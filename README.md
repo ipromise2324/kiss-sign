@@ -48,25 +48,57 @@ Every part is small enough to check by hand.
 
 An operation is something like "deposit USDT into a Morpho vault" or "withdraw from a Fluid vault". You build its template the first time you do it, and reuse it afterwards.
 
-| Step | Who | What happens | Services | What it trusts |
-|---|---|---|---|---|
-| 1. Name the operation | Signer | You say in plain words what you want to do. | An AI agent | You agree the AI's restatement is what you meant. |
-| 2. Research | AI | **Official addresses:** from the protocol's site and GitHub, cross-checked.<br>**Past transactions:** what a normal one looks like.<br>**Protocol health:** hacks, audits, upgrades, admin changes, paused contracts.<br>**ERC-7730:** each contract's clear-signing descriptor and who audited it. | An AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy, ERC-7730 registry | Official sources. Past transactions only show what normal looks like; they prove nothing about safety, because fakes are cheap. |
-| 3. Prove on chain | Program | Confirm each address has code, which implementation a proxy points to, and which factory created it. Prove the ABI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and match the bytecode on chain. | Sourcify, `solc`, Alchemy + drpc | A local compile that matches the chain. Two providers from different companies do not lie together. |
-| 4. Open a pull request | AI | **Report:** where every address came from, the protocol's health, whether an audited ERC-7730 descriptor agrees with the AI's reading, and how many past transactions show what normal looks like, for example "42 past deposits from 31 different Safes".<br>**Template:** what the program will check, and what the Safe should give and get.<br>**Tests:** past transactions that must give `MATCH`, and changed copies that must give `MISMATCH`. | GitHub | Counts show normal use, not safety. |
-| 5. Review the pull request | Signer | Read the report and every rule, and ask for changes. Merging is the confirmation. CI reruns the tests on every change. | GitHub | Your judgment. |
+1. **Name the operation** · *you*<br>
+   Say in plain words what you want to do.<br>
+   <sub>**Uses:** an AI agent · **Trusts:** you agree the AI's restatement is what you meant.</sub>
+2. **Research** · *AI*
+   - **Official addresses:** from the protocol's site and GitHub, cross-checked.
+   - **Past transactions:** what a normal one looks like.
+   - **Protocol health:** hacks, audits, upgrades, admin changes, paused contracts.
+   - **ERC-7730:** each contract's clear-signing descriptor and who audited it.
+
+   <sub>**Uses:** an AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy, ERC-7730 registry · **Trusts:** official sources. Past transactions only show what normal looks like; they prove nothing about safety, because fakes are cheap.</sub>
+3. **Prove on chain** · *program*
+   - **Addresses:** each has code; which implementation a proxy points to; which factory created it.
+   - **ABI:** fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and match the bytecode on chain.
+
+   <sub>**Uses:** Sourcify, `solc`, Alchemy + drpc · **Trusts:** a local compile that matches the chain. Two providers from different companies do not lie together.</sub>
+4. **Open a pull request** · *AI*
+   - **Report:** where every address came from, the protocol's health, whether an audited ERC-7730 descriptor agrees with the AI's reading, and how many past transactions show what normal looks like, for example "42 past deposits from 31 different Safes".
+   - **Template:** what the program will check, and what the Safe should give and get.
+   - **Tests:** past transactions that must give `MATCH`, and changed copies that must give `MISMATCH`.
+
+   <sub>**Uses:** GitHub · **Trusts:** counts show normal use, not safety.</sub>
+5. **Review the pull request** · *you*<br>
+   Read the report and every rule, and ask for changes. Merging is the confirmation. CI reruns the tests on every change.<br>
+   <sub>**Uses:** GitHub · **Trusts:** your judgment.</sub>
 
 ## Every signing
 
-| Step | Who | What happens | Services | What it trusts |
-|---|---|---|---|---|
-| 6. Say this signing's intent | Signer | For example "deposit 65,266 USDT into Steakhouse USDT". | An AI agent | |
-| 7. Fill the card | AI | Pick the template and fill in only the values that change: amounts, vault, limits. | An AI agent | Nothing yet: you confirm the card next. |
-| 8. Confirm the card | Signer | Read the card before seeing the transaction. kiss-sign then seals it on its own. | Local | You read the card. Every address on it comes from the contract registry or your address book. |
-| 9. Propose on Safe | Signer | Create the transaction in the Safe web app. kiss-sign reads it from the Safe Transaction Service, or you paste it. | Safe | Nothing from the API. kiss-sign recomputes every hash itself. |
-| 10. Check | Program | Decode and re-encode byte for byte. Check every field against the template and the card. Change each bound field: every change must give `MISMATCH`. | Local | The fixed program and the template you reviewed. |
-| 11. Simulate | Program | Run the transaction through the Safe's `execTransaction` with `eth_simulateV1`. What the Safe gives and gets must equal the card. | Alchemy + drpc | Both providers must agree, or the verdict is `UNVERIFIABLE`. |
-| 12. Sign on the hardware wallet | Signer | Only on `MATCH`: compare the domain hash and message hash on the wallet's screen, then sign. | A hardware wallet that shows both hashes | The wallet's screen. |
+6. **Say this signing's intent** · *you*<br>
+   For example "deposit 65,266 USDT into Steakhouse USDT".<br>
+   <sub>**Uses:** an AI agent</sub>
+7. **Fill the card** · *AI*<br>
+   Pick the template and fill in only the values that change: amounts, vault, limits.<br>
+   <sub>**Uses:** an AI agent · **Trusts:** nothing yet: you confirm the card next.</sub>
+8. **Confirm the card** · *you*<br>
+   Read the card before seeing the transaction. kiss-sign then seals it on its own.<br>
+   <sub>**Uses:** nothing, it runs locally · **Trusts:** you read the card. Every address on it comes from the contract registry or your address book.</sub>
+9. **Propose on Safe** · *you*<br>
+   Create the transaction in the Safe web app. kiss-sign reads it from the Safe Transaction Service, or you paste it.<br>
+   <sub>**Uses:** Safe · **Trusts:** nothing from the API. kiss-sign recomputes every hash itself.</sub>
+10. **Check** · *program*
+    - **Decode:** decode and re-encode byte for byte.
+    - **Every field:** checked against the template and the card.
+    - **Mutations:** change each bound field; every change must give `MISMATCH`.
+
+    <sub>**Uses:** nothing, it runs locally · **Trusts:** the fixed program and the template you reviewed.</sub>
+11. **Simulate** · *program*<br>
+    Run the transaction through the Safe's `execTransaction` with `eth_simulateV1`. What the Safe gives and gets must equal the card.<br>
+    <sub>**Uses:** Alchemy + drpc · **Trusts:** both providers must agree, or the verdict is `UNVERIFIABLE`.</sub>
+12. **Sign on the hardware wallet** · *you*<br>
+    Only on `MATCH`: compare the domain hash and message hash on the wallet's screen, then sign.<br>
+    <sub>**Uses:** a hardware wallet that shows both hashes · **Trusts:** the wallet's screen.</sub>
 
 ### What you confirm each time
 
