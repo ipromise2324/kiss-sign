@@ -32,8 +32,6 @@ kiss-sign turns the order around: you say what you want first, and the transacti
    - `MISMATCH`: something differs. Do not sign.
    - `UNVERIFIABLE`: it could not be proven either way. Do not sign.
 
-The AI never decides the verdict. If it is fooled while you sign, the worst outcome is `MISMATCH` or `UNVERIFIABLE`. The one thing no check can catch is a template that was wrong when you approved it, which is why templates are reviewed on GitHub.
-
 ![kiss-sign flow: build a template once per operation, then check every signing](docs/architecture.png)
 
 ## Keep it simple, stupid, and sign
