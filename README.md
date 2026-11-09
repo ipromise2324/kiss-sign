@@ -57,6 +57,7 @@ The diagram shows the flow. This is what each step actually does, and what it is
 
 **At every signing:**
 
+- **The program checks itself first.** Before anything else, `verify` requires the local checkout to equal the merged `main` exactly. *Stops:* a template or the program being changed after you approved it.
 - **The card is sealed before you see the transaction.** You confirm what you want first, and kiss-sign stores the card's hash where the AI cannot write. *Stops:* the transaction shaping what you think you asked for.
 - **Every hash is recomputed.** kiss-sign trusts no hash from the Safe web app or its API. *Stops:* a tampered interface showing one transaction while you sign another, as in the Bybit hack.
 - **Decode, then re-encode byte for byte.** The re-encoded transaction must equal the original exactly. *Stops:* extra bytes hidden in the calldata.
@@ -80,23 +81,6 @@ The template is reviewed once. At each signing you confirm only the values that 
 - a transfer: the token, the amount, and the recipient, which must already be in your address book.
 
 Everything else is bound once: the receiver is the Safe, contracts come from the reviewed registry, the Safe and chain come from your config, and the program reads the nonce from the Safe. See [Intent card](docs/design.md#intent-card) for every operation.
-
-## What goes on GitHub
-
-Each operation's template, report, and tests live in this repository, so every rule has a reviewed pull request and evidence behind it. The contract registry lives here too.
-
-Your Safe's address never does:
-
-- Templates say "the Safe", not an address.
-- Test transactions come from other senders, and your own Safe is left out of the search.
-- Your Safe address, API keys, address book, intent cards, and verdicts stay local, in `$KISS_SIGN_HOME`.
-- Before every push, a check greps the outgoing commits for your Safe address and for API keys.
-
-GitHub stores and records; it is not trusted. At signing, the program checks that the template is the exact version you merged.
-
-## Chain access
-
-Every on-chain read goes to two providers run by different companies, Alchemy and drpc, and both must agree. Otherwise the verdict is `UNVERIFIABLE`. API keys go in through `kiss-sign key add <provider>` in a hidden prompt, never through the chat.
 
 ## Threat model
 
