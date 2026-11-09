@@ -14,10 +14,12 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 
 ## The flow
 
+![Detailed flow: who acts at each step, what it does, which services it uses, and what it trusts](architecture-detail.png)
+
 ### First time an operation is done: build its template
 
 1. **State the intent.** For example, "deposit USDC into the Morpho Apex vault." The AI turns it into a concrete operation.
-2. **Research addresses.** The AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources. The program confirms on chain that each address has code, which implementation a proxy points to, and which factory created an instance. Each verified contract goes into the contract registry under a name. The AI also looks up each contract in the ERC-7730 clear-signing registry. Where a descriptor exists, the program checks who reviewed it: each auditor signs an ERC-8176 attestation for that exact descriptor, and the program verifies the signature offline and reads on chain whether it was revoked (for example with Sourcify's `@ethereum-sourcify/clear-signing` library). The AI renders the studied past transactions with the descriptor and compares its field meanings with its own. The descriptor is a second opinion on what each field means. It never becomes a rule by itself, and a field the descriptor hides does not become a free field.
+2. **Research addresses.** The AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources. The program confirms on chain that each address has code, which implementation a proxy points to, and which factory created an instance. Etherscan's address labels and contract-creation records are a third source for both the address and its creator. Each verified contract goes into the contract registry under a name. The AI also looks up each contract in the ERC-7730 clear-signing registry. Where a descriptor exists, the program checks who reviewed it: each auditor signs an ERC-8176 attestation for that exact descriptor, and the program verifies the signature offline and reads on chain whether it was revoked (for example with Sourcify's `@ethereum-sourcify/clear-signing` library). The AI renders the studied past transactions with the descriptor and compares its field meanings with its own. The descriptor is a second opinion on what each field means. It never becomes a rule by itself, and a field the descriptor hides does not become a free field.
 3. **Establish the ABI.** A fixed method, not the AI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and compare the result with the bytecode read from chain. For a proxy, compare the implementation. Matching bytecode proves the ABI belongs to the deployed contract.
 4. **Study past transactions.** The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape. These teach the AI. They prove nothing about safety.
 5. **Check the protocol's health.** The AI looks for anything that makes the protocol unsafe to use right now: past hacks and incidents (for example DefiLlama's hack list and the protocol's own post-mortems), audits, recent upgrades, admin or timelock changes, paused or deprecated contracts. Every claim cites its source. This informs the signer's decision; it does not change what the program checks. What the program can read on chain, such as an upgraded implementation or a paused contract, it checks again at every signing.
@@ -131,6 +133,7 @@ Every on-chain read uses two providers from different companies. Both must agree
 | Role | Providers |
 |---|---|
 | State, code, receipts | Alchemy (free key) and drpc |
+| Contract code and creator, during research | Alchemy and drpc, with Etherscan as a third source |
 | Simulation, latest and past blocks | Alchemy and drpc, `eth_simulateV1` |
 | Finding past transactions | Alchemy Transfers API and a second source (Etherscan with a free key) |
 

@@ -7,7 +7,7 @@
 
 <h1 align="center">kiss-sign</h1>
 
-<p align="center"><b><i>Keep it simple, stupid.</i></b></p>
+<p align="center"><b><i>Keep it simple, stupid, and sign.</i></b></p>
 
 kiss-sign checks a Safe transaction against what you meant to do, before you sign it on a hardware wallet.
 
@@ -35,7 +35,7 @@ kiss-sign is named after KISS: keep it simple, stupid. Every part is kept small 
 
 TODO: why this tool exists.
 
-![kiss-sign overview: build a template once per operation, then verify every signing](docs/architecture.png)
+![kiss-sign flow: build a template once per operation, then check every signing](docs/architecture.png)
 
 ## Build a template (once per operation)
 
