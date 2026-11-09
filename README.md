@@ -21,7 +21,7 @@ You state an intent in plain words. An AI researches the operation and writes a 
 
 > Status: early development. Nothing here is ready to use yet.
 
-## Keep it simple, stupid
+## Keep it simple, stupid, and sign
 
 kiss-sign is named after KISS: keep it simple, stupid. Every part is kept small enough to check by hand.
 
