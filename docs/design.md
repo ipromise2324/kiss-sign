@@ -2,7 +2,7 @@
 
 kiss-sign checks a Safe transaction against what the signer meant to do, before the signer signs it on a hardware wallet. The signer states an intent in plain words. An AI researches the operation and writes a reusable template for it. A fixed program runs that template against the proposed transaction and prints `MATCH`, `MISMATCH`, or `UNVERIFIABLE`. The hashes to compare on the hardware wallet print only on `MATCH`.
 
-The rule the whole design keeps: **the AI writes templates, the program runs them.** The verdict is never the AI's judgment. If the AI is fooled, the worst outcome must be `UNVERIFIABLE` or `MISMATCH`, never a wrong `MATCH`.
+The rule the whole design keeps: **the AI writes templates, the program runs them.** The verdict is never the AI's judgment. `MATCH` means the transaction matches the template and the card the signer approved. If the AI is fooled during signing, the worst outcome must be `UNVERIFIABLE` or `MISMATCH`, never a wrong `MATCH`. A template that was wrong when the signer approved it is not caught by any check; that risk is carried by the review and its evidence.
 
 ## Who does what
 
@@ -20,16 +20,17 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 2. **Research addresses.** The AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources. The program confirms on chain that each address has code, which implementation a proxy points to, and which factory created an instance. Each verified contract goes into the contract registry under a name.
 3. **Establish the ABI.** A fixed method, not the AI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and compare the result with the bytecode read from chain. For a proxy, compare the implementation. Matching bytecode proves the ABI belongs to the deployed contract.
 4. **Study past transactions.** The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape. These teach the AI. They prove nothing about safety.
-5. **Report.** Where each address was verified, where the ABI came from, which transactions were studied, what each field means, which contracts the operation touches, and what the template will check. For each field, the report counts how the studied transactions filled it, and from how many distinct senders. For example, "receiver equals the sender in 42 of 42 transactions, from 31 senders." The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
-6. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests.
-7. **Signer reviews the pull request.** The signer reads the report and the template's rules and asks for changes. Merging the pull request is the confirmation. kiss-sign records the hash of the merged template locally.
+5. **Check the protocol's health.** The AI looks for anything that makes the protocol unsafe to use right now: past hacks and incidents (for example DefiLlama's hack list and the protocol's own post-mortems), audits, recent upgrades, admin or timelock changes, paused or deprecated contracts. Every claim cites its source. This informs the signer's decision; it does not change what the program checks. What the program can read on chain, such as an upgraded implementation or a paused contract, it checks again at every signing.
+6. **Report.** Where each address was verified, where the ABI came from, which transactions were studied, what each field means, which contracts the operation touches, and what the template will check. The report says how many past transactions it studied and from how many senders, for example "42 past deposits from 31 different Safes", and for each field what those transactions held: "`receiver` (who gets the vault shares) was the depositing Safe in all 42". That is the evidence behind the rule "`receiver` equals the Safe". It also carries the protocol health check from step 5. The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
+7. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests.
+8. **Signer reviews the pull request.** The signer reads the report and the template's rules and asks for changes. Merging the pull request is the confirmation. kiss-sign records the hash of the merged template locally.
 
 ### Every signing
 
-8. **State this signing's intent.** The signer says what to do this time, for example "deposit 65,266 USDT into Steakhouse USDT". The AI picks the template and fills in the card values. The signer reads the card and confirms it before seeing the Safe transaction. kiss-sign then seals the card on its own: it hashes the card and stores it where the AI cannot write. The template is not reviewed again; only the card's values are.
-9. **Propose on Safe.** kiss-sign reads the transaction from the Safe Transaction Service, or the signer pastes it. kiss-sign recomputes every hash itself.
-10. **Verify.** The program decodes the transaction with the template, checks every field, mutates the transaction to confirm the template catches changes, simulates it, and compares the Safe's net effects with the card.
-11. **Sign.** On `MATCH`, the signer compares the domain hash and message hash on the hardware wallet's screen, then signs. Any hardware wallet that shows both hashes for a Safe transaction works.
+9. **State this signing's intent.** The signer says what to do this time, for example "deposit 65,266 USDT into Steakhouse USDT". The AI picks the template and fills in the card values. The signer reads the card and confirms it before seeing the Safe transaction. kiss-sign then seals the card on its own: it hashes the card and stores it where the AI cannot write. The template is not reviewed again; only the card's values are.
+10. **Propose on Safe.** kiss-sign reads the transaction from the Safe Transaction Service, or the signer pastes it. kiss-sign recomputes every hash itself.
+11. **Verify.** The program decodes the transaction with the template, checks every field, mutates the transaction to confirm the template catches changes, simulates it, and compares the Safe's net effects with the card.
+12. **Sign.** On `MATCH`, the signer compares the domain hash and message hash on the hardware wallet's screen, then signs. Any hardware wallet that shows both hashes for a Safe transaction works.
 
 ## Data shapes
 
@@ -56,7 +57,7 @@ Where each value comes from:
 | Source | Confirmed | Examples |
 |---|---|---|
 | Template | Once, when the signer reviews the template | Target contracts, `receiver` and `owner` equal the Safe, the spender of an approval equals a named contract |
-| Contract registry | Once per contract, during research (step 2) | Each Morpho vault, each Fluid fToken, the CoW settlement contract and VaultRelayer, routers |
+| Contract registry | Once per contract, during research (step 2) | Each Morpho vault, each Fluid fToken, routers |
 | Address book | Once per address, by the signer | An external recipient of a transfer |
 | Config | Once, at `init` | The Safe, the chain |
 | The Safe, read on chain | By the program, every signing | The nonce |
@@ -72,7 +73,6 @@ Card values per operation, covering the operations in the Safe's history:
 | Deposit into a vault (Morpho, Fluid) | vault, amount | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the vault |
 | Withdraw or redeem from a vault | vault, amount or `all` | receiver and owner are the Safe |
 | Claim rewards (Fluid, Merkl) | reward token | recipient is the Safe; amount and proof are free; the Safe gives nothing and receives only the reward token |
-| CoW order | sell token, sell amount, buy token, minimum buy amount, expiry | receiver is the Safe; the settlement contract and VaultRelayer are named contracts; the approval is exact |
 | Swap through a router (Uniswap, Odos) | sell token, sell amount, buy token, minimum buy amount | recipient is the Safe; the router is a named contract |
 | Cancel a queued transaction | the nonce to replace | 0 ETH to the Safe itself, no data |
 
@@ -116,9 +116,13 @@ These are protocol-free and change rarely.
 
 - The Safe transaction hashes, computed locally.
 - Decode, then re-encode byte for byte, so nothing hides in the encoding.
-- Floor rules: no unlimited approval, no `delegatecall` except to the official MultiSend, no owner, module, guard or threshold change.
+- Floor rules:
+  - no unlimited approval;
+  - no `delegatecall` except to the official MultiSend, and the rules apply again to every call inside it, at every level;
+  - no owner, module, guard, threshold, fallback handler or implementation change;
+  - the Safe's own fee fields are all zero: `safeTxGas`, `baseGas`, `gasPrice`, `gasToken`, `refundReceiver`. Otherwise a correctly hashed transaction can pay a refund to someone else.
 - The mutation check: change each bound field and confirm the template gives `MISMATCH`.
-- Simulation through the Safe's own `execTransaction`, judged by the Safe's balance and allowance changes, not by protocol events. A Safe that pays and gets nothing is `MISMATCH` whatever the template says.
+- Simulation through the Safe's own `execTransaction`, judged by the Safe's balance and allowance changes, not by protocol events. Every change to the Safe's balances and allowances must be one the template's effects explain; any other change is `MISMATCH`, whatever else the template says. A transfer explains its payment by its card's recipient and amount; a deposit or a swap must also receive what its effects promise.
 
 ## Chain access
 
@@ -148,6 +152,10 @@ Not built now. Listed so the path is clear.
 - **Light client (Helios).** Verifies every read against the beacon chain, so one provider is enough. Needs `eth_getProof` (Alchemy has it) and a local EVM to simulate on proven state.
 - **Local simulation (anvil).** Free and open source. Adds execution diversity. On its own it trusts the same RPC state.
 - **A paid or third provider.** Removes rate and range limits and adds an independent source.
+
+## Next phase: CoW orders
+
+A CoW order is not a swap inside the Safe transaction. The transaction only pre-signs an order (`setPreSignature`) and sets an approval; a solver settles the order later. So the order's sell and buy limits, receiver, and expiry live in the order, not in the transaction's effects, and the approval is not spent in the same transaction. Supporting it needs its own rules: rebuild the order from its uid, check every order field against the card, and allow the approval to stay open until the order settles or expires.
 
 ## Out of scope
 

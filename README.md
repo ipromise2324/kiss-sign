@@ -17,7 +17,7 @@ You state an intent in plain words. An AI researches the operation and writes a 
 - `MISMATCH`: something differs. Do not sign.
 - `UNVERIFIABLE`: kiss-sign could not prove it either way, for example because two chain providers disagreed. Do not sign.
 
-**The AI writes templates, the program runs them.** The verdict is never the AI's judgment. If the AI is fooled, the worst outcome is `UNVERIFIABLE` or `MISMATCH`, never a wrong `MATCH`.
+**The AI writes templates, the program runs them.** The verdict is never the AI's judgment. `MATCH` means the transaction matches the template and the card you approved. If the AI is fooled while you sign, the worst outcome is `UNVERIFIABLE` or `MISMATCH`. What no check can catch is a template that was wrong when you approved it, which is why every template comes with its evidence and is reviewed as a pull request.
 
 > Status: early development. Nothing here is ready to use yet.
 
@@ -39,14 +39,14 @@ TODO: why this tool exists.
 
 ## Build a template (once per operation)
 
-An operation is something like "deposit USDT into a Morpho vault" or "place a CoW order". You build its template the first time you do it, and reuse it afterwards.
+An operation is something like "deposit USDT into a Morpho vault" or "withdraw from a Fluid vault". You build its template the first time you do it, and reuse it afterwards.
 
 | Step | Who | What happens | Services | What it trusts |
 |---|---|---|---|---|
 | 1. Name the operation | Signer | You say in plain words what you want to do. | An AI agent | You agree the AI's restatement is what you meant. |
-| 2. Research | AI | Find the protocol's official contract addresses on its site and GitHub, and cross-check them. Pull past transactions of the same operation and learn what each field normally holds. | An AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy | Official sources. Past transactions only teach; they prove nothing about safety, because fakes are cheap. |
+| 2. Research | AI | Find the protocol's official contract addresses on its site and GitHub, and cross-check them. Study past transactions of the same operation to learn what a normal one looks like. Check the protocol's health: past hacks and incidents, audits, recent upgrades or admin changes, paused contracts. | An AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy | Official sources. Past transactions only show what normal looks like; they prove nothing about safety, because fakes are cheap. |
 | 3. Prove on chain | Program | Confirm each address has code, which implementation a proxy points to, and which factory created it. Prove the ABI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and match the bytecode on chain. | Sourcify, `solc`, Alchemy + drpc | A local compile that matches the chain. Two providers from different companies do not lie together. |
-| 4. Open a pull request | AI | The pull request holds three things. The report: where every address and rule came from, for example "receiver = Safe in 42 of 42 past transactions, from 31 senders". The template: what the program will check, and what the Safe should give and get. The tests: past transactions that must give `MATCH`, and mutated copies that must give `MISMATCH`. | GitHub | Counts show normal use, not safety. |
+| 4. Open a pull request | AI | The pull request holds three things. The report: where every address came from; the protocol's health; and how many past transactions show what normal looks like, for example "42 past deposits from 31 different Safes", with what each field held in them. The template: what the program will check, and what the Safe should give and get. The tests: past transactions that must give `MATCH`, and mutated copies that must give `MISMATCH`. | GitHub | Counts show normal use, not safety. |
 | 5. Review the pull request | Signer | Read the report and every rule, and ask for changes. Merging is the confirmation. CI reruns the tests on every change. | GitHub | Your judgment. |
 
 ## Every signing
@@ -66,7 +66,7 @@ An operation is something like "deposit USDT into a Morpho vault" or "place a Co
 The template is reviewed once. At each signing you confirm only the values that change, for example:
 
 - a vault deposit: which vault and how much;
-- a CoW order: what you sell and how much, what you buy, the minimum you accept, and when it expires;
+- a swap: what you sell and how much, what you buy, and the minimum you accept;
 - a transfer: the token, the amount, and the recipient, which must already be in your address book.
 
 Everything else is bound once: the receiver is the Safe, contracts come from the reviewed registry, the Safe and chain come from your config, and the program reads the nonce from the Safe. See [Intent card](docs/design.md#intent-card) for every operation.
