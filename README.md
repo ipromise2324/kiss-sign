@@ -1,10 +1,10 @@
 # kiss-sign
 
-kiss-sign checks a Safe transaction against what you meant to do, before you sign it on a Ledger.
+kiss-sign checks a Safe transaction against what you meant to do, before you sign it on a hardware wallet.
 
 You state an intent in plain words. An AI researches the operation and writes a reusable template for it. A fixed program runs that template against the proposed transaction and prints one of three verdicts:
 
-- `MATCH`: the transaction does exactly what the intent card says. kiss-sign prints the hashes your Ledger will show.
+- `MATCH`: the transaction does exactly what your intent card says. kiss-sign prints the hashes your hardware wallet will show.
 - `MISMATCH`: something differs. Do not sign.
 - `UNVERIFIABLE`: kiss-sign could not prove it either way, for example because two chain providers disagreed. Do not sign.
 
@@ -12,19 +12,64 @@ You state an intent in plain words. An AI researches the operation and writes a 
 
 > Status: early development. Nothing here is ready to use yet.
 
-## How it works
+## Keep it simple
 
-![kiss-sign architecture: building a template once, then verifying every signing](docs/architecture.svg)
+kiss-sign is named after KISS: keep it simple, stupid. Every part is kept small enough to check by hand.
 
-There are two flows:
+- **Your job is small.** One sentence of intent, one short card to confirm, two hashes to compare on the hardware wallet. The long review happens once per operation, not at every signing.
+- **The judge is simple.** A fixed program decides, not an AI. Templates are data, not code: each field equals a card value, the Safe, a named contract, or a constant, or is marked free with a reason.
+- **Trust is small and written down.** Every step says what it trusts. kiss-sign recomputes every hash itself, proves an ABI by compiling it, and asks two providers instead of believing one.
+- **Doubt fails closed.** When kiss-sign cannot prove a transaction, the answer is `UNVERIFIABLE`, never `MATCH`.
+- **No more than needed.** Free services, Ethereum mainnet, Safe, and a hardware wallet. Heavier tools such as a light client wait until they are worth their cost.
 
-1. **Build a template**, once per operation, such as "deposit USDC into a Morpho vault". The AI researches the contract addresses and past transactions and writes a report. A fixed method proves the ABI by compiling the verified source and comparing it with the bytecode on chain. You confirm the report, and the AI saves the template.
-2. **Every signing.** You seal an intent card with this signing's values before you see the transaction. Then you propose the transaction on Safe. The program decodes it, checks every field against the template and the card, mutates it to confirm the checks catch changes, and simulates it. On `MATCH`, you compare the hashes on your Ledger and sign.
+## Why kiss-sign
 
-Every on-chain read goes to two providers run by different companies, and both must agree.
+TODO: why this tool exists.
 
-See [docs/design.md](docs/design.md) for the full design: data shapes, engine checks, chain access, and known limits.
+![kiss-sign overview: build a template once per operation, then verify every signing](docs/architecture.png)
+
+## Build a template (once per operation)
+
+An operation is something like "deposit USDT into a Morpho vault" or "place a CoW order". You build its template the first time you do it, and reuse it afterwards.
+
+| Step | Who | What happens | Services | What it trusts |
+|---|---|---|---|---|
+| 1. Name the operation | Signer | You say in plain words what you want to do. | An AI agent | You agree the AI's restatement is what you meant. |
+| 2. Research | AI | Find the protocol's official contract addresses on its site and GitHub, and cross-check them. Pull past transactions of the same operation and learn what each field normally holds. | An AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy | Official sources. Past transactions only teach; they prove nothing about safety, because fakes are cheap. |
+| 3. Prove on chain | Program | Confirm each address has code, which implementation a proxy points to, and which factory created it. Prove the ABI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and match the bytecode on chain. | Sourcify, `solc`, Alchemy + drpc | A local compile that matches the chain. Two providers from different companies do not lie together. |
+| 4. Write the report | AI | Where each address was verified; how the ABI was proven; a rule for every field with its evidence, for example "receiver = Safe in 42 of 42 past transactions, from 31 senders"; what the program will check; and what the Safe should give and get. | Local | Counts show normal use, not safety. |
+| 5. Review the report | Signer | Ask for changes until every rule is right. The AI then turns the report into a template, saved with the contract registry and your address book. | Local | Your judgment. |
+
+## Every signing
+
+| Step | Who | What happens | Services | What it trusts |
+|---|---|---|---|---|
+| 6. Say this signing's intent | Signer | For example "deposit 65,266 USDT into Steakhouse USDT". | An AI agent | |
+| 7. Fill the card | AI | Pick the template and fill in only the values that change: amounts, vault, limits. | An AI agent | Nothing yet: you confirm the card next. |
+| 8. Confirm the card | Signer | Read the card before seeing the transaction. kiss-sign then seals it on its own. | Local | You read the card. Every address on it comes from the contract registry or your address book. |
+| 9. Propose on Safe | Signer | Create the transaction in the Safe web app. kiss-sign reads it from the Safe Transaction Service, or you paste it. | Safe | Nothing from the API. kiss-sign recomputes every hash itself. |
+| 10. Check | Program | Decode and re-encode byte for byte. Check every field against the template and the card. Change each bound field: every change must give `MISMATCH`. | Local | The fixed program and the template you reviewed. |
+| 11. Simulate | Program | Run the transaction through the Safe's `execTransaction` with `eth_simulateV1`. What the Safe gives and gets must equal the card. | Alchemy + drpc | Both providers must agree, or the verdict is `UNVERIFIABLE`. |
+| 12. Sign on the hardware wallet | Signer | Only on `MATCH`: compare the domain hash and message hash on the wallet's screen, then sign. | A hardware wallet that shows both hashes | The wallet's screen. |
+
+### What you confirm each time
+
+The template is reviewed once. At each signing you confirm only the values that change, for example:
+
+- a vault deposit: which vault and how much;
+- a CoW order: what you sell and how much, what you buy, the minimum you accept, and when it expires;
+- a transfer: the token, the amount, and the recipient, which must already be in your address book.
+
+Everything else is bound once: the receiver is the Safe, contracts come from the reviewed registry, the Safe and chain come from your config, and the program reads the nonce from the Safe. See [Intent card](docs/design.md#intent-card) for every operation.
+
+## Chain access
+
+Every on-chain read goes to two providers run by different companies, Alchemy and drpc, and both must agree. Otherwise the verdict is `UNVERIFIABLE`. API keys go in through `kiss-sign key add <provider>` in a hidden prompt, never through the chat.
+
+## More
+
+[docs/design.md](docs/design.md) has the full design: data shapes, engine checks, chain access, known limits, and later security upgrades.
 
 ## Scope
 
-Safe multisig transactions on Ethereum mainnet, signed with a Ledger. EOA signing, off-chain EIP-712 signatures, and other chains are out of scope.
+Safe multisig transactions on Ethereum mainnet, signed with a hardware wallet that shows the Safe transaction's domain hash and message hash. EOA signing, off-chain EIP-712 signatures, and other chains are out of scope.

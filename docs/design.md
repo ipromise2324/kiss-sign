@@ -1,6 +1,6 @@
 # kiss-sign design
 
-kiss-sign checks a Safe transaction against what the signer meant to do, before the signer signs it on a Ledger. The signer states an intent in plain words. An AI researches the operation and writes a reusable template for it. A fixed program runs that template against the proposed transaction and prints `MATCH`, `MISMATCH`, or `UNVERIFIABLE`. Ledger hashes print only on `MATCH`.
+kiss-sign checks a Safe transaction against what the signer meant to do, before the signer signs it on a hardware wallet. The signer states an intent in plain words. An AI researches the operation and writes a reusable template for it. A fixed program runs that template against the proposed transaction and prints `MATCH`, `MISMATCH`, or `UNVERIFIABLE`. The hashes to compare on the hardware wallet print only on `MATCH`.
 
 The rule the whole design keeps: **the AI writes templates, the program runs them.** The verdict is never the AI's judgment. If the AI is fooled, the worst outcome must be `UNVERIFIABLE` or `MISMATCH`, never a wrong `MATCH`.
 
@@ -8,8 +8,8 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 
 | Actor | Does | Never does |
 |---|---|---|
-| Signer | States intents, reads reports, confirms templates, seals intent cards, proposes on Safe, compares hashes on the Ledger | Pastes keys into the chat |
-| AI (Claude Code skill) | Researches addresses, ABIs and past transactions; writes the report; writes the template; drafts the intent card | Decides a verdict, edits kiss-sign during signing, handles API keys |
+| Signer | States intents, reads reports, confirms templates, confirms intent cards and address-book entries, proposes on Safe, compares hashes on the hardware wallet | Pastes keys into the chat |
+| AI (any coding agent) | Researches addresses, ABIs and past transactions; writes the report; writes the template; drafts the intent card | Decides a verdict, edits kiss-sign during signing, handles API keys |
 | Program (the engine) | Fetches and hashes the Safe transaction, decodes it, runs the template's checks, simulates, compares effects with the card | Reads web pages, follows instructions found in data |
 
 ## The flow
@@ -17,7 +17,7 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 ### First time an operation is done: build its template
 
 1. **State the intent.** For example, "deposit USDC into the Morpho Apex vault." The AI turns it into a concrete operation.
-2. **Research addresses.** The AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources. The program confirms on chain that each address has code, which implementation a proxy points to, and which factory created an instance.
+2. **Research addresses.** The AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources. The program confirms on chain that each address has code, which implementation a proxy points to, and which factory created an instance. Each verified contract goes into the contract registry under a name.
 3. **Establish the ABI.** A fixed method, not the AI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and compare the result with the bytecode read from chain. For a proxy, compare the implementation. Matching bytecode proves the ABI belongs to the deployed contract.
 4. **Study past transactions.** The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape. These teach the AI. They prove nothing about safety.
 5. **Report.** Where each address was verified, where the ABI came from, which transactions were studied, what each field means, which contracts the operation touches, and what the template will check. For each field, the report counts how the studied transactions filled it, and from how many distinct senders. For example, "receiver equals the sender in 42 of 42 transactions, from 31 senders." The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
@@ -26,10 +26,10 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 
 ### Every signing
 
-8. **Seal the intent card.** The AI drafts this time's values, such as the amount. The signer reads the card and seals it before seeing the Safe transaction. Every address on the card must pass the program's address checks.
+8. **State this signing's intent.** The signer says what to do this time, for example "deposit 65,266 USDT into Steakhouse USDT". The AI picks the template and fills in the card values. The signer reads the card and confirms it before seeing the Safe transaction. kiss-sign then seals the card on its own: it hashes the card and stores it where the AI cannot write. The template is not reviewed again; only the card's values are.
 9. **Propose on Safe.** kiss-sign reads the transaction from the Safe Transaction Service, or the signer pastes it. kiss-sign recomputes every hash itself.
 10. **Verify.** The program decodes the transaction with the template, checks every field, mutates the transaction to confirm the template catches changes, simulates it, and compares the Safe's net effects with the card.
-11. **Sign.** On `MATCH`, the signer compares the domain hash and message hash on the Ledger, then signs.
+11. **Sign.** On `MATCH`, the signer compares the domain hash and message hash on the hardware wallet's screen, then signs. Any hardware wallet that shows both hashes for a Safe transaction works.
 
 ## Data shapes
 
@@ -49,7 +49,38 @@ A template describes one operation for one protocol, for example `morpho/vault-d
 
 ### Intent card
 
-The operation id plus this signing's values: amounts, the vault, the chain, the Safe, and the nonce. Sealed means hashed and stored where the AI cannot write.
+The operation id plus this signing's values. The template is reviewed once; the card is the only thing the signer confirms at every signing. So the card holds only what changes between signings, and every other value is bound once, somewhere the signer already reviewed.
+
+Where each value comes from:
+
+| Source | Confirmed | Examples |
+|---|---|---|
+| Template | Once, when the signer reviews the template | Target contracts, `receiver` and `owner` equal the Safe, the spender of an approval equals a named contract |
+| Contract registry | Once per contract, during research (step 2) | Each Morpho vault, each Fluid fToken, the CoW settlement contract and VaultRelayer, routers |
+| Address book | Once per address, by the signer | An external recipient of a transfer |
+| Config | Once, at `init` | The Safe, the chain |
+| The Safe, read on chain | By the program, every signing | The nonce |
+| Card | By the signer, every signing | Amounts, which vault, swap limits, which address-book entry receives a transfer |
+
+An address on the card is never typed by the AI. It is a name from the contract registry or the address book, or the Safe itself. The card shows the name and the full address, and the program resolves the name.
+
+Card values per operation, covering the operations in the Safe's history:
+
+| Operation | Card values | Bound by the template |
+|---|---|---|
+| Transfer ETH or a token | token, amount, recipient | none |
+| Deposit into a vault (Morpho, Fluid) | vault, amount | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the vault |
+| Withdraw or redeem from a vault | vault, amount or `all` | receiver and owner are the Safe |
+| Claim rewards (Fluid, Merkl) | reward token | recipient is the Safe; amount and proof are free; the Safe gives nothing and receives only the reward token |
+| CoW order | sell token, sell amount, buy token, minimum buy amount, expiry | receiver is the Safe; the settlement contract and VaultRelayer are named contracts; the approval is exact |
+| Swap through a router (Uniswap, Odos) | sell token, sell amount, buy token, minimum buy amount | recipient is the Safe; the router is a named contract |
+| Cancel a queued transaction | the nonce to replace | 0 ETH to the Safe itself, no data |
+
+- One Safe transaction can batch several operations, for example withdrawing from two vaults. The card then lists each operation with its values, and the MultiSend must contain exactly those calls. An approval belongs to the operation that spends it, not to its own line.
+- Swap limits are stated as a minimum amount, not a slippage percentage, so the program never needs a price. The AI may suggest the number from a quote; the signer confirms the number.
+- A recipient that is not the Safe must already be in the address book. Adding an entry is a separate step, done before signing, where the signer checks the full address against a source outside the chat.
+
+Sealed means hashed and stored where the AI cannot write.
 
 ### Verdict file
 
