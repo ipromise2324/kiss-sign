@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.svg">
+    <img src="docs/logo.svg" alt="kiss-sign logo: an x on a signature line" width="120">
+  </picture>
+</p>
+
 # kiss-sign
 
 kiss-sign checks a Safe transaction against what you meant to do, before you sign it on a hardware wallet.
