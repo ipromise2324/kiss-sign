@@ -11,33 +11,36 @@
 
 kiss-sign checks a Safe transaction against what you meant to do, before you sign it on a hardware wallet.
 
-You state an intent in plain words. An AI researches the operation and writes a reusable template for it. A fixed program runs that template against the proposed transaction and prints one of three verdicts:
-
-- `MATCH`: the transaction does exactly what your intent card says. kiss-sign prints the hashes your hardware wallet will show.
-- `MISMATCH`: something differs. Do not sign.
-- `UNVERIFIABLE`: kiss-sign could not prove it either way, for example because two chain providers disagreed. Do not sign.
-
-**The AI writes templates, the program runs them.** The verdict is never the AI's judgment. `MATCH` means the transaction matches the template and the card you approved. If the AI is fooled while you sign, the worst outcome is `UNVERIFIABLE` or `MISMATCH`. What no check can catch is a template that was wrong when you approved it, which is why every template comes with its evidence and is reviewed as a pull request.
-
 > Status: early development. Nothing here is ready to use yet.
-
-## Keep it simple, stupid, and sign
-
-kiss-sign is named after KISS: keep it simple, stupid. Every part is kept small enough to check by hand.
-
-- **Your job is small.** One sentence of intent, one short card to confirm, two hashes to compare on the hardware wallet. The long review happens once per operation, not at every signing.
-- **The judge is simple.** A fixed program decides, not an AI. Templates are data, not code: each field equals a card value, the Safe, a named contract, or a constant, or is marked free with a reason.
-- **Trust is small and written down.** Every step says what it trusts. kiss-sign recomputes every hash itself, proves an ABI by compiling it, and asks two providers instead of believing one.
-- **Doubt fails closed.** When kiss-sign cannot prove a transaction, the answer is `UNVERIFIABLE`, never `MATCH`.
-- **No more than needed.** Free services, Ethereum mainnet, Safe, and a hardware wallet. Heavier tools such as a light client wait until they are worth their cost.
 
 ## Why kiss-sign
 
 I sign Safe multisig transactions often, and every signature makes me responsible for the exact data I approve. Today the order is always the same: the transaction is built first, and the signer checks it last. That last check is like the terms on an insurance form. Everyone means to read it, and most people just click sign. Checking the data properly is also slow: today's tools work only if you rebuild the transaction yourself and know how it is encoded. Clear signing (ERC-7730) makes the final screen readable, but you still have to read it at the end and notice what's wrong. It also doesn't handle batched calls well yet and doesn't work for Safe transactions.
 
-kiss-sign turns the order around. You say what you want first, in one sentence, and confirm a short card before you see any transaction. The program then checks the transaction against what you already said. You don't have to read the transaction at the end and catch the problem yourself.
+## How it works
+
+kiss-sign turns the order around: you say what you want first, and the transaction is checked against it.
+
+1. **Say the intent** in one sentence, and confirm a short card before you see any transaction.
+2. **An AI writes a template** the first time you do an operation, and you review it as a pull request with its evidence.
+3. **A fixed program checks** the transaction against the template and your card, then prints a verdict:
+   - `MATCH`: it does exactly what the card says. Compare the two hashes on your hardware wallet and sign.
+   - `MISMATCH`: something differs. Do not sign.
+   - `UNVERIFIABLE`: it could not be proven either way. Do not sign.
+
+The AI never decides the verdict. If it is fooled while you sign, the worst outcome is `MISMATCH` or `UNVERIFIABLE`. The one thing no check can catch is a template that was wrong when you approved it, which is why templates are reviewed on GitHub.
 
 ![kiss-sign flow: build a template once per operation, then check every signing](docs/architecture.png)
+
+## Keep it simple, stupid, and sign
+
+Every part is small enough to check by hand.
+
+- **Your job is small.** One sentence, one card, two hashes. The long review happens once per operation.
+- **The judge is simple.** A fixed program decides. Templates are data, not code.
+- **Trust is written down.** kiss-sign recomputes every hash, compiles every ABI, and asks two providers.
+- **Doubt fails closed.** If it cannot prove a transaction, the answer is `UNVERIFIABLE`.
+- **No more than needed.** Free services, Ethereum mainnet, Safe, and a hardware wallet.
 
 ## Build a template (once per operation)
 
