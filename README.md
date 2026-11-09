@@ -44,63 +44,34 @@ Every part is small enough to check by hand.
 - **Doubt fails closed.** If it cannot prove a transaction, the answer is `UNVERIFIABLE`.
 - **No more than needed.** Free services, Ethereum mainnet, Safe, and a hardware wallet.
 
-## Build a template (once per operation)
+## What each check stops
 
-An operation is something like "deposit USDT into a Morpho vault" or "withdraw from a Fluid vault". You build its template the first time you do it, and reuse it afterwards.
+The diagram shows the flow. This is what each step actually does, and what it is there to stop.
 
-1. **Name the operation** · *you*<br>
-   Say in plain words what you want to do.<br>
-   <sub>**Uses:** an AI agent · **Trusts:** you agree the AI's restatement is what you meant.</sub>
-2. **Research** · *AI*
-   - **Official addresses:** from the protocol's site and GitHub, cross-checked.
-   - **Past transactions:** what a normal one looks like.
-   - **Protocol health:** hacks, audits, upgrades, admin changes, paused contracts.
-   - **ERC-7730:** each contract's clear-signing descriptor and who audited it.
+**When a template is built** (once per operation, such as "deposit into a Morpho vault"):
 
-   <sub>**Uses:** an AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy, ERC-7730 registry · **Trusts:** official sources. Past transactions only show what normal looks like; they prove nothing about safety, because fakes are cheap.</sub>
-3. **Prove on chain** · *program*
-   - **Addresses:** each has code; which implementation a proxy points to; which factory created it.
-   - **ABI:** fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and match the bytecode on chain.
+- **Addresses come from three sources.** The protocol's own site and GitHub, the chain (the address has code, a proxy's implementation, the factory that created it), and Etherscan's labels and creation records must all agree. *Stops:* fake contracts and look-alike addresses.
+- **The ABI is proven by compiling it.** kiss-sign fetches the verified source from Sourcify, compiles it locally with a pinned `solc`, and matches the bytecode on chain, following proxies to their implementation. *Stops:* an ABI that labels a field as something it is not.
+- **Rules come from evidence.** Past transactions show what each field normally holds, for example "`receiver` was the depositing Safe in all 42 past deposits". That count is the evidence behind the rule "`receiver` equals the Safe". *Stops:* a field the template forgot to bind.
+- **The protocol's health is checked.** Past hacks, audits, recent upgrades, admin changes, and paused contracts go in the report. *Stops:* using a protocol that is unsafe right now.
 
-   <sub>**Uses:** Sourcify, `solc`, Alchemy + drpc · **Trusts:** a local compile that matches the chain. Two providers from different companies do not lie together.</sub>
-4. **Open a pull request** · *AI*
-   - **Report:** where every address came from, the protocol's health, whether an audited ERC-7730 descriptor agrees with the AI's reading, and how many past transactions show what normal looks like, for example "42 past deposits from 31 different Safes".
-   - **Template:** what the program will check, and what the Safe should give and get.
-   - **Tests:** past transactions that must give `MATCH`, and changed copies that must give `MISMATCH`.
+**At every signing:**
 
-   <sub>**Uses:** GitHub · **Trusts:** counts show normal use, not safety.</sub>
-5. **Review the pull request** · *you*<br>
-   Read the report and every rule, and ask for changes. Merging is the confirmation. CI reruns the tests on every change.<br>
-   <sub>**Uses:** GitHub · **Trusts:** your judgment.</sub>
+- **The card is sealed before you see the transaction.** You confirm what you want first, and kiss-sign stores the card's hash where the AI cannot write. *Stops:* the transaction shaping what you think you asked for.
+- **Every hash is recomputed.** kiss-sign trusts no hash from the Safe web app or its API. *Stops:* a tampered interface showing one transaction while you sign another, as in the Bybit hack.
+- **Decode, then re-encode byte for byte.** The re-encoded transaction must equal the original exactly. *Stops:* extra bytes hidden in the calldata.
+- **Mutation check.** kiss-sign changes each bound field, and every changed copy must give `MISMATCH`. *Stops:* a template that looks strict but binds nothing.
+- **Floor rules apply to every template:**
+  - no unlimited approval;
+  - no `delegatecall` except to the official MultiSend, and the rules apply again to every call inside it, at every level;
+  - no owner, module, guard, threshold, fallback handler or implementation change;
+  - the Safe's own fee fields are all zero, so a correctly hashed transaction cannot pay a refund to someone else.
 
-## Every signing
+  *Stops:* the attacks that take over the Safe itself, such as the upgrades behind the Bybit and WazirX hacks.
+- **Simulation on two providers.** The transaction runs through the Safe's `execTransaction` with `eth_simulateV1` on Alchemy and drpc. Every change to the Safe's balances and allowances must be one the card explains, and both providers must agree. *Stops:* hidden side effects and a lying provider.
+- **Hashes on the hardware wallet.** On `MATCH`, kiss-sign prints the domain hash and message hash, and you compare them on the wallet's screen. *Stops:* a compromised computer swapping the transaction at the last step.
 
-6. **Say this signing's intent** · *you*<br>
-   For example "deposit 65,266 USDT into Steakhouse USDT".<br>
-   <sub>**Uses:** an AI agent</sub>
-7. **Fill the card** · *AI*<br>
-   Pick the template and fill in only the values that change: amounts, vault, limits.<br>
-   <sub>**Uses:** an AI agent · **Trusts:** nothing yet: you confirm the card next.</sub>
-8. **Confirm the card** · *you*<br>
-   Read the card before seeing the transaction. kiss-sign then seals it on its own.<br>
-   <sub>**Uses:** nothing, it runs locally · **Trusts:** you read the card. Every address on it comes from the contract registry or your address book.</sub>
-9. **Propose on Safe** · *you*<br>
-   Create the transaction in the Safe web app. kiss-sign reads it from the Safe Transaction Service, or you paste it.<br>
-   <sub>**Uses:** Safe · **Trusts:** nothing from the API. kiss-sign recomputes every hash itself.</sub>
-10. **Check** · *program*
-    - **Decode:** decode and re-encode byte for byte.
-    - **Every field:** checked against the template and the card.
-    - **Mutations:** change each bound field; every change must give `MISMATCH`.
-
-    <sub>**Uses:** nothing, it runs locally · **Trusts:** the fixed program and the template you reviewed.</sub>
-11. **Simulate** · *program*<br>
-    Run the transaction through the Safe's `execTransaction` with `eth_simulateV1`. What the Safe gives and gets must equal the card.<br>
-    <sub>**Uses:** Alchemy + drpc · **Trusts:** both providers must agree, or the verdict is `UNVERIFIABLE`.</sub>
-12. **Sign on the hardware wallet** · *you*<br>
-    Only on `MATCH`: compare the domain hash and message hash on the wallet's screen, then sign.<br>
-    <sub>**Uses:** a hardware wallet that shows both hashes · **Trusts:** the wallet's screen.</sub>
-
-### What you confirm each time
+## What you confirm each time
 
 The template is reviewed once. At each signing you confirm only the values that change, for example:
 
