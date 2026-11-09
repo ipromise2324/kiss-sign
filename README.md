@@ -95,6 +95,10 @@ GitHub stores and records; it is not trusted. At signing, the program checks tha
 
 Every on-chain read goes to two providers run by different companies, Alchemy and drpc, and both must agree. Otherwise the verdict is `UNVERIFIABLE`. API keys go in through `kiss-sign key add <provider>` in a hidden prompt, never through the chat.
 
+## Threat model
+
+TODO: the attacks kiss-sign is meant to stop, and the ones it cannot.
+
 ## More
 
 [docs/design.md](docs/design.md) has the full design: data shapes, engine checks, chain access, known limits, and later security upgrades.
