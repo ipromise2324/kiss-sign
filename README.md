@@ -37,8 +37,8 @@ An operation is something like "deposit USDT into a Morpho vault" or "place a Co
 | 1. Name the operation | Signer | You say in plain words what you want to do. | An AI agent | You agree the AI's restatement is what you meant. |
 | 2. Research | AI | Find the protocol's official contract addresses on its site and GitHub, and cross-check them. Pull past transactions of the same operation and learn what each field normally holds. | An AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy | Official sources. Past transactions only teach; they prove nothing about safety, because fakes are cheap. |
 | 3. Prove on chain | Program | Confirm each address has code, which implementation a proxy points to, and which factory created it. Prove the ABI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and match the bytecode on chain. | Sourcify, `solc`, Alchemy + drpc | A local compile that matches the chain. Two providers from different companies do not lie together. |
-| 4. Write the report | AI | Where each address was verified; how the ABI was proven; a rule for every field with its evidence, for example "receiver = Safe in 42 of 42 past transactions, from 31 senders"; what the program will check; and what the Safe should give and get. | Local | Counts show normal use, not safety. |
-| 5. Review the report | Signer | Ask for changes until every rule is right. The AI then turns the report into a template, saved with the contract registry and your address book. | Local | Your judgment. |
+| 4. Open a pull request | AI | The pull request holds three things. The report: where every address and rule came from, for example "receiver = Safe in 42 of 42 past transactions, from 31 senders". The template: what the program will check, and what the Safe should give and get. The tests: past transactions that must give `MATCH`, and mutated copies that must give `MISMATCH`. | GitHub | Counts show normal use, not safety. |
+| 5. Review the pull request | Signer | Read the report and every rule, and ask for changes. Merging is the confirmation. CI reruns the tests on every change. | GitHub | Your judgment. |
 
 ## Every signing
 
@@ -61,6 +61,14 @@ The template is reviewed once. At each signing you confirm only the values that 
 - a transfer: the token, the amount, and the recipient, which must already be in your address book.
 
 Everything else is bound once: the receiver is the Safe, contracts come from the reviewed registry, the Safe and chain come from your config, and the program reads the nonce from the Safe. See [Intent card](docs/design.md#intent-card) for every operation.
+
+## What goes on GitHub
+
+Each operation's template, report, and tests live in this repository, so every rule has a reviewed pull request and evidence behind it. The contract registry lives here too.
+
+Your Safe's address never does. Templates say "the Safe", not an address. Test transactions come from other senders, and your own Safe is left out of the search. Your Safe address, API keys, address book, intent cards, and verdicts stay local, in `$KISS_SIGN_HOME`. Before every push, a check greps the outgoing commits for your Safe address and for API keys.
+
+GitHub stores and records; it is not trusted. At signing, the program checks that the template is the exact version you merged.
 
 ## Chain access
 

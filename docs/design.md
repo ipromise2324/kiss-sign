@@ -21,8 +21,8 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 3. **Establish the ABI.** A fixed method, not the AI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and compare the result with the bytecode read from chain. For a proxy, compare the implementation. Matching bytecode proves the ABI belongs to the deployed contract.
 4. **Study past transactions.** The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape. These teach the AI. They prove nothing about safety.
 5. **Report.** Where each address was verified, where the ABI came from, which transactions were studied, what each field means, which contracts the operation touches, and what the template will check. For each field, the report counts how the studied transactions filled it, and from how many distinct senders. For example, "receiver equals the sender in 42 of 42 transactions, from 31 senders." The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
-6. **Signer confirms.** The signer reads the report and asks for changes.
-7. **Write the template.** The AI writes a declarative template (below) and saves it for reuse.
+6. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests.
+7. **Signer reviews the pull request.** The signer reads the report and the template's rules and asks for changes. Merging the pull request is the confirmation. kiss-sign records the hash of the merged template locally.
 
 ### Every signing
 
@@ -85,6 +85,30 @@ Sealed means hashed and stored where the AI cannot write.
 ### Verdict file
 
 Every input the verdict used, so `replay` can recompute it offline.
+
+## What goes on GitHub
+
+Templates are reviewed once and reused, so they live in git, where every change is a diff someone reviewed. The evidence behind each template goes with it.
+
+| Published in the repository | Kept local, in `$KISS_SIGN_HOME` |
+|---|---|
+| Templates: what each operation checks | Config: the Safe address, providers, API keys |
+| Reports: where every address and rule came from | Address book |
+| Test transactions | Intent cards and verdict files |
+| Contract registry | Approved template hashes |
+
+- Each operation has a folder, for example `templates/morpho/vault-deposit/`, holding `template.json`, `report.md`, and `tests/`.
+- The tests are real past transactions of the operation, each with the card values it implies. Every one must give `MATCH`, and every mutated copy must give `MISMATCH`. CI reruns the decoding, field checks, and mutation checks on every change. Simulation needs live providers, so it runs locally.
+- Git stores and records; it is not trusted. At signing, the program checks that the template's hash equals the hash recorded when the signer merged it. A template from someone else's repository is only a starting point: its report still has to be reviewed.
+
+### The Safe's address is never published
+
+Published files would otherwise tie the Safe, its balances, and its history to whoever owns the repository.
+
+- Templates refer to "the Safe", never to an address.
+- Test transactions come from other senders. The signer's own Safe is excluded when searching for past transactions.
+- Reports count senders but list no Safe of the signer's.
+- Before every push, a check greps the outgoing commits for the configured Safe address and for API keys, and must find nothing.
 
 ## Engine checks that every template gets
 
