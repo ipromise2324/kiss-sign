@@ -5,7 +5,9 @@
   </picture>
 </p>
 
-# kiss-sign
+<h1 align="center">kiss-sign</h1>
+
+<p align="center"><b><i>Keep it simple, stupid.</i></b></p>
 
 kiss-sign checks a Safe transaction against what you meant to do, before you sign it on a hardware wallet.
 
