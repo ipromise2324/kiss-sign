@@ -17,11 +17,11 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 ### First time an operation is done: build its template
 
 1. **State the intent.** For example, "deposit USDC into the Morpho Apex vault." The AI turns it into a concrete operation.
-2. **Research addresses.** The AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources. The program confirms on chain that each address has code, which implementation a proxy points to, and which factory created an instance. Each verified contract goes into the contract registry under a name.
+2. **Research addresses.** The AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources. The program confirms on chain that each address has code, which implementation a proxy points to, and which factory created an instance. Each verified contract goes into the contract registry under a name. The AI also looks up each contract in the ERC-7730 clear-signing registry. Where a descriptor exists, the program checks who reviewed it: each auditor signs an ERC-8176 attestation for that exact descriptor, and the program verifies the signature offline and reads on chain whether it was revoked (for example with Sourcify's `@ethereum-sourcify/clear-signing` library). The AI renders the studied past transactions with the descriptor and compares its field meanings with its own. The descriptor is a second opinion on what each field means. It never becomes a rule by itself, and a field the descriptor hides does not become a free field.
 3. **Establish the ABI.** A fixed method, not the AI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and compare the result with the bytecode read from chain. For a proxy, compare the implementation. Matching bytecode proves the ABI belongs to the deployed contract.
 4. **Study past transactions.** The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape. These teach the AI. They prove nothing about safety.
 5. **Check the protocol's health.** The AI looks for anything that makes the protocol unsafe to use right now: past hacks and incidents (for example DefiLlama's hack list and the protocol's own post-mortems), audits, recent upgrades, admin or timelock changes, paused or deprecated contracts. Every claim cites its source. This informs the signer's decision; it does not change what the program checks. What the program can read on chain, such as an upgraded implementation or a paused contract, it checks again at every signing.
-6. **Report.** Where each address was verified, where the ABI came from, which transactions were studied, what each field means, which contracts the operation touches, and what the template will check. The report says how many past transactions it studied and from how many senders, for example "42 past deposits from 31 different Safes", and for each field what those transactions held: "`receiver` (who gets the vault shares) was the depositing Safe in all 42". That is the evidence behind the rule "`receiver` equals the Safe". It also carries the protocol health check from step 5. The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
+6. **Report.** Whether each contract has an ERC-7730 descriptor, its hash, which auditors attested it and whether any attestation is revoked, and where its field meanings differ from the AI's. Where each address was verified, where the ABI came from, which transactions were studied, what each field means, which contracts the operation touches, and what the template will check. The report says how many past transactions it studied and from how many senders, for example "42 past deposits from 31 different Safes", and for each field what those transactions held: "`receiver` (who gets the vault shares) was the depositing Safe in all 42". That is the evidence behind the rule "`receiver` equals the Safe". It also carries the protocol health check from step 5. The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
 7. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests.
 8. **Signer reviews the pull request.** The signer reads the report and the template's rules and asks for changes. Merging the pull request is the confirmation. kiss-sign records the hash of the merged template locally.
 
@@ -138,11 +138,25 @@ When the system resolver fails, kiss-sign resolves provider hosts over DNS over 
 
 Keys enter through `kiss-sign key add <provider>` in a hidden prompt, never through the chat. They live in `$KISS_SIGN_HOME/.env` with mode 0600.
 
+## The program checks itself first
+
+kiss-sign runs from one clone of this repository. `kiss-sign verify` starts with a self-check before anything else:
+
+1. Fetch `origin`.
+2. The local checkout must be exactly `origin/main`: the same commit, with no local changes and no extra files in the program, the templates, or the settings.
+3. If anything differs, stop and name the files. Nothing is verified.
+
+Templates are read from that commit, so a template counts only after its pull request is merged. `main` changes only through pull requests.
+
+This catches accidental edits and an AI that was tricked into changing a check or a template. It cannot catch an AI that deliberately rewrites both a check and the self-check itself, because the self-check is part of the same program. See Known limits and Later security upgrades.
+
 ## Known limits
 
 - drpc routes requests to third-party nodes, including public ones. Its independence from Alchemy is not proven.
 - Two providers stop one lying provider, not two that collude or share a backend.
 - Simulating an executed transaction on the parent block is not its exact pre-state, because earlier transactions in its block also changed state. For executed transactions, receipts read from two providers are the source of truth.
+- The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is not stopped this round.
+- The hardware wallet shows only the two hashes, not the decoded transaction. ERC-7730 clear signing does not yet cover Safe MultiSend batches.
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
 
 ## Later security upgrades
@@ -152,6 +166,8 @@ Not built now. Listed so the path is clear.
 - **Light client (Helios).** Verifies every read against the beacon chain, so one provider is enough. Needs `eth_getProof` (Alchemy has it) and a local EVM to simulate on proven state.
 - **Local simulation (anvil).** Free and open source. Adds execution diversity. On its own it trusts the same RPC state.
 - **A paid or third provider.** Removes rate and range limits and adds an independent source.
+- **Lock the AI out of the program.** Ship `.claude/settings.json` with deny rules for program code, settings, `gh pr merge`, and pushes to `main`; these hold even in bypass-permissions mode. Add the agent's sandbox, so a script cannot write the program either. Other agents need their own equivalent.
+- **Clear signing on the wallet (ERC-7730).** Export templates as display descriptors so the device shows the decoded call. Wait until wallets decode Safe MultiSend batches; until then, hash comparison stays.
 
 ## Next phase: CoW orders
 
