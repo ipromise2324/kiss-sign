@@ -33,7 +33,9 @@ kiss-sign is named after KISS: keep it simple, stupid. Every part is kept small 
 
 ## Why kiss-sign
 
-TODO: why this tool exists.
+I sign Safe multisig transactions often, and every signature makes me responsible for the exact data I approve. Checking that data by hand means confirming every call, every nested MultiSend, the gas fields and the hashes. Today's tools can do it, but only if you rebuild the transaction yourself and know how it is encoded. ERC-7730 clear signing doesn't handle batched calls well yet and doesn't work for Safe transactions.
+
+kiss-sign makes independent verification something you can do every time you sign, not only when you have an hour.
 
 ![kiss-sign flow: build a template once per operation, then check every signing](docs/architecture.png)
 
