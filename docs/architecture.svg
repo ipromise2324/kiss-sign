@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="1462" viewBox="0 0 1300 1462" role="img" aria-labelledby="t"><title id="t">kiss-sign architecture: build a template once, then verify every signing</title><defs>
+<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8a93a3"/></marker>
+<marker id="arr2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1f9d6b"/></marker>
+<style>
+text { font-family: -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; fill: #1b1f27; }
+.title { font-size: 28px; font-weight: 700; }
+.lede { font-size: 16px; fill: #5b6474; }
+.legend { font-size: 14px; }
+.phase { font-size: 19px; font-weight: 700; }
+.sub { font-size: 14px; fill: #5b6474; }
+.colh { font-size: 12px; font-weight: 600; fill: #5b6474; letter-spacing: .04em; text-transform: uppercase; }
+.row { fill: #ffffff; stroke: #d9dde5; stroke-width: 1; }
+.stepname { font-size: 15px; font-weight: 700; }
+.who { font-size: 12.5px; font-weight: 600; }
+.txt { font-size: 13.5px; }
+.svc { font-size: 13px; fill: #3b4352; }
+.conn { stroke: #8a93a3; stroke-width: 2; }
+.side { fill: none; stroke: #1f9d6b; stroke-width: 2; stroke-dasharray: 6 4; }
+.sidelbl { font-size: 12px; fill: #1f9d6b; font-weight: 600; }
+</style></defs><rect width="100%" height="100%" rx="16" fill="#f6f7f9"/><text class="title" x="64" y="52">kiss-sign</text>
+<text class="lede" x="64" y="80">The AI writes templates. The fixed program runs them and gives the verdict: MATCH, MISMATCH, or UNVERIFIABLE.</text>
+<rect x="64" y="110" width="16" height="16" rx="4" fill="#eaf2fd" stroke="#2f7de1" stroke-width="3"/>
+<text class="legend" x="88" y="123">Signer</text>
+<rect x="172" y="110" width="16" height="16" rx="4" fill="#fdf4e2" stroke="#c98a06" stroke-width="3"/>
+<text class="legend" x="196" y="123">AI</text>
+<rect x="244" y="110" width="16" height="16" rx="4" fill="#e6f6ef" stroke="#1f9d6b" stroke-width="3"/>
+<text class="legend" x="268" y="123">Program</text>
+<text class="phase" x="64" y="160">Build a template</text>
+<text class="sub" x="64" y="182">Once per operation, for example &quot;deposit USDC into a Morpho vault&quot;.</text>
+<text class="colh" x="64" y="206">Step / who</text>
+<text class="colh" x="312" y="206">What happens</text>
+<text class="colh" x="762" y="206">Services</text>
+<text class="colh" x="1022" y="206">What it trusts</text>
+<rect class="row" x="296" y="218" width="964" height="78" rx="10"/>
+<rect x="64" y="225.0" width="220" height="64" rx="12" fill="#eaf2fd" stroke="#2f7de1" stroke-width="3"/>
+<text class="stepname" x="174.0" y="253.0" text-anchor="middle">1. State the intent</text>
+<text class="who" x="174.0" y="273.0" text-anchor="middle" fill="#2f7de1">Signer + AI</text>
+<text class="txt" x="312" y="243"><tspan x="312" dy="0">The signer says in one sentence what to do. The AI turns</tspan><tspan x="312" dy="18">it into a concrete operation.</tspan></text>
+<text class="svc" x="762" y="243"><tspan x="762" dy="0">Claude Code</tspan></text>
+<text class="txt" x="1022" y="243"><tspan x="1022" dy="0">The signer reads the AI&#x27;s</tspan><tspan x="1022" dy="18">restatement and agrees it is what</tspan><tspan x="1022" dy="18">they meant.</tspan></text>
+<rect class="row" x="296" y="308" width="964" height="132" rx="10"/>
+<rect x="64" y="342.0" width="220" height="64" rx="12" fill="#fdf4e2" stroke="#c98a06" stroke-width="3"/>
+<text class="stepname" x="174.0" y="370.0" text-anchor="middle">2. Research addresses</text>
+<text class="who" x="174.0" y="390.0" text-anchor="middle" fill="#c98a06">AI; chain checks by program</text>
+<text class="txt" x="312" y="333"><tspan x="312" dy="0">The AI finds the contracts on the protocol&#x27;s official</tspan><tspan x="312" dy="18">site and GitHub and cross-checks the sources. The</tspan><tspan x="312" dy="18">program confirms on chain that each address has code,</tspan><tspan x="312" dy="18">which implementation a proxy points to, and which</tspan><tspan x="312" dy="18">factory created it.</tspan></text>
+<text class="svc" x="762" y="333"><tspan x="762" dy="0">Web search</tspan><tspan x="762" dy="18">GitHub API</tspan><tspan x="762" dy="18">DefiLlama</tspan><tspan x="762" dy="18">CoinGecko</tspan><tspan x="762" dy="18">Protocol&#x27;s own API</tspan><tspan x="762" dy="18">RPC: Alchemy + drpc</tspan></text>
+<text class="txt" x="1022" y="333"><tspan x="1022" dy="0">Official sources. Two providers from</tspan><tspan x="1022" dy="18">different companies do not lie</tspan><tspan x="1022" dy="18">together.</tspan></text>
+<rect class="row" x="296" y="452" width="964" height="96" rx="10"/>
+<rect x="64" y="468.0" width="220" height="64" rx="12" fill="#e6f6ef" stroke="#1f9d6b" stroke-width="3"/>
+<text class="stepname" x="174.0" y="496.0" text-anchor="middle">3. Establish the ABI</text>
+<text class="who" x="174.0" y="516.0" text-anchor="middle" fill="#1f9d6b">Program (fixed method)</text>
+<text class="txt" x="312" y="477"><tspan x="312" dy="0">Fetch the verified source from Sourcify, compile it</tspan><tspan x="312" dy="18">locally with a pinned solc, and compare it with the</tspan><tspan x="312" dy="18">bytecode read from chain. For a proxy, compare the</tspan><tspan x="312" dy="18">implementation.</tspan></text>
+<text class="svc" x="762" y="477"><tspan x="762" dy="0">Sourcify</tspan><tspan x="762" dy="18">solc (local)</tspan><tspan x="762" dy="18">RPC: Alchemy + drpc</tspan></text>
+<text class="txt" x="1022" y="477"><tspan x="1022" dy="0">Local compile equals on-chain</tspan><tspan x="1022" dy="18">bytecode. Sourcify itself is not</tspan><tspan x="1022" dy="18">trusted.</tspan></text>
+<rect class="row" x="296" y="560" width="964" height="78" rx="10"/>
+<rect x="64" y="567.0" width="220" height="64" rx="12" fill="#fdf4e2" stroke="#c98a06" stroke-width="3"/>
+<text class="stepname" x="174.0" y="595.0" text-anchor="middle">4. Study past transactions</text>
+<text class="who" x="174.0" y="615.0" text-anchor="middle" fill="#c98a06">AI</text>
+<text class="txt" x="312" y="585"><tspan x="312" dy="0">The AI reads real transactions of the same operation to</tspan><tspan x="312" dy="18">learn each field&#x27;s role and the operation&#x27;s normal</tspan><tspan x="312" dy="18">shape.</tspan></text>
+<text class="svc" x="762" y="585"><tspan x="762" dy="0">Find: Alchemy Transfers API +</tspan><tspan x="762" dy="18">Etherscan</tspan><tspan x="762" dy="18">Read: Alchemy + drpc</tspan></text>
+<text class="txt" x="1022" y="585"><tspan x="1022" dy="0">Nothing about safety. Past</tspan><tspan x="1022" dy="18">transactions only teach the AI;</tspan><tspan x="1022" dy="18">fakes are cheap.</tspan></text>
+<rect class="row" x="296" y="650" width="964" height="96" rx="10"/>
+<rect x="64" y="666.0" width="220" height="64" rx="12" fill="#fdf4e2" stroke="#c98a06" stroke-width="3"/>
+<text class="stepname" x="174.0" y="694.0" text-anchor="middle">5. Write the report</text>
+<text class="who" x="174.0" y="714.0" text-anchor="middle" fill="#c98a06">AI</text>
+<text class="txt" x="312" y="675"><tspan x="312" dy="0">Where each address was verified, where the ABI came</tspan><tspan x="312" dy="18">from, which transactions were studied, what each field</tspan><tspan x="312" dy="18">means and how often each value occurred, which contracts</tspan><tspan x="312" dy="18">are touched, and what the template will check.</tspan></text>
+<text class="svc" x="762" y="675"><tspan x="762" dy="0">Local</tspan></text>
+<text class="txt" x="1022" y="675"><tspan x="1022" dy="0">Counts show the template matches</tspan><tspan x="1022" dy="18">normal use, not that it is safe.</tspan></text>
+<rect class="row" x="296" y="758" width="964" height="78" rx="10"/>
+<rect x="64" y="765.0" width="220" height="64" rx="12" fill="#eaf2fd" stroke="#2f7de1" stroke-width="3"/>
+<text class="stepname" x="174.0" y="793.0" text-anchor="middle">6. Confirm</text>
+<text class="who" x="174.0" y="813.0" text-anchor="middle" fill="#2f7de1">Signer</text>
+<text class="txt" x="312" y="783"><tspan x="312" dy="0">The signer reads the report and asks the AI for changes</tspan><tspan x="312" dy="18">until it is right.</tspan></text>
+<text class="svc" x="762" y="783"><tspan x="762" dy="0">None</tspan></text>
+<text class="txt" x="1022" y="783"><tspan x="1022" dy="0">The signer&#x27;s judgment.</tspan></text>
+<rect class="row" x="296" y="848" width="964" height="78" rx="10"/>
+<rect x="64" y="855.0" width="220" height="64" rx="12" fill="#fdf4e2" stroke="#c98a06" stroke-width="3"/>
+<text class="stepname" x="174.0" y="883.0" text-anchor="middle">7. Write the template</text>
+<text class="who" x="174.0" y="903.0" text-anchor="middle" fill="#c98a06">AI</text>
+<text class="txt" x="312" y="873"><tspan x="312" dy="0">A declarative template: contracts, the call tree, a rule</tspan><tspan x="312" dy="18">for every field, and the expected effects. Saved and</tspan><tspan x="312" dy="18">reused for every later signing of this operation.</tspan></text>
+<text class="svc" x="762" y="873"><tspan x="762" dy="0">Local</tspan></text>
+<text class="txt" x="1022" y="873"><tspan x="1022" dy="0">The signer&#x27;s confirmation in step 6.</tspan></text>
+<text class="phase" x="64" y="968">Every signing</text>
+<text class="sub" x="64" y="990">When the template already exists, only these steps run.</text>
+<text class="colh" x="64" y="1014">Step / who</text>
+<text class="colh" x="312" y="1014">What happens</text>
+<text class="colh" x="762" y="1014">Services</text>
+<text class="colh" x="1022" y="1014">What it trusts</text>
+<rect class="row" x="296" y="1026" width="964" height="78" rx="10"/>
+<rect x="64" y="1033.0" width="220" height="64" rx="12" fill="#eaf2fd" stroke="#2f7de1" stroke-width="3"/>
+<text class="stepname" x="174.0" y="1061.0" text-anchor="middle">8. Seal the intent card</text>
+<text class="who" x="174.0" y="1081.0" text-anchor="middle" fill="#2f7de1">AI drafts, signer seals</text>
+<text class="txt" x="312" y="1051"><tspan x="312" dy="0">This signing&#x27;s values: amount, vault, chain, Safe,</tspan><tspan x="312" dy="18">nonce. Sealed (hashed and stored where the AI cannot</tspan><tspan x="312" dy="18">write) before the signer sees the Safe transaction.</tspan></text>
+<text class="svc" x="762" y="1051"><tspan x="762" dy="0">Claude Code</tspan><tspan x="762" dy="18">kiss-sign (local)</tspan></text>
+<text class="txt" x="1022" y="1051"><tspan x="1022" dy="0">The signer read the card. Every</tspan><tspan x="1022" dy="18">address on it passes the program&#x27;s</tspan><tspan x="1022" dy="18">address checks.</tspan></text>
+<rect class="row" x="296" y="1116" width="964" height="78" rx="10"/>
+<rect x="64" y="1123.0" width="220" height="64" rx="12" fill="#eaf2fd" stroke="#2f7de1" stroke-width="3"/>
+<text class="stepname" x="174.0" y="1151.0" text-anchor="middle">9. Propose on Safe</text>
+<text class="who" x="174.0" y="1171.0" text-anchor="middle" fill="#2f7de1">Signer</text>
+<text class="txt" x="312" y="1141"><tspan x="312" dy="0">The signer creates the transaction in the Safe web app.</tspan><tspan x="312" dy="18">kiss-sign reads it from the Safe Transaction Service, or</tspan><tspan x="312" dy="18">the signer pastes the JSON.</tspan></text>
+<text class="svc" x="762" y="1141"><tspan x="762" dy="0">Safe web app</tspan><tspan x="762" dy="18">Safe Transaction Service</tspan></text>
+<text class="txt" x="1022" y="1141"><tspan x="1022" dy="0">Nothing from the API. kiss-sign</tspan><tspan x="1022" dy="18">recomputes every hash itself.</tspan></text>
+<rect class="row" x="296" y="1206" width="964" height="114" rx="10"/>
+<rect x="64" y="1231.0" width="220" height="64" rx="12" fill="#e6f6ef" stroke="#1f9d6b" stroke-width="3"/>
+<text class="stepname" x="174.0" y="1259.0" text-anchor="middle">10. Verify</text>
+<text class="who" x="174.0" y="1279.0" text-anchor="middle" fill="#1f9d6b">Program</text>
+<text class="txt" x="312" y="1231"><tspan x="312" dy="0">Decode and re-encode byte for byte, check every field,</tspan><tspan x="312" dy="18">apply the floor rules, mutate each bound field to</tspan><tspan x="312" dy="18">confirm a MISMATCH, simulate through the Safe&#x27;s</tspan><tspan x="312" dy="18">execTransaction, and compare the Safe&#x27;s net effects with</tspan><tspan x="312" dy="18">the card.</tspan></text>
+<text class="svc" x="762" y="1231"><tspan x="762" dy="0">Local</tspan><tspan x="762" dy="18">Simulation: Alchemy + drpc</tspan><tspan x="762" dy="18">eth_simulateV1</tspan></text>
+<text class="txt" x="1022" y="1231"><tspan x="1022" dy="0">The fixed program. Both providers</tspan><tspan x="1022" dy="18">must agree, or the verdict is</tspan><tspan x="1022" dy="18">UNVERIFIABLE.</tspan></text>
+<rect class="row" x="296" y="1332" width="964" height="78" rx="10"/>
+<rect x="64" y="1339.0" width="220" height="64" rx="12" fill="#eaf2fd" stroke="#2f7de1" stroke-width="3"/>
+<text class="stepname" x="174.0" y="1367.0" text-anchor="middle">11. Sign on the Ledger</text>
+<text class="who" x="174.0" y="1387.0" text-anchor="middle" fill="#2f7de1">Signer</text>
+<text class="txt" x="312" y="1357"><tspan x="312" dy="0">Only on MATCH: the signer compares the domain hash and</tspan><tspan x="312" dy="18">message hash on the Ledger screen with the ones</tspan><tspan x="312" dy="18">kiss-sign printed, then signs.</tspan></text>
+<text class="svc" x="762" y="1357"><tspan x="762" dy="0">Ledger</tspan></text>
+<text class="txt" x="1022" y="1357"><tspan x="1022" dy="0">The Ledger screen.</tspan></text>
+<line class="conn" x1="174.0" y1="289.0" x2="174.0" y2="338.0" marker-end="url(#arr)"/>
+<line class="conn" x1="174.0" y1="406.0" x2="174.0" y2="464.0" marker-end="url(#arr)"/>
+<line class="conn" x1="174.0" y1="532.0" x2="174.0" y2="563.0" marker-end="url(#arr)"/>
+<line class="conn" x1="174.0" y1="631.0" x2="174.0" y2="662.0" marker-end="url(#arr)"/>
+<line class="conn" x1="174.0" y1="730.0" x2="174.0" y2="761.0" marker-end="url(#arr)"/>
+<line class="conn" x1="174.0" y1="829.0" x2="174.0" y2="851.0" marker-end="url(#arr)"/>
+<line class="conn" x1="174.0" y1="1097.0" x2="174.0" y2="1119.0" marker-end="url(#arr)"/>
+<line class="conn" x1="174.0" y1="1187.0" x2="174.0" y2="1227.0" marker-end="url(#arr)"/>
+<line class="conn" x1="174.0" y1="1295.0" x2="174.0" y2="1335.0" marker-end="url(#arr)"/>
+<path class="side" d="M64 887.0 H34 V1263.0 H60" marker-end="url(#arr2)"/><text class="sidelbl" transform="translate(28 1075.0) rotate(-90)" text-anchor="middle">saved template</text></svg>
