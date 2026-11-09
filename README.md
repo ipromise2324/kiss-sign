@@ -15,7 +15,11 @@ kiss-sign checks a Safe transaction against what you meant to do, before you sig
 
 ## Why kiss-sign
 
-I sign Safe multisig transactions often, and every signature makes me responsible for the exact data I approve. Today the order is always the same: the transaction is built first, and the signer checks it last. That last check is like the terms on an insurance form. Everyone means to read it, and most people just click sign. Checking the data properly is also slow: today's tools work only if you rebuild the transaction yourself and know how it is encoded. Clear signing (ERC-7730) makes the final screen readable, but you still have to read it at the end and notice what's wrong. It also doesn't handle batched calls well yet and doesn't work for Safe transactions.
+I sign Safe multisig transactions often, and every signature makes me responsible for the exact data I approve. Today the order is always the same: the transaction is built first, and the signer checks it last. That last check is like the terms on an insurance form. Everyone means to read it, and most people just click sign.
+
+Checking the data properly is also slow: today's tools work only if you rebuild the transaction yourself and know how it is encoded.
+
+Clear signing (ERC-7730) makes the final screen readable, but you still have to read it at the end and notice what's wrong. It also doesn't handle batched calls well yet and doesn't work for Safe transactions.
 
 ## How it works
 
@@ -49,9 +53,9 @@ An operation is something like "deposit USDT into a Morpho vault" or "withdraw f
 | Step | Who | What happens | Services | What it trusts |
 |---|---|---|---|---|
 | 1. Name the operation | Signer | You say in plain words what you want to do. | An AI agent | You agree the AI's restatement is what you meant. |
-| 2. Research | AI | Find the protocol's official contract addresses on its site and GitHub, and cross-check them. Study past transactions of the same operation to learn what a normal one looks like. Check the protocol's health: past hacks and incidents, audits, recent upgrades or admin changes, paused contracts. Look up each contract's ERC-7730 clear-signing descriptor and which auditors attested it. | An AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy, ERC-7730 registry | Official sources. Past transactions only show what normal looks like; they prove nothing about safety, because fakes are cheap. |
+| 2. Research | AI | **Official addresses:** from the protocol's site and GitHub, cross-checked.<br>**Past transactions:** what a normal one looks like.<br>**Protocol health:** hacks, audits, upgrades, admin changes, paused contracts.<br>**ERC-7730:** each contract's clear-signing descriptor and who audited it. | An AI agent, GitHub, DefiLlama, CoinGecko, Etherscan, Alchemy, ERC-7730 registry | Official sources. Past transactions only show what normal looks like; they prove nothing about safety, because fakes are cheap. |
 | 3. Prove on chain | Program | Confirm each address has code, which implementation a proxy points to, and which factory created it. Prove the ABI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and match the bytecode on chain. | Sourcify, `solc`, Alchemy + drpc | A local compile that matches the chain. Two providers from different companies do not lie together. |
-| 4. Open a pull request | AI | The pull request holds three things. The report: where every address came from; the protocol's health; whether an audited ERC-7730 descriptor exists and agrees with the AI's reading; and how many past transactions show what normal looks like, for example "42 past deposits from 31 different Safes", with what each field held in them. The template: what the program will check, and what the Safe should give and get. The tests: past transactions that must give `MATCH`, and mutated copies that must give `MISMATCH`. | GitHub | Counts show normal use, not safety. |
+| 4. Open a pull request | AI | **Report:** where every address came from, the protocol's health, whether an audited ERC-7730 descriptor agrees with the AI's reading, and how many past transactions show what normal looks like, for example "42 past deposits from 31 different Safes".<br>**Template:** what the program will check, and what the Safe should give and get.<br>**Tests:** past transactions that must give `MATCH`, and changed copies that must give `MISMATCH`. | GitHub | Counts show normal use, not safety. |
 | 5. Review the pull request | Signer | Read the report and every rule, and ask for changes. Merging is the confirmation. CI reruns the tests on every change. | GitHub | Your judgment. |
 
 ## Every signing
@@ -80,7 +84,12 @@ Everything else is bound once: the receiver is the Safe, contracts come from the
 
 Each operation's template, report, and tests live in this repository, so every rule has a reviewed pull request and evidence behind it. The contract registry lives here too.
 
-Your Safe's address never does. Templates say "the Safe", not an address. Test transactions come from other senders, and your own Safe is left out of the search. Your Safe address, API keys, address book, intent cards, and verdicts stay local, in `$KISS_SIGN_HOME`. Before every push, a check greps the outgoing commits for your Safe address and for API keys.
+Your Safe's address never does:
+
+- Templates say "the Safe", not an address.
+- Test transactions come from other senders, and your own Safe is left out of the search.
+- Your Safe address, API keys, address book, intent cards, and verdicts stay local, in `$KISS_SIGN_HOME`.
+- Before every push, a check greps the outgoing commits for your Safe address and for API keys.
 
 GitHub stores and records; it is not trusted. At signing, the program checks that the template is the exact version you merged.
 
