@@ -138,6 +138,18 @@ const CASES = [
     ],
   },
   {
+    name: 'vault-bundles-v1',
+    proxy: 'none',
+    proven: '0x02912516d49de997db75b9d7858faae59209650b',
+    contract: 'lib/bundles/src/vault/VaultBundlesV1.sol:VaultBundlesV1',
+    compiler: '0.8.34+commit.80d5c536',
+    functions: 4,
+    immutables: 0,
+    uses: [
+      'vaultBundlesV1Deposit(address vault,uint256 assets,uint256 maxSharePriceE27,(uint8 kind,bytes data) assetPermit,uint256 referralFeePct,address referralFeeRecipient,uint256 deadline)',
+    ],
+  },
+  {
     name: 'morpho-token-eip1967',
     proxy: 'eip1967',
     proven: '0x4364fd2371b6318159366abfa51f190df5c24852',

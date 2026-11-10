@@ -33,6 +33,8 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `morpho-withdraw-all-apex-other-safe.json` | `0x05Adc626f1B382af90EC14F0017c904f511CC072`, Safe 1.3.0 | 26 | `0xef206e5b4bfe20821532f082ffd22ba8b51cfd7ecad91052b36a8360117a6d47`, block 23,725,211 | The same, from another Safe. safeTxHash `0xfbf37b6ff4861f5b721f40a0da485798fb18e2d89dc0bfb89e3c91aa7151fba7` |
 | `morpho-withdraw-two-vaults-all.json` | `0xdD0B39F6962d2AF180c841E0C24D7007C9E14c3F`, Safe 1.3.0 | 55 | `0xbb98496f0cbcd741b5fbe472af6ad322c2a96cc2b9a151fae0b3de22f65edf25`, block 23,446,538 | Share approvals of Smokehouse USDC and Usual Boosted USDC (`0xd63070114470f685b75B74D60EEc7c1113d33a3D`), then one `multicall` redeeming all of each. safeTxHash `0xcf3ecdec3e597f25de2da28cf31b9efd800ef0f3439972730a608e6bf63650cc` |
 | `morpho-withdraw-two-vaults.json` | `0xbefdfEF6930aFE3b6c7Be985C6bAf778ea6ec215`, Safe 1.4.1 | 156 | `0xd7a9ff58f84e66a30f798956b157b9e7697e59b4fa7ccfcd0760d8472d79af24`, block 23,340,731 | The same two approvals, then one `multicall` redeeming all of Smokehouse USDC and withdrawing 154,000 USDC from Usual Boosted USDC. safeTxHash `0xb45eb79f6b3a1c2cb3164b15670ae5543117ca564873dd217e13a90a863d5e33` |
+| `morpho-bundles-deposit.json` | `0x00CAfbC21F9AcfA6084d584D12f9c46eAcFE00CA`, Safe 1.4.1 | 48 | `0xeeb38080eecaecbedf9f0e08f8cbf8ddf454930e38b3012c7203e221c4af1ea4`, block 26,282,671 | MultiSendCallOnly: USDC `approve` of 31,583.325527 USDC to VaultBundlesV1 (`0x02912516d49dE997db75B9D7858faAE59209650B`), then `vaultBundlesV1Deposit` of it into Steakhouse Prime USDC, with an 8-byte trailer. safeTxHash `0xe1ae687dc96aa54128f515735204350f9bd7c0b4fb27ef0d224854901f98f5e1` |
+| `morpho-bundles-deposit-two-tags.json` | `0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0`, Safe 1.4.1 | 310 | `0x56e409df60195e32afea9d737a1ec70cbbaea4d22351d65e4177dd4b84c5d943`, block 26,211,057 | The same shape, 2,700,000 USDC, with a 12-byte trailer: a timestamp and two origin tags. safeTxHash `0x3fd5122233648e6d993f634406de153ddb8f7087f635d90faecf8ccb08354ab4` |
 | `safe-cancel-other-safe.json` | `0xc6835323372A4393B90bCc227c58e82D45CE4b7d`, Safe 1.3.0 | 494 | `0xcb12862fa3c1a0bc7fa0896c82f35f526caeca215e2c036487ea65a943308a9c`, block 24,764,855 | A cancellation: 0 ETH to the Safe itself, no data. safeTxHash `0x337099c7c1850697c2e85f2fbcf9e5fd5d45ff4207c0d0ea2ceb6aa5a43528dd` |
 
 The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see `templates/morpho/vault-deposit/report.md`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service.
@@ -61,9 +63,11 @@ pnpm record-safe-tx morpho-withdraw-all-apex 0xc9442e6eeCD5389D73322e965cD3fa488
 pnpm record-safe-tx morpho-withdraw-all-apex-other-safe 0x05Adc626f1B382af90EC14F0017c904f511CC072 26
 pnpm record-safe-tx morpho-withdraw-two-vaults-all 0xdD0B39F6962d2AF180c841E0C24D7007C9E14c3F 55
 pnpm record-safe-tx morpho-withdraw-two-vaults 0xbefdfEF6930aFE3b6c7Be985C6bAf778ea6ec215 156
+pnpm record-safe-tx morpho-bundles-deposit 0x00CAfbC21F9AcfA6084d584D12f9c46eAcFE00CA 48
+pnpm record-safe-tx morpho-bundles-deposit-two-tags 0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0 310
 ```
 
-The `morpho-withdraw-*` fixtures were found with `pnpm past-txs` on share burns (see the reports of `morpho/vault-withdraw` and `morpho/vault-withdraw-all`), and each transaction looked up in the Safe Transaction Service by `transaction_hash`.
+The `morpho-withdraw-*` and `morpho-bundles-*` fixtures were found with `pnpm past-txs` on share burns and mints (see the reports of `morpho/vault-withdraw`, `morpho/vault-withdraw-all` and `morpho/vault-bundles-deposit`), and each transaction looked up in the Safe Transaction Service by `transaction_hash`.
 
 The last argument is a nonce (the executed transaction at that nonce) or a safeTxHash. The script reads from Alchemy and drpc and writes only the providers' names.
 
@@ -86,6 +90,7 @@ The tests replay the reads, compile the Sourcify source with the pinned solc fro
 | `morpho-vault-v2-apex.json` | Morpho Vault V2 Hyperithm USDC Apex `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | none | `VaultV2`, solc 0.8.28, 12 immutable spans masked. Sourcify's settings ask for an IPFS metadata hash, the code on chain carries none, so it is compiled without one |
 | `metamorpho-v1-0-steakhouse-usdt.json` | MetaMorpho V1.0 Steakhouse USDT `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa` | none | `MetaMorpho`, solc 0.8.21, 32 immutable spans masked |
 | `metamorpho-v1-1-apex.json` | MetaMorpho V1.1 Hyperithm USDC Apex `0x777791C4d6DC2CE140D00D2828a7C93503c67777` | none | `MetaMorphoV1_1`, solc 0.8.26, 32 immutable spans masked |
+| `vault-bundles-v1.json` | Morpho VaultBundlesV1 `0x02912516d49dE997db75B9D7858faAE59209650B` | none | `VaultBundlesV1`, solc 0.8.34 |
 | `safe-proxy-1-3-0.json` | the Safe of `safe-tx/eth-transfer-null-data.json`, `0x9467dcFD4519287e3878C018c02f5670465a9003` | Safe proxy (1.3.0 factory) | `GnosisSafeL2` at `0x3E5c63644E683549055b9Be8653de26E0B4CD36E`, solc 0.7.6 |
 
 ### Recording again
@@ -100,6 +105,7 @@ pnpm record-abi-case safe-proxy-1-3-0 0x9467dcFD4519287e3878C018c02f5670465a9003
 pnpm record-abi-case morpho-vault-v2-apex 0x093272C07700d3cA5301C3Bf9B3A392624179E2F
 pnpm record-abi-case metamorpho-v1-0-steakhouse-usdt 0xbEef047a543E45807105E51A8BBEFCc5950fcfBa
 pnpm record-abi-case metamorpho-v1-1-apex 0x777791C4d6DC2CE140D00D2828a7C93503c67777
+pnpm record-abi-case vault-bundles-v1 0x02912516d49dE997db75B9D7858faAE59209650B
 ```
 
 An optional third argument records at that block instead of the latest.
