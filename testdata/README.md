@@ -23,9 +23,13 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `erc20-transfer-usdt.json` | `0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0`, Safe 1.4.1 | 382 | `0x1bbc644eaa007b97bdd856b8dc00ae461f7f50559df52a192ede7e9aed64b62e`, block 26,383,663 | USDT `transfer` of 535,223.428311 USDT to `0xc748543C7832B39B841AE0b151E9ea53d6B0ADe3`. safeTxHash `0xd1ee22c940b88f931b6b5cc65bb9eaef9d6eb6a22ea7e88f4bc9105261f21217` |
 | `erc20-transfer-usdc-other-safe.json` | `0x9467dcFD4519287e3878C018c02f5670465a9003`, Safe 1.3.0 | 60 | `0xe9ba079b7cfffbe9fd942ea4701de2ce23d7bb709e0f34b29d9adbbc94a79ae1`, block 15,076,804 | USDC `transfer` of 841,909.711357 USDC to `0x519b70055af55A007110B4Ff99b0eA33071c720a`. safeTxHash `0x38a7c6944a1f2b35c595028a2bc6e3186def412c2a910117fc40f859c0567379` |
 | `safe-cancel.json` | `0x9467dcFD4519287e3878C018c02f5670465a9003`, Safe 1.3.0 | 87 | `0x274ee22454c05f8ee8128de656ef76ba580901d9791c73076cc71d9889b96285`, block 16,185,376 | A cancellation: 0 ETH to the Safe itself, no data. safeTxHash `0x85b2e62e2fe9b9000331e9c2ebee7102af5968ad77fbcb800cf64eca68984825` |
+| `morpho-deposit-metamorpho-1-0.json` | `0xE09b7fC43b3De7dba9CF634489D092FF0C99b753`, Safe 1.3.0 | 26 | `0xc51e8ea1847876e92e9c35e923006bd48df21a95f9ceb15762457b53fd8b286e`, block 22,922,634 | MultiSendCallOnly: USDC `approve` of 1,464,958.248813 USDC to GeneralAdapter1, then `Bundler3.multicall` depositing it into Smokehouse USDC (`0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, MetaMorpho V1.0). safeTxHash `0xb676c4016bcd69b8541d83e079e22bb55187754c4fd0cfa3cb7634d4b3003eff` |
+| `morpho-deposit-metamorpho-1-0-other-safe.json` | `0x07a28a8482e4c6f00520d571B8114c69ad44e71B`, Safe 1.3.0 | 564 | `0xc512da588015a75c0ea149153c595e0984af124ad9ae9f94c1031f1e88ffbcd5`, block 22,923,487 | The same shape, 200,000 USDC into Smokehouse USDC. safeTxHash `0x8c0aa7a579c9d25e8cf470f456e78fedda256364769492d099cde6a5e5f586f0` |
+| `morpho-deposit-approve-trailer.json` | `0xaD62cE48D82d7Cb6F584FC2ecE5Ce1C7349F2cbA`, Safe 1.4.1 | 21 | `0x01d697f39a1c0c379885079f9fab20793b09f6e68c4d35bcdd8c0ae4b0e87fe1`, block 23,781,596 | The same shape, 20,000 USDC into Hyperithm USDC Apex (`0x777791C4d6DC2CE140D00D2828a7C93503c67777`, MetaMorpho V1.1), with the Morpho app's 8-byte trailer after both `approve` and `multicall`. safeTxHash `0x91d42376db4eb73419ba4731a46cba44679a5cd67a1139d209911faf26ac582c` |
+| `morpho-deposit-approve-trailer-other-safe.json` | `0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B`, Safe 1.4.1 | 20 | `0x052f3e223514e96cb18fc1ae346fafa113083506b63640dea71af39a8a6c7116`, block 23,787,520 | The same shape as the one above, 10,001 USDC into Hyperithm USDC Apex. safeTxHash `0xda44113d1fa93aa491fd93713d7aaa0ea34ceb28414cbe4ee1d32d796c1342f3` |
 | `safe-cancel-other-safe.json` | `0xc6835323372A4393B90bCc227c58e82D45CE4b7d`, Safe 1.3.0 | 494 | `0xcb12862fa3c1a0bc7fa0896c82f35f526caeca215e2c036487ea65a943308a9c`, block 24,764,855 | A cancellation: 0 ETH to the Safe itself, no data. safeTxHash `0x337099c7c1850697c2e85f2fbcf9e5fd5d45ff4207c0d0ea2ceb6aa5a43528dd` |
 
-The Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service.
+The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see `templates/morpho/vault-deposit/report.md`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service.
 
 ### Recording again
 
@@ -41,6 +45,10 @@ pnpm record-safe-tx erc20-transfer-usdt 0xAF177c57e369bBD30F47745DbAAF1D225f4B74
 pnpm record-safe-tx erc20-transfer-usdc-other-safe 0x9467dcFD4519287e3878C018c02f5670465a9003 60
 pnpm record-safe-tx safe-cancel 0x9467dcFD4519287e3878C018c02f5670465a9003 87
 pnpm record-safe-tx safe-cancel-other-safe 0xc6835323372A4393B90bCc227c58e82D45CE4b7d 494
+pnpm record-safe-tx morpho-deposit-metamorpho-1-0 0xE09b7fC43b3De7dba9CF634489D092FF0C99b753 26
+pnpm record-safe-tx morpho-deposit-metamorpho-1-0-other-safe 0x07a28a8482e4c6f00520d571B8114c69ad44e71B 564
+pnpm record-safe-tx morpho-deposit-approve-trailer 0xaD62cE48D82d7Cb6F584FC2ecE5Ce1C7349F2cbA 21
+pnpm record-safe-tx morpho-deposit-approve-trailer-other-safe 0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B 20
 ```
 
 The last argument is a nonce (the executed transaction at that nonce) or a safeTxHash. The script reads from Alchemy and drpc and writes only the providers' names.
@@ -61,6 +69,9 @@ The tests replay the reads, compile the Sourcify source with the pinned solc fro
 | `bundler3.json` | Morpho Bundler3 `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | none | `Bundler3`, solc 0.8.28 |
 | `general-adapter1.json` | Morpho GeneralAdapter1 `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` | none | `EthereumGeneralAdapter1`, solc 0.8.28, 58 immutable spans masked |
 | `morpho-token-eip1967.json` | MORPHO token `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | EIP-1967 | `MorphoTokenEthereum` at `0x4364fd2371b6318159366abFA51f190df5C24852`, solc 0.8.27 |
+| `morpho-vault-v2-apex.json` | Morpho Vault V2 Hyperithm USDC Apex `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | none | `VaultV2`, solc 0.8.28, 12 immutable spans masked. Sourcify's settings ask for an IPFS metadata hash, the code on chain carries none, so it is compiled without one |
+| `metamorpho-v1-0-steakhouse-usdt.json` | MetaMorpho V1.0 Steakhouse USDT `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa` | none | `MetaMorpho`, solc 0.8.21, 32 immutable spans masked |
+| `metamorpho-v1-1-apex.json` | MetaMorpho V1.1 Hyperithm USDC Apex `0x777791C4d6DC2CE140D00D2828a7C93503c67777` | none | `MetaMorphoV1_1`, solc 0.8.26, 32 immutable spans masked |
 | `safe-proxy-1-3-0.json` | the Safe of `safe-tx/eth-transfer-null-data.json`, `0x9467dcFD4519287e3878C018c02f5670465a9003` | Safe proxy (1.3.0 factory) | `GnosisSafeL2` at `0x3E5c63644E683549055b9Be8653de26E0B4CD36E`, solc 0.7.6 |
 
 ### Recording again
@@ -72,6 +83,9 @@ pnpm record-abi-case bundler3 0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245
 pnpm record-abi-case general-adapter1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
 pnpm record-abi-case morpho-token-eip1967 0x58D97B57BB95320F9a05dC918Aef65434969c2B2
 pnpm record-abi-case safe-proxy-1-3-0 0x9467dcFD4519287e3878C018c02f5670465a9003
+pnpm record-abi-case morpho-vault-v2-apex 0x093272C07700d3cA5301C3Bf9B3A392624179E2F
+pnpm record-abi-case metamorpho-v1-0-steakhouse-usdt 0xbEef047a543E45807105E51A8BBEFCc5950fcfBa
+pnpm record-abi-case metamorpho-v1-1-apex 0x777791C4d6DC2CE140D00D2828a7C93503c67777
 ```
 
 An optional third argument records at that block instead of the latest.

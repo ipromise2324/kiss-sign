@@ -36,7 +36,12 @@ export type Reader = {
   simulateV1(request: SimulationRequest, at: BlockRef): Promise<Read<readonly SimulatedCall[]>>;
 };
 
-export type ReaderOptions = { readonly timeoutMs?: number; readonly retryPausesMs?: readonly number[] };
+export type ReaderOptions = {
+  readonly timeoutMs?: number;
+  readonly retryPausesMs?: readonly number[];
+  /** Pauses after a rate-limited answer, long enough for a public endpoint's window to pass. */
+  readonly rateLimitPausesMs?: readonly number[];
+};
 
 type Answer = { readonly kind: 'result'; readonly value: unknown } | { readonly kind: 'reverted' };
 type Attempt = Answer | { readonly kind: 'failed'; readonly cause: FailureCause };
@@ -122,6 +127,7 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
   if (endpoints[0].company === endpoints[1].company) throw new Error('the two providers must be run by different companies');
   const timeoutMs = options.timeoutMs ?? 20_000;
   const pauses = options.retryPausesMs ?? [250, 750];
+  const rateLimitPauses = options.rateLimitPausesMs ?? [1000, 2000, 4000, 8000, 16000];
 
   async function attempt(endpoint: Endpoint, method: Method, params: readonly unknown[]): Promise<Attempt> {
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: method.name, params });
@@ -136,10 +142,10 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
 
   /** Only a missing answer is asked again. An answer is final, so a retry never swaps one answer for another. */
   async function ask(endpoint: Endpoint, method: Method, params: readonly unknown[]): Promise<ProviderOutcome> {
-    for (let tried = 0; ; tried++) {
+    for (let failed = 0, limited = 0; ; ) {
       const result = await attempt(endpoint, method, params);
       if (result.kind === 'failed') {
-        const pause = pauses[tried];
+        const pause = result.cause === 'rate-limited' ? rateLimitPauses[limited++] : pauses[failed++];
         if (pause === undefined) return { provider: endpoint.provider, kind: 'failed', cause: result.cause };
         await new Promise((resolve) => setTimeout(resolve, pause));
         continue;

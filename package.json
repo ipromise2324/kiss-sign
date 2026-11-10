@@ -14,6 +14,7 @@
     "record-safe-tx": "node scripts/record-safe-tx.ts",
     "fetch-solc": "node scripts/fetch-solc.ts",
     "prove-abi": "node scripts/prove-abi.ts",
+    "prove-instance": "node scripts/prove-instance.ts",
     "record-abi-case": "node scripts/record-abi-case.ts",
     "simulate": "node scripts/simulate.ts",
     "past-txs": "node scripts/past-txs.ts",

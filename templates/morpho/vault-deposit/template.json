@@ -12,6 +12,10 @@
       "args": {
         "spender": { "contract": "general-adapter1" },
         "value": { "card": "amount" }
+      },
+      "trailer": {
+        "maxBytes": 8,
+        "why": "the Morpho app appends the same 4-byte timestamp and 4-byte origin tag as on multicall; approve reads only its two arguments"
       }
     },
     {

@@ -95,5 +95,5 @@ export function replayTransport(exchanges: readonly Exchange[], endpoints: reado
 
 /** A reader on recorded answers only, so the reader parses and compares them as it did live. */
 export function replayReader(exchanges: readonly Exchange[]): Reader {
-  return createReader(REPLAY_ENDPOINTS, replayTransport(exchanges, REPLAY_ENDPOINTS), { timeoutMs: 1000, retryPausesMs: [] });
+  return createReader(REPLAY_ENDPOINTS, replayTransport(exchanges, REPLAY_ENDPOINTS), { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
 }
