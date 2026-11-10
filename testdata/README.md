@@ -36,8 +36,15 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `morpho-bundles-deposit.json` | `0x00CAfbC21F9AcfA6084d584D12f9c46eAcFE00CA`, Safe 1.4.1 | 48 | `0xeeb38080eecaecbedf9f0e08f8cbf8ddf454930e38b3012c7203e221c4af1ea4`, block 26,282,671 | MultiSendCallOnly: USDC `approve` of 31,583.325527 USDC to VaultBundlesV1 (`0x02912516d49dE997db75B9D7858faAE59209650B`), then `vaultBundlesV1Deposit` of it into Steakhouse Prime USDC, with an 8-byte trailer. safeTxHash `0xe1ae687dc96aa54128f515735204350f9bd7c0b4fb27ef0d224854901f98f5e1` |
 | `morpho-bundles-deposit-two-tags.json` | `0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0`, Safe 1.4.1 | 310 | `0x56e409df60195e32afea9d737a1ec70cbbaea4d22351d65e4177dd4b84c5d943`, block 26,211,057 | The same shape, 2,700,000 USDC, with a 12-byte trailer: a timestamp and two origin tags. safeTxHash `0x3fd5122233648e6d993f634406de153ddb8f7087f635d90faecf8ccb08354ab4` |
 | `safe-cancel-other-safe.json` | `0xc6835323372A4393B90bCc227c58e82D45CE4b7d`, Safe 1.3.0 | 494 | `0xcb12862fa3c1a0bc7fa0896c82f35f526caeca215e2c036487ea65a943308a9c`, block 24,764,855 | A cancellation: 0 ETH to the Safe itself, no data. safeTxHash `0x337099c7c1850697c2e85f2fbcf9e5fd5d45ff4207c0d0ea2ceb6aa5a43528dd` |
+| `fluid-deposit-usdt.json` | `0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980`, Safe 1.4.1 | 152 | `0xbf3f89984eae08bd1c73628d5777815592ed85a339223a2517f380a2bf91c801`, block 26,304,863 | A `delegatecall` to MultiSendCallOnly 1.4.1 (`0x9641d764fc13c8B624c04430C7356C1C7C8102e2`) with two calls: USDT `approve` of 51,175.230820 USDT to fUSDT (`0x5C20B550819128074FD538Edf79791733ccEdd18`), then fUSDT `deposit` of that amount, shares to the Safe. safeTxHash `0x6743c8c0c46c13480a551c41b13ff21ea38775e593a3f9c055ce029ee62a8f2f` |
+| `fluid-deposit-usdc.json` | `0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980`, Safe 1.3.0 | 123 | `0xd24b81ce3d776642c935d61121b8baa831c5721d72b7bf74e47be2fa6f10c5f7`, block 24,259,957 | A `delegatecall` to MultiSendCallOnly 1.3.0 (`0x40A2aCCbd92BCA938b02010E17A5b8929b49130D`) with two calls: USDC `approve` of 244.093807 USDC to fUSDC (`0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`), then fUSDC `deposit` of that amount, shares to the Safe. safeTxHash `0x743c6fad5695f523cd391b7abf5a1de313c4921a560c50f0fb2a8335293598d9` |
+| `fluid-withdraw-usdc.json` | `0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980`, Safe 1.3.0 | 124 | `0x447871e549197550f00e6200bd592b980320102cc3094d9afd23dfb98cf431c9`, block 24,314,110 | fUSDC `withdraw` of 7,000 USDC, receiver and owner the Safe. safeTxHash `0x7259b1a33c1a6faecb7db666794f66c4ab1556f2cf65e1fbf16b956571d98637` |
+| `fluid-redeem-usdt.json` | `0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980`, Safe 1.3.0 | 113 | `0xd47e6d224e0db78ba69aa5ddc9a84e8054160b74344e98ce1fae9d3b58f7ab72`, block 23,941,366 | fUSDT `redeem` of 81,438.499490 shares, receiver and owner the Safe. safeTxHash `0xdda5d38fd5618cbd1227a2667ef0d2fea2425d2ccdc7a221dabf0b6b8c946d7f` |
+| `fluid-deposit-usdt-other-safe.json` | `0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb`, Safe 1.4.1 | 13 | `0xf2686312095ff097f3c073df138c7057954f7089185ffa2bbbe23272dc65a19f`, block 26,021,409 | A `delegatecall` to MultiSendCallOnly 1.4.1 (`0x9641d764fc13c8B624c04430C7356C1C7C8102e2`) with two calls: USDT `approve` of 150,003.888850 USDT to fUSDT, then fUSDT `deposit` of that amount, shares to the Safe. safeTxHash `0x08e24eed62490209a17956478009d40152551596d3a48f26f37dd00a9a93ce85` |
+| `fluid-withdraw-usdt-other-safe.json` | `0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb`, Safe 1.4.1 | 35 | `0x4c42906326a59fd538a0996736c8f972aeca1e2245ec897a60ae909ee1fa3cd9`, block 26,251,020 | fUSDT `withdraw` of 35,000 USDT, receiver and owner the Safe. safeTxHash `0x2f735f680c1885472d27d830e5c3cd1bec7e0822a2b42203c98f89fad6a2d8f1` |
+| `fluid-redeem-usdt-other-safe.json` | `0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb`, Safe 1.4.1 | 44 | `0x00c4f712173dc316bebbfb1f8e58eaeba28ea07e820b413249d355dddb5364ca`, block 26,301,256 | fUSDT `redeem` of 36,705.111256 shares, receiver and owner the Safe. safeTxHash `0x271b00f749f54eea2d88b3f1ffecc1855ed9a67049d7ad90eb759af24688a051` |
 
-The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see `templates/morpho/vault-deposit/report.md`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service.
+The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see `templates/morpho/vault-deposit/report.md`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service. The Fluid fixtures come from two Safes that `pnpm past-txs fluid/vault-deposit` and `fluid/vault-withdraw` found, and from those Safes' histories in the Safe Transaction Service; the Fluid app is the origin of each. One Safe was upgraded from 1.3.0 to 1.4.1 between its nonces 124 and 152.
 
 ### Recording again
 
@@ -65,6 +72,13 @@ pnpm record-safe-tx morpho-withdraw-two-vaults-all 0xdD0B39F6962d2AF180c841E0C24
 pnpm record-safe-tx morpho-withdraw-two-vaults 0xbefdfEF6930aFE3b6c7Be985C6bAf778ea6ec215 156
 pnpm record-safe-tx morpho-bundles-deposit 0x00CAfbC21F9AcfA6084d584D12f9c46eAcFE00CA 48
 pnpm record-safe-tx morpho-bundles-deposit-two-tags 0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0 310
+pnpm record-safe-tx fluid-deposit-usdt 0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980 152
+pnpm record-safe-tx fluid-deposit-usdc 0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980 123
+pnpm record-safe-tx fluid-withdraw-usdc 0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980 124
+pnpm record-safe-tx fluid-redeem-usdt 0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980 113
+pnpm record-safe-tx fluid-deposit-usdt-other-safe 0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb 13
+pnpm record-safe-tx fluid-withdraw-usdt-other-safe 0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb 35
+pnpm record-safe-tx fluid-redeem-usdt-other-safe 0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb 44
 ```
 
 The `morpho-withdraw-*` and `morpho-bundles-*` fixtures were found with `pnpm past-txs` on share burns and mints (see the reports of `morpho/vault-withdraw`, `morpho/vault-withdraw-all` and `morpho/vault-bundles-deposit`), and each transaction looked up in the Safe Transaction Service by `transaction_hash`.
@@ -91,6 +105,8 @@ The tests replay the reads, compile the Sourcify source with the pinned solc fro
 | `metamorpho-v1-0-steakhouse-usdt.json` | MetaMorpho V1.0 Steakhouse USDT `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa` | none | `MetaMorpho`, solc 0.8.21, 32 immutable spans masked |
 | `metamorpho-v1-1-apex.json` | MetaMorpho V1.1 Hyperithm USDC Apex `0x777791C4d6DC2CE140D00D2828a7C93503c67777` | none | `MetaMorphoV1_1`, solc 0.8.26, 32 immutable spans masked |
 | `vault-bundles-v1.json` | Morpho VaultBundlesV1 `0x02912516d49dE997db75B9D7858faAE59209650B` | none | `VaultBundlesV1`, solc 0.8.34 |
+| `fluid-fusdc.json` | Fluid fUSDC `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | none | `fToken`, solc 0.8.21, 38 immutable spans masked |
+| `fluid-fusdt.json` | Fluid fUSDT `0x5C20B550819128074FD538Edf79791733ccEdd18` | none | `fToken`, solc 0.8.21, 38 immutable spans masked |
 | `safe-proxy-1-3-0.json` | the Safe of `safe-tx/eth-transfer-null-data.json`, `0x9467dcFD4519287e3878C018c02f5670465a9003` | Safe proxy (1.3.0 factory) | `GnosisSafeL2` at `0x3E5c63644E683549055b9Be8653de26E0B4CD36E`, solc 0.7.6 |
 
 ### Recording again
@@ -106,6 +122,8 @@ pnpm record-abi-case morpho-vault-v2-apex 0x093272C07700d3cA5301C3Bf9B3A39262417
 pnpm record-abi-case metamorpho-v1-0-steakhouse-usdt 0xbEef047a543E45807105E51A8BBEFCc5950fcfBa
 pnpm record-abi-case metamorpho-v1-1-apex 0x777791C4d6DC2CE140D00D2828a7C93503c67777
 pnpm record-abi-case vault-bundles-v1 0x02912516d49dE997db75B9D7858faAE59209650B
+pnpm record-abi-case fluid-fusdc 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33
+pnpm record-abi-case fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18
 ```
 
 An optional third argument records at that block instead of the latest.
@@ -123,6 +141,9 @@ The tests serve each provider its own recorded answer through the real reader, s
 | --- | --- | --- |
 | `eth-transfer-null-data.json` | 17,026,956 | −4.988797943068499801 ETH in the simulation and by the balance around the receipt; Safe settings unchanged |
 | `morpho-vault-deposit.json` | 26,048,222 | −1,800,000.000180 USDC, +1,742,403.090147006731022214 Steakhouse Prime USDC shares, no ETH; the USDC allowance to GeneralAdapter1 is 0 before and after; singleton `0x41675C099F32341bf84BFc5382aF534df5C7461a`, 6 owners, threshold 2, no modules, no guard, all unchanged |
+| `fluid-deposit-usdt.json` | 26,304,862 | −51,175.230820 USDT, +42,209.067384 fUSDT, no ETH; the USDT allowance to fUSDT is 0 before and after, though USDT's `approve` returns nothing; Safe settings unchanged |
+| `fluid-withdraw-usdt-other-safe.json` | 26,251,019 | +35,000 USDT, −28,895.090944 fUSDT, no ETH; Safe settings unchanged |
+| `fluid-redeem-usdt.json` | 23,941,365 | −81,438.499490 fUSDT, +95,466.865113 USDT, no ETH; Safe settings unchanged |
 
 | `morpho-withdraw-all.json`, of `safe-tx/morpho-withdraw-all-apex-other-safe.json` | 23,725,210 | −23,966.697414743719468099 Hyperithm USDC Apex shares, all the Safe held, +25,175.574782 USDC; the share allowance to GeneralAdapter1 is 0 before and after |
 | `morpho-withdraw-open-allowance.json`, of `safe-tx/morpho-withdraw-apex-other-safe.json` | 23,726,457 | −285,544.697740669157631830 Hyperithm USDC Apex shares, +300,000 USDC; the share allowance to GeneralAdapter1 goes from 4,850,840,670,525,793,065 to 40,963,643,267,656,996,464 |
@@ -141,6 +162,13 @@ ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simula
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate eth-transfer-null-data \
   --card '{"operations":[{"template":"eth/transfer","values":{"amount":"4988797943068499801","recipient":"recipient"}}]}' \
   --book '{"recipient":"0x4942fbdc53B295563d59Af51e6DDEdceba5E332f"}' --record eth-transfer-null-data
+export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
+pnpm simulate fluid-deposit-usdt --record fluid-deposit-usdt \
+  --card '{"operations":[{"template":"fluid/vault-deposit","values":{"vault":"fluid-fusdt","amount":"51175230820"}}]}'
+pnpm simulate fluid-withdraw-usdt-other-safe --record fluid-withdraw-usdt-other-safe \
+  --card '{"operations":[{"template":"fluid/vault-withdraw","values":{"vault":"fluid-fusdt","amount":"35000000000"}}]}'
+pnpm simulate fluid-redeem-usdt --record fluid-redeem-usdt \
+  --card '{"operations":[{"template":"fluid/vault-redeem","values":{"vault":"fluid-fusdt","shares":"81438499490"}}]}'
 ```
 
 ## Past-transaction searches

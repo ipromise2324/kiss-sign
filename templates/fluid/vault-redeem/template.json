@@ -1,0 +1,23 @@
+{
+  "id": "fluid/vault-redeem",
+  "card": {
+    "vault": { "kind": "contract", "registryKind": "vault" },
+    "shares": { "kind": "amount", "of": "vault" }
+  },
+  "calls": [
+    {
+      "to": { "card": "vault" },
+      "value": { "const": "0" },
+      "function": "redeem(uint256 shares, address receiver, address owner)",
+      "args": {
+        "shares": { "card": "shares" },
+        "receiver": { "safe": true },
+        "owner": { "safe": true }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [{ "token": "card.vault", "amount": "card.shares" }],
+    "gets": [{ "token": "card.vault.asset", "amount": "positive" }]
+  }
+}

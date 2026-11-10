@@ -1,0 +1,125 @@
+{
+  "chainId": 1,
+  "safe": "0xf4ae94450beaaddb8fa4059d68bbb7de7e2df980",
+  "block": 26304863,
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "chain": {
+    "version": "1.4.1",
+    "domainSeparator": "0xec3510f36d1f0f31b8ba7455bb63f5cc2964e8260aac22d0b7c6fe82afc564c4",
+    "transactionHash": "0x6743c8c0c46c13480a551c41b13ff21ea38775e593a3f9c055ce029ee62a8f2f"
+  },
+  "service": {
+    "safe": "0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980",
+    "to": "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",
+    "value": "0",
+    "data": "0x8d80ff0a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000013200dac17f958d2ee523a2206206994597c13d831ec700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b30000000000000000000000005c20b550819128074fd538edf79791733ccedd180000000000000000000000000000000000000000000000000000000bea480d64005c20b550819128074fd538edf79791733ccedd18000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000446e553f650000000000000000000000000000000000000000000000000000000bea480d64000000000000000000000000f4ae94450beaaddb8fa4059d68bbb7de7e2df9800000000000000000000000000000",
+    "operation": 1,
+    "gasToken": "0x0000000000000000000000000000000000000000",
+    "safeTxGas": "0",
+    "baseGas": "0",
+    "gasPrice": "0",
+    "refundReceiver": "0x0000000000000000000000000000000000000000",
+    "nonce": "152",
+    "executionDate": "2026-10-30T10:06:11Z",
+    "submissionDate": "2026-10-30T10:04:40.706259Z",
+    "modified": "2026-10-30T10:06:11Z",
+    "blockNumber": 26304863,
+    "transactionHash": "0xbf3f89984eae08bd1c73628d5777815592ed85a339223a2517f380a2bf91c801",
+    "safeTxHash": "0x6743c8c0c46c13480a551c41b13ff21ea38775e593a3f9c055ce029ee62a8f2f",
+    "proposer": "0x487970faE8829EbA0f2C2D31D197B47fCE1AE1cc",
+    "proposedByDelegate": null,
+    "executor": "0xF3ac6e600E1A799Fb8562E754DEc3D2F90BbC6BA",
+    "isExecuted": true,
+    "isSuccessful": true,
+    "ethGasPrice": "172126791",
+    "maxFeePerGas": "1000000000",
+    "maxPriorityFeePerGas": "26304",
+    "gasUsed": 174070,
+    "fee": "29962110509370",
+    "payment": "0",
+    "origin": "{\"url\": \"https://fluid.io\", \"name\": \"Fluid\"}",
+    "dataDecoded": {
+      "method": "multiSend",
+      "parameters": [
+        {
+          "name": "transactions",
+          "type": "bytes",
+          "value": "0x00dac17f958d2ee523a2206206994597c13d831ec700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000044095ea7b30000000000000000000000005c20b550819128074fd538edf79791733ccedd180000000000000000000000000000000000000000000000000000000bea480d64005c20b550819128074fd538edf79791733ccedd18000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000446e553f650000000000000000000000000000000000000000000000000000000bea480d64000000000000000000000000f4ae94450beaaddb8fa4059d68bbb7de7e2df980",
+          "valueDecoded": [
+            {
+              "operation": 0,
+              "to": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+              "value": "0",
+              "data": "0x095ea7b30000000000000000000000005c20b550819128074fd538edf79791733ccedd180000000000000000000000000000000000000000000000000000000bea480d64",
+              "dataDecoded": {
+                "method": "approve",
+                "parameters": [
+                  {
+                    "name": "_spender",
+                    "type": "address",
+                    "value": "0x5C20B550819128074FD538Edf79791733ccEdd18"
+                  },
+                  {
+                    "name": "_value",
+                    "type": "uint256",
+                    "value": "51175230820"
+                  }
+                ]
+              }
+            },
+            {
+              "operation": 0,
+              "to": "0x5C20B550819128074FD538Edf79791733ccEdd18",
+              "value": "0",
+              "data": "0x6e553f650000000000000000000000000000000000000000000000000000000bea480d64000000000000000000000000f4ae94450beaaddb8fa4059d68bbb7de7e2df980",
+              "dataDecoded": {
+                "method": "deposit",
+                "parameters": [
+                  {
+                    "name": "assets_",
+                    "type": "uint256",
+                    "value": "51175230820"
+                  },
+                  {
+                    "name": "receiver_",
+                    "type": "address",
+                    "value": "0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "confirmationsRequired": 3,
+    "confirmations": [
+      {
+        "owner": "0x487970faE8829EbA0f2C2D31D197B47fCE1AE1cc",
+        "submissionDate": "2026-10-30T10:04:40.706259Z",
+        "transactionHash": null,
+        "signature": "0x032bc6dbe31b5cd41685766965d268372b1ebb5e91aad680f8d08d1211b61a3c21071733c78f46d4328e13379de6ce428a630d77ce2809eaaa822b5ce339aa7e1c",
+        "signatureType": "EOA"
+      },
+      {
+        "owner": "0xabC01248D6C27073a624b33061BA857DBA22F3B2",
+        "submissionDate": "2026-10-30T10:05:29.391820Z",
+        "transactionHash": null,
+        "signature": "0x9f82c13425912842018a91f399ec5bcef1d50fee12f82c58195f28bdf68da1dc513bcadad2115644f6befd8451798fc870a89104846392eec08659365b5f920b1b",
+        "signatureType": "EOA"
+      },
+      {
+        "owner": "0xF3ac6e600E1A799Fb8562E754DEc3D2F90BbC6BA",
+        "submissionDate": "2026-10-30T10:06:11Z",
+        "transactionHash": null,
+        "signature": "0x000000000000000000000000f3ac6e600e1a799fb8562e754dec3d2f90bbc6ba000000000000000000000000000000000000000000000000000000000000000001",
+        "signatureType": "APPROVED_HASH"
+      }
+    ],
+    "trusted": true,
+    "signatures": "0x032bc6dbe31b5cd41685766965d268372b1ebb5e91aad680f8d08d1211b61a3c21071733c78f46d4328e13379de6ce428a630d77ce2809eaaa822b5ce339aa7e1c9f82c13425912842018a91f399ec5bcef1d50fee12f82c58195f28bdf68da1dc513bcadad2115644f6befd8451798fc870a89104846392eec08659365b5f920b1b000000000000000000000000f3ac6e600e1a799fb8562e754dec3d2f90bbc6ba000000000000000000000000000000000000000000000000000000000000000001"
+  }
+}
