@@ -88,7 +88,8 @@ export type Template = {
 
 export const TEMPLATES_DIR = 'templates';
 const ID = /^[a-z0-9]+(-[a-z0-9]+)*\/[a-z0-9]+(-[a-z0-9]+)*$/;
-const MAX_TRAILER = 32;
+/** Below 20, so a whole address never fits in a trailer. */
+const MAX_TRAILER = 19;
 
 export class TemplateError extends Error {
   override name = 'TemplateError';

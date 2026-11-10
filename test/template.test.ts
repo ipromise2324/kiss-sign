@@ -203,6 +203,16 @@ test('bytes, a string or an array is free only with a proof or unread claim, and
   assert.equal(parseTemplate(scalar, registry).id, 'morpho/urd-claim');
 });
 
+test('a trailer allowance is at most 19 bytes, so a whole address never fits', () => {
+  const at = (maxBytes: number) => {
+    const raw = structuredClone(rawTemplate);
+    raw.calls[1].trailer.maxBytes = maxBytes;
+    return () => parseTemplate(raw, registry);
+  };
+  assert.doesNotThrow(at(19));
+  assert.throws(at(20), (error: unknown) => error instanceof TemplateError && error.path === 'calls[1].trailer.maxBytes' && /from 1 to 19/.test(error.message));
+});
+
 test('the template parses its card fields and effects', () => {
   assert.deepEqual([...template.card], [
     ['vault', { kind: 'contract', registryKind: 'vault' }],
