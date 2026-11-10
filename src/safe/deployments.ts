@@ -1,3 +1,5 @@
+import { topic } from '../simulate/events.ts';
+import type { EventLog } from '../chain/types.ts';
 import type { Address } from './types.ts';
 
 export type SafeSingleton = {
@@ -24,3 +26,33 @@ export const OFFICIAL_SAFE_SINGLETONS: readonly SafeSingleton[] = [
   { address: '0xff51a5898e281db6dfc7855790607438df2ca44b' as Address, contract: 'Safe', version: '1.5.0' },
   { address: '0xedd160febbd92e350d4d398fb636302fccd67c7e' as Address, contract: 'SafeL2', version: '1.5.0' },
 ];
+
+/**
+ * Mainnet proxy factories from the same commit, `src/assets/v<version>/{proxy_factory,safe_proxy_factory}.json`. Safe
+ * 1.2.0 shipped no factory of its own; its Safes come from the 1.1.1 factory.
+ */
+export const OFFICIAL_SAFE_PROXY_FACTORIES: readonly { readonly address: Address; readonly version: SafeSingleton['version'] }[] = [
+  { address: '0x12302fe9c02ff50939baaaaf415fc226c078613c' as Address, version: '1.0.0' },
+  { address: '0x76e2cfc1f5fa8f6a5b3fc4c8f4788f0116861f9b' as Address, version: '1.1.1' },
+  { address: '0xa6b71e26c5e0845f74c812102ca7114b6a896ab2' as Address, version: '1.3.0' },
+  { address: '0xc22834581ebc8527d974f8a1c97e1bea4ef910bc' as Address, version: '1.3.0' },
+  { address: '0x4e1dcf7ad4e460cfd30791ccc4f9c8a4f820ec67' as Address, version: '1.4.1' },
+  { address: '0x14f2982d601c9458f93bd70b218933a6f8165e7b' as Address, version: '1.5.0' },
+];
+
+/** 1.0.0 and 1.1.1 log only the proxy; 1.3.0 adds the singleton; 1.4.1 and 1.5.0 index the proxy. */
+const PROXY_CREATION = [topic('ProxyCreation(address)'), topic('ProxyCreation(address,address)')];
+
+export type SafeProxyCreation = { readonly factory: Address; readonly version: SafeSingleton['version']; readonly proxy: Address };
+
+/** The proxy an official factory created in these logs, if any. */
+export function safeProxyCreated(logs: readonly EventLog[]): SafeProxyCreation | undefined {
+  for (const log of logs) {
+    const factory = OFFICIAL_SAFE_PROXY_FACTORIES.find((f) => f.address === log.address);
+    const [signature, indexed] = log.topics;
+    if (factory === undefined || signature === undefined || !PROXY_CREATION.includes(signature)) continue;
+    const word = indexed ?? log.data.slice(0, 66);
+    return { factory: factory.address, version: factory.version, proxy: `0x${word.slice(26, 66)}` as Address };
+  }
+  return undefined;
+}
