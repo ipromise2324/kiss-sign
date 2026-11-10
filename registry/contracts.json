@@ -3,6 +3,8 @@
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
     "kind": "token",
     "source": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
+    "sourceLabel": "Ethereum",
+    "sourceHeading": "Mainnet",
     "defillama": "circle-usdc",
     "coingecko": "usd-coin"
   },
@@ -10,61 +12,71 @@
     "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     "kind": "token",
     "source": "https://tether.to/en/supported-protocols/",
+    "sourceLabel": "USD₮ contract address",
     "defillama": "tether",
     "coingecko": "tether"
   },
   "multisend-1.3.0": {
     "address": "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
     "kind": "multisend",
-    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send.json",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send.json",
+    "sourceLabel": "canonical",
     "defillama": "safe"
   },
   "multisend-1.3.0-eip155": {
     "address": "0x998739BFdAAdde7C933B942a68053933098f9EDa",
     "kind": "multisend",
-    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send.json",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send.json",
+    "sourceLabel": "eip155",
     "defillama": "safe"
   },
   "multisend-call-only-1.3.0": {
     "address": "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
     "kind": "multisend",
-    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send_call_only.json",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send_call_only.json",
+    "sourceLabel": "canonical",
     "defillama": "safe"
   },
   "multisend-call-only-1.3.0-eip155": {
     "address": "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B",
     "kind": "multisend",
-    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send_call_only.json",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send_call_only.json",
+    "sourceLabel": "eip155",
     "defillama": "safe"
   },
   "multisend-1.4.1": {
     "address": "0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526",
     "kind": "multisend",
-    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.4.1/multi_send.json",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/multi_send.json",
+    "sourceLabel": "canonical",
     "defillama": "safe"
   },
   "multisend-call-only-1.4.1": {
     "address": "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",
     "kind": "multisend",
-    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.4.1/multi_send_call_only.json",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/multi_send_call_only.json",
+    "sourceLabel": "canonical",
     "defillama": "safe"
   },
   "bundler3": {
     "address": "0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245",
     "kind": "router",
-    "source": "https://docs.morpho.org/get-started/resources/addresses/",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Bundler3",
     "defillama": "morpho-blue"
   },
   "general-adapter1": {
     "address": "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0",
     "kind": "adapter",
-    "source": "https://docs.morpho.org/get-started/resources/addresses/",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "EthereumGeneralAdapter1",
     "defillama": "morpho-blue"
   },
   "steakhouse-prime-usdc": {
     "address": "0xbeef088055857739C12CD3765F20b7679Def0f51",
     "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0xbeef088055857739C12CD3765F20b7679Def0f51/steakhouse-prime-usdc",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant",
+    "sourceLabel": "Steakhouse Prime Instant USDC",
     "defillama": "morpho-blue",
     "coingecko": "steakhouse-usdc",
     "attributes": {
@@ -75,28 +87,33 @@
   "metamorpho-factory-1.0": {
     "address": "0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101",
     "kind": "factory",
-    "source": "https://docs.morpho.org/get-started/resources/addresses/",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MetaMorpho Factory",
+    "sourceHeading": "Morpho Vault V1",
     "defillama": "morpho-blue",
     "instanceCheck": "isMetaMorpho(address)"
   },
   "metamorpho-factory-1.1": {
     "address": "0x1897A8997241C1cD4bD0698647e4EB7213535c24",
     "kind": "factory",
-    "source": "https://docs.morpho.org/get-started/resources/addresses/",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MetaMorpho Factory V1.1",
     "defillama": "morpho-blue",
     "instanceCheck": "isMetaMorpho(address)"
   },
   "vault-v2-factory": {
     "address": "0xA1D94F746dEfa1928926b84fB2596c06926C0405",
     "kind": "factory",
-    "source": "https://docs.morpho.org/get-started/resources/addresses/",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "VaultV2Factory",
     "defillama": "morpho-blue",
     "instanceCheck": "isVaultV2(address)"
   },
   "smokehouse-usdc": {
     "address": "0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
     "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0xBEeFFF209270748ddd194831b3fa287a5386f5bC/smokehouse-usdc",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults",
+    "sourceLabel": "Smokehouse USDC",
     "defillama": "morpho-blue",
     "attributes": {
       "asset": "usdc",
@@ -137,13 +154,16 @@
   "vault-bundles-v1": {
     "address": "0x02912516d49dE997db75B9D7858faAE59209650B",
     "kind": "router",
-    "source": "https://docs.morpho.org/get-started/resources/addresses/",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "VaultBundlesV1",
     "defillama": "morpho-blue"
   },
   "fluid-fusdc": {
     "address": "0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33",
     "kind": "vault",
-    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
+    "sourceLabel": "mainnet",
+    "sourceHeading": "fToken_fUSDC",
     "defillama": "fluid-lending",
     "attributes": {
       "asset": "usdc"
@@ -152,7 +172,9 @@
   "fluid-fusdt": {
     "address": "0x5C20B550819128074FD538Edf79791733ccEdd18",
     "kind": "vault",
-    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
+    "sourceLabel": "mainnet",
+    "sourceHeading": "fToken_fUSDT",
     "defillama": "fluid-lending",
     "attributes": {
       "asset": "usdt"
@@ -161,45 +183,54 @@
   "fluid": {
     "address": "0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb",
     "kind": "token",
-    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
     "defillama": "fluid-lending",
     "coingecko": "instadapp"
   },
   "morpho": {
     "address": "0x58D97B57BB95320F9a05dC918Aef65434969c2B2",
     "kind": "token",
-    "source": "https://docs.morpho.org/get-started/resources/addresses/",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MORPHO",
+    "sourceHeading": "MORPHO Token",
     "defillama": "morpho-blue",
     "coingecko": "morpho"
   },
   "fluid-rewards-distributor": {
     "address": "0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0",
     "kind": "distributor",
-    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
+    "sourceLabel": "mainnet",
+    "sourceHeading": "MerkleDistributor",
     "defillama": "fluid-lending"
   },
   "morpho-urd": {
     "address": "0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb",
     "kind": "distributor",
-    "source": "https://docs.morpho.org/get-started/resources/addresses/",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Universal Rewards Distributor",
     "defillama": "morpho-blue"
   },
   "merkl-distributor": {
     "address": "0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae",
     "kind": "distributor",
-    "source": "https://github.com/AngleProtocol/merkl-contracts/blob/main/UPGRADE_DEPLOYMENT.md",
+    "source": "https://developers.merkl.xyz/resources/chains-and-contracts",
+    "sourceLabel": "Distributor",
     "defillama": "merkl"
   },
   "cctp-message-transmitter": {
     "address": "0x0a992d191DEeC32aFe36203Ad87D7d289a738F81",
     "kind": "bridge",
     "source": "https://developers.circle.com/cctp/v1/evm-smart-contracts",
+    "sourceLabel": "Ethereum",
+    "sourceHeading": "MessageTransmitter",
     "defillama": "circle-cctp"
   },
   "steakhouse-high-yield-usdc": {
     "address": "0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757",
     "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/current/high-yield-instant",
+    "sourceLabel": "Steakhouse High Yield Instant USDC",
     "defillama": "morpho-blue",
     "coingecko": "steakhouse-high-yield-usdc",
     "attributes": {
