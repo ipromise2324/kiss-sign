@@ -79,6 +79,11 @@ test('a receiver changed to another address is a mismatch that points at the rec
   ]);
 });
 
+test('a transaction for another chain is a mismatch at chainId', () => {
+  const found = findings(check({ ...deposit, chainId: 8453n }));
+  assert.deepEqual(found.map((f) => [f.callPath, f.arg, f.expected, f.actual]), [['safeTx', 'chainId', '1', '8453']]);
+});
+
 test('a card with a different amount mismatches at every amount field', () => {
   const found = findings(check(deposit, depositCard('1800000000181')));
   assert.deepEqual(

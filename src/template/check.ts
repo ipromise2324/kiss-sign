@@ -27,6 +27,9 @@ export type FieldCheck =
   | { readonly kind: 'mismatch'; readonly findings: readonly Finding[] }
   | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
 
+/** The registry and templates describe Ethereum mainnet contracts only. */
+const REGISTRY_CHAIN_ID = 1n;
+
 type Context = {
   readonly safe: Address;
   readonly registry: Registry;
@@ -167,6 +170,9 @@ export function checkTemplateFields(
   }
   const findings: Finding[] = [];
   const unverifiable: string[] = [];
+  if (tx.chainId !== REGISTRY_CHAIN_ID) {
+    findings.push({ callPath: 'safeTx', arg: 'chainId', bytes: undefined, expected: String(REGISTRY_CHAIN_ID), actual: String(tx.chainId) });
+  }
   if (tx.safe !== card.safe) findings.push({ callPath: 'safeTx', arg: 'safe', bytes: undefined, expected: card.safe, actual: tx.safe });
   const unwrapped = unwrapSafeTx(tx);
   switch (unwrapped.kind) {
