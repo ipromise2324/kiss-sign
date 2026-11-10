@@ -15,12 +15,21 @@ export const ATTRIBUTES = { asset: { of: ['vault'], names: 'token' }, factory: {
 >;
 export type Attribute = keyof typeof ATTRIBUTES;
 
+declare const httpsUrlBrand: unique symbol;
+/**
+ * An https URL of RFC 3986 characters other than `[` and `]`, so a report prints it inside `<…>` and in a table cell
+ * as itself: no `|`, `<`, `>`, backtick, backslash or whitespace can end the link or the cell.
+ */
+export type HttpsUrl = string & { readonly [httpsUrlBrand]: true };
+const HTTPS_URL = /^https:\/\/[A-Za-z0-9\-._~:/?#@!$&'()*+,;=%]+$/;
+export const parseHttpsUrl = (raw: unknown): HttpsUrl | undefined => (typeof raw === 'string' && HTTPS_URL.test(raw) && URL.canParse(raw) ? (raw as HttpsUrl) : undefined);
+
 export type RegistryEntry = {
   readonly name: string;
   readonly address: Address;
   readonly kind: ContractKind;
   /** A page that names this address as this contract. */
-  readonly source: string;
+  readonly source: HttpsUrl;
   /** The text next to the address on the `source` page that names this contract or its role, such as `Bundler3`. */
   readonly sourceLabel?: string;
   /** Text the nearest heading above the address must hold, for a page whose rows name only a chain, such as `MessageTransmitter`. */
@@ -134,9 +143,8 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
   const code = value.code === undefined ? undefined : codePinOf(`${path}.code`, value.code);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
   if (kind === undefined) throw new RegistryError(`${path}.kind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
-  if (typeof value.source !== 'string' || !/^https:\/\/\S+$/.test(value.source)) {
-    throw new RegistryError(`${path}.source`, 'not an https URL');
-  }
+  const source = parseHttpsUrl(value.source);
+  if (source === undefined) throw new RegistryError(`${path}.source`, 'not an https URL');
   for (const key of ['sourceLabel', 'sourceHeading'] as const) {
     const text = value[key];
     if (text !== undefined && (typeof text !== 'string' || !/^\S(?:[^\p{Cc}]{0,118}\S)?$/u.test(text))) {
@@ -166,7 +174,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     name,
     address,
     kind,
-    source: value.source,
+    source,
     ...(value.sourceLabel === undefined ? {} : { sourceLabel: value.sourceLabel as string }),
     ...(value.sourceHeading === undefined ? {} : { sourceHeading: value.sourceHeading as string }),
     attributes,

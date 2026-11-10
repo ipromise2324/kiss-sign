@@ -78,3 +78,20 @@ export function pinnedCompilers(dir: string = SOLC_DIR): Compilers {
     return load;
   };
 }
+
+/** The pinned compilers, with each compile kept, so a source proven twice, such as two vaults with one code, compiles once. */
+export function cachedCompilers(dir: string = SOLC_DIR): Compilers {
+  const pinned = pinnedCompilers(dir);
+  const outputs = new Map<string, string>();
+  return (version) => {
+    const load = pinned(version);
+    if (load.kind !== 'loaded') return load;
+    const compile = (input: string) => {
+      const key = `${version}\n${input}`;
+      const output = outputs.get(key) ?? load.solc.compile(input);
+      outputs.set(key, output);
+      return output;
+    };
+    return { kind: 'loaded', solc: { version, compile } };
+  };
+}
