@@ -15,7 +15,7 @@ import { UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
 import { requireConfig, seal } from './setup.ts';
 
-type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address book' | 'config' };
+type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' };
 
 type Sources = { readonly registry: Registry; readonly book: AddressBook; readonly safe: Address };
 
@@ -23,8 +23,8 @@ type Sources = { readonly registry: Registry; readonly book: AddressBook; readon
 function choicesFor(field: CardField, { registry, book, safe }: Sources): readonly Choice[] | undefined {
   const contracts = (kind?: ContractKind): Choice[] =>
     [...registry.entries.values()].filter((e) => kind === undefined || e.kind === kind).map((e) => ({ name: e.name, address: e.address, from: 'registry' }));
-  const self: Choice = { name: 'safe', address: safe, from: 'config' };
-  const booked = [...book].map(([name, address]): Choice => ({ name, address, from: 'address book' }));
+  const self: Choice = { name: 'safe', address: safe, from: 'safe' };
+  const booked = [...book].map(([name, address]): Choice => ({ name, address, from: 'address-book' }));
   switch (field.kind) {
     case 'contract':
       return contracts(field.registryKind);

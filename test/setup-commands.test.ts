@@ -127,7 +127,7 @@ test('card new offers a transfer recipient only from the address book or the Saf
   await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   const made = await run(['card', 'new', 'erc20/transfer'], home, [numberOf('usdc'), '1', numberOf('alice'), 'y']);
   assert.equal(made.code, 0, made.stderr);
-  assert.match(made.stdout, new RegExp(`recipient:\\n  1\\. safe ${SAFE} \\(config\\)\\n  2\\. alice ${RECIPIENT} \\(address book\\)\\n`));
+  assert.match(made.stdout, new RegExp(`recipient:\\n  1\\. safe ${SAFE} \\(safe\\)\\n  2\\. alice ${RECIPIENT} \\(address-book\\)\\n`));
   assert.match(made.stdout, new RegExp(`recipient: alice ${RECIPIENT} \\(address-book\\)`));
 });
 
@@ -147,6 +147,10 @@ for (const [what, answers, message] of [
   ['a decimal amount', [numberOf('steakhouse-prime-usdc'), '1.5', 'y'], /amount: "1.5" is not a whole number/],
   ['a negative amount', [numberOf('steakhouse-prime-usdc'), '-5', 'y'], /amount: "-5" is not a whole number/],
   ['an empty amount', [numberOf('steakhouse-prime-usdc'), '', 'y'], /amount: "" is not a whole number/],
+  ['a hex amount', [numberOf('steakhouse-prime-usdc'), '0x10', 'y'], /amount: "0x10" is not a whole number/],
+  ['an amount with an exponent', [numberOf('steakhouse-prime-usdc'), '5e6', 'y'], /amount: "5e6" is not a whole number/],
+  ['an amount with a plus sign', [numberOf('steakhouse-prime-usdc'), '+5', 'y'], /amount: "\+5" is not a whole number/],
+  ['an amount of 2^256', [numberOf('steakhouse-prime-usdc'), (2n ** 256n).toString(), 'y'], /amount: /],
   ['an amount with a leading zero', [numberOf('steakhouse-prime-usdc'), '05', 'y'], /amount: "05" is not a whole number/],
 ] as const) {
   test(`card new refuses ${what} and seals nothing`, async () => {

@@ -47,7 +47,7 @@ Two machines, joined only by `main` on GitHub.
 | 5. Sign, comparing the full hashes | Hardware wallet | You |
 
 - **No AI on the signing device.** Nothing there can rewrite `verify`, your cards, or your template approvals.
-- **Branch protection on `main`.** It guards the bridge between the two machines, since the signing device pulls `main`. Only your approval merges a pull request, and the AI pushes from an account that cannot approve or merge.
+- **Branch protection on `main`.** It guards the bridge between the two machines, since the signing device pulls `main`. Once you turn it on, only your approval merges a pull request, and the AI pushes from an account that cannot approve or merge. Both are GitHub settings you make; on a private repository GitHub offers branch protection only with a paid plan.
 - **A small amount first.** It catches honest mistakes and crude attacks. It does not catch a contract that behaves differently for large amounts, or one that turns hostile later.
 - **A permission or parameter change** moves no value, so a small amount cannot test it. It relies on the program's checks and on the template's review.
 
