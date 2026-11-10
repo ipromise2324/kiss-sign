@@ -264,6 +264,9 @@ Run it from a clean clone at origin/main, or the self-check stops it.
 | | | 249 | The Morpho deposit of `safe-tx/morpho-vault-deposit.json` | `MATCH` with its card |
 | | | 338 | MultiSend: `approve` of 2^256-1 vault shares, then a call to another contract | `refused-by-design: unlimited-approval` |
 | `cow-safe.jsonl` | `0xc6835323372A4393B90bCc227c58e82D45CE4b7d` | 559 | MultiSend: `approve` of 2^256-1 to the CoW vault relayer, then `GPv2Settlement.setPreSignature` | `cow-next-phase`, the floor also refusing the approval |
+| | | 10 | `approve` of 8964319619782462544 base units of `0x365AccFCa291e7D3914637ABf1F7635dB165Bb09` to the CoW vault relayer | with a note naming 11 as its spender, `cow-next-phase` like 11 |
+| | | 11 | `GPv2Settlement.setPreSignature` | `cow-next-phase` |
+| | | 558 | `GPv2Settlement.invalidateOrder`, cancelling an order | `cow-next-phase` |
 
 The CoW Safe was found among the owners of `PreSignature` events on GPv2Settlement (`0x9008D19f58AAbD9eD0D60971565AA8510560ab41`), listed with Etherscan's `getLogs`.
 
@@ -271,7 +274,7 @@ The CoW Safe was found among the owners of `PreSignature` events on GPv2Settleme
 
 ```sh
 for pair in 0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0:morpho-safe:248,249,338 \
-            0xc6835323372A4393B90bCc227c58e82D45CE4b7d:cow-safe:559; do
+            0xc6835323372A4393B90bCc227c58e82D45CE4b7d:cow-safe:10,11,558,559; do
   IFS=: read safe name nonces <<< "$pair"
   export KISS_SIGN_HOME=$(mktemp -d)
   bin/kiss-sign init --safe "$safe"
