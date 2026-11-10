@@ -116,5 +116,21 @@
     "address": "0x02912516d49dE997db75B9D7858faAE59209650B",
     "kind": "router",
     "source": "https://docs.morpho.org/get-started/resources/addresses/"
+  },
+  "fluid-fusdc": {
+    "address": "0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33",
+    "kind": "vault",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md",
+    "attributes": {
+      "asset": "usdc"
+    }
+  },
+  "fluid-fusdt": {
+    "address": "0x5C20B550819128074FD538Edf79791733ccEdd18",
+    "kind": "vault",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md",
+    "attributes": {
+      "asset": "usdt"
+    }
   }
 }

@@ -1,0 +1,31 @@
+{
+  "id": "fluid/vault-deposit",
+  "card": {
+    "vault": { "kind": "contract", "registryKind": "vault" },
+    "amount": { "kind": "amount", "of": "vault.asset" }
+  },
+  "calls": [
+    {
+      "to": { "card": "vault.asset" },
+      "value": { "const": "0" },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": { "card": "vault" },
+        "value": { "card": "amount" }
+      }
+    },
+    {
+      "to": { "card": "vault" },
+      "value": { "const": "0" },
+      "function": "deposit(uint256 assets, address receiver)",
+      "args": {
+        "assets": { "card": "amount" },
+        "receiver": { "safe": true }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [{ "token": "card.vault.asset", "amount": "card.amount" }],
+    "gets": [{ "token": "card.vault", "amount": "positive" }]
+  }
+}
