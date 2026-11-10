@@ -175,9 +175,49 @@ test('an address in the label\'s own table row agrees; in another row, too far a
   assert.match(await onDocs(`<p>Bundler3s ${ADDR}</p>`), apart);
 });
 
-test('a label in the paragraph just before the address agrees, unless that paragraph holds an address', async () => {
-  assert.match(await onDocs(`<p>Bundler3 contract address:</p><p><a>${ADDR}</a></p>`), /page {7}agrees {2}the page has the address \d+ characters after "Bundler3"/);
-  assert.match(await onDocs(`<p>${OTHER} is not Bundler3</p><p>${ADDR}</p>`), /page {7}FINDING the address is on the page, but not within/);
+const apartFrom = (label: string) => new RegExp(`page {7}FINDING the address is on the page, but not within 100 characters of "${label}"`);
+
+test('a label standing alone in the paragraph just before the address agrees; one inside other text or beside an address does not', async () => {
+  assert.match(await onDocs(`<p>Bundler3:</p><p><a>${ADDR}</a></p>`), /page {7}agrees {2}the page has the address 2 characters after "Bundler3"/);
+  assert.match(await onDocs(`<p>See the Bundler3 guide</p><p>${ADDR}</p>`), apartFrom('Bundler3'));
+  assert.match(await onDocs(`<p>${OTHER} is not Bundler3</p><p>${ADDR}</p>`), apartFrom('Bundler3'));
+});
+
+test('in a list of names and addresses, each address binds to its own name, whichever side the names stand on', async () => {
+  const nameFirst = `<p>Bundler3: ${ADDR} GeneralAdapter1: ${OTHER}</p>`;
+  assert.match(await onDocs(nameFirst), /page {7}agrees {2}the page has the address 2 characters after "Bundler3"/);
+  assert.match(await onDocs(nameFirst, { sourceLabel: 'GeneralAdapter1' }), apartFrom('GeneralAdapter1'));
+  const nameAfter = `<p>${OTHER} (Bundler3), ${ADDR} (GeneralAdapter1)</p>`;
+  assert.match(await onDocs(nameAfter, { sourceLabel: 'GeneralAdapter1' }), /page {7}agrees {2}the page has the address 2 characters before "GeneralAdapter1"/);
+  assert.match(await onDocs(nameAfter), apartFrom('Bundler3'));
+  assert.match(await onDocs(`<p>${ADDR} is Bundler3</p>`), /page {7}agrees {2}the page has the address 4 characters before "Bundler3"/);
+});
+
+const JSON_PAGE = 'https://docs.morpho.org/addresses.json';
+const onJson = (value: unknown, sourceLabel: string) =>
+  pageReport({ source: JSON_PAGE, sourceLabel }, { [JSON_PAGE]: { status: 200, text: JSON.stringify(value), headers: { 'content-type': 'application/json' } } });
+
+test('in JSON, a name binds to an address only within its own object', async () => {
+  const list = [{ address: OTHER, name: 'Bundler3' }, { address: ADDR, name: 'GeneralAdapter1' }];
+  assert.match(await onJson(list, 'GeneralAdapter1'), /page {7}agrees {2}the page has the address 6 characters before "GeneralAdapter1"/);
+  assert.match(await onJson(list, 'Bundler3'), apartFrom('Bundler3'));
+  assert.match(await onJson([{ name: 'Bundler3' }, { address: ADDR }], 'Bundler3'), apartFrom('Bundler3'));
+});
+
+test('a markdown deployments file binds each address to the row label under its own heading', async () => {
+  const md = 'https://docs.morpho.org/deployments.md';
+  const text = [
+    '## fToken_fUSDC',
+    '| network | address | etherscan | args |',
+    '|---|---|---|---|',
+    `| mainnet | ${ADDR} | [Link](https://etherscan.io/address/${ADDR}#code) | "${OTHER}" |`,
+    '## fToken_fUSDT',
+    '|---|---|---|---|',
+    `| mainnet | ${OTHER} | [Link](https://etherscan.io/address/${OTHER}#code) | "${ADDR}" |`,
+  ].join('\n');
+  const at = (sourceHeading: string) => pageReport({ source: md, sourceLabel: 'mainnet', sourceHeading }, { [md]: { status: 200, text, headers: { 'content-type': 'text/plain' } } });
+  assert.match(await at('fToken_fUSDC'), /page {7}agrees {2}the page has the address 3 characters after "mainnet" under a heading naming "fToken_fUSDC"/);
+  assert.match(await at('fToken_fUSDT'), apartFrom('mainnet'));
 });
 
 test('an address only a script, an attribute, or a comment holds is not on the page as served', async () => {
@@ -185,6 +225,42 @@ test('an address only a script, an attribute, or a comment holds is not on the p
   assert.match(await onDocs(`<div id="root"></div><script>render({ name: "Bundler3", address: "${ADDR}" })</script>`), absent);
   assert.match(await onDocs(`<p>Bundler3 <a href="https://etherscan.io/address/${ADDR}">here</a></p>`), absent);
   assert.match(await onDocs(`<p>Bundler3 <!-- ${ADDR} --></p>`), absent);
+});
+
+test('text a browser hides is not on the page: hidden elements, the title, text areas, SVG, an unclosed script, and inside an attribute', async () => {
+  const absent = /page {7}FINDING the address is not found on the page as served/;
+  const shown = `Bundler3 ${ADDR}`;
+  for (const body of [
+    `<p style="display:none">${shown}</p>`,
+    `<p style="color: red; visibility : hidden">${shown}</p>`,
+    `<div hidden><div>x</div><p>${shown}</p></div>`,
+    `<span aria-hidden="true">${shown}</span>`,
+    `<title>${shown}</title>`,
+    `<textarea>${shown}</textarea>`,
+    `<svg><text>${shown}</text></svg>`,
+    `<template><p>${shown}</p></template>`,
+    `<p>x</p><script>${shown}`,
+    `<p>x</p><style>${shown}`,
+    `<img alt="x>${shown}">`,
+    `<img alt='x>${shown}'>`,
+    `<img alt="x>${shown}`,
+    `<p>x</p><!-- ${shown}`,
+  ]) {
+    assert.match(await onDocs(body), absent, body);
+  }
+});
+
+test('text after a hidden element, an attribute holding ">", or an element not hidden still shows', async () => {
+  const agrees = /page {7}agrees {2}the page has the address 1 characters after "Bundler3"/;
+  for (const body of [
+    `<div hidden><div>x</div></div><p>Bundler3 ${ADDR}</p>`,
+    `<img alt="a > b" hidden><p>Bundler3 ${ADDR}</p>`,
+    `<svg/><p>Bundler3 ${ADDR}</p>`,
+    `<p aria-hidden="false" style="display:block">Bundler3 ${ADDR}</p>`,
+    `<p title="hidden">Bundler3 ${ADDR}</p>`,
+  ]) {
+    assert.match(await onDocs(body), agrees, body);
+  }
 });
 
 test('an address in a broken letter case is a finding; lowercase and checksummed both count', async () => {
@@ -230,6 +306,25 @@ test('a commit off the default branch, such as one only a fork holds, is a findi
   assert.match(await github({ status: 200, text: JSON.stringify({ status: 'diverged' }) }), /github {5}FINDING commit ca9cb0d2d5f5 of safe-global\/safe-deployments is not on the default branch main \(GitHub compare: diverged\)/);
   assert.match(await github({ status: 200, text: JSON.stringify({ status: 'ahead' }) }), /github {5}FINDING .* is not on the default branch main \(GitHub compare: ahead\)/);
   assert.match(await github({ status: 404, text: '{"message":"Not Found"}' }), /github {5}FINDING .* is not on the default branch main \(GitHub compare: no such commit in the repository\)/);
+});
+
+test('two files pinned in one repository ask GitHub for its default branch once', async () => {
+  const OTHER_COMMIT = 'b'.repeat(40);
+  const second = `https://github.com/safe-global/safe-deployments/blob/${OTHER_COMMIT}/src/assets/v1.4.1/multi_send.json`;
+  const served: Record<string, Served> = {
+    [REPO_API]: { status: 200, text: JSON.stringify({ default_branch: 'main' }) },
+    [compareUrl]: { status: 200, text: JSON.stringify({ status: 'behind' }) },
+    [`${REPO_API}/compare/main...${OTHER_COMMIT}?per_page=1`]: { status: 200, text: JSON.stringify({ status: 'identical' }) },
+    [RAW]: deployments,
+    [`https://raw.githubusercontent.com/safe-global/safe-deployments/${OTHER_COMMIT}/src/assets/v1.4.1/multi_send.json`]: deployments,
+  };
+  const asked: string[] = [];
+  const pages = await gatherSourcePages([PINNED, second], (url) => {
+    asked.push(url);
+    return getFrom(served)(url);
+  });
+  assert.equal(asked.filter((url) => url === REPO_API).length, 1);
+  assert.deepEqual([...pages.commits.values()].map((c) => c.kind), ['on-default', 'on-default']);
 });
 
 test('the GitHub rate limit is a finding that says the commit was not checked', async () => {

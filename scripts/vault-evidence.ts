@@ -5,6 +5,7 @@ import { loadConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
+import { proveInstance } from '../src/contracts/instance.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
@@ -14,7 +15,10 @@ const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/vault-evidence.ts <regist
 
 Reads the vault's totalAssets() about every 30 days over the last 12 months through Alchemy and drpc, and counts its
 share holders at the latest block: every address the Alchemy Transfers API shows receiving shares, with balances read
-through both providers that must add up to totalSupply(). It prints evidence, no verdict, and no holder address.`;
+through both providers that must add up to totalSupply(). It prints evidence, no verdict, and no holder address.
+
+The numbers come from the vault's own code. A vault that names a factory is read only after that factory answers, as
+pnpm prove-instance asks it, that it created the vault.`;
 
 const { values: flags, positionals } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
@@ -30,6 +34,18 @@ if (vault?.kind !== 'vault') {
 const endpoints = mainnetEndpoints(process.env);
 const recording = recordingTransport(httpsTransport(), endpoints);
 const reader = createReader(endpoints, recording.transport);
+if (vault.attributes.factory === undefined) {
+  console.log(`NOTE ${vault.name} names no factory, so no factory vouches for the code these numbers come from`);
+} else {
+  const latest = await reader.block('latest');
+  if (latest.kind === 'unverifiable') throw new Error(latest.reason);
+  const admitted = await proveInstance(reader, registry, vault.name, latest.value);
+  if (admitted.kind === 'refused') {
+    console.log(`REFUSED ${admitted.why}; the vault's code is not read`);
+    process.exit(1);
+  }
+  console.log(`admitted     ${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${latest.value.number}`);
+}
 const evidence = await gatherVaultEvidence(reader, alchemyCall(recording.transport, endpoints[0].url), vault);
 if ('kind' in evidence) {
   console.log(`UNVERIFIABLE ${evidence.reason}`);
