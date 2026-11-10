@@ -81,7 +81,7 @@ const hashLine = (stdout: string, label: string): string | undefined => new RegE
 test('the Morpho deposit verifies to MATCH and prints the hashes the hardware wallet shows', async () => {
   const { code, stdout, verdicts } = await verifyTx(service);
   assert.equal(code, 0, stdout);
-  assert.match(stdout, /^MATCH\n/);
+  assert.match(stdout, /^MATCH\nEvery call moves an asset of the Safe\.\n  domain hash/);
   const [domain, message, safeTxHash] = ['domain hash', 'message hash', 'safeTxHash'].map((label) => hashLine(stdout, label));
   assert.equal(domain, chain.domainSeparator);
   assert.equal(safeTxHash, chain.transactionHash);
@@ -175,4 +175,21 @@ test('replay reports a recorded verdict this program does not reproduce', async 
   assert.equal(code, 1);
   assert.match(stdout, /^MATCH\n/);
   assert.match(stderr, /the recorded verdict was MISMATCH; this program now gives another result/);
+});
+
+test('replay names an older verdict format and says to run verify again', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const path = write(join(dir, 'old.json'), JSON.stringify({ ...fixture, format: 'kiss-sign-verdict-1' }));
+  const { code, stderr } = await run(['replay', path], dir, dir);
+  assert.equal(code, 1);
+  assert.match(stderr, /format "kiss-sign-verdict-1", not kiss-sign-verdict-2; run verify again/);
+});
+
+test('replay says when only the call marks differ from the recorded ones', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const claimed = { ...fixture, result: { ...fixture.result, calls: { kind: 'unverifiable', reasons: ['edited'] } } };
+  const path = write(join(dir, 'calls.json'), JSON.stringify(claimed));
+  const { code, stderr } = await run(['replay', path], dir, dir);
+  assert.equal(code, 1);
+  assert.match(stderr, /the recorded verdict was MATCH; this program now gives the same verdict but different call marks or hashes/);
 });

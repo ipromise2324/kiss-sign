@@ -7,6 +7,13 @@ import type { SafeStateEvidence } from './safe-state.ts';
 
 export type AllowanceChange = { readonly token: Address; readonly spender: Address; readonly before: bigint; readonly after: bigint };
 
+export type Permit2Allowance = { readonly amount: bigint; readonly expiration: bigint; readonly nonce: bigint };
+export type Permit2Change = { readonly token: Address; readonly spender: Address; readonly before: Permit2Allowance; readonly after: Permit2Allowance };
+
+/** A raised Permit2 nonce only voids signed permits. */
+export const permit2Raised = ({ before, after }: Permit2Change): boolean =>
+  after.amount > 0n && (after.amount > before.amount || after.expiration > before.expiration);
+
 /**
  * What the Safe's own balances did: net changes, signed, and every allowance from the Safe that was measured. `ends`
  * holds the Safe's balance after the transaction of each token that was asked for, as a card that gives all of it needs.
@@ -15,6 +22,7 @@ export type Effects = {
   readonly eth: bigint;
   readonly tokens: ReadonlyMap<Address, bigint>;
   readonly allowances: readonly AllowanceChange[];
+  readonly permit2: readonly Permit2Change[];
   readonly ends: ReadonlyMap<Address, bigint>;
 };
 
@@ -33,7 +41,8 @@ export type Expected = { readonly kind: 'exactly' | 'more-than' | 'less-than'; r
 export type EffectFinding =
   | { readonly kind: 'balance'; readonly asset: Asset; readonly expected: Exclude<Expected, { kind: 'all' }>; readonly actual: bigint }
   | { readonly kind: 'not-all'; readonly asset: Address; readonly left: bigint }
-  | ({ readonly kind: 'open-allowance' } & AllowanceChange);
+  | ({ readonly kind: 'open-allowance' } & AllowanceChange)
+  | ({ readonly kind: 'open-permit2-allowance' } & Permit2Change);
 
 export type EffectVerdict =
   | { readonly kind: 'match' }
@@ -133,8 +142,8 @@ const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): bo
   expected.kind === 'exactly' ? actual === expected.change : expected.kind === 'more-than' ? actual > expected.change : actual < expected.change;
 
 /**
- * Every change to the Safe's balances must be one the card's effects explain, and no allowance may end higher than it
- * started: an approval is spent in the transaction that gives it.
+ * Every change to the Safe's balances must be one the card's effects explain, and no allowance, ERC-20 or Permit2, may
+ * end higher than it started: an approval is spent in the transaction that gives it.
  */
 export function judgeEffects(
   observed: Observed,
@@ -164,6 +173,7 @@ export function judgeEffects(
     // A lower allowance lets no one take more from the Safe than before, so only a rise must be explained.
     if (allowance.after > allowance.before) findings.push({ kind: 'open-allowance', ...allowance });
   }
+  for (const allowance of observed.permit2) if (permit2Raised(allowance)) findings.push({ kind: 'open-permit2-allowance', ...allowance });
   if (findings.length > 0) return { kind: 'mismatch', findings };
   return unread.length > 0 ? { kind: 'unverifiable', reasons: unread } : { kind: 'match' };
 }
@@ -183,6 +193,10 @@ export function describeFinding(finding: EffectFinding, registry: Registry): str
   if (finding.kind === 'not-all') return `${nameOf(finding.asset, registry)} still held ${finding.left} after the transaction, the card gives all of it`;
   if (finding.kind === 'open-allowance') {
     return `approval raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${finding.before} before, ${finding.after} after`;
+  }
+  if (finding.kind === 'open-permit2-allowance') {
+    const show = ({ amount, expiration, nonce }: Permit2Allowance) => `${amount} until ${expiration} (nonce ${nonce})`;
+    return `Permit2 allowance raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${show(finding.before)} before, ${show(finding.after)} after`;
   }
   const { expected } = finding;
   const want = expected.kind === 'exactly' ? signed(expected.change) : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${signed(expected.change)}`;

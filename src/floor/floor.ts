@@ -28,7 +28,8 @@ const ZERO = '0x0000000000000000000000000000000000000000' as Address;
 
 /** ERC-20 allowances at or above 2^255 are treated as unlimited; no real amount comes near it. */
 export const UNLIMITED_ERC20 = 1n << 255n;
-const PERMIT2_MAX = (1n << 160n) - 1n;
+/** Permit2 never lowers an allowance of 2^160-1 when it is spent. */
+export const PERMIT2_MAX = (1n << 160n) - 1n;
 
 type Approval = { readonly signature: string; readonly selector: Hex; readonly token: 'target' | number; readonly spender: number; readonly amount: number; readonly unlimited: bigint };
 

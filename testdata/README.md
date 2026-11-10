@@ -55,6 +55,10 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `cctp-receive-then-call.json` | `0x8a25A24EDE9482C4Fc0738F99611BE58F1c839AB`, Safe 1.4.1 | 48142 | `0xdd09c9b162d956d128a51a49cb3988789358d52560c0339021afdc05b00ff716`, block 24,800,869 | A `delegatecall` to MultiSend 1.4.1: CCTP V1 MessageTransmitter (`0x0a992d191DEeC32aFe36203Ad87D7d289a738F81`) `receiveMessage` of a message that mints USDC to another address, then a call to another contract. safeTxHash `0xaffef7919a235fa81f6ddfcd5b140eb0a56f618b47d17a124fc95fa9735f002c` |
 | `morpho-migrate-all-smokehouse.json` | `0x3D548a77137E46B25F240CE0091266bAa5803177`, Safe 1.4.1 | 11 | `0xd45381b2f9365376f4248c3fad7d35f6cf0239b96e54d8f9b842a83de78fdc21`, block 25,006,581 | MultiSendCallOnly: Smokehouse USDC `approve` of shares to GeneralAdapter1, then `Bundler3.multicall` moving them to GeneralAdapter1, redeeming all it holds, and depositing all its USDC into Steakhouse High Yield USDC (`0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`), shares to the Safe. The Safe had a leftover share allowance to GeneralAdapter1 before. safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
 | `morpho-migrate-all-smokehouse-other-safe.json` | `0xCDe8da7C6A5408C2491Ea8510Bd2652A2468B9ba`, Safe 1.4.1 | 26 | `0x73df3d85fc65aca5a18be6af230d75b1aa92a07ab64e5e70075a255f6be99ab1`, block 25,931,300 | The same migration from another Safe, with no leftover allowance. safeTxHash `0xb1916e3a23bda7ac1b9a8a302e595abc7f42dc3e91897d08349de0fecc5fbeff` |
+| `morpho-borrow-set-authorization.json` | `0xA159e0C56aafCf9c6c0A7bF4A81a613F6618e772`, Safe 1.4.1 | 14 | `0xb3d7350ee4dea41e3b0f04292ec346dca9f9687f212bd84643b026808ebfc191`, block 25,920,155 | MultiSendCallOnly 1.4.1: wstETH `approve` to GeneralAdapter1, then Morpho Blue (`0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb`) `setAuthorization` of GeneralAdapter1, then `Bundler3.multicall` supplying the wstETH as collateral and borrowing 350 USDC to the Safe. safeTxHash `0x0aa75b0fa21bb435a0a63eafa003e7b546a4c0b6d9172bf594383b4c0e65037e` |
+| `morpho-set-authorization.json` | `0xF33Cec38B56dc445399ae0D4ec834e83dA67e19c`, Safe 1.4.1 | 404 | `0xc66886d2109e78874d460f95e07d5c0b3a1372e197d2642af39448bb3cf235ba`, block 25,933,130 | Morpho Blue `setAuthorization` of GeneralAdapter1, sent on its own. safeTxHash `0x84ef6bee2a4aa95ad1c0ba8e9fa9b0ad2cbae3364b53c30f2506f508780db272` |
+| `uniswap-v4-add-liquidity-permit2.json` | `0xAD7DbDC63bb75C056AC55Fbd7c813ffA77d7DFC5`, Safe 1.3.0 | 125 | `0xab5bab5d60c2235f9d7e6d6ff214f871875f6fd5befc90e0df8b12ba7448e3cd`, block 26,350,094 | MultiSendCallOnly 1.3.0: PENDLE (`0x808507121b80c02388fad14726482e061b8da827`) `approve` to Permit2, Permit2 `approve` of the same amount to the Uniswap v4 PositionManager (`0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e`), `modifyLiquidities` minting a position, then a Permit2 `approve` and a PENDLE `approve` back to zero. safeTxHash `0x33061cab0c751522b1a7c994738fcad071596c0121203feec5b821f6bee6522e` |
+| `permit2-unlimited-approval.json` | `0xB3313a655b4c01abE5A46faDbB7855952863633A`, Safe 1.4.1 | 561 | `0x7eeaeb6fbd2f3fd131a47b75e9200e856149f6c686f85cc86d891f23244611c5`, block 26,361,406 | MultiSendCallOnly 1.4.1: Permit2 `approve`s of 2^160-1 WBTC and USDC to the Uniswap v4 PositionManager, then a PositionManager `multicall` minting a position. safeTxHash `0x5ddf364b6199c45b5bf4e631a52083d125bfadf538a3647cb050dc244b9fea2e` |
 
 The claim fixtures were found with `pnpm past-txs` on transfers of the reward token out of its distributor (`--from`), the CCTP one on USDC mints; see each template's `report.md`. Each Safe's nonce is its `nonce()` at the block before. No Safe in the searched blocks received a CCTP message in a transaction of its own, so `cctp-receive-then-call` serves the CCTP tests twice: whole, and with its first call taken out as a direct call.
 
@@ -95,7 +99,13 @@ pnpm record-safe-tx fluid-withdraw-usdt-other-safe 0x93BD8C5eb0eAB5BE7BfE156Ebfa
 pnpm record-safe-tx fluid-redeem-usdt-other-safe 0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb 44
 pnpm record-safe-tx morpho-migrate-all-smokehouse 0x3D548a77137E46B25F240CE0091266bAa5803177 11
 pnpm record-safe-tx morpho-migrate-all-smokehouse-other-safe 0xCDe8da7C6A5408C2491Ea8510Bd2652A2468B9ba 26
+pnpm record-safe-tx morpho-borrow-set-authorization 0xA159e0C56aafCf9c6c0A7bF4A81a613F6618e772 14
+pnpm record-safe-tx morpho-set-authorization 0xF33Cec38B56dc445399ae0D4ec834e83dA67e19c 404
+pnpm record-safe-tx uniswap-v4-add-liquidity-permit2 0xAD7DbDC63bb75C056AC55Fbd7c813ffA77d7DFC5 125
+pnpm record-safe-tx permit2-unlimited-approval 0xB3313a655b4c01abE5A46faDbB7855952863633A 561
 ```
+
+The `morpho-*-set-authorization` fixtures were found from Morpho Blue's `SetAuthorization` events, and the two Permit2 fixtures from Permit2's `Approval` events, in Etherscan's log search, keeping each transaction a Safe sent to itself through `execTransaction`.
 
 The `morpho-migrate-*` fixtures were found with `pnpm past-txs morpho/vault-migrate-all` on Smokehouse USDC share burns (see `templates/morpho/vault-migrate-all/report.md`). The `morpho-withdraw-*` and `morpho-bundles-*` fixtures were found with `pnpm past-txs` on share burns and mints (see the reports of `morpho/vault-withdraw`, `morpho/vault-withdraw-all` and `morpho/vault-bundles-deposit`), and each transaction looked up in the Safe Transaction Service by `transaction_hash`.
 
@@ -177,6 +187,10 @@ The tests serve each provider its own recorded answer through the real reader, s
 | `morpho-withdraw-all.json`, of `safe-tx/morpho-withdraw-all-apex-other-safe.json` | 23,725,210 | −23,966.697414743719468099 Hyperithm USDC Apex shares, all the Safe held, +25,175.574782 USDC; the share allowance to GeneralAdapter1 is 0 before and after |
 | `morpho-withdraw-open-allowance.json`, of `safe-tx/morpho-withdraw-apex-other-safe.json` | 23,726,457 | −285,544.697740669157631830 Hyperithm USDC Apex shares, +300,000 USDC; the share allowance to GeneralAdapter1 goes from 4,850,840,670,525,793,065 to 40,963,643,267,656,996,464 |
 | `morpho-withdraw-two-vaults-all.json` | 23,446,537 | −18,906.363414828162262882 Smokehouse USDC and −15,590.886101795651433674 Usual Boosted USDC shares, all of each, +37,568.419169 USDC; both share allowances 0 before and after |
+| `morpho-borrow-set-authorization.json` | 25,920,154 | −0.257294902094620447 wstETH, +350 USDC; the wstETH allowance to GeneralAdapter1 is 0 before and after. Run call by call, only `multiSend[1]`, the `setAuthorization`, moves no asset |
+| `morpho-set-authorization.json` | 25,933,129 | nothing; its one call moves no asset |
+| `uniswap-v4-add-liquidity-permit2.json` | 26,350,093 | −49,681.585621060343390213 PENDLE, +1 position NFT; the Permit2 allowance of PENDLE to the PositionManager goes from 0 until 1793633819 to 0 until 1793899307, nonce 0. Run call by call, only the last `approve`, to an allowance already at zero, moves no asset |
+| `permit2-unlimited-approval.json` | 26,361,405 | −0.057897278632288743 WBTC, −64.963110 USDC, +1 position NFT; the Permit2 allowances of WBTC and USDC to the PositionManager end at 2^160-1 until 1796627459 |
 
 ### Recording again
 
@@ -201,7 +215,13 @@ pnpm simulate fluid-redeem-usdt --record fluid-redeem-usdt \
 pnpm simulate fluid-claim --record fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim","values":{"token":"fluid"}}]}'
 pnpm simulate merkl-claim --record merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}'
 pnpm simulate morpho-urd-claim --record morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}'
+pnpm simulate morpho-borrow-set-authorization --record morpho-borrow-set-authorization
+pnpm simulate morpho-set-authorization --record morpho-set-authorization
+pnpm simulate uniswap-v4-add-liquidity-permit2 --record uniswap-v4-add-liquidity-permit2
+pnpm simulate permit2-unlimited-approval --record permit2-unlimited-approval
 ```
+
+The last four have no template and no card, so they record no verdict; the tests read their effects, their Permit2 allowances and the call-by-call scan.
 
 ## Past-transaction searches
 
