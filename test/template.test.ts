@@ -168,8 +168,8 @@ test('the template parses its card fields and effects', () => {
     ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' } }],
   ]);
   assert.deepEqual(template.effects, {
-    gives: [{ token: { field: 'vault', attribute: 'asset' }, amount: { kind: 'card', field: 'amount' } }],
-    gets: [{ token: { field: 'vault', attribute: undefined }, amount: { kind: 'positive' } }],
+    gives: [{ token: { field: 'vault', attribute: 'asset' }, amount: { kind: 'card', field: 'amount' }, to: undefined }],
+    gets: [{ token: { field: 'vault', attribute: undefined }, amount: { kind: 'positive' }, to: undefined }],
   });
 });
 

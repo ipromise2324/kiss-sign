@@ -31,9 +31,9 @@ export type Registry = {
 
 export const REGISTRY_PATH = join('registry', 'contracts.json');
 
-/** Lowercase words joined by `-` or `.`, such as `multisend-call-only-1.4.1`. `safe` is reserved for the Safe itself. */
+/** Lowercase words joined by `-` or `.`, such as `multisend-call-only-1.4.1`. `safe` names the Safe itself, `eth` native ETH. */
 export const NAME = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
-export const RESERVED_NAMES = ['safe'] as const;
+export const RESERVED_NAMES = ['safe', 'eth'] as const;
 
 export class RegistryError extends Error {
   override name = 'RegistryError';

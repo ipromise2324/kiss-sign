@@ -59,14 +59,15 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 A template describes one operation for one protocol, for example `morpho/vault-deposit`. It is data, not code.
 
 - `contracts`. Each named contract with its address, the source that names it, and its code hash.
-- `calls`. The call tree the Safe makes, with MultiSend unwrapped. Each call names its target contract and its function signature.
+- `calls`. The call tree the Safe makes, with MultiSend unwrapped. Each call names its target contract and its function signature, or says its data is empty, as a plain ETH transfer or a cancellation sends.
 - `fields`. A rule for every argument. One of:
   - equals a card value (`amount`, `vault`);
   - equals the Safe;
   - equals a named contract;
   - equals a constant;
   - free, with a written reason (for example a Merkle proof). The mutation check treats free fields as free.
-- `effects`. What the Safe gives and gets, in tokens and amounts written as card values. Approvals must be exact and spent in the same transaction.
+- `nonce`. Optional: a rule for the Safe transaction's own nonce, such as a cancellation's card nonce.
+- `effects`. What the Safe gives and gets, in tokens and amounts written as card values. Native ETH is named `eth`, since no contract holds it, so `eth` and `safe` are never registry or address-book names. What the Safe gives may name its receiver; giving to the Safe itself changes nothing. Approvals must be exact and spent in the same transaction.
 
 ### Intent card
 
@@ -180,6 +181,7 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is not stopped this round.
 - The hardware wallet shows only the two hashes, not the decoded transaction. ERC-7730 clear signing does not yet cover Safe MultiSend batches.
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
+- For an executed transaction, the Safe's ETH change is its balance at the execution block minus its balance at the parent block, since no log shows ETH sent as the value of `execTransaction` itself. Another transaction in the same block that moves the Safe's ETH changes that number too; the field checks still bind the value of every call the Safe makes.
 - For an executed transaction, the floor rules on the Safe's settings read the receipt's events. A storage write without an event shows only in a simulation. The static floor refuses a delegatecall from the Safe itself, but a call to an already enabled module can still make one through `execTransactionFromModule`.
 - The static floor refuses an ERC-20 approval only at or above 2^255, and a Permit2 approval only at the uint160 maximum. A token-specific sentinel such as 2^96-1 (UNI, COMP) passes the floor; the effects check refuses any measured allowance that does not end at its value before the transaction.
 - The self-check does not check where `origin` points, and it does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.

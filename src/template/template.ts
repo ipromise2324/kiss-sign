@@ -11,12 +11,17 @@ import type { Address, Hex } from '../safe/types.ts';
 export type CardField =
   | { readonly kind: 'contract'; readonly registryKind: ContractKind }
   /** A base-unit integer of the token `of` names. */
-  | { readonly kind: 'amount'; readonly of: CardRef }
+  | { readonly kind: 'amount'; readonly of: TokenRef }
   /** A registry name, an address-book name, or `safe`. */
-  | { readonly kind: 'address' };
+  | { readonly kind: 'address' }
+  /** A Safe nonce. */
+  | { readonly kind: 'nonce' };
 
 /** `vault` or `vault.asset`: a card field, or an attribute of the registry entry that field names. */
 export type CardRef = { readonly field: string; readonly attribute: Attribute | undefined };
+
+/** Native ETH, which no contract holds, or a token a card field names. */
+export type TokenRef = 'eth' | CardRef;
 
 export type ConstValue =
   | { readonly kind: 'uint' | 'int'; readonly value: bigint }
@@ -46,14 +51,18 @@ export type CallNode = {
   readonly trailer: TrailerAllowance | undefined;
 };
 
-export type TemplateCall = CallNode & { readonly to: Rule; readonly value: Rule };
+/** A call the Safe makes: a function call, or `empty` data, as a plain ETH transfer or a cancellation sends. */
+export type TemplateCall = { readonly to: Rule; readonly value: Rule; readonly data: CallNode | 'empty' };
 
 export type EffectAmount = { readonly kind: 'card'; readonly field: string } | { readonly kind: 'positive' };
-export type Effect = { readonly token: CardRef; readonly amount: EffectAmount };
+/** `to`, on what the Safe gives, names the receiver; the Safe giving to itself changes nothing. */
+export type Effect = { readonly token: TokenRef; readonly amount: EffectAmount; readonly to: CardRef | undefined };
 
 export type Template = {
   readonly id: string;
   readonly card: ReadonlyMap<string, CardField>;
+  /** The Safe transaction's own nonce. */
+  readonly nonce: Rule | undefined;
   readonly calls: readonly TemplateCall[];
   readonly effects: { readonly gives: readonly Effect[]; readonly gets: readonly Effect[] };
 };
@@ -114,7 +123,14 @@ function cardRef(path: string, raw: string, card: CardFields): CardRef {
 
 /** The ABI type a card reference resolves to. */
 function refType(ref: CardRef, card: CardFields): 'address' | 'uint' {
-  return ref.attribute === undefined && card.get(ref.field)?.kind === 'amount' ? 'uint' : 'address';
+  const kind = card.get(ref.field)?.kind;
+  return ref.attribute === undefined && (kind === 'amount' || kind === 'nonce') ? 'uint' : 'address';
+}
+
+function cardToken(path: string, raw: string, card: CardFields): CardRef {
+  const ref = cardRef(path, raw, card);
+  if (refType(ref, card) !== 'address') throw new TemplateError(path, 'must name a token');
+  return ref;
 }
 
 function constValue(path: string, raw: unknown, type: AbiType): ConstValue {
@@ -239,12 +255,20 @@ function callNode(path: string, raw: unknown, scope: Scope): CallNode {
 
 function templateCall(path: string, raw: unknown, scope: Scope): TemplateCall {
   const value = object(path, raw);
-  exactKeys(path, value, ['to', 'value', 'function', 'args'], ['trailer']);
   const { to, value: amount, ...call } = value;
+  let data: TemplateCall['data'];
+  if (Object.hasOwn(call, 'data')) {
+    exactKeys(path, value, ['to', 'value', 'data']);
+    if (call.data !== 'empty') throw new TemplateError(`${path}.data`, 'must be "empty"; a call with data names its function and args');
+    data = 'empty';
+  } else {
+    exactKeys(path, value, ['to', 'value', 'function', 'args'], ['trailer']);
+    data = callNode(path, call, scope);
+  }
   return {
-    ...callNode(path, call, scope),
     to: rule(`${path}.to`, to, { kind: 'address' }, scope),
     value: rule(`${path}.value`, amount, { kind: 'uint', bits: 256 }, scope),
+    data,
   };
 }
 
@@ -261,37 +285,45 @@ function cardField(path: string, raw: unknown): (fields: CardFields) => CardFiel
     case 'amount': {
       exactKeys(path, value, ['kind', 'of']);
       const of = text(`${path}.of`, value.of);
-      return (fields) => {
-        const ref = cardRef(`${path}.of`, of, fields);
-        if (refType(ref, fields) !== 'address') throw new TemplateError(`${path}.of`, 'must name a token');
-        return { kind: 'amount', of: ref };
-      };
+      return (fields) => ({ kind: 'amount', of: of === 'eth' ? 'eth' : cardToken(`${path}.of`, of, fields) });
     }
     case 'address':
       exactKeys(path, value, ['kind']);
       return () => ({ kind: 'address' });
+    case 'nonce':
+      exactKeys(path, value, ['kind']);
+      return () => ({ kind: 'nonce' });
     default:
-      throw new TemplateError(`${path}.kind`, 'not one of contract, amount, address');
+      throw new TemplateError(`${path}.kind`, 'not one of contract, amount, address, nonce');
   }
 }
 
-function effect(path: string, raw: unknown, scope: Scope): Effect {
+/** `card.<field>` with the prefix removed, or undefined when `raw` lacks it. */
+const cardFieldName = (raw: string): string | undefined => (raw.startsWith('card.') ? raw.slice(5) : undefined);
+
+function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'): Effect {
   const value = object(path, raw);
-  exactKeys(path, value, ['token', 'amount']);
+  exactKeys(path, value, ['token', 'amount'], side === 'gives' ? ['to'] : []);
   const token = text(`${path}.token`, value.token);
-  if (!token.startsWith('card.')) throw new TemplateError(`${path}.token`, 'must be card.<field>');
-  const ref = cardRef(`${path}.token`, token.slice(5), scope.card);
-  if (refType(ref, scope.card) !== 'address') throw new TemplateError(`${path}.token`, 'must name a token');
+  const field = cardFieldName(token);
+  if (token !== 'eth' && field === undefined) throw new TemplateError(`${path}.token`, 'must be eth or card.<field>');
+  const ref = field === undefined ? 'eth' : cardToken(`${path}.token`, field, scope.card);
+  let to: CardRef | undefined;
+  if (value.to !== undefined) {
+    const name = cardFieldName(text(`${path}.to`, value.to)) ?? '';
+    if (scope.card.get(name)?.kind !== 'address') throw new TemplateError(`${path}.to`, 'must be card.<address field>');
+    to = { field: name, attribute: undefined };
+  }
   const amount = text(`${path}.amount`, value.amount);
-  if (amount === 'positive') return { token: ref, amount: { kind: 'positive' } };
-  const field = amount.startsWith('card.') ? amount.slice(5) : '';
-  if (scope.card.get(field)?.kind !== 'amount') throw new TemplateError(`${path}.amount`, 'must be "positive" or card.<amount field>');
-  return { token: ref, amount: { kind: 'card', field } };
+  if (amount === 'positive') return { token: ref, amount: { kind: 'positive' }, to };
+  const amountField = cardFieldName(amount) ?? '';
+  if (scope.card.get(amountField)?.kind !== 'amount') throw new TemplateError(`${path}.amount`, 'must be "positive" or card.<amount field>');
+  return { token: ref, amount: { kind: 'card', field: amountField }, to };
 }
 
 export function parseTemplate(raw: unknown, registry: Registry): Template {
   const value = object('template', raw);
-  exactKeys('template', value, ['id', 'card', 'calls', 'effects']);
+  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce']);
   const id = text('id', value.id);
   if (!ID.test(id)) throw new TemplateError('id', 'not <protocol>/<operation>');
   const pending = Object.entries(object('card', value.card)).map(([name, field]) => {
@@ -301,6 +333,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   const fields = new Map<string, CardField>(pending.map(([name]) => [name, { kind: 'address' }]));
   for (const [name, build] of pending) fields.set(name, build(fields));
   const scope: Scope = { card: fields, registry };
+  const nonce = value.nonce === undefined ? undefined : rule('nonce', value.nonce, { kind: 'uint', bits: 256 }, scope);
   const calls = array('calls', value.calls).map((call, i) => templateCall(`calls[${i}]`, call, scope));
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
   const effects = object('effects', value.effects);
@@ -308,10 +341,11 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   return {
     id,
     card: fields,
+    nonce,
     calls,
     effects: {
-      gives: array('effects.gives', effects.gives).map((e, i) => effect(`effects.gives[${i}]`, e, scope)),
-      gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope)),
+      gives: array('effects.gives', effects.gives).map((e, i) => effect(`effects.gives[${i}]`, e, scope, 'gives')),
+      gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets')),
     },
   };
 }

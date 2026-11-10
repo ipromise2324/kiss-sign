@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { parseAddressBook } from '../src/address-book.ts';
 import { parseCard, resolveCard } from '../src/card.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
@@ -19,13 +20,13 @@ import type { Observation } from '../src/simulate/simulate.ts';
 import { loadTemplate } from '../src/template/template.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/simulate.ts (<safe-tx fixture name> | <safe> <nonce>) --card '<card json>'
-  [--registry <contracts.json>] [--record <name>]`;
+  [--registry <contracts.json>] [--book '<address book json>'] [--record <name>]`;
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 const ROOT = join(import.meta.dirname, '..');
 
 const { values: flags, positionals } = parseArgs({
   allowPositionals: true,
-  options: { card: { type: 'string' }, registry: { type: 'string' }, record: { type: 'string' } },
+  options: { card: { type: 'string' }, registry: { type: 'string' }, book: { type: 'string' }, record: { type: 'string' } },
 });
 if (flags.card === undefined || positionals.length < 1 || positionals.length > 2) throw new Error(USAGE);
 if (flags.record !== undefined && (positionals.length !== 1 || !/^[a-z0-9-]+$/.test(flags.record))) {
@@ -73,11 +74,12 @@ const tx = parseServiceTx(service, { chainId: 1n, version });
 const registry = parseRegistry(JSON.parse(readFileSync(flags.registry ?? join(ROOT, 'registry', 'contracts.json'), 'utf8')));
 const card = parseCard(JSON.parse(flags.card));
 const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(ROOT, op.template, registry)]));
-const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe });
+const addressBook = parseAddressBook(JSON.parse(flags.book ?? '{}'));
+const resolution = resolveCard(card, { templates, registry, addressBook, safe });
 if (resolution.kind === 'refused') throw new Error(`card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
 const resolved = resolution.card;
 const expectations = expectedChanges(resolved, templates, registry);
-const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()] : [];
+const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset) => asset !== 'eth') : [];
 
 const name = (address: string) => registry.byAddress.get(address as never)?.name ?? address;
 function print(label: string, observation: Observation): void {

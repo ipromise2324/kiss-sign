@@ -15,6 +15,7 @@ export type CardOperation = { readonly template: string; readonly values: Readon
 export type ResolvedValue =
   | { readonly kind: 'contract'; readonly name: string; readonly entry: RegistryEntry }
   | { readonly kind: 'amount'; readonly value: bigint }
+  | { readonly kind: 'nonce'; readonly value: bigint }
   | { readonly kind: 'address'; readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' };
 
 export type ResolvedOperation = { readonly template: string; readonly values: ReadonlyMap<string, ResolvedValue> };
@@ -27,7 +28,8 @@ export type CardRefusal =
   | 'unknown-name'
   | 'ambiguous-name'
   | 'wrong-contract-kind'
-  | 'not-an-amount';
+  | 'not-an-amount'
+  | 'not-a-nonce';
 
 export type Resolution =
   | { readonly kind: 'resolved'; readonly card: ResolvedCard }
@@ -99,10 +101,13 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
       const raw = op.values[name];
       if (raw === undefined) return refuse('missing-value', name, `${template.id} needs ${name}`);
       switch (field.kind) {
-        case 'amount': {
+        case 'amount':
+        case 'nonce': {
           const value = /^(0|[1-9][0-9]{0,77})$/.test(raw) ? BigInt(raw) : undefined;
-          if (value === undefined || value >= UINT256_LIMIT) return refuse('not-an-amount', name, 'not a base-unit integer');
-          values.set(name, { kind: 'amount', value });
+          if (value === undefined || value >= UINT256_LIMIT) {
+            return field.kind === 'amount' ? refuse('not-an-amount', name, 'not a base-unit integer') : refuse('not-a-nonce', name, 'not a nonce');
+          }
+          values.set(name, { kind: field.kind, value });
           break;
         }
         case 'contract': {
