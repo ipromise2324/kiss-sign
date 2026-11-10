@@ -31,7 +31,7 @@ export type Asset = 'eth' | Address;
 export type Expected = { readonly kind: 'exactly' | 'more-than' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
 
 export type EffectFinding =
-  | { readonly kind: 'balance'; readonly asset: Address | 'eth'; readonly expected: Exclude<Expected, { kind: 'all' }>; readonly actual: bigint }
+  | { readonly kind: 'balance'; readonly asset: Asset; readonly expected: Exclude<Expected, { kind: 'all' }>; readonly actual: bigint }
   | { readonly kind: 'not-all'; readonly asset: Address; readonly left: bigint }
   | ({ readonly kind: 'open-allowance' } & AllowanceChange);
 

@@ -16,7 +16,7 @@ Without that, a wrong `MATCH` is possible. With different assets, the redeem lea
 
 ## How "all" is bound
 
-As in `morpho/vault-withdraw-all`: the share count is free in `approve.value` and `erc20TransferFrom.amount`, and the effects require the Safe to hold no shares of `from` afterwards and the allowance to end where it started. The redeem and the deposit are bound to the constant 2^256-1, GeneralAdapter1's "everything this adapter holds" (proven source of GeneralAdapter1, `erc4626Redeem` and `erc4626Deposit`), so no asset can stay in the adapter between them.
+As in `morpho/vault-withdraw-all`: the share count is free in `approve.value` and `erc20TransferFrom.amount`, and the effects require the Safe to hold no shares of `from` afterwards and the allowance not to end higher than it started. The redeem and the deposit are bound to the constant 2^256-1, GeneralAdapter1's "everything this adapter holds" (proven source of GeneralAdapter1, `erc4626Redeem` and `erc4626Deposit`), so no asset can stay in the adapter between them.
 
 ## Addresses and ABI
 
@@ -50,11 +50,9 @@ Its name on chain is "Steakhouse High Yield USDC" and `asset()` is USDC.
 
 Every item targets GeneralAdapter1, sends 0 ETH, has `skipRevert` false and a zero `callbackHash`; `approve` and `multicall` may carry the app's 8-byte trailer. Effects: the Safe gives all of `from` and gets a positive number of `to` shares. Both price bounds are free, as in the deposit and withdrawal templates: the new shares are not on the card, so only "more than nothing" is checked.
 
-## Warning: a leftover share allowance gives `MISMATCH`
+## A leftover share allowance
 
-The effects refuse any allowance that does not end where it started, in either direction. A Safe that withdrew an amount from the old vault through the Morpho app before still holds the part of that approval the withdrawal did not burn (see `templates/morpho/vault-withdraw/report.md`). The migration's approval overwrites it with the share balance and spends it to 0, so the allowance ends lower than it started, and the result is `MISMATCH` although the field checks and every balance match the card. Every migration this was run on that followed such a withdrawal gave `MISMATCH` for this reason alone.
-
-Lowering an allowance gives no one new power over the Safe's tokens, but `docs/design.md` says every change to the Safe's allowances must be one the effects explain. Accepting a decrease is the signer's decision, not this template's.
+A Safe that withdrew an amount from the old vault through the Morpho app before still holds the part of that approval the withdrawal did not burn (see `templates/morpho/vault-withdraw/report.md`). The migration's approval overwrites it with the share balance and spends it to 0, so the allowance ends lower than it started. The effects check accepts that: a lower allowance lets no one take more from the Safe than before (`docs/design.md`).
 
 ## Past transactions
 

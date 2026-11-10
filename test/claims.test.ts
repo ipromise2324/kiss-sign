@@ -53,7 +53,6 @@ const card = (...operations: Card['operations']): Card => ({ operations });
 const check = (tx: SafeTx, c: Card): FieldCheck => checkTemplateFields(tx, resolved(tx, c), templates, registry);
 const findings = (result: FieldCheck) => (result.kind === 'mismatch' ? result.findings.map((f) => `${f.callPath}.${f.arg}`) : result);
 
-/** `tx` with every 32-byte word that holds the Safe's address replaced by `OTHER`'s. */
 function otherRecipient(tx: SafeTx): SafeTx {
   const word = tx.safe.slice(2).toLowerCase().padStart(64, '0');
   const data = tx.data.slice(2).replaceAll(word, OTHER.slice(2).padStart(64, '0'));

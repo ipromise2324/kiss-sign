@@ -55,7 +55,6 @@ for (const c of CASES) {
   });
 }
 
-/** The deposit's data with the 32-byte word that holds `value` replaced; the word must occur once. */
 function replaceWord(tx: SafeTx, value: string, replacement: string): SafeTx {
   const word = value.slice(2).padStart(64, '0');
   assert.equal(tx.data.split(word).length, 2, 'the word occurs once');
