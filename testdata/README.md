@@ -223,6 +223,25 @@ pnpm simulate permit2-unlimited-approval --record permit2-unlimited-approval
 
 The last four have no template and no card, so they record no verdict; the tests read their effects, their Permit2 allowances and the call-by-call scan.
 
+## Perturbation tests
+
+`perturb/<name>.json` holds every request `pnpm perturb` sent to Alchemy and drpc, with each one's answer, for one test transaction: the unchanged run and each copy with one free field changed. `test/perturb.test.ts` replays them. `morpho-deposit-free-assets` uses a copy of `morpho/vault-deposit` whose `erc4626Deposit.assets` is free, kept in the recording, so the test can show a field the harness must fail.
+
+```sh
+export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
+pnpm perturb fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim","values":{"token":"fluid"}}]}' --record fluid-claim
+pnpm perturb merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}' --record merkl-claim
+pnpm perturb morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}' --record morpho-urd-claim
+pnpm perturb morpho-bundles-deposit --card '{"operations":[{"template":"morpho/vault-bundles-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"31583325527","min-shares":"30442521166571443751074"}}]}' --record morpho-bundles-deposit
+pnpm perturb morpho-withdraw-apex --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"583913520554","max-shares":"555874861469460312138864"}}]}' --record morpho-withdraw-apex
+pnpm perturb morpho-withdraw-all-apex --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777","min-assets":"1367287893326"}}]}' --record morpho-withdraw-all-apex
+pnpm perturb morpho-migrate-all-smokehouse --card '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' --record morpho-migrate-all-smokehouse
+pnpm perturb morpho-vault-deposit --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
+  --template <copy of templates/morpho/vault-deposit/template.json with erc4626Deposit.assets set to {"free": "..."}> --record morpho-deposit-free-assets
+```
+
+The first recording of `morpho-migrate-all-smokehouse` failed: an approval one share higher than its transfer left a 1-share allowance that the effects allow, since the Safe's allowance still fell. The template now binds the transfer's `amount` to the approval's `value` (`equals`).
+
 ## Past-transaction searches
 
 `research/<name>.json` holds one run of `scripts/past-txs.ts --record <name>`:

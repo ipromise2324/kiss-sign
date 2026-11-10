@@ -67,7 +67,7 @@ for (const [name, bounds] of Object.entries(BOUNDS)) {
   });
 
   test(`${name}: every bound field, changed alone, gives a mismatch`, () => {
-    assert.deepEqual(checkMutations(tx, resolvedFor(tx, MIGRATE), templates, registry), { kind: 'pass', bound: 28, free: 2 });
+    assert.deepEqual(checkMutations(tx, resolvedFor(tx, MIGRATE), templates, registry), { kind: 'pass', bound: 29, free: 1 });
   });
 }
 

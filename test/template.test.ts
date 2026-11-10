@@ -213,6 +213,25 @@ test('a trailer allowance is at most 19 bytes, so a whole address never fits', (
   assert.throws(at(20), (error: unknown) => error instanceof TemplateError && error.path === 'calls[1].trailer.maxBytes' && /from 1 to 19/.test(error.message));
 });
 
+test('a share price bound or equals names a card amount or an earlier uint argument, or the template fails to load', () => {
+  const deposit = (t: any) => t.calls[1].args.bundle.items[1].fields.data.call.args;
+  const at = 'calls[1].args.bundle.items[1].fields.data.call.args';
+  const cases: [(t: any) => void, string][] = [
+    [(t) => (deposit(t).maxSharePriceE27 = { maxSharePrice: { assets: 'card.vault', shares: 'card.min-shares' } }), `${at}.maxSharePriceE27.maxSharePrice.assets`],
+    [(t) => (deposit(t).maxSharePriceE27 = { maxSharePrice: { assets: 'card.amount', shares: `${at}.maxSharePriceE27` } }), `${at}.maxSharePriceE27.maxSharePrice.shares`],
+    [(t) => (t.calls[0].args.value = { equals: `${at}.assets` }), 'calls[0].args.value.equals'],
+    [(t) => (deposit(t).receiver = { maxSharePrice: { assets: 'card.amount', shares: 'card.min-shares' } }), `${at}.receiver.maxSharePrice`],
+  ];
+  for (const [edit, path] of cases) {
+    const broken = structuredClone(rawTemplate);
+    edit(broken);
+    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path, path);
+  }
+  const earlier = structuredClone(rawTemplate);
+  deposit(earlier).assets = { equals: 'calls[0].args.value' };
+  assert.equal(parseTemplate(earlier, registry).id, 'morpho/vault-deposit');
+});
+
 test('the template parses its card fields and effects', () => {
   assert.deepEqual([...template.card], [
     ['vault', { kind: 'contract', registryKind: 'vault' }],

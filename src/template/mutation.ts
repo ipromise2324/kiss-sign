@@ -54,7 +54,6 @@ function mutateBytes(type: AbiType, current: Uint8Array): Uint8Array | undefined
 
 const MAX_UINT = (1n << 256n) - 1n;
 
-/** A share price bound changes to its loosest value, since any stricter one still matches. */
 function mutate(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
   if (leaf.rule.kind === 'share-price' && leaf.bytes !== undefined) {
     const data = hexToBytes(tx.data.slice(2));

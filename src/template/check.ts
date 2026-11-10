@@ -50,7 +50,6 @@ type Context = {
   readonly unverifiable: string[];
   readonly leaves: Leaf[];
   readonly root: Uint8Array;
-  /** Each uint leaf's value in the transaction, per operation, for a share price bound that names its path. */
   readonly seen: Map<Values, Map<LeafRule, bigint>>;
 };
 
@@ -64,7 +63,6 @@ function remember(rule: LeafRule, actual: ConstValue, context: Context): void {
   context.seen.set(context.values, seen);
 }
 
-/** The finding a share price bound gives, or undefined when the transaction's bound is at least as strict as the card's. */
 function checkSharePrice(rule: Extract<Rule, { kind: 'share-price' }>, price: bigint, context: Context): string | undefined {
   const amount = (q: Quantity): bigint | undefined => {
     if (q.kind === 'path') return context.seen.get(context.values)?.get(q.rule);
@@ -134,6 +132,12 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
   context.leaves.push({ callPath, arg, bytes, rule, type });
   remember(rule, actual, context);
   if (rule.kind === 'free') return;
+  if (rule.kind === 'equals') {
+    const expected = context.seen.get(context.values)?.get(rule.rule);
+    if (expected === undefined) context.unverifiable.push(`no value at ${rule.path}`);
+    else if (actual.kind !== 'uint' || actual.value !== expected) context.findings.push({ callPath, arg, bytes, expected: `${expected}, as at ${rule.path}`, actual: render(actual) });
+    return;
+  }
   if (rule.kind === 'share-price') {
     const expected = actual.kind === 'uint' ? checkSharePrice(rule, actual.value, context) : 'a uint';
     if (expected !== undefined) context.findings.push({ callPath, arg, bytes, expected, actual: render(actual) });

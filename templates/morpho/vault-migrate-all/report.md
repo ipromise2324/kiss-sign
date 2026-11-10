@@ -16,7 +16,7 @@ Without that, a wrong `MATCH` is possible. With different assets, the redeem lea
 
 ## How "all" is bound
 
-As in `morpho/vault-withdraw-all`: the share count is free in `approve.value` and `erc20TransferFrom.amount`, and the effects require the Safe to hold no shares of `from` afterwards and the allowance not to end higher than it started. The redeem and the deposit are bound to the constant 2^256-1, GeneralAdapter1's "everything this adapter holds" (proven source of GeneralAdapter1, `erc4626Redeem` and `erc4626Deposit`), so no asset can stay in the adapter between them.
+As in `morpho/vault-withdraw-all`: the share count is free in `approve.value`, `erc20TransferFrom.amount` must equal it, and the effects require the Safe to hold no shares of `from` afterwards and the allowance not to end higher than it started. The redeem and the deposit are bound to the constant 2^256-1, GeneralAdapter1's "everything this adapter holds" (proven source of GeneralAdapter1, `erc4626Redeem` and `erc4626Deposit`), so no asset can stay in the adapter between them.
 
 ## Addresses and ABI
 
@@ -37,8 +37,8 @@ Its name on chain is "Steakhouse High Yield USDC" and `asset()` is USDC.
 | | `approve.value` | how many shares | free: the effects require the allowance to end no higher than it started and no shares left |
 | `multiSend[1]` | `to` | Bundler3 | `bundler3` |
 | item 0 | `erc20TransferFrom.token` | the old vault's shares | the card's `from` |
+| | `erc20TransferFrom.amount` | how many shares | `equals` the approval's `value`; the perturbation test found that an approval one share higher left an allowance the effects allow |
 | | `erc20TransferFrom.receiver` | where they go | `general-adapter1` |
-| | `erc20TransferFrom.amount` | how many | free: the effects require the Safe to hold none afterwards |
 | item 1 | `erc4626Redeem.vault` | the old vault | the card's `from` |
 | | `erc4626Redeem.shares` | how many | 2^256-1, all the adapter holds |
 | | `erc4626Redeem.minSharePriceE27` | slippage bound | `minSharePrice`: at least `min-assets` × 1e27 / the `erc20TransferFrom.amount` of item 0; GeneralAdapter1 redeems at least those shares, so it pays at least `min-assets` or reverts |
@@ -68,7 +68,7 @@ The candidates were first found by listing, with Etherscan's `tokentx`, the vaul
 
 `pnpm simulate` ran both recorded migrations, `morpho-migrate-all-smokehouse` and `morpho-migrate-all-smokehouse-other-safe`. Both left the Safe holding no Smokehouse shares and gave it Steakhouse High Yield shares. The second gives `MATCH`. The first gives `MISMATCH` only because its share allowance to GeneralAdapter1 went from 60,953,196,422,022,121 to 0: the leftover described above.
 
-The tests require `MATCH` from the field checks for both, a mutation of each of the 28 bound fields to give `MISMATCH`, a new-shares receiver other than the Safe to give `MISMATCH` at that field, and a card with vaults of different assets to be refused.
+The tests require `MATCH` from the field checks for both, a mutation of each of the 29 bound fields to give `MISMATCH`, a new-shares receiver other than the Safe to give `MISMATCH` at that field, and a card with vaults of different assets to be refused.
 
 ## ERC-7730
 

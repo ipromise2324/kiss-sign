@@ -154,6 +154,8 @@ function describeRule(rule: LeafRule, sender: string): string {
       return `card ${rule.ref.field}${rule.ref.attribute === undefined ? '' : `.${rule.ref.attribute}`}`;
     case 'free':
       return 'free';
+    case 'equals':
+      return `same as ${rule.path}`;
     case 'share-price': {
       const name = (q: Quantity): string => (q.kind === 'card' ? `card ${q.field}` : q.path);
       return `${rule.bound} share price, against ${name(rule.assets)} per ${name(rule.shares)}`;
@@ -182,6 +184,7 @@ function held(rule: LeafRule, fit: Fit, i: number, rules: readonly LeafRule[], r
       return rules.every((other, j) => cardKey(other) !== key || fit.values[j] === value);
     }
     case 'free':
+    case 'equals':
     case 'share-price':
       return undefined;
   }
@@ -235,7 +238,7 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
       const holding = fits.filter((_, k) => verdicts[k] === true);
       lines.push(`  ${paths[i]}  [${describeRule(rule, sender)}]`);
       const heldText =
-        rule.kind === 'free' || rule.kind === 'share-price'
+        rule.kind === 'free' || rule.kind === 'equals' || rule.kind === 'share-price'
           ? ''
           : rule.kind === 'card'
             ? `same as the other leaves bound to ${describeRule(rule, sender)} in ${holding.length} of ${fits.length}; `

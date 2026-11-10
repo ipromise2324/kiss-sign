@@ -37,8 +37,8 @@ function resolved(tx: SafeTx, card: Card): ResolvedCard {
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;
 }
 
-/** Without a stated bound, a card states one so loose that any of these transactions meets it. */
-const withdraw = (amount: string, maxShares = `${10n ** 40n}`): Card['operations'][number] => ({
+const LOOSE_MAX_SHARES = `${10n ** 40n}`;
+const withdraw = (amount: string, maxShares = LOOSE_MAX_SHARES): Card['operations'][number] => ({
   template: WITHDRAW,
   values: { vault: VAULT, amount, 'max-shares': maxShares },
 });

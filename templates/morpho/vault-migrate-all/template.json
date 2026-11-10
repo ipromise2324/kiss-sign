@@ -37,7 +37,7 @@
                     "args": {
                       "token": { "card": "from" },
                       "receiver": { "contract": "general-adapter1" },
-                      "amount": { "free": "the Safe's whole share balance; the effects require the Safe to hold no shares of the vault afterwards" }
+                      "amount": { "equals": "calls[0].args.value" }
                     }
                   }
                 },
