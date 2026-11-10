@@ -59,7 +59,7 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 A template describes one operation for one protocol, for example `morpho/vault-deposit`. It is data, not code.
 
 - `contracts`. Each named contract with its address, the source that names it, and its code hash.
-- `calls`. The call tree the Safe makes, with MultiSend unwrapped. Each call names its target contract and its function signature, or says its data is empty, as a plain ETH transfer or a cancellation sends. The last call may say, with a reason, that it `merge`s: the card's operations then share it, as the Morpho app puts several vaults' withdrawals into one `multicall`. Each merged call is made once, after every other call, with each operation's items in card order.
+- `calls`. The call tree the Safe makes, with MultiSend unwrapped. Each call names its target contract and its function signature, or says its data is empty, as a plain ETH transfer or a cancellation sends. The last call may say, with a reason, that it `merge`s: the card's operations then share it, as the Morpho app puts several vaults' withdrawals into one `multicall`, or the Merkl app several reward tokens into one `claim`'s parallel arrays. Each merged call is made once, after every other call, with each operation's items in card order.
 - `fields`. A rule for every argument. One of:
   - equals a card value (`amount`, `vault`);
   - equals the Safe;
@@ -93,7 +93,8 @@ Card values per operation, covering the operations in the Safe's history:
 | Transfer ETH or a token | token, amount, recipient | none |
 | Deposit into a vault (Morpho, Fluid) | vault, amount | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the vault |
 | Withdraw or redeem from a vault | vault, amount or `all` (two templates) | receiver and owner are the Safe |
-| Claim rewards (Fluid, Merkl) | reward token | recipient is the Safe; amount and proof are free; the Safe gives nothing and receives only the reward token |
+| Claim rewards (Fluid, Merkl, Morpho) | reward token | recipient is the Safe; amount and proof are free; the Safe gives nothing and receives only the reward token |
+| Receive USDC through CCTP | token, amount | the target is Circle's MessageTransmitter; the message and attestation are free; the Safe gives nothing and receives exactly the amount of the token |
 | Swap through a router (Uniswap, Odos) | sell token, sell amount, buy token, minimum buy amount | recipient is the Safe; the router is a named contract |
 | Cancel a queued transaction | the nonce to replace | 0 ETH to the Safe itself, no data |
 
@@ -188,6 +189,7 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - The self-check does not check where `origin` points, and it does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.
 - `replay` trusts the verdict file it is given. It shows what a recorded verdict was based on; it is not permission to sign.
 - When the code on chain ends in a metadata trailer without a source hash, as solc writes with `bytecodeHash: "none"`, matching bytecode proves the ABI's selectors and types but not its parameter names, since no byte on chain depends on them.
+- When Sourcify holds only a partial match, the source compiles to the code on chain except the IPFS metadata hash, which hashes the source text. The proof masks that hash, so it too proves the ABI's selectors and types but not its parameter names.
 - The simulation reads at most 50 modules. A Safe with more is `UNVERIFIABLE`.
 - Safe 1.1.1 has no `getStorageAt`, so a simulation cannot read its settings, and a pending transaction of a 1.1.1 Safe is at best `UNVERIFIABLE`.
 

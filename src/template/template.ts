@@ -260,8 +260,10 @@ function callNode(path: string, raw: unknown, scope: Scope): CallNode {
 }
 
 /**
- * A merged call must be the template's last, to a named contract, with a constant value and one array argument whose
- * items the operations sharing it put in, so only that argument can differ between them.
+ * A merged call must be the template's last, to a named contract, with a constant value and every argument an array
+ * bound by items, each with the same number of items: the operations sharing it put their items in, item by item across
+ * the arrays, as the Merkl distributor takes parallel `users`, `tokens`, `amounts` and `proofs`. Only those items can
+ * differ between them.
  */
 function mergeReason(path: string, raw: unknown, call: TemplateCall, last: boolean): string | undefined {
   if (raw === undefined) return undefined;
@@ -269,7 +271,10 @@ function mergeReason(path: string, raw: unknown, call: TemplateCall, last: boole
   const data = call.data === 'empty' ? undefined : call.data;
   if (!last) throw new TemplateError(path, 'only the last call may merge');
   if (call.to.kind !== 'contract' || call.value.kind !== 'const') throw new TemplateError(path, 'a merged call needs a contract target and a constant value');
-  if (data === undefined || data.args.length !== 1 || data.args[0]?.kind !== 'items') throw new TemplateError(path, 'a merged call takes one argument bound by items');
+  const counts = new Set(data?.args.map((arg) => (arg.kind === 'items' ? arg.items.length : -1)));
+  if (data === undefined || data.args.length === 0 || counts.has(-1) || counts.size !== 1) {
+    throw new TemplateError(path, 'every argument of a merged call is bound by items, with as many items in each');
+  }
   return why;
 }
 

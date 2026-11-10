@@ -157,7 +157,8 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   const { anchor, template } = run.query;
   const lines: string[] = [];
   const tokenName = registry.byAddress.get(anchor.token)?.name;
-  const direction = { mint: 'minted (from the zero address)', burn: 'burned (to the zero address)', any: 'moved' }[anchor.kind];
+  const sender = anchor.from === undefined ? undefined : (registry.byAddress.get(anchor.from)?.name ?? checksumAddress(anchor.from));
+  const direction = { mint: 'minted (from the zero address)', burn: 'burned (to the zero address)', any: sender === undefined ? 'moved' : `moved out of ${sender}` }[anchor.kind];
   lines.push(`past transactions for ${template.id}`);
   lines.push(`anchor: Transfer of ${tokenName === undefined ? '' : `${tokenName} `}${checksumAddress(anchor.token)} ${direction}, blocks ${anchor.fromBlock} to ${anchor.toBlock}`);
 
