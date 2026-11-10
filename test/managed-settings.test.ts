@@ -12,7 +12,7 @@ async function run(argv: string[], repoRoot: string, env: Record<string, string>
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     readSecret: undefined,
-    confirm: undefined,
+    ask: undefined,
     repoRoot,
     transport: async () => assert.fail('managed-settings reads no chain'),
     fetchJson: async () => assert.fail('managed-settings fetches nothing'),

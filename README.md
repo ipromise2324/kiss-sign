@@ -25,14 +25,33 @@ Clear signing (ERC-7730) makes the final screen readable, but you still have to 
 
 kiss-sign turns the order around: you say what you want first, and the transaction is checked against it.
 
-1. **Say the intent** in one sentence, and confirm a short card before you see any transaction.
-2. **An AI writes a template** the first time you do an operation, and you review it as a pull request with its evidence.
+1. **An AI writes a template** the first time you do an operation, and you review and merge it as a pull request with its evidence.
+2. **You fill a short card** at a prompt on your signing device, picking each vault or recipient from a list with its full address, and confirm it before you see any transaction.
 3. **A fixed program checks** the transaction against the template and your card, then prints a verdict:
    - `MATCH`: it does exactly what the card says. Compare the two hashes on your hardware wallet and sign.
    - `MISMATCH`: something differs. Do not sign.
    - `UNVERIFIABLE`: it could not be proven either way. Do not sign.
 
 ![kiss-sign flow: build a template once per operation, then check every signing](docs/architecture.png)
+
+## The standard setup
+
+Two machines, joined only by `main` on GitHub.
+
+| Step | Where | Who |
+|---|---|---|
+| 1. Research, write the template, open a pull request | A computer with an AI agent | The AI. It never merges. |
+| 2. Read the report and the template, approve and merge | GitHub | You, through branch protection |
+| 3. `git pull`, fill the card with `kiss-sign card new`, seal, verify | A signing device with no AI agent installed | You |
+| 4. The first time a template or a vault is used, send a small amount first | Safe | The signers |
+| 5. Sign, comparing the full hashes | Hardware wallet | You |
+
+- **No AI on the signing device.** Nothing there can rewrite `verify`, your cards, or your template approvals.
+- **Branch protection on `main`.** It guards the bridge between the two machines, since the signing device pulls `main`. Once you turn it on, only your approval merges a pull request, and the AI pushes from an account that cannot approve or merge. Both are GitHub settings you make; on a private repository GitHub offers branch protection only with a paid plan.
+- **A small amount first.** It catches honest mistakes and crude attacks. It does not catch a contract that behaves differently for large amounts, or one that turns hostile later.
+- **A permission or parameter change** moves no value, so a small amount cannot test it. It relies on the program's checks and on the template's review.
+
+If you run an AI on your signing device anyway, `kiss-sign managed-settings` prints a Claude Code managed-settings file that keeps it out of the signing clone. See [Optional hardening](docs/design.md#optional-hardening-an-ai-on-the-signing-device).
 
 ## Keep it simple, stupid, and sign
 
@@ -58,7 +77,7 @@ The diagram shows the flow. This is what each step actually does, and what it is
 **At every signing:**
 
 - **The program checks itself first.** Before anything else, `verify` requires the local checkout to equal the merged `main` exactly. *Stops:* a template or the program being changed after you approved it.
-- **The card is sealed before you see the transaction.** You confirm what you want first, and kiss-sign stores the card's hash where the AI cannot write. *Stops:* the transaction shaping what you think you asked for.
+- **The card is sealed before you see the transaction.** You fill and confirm the card yourself on the signing device first, and kiss-sign stores it under its hash. *Stops:* the transaction shaping what you think you asked for.
 - **Every hash is recomputed.** kiss-sign trusts no hash from the Safe web app or its API. *Stops:* a tampered interface showing one transaction while you sign another, as in the Bybit hack.
 - **Decode, then re-encode byte for byte.** The re-encoded transaction must equal the original exactly. *Stops:* extra bytes hidden in the calldata.
 - **Mutation check.** kiss-sign changes each bound field, and every changed copy must give `MISMATCH`. *Stops:* a template that looks strict but binds nothing.
