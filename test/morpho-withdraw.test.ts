@@ -62,8 +62,7 @@ for (const c of CASES) {
   });
 }
 
-/** The transaction's data with every copy of the Safe's address replaced, at the given occurrence only. */
-function replaceSafe(tx: SafeTx, occurrence: number, other: Address): SafeTx {
+function replaceSafeAt(tx: SafeTx, occurrence: number, other: Address): SafeTx {
   const safe = tx.safe.slice(2).toLowerCase();
   const parts = tx.data.split(safe);
   assert.ok(parts.length > occurrence + 1, 'the Safe occurs often enough');
@@ -76,8 +75,8 @@ const OTHER = '0x1111111111111111111111111111111111111111' as Address;
 test('a withdrawal paid to someone else, or of someone else\'s shares, is a mismatch at that field', () => {
   const tx = safeTx('morpho-withdraw-apex');
   const op = card(withdraw('583913520554'));
-  assert.deepEqual(findings(check(replaceSafe(tx, 0, OTHER), op)), ['multiSend[1].multicall.bundle[0].data.erc4626Withdraw.receiver']);
-  assert.deepEqual(findings(check(replaceSafe(tx, 1, OTHER), op)), ['multiSend[1].multicall.bundle[0].data.erc4626Withdraw.owner']);
+  assert.deepEqual(findings(check(replaceSafeAt(tx, 0, OTHER), op)), ['multiSend[1].multicall.bundle[0].data.erc4626Withdraw.receiver']);
+  assert.deepEqual(findings(check(replaceSafeAt(tx, 1, OTHER), op)), ['multiSend[1].multicall.bundle[0].data.erc4626Withdraw.owner']);
 });
 
 test('a card with another amount is a mismatch at the withdrawn assets', () => {

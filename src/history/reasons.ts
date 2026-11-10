@@ -8,7 +8,6 @@ import type { Verdict } from '../verify/verdict.ts';
 
 /** CoW Protocol's settlement contract on mainnet, github.com/cowprotocol/contracts `networks.json`. */
 export const GPV2_SETTLEMENT = '0x9008d19f58aabd9ed0d60971565aa8510560ab41' as Address;
-/** The settlement calls a Safe makes to place or cancel a CoW order: pre-sign it, or invalidate it. */
 const COW_CALLS = new Map<string, string>(['setPreSignature(bytes,bool)', 'invalidateOrder(bytes)'].map((sig) => [selectorOf(sig), sig.slice(0, sig.indexOf('('))]));
 
 /** What the harness knows about one past transaction when it picks the reason it is not MATCH. */
