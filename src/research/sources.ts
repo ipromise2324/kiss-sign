@@ -154,35 +154,17 @@ function requiredKey(name: 'alchemy' | 'etherscan', env: Env): string {
   return key;
 }
 
-/**
- * The live sources, with keys from the environment or `$KISS_SIGN_HOME/.env`. A failure names the source only, never a
- * URL, since both URLs carry a key.
- */
-export function liveAsk(env: Env, transport: Transport = httpsTransport()): Ask {
-  const alchemyUrl = mainnetEndpoints(env)[0].url;
+export function etherscanAsk(env: Env): (query: Readonly<Record<string, string>>) => Promise<unknown> {
   const etherscanKey = requiredKey('etherscan', env);
   const lookup = fallbackLookup();
   let lastEtherscan = 0;
-  return async (req) => {
-    if (req.source === 'alchemy') {
-      const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getAssetTransfers', params: [req.params] });
-      let answer;
-      try {
-        answer = await transport(alchemyUrl, body, AbortSignal.timeout(30_000));
-      } catch {
-        throw new ResearchError('alchemy unreachable');
-      }
-      if (answer.status !== 200) throw new ResearchError(`alchemy answered HTTP ${answer.status}`);
-      const parsed = JSON.parse(answer.text) as { result?: unknown; error?: { message?: unknown } };
-      if (parsed.error !== undefined) throw new ResearchError(`alchemy refused: ${String(parsed.error.message).slice(0, 120)}`);
-      return parsed.result;
-    }
+  return async (query) => {
     // The free Etherscan plan allows a few requests a second.
     for (let tries = 0; ; tries++) {
       const wait = lastEtherscan + 400 - Date.now();
       if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
       lastEtherscan = Date.now();
-      const path = `/v2/api?${new URLSearchParams({ ...req.query, apikey: etherscanKey })}`;
+      const path = `/v2/api?${new URLSearchParams({ ...query, apikey: etherscanKey })}`;
       let answer;
       try {
         answer = await requestText(
@@ -199,5 +181,28 @@ export function liveAsk(env: Env, transport: Transport = httpsTransport()): Ask 
       if (parsed.status === '0' && /rate limit/i.test(String(parsed.result)) && tries < 3) continue;
       return parsed;
     }
+  };
+}
+
+/**
+ * The live sources, with keys from the environment or `$KISS_SIGN_HOME/.env`. A failure names the source only, never a
+ * URL, since both URLs carry a key.
+ */
+export function liveAsk(env: Env, transport: Transport = httpsTransport()): Ask {
+  const alchemyUrl = mainnetEndpoints(env)[0].url;
+  const etherscan = etherscanAsk(env);
+  return async (req) => {
+    if (req.source === 'etherscan') return etherscan(req.query);
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getAssetTransfers', params: [req.params] });
+    let answer;
+    try {
+      answer = await transport(alchemyUrl, body, AbortSignal.timeout(30_000));
+    } catch {
+      throw new ResearchError('alchemy unreachable');
+    }
+    if (answer.status !== 200) throw new ResearchError(`alchemy answered HTTP ${answer.status}`);
+    const parsed = JSON.parse(answer.text) as { result?: unknown; error?: { message?: unknown } };
+    if (parsed.error !== undefined) throw new ResearchError(`alchemy refused: ${String(parsed.error.message).slice(0, 120)}`);
+    return parsed.result;
   };
 }

@@ -314,3 +314,17 @@ done
 | File | Fetched | Entries |
 | --- | --- | --- |
 | `registry.json` | 2026-11-10 | Every entry of `registry/contracts.json` at the time |
+
+## Etherscan contract origins
+
+`etherscan/<name>.json` is written by `pnpm contract-origin <registry name | address>... --record <name>`: the addresses read, and each request to Etherscan's v2 API (`contract/getsourcecode` and `contract/getcontractcreation`) with its answer, cut to the fields the program reads (`ContractName`, `contractAddress`, `contractCreator`, `contractFactory`, `txHash`). Source code, ABIs and comments are dropped. No request holds a key. `test/contract-origin.test.ts` replays it.
+
+| File | Read | Contracts |
+| --- | --- | --- |
+| `registry-contracts.json` | 2026-11-11 | `bundler3` (`Bundler3`, made by a factory), `steakhouse-prime-usdc` (`VaultV2`, made by `vault-v2-factory`), `usdc` (`FiatTokenProxy`, deployed by an account) |
+
+### Recording again
+
+```sh
+pnpm contract-origin bundler3 steakhouse-prime-usdc usdc --record registry-contracts
+```
