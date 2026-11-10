@@ -24,7 +24,7 @@
           "contract": "general-adapter1"
         },
         "value": {
-          "free": "the most shares the withdrawal may burn, which the app sets from the amount and the price bound; the effects require the allowance to end where it started"
+          "free": "the most shares the withdrawal may burn, which the app sets from the amount and the price bound; the effects require the allowance to end no higher than it started"
         }
       },
       "trailer": {

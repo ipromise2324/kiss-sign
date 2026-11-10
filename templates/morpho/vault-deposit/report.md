@@ -40,7 +40,7 @@ Hyperithm USDC Apex (V2) was refused by `prove-abi` until this pull request. Sou
 | | `erc4626Deposit.maxSharePriceE27` | slippage bound | free: the simulation checks the shares the Safe receives |
 | | `erc4626Deposit.receiver` | who gets the shares | the Safe |
 
-Every call sends 0 ETH, and every bundle item has `skipRevert` false and a zero `callbackHash`. Effects: the Safe gives exactly `amount` of the asset and gets a positive amount of the vault's shares; the approval must end where it started.
+Every call sends 0 ETH, and every bundle item has `skipRevert` false and a zero `callbackHash`. Effects: the Safe gives exactly `amount` of the asset and gets a positive amount of the vault's shares; the allowance may not end higher than it started, so the approval is spent in full.
 
 Both `approve` and `multicall` may carry a trailer of up to 8 bytes. The Morpho app appends a 4-byte timestamp and the 4-byte origin tag `25afea44` (morpho-org/sdks, `addTransactionMetadata`). Neither function reads past its arguments. The app added it to `approve` too by late 2025: the fitting deposits into the V1.1 Apex vault below carry it.
 

@@ -37,7 +37,7 @@ The third argument is a lower bound, the fewest assets per share the owner accep
 | --- | --- | --- | --- |
 | `multiSend[0]` | `to` | the vault, whose shares are approved | the card's `vault` |
 | | `approve.spender` | who may spend the shares | `general-adapter1` |
-| | `approve.value` | how many shares | free: the effects require the allowance to end where it started |
+| | `approve.value` | how many shares | free: the effects require the allowance to end no higher than it started |
 | `multiSend[1]` | `to` | Bundler3 | `bundler3` |
 | bundle item | `to` | the adapter that runs it | `general-adapter1` |
 | | `erc4626Withdraw.vault` | the vault | the card's `vault` |

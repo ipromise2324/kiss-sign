@@ -12,7 +12,7 @@
       "function": "approve(address spender, uint256 value)",
       "args": {
         "spender": { "contract": "general-adapter1" },
-        "value": { "free": "the Safe's whole share balance, read when the transaction is built; the effects require the Safe to hold no shares afterwards and the allowance to end where it started" }
+        "value": { "free": "the Safe's whole share balance, read when the transaction is built; the effects require the Safe to hold no shares afterwards and the allowance to end no higher than it started" }
       },
       "trailer": {
         "maxBytes": 8,

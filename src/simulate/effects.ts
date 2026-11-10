@@ -133,7 +133,7 @@ const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): bo
   expected.kind === 'exactly' ? actual === expected.change : expected.kind === 'more-than' ? actual > expected.change : actual < expected.change;
 
 /**
- * Every change to the Safe's balances must be one the card's effects explain, and every allowance must end where it
+ * Every change to the Safe's balances must be one the card's effects explain, and no allowance may end higher than it
  * started: an approval is spent in the transaction that gives it.
  */
 export function judgeEffects(
