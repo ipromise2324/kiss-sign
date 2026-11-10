@@ -4,8 +4,8 @@ import { mainnetEndpoints } from './providers.ts';
 import type { Endpoint, ProviderName } from './providers.ts';
 import { httpsTransport } from './rpc.ts';
 import type { Transport } from './rpc.ts';
-import { parseBlockRef, parseData, parseReceipt, parseTransaction, hash32, quantity } from './types.ts';
-import type { BlockRef, BlockTag, CallResult, Receipt, Transaction } from './types.ts';
+import { parseBlockHeader, parseBlockRef, parseData, parseReceipt, parseSimulation, parseTransaction, hash32, quantity } from './types.ts';
+import type { BlockHeader, BlockRef, BlockTag, CallResult, Receipt, SimulatedCall, SimulationRequest, Transaction } from './types.ts';
 
 /** Closed values only, so no provider text (which may quote a keyed URL) can reach a reason. */
 export type FailureCause = 'unreachable' | 'timeout' | 'refused' | 'rate-limited' | 'http-error' | 'no-answer';
@@ -25,11 +25,14 @@ export type Reader = {
   /** The number of `block('latest')`: the lower head, confirmed by both providers' hash at that height. */
   blockNumber(): Promise<Read<bigint>>;
   block(tag: BlockTag): Promise<Read<BlockRef>>;
+  header(at: BlockRef): Promise<Read<BlockHeader>>;
   getCode(address: Address, at: BlockRef): Promise<Read<Hex>>;
   call(request: { readonly to: Address; readonly data: Hex }, at: BlockRef): Promise<Read<CallResult>>;
   getStorageAt(address: Address, slot: bigint, at: BlockRef): Promise<Read<Hex>>;
   getTransactionReceipt(hash: Hex): Promise<Read<Receipt | null>>;
   getTransaction(hash: Hex): Promise<Read<Transaction | null>>;
+  /** `eth_simulateV1` of one block on top of `at`, with `traceTransfers` on and validation off. */
+  simulateV1(request: SimulationRequest, at: BlockRef): Promise<Read<readonly SimulatedCall[]>>;
 };
 
 export type ReaderOptions = { readonly timeoutMs?: number; readonly retryPausesMs?: readonly number[] };
@@ -187,6 +190,25 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
   // EIP-1898: name the block by hash, so both providers read the very block they agreed on.
   const pinned = (at: BlockRef) => ({ blockHash: at.hash });
 
+  const simulatePayload = (request: SimulationRequest) => ({
+    blockStateCalls: [
+      {
+        blockOverrides: {
+          number: hexQuantity(request.block.number),
+          time: hexQuantity(request.block.time),
+          gasLimit: hexQuantity(request.block.gasLimit),
+          prevRandao: request.block.prevRandao,
+          baseFeePerGas: '0x0',
+          feeRecipient: `0x${'00'.repeat(20)}`,
+        },
+        stateOverrides: request.stateOverrides,
+        calls: request.calls.map((call) => ({ from: call.from, to: call.to, data: call.data, gas: hexQuantity(call.gas) })),
+      },
+    ],
+    traceTransfers: true,
+    validation: false,
+  });
+
   return {
     providers: [endpoints[0].provider, endpoints[1].provider],
     blockNumber: async () => {
@@ -206,6 +228,21 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
             answer.kind === 'reverted' ? { kind: 'reverted' } : { kind: 'returned', data: parseData(answer.value) },
         },
         [{ to: request.to, data: request.data }, pinned(at)],
+      ),
+    header: (at) =>
+      read(
+        method('eth_getBlockByHash', (raw) => {
+          const header = parseBlockHeader(raw);
+          if (header.hash !== at.hash || header.number !== at.number) throw new Error('another block');
+          return header;
+        }),
+        [at.hash, false],
+        `block ${at.number}`,
+      ),
+    simulateV1: (request, at) =>
+      read(
+        method('eth_simulateV1', (raw) => parseSimulation(raw, request, at)),
+        [simulatePayload(request), pinned(at)],
       ),
     getTransactionReceipt: (hash) => read(byHash('eth_getTransactionReceipt', parseReceipt), [hash]),
     getTransaction: (hash) => read(byHash('eth_getTransactionByHash', parseTransaction), [hash]),
