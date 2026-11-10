@@ -128,7 +128,7 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   } else {
     const header = await reader.header(latest.value);
     const expected = expectedChanges(resolved, templates, registry);
-    const watch = expected.kind === 'expected' ? [...expected.changes.keys()] : [];
+    const watch = expected.kind === 'expected' ? [...expected.changes.keys()].filter((asset) => asset !== 'eth') : [];
     observation =
       header.kind === 'unverifiable'
         ? { kind: 'unverifiable', reasons: [header.reason] }

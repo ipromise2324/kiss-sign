@@ -70,6 +70,7 @@ A new vault for an existing template changes only `registry/contracts.json`.
 
    - A contract field takes a name from `registry/contracts.json`.
    - An address field takes `safe`, a registry name, or an address-book name. List the book with `! kiss-sign book list`.
+   - A `recipient` field takes only `safe` or an address-book name, never a registry contract.
    - An amount is an integer in the token's base units. Show the signer both the base units and the human amount, such as "1800000000180 = 1,800,000.000180 USDC (6 decimals)".
    - If a recipient is not in the address book, the signer adds it. Give them `! kiss-sign book add <name> <address>` and tell them to fill in the address from a source outside this chat.
 3. **Hand over the `!` lines.** These need the signer's terminal, so the signer types them:

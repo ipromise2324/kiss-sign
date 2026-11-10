@@ -38,7 +38,7 @@ export async function init(args: readonly string[], io: Io): Promise<number> {
 export async function bookAdd(args: readonly string[], io: Io): Promise<number> {
   const [name, raw, ...extra] = args;
   if (name === undefined || raw === undefined || extra.length > 0) throw new UsageError('book add takes a name and an address.');
-  if (!isEntryName(name)) throw new UsageError(`${JSON.stringify(name.slice(0, 64))} is not a name: lowercase words joined by - or ., and not "safe".`);
+  if (!isEntryName(name)) throw new UsageError(`${JSON.stringify(name.slice(0, 64))} is not a name: lowercase words joined by - or ., and not "safe" or "eth".`);
   const address = parseAddress('address', raw);
   const confirm = terminalConfirm(io, 'book add');
   if (loadRegistry(io.repoRoot).entries.has(name)) throw new UsageError(`${name} is already a contract in the registry; choose another name.`);
@@ -69,7 +69,7 @@ export function bookList(args: readonly string[], io: Io): number {
 }
 
 function show(value: ResolvedValue): string {
-  if (value.kind === 'amount') return `${value.value}`;
+  if (value.kind === 'amount' || value.kind === 'nonce') return `${value.value}`;
   if (value.kind === 'contract') return `${value.name} ${checksumAddress(value.entry.address)} (registry)`;
   return `${value.name} ${checksumAddress(value.address)} (${value.from})`;
 }

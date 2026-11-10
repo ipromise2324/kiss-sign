@@ -9,7 +9,6 @@ export const TRANSFER = topic('Transfer(address,address,uint256)');
 export const APPROVAL = topic('Approval(address,address,uint256)');
 export const EXECUTION_SUCCESS = topic('ExecutionSuccess(bytes32,uint256)');
 export const EXECUTION_FAILURE = topic('ExecutionFailure(bytes32,uint256)');
-export const SAFE_RECEIVED = topic('SafeReceived(address,uint256)');
 
 /** `traceTransfers` reports each ETH move as a `Transfer` logged from this address. */
 export const ETH_TRANSFER_ADDRESS = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' as Address;

@@ -1,7 +1,7 @@
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import type { Reader } from '../chain/reader.ts';
 import { parseFunctionSignature } from '../decode/abi.ts';
-import type { AbiFunction, AbiType } from '../decode/abi.ts';
+import type { AbiType } from '../decode/abi.ts';
 import { decodeCall, wholeRegion } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
@@ -44,10 +44,11 @@ export function loosen(template: Template): Loosened {
   const looseTop = (call: TemplateCall, wideTrailer: boolean, record: boolean): TemplateCall => {
     const to = looseRule(call.to, wideTrailer, record);
     const value = looseRule(call.value, wideTrailer, record);
-    return { ...looseCall(call, wideTrailer, record), to, value };
+    return { to, value, data: call.data === 'empty' ? 'empty' : looseCall(call.data, wideTrailer, record) };
   };
-  const shape = { ...template, calls: template.calls.map((call) => looseTop(call, false, true)) };
-  const anyTrailer = { ...template, calls: template.calls.map((call) => looseTop(call, true, false)) };
+  // An execTransaction call does not carry the Safe's nonce, so a study never checks it.
+  const shape = { ...template, nonce: undefined, calls: template.calls.map((call) => looseTop(call, false, true)) };
+  const anyTrailer = { ...template, nonce: undefined, calls: template.calls.map((call) => looseTop(call, true, false)) };
   return { shape, anyTrailer, rules };
 }
 
@@ -123,11 +124,11 @@ function functionNames(template: Template): Map<string, string> {
     if (rule.kind === 'items') rule.items.forEach(visitRule);
     if (rule.kind === 'fields') rule.fields.forEach(visitRule);
   };
-  const visitCall = (node: CallNode | { fn: AbiFunction; args: readonly Rule[] }): void => {
+  const visitCall = (node: CallNode): void => {
     names.set(node.fn.selector, node.fn.name);
     node.args.forEach(visitRule);
   };
-  template.calls.forEach(visitCall);
+  for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data);
   return names;
 }
 
@@ -147,8 +148,9 @@ function misfitReason(tx: SafeTx, loosened: Loosened, template: Template, regist
   const sameCalls =
     unwrapped.calls.length === template.calls.length &&
     unwrapped.calls.every((call, i) => {
-      const fn = template.calls[i]?.fn;
-      return fn !== undefined && call.data.end - call.data.start >= 4 && bytesToHex(call.data.root.subarray(call.data.start, call.data.start + 4)) === fn.selector.slice(2);
+      const data = template.calls[i]?.data;
+      if (data === 'empty') return call.data.end === call.data.start;
+      return data !== undefined && call.data.end - call.data.start >= 4 && bytesToHex(call.data.root.subarray(call.data.start, call.data.start + 4)) === data.fn.selector.slice(2);
     });
   if (!sameCalls) return `calls ${shapeOf.join(', ')}`;
   const wide = check(loosened.anyTrailer).check;
