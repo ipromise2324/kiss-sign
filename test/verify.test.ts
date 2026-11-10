@@ -176,3 +176,20 @@ test('replay reports a recorded verdict this program does not reproduce', async 
   assert.match(stdout, /^MATCH\n/);
   assert.match(stderr, /the recorded verdict was MISMATCH; this program now gives another result/);
 });
+
+test('replay names an older verdict format and says to run verify again', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const path = write(join(dir, 'old.json'), JSON.stringify({ ...fixture, format: 'kiss-sign-verdict-1' }));
+  const { code, stderr } = await run(['replay', path], dir, dir);
+  assert.equal(code, 1);
+  assert.match(stderr, /format "kiss-sign-verdict-1", not kiss-sign-verdict-2; run verify again/);
+});
+
+test('replay says when only the call marks differ from the recorded ones', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const claimed = { ...fixture, result: { ...fixture.result, calls: { kind: 'unverifiable', reasons: ['edited'] } } };
+  const path = write(join(dir, 'calls.json'), JSON.stringify(claimed));
+  const { code, stderr } = await run(['replay', path], dir, dir);
+  assert.equal(code, 1);
+  assert.match(stderr, /the recorded verdict was MATCH; this program now gives the same verdict but different call marks or hashes/);
+});

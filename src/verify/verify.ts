@@ -201,7 +201,10 @@ export function parseVerdictFile(raw: unknown): VerdictFile {
   const refuse = (problem: string): never => {
     throw new VerifyError(`not a ${VERDICT_FORMAT} file: ${problem}`);
   };
-  if (!isRecord(raw) || raw.format !== VERDICT_FORMAT) return refuse('format');
+  if (!isRecord(raw)) return refuse('format');
+  if (raw.format !== VERDICT_FORMAT) {
+    throw new VerifyError(`this verdict file is in format ${JSON.stringify(raw.format)}, not ${VERDICT_FORMAT}; run verify again to get a file this program can replay`);
+  }
   const { inputs, exchanges, result } = raw;
   if (!isRecord(inputs) || !isText(inputs.commit) || !isText(inputs.safe) || !isText(inputs.registry)) return refuse('inputs');
   if (!isRecord(inputs.tx) || (inputs.tx.format !== 'service' && inputs.tx.format !== 'web-app')) return refuse('inputs.tx');
@@ -211,6 +214,6 @@ export function parseVerdictFile(raw: unknown): VerdictFile {
   if (!Array.isArray(inputs.templates) || !inputs.templates.every(templateOk)) return refuse('inputs.templates');
   const exchangeOk = (e: unknown) => isRecord(e) && isText(e.method) && isRecord(e.answers);
   if (!Array.isArray(exchanges) || !exchanges.every(exchangeOk)) return refuse('exchanges');
-  if (!isRecord(result) || !isRecord(result.verdict) || !isRecord(result.hashes)) return refuse('result');
+  if (!isRecord(result) || !isRecord(result.verdict) || !isRecord(result.hashes) || !isRecord(result.calls)) return refuse('result');
   return raw as unknown as VerdictFile;
 }

@@ -110,7 +110,8 @@ export async function replay(args: readonly string[], io: Io): Promise<number> {
   const result = await evaluate(file.inputs, replayReader(file.exchanges));
   print(result, parseRegistry(JSON.parse(file.inputs.registry)), io, true);
   if (canonicalJson(result) !== canonicalJson(file.result)) {
-    io.stderr(`kiss-sign: the recorded verdict was ${file.result.verdict.kind}; this program now gives another result.\n`);
+    const what = canonicalJson(result.verdict) === canonicalJson(file.result.verdict) ? 'the same verdict but different call marks or hashes' : 'another result';
+    io.stderr(`kiss-sign: the recorded verdict was ${file.result.verdict.kind}; this program now gives ${what}.\n`);
     return FAILED;
   }
   io.stdout('Same verdict as recorded.\n');
