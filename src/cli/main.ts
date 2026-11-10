@@ -1,20 +1,23 @@
+import { join } from 'node:path';
+import { createInterface } from 'node:readline/promises';
+import { AddressBookError } from '../address-book.ts';
+import { CardError } from '../card.ts';
+import { MissingKeyError } from '../chain/providers.ts';
+import { httpsTransport } from '../chain/rpc.ts';
+import { ConfigError } from '../config.ts';
 import { KEYS, KeyError, findKey, keyFilePath, keySpec, kissSignHome, removeKey, saveKey } from '../keys.ts';
-import type { Env, KeySpec } from '../keys.ts';
+import type { KeySpec } from '../keys.ts';
+import { RegistryError } from '../registry.ts';
+import { SafeTxParseError } from '../safe/types.ts';
+import { TemplateError } from '../template/template.ts';
+import { VerifyError } from '../verify/verify.ts';
+import { FAILED, OK, USAGE, UsageError } from './io.ts';
+import type { Io } from './io.ts';
 import { hiddenPrompt } from './prompt.ts';
+import { bookAdd, bookList, cardSeal, init, templateApprove } from './setup.ts';
+import { replay, verify } from './verify.ts';
 
-export type Io = {
-  readonly env: Env;
-  readonly stdout: (text: string) => void;
-  readonly stderr: (text: string) => void;
-  /** Undefined when stdin is not a terminal, so no key can arrive through a pipe or a chat. */
-  readonly readSecret: ((question: string) => Promise<string | undefined>) | undefined;
-};
-
-const OK = 0;
-const FAILED = 1;
-const USAGE = 64;
-
-class UsageError extends Error {}
+export type { Io } from './io.ts';
 
 const KEY_NAMES = KEYS.map(({ name }) => name).join(' or ');
 
@@ -69,6 +72,13 @@ function keyRemove(args: readonly string[], io: Io): number {
 type Command = { readonly usage: string; readonly run: (args: readonly string[], io: Io) => number | Promise<number> };
 
 const COMMANDS: Readonly<Record<string, Command>> = {
+  init: { usage: 'init --safe <address>', run: init },
+  'book add': { usage: 'book add <name> <address>', run: bookAdd },
+  'book list': { usage: 'book list', run: bookList },
+  'card seal': { usage: 'card seal <card.json>', run: cardSeal },
+  'template approve': { usage: 'template approve <protocol>/<operation>', run: templateApprove },
+  verify: { usage: 'verify --card <sealed card hash> (--tx <file> | --safe-tx-hash <hash>)', run: verify },
+  replay: { usage: 'replay <verdict file>', run: replay },
   'key add': { usage: `key add <${KEYS.map(({ name }) => name).join('|')}>`, run: keyAdd },
   'key list': { usage: 'key list', run: keyList },
   'key remove': { usage: 'key remove <name>', run: keyRemove },
@@ -78,21 +88,26 @@ const USAGE_TEXT = `Usage:\n${Object.values(COMMANDS)
   .map(({ usage }) => `  kiss-sign ${usage}\n`)
   .join('')}`;
 
+/** Errors whose message is written for the signer. */
+const FAILURES = [KeyError, CardError, ConfigError, VerifyError, AddressBookError, SafeTxParseError, TemplateError, RegistryError, MissingKeyError];
+
 export async function main(argv: readonly string[], io: Io): Promise<number> {
-  const name = argv.slice(0, 2).join(' ');
-  const command = Object.hasOwn(COMMANDS, name) ? COMMANDS[name] : undefined;
-  if (command === undefined) {
+  const name = [argv.slice(0, 2).join(' '), argv[0] ?? ''].find((words) => Object.hasOwn(COMMANDS, words));
+  const command = name === undefined ? undefined : COMMANDS[name];
+  if (name === undefined || command === undefined) {
     io.stderr(USAGE_TEXT);
     return USAGE;
   }
   try {
-    return await command.run(argv.slice(2), io);
+    return await command.run(argv.slice(name.split(' ').length), io);
   } catch (error) {
-    if (error instanceof UsageError) {
+    if (!(error instanceof Error)) throw error;
+    const code = (error as NodeJS.ErrnoException).code;
+    if (error instanceof UsageError || code?.startsWith('ERR_PARSE_ARGS')) {
       io.stderr(`kiss-sign: ${error.message}\n`);
       return USAGE;
     }
-    if (error instanceof KeyError) {
+    if (FAILURES.some((kind) => error instanceof kind) || error instanceof SyntaxError || code === 'ENOENT') {
       io.stderr(`kiss-sign: ${error.message}\n`);
       return FAILED;
     }
@@ -106,5 +121,24 @@ export function nodeIo(): Io {
     stdout: (text) => void process.stdout.write(text),
     stderr: (text) => void process.stderr.write(text),
     readSecret: process.stdin.isTTY ? (question) => hiddenPrompt(question, process.stdin, process.stderr) : undefined,
+    confirm: process.stdin.isTTY ? askYes : undefined,
+    repoRoot: join(import.meta.dirname, '..', '..'),
+    transport: httpsTransport(),
+    fetchJson: async (url) => {
+      const response = await fetch(url);
+      if (!response.ok) throw new VerifyError(`${new URL(url).host} answered ${response.status}`);
+      return response.json();
+    },
   };
+}
+
+async function askYes(question: string): Promise<boolean> {
+  const terminal = createInterface({ input: process.stdin, output: process.stderr });
+  try {
+    return /^y(es)?$/i.test((await terminal.question(question)).trim());
+  } catch {
+    return false;
+  } finally {
+    terminal.close();
+  }
 }

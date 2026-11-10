@@ -6,7 +6,7 @@ import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import type { Read } from '../src/chain/reader.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
-import type { Transport } from '../src/chain/rpc.ts';
+import { recordingTransport } from '../src/chain/recording.ts';
 import { parseRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
@@ -46,34 +46,9 @@ async function serviceTx(): Promise<{ service: Record<string, unknown>; version:
   return { service, version: undefined };
 }
 
-type Exchange = { method: string; params: unknown; answers: Record<string, unknown> };
-const exchanges: Exchange[] = [];
 const endpoints = mainnetEndpoints(process.env);
-const providerAt = new Map(endpoints.map((e) => [e.url, e.provider]));
-
-/** Keeps each provider's raw `result` by request, never a URL, so a fixture holds no key. */
-function recording(inner: Transport): Transport {
-  return async (url, body, signal) => {
-    const answer = await inner(url, body, signal);
-    const { method, params } = JSON.parse(body) as { method: string; params: unknown };
-    let result: unknown;
-    try {
-      result = (JSON.parse(answer.text) as { result?: unknown }).result;
-    } catch {
-      return answer;
-    }
-    if (result === undefined) return answer;
-    let exchange = exchanges.find((e) => e.method === method && JSON.stringify(e.params) === JSON.stringify(params));
-    if (exchange === undefined) {
-      exchange = { method, params, answers: {} };
-      exchanges.push(exchange);
-    }
-    exchange.answers[providerAt.get(url) ?? 'unknown'] = result;
-    return answer;
-  };
-}
-
-const reader = createReader(endpoints, recording(httpsTransport()));
+const recorder = recordingTransport(httpsTransport(), endpoints);
+const reader = createReader(endpoints, recorder.transport);
 const agreed = <T>(read: Read<T>): T => {
   if (read.kind === 'unverifiable') throw new Error(read.reason);
   return read.value;
@@ -150,7 +125,7 @@ if (flags.record !== undefined) {
     executed: { number: executed.number.toString(), hash: executed.hash },
     parent: { number: parent.number.toString(), hash: parent.hash },
     providers: reader.providers,
-    exchanges: exchanges.filter((e) => reader.providers.every((p) => p in e.answers)),
+    exchanges: recorder.exchanges().filter((e) => reader.providers.every((p) => p in e.answers)),
   };
   mkdirSync(join(out, '..'), { recursive: true });
   writeFileSync(out, `${JSON.stringify(fixture, null, 2)}\n`);
