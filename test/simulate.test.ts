@@ -11,6 +11,7 @@ import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
+import { checkSimulatedFloor } from '../src/floor/simulated.ts';
 import { judgeEffects } from '../src/simulate/effects.ts';
 import type { EffectVerdict, Observed } from '../src/simulate/effects.ts';
 import { observeExecuted } from '../src/simulate/executed.ts';
@@ -91,19 +92,42 @@ const depositEffects = (overrides: Partial<Extract<Observed, { kind: 'executed' 
     [VAULT, SHARES],
   ]),
   allowances: [{ token: USDC, spender: GENERAL_ADAPTER1, before: 0n, after: 0n }],
+  safeState: { kind: 'receipt', logs: [] },
   ...overrides,
 });
 
+/** What the Safe gave and got, without how its settings were observed. */
+function balances(observed: Observed) {
+  assert.equal(observed.kind, 'executed');
+  const { safeState: _, ...rest } = observed as Extract<Observed, { kind: 'executed' }>;
+  return rest;
+}
+
 test('the Morpho deposit, simulated on its parent block, gives exactly the card amount of USDC for shares and leaves no approval', async () => {
   const effects = observed(await simulated());
-  assert.deepEqual(effects, depositEffects());
+  assert.deepEqual(balances(effects), balances(depositEffects()));
   assert.deepEqual(judge(effects), { kind: 'match' });
+});
+
+test('the simulated deposit leaves every Safe setting as it was and passes the simulated floor', async () => {
+  const effects = observed(await simulated());
+  const evidence = (effects as Extract<Observed, { kind: 'executed' }>).safeState;
+  assert.equal(evidence.kind, 'read');
+  const { before, after } = evidence as Extract<typeof evidence, { kind: 'read' }>;
+  assert.deepEqual(after, before);
+  assert.equal(before.singleton, '0x00000000000000000000000041675c099f32341bf84bfc5382af534df5c7461a');
+  assert.equal(before.threshold, 2n);
+  assert.equal(before.owners.length, 6);
+  assert.deepEqual(before.modules, []);
+  assert.equal(before.moduleGuard, undefined);
+  assert.deepEqual(checkSimulatedFloor(effects, deposit.safe), { kind: 'pass' });
 });
 
 test('the receipt of the executed deposit shows the same USDC and shares', async () => {
   const effects = observed(await observeExecuted(replay(recorded), recorded.transactionHash, deposit));
-  assert.deepEqual(effects, depositEffects());
+  assert.deepEqual(balances(effects), balances(depositEffects()));
   assert.deepEqual(judge(effects), { kind: 'match' });
+  assert.deepEqual(checkSimulatedFloor(effects, deposit.safe), { kind: 'pass' });
 });
 
 test('a card amount one unit higher mismatches on USDC', async () => {
