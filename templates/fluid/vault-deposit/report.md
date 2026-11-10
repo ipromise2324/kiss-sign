@@ -89,7 +89,7 @@ The tests record three deposits from two Safes: `fluid-deposit-usdt` and `fluid-
 - The generic [`ercs/calldata-erc4626-vaults.json`](https://github.com/LedgerHQ/clear-signing-erc7730-registry/blob/8e484f1dee742fa93e5a680c362c6693d0cf7e01/ercs/calldata-erc4626-vaults.json) (blob `4e115826c9aa4513d3b7381eb5c19aee66b626a0`) shows `deposit(uint256 assets, address receiver)` as "Deposit", with `assets` an amount of the underlying token and `receiver` "Send shares to". It shows `withdraw` (`assets` "Withdraw exactly", `receiver` "To", `owner` "Owner") and `redeem` (`shares` "Shares to redeem", `receiver`, `owner`) the same way. These agree with the three templates.
 - `approve(_spender, _value)` is "Approve" with spender and amount in `registry/tether/calldata-usdt.json` (blob `2753fcdee6c3459cb6afd62add5ff550c14b469c`) and in `ercs/calldata-erc20-tokens.json` (blob `ba93f5d423f04c9a2a230cb0ff96c3dad4bd0e5a`).
 
-No ERC-8176 attestation was checked; the program does not verify attestations yet.
+No ERC-8176 attestation was checked; this report predates `pnpm erc7730`, which now checks them; run it for their status.
 
 ## Protocol health
 

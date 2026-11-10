@@ -55,7 +55,7 @@ The tests record three transfers from two Safes that are not in this search: `er
 - USDT: `registry/tether/calldata-usdt.json` in [LedgerHQ/clear-signing-erc7730-registry](https://github.com/LedgerHQ/clear-signing-erc7730-registry/blob/8e484f1dee742fa93e5a680c362c6693d0cf7e01/registry/tether/calldata-usdt.json), git blob `2753fcdee6c3459cb6afd62add5ff550c14b469c` at commit `8e484f1d`. It describes `transfer(address _to, uint256 _value)` as "Send": `_value` is the amount of the called token, `_to` the recipient. That agrees with this template.
 - USDC: no Circle descriptor for the token itself. The generic [`ercs/calldata-erc20-tokens.json`](https://github.com/LedgerHQ/clear-signing-erc7730-registry/blob/8e484f1dee742fa93e5a680c362c6693d0cf7e01/ercs/calldata-erc20-tokens.json) (blob `ba93f5d423f04c9a2a230cb0ff96c3dad4bd0e5a`) describes `transfer` the same way for any token.
 
-No ERC-8176 attestation was checked for either descriptor; the program does not verify attestations yet.
+No ERC-8176 attestation was checked for either descriptor; this report predates `pnpm erc7730`, which now checks them; run it for their status.
 
 ## Protocol health
 
