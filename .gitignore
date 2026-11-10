@@ -1,3 +1,4 @@
 node_modules/
 .kiss-sign/
 .DS_Store
+vendor/
