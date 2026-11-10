@@ -162,5 +162,14 @@
     "address": "0x0a992d191DEeC32aFe36203Ad87D7d289a738F81",
     "kind": "bridge",
     "source": "https://developers.circle.com/cctp/v1/evm-smart-contracts"
+  },
+  "steakhouse-high-yield-usdc": {
+    "address": "0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory"
+    }
   }
 }
