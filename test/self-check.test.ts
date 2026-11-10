@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { test } from 'node:test';
+import { deflateSync } from 'node:zlib';
 import { main } from '../src/cli/main.ts';
-import { githubRepo, selfCheck } from '../src/verify/self-check.ts';
+import { fileAt, githubRepo, selfCheck } from '../src/verify/self-check.ts';
 
 const git = (cwd: string, ...args: string[]) =>
   execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -207,4 +208,129 @@ test('the official repository is recognised in its https and ssh forms, with or 
   ]) {
     assert.notEqual(githubRepo(url), 'github.com/ipromise2324/kiss-sign', url);
   }
+});
+/** Writes a shell script and makes it executable. */
+function script(path: string, body: string): string {
+  write(dirname(path), basename(path), `#!/bin/sh\n${body}\n`);
+  chmodSync(path, 0o755);
+  return path;
+}
+
+test('a loose object rewritten with other content under its name is refused', () => {
+  const { clone } = cloneOfOrigin();
+  const blob = git(clone, 'rev-parse', 'HEAD:registry/contracts.json').trim();
+  const evil = Buffer.from('{"evil":true}\n');
+  const file = join(clone, '.git', 'objects', blob.slice(0, 2), blob.slice(2));
+  chmodSync(file, 0o644);
+  writeFileSync(file, deflateSync(Buffer.concat([Buffer.from(`blob ${evil.length}\0`), evil])));
+  assert.equal(fileAt(clone, 'HEAD', 'registry/contracts.json'), '{"evil":true}\n');
+  assert.deepEqual(problemsOf(clone), [`object ${blob} does not hash to its name`]);
+});
+
+test('a clean filter in .git/info/attributes cannot hide a changed file', () => {
+  const { clone } = cloneOfOrigin();
+  write(clone, '.git/info/attributes', 'src/** filter=x\n');
+  git(clone, 'config', 'filter.x.clean', 'git show HEAD:%f');
+  write(clone, 'src/cli/main.ts', 'MATCH always\n');
+  git(clone, 'add', 'src/cli/main.ts');
+  assert.equal(git(clone, 'status', '--porcelain'), '');
+  assert.deepEqual(problemsOf(clone), ['changed: src/cli/main.ts']);
+});
+
+test('core.worktree pointing at a pristine checkout cannot hide a changed file', () => {
+  const { clone } = cloneOfOrigin();
+  const pristine = join(dirname(clone), 'pristine');
+  cpSync(clone, pristine, { recursive: true, filter: (path) => !path.includes('/.git') });
+  git(clone, 'config', 'core.worktree', pristine);
+  write(clone, 'src/cli/main.ts', 'MATCH always\n');
+  assert.deepEqual(problemsOf(clone), ['changed: src/cli/main.ts']);
+});
+
+test('.git/info/exclude cannot hide an extra file', () => {
+  const { clone } = cloneOfOrigin();
+  write(clone, '.git/info/exclude', 'src/evil.ts\n.claude/\n');
+  write(clone, 'src/evil.ts');
+  write(clone, '.claude/settings.json');
+  assert.deepEqual([...problemsOf(clone)].sort(), ['untracked: .claude/settings.json', 'untracked: src/evil.ts']);
+});
+
+test('a same-size edit with its mtime restored is named even when git trusts only mtime and size', () => {
+  const { clone } = cloneOfOrigin();
+  const file = join(clone, 'src/cli/main.ts');
+  const past = new Date('2020-01-01T00:00:00Z');
+  utimesSync(file, past, past);
+  git(clone, 'update-index', '--refresh');
+  git(clone, 'config', 'core.checkStat', 'minimal');
+  git(clone, 'config', 'core.trustctime', 'false');
+  writeFileSync(file, 'y\n');
+  utimesSync(file, past, past);
+  assert.equal(statSync(file).size, 2);
+  assert.deepEqual(problemsOf(clone), ['changed: src/cli/main.ts']);
+});
+
+test('the clone\'s hooks and fsmonitor do not run during the self-check', () => {
+  const { clone } = cloneOfOrigin();
+  const base = dirname(clone);
+  const ran = join(base, 'ran');
+  script(join(base, 'hooks', 'reference-transaction'), `echo hook >> '${ran}'`);
+  git(clone, 'config', 'core.hooksPath', join(base, 'hooks'));
+  git(clone, 'config', 'core.fsmonitor', script(join(base, 'fsmonitor'), `echo fsmonitor >> '${ran}'; exit 1`));
+  assert.equal(selfCheckTrustingBareOrigin(clone).kind, 'clean');
+  assert.equal(existsSync(ran), false, existsSync(ran) ? readFileSync(ran, 'utf8') : '');
+});
+
+test('the global git config cannot hide files or run a hook', () => {
+  const { clone } = cloneOfOrigin();
+  const home = mkdtempSync(join(tmpdir(), 'kiss-sign-home-'));
+  const ran = join(home, 'ran');
+  script(join(home, 'hooks', 'reference-transaction'), `echo hook >> '${ran}'`);
+  write(home, 'ignore', 'src/evil.ts\n');
+  write(home, 'attributes', 'src/** filter=x\n');
+  write(home, '.gitconfig', [
+    '[core]',
+    `\texcludesFile = ${join(home, 'ignore')}`,
+    `\tattributesFile = ${join(home, 'attributes')}`,
+    `\thooksPath = ${join(home, 'hooks')}`,
+    '[filter "x"]',
+    '\tclean = git show HEAD:%f',
+    '',
+  ].join('\n'));
+  write(clone, 'src/cli/main.ts', 'MATCH always\n');
+  write(clone, 'src/evil.ts');
+  const saved = { home: process.env.HOME, xdg: process.env.XDG_CONFIG_HOME };
+  process.env.HOME = home;
+  process.env.XDG_CONFIG_HOME = home;
+  try {
+    assert.deepEqual(problemsOf(clone), ['changed: src/cli/main.ts', 'untracked: src/evil.ts']);
+  } finally {
+    process.env.HOME = saved.home;
+    if (saved.xdg === undefined) delete process.env.XDG_CONFIG_HOME; else process.env.XDG_CONFIG_HOME = saved.xdg;
+  }
+  assert.equal(existsSync(ran), false);
+});
+
+test('template approve refuses a clone whose origin is not the official repository and fetches nothing', async () => {
+  const { origin, clone } = cloneOfOrigin();
+  const other = join(dirname(clone), 'other');
+  git(dirname(clone), 'clone', '--quiet', origin, other);
+  write(other, 'templates/morpho/vault-deposit/template.json', '{"fork":true}\n');
+  git(other, 'commit', '--quiet', '-am', 'fork');
+  git(other, 'push', '--quiet', 'origin', 'main');
+  const before = git(clone, 'rev-parse', 'refs/remotes/origin/main').trim();
+  const home = mkdtempSync(join(tmpdir(), 'kiss-sign-home-'));
+  let stderr = '';
+  const code = await main(['template', 'approve', 'morpho/vault-deposit'], {
+    env: { KISS_SIGN_HOME: home },
+    stdout: () => {},
+    stderr: (text) => void (stderr += text),
+    readSecret: undefined,
+    confirm: async () => assert.fail('a refused origin asks nothing'),
+    repoRoot: clone,
+    transport: async () => assert.fail('approve reads no chain'),
+    fetchJson: async () => assert.fail('approve fetches nothing'),
+  });
+  assert.equal(code, 1);
+  assert.match(stderr, new RegExp(`origin is ${origin}, not github\\.com/ipromise2324/kiss-sign`));
+  assert.equal(git(clone, 'rev-parse', 'refs/remotes/origin/main').trim(), before);
+  assert.equal(existsSync(join(home, 'approved-templates.json')), false);
 });
