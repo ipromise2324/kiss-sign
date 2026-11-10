@@ -3,13 +3,15 @@
     "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
     "kind": "token",
     "source": "https://developers.circle.com/stablecoins/usdc-contract-addresses",
-    "defillama": "circle-usdc"
+    "defillama": "circle-usdc",
+    "coingecko": "usd-coin"
   },
   "usdt": {
     "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     "kind": "token",
     "source": "https://tether.to/en/supported-protocols/",
-    "defillama": "tether"
+    "defillama": "tether",
+    "coingecko": "tether"
   },
   "multisend-1.3.0": {
     "address": "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
@@ -64,6 +66,7 @@
     "kind": "vault",
     "source": "https://app.morpho.org/ethereum/vault/0xbeef088055857739C12CD3765F20b7679Def0f51/steakhouse-prime-usdc",
     "defillama": "morpho-blue",
+    "coingecko": "steakhouse-usdc",
     "attributes": {
       "asset": "usdc",
       "factory": "vault-v2-factory"
@@ -125,6 +128,7 @@
     "kind": "vault",
     "source": "https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc",
     "defillama": "morpho-blue",
+    "coingecko": "mev-capital-usual-boosted-usdc-morpho-vault",
     "attributes": {
       "asset": "usdc",
       "factory": "metamorpho-factory-1.0"
@@ -158,13 +162,15 @@
     "address": "0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb",
     "kind": "token",
     "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md",
-    "defillama": "fluid-lending"
+    "defillama": "fluid-lending",
+    "coingecko": "instadapp"
   },
   "morpho": {
     "address": "0x58D97B57BB95320F9a05dC918Aef65434969c2B2",
     "kind": "token",
     "source": "https://docs.morpho.org/get-started/resources/addresses/",
-    "defillama": "morpho-blue"
+    "defillama": "morpho-blue",
+    "coingecko": "morpho"
   },
   "fluid-rewards-distributor": {
     "address": "0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0",
@@ -195,6 +201,7 @@
     "kind": "vault",
     "source": "https://app.morpho.org/ethereum/vault/0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757",
     "defillama": "morpho-blue",
+    "coingecko": "steakhouse-high-yield-usdc",
     "attributes": {
       "asset": "usdc",
       "factory": "vault-v2-factory"
