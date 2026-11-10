@@ -1,0 +1,23 @@
+{
+  "id": "fluid/vault-withdraw",
+  "card": {
+    "vault": { "kind": "contract", "registryKind": "vault" },
+    "amount": { "kind": "amount", "of": "vault.asset" }
+  },
+  "calls": [
+    {
+      "to": { "card": "vault" },
+      "value": { "const": "0" },
+      "function": "withdraw(uint256 assets, address receiver, address owner)",
+      "args": {
+        "assets": { "card": "amount" },
+        "receiver": { "safe": true },
+        "owner": { "safe": true }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [{ "token": "card.vault", "amount": "positive" }],
+    "gets": [{ "token": "card.vault.asset", "amount": "card.amount" }]
+  }
+}
