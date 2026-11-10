@@ -174,7 +174,7 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
   const rows = own.map((row) => {
     const spentBy = history.notes.get(row.nonce)?.spentBy;
     const spender = spentBy === undefined ? undefined : byNonce.get(spentBy);
-    return spender === undefined || row.verdict === 'MATCH' ? row : { ...row, reason: spentReason(row.reason, spender) };
+    return spender === undefined ? row : { ...row, reason: spentReason(row.reason, spender) };
   });
   const report: Report = {
     commit,

@@ -388,6 +388,29 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   };
 }
 
+/** Every card reference the template makes. */
+export function cardRefs(template: Template): CardRef[] {
+  const refs: CardRef[] = [...template.same];
+  const visit = (rule: Rule | undefined): void => {
+    if (rule?.kind === 'card') refs.push(rule.ref);
+    else if (rule?.kind === 'call') rule.call.args.forEach(visit);
+    else if (rule?.kind === 'items') rule.items.forEach(visit);
+    else if (rule?.kind === 'fields') rule.fields.forEach(visit);
+  };
+  visit(template.nonce);
+  for (const call of template.calls) {
+    visit(call.to);
+    visit(call.value);
+    if (call.data !== 'empty') call.data.args.forEach(visit);
+  }
+  for (const field of template.card.values()) if (field.kind === 'amount' && field.of !== 'eth') refs.push(field.of);
+  for (const { token, to } of [...template.effects.gives, ...template.effects.gets]) {
+    if (token !== 'eth') refs.push(token);
+    if (to !== undefined) refs.push(to);
+  }
+  return refs;
+}
+
 /** Reads `templates/<id>/template.json` and requires its `id` to be the folder it sits in. */
 export function loadTemplate(repoRoot: string, id: string, registry: Registry): Template {
   if (!ID.test(id)) throw new TemplateError('id', `${JSON.stringify(id.slice(0, 80))} is not <protocol>/<operation>`);

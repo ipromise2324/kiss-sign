@@ -16,6 +16,7 @@ const passing: AllChecks = {
   approvals: [{ template: 'morpho/vault-deposit', hash: HASH, approved: HASH }],
   staticFloor: { kind: 'pass' },
   fields: { kind: 'match' },
+  assets: { kind: 'pass' },
   mutation: { kind: 'pass', bound: 12, free: 1 },
   simulation: { kind: 'observed', effects: { kind: 'match' }, floor: { kind: 'pass' } },
 };
@@ -43,6 +44,18 @@ const rows: readonly { name: string; changes: Partial<AllChecks>; verdict: strin
   },
   { name: 'a refused static floor', changes: { staticFloor: refused }, verdict: 'MISMATCH', causes: { 'static-floor': /fee-fields at safeTx: gasPrice/ } },
   { name: 'a mismatched field', changes: { fields: fieldMismatch }, verdict: 'MISMATCH', causes: { fields: /erc4626Deposit receiver: expected 0xsafe, got 0xother/ } },
+  {
+    name: 'a vault whose asset() is not the registry asset',
+    changes: { assets: { kind: 'mismatch', findings: ['smokehouse-usdc 0x1 holds 0x2 by its asset() at block 1, the registry says usdt 0x3'] } },
+    verdict: 'MISMATCH',
+    causes: { 'vault-asset': /smokehouse-usdc 0x1 holds 0x2 by its asset\(\) at block 1, the registry says usdt 0x3/ },
+  },
+  {
+    name: 'a vault asset() the providers disagree on',
+    changes: { assets: { kind: 'unverifiable', reasons: ['eth_call: alchemy and drpc disagree'] } },
+    verdict: 'UNVERIFIABLE',
+    causes: { 'vault-asset': /disagree/ },
+  },
   {
     name: 'an unverifiable field',
     changes: { fields: { kind: 'unverifiable', reasons: ['the registry has no bundler3'] }, mutation: { kind: 'not-run', check: { kind: 'unverifiable', reasons: [] } } },

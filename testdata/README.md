@@ -242,6 +242,9 @@ The tests set up a clone and a `$KISS_SIGN_HOME` from its inputs, run `verify` w
 | File | Transaction | Verdict |
 | --- | --- | --- |
 | `morpho-vault-deposit.json` | `safe-tx/morpho-vault-deposit.json`, executed, judged by its receipt | `MATCH`, safeTxHash `0x0287ff5583b9bda9564e871c98d292c1a5b433cba905b02df369bab37b20c84a` |
+| `morpho-migrate-all.json` | `safe-tx/morpho-migrate-all-smokehouse.json`, executed, judged by its receipt, card `smokehouse-usdc` to `steakhouse-high-yield-usdc` | `MATCH`, safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
+
+`test/morpho-migrate.test.ts` evaluates `morpho-migrate-all.json` with its registry changed to name USDT as both vaults' asset, which the card's `same` then accepts, and requires `MISMATCH` from the vaults' recorded `asset()`. With the drpc answer to `asset()` changed it requires `UNVERIFIABLE`.
 
 ### Recording again
 
@@ -251,9 +254,20 @@ bin/kiss-sign init --safe 0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0
 bin/kiss-sign template approve morpho/vault-deposit
 echo '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180"}}]}' > card.json
 bin/kiss-sign card seal card.json
+node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-vault-deposit.json").service))' > tx.json
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
-  bin/kiss-sign verify --card <sealed hash> --safe-tx-hash 0x0287ff5583b9bda9564e871c98d292c1a5b433cba905b02df369bab37b20c84a
+  bin/kiss-sign verify --card <sealed hash> --tx tx.json
 cp "$KISS_SIGN_HOME"/verdicts/0x0287ff55*.json testdata/verify/morpho-vault-deposit.json
+
+export KISS_SIGN_HOME=$HOME/.kiss-sign-migrate
+bin/kiss-sign init --safe 0x3D548a77137E46B25F240CE0091266bAa5803177
+bin/kiss-sign template approve morpho/vault-migrate-all
+echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc"}}]}' > card.json
+bin/kiss-sign card seal card.json
+node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-migrate-all-smokehouse.json").service))' > tx.json
+ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
+  bin/kiss-sign verify --card <sealed hash> --tx tx.json
+cp "$KISS_SIGN_HOME"/verdicts/0x8e7bcfd5*.json testdata/verify/morpho-migrate-all.json
 ```
 
 Run it from a clean clone at origin/main, or the self-check stops it.
