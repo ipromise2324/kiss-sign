@@ -14,7 +14,7 @@ import { hashSafeTx } from '../safe/hash.ts';
 import { parseSafeWebAppTx, parseServiceTx } from '../safe/parse.ts';
 import { parseAddress, parseHex, parseSafeVersion } from '../safe/types.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
-import { expectedChanges } from '../simulate/effects.ts';
+import { endsNeeded, expectedChanges } from '../simulate/effects.ts';
 import { observeExecuted } from '../simulate/executed.ts';
 import { simulateSafeTx } from '../simulate/simulate.ts';
 import type { Observation } from '../simulate/simulate.ts';
@@ -148,17 +148,18 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   const tx = parseTx(inputs.tx, safe, guard("the Safe's version", () => parseSafeVersion(version)));
 
   const executed = guard('the Safe transaction', () => executedIn(inputs.tx));
+  const expected = expectedChanges(prepared.card, prepared.templates, prepared.registry);
+  const ends = endsNeeded(expected);
   let observation: Observation;
   if (executed !== undefined) {
-    observation = await observeExecuted(reader, executed, tx);
+    observation = await observeExecuted(reader, executed, tx, ends);
   } else {
     const header = await reader.header(latest.value);
-    const expected = expectedChanges(prepared.card, prepared.templates, prepared.registry);
     const watch = expected.kind === 'expected' ? [...expected.changes.keys()].filter((asset) => asset !== 'eth') : [];
     observation =
       header.kind === 'unverifiable'
         ? { kind: 'unverifiable', reasons: [header.reason] }
-        : await simulateSafeTx(reader, { tx, parent: header.value, time: header.value.time + SLOT_SECONDS, watch });
+        : await simulateSafeTx(reader, { tx, parent: header.value, time: header.value.time + SLOT_SECONDS, watch, ends });
   }
   return { verdict: judge(prepared, tx, observation), hashes: hashSafeTx(tx) };
 }

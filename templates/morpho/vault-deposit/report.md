@@ -66,7 +66,7 @@ In every fitting transaction, each bound field held its rule: the receiver was t
 
 What the misfits taught:
 
-- **VaultBundlesV1.** In the recent Steakhouse Prime range, 34 deposits from 12 Safes call `vaultBundlesV1Deposit` (`0x6bbba4e0`) on Morpho's VaultBundlesV1 (`0x02912516d49dE997db75B9D7858faAE59209650B`), alone or after a USDC `approve`. That is the Morpho app's current deposit route, a different call tree, so it needs its own template. This template does not accept it.
+- **VaultBundlesV1.** In the recent Steakhouse Prime range, 34 deposits from 12 Safes call `vaultBundlesV1Deposit` (`0x6bbba4e0`) on Morpho's VaultBundlesV1 (`0x02912516d49dE997db75B9D7858faAE59209650B`), alone or after a USDC `approve`. That is the Morpho app's current deposit route, a different call tree, which `morpho/vault-bundles-deposit` covers. This template does not accept it.
 - **One bundle item.** 21 from 13 Safes into Apex V1.1 run Bundler3 with a single item, such as `erc4626Redeem`: other operations, not deposits.
 - **Three items.** 4 from 4 Safes run `erc4626Redeem` and then two `erc20Transfer` items: withdrawals that sweep leftovers back to the Safe.
 - **Four items.** 1 from 1 Safe deposits and then sweeps, with `erc20Transfer(asset, Safe, 2^256-1)` and `erc20Transfer(vault, Safe, 2^256-1)` after the deposit. The template stays at exactly two items. One Safe in 56 is not normal use, and accepting optional items would change the template language.

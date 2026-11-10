@@ -26,6 +26,10 @@ export const SOLC_PINS: Readonly<Record<string, SolcPin>> = {
     file: 'soljson-v0.8.28+commit.7893614a.js',
     sha256: '72ef580a6ec5943130028e5294313f24e9435520acc89f8c9dbfd0139d9ae146',
   },
+  '0.8.34+commit.80d5c536': {
+    file: 'soljson-v0.8.34+commit.80d5c536.js',
+    sha256: 'c8649f8d57f81b3244c7d2dd662efc0620d1ae296f623b347a2c616a6cfd11d8',
+  },
 };
 
 export const SOLC_DOWNLOAD_BASE = 'https://binaries.soliditylang.org/bin/';

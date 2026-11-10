@@ -7,11 +7,15 @@ import type { SafeStateEvidence } from './safe-state.ts';
 
 export type AllowanceChange = { readonly token: Address; readonly spender: Address; readonly before: bigint; readonly after: bigint };
 
-/** What the Safe's own balances did: net changes, signed, and every allowance from the Safe that was measured. */
+/**
+ * What the Safe's own balances did: net changes, signed, and every allowance from the Safe that was measured. `ends`
+ * holds the Safe's balance after the transaction of each token that was asked for, as a card that gives all of it needs.
+ */
 export type Effects = {
   readonly eth: bigint;
   readonly tokens: ReadonlyMap<Address, bigint>;
   readonly allowances: readonly AllowanceChange[];
+  readonly ends: ReadonlyMap<Address, bigint>;
 };
 
 export type Observed =
@@ -20,11 +24,15 @@ export type Observed =
 
 export type Asset = 'eth' | Address;
 
-/** A change of exactly `change`, or, for an effect that `gets` a `positive` amount, of more than `change`. */
-export type Expected = { readonly kind: 'exactly' | 'more-than'; readonly change: bigint };
+/**
+ * A change of exactly `change`; of more than `change` when the Safe also gets a `positive` amount, or less when it gives
+ * one; or, when the Safe gives `all` of a token, any change that leaves it holding none.
+ */
+export type Expected = { readonly kind: 'exactly' | 'more-than' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
 
 export type EffectFinding =
-  | { readonly kind: 'balance'; readonly asset: Asset; readonly expected: Expected; readonly actual: bigint }
+  | { readonly kind: 'balance'; readonly asset: Address | 'eth'; readonly expected: Exclude<Expected, { kind: 'all' }>; readonly actual: bigint }
+  | { readonly kind: 'not-all'; readonly asset: Address; readonly left: bigint }
   | ({ readonly kind: 'open-allowance' } & AllowanceChange);
 
 export type EffectVerdict =
@@ -84,9 +92,21 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         if (receiver.address === card.safe) continue;
       }
       const token = ref.asset;
-      const known = changes.get(token) ?? { kind: 'exactly', change: 0n };
+      const known = changes.get(token);
+      const open = sign > 0n ? 'more-than' : 'less-than';
+      if (effect.amount.kind === 'all') {
+        if (token === 'eth' || known !== undefined) reasons.push(`the card gives all of ${token} and names it again`);
+        else changes.set(token, { kind: 'all' });
+        continue;
+      }
+      if (known?.kind === 'all') {
+        reasons.push(`the card gives all of ${token} and names it again`);
+        continue;
+      }
+      const base = known ?? { kind: 'exactly', change: 0n };
       if (effect.amount.kind === 'positive') {
-        changes.set(token, { kind: 'more-than', change: known.change });
+        if (base.kind !== 'exactly' && base.kind !== open) reasons.push(`the card leaves the change of ${token} open both ways`);
+        else changes.set(token, { kind: open, change: base.change });
         continue;
       }
       const amount = op.values.get(effect.amount.field);
@@ -94,14 +114,14 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         reasons.push(`the card has no amount ${effect.amount.field}`);
         continue;
       }
-      changes.set(token, { ...known, change: known.change + sign * amount.value });
+      changes.set(token, { ...base, change: base.change + sign * amount.value });
     }
   }
   return reasons.length > 0 ? { kind: 'unverifiable', reasons } : { kind: 'expected', changes };
 }
 
-const meets = (expected: Expected, actual: bigint): boolean =>
-  expected.kind === 'exactly' ? actual === expected.change : actual > expected.change;
+const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): boolean =>
+  expected.kind === 'exactly' ? actual === expected.change : expected.kind === 'more-than' ? actual > expected.change : actual < expected.change;
 
 /**
  * Every change to the Safe's balances must be one the card's effects explain, and every allowance must end where it
@@ -119,15 +139,29 @@ export function judgeEffects(
   const NONE: Expected = { kind: 'exactly', change: 0n };
   const findings: EffectFinding[] = [];
   const assets = new Set<Asset>(['eth', ...expectations.changes.keys(), ...observed.tokens.keys()]);
+  const unread: string[] = [];
   for (const asset of assets) {
     const expected = expectations.changes.get(asset) ?? NONE;
+    if (expected.kind === 'all') {
+      const left = asset === 'eth' ? undefined : observed.ends.get(asset);
+      if (asset === 'eth' || left === undefined) unread.push(`the Safe's balance of ${asset} after the transaction was not read`);
+      else if (left !== 0n) findings.push({ kind: 'not-all', asset, left });
+      continue;
+    }
     const actual = asset === 'eth' ? observed.eth : (observed.tokens.get(asset) ?? 0n);
     if (!meets(expected, actual)) findings.push({ kind: 'balance', asset, expected, actual });
   }
   for (const allowance of observed.allowances) {
     if (allowance.after !== allowance.before) findings.push({ kind: 'open-allowance', ...allowance });
   }
-  return findings.length === 0 ? { kind: 'match' } : { kind: 'mismatch', findings };
+  if (findings.length > 0) return { kind: 'mismatch', findings };
+  return unread.length > 0 ? { kind: 'unverifiable', reasons: unread } : { kind: 'match' };
+}
+
+/** The tokens whose balance after the transaction the card's effects need: those it gives all of. */
+export function endsNeeded(expectations: Expectations): Address[] {
+  if (expectations.kind === 'unverifiable') return [];
+  return [...expectations.changes].flatMap(([asset, expected]) => (expected.kind === 'all' && asset !== 'eth' ? [asset] : []));
 }
 
 const nameOf = (asset: Asset, registry: Registry): string =>
@@ -136,10 +170,11 @@ const nameOf = (asset: Asset, registry: Registry): string =>
 const signed = (n: bigint): string => (n > 0n ? `+${n}` : `${n}`);
 
 export function describeFinding(finding: EffectFinding, registry: Registry): string {
+  if (finding.kind === 'not-all') return `${nameOf(finding.asset, registry)} still held ${finding.left} after the transaction, the card gives all of it`;
   if (finding.kind === 'open-allowance') {
     return `approval not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${finding.before} before, ${finding.after} after`;
   }
   const { expected } = finding;
-  const want = expected.kind === 'exactly' ? signed(expected.change) : `more than ${signed(expected.change)}`;
+  const want = expected.kind === 'exactly' ? signed(expected.change) : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${signed(expected.change)}`;
   return `${nameOf(finding.asset, registry)} changed by ${signed(finding.actual)}, the card explains ${want}`;
 }

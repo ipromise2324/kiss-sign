@@ -102,5 +102,19 @@
       "asset": "usdc",
       "factory": "vault-v2-factory"
     }
+  },
+  "usual-boosted-usdc": {
+    "address": "0xd63070114470f685b75B74D60EEc7c1113d33a3D",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-1.0"
+    }
+  },
+  "vault-bundles-v1": {
+    "address": "0x02912516d49dE997db75B9D7858faAE59209650B",
+    "kind": "router",
+    "source": "https://docs.morpho.org/get-started/resources/addresses/"
   }
 }

@@ -1,0 +1,89 @@
+{
+  "id": "morpho/vault-bundles-deposit",
+  "card": {
+    "vault": {
+      "kind": "contract",
+      "registryKind": "vault"
+    },
+    "amount": {
+      "kind": "amount",
+      "of": "vault.asset"
+    }
+  },
+  "calls": [
+    {
+      "to": {
+        "card": "vault.asset"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": {
+          "contract": "vault-bundles-v1"
+        },
+        "value": {
+          "card": "amount"
+        }
+      }
+    },
+    {
+      "to": {
+        "contract": "vault-bundles-v1"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "vaultBundlesV1Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, (uint8 kind, bytes data) assetPermit, uint256 referralFeePct, address referralFeeRecipient, uint256 deadline)",
+      "args": {
+        "vault": {
+          "card": "vault"
+        },
+        "assets": {
+          "card": "amount"
+        },
+        "maxSharePriceE27": {
+          "free": "slippage bound; the effects require the Safe to give exactly the amount and get a positive number of shares"
+        },
+        "assetPermit": {
+          "fields": {
+            "kind": {
+              "const": "0"
+            },
+            "data": {
+              "free": "TokenLib.pullToken reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom"
+            }
+          }
+        },
+        "referralFeePct": {
+          "const": "0"
+        },
+        "referralFeeRecipient": {
+          "const": "0x0000000000000000000000000000000000000000"
+        },
+        "deadline": {
+          "free": "a time after which the call reverts; it limits when the deposit can run, not what it does"
+        }
+      },
+      "trailer": {
+        "maxBytes": 12,
+        "why": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); vaultBundlesV1Deposit reads only its arguments"
+      }
+    }
+  ],
+  "effects": {
+    "gives": [
+      {
+        "token": "card.vault.asset",
+        "amount": "card.amount"
+      }
+    ],
+    "gets": [
+      {
+        "token": "card.vault",
+        "amount": "positive"
+      }
+    ]
+  }
+}

@@ -13,7 +13,7 @@ import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
 import type { Hex } from '../src/safe/types.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
-import { describeFinding, expectedChanges, judgeEffects } from '../src/simulate/effects.ts';
+import { describeFinding, endsNeeded, expectedChanges, judgeEffects } from '../src/simulate/effects.ts';
 import { observeExecuted } from '../src/simulate/executed.ts';
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
 import type { Observation } from '../src/simulate/simulate.ts';
@@ -80,6 +80,7 @@ if (resolution.kind === 'refused') throw new Error(`card refused: ${resolution.r
 const resolved = resolution.card;
 const expectations = expectedChanges(resolved, templates, registry);
 const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset) => asset !== 'eth') : [];
+const ends = endsNeeded(expectations);
 
 const name = (address: string) => registry.byAddress.get(address as never)?.name ?? address;
 function print(label: string, observation: Observation): void {
@@ -93,6 +94,7 @@ function print(label: string, observation: Observation): void {
   else {
     console.log(`  ETH ${observed.eth}`);
     for (const [token, delta] of observed.tokens) console.log(`  ${name(token)} ${delta > 0n ? '+' : ''}${delta}`);
+    for (const [token, left] of observed.ends) console.log(`  ${name(token)} held after: ${left}`);
     for (const a of observed.allowances) console.log(`  allowance ${name(a.token)} to ${name(a.spender)}: ${a.before} -> ${a.after}`);
     const evidence = observed.safeState;
     if (evidence.kind === 'read') {
@@ -115,9 +117,9 @@ function print(label: string, observation: Observation): void {
 console.log(`nonce ${tx.nonce}, executed in block ${executed.number}; simulating on block ${parent.number}, agreed by ${reader.providers.join(' and ')}`);
 print(
   `simulated through execTransaction at block ${parent.number}`,
-  await simulateSafeTx(reader, { tx, parent, time: executedHeader.time, watch }),
+  await simulateSafeTx(reader, { tx, parent, time: executedHeader.time, watch, ends }),
 );
-print(`from the receipt of ${txHash}`, await observeExecuted(reader, txHash, tx));
+print(`from the receipt of ${txHash}`, await observeExecuted(reader, txHash, tx, ends));
 
 if (flags.record !== undefined) {
   const out = join(ROOT, 'testdata', 'simulate', `${flags.record}.json`);

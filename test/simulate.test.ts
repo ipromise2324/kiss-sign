@@ -59,7 +59,7 @@ async function simulated(fixture: Fixture = recorded, tx: SafeTx = deposit): Pro
     return (read as Extract<typeof read, { kind: 'agreed' }>).value;
   };
   const [parent, executed] = [await header(recorded.parent), await header(recorded.executed)];
-  return simulateSafeTx(reader, { tx, parent, time: executed.time, watch: [USDC, VAULT] });
+  return simulateSafeTx(reader, { tx, parent, time: executed.time, watch: [USDC, VAULT], ends: [] });
 }
 
 function observed(observation: Observation): Observed {
@@ -75,6 +75,7 @@ const depositEffects = (overrides: Partial<Extract<Observed, { kind: 'executed' 
     [VAULT, SHARES],
   ]),
   allowances: [{ token: USDC, spender: GENERAL_ADAPTER1, before: 0n, after: 0n }],
+  ends: new Map(),
   safeState: { kind: 'receipt', logs: [] },
   ...overrides,
 });
@@ -107,7 +108,7 @@ test('the simulated deposit leaves every Safe setting as it was and passes the s
 });
 
 test('the receipt of the executed deposit shows the same USDC and shares', async () => {
-  const effects = observed(await observeExecuted(replay(recorded), recorded.transactionHash, deposit));
+  const effects = observed(await observeExecuted(replay(recorded), recorded.transactionHash, deposit, []));
   assert.deepEqual(balances(effects), balances(depositEffects()));
   assert.deepEqual(judge(effects), { kind: 'match' });
   assert.deepEqual(checkSimulatedFloor(effects, deposit.safe), { kind: 'pass' });
