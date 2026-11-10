@@ -83,6 +83,22 @@ test('a provider that never answers times out and makes the read unverifiable', 
   assert.match(reason, /alchemy failed \(timeout\)/);
 });
 
+function limitedFor(times: number): Transport {
+  let refused = 0;
+  const answering = transport(node(100), node(100));
+  return async (url, body, signal) => (url !== ALCHEMY_URL && refused++ < times ? { status: 429, text: 'Too Many Requests' } : answering(url, body, signal));
+}
+
+test('a rate-limited provider is asked again after its own pauses, so a passing limit still gives an agreed value', async () => {
+  const read = await createReader(ENDPOINTS, limitedFor(3), { timeoutMs: 50, retryPausesMs: [], rateLimitPausesMs: [1, 1, 1] }).getCode(ADDRESS, AT);
+  assert.deepEqual(read, { kind: 'agreed', value: '0x6001', providers: ['alchemy', 'drpc'] });
+});
+
+test('a provider still rate-limited after every pause is a failed provider, not a disagreement', async () => {
+  const read = await createReader(ENDPOINTS, limitedFor(4), { timeoutMs: 50, retryPausesMs: [250], rateLimitPausesMs: [1, 1, 1] }).getCode(ADDRESS, AT);
+  assert.equal(unverifiable(read), 'eth_getCode: drpc failed (rate-limited)');
+});
+
 test('a malformed answer makes the read unverifiable', async () => {
   const reason = unverifiable(await reader(node(100), node(100, undefined, 'not hex')).getCode(ADDRESS, AT));
   assert.match(reason, /drpc sent a malformed answer/);
