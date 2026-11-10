@@ -10,7 +10,10 @@ kiss-sign checks a Safe transaction against the signer's stated intent before th
 ## Commands
 
 - `pnpm install` also sets `core.hooksPath` to `.githooks`, which turns on the pre-push check.
-- `pnpm test` runs `node --test`. Tests run offline against recorded fixtures.
+- `pnpm fetch-solc` downloads every pinned solc (`src/contracts/solc-pins.ts`) into `vendor/solc/` and refuses a file whose sha256 differs from its pin. Run it once before `pnpm test`.
+- `pnpm test` runs `node --test`. Tests run offline against recorded fixtures and the compilers in `vendor/solc/`; a missing compiler fails the test.
+- `ALCHEMY_API_KEY=... pnpm prove-abi <address>` proves a contract's ABI live and prints the proof.
+- `ALCHEMY_API_KEY=... pnpm record-abi-case <name> <address>` records an ABI-proof fixture into `testdata/abi/`.
 - `pnpm typecheck` runs `tsc --noEmit`.
 - `pnpm check-push origin/main..HEAD` runs the pre-push check on a range by hand.
 
