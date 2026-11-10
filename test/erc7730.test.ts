@@ -148,3 +148,20 @@ test('the registry archive is refused when missing or when its sha256 is not the
   const refused = loadSnapshot(dir);
   assert.ok('unavailable' in refused && /sha256 [0-9a-f]{64} is not the pinned b4e02f6c/.test(refused.unavailable));
 });
+
+test('a schema written in another case is INVALID, so its uid cannot dodge a revocation', async () => {
+  const files = editJson(SIG, (doc) => {
+    doc.sig.message.schema = `0x${doc.sig.message.schema.slice(2).toUpperCase()}`;
+  });
+  const text = await report(['smokehouse-usdc'], { files, chain: withRevokeAnswer({ alchemy: word(1790000000), drpc: word(1790000000) }) });
+  assert.match(text, /result {5}INVALID: its schema is not the ERC-8176 schema, written in lowercase/);
+  assert.doesNotMatch(text, /result {5}VALID/);
+});
+
+test('a file that names no signer still says whether the recovered signer is a listed auditor', async () => {
+  const files = editJson(SIG, (doc) => {
+    delete doc.signer;
+  });
+  const text = await report(['smokehouse-usdc'], { files });
+  assert.match(text, new RegExp(`signer {5}${AUDITOR}, listed in auditors/`));
+});

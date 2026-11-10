@@ -256,7 +256,7 @@ export type AttestationStatus =
   | { readonly kind: 'invalid'; readonly why: string }
   | { readonly kind: 'unverifiable'; readonly why: string };
 
-export type AttestationFact = { readonly file: string; readonly claimedSigner: Address | undefined; readonly listed: boolean; readonly status: AttestationStatus };
+export type AttestationFact = { readonly file: string; readonly signer: Address | undefined; readonly listed: boolean; readonly status: AttestationStatus };
 
 export type DescriptorFact = {
   readonly path: string;
@@ -367,7 +367,7 @@ function offchainUid(a: Attestation): Hex {
   return keccakHex(
     concatBytes(
       word(BigInt(a.version), 2),
-      utf8ToBytes(a.schema),
+      utf8ToBytes(ERC8176.schema),
       hexBytes(a.recipient),
       new Uint8Array(20),
       word(a.time, 8),
@@ -409,7 +409,7 @@ function attestDigest(a: Attestation): Uint8Array {
 
 /** What the static checks found wrong with an attestation of `descriptorHash`, in the order ERC-8176 checks them. */
 function staticFailure(a: Attestation, descriptorHash: Hex): string | undefined {
-  if (a.schema.toLowerCase() !== ERC8176.schema) return 'its schema is not the ERC-8176 schema';
+  if (a.schema !== ERC8176.schema) return 'its schema is not the ERC-8176 schema, written in lowercase';
   if (a.version !== 2) return 'it is not an EAS offchain attestation of version 2';
   if (!a.domainIsErc8176) return 'its EIP-712 domain is not the ERC-8176 one';
   if (a.data !== descriptorHash) return 'it attests another descriptorHash';
@@ -475,18 +475,19 @@ async function attestationFacts(snapshot: Snapshot, d: Descriptor, descriptorHas
   const facts: AttestationFact[] = [];
   for (const { file, parsed } of attestationFiles(snapshot, d.path, descriptorHash)) {
     if (typeof parsed === 'string') {
-      facts.push({ file, claimedSigner: undefined, listed: false, status: { kind: 'invalid', why: `the file is malformed: ${parsed}` } });
+      facts.push({ file, signer: undefined, listed: false, status: { kind: 'invalid', why: `the file is malformed: ${parsed}` } });
       continue;
     }
     const listed = parsed.signer !== undefined && isListedAuditor(snapshot, parsed.signer);
     const failure = descriptorHash === undefined ? 'the descriptorHash could not be computed' : staticFailure(parsed, descriptorHash);
     if (failure !== undefined) {
-      facts.push({ file, claimedSigner: parsed.signer, listed, status: { kind: 'invalid', why: failure } });
+      facts.push({ file, signer: parsed.signer, listed, status: { kind: 'invalid', why: failure } });
       continue;
     }
     const access = await chain();
     const status: AttestationStatus = 'unavailable' in access ? { kind: 'unverifiable', why: access.unavailable } : await checkOnChain(parsed, access);
-    facts.push({ file, claimedSigner: parsed.signer, listed, status });
+    const signer = 'attester' in status ? status.attester : parsed.signer;
+    facts.push({ file, signer: signer, listed: signer !== undefined && isListedAuditor(snapshot, signer), status });
   }
   return facts;
 }
@@ -592,7 +593,7 @@ function descriptorLines(d: DescriptorFact, report: EntryReport): string[] {
   if (d.attestations.length === 0) lines.push('  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash');
   for (const a of d.attestations) {
     lines.push(`  attestation  ${printablePath(a.file)}`);
-    if (a.claimedSigner !== undefined) lines.push(`    signer     ${checksumAddress(a.claimedSigner)}, ${a.listed ? 'listed' : 'not listed'} in auditors/`);
+    if (a.signer !== undefined) lines.push(`    signer     ${checksumAddress(a.signer)}, ${a.listed ? 'listed' : 'not listed'} in auditors/`);
     lines.push(`    result     ${statusLine(a.status)}`);
   }
   return lines;
@@ -643,7 +644,7 @@ export function trimForRecording(snapshot: Snapshot, reports: readonly EntryRepo
       d.includes.forEach(add);
       for (const a of d.attestations) {
         add(a.file);
-        for (const f of snapshot.files.keys()) if (a.claimedSigner !== undefined && f.toLowerCase() === `auditors/eip155-1-${a.claimedSigner.toLowerCase()}/profile.json`) add(f);
+        for (const f of snapshot.files.keys()) if (a.signer !== undefined && f.toLowerCase() === `auditors/eip155-1-${a.signer.toLowerCase()}/profile.json`) add(f);
       }
     }
   }
