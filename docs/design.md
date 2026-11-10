@@ -93,7 +93,7 @@ A template describes one operation for one protocol, for example `morpho/vault-d
   - equals a card value (`amount`, `vault`);
   - equals the Safe;
   - equals a named contract;
-  - equals a constant. A constant address is only the zero address, and constant `bytes` or a constant string is only empty, so no address or call is written into a template without a registry name;
+  - equals a constant. A constant address is only the zero address, and constant `bytes` or a constant string is only empty, so no address-typed value or call is written into a template without a registry name. The lint goes by declared type: a free or constant `uint160`, `uint256` or `bytes32` that a contract reads as an address is not caught by type, and is left to review and the perturbation test;
   - equals the number the transaction holds at an earlier template path (`equals`), as a migration's share transfer must equal its approval;
   - a share price bound, at least as strict as the price a card amount per a card amount or an earlier field gives (`maxSharePrice`, `minSharePrice`; see Intent card);
   - free, with a written reason. The mutation check treats free fields as free.
@@ -179,7 +179,7 @@ These are protocol-free and change rarely.
 
 - The Safe transaction hashes, computed locally.
 - Decode, then re-encode byte for byte, so nothing hides in the encoding.
-  - One exception, declared per call in the template: a trailer of at most a stated number of bytes after the arguments, with a written reason. The Morpho app appends 8 bytes to `multicall` (a timestamp and an origin tag) that the contract never reads, and up to 12 to `vaultBundlesV1Deposit`. A template may allow at most 19 bytes, so a whole 20-byte address never fits in a trailer. Without a declared trailer, any extra byte is `MISMATCH`.
+  - One exception, declared per call in the template: a trailer of at most a stated number of bytes after the arguments, with a written reason. The Morpho app appends 8 bytes to `multicall` (a timestamp and an origin tag) that the contract never reads, and up to 12 to `vaultBundlesV1Deposit`. A template may allow at most 19 bytes, so a whole 20-byte address never fits in a trailer. A contract that reads its caller from the last 20 bytes of calldata (ERC-2771) would still take the last argument byte plus a 19-byte trailer as an address, so a template for such a contract declares no trailer. Without a declared trailer, any extra byte is `MISMATCH`.
 - Floor rules:
   - no unlimited approval;
   - no `delegatecall` except to the official MultiSend, and the rules apply again to every call inside it, at every level;
@@ -270,6 +270,7 @@ With it installed, the AI works in a different clone and opens pull requests fro
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
 - The v1 templates were written and merged by the AI without human review. The signer reviews them during final testing.
 - The perturbation test samples a few values per free field on recorded transactions. A contract that treats one rare value of a free number differently, chosen by an attacker at signing, is not found by it; the lint keeps such a field to a number, never an address or a call. Empty `bytes`, such as the VaultBundles permit data, has no byte to change in place, so its `unread` claim is not exercised. CCTP's message and attestation are claimed `proof` but have no recorded transaction to perturb, since no Safe received a CCTP message in a transaction of its own in the searched blocks.
+- The perturbation test compares logs and the Safe's measured effects, so a changed free field that only writes storage without an event looks the same. A free field with nothing to change, such as empty bytes or an empty array, gets no run, and the report does not flag it.
 - For an executed transaction, the Safe's ETH change is its balance at the execution block minus its balance at the parent block, since no log shows ETH sent as the value of `execTransaction` itself. Another transaction in the same block that moves the Safe's ETH changes that number too; the field checks still bind the value of every call the Safe makes.
 - For an executed transaction, a card that gives `all` of a token reads the Safe's balance of it at the parent block and at the end of the execution block, and is `UNVERIFIABLE` unless the two differ by exactly this transaction's change. Two other transactions in that block whose changes to the token cancel out go unnoticed.
 - For an executed transaction, the floor rules on the Safe's settings read the receipt's events. A storage write without an event shows only in a simulation. The static floor refuses a delegatecall from the Safe itself, but a call to an already enabled module can still make one through `execTransactionFromModule`.
