@@ -4,10 +4,9 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { resolveCard } from '../src/card.ts';
 import type { Card, ResolvedCard } from '../src/card.ts';
-import type { Endpoint } from '../src/chain/providers.ts';
-import { createReader } from '../src/chain/reader.ts';
+import { replayReader } from '../src/chain/recording.ts';
+import type { Exchange } from '../src/chain/recording.ts';
 import type { Reader } from '../src/chain/reader.ts';
-import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
@@ -22,7 +21,6 @@ import { loadTemplate } from '../src/template/template.ts';
 const ROOT = join(import.meta.dirname, '..');
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
 
-type Exchange = { method: string; params: unknown; answers: Record<string, unknown> };
 type Fixture = { transactionHash: Hex; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
 
 const recorded: Fixture = load('simulate', 'morpho-vault-deposit');
@@ -39,22 +37,7 @@ const OTHER = '0x1111111111111111111111111111111111111111' as Address;
 const AMOUNT = 1800000000180n;
 const SHARES = 1742403090147006731022214n;
 
-const ENDPOINTS: readonly [Endpoint, Endpoint] = [
-  { provider: 'alchemy', company: 'Alchemy', url: 'https://alchemy.replay' },
-  { provider: 'drpc', company: 'drpc', url: 'https://drpc.replay' },
-];
-
-/** Serves each provider its own recorded raw answer, so the reader parses and compares them as it would live. */
-function replay(fixture: Fixture): Reader {
-  const transport: Transport = async (url, body) => {
-    const { method, params } = JSON.parse(body) as { method: string; params: unknown };
-    const provider = ENDPOINTS.find((e) => e.url === url)!.provider;
-    const exchange = fixture.exchanges.find((e) => e.method === method && JSON.stringify(e.params) === JSON.stringify(params));
-    const answer = exchange === undefined ? { error: { code: -32000, message: 'not recorded' } } : { result: exchange.answers[provider] };
-    return { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, ...answer }) };
-  };
-  return createReader(ENDPOINTS, transport, { timeoutMs: 1000, retryPausesMs: [] });
-}
+const replay = (fixture: Fixture): Reader => replayReader(fixture.exchanges);
 
 const depositCard = (amount = AMOUNT, count = 1): Card => ({
   operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: `${amount}` } })),
