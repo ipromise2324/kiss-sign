@@ -102,5 +102,14 @@
       "asset": "usdc",
       "factory": "vault-v2-factory"
     }
+  },
+  "usual-boosted-usdc": {
+    "address": "0xd63070114470f685b75B74D60EEc7c1113d33a3D",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-1.0"
+    }
   }
 }

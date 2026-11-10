@@ -133,6 +133,8 @@ const CASES = [
     uses: [
       'erc20TransferFrom(address token,address receiver,uint256 amount)',
       'erc4626Deposit(address vault,uint256 assets,uint256 maxSharePriceE27,address receiver)',
+      'erc4626Withdraw(address vault,uint256 assets,uint256 minSharePriceE27,address receiver,address owner)',
+      'erc4626Redeem(address vault,uint256 shares,uint256 minSharePriceE27,address receiver,address owner)',
     ],
   },
   {
@@ -173,7 +175,7 @@ const CASES = [
     compiler: '0.8.26+commit.8a97fa7a',
     functions: 76,
     immutables: 32,
-    uses: ['deposit(uint256 assets,address receiver)', 'asset()'],
+    uses: ['deposit(uint256 assets,address receiver)', 'asset()', 'approve(address spender,uint256 value)'],
   },
   {
     name: 'safe-proxy-1-3-0',

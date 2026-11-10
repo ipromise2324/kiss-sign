@@ -27,6 +27,12 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `morpho-deposit-metamorpho-1-0-other-safe.json` | `0x07a28a8482e4c6f00520d571B8114c69ad44e71B`, Safe 1.3.0 | 564 | `0xc512da588015a75c0ea149153c595e0984af124ad9ae9f94c1031f1e88ffbcd5`, block 22,923,487 | The same shape, 200,000 USDC into Smokehouse USDC. safeTxHash `0x8c0aa7a579c9d25e8cf470f456e78fedda256364769492d099cde6a5e5f586f0` |
 | `morpho-deposit-approve-trailer.json` | `0xaD62cE48D82d7Cb6F584FC2ecE5Ce1C7349F2cbA`, Safe 1.4.1 | 21 | `0x01d697f39a1c0c379885079f9fab20793b09f6e68c4d35bcdd8c0ae4b0e87fe1`, block 23,781,596 | The same shape, 20,000 USDC into Hyperithm USDC Apex (`0x777791C4d6DC2CE140D00D2828a7C93503c67777`, MetaMorpho V1.1), with the Morpho app's 8-byte trailer after both `approve` and `multicall`. safeTxHash `0x91d42376db4eb73419ba4731a46cba44679a5cd67a1139d209911faf26ac582c` |
 | `morpho-deposit-approve-trailer-other-safe.json` | `0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B`, Safe 1.4.1 | 20 | `0x052f3e223514e96cb18fc1ae346fafa113083506b63640dea71af39a8a6c7116`, block 23,787,520 | The same shape as the one above, 10,001 USDC into Hyperithm USDC Apex. safeTxHash `0xda44113d1fa93aa491fd93713d7aaa0ea34ceb28414cbe4ee1d32d796c1342f3` |
+| `morpho-withdraw-apex.json` | `0xB67fE25C95177B90d895bB8d31C3587Dc8C22C35`, Safe 1.4.1 | 132 | `0x365322f8431ca07fd2c732c414ad292dee896f2f1e13846192dde2c30827d115`, block 23,726,256 | MultiSendCallOnly: Hyperithm USDC Apex `approve` of shares to GeneralAdapter1, then `Bundler3.multicall` running `erc4626Withdraw` of 583,913.520554 USDC to the Safe. safeTxHash `0xf3935e1dc593373507c9af2b480acc8b9ac6ca50ac76061a873a4ef7d10a213b` |
+| `morpho-withdraw-apex-other-safe.json` | `0xCecd97DAF0B5a8A4E870C17ef825c8EBd602B2B8`, Safe 1.4.1 | 8 | `0x95c2e3259bac686232ab91243dd19299d34c1872304b0dea02c247212d76f00e`, block 23,726,458 | The same shape, 300,000 USDC from Hyperithm USDC Apex. safeTxHash `0x8d47c4a4f35a5ed92e57902348c9831461698cc3dbd90ec785b7a1a1fa1f3588` |
+| `morpho-withdraw-all-apex.json` | `0xc9442e6eeCD5389D73322e965cD3fa488aaEee20`, Safe 1.3.0 | 204 | `0xb1356054ce34880681dd5239a57b37f3f7187fcc2dc0deefce6b5baa1f8f73dc`, block 23,723,151 | The same shape with `erc4626Redeem` of all the Safe's Hyperithm USDC Apex shares. safeTxHash `0xca605eaeafc5d3a21f4f27087ebd62e49a5f175ff0586303d2eea6693a71aaf6` |
+| `morpho-withdraw-all-apex-other-safe.json` | `0x05Adc626f1B382af90EC14F0017c904f511CC072`, Safe 1.3.0 | 26 | `0xef206e5b4bfe20821532f082ffd22ba8b51cfd7ecad91052b36a8360117a6d47`, block 23,725,211 | The same, from another Safe. safeTxHash `0xfbf37b6ff4861f5b721f40a0da485798fb18e2d89dc0bfb89e3c91aa7151fba7` |
+| `morpho-withdraw-two-vaults-all.json` | `0xdD0B39F6962d2AF180c841E0C24D7007C9E14c3F`, Safe 1.3.0 | 55 | `0xbb98496f0cbcd741b5fbe472af6ad322c2a96cc2b9a151fae0b3de22f65edf25`, block 23,446,538 | Share approvals of Smokehouse USDC and Usual Boosted USDC (`0xd63070114470f685b75B74D60EEc7c1113d33a3D`), then one `multicall` redeeming all of each. safeTxHash `0xcf3ecdec3e597f25de2da28cf31b9efd800ef0f3439972730a608e6bf63650cc` |
+| `morpho-withdraw-two-vaults.json` | `0xbefdfEF6930aFE3b6c7Be985C6bAf778ea6ec215`, Safe 1.4.1 | 156 | `0xd7a9ff58f84e66a30f798956b157b9e7697e59b4fa7ccfcd0760d8472d79af24`, block 23,340,731 | The same two approvals, then one `multicall` redeeming all of Smokehouse USDC and withdrawing 154,000 USDC from Usual Boosted USDC. safeTxHash `0xb45eb79f6b3a1c2cb3164b15670ae5543117ca564873dd217e13a90a863d5e33` |
 | `safe-cancel-other-safe.json` | `0xc6835323372A4393B90bCc227c58e82D45CE4b7d`, Safe 1.3.0 | 494 | `0xcb12862fa3c1a0bc7fa0896c82f35f526caeca215e2c036487ea65a943308a9c`, block 24,764,855 | A cancellation: 0 ETH to the Safe itself, no data. safeTxHash `0x337099c7c1850697c2e85f2fbcf9e5fd5d45ff4207c0d0ea2ceb6aa5a43528dd` |
 
 The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see `templates/morpho/vault-deposit/report.md`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service.
@@ -49,7 +55,15 @@ pnpm record-safe-tx morpho-deposit-metamorpho-1-0 0xE09b7fC43b3De7dba9CF634489D0
 pnpm record-safe-tx morpho-deposit-metamorpho-1-0-other-safe 0x07a28a8482e4c6f00520d571B8114c69ad44e71B 564
 pnpm record-safe-tx morpho-deposit-approve-trailer 0xaD62cE48D82d7Cb6F584FC2ecE5Ce1C7349F2cbA 21
 pnpm record-safe-tx morpho-deposit-approve-trailer-other-safe 0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B 20
+pnpm record-safe-tx morpho-withdraw-apex 0xB67fE25C95177B90d895bB8d31C3587Dc8C22C35 132
+pnpm record-safe-tx morpho-withdraw-apex-other-safe 0xCecd97DAF0B5a8A4E870C17ef825c8EBd602B2B8 8
+pnpm record-safe-tx morpho-withdraw-all-apex 0xc9442e6eeCD5389D73322e965cD3fa488aaEee20 204
+pnpm record-safe-tx morpho-withdraw-all-apex-other-safe 0x05Adc626f1B382af90EC14F0017c904f511CC072 26
+pnpm record-safe-tx morpho-withdraw-two-vaults-all 0xdD0B39F6962d2AF180c841E0C24D7007C9E14c3F 55
+pnpm record-safe-tx morpho-withdraw-two-vaults 0xbefdfEF6930aFE3b6c7Be985C6bAf778ea6ec215 156
 ```
+
+The `morpho-withdraw-*` fixtures were found with `pnpm past-txs` on share burns (see the reports of `morpho/vault-withdraw` and `morpho/vault-withdraw-all`), and each transaction looked up in the Safe Transaction Service by `transaction_hash`.
 
 The last argument is a nonce (the executed transaction at that nonce) or a safeTxHash. The script reads from Alchemy and drpc and writes only the providers' names.
 
@@ -104,9 +118,17 @@ The tests serve each provider its own recorded answer through the real reader, s
 | `eth-transfer-null-data.json` | 17,026,956 | −4.988797943068499801 ETH in the simulation and by the balance around the receipt; Safe settings unchanged |
 | `morpho-vault-deposit.json` | 26,048,222 | −1,800,000.000180 USDC, +1,742,403.090147006731022214 Steakhouse Prime USDC shares, no ETH; the USDC allowance to GeneralAdapter1 is 0 before and after; singleton `0x41675C099F32341bf84BFc5382aF534df5C7461a`, 6 owners, threshold 2, no modules, no guard, all unchanged |
 
+| `morpho-withdraw-all.json`, of `safe-tx/morpho-withdraw-all-apex-other-safe.json` | 23,725,210 | −23,966.697414743719468099 Hyperithm USDC Apex shares, all the Safe held, +25,175.574782 USDC; the share allowance to GeneralAdapter1 is 0 before and after |
+| `morpho-withdraw-open-allowance.json`, of `safe-tx/morpho-withdraw-apex-other-safe.json` | 23,726,457 | −285,544.697740669157631830 Hyperithm USDC Apex shares, +300,000 USDC; the share allowance to GeneralAdapter1 goes from 4,850,840,670,525,793,065 to 40,963,643,267,656,996,464 |
+| `morpho-withdraw-two-vaults-all.json` | 23,446,537 | −18,906.363414828162262882 Smokehouse USDC and −15,590.886101795651433674 Usual Boosted USDC shares, all of each, +37,568.419169 USDC; both share allowances 0 before and after |
+
 ### Recording again
 
 ```sh
+export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
+pnpm simulate morpho-withdraw-all-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777"}}]}' --record morpho-withdraw-all
+pnpm simulate morpho-withdraw-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"300000000000"}}]}' --record morpho-withdraw-open-allowance
+pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc"}}]}' --record morpho-withdraw-two-vaults-all
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate morpho-vault-deposit \
   --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180"}}]}' \
   --record morpho-vault-deposit
