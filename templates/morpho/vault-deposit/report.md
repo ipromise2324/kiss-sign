@@ -1,5 +1,7 @@
 # morpho/vault-deposit
 
+**Written by the AI.** The evidence the program generated, with every field rule, each function's official page, the source checks, the code pins, the ABI proofs, the vault evidence, the past-transaction studies and the ERC-7730 descriptors with their attestations checked, is in [report.generated.md](report.generated.md).
+
 The Safe deposits an amount of a Morpho vault's asset into that vault, the way the Morpho app builds it: one official MultiSend with two calls. The first approves GeneralAdapter1 for exactly the amount. The second is `Bundler3.multicall` with two bundle items: GeneralAdapter1 pulls the amount from the Safe (`erc20TransferFrom`), then deposits it into the vault with the shares going to the Safe (`erc4626Deposit`).
 
 ## Addresses and ABI
@@ -78,14 +80,9 @@ The tests record four deposits from four other Safes: two into Smokehouse USDC (
 
 ## ERC-7730
 
-From [LedgerHQ/clear-signing-erc7730-registry](https://github.com/LedgerHQ/clear-signing-erc7730-registry) at commit `8e484f1dee742fa93e5a680c362c6693d0cf7e01`:
+The generated report's ERC-7730 section lists what `pnpm erc7730` found at the pinned commit of `ethereum/clear-signing-erc7730-registry`. Every descriptor there applies by exact address; none applies by factory. Bundler3's descriptor shows each bundle item's `data` as `calldata`, so it describes the outer call and leaves the adapter calls to whatever descriptor the wallet finds for them; GeneralAdapter1 has none, so `erc20TransferFrom` and `erc4626Deposit` get no field meanings from ERC-7730. USDT's descriptor shows `approve`'s `_spender` as `addressName` and `_value` as `tokenAmount`, which agrees with `approve.spender` (GeneralAdapter1) and `approve.value` (the card's `amount`) here. USDC has none.
 
-- Hyperithm USDC Apex V2: `registry/morpho/calldata-hyperithm-hyperUSDCa-v2-1.json`, git blob `7c9ff07233e8bb0c094f0c939c956e9c558c843f`, which includes `common-VaultV2.json` (blob `4e89e9c7d81d90a39f91885636fa5dea033bbed1`). It shows the vault's own `deposit(uint256 assets, address receiver)` as "Deposit asset" and "Send shares to", which agrees with `erc4626Deposit.assets` and `.receiver` here.
-- Smokehouse USDC: `registry/morpho/calldata-steakhouse_financial-bbqUSDC.json`, blob `d2242761c419a83de14b1dc9d4531f195cdd44f0`, which includes the generic ERC-4626 descriptor.
-- Steakhouse Prime USDC: `registry/morpho/calldata-steakhouse_financial-steakUSDC-v2-1.json`, blob `90ba906aba1c66f11c619d8e20bc1f7a30566c91`.
-- Hyperithm USDC Apex V1.1, the factories, Bundler3 and GeneralAdapter1: no descriptor found. The registry describes `VaultBundlesV1`, not this route.
-
-The descriptors describe a direct call to the vault, while this template's deposit goes through GeneralAdapter1, so they are a second opinion on what `assets` and `receiver` mean, not on this call tree. No ERC-8176 attestation was checked; this report predates `pnpm erc7730`, which now checks them; run it for their status.
+The vault descriptors describe a direct call to the vault, while this template's deposit goes through GeneralAdapter1, so they are a second opinion on what `assets` and `receiver` mean, not on this call tree. The Vault V2 descriptors name the second argument of `deposit(uint256,address)` `onBehalf`, the MetaMorpho ones `receiver`; both agree with `erc4626Deposit.receiver` being who gets the shares. Two descriptors carry an attestation, Smokehouse USDC's and Usual Boosted USDC's, both `VALID` and signed by one auditor listed in the registry's `auditors/` folder. The others carry none. Hyperithm USDC Apex V1.1, the Fluid vaults and the factories have no descriptor.
 
 ## Protocol health
 
