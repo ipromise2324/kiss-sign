@@ -3,6 +3,7 @@ import type { Registry } from '../registry.ts';
 import type { Address } from '../safe/types.ts';
 import type { CardRef, Template } from '../template/template.ts';
 import type { Execution } from './events.ts';
+import type { SafeStateEvidence } from './safe-state.ts';
 
 export type AllowanceChange = { readonly token: Address; readonly spender: Address; readonly before: bigint; readonly after: bigint };
 
@@ -14,7 +15,7 @@ export type Effects = {
 };
 
 export type Observed =
-  | ({ readonly kind: 'executed' } & Effects)
+  | ({ readonly kind: 'executed'; readonly safeState: SafeStateEvidence } & Effects)
   | { readonly kind: 'not-executed'; readonly why: Exclude<Execution, 'success'> };
 
 export type Asset = 'eth' | Address;

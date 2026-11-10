@@ -180,6 +180,8 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is not stopped this round.
 - The hardware wallet shows only the two hashes, not the decoded transaction. ERC-7730 clear signing does not yet cover Safe MultiSend batches.
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
+- For an executed transaction, the floor rules on the Safe's settings read the receipt's events. A storage write without an event shows only in a simulation; the static floor refuses every delegatecall that could make one.
+- The simulation reads at most 50 modules. A Safe with more is `UNVERIFIABLE`.
 
 ## Later security upgrades
 

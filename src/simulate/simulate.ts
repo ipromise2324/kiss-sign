@@ -9,6 +9,7 @@ import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import type { AllowanceChange, Observed } from './effects.ts';
 import { addressOf, executionOf, isEthTransfer, namesAddress, touchedBy, uintOf } from './events.ts';
 import type { Allowance, Execution } from './events.ts';
+import { parseSafeState, safeStateCalls } from './safe-state.ts';
 
 export type Observation = { readonly kind: 'observed'; readonly observed: Observed } | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
 
@@ -105,7 +106,8 @@ function executionOfCall(call: SimulatedCall, safe: Address, safeTxHash: Hex): E
 /**
  * Runs the Safe transaction through the Safe's own `execTransaction`, signed by approved hashes of the first `threshold`
  * owners, on both providers. A first run finds the tokens and allowances the transaction touches; a second reads each
- * of them just before and just after it, in the same block. The threshold and owners stay as they are on chain.
+ * of them, and the Safe's own settings, just before and just after it, in the same block. The threshold and owners stay as
+ * they are on chain.
  */
 export async function simulateSafeTx(reader: Reader, input: SimulationInput): Promise<Observation> {
   const { tx, parent } = input;
@@ -146,26 +148,31 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   const tokens = [...new Set([...input.watch, ...touched.tokens])];
   const allowances = [...touched.approvals.values()];
   const reads = readsOf(safe, sender, tokens, allowances);
-  const measured = await reader.simulateV1({ ...base, calls: [...reads.map((r) => r.call), exec, ...reads.map((r) => r.call)] }, parent);
+  const stateCalls = safeStateCalls(safe, sender, tx.version);
+  const around = [...reads.map((r) => r.call), ...stateCalls];
+  const measured = await reader.simulateV1({ ...base, calls: [...around, exec, ...around] }, parent);
   if (measured.kind === 'unverifiable') return unverifiable(measured.reason);
   const calls = measured.value;
-  const run = calls[reads.length] as SimulatedCall;
+  const run = calls[around.length] as SimulatedCall;
   if (executionOfCall(run, safe, safeTxHash) !== 'success') return unverifiable('the transaction executed alone but not between the balance reads');
   const again = touchedBy(run.logs, safe);
   const unmeasured: string[] = [...again.tokens].filter((t) => !tokens.includes(t));
   unmeasured.push(...[...again.approvals.keys()].filter((k) => !touched.approvals.has(k)));
   if (unmeasured.length > 0) return unverifiable(`between the balance reads the transaction touched what it did not touch alone: ${unmeasured.join(', ')}`);
 
-  const values: bigint[] = [];
-  for (const [i, call] of calls.entries()) {
-    if (i === reads.length) continue;
-    const read = reads[i < reads.length ? i : i - reads.length - 1] as Read;
-    const value = call.status === 'success' ? word(call.returnData) : undefined;
-    if (value === undefined) return unverifiable(`${read.what} could not be read`);
-    values.push(value);
+  const after0 = around.length + 1;
+  const measuredReads: { readonly before: bigint; readonly after: bigint }[] = [];
+  for (const [i, read] of reads.entries()) {
+    const [before, after] = [calls[i], calls[after0 + i]].map((call) => (call?.status === 'success' ? word(call.returnData) : undefined));
+    if (before === undefined || after === undefined) return unverifiable(`${read.what} could not be read`);
+    measuredReads.push({ before, after });
   }
-  const before = (i: number) => values[i] as bigint;
-  const after = (i: number) => values[reads.length + i] as bigint;
+  const stateBefore = parseSafeState(calls.slice(reads.length, around.length), tx.version);
+  const stateAfter = parseSafeState(calls.slice(after0 + reads.length), tx.version);
+  if ('unreadable' in stateBefore) return unverifiable(`the Safe's ${stateBefore.unreadable} could not be read before the transaction`);
+  if ('unreadable' in stateAfter) return unverifiable(`the Safe's ${stateAfter.unreadable} could not be read after the transaction`);
+  const before = (i: number) => (measuredReads[i] as { before: bigint }).before;
+  const after = (i: number) => (measuredReads[i] as { after: bigint }).after;
   const eth = after(0) - before(0);
   const traced = run.logs.filter(isEthTransfer).reduce((sum, log) => {
     const amount = uintOf(log.data);
@@ -180,6 +187,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
       eth,
       tokens: new Map(tokens.map((token, i) => [token, after(1 + i) - before(1 + i)])),
       allowances: allowanceChanges,
+      safeState: { kind: 'read', before: stateBefore, after: stateAfter },
     },
   };
 }
