@@ -247,6 +247,7 @@ test('the effects, not the fields, hold a CCTP message to the Safe and the card 
     eth: 0n,
     tokens: new Map(minted === 0n ? [] : [[usdc, minted]]),
     allowances: [],
+    permit2: [],
     ends: new Map(),
   });
   const judge = (minted: bigint) => judgeEffects(observed(minted), resolved(direct, receive(amount)), templates, registry);

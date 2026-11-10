@@ -5,15 +5,23 @@ import { selectorOf } from '../decode/abi.ts';
 import { uintWord } from '../decode/codec.ts';
 import { hashSafeTx } from '../safe/hash.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import type { AllowanceChange } from './effects.ts';
-import { TRANSFER, executionOf, isEthTransfer, namesAddress, touchedBy, uintOf } from './events.ts';
+import type { AllowanceChange, Permit2Allowance, Permit2Change } from './effects.ts';
+import { PERMIT2, TRANSFER, executionOf, isEthTransfer, namesAddress, touchedBy, uintOf } from './events.ts';
 import type { Allowance } from './events.ts';
+import { permit2AllowanceOf } from './simulate.ts';
 import type { Observation } from './simulate.ts';
 
 const allowanceCall = (safe: Address, { token, spender }: Allowance) => ({
   to: token,
   data: `0x${bytesToHex(
     concatBytes(hexToBytes(selectorOf('allowance(address,address)').slice(2)), uintWord(BigInt(safe)), uintWord(BigInt(spender))),
+  )}` as Hex,
+});
+
+const permit2Call = (safe: Address, { token, spender }: Allowance) => ({
+  to: PERMIT2,
+  data: `0x${bytesToHex(
+    concatBytes(hexToBytes(selectorOf('allowance(address,address,address)').slice(2)), uintWord(BigInt(safe)), uintWord(BigInt(token)), uintWord(BigInt(spender))),
   )}` as Hex,
 });
 
@@ -51,9 +59,9 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, e
     tokens.set(log.address, (tokens.get(log.address) ?? 0n) + delta);
   }
 
-  // Receipts cannot show allowances, and tokens such as USDC spend one without a log, so each allowance an Approval
-  // names, and the ETH balance, is read at the parent block and at the execution block; another transaction in that
-  // block could move either.
+  // Receipts cannot show allowances, and tokens such as USDC spend one without a log, so each allowance an Approval or
+  // a Permit2 event names, and the ETH balance, is read at the parent block and at the execution block; another
+  // transaction in that block could move either.
   const [parent, block] = await Promise.all([reader.block(receipt.blockNumber - 1n), reader.block(receipt.blockNumber)]);
   if (parent.kind === 'unverifiable') return unverifiable(parent.reason);
   if (block.kind === 'unverifiable') return unverifiable(block.reason);
@@ -66,12 +74,26 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, e
     if (answer.kind === 'unverifiable') return answer.reason;
     return answer.value.kind === 'returned' && answer.value.data.length === 66 ? uintOf(answer.value.data) : `allowance at ${allowance.token} could not be read`;
   };
+  const touched = touchedBy(receipt.logs, safe);
   const allowances: AllowanceChange[] = [];
-  for (const allowance of touchedBy(receipt.logs, safe).approvals.values()) {
+  for (const allowance of touched.approvals.values()) {
     const [before, after] = await Promise.all([allowanceAt(allowance, parent.value), allowanceAt(allowance, block.value)]);
     if (typeof before === 'string') return unverifiable(before);
     if (typeof after === 'string') return unverifiable(after);
     allowances.push({ ...allowance, before, after });
+  }
+  const permit2At = async (allowance: Allowance, at: BlockRef): Promise<Permit2Allowance | string> => {
+    const answer = await reader.call(permit2Call(safe, allowance), at);
+    if (answer.kind === 'unverifiable') return answer.reason;
+    const read = answer.value.kind === 'returned' ? permit2AllowanceOf(answer.value.data) : undefined;
+    return read ?? `the Permit2 allowance of ${allowance.token} to ${allowance.spender} could not be read`;
+  };
+  const permit2: Permit2Change[] = [];
+  for (const allowance of touched.permit2.values()) {
+    const [before, after] = await Promise.all([permit2At(allowance, parent.value), permit2At(allowance, block.value)]);
+    if (typeof before === 'string') return unverifiable(before);
+    if (typeof after === 'string') return unverifiable(after);
+    permit2.push({ ...allowance, before, after });
   }
   const balanceAt = async (token: Address, at: BlockRef): Promise<bigint | string> => {
     const answer = await reader.call(balanceCall(safe, token), at);
@@ -90,5 +112,5 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, e
   }
   const logs = receipt.logs.map(({ address, topics, data }) => ({ address, topics, data }));
   const eth = ethAfter.value - ethBefore.value;
-  return { kind: 'observed', observed: { kind: 'executed', eth, tokens, allowances, ends: held, safeState: { kind: 'receipt', logs } } };
+  return { kind: 'observed', observed: { kind: 'executed', eth, tokens, allowances, permit2, ends: held, safeState: { kind: 'receipt', logs } } };
 }

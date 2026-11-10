@@ -139,7 +139,7 @@ const USDC = registry.entries.get('usdc')!.address;
 
 function judgeObserved(c: Card, tokens: [Address, bigint][], ends: [Address, bigint][]): EffectVerdict {
   const tx = safeTx('morpho-withdraw-all-apex');
-  const observed = { kind: 'executed', eth: 0n, tokens: new Map(tokens), allowances: [], ends: new Map(ends), safeState: { kind: 'receipt', logs: [] } } as const;
+  const observed = { kind: 'executed', eth: 0n, tokens: new Map(tokens), allowances: [], permit2: [], ends: new Map(ends), safeState: { kind: 'receipt', logs: [] } } as const;
   return judgeEffects(observed, resolved(tx, c), templates, registry);
 }
 
@@ -219,7 +219,7 @@ test('an allowance that falls is allowed, one that rises and stays open is a mis
     const tx = safeTx('morpho-withdraw-all-apex');
     const observed = {
       kind: 'executed', eth: 0n, tokens: new Map([[SHARES, -5n], [USDC, 5n]]), ends: new Map([[SHARES, 0n]]),
-      allowances: [{ token: SHARES, spender, before, after }], safeState: { kind: 'receipt', logs: [] },
+      allowances: [{ token: SHARES, spender, before, after }], permit2: [], safeState: { kind: 'receipt', logs: [] },
     } as const;
     return judgeEffects(observed, resolved(tx, card(withdrawAll())), templates, registry);
   };
