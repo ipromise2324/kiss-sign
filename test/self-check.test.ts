@@ -337,7 +337,7 @@ test('template approve refuses a clone whose origin is not the official reposito
     stdout: () => {},
     stderr: (text) => void (stderr += text),
     readSecret: undefined,
-    confirm: async () => assert.fail('a refused origin asks nothing'),
+    ask: async () => assert.fail('a refused origin asks nothing'),
     repoRoot: clone,
     transport: async () => assert.fail('approve reads no chain'),
     fetchJson: async () => assert.fail('approve fetches nothing'),
