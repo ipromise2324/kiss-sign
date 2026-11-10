@@ -292,3 +292,11 @@ done
 ## Attack replays
 
 `attacks/<case>/` holds a real attack on a Safe whose signers were shown another transaction: `case.json` from the post-mortems, and `recording.json` from `pnpm attacks --record <case>`. [attacks/README.md](attacks/README.md) lists the cases, their sources, and what catches each.
+
+## Official-source listings
+
+`sources/<name>.json` is written by `pnpm check-sources --record <name>`: the date it was fetched, the DefiLlama protocols (`https://api.llama.fi/protocols`) the checked registry entries name in `defillama`, cut to `slug`, `name`, `url` and `github`, and the CoinGecko coins (`https://api.coingecko.com/api/v3/coins/list?include_platform=true`) whose Ethereum contract is a checked token, cut to `id`, `symbol`, `name` and `platforms.ethereum`. `test/check-sources.test.ts` runs the check on it offline.
+
+| File | Fetched | Entries |
+| --- | --- | --- |
+| `registry.json` | 2026-11-10 | Every entry of `registry/contracts.json` at the time |
