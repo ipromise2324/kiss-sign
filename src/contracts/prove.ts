@@ -31,6 +31,8 @@ export type AbiProof = {
   readonly source: 'sourcify';
   readonly immutablesMasked: number;
   readonly librariesMasked: number;
+  /** True when the metadata hash in the trailer differs: the source compiles to the same code but is not the deployed text. */
+  readonly metadataHashMasked: boolean;
 };
 
 export type Refusal =
@@ -179,11 +181,18 @@ function compile(source: VerifiedSource, compilers: Compilers, onChain: Hex): Co
   };
 }
 
+/** solc's CBOR trailer with an IPFS metadata hash: the map `{"ipfs": <34-byte multihash>, "solc": <version>}` and its length. */
+const IPFS_TRAILER = /a264697066735822[0-9a-f]{68}64736f6c6343[0-9a-f]{6}0033$/;
+const IPFS_HASH_FROM_END = 45;
+const IPFS_HASH_LENGTH = 34;
+
 /**
  * Immutables are written by the constructor and libraries are linked at deployment, so their bytes are not in the
- * source. Every other byte must be equal.
+ * source. The metadata hash in an IPFS trailer hashes the source text, comments and file names included, so a source
+ * Sourcify holds as a partial match differs from the code only there. Every other byte must be equal. Returns whether
+ * the metadata hash differed.
  */
-function compare(compiled: Compiled, onChain: Hex, at: Address): void {
+function compare(compiled: Compiled, onChain: Hex, at: Address): boolean {
   const chain = onChain.slice(2);
   const ours = compiled.code.toLowerCase();
   const mismatch = (detail: string) => refuse({ why: 'bytecode-mismatch', at, detail });
@@ -193,9 +202,14 @@ function compare(compiled: Compiled, onChain: Hex, at: Address): void {
     if (start < 0 || length <= 0 || start + length > masked.length) mismatch('a masked span falls outside the code');
     masked.fill(1, start, start + length);
   }
+  const hashStart = masked.length - IPFS_HASH_FROM_END;
+  const hashOf = (code: string) => code.slice(2 * hashStart, 2 * (hashStart + IPFS_HASH_LENGTH));
+  const hashDiffers = IPFS_TRAILER.test(ours) && IPFS_TRAILER.test(chain) && hashOf(ours) !== hashOf(chain);
+  if (hashDiffers) masked.fill(1, hashStart, hashStart + IPFS_HASH_LENGTH);
   for (let i = 0; i < masked.length; i++) {
     if (masked[i] === 0 && ours.slice(2 * i, 2 * i + 2) !== chain.slice(2 * i, 2 * i + 2)) mismatch(`first difference at byte ${i}`);
   }
+  return hashDiffers;
 }
 
 const codeHash = (code: Hex): Hex => `0x${bytesToHex(keccak_256(hexToBytes(code.slice(2))))}` as Hex;
@@ -242,7 +256,7 @@ export async function proveAbi(reader: Reader, address: Address, block: BlockRef
     }
     const source = await sourceOf(deps, proven);
     const compiled = compile(source, deps.compilers, code);
-    compare(compiled, code, proven);
+    const metadataHashMasked = compare(compiled, code, proven);
     return {
       kind: 'proven',
       address,
@@ -259,6 +273,7 @@ export async function proveAbi(reader: Reader, address: Address, block: BlockRef
       source: 'sourcify',
       immutablesMasked: compiled.immutables.length,
       librariesMasked: compiled.libraries.length,
+      metadataHashMasked,
     };
   } catch (error) {
     if (error instanceof Refused) return { kind: 'refused', address, block, refusal: error.refusal };

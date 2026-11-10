@@ -219,7 +219,60 @@ const CASES = [
     immutables: 0,
     uses: [],
   },
+  {
+    name: 'fluid-rewards-distributor',
+    proxy: 'none',
+    proven: '0x7060fe0dd3e31be01efac6b28c8d38018fd163b0',
+    contract: 'contracts/protocols/lending/merkleDistributor/main.sol:FluidMerkleDistributor',
+    compiler: '0.8.21+commit.d9974bed',
+    functions: 21,
+    immutables: 2,
+    uses: ['claim(address recipient_,uint256 cumulativeAmount_,uint8 positionType_,bytes32 positionId_,uint256 cycle_,bytes32[] merkleProof_,bytes metadata_)'],
+  },
+  {
+    name: 'fluid-token',
+    proxy: 'none',
+    proven: '0x6f40d4a6237c257fff2db00fa0510deeecd303eb',
+    contract: 'contracts/TokenDelegator.sol:InstaToken',
+    compiler: '0.7.3+commit.9bfce1f6',
+    functions: 7,
+    immutables: 0,
+    uses: [],
+  },
+  {
+    name: 'merkl-distributor',
+    proxy: 'eip1967',
+    proven: '0x33cc998fd4af3b6be42bac9a67fe97e9e275d2ae',
+    contract: 'contracts/Distributor.sol:Distributor',
+    compiler: '0.8.25+commit.b61c2a91',
+    functions: 38,
+    immutables: 5,
+    uses: ['claim(address[] users,address[] tokens,uint256[] amounts,bytes32[][] proofs)'],
+  },
+  {
+    name: 'morpho-urd',
+    proxy: 'none',
+    proven: '0x330eefa8a787552dc5cad3c3ca644844b1e61ddb',
+    contract: 'src/UniversalRewardsDistributor.sol:UniversalRewardsDistributor',
+    compiler: '0.8.19+commit.7dd6d404',
+    functions: 15,
+    immutables: 0,
+    uses: ['claim(address account,address reward,uint256 claimable,bytes32[] proof)'],
+  },
+  {
+    name: 'cctp-message-transmitter',
+    proxy: 'none',
+    proven: '0x0a992d191deec32afe36203ad87d7d289a738f81',
+    contract: 'MessageTransmitter.sol:MessageTransmitter',
+    compiler: '0.7.6+commit.7338295f',
+    functions: 31,
+    immutables: 7,
+    uses: ['receiveMessage(bytes message,bytes attestation)'],
+  },
 ] as const;
+
+/** Sourcify holds these as partial matches: the source compiles to the code on chain except the metadata hash. */
+const PARTIAL = ['morpho-urd', 'cctp-message-transmitter'];
 
 for (const expected of CASES) {
   test(`${expected.name}: the pinned solc rebuilds the code read on chain, so its ABI is proven`, async () => {
@@ -235,6 +288,7 @@ for (const expected of CASES) {
     assert.equal(proof.source, 'sourcify');
     assert.equal(proof.abi.filter((entry) => entry.type === 'function').length, expected.functions);
     assert.equal(proof.immutablesMasked, expected.immutables);
+    assert.equal(proof.metadataHashMasked, PARTIAL.includes(expected.name));
     assert.equal(proof.codeHash, codeHashOf(fixture, expected.proven));
     assert.equal(proof.proxyCodeHash, expected.proxy === 'none' ? undefined : codeHashOf(fixture, fixture.address));
     const functions = proof.abi.filter((entry) => entry.type === 'function').map((entry) => parseFunctionSignature(namedSignatureOfAbiEntry(entry)));
@@ -277,6 +331,32 @@ test('code whose trailer carries no metadata hash still has every byte compared:
   file.content = file.content.replace('MAX_PERFORMANCE_FEE = 0.5e18', 'MAX_PERFORMANCE_FEE = 0.6e18');
   const refused = refusal(
     await proveAbi(replay(fixture), fixture.address, blockOf(fixture), { sourcify: sourcifyOf({ [fixture.address]: answer }), compilers }),
+  );
+  assert.equal(refused.why, 'bytecode-mismatch');
+});
+
+test('a partial match is proven only up to the metadata hash: one changed literal is still refused', async () => {
+  const fixture = load('morpho-urd');
+  const answer = structuredClone(fixture.sourcify[fixture.address]) as { status: number; body: { stdJsonInput: { sources: Record<string, { content: string }> } } };
+  const file = answer.body.stdJsonInput.sources['src/UniversalRewardsDistributor.sol'] as { content: string };
+  assert.ok(file.content.includes('claimable > claimed[account][reward]'));
+  file.content = file.content.replace('claimable > claimed[account][reward]', 'claimable >= claimed[account][reward]');
+  const refused = refusal(
+    await proveAbi(replay(fixture), fixture.address, blockOf(fixture), { sourcify: sourcifyOf({ [fixture.address]: answer }), compilers }),
+  );
+  assert.equal(refused.why, 'bytecode-mismatch');
+});
+
+test('a partial match whose code on chain differs outside the metadata hash is refused', async () => {
+  const fixture = load('cctp-message-transmitter');
+  const reads = fixture.reads.map((read) => {
+    if (read.method !== 'getCode') return read;
+    const code = read.value as string;
+    const at = code.length - 2 * 60;
+    return { ...read, value: `${code.slice(0, at)}${code[at] === '0' ? '1' : '0'}${code.slice(at + 1)}` };
+  });
+  const refused = refusal(
+    await proveAbi(replay({ ...fixture, reads }), fixture.address, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers }),
   );
   assert.equal(refused.why, 'bytecode-mismatch');
 });

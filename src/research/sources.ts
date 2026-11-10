@@ -17,7 +17,8 @@ import type { Address, Hex } from '../safe/types.ts';
 export type AnchorKind = 'mint' | 'burn' | 'any';
 export const ANCHOR_KINDS: readonly AnchorKind[] = ['mint', 'burn', 'any'];
 
-export type Anchor = { readonly token: Address; readonly kind: AnchorKind; readonly fromBlock: bigint; readonly toBlock: bigint };
+/** `from`, with `any`, keeps only transfers out of that address, such as a rewards distributor paying a claim. */
+export type Anchor = { readonly token: Address; readonly kind: AnchorKind; readonly fromBlock: bigint; readonly toBlock: bigint; readonly from?: Address };
 
 export const SOURCES = ['alchemy', 'etherscan'] as const;
 export type SourceName = (typeof SOURCES)[number];
@@ -67,6 +68,7 @@ async function searchAlchemy(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     maxCount: '0x3e8',
     ...(anchor.kind === 'mint' ? { fromAddress: ZERO } : {}),
     ...(anchor.kind === 'burn' ? { toAddress: ZERO } : {}),
+    ...(anchor.from !== undefined ? { fromAddress: anchor.from } : {}),
   };
   const hits: Hit[] = [];
   let pageKey: string | undefined;
@@ -93,6 +95,7 @@ async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     topic0: TRANSFER,
     ...(anchor.kind === 'mint' ? { topic0_1_opr: 'and', topic1: ZERO_WORD } : {}),
     ...(anchor.kind === 'burn' ? { topic0_2_opr: 'and', topic2: ZERO_WORD } : {}),
+    ...(anchor.from !== undefined ? { topic0_1_opr: 'and', topic1: `0x${'00'.repeat(12)}${anchor.from.slice(2)}` } : {}),
     offset: String(ETHERSCAN_PAGE),
   };
   const hits: Hit[] = [];

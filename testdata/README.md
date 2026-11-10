@@ -43,6 +43,18 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `fluid-deposit-usdt-other-safe.json` | `0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb`, Safe 1.4.1 | 13 | `0xf2686312095ff097f3c073df138c7057954f7089185ffa2bbbe23272dc65a19f`, block 26,021,409 | A `delegatecall` to MultiSendCallOnly 1.4.1 (`0x9641d764fc13c8B624c04430C7356C1C7C8102e2`) with two calls: USDT `approve` of 150,003.888850 USDT to fUSDT, then fUSDT `deposit` of that amount, shares to the Safe. safeTxHash `0x08e24eed62490209a17956478009d40152551596d3a48f26f37dd00a9a93ce85` |
 | `fluid-withdraw-usdt-other-safe.json` | `0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb`, Safe 1.4.1 | 35 | `0x4c42906326a59fd538a0996736c8f972aeca1e2245ec897a60ae909ee1fa3cd9`, block 26,251,020 | fUSDT `withdraw` of 35,000 USDT, receiver and owner the Safe. safeTxHash `0x2f735f680c1885472d27d830e5c3cd1bec7e0822a2b42203c98f89fad6a2d8f1` |
 | `fluid-redeem-usdt-other-safe.json` | `0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb`, Safe 1.4.1 | 44 | `0x00c4f712173dc316bebbfb1f8e58eaeba28ea07e820b413249d355dddb5364ca`, block 26,301,256 | fUSDT `redeem` of 36,705.111256 shares, receiver and owner the Safe. safeTxHash `0x271b00f749f54eea2d88b3f1ffecc1855ed9a67049d7ad90eb759af24688a051` |
+| `fluid-claim.json` | `0x45169639f92b253958f2d5FBD787459fEF8EaE80`, Safe 1.3.0 | 151 | `0x59ea25801f6ff8891694b0249a9bab7a96a385c7b2b451c371c3097feacdd3d7`, block 22,609,103 | FluidMerkleDistributor (`0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0`) `claim` of FLUID, recipient the Safe. safeTxHash `0xafecdb40477981d108b21b0c4ff29afc9e5db19a2922bbeece7984fd21afc00b` |
+| `fluid-claim-other-safe.json` | `0x176f7558571865799bdb56FBFdABF37447227977`, Safe 1.3.0 | 40 | `0xaef8ff6374793e1ed3c9ebdeadd6c369d66d829f5a203d8bb616cd74552f593c`, block 22,652,493 | The same direct `claim`, from another Safe. safeTxHash `0xdf39adb096405aeed4a53c8b5bcad84dad68472f0c3041e6ac0d54bc8679a060` |
+| `fluid-claim-two.json` | `0xCE49F4DEC84C3e44A560b39f1A5d8111ae67683F`, Safe 1.4.1 | 14 | `0x874dc6b6dc42c7232d306fccf44f0fdaa0916a192fb500bc6d0271c498e930bd`, block 23,021,539 | A `delegatecall` to MultiSendCallOnly 1.4.1 with two FluidMerkleDistributor `claim`s, each for one position, recipient the Safe. safeTxHash `0xd49c10037dbbe73c266c33cfb85cc54d674a0bc70d7f0a18e097b67c471f00d1` |
+| `merkl-claim.json` | `0x79beA6B85433BFa83324991AeBA1C7d05ADBA18f`, Safe 1.4.1 | 86 | `0xf5e51feae82ed02372dde6d38307d6b7111b2dd3644bdb9a471620d875439292`, block 24,029,026 | Merkl Distributor (`0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae`) `claim` of MORPHO, user the Safe. safeTxHash `0x1ae88c7973a32b8e02925de883a3ad0f81294d4d2ee77d73d94f96fec44e5a05` |
+| `merkl-claim-other-safe.json` | `0x86aa8cbd3752104Ed4Da624be502a3b192239Cd6`, Safe 1.3.0 | 470 | `0x53fec1eb454d8a84c38a56356f616a6f2226b3ad2f71baf3b7b1b6298137f882`, block 24,032,055 | The same direct `claim` of MORPHO, from another Safe. safeTxHash `0xbccbbfc0c11f9e7cc0daced69e996c2a979d6f26f9b96834c0540632c7950e5e` |
+| `merkl-claim-two-tokens.json` | `0x7A4c2448EeB7A0BC297eD47C332d1a528b5A29bC`, Safe 1.3.0 | 693 | `0xb307157df56d5e51b9ca25b28646190970254a2f3db050e3937657e73b9455f9`, block 24,020,632 | One Merkl `claim` of USDC and MORPHO, two items in each of its four arrays. safeTxHash `0x1b1774a52d845dce2ea6faac3ab5dd01747adda3af6838dde7f4f4107abdd59a` |
+| `merkl-claim-three-tokens.json` | `0x9260C9D6f93ABD3b288C86a58bd46088099097A3`, Safe 1.3.0 | 70 | `0x06cded3c3888831a929a95d766a429b71cb33efddb3cc21c90efa7815ff89380`, block 24,020,899 | One Merkl `claim` of MORPHO, aEthUSDe and FXN, three items in each array. safeTxHash `0xe5a8d1f6d4593e703e69a57f3b61ad669446d058699d83ce071473f269a5d8d3` |
+| `morpho-urd-claim.json` | `0xDf95bb71581B224BD42eB19ceaff5E92816e181E`, Safe 1.4.1 | 40 | `0xc40b144c77500ef495717be260db8fb877692e1baa439352ce9e67e0af6e297e`, block 22,819,152 | Bundler3 `multicall` with one item: the Morpho URD (`0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb`) `claim` of MORPHO for the Safe, with the Morpho app's 8-byte trailer. safeTxHash `0x5001bd84a4a5d9daa0d42fb7148b5da12c0343cdaa0ff046c449efec4b020104` |
+| `merkl-and-morpho-urd-claim.json` | `0x1c7766189b90da61BE1a7e6462E9f81eC795E40E`, Safe 1.4.1 | 7 | `0x657ac61e1f43c2b79dd504b49d0fe19dd6d6e2be32c3f2815addd5b0484547bc`, block 22,815,761 | A `delegatecall` to MultiSendCallOnly 1.4.1: a Merkl `claim` of aEthRLUSD, then a Bundler3 `multicall` claiming MORPHO from the Morpho URD. safeTxHash `0x2f85529efdd3b1fbbde890735c5cd4f81b3c4088795994b881a4ffcb872022f3` |
+| `cctp-receive-then-call.json` | `0x8a25A24EDE9482C4Fc0738F99611BE58F1c839AB`, Safe 1.4.1 | 48142 | `0xdd09c9b162d956d128a51a49cb3988789358d52560c0339021afdc05b00ff716`, block 24,800,869 | A `delegatecall` to MultiSend 1.4.1: CCTP V1 MessageTransmitter (`0x0a992d191DEeC32aFe36203Ad87D7d289a738F81`) `receiveMessage` of a message that mints USDC to another address, then a call to another contract. safeTxHash `0xaffef7919a235fa81f6ddfcd5b140eb0a56f618b47d17a124fc95fa9735f002c` |
+
+The claim fixtures were found with `pnpm past-txs` on transfers of the reward token out of its distributor (`--from`), the CCTP one on USDC mints; see each template's `report.md`. Each Safe's nonce is its `nonce()` at the block before. No Safe in the searched blocks received a CCTP message in a transaction of its own, so `cctp-receive-then-call` serves the CCTP tests twice: whole, and with its first call taken out as a direct call.
 
 The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see `templates/morpho/vault-deposit/report.md`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service. The Fluid fixtures come from two Safes that `pnpm past-txs fluid/vault-deposit` and `fluid/vault-withdraw` found, and from those Safes' histories in the Safe Transaction Service; the Fluid app is the origin of each. One Safe was upgraded from 1.3.0 to 1.4.1 between its nonces 124 and 152.
 
@@ -107,6 +119,11 @@ The tests replay the reads, compile the Sourcify source with the pinned solc fro
 | `vault-bundles-v1.json` | Morpho VaultBundlesV1 `0x02912516d49dE997db75B9D7858faAE59209650B` | none | `VaultBundlesV1`, solc 0.8.34 |
 | `fluid-fusdc.json` | Fluid fUSDC `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | none | `fToken`, solc 0.8.21, 38 immutable spans masked |
 | `fluid-fusdt.json` | Fluid fUSDT `0x5C20B550819128074FD538Edf79791733ccEdd18` | none | `fToken`, solc 0.8.21, 38 immutable spans masked |
+| `fluid-rewards-distributor.json` | FluidMerkleDistributor "Fluid Rewards - Dec 2024" `0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0` | none | `FluidMerkleDistributor`, solc 0.8.21, 2 immutable spans masked |
+| `fluid-token.json` | FLUID token `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | none | `InstaToken`, solc 0.7.3 |
+| `merkl-distributor.json` | Merkl Distributor `0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae` | EIP-1967 | `Distributor` at `0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE`, solc 0.8.25, 5 immutable spans masked |
+| `morpho-urd.json` | Morpho Universal Rewards Distributor `0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb` | none | `UniversalRewardsDistributor`, solc 0.8.19. Sourcify holds a partial match: every byte equals except the IPFS metadata hash, which is masked |
+| `cctp-message-transmitter.json` | Circle CCTP V1 MessageTransmitter `0x0a992d191DEeC32aFe36203Ad87D7d289a738F81` | none | `MessageTransmitter`, solc 0.7.6, 7 immutable and 5 library spans masked. A partial match like `morpho-urd.json` |
 | `safe-proxy-1-3-0.json` | the Safe of `safe-tx/eth-transfer-null-data.json`, `0x9467dcFD4519287e3878C018c02f5670465a9003` | Safe proxy (1.3.0 factory) | `GnosisSafeL2` at `0x3E5c63644E683549055b9Be8653de26E0B4CD36E`, solc 0.7.6 |
 
 ### Recording again
@@ -124,6 +141,11 @@ pnpm record-abi-case metamorpho-v1-1-apex 0x777791C4d6DC2CE140D00D2828a7C93503c6
 pnpm record-abi-case vault-bundles-v1 0x02912516d49dE997db75B9D7858faAE59209650B
 pnpm record-abi-case fluid-fusdc 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33
 pnpm record-abi-case fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18
+pnpm record-abi-case fluid-rewards-distributor 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0
+pnpm record-abi-case fluid-token 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb
+pnpm record-abi-case merkl-distributor 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae
+pnpm record-abi-case morpho-urd 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb
+pnpm record-abi-case cctp-message-transmitter 0x0a992d191DEeC32aFe36203Ad87D7d289a738F81
 ```
 
 An optional third argument records at that block instead of the latest.
@@ -144,6 +166,9 @@ The tests serve each provider its own recorded answer through the real reader, s
 | `fluid-deposit-usdt.json` | 26,304,862 | −51,175.230820 USDT, +42,209.067384 fUSDT, no ETH; the USDT allowance to fUSDT is 0 before and after, though USDT's `approve` returns nothing; Safe settings unchanged |
 | `fluid-withdraw-usdt-other-safe.json` | 26,251,019 | +35,000 USDT, −28,895.090944 fUSDT, no ETH; Safe settings unchanged |
 | `fluid-redeem-usdt.json` | 23,941,365 | −81,438.499490 fUSDT, +95,466.865113 USDT, no ETH; Safe settings unchanged |
+| `fluid-claim.json` | 22,609,102 | +58.037012247904058352 FLUID, no ETH; Safe settings unchanged |
+| `merkl-claim.json` | 24,029,025 | +100.951036832327882581 MORPHO, no ETH; Safe settings unchanged |
+| `morpho-urd-claim.json` | 22,819,151 | +3,824.546796543481634870 MORPHO, no ETH; Safe settings unchanged |
 
 | `morpho-withdraw-all.json`, of `safe-tx/morpho-withdraw-all-apex-other-safe.json` | 23,725,210 | −23,966.697414743719468099 Hyperithm USDC Apex shares, all the Safe held, +25,175.574782 USDC; the share allowance to GeneralAdapter1 is 0 before and after |
 | `morpho-withdraw-open-allowance.json`, of `safe-tx/morpho-withdraw-apex-other-safe.json` | 23,726,457 | −285,544.697740669157631830 Hyperithm USDC Apex shares, +300,000 USDC; the share allowance to GeneralAdapter1 goes from 4,850,840,670,525,793,065 to 40,963,643,267,656,996,464 |
@@ -169,13 +194,16 @@ pnpm simulate fluid-withdraw-usdt-other-safe --record fluid-withdraw-usdt-other-
   --card '{"operations":[{"template":"fluid/vault-withdraw","values":{"vault":"fluid-fusdt","amount":"35000000000"}}]}'
 pnpm simulate fluid-redeem-usdt --record fluid-redeem-usdt \
   --card '{"operations":[{"template":"fluid/vault-redeem","values":{"vault":"fluid-fusdt","shares":"81438499490"}}]}'
+pnpm simulate fluid-claim --record fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim","values":{"token":"fluid"}}]}'
+pnpm simulate merkl-claim --record merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}'
+pnpm simulate morpho-urd-claim --record morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}'
 ```
 
 ## Past-transaction searches
 
 `research/<name>.json` holds one run of `scripts/past-txs.ts --record <name>`:
 
-- `query`: the template, the anchor token, the anchor kind, and the block range.
+- `query`: the template, the anchor token, the anchor kind, the sender when the search had one (`--from`), and the block range.
 - `sources`: each request to Alchemy (`alchemy_getAssetTransfers`) and Etherscan (`logs/getLogs`), with its answer. No request holds a key.
 - `providers` and `exchanges`: each `eth_getTransactionByHash` and `eth_getTransactionReceipt`, with the answers of Alchemy and drpc.
 
@@ -186,6 +214,7 @@ The tests replay the run and require the counts a reader sees: per source, per f
 | File | Anchor | Blocks | What it found |
 | --- | --- | --- | --- |
 | `morpho-vault-deposit.json` | Steakhouse Prime USDC shares minted | 26,044,000 to 26,052,000 | 65 transactions, all found by both sources; 3 executed by a Safe, 2 fitting `morpho/vault-deposit` |
+| `merkl-claim.json` | MORPHO moved out of the Merkl Distributor | 24,020,000 to 24,030,000 | 120 transactions, all found by both sources; 3 executed by a Safe, 1 fitting `merkl/claim` |
 
 ### Recording again
 
@@ -195,6 +224,10 @@ KISS_SIGN_HOME=$HOME/.kiss-sign-lane-9 pnpm past-txs morpho/vault-deposit --toke
 ```
 
 That home's `config.json` names the Safe of `safe-tx/morpho-vault-deposit.json`, so its deposit in this range is left out.
+
+```sh
+pnpm past-txs merkl/claim --token morpho --anchor any --from merkl-distributor --from-block 24020000 --to-block 24030000 --record merkl-claim
+```
 
 ## Verdicts
 

@@ -132,5 +132,35 @@
     "attributes": {
       "asset": "usdt"
     }
+  },
+  "fluid": {
+    "address": "0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb",
+    "kind": "token",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md"
+  },
+  "morpho": {
+    "address": "0x58D97B57BB95320F9a05dC918Aef65434969c2B2",
+    "kind": "token",
+    "source": "https://docs.morpho.org/get-started/resources/addresses/"
+  },
+  "fluid-rewards-distributor": {
+    "address": "0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0",
+    "kind": "distributor",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/main/deployments/deployments.md"
+  },
+  "morpho-urd": {
+    "address": "0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb",
+    "kind": "distributor",
+    "source": "https://docs.morpho.org/get-started/resources/addresses/"
+  },
+  "merkl-distributor": {
+    "address": "0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae",
+    "kind": "distributor",
+    "source": "https://github.com/AngleProtocol/merkl-contracts/blob/main/UPGRADE_DEPLOYMENT.md"
+  },
+  "cctp-message-transmitter": {
+    "address": "0x0a992d191DEeC32aFe36203Ad87D7d289a738F81",
+    "kind": "bridge",
+    "source": "https://developers.circle.com/cctp/v1/evm-smart-contracts"
   }
 }

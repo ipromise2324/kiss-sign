@@ -1,0 +1,47 @@
+{
+  "id": "morpho/urd-claim",
+  "card": {
+    "token": { "kind": "contract", "registryKind": "token" }
+  },
+  "calls": [
+    {
+      "to": { "contract": "bundler3" },
+      "value": { "const": "0" },
+      "function": "multicall((address to, bytes data, uint256 value, bool skipRevert, bytes32 callbackHash)[] bundle)",
+      "args": {
+        "bundle": {
+          "items": [
+            {
+              "fields": {
+                "to": { "contract": "morpho-urd" },
+                "data": {
+                  "call": {
+                    "function": "claim(address account, address reward, uint256 claimable, bytes32[] proof)",
+                    "args": {
+                      "account": { "safe": true },
+                      "reward": { "card": "token" },
+                      "claimable": { "free": "the cumulative amount in the Merkle leaf: the distributor reverts unless the proof hashes it into the root; the effects require the Safe to get a positive amount of the card's token and nothing else" },
+                      "proof": { "free": "a Merkle proof: the distributor reverts unless it proves the leaf (account, reward, claimable) against the root" }
+                    }
+                  }
+                },
+                "value": { "const": "0" },
+                "skipRevert": { "const": "false" },
+                "callbackHash": { "const": "0x0000000000000000000000000000000000000000000000000000000000000000" }
+              }
+            }
+          ]
+        }
+      },
+      "trailer": {
+        "maxBytes": 8,
+        "why": "the Morpho app appends a 4-byte timestamp and a 4-byte origin tag; multicall reads only its one argument"
+      },
+      "merge": "the Morpho app claims every reward token in one multicall, one bundle item per token"
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [{ "token": "card.token", "amount": "positive" }]
+  }
+}

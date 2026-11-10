@@ -16,12 +16,13 @@ import { parseAddress } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/past-txs.ts <protocol>/<operation>
-  --token <registry name | address> --anchor mint|burn|any --from-block <n> --to-block <n> [--max-txs <n>] [--record <name>]
+  --token <registry name | address> --anchor mint|burn|any --from-block <n> --to-block <n> [--from <registry name | address>] [--max-txs <n>] [--record <name>]
 
 Finds executed Safe transactions of one operation through an anchor: an ERC-20 Transfer of --token.
   deposit into a vault:   --token <vault> --anchor mint   (shares minted to the depositor)
   withdraw from a vault:  --token <vault> --anchor burn   (shares burned from the owner)
   transfer a token:       --token <token> --anchor any    (any transfer of the token)
+  claim a reward:         --token <token> --anchor any --from <distributor>   (the distributor paying it out)
 Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search the range; each transaction says which found it.
 The Safe in $KISS_SIGN_HOME/config.json is left out of every count, example and recording.`;
 
@@ -34,6 +35,7 @@ const { values: flags, positionals } = parseArgs({
     anchor: { type: 'string' },
     'from-block': { type: 'string' },
     'to-block': { type: 'string' },
+    from: { type: 'string' },
     'max-txs': { type: 'string', default: '200' },
     record: { type: 'string' },
   },
@@ -46,18 +48,23 @@ if (templateId === undefined || positionals.length !== 1 || flags.token === unde
   console.error(USAGE);
   process.exit(64);
 }
+if (flags.from !== undefined && kind !== 'any') {
+  console.error('--from goes with --anchor any');
+  process.exit(64);
+}
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
 
 const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, templateId, registry);
 const token = registry.entries.get(flags.token)?.address ?? parseAddress('--token', flags.token);
+const from = flags.from === undefined ? undefined : (registry.entries.get(flags.from)?.address ?? parseAddress('--from', flags.from));
 const exclude = loadConfig(kissSignHome(process.env))?.safe;
 if (exclude === undefined) console.error(`no Safe configured in ${kissSignHome(process.env)}, so nothing is excluded`);
 
 const endpoints = mainnetEndpoints(process.env);
 const chain = recordingTransport(httpsTransport(), endpoints);
 const sources = recordingAsk(liveAsk(process.env));
-const query = { template, anchor: { token, kind, fromBlock, toBlock } };
+const query = { template, anchor: { token, kind, fromBlock, toBlock, ...(from === undefined ? {} : { from }) } };
 const run = await pastTxs(query, {
   ask: sources.ask,
   reader: createReader(endpoints, chain.transport),
@@ -71,7 +78,7 @@ if (flags.record !== undefined) {
   const providers = endpoints.map((e) => e.provider);
   const fixture = scrubRecording(
     {
-      query: { template: templateId, token, anchor: kind, fromBlock: fromBlock.toString(), toBlock: toBlock.toString() },
+      query: { template: templateId, token, anchor: kind, ...(from === undefined ? {} : { from }), fromBlock: fromBlock.toString(), toBlock: toBlock.toString() },
       sources: sources.exchanges(),
       providers,
       exchanges: chain.exchanges().filter((e) => providers.every((p) => p in e.answers)),

@@ -1,0 +1,26 @@
+{
+  "id": "fluid/rewards-claim",
+  "card": {
+    "token": { "kind": "contract", "registryKind": "token" }
+  },
+  "calls": [
+    {
+      "to": { "contract": "fluid-rewards-distributor" },
+      "value": { "const": "0" },
+      "function": "claim(address recipient_, uint256 cumulativeAmount_, uint8 positionType_, bytes32 positionId_, uint256 cycle_, bytes32[] merkleProof_, bytes metadata_)",
+      "args": {
+        "recipient_": { "safe": true },
+        "cumulativeAmount_": { "free": "part of the Merkle leaf: the distributor reverts unless the proof hashes it into the published root; the effects require the Safe to get a positive amount of the card's token and nothing else" },
+        "positionType_": { "free": "part of the Merkle leaf, checked against the root like cumulativeAmount_; it names which kind of Fluid position earned the reward" },
+        "positionId_": { "free": "part of the Merkle leaf, checked against the root like cumulativeAmount_; it names the position, such as an fToken, that earned the reward" },
+        "cycle_": { "free": "which published root the proof is against, the current or the previous one; the distributor refuses any other" },
+        "merkleProof_": { "free": "a Merkle proof: the distributor reverts unless it proves the leaf against the root" },
+        "metadata_": { "free": "part of the Merkle leaf, checked against the root like cumulativeAmount_; the distributor reads it nowhere else" }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [{ "token": "card.token", "amount": "positive" }]
+  }
+}

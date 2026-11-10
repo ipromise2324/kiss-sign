@@ -67,6 +67,8 @@ const assetOf = (ref: TokenRef, values: ReadonlyMap<string, ResolvedValue>, regi
 export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Expectations {
   const changes = new Map<Asset, Expected>();
   const reasons: string[] = [];
+  const stated = new Set<Asset>();
+  const mixed = (token: Asset): string => `the card names an exact and an open amount of ${token}, so neither can be checked`;
   for (const op of card.operations) {
     const template = templates.get(op.template);
     if (template === undefined) {
@@ -106,9 +108,16 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
       const base = known ?? { kind: 'exactly', change: 0n };
       if (effect.amount.kind === 'positive') {
         if (base.kind !== 'exactly' && base.kind !== open) reasons.push(`the card leaves the change of ${token} open both ways`);
+        else if (stated.has(token)) reasons.push(mixed(token));
         else changes.set(token, { kind: open, change: base.change });
         continue;
       }
+      // An open amount of the same token would hide whether this one arrived exactly, which a template may rely on.
+      if (base.kind !== 'exactly') {
+        reasons.push(mixed(token));
+        continue;
+      }
+      stated.add(token);
       const amount = op.values.get(effect.amount.field);
       if (amount?.kind !== 'amount') {
         reasons.push(`the card has no amount ${effect.amount.field}`);
