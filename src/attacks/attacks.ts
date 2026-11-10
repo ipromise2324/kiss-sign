@@ -15,6 +15,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { SafeTx } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { assetClaims } from '../verify/assets.ts';
+import { codeClaims } from '../verify/code.ts';
 import type { Verdict } from '../verify/verdict.ts';
 import { VerifyError, evaluate, judge, keccakText, prepare } from '../verify/verify.ts';
 import type { TxInput, VerifyInputs } from '../verify/verify.ts';
@@ -126,7 +127,11 @@ export async function judgeCase(repoRoot: string, attack: AttackCase, service: R
       await attempt('as proposed, without a simulation', () => {
         const prepared = prepare(executed);
         const unread = { kind: 'unverifiable', reasons: [reason] } as const;
-        return judge(prepared, tx, unread, assetClaims(prepared.card, prepared.templates, prepared.registry).length === 0 ? { kind: 'pass' } : unread);
+        const unless = (claims: readonly unknown[]) => (claims.length === 0 ? ({ kind: 'pass' } as const) : unread);
+        return judge(prepared, tx, unread, {
+          assets: unless(assetClaims(prepared.card, prepared.templates, prepared.registry)),
+          code: unless(codeClaims(tx, prepared.card, prepared.templates, prepared.registry)),
+        });
       }),
     );
   }

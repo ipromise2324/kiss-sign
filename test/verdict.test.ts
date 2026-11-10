@@ -17,6 +17,7 @@ const passing: AllChecks = {
   staticFloor: { kind: 'pass' },
   fields: { kind: 'match' },
   assets: { kind: 'pass' },
+  code: { kind: 'pass' },
   mutation: { kind: 'pass', bound: 12, free: 1 },
   simulation: { kind: 'observed', effects: { kind: 'match' }, floor: { kind: 'pass' } },
 };

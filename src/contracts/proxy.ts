@@ -4,6 +4,8 @@ import type { Address, Hex } from '../safe/types.ts';
 
 export const EIP1967_IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbcn;
 export const EIP1967_BEACON_SLOT = 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50n;
+/** keccak256("org.zeppelinos.proxy.implementation"), where proxies older than EIP-1967 keep it, such as USDC's. */
+export const ZEPPELINOS_IMPLEMENTATION_SLOT = 0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3n;
 const IMPLEMENTATION_CALL = '0x5c60da1b' as Hex;
 
 const EIP1167_HEAD = '0x363d3d373d3d3d363d73';
@@ -43,12 +45,13 @@ export type Proxy =
   | { readonly kind: 'none' }
   | { readonly kind: 'eip1967'; readonly implementation: Address }
   | { readonly kind: 'eip1967-beacon'; readonly beacon: Address; readonly implementation: Address }
+  | { readonly kind: 'zeppelinos'; readonly implementation: Address }
   | { readonly kind: 'eip1167'; readonly implementation: Address }
   | { readonly kind: 'safe'; readonly factory: SafeProxyName; readonly implementation: Address };
 
 export type ProxyRefusal =
   | { readonly why: 'unverifiable'; readonly read: string }
-  | { readonly why: 'slot-not-an-address'; readonly slot: 'eip1967-implementation' | 'eip1967-beacon' | 'safe-singleton' }
+  | { readonly why: 'slot-not-an-address'; readonly slot: 'eip1967-implementation' | 'eip1967-beacon' | 'zeppelinos-implementation' | 'safe-singleton' }
   | { readonly why: 'beacon-answer-not-an-address'; readonly beacon: Address }
   | { readonly why: 'both-eip1967-slots-set' }
   | { readonly why: 'slot-without-delegatecall' };
@@ -94,9 +97,18 @@ const unverifiable = (read: Read<unknown> & { kind: 'unverifiable' }): Located =
 });
 const refused = (refusal: ProxyRefusal): Located => ({ kind: 'refused', refusal });
 
+async function zeppelinosWhenNoEip1967(reader: Reader, address: Address, code: Hex, at: BlockRef): Promise<Located> {
+  if (!hasDelegatecall(code)) return { kind: 'located', proxy: { kind: 'none' } };
+  const slot = await reader.getStorageAt(address, ZEPPELINOS_IMPLEMENTATION_SLOT, at);
+  if (slot.kind === 'unverifiable') return unverifiable(slot);
+  const implementation = addressWord(slot.value);
+  if (implementation === undefined) return refused({ why: 'slot-not-an-address', slot: 'zeppelinos-implementation' });
+  return { kind: 'located', proxy: implementation === null ? { kind: 'none' } : { kind: 'zeppelinos', implementation } };
+}
+
 /**
  * Which code a call to `address` runs. A minimal proxy and a Safe proxy are known by their whole code. An EIP-1967
- * slot counts only when the code can DELEGATECALL, since a slot is storage that any code may have written.
+ * or ZeppelinOS slot counts only when the code can DELEGATECALL, since a slot is storage that any code may have written.
  */
 export async function locate(reader: Reader, address: Address, code: Hex, at: BlockRef): Promise<Located> {
   const clone = minimalProxyTarget(code);
@@ -124,7 +136,7 @@ export async function locate(reader: Reader, address: Address, code: Hex, at: Bl
     if (!hasDelegatecall(code)) return refused({ why: 'slot-without-delegatecall' });
     return { kind: 'located', proxy: { kind: 'eip1967', implementation } };
   }
-  if (beacon === null) return { kind: 'located', proxy: { kind: 'none' } };
+  if (beacon === null) return zeppelinosWhenNoEip1967(reader, address, code, at);
   if (!hasDelegatecall(code)) return refused({ why: 'slot-without-delegatecall' });
   const answer = await reader.call({ to: beacon, data: IMPLEMENTATION_CALL }, at);
   if (answer.kind === 'unverifiable') return unverifiable(answer);

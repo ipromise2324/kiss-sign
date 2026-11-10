@@ -3,14 +3,18 @@ import type { FloorResult } from '../floor/floor.ts';
 import type { Registry } from '../registry.ts';
 import type { Hex } from '../safe/types.ts';
 import { describeFinding } from '../simulate/effects.ts';
-import type { AssetCheck } from './assets.ts';
 
 /** A template's hash as read from origin/main, and the hash the signer approved, absent when never approved. */
 export type TemplateApproval = { readonly template: string; readonly hash: Hex; readonly approved: Hex | undefined };
 
-export type AllChecks = EngineChecks & { readonly approvals: readonly TemplateApproval[]; readonly assets: AssetCheck };
+export type ChainCheck =
+  | { readonly kind: 'pass' }
+  | { readonly kind: 'mismatch'; readonly findings: readonly string[] }
+  | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
 
-export type CheckName = 'template-approval' | 'static-floor' | 'fields' | 'vault-asset' | 'mutation' | 'simulation' | 'simulated-floor' | 'effects';
+export type AllChecks = EngineChecks & { readonly approvals: readonly TemplateApproval[]; readonly assets: ChainCheck; readonly code: ChainCheck };
+
+export type CheckName = 'template-approval' | 'static-floor' | 'fields' | 'vault-asset' | 'contract-code' | 'mutation' | 'simulation' | 'simulated-floor' | 'effects';
 
 type Outcome = { readonly kind: 'pass' } | { readonly kind: 'fail' | 'unverifiable'; readonly details: readonly string[] };
 
@@ -22,6 +26,9 @@ export type Verdict =
 
 const PASS: Outcome = { kind: 'pass' };
 const outcome = (kind: 'fail' | 'unverifiable', details: readonly string[]): Outcome => (details.length === 0 ? PASS : { kind, details });
+
+const chain = (check: ChainCheck): Outcome =>
+  check.kind === 'pass' ? PASS : check.kind === 'mismatch' ? outcome('fail', check.findings) : outcome('unverifiable', check.reasons);
 
 const floor = (result: FloorResult): Outcome =>
   result.kind === 'pass' ? PASS : outcome('fail', result.findings.map((f) => `${f.rule} at ${f.callPath}: ${f.detail}`));
@@ -52,10 +59,8 @@ const ROWS: readonly (readonly [CheckName, (checks: AllChecks, registry: Registr
       return outcome('fail', fields.findings.map((f) => `${f.callPath} ${f.arg}: expected ${f.expected}, got ${f.actual}`));
     },
   ],
-  [
-    'vault-asset',
-    ({ assets }) => (assets.kind === 'pass' ? PASS : assets.kind === 'mismatch' ? outcome('fail', assets.findings) : outcome('unverifiable', assets.reasons)),
-  ],
+  ['vault-asset', ({ assets }) => chain(assets)],
+  ['contract-code', ({ code }) => chain(code)],
   [
     'mutation',
     ({ mutation }) => {

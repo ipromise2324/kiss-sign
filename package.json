@@ -16,6 +16,7 @@
     "fetch-psl": "node scripts/fetch-psl.ts",
     "prove-abi": "node scripts/prove-abi.ts",
     "prove-instance": "node scripts/prove-instance.ts",
+    "pin-code": "node scripts/pin-code.ts",
     "check-sources": "node scripts/check-sources.ts",
     "vault-evidence": "node scripts/vault-evidence.ts",
     "record-abi-case": "node scripts/record-abi-case.ts",
