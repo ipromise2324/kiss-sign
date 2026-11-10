@@ -136,6 +136,7 @@ These are protocol-free and change rarely.
 
 - The Safe transaction hashes, computed locally.
 - Decode, then re-encode byte for byte, so nothing hides in the encoding.
+  - One exception, declared per call in the template: a trailer of at most a stated number of bytes after the arguments, with a written reason. The Morpho app appends 8 bytes to `multicall` (a timestamp and an origin tag) that the contract never reads. Without a declared trailer, any extra byte is `MISMATCH`.
 - Floor rules:
   - no unlimited approval;
   - no `delegatecall` except to the official MultiSend, and the rules apply again to every call inside it, at every level;
