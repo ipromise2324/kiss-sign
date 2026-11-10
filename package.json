@@ -10,11 +10,15 @@
     "prepare": "git config core.hooksPath .githooks",
     "test": "node --test",
     "typecheck": "tsc --noEmit",
-    "check-push": "node scripts/check-push.ts"
+    "check-push": "node scripts/check-push.ts",
+    "record-safe-tx": "node scripts/record-safe-tx.ts"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
     "typescript": "7.0.2"
   },
-  "packageManager": "pnpm@12.16.1"
+  "packageManager": "pnpm@12.16.1",
+  "dependencies": {
+    "@noble/hashes": "2.4.0"
+  }
 }
