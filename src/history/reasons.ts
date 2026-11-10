@@ -8,7 +8,8 @@ import type { Verdict } from '../verify/verdict.ts';
 
 /** CoW Protocol's settlement contract on mainnet, github.com/cowprotocol/contracts `networks.json`. */
 export const GPV2_SETTLEMENT = '0x9008d19f58aabd9ed0d60971565aa8510560ab41' as Address;
-const SET_PRE_SIGNATURE = selectorOf('setPreSignature(bytes,bool)');
+/** The settlement calls a Safe makes to place or cancel a CoW order: pre-sign it, or invalidate it. */
+const COW_CALLS = new Map<string, string>(['setPreSignature(bytes,bool)', 'invalidateOrder(bytes)'].map((sig) => [selectorOf(sig), sig.slice(0, sig.indexOf('('))]));
 
 /** What the harness knows about one past transaction when it picks the reason it is not MATCH. */
 export type Facts = {
@@ -22,12 +23,13 @@ export type Facts = {
 /** `key` groups rows in the summary; `detail` says what about this transaction gave it. */
 export type Reason = { readonly key: string; readonly detail: string };
 
-function preSignatureCalls(tx: SafeTx): string[] {
+function cowCalls(tx: SafeTx): string[] {
   const unwrapped = unwrapSafeTx(tx);
   if (unwrapped.kind !== 'direct' && unwrapped.kind !== 'multisend') return [];
-  return unwrapped.calls
-    .filter((call) => call.to === GPV2_SETTLEMENT && `0x${bytesToHex(regionBytes(call.data).subarray(0, 4))}` === SET_PRE_SIGNATURE)
-    .map((call) => call.path);
+  return unwrapped.calls.flatMap((call) => {
+    const name = call.to === GPV2_SETTLEMENT ? COW_CALLS.get(`0x${bytesToHex(regionBytes(call.data).subarray(0, 4))}`) : undefined;
+    return name === undefined ? [] : [`${name} at ${call.path}`];
+  });
 }
 
 const floorRules = (floor: FloorResult): string | undefined =>
@@ -49,17 +51,17 @@ function verdictCauses(outcome: Facts['outcome']): Reason | undefined {
 
 /**
  * Why a past transaction is not MATCH, first row that applies. A MATCH has no reason, whatever the rows say.
- * The CoW row comes first because pre-signing an order is a known next-phase operation even when the floor refuses
- * the open approval that comes with it.
+ * The CoW row comes first because pre-signing or cancelling an order is a known next-phase operation even when the
+ * floor refuses the open approval that comes with it.
  */
 export const REASONS: readonly { readonly key: string; readonly decide: (facts: Facts) => string | undefined }[] = [
   {
     key: 'cow-next-phase',
     decide: ({ tx, floor }) => {
-      const paths = preSignatureCalls(tx);
-      if (paths.length === 0) return undefined;
+      const calls = cowCalls(tx);
+      if (calls.length === 0) return undefined;
       const refused = floorRules(floor);
-      return `GPv2Settlement setPreSignature at ${paths.join(', ')}${refused === undefined ? '' : `; the floor also refuses ${refused}`}`;
+      return `GPv2Settlement ${calls.join(', ')}${refused === undefined ? '' : `; the floor also refuses ${refused}`}`;
     },
   },
   {
@@ -76,4 +78,13 @@ export function reasonFor(facts: Facts): Reason | undefined {
     if (detail !== undefined) return { key, detail };
   }
   return verdictCauses(facts.outcome);
+}
+
+/**
+ * The reason of an approval that a later nonce spends: the spender's, since the approval is half of that operation.
+ * A spender without a reason, a MATCH, leaves the approval its own.
+ */
+export function spentReason(own: Reason | undefined, spender: { readonly nonce: number; readonly reason: Reason | undefined }): Reason | undefined {
+  if (spender.reason === undefined) return own;
+  return { key: spender.reason.key, detail: `its approval is spent by nonce ${spender.nonce}: ${spender.reason.detail}` };
 }

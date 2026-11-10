@@ -36,12 +36,18 @@ export type Mark = { readonly at: string; readonly note: string };
 /** A card written for one past nonce. `text` is the card itself as `card seal` would store it; marks stay outside it. */
 export type HistoryCard = { readonly card: Card; readonly text: string; readonly hash: Hex; readonly marks: readonly Mark[] };
 
+/**
+ * A note on one nonce. `spentBy` names the later nonce that spends the approval this one gives, so the row takes that
+ * nonce's reason: the approval is half of that operation.
+ */
+export type Note = { readonly text: string; readonly spentBy: number | undefined };
+
 export type BookEntry = { readonly address: Address; readonly mark: string };
 
 export type History = {
   readonly txs: readonly HistoryTx[];
   readonly intents: ReadonlyMap<number, Intent>;
-  readonly notes: ReadonlyMap<number, string>;
+  readonly notes: ReadonlyMap<number, Note>;
   readonly cards: ReadonlyMap<number, HistoryCard>;
   readonly book: ReadonlyMap<string, BookEntry>;
   /** Entries for the registry, merged over the repository's; none may share a name with it. */
@@ -142,15 +148,26 @@ function loadIntents(path: string, txs: readonly HistoryTx[]): Map<number, Inten
   return intents;
 }
 
-function loadNotes(path: string): Map<number, string> {
+/** `{ "<nonce>": "<text>" }`, or `{ "<nonce>": { "note": "<text>", "spentBy": <nonce> } }` for an approval a later nonce spends. */
+function loadNotes(path: string): Map<number, Note> {
   const text = readOptional(path);
-  const notes = new Map<number, string>();
+  const notes = new Map<number, Note>();
   if (text === undefined) return notes;
   const raw = json(path, text);
   if (!isRecord(raw)) throw new HistoryError(`${path}: must be { "<nonce>": "<text>" }`);
   for (const [key, note] of Object.entries(raw)) {
-    if (typeof note !== 'string') throw new HistoryError(`${path}.${key}: not text`);
-    notes.set(nonceOf(`${path}.${key}`, key), note);
+    const where = `${path}.${key}`;
+    const nonce = nonceOf(where, key);
+    if (typeof note === 'string') {
+      notes.set(nonce, { text: note, spentBy: undefined });
+      continue;
+    }
+    if (!isRecord(note) || Object.keys(note).sort().join() !== 'note,spentBy' || typeof note.note !== 'string') {
+      throw new HistoryError(`${where}: must be text or exactly { "note": string, "spentBy": <nonce> }`);
+    }
+    const spentBy = nonceOf(`${where}.spentBy`, note.spentBy);
+    if (spentBy <= nonce) throw new HistoryError(`${where}.spentBy: an approval is spent by a later nonce`);
+    notes.set(nonce, { text: note.note, spentBy });
   }
   return notes;
 }

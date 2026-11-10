@@ -67,6 +67,7 @@ A template describes one operation for one protocol, for example `morpho/vault-d
   - equals a constant;
   - free, with a written reason (for example a Merkle proof). The mutation check treats free fields as free.
 - `nonce`. Optional: a rule for the Safe transaction's own nonce, such as a cancellation's card nonce.
+- `same`. Optional: card references that must name one address, such as the assets of the two vaults in a migration. A card where they differ is refused before any check runs.
 - `effects`. What the Safe gives and gets, in tokens and amounts written as card values, `positive` (more than nothing, in the direction of the side), or, for what the Safe gives, `all` (the Safe holds none of the token afterwards). Native ETH is named `eth`, since no contract holds it, so `eth` and `safe` are never registry or address-book names. What the Safe gives may name its receiver; giving to the Safe itself changes nothing. Approvals must be exact and spent in the same transaction.
 
 ### Intent card

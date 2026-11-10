@@ -20,7 +20,7 @@ import { VerifyError, evaluate, keccakText } from '../verify/verify.ts';
 import type { VerifyInputs } from '../verify/verify.ts';
 import { HistoryError, cacheDir, historyDir, loadHistory, mergeRegistry, txsPath } from './load.ts';
 import type { History, HistoryCard, HistoryTx } from './load.ts';
-import { reasonFor } from './reasons.ts';
+import { reasonFor, spentReason } from './reasons.ts';
 import type { Facts } from './reasons.ts';
 import { renderMarkdown, renderText } from './render.ts';
 import type { Report, Row } from './render.ts';
@@ -124,7 +124,7 @@ async function rowFor(ctx: Context, entry: HistoryTx): Promise<Row> {
     intent: intent === undefined ? '' : intent.app === '' ? intent.intent : `[${intent.app}] ${intent.intent}`,
     verdict: outcome?.kind === 'verdict' ? outcome.verdict.kind : outcome?.kind === 'error' ? 'ERROR' : 'not run',
     reason,
-    note: ctx.history.notes.get(entry.nonce),
+    note: ctx.history.notes.get(entry.nonce)?.text,
     card: card === undefined ? undefined : cardMarks(card, ctx.history),
   };
 }
@@ -168,8 +168,14 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     refresh,
     templateText,
   };
-  const rows: Row[] = [];
-  for (const entry of history.txs) rows.push(await rowFor(ctx, entry));
+  const own: Row[] = [];
+  for (const entry of history.txs) own.push(await rowFor(ctx, entry));
+  const byNonce = new Map(own.map((row) => [row.nonce, row]));
+  const rows = own.map((row) => {
+    const spentBy = history.notes.get(row.nonce)?.spentBy;
+    const spender = spentBy === undefined ? undefined : byNonce.get(spentBy);
+    return spender === undefined || row.verdict === 'MATCH' ? row : { ...row, reason: spentReason(row.reason, spender) };
+  });
   const report: Report = {
     commit,
     templates: [...texts].map(([id, text]) => ({ id, hash: keccakText(text) })),

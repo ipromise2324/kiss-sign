@@ -32,7 +32,7 @@ function write(path: string, text: string): string {
 }
 
 /** A clone whose origin/main holds this repository's template and registry, and a home holding one Safe's history. */
-function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<string, string> = {}) {
+function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<string, unknown> = {}) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-history-'));
   const origin = join(base, 'origin.git');
   const repo = join(base, 'repo');
@@ -99,6 +99,24 @@ test('reason row cow-next-phase: a setPreSignature inside a MultiSend, even when
     rowOf(stdout, 559),
     /^  559  [\d-]{10}  not run       intent of nonce 559\n {33}cow-next-phase: GPv2Settlement setPreSignature at multiSend\[1\]; the floor also refuses unlimited-approval at multiSend\[0\]$/,
   );
+});
+
+test('reason row cow-next-phase: an order cancelled with GPv2Settlement invalidateOrder', async () => {
+  const { stdout } = await run(setUp('cow-safe'));
+  assert.match(rowOf(stdout, 558), /^  558  [\d-]{10}  not run       intent of nonce 558\n {33}cow-next-phase: GPv2Settlement invalidateOrder at call$/);
+});
+
+test('a note naming the nonce that spends an approval gives the approval that nonce\'s reason', async () => {
+  const { stdout } = await run(setUp('cow-safe', {}, { 10: { note: 'approval for the order', spentBy: 11 } }));
+  assert.match(
+    rowOf(stdout, 10),
+    /^   10  [\d-]{10}  not run       intent of nonce 10\n {33}cow-next-phase: its approval is spent by nonce 11: GPv2Settlement setPreSignature at call; note: approval for the order$/,
+  );
+  assert.match(rowOf(stdout, 11), /\n {33}cow-next-phase: GPv2Settlement setPreSignature at call$/);
+});
+
+test('a note whose spending nonce is not later is refused', async () => {
+  await assert.rejects(run(setUp('cow-safe', {}, { 11: { note: 'x', spentBy: 10 } })), /notes\.json\.11\.spentBy: an approval is spent by a later nonce/);
 });
 
 test('reason row refused-by-design: the static floor refuses an unlimited approval, and names the rule', async () => {

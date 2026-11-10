@@ -69,6 +69,8 @@ export type Template = {
   readonly card: ReadonlyMap<string, CardField>;
   /** The Safe transaction's own nonce. */
   readonly nonce: Rule | undefined;
+  /** Card references that must all name the same address, such as two vaults' assets; a card where they differ is refused. */
+  readonly same: readonly CardRef[];
   readonly calls: readonly TemplateCall[];
   readonly effects: { readonly gives: readonly Effect[]; readonly gets: readonly Effect[] };
 };
@@ -355,7 +357,7 @@ function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'
 
 export function parseTemplate(raw: unknown, registry: Registry): Template {
   const value = object('template', raw);
-  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce']);
+  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same']);
   const id = text('id', value.id);
   if (!ID.test(id)) throw new TemplateError('id', 'not <protocol>/<operation>');
   const pending = Object.entries(object('card', value.card)).map(([name, field]) => {
@@ -366,6 +368,8 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   for (const [name, build] of pending) fields.set(name, build(fields));
   const scope: Scope = { card: fields, registry };
   const nonce = value.nonce === undefined ? undefined : rule('nonce', value.nonce, { kind: 'uint', bits: 256 }, scope);
+  const same = value.same === undefined ? [] : array('same', value.same).map((ref, i) => cardToken(`same[${i}]`, text(`same[${i}]`, ref), fields));
+  if (value.same !== undefined && same.length < 2) throw new TemplateError('same', 'names fewer than two card references');
   const rawCalls = array('calls', value.calls);
   const calls = rawCalls.map((call, i) => templateCall(`calls[${i}]`, call, scope, i === rawCalls.length - 1));
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
@@ -375,6 +379,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     id,
     card: fields,
     nonce,
+    same,
     calls,
     effects: {
       gives: array('effects.gives', effects.gives).map((e, i) => effect(`effects.gives[${i}]`, e, scope, 'gives')),

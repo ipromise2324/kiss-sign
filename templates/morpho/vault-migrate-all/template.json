@@ -1,0 +1,99 @@
+{
+  "id": "morpho/vault-migrate-all",
+  "card": {
+    "from": { "kind": "contract", "registryKind": "vault" },
+    "to": { "kind": "contract", "registryKind": "vault" }
+  },
+  "same": ["from.asset", "to.asset"],
+  "calls": [
+    {
+      "to": { "card": "from" },
+      "value": { "const": "0" },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": { "contract": "general-adapter1" },
+        "value": { "free": "the Safe's whole share balance, read when the transaction is built; the effects require the Safe to hold no shares afterwards and the allowance to end where it started" }
+      },
+      "trailer": {
+        "maxBytes": 8,
+        "why": "the Morpho app appends a 4-byte timestamp and a 4-byte origin tag, as on multicall; approve reads only its two arguments"
+      }
+    },
+    {
+      "to": { "contract": "bundler3" },
+      "value": { "const": "0" },
+      "function": "multicall((address to, bytes data, uint256 value, bool skipRevert, bytes32 callbackHash)[] bundle)",
+      "args": {
+        "bundle": {
+          "items": [
+            {
+              "fields": {
+                "to": { "contract": "general-adapter1" },
+                "data": {
+                  "call": {
+                    "function": "erc20TransferFrom(address token, address receiver, uint256 amount)",
+                    "args": {
+                      "token": { "card": "from" },
+                      "receiver": { "contract": "general-adapter1" },
+                      "amount": { "free": "the Safe's whole share balance; the effects require the Safe to hold no shares of the vault afterwards" }
+                    }
+                  }
+                },
+                "value": { "const": "0" },
+                "skipRevert": { "const": "false" },
+                "callbackHash": { "const": "0x0000000000000000000000000000000000000000000000000000000000000000" }
+              }
+            },
+            {
+              "fields": {
+                "to": { "contract": "general-adapter1" },
+                "data": {
+                  "call": {
+                    "function": "erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)",
+                    "args": {
+                      "vault": { "card": "from" },
+                      "shares": { "const": "115792089237316195423570985008687907853269984665640564039457584007913129639935" },
+                      "minSharePriceE27": { "free": "slippage bound: the fewest assets per share; the effects require the Safe to get a positive number of the new vault's shares" },
+                      "receiver": { "contract": "general-adapter1" },
+                      "owner": { "contract": "general-adapter1" }
+                    }
+                  }
+                },
+                "value": { "const": "0" },
+                "skipRevert": { "const": "false" },
+                "callbackHash": { "const": "0x0000000000000000000000000000000000000000000000000000000000000000" }
+              }
+            },
+            {
+              "fields": {
+                "to": { "contract": "general-adapter1" },
+                "data": {
+                  "call": {
+                    "function": "erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)",
+                    "args": {
+                      "vault": { "card": "to" },
+                      "assets": { "const": "115792089237316195423570985008687907853269984665640564039457584007913129639935" },
+                      "maxSharePriceE27": { "free": "slippage bound: the most assets per share; the effects require the Safe to get a positive number of shares" },
+                      "receiver": { "safe": true }
+                    }
+                  }
+                },
+                "value": { "const": "0" },
+                "skipRevert": { "const": "false" },
+                "callbackHash": { "const": "0x0000000000000000000000000000000000000000000000000000000000000000" }
+              }
+            }
+          ]
+        }
+      },
+      "trailer": {
+        "maxBytes": 8,
+        "why": "the Morpho app appends a 4-byte timestamp and a 4-byte origin tag, which multicall ignores (morpho-org/sdks, addTransactionMetadata)"
+      }
+    }
+  ],
+  "effects": {
+    "gives": [{ "token": "card.from", "amount": "all" }],
+    "gets": [{ "token": "card.to", "amount": "positive" }]
+  }
+}
