@@ -256,3 +256,10 @@ test('the effects, not the fields, hold a CCTP message to the Safe and the card 
     assert.deepEqual(judge(minted), { kind: 'mismatch', findings: [{ kind: 'balance', asset: usdc, expected: { kind: 'exactly', change: amount }, actual: minted }] });
   }
 });
+
+test('a card that claims a reward in USDC and also receives an exact amount of USDC through CCTP cannot be judged', () => {
+  const tx = safeTx('cctp-receive-then-call');
+  const both = card(claim('merkl/claim', 'usdc'), { template: 'cctp/receive', values: { token: 'usdc', amount: '1000' } });
+  const expectations = expectedChanges(resolved(tx, both), templates, registry);
+  assert.deepEqual(expectations, { kind: 'unverifiable', reasons: [`the card names an exact and an open amount of ${addressOf('usdc')}, so neither can be checked`] });
+});
