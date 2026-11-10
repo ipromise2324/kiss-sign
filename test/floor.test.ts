@@ -122,6 +122,14 @@ test('a Permit2 approval of the maximum uint160 is refused, naming the token ins
   assert.deepEqual(details(result), [`approve(address,address,uint160,uint48) of token ${USDC} to spender ${OTHER}, amount ${max160}`]);
 });
 
+test('an NFT approve-all is refused when set and passes when revoked', () => {
+  const nft = '0x2222222222222222222222222222222222222222' as Address;
+  assert.deepEqual(details(checkFloor(direct(nft, calldata('setApprovalForAll(address,bool)', OTHER, 1n)))), [
+    `setApprovalForAll(address,bool) of token ${nft} to spender ${OTHER}, amount 1`,
+  ]);
+  assert.deepEqual(checkFloor(direct(nft, calldata('setApprovalForAll(address,bool)', OTHER, 0n))), { kind: 'pass' });
+});
+
 const STATE: SafeState = {
   singleton: `0x${'41675c099f32341bf84bfc5382af534df5c7461a'.padStart(64, '0')}` as Hex,
   threshold: 2n,

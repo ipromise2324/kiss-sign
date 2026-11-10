@@ -180,7 +180,8 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is not stopped this round.
 - The hardware wallet shows only the two hashes, not the decoded transaction. ERC-7730 clear signing does not yet cover Safe MultiSend batches.
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
-- For an executed transaction, the floor rules on the Safe's settings read the receipt's events. A storage write without an event shows only in a simulation; the static floor refuses every delegatecall that could make one.
+- For an executed transaction, the floor rules on the Safe's settings read the receipt's events. A storage write without an event shows only in a simulation. The static floor refuses a delegatecall from the Safe itself, but a call to an already enabled module can still make one through `execTransactionFromModule`.
+- The static floor refuses an ERC-20 approval only at or above 2^255, and a Permit2 approval only at the uint160 maximum. A token-specific sentinel such as 2^96-1 (UNI, COMP) passes the floor; the effects check refuses any measured allowance that does not end at its value before the transaction.
 - The simulation reads at most 50 modules. A Safe with more is `UNVERIFIABLE`.
 
 ## Later security upgrades

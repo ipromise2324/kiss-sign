@@ -41,11 +41,12 @@ const approval = (signature: string, token: 'target' | number, spender: number, 
   unlimited,
 });
 
-/** Argument positions by word. Permit2's `approve` names the token as its first argument and is called on Permit2. */
+/** Argument positions by word. An NFT approve-all is unlimited whenever its flag is set. Permit2's `approve` names the token as its first argument and is called on Permit2. */
 const APPROVALS: readonly Approval[] = [
   approval('approve(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20),
   approval('increaseAllowance(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20),
   approval('approve(address,address,uint160,uint48)', 0, 1, 2, PERMIT2_MAX),
+  approval('setApprovalForAll(address,bool)', 'target', 0, 1, 1n),
 ];
 
 const addressIn = (word: bigint): Address => `0x${word.toString(16).padStart(64, '0').slice(24)}` as Address;
