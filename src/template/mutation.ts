@@ -56,6 +56,7 @@ function mutate(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
   if (leaf.bytes === undefined) {
     if (leaf.arg === 'to') return { ...tx, to: `0x${bytesToHex(mutateBytes(leaf.type, hexToBytes(tx.to.slice(2))) as Uint8Array)}` as Address };
     if (leaf.arg === 'value') return { ...tx, value: nextInt({ kind: 'uint', bits: 256 }, tx.value) };
+    if (leaf.arg === 'nonce') return { ...tx, nonce: nextInt({ kind: 'uint', bits: 256 }, tx.nonce) };
     return undefined;
   }
   const data = hexToBytes(tx.data.slice(2));

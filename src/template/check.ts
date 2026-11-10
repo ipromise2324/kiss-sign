@@ -24,7 +24,7 @@ export type Finding = {
 
 /**
  * One argument the check compared, or let through as free. `bytes` is its span in `data`; absent, it is the Safe
- * transaction's own `to` or `value`.
+ * transaction's own `to`, `value` or `nonce`.
  */
 export type Leaf = {
   readonly callPath: string;
@@ -86,7 +86,7 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
         context.unverifiable.push(`the card has no ${rule.ref.field}`);
         return undefined;
       }
-      if (value.kind === 'amount') return { kind: 'uint', value: value.value };
+      if (value.kind === 'amount' || value.kind === 'nonce') return { kind: 'uint', value: value.value };
       if (value.kind === 'address') return { kind: 'address', value: value.address };
       if (rule.ref.attribute === undefined) return { kind: 'address', value: value.entry.address };
       const name = value.entry.attributes[rule.ref.attribute];
@@ -167,7 +167,14 @@ function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context): v
   }
   compareLeaf(call.to, { kind: 'address' }, { kind: 'address', value: inner.to }, inner.fields?.to, inner.path, 'to', context);
   compareLeaf(call.value, { kind: 'uint', bits: 256 }, { kind: 'uint', value: inner.value }, inner.fields?.value, inner.path, 'value', context);
-  checkCall(call, inner.data, inner.path, context);
+  if (call.data !== 'empty') {
+    checkCall(call.data, inner.data, inner.path, context);
+    return;
+  }
+  const length = inner.data.end - inner.data.start;
+  if (length > 0) {
+    context.findings.push({ callPath: inner.path, arg: 'data', bytes: [inner.data.start, inner.data.end], expected: 'no data', actual: `${length} bytes` });
+  }
 }
 
 export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[] };
@@ -193,15 +200,29 @@ export function inspectTemplateFields(
   registry: Registry,
 ): Inspection {
   const expected: { call: TemplateCall; values: ReadonlyMap<string, ResolvedValue> }[] = [];
+  const nonces: { rule: Rule; values: ReadonlyMap<string, ResolvedValue> }[] = [];
   for (const op of card.operations) {
     const template = templates.get(op.template);
     if (template === undefined) return { check: { kind: 'unverifiable', reasons: [`no template ${op.template}`] }, leaves: [] };
     expected.push(...template.calls.map((call) => ({ call, values: op.values })));
+    if (template.nonce !== undefined) nonces.push({ rule: template.nonce, values: op.values });
   }
   const findings: Finding[] = [];
   const unverifiable: string[] = [];
   const leaves: Leaf[] = [];
   const done = (check: FieldCheck): Inspection => ({ check, leaves });
+  const contextFor = (values: ReadonlyMap<string, ResolvedValue>, root: Uint8Array): Context => ({
+    safe: card.safe,
+    registry,
+    values,
+    findings,
+    unverifiable,
+    leaves,
+    root,
+  });
+  for (const { rule, values } of nonces) {
+    compareLeaf(rule, { kind: 'uint', bits: 256 }, { kind: 'uint', value: tx.nonce }, undefined, 'safeTx', 'nonce', contextFor(values, new Uint8Array()));
+  }
   if (tx.chainId !== REGISTRY_CHAIN_ID) {
     findings.push({ callPath: 'safeTx', arg: 'chainId', bytes: undefined, expected: String(REGISTRY_CHAIN_ID), actual: String(tx.chainId) });
   }
@@ -228,11 +249,12 @@ export function inspectTemplateFields(
       findings.push({ callPath: inner.path, arg: 'call', bytes: inner.span, expected: 'no call', actual: `a call to ${inner.to}` });
       continue;
     }
-    checkTopCall(wanted.call, inner, { safe: card.safe, registry, values: wanted.values, findings, unverifiable, leaves, root });
+    checkTopCall(wanted.call, inner, contextFor(wanted.values, root));
   }
   for (const [i, wanted] of expected.entries()) {
     if (i < calls.length) continue;
-    findings.push({ callPath: `multiSend[${i}]`, arg: 'call', bytes: undefined, expected: wanted.call.fn.signature, actual: 'missing' });
+    const signature = wanted.call.data === 'empty' ? 'a call without data' : wanted.call.data.fn.signature;
+    findings.push({ callPath: `multiSend[${i}]`, arg: 'call', bytes: undefined, expected: signature, actual: 'missing' });
   }
   if (findings.length > 0) return done({ kind: 'mismatch', findings });
   if (unverifiable.length > 0) return done({ kind: 'unverifiable', reasons: unverifiable });

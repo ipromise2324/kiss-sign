@@ -1,7 +1,7 @@
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import type { Registry } from '../registry.ts';
 import type { Address } from '../safe/types.ts';
-import type { CardRef, Template } from '../template/template.ts';
+import type { CardRef, Template, TokenRef } from '../template/template.ts';
 import type { Execution } from './events.ts';
 import type { SafeStateEvidence } from './safe-state.ts';
 
@@ -33,25 +33,31 @@ export type EffectVerdict =
   | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
 
 export type Expectations =
-  | { readonly kind: 'expected'; readonly changes: ReadonlyMap<Address, Expected> }
+  | { readonly kind: 'expected'; readonly changes: ReadonlyMap<Asset, Expected> }
   | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
 
-type TokenRef = { readonly token: Address } | { readonly problem: string };
+type Resolved = { readonly address: Address } | { readonly problem: string };
 
-function tokenOf(ref: CardRef, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): TokenRef {
+function addressOf(ref: CardRef, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): Resolved {
   const value = values.get(ref.field);
   if (value === undefined) return { problem: `the card has no ${ref.field}` };
-  if (value.kind === 'amount') return { problem: `card field ${ref.field} is an amount, not a token` };
-  if (value.kind === 'address') return { token: value.address };
-  if (ref.attribute === undefined) return { token: value.entry.address };
+  if (value.kind === 'amount' || value.kind === 'nonce') return { problem: `card field ${ref.field} is a number, not an address` };
+  if (value.kind === 'address') return { address: value.address };
+  if (ref.attribute === undefined) return { address: value.entry.address };
   const name = value.entry.attributes[ref.attribute];
   const target = name === undefined ? undefined : registry.entries.get(name);
-  return target === undefined ? { problem: `the registry has no ${ref.attribute} for ${value.name}` } : { token: target.address };
+  return target === undefined ? { problem: `the registry has no ${ref.attribute} for ${value.name}` } : { address: target.address };
 }
+
+const assetOf = (ref: TokenRef, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): { readonly asset: Asset } | { readonly problem: string } => {
+  if (ref === 'eth') return { asset: 'eth' };
+  const resolved = addressOf(ref, values, registry);
+  return 'problem' in resolved ? resolved : { asset: resolved.address };
+};
 
 /** The sum over the card's operations of what each template's effects say the Safe gives and gets. */
 export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Expectations {
-  const changes = new Map<Address, Expected>();
+  const changes = new Map<Asset, Expected>();
   const reasons: string[] = [];
   for (const op of card.operations) {
     const template = templates.get(op.template);
@@ -64,12 +70,20 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
       ...template.effects.gets.map((effect) => ({ effect, sign: 1n })),
     ];
     for (const { effect, sign } of sides) {
-      const ref = tokenOf(effect.token, op.values, registry);
+      const ref = assetOf(effect.token, op.values, registry);
       if ('problem' in ref) {
         reasons.push(ref.problem);
         continue;
       }
-      const { token } = ref;
+      if (effect.to !== undefined) {
+        const receiver = addressOf(effect.to, op.values, registry);
+        if ('problem' in receiver) {
+          reasons.push(receiver.problem);
+          continue;
+        }
+        if (receiver.address === card.safe) continue;
+      }
+      const token = ref.asset;
       const known = changes.get(token) ?? { kind: 'exactly', change: 0n };
       if (effect.amount.kind === 'positive') {
         changes.set(token, { kind: 'more-than', change: known.change });
@@ -104,11 +118,10 @@ export function judgeEffects(
   if (expectations.kind === 'unverifiable') return expectations;
   const NONE: Expected = { kind: 'exactly', change: 0n };
   const findings: EffectFinding[] = [];
-  const assets = new Set<Address>([...expectations.changes.keys(), ...observed.tokens.keys()]);
-  if (!meets(NONE, observed.eth)) findings.push({ kind: 'balance', asset: 'eth', expected: NONE, actual: observed.eth });
+  const assets = new Set<Asset>(['eth', ...expectations.changes.keys(), ...observed.tokens.keys()]);
   for (const asset of assets) {
     const expected = expectations.changes.get(asset) ?? NONE;
-    const actual = observed.tokens.get(asset) ?? 0n;
+    const actual = asset === 'eth' ? observed.eth : (observed.tokens.get(asset) ?? 0n);
     if (!meets(expected, actual)) findings.push({ kind: 'balance', asset, expected, actual });
   }
   for (const allowance of observed.allowances) {

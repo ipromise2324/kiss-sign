@@ -1,0 +1,18 @@
+{
+  "id": "safe/cancel",
+  "card": {
+    "nonce": { "kind": "nonce" }
+  },
+  "nonce": { "card": "nonce" },
+  "calls": [
+    {
+      "to": { "safe": true },
+      "value": { "const": "0" },
+      "data": "empty"
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": []
+  }
+}

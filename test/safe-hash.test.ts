@@ -14,7 +14,16 @@ type Fixture = {
   service: Record<string, unknown> & { safeTxHash: string; data: string | null };
 };
 
-const FIXTURES = ['morpho-vault-deposit', 'eth-transfer-null-data'] as const;
+const FIXTURES = [
+  'morpho-vault-deposit',
+  'eth-transfer-null-data',
+  'eth-transfer-first-nonce',
+  'erc20-transfer-usdc',
+  'erc20-transfer-usdc-other-safe',
+  'erc20-transfer-usdt',
+  'safe-cancel',
+  'safe-cancel-other-safe',
+] as const;
 
 function load(name: string): Fixture {
   return JSON.parse(readFileSync(join(import.meta.dirname, '..', 'testdata', 'safe-tx', `${name}.json`), 'utf8'));

@@ -27,6 +27,7 @@ export type Reader = {
   block(tag: BlockTag): Promise<Read<BlockRef>>;
   header(at: BlockRef): Promise<Read<BlockHeader>>;
   getCode(address: Address, at: BlockRef): Promise<Read<Hex>>;
+  getBalance(address: Address, at: BlockRef): Promise<Read<bigint>>;
   call(request: { readonly to: Address; readonly data: Hex }, at: BlockRef): Promise<Read<CallResult>>;
   getStorageAt(address: Address, slot: bigint, at: BlockRef): Promise<Read<Hex>>;
   getTransactionReceipt(hash: Hex): Promise<Read<Receipt | null>>;
@@ -217,6 +218,7 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
     },
     block,
     getCode: (address, at) => read(method('eth_getCode', parseData), [address, pinned(at)]),
+    getBalance: (address, at) => read(method('eth_getBalance', quantity), [address, pinned(at)]),
     getStorageAt: (address, slot, at) =>
       read(method('eth_getStorageAt', hash32), [address, hexQuantity(slot), pinned(at)]),
     call: (request, at) =>
