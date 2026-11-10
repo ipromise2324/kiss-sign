@@ -104,7 +104,7 @@ Sealed means hashed and stored where the AI cannot write.
 
 ### Verdict file
 
-Every input the verdict used, so `replay` can recompute it offline.
+Every input the verdict used, so `replay` can recompute it offline: the Safe transaction as given, the sealed card's text and hash, each template's text with its approved hash, the contract registry and the address-book entries the card names, all read at the origin/main commit the self-check passed on, and every request sent to the two providers with each one's answer. `replay` runs the same checks on these alone and reports whether the verdict is the one recorded.
 
 ## What goes on GitHub
 
