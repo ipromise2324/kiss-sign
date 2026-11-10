@@ -36,7 +36,7 @@ const lines = [
   `contract       ${proof.contractPath}:${proof.contractName}`,
   `functions      ${proof.abi.filter((entry) => entry.type === 'function').length}`,
   `codeHash       ${proof.codeHash}`,
-  `masked         ${proof.immutablesMasked} immutable spans, ${proof.librariesMasked} library spans`,
+  `masked         ${proof.immutablesMasked} immutable spans, ${proof.librariesMasked} library spans${proof.metadataHashMasked ? ', the metadata hash (Sourcify holds a partial match)' : ''}`,
   `took           ${seconds}s`,
 ];
 console.log(lines.join('\n'));

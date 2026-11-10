@@ -158,7 +158,7 @@ function checkCall(node: CallNode, region: Region, callPath: string, context: Co
   }
   const path = `${callPath}.${node.fn.name}`;
   node.fn.params.forEach((param, i) => {
-    checkValue(node.args[i] as Rule, param.type, decoded.args[i] as AbiValue, path, paramName(param, i), context, i === 0 ? itemContexts : undefined);
+    checkValue(node.args[i] as Rule, param.type, decoded.args[i] as AbiValue, path, paramName(param, i), context, itemContexts);
   });
 }
 
@@ -182,10 +182,10 @@ export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly
 
 type Values = ReadonlyMap<string, ResolvedValue>;
 
-/** One operation's items in a merged call, checked with that operation's card values. */
-type Part = { readonly items: readonly Rule[]; readonly values: Values };
+/** One operation's items in a merged call, per argument, checked with that operation's card values. */
+type Part = { readonly args: readonly (readonly Rule[])[]; readonly values: Values };
 
-/** A call the transaction must make. A merged call holds every part, in card order, as its one array argument. */
+/** A call the transaction must make. A merged call holds every part, in card order, in each of its array arguments. */
 type ExpectedCall = { readonly call: TemplateCall; readonly values: Values; readonly parts: readonly Part[] | undefined };
 
 function mergeKey(call: TemplateCall): string {
@@ -207,18 +207,20 @@ function expectedCalls(operations: readonly { readonly template: Template; reado
         plain.push({ call, values, parts: undefined });
         continue;
       }
-      const items = call.data.args[0];
-      if (items?.kind !== 'items') throw new Error('a merged call without an items argument');
+      const args = call.data.args.map((arg) => {
+        if (arg.kind !== 'items') throw new Error('a merged call with an argument not bound by items');
+        return arg.items;
+      });
       const key = mergeKey(call);
       const group = merged.get(key) ?? { call, values, parts: [] };
-      group.parts.push({ items: items.items, values });
+      group.parts.push({ args, values });
       merged.set(key, group);
     }
   }
   const joined = [...merged.values()].map(({ call, values, parts }): ExpectedCall => {
     const data = call.data as CallNode;
-    const items: Rule = { kind: 'items', items: parts.flatMap((part) => part.items) };
-    return { call: { ...call, data: { ...data, args: [items] } }, values, parts };
+    const args = data.args.map((_, a): Rule => ({ kind: 'items', items: parts.flatMap((part) => part.args[a] ?? []) }));
+    return { call: { ...call, data: { ...data, args } }, values, parts };
   });
   return [...plain, ...joined];
 }
@@ -294,7 +296,7 @@ export function inspectTemplateFields(
       findings.push({ callPath: inner.path, arg: 'call', bytes: inner.span, expected: 'no call', actual: `a call to ${inner.to}` });
       continue;
     }
-    const itemContexts = wanted.parts?.flatMap((part) => part.items.map(() => contextFor(part.values, root)));
+    const itemContexts = wanted.parts?.flatMap((part) => (part.args[0] ?? []).map(() => contextFor(part.values, root)));
     checkTopCall(wanted.call, inner, contextFor(wanted.values, root), itemContexts);
   }
   for (const [i, wanted] of expected.entries()) {

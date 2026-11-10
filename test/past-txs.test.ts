@@ -100,3 +100,16 @@ test('a template whose trailer allowance is shorter than real use lists those tr
   assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
   assert.match(text, /^ {2}2 from 1 Safe: more bytes after the arguments than the template allows, at multiSend\[1\]$/m);
 });
+
+test('an anchor with a sender asks both sources only for transfers out of it, and the report names it', async () => {
+  const claims: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'merkl-claim.json'), 'utf8'));
+  const { query } = claims;
+  const unfiltered = { token: query.token as Address, kind: query.anchor as AnchorKind, fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) };
+  const anchor = { ...unfiltered, from: query.from as Address };
+  const deps = { ask: replayAsk(claims.sources), reader: replayReader(claims.exchanges), registry, exclude: undefined, maxTxs: 200 };
+  const text = renderPastTxs(await pastTxs({ template: loadTemplate(ROOT, query.template, registry), anchor }, deps), registry);
+  assert.match(text, /^anchor: Transfer of morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 moved out of merkl-distributor, blocks 24020000 to 24030000$/m);
+  assert.match(text, /^sources: alchemy found 120, etherscan found 120; both 120, /m);
+  assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 2 from 2 Safes$/m);
+  await assert.rejects(pastTxs({ template: loadTemplate(ROOT, query.template, registry), anchor: unfiltered }, deps), /request not recorded/);
+});
