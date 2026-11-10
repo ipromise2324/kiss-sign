@@ -1,0 +1,77 @@
+{
+  "fetched": "2026-11-10",
+  "defillama": [
+    {
+      "slug": "morpho-blue",
+      "name": "Morpho Blue",
+      "url": "https://app.morpho.org"
+    },
+    {
+      "slug": "fluid-lending",
+      "name": "Fluid Lending",
+      "url": "https://www.fluid.io/"
+    },
+    {
+      "slug": "merkl",
+      "name": "Merkl",
+      "url": "https://app.merkl.xyz/"
+    },
+    {
+      "slug": "safe",
+      "name": "Safe",
+      "url": "https://safe.global/",
+      "github": [
+        "safe-global"
+      ]
+    },
+    {
+      "slug": "circle-usdc",
+      "name": "Circle USDC",
+      "url": "https://www.circle.com/en/"
+    },
+    {
+      "slug": "tether",
+      "name": "Tether",
+      "url": "https://tether.to/en/"
+    },
+    {
+      "slug": "circle-cctp",
+      "name": "Circle CCTP",
+      "url": "https://www.circle.com/cross-chain-transfer-protocol"
+    }
+  ],
+  "coingecko": [
+    {
+      "id": "instadapp",
+      "symbol": "fluid",
+      "name": "Fluid",
+      "platforms": {
+        "ethereum": "0x6f40d4a6237c257fff2db00fa0510deeecd303eb"
+      }
+    },
+    {
+      "id": "morpho",
+      "symbol": "morpho",
+      "name": "Morpho",
+      "platforms": {
+        "ethereum": "0x58d97b57bb95320f9a05dc918aef65434969c2b2"
+      }
+    },
+    {
+      "id": "tether",
+      "symbol": "usdt",
+      "name": "Tether",
+      "platforms": {
+        "ethereum": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+      }
+    },
+    {
+      "id": "usd-coin",
+      "symbol": "usdc",
+      "name": "USDC",
+      "platforms": {
+        "ethereum": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+      }
+    }
+  ]
+}

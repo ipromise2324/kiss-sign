@@ -24,6 +24,8 @@ export type RegistryEntry = {
   readonly attributes: { readonly [A in Attribute]?: string };
   /** A factory's view function that answers true only for a contract it created, such as `isMetaMorpho(address)`. */
   readonly instanceCheck?: AbiFunction;
+  /** The DefiLlama protocol slug this contract belongs to, such as `morpho-blue`; `pnpm check-sources` compares its listing with `source`. */
+  readonly defillama?: string;
   /** Recorded once the verify flow proves the code; absent until then. */
   readonly codeHash?: Hex;
 };
@@ -38,6 +40,9 @@ export const REGISTRY_PATH = join('registry', 'contracts.json');
 /** Lowercase words joined by `-` or `.`, such as `multisend-call-only-1.4.1`. `safe` names the Safe itself, `eth` native ETH. */
 export const NAME = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
 export const RESERVED_NAMES = ['safe', 'eth'] as const;
+
+/** A DefiLlama protocol slug, as `https://api.llama.fi/protocols` lists it. */
+const DEFILLAMA_SLUG = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
 
 export class RegistryError extends Error {
   override name = 'RegistryError';
@@ -83,7 +88,7 @@ function instanceCheckOf(path: string, raw: unknown): AbiFunction {
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'attributes', 'codeHash', 'instanceCheck']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'defillama', 'attributes', 'codeHash', 'instanceCheck']);
   let address: Address;
   let codeHash: Hex | undefined;
   try {
@@ -111,7 +116,18 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
       attributes[key] = target;
     }
   }
-  const entry = { name, address, kind, source: value.source, attributes, ...(codeHash === undefined ? {} : { codeHash }) };
+  if (value.defillama !== undefined && (typeof value.defillama !== 'string' || !DEFILLAMA_SLUG.test(value.defillama))) {
+    throw new RegistryError(`${path}.defillama`, 'not a DefiLlama protocol slug');
+  }
+  const entry = {
+    name,
+    address,
+    kind,
+    source: value.source,
+    attributes,
+    ...(value.defillama === undefined ? {} : { defillama: value.defillama }),
+    ...(codeHash === undefined ? {} : { codeHash }),
+  };
   if (kind !== 'factory') {
     if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
     return entry;
