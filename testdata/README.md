@@ -69,11 +69,11 @@ An optional third argument records at that block instead of the latest.
 - `executed` and `parent`: the block the transaction executed in, and the block the simulation sits on.
 - `exchanges`: each request's `method` and `params`, and `answers` keyed by provider. Only requests both providers answered are kept.
 
-The tests serve each provider its own recorded answer through the real reader, so parsing and agreement run as they do live. They simulate the deposit through `execTransaction` on the parent block, read its receipt, and judge both against the card.
+The tests serve each provider its own recorded answer through the real reader, so parsing and agreement run as they do live. They simulate the deposit through `execTransaction` on the parent block, read its receipt, and judge both against the card. The simulation also reads the Safe's singleton, threshold, owners, modules, guard and fallback handler just before and just after the transaction, and the floor rules require them unchanged.
 
 | File | Parent block | What the Safe gave and got |
 | --- | --- | --- |
-| `morpho-vault-deposit.json` | 26,048,222 | −1,800,000.000180 USDC, +1,742,403.090147006731022214 Steakhouse Prime USDC shares, no ETH; the USDC allowance to GeneralAdapter1 is 0 before and after |
+| `morpho-vault-deposit.json` | 26,048,222 | −1,800,000.000180 USDC, +1,742,403.090147006731022214 Steakhouse Prime USDC shares, no ETH; the USDC allowance to GeneralAdapter1 is 0 before and after; singleton `0x41675C099F32341bf84BFc5382aF534df5C7461a`, 6 owners, threshold 2, no modules, no guard, all unchanged |
 
 ### Recording again
 

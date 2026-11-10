@@ -11,6 +11,7 @@ import { parseRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
 import type { Hex } from '../src/safe/types.ts';
+import { checkSimulatedFloor } from '../src/floor/simulated.ts';
 import { describeFinding, expectedChanges, judgeEffects } from '../src/simulate/effects.ts';
 import { observeExecuted } from '../src/simulate/executed.ts';
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
@@ -116,7 +117,18 @@ function print(label: string, observation: Observation): void {
     console.log(`  ETH ${observed.eth}`);
     for (const [token, delta] of observed.tokens) console.log(`  ${name(token)} ${delta > 0n ? '+' : ''}${delta}`);
     for (const a of observed.allowances) console.log(`  allowance ${name(a.token)} to ${name(a.spender)}: ${a.before} -> ${a.after}`);
+    const evidence = observed.safeState;
+    if (evidence.kind === 'read') {
+      for (const [field, value] of Object.entries(evidence.before)) {
+        const after = evidence.after[field as keyof typeof evidence.after];
+        const show = (v: unknown) => (Array.isArray(v) ? `${v.length} entries` : String(v));
+        console.log(`  safe ${field}: ${show(value)}${String(after) === String(value) ? ' (unchanged)' : ` -> ${show(after)}`}`);
+      }
+    } else console.log(`  safe settings from ${evidence.logs.length} receipt logs`);
   }
+  const floor = checkSimulatedFloor(observed, safe);
+  if (floor.kind === 'pass') console.log('  simulated floor PASS');
+  else console.log(`  simulated floor REFUSED\n${floor.findings.map((f) => `    ${f.rule}: ${f.detail}`).join('\n')}`);
   const verdict = judgeEffects(observed, resolved, templates, registry);
   if (verdict.kind === 'match') console.log('  verdict MATCH');
   else if (verdict.kind === 'mismatch') console.log(`  verdict MISMATCH\n${verdict.findings.map((f) => `    ${describeFinding(f, registry)}`).join('\n')}`);

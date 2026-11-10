@@ -3,7 +3,7 @@ import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import type { EventLog } from '../chain/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
-const topic = (signature: string): Hex => `0x${bytesToHex(keccak_256(utf8ToBytes(signature)))}` as Hex;
+export const topic = (signature: string): Hex => `0x${bytesToHex(keccak_256(utf8ToBytes(signature)))}` as Hex;
 
 export const TRANSFER = topic('Transfer(address,address,uint256)');
 export const APPROVAL = topic('Approval(address,address,uint256)');

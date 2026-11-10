@@ -69,5 +69,6 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx): 
     if (typeof after === 'string') return unverifiable(after);
     allowances.push({ ...allowance, before, after });
   }
-  return { kind: 'observed', observed: { kind: 'executed', eth: ethIn - ethOut, tokens, allowances } };
+  const logs = receipt.logs.map(({ address, topics, data }) => ({ address, topics, data }));
+  return { kind: 'observed', observed: { kind: 'executed', eth: ethIn - ethOut, tokens, allowances, safeState: { kind: 'receipt', logs } } };
 }
