@@ -5,10 +5,8 @@ import type { RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 
-/** One protocol from DefiLlama's `/protocols` list: its home page and the GitHub organizations it names. */
 export type DefiLlamaProtocol = { readonly slug: string; readonly name: string; readonly url: URL | undefined; readonly github: readonly string[] };
 
-/** One CoinGecko coin that has an Ethereum mainnet contract. */
 export type CoinGeckoCoin = { readonly id: string; readonly symbol: string; readonly name: string; readonly ethereum: Address };
 
 export type Listings = {
@@ -36,7 +34,7 @@ function httpsUrl(raw: unknown): URL | undefined {
   }
 }
 
-/** Parses DefiLlama's `https://api.llama.fi/protocols` answer. A protocol without a slug is skipped. */
+/** A protocol without a slug is skipped. */
 export function parseDefiLlamaProtocols(raw: unknown): Map<string, DefiLlamaProtocol> {
   if (!Array.isArray(raw)) throw new ListingError('DefiLlama sent no protocol list');
   const protocols = new Map<string, DefiLlamaProtocol>();
@@ -86,7 +84,6 @@ export function registrableDomain(host: string): string {
   return labels.slice(-take).join('.');
 }
 
-/** The organization of a `github.com/<org>/...` URL, lowercased; undefined for any other host. */
 export function githubOrg(url: URL): string | undefined {
   if (url.hostname.toLowerCase() !== 'github.com') return undefined;
   const org = url.pathname.split('/')[1];
@@ -122,7 +119,6 @@ function coingeckoLine(entry: RegistryEntry, coinsByAddress: ReadonlyMap<Address
   return { kind: 'agrees', check: 'coingecko', text: `CoinGecko lists ${named} at this address on ethereum` };
 }
 
-/** Compares each entry's source with its DefiLlama protocol, and each token's address with CoinGecko's. */
 export function checkSources(entries: readonly RegistryEntry[], listings: Listings): EntryResult[] {
   return entries.map((entry) => ({
     entry,
@@ -144,7 +140,7 @@ export function formatResults(results: readonly EntryResult[]): string {
 export const DEFILLAMA_PROTOCOLS = { hostname: 'api.llama.fi', path: '/protocols' } as const;
 export const COINGECKO_COINS = { hostname: 'api.coingecko.com', path: '/api/v3/coins/list?include_platform=true' } as const;
 
-/** GETs one listing and parses its JSON. Both answers are public and need no key. */
+/** Both answers are public and need no key. */
 export async function fetchListing(target: { readonly hostname: string; readonly path: string }): Promise<unknown> {
   let answer;
   try {

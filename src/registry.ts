@@ -41,7 +41,6 @@ export const REGISTRY_PATH = join('registry', 'contracts.json');
 export const NAME = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
 export const RESERVED_NAMES = ['safe', 'eth'] as const;
 
-/** A DefiLlama protocol slug, as `https://api.llama.fi/protocols` lists it. */
 const DEFILLAMA_SLUG = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
 
 export class RegistryError extends Error {

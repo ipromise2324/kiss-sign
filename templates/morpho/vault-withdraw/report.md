@@ -8,7 +8,7 @@ Withdrawing from several vaults at once is a card with one operation per vault. 
 
 ## Warning: the effects refuse the Morpho app's withdrawals of an amount
 
-The app approves GeneralAdapter1 for `assets × 1e27 / minSharePriceE27` shares, the most the withdrawal may burn at the price bound. The vault burns fewer, because the price at execution is above the bound. Part of the approval stays open after the transaction, and the effects check refuses any allowance that does not end where it started.
+The app approves GeneralAdapter1 for `assets × 1e27 / minSharePriceE27` shares, the most the withdrawal may burn at the price bound. The vault burns fewer, because the price at execution is above the bound. Part of the approval stays open after the transaction, and the effects check refuses any allowance that ends higher than it started.
 
 Every withdrawal of an amount that `pnpm simulate` ran gave `MISMATCH` for this reason alone, both from other Safes and every one in the signer's own history: the field checks match, and the balances match the card. The recorded case `morpho-withdraw-open-allowance` shows it: the allowance went from 4,850,840,670,525,793,065 to 40,963,643,267,656,996,464 shares.
 
