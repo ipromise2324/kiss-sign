@@ -123,7 +123,7 @@ export function nodeIo(): Io {
     stdout: (text) => void process.stdout.write(text),
     stderr: (text) => void process.stderr.write(text),
     readSecret: process.stdin.isTTY ? (question) => hiddenPrompt(question, process.stdin, process.stderr) : undefined,
-    confirm: process.stdin.isTTY ? askYes : undefined,
+    ask: process.stdin.isTTY ? askLine : undefined,
     repoRoot: join(import.meta.dirname, '..', '..'),
     transport: httpsTransport(),
     fetchJson: async (url) => {
@@ -134,12 +134,12 @@ export function nodeIo(): Io {
   };
 }
 
-async function askYes(question: string): Promise<boolean> {
+async function askLine(question: string): Promise<string | undefined> {
   const terminal = createInterface({ input: process.stdin, output: process.stderr });
   try {
-    return /^y(es)?$/i.test((await terminal.question(question)).trim());
+    return await terminal.question(question);
   } catch {
-    return false;
+    return undefined;
   } finally {
     terminal.close();
   }

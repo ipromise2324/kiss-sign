@@ -9,16 +9,27 @@ const ROOT = join(import.meta.dirname, '..');
 const SAFE = '0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0';
 const RECIPIENT = '0x1111111111111111111111111111111111111111';
 
-async function run(argv: string[], home: string, answer?: boolean) {
+/** A typed line, or one worked out from what the command has printed so far. */
+type Answer = string | ((stdout: string) => string);
+
+async function run(argv: string[], home: string, answers?: readonly Answer[]) {
   let stdout = '';
   let stderr = '';
   const asked: string[] = [];
+  const queue = [...(answers ?? [])];
   const code = await main(argv, {
     env: { KISS_SIGN_HOME: home },
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     readSecret: undefined,
-    confirm: answer === undefined ? undefined : async (question) => (asked.push(question), answer),
+    ask:
+      answers === undefined
+        ? undefined
+        : async (question) => {
+            asked.push(question);
+            const next = queue.shift();
+            return typeof next === 'function' ? next(stdout) : next;
+          },
     repoRoot: ROOT,
     transport: async () => assert.fail('setup commands read no chain'),
     fetchJson: async () => assert.fail('setup commands fetch nothing'),
@@ -47,10 +58,10 @@ test('book add refuses without a terminal and adds nothing', async () => {
 
 test('book add shows the full address, adds it on yes, and book list prints it', async () => {
   const home = freshHome();
-  const declined = await run(['book', 'add', 'alice', RECIPIENT], home, false);
+  const declined = await run(['book', 'add', 'alice', RECIPIENT], home, ['n']);
   assert.equal(declined.code, 1);
   assert.equal(existsSync(join(home, 'address-book.json')), false);
-  const added = await run(['book', 'add', 'alice', RECIPIENT], home, true);
+  const added = await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   assert.equal(added.code, 0);
   assert.match(added.stdout, new RegExp(`alice -> ${RECIPIENT}`));
   assert.equal((await run(['book', 'list'], home)).stdout, `alice ${RECIPIENT}\n`);
@@ -61,7 +72,7 @@ test('card seal prints every name with its full address and stores the card unde
   await run(['init', '--safe', SAFE], home);
   const card = join(home, 'card.json');
   writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: '5' } }] }));
-  const sealed = await run(['card', 'seal', card], home, true);
+  const sealed = await run(['card', 'seal', card], home, ['y']);
   assert.equal(sealed.code, 0, sealed.stderr);
   assert.match(sealed.stdout, /vault: steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51/);
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
@@ -73,7 +84,7 @@ test('card seal refuses a name in neither the registry nor the address book', as
   await run(['init', '--safe', SAFE], home);
   const card = join(home, 'card.json');
   writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'no-such-vault', amount: '5' } }] }));
-  const result = await run(['card', 'seal', card], home, true);
+  const result = await run(['card', 'seal', card], home, ['y']);
   assert.equal(result.code, 1);
   assert.match(result.stderr, /no-such-vault/);
   assert.deepEqual(result.asked, []);
