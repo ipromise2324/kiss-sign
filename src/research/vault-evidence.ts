@@ -1,5 +1,6 @@
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import type { Reader } from '../chain/reader.ts';
+import { proveInstance } from '../contracts/instance.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Transport } from '../chain/rpc.ts';
 import type { BlockRef } from '../chain/types.ts';
@@ -261,4 +262,24 @@ export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry)
     `top 10       hold ${percent(topSum, supply)} of the shares; each: ${top.map((b) => percent(b, supply)).join(', ')}`,
   );
   return out.join('\n');
+}
+
+/**
+ * What `pnpm vault-evidence` prints: a vault that names a factory is read only after that factory answers that it
+ * created the vault, since the numbers come from the vault's own code. `read` is false when nothing was read.
+ */
+export async function vaultEvidenceText(reader: Reader, alchemy: AlchemyCall, registry: Registry, vault: RegistryEntry): Promise<{ readonly read: boolean; readonly text: string }> {
+  const lines: string[] = [];
+  if (vault.attributes.factory === undefined) {
+    lines.push(`NOTE ${vault.name} names no factory, so no factory vouches for the code these numbers come from`);
+  } else {
+    const latest = await reader.block('latest');
+    if (latest.kind === 'unverifiable') return { read: false, text: `UNVERIFIABLE ${latest.reason}` };
+    const admitted = await proveInstance(reader, registry, vault.name, latest.value);
+    if (admitted.kind === 'refused') return { read: false, text: `REFUSED ${admitted.why}; the vault's code is not read` };
+    lines.push(`admitted     ${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${latest.value.number}`);
+  }
+  const evidence = await gatherVaultEvidence(reader, alchemy, vault);
+  if ('kind' in evidence) return { read: false, text: [...lines, `UNVERIFIABLE ${evidence.reason}`].join('\n') };
+  return { read: true, text: [...lines, formatVaultEvidence(evidence, registry)].join('\n') };
 }

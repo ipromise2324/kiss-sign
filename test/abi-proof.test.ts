@@ -5,34 +5,20 @@ import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import type { ProviderName } from '../src/chain/providers.ts';
-import type { Read, Reader } from '../src/chain/reader.ts';
-import type { BlockRef } from '../src/chain/types.ts';
+import type { Read } from '../src/chain/reader.ts';
 import { namedSignatureOfAbiEntry, parseFunctionSignature } from '../src/decode/abi.ts';
+import { abiCaseBlock, abiCaseReader, abiCaseSourcify } from '../src/contracts/abi-case.ts';
+import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal, Refusal } from '../src/contracts/prove.ts';
 import { EIP1967_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
-import { pinnedCompilers } from '../src/contracts/solc.ts';
-import type { Compilers } from '../src/contracts/solc.ts';
+import { cachedCompilers, pinnedCompilers } from '../src/contracts/solc.ts';
 import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SourcifyAnswer } from '../src/contracts/sourcify.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 
-type Recorded = { method: string; args: unknown[]; value: unknown };
-type Fixture = {
-  address: Address;
-  block: { number: string; hash: Hex };
-  providers: [ProviderName, ProviderName];
-  reads: Recorded[];
-  sourcify: Record<string, SourcifyAnswer>;
-};
+const load = (name: string): AbiCase => JSON.parse(readFileSync(join(import.meta.dirname, '..', 'testdata', 'abi', `${name}.json`), 'utf8')) as AbiCase;
 
-const load = (name: string): Fixture =>
-  JSON.parse(readFileSync(join(import.meta.dirname, '..', 'testdata', 'abi', `${name}.json`), 'utf8')) as Fixture;
-
-const blockOf = (fixture: Fixture): BlockRef => ({ number: BigInt(fixture.block.number), hash: fixture.block.hash });
-
-const NOT_RECORDED = 'not recorded';
 const unverifiable = <T>(reason: string): Read<T> => ({
   kind: 'unverifiable',
   reason,
@@ -41,52 +27,6 @@ const unverifiable = <T>(reason: string): Read<T> => ({
     { provider: 'drpc', kind: 'failed', cause: 'no-answer' },
   ],
 });
-
-/** Answers only the reads the recording made, at the recorded block, as both providers agreed on them. */
-function replay(fixture: Fixture, extra: Recorded[] = [], overrides: Partial<Reader> = {}): Reader {
-  const reads = [...extra, ...fixture.reads];
-  const answer = <T>(at: BlockRef, method: string, args: unknown[]): Promise<Read<T>> => {
-    const found = reads.find((read) => read.method === method && JSON.stringify(read.args) === JSON.stringify(args));
-    if (at.hash !== fixture.block.hash || found === undefined) return Promise.resolve(unverifiable(NOT_RECORDED));
-    return Promise.resolve({ kind: 'agreed', value: found.value as T, providers: fixture.providers });
-  };
-  return {
-    providers: fixture.providers,
-    blockNumber: () => Promise.resolve(unverifiable(NOT_RECORDED)),
-    block: () => Promise.resolve(unverifiable(NOT_RECORDED)),
-    header: () => Promise.resolve(unverifiable(NOT_RECORDED)),
-    simulateV1: () => Promise.resolve(unverifiable(NOT_RECORDED)),
-    getTransactionReceipt: () => Promise.resolve(unverifiable(NOT_RECORDED)),
-    getTransaction: () => Promise.resolve(unverifiable(NOT_RECORDED)),
-    getBalance: () => Promise.resolve(unverifiable(NOT_RECORDED)),
-    getCode: (address, at) => answer(at, 'getCode', [address]),
-    getStorageAt: (address, slot, at) => answer(at, 'getStorageAt', [address, `0x${slot.toString(16)}`]),
-    call: (request, at) => answer(at, 'call', [request.to, request.data]),
-    ...overrides,
-  };
-}
-
-const sourcifyOf =
-  (answers: Record<string, SourcifyAnswer>) =>
-  async (address: Address): Promise<SourcifyAnswer> =>
-    answers[address] ?? { status: 404, body: { error: 'not found' } };
-
-/** The pinned compilers from vendor/solc, with each compile kept so a test that repeats a source does not wait again. */
-function cachedCompilers(): Compilers {
-  const pinned = pinnedCompilers();
-  const outputs = new Map<string, string>();
-  return (version) => {
-    const load = pinned(version);
-    if (load.kind !== 'loaded') return load;
-    const compile = (input: string) => {
-      const key = `${version}\n${input}`;
-      const output = outputs.get(key) ?? load.solc.compile(input);
-      outputs.set(key, output);
-      return output;
-    };
-    return { kind: 'loaded', solc: { version, compile } };
-  };
-}
 
 const compilers = cachedCompilers();
 
@@ -103,7 +43,7 @@ function refusal(result: AbiProof | AbiRefusal): Refusal {
   return (result as AbiRefusal).refusal;
 }
 
-const codeHashOf = (fixture: Fixture, address: string): Hex => {
+const codeHashOf = (fixture: AbiCase, address: string): Hex => {
   const code = fixture.reads.find((read) => read.method === 'getCode' && read.args[0] === address)?.value as string;
   return `0x${bytesToHex(keccak_256(hexToBytes(code.slice(2))))}` as Hex;
 };
@@ -277,9 +217,9 @@ const PARTIAL = ['morpho-urd', 'cctp-message-transmitter'];
 for (const expected of CASES) {
   test(`${expected.name}: the pinned solc rebuilds the code read on chain, so its ABI is proven`, async () => {
     const fixture = load(expected.name);
-    const proof = proven(await proveAbi(replay(fixture), fixture.address, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers }));
+    const proof = proven(await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
     assert.equal(proof.address, fixture.address);
-    assert.deepEqual(proof.block, blockOf(fixture));
+    assert.deepEqual(proof.block, abiCaseBlock(fixture));
     assert.deepEqual(proof.providers, fixture.providers);
     assert.equal(proof.proxy.kind, expected.proxy);
     assert.equal(proof.proven, expected.proven);
@@ -300,7 +240,7 @@ for (const expected of CASES) {
 
 test('a proxy names its implementation, and a Safe proxy names its factory', async () => {
   const safe = load('safe-proxy-1-3-0');
-  const proof = proven(await proveAbi(replay(safe), safe.address, blockOf(safe), { sourcify: sourcifyOf(safe.sourcify), compilers }));
+  const proof = proven(await proveAbi(abiCaseReader(safe), safe.address, abiCaseBlock(safe), { sourcify: abiCaseSourcify(safe.sourcify), compilers }));
   assert.deepEqual(proof.proxy, { kind: 'safe', factory: 'GnosisSafeProxy 1.3.0', implementation: '0x3e5c63644e683549055b9be8653de26e0b4cd36e' });
 });
 
@@ -308,7 +248,7 @@ test("GeneralAdapter1's source is refused for Bundler3's code", async () => {
   const bundler3 = load('bundler3');
   const adapter = load('general-adapter1').sourcify[GENERAL_ADAPTER1] as SourcifyAnswer;
   const lying = { [BUNDLER3]: { status: 200, body: { ...(adapter.body as object), address: BUNDLER3 } } };
-  const refused = refusal(await proveAbi(replay(bundler3), BUNDLER3, blockOf(bundler3), { sourcify: sourcifyOf(lying), compilers }));
+  const refused = refusal(await proveAbi(abiCaseReader(bundler3), BUNDLER3, abiCaseBlock(bundler3), { sourcify: abiCaseSourcify(lying), compilers }));
   assert.equal(refused.why, 'bytecode-mismatch');
   assert.match(describeRefusal(refused), /compiled code differs from the code at 0x6566194141eefa99af43bb5aa71460ca2dc90245/);
 });
@@ -319,7 +259,7 @@ test('a source with one changed literal is refused', async () => {
   const file = answer.body.stdJsonInput.sources['src/Bundler3.sol'] as { content: string };
   assert.ok(file.content.includes('bundle.length > 0'));
   file.content = file.content.replace('bundle.length > 0', 'bundle.length > 1');
-  const refused = refusal(await proveAbi(replay(fixture), BUNDLER3, blockOf(fixture), { sourcify: sourcifyOf({ [BUNDLER3]: answer }), compilers }));
+  const refused = refusal(await proveAbi(abiCaseReader(fixture), BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({ [BUNDLER3]: answer }), compilers }));
   assert.equal(refused.why, 'bytecode-mismatch');
 });
 
@@ -330,7 +270,7 @@ test('code whose trailer carries no metadata hash still has every byte compared:
   assert.ok(file !== undefined);
   file.content = file.content.replace('MAX_PERFORMANCE_FEE = 0.5e18', 'MAX_PERFORMANCE_FEE = 0.6e18');
   const refused = refusal(
-    await proveAbi(replay(fixture), fixture.address, blockOf(fixture), { sourcify: sourcifyOf({ [fixture.address]: answer }), compilers }),
+    await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({ [fixture.address]: answer }), compilers }),
   );
   assert.equal(refused.why, 'bytecode-mismatch');
 });
@@ -342,7 +282,7 @@ test('a partial match is proven only up to the metadata hash: one changed litera
   assert.ok(file.content.includes('claimable > claimed[account][reward]'));
   file.content = file.content.replace('claimable > claimed[account][reward]', 'claimable >= claimed[account][reward]');
   const refused = refusal(
-    await proveAbi(replay(fixture), fixture.address, blockOf(fixture), { sourcify: sourcifyOf({ [fixture.address]: answer }), compilers }),
+    await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({ [fixture.address]: answer }), compilers }),
   );
   assert.equal(refused.why, 'bytecode-mismatch');
 });
@@ -356,7 +296,7 @@ test('a partial match whose code on chain differs outside the metadata hash is r
     return { ...read, value: `${code.slice(0, at)}${code[at] === '0' ? '1' : '0'}${code.slice(at + 1)}` };
   });
   const refused = refusal(
-    await proveAbi(replay({ ...fixture, reads }), fixture.address, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers }),
+    await proveAbi(abiCaseReader({ ...fixture, reads }), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }),
   );
   assert.equal(refused.why, 'bytecode-mismatch');
 });
@@ -368,7 +308,7 @@ test('a compiler file whose sha256 differs from the pin is refused', async () =>
   assert.ok(pin !== undefined);
   writeFileSync(join(dir, pin.file), 'var Module = {};\n');
   const refused = refusal(
-    await proveAbi(replay(fixture), BUNDLER3, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers: pinnedCompilers(dir) }),
+    await proveAbi(abiCaseReader(fixture), BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers: pinnedCompilers(dir) }),
   );
   assert.equal(refused.why, 'compiler-hash-mismatch');
   assert.match(describeRefusal(refused), /not the pinned 72ef580a.*pnpm fetch-solc/);
@@ -378,7 +318,7 @@ test('a missing compiler file is refused with the command that fetches it', asyn
   const fixture = load('bundler3');
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-solc-'));
   const refused = refusal(
-    await proveAbi(replay(fixture), BUNDLER3, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers: pinnedCompilers(dir) }),
+    await proveAbi(abiCaseReader(fixture), BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers: pinnedCompilers(dir) }),
   );
   assert.equal(refused.why, 'compiler-missing');
   assert.match(describeRefusal(refused), /run `pnpm fetch-solc`/);
@@ -388,20 +328,20 @@ test('a compiler version with no pin is refused', async () => {
   const fixture = load('bundler3');
   const answer = structuredClone(fixture.sourcify[BUNDLER3]) as { status: number; body: { compilation: { compilerVersion: string } } };
   answer.body.compilation.compilerVersion = '0.8.29+commit.ab55807c';
-  const refused = refusal(await proveAbi(replay(fixture), BUNDLER3, blockOf(fixture), { sourcify: sourcifyOf({ [BUNDLER3]: answer }), compilers }));
+  const refused = refusal(await proveAbi(abiCaseReader(fixture), BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({ [BUNDLER3]: answer }), compilers }));
   assert.deepEqual(refused, { why: 'compiler-not-pinned', version: '0.8.29+commit.ab55807c' });
 });
 
 test('an unverifiable code read is refused, not proven', async () => {
   const fixture = load('bundler3');
-  const reader = replay(fixture, [], { getCode: () => Promise.resolve(unverifiable('eth_getCode: alchemy and drpc disagree')) });
-  const refused = refusal(await proveAbi(reader, BUNDLER3, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers }));
+  const reader = abiCaseReader(fixture, [], { getCode: () => Promise.resolve(unverifiable('eth_getCode: alchemy and drpc disagree')) });
+  const refused = refusal(await proveAbi(reader, BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
   assert.deepEqual(refused, { why: 'unverifiable', read: 'eth_getCode: alchemy and drpc disagree' });
 });
 
 test('a contract Sourcify has not verified is refused', async () => {
   const fixture = load('bundler3');
-  const refused = refusal(await proveAbi(replay(fixture), BUNDLER3, blockOf(fixture), { sourcify: sourcifyOf({}), compilers }));
+  const refused = refusal(await proveAbi(abiCaseReader(fixture), BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({}), compilers }));
   assert.deepEqual(refused, { why: 'not-on-sourcify', at: BUNDLER3 });
 });
 
@@ -409,8 +349,8 @@ test('an EIP-1167 minimal proxy proves the code it delegates to', async () => {
   const fixture = load('bundler3');
   const clone = `0x${'c1'.repeat(20)}` as Address;
   const code = `0x363d3d373d3d3d363d73${BUNDLER3.slice(2)}5af43d82803e903d91602b57fd5bf3`;
-  const reader = replay(fixture, [{ method: 'getCode', args: [clone], value: code }]);
-  const proof = proven(await proveAbi(reader, clone, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers }));
+  const reader = abiCaseReader(fixture, [{ method: 'getCode', args: [clone], value: code }]);
+  const proof = proven(await proveAbi(reader, clone, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
   assert.deepEqual(proof.proxy, { kind: 'eip1167', implementation: BUNDLER3 });
   assert.equal(proof.contractName, 'Bundler3');
 });
@@ -418,15 +358,15 @@ test('an EIP-1167 minimal proxy proves the code it delegates to', async () => {
 test('an EIP-1967 slot on code that cannot DELEGATECALL is refused', async () => {
   const fixture = load('bundler3');
   const slot = `0x${EIP1967_IMPLEMENTATION_SLOT.toString(16)}`;
-  const reader = replay(fixture, [{ method: 'getStorageAt', args: [BUNDLER3, slot], value: `0x${GENERAL_ADAPTER1.slice(2).padStart(64, '0')}` }]);
-  const refused = refusal(await proveAbi(reader, BUNDLER3, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers }));
+  const reader = abiCaseReader(fixture, [{ method: 'getStorageAt', args: [BUNDLER3, slot], value: `0x${GENERAL_ADAPTER1.slice(2).padStart(64, '0')}` }]);
+  const refused = refusal(await proveAbi(reader, BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
   assert.equal(refused.why, 'slot-without-delegatecall');
 });
 
 test('an address with no code is refused', async () => {
   const fixture = load('bundler3');
   const empty = `0x${'e0'.repeat(20)}` as Address;
-  const reader = replay(fixture, [{ method: 'getCode', args: [empty], value: '0x' }]);
-  const refused = refusal(await proveAbi(reader, empty, blockOf(fixture), { sourcify: sourcifyOf(fixture.sourcify), compilers }));
+  const reader = abiCaseReader(fixture, [{ method: 'getCode', args: [empty], value: '0x' }]);
+  const refused = refusal(await proveAbi(reader, empty, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
   assert.deepEqual(refused, { why: 'no-code', at: empty });
 });
