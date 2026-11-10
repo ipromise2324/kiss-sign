@@ -196,3 +196,20 @@ test('the operations of a merged multicall must be on the card, in its order', (
 test('two redeems of all, from two vaults, match their effects simulated and from their receipt', async () => {
   assert.deepEqual(await observe('morpho-withdraw-two-vaults-all', BOTH_ALL), { simulated: { kind: 'match' }, receipt: { kind: 'match' } });
 });
+
+test('a redeem of all whose shares another transaction in the same block also moved cannot be judged from its receipt', async () => {
+  const fixture = recording('morpho-withdraw-all');
+  const tx = safeTx(fixture.safeTx);
+  const balanceOf = `0x70a08231${tx.safe.slice(2).toLowerCase().padStart(64, '0')}`;
+  const leftOver = `0x${(1n).toString(16).padStart(64, '0')}`;
+  const exchanges = fixture.exchanges.map((exchange) => {
+    const [request, at] = exchange.params as [{ data?: string }, { blockHash?: string }];
+    if (exchange.method !== 'eth_call' || request.data !== balanceOf || at.blockHash !== fixture.parent.hash) return exchange;
+    const answers = exchange.answers as Record<string, string>;
+    return { ...exchange, answers: Object.fromEntries(Object.entries(answers).map(([provider, answer]) => [provider, `0x${(BigInt(answer) + BigInt(leftOver)).toString(16).padStart(64, '0')}`])) };
+  });
+  const resolvedCard = resolved(tx, card(withdrawAll()));
+  const observation = await observeExecuted(replayReader(exchanges), fixture.transactionHash, tx, endsNeeded(expectedChanges(resolvedCard, templates, registry)));
+  assert.equal(observation.kind, 'unverifiable');
+  assert.match(observation.kind === 'unverifiable' ? observation.reasons.join('; ') : '', /another transaction in block \d+ moved the Safe's/);
+});
