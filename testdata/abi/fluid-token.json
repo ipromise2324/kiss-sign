@@ -1,8 +1,8 @@
 {
   "address": "0x6f40d4a6237c257fff2db00fa0510deeecd303eb",
   "block": {
-    "number": "26385368",
-    "hash": "0x23211a3a77a39c69256656008b6ca21f30128a57b50f7f5a1428ecb387333b46"
+    "number": "26385844",
+    "hash": "0x2a50d3e33090038cbeb5a070acbebfd149d8135528291a569a2072a808c33582"
   },
   "providers": [
     "alchemy",
@@ -29,6 +29,14 @@
       "args": [
         "0x6f40d4a6237c257fff2db00fa0510deeecd303eb",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50"
+      ],
+      "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "method": "getStorageAt",
+      "args": [
+        "0x6f40d4a6237c257fff2db00fa0510deeecd303eb",
+        "0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3"
       ],
       "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
     }

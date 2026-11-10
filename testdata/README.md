@@ -122,6 +122,8 @@ The last argument is a nonce (the executed transaction at that nonce) or a safeT
 
 The tests replay the reads, compile the Sourcify source with the pinned solc from `vendor/solc/`, and require the proof.
 
+Code that can DELEGATECALL and has neither EIP-1967 slot set also has its ZeppelinOS implementation slot read, so the fixtures of such contracts hold that read too.
+
 | File | Address | Proxy | Code compiled |
 | --- | --- | --- | --- |
 | `bundler3.json` | Morpho Bundler3 `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | none | `Bundler3`, solc 0.8.28 |
