@@ -29,7 +29,8 @@ export type CardRefusal =
   | 'ambiguous-name'
   | 'wrong-contract-kind'
   | 'not-an-amount'
-  | 'not-a-nonce';
+  | 'not-a-nonce'
+  | 'not-the-same';
 
 export type Resolution =
   | { readonly kind: 'resolved'; readonly card: ResolvedCard }
@@ -134,6 +135,17 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
           break;
         }
       }
+    }
+    const named = template.same.map((ref) => {
+      const value = values.get(ref.field);
+      if (value?.kind === 'address') return { text: `${ref.field} ${value.name}`, address: value.address };
+      if (value?.kind !== 'contract') return { text: ref.field, address: undefined };
+      const name = ref.attribute === undefined ? value.name : value.entry.attributes[ref.attribute];
+      const text = ref.attribute === undefined ? `${ref.field} ${value.name}` : `${ref.field}.${ref.attribute} ${name ?? 'none'}`;
+      return { text, address: name === undefined ? undefined : context.registry.entries.get(name)?.address };
+    });
+    if (named.some((n) => n.address === undefined || n.address !== named[0]?.address)) {
+      return refuse('not-the-same', '', `${template.id} needs one address for ${named.map((n) => n.text).join(' and ')}`);
     }
     operations.push({ template: template.id, values });
   }
