@@ -181,3 +181,13 @@ test("a batch card's effects are the sum over its operations", () => {
   assert.deepEqual(judge(twice, depositCard(AMOUNT, 2)), { kind: 'match' });
   assert.equal(judge(depositEffects(), depositCard(AMOUNT, 2)).kind, 'mismatch');
 });
+
+test('a receipt that executed two Safe transactions cannot judge either, and says why', async () => {
+  const { EXECUTION_SUCCESS, executionOf } = await import('../src/simulate/events.ts');
+  const safe = '0x1111111111111111111111111111111111111111' as Address;
+  const hash = (n: number) => `0x${n.toString(16).padStart(64, '0')}` as Hex;
+  const log = (n: number) => ({ address: safe, topics: [EXECUTION_SUCCESS, hash(n)], data: `0x${'0'.repeat(64)}` as Hex });
+  assert.equal(executionOf([log(1)], safe, hash(1)), 'success');
+  assert.equal(executionOf([log(1), log(2)], safe, hash(1)), 'several-safe-executions-in-one-transaction');
+  assert.equal(executionOf([], safe, hash(1)), 'no-execution-event');
+});

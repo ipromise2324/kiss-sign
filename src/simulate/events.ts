@@ -46,16 +46,18 @@ export function touchedBy(logs: readonly EventLog[], safe: Address): Touched {
   return { tokens, approvals };
 }
 
-export type Execution = 'success' | 'reverted' | 'execution-failure' | 'other-safe-tx-hash' | 'no-execution-event';
+export type Execution = 'success' | 'reverted' | 'execution-failure' | 'other-safe-tx-hash' | 'no-execution-event' | 'several-safe-executions-in-one-transaction';
 
 /**
  * A `delegatecall` runs in the Safe's context and can log a forged execution event from the Safe's address, so
- * anything but exactly one event is refused. Safe 1.3.0 logs the hash as data, 1.4.1 and later as an indexed topic.
+ * anything but exactly one event is refused. Several events also come from one Ethereum transaction that executes several
+ * Safe transactions; its receipt mixes their effects, so it cannot judge any one of them. Safe 1.3.0 logs the hash as data, 1.4.1 and later as an indexed topic.
  */
 export function executionOf(logs: readonly EventLog[], safe: Address, safeTxHash: Hex): Execution {
   const events = logs.filter((log) => log.address === safe && (log.topics[0] === EXECUTION_SUCCESS || log.topics[0] === EXECUTION_FAILURE));
   const [event] = events;
-  if (event === undefined || events.length !== 1) return 'no-execution-event';
+  if (event === undefined) return 'no-execution-event';
+  if (events.length > 1) return 'several-safe-executions-in-one-transaction';
   if (event.topics[0] === EXECUTION_FAILURE) return 'execution-failure';
   const hash = event.topics.length === 2 ? event.topics[1] : event.data.slice(0, 66);
   return hash === safeTxHash ? 'success' : 'other-safe-tx-hash';

@@ -34,10 +34,15 @@ export function selfCheck(root: string): SelfCheck {
 export function fetchOriginMain(root: string): string | undefined {
   try {
     git(root, 'fetch', '--quiet', 'origin');
-    return git(root, 'rev-parse', 'refs/remotes/origin/main').trim();
+    return localOriginMain(root);
   } catch {
     return undefined;
   }
+}
+
+/** The commit origin/main names in this clone, without fetching. */
+export function localOriginMain(root: string): string {
+  return git(root, 'rev-parse', 'refs/remotes/origin/main').trim();
 }
 
 /** A file's text at `commit`, so a template or the registry counts only once it is merged. */
