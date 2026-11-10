@@ -2,8 +2,14 @@ import { execFileSync } from 'node:child_process';
 
 export type SelfCheck = { readonly kind: 'clean'; readonly commit: string } | { readonly kind: 'differs'; readonly problems: readonly string[] };
 
+/** Git without any GIT_* variable from the caller, which could point it at another repository, and without replace refs. */
+const gitEnv = (): NodeJS.ProcessEnv => ({
+  ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_'))),
+  GIT_NO_REPLACE_OBJECTS: '1',
+});
+
 const git = (root: string, ...args: string[]): string =>
-  execFileSync('git', args, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 26 });
+  execFileSync('git', args, { cwd: root, env: gitEnv(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 26 });
 
 /**
  * Fetches origin and requires the checkout at `root` to be exactly origin/main: the same commit, no change to a tracked
@@ -17,6 +23,10 @@ export function selfCheck(root: string): SelfCheck {
   if (head !== main) problems.push(`HEAD is ${head}, origin/main is ${main}`);
   const status = git(root, 'status', '--porcelain=v1', '--untracked-files=all', '--ignored=no').split('\n').filter(Boolean);
   for (const line of status) problems.push(`${line.startsWith('??') ? 'untracked' : 'changed'}: ${line.slice(3)}`);
+  // A skip-worktree (S) or assume-unchanged (lowercase) flag hides a changed file from git status.
+  const hidden = git(root, 'ls-files', '-v').split('\n').filter((line) => line !== '' && (line[0] === 'S' || line[0] !== line[0]!.toUpperCase()));
+  for (const line of hidden) problems.push(`hidden from git status: ${line.slice(2)}`);
+  for (const ref of git(root, 'replace', '-l').split('\n').filter(Boolean)) problems.push(`git replace ref: ${ref}`);
   return problems.length === 0 ? { kind: 'clean', commit: main } : { kind: 'differs', problems };
 }
 

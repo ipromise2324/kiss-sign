@@ -23,11 +23,15 @@ const SERVICE = 'https://api.safe.global/tx-service/eth/api/v1';
 
 export const verdictsDir = (home: string): string => join(home, 'verdicts');
 
-function print({ verdict, hashes }: Evaluation, io: Io): void {
+function print({ verdict, hashes }: Evaluation, io: Io, replaying = false): void {
   io.stdout(`${verdict.kind}\n`);
   if (verdict.kind === 'MATCH') {
     io.stdout(`  domain hash   ${hashes.domainHash}\n  message hash  ${hashes.messageHash}\n  safeTxHash    ${hashes.safeTxHash}\n`);
-    io.stdout('Compare the domain hash and the message hash on the hardware wallet before you sign.\n');
+    io.stdout(
+      replaying
+        ? 'This is a replay of a recorded verdict, not permission to sign. Run kiss-sign verify before signing.\n'
+        : 'Compare the domain hash and the message hash on the hardware wallet before you sign.\n',
+    );
     return;
   }
   for (const cause of verdict.causes) for (const detail of cause.details) io.stdout(`  ${cause.check}: ${detail}\n`);
@@ -101,7 +105,7 @@ export async function replay(args: readonly string[], io: Io): Promise<number> {
   if (path === undefined || extra.length > 0) throw new UsageError('replay takes the path of one verdict file.');
   const file = parseVerdictFile(JSON.parse(readFileSync(path, 'utf8')));
   const result = await evaluate(file.inputs, replayReader(file.exchanges));
-  print(result, io);
+  print(result, io, true);
   if (canonicalJson(result) !== canonicalJson(file.result)) {
     io.stderr(`kiss-sign: the recorded verdict was ${file.result.verdict.kind}; this program now gives another result.\n`);
     return FAILED;

@@ -182,6 +182,8 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
 - For an executed transaction, the floor rules on the Safe's settings read the receipt's events. A storage write without an event shows only in a simulation. The static floor refuses a delegatecall from the Safe itself, but a call to an already enabled module can still make one through `execTransactionFromModule`.
 - The static floor refuses an ERC-20 approval only at or above 2^255, and a Permit2 approval only at the uint160 maximum. A token-specific sentinel such as 2^96-1 (UNI, COMP) passes the floor; the effects check refuses any measured allowance that does not end at its value before the transaction.
+- The self-check does not check where `origin` points, and it does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.
+- `replay` trusts the verdict file it is given. It shows what a recorded verdict was based on; it is not permission to sign.
 - The simulation reads at most 50 modules. A Safe with more is `UNVERIFIABLE`.
 
 ## Later security upgrades

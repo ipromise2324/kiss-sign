@@ -103,3 +103,36 @@ test('verify stops on a changed checkout, names the file, and verifies nothing',
   assert.equal(stdout, '');
   assert.equal(existsSync(join(home, 'verdicts')), false);
 });
+
+test('a change hidden by skip-worktree or assume-unchanged is still named', () => {
+  const { clone } = cloneOfOrigin();
+  git(clone, 'update-index', '--skip-worktree', 'src/cli/main.ts');
+  git(clone, 'update-index', '--assume-unchanged', 'registry/contracts.json');
+  write(clone, 'src/cli/main.ts', 'MATCH always\n');
+  write(clone, 'registry/contracts.json', '{"evil":true}\n');
+  assert.deepEqual(problemsOf(clone), ['hidden from git status: registry/contracts.json', 'hidden from git status: src/cli/main.ts']);
+});
+
+test('a git replace ref fails the self-check', () => {
+  const { clone } = cloneOfOrigin();
+  const blob = git(clone, 'rev-parse', 'HEAD:registry/contracts.json').trim();
+  write(clone, '../evil.json', '{"evil":true}\n');
+  const evil = git(clone, 'hash-object', '-w', '../evil.json').trim();
+  git(clone, 'replace', blob, evil);
+  assert.deepEqual(problemsOf(clone), [`git replace ref: ${blob}`]);
+});
+
+test('GIT_DIR and GIT_WORK_TREE in the environment cannot point the self-check at another clone', () => {
+  const edited = cloneOfOrigin().clone;
+  const clean = cloneOfOrigin().clone;
+  write(edited, 'src/cli/main.ts', 'MATCH always\n');
+  const saved = { dir: process.env.GIT_DIR, tree: process.env.GIT_WORK_TREE };
+  process.env.GIT_DIR = join(clean, '.git');
+  process.env.GIT_WORK_TREE = clean;
+  try {
+    assert.deepEqual(problemsOf(edited), ['changed: src/cli/main.ts']);
+  } finally {
+    if (saved.dir === undefined) delete process.env.GIT_DIR; else process.env.GIT_DIR = saved.dir;
+    if (saved.tree === undefined) delete process.env.GIT_WORK_TREE; else process.env.GIT_WORK_TREE = saved.tree;
+  }
+});
