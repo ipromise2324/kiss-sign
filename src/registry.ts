@@ -1,13 +1,15 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { AbiSignatureError, parseFunctionSignature } from './decode/abi.ts';
+import type { AbiFunction } from './decode/abi.ts';
 import { SafeTxParseError, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 
-export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter'] as const;
+export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory'] as const;
 export type ContractKind = (typeof CONTRACT_KINDS)[number];
 
 /** What a registry entry may say about itself, each naming another registry entry, and which kinds may say it. */
-export const ATTRIBUTES = { asset: { of: ['vault'], names: 'token' } } as const satisfies Record<
+export const ATTRIBUTES = { asset: { of: ['vault'], names: 'token' }, factory: { of: ['vault'], names: 'factory' } } as const satisfies Record<
   string,
   { of: readonly ContractKind[]; names: ContractKind }
 >;
@@ -20,6 +22,8 @@ export type RegistryEntry = {
   /** A page that names this address as this contract. */
   readonly source: string;
   readonly attributes: { readonly [A in Attribute]?: string };
+  /** A factory's view function that answers true only for a contract it created, such as `isMetaMorpho(address)`. */
+  readonly instanceCheck?: AbiFunction;
   /** Recorded once the verify flow proves the code; absent until then. */
   readonly codeHash?: Hex;
 };
@@ -63,10 +67,23 @@ function onlyKeys(path: string, value: Record<string, unknown>, allowed: readonl
   if (extra !== undefined) throw new RegistryError(`${path}.${extra}`, 'unexpected field');
 }
 
+function instanceCheckOf(path: string, raw: unknown): AbiFunction {
+  if (typeof raw !== 'string') throw new RegistryError(path, 'not a function signature');
+  let fn: AbiFunction;
+  try {
+    fn = parseFunctionSignature(raw);
+  } catch (error) {
+    if (error instanceof AbiSignatureError) throw new RegistryError(path, error.message);
+    throw error;
+  }
+  if (fn.params.length !== 1 || fn.params[0]?.type.kind !== 'address') throw new RegistryError(path, 'must take exactly one address');
+  return fn;
+}
+
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'attributes', 'codeHash']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'attributes', 'codeHash', 'instanceCheck']);
   let address: Address;
   let codeHash: Hex | undefined;
   try {
@@ -94,8 +111,12 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
       attributes[key] = target;
     }
   }
-  const entry = { name, address, kind, source: value.source, attributes };
-  return codeHash === undefined ? entry : { ...entry, codeHash };
+  const entry = { name, address, kind, source: value.source, attributes, ...(codeHash === undefined ? {} : { codeHash }) };
+  if (kind !== 'factory') {
+    if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
+    return entry;
+  }
+  return { ...entry, instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck) };
 }
 
 export function parseRegistry(raw: unknown): Registry {
