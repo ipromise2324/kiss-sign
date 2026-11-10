@@ -2,19 +2,16 @@
   "fetched": "2026-11-10",
   "defillama": [
     {
-      "slug": "morpho-blue",
-      "name": "Morpho Blue",
-      "url": "https://app.morpho.org"
+      "slug": "circle-usdc",
+      "name": "Circle USDC",
+      "url": "https://www.circle.com/en/",
+      "github": []
     },
     {
-      "slug": "fluid-lending",
-      "name": "Fluid Lending",
-      "url": "https://www.fluid.io/"
-    },
-    {
-      "slug": "merkl",
-      "name": "Merkl",
-      "url": "https://app.merkl.xyz/"
+      "slug": "tether",
+      "name": "Tether",
+      "url": "https://tether.to/en/",
+      "github": []
     },
     {
       "slug": "safe",
@@ -25,22 +22,63 @@
       ]
     },
     {
-      "slug": "circle-usdc",
-      "name": "Circle USDC",
-      "url": "https://www.circle.com/en/"
+      "slug": "morpho-blue",
+      "name": "Morpho Blue",
+      "url": "https://app.morpho.org/",
+      "github": []
     },
     {
-      "slug": "tether",
-      "name": "Tether",
-      "url": "https://tether.to/en/"
+      "slug": "fluid-lending",
+      "name": "Fluid Lending",
+      "url": "https://www.fluid.io/",
+      "github": []
+    },
+    {
+      "slug": "merkl",
+      "name": "Merkl",
+      "url": "https://app.merkl.xyz/",
+      "github": []
     },
     {
       "slug": "circle-cctp",
       "name": "Circle CCTP",
-      "url": "https://www.circle.com/cross-chain-transfer-protocol"
+      "url": "https://www.circle.com/cross-chain-transfer-protocol",
+      "github": []
     }
   ],
   "coingecko": [
+    {
+      "id": "usd-coin",
+      "symbol": "usdc",
+      "name": "USDC",
+      "platforms": {
+        "ethereum": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+      }
+    },
+    {
+      "id": "tether",
+      "symbol": "usdt",
+      "name": "Tether",
+      "platforms": {
+        "ethereum": "0xdac17f958d2ee523a2206206994597c13d831ec7"
+      }
+    },
+    {
+      "id": "steakhouse-usdc",
+      "symbol": "steakusdc",
+      "name": "Steakhouse USDC V2",
+      "platforms": {
+        "ethereum": "0xbeef088055857739c12cd3765f20b7679def0f51"
+      }
+    },
+    {
+      "id": "mev-capital-usual-boosted-usdc-morpho-vault",
+      "symbol": "usualusdc+",
+      "name": "MEV Capital Usual Boosted USDC Morpho Vault",
+      "platforms": {
+        "ethereum": "0xd63070114470f685b75b74d60eec7c1113d33a3d"
+      }
+    },
     {
       "id": "instadapp",
       "symbol": "fluid",
@@ -58,19 +96,11 @@
       }
     },
     {
-      "id": "tether",
-      "symbol": "usdt",
-      "name": "Tether",
+      "id": "steakhouse-high-yield-usdc",
+      "symbol": "bbqusdc",
+      "name": "Steakhouse High Yield USDC",
       "platforms": {
-        "ethereum": "0xdac17f958d2ee523a2206206994597c13d831ec7"
-      }
-    },
-    {
-      "id": "usd-coin",
-      "symbol": "usdc",
-      "name": "USDC",
-      "platforms": {
-        "ethereum": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+        "ethereum": "0xbeeff2c5bf38f90e3482a8b19f12e5a6d2fca757"
       }
     }
   ]

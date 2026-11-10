@@ -12,11 +12,13 @@ import {
   parseDefiLlamaProtocols,
   trimForRecording,
 } from '../src/research/listings.ts';
+import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 
 const USAGE = `usage: node scripts/check-sources.ts [<registry name>...] [--record <name>]
 
-Compares each registry entry's source domain with its DefiLlama protocol's website or GitHub org, and each token's
-address with CoinGecko's Ethereum contract. With no names it checks every entry. Every disagreement prints as FINDING.`;
+Compares each registry entry's source domain (by the Public Suffix List in vendor/publicsuffix/) with its DefiLlama
+protocol's website, or its GitHub org with the protocol's orgs, and checks that CoinGecko lists each token's or vault
+share's own coin id at its address. With no names it checks every entry. Every disagreement prints as FINDING.`;
 
 const { values: flags, positionals: names } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
@@ -31,13 +33,13 @@ if (unknown.length > 0) {
 const entries = names.length === 0 ? [...registry.entries.values()] : names.map((name) => registry.entries.get(name)!);
 
 const [defillama, coingecko] = await Promise.all([fetchListing(DEFILLAMA_PROTOCOLS), fetchListing(COINGECKO_COINS)]);
-const listings = { protocols: parseDefiLlamaProtocols(defillama), coinsByAddress: parseCoinGeckoCoins(coingecko) };
+const listings = { protocols: parseDefiLlamaProtocols(defillama), coinsByAddress: parseCoinGeckoCoins(coingecko), suffixes: loadPublicSuffixList() };
 console.log(formatResults(checkSources(entries, listings)));
 
 if (flags.record !== undefined) {
   const dir = join(root, 'testdata', 'sources');
   mkdirSync(dir, { recursive: true });
   const path = join(dir, `${flags.record}.json`);
-  writeFileSync(path, `${JSON.stringify(trimForRecording(entries, defillama, coingecko, new Date()), null, 2)}\n`);
+  writeFileSync(path, `${JSON.stringify(trimForRecording(entries, listings, new Date()), null, 2)}\n`);
   console.log(`recorded ${path}`);
 }

@@ -26,6 +26,8 @@ export type RegistryEntry = {
   readonly instanceCheck?: AbiFunction;
   /** The DefiLlama protocol slug this contract belongs to, such as `morpho-blue`; `pnpm check-sources` compares its listing with `source`. */
   readonly defillama?: string;
+  /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
+  readonly coingecko?: string;
   /** Recorded once the verify flow proves the code; absent until then. */
   readonly codeHash?: Hex;
 };
@@ -42,6 +44,8 @@ export const NAME = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
 export const RESERVED_NAMES = ['safe', 'eth'] as const;
 
 const DEFILLAMA_SLUG = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
+const COINGECKO_ID = /^[a-z0-9]+([._-][a-z0-9]+)*$/;
+export const COINGECKO_KINDS: readonly ContractKind[] = ['token', 'vault'];
 
 export class RegistryError extends Error {
   override name = 'RegistryError';
@@ -87,7 +91,7 @@ function instanceCheckOf(path: string, raw: unknown): AbiFunction {
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'defillama', 'attributes', 'codeHash', 'instanceCheck']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'defillama', 'coingecko', 'attributes', 'codeHash', 'instanceCheck']);
   let address: Address;
   let codeHash: Hex | undefined;
   try {
@@ -118,6 +122,10 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
   if (value.defillama !== undefined && (typeof value.defillama !== 'string' || !DEFILLAMA_SLUG.test(value.defillama))) {
     throw new RegistryError(`${path}.defillama`, 'not a DefiLlama protocol slug');
   }
+  if (value.coingecko !== undefined) {
+    if (typeof value.coingecko !== 'string' || !COINGECKO_ID.test(value.coingecko)) throw new RegistryError(`${path}.coingecko`, 'not a CoinGecko coin id');
+    if (!COINGECKO_KINDS.includes(kind)) throw new RegistryError(`${path}.coingecko`, `a ${kind} has no coingecko`);
+  }
   const entry = {
     name,
     address,
@@ -125,6 +133,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     source: value.source,
     attributes,
     ...(value.defillama === undefined ? {} : { defillama: value.defillama }),
+    ...(value.coingecko === undefined ? {} : { coingecko: value.coingecko }),
     ...(codeHash === undefined ? {} : { codeHash }),
   };
   if (kind !== 'factory') {
