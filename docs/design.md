@@ -204,6 +204,20 @@ Templates are read from that commit, so a template counts only after its pull re
 
 This catches accidental edits and an AI that was tricked into changing a check or a template. It cannot catch an AI that deliberately rewrites both a check and the self-check itself, because the self-check is part of the same program. See Known limits and Later security upgrades.
 
+## The signer's steps run where the AI cannot write
+
+`verify`, `card seal` and `template approve` run from a clone and a `$KISS_SIGN_HOME` that no AI session can write. The self-check runs inside the program it checks, so it cannot be the only lock.
+
+The standard setup is a Claude Code managed-settings file. `kiss-sign managed-settings` prints it as JSON, with the clone it runs from and the resolved `$KISS_SIGN_HOME` filled in, and prints on stderr the `sudo` commands that install it. The signer installs it once, from their own terminal, on the device they sign on. kiss-sign never installs it. Managed settings sit above every user, project and local setting, and a file owned by root cannot be edited without `sudo`. The file sets:
+
+- `permissions.disableBypassPermissionsMode: "disable"`, so no session runs without permission checks;
+- `permissions.deny` with `Edit(//<clone>/**)`, `Read(//<clone>/**)`, `Edit(//<home>/**)`, `Read(//<home>/**)` and `Read(~/.kiss-sign/.env)`, where `//` marks an absolute path;
+- `sandbox.enabled`, `sandbox.failIfUnavailable` and `sandbox.allowUnsandboxedCommands: false`, so every shell command runs in the sandbox, which also enforces the deny rules on scripts, and Claude Code refuses to start when the sandbox cannot run.
+
+With it installed, the AI works in a different clone and opens pull requests from there. The deny rules also keep the AI's scripts from reading the API keys in `$KISS_SIGN_HOME/.env`, so a research script that needs a key runs in the signer's own terminal.
+
+Stricter options are a separate OS account for signing, which the AI's account cannot read or write, or a signing device with no AI on it.
+
 ## Known limits
 
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used. Etherscan offers no free API for them. The verified contract name and the creator, read from the contract's Etherscan page, are used instead.
@@ -211,7 +225,7 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - drpc routes requests to third-party nodes, including public ones. Its independence from Alchemy is not proven.
 - Two providers stop one lying provider, not two that collude or share a backend.
 - Simulating an executed transaction on the parent block is not its exact pre-state, because earlier transactions in its block also changed state. For executed transactions, receipts read from two providers are the source of truth.
-- The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is not stopped this round.
+- The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is stopped only by the managed-settings file, which the signer installs, and only for Claude Code. Another agent needs its own equivalent.
 - The hardware wallet shows only the two hashes, not the decoded transaction. ERC-7730 clear signing does not yet cover Safe MultiSend batches.
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
 - For an executed transaction, the Safe's ETH change is its balance at the execution block minus its balance at the parent block, since no log shows ETH sent as the value of `execTransaction` itself. Another transaction in the same block that moves the Safe's ETH changes that number too; the field checks still bind the value of every call the Safe makes.
@@ -220,7 +234,7 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - The static floor refuses an ERC-20 approval only at or above 2^255, and a Permit2 approval only at the uint160 maximum. A token-specific sentinel such as 2^96-1 (UNI, COMP) passes the floor; the effects check refuses any measured allowance, ERC-20 or Permit2, that ends above its value before the transaction.
 - Not yet seen by effects: an NFT `setApprovalForAll`, ERC-1155 balances and approvals, Aave's `approveDelegation`, Compound Comet's `allow`, and allowances in the Safe AllowanceModule. A change to any of them moves no balance the program measures. Permit2 is read only at its canonical address. A transaction that lets the Safe accept EIP-1271 signatures moves no allowance now but enables a later `permit`; the floor rules already refuse the usual routes, a delegatecall to SignMessageLib and a fallback handler change. The static floor refuses `setApprovalForAll` when it is set, and a call that changes only one of them is marked as moving no asset.
 - The mark on calls that move no asset is per call the Safe makes. A call that moves an asset and also grants a permission, such as a `multicall` that deposits and authorizes, is not marked. Each call runs as its own Safe transaction, so a contract that reads the Safe's nonce or the transaction's origin can act differently than in the real batch; a call that does not execute that way makes the scan unreadable, which `verify` prints. For an executed transaction the scan is a simulation on the parent block, not its exact pre-state.
-- The official repository URL is a constant in the program, so an AI that repoints `origin` to a fork whose program accepts that fork passes the self-check. It reads where `origin` points, not how git reaches it: git config such as `core.sshCommand`, a proxy, or a turned-off TLS check can serve another repository under the official URL. The self-check does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.
+- The official repository URL is a constant in the program, so an AI that repoints `origin` to a fork whose program accepts that fork passes the self-check. It reads where `origin` points, not how git reaches it: git config such as `core.sshCommand`, a proxy, or a turned-off TLS check can serve another repository under the official URL; the managed-settings file keeps the AI from writing the clone's git config. The self-check does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.
 - `replay` trusts the verdict file it is given. It shows what a recorded verdict was based on; it is not permission to sign.
 - When the code on chain ends in a metadata trailer without a source hash, as solc writes with `bytecodeHash: "none"`, matching bytecode proves the ABI's selectors and types but not its parameter names, since no byte on chain depends on them.
 - When Sourcify holds only a partial match, the source compiles to the code on chain except the IPFS metadata hash, which hashes the source text. The proof masks that hash, so it too proves the ABI's selectors and types but not its parameter names.
@@ -234,7 +248,7 @@ Not built now. Listed so the path is clear.
 - **Light client (Helios).** Verifies every read against the beacon chain, so one provider is enough. Needs `eth_getProof` (Alchemy has it) and a local EVM to simulate on proven state.
 - **Local simulation (anvil).** Free and open source. Adds execution diversity. On its own it trusts the same RPC state.
 - **A paid or third provider.** Removes rate and range limits and adds an independent source.
-- **Lock the AI out of the program.** Ship `.claude/settings.json` with deny rules for program code, settings, `gh pr merge`, and pushes to `main`; these hold even in bypass-permissions mode. Add the agent's sandbox, so a script cannot write the program either. Other agents need their own equivalent.
+- **Keep the AI from merging.** Deny rules for `gh pr merge` and pushes to `main`, or a GitHub account for the AI without merge rights.
 - **Clear signing on the wallet (ERC-7730).** Export templates as display descriptors so the device shows the decoded call. Wait until wallets decode Safe MultiSend batches; until then, hash comparison stays.
 
 ## Next phase: CoW orders
