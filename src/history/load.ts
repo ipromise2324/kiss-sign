@@ -149,7 +149,7 @@ function loadIntents(path: string, txs: readonly HistoryTx[]): Map<number, Inten
 }
 
 /** `{ "<nonce>": "<text>" }`, or `{ "<nonce>": { "note": "<text>", "spentBy": <nonce> } }` for an approval a later nonce spends. */
-function loadNotes(path: string): Map<number, Note> {
+function loadNotes(path: string, txs: readonly HistoryTx[]): Map<number, Note> {
   const text = readOptional(path);
   const notes = new Map<number, Note>();
   if (text === undefined) return notes;
@@ -167,7 +167,12 @@ function loadNotes(path: string): Map<number, Note> {
     }
     const spentBy = nonceOf(`${where}.spentBy`, note.spentBy);
     if (spentBy <= nonce) throw new HistoryError(`${where}.spentBy: an approval is spent by a later nonce`);
+    if (!txs.some((tx) => tx.nonce === spentBy)) throw new HistoryError(`${where}.spentBy: no executed transaction at nonce ${spentBy} in the history`);
     notes.set(nonce, { text: note.note, spentBy });
+  }
+  for (const [nonce, { spentBy }] of notes) {
+    const next = spentBy === undefined ? undefined : notes.get(spentBy)?.spentBy;
+    if (next !== undefined) throw new HistoryError(`${path}.${nonce}.spentBy: nonce ${spentBy} is itself an approval spent by nonce ${next}`);
   }
   return notes;
 }
@@ -262,7 +267,7 @@ export function loadHistory(home: string, safe: Address): History {
   return {
     txs,
     intents: loadIntents(join(dir, 'intents.json'), txs),
-    notes: loadNotes(join(dir, 'notes.json')),
+    notes: loadNotes(join(dir, 'notes.json'), txs),
     cards: loadCards(join(dir, 'cards')),
     book: loadBook(join(dir, 'address-book.json')),
     registryOverlay: loadOverlay(join(dir, 'registry.json')),
