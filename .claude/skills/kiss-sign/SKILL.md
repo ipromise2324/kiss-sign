@@ -36,6 +36,7 @@ Work on a branch. Each step's output goes into `templates/<protocol>/<operation>
    - Find it in the protocol's official docs and its official GitHub organization, on the default branch. Cross-check at least two of them. Skip forks, issues, pull requests, and sponsored search results.
    - Prove it on chain with `pnpm prove-abi <address>`. It prints the proxy kind, the implementation, the compiler, and the code hash.
    - Read the address's Etherscan page: the verified contract name, the creator, and the creation transaction. The creator must be the deployer or factory the docs name.
+   - For a contract a factory makes, such as a vault, register the factory (kind `factory`, with its `instanceCheck`), prove the factory's ABI, give the contract a `factory` attribute, and run `pnpm prove-instance <name>`. The factory must answer true.
    - Look the contract up in the ERC-7730 clear-signing registry. Report the descriptor if one exists. It is a second opinion on field meanings, never a rule.
    - Add each contract to `registry/contracts.json` with a name, a `kind`, the official `source` page that names it, and `attributes` where the kind needs them (a vault's `asset`).
 3. **Establish the ABI.** `pnpm prove-abi` compiles the Sourcify source with a pinned solc and compares it with the code on chain. Take function signatures only from a proven ABI. Record the proof in a fixture with `pnpm record-abi-case <name> <address>`.
@@ -55,9 +56,9 @@ Work on a branch. Each step's output goes into `templates/<protocol>/<operation>
 
 A new vault for an existing template changes only `registry/contracts.json`.
 
-1. Do step 2 of [Build a template](#build-a-template) for the vault and its asset token. Confirm a factory the template's report names created the vault.
+1. Do step 2 of [Build a template](#build-a-template) for the vault and its asset token. Name a factory the template's report names in the vault's `factory` attribute, and confirm with `pnpm prove-instance <vault>` that it created the vault.
 2. Run `pnpm past-txs` for the existing template with the vault as `--token`. Note the counts.
-3. Open a pull request that changes only `registry/contracts.json`. Put a short report in the pull request description: the vault's sources, the `pnpm prove-abi` result, the Etherscan name and creator, the `pnpm past-txs` counts, and any health findings with citations.
+3. Open a pull request that changes only `registry/contracts.json`. Put a short report in the pull request description: the vault's sources, the `pnpm prove-abi` and `pnpm prove-instance` results, the Etherscan name and creator, the `pnpm past-txs` counts, and any health findings with citations.
 
 ## Prepare a signing
 

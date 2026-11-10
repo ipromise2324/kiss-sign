@@ -191,7 +191,11 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
     const top = [...selectors].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([sel, k]) => `${sel} in ${k}`).join(', ');
     lines.push(`  ${n} ${why} (called ${top}${selectors.size > 4 ? ', …' : ''})`);
   }
-  if (unreadable.length > 0) lines.push(`  ${unreadable.length} unreadable (the two providers did not agree): ${examples(unreadable.map((s) => s.hash))}`);
+  const unreadableGroups = new Map<string, Hex[]>();
+  for (const s of unreadable) unreadableGroups.set(s.reason, [...(unreadableGroups.get(s.reason) ?? []), s.hash]);
+  for (const [reason, hashes] of [...unreadableGroups].sort((a, b) => b[1].length - a[1].length)) {
+    lines.push(`  ${hashes.length} unreadable, ${reason}: ${examples(hashes)}`);
+  }
   lines.push(`fit the template's shape: ${plural(fits.length, 'transaction')} from ${plural(safesOf(fits), 'Safe')}; misfits: ${misfits.length} from ${plural(safesOf(misfits), 'Safe')}`);
 
   if (fits.length > 0) {

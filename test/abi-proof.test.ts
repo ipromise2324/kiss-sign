@@ -146,6 +146,36 @@ const CASES = [
     uses: [],
   },
   {
+    name: 'morpho-vault-v2-apex',
+    proxy: 'none',
+    proven: '0x093272c07700d3ca5301c3bf9b3a392624179e2f',
+    contract: '../lib/vault-v2/src/VaultV2.sol:VaultV2',
+    compiler: '0.8.28+commit.7893614a',
+    functions: 97,
+    immutables: 12,
+    uses: ['deposit(uint256 assets,address onBehalf)', 'asset()'],
+  },
+  {
+    name: 'metamorpho-v1-0-steakhouse-usdt',
+    proxy: 'none',
+    proven: '0xbeef047a543e45807105e51a8bbefcc5950fcfba',
+    contract: 'src/MetaMorpho.sol:MetaMorpho',
+    compiler: '0.8.21+commit.d9974bed',
+    functions: 73,
+    immutables: 32,
+    uses: ['deposit(uint256 assets,address receiver)', 'asset()'],
+  },
+  {
+    name: 'metamorpho-v1-1-apex',
+    proxy: 'none',
+    proven: '0x777791c4d6dc2ce140d00d2828a7c93503c67777',
+    contract: 'src/MetaMorphoV1_1.sol:MetaMorphoV1_1',
+    compiler: '0.8.26+commit.8a97fa7a',
+    functions: 76,
+    immutables: 32,
+    uses: ['deposit(uint256 assets,address receiver)', 'asset()'],
+  },
+  {
     name: 'safe-proxy-1-3-0',
     proxy: 'safe',
     proven: '0x3e5c63644e683549055b9be8653de26e0b4cd36e',
@@ -202,6 +232,18 @@ test('a source with one changed literal is refused', async () => {
   assert.ok(file.content.includes('bundle.length > 0'));
   file.content = file.content.replace('bundle.length > 0', 'bundle.length > 1');
   const refused = refusal(await proveAbi(replay(fixture), BUNDLER3, blockOf(fixture), { sourcify: sourcifyOf({ [BUNDLER3]: answer }), compilers }));
+  assert.equal(refused.why, 'bytecode-mismatch');
+});
+
+test('code whose trailer carries no metadata hash still has every byte compared: one changed literal is refused', async () => {
+  const fixture = load('morpho-vault-v2-apex');
+  const answer = structuredClone(fixture.sourcify[fixture.address]) as { status: number; body: { stdJsonInput: { sources: Record<string, { content: string }> } } };
+  const file = Object.values(answer.body.stdJsonInput.sources).find(({ content }) => content.includes('MAX_PERFORMANCE_FEE = 0.5e18'));
+  assert.ok(file !== undefined);
+  file.content = file.content.replace('MAX_PERFORMANCE_FEE = 0.5e18', 'MAX_PERFORMANCE_FEE = 0.6e18');
+  const refused = refusal(
+    await proveAbi(replay(fixture), fixture.address, blockOf(fixture), { sourcify: sourcifyOf({ [fixture.address]: answer }), compilers }),
+  );
   assert.equal(refused.why, 'bytecode-mismatch');
 });
 

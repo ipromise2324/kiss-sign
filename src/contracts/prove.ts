@@ -124,7 +124,20 @@ function spans(raw: unknown, depth: 1 | 2): Span[] {
   });
 }
 
-function compile(source: VerifiedSource, compilers: Compilers): Compiled {
+/** The CBOR trailer solc appends with `bytecodeHash: "none"`: the map `{"solc": <version>}` and its length. */
+const SOLC_ONLY_TRAILER = /a164736f6c6343[0-9a-f]{6}000a$/;
+
+/**
+ * A trailer without a metadata hash binds no source text, so whichever `bytecodeHash` the verifier on Sourcify chose
+ * changes only bytes the chain does not have. Compiling without the hash compares every byte on chain, trailer included.
+ */
+function settingsFor(source: VerifiedSource, onChain: Hex): Readonly<Record<string, unknown>> {
+  if (!SOLC_ONLY_TRAILER.test(onChain)) return source.settings;
+  const metadata = isJson(source.settings.metadata) ? source.settings.metadata : {};
+  return { ...source.settings, metadata: { ...metadata, bytecodeHash: 'none' } };
+}
+
+function compile(source: VerifiedSource, compilers: Compilers, onChain: Hex): Compiled {
   const load = compilers(source.compilerVersion);
   switch (load.kind) {
     case 'not-pinned':
@@ -138,7 +151,7 @@ function compile(source: VerifiedSource, compilers: Compilers): Compiled {
   const input = {
     language: source.language,
     sources: source.sources,
-    settings: { ...source.settings, outputSelection: { [contractPath]: { [contractName]: OUTPUTS } } },
+    settings: { ...settingsFor(source, onChain), outputSelection: { [contractPath]: { [contractName]: OUTPUTS } } },
   };
   let output: Json;
   try {
@@ -228,7 +241,7 @@ export async function proveAbi(reader: Reader, address: Address, block: BlockRef
       refuse({ why: 'chained-proxy', at: proven });
     }
     const source = await sourceOf(deps, proven);
-    const compiled = compile(source, deps.compilers);
+    const compiled = compile(source, deps.compilers, code);
     compare(compiled, code, proven);
     return {
       kind: 'proven',

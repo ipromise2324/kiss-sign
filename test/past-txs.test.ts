@@ -27,14 +27,16 @@ function safeOf(hash: string): Address {
   return (read?.answers.alchemy as { to: Address }).to;
 }
 
-async function report(options: { exclude?: Address; sources?: readonly SourceExchange[]; template?: Template } = {}): Promise<string> {
+async function report(
+  options: { exclude?: Address; sources?: readonly SourceExchange[]; template?: Template; exchanges?: PastTxsRecording['exchanges'] } = {},
+): Promise<string> {
   const { query } = recording;
   const run = await pastTxs(
     {
       template: options.template ?? template,
       anchor: { token: query.token as Address, kind: query.anchor as AnchorKind, fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) },
     },
-    { ask: replayAsk(options.sources ?? recording.sources), reader: replayReader(recording.exchanges), registry, exclude: options.exclude, maxTxs: 200 },
+    { ask: replayAsk(options.sources ?? recording.sources), reader: replayReader(options.exchanges ?? recording.exchanges), registry, exclude: options.exclude, maxTxs: 200 },
   );
   return renderPastTxs(run, registry);
 }
@@ -70,6 +72,18 @@ test('a transaction only one source found is still studied, and marked', async (
   assert.match(text, /^sources: alchemy found 65, etherscan found 64; both 64, only alchemy 1, only etherscan 0$/m);
   assert.match(text, new RegExp(`^ {2}only alchemy: ${FIT}$`, 'm'));
   assert.match(text, new RegExp(`^examples that fit: ${FIT} \\[only alchemy\\], `, 'm'));
+});
+
+test('a transaction a provider would not serve is unreadable for that reason, apart from one the providers disagree on', async () => {
+  const exchanges = recording.exchanges.map((e) => {
+    if (e.method !== 'eth_getTransactionByHash') return e;
+    if (JSON.stringify(e.params) === JSON.stringify([FIT])) return { ...e, answers: { alchemy: e.answers.alchemy }, statuses: { drpc: 429 } };
+    if (JSON.stringify(e.params) === JSON.stringify([MISFIT])) return { ...e, answers: { ...e.answers, drpc: { ...(e.answers.drpc as object), nonce: '0x0' } } };
+    return e;
+  });
+  const text = await report({ exchanges });
+  assert.match(text, new RegExp(`^ {2}1 unreadable, eth_getTransactionByHash: drpc failed \\(rate-limited\\): ${FIT}$`, 'm'));
+  assert.match(text, new RegExp(`^ {2}1 unreadable, eth_getTransactionByHash: alchemy and drpc disagree: ${MISFIT}$`, 'm'));
 });
 
 test('a recording that would name the configured Safe loses those entries, or is refused', () => {
