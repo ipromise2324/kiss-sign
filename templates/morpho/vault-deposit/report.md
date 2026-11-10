@@ -85,7 +85,7 @@ From [LedgerHQ/clear-signing-erc7730-registry](https://github.com/LedgerHQ/clear
 - Steakhouse Prime USDC: `registry/morpho/calldata-steakhouse_financial-steakUSDC-v2-1.json`, blob `90ba906aba1c66f11c619d8e20bc1f7a30566c91`.
 - Hyperithm USDC Apex V1.1, the factories, Bundler3 and GeneralAdapter1: no descriptor found. The registry describes `VaultBundlesV1`, not this route.
 
-The descriptors describe a direct call to the vault, while this template's deposit goes through GeneralAdapter1, so they are a second opinion on what `assets` and `receiver` mean, not on this call tree. No ERC-8176 attestation was checked; the program does not verify attestations yet.
+The descriptors describe a direct call to the vault, while this template's deposit goes through GeneralAdapter1, so they are a second opinion on what `assets` and `receiver` mean, not on this call tree. No ERC-8176 attestation was checked; this report predates `pnpm erc7730`, which now checks them; run it for their status.
 
 ## Protocol health
 

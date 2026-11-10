@@ -43,7 +43,7 @@ test('the skill names only kiss-sign commands the CLI has', async () => {
 
 test('the skill names only pnpm scripts package.json has', () => {
   const scripts = Object.keys(JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).scripts);
-  const named = code.flatMap((span) => [...span.matchAll(/\bpnpm ([a-z][a-z-]*)/g)].map((m) => m[1] as string));
+  const named = code.flatMap((span) => [...span.matchAll(/\bpnpm ([a-z][a-z0-9-]*)/g)].map((m) => m[1] as string));
   assert.ok(named.includes('past-txs'), 'the skill names pnpm past-txs');
   for (const script of named) assert.ok(scripts.includes(script), `pnpm ${script} is not a script`);
 });

@@ -322,7 +322,7 @@ async function defaultBranch(api: string, ref: Extract<GitHubSourceRef, { kind: 
  * means the commit is in the branch's history. A commit that exists only in a fork is still served under the parent's
  * path, so the path alone proves nothing.
  */
-async function checkCommit(ref: Extract<GitHubSourceRef, { kind: 'pinned' }>, get: HttpGet, branches: Map<string, DefaultBranch>): Promise<CommitCheck> {
+export async function checkCommit(ref: Extract<GitHubSourceRef, { kind: 'pinned' }>, get: HttpGet, branches: Map<string, DefaultBranch>): Promise<CommitCheck> {
   const api = `https://api.github.com/repos/${encodeURIComponent(ref.owner)}/${encodeURIComponent(ref.repo)}`;
   const key = `${ref.owner}/${ref.repo}`.toLowerCase();
   const found = branches.get(key) ?? (await defaultBranch(api, ref, get));

@@ -87,7 +87,7 @@ From [LedgerHQ/clear-signing-erc7730-registry](https://github.com/LedgerHQ/clear
 - GeneralAdapter1: no descriptor found.
 - Usual Boosted USDC: `registry/morpho/calldata-mev_capital-USUALUSDC+.json`, blob `772b0e68a29dc034585d30f528b2075850ae0e2f`, a descriptor of the vault's own calls.
 
-No ERC-8176 attestation was checked; the program does not verify attestations yet.
+No ERC-8176 attestation was checked; this report predates `pnpm erc7730`, which now checks them; run it for their status.
 
 ## Protocol health
 
