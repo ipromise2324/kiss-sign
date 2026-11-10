@@ -1,0 +1,697 @@
+# Generated evidence: morpho/vault-deposit
+
+Written by `pnpm report morpho/vault-deposit --record` from `templates/morpho/vault-deposit/template.json`, `templates/morpho/vault-deposit/docs.json`, `registry/contracts.json`, `testdata/report/morpho-vault-deposit.json`, `testdata/abi`, `testdata/research/morpho-vault-deposit-windows.json`, `testdata/research/morpho-vault-deposit.json`. The listings and pages were read on 2026-11-10. It holds no text from a web page, a token, a contract's source, an ERC-7730 descriptor, or an API answer, and no prose from the AI except the reasons the template states. Do not edit it: `pnpm test` writes it again from the same files and fails on any difference.
+
+## Card
+
+| Field | The signer gives |
+| --- | --- |
+| `vault` | a registry `vault`, picked by number from the list below |
+| `amount` | an integer in base units of the `asset` of the card's `vault` |
+| `min-shares` | an integer in base units of the card's `vault` |
+
+`vault` can name:
+
+| Name | Address | Attributes |
+| --- | --- | --- |
+| `steakhouse-prime-usdc` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory` `0xA1D94F746dEfa1928926b84fB2596c06926C0405` |
+| `smokehouse-usdc` | `0xBEeFFF209270748ddd194831b3fa287a5386f5bC` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `metamorpho-factory-1.0` `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` |
+| `hyperithm-usdc-apex-7777` | `0x777791C4d6DC2CE140D00D2828a7C93503c67777` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `metamorpho-factory-1.1` `0x1897A8997241C1cD4bD0698647e4EB7213535c24` |
+| `hyperithm-usdc-apex-0932` | `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory` `0xA1D94F746dEfa1928926b84fB2596c06926C0405` |
+| `usual-boosted-usdc` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `metamorpho-factory-1.0` `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` |
+| `fluid-fusdc` | `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |
+| `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | asset `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` |
+| `steakhouse-high-yield-usdc` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory` `0xA1D94F746dEfa1928926b84fB2596c06926C0405` |
+
+## Calls and field rules
+
+### Call 1 of 2
+
+| Field | Rule |
+| --- | --- |
+| `to` | the `asset` of the card's `vault`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` |
+| `value` | constant `0` |
+| `approve` | calls `approve(address,uint256)`, selector `0x095ea7b3`; at most 8 bytes after the arguments; the template's reason: the Morpho app appends the same 4-byte timestamp and 4-byte origin tag as on multicall; approve reads only its two arguments |
+| `approve.spender` | registry `general-adapter1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` |
+| `approve.value` | the card's `amount` |
+
+### Call 2 of 2
+
+| Field | Rule |
+| --- | --- |
+| `to` | registry `bundler3` `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` |
+| `value` | constant `0` |
+| `multicall` | calls `multicall((address,bytes,uint256,bool,bytes32)[])`, selector `0x374f435d`; at most 8 bytes after the arguments; the template's reason: the Morpho app appends a 4-byte timestamp and a 4-byte origin tag, which multicall ignores (morpho-org/sdks, addTransactionMetadata) |
+| `multicall.bundle` | exactly 2 items |
+| `multicall.bundle[0].to` | registry `general-adapter1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` |
+| `multicall.bundle[0].data → erc20TransferFrom` | calls `erc20TransferFrom(address,address,uint256)`, selector `0xd96ca0b9`; no bytes after the arguments |
+| `multicall.bundle[0].data → erc20TransferFrom.token` | the `asset` of the card's `vault`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` |
+| `multicall.bundle[0].data → erc20TransferFrom.receiver` | registry `general-adapter1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` |
+| `multicall.bundle[0].data → erc20TransferFrom.amount` | the card's `amount` |
+| `multicall.bundle[0].value` | constant `0` |
+| `multicall.bundle[0].skipRevert` | constant `false` |
+| `multicall.bundle[0].callbackHash` | constant `0x0000000000000000000000000000000000000000000000000000000000000000` |
+| `multicall.bundle[1].to` | registry `general-adapter1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` |
+| `multicall.bundle[1].data → erc4626Deposit` | calls `erc4626Deposit(address,uint256,uint256,address)`, selector `0x6ef5eeae`; no bytes after the arguments |
+| `multicall.bundle[1].data → erc4626Deposit.vault` | the card's `vault`: one of `steakhouse-prime-usdc` `0xbeef088055857739C12CD3765F20b7679Def0f51`, `smokehouse-usdc` `0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, `hyperithm-usdc-apex-7777` `0x777791C4d6DC2CE140D00D2828a7C93503c67777`, `hyperithm-usdc-apex-0932` `0x093272C07700d3cA5301C3Bf9B3A392624179E2F`, `usual-boosted-usdc` `0xd63070114470f685b75B74D60EEc7c1113d33a3D`, `fluid-fusdc` `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`, `fluid-fusdt` `0x5C20B550819128074FD538Edf79791733ccEdd18`, `steakhouse-high-yield-usdc` `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` |
+| `multicall.bundle[1].data → erc4626Deposit.assets` | the card's `amount` |
+| `multicall.bundle[1].data → erc4626Deposit.maxSharePriceE27` | at most assets × 1e27 / shares, with assets the card's `amount` and shares the card's `min-shares` |
+| `multicall.bundle[1].data → erc4626Deposit.receiver` | the Safe |
+| `multicall.bundle[1].value` | constant `0` |
+| `multicall.bundle[1].skipRevert` | constant `false` |
+| `multicall.bundle[1].callbackHash` | constant `0x0000000000000000000000000000000000000000000000000000000000000000` |
+
+## Effects
+
+| Side | Token | Amount |
+| --- | --- | --- |
+| the Safe gives | the `asset` of the card's `vault`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` | the card's `amount` |
+| the Safe gets | the card's `vault`: one of `steakhouse-prime-usdc` `0xbeef088055857739C12CD3765F20b7679Def0f51`, `smokehouse-usdc` `0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, `hyperithm-usdc-apex-7777` `0x777791C4d6DC2CE140D00D2828a7C93503c67777`, `hyperithm-usdc-apex-0932` `0x093272C07700d3cA5301C3Bf9B3A392624179E2F`, `usual-boosted-usdc` `0xd63070114470f685b75B74D60EEc7c1113d33a3D`, `fluid-fusdc` `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`, `fluid-fusdt` `0x5C20B550819128074FD538Edf79791733ccEdd18`, `steakhouse-high-yield-usdc` `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | more than nothing |
+
+## Official documentation
+
+Each page comes from `docs.json`. The program compares its registrable domain, or GitHub organization, with the DefiLlama protocol of the contract named, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's name in the page as served, without scripts.
+
+| Function | Contract | Page | Site | GitHub commit | Name on page |
+| --- | --- | --- | --- | --- | --- |
+| `approve(address,uint256)` | `usdc` | <https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol> | FINDING | PASS | PASS |
+| `multicall((address,bytes,uint256,bool,bytes32)[])` | `bundler3` | <https://docs.morpho.org/developers/contracts/bundles/> | PASS | n/a | PASS |
+| `erc20TransferFrom(address,address,uint256)` | `general-adapter1` | <https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol> | FINDING | PASS | PASS |
+| `erc4626Deposit(address,uint256,uint256,address)` | `general-adapter1` | <https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol> | FINDING | PASS | PASS |
+
+## Registry entries
+
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt bundler3 general-adapter1 steakhouse-prime-usdc metamorpho-factory-1.0 metamorpho-factory-1.1 vault-v2-factory smokehouse-usdc hyperithm-usdc-apex-7777 hyperithm-usdc-apex-0932 usual-boosted-usdc fluid-fusdc fluid-fusdt steakhouse-high-yield-usdc` prints what each check compared.
+
+| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page | Code pin |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505`; implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` |
+| `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` |
+| `bundler3` | `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | router | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS | `0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454` |
+| `general-adapter1` | `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` | adapter | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS | `0xf9cc71076c5b97dca248a8085a0faaad24a5768948474306a20e345a739dd74c` |
+| `steakhouse-prime-usdc` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | vault | <https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant> | FINDING | PASS | n/a | PASS | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` |
+| `metamorpho-factory-1.0` | `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS | `0x948cb0a2bf347795e99af306e37423dacabb048db2c650b34cd800d1dffba283` |
+| `metamorpho-factory-1.1` | `0x1897A8997241C1cD4bD0698647e4EB7213535c24` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS | `0xc96dffc14441bb58cc55e7bdb1382f87dc718ffd44927f304177f235e94fa004` |
+| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` |
+| `smokehouse-usdc` | `0xBEeFFF209270748ddd194831b3fa287a5386f5bC` | vault | <https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults> | FINDING | FINDING | n/a | PASS | `0x8bff8e3326458676fbf3faf1d7e5f07469c3d8923c38cc70b3dcc9c1ee372753` |
+| `hyperithm-usdc-apex-7777` | `0x777791C4d6DC2CE140D00D2828a7C93503c67777` | vault | <https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex> | PASS | FINDING | n/a | FINDING | `0x872152c0dae0845c12d4d8088b927f5fd1049c1757e9f282b4b74c089ed8b294` |
+| `hyperithm-usdc-apex-0932` | `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | vault | <https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex> | PASS | FINDING | n/a | FINDING | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` |
+| `usual-boosted-usdc` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | vault | <https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc> | PASS | PASS | n/a | FINDING | `0x962bef2305e60f683bf25cd0f822341c121ce763442e4c674a6cc746801febaa` |
+| `fluid-fusdc` | `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | vault | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | FINDING | FINDING | PASS | PASS | `0x131b2014b67d86e5a1fcd6be7b6817b76ae9ac1663266f88366e526666297828` |
+| `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | vault | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | FINDING | FINDING | PASS | PASS | `0x662b760b02d5258965404cd8daca2c1ce5ef5567417cedec5a0acf895b775195` |
+| `steakhouse-high-yield-usdc` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | vault | <https://www.steakhouse.financial/docs/products/vault-products/current/high-yield-instant> | FINDING | PASS | n/a | PASS | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` |
+
+15 entries, 13 findings.
+
+## ABI proofs
+
+`pnpm prove-abi`: Sourcify's source, compiled with a pinned solc, against the code both providers return. Equals pin: whether the proved code, and the implementation behind a proxy, are the registry's code pin, which every signing requires.
+
+| Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | REFUSED: `compiler-not-pinned` solc `0.6.12+commit.27d51765` | | | | | | 26386376 |
+| `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | REFUSED: `compiler-not-pinned` solc `0.4.18+commit.9cf6e910` | | | | | | 26386376 |
+| `bundler3` | `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | PROVEN | none | `Bundler3`, solc `0.8.28+commit.7893614a` | `0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454` | PASS | 0 immutable, 0 library spans masked | 26383744 |
+| `general-adapter1` | `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` | PROVEN | none | `EthereumGeneralAdapter1`, solc `0.8.28+commit.7893614a` | `0xf9cc71076c5b97dca248a8085a0faaad24a5768948474306a20e345a739dd74c` | PASS | 58 immutable, 0 library spans masked | 26383745 |
+| `steakhouse-prime-usdc` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26386376 |
+| `metamorpho-factory-1.0` | `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` | PROVEN | none | `MetaMorphoFactory`, solc `0.8.21+commit.d9974bed` | `0x948cb0a2bf347795e99af306e37423dacabb048db2c650b34cd800d1dffba283` | PASS | 2 immutable, 0 library spans masked | 26386376 |
+| `metamorpho-factory-1.1` | `0x1897A8997241C1cD4bD0698647e4EB7213535c24` | PROVEN | none | `MetaMorphoV1_1Factory`, solc `0.8.26+commit.8a97fa7a` | `0xc96dffc14441bb58cc55e7bdb1382f87dc718ffd44927f304177f235e94fa004` | PASS | 2 immutable, 0 library spans masked | 26386376 |
+| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | PROVEN | none | `VaultV2Factory`, solc `0.8.28+commit.7893614a` | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | PASS | 0 immutable, 0 library spans masked | 26386376 |
+| `smokehouse-usdc` | `0xBEeFFF209270748ddd194831b3fa287a5386f5bC` | PROVEN | none | `MetaMorpho`, solc `0.8.21+commit.d9974bed` | `0x8bff8e3326458676fbf3faf1d7e5f07469c3d8923c38cc70b3dcc9c1ee372753` | PASS | 32 immutable, 0 library spans masked | 26386376 |
+| `hyperithm-usdc-apex-7777` | `0x777791C4d6DC2CE140D00D2828a7C93503c67777` | PROVEN | none | `MetaMorphoV1_1`, solc `0.8.26+commit.8a97fa7a` | `0x872152c0dae0845c12d4d8088b927f5fd1049c1757e9f282b4b74c089ed8b294` | PASS | 32 immutable, 0 library spans masked | 26385841 |
+| `hyperithm-usdc-apex-0932` | `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26385837 |
+| `usual-boosted-usdc` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | PROVEN | none | `MetaMorpho`, solc `0.8.21+commit.d9974bed` | `0x962bef2305e60f683bf25cd0f822341c121ce763442e4c674a6cc746801febaa` | PASS | 32 immutable, 0 library spans masked | 26386376 |
+| `fluid-fusdc` | `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | PROVEN | none | `fToken`, solc `0.8.21+commit.d9974bed` | `0x131b2014b67d86e5a1fcd6be7b6817b76ae9ac1663266f88366e526666297828` | PASS | 38 immutable, 0 library spans masked | 26384739 |
+| `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | PROVEN | none | `fToken`, solc `0.8.21+commit.d9974bed` | `0x662b760b02d5258965404cd8daca2c1ce5ef5567417cedec5a0acf895b775195` | PASS | 38 immutable, 0 library spans masked | 26384738 |
+| `steakhouse-high-yield-usdc` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26386376 |
+
+## Vaults
+
+`pnpm vault-evidence` for each vault.
+
+### `steakhouse-prime-usdc`
+
+```text
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26386392
+vault        steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51
+latest block 26386392 0x74fd6621b3b674fba8018f0b7bf04b1b7b7ced21238df2ab31358a17c1b7dd32
+asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-10  block 26386392  130,697,719.723756 usdc
+  2026-10-11  block 26170392  112,964,622.178224 usdc
+  2026-09-11  block 25954392  99,164,520.978371 usdc
+  2026-08-12  block 25738392  93,882,170.051490 usdc
+  2026-07-13  block 25522392  60,670,779.396821 usdc
+  2026-06-13  block 25306392  62,586,749.096714 usdc
+  2026-05-14  block 25090392  57,634,636.793855 usdc
+  2026-04-14  block 24874392  7,824,544.528631 usdc
+  2026-03-14  block 24658392  11,149,303.359259 usdc
+  2026-02-12  block 24442392  10,840,996.725980 usdc
+  2026-01-13  block 24226392  6,526,190.600407 usdc
+  2025-12-14  block 24010392  5,994,347.157823 usdc
+  2025-11-14  block 23794392  0.020025 usdc
+
+holders      777 addresses hold shares at block 26386392, of 1449 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 125754198008369267391822049
+top 10       hold 52.56% of the shares; each: 18.80%, 6.96%, 6.07%, 4.77%, 4.61%, 2.82%, 2.33%, 2.30%, 2.29%, 1.61%
+```
+
+### `smokehouse-usdc`
+
+```text
+admitted     metamorpho-factory-1.0 answered isMetaMorpho(address) = true at block 26386394
+vault        smokehouse-usdc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC
+latest block 26386394 0x2499bb40563026c9c07db446f92581a9a9e685f2569735049be901224345366e
+asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-10  block 26386394  10,802,166.685282 usdc
+  2026-10-11  block 26170394  12,732,850.533147 usdc
+  2026-09-11  block 25954394  13,501,340.120148 usdc
+  2026-08-12  block 25738394  15,821,271.784467 usdc
+  2026-07-13  block 25522394  17,858,596.986900 usdc
+  2026-06-13  block 25306394  18,668,427.023397 usdc
+  2026-05-14  block 25090394  25,120,284.618570 usdc
+  2026-04-14  block 24874394  62,114,380.629847 usdc
+  2026-03-14  block 24658394  59,282,368.265164 usdc
+  2026-02-12  block 24442394  65,867,378.781780 usdc
+  2026-01-13  block 24226394  128,914,850.654805 usdc
+  2025-12-14  block 24010394  150,128,306.425205 usdc
+  2025-11-14  block 23794394  92,135,587.354629 usdc
+
+holders      430 addresses hold shares at block 26386394, of 2521 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 9497042641105295951880992
+top 10       hold 77.17% of the shares; each: 28.01%, 14.89%, 8.54%, 5.15%, 4.20%, 4.08%, 3.62%, 3.22%, 3.03%, 2.43%
+```
+
+### `hyperithm-usdc-apex-7777`
+
+```text
+admitted     metamorpho-factory-1.1 answered isMetaMorpho(address) = true at block 26386397
+vault        hyperithm-usdc-apex-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777
+latest block 26386397 0xce49eb718d3046773fcc02c45124a63ee5cbbcda25a8bfdf01c27f8037916d50
+asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-10  block 26386397  1,211,911.553899 usdc
+  2026-10-11  block 26170397  1,602,679.684221 usdc
+  2026-09-11  block 25954397  1,965,892.483463 usdc
+  2026-08-12  block 25738397  2,373,939.027910 usdc
+  2026-07-13  block 25522397  2,333,886.511396 usdc
+  2026-06-13  block 25306397  2,886,003.043730 usdc
+  2026-05-14  block 25090397  3,559,965.084110 usdc
+  2026-04-14  block 24874397  20,627,353.044471 usdc
+  2026-03-14  block 24658397  21,957,682.866825 usdc
+  2026-02-12  block 24442397  25,060,803.344802 usdc
+  2026-01-13  block 24226397  19,475,610.985426 usdc
+  2025-12-14  block 24010397  25,266,451.998080 usdc
+  2025-11-14  block 23794397  31,010,006.904044 usdc
+
+holders      219 addresses hold shares at block 26386397, of 1590 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 1078938447596694482804422
+top 10       hold 85.86% of the shares; each: 18.52%, 17.55%, 16.70%, 8.39%, 7.75%, 5.42%, 3.62%, 2.74%, 2.62%, 2.54%
+```
+
+### `hyperithm-usdc-apex-0932`
+
+```text
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26386400
+vault        hyperithm-usdc-apex-0932 0x093272C07700d3cA5301C3Bf9B3A392624179E2F
+latest block 26386400 0xaf486898ac5cc00981ec34aaf260a4bdda0dbb6372f72e91ce3929e5461565e0
+asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-10  block 26386400  7,502,408.790417 usdc
+  2026-10-11  block 26170400  11,870,757.601674 usdc
+  2026-09-11  block 25954400  8,537,890.009652 usdc
+  2026-08-12  block 25738400  4,585,139.608578 usdc
+  2026-07-13  block 25522400  9,084,678.845574 usdc
+  2026-06-13  block 25306400  5,115,457.804131 usdc
+  2026-05-14  block 25090400  12,320,728.893922 usdc
+  2026-04-14  block 24874400  14,615,176.316840 usdc
+  2026-03-14  block 24658400  9,399,460.596012 usdc
+  2026-02-12  block 24442400  10,906,852.365304 usdc
+  2026-01-13  block 24226400  160,142.882016 usdc
+  2025-12-14  block 24010400  157,824.157885 usdc
+  2025-11-14  block 23794400  3,326.593761 usdc
+
+holders      170 addresses hold shares at block 26386400, of 352 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 7017295754608236392724917
+top 10       hold 90.04% of the shares; each: 51.74%, 13.85%, 5.43%, 4.90%, 3.43%, 3.34%, 2.53%, 2.09%, 1.46%, 1.27%
+```
+
+### `usual-boosted-usdc`
+
+```text
+admitted     metamorpho-factory-1.0 answered isMetaMorpho(address) = true at block 26386402
+vault        usual-boosted-usdc 0xd63070114470f685b75B74D60EEc7c1113d33a3D
+latest block 26386402 0x8275d5b42f24bd73e2cf864442ff8923abb00ce255698a2512f913558ca0cfa3
+asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-10  block 26386402  1,801,095.946696 usdc
+  2026-10-11  block 26170402  1,961,572.670170 usdc
+  2026-09-11  block 25954402  2,119,818.021931 usdc
+  2026-08-12  block 25738402  3,539,357.982598 usdc
+  2026-07-13  block 25522402  4,421,971.374461 usdc
+  2026-06-13  block 25306402  4,481,383.270313 usdc
+  2026-05-14  block 25090402  4,951,285.537425 usdc
+  2026-04-14  block 24874402  6,330,991.658183 usdc
+  2026-03-14  block 24658402  9,728,177.759756 usdc
+  2026-02-12  block 24442402  19,136,367.980128 usdc
+  2026-01-13  block 24226402  19,456,139.112087 usdc
+  2025-12-14  block 24010402  27,590,028.666639 usdc
+  2025-11-14  block 23794402  36,130,565.701422 usdc
+
+holders      940 addresses hold shares at block 26386402, of 7246 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 1586253166168596203946773
+top 10       hold 66.47% of the shares; each: 18.05%, 14.20%, 5.88%, 5.88%, 5.80%, 4.44%, 3.39%, 3.33%, 2.99%, 2.50%
+```
+
+### `fluid-fusdc`
+
+```text
+NOTE fluid-fusdc names no factory, so no factory vouches for the code these numbers come from
+vault        fluid-fusdc 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33
+latest block 26386406 0xf9dfe0c742716e9728744a00bccfb55d682031f1a0dc8c5662804461d558020a
+asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-10  block 26386406  134,533,874.524547 usdc
+  2026-10-11  block 26170406  130,786,917.195283 usdc
+  2026-09-11  block 25954406  152,811,930.782137 usdc
+  2026-08-12  block 25738406  149,664,248.490223 usdc
+  2026-07-13  block 25522406  133,922,909.087536 usdc
+  2026-06-13  block 25306406  105,479,215.016942 usdc
+  2026-05-14  block 25090406  195,303,862.518324 usdc
+  2026-04-14  block 24874406  190,936,285.430196 usdc
+  2026-03-14  block 24658406  220,634,150.906557 usdc
+  2026-02-12  block 24442406  261,371,629.056893 usdc
+  2026-01-13  block 24226406  289,067,806.176140 usdc
+  2025-12-14  block 24010406  277,164,033.127049 usdc
+  2025-11-14  block 23794406  262,712,958.222540 usdc
+
+holders      2118 addresses hold shares at block 26386406, of 10912 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 109666555604168
+top 10       hold 41.42% of the shares; each: 9.73%, 8.42%, 5.95%, 3.58%, 3.07%, 2.45%, 2.37%, 2.04%, 1.96%, 1.85%
+```
+
+### `fluid-fusdt`
+
+```text
+NOTE fluid-fusdt names no factory, so no factory vouches for the code these numbers come from
+vault        fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18
+latest block 26386412 0x68da65c23ff08ea4d0edbb75c545ebd9ce93399b49f9278d31d530ec2801a3f5
+asset()      usdt 0xdAC17F958D2ee523a2206206994597C13D831ec7, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-10  block 26386412  125,366,694.531023 usdt
+  2026-10-11  block 26170412  130,684,881.625677 usdt
+  2026-09-11  block 25954412  132,095,111.618902 usdt
+  2026-08-12  block 25738412  139,876,920.358865 usdt
+  2026-07-13  block 25522412  123,156,449.369473 usdt
+  2026-06-13  block 25306412  108,363,478.386630 usdt
+  2026-05-14  block 25090412  132,339,246.311413 usdt
+  2026-04-14  block 24874412  123,400,614.946175 usdt
+  2026-03-14  block 24658412  148,447,899.561721 usdt
+  2026-02-12  block 24442412  164,709,181.215035 usdt
+  2026-01-13  block 24226412  181,643,991.824516 usdt
+  2025-12-14  block 24010412  238,886,623.558556 usdt
+  2025-11-14  block 23794412  207,273,060.048682 usdt
+
+holders      1366 addresses hold shares at block 26386412, of 6758 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 103222578723393
+top 10       hold 37.71% of the shares; each: 6.41%, 5.15%, 4.41%, 4.12%, 3.86%, 3.56%, 2.98%, 2.48%, 2.45%, 2.30%
+```
+
+### `steakhouse-high-yield-usdc`
+
+```text
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26386415
+vault        steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757
+latest block 26386415 0xf483a05176ee6336edb8cf0d7d02049bb14c9c2f9eac37c43911d0245ad83892
+asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-10  block 26386415  43,151,599.492365 usdc
+  2026-10-11  block 26170415  49,267,515.287786 usdc
+  2026-09-11  block 25954415  41,877,330.091100 usdc
+  2026-08-12  block 25738415  47,477,448.457029 usdc
+  2026-07-13  block 25522415  38,783,011.958237 usdc
+  2026-06-13  block 25306415  35,627,863.135702 usdc
+  2026-05-14  block 25090415  32,948,400.207871 usdc
+  2026-04-14  block 24874415  22,139,907.213455 usdc
+  2026-03-14  block 24658415  2,769,928.019581 usdc
+  2026-02-12  block 24442415  4,448,141.183616 usdc
+  2026-01-13  block 24226415  2,343,206.566144 usdc
+  2025-12-14  block 24010415  3,553,129.852230 usdc
+  2025-11-14  block 23794415  2,733,841.063613 usdc
+
+holders      452 addresses hold shares at block 26386415, of 1038 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 40781435995272770332350072
+top 10       hold 53.52% of the shares; each: 18.03%, 8.57%, 4.29%, 4.23%, 3.86%, 3.53%, 3.34%, 2.84%, 2.44%, 2.38%
+```
+
+## Past transactions
+
+### `testdata/research/morpho-vault-deposit-windows.json`
+
+Recorded with `pnpm past-txs morpho/vault-deposit --token 0xbeef088055857739c12cd3765f20b7679def0f51 --anchor mint --max-txs 24 --record morpho-vault-deposit-windows`, and studied again here with the template as it is now.
+
+```text
+past transactions for morpho/vault-deposit
+anchor: Transfer of steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51 minted (from the zero address)
+windows: 12 of up to 7200 blocks, one every 219000 blocks over the last year; at most 2 studied per window
+  blocks 23964601 to 23971800: 0 found, 0 studied
+  blocks 24183601 to 24190800: 0 found, 0 studied
+  blocks 24402601 to 24409800: 2 found, 2 studied
+  blocks 24621601 to 24628800: 1 found, 1 studied
+  blocks 24840601 to 24847800: 1 found, 1 studied
+  blocks 25059601 to 25066800: 17 found, 2 studied
+  blocks 25278601 to 25285800: 35 found, 2 studied
+  blocks 25497601 to 25504800: 22 found, 2 studied
+  blocks 25716601 to 25723800: 22 found, 2 studied
+  blocks 25935601 to 25942800: 39 found, 2 studied
+  blocks 26154601 to 26161800: 38 found, 2 studied
+  blocks 26373601 to 26380800: 45 found, 2 studied
+sources: alchemy found 222, etherscan found 222; both 222, only alchemy 0, only etherscan 0
+senders, of 18 transactions studied:
+  proven Safe: 0, from 0 Safes
+  contract, not a proven Safe: 0, from 0 contracts
+  EOA calling a function of the template directly: 6, from 6 EOAs
+  neither: 12
+    12 calls no function the template calls (called 0x6e553f65 in 4, 0xc0be882e in 2, 0xde0171ed in 1, 0x3da9b9d0 in 1, …)
+by proven Safes, the whole template in one transaction:
+fit the template's shape: 0 transactions from 0 Safes; misfits: 0 from 0 Safes
+by EOAs, call 2 of 2 (multicall) as its own transaction:
+fit the call's shape: 0 transactions from 0 EOAs; misfits: 6 from 6 EOAs
+misfits, by reason:
+  4 from 4 EOAs: call.multicall.bundle: expected 2 items, got 3 items
+    e.g. 0xd43657332f2ddfc79c07b482e3c4cda62fd95ab5306de32871625819cb527160, 0xc8149650e9d0acd4af24a9176665485f613e0cc02b85ab23798d69c4254398b1, 0x4b55fa0ca1e00ba10d595be0232f0c5e82a116932652910351411df652a7fb76
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 6 items
+    e.g. 0xb2e1fa9d798a29a9b80f78b5efd8c0673b61805048bcbf576dc327308a36c492
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 5 items
+    e.g. 0x226c6f637d787a5e0d04064b0ea51401e9fe4f4244a159dc1a7ea70c8e5cc01c
+```
+
+### `testdata/research/morpho-vault-deposit.json`
+
+Recorded with `pnpm past-txs morpho/vault-deposit --token 0xbeef088055857739c12cd3765f20b7679def0f51 --anchor mint --from-block 26044000 --to-block 26052000 --max-txs 240 --record morpho-vault-deposit`, and studied again here with the template as it is now.
+
+```text
+past transactions for morpho/vault-deposit
+anchor: Transfer of steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51 minted (from the zero address)
+windows: one block range given by hand
+  blocks 26044000 to 26052000: 65 found, 65 studied
+sources: alchemy found 65, etherscan found 65; both 65, only alchemy 0, only etherscan 0
+senders, of 65 transactions studied:
+  proven Safe: 3, from 1 Safe
+  contract, not a proven Safe: 0, from 0 contracts
+  EOA calling a function of the template directly: 25, from 24 EOAs
+  neither: 37
+    37 calls no function the template calls (called 0x22cfce7b in 16, 0x6e553f65 in 7, 0xac108acc in 4, 0x6bbba4e0 in 3, …)
+by proven Safes, the whole template in one transaction:
+fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe
+fields, over the 2 fitting transactions:
+  multiSend[0].to  [card vault.asset]
+    same as the other leaves bound to card vault.asset in 2 of 2; values: usdc in 2
+  multiSend[0].value  [const 0]
+    equalled const 0 in 2 of 2 (1 Safe); values: 0 in 2
+  multiSend[0].approve.spender  [contract general-adapter1]
+    equalled contract general-adapter1 in 2 of 2 (1 Safe); values: general-adapter1 in 2
+  multiSend[0].approve.value  [card amount]
+    same as the other leaves bound to card amount in 2 of 2; values: 15509000000 in 1, 74309596 in 1
+  multiSend[1].to  [contract bundler3]
+    equalled contract bundler3 in 2 of 2 (1 Safe); values: bundler3 in 2
+  multiSend[1].value  [const 0]
+    equalled const 0 in 2 of 2 (1 Safe); values: 0 in 2
+  multiSend[1].multicall.bundle[0].to  [contract general-adapter1]
+    equalled contract general-adapter1 in 2 of 2 (1 Safe); values: general-adapter1 in 2
+  multiSend[1].multicall.bundle[0].data.erc20TransferFrom.token  [card vault.asset]
+    same as the other leaves bound to card vault.asset in 2 of 2; values: usdc in 2
+  multiSend[1].multicall.bundle[0].data.erc20TransferFrom.receiver  [contract general-adapter1]
+    equalled contract general-adapter1 in 2 of 2 (1 Safe); values: general-adapter1 in 2
+  multiSend[1].multicall.bundle[0].data.erc20TransferFrom.amount  [card amount]
+    same as the other leaves bound to card amount in 2 of 2; values: 15509000000 in 1, 74309596 in 1
+  multiSend[1].multicall.bundle[0].value  [const 0]
+    equalled const 0 in 2 of 2 (1 Safe); values: 0 in 2
+  multiSend[1].multicall.bundle[0].skipRevert  [const false]
+    equalled const false in 2 of 2 (1 Safe); values: false in 2
+  multiSend[1].multicall.bundle[0].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
+    equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 2 of 2 (1 Safe); values: 0x0000000000000000…(32 bytes) in 2
+  multiSend[1].multicall.bundle[1].to  [contract general-adapter1]
+    equalled contract general-adapter1 in 2 of 2 (1 Safe); values: general-adapter1 in 2
+  multiSend[1].multicall.bundle[1].data.erc4626Deposit.vault  [card vault]
+    same as the other leaves bound to card vault in 2 of 2; values: steakhouse-prime-usdc in 2
+  multiSend[1].multicall.bundle[1].data.erc4626Deposit.assets  [card amount]
+    same as the other leaves bound to card amount in 2 of 2; values: 15509000000 in 1, 74309596 in 1
+  multiSend[1].multicall.bundle[1].data.erc4626Deposit.maxSharePriceE27  [max share price, against card amount per card min-shares]
+    values: 1033338658551114 in 1, 1033338619340135 in 1
+  multiSend[1].multicall.bundle[1].data.erc4626Deposit.receiver  [the Safe]
+    equalled the Safe in 2 of 2 (1 Safe); values: the Safe in 2
+  multiSend[1].multicall.bundle[1].value  [const 0]
+    equalled const 0 in 2 of 2 (1 Safe); values: 0 in 2
+  multiSend[1].multicall.bundle[1].skipRevert  [const false]
+    equalled const false in 2 of 2 (1 Safe); values: false in 2
+  multiSend[1].multicall.bundle[1].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
+    equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 2 of 2 (1 Safe); values: 0x0000000000000000…(32 bytes) in 2
+misfits, by reason:
+  1 from 1 Safe: calls usdc.approve, vault-bundles-v1.0x6bbba4e0
+    e.g. 0xbd242bf8e4ff0a45a27468a62553bae8770bd456c12420028de0f82e28e18a80
+examples that fit: 0x88a65493c62cfc17be33cbc587fca29edf71d0984b6ba2295873dfb1a9a38c4c, 0xe4c6c109b4bec1981abbd60c1c3ef5d79e5ff5387ca5848b018e27f83f2ea3e8
+by EOAs, call 2 of 2 (multicall) as its own transaction:
+fit the call's shape: 2 transactions from 2 EOAs; misfits: 23 from 22 EOAs
+fields, over the 2 fitting transactions:
+  call.to  [contract bundler3]
+    equalled contract bundler3 in 2 of 2 (2 EOAs); values: bundler3 in 2
+  call.value  [const 0]
+    equalled const 0 in 2 of 2 (2 EOAs); values: 0 in 2
+  call.multicall.bundle[0].to  [contract general-adapter1]
+    equalled contract general-adapter1 in 2 of 2 (2 EOAs); values: general-adapter1 in 2
+  call.multicall.bundle[0].data.erc20TransferFrom.token  [card vault.asset]
+    same as the other leaves bound to card vault.asset in 2 of 2; values: usdc in 2
+  call.multicall.bundle[0].data.erc20TransferFrom.receiver  [contract general-adapter1]
+    equalled contract general-adapter1 in 2 of 2 (2 EOAs); values: general-adapter1 in 2
+  call.multicall.bundle[0].data.erc20TransferFrom.amount  [card amount]
+    same as the other leaves bound to card amount in 2 of 2; values: 1000000 in 1, 16601300000 in 1
+  call.multicall.bundle[0].value  [const 0]
+    equalled const 0 in 2 of 2 (2 EOAs); values: 0 in 2
+  call.multicall.bundle[0].skipRevert  [const false]
+    equalled const false in 2 of 2 (2 EOAs); values: false in 2
+  call.multicall.bundle[0].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
+    equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 2 of 2 (2 EOAs); values: 0x0000000000000000…(32 bytes) in 2
+  call.multicall.bundle[1].to  [contract general-adapter1]
+    equalled contract general-adapter1 in 2 of 2 (2 EOAs); values: general-adapter1 in 2
+  call.multicall.bundle[1].data.erc4626Deposit.vault  [card vault]
+    same as the other leaves bound to card vault in 2 of 2; values: steakhouse-prime-usdc in 2
+  call.multicall.bundle[1].data.erc4626Deposit.assets  [card amount]
+    same as the other leaves bound to card amount in 2 of 2; values: 1000000 in 1, 16601300000 in 1
+  call.multicall.bundle[1].data.erc4626Deposit.maxSharePriceE27  [max share price, against card amount per card min-shares]
+    values: 1033309490069345 in 1, 1033323221574319 in 1
+  call.multicall.bundle[1].data.erc4626Deposit.receiver  [the sender]
+    equalled the sender in 2 of 2 (2 EOAs); values: the sender in 2
+  call.multicall.bundle[1].value  [const 0]
+    equalled const 0 in 2 of 2 (2 EOAs); values: 0 in 2
+  call.multicall.bundle[1].skipRevert  [const false]
+    equalled const false in 2 of 2 (2 EOAs); values: false in 2
+  call.multicall.bundle[1].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
+    equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 2 of 2 (2 EOAs); values: 0x0000000000000000…(32 bytes) in 2
+misfits, by reason:
+  13 from 12 EOAs: call.multicall.bundle: expected 2 items, got 3 items
+    e.g. 0x8b418f72564aac961208cf6f6aea83a99d26d4a385f2f40b9087161ac205efd1, 0xb24d1632b3f2ee85e8a74ca8e3bed35dbcc493cbc28c07c34d420675b8a52242, 0x3bffebfb02c52def0e948fd439634f77895206486c760e8a4a66fcf5686fd661
+  10 from 10 EOAs: call.multicall.bundle: expected 2 items, got 5 items
+    e.g. 0xaa2db7e2400a5e6762368a539395f35704c1b18f5fd81f59faaf43688b601ea8, 0x182ec904c89efd8149cef49ba800111350d84fa8f7ab691c4ca574ae4b840ba9, 0x67c52780beccae4e05167a4a2b436ab65c6798b07997d73120a28da45a77c57e
+examples that fit: 0x44ea4609aad8d06c8934e4ef174b2c5b9572169b6420abe09ccd955fbeab1840, 0x8cec01d9fd62e7fb22f7fe3341cef470403ef1263303dcbad7aed4eb737df8cb
+```
+
+## ERC-7730
+
+`pnpm erc7730 usdc usdt bundler3 general-adapter1 steakhouse-prime-usdc metamorpho-factory-1.0 metamorpho-factory-1.1 vault-v2-factory smokehouse-usdc hyperithm-usdc-apex-7777 hyperithm-usdc-apex-0932 usual-boosted-usdc fluid-fusdc fluid-fusdt steakhouse-high-yield-usdc`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+
+```text
+ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
+1 descriptor(s) scoped by factory: registry/railnet/calldata-Conduit.json; one applies below only when its factory is the entry's registry factory
+
+usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (token)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+usdt 0xdAC17F958D2ee523a2206206994597C13D831ec7 (token)
+  descriptor   registry/tether/calldata-usdt.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  file         sha256 f8512038c6944e78050035acb5a43e9cbc92dd2cc103d527c7fe2dd769c337af of the file's bytes
+  hash         descriptorHash 0xdb0767deb92cae703b52894b7610c5ee1b1abaf5ee4ccedb2c36be881c0ab713: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0xa9059cbb transfer(address,uint256)
+    field      #._value tokenAmount
+    field      #._to addressName
+  function     0x095ea7b3 approve(address,uint256)
+    field      #._spender addressName
+    field      #._value tokenAmount
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+
+bundler3 0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245 (router)
+  descriptor   registry/morpho/calldata-MorphoBundlerV3.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  file         sha256 6c2b3a9563e9fe916b0b5bb7324c6d844c32868eb8412f48a01944aed15ed7e9 of the file's bytes
+  hash         descriptorHash 0xa1f434c3a61dbe28175c77b3ec9eda974850fabb75fa514e50c0ae8342055682: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0x374f435d multicall((address,bytes,uint256,bool,bytes32)[])
+    field      #.bundle.[].data calldata
+  function     0x803a7fba reenter((address,bytes,uint256,bool,bytes32)[])
+    field      #.bundle.[].data calldata
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+
+general-adapter1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 (adapter)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51 (vault)
+  descriptor   registry/morpho/calldata-steakhouse_financial-steakUSDC-v2-1.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  includes     registry/morpho/common-VaultV2.json
+  includes     registry/morpho/common-VaultV2-NoMint.json
+  file         sha256 ccafebea74a70cfe93bbf5c6092a33d2781ef5b50906c426c341a0d257b3f308 of the file's bytes
+  hash         descriptorHash 0xef134cc94db0c977706080fa72ac5f6cff599d70d360a698768143428e7a8ae9: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0x6e553f65 deposit(uint256,address)
+    field      assets tokenAmount
+    field      (constant) raw
+    field      onBehalf addressName
+  function     0xb460af94 withdraw(uint256,address,address)
+    field      assets tokenAmount
+    field      receiver addressName
+    field      onBehalf addressName
+  function     0xba087652 redeem(uint256,address,address)
+    field      shares tokenAmount
+    field      receiver addressName
+    field      onBehalf addressName
+  function     0x94bf804d mint(uint256,address)
+    field      (constant) raw
+    field      shares tokenAmount
+    field      onBehalf addressName
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+
+metamorpho-factory-1.0 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101 (factory)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+metamorpho-factory-1.1 0x1897A8997241C1cD4bD0698647e4EB7213535c24 (factory)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+vault-v2-factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405 (factory)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+smokehouse-usdc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC (vault)
+  descriptor   registry/morpho/calldata-steakhouse_financial-bbqUSDC.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  includes     ercs/calldata-erc4626-vaults.json
+  file         sha256 c78dcaa71eadfef7cd91a417e7dbd6f548cb820f53b8b3847417691c7740a2ef of the file's bytes
+  hash         descriptorHash 0x5d894d892e605db377c8d58b73cd7afc45b17c47ff4f2f4c97ab4e032c42e4c6: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0x6e553f65 deposit(uint256,address)
+    field      assets tokenAmount
+    field      (constant) raw
+    field      receiver addressName
+  function     0x94bf804d mint(uint256,address)
+    field      (constant) raw
+    field      shares tokenAmount
+    field      receiver addressName
+  function     0xb460af94 withdraw(uint256,address,address)
+    field      assets tokenAmount
+    field      receiver addressName
+    field      owner addressName
+  function     0xba087652 redeem(uint256,address,address)
+    field      shares tokenAmount
+    field      receiver addressName
+    field      owner addressName
+  attestation  registry/morpho/sigs/calldata-steakhouse_financial-bbqUSDC.eip155-1-0x3846c3A30E62075Fa916216b35EF04B8F53931f6.json
+    signer     0x3846c3A30E62075Fa916216b35EF04B8F53931f6, listed in auditors/
+    result     VALID: ERC-8176 schema and domain, data equals this descriptorHash, uid matches its fields, signature recovers 0x3846c3A30E62075Fa916216b35EF04B8F53931f6 (both providers), never expires, not revoked as of block 26386417 (getRevokeOffchain, both providers)
+
+hyperithm-usdc-apex-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 (vault)
+  descriptor   none: no calldata descriptor lists this address on chain 1 or is scoped by its factory metamorpho-factory-1.1
+  index        index.calldata.json has no entry for this address
+
+hyperithm-usdc-apex-0932 0x093272C07700d3cA5301C3Bf9B3A392624179E2F (vault)
+  descriptor   registry/morpho/calldata-hyperithm-hyperUSDCa-v2-1.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  includes     registry/morpho/common-VaultV2.json
+  includes     registry/morpho/common-VaultV2-NoMint.json
+  file         sha256 eca6b67829fe1b0e479738bb8ea480621849334c4664602aed66472a835054ae of the file's bytes
+  hash         descriptorHash 0xea35339361a564eaba947dfa53265baa8df5fe4ada543e06a5e243b894e914cd: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0x6e553f65 deposit(uint256,address)
+    field      assets tokenAmount
+    field      (constant) raw
+    field      onBehalf addressName
+  function     0xb460af94 withdraw(uint256,address,address)
+    field      assets tokenAmount
+    field      receiver addressName
+    field      onBehalf addressName
+  function     0xba087652 redeem(uint256,address,address)
+    field      shares tokenAmount
+    field      receiver addressName
+    field      onBehalf addressName
+  function     0x94bf804d mint(uint256,address)
+    field      (constant) raw
+    field      shares tokenAmount
+    field      onBehalf addressName
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+
+usual-boosted-usdc 0xd63070114470f685b75B74D60EEc7c1113d33a3D (vault)
+  descriptor   registry/morpho/calldata-mev_capital-USUALUSDC+.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  includes     ercs/calldata-erc4626-vaults.json
+  file         sha256 b84a1f4d881cd9f124be318a729b3466cc61e736678b26ecf986f18702ed9b29 of the file's bytes
+  hash         descriptorHash 0x8f492e7a8071eda814e9c876d8998aacc2dc4993388e8f7631a9543155ab487b: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0x6e553f65 deposit(uint256,address)
+    field      assets tokenAmount
+    field      (constant) raw
+    field      receiver addressName
+  function     0x94bf804d mint(uint256,address)
+    field      (constant) raw
+    field      shares tokenAmount
+    field      receiver addressName
+  function     0xb460af94 withdraw(uint256,address,address)
+    field      assets tokenAmount
+    field      receiver addressName
+    field      owner addressName
+  function     0xba087652 redeem(uint256,address,address)
+    field      shares tokenAmount
+    field      receiver addressName
+    field      owner addressName
+  attestation  registry/morpho/sigs/calldata-mev_capital-USUALUSDC+.eip155-1-0x3846c3A30E62075Fa916216b35EF04B8F53931f6.json
+    signer     0x3846c3A30E62075Fa916216b35EF04B8F53931f6, listed in auditors/
+    result     VALID: ERC-8176 schema and domain, data equals this descriptorHash, uid matches its fields, signature recovers 0x3846c3A30E62075Fa916216b35EF04B8F53931f6 (both providers), never expires, not revoked as of block 26386417 (getRevokeOffchain, both providers)
+
+fluid-fusdc 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33 (vault)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18 (vault)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757 (vault)
+  descriptor   registry/morpho/calldata-steakhouse_financial-bbqUSDC-v2-1.json
+  applies      by exact address (context.contract.deployments lists it on chain 1)
+  index        index.calldata.json names this file
+  includes     registry/morpho/common-VaultV2.json
+  includes     registry/morpho/common-VaultV2-NoMint.json
+  file         sha256 74c3f79002634636976181e5022b31d78a6a313febbb615f060047712a661125 of the file's bytes
+  hash         descriptorHash 0x65e00787f71718da81e0c70ff46ec7b76656db9a5a83ef6c282acc577c040a52: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
+  function     0x6e553f65 deposit(uint256,address)
+    field      assets tokenAmount
+    field      (constant) raw
+    field      onBehalf addressName
+  function     0xb460af94 withdraw(uint256,address,address)
+    field      assets tokenAmount
+    field      receiver addressName
+    field      onBehalf addressName
+  function     0xba087652 redeem(uint256,address,address)
+    field      shares tokenAmount
+    field      receiver addressName
+    field      onBehalf addressName
+  function     0x94bf804d mint(uint256,address)
+    field      (constant) raw
+    field      shares tokenAmount
+    field      onBehalf addressName
+  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
+```
