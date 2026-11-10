@@ -47,7 +47,7 @@ export type VerifyInputs = {
 /** `calls` is information for the signer, not a check: which of the Safe's calls move none of its assets. */
 export type Evaluation = { readonly verdict: Verdict; readonly hashes: SafeTxHashes; readonly calls: CallScan };
 
-export const VERDICT_FORMAT = 'kiss-sign-verdict-1';
+export const VERDICT_FORMAT = 'kiss-sign-verdict-2';
 
 export type VerdictFile = {
   readonly format: typeof VERDICT_FORMAT;
