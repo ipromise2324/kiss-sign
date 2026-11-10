@@ -127,3 +127,25 @@ test('Safe web app JSON with an unexpected field is refused', () => {
     { name: 'SafeTxParseError', message: /unexpected field/ },
   );
 });
+
+test('a Safe 1.1.1 transaction hashes without the chain id in its domain, as the Safe and the service hash it', () => {
+  // Bybit's cold wallet, nonce 71: the Transaction Service record, and `domainSeparator()` read at block 21,895,237.
+  const bybit = {
+    safe: '0x1Db92e2EeBC8E0c075a02BeA49a2935BcD2dFCF4',
+    to: '0x96221423681A6d52E184D440a8eFCEbB105C7242',
+    value: '0',
+    data: '0xa9059cbb000000000000000000000000bdd077f651ebe7f7b3ce16fe5f2b025be29695160000000000000000000000000000000000000000000000000000000000000000',
+    operation: 1,
+    gasToken: '0x0000000000000000000000000000000000000000',
+    safeTxGas: '45746',
+    baseGas: '0',
+    gasPrice: '0',
+    refundReceiver: '0x0000000000000000000000000000000000000000',
+    nonce: '71',
+    safeTxHash: '0xb3476d061aeb8fc1d605a873c483a2402d88a68a9cdd1a8b47655dd55ba004f8',
+  };
+  const hashes = hashSafeTx(parseServiceTx(bybit, { chainId: 1n, version: '1.1.1' }));
+  assert.equal(hashes.domainHash, '0xb3ded2bdbff5db1a87f6d551fa256e9f2bd6517a3bb84f4c2ea863fb3a559622');
+  assert.equal(hashes.safeTxHash, bybit.safeTxHash);
+  assert.throws(() => parseServiceTx(bybit, { chainId: 1n, version: '1.3.0' }), { field: 'safeTxHash' });
+});

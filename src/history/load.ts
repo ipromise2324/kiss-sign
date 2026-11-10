@@ -75,7 +75,7 @@ function nonceOf(where: string, raw: unknown): number {
   return Number(text);
 }
 
-/** The service's records carry no Safe version; every supported version hashes a mainnet transaction the same way. */
+/** The service's records carry no Safe version; the first version whose hash is the record's safeTxHash parses it. */
 function parseRecord(where: string, record: Record<string, unknown>): SafeTx {
   let last: unknown;
   for (const version of SAFE_VERSIONS) {

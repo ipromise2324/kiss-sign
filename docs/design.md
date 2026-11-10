@@ -187,6 +187,7 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - The self-check does not check where `origin` points, and it does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.
 - `replay` trusts the verdict file it is given. It shows what a recorded verdict was based on; it is not permission to sign.
 - The simulation reads at most 50 modules. A Safe with more is `UNVERIFIABLE`.
+- Safe 1.1.1 has no `getStorageAt`, so a simulation cannot read its settings, and a pending transaction of a 1.1.1 Safe is at best `UNVERIFIABLE`.
 
 ## Later security upgrades
 
