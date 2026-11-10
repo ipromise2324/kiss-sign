@@ -1,15 +1,42 @@
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { lstatSync, mkdtempSync, readFileSync, readlinkSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 export type SelfCheck = { readonly kind: 'clean'; readonly commit: string } | { readonly kind: 'differs'; readonly problems: readonly string[] };
 
-/** Git without any GIT_* variable from the caller, which could point it at another repository, and without replace refs. */
-const gitEnv = (): NodeJS.ProcessEnv => ({
+export type OriginMain =
+  | { readonly kind: 'fetched'; readonly commit: string }
+  | { readonly kind: 'unreachable' }
+  | { readonly kind: 'refused'; readonly problems: readonly string[] };
+
+/**
+ * `fetch` reads the system and global git config, since a private repository needs the signer's credential helper, and
+ * the origin URL is read the same way so it names the URL that fetch uses. Every other call reads only the clone's own
+ * config. No call takes a GIT_* variable from the caller, follows replace refs, runs a hook, or asks an fsmonitor.
+ */
+type ConfigScope = 'fetch' | 'clone-only';
+
+const gitEnv = (config: ConfigScope, extra: NodeJS.ProcessEnv = {}): NodeJS.ProcessEnv => ({
   ...Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('GIT_'))),
   GIT_NO_REPLACE_OBJECTS: '1',
+  GIT_TERMINAL_PROMPT: '0',
+  ...(config === 'clone-only' ? { GIT_CONFIG_NOSYSTEM: '1', GIT_CONFIG_GLOBAL: '/dev/null' } : {}),
+  ...extra,
 });
 
-const git = (root: string, ...args: string[]): string =>
-  execFileSync('git', args, { cwd: root, env: gitEnv(), encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 1 << 26 });
+function gitRun(root: string, config: ConfigScope, args: readonly string[], options: { input?: string; env?: NodeJS.ProcessEnv } = {}): Buffer {
+  return execFileSync('git', ['-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false', `--work-tree=${root}`, ...args], {
+    cwd: root,
+    env: gitEnv(config, options.env),
+    input: options.input,
+    stdio: ['pipe', 'pipe', 'pipe'],
+    maxBuffer: 1 << 28,
+  });
+}
+
+const git = (root: string, ...args: string[]): string => gitRun(root, 'clone-only', args).toString('utf8');
 
 export const OFFICIAL_REPO = 'github.com/ipromise2324/kiss-sign';
 
@@ -19,49 +46,138 @@ export function githubRepo(url: string): string | undefined {
   return match === null ? undefined : `github.com/${match[1]!.toLowerCase()}`;
 }
 
+const isOfficialRepo = (url: string) => githubRepo(url) === OFFICIAL_REPO;
+
 /**
- * Requires every URL of `origin` to be the official repository, then fetches it and requires the checkout at `root` to
- * be exactly origin/main: the same commit, no change to a tracked file, and no untracked file that git does not ignore.
- * An origin elsewhere is never fetched.
+ * Requires every URL of `origin` to be the official repository, fetches its main into origin/main, and requires every
+ * object of that commit to hash to its name, so a template or the registry read from it is what origin serves. An origin
+ * elsewhere is never fetched.
  */
-export function selfCheck(root: string, isOfficial: (url: string) => boolean = (url) => githubRepo(url) === OFFICIAL_REPO): SelfCheck {
-  const problems: string[] = [];
-  // get-url applies url.<base>.insteadOf, so it names the URL a fetch would really use.
+export function fetchOriginMain(root: string, isOfficial: (url: string) => boolean = isOfficialRepo): OriginMain {
   const origins = originUrls(root);
-  if (origins.length === 0) problems.push('there is no origin remote');
-  for (const url of origins.filter((url) => !isOfficial(url))) problems.push(`origin is ${url}, not ${OFFICIAL_REPO}`);
-  let main: string | undefined;
-  if (problems.length === 0) {
-    main = fetchOriginMain(root);
-    if (main === undefined) return { kind: 'differs', problems: ['could not fetch origin'] };
-    const head = git(root, 'rev-parse', 'HEAD').trim();
-    if (head !== main) problems.push(`HEAD is ${head}, origin/main is ${main}`);
+  const problems = origins.length === 0 ? ['there is no origin remote'] : origins.filter((url) => !isOfficial(url)).map((url) => `origin is ${url}, not ${OFFICIAL_REPO}`);
+  if (problems.length > 0) return { kind: 'refused', problems };
+  try {
+    // --refmap= ignores remote.origin.fetch, which could map another branch onto origin/main.
+    gitRun(root, 'fetch', ['fetch', '--quiet', '--refmap=', 'origin', '+refs/heads/main:refs/remotes/origin/main']);
+  } catch {
+    return { kind: 'unreachable' };
   }
-  const status = git(root, 'status', '--porcelain=v1', '--untracked-files=all', '--ignored=no').split('\n').filter(Boolean);
-  for (const line of status) problems.push(`${line.startsWith('??') ? 'untracked' : 'changed'}: ${line.slice(3)}`);
-  // A skip-worktree (S) or assume-unchanged (lowercase) flag hides a changed file from git status.
-  const hidden = git(root, 'ls-files', '-v').split('\n').filter((line) => line !== '' && (line[0] === 'S' || line[0] !== line[0]!.toUpperCase()));
-  for (const line of hidden) problems.push(`hidden from git status: ${line.slice(2)}`);
+  const commit = localOriginMain(root);
+  const corrupt = corruptObjects(root, commit);
+  return corrupt.length === 0 ? { kind: 'fetched', commit } : { kind: 'refused', problems: corrupt.map((id) => `object ${id} does not hash to its name`) };
+}
+
+/**
+ * Requires the checkout at `root` to be exactly origin/main, as `fetchOriginMain` fetched it: HEAD at that commit, every
+ * file of it on disk with the same bytes and mode, and no other file that its .gitignore does not ignore. Files are
+ * hashed from disk rather than asked of git status, whose answer the index, filters and stat settings can change.
+ */
+export function selfCheck(root: string, isOfficial: (url: string) => boolean = isOfficialRepo): SelfCheck {
+  const origin = fetchOriginMain(root, isOfficial);
+  if (origin.kind === 'refused') return { kind: 'differs', problems: origin.problems };
+  if (origin.kind === 'unreachable') return { kind: 'differs', problems: ['could not fetch origin'] };
+  const { commit } = origin;
+  const problems: string[] = [];
+  const head = git(root, 'rev-parse', 'HEAD').trim();
+  if (head !== commit) problems.push(`HEAD is ${head}, origin/main is ${commit}`);
+  for (const path of changedFiles(root, commit)) problems.push(`changed: ${path}`);
+  for (const path of untrackedFiles(root, commit)) problems.push(`untracked: ${path}`);
   for (const ref of git(root, 'replace', '-l').split('\n').filter(Boolean)) problems.push(`git replace ref: ${ref}`);
-  return problems.length === 0 && main !== undefined ? { kind: 'clean', commit: main } : { kind: 'differs', problems };
+  return problems.length === 0 ? { kind: 'clean', commit } : { kind: 'differs', problems };
 }
 
 function originUrls(root: string): string[] {
   try {
-    return git(root, 'remote', 'get-url', '--all', 'origin').split('\n').filter(Boolean);
+    // get-url applies url.<base>.insteadOf, so it names the URL a fetch would really use.
+    return gitRun(root, 'fetch', ['remote', 'get-url', '--all', 'origin']).toString('utf8').split('\n').filter(Boolean);
   } catch {
     return [];
   }
 }
 
-/** Fetches origin and returns the commit origin/main names, or undefined when the fetch fails. */
-export function fetchOriginMain(root: string): string | undefined {
+type TreeEntry = { readonly mode: string; readonly type: string; readonly id: string; readonly path: string };
+
+function treeEntries(root: string, commit: string): TreeEntry[] {
+  return git(root, 'ls-tree', '-r', '-t', '-z', commit)
+    .split('\0')
+    .filter(Boolean)
+    .map((line) => {
+      const tab = line.indexOf('\t');
+      const [mode, type, id] = line.slice(0, tab).split(' ') as [string, string, string];
+      return { mode, type, id, path: line.slice(tab + 1) };
+    });
+}
+
+const objectId = (type: string, content: Buffer): string => createHash('sha1').update(`${type} ${content.length}\0`).update(content).digest('hex');
+
+/** The objects of `commit` (itself, its trees and blobs) whose content does not hash to their id; git does not check on read. */
+function corruptObjects(root: string, commit: string): string[] {
+  const tree = git(root, 'rev-parse', `${commit}^{tree}`).trim();
+  const ids = [...new Set([commit, tree, ...treeEntries(root, commit).filter((entry) => entry.type !== 'commit').map((entry) => entry.id)])];
+  const out = gitRun(root, 'clone-only', ['cat-file', '--batch'], { input: `${ids.join('\n')}\n` });
+  const corrupt: string[] = [];
+  let at = 0;
+  for (const id of ids) {
+    const end = out.indexOf(10, at);
+    const [, type, size] = out.subarray(at, end).toString('utf8').split(' ');
+    if (size === undefined) {
+      corrupt.push(id);
+      at = end + 1;
+      continue;
+    }
+    const content = out.subarray(end + 1, end + 1 + Number(size));
+    if (objectId(type!, content) !== id) corrupt.push(id);
+    at = end + 1 + Number(size) + 1;
+  }
+  return corrupt;
+}
+
+/** Each file of `commit` whose bytes or mode on disk differ from the commit's, or that is missing. */
+function changedFiles(root: string, commit: string): string[] {
+  return treeEntries(root, commit)
+    .filter((entry) => entry.type === 'blob' && !onDiskAs(join(root, entry.path), entry))
+    .map((entry) => entry.path);
+}
+
+function onDiskAs(file: string, entry: TreeEntry): boolean {
+  let stat;
   try {
-    // --refmap= ignores remote.origin.fetch, which could map another branch onto origin/main.
-    git(root, 'fetch', '--quiet', '--refmap=', 'origin', '+refs/heads/main:refs/remotes/origin/main');
-    return localOriginMain(root);
+    stat = lstatSync(file);
   } catch {
-    return undefined;
+    return false;
+  }
+  if (entry.mode === '120000') return stat.isSymbolicLink() && objectId('blob', Buffer.from(readlinkSync(file))) === entry.id;
+  const executable = (stat.mode & 0o111) !== 0;
+  return stat.isFile() && executable === (entry.mode === '100755') && objectId('blob', readFileSync(file)) === entry.id;
+}
+
+/**
+ * Files on disk that are not in `commit` and that the commit's root .gitignore does not ignore. It lists them against a
+ * fresh index of the commit and only that .gitignore, so the clone's index, .git/info/exclude, core.excludesFile and an
+ * untracked .gitignore cannot hide a file.
+ */
+function untrackedFiles(root: string, commit: string): string[] {
+  const patterns = gitignoreAt(root, commit)
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line !== '' && !line.startsWith('#'));
+  const scratch = mkdtempSync(join(tmpdir(), 'kiss-sign-index-'));
+  try {
+    const env = { GIT_INDEX_FILE: join(scratch, 'index') };
+    gitRun(root, 'clone-only', ['read-tree', commit], { env });
+    const args = ['ls-files', '-z', '--others', ...patterns.map((pattern) => `--exclude=${pattern}`)];
+    return gitRun(root, 'clone-only', args, { env }).toString('utf8').split('\0').filter(Boolean);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+}
+
+function gitignoreAt(root: string, commit: string): string {
+  try {
+    return fileAt(root, commit, '.gitignore');
+  } catch {
+    return '';
   }
 }
 

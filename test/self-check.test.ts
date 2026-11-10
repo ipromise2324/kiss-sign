@@ -33,6 +33,15 @@ function cloneOfOrigin(): { origin: string; clone: string } {
   return { origin, clone };
 }
 
+/** Points origin at the official URL and serves it offline from the local bare origin through core.sshCommand. */
+function serveAsOfficial(origin: string, clone: string): void {
+  const ssh = join(dirname(clone), 'ssh');
+  write(dirname(ssh), 'ssh', `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
+  chmodSync(ssh, 0o755);
+  git(clone, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
+  git(clone, 'config', 'core.sshCommand', ssh);
+}
+
 const selfCheckTrustingBareOrigin = (root: string) => selfCheck(root, (url) => url.endsWith('/origin.git'));
 
 const problemsOf = (root: string) => {
@@ -84,7 +93,9 @@ test('a local commit not on origin/main fails the self-check', () => {
   const { clone } = cloneOfOrigin();
   write(clone, 'src/cli/main.ts', 'committed locally\n');
   git(clone, 'commit', '--quiet', '-am', 'local');
-  assert.match(problemsOf(clone).join('\n'), /^HEAD is [0-9a-f]{40}, origin\/main is [0-9a-f]{40}$/);
+  const [head, ...rest] = problemsOf(clone);
+  assert.match(head!, /^HEAD is [0-9a-f]{40}, origin\/main is [0-9a-f]{40}$/);
+  assert.deepEqual(rest, ['changed: src/cli/main.ts']);
 });
 
 test('a newer origin/main is fetched, so a clone left behind fails the self-check', () => {
@@ -98,7 +109,8 @@ test('a newer origin/main is fetched, so a clone left behind fails the self-chec
 });
 
 test('verify stops on a changed checkout, names the file, and verifies nothing', async () => {
-  const { clone } = cloneOfOrigin();
+  const { origin, clone } = cloneOfOrigin();
+  serveAsOfficial(origin, clone);
   write(clone, 'templates/morpho/vault-deposit/template.json', '{"edited":true}\n');
   const home = mkdtempSync(join(tmpdir(), 'kiss-sign-home-'));
   let stdout = '';
@@ -126,7 +138,7 @@ test('a change hidden by skip-worktree or assume-unchanged is still named', () =
   git(clone, 'update-index', '--assume-unchanged', 'registry/contracts.json');
   write(clone, 'src/cli/main.ts', 'MATCH always\n');
   write(clone, 'registry/contracts.json', '{"evil":true}\n');
-  assert.deepEqual(problemsOf(clone), ['hidden from git status: registry/contracts.json', 'hidden from git status: src/cli/main.ts']);
+  assert.deepEqual(problemsOf(clone), ['changed: registry/contracts.json', 'changed: src/cli/main.ts']);
 });
 
 test('a git replace ref fails the self-check', () => {
@@ -209,6 +221,7 @@ test('the official repository is recognised in its https and ssh forms, with or 
     assert.notEqual(githubRepo(url), 'github.com/ipromise2324/kiss-sign', url);
   }
 });
+
 /** Writes a shell script and makes it executable. */
 function script(path: string, body: string): string {
   write(dirname(path), basename(path), `#!/bin/sh\n${body}\n`);
