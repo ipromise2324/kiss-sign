@@ -50,7 +50,7 @@ The diagram shows the flow. This is what each step actually does, and what it is
 
 **When a template is built** (once per operation, such as "deposit into a Morpho vault"):
 
-- **Addresses come from three sources.** The protocol's own site and GitHub, the chain (the address has code, a proxy's implementation, the factory that created it), and Etherscan's labels and creation records must all agree. *Stops:* fake contracts and look-alike addresses.
+- **Addresses come from three sources.** The protocol's own site and GitHub, the chain (the address has code, a proxy's implementation, the factory that created it), and Etherscan's verified contract name and creator must all agree. `pnpm check-sources` also compares each source's domain with DefiLlama's listing of the protocol and each token's address with CoinGecko's, and prints every disagreement for the signer to judge. *Stops:* fake contracts and look-alike addresses.
 - **The ABI is proven by compiling it.** kiss-sign fetches the verified source from Sourcify, compiles it locally with a pinned `solc`, and matches the bytecode on chain, following proxies to their implementation. *Stops:* an ABI that labels a field as something it is not.
 - **Rules come from evidence.** Past transactions show what each field normally holds, for example "`receiver` was the depositing Safe in all 42 past deposits". That count is the evidence behind the rule "`receiver` equals the Safe". *Stops:* a field the template forgot to bind.
 - **The protocol's health is checked.** Past hacks, audits, recent upgrades, admin changes, and paused contracts go in the report. *Stops:* using a protocol that is unsafe right now.

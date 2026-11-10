@@ -34,17 +34,19 @@ Work on a branch. Each step's output goes into `templates/<protocol>/<operation>
 1. **State the intent.** Restate the signer's sentence as one operation with an id `<protocol>/<operation>`, such as `morpho/vault-withdraw`. Name the card values it needs. The card values per operation are in the "Intent card" section of `docs/design.md`.
 2. **Research the addresses.** For each contract the operation touches:
    - Find it in the protocol's official docs and its official GitHub organization, on the default branch. Cross-check at least two of them. Skip forks, issues, pull requests, and sponsored search results.
+   - If the protocol runs its own public API, such as Morpho's GraphQL API at `https://api.morpho.org/graphql`, query it too: the address, and what the protocol says about the contract, such as a vault's curator and asset. Quote the query and the answer in the report. Skip this step when the protocol has no API.
    - Prove it on chain with `pnpm prove-abi <address>`. It prints the proxy kind, the implementation, the compiler, and the code hash.
    - Read the address's Etherscan page: the verified contract name, the creator, and the creation transaction. The creator must be the deployer or factory the docs name.
    - For a contract a factory makes, such as a vault, register the factory (kind `factory`, with its `instanceCheck`), prove the factory's ABI, give the contract a `factory` attribute, and run `pnpm prove-instance <name>`. The factory must answer true.
    - Look the contract up in the ERC-7730 clear-signing registry. Report the descriptor if one exists. It is a second opinion on field meanings, never a rule.
-   - Add each contract to `registry/contracts.json` with a name, a `kind`, the official `source` page that names it, and `attributes` where the kind needs them (a vault's `asset`).
+   - Add each contract to `registry/contracts.json` with a name, a `kind`, the official `source` page that names it, its DefiLlama protocol slug in `defillama` (such as `morpho-blue`, from `https://api.llama.fi/protocols`), and `attributes` where the kind needs them (a vault's `asset`).
+   - Run `pnpm check-sources <name>...` for the new entries. The program compares each `source` domain, or its GitHub organization, with the protocol DefiLlama lists, and each token's address with CoinGecko's. Paste its whole output into the report. Do not judge or drop a `FINDING`; the signer does.
 3. **Establish the ABI.** `pnpm prove-abi` compiles the Sourcify source with a pinned solc and compares it with the code on chain. Take function signatures only from a proven ABI. Record the proof in a fixture with `pnpm record-abi-case <name> <address>`.
 4. **Draft the template.** Write `templates/<protocol>/<operation>/template.json`. Follow `templates/morpho/vault-deposit/template.json` and the "Data shapes" section of `docs/design.md`. Bind every argument. Use `free` only with a reason, such as a Merkle proof.
 5. **Study past transactions.** Run `pnpm past-txs <protocol>/<operation>` with an anchor and a block range. `pnpm past-txs` with no arguments prints the anchor choices. Start with about 10,000 blocks and widen until at least 10 Safes fit. For each field, report how many transactions and Safes held the template's rule. Read every misfit group. A misfit shows a shape the template does not accept, such as an extra call or a longer trailer. Change the template only when the misfit is normal use, and say why in the report.
 6. **Check the protocol's health.** Look for past hacks and incidents (DefiLlama's hack list, the protocol's post-mortems), audits, recent upgrades, admin or timelock changes, and paused or deprecated contracts. Cite a URL for every claim.
 7. **Write the report.** `templates/<protocol>/<operation>/report.md` has these sections:
-   - **Addresses and ABI.** Where each address was found, the `pnpm prove-abi` result, and the Etherscan name and creator.
+   - **Addresses and ABI.** Where each address was found, the protocol API's query and answer when there is one, the `pnpm check-sources` output with every finding, the `pnpm prove-abi` result, and the Etherscan verified contract name and creator.
    - **Fields.** What each field means, which contracts the operation touches, and the rule the template applies to each field.
    - **Past transactions.** The `pnpm past-txs` command and its counts, such as "42 deposits from 31 Safes; `receiver` equalled the Safe in 42". Name both sources and their agreement. List misfits and what they taught.
    - **ERC-7730.** Whether each contract has a descriptor, its hash, who attested it, any revocation, and where its field meanings differ from yours.
@@ -58,7 +60,7 @@ A new vault for an existing template changes only `registry/contracts.json`.
 
 1. Do step 2 of [Build a template](#build-a-template) for the vault and its asset token. Name a factory the template's report names in the vault's `factory` attribute, and confirm with `pnpm prove-instance <vault>` that it created the vault.
 2. Run `pnpm past-txs` for the existing template with the vault as `--token`. Note the counts.
-3. Open a pull request that changes only `registry/contracts.json`. Put a short report in the pull request description: the vault's sources, the `pnpm prove-abi` and `pnpm prove-instance` results, the Etherscan name and creator, the `pnpm past-txs` counts, and any health findings with citations.
+3. Open a pull request that changes only `registry/contracts.json`. Put a short report in the pull request description: the vault's sources, the `pnpm check-sources` output with every finding, the `pnpm prove-abi` and `pnpm prove-instance` results, the Etherscan name and creator, the `pnpm past-txs` counts, and any health findings with citations.
 
 ## Prepare a signing
 
