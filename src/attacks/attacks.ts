@@ -14,6 +14,7 @@ import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { SafeTx } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
+import { assetClaims } from '../verify/assets.ts';
 import type { Verdict } from '../verify/verdict.ts';
 import { VerifyError, evaluate, judge, keccakText, prepare } from '../verify/verify.ts';
 import type { TxInput, VerifyInputs } from '../verify/verify.ts';
@@ -122,7 +123,11 @@ export async function judgeCase(repoRoot: string, attack: AttackCase, service: R
   } else {
     const reason = `kiss-sign reads Ethereum only, and this transaction ran on ${CHAINS[attack.chain].name}`;
     judgements.push(
-      await attempt('as proposed, without a simulation', () => judge(prepare(executed), tx, { kind: 'unverifiable', reasons: [reason] })),
+      await attempt('as proposed, without a simulation', () => {
+        const prepared = prepare(executed);
+        const unread = { kind: 'unverifiable', reasons: [reason] } as const;
+        return judge(prepared, tx, unread, assetClaims(prepared.card, prepared.templates, prepared.registry).length === 0 ? { kind: 'pass' } : unread);
+      }),
     );
   }
   return { attack, tx, service, registry, card, judgements };

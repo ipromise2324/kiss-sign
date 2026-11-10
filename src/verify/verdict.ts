@@ -3,13 +3,14 @@ import type { FloorResult } from '../floor/floor.ts';
 import type { Registry } from '../registry.ts';
 import type { Hex } from '../safe/types.ts';
 import { describeFinding } from '../simulate/effects.ts';
+import type { AssetCheck } from './assets.ts';
 
 /** A template's hash as read from origin/main, and the hash the signer approved, absent when never approved. */
 export type TemplateApproval = { readonly template: string; readonly hash: Hex; readonly approved: Hex | undefined };
 
-export type AllChecks = EngineChecks & { readonly approvals: readonly TemplateApproval[] };
+export type AllChecks = EngineChecks & { readonly approvals: readonly TemplateApproval[]; readonly assets: AssetCheck };
 
-export type CheckName = 'template-approval' | 'static-floor' | 'fields' | 'mutation' | 'simulation' | 'simulated-floor' | 'effects';
+export type CheckName = 'template-approval' | 'static-floor' | 'fields' | 'vault-asset' | 'mutation' | 'simulation' | 'simulated-floor' | 'effects';
 
 type Outcome = { readonly kind: 'pass' } | { readonly kind: 'fail' | 'unverifiable'; readonly details: readonly string[] };
 
@@ -50,6 +51,10 @@ const ROWS: readonly (readonly [CheckName, (checks: AllChecks, registry: Registr
       if (fields.kind === 'unverifiable') return outcome('unverifiable', fields.reasons);
       return outcome('fail', fields.findings.map((f) => `${f.callPath} ${f.arg}: expected ${f.expected}, got ${f.actual}`));
     },
+  ],
+  [
+    'vault-asset',
+    ({ assets }) => (assets.kind === 'pass' ? PASS : assets.kind === 'mismatch' ? outcome('fail', assets.findings) : outcome('unverifiable', assets.reasons)),
   ],
   [
     'mutation',
