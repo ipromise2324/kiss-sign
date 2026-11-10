@@ -1,0 +1,18 @@
+{
+  "id": "eth/transfer",
+  "card": {
+    "amount": { "kind": "amount", "of": "eth" },
+    "recipient": { "kind": "address" }
+  },
+  "calls": [
+    {
+      "to": { "card": "recipient" },
+      "value": { "card": "amount" },
+      "data": "empty"
+    }
+  ],
+  "effects": {
+    "gives": [{ "token": "eth", "amount": "card.amount", "to": "card.recipient" }],
+    "gets": []
+  }
+}
