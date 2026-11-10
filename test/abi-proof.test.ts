@@ -133,6 +133,20 @@ const CASES = [
     uses: [
       'erc20TransferFrom(address token,address receiver,uint256 amount)',
       'erc4626Deposit(address vault,uint256 assets,uint256 maxSharePriceE27,address receiver)',
+      'erc4626Withdraw(address vault,uint256 assets,uint256 minSharePriceE27,address receiver,address owner)',
+      'erc4626Redeem(address vault,uint256 shares,uint256 minSharePriceE27,address receiver,address owner)',
+    ],
+  },
+  {
+    name: 'vault-bundles-v1',
+    proxy: 'none',
+    proven: '0x02912516d49de997db75b9d7858faae59209650b',
+    contract: 'lib/bundles/src/vault/VaultBundlesV1.sol:VaultBundlesV1',
+    compiler: '0.8.34+commit.80d5c536',
+    functions: 4,
+    immutables: 0,
+    uses: [
+      'vaultBundlesV1Deposit(address vault,uint256 assets,uint256 maxSharePriceE27,(uint8 kind,bytes data) assetPermit,uint256 referralFeePct,address referralFeeRecipient,uint256 deadline)',
     ],
   },
   {
@@ -173,7 +187,7 @@ const CASES = [
     compiler: '0.8.26+commit.8a97fa7a',
     functions: 76,
     immutables: 32,
-    uses: ['deposit(uint256 assets,address receiver)', 'asset()'],
+    uses: ['deposit(uint256 assets,address receiver)', 'asset()', 'approve(address spender,uint256 value)'],
   },
   {
     name: 'safe-proxy-1-3-0',

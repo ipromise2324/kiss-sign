@@ -1,0 +1,108 @@
+{
+  "id": "morpho/vault-withdraw",
+  "card": {
+    "vault": {
+      "kind": "contract",
+      "registryKind": "vault"
+    },
+    "amount": {
+      "kind": "amount",
+      "of": "vault.asset"
+    }
+  },
+  "calls": [
+    {
+      "to": {
+        "card": "vault"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": {
+          "contract": "general-adapter1"
+        },
+        "value": {
+          "free": "the most shares the withdrawal may burn, which the app sets from the amount and the price bound; the effects require the allowance to end where it started"
+        }
+      },
+      "trailer": {
+        "maxBytes": 8,
+        "why": "the Morpho app appends a 4-byte timestamp and a 4-byte origin tag, as on multicall; approve reads only its two arguments"
+      }
+    },
+    {
+      "to": {
+        "contract": "bundler3"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "multicall((address to, bytes data, uint256 value, bool skipRevert, bytes32 callbackHash)[] bundle)",
+      "args": {
+        "bundle": {
+          "items": [
+            {
+              "fields": {
+                "to": {
+                  "contract": "general-adapter1"
+                },
+                "data": {
+                  "call": {
+                    "function": "erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)",
+                    "args": {
+                      "vault": {
+                        "card": "vault"
+                      },
+                      "assets": {
+                        "card": "amount"
+                      },
+                      "minSharePriceE27": {
+                        "free": "slippage bound: the fewest assets per share the Safe accepts; the effects require the Safe to get exactly the amount and give a positive number of shares"
+                      },
+                      "receiver": {
+                        "safe": true
+                      },
+                      "owner": {
+                        "safe": true
+                      }
+                    }
+                  }
+                },
+                "value": {
+                  "const": "0"
+                },
+                "skipRevert": {
+                  "const": "false"
+                },
+                "callbackHash": {
+                  "const": "0x0000000000000000000000000000000000000000000000000000000000000000"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "trailer": {
+        "maxBytes": 8,
+        "why": "the Morpho app appends a 4-byte timestamp and a 4-byte origin tag, which multicall ignores (morpho-org/sdks, addTransactionMetadata)"
+      },
+      "merge": "the Morpho app puts every vault's withdrawal into one multicall, after all the share approvals"
+    }
+  ],
+  "effects": {
+    "gives": [
+      {
+        "token": "card.vault",
+        "amount": "positive"
+      }
+    ],
+    "gets": [
+      {
+        "token": "card.vault.asset",
+        "amount": "card.amount"
+      }
+    ]
+  }
+}

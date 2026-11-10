@@ -17,13 +17,20 @@ const allowanceCall = (safe: Address, { token, spender }: Allowance) => ({
   )}` as Hex,
 });
 
+const balanceCall = (safe: Address, token: Address) => ({
+  to: token,
+  data: `0x${bytesToHex(concatBytes(hexToBytes(selectorOf('balanceOf(address)').slice(2)), uintWord(BigInt(safe))))}` as Hex,
+});
+
 /**
  * What an executed Safe transaction did, from its receipt as both providers agree on it: token changes from the
  * `Transfer` logs that name the Safe, and the ETH change from the Safe's balance at the parent block and at the
  * execution block. No log shows ETH that reaches the Safe as the value of `execTransaction` itself or without calling
- * it, and with every fee field zero the Safe pays no gas.
+ * it, and with every fee field zero the Safe pays no gas. The balance of each token in `ends` is read at the parent block
+ * and at the execution block, and must differ by exactly this transaction's change; otherwise another transaction in
+ * that block moved it.
  */
-export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx): Promise<Observation> {
+export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, ends: readonly Address[]): Promise<Observation> {
   const safe = tx.safe;
   const unverifiable = (...reasons: string[]): Observation => ({ kind: 'unverifiable', reasons });
   const read = await reader.getTransactionReceipt(txHash);
@@ -66,7 +73,22 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx): 
     if (typeof after === 'string') return unverifiable(after);
     allowances.push({ ...allowance, before, after });
   }
+  const balanceAt = async (token: Address, at: BlockRef): Promise<bigint | string> => {
+    const answer = await reader.call(balanceCall(safe, token), at);
+    if (answer.kind === 'unverifiable') return answer.reason;
+    return answer.value.kind === 'returned' && answer.value.data.length === 66 ? uintOf(answer.value.data) : `balanceOf at ${token} could not be read`;
+  };
+  const held = new Map<Address, bigint>();
+  for (const token of ends) {
+    const [before, after] = await Promise.all([balanceAt(token, parent.value), balanceAt(token, block.value)]);
+    if (typeof before === 'string') return unverifiable(before);
+    if (typeof after === 'string') return unverifiable(after);
+    if (before + (tokens.get(token) ?? 0n) !== after) {
+      return unverifiable(`another transaction in block ${receipt.blockNumber} moved the Safe's ${token}, so its balance right after this one is unknown`);
+    }
+    held.set(token, after);
+  }
   const logs = receipt.logs.map(({ address, topics, data }) => ({ address, topics, data }));
   const eth = ethAfter.value - ethBefore.value;
-  return { kind: 'observed', observed: { kind: 'executed', eth, tokens, allowances, safeState: { kind: 'receipt', logs } } };
+  return { kind: 'observed', observed: { kind: 'executed', eth, tokens, allowances, ends: held, safeState: { kind: 'receipt', logs } } };
 }

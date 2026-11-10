@@ -53,10 +53,14 @@ export type CallNode = {
   readonly trailer: TrailerAllowance | undefined;
 };
 
-/** A call the Safe makes: a function call, or `empty` data, as a plain ETH transfer or a cancellation sends. */
-export type TemplateCall = { readonly to: Rule; readonly value: Rule; readonly data: CallNode | 'empty' };
+/**
+ * A call the Safe makes: a function call, or `empty` data, as a plain ETH transfer or a cancellation sends. `merge`,
+ * with its reason, lets several operations share this call: see `checkTemplateFields`.
+ */
+export type TemplateCall = { readonly to: Rule; readonly value: Rule; readonly data: CallNode | 'empty'; readonly merge: string | undefined };
 
-export type EffectAmount = { readonly kind: 'card'; readonly field: string } | { readonly kind: 'positive' };
+/** `all`, only on what the Safe gives, means its whole balance: the Safe holds none of the token afterwards. */
+export type EffectAmount = { readonly kind: 'card'; readonly field: string } | { readonly kind: 'positive' } | { readonly kind: 'all' };
 /** `to`, on what the Safe gives, names the receiver; the Safe giving to itself changes nothing. */
 export type Effect = { readonly token: TokenRef; readonly amount: EffectAmount; readonly to: CardRef | undefined };
 
@@ -255,8 +259,22 @@ function callNode(path: string, raw: unknown, scope: Scope): CallNode {
   return { fn, args: params(`${path}.args`, value.args, fn.params, scope), trailer: trailer(`${path}.trailer`, value.trailer) };
 }
 
-function templateCall(path: string, raw: unknown, scope: Scope): TemplateCall {
-  const value = object(path, raw);
+/**
+ * A merged call must be the template's last, to a named contract, with a constant value and one array argument whose
+ * items the operations sharing it put in, so only that argument can differ between them.
+ */
+function mergeReason(path: string, raw: unknown, call: TemplateCall, last: boolean): string | undefined {
+  if (raw === undefined) return undefined;
+  const why = text(path, raw);
+  const data = call.data === 'empty' ? undefined : call.data;
+  if (!last) throw new TemplateError(path, 'only the last call may merge');
+  if (call.to.kind !== 'contract' || call.value.kind !== 'const') throw new TemplateError(path, 'a merged call needs a contract target and a constant value');
+  if (data === undefined || data.args.length !== 1 || data.args[0]?.kind !== 'items') throw new TemplateError(path, 'a merged call takes one argument bound by items');
+  return why;
+}
+
+function templateCall(path: string, raw: unknown, scope: Scope, last: boolean): TemplateCall {
+  const { merge, ...value } = object(path, raw);
   const { to, value: amount, ...call } = value;
   let data: TemplateCall['data'];
   if (Object.hasOwn(call, 'data')) {
@@ -267,11 +285,12 @@ function templateCall(path: string, raw: unknown, scope: Scope): TemplateCall {
     exactKeys(path, value, ['to', 'value', 'function', 'args'], ['trailer']);
     data = callNode(path, call, scope);
   }
-  return {
+  const parsed = {
     to: rule(`${path}.to`, to, { kind: 'address' }, scope),
     value: rule(`${path}.value`, amount, { kind: 'uint', bits: 256 }, scope),
     data,
   };
+  return { ...parsed, merge: mergeReason(`${path}.merge`, merge, { ...parsed, merge: undefined }, last) };
 }
 
 /** A field's parser waits for the full field list, since `amount.of` may name a field declared after it. */
@@ -321,8 +340,11 @@ function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'
   }
   const amount = text(`${path}.amount`, value.amount);
   if (amount === 'positive') return { token: ref, amount: { kind: 'positive' }, to };
+  if (amount === 'all' && side === 'gives') return { token: ref, amount: { kind: 'all' }, to };
   const amountField = cardFieldName(amount) ?? '';
-  if (scope.card.get(amountField)?.kind !== 'amount') throw new TemplateError(`${path}.amount`, 'must be "positive" or card.<amount field>');
+  if (scope.card.get(amountField)?.kind !== 'amount') {
+    throw new TemplateError(`${path}.amount`, side === 'gives' ? 'must be "positive", "all" or card.<amount field>' : 'must be "positive" or card.<amount field>');
+  }
   return { token: ref, amount: { kind: 'card', field: amountField }, to };
 }
 
@@ -339,7 +361,8 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   for (const [name, build] of pending) fields.set(name, build(fields));
   const scope: Scope = { card: fields, registry };
   const nonce = value.nonce === undefined ? undefined : rule('nonce', value.nonce, { kind: 'uint', bits: 256 }, scope);
-  const calls = array('calls', value.calls).map((call, i) => templateCall(`calls[${i}]`, call, scope));
+  const rawCalls = array('calls', value.calls);
+  const calls = rawCalls.map((call, i) => templateCall(`calls[${i}]`, call, scope, i === rawCalls.length - 1));
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
   const effects = object('effects', value.effects);
   exactKeys('effects', effects, ['gives', 'gets']);

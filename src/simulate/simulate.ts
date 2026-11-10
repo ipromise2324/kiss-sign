@@ -21,6 +21,8 @@ export type SimulationInput = {
   readonly time: bigint;
   /** Tokens measured even if no log names the Safe, such as every token the card's effects name. */
   readonly watch: readonly Address[];
+  /** Tokens whose balance after the transaction the result carries in `ends`. */
+  readonly ends: readonly Address[];
 };
 
 /** Safe 1.1.1, 1.3.0 and 1.4.1: `mapping(address => mapping(bytes32 => uint256)) approvedHashes` is storage slot 8. */
@@ -145,7 +147,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   if (execution !== 'success') return { kind: 'observed', observed: { kind: 'not-executed', why: execution } };
 
   const touched = touchedBy(alone.logs, safe);
-  const tokens = [...new Set([...input.watch, ...touched.tokens])];
+  const tokens = [...new Set([...input.watch, ...input.ends, ...touched.tokens])];
   const allowances = [...touched.approvals.values()];
   const reads = readsOf(safe, sender, tokens, allowances);
   const stateCalls = safeStateCalls(safe, sender, tx.version);
@@ -187,6 +189,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
       eth,
       tokens: new Map(tokens.map((token, i) => [token, after(1 + i) - before(1 + i)])),
       allowances: allowanceChanges,
+      ends: new Map(input.ends.map((token) => [token, after(1 + tokens.indexOf(token))])),
       safeState: { kind: 'read', before: stateBefore, after: stateAfter },
     },
   };
