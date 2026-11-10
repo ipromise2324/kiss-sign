@@ -19,8 +19,11 @@ const records = (name: string) =>
     .split('\n')
     .map((line) => JSON.parse(line) as Record<string, unknown>);
 const ENV = { ALCHEMY_API_KEY: 'test-key' };
-const DEPOSIT_CARD = { operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: '1800000000180' } }] };
-const MARKS = [{ at: 'operations[0].values.amount', note: 'taken from the transaction' }];
+const DEPOSIT_CARD = { operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: '1800000000180', 'min-shares': '1741863305677219101283940' } }] };
+const MARKS = [
+  { at: 'operations[0].values.amount', note: 'taken from the transaction' },
+  { at: 'operations[0].values.min-shares', note: 'taken from the transaction' },
+];
 
 const git = (cwd: string, ...args: string[]) =>
   execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -96,7 +99,7 @@ const withCard = { 249: { ...DEPOSIT_CARD, origin: 'history', marks: MARKS } };
 test('a deposit with its card is MATCH, and the card column says which values came from the transaction', async () => {
   const { code, stdout } = await run(setUp('morpho-safe', withCard));
   assert.equal(code, 0);
-  assert.match(rowOf(stdout, 249), /^  249  2026-\d\d-\d\d  MATCH         intent of nonce 249\n {33}card: amount: taken from the transaction$/);
+  assert.match(rowOf(stdout, 249), /^  249  2026-\d\d-\d\d  MATCH         intent of nonce 249\n {33}card: amount: taken from the transaction; min-shares: taken from the transaction$/);
   assert.match(stdout, /Templates are approved at their origin\/main hash \([0-9a-f]{40}\) for this run only, since history is not a signing: morpho\/vault-deposit 0x[0-9a-f]{64}\./);
 });
 
@@ -127,7 +130,7 @@ test('a note whose spending nonce is not later is refused', async () => {
 });
 
 test("a note naming a spending nonce leaves a row that has its own verdict its own reason", async () => {
-  const card = { operations: [{ ...DEPOSIT_CARD.operations[0]!, values: { vault: 'steakhouse-prime-usdc', amount: '1' } }], origin: 'history', marks: [] };
+  const card = { operations: [{ ...DEPOSIT_CARD.operations[0]!, values: { vault: 'steakhouse-prime-usdc', amount: '1', 'min-shares': '1' } }], origin: 'history', marks: [] };
   const { stdout } = await run(setUp('morpho-safe', { 249: card }, { 249: { note: 'approval for the migration', spentBy: 338 } }));
   assert.match(rowOf(stdout, 249), /  MISMATCH  .*\n {33}mismatch: fields\+effects: fields: multiSend\[0\]\.approve value: expected 1, got 1800000000180; .*; note: approval for the migration\n/);
 });
@@ -152,7 +155,7 @@ test('reason row no-card-yet: a transaction without a card file is not run', asy
 });
 
 test("reason row verdict causes: a card whose amount differs is MISMATCH, with the check and its first detail", async () => {
-  const card = { operations: [{ ...DEPOSIT_CARD.operations[0]!, values: { vault: 'steakhouse-prime-usdc', amount: '1' } }], origin: 'history', marks: [] };
+  const card = { operations: [{ ...DEPOSIT_CARD.operations[0]!, values: { vault: 'steakhouse-prime-usdc', amount: '1', 'min-shares': '1' } }], origin: 'history', marks: [] };
   const { stdout } = await run(setUp('morpho-safe', { 249: card }));
   assert.match(rowOf(stdout, 249), /  MISMATCH  .*\n {33}mismatch: fields\+effects: fields: multiSend\[0\]\.approve value: expected 1, got 1800000000180; effects: /);
 });
@@ -178,7 +181,7 @@ test('--out writes the same rows as Markdown, and refuses a file inside the repo
   const out = join(at.base, 'history.md');
   await run(at, ['--out', out]);
   const markdown = readFileSync(out, 'utf8');
-  assert.match(markdown, /\n\| 249 \| [\d-]{10} \| intent of nonce 249 \| MATCH \|  \| amount: taken from the transaction \|\n/);
+  assert.match(markdown, /\n\| 249 \| [\d-]{10} \| intent of nonce 249 \| MATCH \|  \| amount: taken from the transaction; min-shares: taken from the transaction \|\n/);
   assert.match(markdown, /\n\| 338 \| [\d-]{10} \| intent of nonce 338 \| not run \| refused-by-design: unlimited-approval at multiSend\[0\]; note: a \\\| b \|  \|\n/);
   await assert.rejects(run(at, ['--out', join(at.repo, 'history.md')]), /--out must be outside this repository/);
 });

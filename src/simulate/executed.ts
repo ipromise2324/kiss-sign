@@ -45,9 +45,9 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, e
   if (read.kind === 'unverifiable') return unverifiable(read.reason);
   const receipt = read.value;
   if (receipt === null) return unverifiable(`no receipt for ${txHash}`);
-  if (receipt.status === 0) return { kind: 'observed', observed: { kind: 'not-executed', why: 'reverted' } };
+  if (receipt.status === 0) return { kind: 'observed', observed: { kind: 'not-executed', why: 'reverted' }, logs: receipt.logs };
   const execution = executionOf(receipt.logs, safe, hashSafeTx(tx).safeTxHash);
-  if (execution !== 'success') return { kind: 'observed', observed: { kind: 'not-executed', why: execution } };
+  if (execution !== 'success') return { kind: 'observed', observed: { kind: 'not-executed', why: execution }, logs: receipt.logs };
 
   const tokens = new Map<Address, bigint>();
   for (const log of receipt.logs) {
@@ -112,5 +112,5 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, e
   }
   const logs = receipt.logs.map(({ address, topics, data }) => ({ address, topics, data }));
   const eth = ethAfter.value - ethBefore.value;
-  return { kind: 'observed', observed: { kind: 'executed', eth, tokens, allowances, permit2, ends: held, safeState: { kind: 'receipt', logs } } };
+  return { kind: 'observed', observed: { kind: 'executed', eth, tokens, allowances, permit2, ends: held, safeState: { kind: 'receipt', logs } }, logs };
 }

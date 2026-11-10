@@ -2,7 +2,7 @@
 
 The Safe withdraws all of its shares of a Morpho vault, the way the Morpho app's "max" withdrawal builds it through Bundler3: one official MultiSend with two calls. The first approves GeneralAdapter1 to spend the Safe's shares. The second is `Bundler3.multicall` with one bundle item: GeneralAdapter1 calls `erc4626Redeem` for the Safe's whole share balance and pays the asset to the Safe.
 
-The card is the vault alone. This template is the "all" of the design's "amount or all"; `morpho/vault-withdraw` is the amount. Like that template, the multicall is marked `merge`, so a card with a withdrawal from each of several vaults matches the app's single multicall.
+The card is the vault and `min-assets`, the fewest assets the Safe may get. This template is the "all" of the design's "amount or all"; `morpho/vault-withdraw` is the amount. Like that template, the multicall is marked `merge`, so a card with a withdrawal from each of several vaults matches the app's single multicall.
 
 ## How "all" is bound
 
@@ -33,13 +33,13 @@ See `templates/morpho/vault-withdraw/report.md`. The proven GeneralAdapter1 ABI 
 | bundle item | `to` | the adapter that runs it | `general-adapter1` |
 | | `erc4626Redeem.vault` | the vault | the card's `vault` |
 | | `erc4626Redeem.shares` | how many shares | free: the effects require the Safe to hold none afterwards |
-| | `erc4626Redeem.minSharePriceE27` | slippage bound | free: the effects require a positive amount of the asset in |
+| | `erc4626Redeem.minSharePriceE27` | slippage bound, the fewest assets per share | `minSharePrice`: at least the card's `min-assets` × 1e27 / `erc4626Redeem.shares`, so the redeem pays at least `min-assets` or reverts; `shares` of 2^256-1 is `MISMATCH` |
 | | `erc4626Redeem.receiver` | who gets the asset | the Safe |
 | | `erc4626Redeem.owner` | whose shares are redeemed | the Safe |
 
 Every call sends 0 ETH, the item has `skipRevert` false and a zero `callbackHash`, and both `approve` and `multicall` may carry the app's 8-byte trailer. Effects: the Safe gives all of the vault's shares and gets a positive amount of the vault's asset.
 
-The price bound is free as in the deposit: the amount received is not on the card, so only "more than nothing" is checked. A redeem at a price far below the vault's is caught by neither the fields nor the effects. That is the risk `morpho/vault-deposit` accepts for its price bound: the vault is a registered contract the signer chose.
+The price bound is bound to the card's `min-assets` through the share count the transaction states: `minSharePriceE27 × shares` must be at least `min-assets × 1e27`. The shares are free, but the effects require the Safe to hold none afterwards, so they are the Safe's whole balance. A transaction that states 2^256-1 shares, which GeneralAdapter1 reads as the owner's balance when it runs, is `MISMATCH`, since its bound would then guarantee nothing.
 
 ## Past transactions
 

@@ -66,7 +66,7 @@ const SAFE = '0x2222222222222222222222222222222222222222' as Address;
 const VAULT = registry.entries.get('steakhouse-prime-usdc')!.address;
 const AMOUNT = 1_000_000n;
 const resolution = resolveCard(
-  { operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: `${AMOUNT}` } }] },
+  { operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: `${AMOUNT}`, 'min-shares': '1' } }] },
   { templates, registry, addressBook: new Map(), safe: SAFE },
 );
 assert.equal(resolution.kind, 'resolved');

@@ -4,6 +4,10 @@
     "vault": {
       "kind": "contract",
       "registryKind": "vault"
+    },
+    "min-assets": {
+      "kind": "amount",
+      "of": "vault.asset"
     }
   },
   "calls": [
@@ -55,7 +59,10 @@
                         "free": "the Safe's whole share balance; the effects require the Safe to hold no shares of the vault afterwards"
                       },
                       "minSharePriceE27": {
-                        "free": "slippage bound: the fewest assets per share the Safe accepts; the effects require the Safe to get a positive amount of the asset"
+                        "minSharePrice": {
+                          "assets": "card.min-assets",
+                          "shares": "calls[1].args.bundle.items[0].fields.data.call.args.shares"
+                        }
                       },
                       "receiver": {
                         "safe": true

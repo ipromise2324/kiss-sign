@@ -26,9 +26,9 @@ const refusal = (card: Card) => {
 };
 
 test('a migration between two vaults of one asset resolves, and between vaults of different assets is refused', () => {
-  assert.equal(refusal({ operations: [{ template: ALL, values: { from: 'hyperithm-usdc-apex-7777', to: 'steakhouse-prime-usdc' } }] }), 'resolved');
+  assert.equal(refusal({ operations: [{ template: ALL, values: { from: 'hyperithm-usdc-apex-7777', to: 'steakhouse-prime-usdc', 'min-assets': '1', 'min-shares': '1' } }] }), 'resolved');
   assert.equal(
-    refusal({ operations: [{ template: ALL, values: { from: 'hyperithm-usdc-apex-7777', to: 'fluid-fusdt' } }] }),
+    refusal({ operations: [{ template: ALL, values: { from: 'hyperithm-usdc-apex-7777', to: 'fluid-fusdt', 'min-assets': '1', 'min-shares': '1' } }] }),
     'not-the-same at operations[0]: morpho/vault-migrate-all needs one address for from.asset usdc and to.asset usdt',
   );
 });
@@ -43,7 +43,14 @@ function safeTx(name: string): SafeTx {
   return parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
 }
 
-const MIGRATE: Card = { operations: [{ template: ALL, values: { from: 'smokehouse-usdc', to: 'steakhouse-high-yield-usdc' } }] };
+const migrate = (minAssets: string, minShares: string): Card => ({
+  operations: [{ template: ALL, values: { from: 'smokehouse-usdc', to: 'steakhouse-high-yield-usdc', 'min-assets': minAssets, 'min-shares': minShares } }],
+});
+const BOUNDS: Record<string, [string, string]> = {
+  'morpho-migrate-all-smokehouse': ['11959243449', '11619105060826236536810'],
+  'morpho-migrate-all-smokehouse-other-safe': ['72804844915', '69500106226276768561930'],
+};
+const MIGRATE = migrate(...BOUNDS['morpho-migrate-all-smokehouse']!);
 
 function resolvedFor(tx: SafeTx, card: Card) {
   const result = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
@@ -51,15 +58,16 @@ function resolvedFor(tx: SafeTx, card: Card) {
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;
 }
 
-for (const name of ['morpho-migrate-all-smokehouse', 'morpho-migrate-all-smokehouse-other-safe']) {
+for (const [name, bounds] of Object.entries(BOUNDS)) {
   const tx = safeTx(name);
+  const MIGRATE = migrate(...bounds);
 
   test(`${name} matches ${ALL} with the card it implies`, () => {
     assert.deepEqual(checkTemplateFields(tx, resolvedFor(tx, MIGRATE), templates, registry), { kind: 'match' });
   });
 
   test(`${name}: every bound field, changed alone, gives a mismatch`, () => {
-    assert.deepEqual(checkMutations(tx, resolvedFor(tx, MIGRATE), templates, registry), { kind: 'pass', bound: 26, free: 4 });
+    assert.deepEqual(checkMutations(tx, resolvedFor(tx, MIGRATE), templates, registry), { kind: 'pass', bound: 29, free: 1 });
   });
 }
 
@@ -72,6 +80,19 @@ test('a migration whose new shares go to someone else is a mismatch at the depos
   assert.deepEqual(result.kind === 'mismatch' ? result.findings.map((f) => `${f.callPath}.${f.arg}`) : result, [
     'multiSend[1].multicall.bundle[2].data.erc4626Deposit.receiver',
   ]);
+});
+
+test('a migration card asks for at least the assets the redeem bound guarantees, and at least the shares the deposit bound guarantees', () => {
+  const tx = safeTx('morpho-migrate-all-smokehouse');
+  const at = (card: Card) => {
+    const result = checkTemplateFields(tx, resolvedFor(tx, card), templates, registry);
+    return result.kind === 'mismatch' ? result.findings.map((f) => `${f.callPath}.${f.arg}`) : result.kind;
+  };
+  const [assets, shares] = BOUNDS['morpho-migrate-all-smokehouse']!;
+  assert.deepEqual(at(migrate(`${BigInt(assets) + 1n}`, shares)), [
+    'multiSend[1].multicall.bundle[1].data.erc4626Redeem.minSharePriceE27',
+  ]);
+  assert.deepEqual(at(migrate(assets, `${BigInt(shares) + 1n}`)), ['multiSend[1].multicall.bundle[2].data.erc4626Deposit.maxSharePriceE27']);
 });
 
 const recorded: VerdictFile = JSON.parse(readFileSync(join(ROOT, 'testdata', 'verify', 'morpho-migrate-all.json'), 'utf8'));

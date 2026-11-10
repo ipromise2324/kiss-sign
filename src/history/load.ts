@@ -187,7 +187,7 @@ function parseMarks(where: string, raw: unknown): Mark[] {
   });
 }
 
-const VALUE_PATH = /^operations\[(0|[1-9][0-9]*)\]\.values\.([A-Za-z0-9_]+)$/;
+const VALUE_PATH = /^operations\[(0|[1-9][0-9]*)\]\.values\.([A-Za-z0-9_-]+)$/;
 
 /** `{ "operations": [...], "origin": "history", "marks": [{ "at": "operations[0].values.amount", "note": ... }] }`. */
 function parseHistoryCard(where: string, raw: unknown): HistoryCard {
