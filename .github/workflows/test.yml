@@ -27,5 +27,6 @@ jobs:
           path: vendor/solc
           key: solc-${{ hashFiles('src/contracts/solc-pins.ts') }}
       - run: pnpm fetch-solc
+      - run: pnpm fetch-psl
       - run: pnpm typecheck
       - run: pnpm test

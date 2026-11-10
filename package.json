@@ -14,11 +14,13 @@
     "record-safe-tx": "node scripts/record-safe-tx.ts",
     "fetch-solc": "node scripts/fetch-solc.ts",
     "fetch-psl": "node scripts/fetch-psl.ts",
+    "fetch-erc7730": "node scripts/fetch-erc7730.ts",
     "prove-abi": "node scripts/prove-abi.ts",
     "prove-instance": "node scripts/prove-instance.ts",
     "pin-code": "node scripts/pin-code.ts",
     "check-sources": "node scripts/check-sources.ts",
     "vault-evidence": "node scripts/vault-evidence.ts",
+    "erc7730": "node scripts/erc7730.ts",
     "record-abi-case": "node scripts/record-abi-case.ts",
     "record-safe-proxy": "node scripts/record-safe-proxy.ts",
     "simulate": "node scripts/simulate.ts",
@@ -27,7 +29,8 @@
     "history": "node scripts/history.ts",
     "attacks": "node scripts/attacks.ts",
     "contract-origin": "node scripts/contract-origin.ts",
-    "research-parse": "node scripts/research-parse.ts"
+    "research-parse": "node scripts/research-parse.ts",
+    "report": "node scripts/report.ts"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

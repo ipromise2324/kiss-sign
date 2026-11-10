@@ -97,17 +97,18 @@ function websiteLine(source: URL, protocol: DefiLlamaProtocol, label: string, su
   return finding(`source domain ${ours} differs from ${label}'s website ${protocol.url.hostname} (${theirs})`);
 }
 
-function defillamaLine(entry: RegistryEntry, listings: Listings): Line {
+/** Compares the registrable domain, or GitHub org, of `source` with what DefiLlama lists for the protocol `slug`. */
+export function sourceSiteLine(source: string, slug: string | undefined, listings: Listings): Line {
   const finding = (text: string): Line => ({ kind: 'finding', check: 'defillama', text });
-  if (entry.defillama === undefined) return finding('the entry names no DefiLlama protocol; source not compared');
-  const listed = listings.protocols.get(entry.defillama) ?? [];
+  if (slug === undefined) return finding('the entry names no DefiLlama protocol; source not compared');
+  const listed = listings.protocols.get(slug) ?? [];
   const [protocol] = listed;
-  if (protocol === undefined) return finding(`DefiLlama lists no protocol "${entry.defillama}"`);
-  if (listed.length > 1) return finding(`DefiLlama lists ${listed.length} protocols with slug "${entry.defillama}": ${listed.map((p) => p.name).join(', ')}; not compared`);
-  const source = new URL(entry.source);
+  if (protocol === undefined) return finding(`DefiLlama lists no protocol "${slug}"`);
+  if (listed.length > 1) return finding(`DefiLlama lists ${listed.length} protocols with slug "${slug}": ${listed.map((p) => p.name).join(', ')}; not compared`);
+  const url = new URL(source);
   const label = `${protocol.slug} (${protocol.name})`;
-  const github = githubSource(source);
-  if (github.kind === 'not-github') return websiteLine(source, protocol, label, listings.suffixes);
+  const github = githubSource(url);
+  if (github.kind === 'not-github') return websiteLine(url, protocol, label, listings.suffixes);
   if (github.kind === 'no-org') return finding(`${github.why}; not compared`);
   if (protocol.github.length === 0) return finding(`source is GitHub org ${github.org}; DefiLlama names no GitHub org for ${label}, so it is not compared`);
   const orgs = protocol.github.map((g) => g.toLowerCase());
@@ -130,7 +131,7 @@ function coingeckoLine(entry: RegistryEntry, coinsByAddress: Listings['coinsByAd
 
 const hasCoin = (entry: RegistryEntry) => COINGECKO_KINDS.includes(entry.kind);
 
-function githubLine(source: URL, commits: SourcePages['commits']): Line {
+export function githubLine(source: URL, commits: SourcePages['commits']): Line {
   const finding = (text: string): Line => ({ kind: 'finding', check: 'github', text });
   const ref = githubRef(source);
   if (ref.kind === 'unpinned') return finding('not pinned to a commit: name the file as github.com/<org>/<repo>/blob/<40-hex commit>/<path>');
@@ -175,7 +176,7 @@ export function checkSources(entries: readonly RegistryEntry[], listings: Listin
       entry,
       site: siteOf(source, listings.suffixes),
       lines: [
-        defillamaLine(entry, listings),
+        sourceSiteLine(entry.source, entry.defillama, listings),
         ...(hasCoin(entry) ? [coingeckoLine(entry, listings.coinsByAddress)] : []),
         ...(isGitHubPage(source) ? [githubLine(source, pages.commits)] : []),
         echoes
@@ -251,10 +252,12 @@ export function sourcePagesOf(recording: Pick<ListingsRecording, 'pages' | 'comm
   return { pages: new Map(Object.entries(recording.pages)), commits: new Map(Object.entries(recording.commits)) };
 }
 
-function trimPage(page: Page, addresses: readonly Address[]): Page {
+/** Keeps the blocks holding one of `addresses`, the block before each, and the blocks holding one of `words`. */
+export function trimPage(page: Page, addresses: readonly Address[], words: readonly RegExp[] = []): Page {
   if (page.kind === 'failed') return page;
   const holds = (block: PageBlock | undefined) => block !== undefined && addresses.some((a) => block.text.toLowerCase().includes(a.slice(2)));
-  return { kind: 'served', blocks: page.blocks.filter((block, i) => holds(block) || holds(page.blocks[i + 1])) };
+  const says = (block: PageBlock) => words.some((word) => word.test(block.text));
+  return { kind: 'served', blocks: page.blocks.filter((block, i) => holds(block) || holds(page.blocks[i + 1]) || says(block)) };
 }
 
 export function trimForRecording(entries: readonly RegistryEntry[], listings: Listings, pages: SourcePages, fetched: Date): ListingsRecording {

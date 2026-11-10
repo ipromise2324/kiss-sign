@@ -408,3 +408,15 @@ done
 ```sh
 pnpm contract-origin bundler3 steakhouse-prime-usdc usdc --record registry-contracts
 ```
+
+## ERC-7730 descriptors
+
+`erc7730/<name>.json` is written by `pnpm erc7730 <registry name>... --record <name>`: the registry commit, the date, the entries checked, the registry files the run read (the descriptors found, their includes and attestations, the auditor folders they name, every descriptor scoped by a factory, and `index.calldata.json` cut to the checked addresses), and every chain request with both providers' answers. The files are the registry's own, so they hold descriptor text the program never prints. `test/erc7730.test.ts` replays it offline, and edits copies of its files and answers to show a changed include, a changed attestation, a revocation, a provider disagreement, and a descriptor scoped by a factory.
+
+| File | Commit | Entries | What it shows |
+| --- | --- | --- | --- |
+| `smokehouse-usdc-and-usdc.json` | `3bebbd05` | `smokehouse-usdc`, `usdc` | Smokehouse USDC's descriptor `registry/morpho/calldata-steakhouse_financial-bbqUSDC.json`, by exact address, with one VALID attestation by `0x3846c3A30E62075Fa916216b35EF04B8F53931f6`; USDC with no descriptor |
+
+### Recording again
+
+`ALCHEMY_API_KEY=... pnpm erc7730 smokehouse-usdc usdc --record smokehouse-usdc-and-usdc`, after `pnpm fetch-erc7730`. The block, and so the test's expected block number, changes with each recording; the tests match any block.

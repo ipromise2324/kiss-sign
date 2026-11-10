@@ -5,11 +5,10 @@ import { loadConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
-import { proveInstance } from '../src/contracts/instance.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
-import { alchemyCall, formatVaultEvidence, gatherVaultEvidence, trimVaultRecording } from '../src/research/vault-evidence.ts';
+import { alchemyCall, trimVaultRecording, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/vault-evidence.ts <registry vault name> [--record <name>]
 
@@ -34,24 +33,9 @@ if (vault?.kind !== 'vault') {
 const endpoints = mainnetEndpoints(process.env);
 const recording = recordingTransport(httpsTransport(), endpoints);
 const reader = createReader(endpoints, recording.transport);
-if (vault.attributes.factory === undefined) {
-  console.log(`NOTE ${vault.name} names no factory, so no factory vouches for the code these numbers come from`);
-} else {
-  const latest = await reader.block('latest');
-  if (latest.kind === 'unverifiable') throw new Error(latest.reason);
-  const admitted = await proveInstance(reader, registry, vault.name, latest.value);
-  if (admitted.kind === 'refused') {
-    console.log(`REFUSED ${admitted.why}; the vault's code is not read`);
-    process.exit(1);
-  }
-  console.log(`admitted     ${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${latest.value.number}`);
-}
-const evidence = await gatherVaultEvidence(reader, alchemyCall(recording.transport, endpoints[0].url), vault);
-if ('kind' in evidence) {
-  console.log(`UNVERIFIABLE ${evidence.reason}`);
-  process.exit(1);
-}
-console.log(formatVaultEvidence(evidence, registry));
+const { read, text } = await vaultEvidenceText(reader, alchemyCall(recording.transport, endpoints[0].url), registry, vault);
+console.log(text);
+if (!read) process.exit(1);
 
 if (flags.record !== undefined) {
   const safe = loadConfig(kissSignHome(process.env))?.safe;
