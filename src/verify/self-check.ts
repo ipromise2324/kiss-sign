@@ -1,8 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { lstatSync, mkdtempSync, readFileSync, readlinkSync, rmSync } from 'node:fs';
+import { lstatSync, mkdtempSync, readFileSync, readlinkSync, realpathSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 export type SelfCheck = { readonly kind: 'clean'; readonly commit: string } | { readonly kind: 'differs'; readonly problems: readonly string[] };
 
@@ -79,6 +79,9 @@ export function selfCheck(root: string, isOfficial: (url: string) => boolean = i
   if (origin.kind === 'unreachable') return { kind: 'differs', problems: ['could not fetch origin'] };
   const { commit } = origin;
   const problems: string[] = [];
+  const own = realpathSync(join(root, '.git'));
+  const dirs = new Set(['--absolute-git-dir', '--git-common-dir'].map((flag) => realpathSync(resolve(root, git(root, 'rev-parse', flag).trim()))));
+  for (const dir of dirs) if (dir !== own) problems.push(`the git directory is ${dir}, not ${own}; sign from a plain git clone`);
   const head = git(root, 'rev-parse', 'HEAD').trim();
   if (head !== commit) problems.push(`HEAD is ${head}, origin/main is ${commit}`);
   for (const path of changedFiles(root, commit)) problems.push(`changed: ${path}`);
@@ -161,7 +164,10 @@ function untrackedFiles(root: string, commit: string): string[] {
   const patterns = gitignoreAt(root, commit)
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => line !== '' && !line.startsWith('#'));
+    .filter((line) => line !== '' && !line.startsWith('#'))
+    // A directory pattern such as `node_modules/` would also exempt src/node_modules/, which Node resolves before the
+    // root one, so directories are ignored only at the root.
+    .map((line) => (line.endsWith('/') && !line.startsWith('/') ? `/${line}` : line));
   const scratch = mkdtempSync(join(tmpdir(), 'kiss-sign-index-'));
   try {
     const env = { GIT_INDEX_FILE: join(scratch, 'index') };

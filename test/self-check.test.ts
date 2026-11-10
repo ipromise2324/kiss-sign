@@ -347,3 +347,16 @@ test('template approve refuses a clone whose origin is not the official reposito
   assert.equal(git(clone, 'rev-parse', 'refs/remotes/origin/main').trim(), before);
   assert.equal(existsSync(join(home, 'approved-templates.json')), false);
 });
+
+test('a node_modules folder below the root is named, since Node would load it before the root one', () => {
+  const { clone } = cloneOfOrigin();
+  write(clone, 'src/cli/node_modules/@noble/hashes/index.js');
+  assert.deepEqual(problemsOf(clone), ['untracked: src/cli/node_modules/@noble/hashes/index.js']);
+});
+
+test('a clone whose git directory lives elsewhere, as a linked worktree has, fails the self-check', () => {
+  const { clone } = cloneOfOrigin();
+  const linked = join(dirname(clone), 'linked');
+  git(clone, 'worktree', 'add', '--quiet', '--detach', linked, 'origin/main');
+  assert.match(problemsOf(linked).join('\n'), /the git directory is .*, not .*; sign from a plain git clone/);
+});
