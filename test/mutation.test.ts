@@ -44,9 +44,9 @@ test('every bound field of the Morpho deposit, changed alone, gives a mismatch',
   assert.deepEqual(mutations(), { kind: 'pass', bound: 20, free: 1 });
 });
 
-test('a template that frees the receiver still passes, with one more free field and one fewer bound', () => {
+test('a template that frees the deposited assets still passes, with one more free field and one fewer bound', () => {
   const weakened = structuredClone(rawTemplate);
-  weakened.calls[1].args.bundle.items[1].fields.data.call.args.receiver = { free: 'test: receiver left free' };
+  weakened.calls[1].args.bundle.items[1].fields.data.call.args.assets = { free: 'test: assets left free' };
   assert.deepEqual(mutations(parseTemplate(weakened, registry)), { kind: 'pass', bound: 19, free: 2 });
 });
 
@@ -63,7 +63,7 @@ test('a checker that ignores the receiver makes the template weak, naming the re
   const { uncaught, bound, free } = result as Extract<MutationResult, { kind: 'weak-template' }>;
   assert.deepEqual([bound, free], [20, 1]);
   assert.deepEqual(
-    uncaught.map(({ leaf, mutated }) => [leaf.callPath, leaf.arg, leaf.bytes, leaf.rule, mutated]),
+    uncaught.map(({ leaf, mutated }) => [leaf.callPath, leaf.arg, leaf.bytes, leaf.rule.kind, mutated]),
     [[DEPOSIT_PATH, 'receiver', RECEIVER, 'safe', 'match']],
   );
 });

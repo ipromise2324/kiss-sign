@@ -80,7 +80,7 @@ export function checkMutations(
 ): MutationResult {
   const { check, leaves } = inspectTemplateFields(tx, card, templates, registry);
   if (check.kind !== 'match') return { kind: 'not-run', check };
-  const bound = leaves.filter((leaf) => leaf.rule !== 'free');
+  const bound = leaves.filter((leaf) => leaf.rule.kind !== 'free');
   const free = leaves.length - bound.length;
   const uncaught: Uncaught[] = [];
   for (const leaf of bound) {

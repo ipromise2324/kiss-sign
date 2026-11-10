@@ -8,7 +8,7 @@ import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import type { CallNode, ConstValue, Rule, Template, TemplateCall } from './template.ts';
+import type { CallNode, ConstValue, LeafRule, Rule, Template, TemplateCall } from './template.ts';
 
 /**
  * Where a field differs. `callPath` names the call, such as `multiSend[1].multicall.bundle[1].data.erc4626Deposit`;
@@ -30,7 +30,7 @@ export type Leaf = {
   readonly callPath: string;
   readonly arg: string;
   readonly bytes: Span | undefined;
-  readonly rule: Exclude<Rule['kind'], 'call' | 'items' | 'fields'>;
+  readonly rule: LeafRule;
   readonly type: AbiType;
 };
 
@@ -101,7 +101,7 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
 
 function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span | undefined, callPath: string, arg: string, context: Context): void {
   if (rule.kind === 'call' || rule.kind === 'items' || rule.kind === 'fields') throw new Error(`a ${rule.kind} rule is not a leaf`);
-  context.leaves.push({ callPath, arg, bytes, rule: rule.kind, type });
+  context.leaves.push({ callPath, arg, bytes, rule, type });
   if (rule.kind === 'free') return;
   const expected = expectedOf(rule, context);
   if (expected === undefined) return;
@@ -112,7 +112,7 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
 /** `itemContexts`, for a merged call's items, gives each item the card values of the operation that put it in. */
 function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: string, arg: string, context: Context, itemContexts?: readonly Context[]): void {
   if (rule.kind === 'free') {
-    context.leaves.push({ callPath, arg, bytes: actual.span, rule: 'free', type });
+    context.leaves.push({ callPath, arg, bytes: actual.span, rule, type });
     return;
   }
   if (rule.kind === 'call') {

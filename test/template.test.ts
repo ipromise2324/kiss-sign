@@ -165,6 +165,44 @@ test('a template rule that cannot bind its argument fails to load, naming the pa
   }
 });
 
+test('an address anywhere in the type tree is never free, and a constant address is only the zero address', () => {
+  const deposit = (t: any) => t.calls[1].args.bundle.items[1].fields.data.call.args;
+  const cases: [(t: any) => void, string, RegExp][] = [
+    [(t) => (deposit(t).receiver = { free: 'x' }), 'calls[1].args.bundle.items[1].fields.data.call.args.receiver.free', /address is never free/],
+    [(t) => (t.calls[1].args.bundle = { free: { proof: 'x' } }), 'calls[1].args.bundle.free', /address is never free/],
+    [(t) => (t.calls[1].args.bundle.items[1] = { free: { unread: 'x' } }), 'calls[1].args.bundle.items[1].free', /address is never free/],
+    [(t) => (deposit(t).receiver = { const: OTHER }), 'calls[1].args.bundle.items[1].fields.data.call.args.receiver.const', /zero address/],
+    [(t) => (t.calls[0].to = { const: OTHER }), 'calls[0].to.const', /zero address/],
+  ];
+  for (const [edit, path, problem] of cases) {
+    const broken = structuredClone(rawTemplate);
+    edit(broken);
+    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
+  }
+  const zero = structuredClone(rawTemplate);
+  deposit(zero).receiver = { const: '0x0000000000000000000000000000000000000000' };
+  assert.doesNotThrow(() => parseTemplate(zero, registry));
+});
+
+test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes are empty', () => {
+  const urd = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'urd-claim', 'template.json'), 'utf8'));
+  const claim = (t: any) => t.calls[0].args.bundle.items[0].fields.data.call.args;
+  const at = 'calls[0].args.bundle.items[0].fields.data.call.args';
+  const cases: [(t: any) => void, string, RegExp][] = [
+    [(t) => (claim(t).proof = { free: 'x' }), `${at}.proof.free`, /needs \{"proof": why\} or \{"unread": why\}/],
+    [(t) => (claim(t).proof = { free: { trust: 'x' } }), `${at}.proof.free`, /exactly one of proof, unread/],
+    [(t) => (t.calls[0].args.bundle.items[0].fields.data = { const: '0x00' }), 'calls[0].args.bundle.items[0].fields.data.const', /must be empty/],
+  ];
+  for (const [edit, path, problem] of cases) {
+    const broken = structuredClone(urd);
+    edit(broken);
+    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
+  }
+  const scalar = structuredClone(urd);
+  claim(scalar).claimable = { free: { proof: 'the leaf amount' } };
+  assert.equal(parseTemplate(scalar, registry).id, 'morpho/urd-claim');
+});
+
 test('the template parses its card fields and effects', () => {
   assert.deepEqual([...template.card], [
     ['vault', { kind: 'contract', registryKind: 'vault' }],

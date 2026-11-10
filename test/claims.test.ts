@@ -149,7 +149,7 @@ test('a merged call takes every argument as items, with as many items in each, o
   const unequal = structuredClone(raw);
   unequal.calls[0].args.users.items.push({ safe: true });
   const loose = structuredClone(raw);
-  loose.calls[0].args.users = { free: 'x' };
+  loose.calls[0].args.amounts = { free: { proof: 'x' } };
   for (const broken of [unequal, loose]) {
     assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === 'calls[0].merge');
   }

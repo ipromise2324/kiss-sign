@@ -93,8 +93,14 @@ A template describes one operation for one protocol, for example `morpho/vault-d
   - equals a card value (`amount`, `vault`);
   - equals the Safe;
   - equals a named contract;
-  - equals a constant;
-  - free, with a written reason (for example a Merkle proof). The mutation check treats free fields as free.
+  - equals a constant. A constant address is only the zero address, and constant `bytes` or a constant string is only empty, so no address or call is written into a template without a registry name;
+  - free, with a written reason. The mutation check treats free fields as free.
+
+  Template load walks every argument's whole type, through tuples, arrays and decoded calls, and refuses a template that breaks these rules:
+  - An address, wherever it sits, is bound to the Safe, a card value or a registry contract, or is the zero address. It is never free, and neither is a tuple or an array that holds one; bind its parts with `fields` and `items`.
+  - A tuple is never free as a whole.
+  - A number, a bool or fixed-size bytes may be free with a reason: `{"free": "<why>"}`.
+  - `bytes`, a string or an array of those leaves may be free only with a claim the template's tests check: `{"free": {"proof": "<why>"}}` when the contract reverts unless it verifies the value against what it already holds, such as a Merkle proof against a root or a CCTP message against Circle's attesters, or `{"free": {"unread": "<why>"}}` when the contract never reads it, such as the permit data of a VaultBundles deposit whose permit kind is bound to none. Free bytes could carry a whole call or an address, so they need one of these two claims, and the claim is what the perturbation test checks.
 - `nonce`. Optional: a rule for the Safe transaction's own nonce, such as a cancellation's card nonce.
 - `same`. Optional: card references that must name one address, such as the assets of the two vaults in a migration. A card where they differ is refused before any check runs.
 - `effects`. What the Safe gives and gets, in tokens and amounts written as card values, `positive` (more than nothing, in the direction of the side), or, for what the Safe gives, `all` (the Safe holds none of the token afterwards). Native ETH is named `eth`, since no contract holds it, so `eth` and `safe` are never registry or address-book names. What the Safe gives may name its receiver; giving to the Safe itself changes nothing. Approvals must be exact and spent in the same transaction.
@@ -169,7 +175,7 @@ These are protocol-free and change rarely.
 
 - The Safe transaction hashes, computed locally.
 - Decode, then re-encode byte for byte, so nothing hides in the encoding.
-  - One exception, declared per call in the template: a trailer of at most a stated number of bytes after the arguments, with a written reason. The Morpho app appends 8 bytes to `multicall` (a timestamp and an origin tag) that the contract never reads. Without a declared trailer, any extra byte is `MISMATCH`.
+  - One exception, declared per call in the template: a trailer of at most a stated number of bytes after the arguments, with a written reason. The Morpho app appends 8 bytes to `multicall` (a timestamp and an origin tag) that the contract never reads,. Without a declared trailer, any extra byte is `MISMATCH`.
 - Floor rules:
   - no unlimited approval;
   - no `delegatecall` except to the official MultiSend, and the rules apply again to every call inside it, at every level;

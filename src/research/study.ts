@@ -12,9 +12,8 @@ import { EXECUTION_SUCCESS } from '../simulate/events.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { inspectTemplateFields } from '../template/check.ts';
 import type { Leaf } from '../template/check.ts';
-import type { CallNode, ConstValue, Rule, Template, TemplateCall } from '../template/template.ts';
+import type { CallNode, ConstValue, LeafRule, Rule, Template, TemplateCall } from '../template/template.ts';
 
-export type LeafRule = Exclude<Rule, { readonly kind: 'call' | 'items' | 'fields' }>;
 
 /**
  * The template with every leaf set free, so only its shape is checked (calls, selectors, canonical encoding, trailers),
@@ -37,7 +36,7 @@ export function loosen(template: Template): Loosened {
         return { kind: 'fields', fields: rule.fields.map((field) => looseRule(field, wideTrailer, record)) };
       default:
         if (record) rules.push(rule);
-        return { kind: 'free', reason: 'study' };
+        return { kind: 'free', reason: 'study', claim: 'scalar' };
     }
   };
   const looseCall = (node: CallNode, wideTrailer: boolean, record: boolean): CallNode => ({

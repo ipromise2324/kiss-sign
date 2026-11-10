@@ -21,7 +21,7 @@
                       "account": { "safe": true },
                       "reward": { "card": "token" },
                       "claimable": { "free": "the cumulative amount in the Merkle leaf: the distributor reverts unless the proof hashes it into the root; the effects require the Safe to get a positive amount of the card's token and nothing else" },
-                      "proof": { "free": "a Merkle proof: the distributor reverts unless it proves the leaf (account, reward, claimable) against the root" }
+                      "proof": { "free": { "proof": "a Merkle proof: the distributor reverts unless it proves the leaf (account, reward, claimable) against the root" } }
                     }
                   }
                 },

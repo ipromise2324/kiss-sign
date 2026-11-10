@@ -31,17 +31,28 @@ export type ConstValue =
   | { readonly kind: 'bool'; readonly value: boolean }
   | { readonly kind: 'fixed-bytes' | 'bytes' | 'string'; readonly value: Hex };
 
+/**
+ * Why a free field is safe at any value. `scalar`: a number, bool or fixed-size bytes, which the reason explains.
+ * `proof`: the contract reverts unless it verifies the value against what it already holds, such as a Merkle root or
+ * attesters' signatures. `unread`: the contract never reads the value. Only `proof` and `unread` may free bytes, a string
+ * or an array, and nothing may free an address or a tuple.
+ */
+export type FreeClaim = 'scalar' | 'proof' | 'unread';
+
 export type Rule =
   | { readonly kind: 'card'; readonly ref: CardRef }
   | { readonly kind: 'safe' }
   | { readonly kind: 'contract'; readonly name: string }
   | { readonly kind: 'const'; readonly value: ConstValue }
-  | { readonly kind: 'free'; readonly reason: string }
+  | { readonly kind: 'free'; readonly reason: string; readonly claim: FreeClaim }
   | { readonly kind: 'call'; readonly call: CallNode }
   /** An array of exactly this many items. */
   | { readonly kind: 'items'; readonly items: readonly Rule[] }
   /** A tuple's components, by position. */
   | { readonly kind: 'fields'; readonly fields: readonly Rule[] };
+
+/** A rule on one value, rather than on the parts of an array, a tuple or a decoded call. */
+export type LeafRule = Exclude<Rule, { readonly kind: 'call' | 'items' | 'fields' }>;
 
 /** Bytes a contract ignores after a call's arguments, which the template lets through up to `maxBytes`. */
 export type TrailerAllowance = { readonly maxBytes: number; readonly why: string };
@@ -174,6 +185,27 @@ function constValue(path: string, raw: unknown, type: AbiType): ConstValue {
   }
 }
 
+const contains = (type: AbiType, kind: AbiType['kind']): boolean =>
+  type.kind === kind ||
+  ((type.kind === 'array' || type.kind === 'fixed-array') && contains(type.item, kind)) ||
+  (type.kind === 'tuple' && type.components.some((param) => contains(param.type, kind)));
+
+/** `{"free": why}` frees a scalar; `{"free": {"proof": why}}` or `{"free": {"unread": why}}` anything without an address or a tuple. */
+function free(path: string, raw: unknown, type: AbiType): Rule {
+  if (contains(type, 'address')) throw new TemplateError(path, 'an address is never free; bind it to the Safe, a card value or a registry contract');
+  if (contains(type, 'tuple')) throw new TemplateError(path, 'a tuple is never free as a whole; bind its fields');
+  if (typeof raw === 'string') {
+    if (!['uint', 'int', 'bool', 'fixed-bytes'].includes(type.kind)) {
+      throw new TemplateError(path, `a free ${canonicalType(type)} needs {"proof": why} or {"unread": why}`);
+    }
+    return { kind: 'free', reason: text(path, raw), claim: 'scalar' };
+  }
+  const value = object(path, raw);
+  const [claim, ...extra] = Object.keys(value);
+  if ((claim !== 'proof' && claim !== 'unread') || extra.length > 0) throw new TemplateError(path, 'must be a reason, or exactly one of proof, unread');
+  return { kind: 'free', reason: text(`${path}.${claim}`, value[claim]), claim };
+}
+
 function rule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
   const value = object(path, raw);
   const keys = Object.keys(value);
@@ -201,10 +233,16 @@ function rule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
       needs(['address']);
       return { kind: 'contract', name };
     }
-    case 'const':
-      return { kind: 'const', value: constValue(at, body, type) };
+    case 'const': {
+      const constant = constValue(at, body, type);
+      if (constant.kind === 'address' && BigInt(constant.value) !== 0n) {
+        throw new TemplateError(at, 'a constant address must be the zero address; bind any other with contract, from the registry');
+      }
+      if ((constant.kind === 'bytes' || constant.kind === 'string') && constant.value.length > 2) throw new TemplateError(at, `a constant ${constant.kind} must be empty`);
+      return { kind: 'const', value: constant };
+    }
     case 'free':
-      return { kind: 'free', reason: text(at, body) };
+      return free(at, body, type);
     case 'call':
       needs(['bytes']);
       return { kind: 'call', call: callNode(at, body, scope) };

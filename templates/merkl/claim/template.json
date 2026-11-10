@@ -12,7 +12,7 @@
         "users": { "items": [{ "safe": true }] },
         "tokens": { "items": [{ "card": "token" }] },
         "amounts": { "items": [{ "free": "the cumulative amount in the Merkle leaf: the distributor reverts unless the proof hashes it into the published root; the effects require the Safe to get a positive amount of the card's token and nothing else" }] },
-        "proofs": { "items": [{ "free": "a Merkle proof: the distributor reverts unless it proves the leaf (user, token, amount) against the root" }] }
+        "proofs": { "items": [{ "free": { "proof": "a Merkle proof: the distributor reverts unless it proves the leaf (user, token, amount) against the root" } }] }
       },
       "merge": "the Merkl app claims several reward tokens in one call, one item per token in each of the four arrays"
     }

@@ -3,11 +3,11 @@ import type { AbiType } from '../decode/abi.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import type { Template } from '../template/template.ts';
+import type { LeafRule, Template } from '../template/template.ts';
 import { ResearchError, SOURCES, TooManyTransfers, searchBoth } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
 import { constText, shapesOf, studyTx } from './study.ts';
-import type { LeafRule, Sender, TxStudy } from './study.ts';
+import type { Sender, TxStudy } from './study.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
 

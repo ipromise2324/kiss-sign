@@ -52,7 +52,9 @@
               "const": "0"
             },
             "data": {
-              "free": "TokenLib.pullToken reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom"
+              "free": {
+                "unread": "TokenLib.pullToken reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom"
+              }
             }
           }
         },
