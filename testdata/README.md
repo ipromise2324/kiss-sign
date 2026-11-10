@@ -356,8 +356,16 @@ done
 
 ## Official-source listings
 
-`sources/<name>.json` is written by `pnpm check-sources --record <name>`: the date it was fetched, the DefiLlama protocols (`https://api.llama.fi/protocols`) the checked registry entries name in `defillama`, cut to `slug`, `name`, `url` and `github`, and the CoinGecko coins (`https://api.coingecko.com/api/v3/coins/list?include_platform=true`) whose Ethereum contract is a checked token, cut to `id`, `symbol`, `name` and `platforms.ethereum`. `test/check-sources.test.ts` runs the check on it offline.
+`sources/<name>.json` is written by `pnpm check-sources --record <name>`: the date it was fetched, the DefiLlama protocols (`https://api.llama.fi/protocols`) the checked registry entries name in `defillama`, cut to `slug`, `name`, `url` and `github`, and the CoinGecko coins (`https://api.coingecko.com/api/v3/coins/list?include_platform=true`) whose Ethereum contract is a checked token, cut to `id`, `symbol`, `name` and `platforms.ethereum`. It also holds `pages`, each source page's blocks that hold a checked address plus the block before each, with their headings, as the program read them, and `commits`, GitHub's answer for each pinned commit. `test/check-sources.test.ts` runs the check on it offline.
 
 | File | Fetched | Entries |
 | --- | --- | --- |
 | `registry.json` | 2026-11-10 | Every entry of `registry/contracts.json` at the time |
+
+## Vault evidence
+
+`vault-evidence/<name>.json` is written by `pnpm vault-evidence <vault> --record <name>`: the vault's registry name and every request with each provider's answer, as in `simulate/`. Block answers are cut to `number`, `hash`, `timestamp`, `gasLimit` and `mixHash`, and each Alchemy Transfers API page to its distinct recipients. The command refuses to write a recording that names the configured Safe, so a vault the Safe ever held cannot be recorded.
+
+| File | Vault | Block | What it shows |
+| --- | --- | --- | --- |
+| `steakhouse-high-yield-usdc.json` | Steakhouse High Yield Instant USDC (`0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`) | 26,385,872 | 13 monthly `totalAssets()` points, from 2,733,798 USDC to 43,152,031 USDC; 452 holders of 1,038 recipients, adding up to `totalSupply()`; the top 10 hold 53.52%. |

@@ -17,6 +17,7 @@
     "prove-abi": "node scripts/prove-abi.ts",
     "prove-instance": "node scripts/prove-instance.ts",
     "check-sources": "node scripts/check-sources.ts",
+    "vault-evidence": "node scripts/vault-evidence.ts",
     "record-abi-case": "node scripts/record-abi-case.ts",
     "record-safe-proxy": "node scripts/record-safe-proxy.ts",
     "simulate": "node scripts/simulate.ts",
