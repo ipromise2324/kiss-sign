@@ -8,6 +8,7 @@ import { test } from 'node:test';
 import type { ProviderName } from '../src/chain/providers.ts';
 import type { Read, Reader } from '../src/chain/reader.ts';
 import type { BlockRef } from '../src/chain/types.ts';
+import { namedSignatureOfAbiEntry, parseFunctionSignature } from '../src/decode/abi.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal, Refusal } from '../src/contracts/prove.ts';
 import { EIP1967_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
@@ -116,6 +117,7 @@ const CASES = [
     compiler: '0.8.28+commit.7893614a',
     functions: 4,
     immutables: 0,
+    uses: ['multicall((address to,bytes data,uint256 value,bool skipRevert,bytes32 callbackHash)[] bundle)'],
   },
   {
     name: 'general-adapter1',
@@ -125,6 +127,10 @@ const CASES = [
     compiler: '0.8.28+commit.7893614a',
     functions: 34,
     immutables: 58,
+    uses: [
+      'erc20TransferFrom(address token,address receiver,uint256 amount)',
+      'erc4626Deposit(address vault,uint256 assets,uint256 maxSharePriceE27,address receiver)',
+    ],
   },
   {
     name: 'morpho-token-eip1967',
@@ -134,6 +140,7 @@ const CASES = [
     compiler: '0.8.27+commit.40a35a09',
     functions: 30,
     immutables: 2,
+    uses: [],
   },
   {
     name: 'safe-proxy-1-3-0',
@@ -143,6 +150,7 @@ const CASES = [
     compiler: '0.7.6+commit.7338295f',
     functions: 31,
     immutables: 0,
+    uses: [],
   },
 ] as const;
 
@@ -162,6 +170,10 @@ for (const expected of CASES) {
     assert.equal(proof.immutablesMasked, expected.immutables);
     assert.equal(proof.codeHash, codeHashOf(fixture, expected.proven));
     assert.equal(proof.proxyCodeHash, expected.proxy === 'none' ? undefined : codeHashOf(fixture, fixture.address));
+    const functions = proof.abi.filter((entry) => entry.type === 'function').map((entry) => parseFunctionSignature(namedSignatureOfAbiEntry(entry)));
+    for (const used of expected.uses) {
+      assert.deepEqual(functions.find((fn) => fn.signature === parseFunctionSignature(used).signature), parseFunctionSignature(used), `${used} is in the proven ABI with these names`);
+    }
   });
 }
 
