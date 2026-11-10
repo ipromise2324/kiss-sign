@@ -83,6 +83,31 @@ ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simula
   --record morpho-vault-deposit
 ```
 
+## Past-transaction searches
+
+`research/<name>.json` holds one run of `scripts/past-txs.ts --record <name>`:
+
+- `query`: the template, the anchor token, the anchor kind, and the block range.
+- `sources`: each request to Alchemy (`alchemy_getAssetTransfers`) and Etherscan (`logs/getLogs`), with its answer. No request holds a key.
+- `providers` and `exchanges`: each `eth_getTransactionByHash` and `eth_getTransactionReceipt`, with the answers of Alchemy and drpc.
+
+Before writing, the script drops every entry that mentions the configured Safe or one of its transactions, and refuses to write if any mention is left.
+
+The tests replay the run and require the counts a reader sees: per source, per field, and per misfit reason. A Safe set as the configured Safe disappears from every count, and a transaction removed from one source's answer is marked as found by the other only.
+
+| File | Anchor | Blocks | What it found |
+| --- | --- | --- | --- |
+| `morpho-vault-deposit.json` | Steakhouse Prime USDC shares minted | 26,044,000 to 26,052,000 | 65 transactions, all found by both sources; 3 executed by a Safe, 2 fitting `morpho/vault-deposit` |
+
+### Recording again
+
+```sh
+KISS_SIGN_HOME=$HOME/.kiss-sign-lane-9 pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc --anchor mint \
+  --from-block 26044000 --to-block 26052000 --record morpho-vault-deposit
+```
+
+That home's `config.json` names the Safe of `safe-tx/morpho-vault-deposit.json`, so its deposit in this range is left out.
+
 ## Verdicts
 
 `verify/<name>.json` is a verdict file written by a live `kiss-sign verify`: every input the verdict used and every request sent to Alchemy and drpc, with each provider's answer (`answers` for a JSON-RPC result, `errors` for a JSON-RPC error, `statuses` for an HTTP status without either). Its `commit` is the origin/main commit of the clone it ran from.
