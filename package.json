@@ -14,7 +14,8 @@
     "record-safe-tx": "node scripts/record-safe-tx.ts",
     "fetch-solc": "node scripts/fetch-solc.ts",
     "prove-abi": "node scripts/prove-abi.ts",
-    "record-abi-case": "node scripts/record-abi-case.ts"
+    "record-abi-case": "node scripts/record-abi-case.ts",
+    "simulate": "node scripts/simulate.ts"
   },
   "devDependencies": {
     "@types/node": "22.20.5",

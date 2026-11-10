@@ -54,6 +54,8 @@ function replay(fixture: Fixture, extra: Recorded[] = [], overrides: Partial<Rea
     providers: fixture.providers,
     blockNumber: () => Promise.resolve(unverifiable(NOT_RECORDED)),
     block: () => Promise.resolve(unverifiable(NOT_RECORDED)),
+    header: () => Promise.resolve(unverifiable(NOT_RECORDED)),
+    simulateV1: () => Promise.resolve(unverifiable(NOT_RECORDED)),
     getTransactionReceipt: () => Promise.resolve(unverifiable(NOT_RECORDED)),
     getTransaction: () => Promise.resolve(unverifiable(NOT_RECORDED)),
     getCode: (address, at) => answer(at, 'getCode', [address]),
