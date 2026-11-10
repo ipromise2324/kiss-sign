@@ -130,6 +130,7 @@ Templates are reviewed once and reused, so they live in git, where every change 
 
 - Each operation has a folder, for example `templates/morpho/vault-deposit/`, holding `template.json`, `report.md`, and `tests/`.
 - The tests are real past transactions of the operation, each with the card values it implies. Every one must give `MATCH`, and every mutated copy must give `MISMATCH`. CI reruns the decoding, field checks, and mutation checks on every change. Simulation needs live providers, so it runs locally.
+- `.github/CODEOWNERS` names the signer as owner of `src/`, `bin/`, `package.json` and `pnpm-lock.yaml`. It binds only once branch protection requires code-owner review and the AI pushes from an account other than the signer's; both are GitHub settings the signer makes.
 - Git stores and records; it is not trusted. At signing, the program checks that the template's hash equals the hash recorded when the signer merged it. A template from someone else's repository is only a starting point: its report still has to be reviewed.
 
 ### The Safe's address is never published
