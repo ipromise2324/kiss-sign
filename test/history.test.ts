@@ -119,6 +119,21 @@ test('a note whose spending nonce is not later is refused', async () => {
   await assert.rejects(run(setUp('cow-safe', {}, { 11: { note: 'x', spentBy: 10 } })), /notes\.json\.11\.spentBy: an approval is spent by a later nonce/);
 });
 
+test("a note naming a spending nonce leaves a row that has its own verdict its own reason", async () => {
+  const card = { operations: [{ ...DEPOSIT_CARD.operations[0]!, values: { vault: 'steakhouse-prime-usdc', amount: '1' } }], origin: 'history', marks: [] };
+  const { stdout } = await run(setUp('morpho-safe', { 249: card }, { 249: { note: 'approval for the migration', spentBy: 338 } }));
+  assert.match(rowOf(stdout, 249), /  MISMATCH  .*\n {33}mismatch: fields\+effects: fields: multiSend\[0\]\.approve value: expected 1, got 1800000000180; .*; note: approval for the migration\n/);
+});
+
+test('a note whose spending nonce is not in the history is refused', async () => {
+  await assert.rejects(run(setUp('cow-safe', {}, { 10: { note: 'x', spentBy: 12 } })), /notes\.json\.10\.spentBy: no executed transaction at nonce 12 in the history/);
+});
+
+test('a note whose spending nonce is itself an approval spent later is refused', async () => {
+  const notes = { 10: { note: 'x', spentBy: 11 }, 11: { note: 'y', spentBy: 558 } };
+  await assert.rejects(run(setUp('cow-safe', {}, notes)), /notes\.json\.10\.spentBy: nonce 11 is itself an approval spent by nonce 558/);
+});
+
 test('reason row refused-by-design: the static floor refuses an unlimited approval, and names the rule', async () => {
   const { stdout } = await run(setUp('morpho-safe', withCard, { 338: 'approved for a migration' }));
   assert.match(rowOf(stdout, 338), /\n {33}refused-by-design: unlimited-approval at multiSend\[0\]; note: approved for a migration$/);

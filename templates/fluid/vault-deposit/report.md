@@ -59,7 +59,7 @@ The proven ABI holds `deposit(uint256 assets_, address receiver_)`, `withdraw(ui
 | | `deposit.assets` | the asset amount deposited | the card's `amount` |
 | | `deposit.receiver` | who gets the shares | the Safe |
 
-Card: `vault` (a registry `vault`) and `amount` (`of: vault.asset`). Effects: the Safe gives exactly `amount` of the asset and gets a positive amount of the fToken. The approval must end where it started, so it is exact and spent. USDT's own `approve` refuses to change a non-zero allowance to another non-zero one, and an exact approval spent in full leaves it at 0, so the next deposit can approve again.
+Card: `vault` (a registry `vault`) and `amount` (`of: vault.asset`). Effects: the Safe gives exactly `amount` of the asset and gets a positive amount of the fToken. The allowance may not end higher than it started, so the approval is exact and spent in full. USDT's own `approve` refuses to change a non-zero allowance to another non-zero one, and an exact approval spent in full leaves it at 0, so the next deposit can approve again.
 
 The template accepts any registry entry of kind `vault`. Its shape is the plain ERC-4626 deposit, so a card that names a Morpho vault with this template checks a direct deposit into that vault, which the Morpho app does not send. The registry, not the template, limits which vaults a card can name.
 

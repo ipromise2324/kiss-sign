@@ -5,6 +5,7 @@ import { parseCard, resolveCard } from '../card.ts';
 import type { ResolvedCard } from '../card.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Reader } from '../chain/reader.ts';
+import type { BlockRef } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
 import { checkFloor } from '../floor/floor.ts';
 import { checkObservation } from '../floor/summary.ts';
@@ -22,6 +23,8 @@ import { checkTemplateFields } from '../template/check.ts';
 import { checkMutations } from '../template/mutation.ts';
 import { parseTemplate } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
+import { assetClaims, checkAssets } from './assets.ts';
+import type { AssetCheck } from './assets.ts';
 import { decideVerdict } from './verdict.ts';
 import type { TemplateApproval, Verdict } from './verdict.ts';
 
@@ -121,16 +124,26 @@ export function prepare(inputs: VerifyInputs): Prepared {
 }
 
 /** Every check on the transaction, given what a simulation or its receipt showed it doing. */
-export function judge(prepared: Prepared, tx: SafeTx, observation: Observation): Verdict {
+export function judge(prepared: Prepared, tx: SafeTx, observation: Observation, assets: AssetCheck): Verdict {
   const { registry, safe, card, templates, approvals } = prepared;
   const checks = {
     staticFloor: checkFloor(tx),
     fields: checkTemplateFields(tx, card, templates, registry),
+    assets,
     mutation: checkMutations(tx, card, templates, registry),
     simulation: checkObservation(observation, safe, card, templates, registry),
     approvals,
   };
   return decideVerdict(checks, registry);
+}
+
+async function ranOn(reader: Reader, executed: Hex | undefined, latest: BlockRef): Promise<BlockRef | string> {
+  if (executed === undefined) return latest;
+  const receipt = await reader.getTransactionReceipt(executed);
+  if (receipt.kind === 'unverifiable') return receipt.reason;
+  if (receipt.value === null) return `no receipt for ${executed}`;
+  const parent = await reader.block(receipt.value.blockNumber - 1n);
+  return parent.kind === 'unverifiable' ? parent.reason : parent.value;
 }
 
 /**
@@ -161,7 +174,13 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
         ? { kind: 'unverifiable', reasons: [header.reason] }
         : await simulateSafeTx(reader, { tx, parent: header.value, time: header.value.time + SLOT_SECONDS, watch, ends });
   }
-  return { verdict: judge(prepared, tx, observation), hashes: hashSafeTx(tx) };
+  const claims = assetClaims(prepared.card, prepared.templates, prepared.registry);
+  let assets: AssetCheck = { kind: 'pass' };
+  if (claims.length > 0) {
+    const at = await ranOn(reader, executed, latest.value);
+    assets = typeof at === 'string' ? { kind: 'unverifiable', reasons: [at] } : await checkAssets(reader, claims, at);
+  }
+  return { verdict: judge(prepared, tx, observation, assets), hashes: hashSafeTx(tx) };
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);

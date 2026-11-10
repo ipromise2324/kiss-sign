@@ -38,7 +38,7 @@ From the proven source of `vaultBundlesV1Deposit` and its library `TokenLib`:
 | | `referralFeeRecipient` | who gets the fee | the zero address |
 | | `deadline` | the time after which the call reverts | free: it limits when the deposit can run, not what it does |
 
-The shares go to `msg.sender`, the Safe; the function has no receiver argument. Effects: the Safe gives exactly `amount` of the asset and gets a positive number of the vault's shares; the approval must end where it started.
+The shares go to `msg.sender`, the Safe; the function has no receiver argument. Effects: the Safe gives exactly `amount` of the asset and gets a positive number of the vault's shares; the allowance may not end higher than it started, so the approval is spent in full.
 
 The referral fee is why the fee fields are bound. A fee is deducted from the amount, sent elsewhere, and the rest deposited, so the Safe still gives exactly `amount` and still gets some shares: the effects would not see it. Every studied deposit had a zero fee and a zero recipient.
 

@@ -6,15 +6,15 @@ The card is the vault alone. This template is the "all" of the design's "amount 
 
 ## How "all" is bound
 
-The share count is not on the card. The app reads the Safe's balance when it builds the transaction and writes it into both `approve.value` and `erc4626Redeem.shares`. The template leaves both free and binds "all" through the effects instead: the Safe gives `all` of the vault's shares, which means it holds none of them after the transaction, and the allowance must end where it started.
+The share count is not on the card. The app reads the Safe's balance when it builds the transaction and writes it into both `approve.value` and `erc4626Redeem.shares`. The template leaves both free and binds "all" through the effects instead: the Safe gives `all` of the vault's shares, which means it holds none of them after the transaction, and the allowance may not end higher than it started.
 
 That covers every way the two numbers can be wrong:
 
 - fewer shares than the balance leave shares behind: `MISMATCH`, "still held … after the transaction";
-- an approval larger than the shares redeemed stays open: `MISMATCH`;
+- an approval larger than the shares redeemed leaves the allowance higher than it started: `MISMATCH`;
 - more shares than the balance, or than the approval, revert: `UNVERIFIABLE`.
 
-`all` is new in this pull request. The simulation reads the Safe's balance of each such token right after the transaction. For an executed transaction the program reads it at the end of the execution block, so a later transaction in that block that moved the Safe's shares would change it; see Known limits in `docs/design.md`. A card that names a token in `all` and again in another effect cannot be judged and is `UNVERIFIABLE`.
+`all` is new in this pull request. The simulation reads the Safe's balance of each such token right after the transaction. For an executed transaction the program reads it at the parent block and at the end of the execution block, and the verdict is `UNVERIFIABLE` unless the two differ by exactly this transaction's change. Only an earlier transaction in that block that adds exactly what a later one removes goes unnoticed; see Known limits in `docs/design.md`. A card that names a token in `all` and again in another effect cannot be judged and is `UNVERIFIABLE`.
 
 GeneralAdapter1 also takes `type(uint256).max` as "the owner's whole balance". The app does not use it, so binding `shares` to that constant would refuse every past withdrawal.
 
@@ -28,7 +28,7 @@ See `templates/morpho/vault-withdraw/report.md`. The proven GeneralAdapter1 ABI 
 | --- | --- | --- | --- |
 | `multiSend[0]` | `to` | the vault, whose shares are approved | the card's `vault` |
 | | `approve.spender` | who may spend the shares | `general-adapter1` |
-| | `approve.value` | how many shares | free: the effects require the allowance to end where it started and no shares left |
+| | `approve.value` | how many shares | free: the effects require the allowance to end no higher than it started and no shares left |
 | `multiSend[1]` | `to` | Bundler3 | `bundler3` |
 | bundle item | `to` | the adapter that runs it | `general-adapter1` |
 | | `erc4626Redeem.vault` | the vault | the card's `vault` |

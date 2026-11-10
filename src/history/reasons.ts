@@ -80,10 +80,10 @@ export function reasonFor(facts: Facts): Reason | undefined {
 }
 
 /**
- * The reason of an approval that a later nonce spends: the spender's, since the approval is half of that operation.
- * A spender without a reason, a MATCH, leaves the approval its own.
+ * The reason of an approval without a card that a later nonce spends: the spender's, since the approval is half of that
+ * operation. A spender without a reason, a MATCH, leaves the approval its own.
  */
 export function spentReason(own: Reason | undefined, spender: { readonly nonce: number; readonly reason: Reason | undefined }): Reason | undefined {
-  if (spender.reason === undefined) return own;
+  if (own?.key !== 'no-card-yet' || spender.reason === undefined) return own;
   return { key: spender.reason.key, detail: `its approval is spent by nonce ${spender.nonce}: ${spender.reason.detail}` };
 }

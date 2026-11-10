@@ -34,7 +34,7 @@ Its name on chain is "Steakhouse High Yield USDC" and `asset()` is USDC.
 | --- | --- | --- | --- |
 | `multiSend[0]` | `to` | the old vault, whose shares are approved | the card's `from` |
 | | `approve.spender` | who may spend the shares | `general-adapter1` |
-| | `approve.value` | how many shares | free: the effects require the allowance to end where it started and no shares left |
+| | `approve.value` | how many shares | free: the effects require the allowance to end no higher than it started and no shares left |
 | `multiSend[1]` | `to` | Bundler3 | `bundler3` |
 | item 0 | `erc20TransferFrom.token` | the old vault's shares | the card's `from` |
 | | `erc20TransferFrom.receiver` | where they go | `general-adapter1` |
