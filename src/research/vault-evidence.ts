@@ -10,10 +10,8 @@ import type { Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
-/** One request to Alchemy alone, such as `alchemy_getAssetTransfers`. */
 export type AlchemyCall = (method: string, params: readonly unknown[]) => Promise<unknown>;
 
-/** Through the reader's own transport, so a recording keeps the answer beside the chain reads. Errors never quote the keyed URL. */
 export function alchemyCall(transport: Transport, url: string): AlchemyCall {
   return async (method, params) => {
     let answer;
@@ -31,7 +29,6 @@ export function alchemyCall(transport: Transport, url: string): AlchemyCall {
 
 const BLOCK_FIELDS = ['number', 'hash', 'timestamp', 'gasLimit', 'mixHash'];
 
-/** Keeps the fields the reads parse: each Transfers API page's distinct recipients, and each block's header fields. */
 export function trimVaultRecording(exchanges: readonly Exchange[]): Exchange[] {
   return exchanges.map((exchange) => {
     if (exchange.method === 'eth_getBlockByNumber' || exchange.method === 'eth_getBlockByHash') {
@@ -58,8 +55,7 @@ export type HolderCount = {
   readonly candidates: number;
   readonly holders: number;
   readonly supply: bigint;
-  /** Shares of the ten largest holders, largest first. */
-  readonly top: readonly bigint[];
+  readonly largestBalances: readonly bigint[];
 };
 
 export type VaultEvidence = {
@@ -70,8 +66,8 @@ export type VaultEvidence = {
   readonly holders: Reading<HolderCount>;
 };
 
-/** Twelve-second slots: 30 days. */
-export const BLOCKS_PER_MONTH = 216_000n;
+const SECONDS_PER_SLOT = 12n;
+export const BLOCKS_PER_MONTH = (30n * 24n * 3600n) / SECONDS_PER_SLOT;
 export const MONTHS = 12;
 export const MULTICALL3 = parseAddress('multicall3', '0xcA11bde05977b3631167028862bE2a173976CA11');
 const MAX_TRANSFER_PAGES = 300;
@@ -83,8 +79,7 @@ const ASSET = '0x38d52e0f' as Hex;
 const DECIMALS = '0x313ce567' as Hex;
 const BALANCE_OF = parseFunctionSignature('balanceOf(address)');
 const AGGREGATE = parseFunctionSignature('aggregate((address target, bytes callData)[] calls)');
-// The codec decodes calldata only, so the answer is decoded as the arguments of a function shaped like its return.
-const AGGREGATE_RETURN = parseFunctionSignature('aggregateReturn(uint256 blockNumber, bytes[] returnData)');
+const AGGREGATE_RETURN_AS_ARGUMENTS = parseFunctionSignature('aggregateReturn(uint256 blockNumber, bytes[] returnData)');
 
 const ZERO = parseAddress('zero', `0x${'00'.repeat(20)}`);
 const hex = (n: bigint): string => `0x${n.toString(16)}`;
@@ -123,7 +118,6 @@ async function pointAt(reader: Reader, vault: Address, number: bigint): Promise<
   return { block: number, time, totalAssets: { kind: 'read', value: { kind: 'assets', amount: BigInt(read.value.data) } } };
 }
 
-/** Every address that ever received the vault's shares, from Alchemy's Transfers API up to `toBlock`. */
 async function recipients(alchemy: AlchemyCall, vault: Address, toBlock: bigint): Promise<Reading<Address[]>> {
   const found = new Set<Address>();
   let pageKey: string | undefined;
@@ -179,7 +173,7 @@ async function balancesOf(reader: Reader, vault: Address, holders: readonly Addr
     const read = await reader.call({ to: MULTICALL3, data }, at);
     if (read.kind === 'unverifiable') return unverifiable(read.reason);
     if (read.value.kind === 'reverted') return unverifiable('a Multicall3 balanceOf batch reverted');
-    const decoded = decodeCall(AGGREGATE_RETURN, wholeRegion(concatBytes(hexToBytes(AGGREGATE_RETURN.selector.slice(2)), hexToBytes(read.value.data.slice(2)))));
+    const decoded = decodeCall(AGGREGATE_RETURN_AS_ARGUMENTS, wholeRegion(concatBytes(hexToBytes(AGGREGATE_RETURN_AS_ARGUMENTS.selector.slice(2)), hexToBytes(read.value.data.slice(2)))));
     const returned = decoded.kind === 'decoded' ? decoded.args[1] : undefined;
     if (returned?.kind !== 'array' || returned.items.length !== chunk.length) return unverifiable('Multicall3 answered a malformed balanceOf batch');
     for (const item of returned.items) {
@@ -190,10 +184,6 @@ async function balancesOf(reader: Reader, vault: Address, holders: readonly Addr
   return { kind: 'read', value: balances };
 }
 
-/**
- * Candidates come from Alchemy alone, so the count is checked whole: the balances both providers agree on must add up
- * to `totalSupply()`. A holder Alchemy left out makes the sum fall short.
- */
 async function holderCount(reader: Reader, alchemy: AlchemyCall, vault: Address, at: BlockRef): Promise<Reading<HolderCount>> {
   const candidates = await recipients(alchemy, vault, at.number);
   if (candidates.kind === 'unverifiable') return candidates;
@@ -206,7 +196,7 @@ async function holderCount(reader: Reader, alchemy: AlchemyCall, vault: Address,
   if (sum !== supply.value) {
     return unverifiable(`the ${held.length} holders found hold ${sum} of ${supply.value} shares, so the holder list is incomplete`);
   }
-  return { kind: 'read', value: { block: at.number, candidates: candidates.value.length, holders: held.length, supply: supply.value, top: held.slice(0, 10) } };
+  return { kind: 'read', value: { block: at.number, candidates: candidates.value.length, holders: held.length, supply: supply.value, largestBalances: held.slice(0, 10) } };
 }
 
 export async function gatherVaultEvidence(reader: Reader, alchemy: AlchemyCall, vault: RegistryEntry): Promise<VaultEvidence | { readonly kind: 'unverifiable'; readonly reason: string }> {
@@ -235,7 +225,6 @@ function units(amount: bigint, decimals: number): string {
 
 const percent = (part: bigint, whole: bigint): string => (whole === 0n ? 'n/a' : `${(Number((part * 1_000_000n) / whole) / 10_000).toFixed(2)}%`);
 
-/** Evidence for the report, with no verdict. No holder address is printed, so the configured Safe never shows. */
 export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry): string {
   const { vault, latest, asset, points, holders } = evidence;
   const out = [`vault        ${vault.name} ${checksumAddress(vault.address)}`, `latest block ${latest.number} ${latest.hash}`];
@@ -265,7 +254,7 @@ export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry)
     out.push(`holders      UNVERIFIABLE ${holders.reason}`);
     return out.join('\n');
   }
-  const { holders: count, candidates, supply, top } = holders.value;
+  const { holders: count, candidates, supply, largestBalances: top } = holders.value;
   const topSum = top.reduce((total, b) => total + b, 0n);
   out.push(
     `holders      ${count} addresses hold shares at block ${holders.value.block}, of ${candidates} that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() ${supply}`,

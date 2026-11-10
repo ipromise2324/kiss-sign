@@ -10,7 +10,6 @@ export type PageBlock = { readonly text: string; readonly heading?: string };
 
 export type Page = { readonly kind: 'served'; readonly blocks: readonly PageBlock[] } | { readonly kind: 'failed'; readonly why: string };
 
-/** Whether a pinned commit is on its repository's default branch, as GitHub's compare API answered. */
 export type CommitCheck =
   | { readonly kind: 'on-default'; readonly branch: string; readonly status: 'behind' | 'identical' }
   | { readonly kind: 'off-default'; readonly branch: string; readonly status: string }
@@ -24,15 +23,13 @@ export type GitHubSourceRef =
 
 export type HttpGet = (url: string) => Promise<HttpAnswer>;
 
-/** Characters allowed between the label and the address inside one block. */
-export const MAX_GAP = 100;
+export const MAX_LABEL_ADDRESS_GAP = 100;
 
 export function isGitHubPage(url: URL): boolean {
   const host = url.hostname.toLowerCase();
   return host === 'github.com' || host === 'www.github.com';
 }
 
-/** `github.com/<owner>/<repo>/blob/<40-hex commit>/<path>` is pinned; any other GitHub page is not. */
 export function githubRef(url: URL): GitHubSourceRef {
   const [owner, repo, blob, commit, ...path] = url.pathname.split('/').filter((s) => s !== '');
   if (owner === undefined || repo === undefined || blob !== 'blob' || commit === undefined || !/^[0-9a-f]{40}$/.test(commit) || path.length === 0) {
@@ -120,7 +117,6 @@ export function htmlBlocks(html: string): PageBlock[] {
   return blocks;
 }
 
-/** Each line is a block; a Markdown `#` line is a heading. */
 export function lineBlocks(text: string): PageBlock[] {
   const blocks: PageBlock[] = [];
   let heading: string | undefined;
@@ -134,7 +130,6 @@ export function lineBlocks(text: string): PageBlock[] {
   return blocks;
 }
 
-/** Each leaf is a block of its key path and value, such as `deployments canonical address 0xA238...`. */
 export function jsonBlocks(value: unknown, path: readonly string[] = []): PageBlock[] {
   if (Array.isArray(value)) return value.flatMap((item, i) => jsonBlocks(item, [...path, String(i)]));
   if (typeof value === 'object' && value !== null) return Object.entries(value).flatMap(([key, item]) => jsonBlocks(item, [...path, key]));
@@ -179,7 +174,7 @@ const HAS_ADDRESS = new RegExp(ADDRESS_TEXT.source);
 
 /**
  * Where `address` stands on the page relative to `label`. They must share one block, or the label must be in the block
- * just before when that block holds no address, as in `<p>Name:</p><p>0x…</p>`. They must be at most `MAX_GAP`
+ * just before when that block holds no address, as in `<p>Name:</p><p>0x…</p>`. They must be at most `MAX_LABEL_ADDRESS_GAP`
  * characters apart, with no other address between them. With `heading`, the block's nearest heading must name it too. The
  * address counts only written in lowercase or in its EIP-55 checksum.
  */
@@ -204,7 +199,7 @@ export function findOnPage(blocks: readonly PageBlock[], address: Address, label
       for (const name of wordSpans(text, label)) {
         const labelFirst = name.end <= spot.start;
         const [from, to] = labelFirst ? [name.end, spot.start] : [spot.end, name.start];
-        if (to < from || to - from > MAX_GAP) continue;
+        if (to < from || to - from > MAX_LABEL_ADDRESS_GAP) continue;
         if (others.some((o) => o.start < to && o.end > from)) continue;
         if (best === undefined || to - from < best.gap) best = { kind: 'next-to', gap: to - from, labelFirst };
       }
@@ -220,7 +215,6 @@ const header = (answer: HttpAnswer, name: string): string => {
   return Array.isArray(value) ? (value[0] ?? '') : (value ?? '');
 };
 
-/** A redirect is not followed: the registry should name the page the text is on. */
 export async function fetchPage(url: string, get: HttpGet): Promise<Page> {
   let answer: HttpAnswer;
   try {
@@ -300,7 +294,7 @@ export async function gatherSourcePages(sources: readonly string[], get: HttpGet
   return { pages, commits };
 }
 
-/** A public GET with no key. GitHub's API asks for a user agent. */
+/** GitHub's API refuses a request without a user agent. */
 export const httpsGet: HttpGet = (url) => {
   const target = new URL(url);
   if (target.protocol !== 'https:') return Promise.reject(new Error('not https'));

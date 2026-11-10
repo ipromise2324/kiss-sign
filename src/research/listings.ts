@@ -7,7 +7,7 @@ import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.t
 import type { Address } from '../safe/types.ts';
 import { registrableDomain } from './public-suffix.ts';
 import type { PublicSuffixList, SuffixListUnavailable } from './public-suffix.ts';
-import { MAX_GAP, commitKey, findOnPage, githubRef, isGitHubPage, pageUrlOf, sourceHoldsAddress } from './source-page.ts';
+import { MAX_LABEL_ADDRESS_GAP, commitKey, findOnPage, githubRef, isGitHubPage, pageUrlOf, sourceHoldsAddress } from './source-page.ts';
 import type { CommitCheck, Page, PageBlock, SourcePages } from './source-page.ts';
 
 export type DefiLlamaProtocol = { readonly slug: string; readonly name: string; readonly url: URL | undefined; readonly github: readonly string[] };
@@ -22,7 +22,6 @@ export type Listings = {
 
 /** What `check-sources` saw for one entry. A `finding` is for the signer to judge; `agrees` is evidence for the report. */
 export type Line = { readonly kind: 'agrees' | 'finding'; readonly check: 'defillama' | 'coingecko' | 'url' | 'github' | 'page'; readonly text: string };
-/** `site` is where the source lives: its registrable domain, or `github.com/<org>`. */
 export type EntryResult = { readonly entry: RegistryEntry; readonly site: string; readonly lines: readonly Line[] };
 
 export class ListingError extends Error {
@@ -157,7 +156,7 @@ function pageLine(entry: RegistryEntry, pages: SourcePages['pages']): Line {
     case 'miscased':
       return finding('the address is on the page only in a letter case that is neither lowercase nor its EIP-55 checksum');
     case 'apart':
-      return finding(`the address is on the page, but not within ${MAX_GAP} characters of ${label}${under} in one block with no other address between`);
+      return finding(`the address is on the page, but not within ${MAX_LABEL_ADDRESS_GAP} characters of ${label}${under} in one block with no other address between`);
     case 'next-to':
       return { kind: 'agrees', check: 'page', text: `the page has the address ${match.gap} characters ${match.labelFirst ? 'after' : 'before'} ${label}${under}` };
   }
@@ -244,7 +243,6 @@ export type ListingsRecording = {
   readonly fetched: string;
   readonly defillama: readonly { slug: string; name: string; url?: string; github: readonly string[] }[];
   readonly coingecko: readonly { id: string; symbol: string; name: string; platforms: { ethereum: Address } }[];
-  /** Each page's blocks that hold a registry address, each with its heading, so the page checks replay unchanged. */
   readonly pages: Readonly<Record<string, Page>>;
   readonly commits: Readonly<Record<string, CommitCheck>>;
 };
