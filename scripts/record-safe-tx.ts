@@ -2,17 +2,18 @@ import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { KEYS, findKey } from '../src/keys.ts';
 import { checksumAddress, parseAddress, parseHex, parseOperation, parseUint256 } from '../src/safe/types.ts';
 
 const USAGE = 'usage: ALCHEMY_API_KEY=... node scripts/record-safe-tx.ts <name> <safe> <safeTxHash | nonce>';
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 
 const [name, safeArg, which] = process.argv.slice(2);
-const alchemyKey = process.env.ALCHEMY_API_KEY;
+const alchemyKey = findKey(KEYS[0], process.env)?.value;
 if (name === undefined || safeArg === undefined || which === undefined || !/^[a-z0-9-]+$/.test(name)) {
   throw new Error(USAGE);
 }
-if (alchemyKey === undefined || alchemyKey === '') throw new Error(`ALCHEMY_API_KEY is not set\n${USAGE}`);
+if (alchemyKey === undefined || alchemyKey === '') throw new Error(`ALCHEMY_API_KEY is not set, in the environment or in $KISS_SIGN_HOME/.env\n${USAGE}`);
 
 const providers = [
   { name: 'alchemy', url: `https://eth-mainnet.g.alchemy.com/v2/${alchemyKey}` },
