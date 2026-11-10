@@ -22,6 +22,18 @@ export type Finding = {
   readonly actual: string;
 };
 
+/**
+ * One argument the check compared, or let through as free. `bytes` is its span in `data`; absent, it is the Safe
+ * transaction's own `to` or `value`.
+ */
+export type Leaf = {
+  readonly callPath: string;
+  readonly arg: string;
+  readonly bytes: Span | undefined;
+  readonly rule: Exclude<Rule['kind'], 'call' | 'items' | 'fields'>;
+  readonly type: AbiType;
+};
+
 export type FieldCheck =
   | { readonly kind: 'match' }
   | { readonly kind: 'mismatch'; readonly findings: readonly Finding[] }
@@ -36,6 +48,7 @@ type Context = {
   readonly values: ReadonlyMap<string, ResolvedValue>;
   readonly findings: Finding[];
   readonly unverifiable: string[];
+  readonly leaves: Leaf[];
   readonly root: Uint8Array;
 };
 
@@ -86,7 +99,9 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
   }
 }
 
-function compareLeaf(rule: Rule, actual: ConstValue, bytes: Span | undefined, callPath: string, arg: string, context: Context): void {
+function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span | undefined, callPath: string, arg: string, context: Context): void {
+  if (rule.kind === 'call' || rule.kind === 'items' || rule.kind === 'fields') throw new Error(`a ${rule.kind} rule is not a leaf`);
+  context.leaves.push({ callPath, arg, bytes, rule: rule.kind, type });
   if (rule.kind === 'free') return;
   const expected = expectedOf(rule, context);
   if (expected === undefined) return;
@@ -95,7 +110,10 @@ function compareLeaf(rule: Rule, actual: ConstValue, bytes: Span | undefined, ca
 }
 
 function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: string, arg: string, context: Context): void {
-  if (rule.kind === 'free') return;
+  if (rule.kind === 'free') {
+    context.leaves.push({ callPath, arg, bytes: actual.span, rule: 'free', type });
+    return;
+  }
   if (rule.kind === 'call') {
     if (actual.kind !== 'bytes') throw new Error('a call rule on a value that is not bytes');
     checkCall(rule.call, { root: context.root, start: actual.span[0], end: actual.span[1] }, `${callPath}.${arg}`, context);
@@ -121,7 +139,7 @@ function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: strin
   }
   const leaf = leafOf(actual);
   if (leaf === undefined) throw new Error(`a ${rule.kind} rule on a ${actual.kind}`);
-  compareLeaf(rule, leaf, actual.span, callPath, arg, context);
+  compareLeaf(rule, type, leaf, actual.span, callPath, arg, context);
 }
 
 function checkCall(node: CallNode, region: Region, callPath: string, context: Context): void {
@@ -147,10 +165,12 @@ function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context): v
   if (inner.operation !== 0) {
     context.findings.push({ callPath: inner.path, arg: 'operation', bytes: inner.fields?.operation, expected: '0 (call)', actual: '1 (delegatecall)' });
   }
-  compareLeaf(call.to, { kind: 'address', value: inner.to }, inner.fields?.to, inner.path, 'to', context);
-  compareLeaf(call.value, { kind: 'uint', value: inner.value }, inner.fields?.value, inner.path, 'value', context);
+  compareLeaf(call.to, { kind: 'address' }, { kind: 'address', value: inner.to }, inner.fields?.to, inner.path, 'to', context);
+  compareLeaf(call.value, { kind: 'uint', bits: 256 }, { kind: 'uint', value: inner.value }, inner.fields?.value, inner.path, 'value', context);
   checkCall(call, inner.data, inner.path, context);
 }
+
+export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[] };
 
 /**
  * Checks every field of `tx` against the card's templates. The calls the Safe makes, after unwrapping an official
@@ -162,14 +182,26 @@ export function checkTemplateFields(
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
 ): FieldCheck {
+  return inspectTemplateFields(tx, card, templates, registry).check;
+}
+
+/** `checkTemplateFields`, plus every leaf it reached, for the mutation check. */
+export function inspectTemplateFields(
+  tx: SafeTx,
+  card: ResolvedCard,
+  templates: ReadonlyMap<string, Template>,
+  registry: Registry,
+): Inspection {
   const expected: { call: TemplateCall; values: ReadonlyMap<string, ResolvedValue> }[] = [];
   for (const op of card.operations) {
     const template = templates.get(op.template);
-    if (template === undefined) return { kind: 'unverifiable', reasons: [`no template ${op.template}`] };
+    if (template === undefined) return { check: { kind: 'unverifiable', reasons: [`no template ${op.template}`] }, leaves: [] };
     expected.push(...template.calls.map((call) => ({ call, values: op.values })));
   }
   const findings: Finding[] = [];
   const unverifiable: string[] = [];
+  const leaves: Leaf[] = [];
+  const done = (check: FieldCheck): Inspection => ({ check, leaves });
   if (tx.chainId !== REGISTRY_CHAIN_ID) {
     findings.push({ callPath: 'safeTx', arg: 'chainId', bytes: undefined, expected: String(REGISTRY_CHAIN_ID), actual: String(tx.chainId) });
   }
@@ -178,12 +210,12 @@ export function checkTemplateFields(
   switch (unwrapped.kind) {
     case 'foreign-delegatecall':
       findings.push({ callPath: 'safeTx', arg: 'to', bytes: undefined, expected: 'an official MultiSend for a delegatecall', actual: unwrapped.to });
-      return { kind: 'mismatch', findings };
+      return done({ kind: 'mismatch', findings });
     case 'malformed':
     case 'non-canonical':
     case 'wrong-selector':
       findings.push({ callPath: 'safeTx', arg: 'data', bytes: [unwrapped.at, unwrapped.at + 1], expected: 'canonical multiSend(bytes)', actual: unwrapped.kind });
-      return { kind: 'mismatch', findings };
+      return done({ kind: 'mismatch', findings });
   }
   if (unwrapped.kind === 'multisend' && tx.value !== 0n) {
     findings.push({ callPath: 'safeTx', arg: 'value', bytes: undefined, expected: '0', actual: String(tx.value) });
@@ -196,13 +228,13 @@ export function checkTemplateFields(
       findings.push({ callPath: inner.path, arg: 'call', bytes: inner.span, expected: 'no call', actual: `a call to ${inner.to}` });
       continue;
     }
-    checkTopCall(wanted.call, inner, { safe: card.safe, registry, values: wanted.values, findings, unverifiable, root });
+    checkTopCall(wanted.call, inner, { safe: card.safe, registry, values: wanted.values, findings, unverifiable, leaves, root });
   }
   for (const [i, wanted] of expected.entries()) {
     if (i < calls.length) continue;
     findings.push({ callPath: `multiSend[${i}]`, arg: 'call', bytes: undefined, expected: wanted.call.fn.signature, actual: 'missing' });
   }
-  if (findings.length > 0) return { kind: 'mismatch', findings };
-  if (unverifiable.length > 0) return { kind: 'unverifiable', reasons: unverifiable };
-  return { kind: 'match' };
+  if (findings.length > 0) return done({ kind: 'mismatch', findings });
+  if (unverifiable.length > 0) return done({ kind: 'unverifiable', reasons: unverifiable });
+  return done({ kind: 'match' });
 }
