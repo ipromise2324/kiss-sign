@@ -89,3 +89,91 @@ test('card seal refuses a name in neither the registry nor the address book', as
   assert.match(result.stderr, /no-such-vault/);
   assert.deepEqual(result.asked, []);
 });
+
+const STEAKHOUSE = '0xbeef088055857739C12CD3765F20b7679Def0f51';
+
+/** The number the prompt lists a name under. */
+const numberOf = (name: string) => (stdout: string) => {
+  const found = new RegExp(`(\\d+)\\. ${name} 0x`).exec(stdout)?.[1];
+  assert.ok(found !== undefined, `${name} is listed`);
+  return found;
+};
+
+async function sealedFile(values: Record<string, string>) {
+  const home = freshHome();
+  await run(['init', '--safe', SAFE], home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values }] }));
+  const sealed = await run(['card', 'seal', card], home, ['y']);
+  return /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
+}
+
+test('card new lists vaults with full addresses and seals the same card card seal would', async () => {
+  const home = freshHome();
+  await run(['init', '--safe', SAFE], home);
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5000000', 'y']);
+  assert.equal(made.code, 0, made.stderr);
+  assert.match(made.stdout, new RegExp(`\\d+\\. steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)`));
+  assert.match(made.asked[1] ?? '', /amount \(base units of usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\): /);
+  assert.match(made.stdout, new RegExp(`vault: steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)`));
+  assert.equal(made.asked[2], 'Is this what you mean to do? [y/N] ');
+  const hash = /Sealed card (0x[0-9a-f]{64})/.exec(made.stdout)?.[1];
+  assert.equal(hash, await sealedFile({ vault: 'steakhouse-prime-usdc', amount: '5000000' }));
+});
+
+test('card new offers a transfer recipient only from the address book or the Safe', async () => {
+  const home = freshHome();
+  await run(['init', '--safe', SAFE], home);
+  await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
+  const made = await run(['card', 'new', 'erc20/transfer'], home, [numberOf('usdc'), '1', numberOf('alice'), 'y']);
+  assert.equal(made.code, 0, made.stderr);
+  assert.match(made.stdout, new RegExp(`recipient:\\n  1\\. safe ${SAFE} \\(config\\)\\n  2\\. alice ${RECIPIENT} \\(address book\\)\\n`));
+  assert.match(made.stdout, new RegExp(`recipient: alice ${RECIPIENT} \\(address-book\\)`));
+});
+
+test('card new refuses without a terminal before it asks anything', async () => {
+  const home = freshHome();
+  await run(['init', '--safe', SAFE], home);
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home);
+  assert.equal(result.code, 64);
+  assert.match(result.stderr, /confirm at a terminal/);
+  assert.equal(result.stdout, '');
+});
+
+for (const [what, answers, message] of [
+  ['a number past the list', ['9999', '5', 'y'], /vault: "9999" is not a number from 1 to \d+/],
+  ['zero', ['0', '5', 'y'], /vault: "0" is not a number/],
+  ['a name instead of a number', ['steakhouse-prime-usdc', '5', 'y'], /is not a number/],
+  ['a decimal amount', [numberOf('steakhouse-prime-usdc'), '1.5', 'y'], /amount: "1.5" is not a whole number/],
+  ['a negative amount', [numberOf('steakhouse-prime-usdc'), '-5', 'y'], /amount: "-5" is not a whole number/],
+  ['an empty amount', [numberOf('steakhouse-prime-usdc'), '', 'y'], /amount: "" is not a whole number/],
+  ['an amount with a leading zero', [numberOf('steakhouse-prime-usdc'), '05', 'y'], /amount: "05" is not a whole number/],
+] as const) {
+  test(`card new refuses ${what} and seals nothing`, async () => {
+    const home = freshHome();
+    await run(['init', '--safe', SAFE], home);
+    const result = await run(['card', 'new', 'morpho/vault-deposit'], home, answers);
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, message);
+    assert.ok(!result.asked.includes('Is this what you mean to do? [y/N] '));
+    assert.equal(existsSync(join(home, 'cards')), false);
+  });
+}
+
+test('card new refuses a template that is not in the repository', async () => {
+  const home = freshHome();
+  await run(['init', '--safe', SAFE], home);
+  const result = await run(['card', 'new', 'morpho/no-such-operation'], home, ['1', 'y']);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /no template morpho\/no-such-operation in templates\//);
+  assert.deepEqual(result.asked, []);
+});
+
+test('card new seals nothing when the signer says no', async () => {
+  const home = freshHome();
+  await run(['init', '--safe', SAFE], home);
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', 'n']);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /Nothing sealed/);
+  assert.equal(existsSync(join(home, 'cards')), false);
+});

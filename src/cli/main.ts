@@ -11,6 +11,7 @@ import { RegistryError } from '../registry.ts';
 import { SafeTxParseError } from '../safe/types.ts';
 import { TemplateError } from '../template/template.ts';
 import { VerifyError } from '../verify/verify.ts';
+import { cardNew } from './card-new.ts';
 import { FAILED, OK, USAGE, UsageError } from './io.ts';
 import { printManagedSettings } from './managed-settings.ts';
 import type { Io } from './io.ts';
@@ -76,6 +77,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
   init: { usage: 'init --safe <address>', run: init },
   'book add': { usage: 'book add <name> <address>', run: bookAdd },
   'book list': { usage: 'book list', run: bookList },
+  'card new': { usage: 'card new <protocol>/<operation>...', run: cardNew },
   'card seal': { usage: 'card seal <card.json>', run: cardSeal },
   'template approve': { usage: 'template approve <protocol>/<operation>', run: templateApprove },
   verify: { usage: 'verify --card <sealed card hash> (--tx <file> | --safe-tx-hash <hash>)', run: verify },
