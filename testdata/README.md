@@ -207,18 +207,19 @@ pnpm simulate morpho-urd-claim --record morpho-urd-claim --card '{"operations":[
 
 `research/<name>.json` holds one run of `scripts/past-txs.ts --record <name>`:
 
-- `query`: the template, the anchor token, the anchor kind, the sender when the search had one (`--from`), and the block range.
+- `query`: the template, the anchor token, the anchor kind, the sender when the search had one (`--from`), the block range when one was given (none means the default windows), and `--max-txs`.
 - `sources`: each request to Alchemy (`alchemy_getAssetTransfers`) and Etherscan (`logs/getLogs`), with its answer. No request holds a key.
-- `providers` and `exchanges`: each `eth_getTransactionByHash` and `eth_getTransactionReceipt`, with the answers of Alchemy and drpc.
+- `providers` and `exchanges`: each chain read (the head block, transactions, and for an `execTransaction` the block before, the contract's code and slot 0, and the receipt), with the answers of Alchemy and drpc.
 
 Before writing, the script drops every entry that mentions the configured Safe or one of its transactions, and refuses to write if any mention is left.
 
-The tests replay the run and require the counts a reader sees: per source, per field, and per misfit reason. A Safe set as the configured Safe disappears from every count, and a transaction removed from one source's answer is marked as found by the other only.
+The tests replay the run and require the counts a reader sees: per window, per source, per sender type, per field, and per misfit reason. A Safe set as the configured Safe disappears from every count, and a transaction removed from one source's answer is marked as found by the other only. A Safe whose recorded code or slot 0 is changed counts as a contract, not a proven Safe. A window whose recorded Alchemy answer is given a next page is halved, and the report names the blocks left out. An EOA's `multicall` sent to a contract other than Bundler3 counts as calling no function the template calls.
 
 | File | Anchor | Blocks | What it found |
 | --- | --- | --- | --- |
-| `morpho-vault-deposit.json` | Steakhouse Prime USDC shares minted | 26,044,000 to 26,052,000 | 65 transactions, all found by both sources; 3 executed by a Safe, 2 fitting `morpho/vault-deposit` |
-| `merkl-claim.json` | MORPHO moved out of the Merkl Distributor | 24,020,000 to 24,030,000 | 120 transactions, all found by both sources; 3 executed by a Safe, 1 fitting `merkl/claim` |
+| `morpho-vault-deposit.json` | Steakhouse Prime USDC shares minted | 26,044,000 to 26,052,000 | 65 transactions, all found by both sources; 3 from 1 proven Safe, 2 fitting `morpho/vault-deposit`; 25 from 24 EOAs calling `multicall` directly, 2 fitting that call |
+| `merkl-claim.json` | MORPHO moved out of the Merkl Distributor | 24,020,000 to 24,030,000 | 120 transactions, all found by both sources; 3 from 3 proven Safes, 1 fitting `merkl/claim`; 102 from 90 EOAs |
+| `morpho-vault-deposit-windows.json` | Steakhouse Prime USDC shares minted | the default 12 windows from head block 26,385,810 | 222 transactions, 2 studied per window, 18 in all |
 
 ### Recording again
 
@@ -231,7 +232,33 @@ That home's `config.json` names the Safe of `safe-tx/morpho-vault-deposit.json`,
 
 ```sh
 pnpm past-txs merkl/claim --token morpho --anchor any --from merkl-distributor --from-block 24020000 --to-block 24030000 --record merkl-claim
+pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc --anchor mint --max-txs 24 --record morpho-vault-deposit-windows
 ```
+
+The windows follow the head block, so recording the last one again moves them.
+
+## Safe proxy factories
+
+`safe-proxy/<name>.json` holds one run of `scripts/record-safe-proxy.ts <name> <transaction hash>`: the transaction in which an official mainnet proxy factory (`src/safe/deployments.ts`) created a Safe, and its chain reads (the receipt with the factory's `ProxyCreation`, the block, and the new proxy's code at that block), with the answers of Alchemy and drpc. The test requires one fixture per official factory and that each proxy's code is the known Safe proxy of that factory's version, so the code `past-txs` accepts as a Safe proxy is what an official factory deploys.
+
+| File | Factory | Transaction |
+| --- | --- | --- |
+| `proxy-factory-1-0-0.json` | 1.0.0 `0x12302fE9c02ff50939BaAaaf415fc226C078613C` | `0xc9403782c9771264889237538ca46ee714dbf394cc6f001acc53bc08e29a79e8` |
+| `proxy-factory-1-1-1.json` | 1.1.1 `0x76E2cFc1F5Fa8F6a5b3fC4c8F4788F0116861F9B` | `0x53e1d0bee0ad9aa0637c57dd528586ddb22218f53510b191a9247c19640ba779` |
+| `proxy-factory-1-3-0.json` | 1.3.0 `0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2` | `0x12d7accd124bd70796fddbe56c1ea96a12903d250fc116d0269bcc6b0bb2d41d` |
+| `proxy-factory-1-3-0-eip155.json` | 1.3.0 `0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC` | `0xe6adcfb6c7c0298d6935057c936ea961f13c0ea637e3b79ac2a0eba9242ff49e` |
+| `proxy-factory-1-4-1.json` | 1.4.1 `0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67` | `0x48e7c7beacaa069da219fed256237f5fba5794c6f23803083d38c805b66b110c` |
+| `proxy-factory-1-5-0.json` | 1.5.0 `0x14F2982D601c9458F93bd70B218933A6f8165e7b` | `0x258d1aeb8652dc6cb0df9e3f1298b3abcb57ead26194c76a924c597e2a45516c` |
+
+Each transaction was found with Etherscan's `logs/getLogs` on the factory's address.
+
+### Recording again
+
+```sh
+pnpm record-safe-proxy proxy-factory-1-0-0 0xc9403782c9771264889237538ca46ee714dbf394cc6f001acc53bc08e29a79e8
+```
+
+and likewise for each row.
 
 ## Verdicts
 

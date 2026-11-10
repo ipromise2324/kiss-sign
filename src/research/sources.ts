@@ -35,14 +35,22 @@ export type Hit = { readonly hash: Hex; readonly from: Address; readonly to: Add
 
 export type Hits = Readonly<Record<SourceName, readonly Hit[]>>;
 
+const PAGE = 1000;
+
 export class ResearchError extends Error {
   override name = 'ResearchError';
 }
 
+export class TooManyTransfers extends ResearchError {
+  override name = 'TooManyTransfers';
+
+  constructor(source: SourceName) {
+    super(`${source} lists more than ${PAGE - 1} transfers in the range`);
+  }
+}
+
 const ZERO = `0x${'00'.repeat(20)}` as Address;
 const ZERO_WORD = `0x${'00'.repeat(32)}`;
-const ETHERSCAN_PAGE = 1000;
-const ETHERSCAN_MAX_PAGES = 10;
 
 const hex = (n: bigint): string => `0x${n.toString(16)}`;
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -65,23 +73,18 @@ async function searchAlchemy(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     excludeZeroValue: false,
     withMetadata: false,
     order: 'asc',
-    maxCount: '0x3e8',
+    maxCount: hex(BigInt(PAGE)),
     ...(anchor.kind === 'mint' ? { fromAddress: ZERO } : {}),
     ...(anchor.kind === 'burn' ? { toAddress: ZERO } : {}),
     ...(anchor.from !== undefined ? { fromAddress: anchor.from } : {}),
   };
-  const hits: Hit[] = [];
-  let pageKey: string | undefined;
-  do {
-    const answer = await ask({ source: 'alchemy', params: pageKey === undefined ? base : { ...base, pageKey } });
-    if (!isRecord(answer) || !Array.isArray(answer.transfers)) throw new ResearchError('alchemy sent no transfer list');
-    for (const t of answer.transfers as unknown[]) {
-      if (!isRecord(t)) throw new ResearchError('alchemy sent a malformed transfer');
-      hits.push(hitOf('alchemy', t.hash, t.from, t.to));
-    }
-    pageKey = typeof answer.pageKey === 'string' ? answer.pageKey : undefined;
-  } while (pageKey !== undefined);
-  return hits;
+  const answer = await ask({ source: 'alchemy', params: base });
+  if (!isRecord(answer) || !Array.isArray(answer.transfers)) throw new ResearchError('alchemy sent no transfer list');
+  if (typeof answer.pageKey === 'string') throw new TooManyTransfers('alchemy');
+  return (answer.transfers as unknown[]).map((t) => {
+    if (!isRecord(t)) throw new ResearchError('alchemy sent a malformed transfer');
+    return hitOf('alchemy', t.hash, t.from, t.to);
+  });
 }
 
 async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
@@ -96,26 +99,21 @@ async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     ...(anchor.kind === 'mint' ? { topic0_1_opr: 'and', topic1: ZERO_WORD } : {}),
     ...(anchor.kind === 'burn' ? { topic0_2_opr: 'and', topic2: ZERO_WORD } : {}),
     ...(anchor.from !== undefined ? { topic0_1_opr: 'and', topic1: `0x${'00'.repeat(12)}${anchor.from.slice(2)}` } : {}),
-    offset: String(ETHERSCAN_PAGE),
+    offset: String(PAGE),
   };
-  const hits: Hit[] = [];
-  for (let page = 1; ; page++) {
-    if (page > ETHERSCAN_MAX_PAGES) throw new ResearchError(`etherscan lists more than ${ETHERSCAN_PAGE * ETHERSCAN_MAX_PAGES} transfers; narrow the block range`);
-    const answer = await ask({ source: 'etherscan', query: { ...base, page: String(page) } });
-    if (!isRecord(answer)) throw new ResearchError('etherscan sent no answer');
-    if (answer.status === '0' && answer.message === 'No records found') break;
-    if (answer.status !== '1' || !Array.isArray(answer.result)) {
-      throw new ResearchError(`etherscan refused: ${String(answer.message).slice(0, 80)} ${typeof answer.result === 'string' ? answer.result.slice(0, 120) : ''}`.trim());
-    }
-    for (const log of answer.result as unknown[]) {
-      if (!isRecord(log) || !Array.isArray(log.topics)) throw new ResearchError('etherscan sent a malformed log');
-      const [, from, to] = log.topics as unknown[];
-      const address = (word: unknown) => (typeof word === 'string' ? `0x${word.slice(-40)}` : word);
-      hits.push(hitOf('etherscan', log.transactionHash, address(from), address(to)));
-    }
-    if (answer.result.length < ETHERSCAN_PAGE) break;
+  const answer = await ask({ source: 'etherscan', query: { ...base, page: '1' } });
+  if (!isRecord(answer)) throw new ResearchError('etherscan sent no answer');
+  if (answer.status === '0' && answer.message === 'No records found') return [];
+  if (answer.status !== '1' || !Array.isArray(answer.result)) {
+    throw new ResearchError(`etherscan refused: ${String(answer.message).slice(0, 80)} ${typeof answer.result === 'string' ? answer.result.slice(0, 120) : ''}`.trim());
   }
-  return hits;
+  if (answer.result.length >= PAGE) throw new TooManyTransfers('etherscan');
+  return (answer.result as unknown[]).map((log) => {
+    if (!isRecord(log) || !Array.isArray(log.topics)) throw new ResearchError('etherscan sent a malformed log');
+    const [, from, to] = log.topics as unknown[];
+    const address = (word: unknown) => (typeof word === 'string' ? `0x${word.slice(-40)}` : word);
+    return hitOf('etherscan', log.transactionHash, address(from), address(to));
+  });
 }
 
 /** Both sources' anchor transfers. Either source failing stops the search, since one source is no cross-check. */
