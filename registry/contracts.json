@@ -1,0 +1,53 @@
+{
+  "usdc": {
+    "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    "kind": "token",
+    "source": "https://developers.circle.com/stablecoins/usdc-contract-addresses"
+  },
+  "multisend-1.3.0": {
+    "address": "0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send.json"
+  },
+  "multisend-1.3.0-eip155": {
+    "address": "0x998739BFdAAdde7C933B942a68053933098f9EDa",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send.json"
+  },
+  "multisend-call-only-1.3.0": {
+    "address": "0x40A2aCCbd92BCA938b02010E17A5b8929b49130D",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send_call_only.json"
+  },
+  "multisend-call-only-1.3.0-eip155": {
+    "address": "0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send_call_only.json"
+  },
+  "multisend-1.4.1": {
+    "address": "0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.4.1/multi_send.json"
+  },
+  "multisend-call-only-1.4.1": {
+    "address": "0x9641d764fc13c8B624c04430C7356C1C7C8102e2",
+    "kind": "multisend",
+    "source": "https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.4.1/multi_send_call_only.json"
+  },
+  "bundler3": {
+    "address": "0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245",
+    "kind": "router",
+    "source": "https://docs.morpho.org/get-started/resources/addresses/"
+  },
+  "general-adapter1": {
+    "address": "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0",
+    "kind": "adapter",
+    "source": "https://docs.morpho.org/get-started/resources/addresses/"
+  },
+  "steakhouse-prime-usdc": {
+    "address": "0xbeef088055857739C12CD3765F20b7679Def0f51",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xbeef088055857739C12CD3765F20b7679Def0f51/steakhouse-prime-usdc",
+    "attributes": { "asset": "usdc" }
+  }
+}
