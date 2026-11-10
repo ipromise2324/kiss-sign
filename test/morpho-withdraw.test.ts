@@ -213,3 +213,18 @@ test('a redeem of all whose shares another transaction in the same block also mo
   assert.equal(observation.kind, 'unverifiable');
   assert.match(observation.kind === 'unverifiable' ? observation.reasons.join('; ') : '', /another transaction in block \d+ moved the Safe's/);
 });
+
+test('an allowance that falls is allowed, one that rises and stays open is a mismatch', () => {
+  const spender = registry.entries.get('general-adapter1')!.address;
+  const judge = (before: bigint, after: bigint): EffectVerdict => {
+    const tx = safeTx('morpho-withdraw-all-apex');
+    const observed = {
+      kind: 'executed', eth: 0n, tokens: new Map([[SHARES, -5n], [USDC, 5n]]), ends: new Map([[SHARES, 0n]]),
+      allowances: [{ token: SHARES, spender, before, after }], safeState: { kind: 'receipt', logs: [] },
+    } as const;
+    return judgeEffects(observed, resolved(tx, card(withdrawAll())), templates, registry);
+  };
+  assert.deepEqual(judge(490n, 0n), { kind: 'match' });
+  assert.deepEqual(judge(0n, 0n), { kind: 'match' });
+  assert.equal(judge(0n, 1n).kind, 'mismatch');
+});

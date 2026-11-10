@@ -161,7 +161,8 @@ export function judgeEffects(
     if (!meets(expected, actual)) findings.push({ kind: 'balance', asset, expected, actual });
   }
   for (const allowance of observed.allowances) {
-    if (allowance.after !== allowance.before) findings.push({ kind: 'open-allowance', ...allowance });
+    // A lower allowance lets no one take more from the Safe than before, so only a rise must be explained.
+    if (allowance.after > allowance.before) findings.push({ kind: 'open-allowance', ...allowance });
   }
   if (findings.length > 0) return { kind: 'mismatch', findings };
   return unread.length > 0 ? { kind: 'unverifiable', reasons: unread } : { kind: 'match' };
@@ -181,7 +182,7 @@ const signed = (n: bigint): string => (n > 0n ? `+${n}` : `${n}`);
 export function describeFinding(finding: EffectFinding, registry: Registry): string {
   if (finding.kind === 'not-all') return `${nameOf(finding.asset, registry)} still held ${finding.left} after the transaction, the card gives all of it`;
   if (finding.kind === 'open-allowance') {
-    return `approval not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${finding.before} before, ${finding.after} after`;
+    return `approval raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${finding.before} before, ${finding.after} after`;
   }
   const { expected } = finding;
   const want = expected.kind === 'exactly' ? signed(expected.change) : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${signed(expected.change)}`;
