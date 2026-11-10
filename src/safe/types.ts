@@ -7,7 +7,7 @@ type Brand<T, B extends string> = T & { readonly [brand]: B };
 export type Address = Brand<`0x${string}`, 'Address'>;
 export type Hex = Brand<`0x${string}`, 'Hex'>;
 
-export const SAFE_VERSIONS = ['1.3.0', '1.4.1', '1.5.0'] as const;
+export const SAFE_VERSIONS = ['1.1.1', '1.3.0', '1.4.1', '1.5.0'] as const;
 export type SafeVersion = (typeof SAFE_VERSIONS)[number];
 
 export type SafeTx = {
