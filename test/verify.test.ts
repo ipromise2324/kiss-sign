@@ -2,7 +2,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -31,7 +31,10 @@ function write(path: string, text: string): string {
   return path;
 }
 
-/** A clone at its origin/main holding the fixture's template and registry, and a home set up as the signer set it up. */
+/**
+ * A clone at its origin/main holding the fixture's template and registry, and a home set up as the signer set it up. Its
+ * origin is the official URL, served offline from a local bare repository through core.sshCommand.
+ */
 function setUp(approved: string | null = template.approved) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-verify-'));
   const origin = join(base, 'origin.git');
@@ -43,6 +46,10 @@ function setUp(approved: string | null = template.approved) {
   git(repo, 'add', '-A');
   git(repo, 'commit', '--quiet', '-m', 'templates');
   git(repo, 'push', '--quiet', 'origin', 'main');
+  const ssh = write(join(base, 'ssh'), `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
+  chmodSync(ssh, 0o755);
+  git(repo, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
+  git(repo, 'config', 'core.sshCommand', ssh);
   const home = join(base, 'home');
   write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: fixture.inputs.safe }));
   write(join(home, 'cards', `${fixture.inputs.card.hash}.json`), fixture.inputs.card.text);

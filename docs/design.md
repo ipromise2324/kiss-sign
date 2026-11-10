@@ -195,9 +195,10 @@ Services used while building a template, besides the providers above. None of th
 
 kiss-sign runs from one clone of this repository. `kiss-sign verify` starts with a self-check before anything else:
 
-1. Fetch `origin`.
-2. The local checkout must be exactly `origin/main`: the same commit, with no local changes and no extra files in the program, the templates, or the settings.
-3. If anything differs, stop and name the files. Nothing is verified.
+1. Every URL of `origin` must be the official repository, `github.com/ipromise2324/kiss-sign`, in its https or ssh form. The URL is read as a fetch would use it, after any `url.<base>.insteadOf` rewrite. An origin elsewhere is not fetched.
+2. Fetch `origin`.
+3. The local checkout must be exactly `origin/main`: the same commit, with no local changes and no extra files in the program, the templates, or the settings.
+4. If anything differs, stop and name the files. Nothing is verified.
 
 Templates are read from that commit, so a template counts only after its pull request is merged. `main` changes only through pull requests.
 
@@ -219,7 +220,7 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - The static floor refuses an ERC-20 approval only at or above 2^255, and a Permit2 approval only at the uint160 maximum. A token-specific sentinel such as 2^96-1 (UNI, COMP) passes the floor; the effects check refuses any measured allowance, ERC-20 or Permit2, that ends above its value before the transaction.
 - Not yet seen by effects: an NFT `setApprovalForAll`, ERC-1155 balances and approvals, Aave's `approveDelegation`, Compound Comet's `allow`, and allowances in the Safe AllowanceModule. A change to any of them moves no balance the program measures. Permit2 is read only at its canonical address. A transaction that lets the Safe accept EIP-1271 signatures moves no allowance now but enables a later `permit`; the floor rules already refuse the usual routes, a delegatecall to SignMessageLib and a fallback handler change. The static floor refuses `setApprovalForAll` when it is set, and a call that changes only one of them is marked as moving no asset.
 - The mark on calls that move no asset is per call the Safe makes. A call that moves an asset and also grants a permission, such as a `multicall` that deposits and authorizes, is not marked. Each call runs as its own Safe transaction, so a contract that reads the Safe's nonce or the transaction's origin can act differently than in the real batch; a call that does not execute that way makes the scan unreadable, which `verify` prints. For an executed transaction the scan is a simulation on the parent block, not its exact pre-state.
-- The self-check does not check where `origin` points, and it does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.
+- The official repository URL is a constant in the program, so an AI that repoints `origin` to a fork whose program accepts that fork passes the self-check. It reads where `origin` points, not how git reaches it: git config such as `core.sshCommand`, a proxy, or a turned-off TLS check can serve another repository under the official URL. The self-check does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.
 - `replay` trusts the verdict file it is given. It shows what a recorded verdict was based on; it is not permission to sign.
 - When the code on chain ends in a metadata trailer without a source hash, as solc writes with `bytecodeHash: "none"`, matching bytecode proves the ABI's selectors and types but not its parameter names, since no byte on chain depends on them.
 - When Sourcify holds only a partial match, the source compiles to the code on chain except the IPFS metadata hash, which hashes the source text. The proof masks that hash, so it too proves the ABI's selectors and types but not its parameter names.

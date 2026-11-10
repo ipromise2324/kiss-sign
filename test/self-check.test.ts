@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { main } from '../src/cli/main.ts';
-import { selfCheck } from '../src/verify/self-check.ts';
+import { githubRepo, selfCheck } from '../src/verify/self-check.ts';
 
 const git = (cwd: string, ...args: string[]) =>
   execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -32,14 +32,16 @@ function cloneOfOrigin(): { origin: string; clone: string } {
   return { origin, clone };
 }
 
+const selfCheckTrustingBareOrigin = (root: string) => selfCheck(root, (url) => url.endsWith('/origin.git'));
+
 const problemsOf = (root: string) => {
-  const result = selfCheck(root);
+  const result = selfCheckTrustingBareOrigin(root);
   return result.kind === 'clean' ? [] : result.problems;
 };
 
 test('a clone exactly at origin/main passes the self-check', () => {
   const { clone } = cloneOfOrigin();
-  assert.deepEqual(selfCheck(clone), { kind: 'clean', commit: git(clone, 'rev-parse', 'HEAD').trim() });
+  assert.deepEqual(selfCheckTrustingBareOrigin(clone), { kind: 'clean', commit: git(clone, 'rev-parse', 'HEAD').trim() });
 });
 
 test('a changed tracked file and an extra template are named', () => {
@@ -61,7 +63,7 @@ test('ignored paths such as vendor, node_modules and .worktrees do not count', (
   write(clone, 'vendor/solc/soljson.js');
   write(clone, 'node_modules/x/index.js');
   write(clone, '.worktrees/pr/file.ts');
-  assert.equal(selfCheck(clone).kind, 'clean');
+  assert.equal(selfCheckTrustingBareOrigin(clone).kind, 'clean');
 });
 
 test('a local commit not on origin/main fails the self-check', () => {
@@ -134,5 +136,62 @@ test('GIT_DIR and GIT_WORK_TREE in the environment cannot point the self-check a
   } finally {
     if (saved.dir === undefined) delete process.env.GIT_DIR; else process.env.GIT_DIR = saved.dir;
     if (saved.tree === undefined) delete process.env.GIT_WORK_TREE; else process.env.GIT_WORK_TREE = saved.tree;
+  }
+});
+
+test('a clone whose origin points to a fork is refused and the fork is never fetched', () => {
+  const { clone } = cloneOfOrigin();
+  git(clone, 'remote', 'set-url', 'origin', 'https://github.com/attacker/kiss-sign.git');
+  assert.deepEqual(selfCheck(clone), {
+    kind: 'differs',
+    problems: ['origin is https://github.com/attacker/kiss-sign.git, not github.com/ipromise2324/kiss-sign'],
+  });
+});
+
+test('a url.insteadOf rewrite that sends the official URL to a fork is refused', () => {
+  const { clone } = cloneOfOrigin();
+  git(clone, 'remote', 'set-url', 'origin', 'https://github.com/ipromise2324/kiss-sign.git');
+  git(clone, 'config', 'url.https://github.com/attacker/.insteadOf', 'https://github.com/ipromise2324/');
+  assert.deepEqual(selfCheck(clone), {
+    kind: 'differs',
+    problems: ['origin is https://github.com/attacker/kiss-sign.git, not github.com/ipromise2324/kiss-sign'],
+  });
+});
+
+test('a second fetch URL on origin pointing elsewhere is refused', () => {
+  const { clone } = cloneOfOrigin();
+  git(clone, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
+  git(clone, 'remote', 'set-url', '--add', 'origin', 'git@github.com:attacker/kiss-sign.git');
+  assert.deepEqual(selfCheck(clone), {
+    kind: 'differs',
+    problems: ['origin is git@github.com:attacker/kiss-sign.git, not github.com/ipromise2324/kiss-sign'],
+  });
+});
+
+test('the official repository is recognised in its https and ssh forms, with or without .git', () => {
+  for (const url of [
+    'https://github.com/ipromise2324/kiss-sign',
+    'https://github.com/ipromise2324/kiss-sign.git',
+    'https://github.com/ipromise2324/kiss-sign/',
+    'https://ipromise2324@github.com/ipromise2324/kiss-sign.git',
+    'https://GitHub.com/IPromise2324/Kiss-Sign.git',
+    'git@github.com:ipromise2324/kiss-sign.git',
+    'git@github.com:ipromise2324/kiss-sign',
+    'ssh://git@github.com/ipromise2324/kiss-sign.git',
+    'ssh://git@github.com:22/ipromise2324/kiss-sign',
+  ]) {
+    assert.equal(githubRepo(url), 'github.com/ipromise2324/kiss-sign', url);
+  }
+  for (const url of [
+    'https://github.com/attacker/kiss-sign.git',
+    'https://github.com/ipromise2324/kiss-sign-fork.git',
+    'https://github.com.evil.example/ipromise2324/kiss-sign.git',
+    'https://github.com@evil.example/ipromise2324/kiss-sign.git',
+    'http://github.com/ipromise2324/kiss-sign.git',
+    'git://github.com/ipromise2324/kiss-sign.git',
+    'file:///tmp/kiss-sign.git',
+    '/tmp/origin.git',
+  ]) {
+    assert.notEqual(githubRepo(url), 'github.com/ipromise2324/kiss-sign', url);
   }
 });
