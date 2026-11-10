@@ -2,12 +2,14 @@ import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { parseAddressBook } from '../address-book.ts';
 import { parseCard, resolveCard } from '../card.ts';
+import type { ResolvedCard } from '../card.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Reader } from '../chain/reader.ts';
 import { selectorOf } from '../decode/abi.ts';
 import { checkFloor } from '../floor/floor.ts';
 import { checkObservation } from '../floor/summary.ts';
 import { parseRegistry } from '../registry.ts';
+import type { Registry } from '../registry.ts';
 import { hashSafeTx } from '../safe/hash.ts';
 import { parseSafeWebAppTx, parseServiceTx } from '../safe/parse.ts';
 import { parseAddress, parseHex, parseSafeVersion } from '../safe/types.ts';
@@ -21,7 +23,7 @@ import { checkMutations } from '../template/mutation.ts';
 import { parseTemplate } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
 import { decideVerdict } from './verdict.ts';
-import type { Verdict } from './verdict.ts';
+import type { TemplateApproval, Verdict } from './verdict.ts';
 
 /** The Safe transaction as given: Transaction Service JSON, which carries its safeTxHash, or the Safe web app's JSON. */
 export type TxInput = { readonly format: 'service' | 'web-app'; readonly json: unknown };
@@ -91,11 +93,16 @@ function executedIn(input: TxInput): Hex | undefined {
   return isExecuted === true && typeof transactionHash === 'string' ? parseHex('transactionHash', transactionHash) : undefined;
 }
 
-/**
- * Runs every check on the inputs, reading the chain only through `reader`. The same inputs and the same chain answers
- * give the same verdict, which is what `replay` relies on.
- */
-export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Evaluation> {
+/** The inputs a verdict needs besides the transaction, parsed, with the card resolved to what it names. */
+export type Prepared = {
+  readonly registry: Registry;
+  readonly safe: Address;
+  readonly card: ResolvedCard;
+  readonly templates: ReadonlyMap<string, Template>;
+  readonly approvals: readonly TemplateApproval[];
+};
+
+export function prepare(inputs: VerifyInputs): Prepared {
   const registry = guard('the registry', () => parseRegistry(JSON.parse(inputs.registry)));
   const safe = guard('the configured Safe', () => parseAddress('safe', inputs.safe));
   if (keccakText(inputs.card.text) !== inputs.card.hash) throw new VerifyError(`the card does not hash to ${inputs.card.hash}`);
@@ -110,8 +117,29 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   const addressBook = guard('the address book', () => parseAddressBook(inputs.addressBook));
   const resolution = resolveCard(card, { templates, registry, addressBook, safe });
   if (resolution.kind === 'refused') throw new VerifyError(`the card is refused at ${resolution.at}: ${resolution.detail}`);
-  const resolved = resolution.card;
+  return { registry, safe, card: resolution.card, templates, approvals };
+}
 
+/** Every check on the transaction, given what a simulation or its receipt showed it doing. */
+export function judge(prepared: Prepared, tx: SafeTx, observation: Observation): Verdict {
+  const { registry, safe, card, templates, approvals } = prepared;
+  const checks = {
+    staticFloor: checkFloor(tx),
+    fields: checkTemplateFields(tx, card, templates, registry),
+    mutation: checkMutations(tx, card, templates, registry),
+    simulation: checkObservation(observation, safe, card, templates, registry),
+    approvals,
+  };
+  return decideVerdict(checks, registry);
+}
+
+/**
+ * Runs every check on the inputs, reading the chain only through `reader`. The same inputs and the same chain answers
+ * give the same verdict, which is what `replay` relies on.
+ */
+export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Evaluation> {
+  const prepared = prepare(inputs);
+  const { safe } = prepared;
   const latest = await reader.block('latest');
   if (latest.kind === 'unverifiable') throw new VerifyError(`no agreed latest block: ${latest.reason}`);
   const versionRead = await reader.call({ to: safe, data: selectorOf('VERSION()') }, latest.value);
@@ -119,23 +147,20 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   const version = versionRead.value.kind === 'returned' ? abiString(versionRead.value.data) : undefined;
   const tx = parseTx(inputs.tx, safe, guard("the Safe's version", () => parseSafeVersion(version)));
 
-  const fields = checkTemplateFields(tx, resolved, templates, registry);
-  const mutation = checkMutations(tx, resolved, templates, registry);
   const executed = guard('the Safe transaction', () => executedIn(inputs.tx));
   let observation: Observation;
   if (executed !== undefined) {
     observation = await observeExecuted(reader, executed, tx);
   } else {
     const header = await reader.header(latest.value);
-    const expected = expectedChanges(resolved, templates, registry);
+    const expected = expectedChanges(prepared.card, prepared.templates, prepared.registry);
     const watch = expected.kind === 'expected' ? [...expected.changes.keys()].filter((asset) => asset !== 'eth') : [];
     observation =
       header.kind === 'unverifiable'
         ? { kind: 'unverifiable', reasons: [header.reason] }
         : await simulateSafeTx(reader, { tx, parent: header.value, time: header.value.time + SLOT_SECONDS, watch });
   }
-  const checks = { staticFloor: checkFloor(tx), fields, mutation, simulation: checkObservation(observation, safe, resolved, templates, registry), approvals };
-  return { verdict: decideVerdict(checks, registry), hashes: hashSafeTx(tx) };
+  return { verdict: judge(prepared, tx, observation), hashes: hashSafeTx(tx) };
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);

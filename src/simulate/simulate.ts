@@ -23,7 +23,7 @@ export type SimulationInput = {
   readonly watch: readonly Address[];
 };
 
-/** Safe 1.3.0 and 1.4.1: `mapping(address => mapping(bytes32 => uint256)) approvedHashes` is storage slot 8. */
+/** Safe 1.1.1, 1.3.0 and 1.4.1: `mapping(address => mapping(bytes32 => uint256)) approvedHashes` is storage slot 8. */
 const APPROVED_HASHES_SLOT = 8n;
 /** EIP-7825 caps a transaction's gas at 2^24. */
 const EXEC_GAS = 1n << 24n;

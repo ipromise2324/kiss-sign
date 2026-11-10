@@ -1,0 +1,29 @@
+{
+  "title": "WazirX multisig",
+  "date": "2024-07-18",
+  "chain": "eth",
+  "safe": "0x27fD43BABfbe83a81d14665b1a6fB8030A60C9b4",
+  "nonce": "1718",
+  "believed": "A transfer of 500,000 USDT to WazirX's withdrawal wallet, already whitelisted in Liminal's address book. All signers saw the expected token and destination in the Liminal interface; the Ledger showed neither. The card is the decoy proposal the Transaction Service holds at the same nonce, safeTxHash 0xfe1d20734698cb8f8fc21e70a797db518063bc5d059cba41d1f220cec1e4529a.",
+  "sources": [
+    "https://wazirx.com/blog/preliminary-report-cyber-attack-on-wazirx-multisig-wallet/",
+    "https://wazirx.com/blog/wazirx-cyber-attack-key-insights-and-learnings/",
+    "https://etherscan.io/tx/0x48164d3adbab78c2cb9876f6e17f88e321097fcd14cadd57556866e4ef3e185d"
+  ],
+  "card": {
+    "operations": [
+      {
+        "template": "erc20/transfer",
+        "values": {
+          "token": "usdt",
+          "amount": "500000000000",
+          "recipient": "wazirx-withdrawals"
+        }
+      }
+    ]
+  },
+  "addressBook": {
+    "wazirx-withdrawals": "0x618fFD1cDAbeE36CE5992a857Cc7463f21272bD7"
+  },
+  "call": null
+}

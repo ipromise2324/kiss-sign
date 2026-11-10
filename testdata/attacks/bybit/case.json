@@ -1,0 +1,28 @@
+{
+  "title": "Bybit ETH cold wallet",
+  "date": "2025-02-21",
+  "chain": "eth",
+  "safe": "0x1Db92e2EeBC8E0c075a02BeA49a2935BcD2dFCF4",
+  "nonce": "71",
+  "believed": "A routine transfer of ETH from the cold wallet to the warm wallet. The Safe web app showed the expected address and data; the transaction sent to the Ledger was another one. No source gives the amount; the card uses 30,000 ETH, what most of the cold wallet's earlier ETH transfers sent (nonces 62 to 69).",
+  "sources": [
+    "https://www.certik.com/resources/blog/bybit-incident-technical-analysis",
+    "https://www.sygnia.co/blog/sygnia-investigation-bybit-hack/",
+    "https://etherscan.io/tx/0x46deef0f52e3a983b67abf4714448a41dd7ffd6d32d32da69d62081c68ad7882"
+  ],
+  "card": {
+    "operations": [
+      {
+        "template": "eth/transfer",
+        "values": {
+          "amount": "30000000000000000000000",
+          "recipient": "bybit-warm-wallet"
+        }
+      }
+    ]
+  },
+  "addressBook": {
+    "bybit-warm-wallet": "0xf89d7b9c864f589bbF53a82105107622B35EaA40"
+  },
+  "call": "transfer(address to, uint256 value)"
+}
