@@ -13,6 +13,7 @@
     "check-push": "node scripts/check-push.ts",
     "record-safe-tx": "node scripts/record-safe-tx.ts",
     "fetch-solc": "node scripts/fetch-solc.ts",
+    "fetch-psl": "node scripts/fetch-psl.ts",
     "prove-abi": "node scripts/prove-abi.ts",
     "prove-instance": "node scripts/prove-instance.ts",
     "check-sources": "node scripts/check-sources.ts",
