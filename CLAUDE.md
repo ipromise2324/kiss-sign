@@ -14,6 +14,7 @@ kiss-sign checks a Safe transaction against the signer's stated intent before th
 - `pnpm test` runs `node --test`. Tests run offline against recorded fixtures and the compilers in `vendor/solc/`; a missing compiler fails the test.
 - `ALCHEMY_API_KEY=... pnpm prove-abi <address>` proves a contract's ABI live and prints the proof.
 - `ALCHEMY_API_KEY=... pnpm record-abi-case <name> <address>` records an ABI-proof fixture into `testdata/abi/`.
+- `ALCHEMY_API_KEY=... pnpm simulate <safe-tx fixture> --card '<card json>' [--record <name>]` simulates an executed Safe transaction on its parent block, reads its receipt, and prints both effects with their verdicts. `--record` writes `testdata/simulate/<name>.json`. `<safe> <nonce>` in place of a fixture name runs locally only and records nothing.
 - `pnpm typecheck` runs `tsc --noEmit`.
 - `pnpm check-push origin/main..HEAD` runs the pre-push check on a range by hand.
 
