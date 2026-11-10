@@ -120,7 +120,11 @@ function held(rule: LeafRule, fit: Fit, i: number, rules: readonly LeafRule[], r
   }
 }
 
+const SENDER_TEXT_FREE_KINDS: readonly AbiType['kind'][] = ['uint', 'int', 'bool', 'address'];
+const mayHoldSenderText = (type: AbiType): boolean => !SENDER_TEXT_FREE_KINDS.includes(type.kind);
+
 function label(value: string, type: AbiType, fit: Fit, registry: Registry, anchorToken: Address): string | undefined {
+  if (mayHoldSenderText(type)) return plural((value.length - 2) / 2, 'byte');
   if (type.kind !== 'address') return undefined;
   if (value === fit.safe) return 'the Safe';
   const named = registry.byAddress.get(value as Address)?.name;
@@ -129,8 +133,6 @@ function label(value: string, type: AbiType, fit: Fit, registry: Registry, ancho
   if (value === ZERO) return 'the zero address';
   return 'another address';
 }
-
-const short = (value: string): string => (value.length > 24 ? `${value.slice(0, 18)}…(${(value.length - 2) / 2} bytes)` : value);
 
 function distribution(run: PastTxs, fits: readonly Fit[], i: number, registry: Registry): string {
   const type = fits[0]?.types[i] as AbiType;
@@ -143,9 +145,10 @@ function distribution(run: PastTxs, fits: readonly Fit[], i: number, registry: R
     counts.set(name, (counts.get(name) ?? 0) + 1);
   }
   if (type.kind !== 'address' && counts.size > 3) return `${raw.size} distinct values`;
-  const parts = [...counts].sort((a, b) => b[1] - a[1]).map(([name, n]) => `${short(name)} in ${n}`);
+  const parts = [...counts].sort((a, b) => b[1] - a[1]).map(([name, n]) => `${name} in ${n}`);
   const others = type.kind === 'address' ? [...raw].filter((v) => label(v, type, fits.find((f) => f.values[i] === v) as Fit, registry, run.query.anchor.token) === 'another address').length : 0;
-  return `${parts.join(', ')}${others > 1 ? ` (${others} distinct other addresses)` : ''}`;
+  const distinct = others > 1 ? ` (${others} distinct other addresses)` : mayHoldSenderText(type) ? ` (${raw.size} distinct)` : '';
+  return `${parts.join(', ')}${distinct}`;
 }
 
 const safesOf = (studies: readonly { safe: Address }[]): number => new Set(studies.map((s) => s.safe)).size;

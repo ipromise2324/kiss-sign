@@ -113,3 +113,16 @@ test('an anchor with a sender asks both sources only for transfers out of it, an
   assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 2 from 2 Safes$/m);
   await assert.rejects(pastTxs({ template: loadTemplate(ROOT, query.template, registry), anchor: unfiltered }, deps), /request not recorded/);
 });
+
+test('the report prints numbers and addresses only: bytes, strings and free arrays print as their length', async () => {
+  const claims: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'merkl-claim.json'), 'utf8'));
+  const { query } = claims;
+  const anchor = { token: query.token as Address, kind: query.anchor as AnchorKind, fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock), from: query.from as Address };
+  const deps = { ask: replayAsk(claims.sources), reader: replayReader(claims.exchanges), registry, exclude: undefined, maxTxs: 200 };
+  const texts = [renderPastTxs(await pastTxs({ template: loadTemplate(ROOT, query.template, registry), anchor }, deps), registry), await report()];
+  assert.match(texts[0] as string, /call\.claim\.proofs\[0\] {2}\[free\]\n {4}values: \d+ bytes in 1 \(1 distinct\)$/m);
+  assert.match(texts[1] as string, /callbackHash {2}\[const 0x0{64}\]\n {4}equalled .*; values: 32 bytes in 2 \(1 distinct\)$/m);
+  for (const values of texts.join('\n').split('\n').flatMap((l) => l.split('values: ').slice(1))) {
+    for (const hex of values.match(/0x[0-9a-fA-F]*/g) ?? []) assert.equal(hex.length, 42, `only addresses print as hex: ${values}`);
+  }
+});
