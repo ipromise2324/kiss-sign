@@ -4,33 +4,51 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { replayReader } from '../src/chain/recording.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
-import { loadRegistry } from '../src/registry.ts';
+import { REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
 import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
 import { chainAt } from '../src/research/erc7730.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { ReportError, GENERATED_FILE, entriesOf, erc7730Text, loadSubject, parseDocs, renderReport, replayTemplateReport, reportRecordingPath } from '../src/research/report.ts';
-import type { ReportInputs, ReportRecording } from '../src/research/report.ts';
+import {
+  GENERATED_FILE,
+  GENERATED_SUFFIX,
+  ReportError,
+  VAULT_REPORTS_DIR,
+  compareReports,
+  entriesOf,
+  erc7730Text,
+  loadSubject,
+  parseDocs,
+  renderReport,
+  replayReport,
+  reportRecordingPath,
+} from '../src/research/report.ts';
+import type { ReportInputs, ReportRecording, Subject } from '../src/research/report.ts';
 import type { Page } from '../src/research/source-page.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
 import type { Hex } from '../src/safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate } from '../src/template/template.ts';
+import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
 const suffixes = loadPublicSuffixList();
 const ID = 'morpho/vault-deposit';
-const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath(ID)), 'utf8')) as ReportRecording;
+const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath({ template: ID })), 'utf8')) as ReportRecording;
 
 /** The report with no ABI proofs, vault evidence or past transactions, which the replay test covers. */
-function quick(pages: Readonly<Record<string, Page>> = recording.pages, abi: ReportInputs['abi'] = new Map()): string {
+function quick(
+  pages: Readonly<Record<string, Page>> = recording.pages,
+  abi: ReportInputs['abi'] = new Map(),
+  subject: Subject = loadSubject(ROOT, registry, { template: ID }),
+  vaults: ReportInputs['vaults'] = new Map(),
+): string {
   const inputs: ReportInputs = {
-    subject: loadSubject(ROOT, registry, { template: ID }),
+    subject,
     registry,
     listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes },
     pages: sourcePagesOf({ pages, commits: recording.commits }),
     fetched: recording.fetched,
     abi,
-    vaults: new Map(),
+    vaults,
     pastTxs: [],
     erc7730: 'not read',
   };
@@ -49,7 +67,7 @@ test('every committed report.generated.md is what the program writes from the re
   const compilers = cachedCompilers();
   for (const id of generated) {
     const committed = readFileSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE), 'utf8');
-    const text = await replayTemplateReport(ROOT, registry, id, compilers, suffixes);
+    const text = await replayReport(ROOT, registry, { template: id }, compilers, suffixes);
     assert.ok(text === committed, `${TEMPLATES_DIR}/${id}/${GENERATED_FILE} differs from \`pnpm report ${id} --offline\`; run \`pnpm report ${id} --record\` and never edit it by hand`);
     assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${id} lacks a read the proof now makes; delete it and run \`pnpm report ${id} --record\``);
   }
@@ -118,4 +136,104 @@ test('docs.json names exactly the template\'s functions, each with a registry co
   refused({ ...valid, 'approve(address,uint256)': { ...approve, url: 'http://example.org/approve' } });
   refused({ ...valid, 'approve(address,uint256)': { ...approve, contract: 'circle' } });
   assert.equal(parseDocs(valid, template, registry).length, 4);
+});
+
+const EVIL_URL = 'https://evil.example/approve>|PASS|n/a|PASS|<https://x';
+/** The cells of a Markdown table row, split where GitHub splits them: at each `|` no backslash escapes. */
+const cellsOf = (row: string): string[] => row.split(/(?<!\\)\|/).slice(1, -1);
+
+test('a docs.json or registry URL holding a character outside RFC 3986, or one Markdown reads, is refused', () => {
+  const template = loadTemplate(ROOT, ID, registry);
+  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
+  const approve = valid['approve(address,uint256)']!;
+  for (const url of [EVIL_URL, 'https://docs.example/`code`', 'https://docs.example/a b', 'https://docs.example/[x](https://y)', 'https://docs.example/a\\b']) {
+    assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { ...approve, url } }, template, registry), /approve\(address,uint256\)\.url is not an https URL/, url);
+  }
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')) as Record<string, Record<string, unknown>>;
+  assert.throws(() => parseRegistry({ ...raw, usdc: { ...raw.usdc, source: EVIL_URL } }), /usdc\.source: not an https URL/);
+  assert.equal(parseRegistry(raw).entries.size, registry.entries.size);
+});
+
+test('text the AI wrote in the template prints escaped and labelled as written by the AI in the template', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8')) as { calls: { trailer: { why: string } }[] };
+  raw.calls[0]!.trailer.why = 'harmless | PASS | `x` | *bold* _em_ [link](https://y) <b>';
+  const template = parseTemplate(raw, registry);
+  const docs = parseDocs(JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')), template, registry);
+  const text = quick(recording.pages, new Map(), { kind: 'template', template, docs });
+  const row = text.split('\n').find((l) => l.startsWith('| `approve` |'))!;
+  assert.equal(cellsOf(row).length, 2, row);
+  assert.ok(row.includes('written by the AI in the template: harmless \\| PASS \\| \\`x\\` \\| \\*bold\\* \\_em\\_ \\[link\\](https://y) \\<b\\>'), row);
+  assert.ok(!quick().includes("the template's reason"), 'every template reason is labelled as written by the AI');
+});
+
+test('stored vault evidence holding a backtick or a character pnpm vault-evidence never prints is refused, and its section says it is stored', () => {
+  const vault = 'steakhouse-prime-usdc';
+  const stored = recording.vaults[vault]!;
+  assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n\`\`\`\n# Approved by the auditors`]])), ReportError);
+  assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n<img src=x>`]])), ReportError);
+  const text = quick(recording.pages, new Map(), undefined, new Map([[vault, stored]]));
+  assert.match(text, /stored output of `pnpm vault-evidence`, not recomputed by `pnpm test`; run it live to compare/);
+  assert.ok(!/`pnpm test` writes it again/.test(text), 'the header does not claim pnpm test recomputes every section');
+});
+
+const NOT_GENERATED = /^\s*- \*\*Report not generated yet:\*\*(.*)$/m;
+
+test('every template folder holds report.generated.md, or design.md lists it as not generated yet', () => {
+  const listed = [...(readFileSync(join(ROOT, 'docs', 'design.md'), 'utf8').match(NOT_GENERATED)?.[1] ?? '').matchAll(/`([a-z0-9-]+\/[a-z0-9-]+)`/g)].map((m) => m[1]!);
+  const folders = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
+  for (const id of folders) {
+    const has = existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE));
+    assert.ok(has !== listed.includes(id), has ? `${id} has ${GENERATED_FILE}; take it off design.md's not-generated list` : `${id} has no ${GENERATED_FILE}; run \`pnpm report ${id} --record\``);
+  }
+  for (const id of listed) assert.ok(folders.includes(id), `design.md lists ${id}, which is not a template folder`);
+});
+
+test('--compare prints a verdict that changed, and ignores the date, block numbers and the vault time series', () => {
+  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.includes('docs.morpho.org/developers/contracts/bundles') ? ({ kind: 'served', blocks: [] } as Page) : page]));
+  const differences = compareReports(quick(), quick(pages));
+  assert.deepEqual(differences, ['Official documentation › `multicall((address,bytes,uint256,bool,bytes32)[])` › Function name appears on page: committed PASS, live FINDING']);
+
+  const committed = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_FILE), 'utf8');
+  const drifted = committed
+    .replace(/were read on \d{4}-\d{2}-\d{2}/, 'were read on 2027-01-01')
+    .replace(/\| 2638\d{4} \|$/gm, '| 27000000 |')
+    .replace(/  2026-11-10  block 26386392  130,697,719\.723756 usdc/, '  2026-12-10  block 26600000  140,000,000.000000 usdc')
+    .replace(/^latest block 26386392 0x[0-9a-f]{64}$/m, `latest block 26600000 0x${'ab'.repeat(32)}`)
+    .replace(/^(admitted .*) at block 26386392$/m, '$1 at block 26600000');
+  assert.notEqual(drifted, committed);
+  assert.deepEqual(compareReports(committed, drifted), []);
+
+  const revoked = committed.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
+  assert.equal(compareReports(committed, revoked).length, 2);
+  assert.match(compareReports(committed, revoked).join('\n'), /^ERC-7730 › [a-z0-9.-]+ 0x[0-9a-fA-F]{40} \(\w+\) › only live: .*REVOKED: ERC-8176/m);
+  const moved = committed.replace('| `bundler3` | `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | router |', '| `bundler3` | `0x0000000000000000000000000000000000000001` | router |');
+  assert.deepEqual(compareReports(committed, moved), ['Registry entries › `bundler3` › Address: committed `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245`, live `0x0000000000000000000000000000000000000001`']);
+});
+
+test("docs.json's contract must be the call's target when the template binds the target", () => {
+  const template = loadTemplate(ROOT, ID, registry);
+  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
+  const swap = (sig: string, contract: string) => ({ ...valid, [sig]: { ...valid[sig]!, contract } });
+  assert.throws(() => parseDocs(swap('erc4626Deposit(address,uint256,uint256,address)', 'bundler3'), template, registry), /erc4626Deposit\(address,uint256,uint256,address\)\.contract is bundler3, but the template calls it on general-adapter1/);
+  assert.throws(() => parseDocs(swap('multicall((address,bytes,uint256,bool,bytes32)[])', 'general-adapter1'), template, registry), /calls it on bundler3/);
+  assert.throws(() => parseDocs(swap('approve(address,uint256)', 'bundler3'), template, registry), /calls it on one of usdc, usdt/);
+  assert.equal(parseDocs(swap('approve(address,uint256)', 'usdt'), template, registry).length, 4);
+  assert.match(quick(), /\| Function \| Contract \| Page \| Site \| GitHub commit \| Function name appears on page \|/);
+});
+
+const vaultReports = existsSync(join(ROOT, VAULT_REPORTS_DIR)) ? readdirSync(join(ROOT, VAULT_REPORTS_DIR)).filter((f) => f.endsWith(GENERATED_SUFFIX)) : [];
+
+test('every committed registry/reports/<vault>.generated.md is what pnpm report --vault writes from its recordings', { timeout: 600_000 }, async () => {
+  assert.ok(vaultReports.length > 0, `${VAULT_REPORTS_DIR} holds a vault report`);
+  const compilers = cachedCompilers();
+  for (const file of vaultReports) {
+    const vault = file.slice(0, -GENERATED_SUFFIX.length);
+    const committed = readFileSync(join(ROOT, VAULT_REPORTS_DIR, file), 'utf8');
+    const text = await replayReport(ROOT, registry, { vault }, compilers, suffixes);
+    assert.ok(text === committed, `${VAULT_REPORTS_DIR}/${file} differs from \`pnpm report --vault ${vault} --offline\`; run \`pnpm report --vault ${vault} --record\``);
+    assert.ok(!text.includes('## Card'), 'a vault report has no template sections');
+    const entry = registry.entries.get(vault)!;
+    for (const name of [vault, ...Object.values(entry.attributes)]) assert.match(text, new RegExp(`^\\| \`${name.replace(/\./g, '\\.')}\` \\| \`0x[0-9a-fA-F]{40}\` \\|`, 'm'));
+    assert.match(text, /stored output of `pnpm vault-evidence`/);
+  }
 });

@@ -8,8 +8,8 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { REGISTRY_PATH } from '../registry.ts';
-import type { Registry, RegistryEntry } from '../registry.ts';
+import { REGISTRY_PATH, parseHttpsUrl } from '../registry.ts';
+import type { HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
@@ -23,13 +23,16 @@ import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
 import type { ChainAccess, EntryReport, Snapshot } from './erc7730.ts';
 import { constText } from './study.ts';
-import { replayAsk } from './sources.ts';
+import { ANCHOR_KINDS, replayAsk } from './sources.ts';
 import type { AnchorKind } from './sources.ts';
 
 export type Subject = { readonly kind: 'template'; readonly template: Template; readonly docs: readonly DocLink[] } | { readonly kind: 'vault'; readonly vault: RegistryEntry };
 
 /** The official page the AI names for one function. The program checks the page; the AI writes no text about it. */
-export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: string };
+export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: HttpsUrl };
+
+/** What a report is of: a template by id, or one registry vault by name. */
+export type Target = { readonly template: string } | { readonly vault: string };
 
 /** The ERC-7730 files the section read, cut as `pnpm erc7730 --record` cuts them, and the attestation reads. */
 export type Erc7730Section = { readonly commit: string; readonly files: Readonly<Record<string, string>>; readonly chain: readonly Exchange[] };
@@ -59,11 +62,17 @@ export class ReportError extends Error {
 }
 
 export const DOCS_FILE = 'docs.json';
-export const GENERATED_FILE = 'report.generated.md';
+export const GENERATED_SUFFIX = '.generated.md';
+export const GENERATED_FILE = `report${GENERATED_SUFFIX}`;
+export const VAULT_REPORTS_DIR = join('registry', 'reports');
 export const REPORT_RECORDINGS_DIR = join('testdata', 'report');
 const RESEARCH_DIR = join('testdata', 'research');
 
-export const recordingName = (id: string): string => id.replace('/', '-');
+export const generatedPath = (target: Target): string =>
+  'vault' in target ? join(VAULT_REPORTS_DIR, `${target.vault}${GENERATED_SUFFIX}`) : join(TEMPLATES_DIR, target.template, GENERATED_FILE);
+
+export const reportRecordingPath = (target: Target): string =>
+  'vault' in target ? join(REPORT_RECORDINGS_DIR, 'vaults', `${target.vault}.json`) : join(REPORT_RECORDINGS_DIR, `${target.template.replace('/', '-')}.json`);
 
 /** Every function the template calls, nested calls included, once each, in the order the template names them. */
 export function templateFunctions(template: Template): AbiFunction[] {
@@ -83,10 +92,57 @@ export function templateFunctions(template: Template): AbiFunction[] {
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-/** `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`. Nothing else. */
+/** The registry names a card reference can resolve to, in registry order. */
+function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
+  const field = template.card.get(ref.field);
+  if (field?.kind !== 'contract') return [];
+  const { attribute } = ref;
+  const candidates = [...registry.entries.values()].filter((e) => e.kind === field.registryKind);
+  return [...new Set(attribute === undefined ? candidates.map((e) => e.name) : candidates.flatMap((e) => e.attributes[attribute] ?? []))];
+}
+
+function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
+  if (rule.kind === 'contract') return [rule.name];
+  const names = rule.kind === 'card' ? refNames(rule.ref, template, registry) : [];
+  return names.length > 0 ? names : undefined;
+}
+
+/**
+ * For each function, by signature, the registry names the template calls it on: a call's `to`, or for a call nested in
+ * a tuple, such as a Bundler3 bundle item, the tuple's one address field. Absent when no call site binds its target.
+ */
+function callTargets(template: Template, registry: Registry): Map<string, string[]> {
+  const targets = new Map<string, string[]>();
+  const visitCall = (node: CallNode, target: Rule | undefined): void => {
+    const names = target === undefined ? undefined : targetNames(target, template, registry);
+    if (names !== undefined) targets.set(node.fn.signature, [...new Set([...(targets.get(node.fn.signature) ?? []), ...names])]);
+    node.fn.params.forEach((param, i) => visitArg(node.args[i] as Rule, param));
+  };
+  const visitArg = (rule: Rule, param: AbiParam | undefined): void => {
+    if (rule.kind === 'call') visitCall(rule.call, undefined);
+    if (rule.kind === 'items') {
+      const item = param?.type.kind === 'array' || param?.type.kind === 'fixed-array' ? { name: undefined, type: param.type.item } : undefined;
+      rule.items.forEach((r) => visitArg(r, item));
+    }
+    if (rule.kind === 'fields') {
+      const components = param?.type.kind === 'tuple' ? param.type.components : [];
+      const addresses = components.flatMap((c, i) => (c.type.kind === 'address' ? [rule.fields[i] as Rule] : []));
+      const target = addresses.length === 1 ? addresses[0] : undefined;
+      rule.fields.forEach((r, i) => (r.kind === 'call' ? visitCall(r.call, target) : visitArg(r, components[i])));
+    }
+  };
+  for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data, call.to);
+  return targets;
+}
+
+/**
+ * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`. Nothing else. The
+ * contract must be one the template calls the function on, when the template binds that target.
+ */
 export function parseDocs(raw: unknown, template: Template, registry: Registry): DocLink[] {
   if (!isRecord(raw)) throw new ReportError(`${DOCS_FILE}: not a JSON object`);
   const fns = templateFunctions(template);
+  const targets = callTargets(template, registry);
   const extra = Object.keys(raw).find((key) => !fns.some((fn) => fn.signature === key));
   if (extra !== undefined) throw new ReportError(`${DOCS_FILE}: ${JSON.stringify(extra.slice(0, 80))} is not a function the template calls`);
   return fns.map((fn) => {
@@ -95,12 +151,17 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
     if (!isRecord(value) || Object.keys(value).sort().join() !== 'contract,url') throw new ReportError(`${DOCS_FILE}: ${fn.signature} must hold exactly contract and url`);
     const contract = typeof value.contract === 'string' ? registry.entries.get(value.contract) : undefined;
     if (contract === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is not a registry name`);
-    if (typeof value.url !== 'string' || !/^https:\/\/\S+$/.test(value.url) || !URL.canParse(value.url)) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.url is not an https URL`);
-    return { fn, contract, url: value.url };
+    const names = targets.get(fn.signature);
+    if (names !== undefined && !names.includes(contract.name)) {
+      throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is ${contract.name}, but the template calls it on ${names.length === 1 ? names[0] : `one of ${names.join(', ')}`}`);
+    }
+    const url = parseHttpsUrl(value.url);
+    if (url === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.url is not an https URL`);
+    return { fn, contract, url };
   });
 }
 
-export function loadSubject(repoRoot: string, registry: Registry, target: { readonly template: string } | { readonly vault: string }): Subject {
+export function loadSubject(repoRoot: string, registry: Registry, target: Target): Subject {
   if ('vault' in target) {
     const vault = registry.entries.get(target.vault);
     if (vault?.kind !== 'vault') throw new ReportError(`${target.vault} is not a vault in the registry`);
@@ -190,7 +251,26 @@ export function pastTxsRecordings(repoRoot: string, subject: Subject): { readonl
     .filter((f) => f.endsWith('.json'))
     .sort()
     .map((f) => ({ file: join(RESEARCH_DIR, f), recording: JSON.parse(readFileSync(join(dir, f), 'utf8')) as PastTxsRecording }))
-    .filter(({ recording: { query } }) => (subject.kind === 'template' ? query.template === subject.template.id : query.token.toLowerCase() === subject.vault.address));
+    .filter(({ file, recording: { query } }) => {
+      if (!printableQuery(file, query)) throw new ReportError(`${file}: its name or query holds a value \`pnpm past-txs --record\` never writes`);
+      return subject.kind === 'template' ? query.template === subject.template.id : query.token.toLowerCase() === subject.vault.address;
+    });
+}
+
+/** The report prints a recording's file name and query as a command, so each must be what `pnpm past-txs` writes. */
+function printableQuery(file: string, query: PastTxsRecording['query']): boolean {
+  const address = (v: unknown) => typeof v === 'string' && /^0x[0-9a-fA-F]{40}$/.test(v);
+  const block = (v: unknown) => v === undefined || (typeof v === 'string' && /^\d+$/.test(v));
+  return (
+    /^[a-z0-9-]+\.json$/.test(file.replace(/^.*\//, '')) &&
+    /^[a-z0-9-]+\/[a-z0-9-]+$/.test(query.template) &&
+    address(query.token) &&
+    (query.from === undefined || address(query.from)) &&
+    (ANCHOR_KINDS as readonly string[]).includes(query.anchor) &&
+    block(query.fromBlock) &&
+    block(query.toBlock) &&
+    Number.isSafeInteger(query.maxTxs)
+  );
 }
 
 /** Runs the study again on a recording, with the template as it is now. */
@@ -208,7 +288,10 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
   return { file, query, text: renderPastTxs(run, registry) };
 }
 
-const cell = (text: string): string => text.replace(/\|/g, '\\|').replace(/\s*\n\s*/g, ' ');
+/** Text the AI wrote, as literal Markdown on one line: every character Markdown or a table cell reads is escaped. */
+const inline = (text: string): string => text.replace(/\s+/g, ' ').replace(/[\\`*_[\]<>|~#!&]/g, (c) => `\\${c}`);
+const byAi = (text: string): string => `written by the AI in the template: ${inline(text)}`;
+/** Names, addresses, hashes, selectors and file paths, each parsed into a charset that holds no backtick or `|`. */
 const code = (text: string): string => `\`${text}\``;
 const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(checksumAddress(entry.address))}`;
 const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : line.kind === 'agrees' ? 'PASS' : 'FINDING');
@@ -218,12 +301,8 @@ function refText(ref: CardRef): string {
 }
 
 function refAddresses(ref: CardRef, template: Template, registry: Registry): string {
-  const field = template.card.get(ref.field);
-  if (field?.kind !== 'contract') return '';
-  const { attribute } = ref;
-  const candidates = [...registry.entries.values()].filter((e) => e.kind === field.registryKind);
-  const names = attribute === undefined ? candidates.map((e) => e.name) : candidates.flatMap((e) => e.attributes[attribute] ?? []);
-  return `: one of ${[...new Set(names)].map((n) => full(registry.entries.get(n) as RegistryEntry)).join(', ')}`;
+  if (template.card.get(ref.field)?.kind !== 'contract') return '';
+  return `: one of ${refNames(ref, template, registry).map((n) => full(registry.entries.get(n) as RegistryEntry)).join(', ')}`;
 }
 
 const FREE_CLAIMS = { scalar: 'free', proof: 'free, claimed `proof`: every changed value must revert or be refused', unread: 'free, claimed `unread`: no changed value may change anything' } as const;
@@ -241,7 +320,7 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'const':
       return `constant ${code(constText(rule.value))}`;
     case 'free':
-      return `${FREE_CLAIMS[rule.claim]}; the template's reason: ${rule.reason}`;
+      return `${FREE_CLAIMS[rule.claim]}; ${byAi(rule.reason)}`;
     case 'equals':
       return `the same number as ${code(rule.path)}, which is ${ruleText(rule.rule, template, registry)}`;
     case 'share-price':
@@ -270,14 +349,14 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
       return argRows(components, rule.fields, `${path}.`, template, registry);
     }
     default:
-      return [`| ${code(path)} | ${cell(ruleText(rule, template, registry))} |`];
+      return [`| ${code(path)} | ${ruleText(rule, template, registry)} |`];
   }
 }
 
 function callRows(node: CallNode, prefix: string, template: Template, registry: Registry): string[] {
-  const trailer = node.trailer === undefined ? 'no bytes after the arguments' : `at most ${node.trailer.maxBytes} bytes after the arguments; the template's reason: ${node.trailer.why}`;
+  const trailer = node.trailer === undefined ? 'no bytes after the arguments' : `at most ${node.trailer.maxBytes} bytes after the arguments; ${byAi(node.trailer.why)}`;
   return [
-    `| ${code(`${prefix}${node.fn.name}`)} | calls ${code(node.fn.signature)}, selector ${code(node.fn.selector)}; ${cell(trailer)} |`,
+    `| ${code(`${prefix}${node.fn.name}`)} | calls ${code(node.fn.signature)}, selector ${code(node.fn.selector)}; ${trailer} |`,
     ...argRows(node.fn.params, node.args, `${prefix}${node.fn.name}.`, template, registry),
   ];
 }
@@ -289,7 +368,7 @@ function tokenText(token: TokenRef, template: Template, registry: Registry): str
 function effectRow(side: string, effect: Effect, template: Template, registry: Registry): string {
   const amount = effect.amount.kind === 'card' ? `the card's ${code(effect.amount.field)}` : effect.amount.kind === 'positive' ? 'more than nothing' : 'its whole balance';
   const to = effect.to === undefined ? '' : `, to ${refText(effect.to)}`;
-  return `| ${side} | ${cell(tokenText(effect.token, template, registry))} | ${amount}${to} |`;
+  return `| ${side} | ${tokenText(effect.token, template, registry)} | ${amount}${to} |`;
 }
 
 function templateSections(template: Template, docs: readonly DocLink[], inputs: ReportInputs): string[] {
@@ -323,10 +402,10 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   out.push('', '## Calls and field rules', '');
   template.calls.forEach((call, i) => {
     out.push(`### Call ${i + 1} of ${template.calls.length}`, '', '| Field | Rule |', '| --- | --- |');
-    out.push(`| ${code('to')} | ${cell(ruleText(call.to, template, registry))} |`, `| ${code('value')} | ${cell(ruleText(call.value, template, registry))} |`);
+    out.push(`| ${code('to')} | ${ruleText(call.to, template, registry)} |`, `| ${code('value')} | ${ruleText(call.value, template, registry)} |`);
     if (call.data === 'empty') out.push(`| ${code('data')} | empty |`);
     else out.push(...callRows(call.data, '', template, registry));
-    if (call.merge !== undefined) out.push('', `Several operations on one card share this call; the template's reason: ${call.merge}`);
+    if (call.merge !== undefined) out.push('', `Several operations on one card share this call; ${byAi(call.merge)}`);
     out.push('');
   });
 
@@ -338,9 +417,9 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     '',
     '## Official documentation',
     '',
-    `Each page comes from ${code(DOCS_FILE)}. The program compares its registrable domain, or GitHub organization, with the DefiLlama protocol of the contract named, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's name in the page as served, without scripts.`,
+    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.`,
     '',
-    '| Function | Contract | Page | Site | GitHub commit | Name on page |',
+    '| Function | Contract | Page | Site | GitHub commit | Function name appears on page |',
     '| --- | --- | --- | --- | --- | --- |',
   );
   for (const doc of docs) {
@@ -390,6 +469,17 @@ function pastTxsCommand({ query, file }: PastTxsSummary): string {
   return `pnpm past-txs ${query.template} ${args.join(' ')} --record ${file.replace(/^.*\//, '').replace(/\.json$/, '')}`;
 }
 
+/** The characters `pnpm vault-evidence` prints. Its text is stored, not recomputed, so anything else is refused. */
+const VAULT_TEXT = /^[A-Za-z0-9 \n%(),.:;=_/'-]*$/;
+
+/** A ```text block. Program output never holds three backticks, so text that does could close the block and is refused. */
+function fenced(text: string): string[] {
+  if (text.includes('```')) throw new ReportError('a section to print in a text block holds ```');
+  return ['```text', text, '```'];
+}
+
+export const compareCommand = (subject: Subject): string => (subject.kind === 'template' ? `pnpm report ${subject.template.id} --compare` : `pnpm report --vault ${subject.vault.name} --compare`);
+
 export function renderReport(inputs: ReportInputs, title: { readonly command: string; readonly sources: readonly string[] }): string {
   const { subject, registry } = inputs;
   const entries = entriesOf(subject, registry);
@@ -397,7 +487,7 @@ export function renderReport(inputs: ReportInputs, title: { readonly command: st
   const out: string[] = [
     `# Generated evidence: ${name}`,
     '',
-    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. It holds no text from a web page, a token, a contract's source, an ERC-7730 descriptor, or an API answer, and no prose from the AI except the reasons the template states. Do not edit it: ${code('pnpm test')} writes it again from the same files and fails on any difference.`,
+    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads everything live and prints each fact that differs. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
     '',
   ];
   if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));
@@ -433,14 +523,18 @@ export function renderReport(inputs: ReportInputs, title: { readonly command: st
 
   const vaults = vaultsOf(subject, registry);
   if (vaults.length > 0) {
-    out.push('## Vaults', '', `${code('pnpm vault-evidence')} for each vault.`, '');
-    for (const vault of vaults) out.push(`### ${code(vault.name)}`, '', '```text', inputs.vaults.get(vault.name) ?? 'not read', '```', '');
+    out.push('## Vaults', '', `For each vault, the stored output of ${code('pnpm vault-evidence')}, not recomputed by ${code('pnpm test')}; run it live to compare.`, '');
+    for (const vault of vaults) {
+      const text = inputs.vaults.get(vault.name) ?? 'not read';
+      if (!VAULT_TEXT.test(text)) throw new ReportError(`the stored vault evidence of ${vault.name} holds a character ${code('pnpm vault-evidence')} never prints`);
+      out.push(`### ${code(vault.name)}`, '', ...fenced(text), '');
+    }
   }
 
   out.push('## Past transactions', '');
   if (inputs.pastTxs.length === 0) out.push(`No ${code('pnpm past-txs --record')} recording names this ${subject.kind}.`, '');
   for (const summary of inputs.pastTxs) {
-    out.push(`### ${code(summary.file)}`, '', `Recorded with ${code(pastTxsCommand(summary))}, and studied again here with the template as it is now.`, '', '```text', summary.text.trimEnd(), '```', '');
+    out.push(`### ${code(summary.file)}`, '', `Recorded with ${code(pastTxsCommand(summary))}, and studied again here with the template as it is now.`, '', ...fenced(summary.text.trimEnd()), '');
   }
 
   out.push(
@@ -448,15 +542,11 @@ export function renderReport(inputs: ReportInputs, title: { readonly command: st
     '',
     `${code(`pnpm erc7730 ${entries.map((e) => e.name).join(' ')}`)}: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.`,
     '',
-    '```text',
-    inputs.erc7730,
-    '```',
+    ...fenced(inputs.erc7730),
     '',
   );
   return out.join('\n');
 }
-
-export const reportRecordingPath = (id: string): string => join(REPORT_RECORDINGS_DIR, `${recordingName(id)}.json`);
 
 /** ABI proofs from the recorded cases alone, compiled again with the pinned solc. */
 export async function replayAbiProofs(entries: readonly RegistryEntry[], cases: ReadonlyMap<Address, AbiCase>, compilers: Compilers): Promise<Map<Address, AbiProof | AbiRefusal>> {
@@ -468,10 +558,10 @@ export async function replayAbiProofs(entries: readonly RegistryEntry[], cases: 
   return proofs;
 }
 
-/** The report of a template from the repository and its recordings alone, as `report.generated.md` holds it. */
-export async function replayTemplateReport(repoRoot: string, registry: Registry, id: string, compilers: Compilers, suffixes: Listings['suffixes']): Promise<string> {
-  const subject = loadSubject(repoRoot, registry, { template: id });
-  const recordingPath = reportRecordingPath(id);
+/** The report from the repository and its recordings alone, as its committed `.generated.md` holds it. */
+export async function replayReport(repoRoot: string, registry: Registry, target: Target, compilers: Compilers, suffixes: Listings['suffixes']): Promise<string> {
+  const subject = loadSubject(repoRoot, registry, target);
+  const recordingPath = reportRecordingPath(target);
   const recording = JSON.parse(readFileSync(join(repoRoot, recordingPath), 'utf8')) as ReportRecording;
   const entries = entriesOf(subject, registry);
   const pastRecordings = pastTxsRecordings(repoRoot, subject);
@@ -487,6 +577,86 @@ export async function replayTemplateReport(repoRoot: string, registry: Registry,
     pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
     erc7730: (await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)))).text,
   };
-  const sources = [join(TEMPLATES_DIR, id, 'template.json'), join(TEMPLATES_DIR, id, DOCS_FILE), REGISTRY_PATH, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
-  return renderReport(inputs, { command: `pnpm report ${id} --record`, sources });
+  const inputsFiles = 'vault' in target ? [REGISTRY_PATH] : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), REGISTRY_PATH];
+  const sources = [...inputsFiles, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
+  const command = 'vault' in target ? `pnpm report --vault ${target.vault} --record` : `pnpm report ${target.template} --record`;
+  return renderReport(inputs, { command, sources });
+}
+
+/**
+ * Where a fact sits in a report: its heading, then a table row's first cell and the column, or for a text line, the
+ * nearest line above it at the left margin, such as the ERC-7730 entry an attestation belongs to.
+ */
+type Facts = { readonly cells: Map<string, string>; readonly lines: Map<string, string[]> };
+
+/** Columns and text lines that change between two honest reads: the block an answer was read at, and a vault's numbers. */
+const IGNORED_COLUMNS = new Set(['Block']);
+const VAULT_FACT = /^(admitted|vault|asset\(\)|NOTE|REFUSED|UNVERIFIABLE) /;
+const atBlock = (line: string): string => line.replace(/\bblock \d+/g, 'block N');
+
+function factsOf(markdown: string): Facts {
+  const cells = new Map<string, string>();
+  const lines = new Map<string, string[]>();
+  const addLine = (key: string, line: string) => lines.set(key, [...(lines.get(key) ?? []), atBlock(line)]);
+  let section = '';
+  let heading = '';
+  let columns: string[] | undefined;
+  let inFence = false;
+  let margin = '';
+  const rows = markdown.split('\n');
+  for (let i = 0; i < rows.length; i++) {
+    const line = rows[i] as string;
+    if (inFence) {
+      if (line === '```') inFence = false;
+      else if (section !== 'Vaults' || VAULT_FACT.test(line)) {
+        if (!line.startsWith(' ')) margin = line;
+        addLine(line.startsWith(' ') ? `${heading} › ${atBlock(margin)}` : heading, line);
+      }
+      continue;
+    }
+    columns = line.startsWith('|') ? columns : undefined;
+    if (line.startsWith('```')) [inFence, margin] = [true, ''];
+    else if (line.startsWith('#')) {
+      heading = line.replace(/^#+ /, '');
+      if (line.startsWith('## ')) section = heading;
+    } else if (line.startsWith('|') && columns === undefined) {
+      columns = splitRow(line);
+      i++;
+    } else if (line.startsWith('|') && columns !== undefined) {
+      const row = splitRow(line);
+      let key = `${heading} › ${row[0]}`;
+      for (let n = 2; cells.has(`${key} › ${columns[1]}`); n++) key = `${heading} › ${row[0]} (${n})`;
+      row.forEach((value, j) => {
+        const column = columns?.[j] ?? `column ${j + 1}`;
+        if (j > 0 && !IGNORED_COLUMNS.has(column)) cells.set(`${key} › ${column}`, value);
+      });
+    } else if (line !== '' && !line.startsWith('Written by ')) addLine(heading, line);
+  }
+  return { cells, lines };
+}
+
+const splitRow = (row: string): string[] => row.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.trim());
+
+/**
+ * Each fact that differs between the committed report and one read live: every table cell but the block numbers, and
+ * every text line with block numbers set aside, except a vault's time series, holder count and concentration, which
+ * change with every block. Empty when they agree.
+ */
+export function compareReports(committed: string, live: string): string[] {
+  const [was, now] = [factsOf(committed), factsOf(live)];
+  const out: string[] = [];
+  for (const key of new Set([...was.cells.keys(), ...now.cells.keys()])) {
+    const [a, b] = [was.cells.get(key), now.cells.get(key)];
+    if (a !== b) out.push(`${key}: committed ${a ?? 'absent'}, live ${b ?? 'absent'}`);
+  }
+  for (const key of new Set([...was.lines.keys(), ...now.lines.keys()])) {
+    const remaining = [...(now.lines.get(key) ?? [])];
+    for (const line of was.lines.get(key) ?? []) {
+      const at = remaining.indexOf(line);
+      if (at === -1) out.push(`${key} › only committed: ${line}`);
+      else remaining.splice(at, 1);
+    }
+    for (const line of remaining) out.push(`${key} › only live: ${line}`);
+  }
+  return out;
 }
