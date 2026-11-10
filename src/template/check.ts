@@ -109,7 +109,8 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
   context.findings.push({ callPath, arg, bytes, expected: render(expected), actual: render(actual) });
 }
 
-function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: string, arg: string, context: Context): void {
+/** `itemContexts`, for a merged call's items, gives each item the card values of the operation that put it in. */
+function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: string, arg: string, context: Context, itemContexts?: readonly Context[]): void {
   if (rule.kind === 'free') {
     context.leaves.push({ callPath, arg, bytes: actual.span, rule: 'free', type });
     return;
@@ -126,7 +127,7 @@ function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: strin
     }
     rule.items.forEach((item, i) => {
       const value = actual.items[i];
-      if (value !== undefined) checkValue(item, type.item, value, callPath, `${arg}[${i}]`, context);
+      if (value !== undefined) checkValue(item, type.item, value, callPath, `${arg}[${i}]`, itemContexts?.[i] ?? context);
     });
     return;
   }
@@ -142,7 +143,7 @@ function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: strin
   compareLeaf(rule, type, leaf, actual.span, callPath, arg, context);
 }
 
-function checkCall(node: CallNode, region: Region, callPath: string, context: Context): void {
+function checkCall(node: CallNode, region: Region, callPath: string, context: Context, itemContexts?: readonly Context[]): void {
   const decoded = decodeCall(node.fn, region, { trailerMaxBytes: node.trailer?.maxBytes ?? 0 });
   switch (decoded.kind) {
     case 'wrong-selector':
@@ -157,18 +158,18 @@ function checkCall(node: CallNode, region: Region, callPath: string, context: Co
   }
   const path = `${callPath}.${node.fn.name}`;
   node.fn.params.forEach((param, i) => {
-    checkValue(node.args[i] as Rule, param.type, decoded.args[i] as AbiValue, path, paramName(param, i), context);
+    checkValue(node.args[i] as Rule, param.type, decoded.args[i] as AbiValue, path, paramName(param, i), context, i === 0 ? itemContexts : undefined);
   });
 }
 
-function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context): void {
+function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context, itemContexts?: readonly Context[]): void {
   if (inner.operation !== 0) {
     context.findings.push({ callPath: inner.path, arg: 'operation', bytes: inner.fields?.operation, expected: '0 (call)', actual: '1 (delegatecall)' });
   }
   compareLeaf(call.to, { kind: 'address' }, { kind: 'address', value: inner.to }, inner.fields?.to, inner.path, 'to', context);
   compareLeaf(call.value, { kind: 'uint', bits: 256 }, { kind: 'uint', value: inner.value }, inner.fields?.value, inner.path, 'value', context);
   if (call.data !== 'empty') {
-    checkCall(call.data, inner.data, inner.path, context);
+    checkCall(call.data, inner.data, inner.path, context, itemContexts);
     return;
   }
   const length = inner.data.end - inner.data.start;
@@ -179,9 +180,52 @@ function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context): v
 
 export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[] };
 
+type Values = ReadonlyMap<string, ResolvedValue>;
+
+/** One operation's items in a merged call, checked with that operation's card values. */
+type Part = { readonly items: readonly Rule[]; readonly values: Values };
+
+/** A call the transaction must make. A merged call holds every part, in card order, as its one array argument. */
+type ExpectedCall = { readonly call: TemplateCall; readonly values: Values; readonly parts: readonly Part[] | undefined };
+
+function mergeKey(call: TemplateCall): string {
+  const data = call.data === 'empty' ? undefined : call.data;
+  const target = call.to.kind === 'contract' ? call.to.name : '';
+  return JSON.stringify([target, data?.fn.signature, call.value.kind === 'const' ? String(call.value.value.value) : '', data?.trailer?.maxBytes]);
+}
+
+/**
+ * The calls the card's operations make, in card order. Calls a template marks `merge` are made once per target and
+ * function, after every other call, with each operation's items in card order.
+ */
+function expectedCalls(operations: readonly { readonly template: Template; readonly values: Values }[]): ExpectedCall[] {
+  const plain: ExpectedCall[] = [];
+  const merged = new Map<string, { call: TemplateCall; values: Values; parts: Part[] }>();
+  for (const { template, values } of operations) {
+    for (const call of template.calls) {
+      if (call.merge === undefined || call.data === 'empty') {
+        plain.push({ call, values, parts: undefined });
+        continue;
+      }
+      const items = call.data.args[0];
+      if (items?.kind !== 'items') throw new Error('a merged call without an items argument');
+      const key = mergeKey(call);
+      const group = merged.get(key) ?? { call, values, parts: [] };
+      group.parts.push({ items: items.items, values });
+      merged.set(key, group);
+    }
+  }
+  const joined = [...merged.values()].map(({ call, values, parts }): ExpectedCall => {
+    const data = call.data as CallNode;
+    const items: Rule = { kind: 'items', items: parts.flatMap((part) => part.items) };
+    return { call: { ...call, data: { ...data, args: [items] } }, values, parts };
+  });
+  return [...plain, ...joined];
+}
+
 /**
  * Checks every field of `tx` against the card's templates. The calls the Safe makes, after unwrapping an official
- * MultiSend, must be exactly the card's operations' calls in card order.
+ * MultiSend, must be exactly the card's operations' calls in card order, with merged calls last (`expectedCalls`).
  */
 export function checkTemplateFields(
   tx: SafeTx,
@@ -199,19 +243,20 @@ export function inspectTemplateFields(
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
 ): Inspection {
-  const expected: { call: TemplateCall; values: ReadonlyMap<string, ResolvedValue> }[] = [];
-  const nonces: { rule: Rule; values: ReadonlyMap<string, ResolvedValue> }[] = [];
+  const operations: { template: Template; values: Values }[] = [];
+  const nonces: { rule: Rule; values: Values }[] = [];
   for (const op of card.operations) {
     const template = templates.get(op.template);
     if (template === undefined) return { check: { kind: 'unverifiable', reasons: [`no template ${op.template}`] }, leaves: [] };
-    expected.push(...template.calls.map((call) => ({ call, values: op.values })));
+    operations.push({ template, values: op.values });
     if (template.nonce !== undefined) nonces.push({ rule: template.nonce, values: op.values });
   }
+  const expected = expectedCalls(operations);
   const findings: Finding[] = [];
   const unverifiable: string[] = [];
   const leaves: Leaf[] = [];
   const done = (check: FieldCheck): Inspection => ({ check, leaves });
-  const contextFor = (values: ReadonlyMap<string, ResolvedValue>, root: Uint8Array): Context => ({
+  const contextFor = (values: Values, root: Uint8Array): Context => ({
     safe: card.safe,
     registry,
     values,
@@ -249,7 +294,8 @@ export function inspectTemplateFields(
       findings.push({ callPath: inner.path, arg: 'call', bytes: inner.span, expected: 'no call', actual: `a call to ${inner.to}` });
       continue;
     }
-    checkTopCall(wanted.call, inner, contextFor(wanted.values, root));
+    const itemContexts = wanted.parts?.flatMap((part) => part.items.map(() => contextFor(part.values, root)));
+    checkTopCall(wanted.call, inner, contextFor(wanted.values, root), itemContexts);
   }
   for (const [i, wanted] of expected.entries()) {
     if (i < calls.length) continue;

@@ -154,6 +154,9 @@ test('a template rule that cannot bind its argument fails to load, naming the pa
     [(t) => (t.calls[1].args.bundle.items[0].fields.skipRevert = { const: 'no' }), 'calls[1].args.bundle.items[0].fields.skipRevert.const'],
     [(t) => (t.calls[0].to = { card: 'amount.asset' }), 'calls[0].to.card'],
     [(t) => (t.calls[0].function = 'approve(address spender, uint7 value)'), 'calls[0].function'],
+    [(t) => (t.calls[0].merge = 'x'), 'calls[0].merge'],
+    [(t) => ((t.calls[1].merge = 'x'), (t.calls[1].to = { card: 'vault' })), 'calls[1].merge'],
+    [(t) => (t.effects.gets[0].amount = 'all'), 'effects.gets[0].amount'],
   ];
   for (const [edit, path] of cases) {
     const broken = structuredClone(rawTemplate);

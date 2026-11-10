@@ -44,7 +44,7 @@ export function loosen(template: Template): Loosened {
   const looseTop = (call: TemplateCall, wideTrailer: boolean, record: boolean): TemplateCall => {
     const to = looseRule(call.to, wideTrailer, record);
     const value = looseRule(call.value, wideTrailer, record);
-    return { to, value, data: call.data === 'empty' ? 'empty' : looseCall(call.data, wideTrailer, record) };
+    return { to, value, data: call.data === 'empty' ? 'empty' : looseCall(call.data, wideTrailer, record), merge: call.merge };
   };
   // An execTransaction call does not carry the Safe's nonce, so a study never checks it.
   const shape = { ...template, nonce: undefined, calls: template.calls.map((call) => looseTop(call, false, true)) };

@@ -171,8 +171,8 @@ async function ethObservations(): Promise<{ simulated: Observed; receipt: Observ
     return (o as Extract<Observation, { kind: 'observed' }>).observed;
   };
   return {
-    simulated: observedOf(await simulateSafeTx(reader, { tx: c.tx, parent, time: executed.time, watch: [] })),
-    receipt: observedOf(await observeExecuted(reader, ethSim.transactionHash, c.tx)),
+    simulated: observedOf(await simulateSafeTx(reader, { tx: c.tx, parent, time: executed.time, watch: [], ends: [] })),
+    receipt: observedOf(await observeExecuted(reader, ethSim.transactionHash, c.tx, [])),
   };
 }
 
@@ -205,6 +205,7 @@ test('a transfer to the Safe itself expects no net change, and any change is a m
     eth,
     tokens: new Map(tokens),
     allowances: [],
+    ends: new Map(),
     safeState: { kind: 'receipt', logs: [] },
   });
   const usdc = registry.entries.get('usdc')!.address;
