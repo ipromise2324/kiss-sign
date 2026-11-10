@@ -9,7 +9,7 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 | Actor | Does | Never does |
 |---|---|---|
 | Signer | States intents, reads reports, confirms templates, confirms intent cards and address-book entries, proposes on Safe, compares hashes on the hardware wallet | Pastes keys into the chat |
-| AI (any coding agent) | Researches addresses, ABIs and past transactions; writes the report; writes the template; drafts the intent card | Decides a verdict, edits kiss-sign during signing, handles API keys |
+| AI (any coding agent) | Researches addresses, ABIs and past transactions, reading web pages only through the `researcher` subagent's typed answer; writes the report; writes the template; drafts the intent card | Decides a verdict, edits kiss-sign during signing, handles API keys |
 | Program (the engine) | Fetches and hashes the Safe transaction, decodes it, runs the template's checks, simulates, compares effects with the card | Reads web pages, follows instructions found in data |
 
 ## The flow
@@ -22,22 +22,23 @@ Every service or step drawn in `docs/architecture.png` and `docs/architecture-de
 
 1. **State the intent.** For example, "deposit USDC into the Morpho Apex vault." The AI turns it into a concrete operation.
 2. **Research addresses.**
-   - **Find:** the AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources.
-   - **Protocol API:** when the protocol runs its own public API, such as Morpho's GraphQL API at `api.morpho.org`, the AI queries it as one more source: the contract's address and what the protocol says about it, such as a vault's curator and asset. The AI does this, not the program, because every protocol's API has its own shape; the report quotes the query and the answer. A protocol without an API has no entry here.
+   - **The researcher:** web pages, Sourcify source and a protocol's API hold text that anyone, an attacker included, may have written. The main AI does not read them. A `researcher` subagent (`.claude/agents/researcher.md`) does, with only web search and web fetch: it cannot read files, so it cannot open `$KISS_SIGN_HOME/.env`, and it cannot run or write anything. Its prompt holds the protocol, the operation and the vault or token names, never the Safe or an amount, so a hijacked researcher has nothing private to leak through a URL or a search. It answers with JSON in a fixed schema (`src/research/answer.schema.json`) that has no free-text field: addresses are `0x` and 40 hex characters, URLs are https with no query or fragment, slugs and selectors match fixed patterns, and every choice comes from a fixed list. The program (`pnpm research-parse`) parses the answer once; an unknown key, a value no rule admits, or text that is not JSON stops the research, and the refusal names only where the answer broke the schema, never what it said.
+   - **Find:** the researcher finds the protocol's contracts on its official site and GitHub and gives one to five official pages per address.
+   - **Protocol API:** when the protocol runs its own public API, such as Morpho's GraphQL API at `api.morpho.org`, the researcher queries it as one more source and gives the endpoint, whether the API lists the contract, and the asset and curator addresses it gives. Every protocol's API has its own shape, so the researcher reads it, not the program. A protocol without an API has no entry here.
    - **Check the sources against public listings:** the program (`pnpm check-sources`) compares each registry entry with two listings. Each entry names its DefiLlama protocol by slug (`defillama`, such as `morpho-blue`). The registrable domain of the entry's `source`, found with a pinned copy of the Public Suffix List including its private section, must equal that of the website DefiLlama lists for the protocol, or, for a github.com source, its organization must be one DefiLlama lists. Each token and vault share names its CoinGecko coin id (`coingecko`, such as `usd-coin`), and CoinGecko must list exactly that coin at the entry's address. A disagreement, a missing listing, a slug DefiLlama lists twice, a protocol with no GitHub organization to compare, or a missing Public Suffix List prints as a finding. The program decides nothing: the AI pastes the output into the report, and the signer judges each finding.
    - **Prove on chain:** the program confirms that each address has code, which implementation a proxy points to, and which factory created an instance.
-   - **Contract name and creator:** the AI reads each address's Etherscan page: the verified contract name, the creator, and the creation transaction. The creator must be the deployer or factory the official source names.
+   - **Contract name and creator:** the program (`pnpm contract-origin`) reads each address's verified contract name, creator, factory and creation transaction from the Etherscan API. A name that is not an identifier of at most 64 characters is refused and not printed; source code and comments are never read. The AI checks that the factory, or the creator when there is none, is a deployer the researcher's official pages name or a registry factory.
    - **Register:** each verified contract goes into the contract registry under a name.
    - **ERC-7730:** the AI looks up each contract in the ERC-7730 clear-signing registry. Where a descriptor exists, the program checks who reviewed it: each auditor signs an ERC-8176 attestation for that exact descriptor, and the program verifies the signature offline and reads on chain whether it was revoked (for example with Sourcify's `@ethereum-sourcify/clear-signing` library). The AI renders the studied past transactions with the descriptor and compares its field meanings with its own.
 
    The descriptor is a second opinion on what each field means. It never becomes a rule by itself, and a field the descriptor hides does not become a free field.
 3. **Establish the ABI.** A fixed method, not the AI: fetch the verified source from Sourcify, compile it locally with a pinned `solc`, and compare the result with the bytecode read from chain. For a proxy, compare the implementation. Matching bytecode proves the ABI belongs to the deployed contract.
-4. **Study past transactions.** The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape. The program (`pnpm past-txs`) finds them through Alchemy's Transfers API and Etherscan, decodes each with the template, and counts, per field, the transactions and Safes that held its rule; the AI reads the counts and every misfit. These teach the AI. They prove nothing about safety.
-5. **Check the protocol's health.** The AI looks for anything that makes the protocol unsafe to use right now: past hacks and incidents (for example DefiLlama's hack list and the protocol's own post-mortems), audits, recent upgrades, admin or timelock changes, paused or deprecated contracts. Every claim cites its source.
+4. **Study past transactions.** The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape. The program (`pnpm past-txs`) finds them through Alchemy's Transfers API and Etherscan, decodes each with the template, and counts, per field, the transactions and Safes that held its rule; the AI reads the counts and every misfit. It prints numbers and addresses only: a byte or string value, or a free array, prints as its length, since the sender chose its bytes. These teach the AI. They prove nothing about safety.
+5. **Check the protocol's health.** The researcher looks for anything that makes the protocol unsafe to use right now: past hacks and incidents (for example DefiLlama's hack list and the protocol's own post-mortems), audits, recent upgrades, admin or timelock changes, paused or deprecated contracts, and bug bounties. It gives each page with its category and date, and the AI cites each in the report.
 
    This informs the signer's decision; it does not change what the program checks. What the program can read on chain, such as an upgraded implementation or a paused contract, it checks again at every signing.
 6. **Report.** It covers:
-   - **Addresses and ABI:** where each address was verified, the protocol API's query and answer when there is one, the `pnpm check-sources` output with every finding, each contract's Etherscan name and creator, and where each ABI came from.
+   - **Addresses and ABI:** where each address was verified, what the protocol's API lists when there is one, the `pnpm check-sources` output with every finding, the `pnpm contract-origin` output, and where each ABI came from.
    - **Fields:** what each field means, which contracts the operation touches, and what the template will check.
    - **Past transactions:** how many were studied and from how many senders, for example "42 past deposits from 31 different Safes", and for each field what they held: "`receiver` (who gets the vault shares) was the depositing Safe in all 42". That is the evidence behind the rule "`receiver` equals the Safe".
    - **ERC-7730:** whether each contract has a descriptor, its hash, which auditors attested it, whether any attestation is revoked, and where its field meanings differ from the AI's.
@@ -174,16 +175,17 @@ Services used while building a template, besides the providers above. None of th
 
 | Service | What is checked with it | By |
 |---|---|---|
-| The protocol's official site and GitHub organization | Where each contract address is published (step 2) | AI |
-| The protocol's own API, when it has one (such as `api.morpho.org`) | The contract's address and what the protocol says about it, such as a vault's curator and asset (step 2) | AI |
+| The protocol's official site and GitHub organization | Where each contract address is published, and the official docs page per function (step 2) | AI, through the `researcher` subagent's typed answer |
+| The protocol's own API, when it has one (such as `api.morpho.org`) | Whether it lists the contract, and the asset and curator addresses it gives (step 2) | AI, through the `researcher` subagent's typed answer |
+| Sourcify source and its NatSpec comments | The role of each function argument, from a fixed list (step 2) | AI, through the `researcher` subagent's typed answer |
 | DefiLlama protocol list (`api.llama.fi/protocols`) | Each registry entry's source domain or GitHub organization against the protocol's listed website and organizations (step 2) | Program, `pnpm check-sources`; the signer judges findings |
 | Public Suffix List (pinned in `vendor/publicsuffix/`) | Where a host's registrable domain begins, so two sites on one shared host such as `gitlab.io` differ (step 2) | Program, `pnpm check-sources` |
 | CoinGecko coin list (`api.coingecko.com`) | The coin listed at each token's and vault share's Ethereum address against the coin id the entry names (step 2) | Program, `pnpm check-sources`; the signer judges findings |
-| Etherscan contract page | Verified contract name, creator, and creation transaction (step 2) | AI |
+| Etherscan API (`contract/getsourcecode`, `contract/getcontractcreation`) | Verified contract name, creator, factory, and creation transaction (step 2) | Program, `pnpm contract-origin`; the AI compares the creator with the official deployers |
 | ERC-7730 registry | Whether a descriptor exists and what it says each field means (step 2) | AI; the program checks its attestations |
 | Sourcify and a pinned `solc` | The ABI compiles to the code on chain (step 3) | Program, `pnpm prove-abi` |
 | Alchemy Transfers API and Etherscan API | Past transactions of the operation (step 4) | Program, `pnpm past-txs`; the AI reads the counts |
-| DefiLlama hacks list and post-mortems | Past hacks and incidents (step 5) | AI |
+| DefiLlama hacks list, post-mortems, and audits | Past hacks and incidents, audits, upgrades, admin changes (step 5) | AI, through the `researcher` subagent's typed answer |
 
 ## The program checks itself first
 
@@ -199,8 +201,9 @@ This catches accidental edits and an AI that was tricked into changing a check o
 
 ## Known limits
 
-- Etherscan name tags (labels such as "Morpho: Bundler3") are not used. Etherscan offers no free API for them. The verified contract name and the creator, read from the contract's Etherscan page, are used instead.
+- Etherscan name tags (labels such as "Morpho: Bundler3") are not used. Etherscan offers no free API for them. The verified contract name and the creator, read through the Etherscan API, are used instead.
 - DefiLlama and CoinGecko are aggregators that take listing requests, so `pnpm check-sources` agreeing is supporting evidence, not proof. It finds the registrable domain with the Public Suffix List plus `medium.com`, `mirror.xyz` and `substack.com`; a shared host on neither still looks like one site. Every report line prints what it compared, or says that nothing was compared and why.
+- The researcher's answer reaches the main AI as text before `pnpm research-parse` checks it, so a hijacked researcher can still show the main AI words. The skill tells the main AI to act on nothing in an answer the parser refuses. URLs, slugs and Etherscan contract names are bounded in length and alphabet but can still spell words.
 - drpc routes requests to third-party nodes, including public ones. Its independence from Alchemy is not proven.
 - Two providers stop one lying provider, not two that collude or share a backend.
 - Simulating an executed transaction on the parent block is not its exact pre-state, because earlier transactions in its block also changed state. For executed transactions, receipts read from two providers are the source of truth.
