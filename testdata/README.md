@@ -312,6 +312,8 @@ The tests set up a clone and a `$KISS_SIGN_HOME` from its inputs, run `verify` w
 | `morpho-vault-deposit.json` | `safe-tx/morpho-vault-deposit.json`, executed, judged by its receipt | `MATCH`, safeTxHash `0x0287ff5583b9bda9564e871c98d292c1a5b433cba905b02df369bab37b20c84a` |
 | `morpho-migrate-all.json` | `safe-tx/morpho-migrate-all-smokehouse.json`, executed, judged by its receipt, card `smokehouse-usdc` to `steakhouse-high-yield-usdc` | `MATCH`, safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
 
+`test/code-pin.test.ts` evaluates `morpho-vault-deposit.json` with one recorded `eth_getCode` or `eth_getStorageAt` answer changed, or with a pin removed from its registry: changed code of the MultiSend, bundler3, general-adapter1, the vault, USDC or USDC's implementation, or USDC's ZeppelinOS slot pointing elsewhere, must give `MISMATCH`; a drpc answer that differs, or a touched entry with no pin, must give `UNVERIFIABLE`.
+
 `test/morpho-migrate.test.ts` evaluates `morpho-migrate-all.json` with its registry changed to name USDT as both vaults' asset, which the card's `same` then accepts, and requires `MISMATCH` from the vaults' recorded `asset()`. With the drpc answer to `asset()` changed it requires `UNVERIFIABLE`.
 
 ### Recording again

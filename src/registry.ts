@@ -32,9 +32,12 @@ export type RegistryEntry = {
   readonly defillama?: string;
   /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
   readonly coingecko?: string;
-  /** Recorded once the verify flow proves the code; absent until then. */
-  readonly codeHash?: Hex;
+  /** The code a call to this address ran when `pnpm pin-code` read it; verify requires the same code at every signing. */
+  readonly code?: CodePin;
 };
+
+/** keccak256 of the runtime code at the address, and behind a proxy, the implementation it delegates to and its code's. */
+export type CodePin = { readonly hash: Hex; readonly implementation?: { readonly address: Address; readonly hash: Hex } };
 
 export type Registry = {
   readonly entries: ReadonlyMap<string, RegistryEntry>;
@@ -92,20 +95,43 @@ function instanceCheckOf(path: string, raw: unknown): AbiFunction {
   return fn;
 }
 
-function entryOf(name: string, raw: unknown): RegistryEntry {
-  const path = name;
-  const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'sourceLabel', 'sourceHeading', 'defillama', 'coingecko', 'attributes', 'codeHash', 'instanceCheck']);
-  let address: Address;
-  let codeHash: Hex | undefined;
+function parsed<T>(run: () => T): T {
   try {
-    address = parseAddress(`${path}.address`, value.address);
-    codeHash = value.codeHash === undefined ? undefined : parseHex(`${path}.codeHash`, value.codeHash);
+    return run();
   } catch (error) {
     if (error instanceof SafeTxParseError) throw new RegistryError(error.field, error.message.slice(error.field.length + 2));
     throw error;
   }
-  if (codeHash !== undefined && codeHash.length !== 66) throw new RegistryError(`${path}.codeHash`, 'not 32 bytes');
+}
+
+function hash32(path: string, raw: unknown): Hex {
+  const hash = parsed(() => parseHex(path, raw));
+  if (hash.length !== 66) throw new RegistryError(path, 'not 32 bytes');
+  return hash;
+}
+
+function codePinOf(path: string, raw: unknown): CodePin {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['hash', 'implementation']);
+  const hash = hash32(`${path}.hash`, value.hash);
+  if (value.implementation === undefined) return { hash };
+  const implementation = record(`${path}.implementation`, value.implementation);
+  onlyKeys(`${path}.implementation`, implementation, ['address', 'hash']);
+  return {
+    hash,
+    implementation: {
+      address: parsed(() => parseAddress(`${path}.implementation.address`, implementation.address)),
+      hash: hash32(`${path}.implementation.hash`, implementation.hash),
+    },
+  };
+}
+
+function entryOf(name: string, raw: unknown): RegistryEntry {
+  const path = name;
+  const value = record(path, raw);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'sourceLabel', 'sourceHeading', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck']);
+  const address = parsed(() => parseAddress(`${path}.address`, value.address));
+  const code = value.code === undefined ? undefined : codePinOf(`${path}.code`, value.code);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
   if (kind === undefined) throw new RegistryError(`${path}.kind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
   if (typeof value.source !== 'string' || !/^https:\/\/\S+$/.test(value.source)) {
@@ -146,7 +172,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     attributes,
     ...(value.defillama === undefined ? {} : { defillama: value.defillama }),
     ...(value.coingecko === undefined ? {} : { coingecko: value.coingecko }),
-    ...(codeHash === undefined ? {} : { codeHash }),
+    ...(code === undefined ? {} : { code }),
   };
   if (kind !== 'factory') {
     if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);

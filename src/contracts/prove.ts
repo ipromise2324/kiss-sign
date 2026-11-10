@@ -1,11 +1,10 @@
-import { keccak_256 } from '@noble/hashes/sha3.js';
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import type { ProviderName } from '../chain/providers.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { locate, minimalProxyTarget, safeProxyFactory } from './proxy.ts';
-import type { Proxy, ProxyRefusal } from './proxy.ts';
+import { keccakCode, readRunningCode } from './code.ts';
+import type { CodeRefusal } from './code.ts';
+import type { Proxy } from './proxy.ts';
 import type { Compilers } from './solc.ts';
 import { parseSourcify } from './sourcify.ts';
 import type { SourcifyGet, VerifiedSource } from './sourcify.ts';
@@ -36,9 +35,7 @@ export type AbiProof = {
 };
 
 export type Refusal =
-  | ProxyRefusal
-  | { readonly why: 'no-code'; readonly at: Address }
-  | { readonly why: 'chained-proxy'; readonly at: Address }
+  | CodeRefusal
   | { readonly why: 'not-on-sourcify'; readonly at: Address }
   | { readonly why: 'sourcify-unreadable'; readonly at: Address; readonly detail: string }
   | { readonly why: 'unsupported-language'; readonly language: string }
@@ -212,15 +209,6 @@ function compare(compiled: Compiled, onChain: Hex, at: Address): boolean {
   return hashDiffers;
 }
 
-const codeHash = (code: Hex): Hex => `0x${bytesToHex(keccak_256(hexToBytes(code.slice(2))))}` as Hex;
-
-async function codeAt(reader: Reader, address: Address, block: BlockRef): Promise<Hex> {
-  const read = await reader.getCode(address, block);
-  if (read.kind === 'unverifiable') return refuse({ why: 'unverifiable', read: read.reason });
-  if (read.value.length === 2) refuse({ why: 'no-code', at: address });
-  return read.value;
-}
-
 async function sourceOf(deps: ProveDeps, address: Address): Promise<VerifiedSource> {
   let lookup;
   try {
@@ -245,15 +233,10 @@ async function sourceOf(deps: ProveDeps, address: Address): Promise<VerifiedSour
  */
 export async function proveAbi(reader: Reader, address: Address, block: BlockRef, deps: ProveDeps): Promise<AbiProof | AbiRefusal> {
   try {
-    const own = await codeAt(reader, address, block);
-    const located = await locate(reader, address, own, block);
-    if (located.kind === 'refused') return refuse(located.refusal);
-    const { proxy } = located;
+    const read = await readRunningCode(reader, address, block);
+    if (read.kind === 'refused') return refuse(read.refusal);
+    const { own, proxy, runs: code } = read.code;
     const proven = proxy.kind === 'none' ? address : proxy.implementation;
-    const code = proxy.kind === 'none' ? own : await codeAt(reader, proven, block);
-    if (proxy.kind !== 'none' && (minimalProxyTarget(code) !== undefined || safeProxyFactory(code) !== undefined)) {
-      refuse({ why: 'chained-proxy', at: proven });
-    }
     const source = await sourceOf(deps, proven);
     const compiled = compile(source, deps.compilers, code);
     const metadataHashMasked = compare(compiled, code, proven);
@@ -264,8 +247,8 @@ export async function proveAbi(reader: Reader, address: Address, block: BlockRef
       providers: reader.providers,
       proxy,
       proven,
-      codeHash: codeHash(code),
-      proxyCodeHash: proxy.kind === 'none' ? undefined : codeHash(own),
+      codeHash: keccakCode(code),
+      proxyCodeHash: proxy.kind === 'none' ? undefined : keccakCode(own),
       compiler: source.compilerVersion,
       contractPath: source.contractPath,
       contractName: source.contractName,
