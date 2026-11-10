@@ -103,5 +103,388 @@
         "ethereum": "0xbeeff2c5bf38f90e3482a8b19f12e5a6d2fca757"
       }
     }
-  ]
+  ],
+  "pages": {
+    "https://developers.circle.com/stablecoins/usdc-contract-addresses": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "EDGE 0x98d2919b9A214E6Fa5384AC81E6864bA686Ad74c",
+          "heading": "Mainnet"
+        },
+        {
+          "text": "Ethereum 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "heading": "Mainnet"
+        }
+      ]
+    },
+    "https://tether.to/en/supported-protocols/": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "USD₮ contract address:",
+          "heading": "Supported Protocols and Integration Guidelines"
+        },
+        {
+          "text": "https://etherscan.io/token/0xdac17f958d2ee523a2206206994597c13d831ec7",
+          "heading": "Supported Protocols and Integration Guidelines"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/safe-global/safe-deployments/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "version 1.3.0"
+        },
+        {
+          "text": "deployments canonical address 0xA238CBeb142c10Ef7Ad8442C6D1f9E89e07e7761"
+        },
+        {
+          "text": "deployments canonical codeHash 0x0208282bd262360d0320862c5ac70f375f5ed3b9d89a83a615b4d398415bdc83"
+        },
+        {
+          "text": "deployments eip155 address 0x998739BFdAAdde7C933B942a68053933098f9EDa"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/safe-global/safe-deployments/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/multi_send_call_only.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "version 1.3.0"
+        },
+        {
+          "text": "deployments canonical address 0x40A2aCCbd92BCA938b02010E17A5b8929b49130D"
+        },
+        {
+          "text": "deployments canonical codeHash 0xa9865ac2d9c7a1591619b188c4d88167b50df6cc0c5327fcbd1c8c75f7c066ad"
+        },
+        {
+          "text": "deployments eip155 address 0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/safe-global/safe-deployments/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/multi_send.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "version 1.4.1"
+        },
+        {
+          "text": "deployments canonical address 0x38869bf66a61cF6bDB996A6aE40D5853Fd43B526"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/safe-global/safe-deployments/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/multi_send_call_only.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "version 1.4.1"
+        },
+        {
+          "text": "deployments canonical address 0x9641d764fc13c8B624c04430C7356C1C7C8102e2"
+        }
+      ]
+    },
+    "https://docs.morpho.org/developers/contracts/addresses/": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------ |",
+          "heading": "Morpho Vault V2 [#morpho-vault-v2]"
+        },
+        {
+          "text": "| VaultV2Factory | [ 0xA1D94F746dEfa1928926b84fB2596c06926C0405 ](https://etherscan.io/address/0xA1D94F746dEfa1928926b84fB2596c06926C0405#code) <AddressCopyButton address=\"0xA1D94F746dEfa1928926b84fB2596c06926C0405\" /> | [vault-v2](https://github.com/morpho-org/vault-v2) |",
+          "heading": "Morpho Vault V2 [#morpho-vault-v2]"
+        },
+        {
+          "text": "| :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------- |",
+          "heading": "Morpho Vault V1 [#morpho-vault-v1]"
+        },
+        {
+          "text": "| MetaMorpho Factory V1.1 | [ 0x1897A8997241C1cD4bD0698647e4EB7213535c24 ](https://etherscan.io/address/0x1897A8997241C1cD4bD0698647e4EB7213535c24#code) <AddressCopyButton address=\"0x1897A8997241C1cD4bD0698647e4EB7213535c24\" /> | [metamorpho-v1.1](https://github.com/morpho-org/metamorpho-v1.1/tree/5a0717b2c863060ff452ca324716083fe6d09374/src) |",
+          "heading": "Morpho Vault V1 [#morpho-vault-v1]"
+        },
+        {
+          "text": "| MetaMorpho Factory \\[OLD] | [ 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101 ](https://etherscan.io/address/0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101#code) <AddressCopyButton address=\"0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101\" /> | [metamorpho](https://github.com/morpho-org/metamorpho/tree/c5e758da97d210ede921bf228d37d31e744bd5bf) |",
+          "heading": "Morpho Vault V1 [#morpho-vault-v1]"
+        },
+        {
+          "text": "| MetaMorpho Factory V1.1 | [ 0xFf62A7c278C62eD665133147129245053Bbf5918 ](https://basescan.org/address/0xFf62A7c278C62eD665133147129245053Bbf5918#code) <AddressCopyButton address=\"0xFf62A7c278C62eD665133147129245053Bbf5918\" /> | [metamorpho-v1.1](https://github.com/morpho-org/metamorpho-v1.1/tree/5a0717b2c863060ff452ca324716083fe6d09374/src) |",
+          "heading": "Morpho Vault V1 [#morpho-vault-v1]"
+        },
+        {
+          "text": "| MetaMorpho Factory \\[OLD] | [ 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101 ](https://basescan.org/address/0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101#code) <AddressCopyButton address=\"0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101\" /> | [metamorpho](https://github.com/morpho-org/metamorpho/tree/c5e758da97d210ede921bf228d37d31e744bd5bf) |",
+          "heading": "Morpho Vault V1 [#morpho-vault-v1]"
+        },
+        {
+          "text": "| :----------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------- |",
+          "heading": "Bundles [#bundles]"
+        },
+        {
+          "text": "| VaultBundlesV1 | [ 0x02912516d49dE997db75B9D7858faAE59209650B ](https://etherscan.io/address/0x02912516d49dE997db75B9D7858faAE59209650B#code) <AddressCopyButton address=\"0x02912516d49dE997db75B9D7858faAE59209650B\" /> | [morpho-org/bundles](https://github.com/morpho-org/bundles/blob/main/src/vault/VaultBundlesV1.sol) |",
+          "heading": "Bundles [#bundles]"
+        },
+        {
+          "text": "| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------------------------------- |",
+          "heading": "Bundlers (deprecated) [#bundlers-deprecated]"
+        },
+        {
+          "text": "| Bundler3 | [ 0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245 ](https://etherscan.io/address/0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245#code) <AddressCopyButton address=\"0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245\" /> | [morpho-org/bundler3](https://github.com/morpho-org/bundler3/tree/82e44ddebae998dc8b6e5cbd29ff69786135b1d3) |",
+          "heading": "Bundlers (deprecated) [#bundlers-deprecated]"
+        },
+        {
+          "text": "| EthereumGeneralAdapter1 | [ 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 ](https://etherscan.io/address/0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0#code) <AddressCopyButton address=\"0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0\" /> | [morpho-org/bundler3](https://github.com/morpho-org/bundler3/tree/82e44ddebae998dc8b6e5cbd29ff69786135b1d3) |",
+          "heading": "Bundlers (deprecated) [#bundlers-deprecated]"
+        },
+        {
+          "text": "| Universal Rewards Distributor Factory | [ 0x9baA51245CDD28D8D74Afe8B3959b616E9ee7c8D ](https://etherscan.io/address/0x9baA51245CDD28D8D74Afe8B3959b616E9ee7c8D#code) <AddressCopyButton address=\"0x9baA51245CDD28D8D74Afe8B3959b616E9ee7c8D\" /> | [universal-rewards-distributor](https://github.com/morpho-org/universal-rewards-distributor/blob/v1.0.0/src/UrdFactory.sol) |",
+          "heading": "Rewards [#rewards]"
+        },
+        {
+          "text": "| Universal Rewards Distributor (used with the Market Rewards Program Registry) | [ 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb ](https://etherscan.io/address/0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb#code) <AddressCopyButton address=\"0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb\" /> | [universal-rewards-distributor](https://github.com/morpho-org/universal-rewards-distributor/blob/v1.0.0/src/UniversalRewardsDistributor.sol) |",
+          "heading": "Rewards [#rewards]"
+        },
+        {
+          "text": "| :--------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :---------------------------------------------------------------------------------- |",
+          "heading": "MORPHO Token [#morpho-token]"
+        },
+        {
+          "text": "| MORPHO | [ 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 ](https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code) <AddressCopyButton address=\"0x58D97B57BB95320F9a05dC918Aef65434969c2B2\" /> | [morpho-org/morpho-token](https://github.com/morpho-org/morpho-token) |",
+          "heading": "MORPHO Token [#morpho-token]"
+        }
+      ]
+    },
+    "https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Name Currency Blockchain Version Vault Address",
+          "heading": "Strategy"
+        },
+        {
+          "text": "Steakhouse Prime Instant USDC Ethereum USD Ethereum Morpho v2 0xbeef088055857739C12CD3765F20b7679Def0f51",
+          "heading": "Strategy"
+        }
+      ]
+    },
+    "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Steakhouse USDC Ethereum Stablecoin Prime Instant USDC Ethereum v1 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Smokehouse USDC Ethereum Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Steakhouse USDT Stablecoin Prime Instant USDC Ethereum v1 0xbeef047a543e45807105e51a8bbefcc5950fcfba",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Smokehouse USDC Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+          "heading": "Legacy Vaults"
+        }
+      ]
+    },
+    "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://raw.githubusercontent.com/Instadapp/fluid-contracts-public/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "fToken_fUSDC"
+        },
+        {
+          "text": "| mainnet | 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33 | [Link](https://etherscan.io/address/0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33#code) | \"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\", \"0x54B91A0D94cb471F37f949c60F7Fa7935b551D03\", \"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\" | 0x0003 |",
+          "heading": "fToken_fUSDC"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "fToken_fUSDT"
+        },
+        {
+          "text": "| mainnet | 0x5C20B550819128074FD538Edf79791733ccEdd18 | [Link](https://etherscan.io/address/0x5C20B550819128074FD538Edf79791733ccEdd18#code) | \"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\", \"0x54B91A0D94cb471F37f949c60F7Fa7935b551D03\", \"0xdac17f958d2ee523a2206206994597c13d831ec7\" | 0x0003 |",
+          "heading": "fToken_fUSDT"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "fUSDC_fUSDT_Rewards"
+        },
+        {
+          "text": "| mainnet | 0x724d0c9497Fa89B2C6A4585e08380c91a92ab9b6 | [Link](https://etherscan.io/address/0x724d0c9497Fa89B2C6A4585e08380c91a92ab9b6#code) | \"0x4F6F977aCDD1177DCD81aB83074855EcB9C2D49e\", \"0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33\", \"0x5C20B550819128074FD538Edf79791733ccEdd18\", \"0x0000000000000000000000000000000000000000\", {\"type\":\"BigNumber\",\"hex\":\"0x3b9aca00\"}, {\"type\":\"BigNumber\",\"hex\":\"0xae9f7bcc00\"}, 7776000, 1740260247 | 0x0003 |",
+          "heading": "fUSDC_fUSDT_Rewards"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "VaultT2_DEX-INST-ETH_ETH"
+        },
+        {
+          "text": "| mainnet | 0x7FE0B032cB5982Af72498F96be3DD6566F7B7de8 | [Link](https://etherscan.io/address/0x7FE0B032cB5982Af72498F96be3DD6566F7B7de8#code) | {\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x324c5Dc1fC42c7a4D43d92df1eBA58a54d13Bf2d\",\"operateImplementation\":\"0xB8BfFC6F90d61752A93A6F3b02887377FCffC64A\",\"adminImplementation\":\"0x148807CFE7C285003A923411C6037eb3Fe0E7f1C\",\"secondaryImplementation\":\"0xf38478d055020bbC173734Dc62d88b749Eb99b59\",\"deployer\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"supply\":\"0xc800b0e15c40a1Ff0539218100c86F4c1BAC8D9C\",\"borrow\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"supplyToken\":{\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\"},\"borrowToken\":{\"token0\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"token1\":\"0x0000000000000000000000000000000000000000\"},\"vaultId\":75,\"vaultType\":\"20000\",\"supplyExchangePriceSlot\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"borrowExchangePriceSlot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\",\"userSupplySlot\":\"0x19599101b1050fefec1acbaf740191fe0a6c9b7ddc1a1faf1fa0b27353132059\",\"userBorrowSlot\":\"0x9b9ff58764bad50c0c8f5a3f64ac3aa2dbc14792b2acbb1150024845fc40e79d\"} | 0x0003 |",
+          "heading": "VaultT2_DEX-INST-ETH_ETH"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "VaultT2_DEX-INST-ETH_ETH_Operate"
+        },
+        {
+          "text": "| mainnet | 0xB8BfFC6F90d61752A93A6F3b02887377FCffC64A | [Link](https://etherscan.io/address/0xB8BfFC6F90d61752A93A6F3b02887377FCffC64A#code) | [{\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x324c5Dc1fC42c7a4D43d92df1eBA58a54d13Bf2d\",\"operateImplementation\":\"0x0000000000000000000000000000000000000000\",\"adminImplementation\":\"0x148807CFE7C285003A923411C6037eb3Fe0E7f1C\",\"secondaryImplementation\":\"0xf38478d055020bbC173734Dc62d88b749Eb99b59\",\"deployer\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"supply\":\"0xc800b0e15c40a1Ff0539218100c86F4c1BAC8D9C\",\"borrow\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"supplyToken\":{\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\"},\"borrowToken\":{\"token0\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"token1\":\"0x0000000000000000000000000000000000000000\"},\"vaultId\":75,\"vaultType\":\"20000\",\"supplyExchangePriceSlot\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"borrowExchangePriceSlot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\",\"userSupplySlot\":\"0x19599101b1050fefec1acbaf740191fe0a6c9b7ddc1a1faf1fa0b27353132059\",\"userBorrowSlot\":\"0x9b9ff58764bad50c0c8f5a3f64ac3aa2dbc14792b2acbb1150024845fc40e79d\"}] | 0x0003 |",
+          "heading": "VaultT2_DEX-INST-ETH_ETH_Operate"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "Dex_FLUID_ETH"
+        },
+        {
+          "text": "| mainnet | 0xc800b0e15c40a1Ff0539218100c86F4c1BAC8D9C | [Link](https://etherscan.io/address/0xc800b0e15c40a1Ff0539218100c86F4c1BAC8D9C#code) | {\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x91716C4EDA1Fb55e84Bf8b4c7085f84285c19085\",\"deployerContract\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"implementations\":{\"shift\":\"0x4ECb836267b8b6473B34E244c82A6AA0749FFB9b\",\"admin\":\"0x780D3C70d583DD8bd894abB53952B868916f69D8\",\"colOperations\":\"0x7eb692a3Fa34EB8e724c4809CDc4293b0A455E8c\",\"debtOperations\":\"0xbfa9093d4Ee238adB15EA40bFA90A088C1D629D3\",\"perfectOperationsAndSwapOut\":\"0x5BE9C322A0B38458b8d36F9a91Eb7ACa5dF25543\"},\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"oracleMapping\":1024,\"dexId\":11,\"supplyToken0Slot\":\"0x76eefde27cef0839f6721813b8a946733d2dc6c96617e06f48ce36e5ebf61a72\",\"borrowToken0Slot\":\"0x7fc1b849f2080d40c18fc3be2117724aa74d4d24fd5a693f8ad10a8bb0d39853\",\"supplyToken1Slot\":\"0xc6aa0a1ebc72fe4114f79538b07fe13247dd00fa4cd45b15bdf0806962814311\",\"borrowToken1Slot\":\"0xec31c709fa552a64d5bf7b00e0effa57c1f425f5596528967d700b0acd6ed68b\",\"exchangePriceToken0Slot\":\"0x7e6352010c06d4d4e841dfdca419ce23a0173412563e7ab6bebf6cce56e1202a\",\"exchangePriceToken1Slot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\"} | 0x0003 |",
+          "heading": "Dex_FLUID_ETH"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "Dex_FLUID_ETH_ColOperations"
+        },
+        {
+          "text": "| mainnet | 0x7eb692a3Fa34EB8e724c4809CDc4293b0A455E8c | [Link](https://etherscan.io/address/0x7eb692a3Fa34EB8e724c4809CDc4293b0A455E8c#code) | [{\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x91716C4EDA1Fb55e84Bf8b4c7085f84285c19085\",\"deployerContract\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"implementations\":{\"shift\":\"0x4ECb836267b8b6473B34E244c82A6AA0749FFB9b\",\"admin\":\"0x0000000000000000000000000000000000000000\",\"colOperations\":\"0x0000000000000000000000000000000000000000\",\"debtOperations\":\"0x0000000000000000000000000000000000000000\",\"perfectOperationsAndSwapOut\":\"0x0000000000000000000000000000000000000000\"},\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"oracleMapping\":1024,\"dexId\":11,\"supplyToken0Slot\":\"0x76eefde27cef0839f6721813b8a946733d2dc6c96617e06f48ce36e5ebf61a72\",\"borrowToken0Slot\":\"0x7fc1b849f2080d40c18fc3be2117724aa74d4d24fd5a693f8ad10a8bb0d39853\",\"supplyToken1Slot\":\"0xc6aa0a1ebc72fe4114f79538b07fe13247dd00fa4cd45b15bdf0806962814311\",\"borrowToken1Slot\":\"0xec31c709fa552a64d5bf7b00e0effa57c1f425f5596528967d700b0acd6ed68b\",\"exchangePriceToken0Slot\":\"0x7e6352010c06d4d4e841dfdca419ce23a0173412563e7ab6bebf6cce56e1202a\",\"exchangePriceToken1Slot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\"}] | 0x0003 |",
+          "heading": "Dex_FLUID_ETH_ColOperations"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "Dex_FLUID_ETH_DebtOperations"
+        },
+        {
+          "text": "| mainnet | 0xbfa9093d4Ee238adB15EA40bFA90A088C1D629D3 | [Link](https://etherscan.io/address/0xbfa9093d4Ee238adB15EA40bFA90A088C1D629D3#code) | [{\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x91716C4EDA1Fb55e84Bf8b4c7085f84285c19085\",\"deployerContract\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"implementations\":{\"shift\":\"0x4ECb836267b8b6473B34E244c82A6AA0749FFB9b\",\"admin\":\"0x0000000000000000000000000000000000000000\",\"colOperations\":\"0x0000000000000000000000000000000000000000\",\"debtOperations\":\"0x0000000000000000000000000000000000000000\",\"perfectOperationsAndSwapOut\":\"0x0000000000000000000000000000000000000000\"},\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"oracleMapping\":1024,\"dexId\":11,\"supplyToken0Slot\":\"0x76eefde27cef0839f6721813b8a946733d2dc6c96617e06f48ce36e5ebf61a72\",\"borrowToken0Slot\":\"0x7fc1b849f2080d40c18fc3be2117724aa74d4d24fd5a693f8ad10a8bb0d39853\",\"supplyToken1Slot\":\"0xc6aa0a1ebc72fe4114f79538b07fe13247dd00fa4cd45b15bdf0806962814311\",\"borrowToken1Slot\":\"0xec31c709fa552a64d5bf7b00e0effa57c1f425f5596528967d700b0acd6ed68b\",\"exchangePriceToken0Slot\":\"0x7e6352010c06d4d4e841dfdca419ce23a0173412563e7ab6bebf6cce56e1202a\",\"exchangePriceToken1Slot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\"}] | 0x0003 |",
+          "heading": "Dex_FLUID_ETH_DebtOperations"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "Dex_FLUID_ETH_PerfectOperationsAndSwapOut"
+        },
+        {
+          "text": "| mainnet | 0x5BE9C322A0B38458b8d36F9a91Eb7ACa5dF25543 | [Link](https://etherscan.io/address/0x5BE9C322A0B38458b8d36F9a91Eb7ACa5dF25543#code) | [{\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x91716C4EDA1Fb55e84Bf8b4c7085f84285c19085\",\"deployerContract\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"implementations\":{\"shift\":\"0x4ECb836267b8b6473B34E244c82A6AA0749FFB9b\",\"admin\":\"0x0000000000000000000000000000000000000000\",\"colOperations\":\"0x0000000000000000000000000000000000000000\",\"debtOperations\":\"0x0000000000000000000000000000000000000000\",\"perfectOperationsAndSwapOut\":\"0x0000000000000000000000000000000000000000\"},\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"oracleMapping\":1024,\"dexId\":11,\"supplyToken0Slot\":\"0x76eefde27cef0839f6721813b8a946733d2dc6c96617e06f48ce36e5ebf61a72\",\"borrowToken0Slot\":\"0x7fc1b849f2080d40c18fc3be2117724aa74d4d24fd5a693f8ad10a8bb0d39853\",\"supplyToken1Slot\":\"0xc6aa0a1ebc72fe4114f79538b07fe13247dd00fa4cd45b15bdf0806962814311\",\"borrowToken1Slot\":\"0xec31c709fa552a64d5bf7b00e0effa57c1f425f5596528967d700b0acd6ed68b\",\"exchangePriceToken0Slot\":\"0x7e6352010c06d4d4e841dfdca419ce23a0173412563e7ab6bebf6cce56e1202a\",\"exchangePriceToken1Slot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\"}] | 0x0003 |",
+          "heading": "Dex_FLUID_ETH_PerfectOperationsAndSwapOut"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "MerkleDistributor"
+        },
+        {
+          "text": "| mainnet | 0xD833484b198D3d05707832cc1C2D62b520D95B8A | [Link](https://etherscan.io/address/0xD833484b198D3d05707832cc1C2D62b520D95B8A#code) | \"GHO Vaults $FLUID rewards - Apr 2025\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\", 1, 1, 0, false | 0x0003 |",
+          "heading": "MerkleDistributor"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "MerkleDistributor for delegateCall claimOnBehalfOf FLUID token"
+        },
+        {
+          "text": "| mainnet | 0x9d694b7f2AB2C1f328Ca3E334AB74aFC2814240E | [Link](https://etherscan.io/address/0x9d694b7f2AB2C1f328Ca3E334AB74aFC2814240E#code) | {\"name\":\"NONE - Used for delegateCall onBehalfOf\",\"owner\":\"0x4F6F977aCDD1177DCD81aB83074855EcB9C2D49e\",\"proposer\":\"0x4F6F977aCDD1177DCD81aB83074855EcB9C2D49e\",\"approver\":\"0x4F6F977aCDD1177DCD81aB83074855EcB9C2D49e\",\"rewardToken\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"distributionInHours\":1,\"cycleInHours\":1,\"startBlock\":0,\"pullFromDistributor\":false,\"vestingTime\":0,\"vestingStartTime\":0} | 0x0003 |",
+          "heading": "MerkleDistributor for delegateCall claimOnBehalfOf FLUID token"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "$FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
+        },
+        {
+          "text": "| mainnet | 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0 | [Link](https://etherscan.io/address/0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0#code) | \"Fluid Rewards - Dec 2024\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\" | 0x0003 |",
+          "heading": "$FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "cbBTC-wBTC $FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
+        },
+        {
+          "text": "| mainnet | 0xbAbB3f87424d900aBd83C807C1E01a22a54E726F | [Link](https://etherscan.io/address/0xbAbB3f87424d900aBd83C807C1E01a22a54E726F#code) | \"cbBTC-wBTC FLUID Rewards - Dec 2024\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\" | 0x0003 |",
+          "heading": "cbBTC-wBTC $FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "deUSD-USDC Smart Lending FLUID Rewards - 31 Jan 2025 - 2 March 2025"
+        },
+        {
+          "text": "| mainnet | 0xB48BbE313eDB7fAAa28C03684D48F58dD7dEA239 | [Link](https://etherscan.io/address/0xB48BbE313eDB7fAAa28C03684D48F58dD7dEA239#code) | \"deUSD-USDC Smart Lending FLUID Rewards - Jan 2025\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\" | 0x0003 |",
+          "heading": "deUSD-USDC Smart Lending FLUID Rewards - 31 Jan 2025 - 2 March 2025"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "Mainnet: GHO Vaults $FLUID Rewards - April 2025 MerkleDistributor"
+        },
+        {
+          "text": "| mainnet | 0xD833484b198D3d05707832cc1C2D62b520D95B8A | [Link](https://etherscan.io/address/0xD833484b198D3d05707832cc1C2D62b520D95B8A#code) | \"GHO Vaults $FLUID rewards - Apr 2025\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\", 1, 1, 0, false | 0x0003 |",
+          "heading": "Mainnet: GHO Vaults $FLUID Rewards - April 2025 MerkleDistributor"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "ETH-USDC LP $FLUID rewards - Jul 2025"
+        },
+        {
+          "text": "| mainnet | 0x252452ccf245a59A6d1Afab11cF16750029b4620 | [Link](https://etherscan.io/address/0x252452ccf245a59A6d1Afab11cF16750029b4620#code) | {\"name\":\"ETH-USDC LP $FLUID rewards - Jul 2025\",\"owner\":\"0x9800020b610194dBa52CF606E8Aa142F9F256166\",\"proposer\":\"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\",\"approver\":\"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\",\"rewardToken\":\"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\",\"distributionInHours\":1,\"cycleInHours\":1,\"startBlock\":0,\"pullFromDistributor\":false,\"vestingTime\":31536000,\"vestingStartTime\":1751673600} | 0x0003 |",
+          "heading": "ETH-USDC LP $FLUID rewards - Jul 2025"
+        }
+      ]
+    },
+    "https://developers.merkl.xyz/resources/chains-and-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Entry point for campaign creators. Operators deposit reward tokens and configure campaign parameters here.",
+          "heading": "DistributionCreator"
+        },
+        {
+          "text": "On the vast majority of EVM chains, the Distributor is deployed at 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae and the DistributionCreator is deployed at 0x8BB4C975Ff3c250e0ceEA271728547f3802B36Fd.",
+          "heading": "DistributionCreator"
+        }
+      ]
+    },
+    "https://developers.circle.com/cctp/v1/evm-smart-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Chain Domain Address",
+          "heading": "MessageTransmitter: Mainnet"
+        },
+        {
+          "text": "Ethereum 0 0x0a992d191DEeC32aFe36203Ad87D7d289a738F81",
+          "heading": "MessageTransmitter: Mainnet"
+        }
+      ]
+    },
+    "https://www.steakhouse.financial/docs/products/vault-products/current/high-yield-instant": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Name Currency Blockchain Version Vault Address",
+          "heading": "Strategy"
+        },
+        {
+          "text": "Steakhouse High Yield Instant USDC Ethereum USD Ethereum Morpho v2 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757",
+          "heading": "Strategy"
+        }
+      ]
+    }
+  },
+  "commits": {
+    "safe-global/safe-deployments@ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62": {
+      "kind": "on-default",
+      "branch": "main",
+      "status": "identical"
+    },
+    "instadapp/fluid-contracts-public@404d73f91e6806f881f8dabeb30494f93f9e99b7": {
+      "kind": "on-default",
+      "branch": "main",
+      "status": "identical"
+    }
+  }
 }
