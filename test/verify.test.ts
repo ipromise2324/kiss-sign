@@ -67,7 +67,7 @@ async function run(argv: string[], repo: string, home: string) {
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     readSecret: undefined,
-    confirm: undefined,
+    ask: undefined,
     repoRoot: repo,
     transport: replayTransport(fixture.exchanges, mainnetEndpoints(env)),
     fetchJson: async () => assert.fail('these tests give the transaction as a file'),

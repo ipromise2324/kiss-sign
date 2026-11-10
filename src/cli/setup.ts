@@ -11,8 +11,8 @@ import { checksumAddress, parseAddress } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template.ts';
 import { fetchOriginMain, fileAt } from '../verify/self-check.ts';
 import { keccakText } from '../verify/verify.ts';
-import { FAILED, OK, UsageError, terminalConfirm } from './io.ts';
-import type { Io } from './io.ts';
+import { FAILED, OK, UsageError, terminal } from './io.ts';
+import type { Io, Terminal } from './io.ts';
 
 export function requireConfig(home: string): Config {
   const config = loadConfig(home);
@@ -40,7 +40,7 @@ export async function bookAdd(args: readonly string[], io: Io): Promise<number> 
   if (name === undefined || raw === undefined || extra.length > 0) throw new UsageError('book add takes a name and an address.');
   if (!isEntryName(name)) throw new UsageError(`${JSON.stringify(name.slice(0, 64))} is not a name: lowercase words joined by - or ., and not "safe" or "eth".`);
   const address = parseAddress('address', raw);
-  const confirm = terminalConfirm(io, 'book add');
+  const { confirm } = terminal(io, 'book add');
   if (loadRegistry(io.repoRoot).entries.has(name)) throw new UsageError(`${name} is already a contract in the registry; choose another name.`);
   const home = kissSignHome(io.env);
   const book = loadAddressBook(home);
@@ -77,8 +77,12 @@ function show(value: ResolvedValue): string {
 export async function cardSeal(args: readonly string[], io: Io): Promise<number> {
   const [path, ...extra] = args;
   if (path === undefined || extra.length > 0) throw new UsageError('card seal takes the path of one card JSON file.');
-  const confirm = terminalConfirm(io, 'card seal');
-  const card: Card = parseCard(JSON.parse(readFileSync(path, 'utf8')));
+  const { confirm } = terminal(io, 'card seal');
+  return seal(parseCard(JSON.parse(readFileSync(path, 'utf8'))), io, confirm);
+}
+
+/** Resolves every name, shows the card with full addresses, and stores it under its hash once the signer says yes. */
+export async function seal(card: Card, io: Io, confirm: Terminal['confirm']): Promise<number> {
   const home = kissSignHome(io.env);
   const { safe } = requireConfig(home);
   const registry = loadRegistry(io.repoRoot);
@@ -104,7 +108,7 @@ export async function cardSeal(args: readonly string[], io: Io): Promise<number>
 export async function templateApprove(args: readonly string[], io: Io): Promise<number> {
   const [id, ...extra] = args;
   if (id === undefined || extra.length > 0) throw new UsageError('template approve takes one template id, such as morpho/vault-deposit.');
-  const confirm = terminalConfirm(io, 'template approve');
+  const { confirm } = terminal(io, 'template approve');
   const origin = fetchOriginMain(io.repoRoot);
   if (origin.kind !== 'fetched') {
     const problems = origin.kind === 'refused' ? origin.problems : ['could not fetch origin'];

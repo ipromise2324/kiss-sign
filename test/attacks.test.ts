@@ -54,7 +54,7 @@ test('pnpm attacks prints, per case, the card with full addresses, the decoded c
     stdout: (text) => void (stdout += text),
     stderr: () => undefined,
     readSecret: undefined,
-    confirm: undefined,
+    ask: undefined,
     repoRoot: ROOT,
     transport: async () => assert.fail('a replay reads no provider'),
     fetchJson: async () => assert.fail('a replay reads no Transaction Service'),

@@ -8,9 +8,26 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 
 | Actor | Does | Never does |
 |---|---|---|
-| Signer | States intents, reads reports, confirms templates, confirms intent cards and address-book entries, proposes on Safe, compares hashes on the hardware wallet | Pastes keys into the chat |
-| AI (any coding agent) | Researches addresses, ABIs and past transactions; writes the report; writes the template; drafts the intent card | Decides a verdict, edits kiss-sign during signing, handles API keys |
+| Signer | States intents, reads reports, merges template pull requests, fills and confirms intent cards, confirms address-book entries, proposes on Safe, compares hashes on the hardware wallet | Pastes keys into the chat, runs an AI agent on the signing device |
+| AI (any coding agent) | Researches addresses, ABIs and past transactions; writes the report; writes the template; opens the pull request | Merges, fills or seals a card, decides a verdict, runs on the signing device, handles API keys |
 | Program (the engine) | Fetches and hashes the Safe transaction, decodes it, runs the template's checks, simulates, compares effects with the card | Reads web pages, follows instructions found in data |
+
+### The standard setup
+
+Two machines, joined only by `main` on GitHub.
+
+| Step | Where | Who |
+|---|---|---|
+| 1. Research, write the template, open a pull request | A computer with an AI agent | The AI. It never merges. |
+| 2. Read the report and the template, approve and merge | GitHub | The signer, through branch protection |
+| 3. `git pull`, fill the card with `kiss-sign card new`, seal, verify | A signing device with no AI agent installed | The signer |
+| 4. The first time a template or a vault is used, send a small amount first | Safe | The signers |
+| 5. Sign, comparing the full hashes | Hardware wallet | The signer |
+
+- With no AI on the signing device, nothing there can rewrite `verify`, the sealed cards, or the approved template hashes. The self-check guards against accidents; the separate device guards against an AI that means harm.
+- Branch protection on `main` protects the bridge between the two machines, since the signing device pulls `main`. It requires a pull request approved by the code owner, the signer, and the AI pushes from a GitHub account that cannot approve or merge. Both are GitHub settings the signer makes. On a private repository GitHub offers branch protection only with a paid plan; until it is on, nothing in GitHub stops an AI that can push from merging.
+- A small first transaction catches honest mistakes and crude attacks, such as a wrong vault or a template that sends funds elsewhere. It does not catch a contract that behaves differently for large amounts, or one that turns hostile later.
+- A permission or parameter change, a call that moves no value, cannot be tested with a small amount. It relies on the program's checks and on the review of its template.
 
 ## The flow
 
@@ -48,17 +65,19 @@ Every service or step drawn in `docs/architecture.png` and `docs/architecture-de
    - **Calls that move no asset:** for each call the program marks as moving no asset of the Safe (see [Engine checks](#engine-checks-that-every-template-gets)), what it changes, explained by the AI from the protocol's official documentation with a link to the page. This section is labelled as written by the AI.
 
    The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
-7. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests.
-8. **Signer reviews the pull request.** The signer reads the report and the template's rules and asks for changes. Merging the pull request is the confirmation. kiss-sign records the hash of the merged template locally.
+7. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests. It never merges.
+8. **Signer reviews the pull request.** The signer reads the report and the template's rules on GitHub and asks for changes. Approving and merging the pull request is the confirmation. On the signing device, `kiss-sign template approve` records the hash of the merged template locally.
 
 ### Every signing
 
-9. **State this signing's intent.** The signer says what to do this time, for example "deposit 65,266 USDT into Steakhouse USDT". The AI picks the template and fills in the card values. The signer reads the card and confirms it before seeing the Safe transaction.
+Every signing runs on the signing device, with no AI involved.
 
-   kiss-sign then seals the card on its own: it hashes the card and stores it where the AI cannot write. The template is not reviewed again; only the card's values are.
-10. **Propose on Safe.** kiss-sign reads the transaction from the Safe Transaction Service, or the signer pastes it. kiss-sign recomputes every hash itself.
-11. **Verify.** The program decodes the transaction with the template, checks every field, mutates the transaction to confirm the template catches changes, simulates it, and compares the Safe's net effects with the card. It also lists the calls that move no asset of the Safe, next to the verdict.
-12. **Sign.** On `MATCH`, the signer compares the domain hash and message hash on the hardware wallet's screen, then signs. Any hardware wallet that shows both hashes for a Safe transaction works.
+9. **Fill the card.** The signer runs `git pull`, then `kiss-sign card new <protocol>/<operation>`, for example `morpho/vault-deposit` to deposit into Steakhouse USDC. For each card value the template needs, the prompt lists the registry entries of the right kind, the address-book entries, or the Safe by number, each with its name and full address, and the signer picks one; an amount or a limit is typed as a base-unit integer, and the prompt names the token it counts. A card with several operations names several templates.
+10. **Seal it.** The program prints the card with every full address, and on the signer's yes hashes it and stores it in `$KISS_SIGN_HOME`, before the signer sees the Safe transaction. `kiss-sign card seal` does the same for a card written as a file. The template is not reviewed again; only the card's values are.
+11. **Propose on Safe.** kiss-sign reads the transaction from the Safe Transaction Service, or the signer pastes it. kiss-sign recomputes every hash itself.
+12. **Verify.** The program decodes the transaction with the template, checks every field, mutates the transaction to confirm the template catches changes, simulates it, and compares the Safe's net effects with the card. It also lists the calls that move no asset of the Safe, next to the verdict.
+13. **Small amount first.** The first time a template or a vault is used, the card from step 9 names a small amount. The full amount gets a new card once the small transaction has settled as expected.
+14. **Sign.** On `MATCH`, the signer compares the domain hash and message hash on the hardware wallet's screen, then signs. Any hardware wallet that shows both hashes for a Safe transaction works.
 
 ## Data shapes
 
@@ -108,7 +127,7 @@ Card values per operation, covering the operations in the Safe's history:
 | Cancel a queued transaction | the nonce to replace | 0 ETH to the Safe itself, no data |
 
 - One Safe transaction can batch several operations, for example withdrawing from two vaults. The card then lists each operation with its values, and the MultiSend must contain exactly those calls. An approval belongs to the operation that spends it, not to its own line.
-- Swap limits are stated as a minimum amount, not a slippage percentage, so the program never needs a price. The AI may suggest the number from a quote; the signer confirms the number.
+- Swap limits are stated as a minimum amount, not a slippage percentage, so the program never needs a price. The signer types the number.
 - A recipient that is not the Safe must already be in the address book. Adding an entry is a separate step, done before signing, where the signer checks the full address against a source outside the chat.
 
 Sealed means hashed and stored where the AI cannot write.
@@ -206,19 +225,17 @@ Templates are read from that commit, so a template counts only after its pull re
 
 This catches accidental edits and an AI that was tricked into changing a check or a template. It cannot catch an AI that deliberately rewrites both a check and the self-check itself, because the self-check is part of the same program. See Known limits and Later security upgrades.
 
-## The signer's steps run where the AI cannot write
+## Optional hardening: an AI on the signing device
 
-`verify`, `card seal` and `template approve` run from a clone and a `$KISS_SIGN_HOME` that no AI session can write. The self-check runs inside the program it checks, so it cannot be the only lock.
+The standard setup keeps every AI agent off the signing device. A signer who runs one there anyway needs `verify`, `card new`, `card seal` and `template approve` to run from a clone and a `$KISS_SIGN_HOME` that no AI session can write. The self-check runs inside the program it checks, so it cannot be that lock.
 
-The standard setup is a Claude Code managed-settings file. `kiss-sign managed-settings` prints it as JSON, with the clone it runs from and the resolved `$KISS_SIGN_HOME` filled in, and prints on stderr the `sudo` commands that install it. The signer installs it once, from their own terminal, on the device they sign on. kiss-sign never installs it. Managed settings sit above every user, project and local setting, and a file owned by root cannot be edited without `sudo`. The file sets:
+For Claude Code, `kiss-sign managed-settings` prints a managed-settings file as JSON, with the clone it runs from and the resolved `$KISS_SIGN_HOME` filled in, and prints on stderr the `sudo` commands that install it. The signer installs it once, from their own terminal. kiss-sign never installs it. Managed settings sit above every user, project and local setting, and a file owned by root cannot be edited without `sudo`. The file sets:
 
 - `permissions.disableBypassPermissionsMode: "disable"`, so no session runs without permission checks;
 - `permissions.deny` with `Edit(//<clone>/**)`, `Read(//<clone>/**)`, `Edit(//<home>/**)`, `Read(//<home>/**)` and `Read(~/.kiss-sign/.env)`, where `//` marks an absolute path;
 - `sandbox.enabled`, `sandbox.failIfUnavailable` and `sandbox.allowUnsandboxedCommands: false`, so every shell command runs in the sandbox, which also enforces the deny rules on scripts, and Claude Code refuses to start when the sandbox cannot run.
 
-With it installed, the AI works in a different clone and opens pull requests from there. The deny rules also keep the AI's scripts from reading the API keys in `$KISS_SIGN_HOME/.env`, so a research script that needs a key runs in the signer's own terminal.
-
-Stricter options are a separate OS account for signing, which the AI's account cannot read or write, or a signing device with no AI on it.
+With it installed, the AI works in a different clone and opens pull requests from there. The deny rules also keep the AI's scripts from reading the API keys in `$KISS_SIGN_HOME/.env`, so a research script that needs a key runs in the signer's own terminal. It covers Claude Code only; another agent needs its own equivalent. A separate OS account for signing, which the AI's account cannot read or write, is a stronger middle ground.
 
 ## Known limits
 
@@ -227,7 +244,7 @@ Stricter options are a separate OS account for signing, which the AI's account c
 - drpc routes requests to third-party nodes, including public ones. Its independence from Alchemy is not proven.
 - Two providers stop one lying provider, not two that collude or share a backend.
 - Simulating an executed transaction on the parent block is not its exact pre-state, because earlier transactions in its block also changed state. For executed transactions, receipts read from two providers are the source of truth.
-- The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is stopped only by the managed-settings file, which the signer installs, and only for Claude Code. Another agent needs its own equivalent.
+- The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is stopped by keeping every AI off the signing device, the standard setup. A signer who runs an AI there anyway relies on the managed-settings file, which covers only Claude Code.
 - The hardware wallet shows only the two hashes, not the decoded transaction. ERC-7730 clear signing does not yet cover Safe MultiSend batches.
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
 - The v1 templates were written and merged by the AI without human review. The signer reviews them during final testing.
@@ -237,7 +254,7 @@ Stricter options are a separate OS account for signing, which the AI's account c
 - The static floor refuses an ERC-20 approval only at or above 2^255, and a Permit2 approval only at the uint160 maximum. A token-specific sentinel such as 2^96-1 (UNI, COMP) passes the floor; the effects check refuses any measured allowance, ERC-20 or Permit2, that ends above its value before the transaction.
 - Not yet seen by effects: an NFT `setApprovalForAll`, ERC-1155 balances and approvals, Aave's `approveDelegation`, Compound Comet's `allow`, and allowances in the Safe AllowanceModule. A change to any of them moves no balance the program measures. Permit2 is read only at its canonical address. A transaction that lets the Safe accept EIP-1271 signatures moves no allowance now but enables a later `permit`; the floor rules already refuse the usual routes, a delegatecall to SignMessageLib and a fallback handler change. The static floor refuses `setApprovalForAll` when it is set, and a call that changes only one of them is marked as moving no asset.
 - The mark on calls that move no asset is per call the Safe makes. A call that moves an asset and also grants a permission, such as a `multicall` that deposits and authorizes, is not marked. Each call runs as its own Safe transaction, so a contract that reads the Safe's nonce or the transaction's origin can act differently than in the real batch; a call that does not execute that way makes the scan unreadable, which `verify` prints. For an executed transaction the scan is a simulation on the parent block, not its exact pre-state.
-- The official repository URL is a constant in the program, so an AI that repoints `origin` to a fork whose program accepts that fork passes the self-check. The self-check's git calls take no `GIT_*` variable from the caller, follow no git replace ref, run no hook and ask no fsmonitor; all but the fetch and the origin URL read only the clone's own git config. The fetch reads the system and global config too, since a private repository needs the signer's credential helper there. So git config, in the clone or global, that runs a program or reroutes the connection during the fetch, such as `core.sshCommand`, a credential helper, a proxy or a turned-off TLS check, can run code or serve another repository under the official URL; the managed-settings file keeps the AI from writing the clone's git config and does not name the global one. The self-check does not check code the root `.gitignore` ignores, such as the root `node_modules/`; an ignored directory counts only at the root, so `src/node_modules/` is named. It refuses a clone whose git directory is not its own `.git`, such as a linked worktree, so the signing clone is a plain `git clone`. It also refuses git replace refs. It checks the clone once, so code that rewrites the clone or its objects after the check, while the program runs, is not caught. `template approve` and `history` fetch through the same origin check and object check, and `history` falls back to the local `origin/main`, unchecked, when the fetch fails.
+- The official repository URL is a constant in the program, so an AI that repoints `origin` to a fork whose program accepts that fork passes the self-check. The self-check's git calls take no `GIT_*` variable from the caller, follow no git replace ref, run no hook and ask no fsmonitor; all but the fetch and the origin URL read only the clone's own git config. The fetch reads the system and global config too, since a private repository needs the signer's credential helper there. So git config, in the clone or global, that runs a program or reroutes the connection during the fetch, such as `core.sshCommand`, a credential helper, a proxy or a turned-off TLS check, can run code or serve another repository under the official URL; keeping the AI off the signing device, or else the managed-settings file, keeps it from writing the clone's git config; the managed-settings file does not name the global one. The self-check does not check code the root `.gitignore` ignores, such as the root `node_modules/`; an ignored directory counts only at the root, so `src/node_modules/` is named. It refuses a clone whose git directory is not its own `.git`, such as a linked worktree, so the signing clone is a plain `git clone`. It also refuses git replace refs. It checks the clone once, so code that rewrites the clone or its objects after the check, while the program runs, is not caught. `template approve` and `history` fetch through the same origin check and object check, and `history` falls back to the local `origin/main`, unchecked, when the fetch fails.
 - `replay` trusts the verdict file it is given. It shows what a recorded verdict was based on; it is not permission to sign.
 - When the code on chain ends in a metadata trailer without a source hash, as solc writes with `bytecodeHash: "none"`, matching bytecode proves the ABI's selectors and types but not its parameter names, since no byte on chain depends on them.
 - When Sourcify holds only a partial match, the source compiles to the code on chain except the IPFS metadata hash, which hashes the source text. The proof masks that hash, so it too proves the ABI's selectors and types but not its parameter names.
@@ -251,7 +268,6 @@ Not built now. Listed so the path is clear.
 - **Light client (Helios).** Verifies every read against the beacon chain, so one provider is enough. Needs `eth_getProof` (Alchemy has it) and a local EVM to simulate on proven state.
 - **Local simulation (anvil).** Free and open source. Adds execution diversity. On its own it trusts the same RPC state.
 - **A paid or third provider.** Removes rate and range limits and adds an independent source.
-- **Keep the AI from merging.** Deny rules for `gh pr merge` and pushes to `main`, or a GitHub account for the AI without merge rights.
 - **Clear signing on the wallet (ERC-7730).** Export templates as display descriptors so the device shows the decoded call. Wait until wallets decode Safe MultiSend batches; until then, hash comparison stays.
 
 ## Next phase: CoW orders
