@@ -197,7 +197,7 @@ Services used while building a template, besides the providers above. None of th
 kiss-sign runs from one clone of this repository. `kiss-sign verify` starts with a self-check before anything else:
 
 1. Every URL of `origin` must be the official repository, `github.com/ipromise2324/kiss-sign`, in its https or ssh form. The URL is read as a fetch would use it, after any `url.<base>.insteadOf` rewrite. An origin elsewhere is not fetched.
-2. Fetch `origin`.
+2. Fetch `main` from `origin` into `origin/main`, ignoring any configured fetch refspec, which could map another branch there.
 3. The local checkout must be exactly `origin/main`: the same commit, with no local changes and no extra files in the program, the templates, or the settings.
 4. If anything differs, stop and name the files. Nothing is verified.
 

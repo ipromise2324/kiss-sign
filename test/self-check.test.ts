@@ -44,6 +44,19 @@ test('a clone exactly at origin/main passes the self-check', () => {
   assert.deepEqual(selfCheckTrustingBareOrigin(clone), { kind: 'clean', commit: git(clone, 'rev-parse', 'HEAD').trim() });
 });
 
+test('a fetch refspec that maps an unmerged branch onto origin/main is ignored', () => {
+  const { origin, clone } = cloneOfOrigin();
+  const other = join(dirname(clone), 'other');
+  git(dirname(clone), 'clone', '--quiet', origin, other);
+  write(other, 'src/cli/main.ts', 'unmerged\n');
+  git(other, 'commit', '--quiet', '-am', 'unmerged');
+  git(other, 'push', '--quiet', 'origin', 'HEAD:refs/heads/evil');
+  git(clone, 'config', '--replace-all', 'remote.origin.fetch', '+refs/heads/evil:refs/remotes/origin/main');
+  git(clone, 'fetch', '--quiet', 'origin');
+  git(clone, 'reset', '--quiet', '--hard', 'origin/main');
+  assert.match(problemsOf(clone).join('\n'), /^HEAD is /);
+});
+
 test('a changed tracked file and an extra template are named', () => {
   const { clone } = cloneOfOrigin();
   write(clone, 'src/cli/main.ts', 'changed\n');

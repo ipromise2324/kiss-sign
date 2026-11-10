@@ -57,7 +57,8 @@ function originUrls(root: string): string[] {
 /** Fetches origin and returns the commit origin/main names, or undefined when the fetch fails. */
 export function fetchOriginMain(root: string): string | undefined {
   try {
-    git(root, 'fetch', '--quiet', 'origin');
+    // --refmap= ignores remote.origin.fetch, which could map another branch onto origin/main.
+    git(root, 'fetch', '--quiet', '--refmap=', 'origin', '+refs/heads/main:refs/remotes/origin/main');
     return localOriginMain(root);
   } catch {
     return undefined;
