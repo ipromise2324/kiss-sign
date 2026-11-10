@@ -15,6 +15,12 @@ kiss-sign checks a Safe transaction against the signer's stated intent before th
 - `ALCHEMY_API_KEY=... pnpm prove-abi <address>` proves a contract's ABI live and prints the proof.
 - `ALCHEMY_API_KEY=... pnpm record-abi-case <name> <address>` records an ABI-proof fixture into `testdata/abi/`.
 - `ALCHEMY_API_KEY=... pnpm simulate <safe-tx fixture> --card '<card json>' [--record <name>]` simulates an executed Safe transaction on its parent block, reads its receipt, and prints both effects with their verdicts. `--record` writes `testdata/simulate/<name>.json`. `<safe> <nonce>` in place of a fixture name runs locally only and records nothing.
+- `bin/kiss-sign init --safe <address>` writes `$KISS_SIGN_HOME/config.json` (chain 1). It refuses a home already set up for another Safe.
+- `bin/kiss-sign book add <name> <address>` adds an address-book entry after you confirm it at a terminal; `book list` prints the book.
+- `bin/kiss-sign template approve <protocol>/<operation>` fetches origin and records the keccak256 of that template as it is at origin/main in `$KISS_SIGN_HOME/approved-templates.json`, after you confirm at a terminal.
+- `bin/kiss-sign card seal <card.json>` resolves every name, prints the card with full addresses, and after you confirm at a terminal stores it under `$KISS_SIGN_HOME/cards/<hash>.json` and prints the hash.
+- `ALCHEMY_API_KEY=... bin/kiss-sign verify --card <hash> (--tx <file> | --safe-tx-hash <hash>)` runs the self-check against origin/main, then every check, and prints `MATCH` with the domain hash, message hash and safeTxHash, or `MISMATCH`/`UNVERIFIABLE` with the checks that caused it. `--tx` takes Transaction Service JSON or the Safe web app's JSON. An executed transaction is judged by its receipt; any other is simulated on the latest block. It writes a verdict file to `$KISS_SIGN_HOME/verdicts/`.
+- `bin/kiss-sign replay <verdict file>` recomputes the verdict offline from the file alone and says whether it equals the recorded one.
 - `pnpm typecheck` runs `tsc --noEmit`.
 - `pnpm check-push origin/main..HEAD` runs the pre-push check on a range by hand.
 
