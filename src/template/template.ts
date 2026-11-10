@@ -14,6 +14,8 @@ export type CardField =
   | { readonly kind: 'amount'; readonly of: TokenRef }
   /** A registry name, an address-book name, or `safe`. */
   | { readonly kind: 'address' }
+  /** Who receives a transfer: an address-book name or `safe`, never a registry contract. */
+  | { readonly kind: 'recipient' }
   /** A Safe nonce. */
   | { readonly kind: 'nonce' };
 
@@ -290,6 +292,9 @@ function cardField(path: string, raw: unknown): (fields: CardFields) => CardFiel
     case 'address':
       exactKeys(path, value, ['kind']);
       return () => ({ kind: 'address' });
+    case 'recipient':
+      exactKeys(path, value, ['kind']);
+      return () => ({ kind: 'recipient' });
     case 'nonce':
       exactKeys(path, value, ['kind']);
       return () => ({ kind: 'nonce' });
@@ -311,7 +316,7 @@ function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'
   let to: CardRef | undefined;
   if (value.to !== undefined) {
     const name = cardFieldName(text(`${path}.to`, value.to)) ?? '';
-    if (scope.card.get(name)?.kind !== 'address') throw new TemplateError(`${path}.to`, 'must be card.<address field>');
+    if (!['address', 'recipient'].includes(scope.card.get(name)?.kind ?? '')) throw new TemplateError(`${path}.to`, 'must be card.<address field>');
     to = { field: name, attribute: undefined };
   }
   const amount = text(`${path}.amount`, value.amount);

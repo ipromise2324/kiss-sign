@@ -2,7 +2,7 @@
   "id": "eth/transfer",
   "card": {
     "amount": { "kind": "amount", "of": "eth" },
-    "recipient": { "kind": "address" }
+    "recipient": { "kind": "recipient" }
   },
   "calls": [
     {

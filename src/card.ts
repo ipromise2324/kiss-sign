@@ -126,6 +126,13 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
           values.set(name, resolved);
           break;
         }
+        case 'recipient': {
+          const booked = context.addressBook.get(raw);
+          if (raw === 'safe') values.set(name, { kind: 'address', name: raw, address: context.safe, from: 'safe' });
+          else if (booked !== undefined) values.set(name, { kind: 'address', name: raw, address: booked, from: 'address-book' });
+          else return refuse('unknown-name', name, `${JSON.stringify(raw)} is not in the address book; a recipient other than the Safe must be added with kiss-sign book add`);
+          break;
+        }
       }
     }
     operations.push({ template: template.id, values });

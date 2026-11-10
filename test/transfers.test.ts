@@ -239,3 +239,12 @@ test('a cancellation card refuses a value that is not a nonce', () => {
   const result = resolveCard({ operations: [{ template: 'safe/cancel', values: { nonce: '-1' } }] }, { templates, registry, addressBook: new Map(), safe: c.tx.safe });
   assert.deepEqual(result.kind === 'refused' ? [result.reason, result.at] : result.kind, ['not-a-nonce', 'operations[0].values.nonce']);
 });
+
+test('a transfer recipient must be the Safe or in the address book, never a registry contract', () => {
+  const card: Card = { operations: [{ template: 'erc20/transfer', values: { token: 'usdc', amount: '1000000', recipient: 'usdt' } }] };
+  const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: OTHER });
+  assert.equal(resolution.kind, 'refused');
+  assert.match(JSON.stringify(resolution), /not in the address book/);
+  const toSelf = resolveCard({ operations: [{ template: 'eth/transfer', values: { amount: '1', recipient: 'safe' } }] }, { templates, registry, addressBook: new Map(), safe: OTHER });
+  assert.equal(toSelf.kind, 'resolved');
+});

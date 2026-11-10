@@ -3,7 +3,7 @@
   "card": {
     "token": { "kind": "contract", "registryKind": "token" },
     "amount": { "kind": "amount", "of": "token" },
-    "recipient": { "kind": "address" }
+    "recipient": { "kind": "recipient" }
   },
   "calls": [
     {
