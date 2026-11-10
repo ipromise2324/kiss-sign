@@ -75,5 +75,32 @@
     "kind": "factory",
     "source": "https://docs.morpho.org/get-started/resources/addresses/",
     "instanceCheck": "isVaultV2(address)"
+  },
+  "smokehouse-usdc": {
+    "address": "0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xBEeFFF209270748ddd194831b3fa287a5386f5bC/smokehouse-usdc",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-1.0"
+    }
+  },
+  "hyperithm-usdc-apex-7777": {
+    "address": "0x777791C4d6DC2CE140D00D2828a7C93503c67777",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-1.1"
+    }
+  },
+  "hyperithm-usdc-apex-0932": {
+    "address": "0x093272C07700d3cA5301C3Bf9B3A392624179E2F",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory"
+    }
   }
 }
