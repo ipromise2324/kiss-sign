@@ -61,3 +61,24 @@ pnpm record-abi-case safe-proxy-1-3-0 0x9467dcFD4519287e3878C018c02f5670465a9003
 ```
 
 An optional third argument records at that block instead of the latest.
+
+## Simulations
+
+`simulate/<name>.json` holds every JSON-RPC request one run of `scripts/simulate.ts` made for the Safe transaction `safe-tx/<name>.json`, with each provider's raw `result`:
+
+- `executed` and `parent`: the block the transaction executed in, and the block the simulation sits on.
+- `exchanges`: each request's `method` and `params`, and `answers` keyed by provider. Only requests both providers answered are kept.
+
+The tests serve each provider its own recorded answer through the real reader, so parsing and agreement run as they do live. They simulate the deposit through `execTransaction` on the parent block, read its receipt, and judge both against the card.
+
+| File | Parent block | What the Safe gave and got |
+| --- | --- | --- |
+| `morpho-vault-deposit.json` | 26,048,222 | −1,800,000.000180 USDC, +1,742,403.090147006731022214 Steakhouse Prime USDC shares, no ETH; the USDC allowance to GeneralAdapter1 is 0 before and after |
+
+### Recording again
+
+```sh
+ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate morpho-vault-deposit \
+  --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180"}}]}' \
+  --record morpho-vault-deposit
+```
