@@ -1,4 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { loadConfig } from '../src/config.ts';
@@ -23,11 +25,13 @@ import {
   generatedPath,
   loadSubject,
   pastTxsRecordings,
+  programChanges,
   renderReport,
   replayReport,
   reportRecordingPath,
   summarizePastTxs,
   trimReportRecording,
+  vaultsAt,
   vaultsOf,
 } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
@@ -35,32 +39,72 @@ import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) [--record | --compare]
+const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
        node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) --offline
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
 docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
 the operation can touch with its code pin, pnpm vault-evidence for every vault its card can name, the past-txs
-recordings of the template studied again, and pnpm erc7730 for every such entry (pnpm fetch-erc7730 first). --vault
-prints the same for one vault, for a pull request that adds it.
+recordings of the template studied again with each recorded transaction fetched again by hash through both providers,
+and pnpm erc7730 for every such entry (pnpm fetch-erc7730 first). --vault prints the same for one vault, for a pull
+request that adds it.
 
 --record also writes the live answers to testdata/report/, records an ABI case for each entry testdata/abi/ lacks, and
 writes the committed report from those recordings alone: templates/<protocol>/<operation>/report.generated.md, or
 registry/reports/<vault>.generated.md. --offline prints that file's text from the recordings, reading nothing live.
---compare reads everything live and prints each fact that differs from the committed report; it exits 1 on any.`;
+--compare reads the listings, pages, ABI proofs and ERC-7730 attestations live, reads each vault again at the blocks
+the committed report names, fetches each recorded past transaction again by hash, and prints each fact that differs
+from the committed report; it exits 1 on any. It does not search for past transactions again. It first prints every
+file the pull request changes outside templates/, registry/ and testdata/ against origin/main.
+
+--data <git ref> takes templates/, registry/ and testdata/ from that ref, such as a fetched pull request branch, and
+runs the code checked out here. Run --compare from main with --data, so the pull request's own code cannot change what
+--compare checks.`;
 
 const { values: flags, positionals } = parseArgs({
-  options: { vault: { type: 'string' }, record: { type: 'boolean' }, offline: { type: 'boolean' }, compare: { type: 'boolean' } },
+  options: { vault: { type: 'string' }, record: { type: 'boolean' }, offline: { type: 'boolean' }, compare: { type: 'boolean' }, data: { type: 'string' } },
   allowPositionals: true,
 });
 const [id] = positionals;
-if ((id === undefined) === (flags.vault === undefined) || positionals.length > 1 || [flags.record, flags.offline, flags.compare].filter(Boolean).length > 1) {
+if (
+  (id === undefined) === (flags.vault === undefined) ||
+  positionals.length > 1 ||
+  [flags.record, flags.offline, flags.compare].filter(Boolean).length > 1 ||
+  (flags.data !== undefined && !flags.compare)
+) {
   console.error(USAGE);
   process.exit(2);
 }
 const target: Target = id === undefined ? { vault: flags.vault! } : { template: id };
 
-const root = join(import.meta.dirname, '..');
+const codeRoot = join(import.meta.dirname, '..');
+const git = (...args: string[]): Buffer => execFileSync('git', args, { cwd: codeRoot, maxBuffer: 1 << 30, stdio: ['ignore', 'pipe', 'pipe'] });
+
+/** The data directories as they are at `ref`, unpacked into a fresh directory, beside none of this checkout's code. */
+function dataAt(ref: string): string {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-data-'));
+  process.on('exit', () => rmSync(dir, { recursive: true, force: true }));
+  execFileSync('tar', ['-x', '-C', dir], { input: git('archive', '--format=tar', ref, 'templates', 'registry', 'testdata') });
+  return dir;
+}
+
+if (flags.compare) {
+  const head = flags.data ?? 'HEAD';
+  let changed: string[] | undefined;
+  try {
+    changed = git('diff', '--name-only', `origin/main...${head}`).toString().split('\n').filter((f) => f !== '');
+  } catch {
+    console.log(`PROGRAM CHANGE?  git could not compare ${head} with origin/main; check by hand which files the pull request changes`);
+  }
+  const program = changed === undefined ? [] : programChanges(changed);
+  if (program.length > 0) {
+    console.log(`PROGRAM CHANGE  ${head} changes ${program.length} file(s) outside templates/, registry/ and testdata/; review it as a program change, not a template:`);
+    for (const file of program) console.log(`  ${file}`);
+  }
+  if (flags.data === undefined) console.log('NOTE  this runs the code checked out here; to check a pull request, run --compare from main with --data <its branch>');
+}
+
+const root = flags.data === undefined ? codeRoot : dataAt(flags.data);
 const registry = loadRegistry(root);
 const suffixes = loadPublicSuffixList();
 const compilers = cachedCompilers();
@@ -99,11 +143,10 @@ for (const entry of entries) {
 }
 
 const alchemy = alchemyCall(httpsTransport(), endpoints[0].url);
-const vaults = new Map<string, string>();
-for (const vault of vaultsOf(subject, registry)) {
-  console.error(`reading ${vault.name}`);
-  vaults.set(vault.name, (await vaultEvidenceText(reader, alchemy, registry, vault)).text);
-}
+const vaults = await vaultsAt(flags.compare ? readFileSync(committedPath, 'utf8') : '', vaultsOf(subject, registry), async (vault, at) => {
+  console.error(`reading ${vault.name} at ${at === 'latest' ? 'the latest block' : `block ${at}`}`);
+  return (await vaultEvidenceText(reader, alchemy, registry, vault, at)).text;
+});
 
 const snapshot = loadSnapshot();
 if ('unavailable' in snapshot) {
@@ -113,7 +156,7 @@ if ('unavailable' in snapshot) {
 const erc7730Chain = recordingTransport(httpsTransport(), endpoints);
 const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport)));
 
-const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording)));
+const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
 const fetched = new Date();
 const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, erc7730: erc7730.text };
 const command = id === undefined ? `pnpm report --vault ${flags.vault}` : `pnpm report ${id}`;
@@ -124,7 +167,7 @@ if (flags.compare) {
   for (const line of differences) console.log(`DIFFERS  ${line}`);
   console.log(
     differences.length === 0
-      ? `${generatedPath(target)}: every fact read live equals the committed report (dates, block numbers and vault time series not compared)`
+      ? `${generatedPath(target)}: every fact read live equals the committed report (not compared: the date the listings were read and the block each ABI proof was read at; past transactions were not searched again)`
       : `${generatedPath(target)}: ${differences.length} fact(s) differ from what was read live`,
   );
   process.exit(differences.length === 0 ? 0 : 1);

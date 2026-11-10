@@ -3,7 +3,7 @@ import type { Reader } from '../chain/reader.ts';
 import { proveInstance } from '../contracts/instance.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Transport } from '../chain/rpc.ts';
-import type { BlockRef } from '../chain/types.ts';
+import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { parseFunctionSignature } from '../decode/abi.ts';
 import { decodeCall, encodeCall, wholeRegion } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
@@ -200,8 +200,14 @@ async function holderCount(reader: Reader, alchemy: AlchemyCall, vault: Address,
   return { kind: 'read', value: { block: at.number, candidates: candidates.value.length, holders: held.length, supply: supply.value, largestBalances: held.slice(0, 10) } };
 }
 
-export async function gatherVaultEvidence(reader: Reader, alchemy: AlchemyCall, vault: RegistryEntry): Promise<VaultEvidence | { readonly kind: 'unverifiable'; readonly reason: string }> {
-  const latest = await reader.block('latest');
+/** The evidence as of block `at`: the latest block, or the block a report names, so `--compare` can read it again. */
+export async function gatherVaultEvidence(
+  reader: Reader,
+  alchemy: AlchemyCall,
+  vault: RegistryEntry,
+  at: BlockTag = 'latest',
+): Promise<VaultEvidence | { readonly kind: 'unverifiable'; readonly reason: string }> {
+  const latest = await reader.block(at);
   if (latest.kind === 'unverifiable') return unverifiable(latest.reason);
   const points: AssetsPoint[] = [];
   for (let month = 0; month <= MONTHS; month++) {
@@ -266,20 +272,27 @@ export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry)
 
 /**
  * What `pnpm vault-evidence` prints: a vault that names a factory is read only after that factory answers that it
- * created the vault, since the numbers come from the vault's own code. `read` is false when nothing was read.
+ * created the vault, since the numbers come from the vault's own code. Everything is read as of one block, `at`.
+ * `read` is false when nothing was read.
  */
-export async function vaultEvidenceText(reader: Reader, alchemy: AlchemyCall, registry: Registry, vault: RegistryEntry): Promise<{ readonly read: boolean; readonly text: string }> {
+export async function vaultEvidenceText(
+  reader: Reader,
+  alchemy: AlchemyCall,
+  registry: Registry,
+  vault: RegistryEntry,
+  at: BlockTag = 'latest',
+): Promise<{ readonly read: boolean; readonly text: string }> {
+  const block = await reader.block(at);
+  if (block.kind === 'unverifiable') return { read: false, text: `UNVERIFIABLE ${block.reason}` };
   const lines: string[] = [];
   if (vault.attributes.factory === undefined) {
     lines.push(`NOTE ${vault.name} names no factory, so no factory vouches for the code these numbers come from`);
   } else {
-    const latest = await reader.block('latest');
-    if (latest.kind === 'unverifiable') return { read: false, text: `UNVERIFIABLE ${latest.reason}` };
-    const admitted = await proveInstance(reader, registry, vault.name, latest.value);
+    const admitted = await proveInstance(reader, registry, vault.name, block.value);
     if (admitted.kind === 'refused') return { read: false, text: `REFUSED ${admitted.why}; the vault's code is not read` };
-    lines.push(`admitted     ${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${latest.value.number}`);
+    lines.push(`admitted     ${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${block.value.number}`);
   }
-  const evidence = await gatherVaultEvidence(reader, alchemy, vault);
+  const evidence = await gatherVaultEvidence(reader, alchemy, vault, block.value.number);
   if ('kind' in evidence) return { read: false, text: [...lines, `UNVERIFIABLE ${evidence.reason}`].join('\n') };
   return { read: true, text: [...lines, formatVaultEvidence(evidence, registry)].join('\n') };
 }
