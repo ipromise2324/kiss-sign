@@ -7,6 +7,8 @@ import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.t
 import type { Address } from '../safe/types.ts';
 import { registrableDomain } from './public-suffix.ts';
 import type { PublicSuffixList, SuffixListUnavailable } from './public-suffix.ts';
+import { MAX_LABEL_ADDRESS_GAP, commitKey, findOnPage, githubRef, isGitHubPage, pageUrlOf, sourceHoldsAddress } from './source-page.ts';
+import type { CommitCheck, Page, PageBlock, SourcePages } from './source-page.ts';
 
 export type DefiLlamaProtocol = { readonly slug: string; readonly name: string; readonly url: URL | undefined; readonly github: readonly string[] };
 
@@ -19,8 +21,8 @@ export type Listings = {
 };
 
 /** What `check-sources` saw for one entry. A `finding` is for the signer to judge; `agrees` is evidence for the report. */
-export type Line = { readonly kind: 'agrees' | 'finding'; readonly check: 'defillama' | 'coingecko'; readonly text: string };
-export type EntryResult = { readonly entry: RegistryEntry; readonly lines: readonly Line[] };
+export type Line = { readonly kind: 'agrees' | 'finding'; readonly check: 'defillama' | 'coingecko' | 'url' | 'github' | 'page'; readonly text: string };
+export type EntryResult = { readonly entry: RegistryEntry; readonly site: string; readonly lines: readonly Line[] };
 
 export class ListingError extends Error {
   override name = 'ListingError';
@@ -128,11 +130,60 @@ function coingeckoLine(entry: RegistryEntry, coinsByAddress: Listings['coinsByAd
 
 const hasCoin = (entry: RegistryEntry) => COINGECKO_KINDS.includes(entry.kind);
 
-export function checkSources(entries: readonly RegistryEntry[], listings: Listings): EntryResult[] {
-  return entries.map((entry) => ({
-    entry,
-    lines: [defillamaLine(entry, listings), ...(hasCoin(entry) ? [coingeckoLine(entry, listings.coinsByAddress)] : [])],
-  }));
+function githubLine(source: URL, commits: SourcePages['commits']): Line {
+  const finding = (text: string): Line => ({ kind: 'finding', check: 'github', text });
+  const ref = githubRef(source);
+  if (ref.kind === 'unpinned') return finding('not pinned to a commit: name the file as github.com/<org>/<repo>/blob/<40-hex commit>/<path>');
+  const check: CommitCheck = commits.get(commitKey(ref)) ?? { kind: 'unknown', why: 'the commit was not checked' };
+  const at = `commit ${ref.commit.slice(0, 12)} of ${ref.owner}/${ref.repo}`;
+  if (check.kind === 'unknown') return finding(`${at}: ${check.why}`);
+  if (check.kind === 'off-default') return finding(`${at} is not on the default branch ${check.branch} (GitHub compare: ${check.status})`);
+  return { kind: 'agrees', check: 'github', text: `${at} is on the default branch ${check.branch} (GitHub compare: ${check.status})` };
+}
+
+function pageLine(entry: RegistryEntry, pages: SourcePages['pages']): Line {
+  const finding = (text: string): Line => ({ kind: 'finding', check: 'page', text });
+  const url = pageUrlOf(entry.source);
+  const page: Page = pages.get(url) ?? { kind: 'failed', why: `${url} was not fetched` };
+  if (page.kind === 'failed') return finding(page.why);
+  if (entry.sourceLabel === undefined) return finding('the entry names no sourceLabel, so where the address stands on the page is not checked');
+  const label = `"${entry.sourceLabel}"`;
+  const under = entry.sourceHeading === undefined ? '' : ` under a heading naming "${entry.sourceHeading}"`;
+  const match = findOnPage(page.blocks, entry.address, entry.sourceLabel, entry.sourceHeading);
+  switch (match.kind) {
+    case 'absent':
+      return finding(`the address is not found on the page as served (${url}); a page that shows it only by running JavaScript is not read`);
+    case 'miscased':
+      return finding('the address is on the page only in a letter case that is neither lowercase nor its EIP-55 checksum');
+    case 'apart':
+      return finding(`the address is on the page, but not within ${MAX_LABEL_ADDRESS_GAP} characters of ${label}${under} in one block with no other address between`);
+    case 'next-to':
+      return { kind: 'agrees', check: 'page', text: `the page has the address ${match.gap} characters ${match.labelFirst ? 'after' : 'before'} ${label}${under}` };
+  }
+}
+
+function siteOf(source: URL, suffixes: Listings['suffixes']): string {
+  if (isGitHubPage(source)) return `github.com/${source.pathname.split('/').filter((s) => s !== '')[0]?.toLowerCase() ?? ''}`;
+  return ('unavailable' in suffixes ? undefined : registrableDomain(source.hostname, suffixes)) ?? source.hostname;
+}
+
+export function checkSources(entries: readonly RegistryEntry[], listings: Listings, pages: SourcePages): EntryResult[] {
+  return entries.map((entry) => {
+    const source = new URL(entry.source);
+    const echoes = sourceHoldsAddress(entry.source, entry.address);
+    return {
+      entry,
+      site: siteOf(source, listings.suffixes),
+      lines: [
+        defillamaLine(entry, listings),
+        ...(hasCoin(entry) ? [coingeckoLine(entry, listings.coinsByAddress)] : []),
+        ...(isGitHubPage(source) ? [githubLine(source, pages.commits)] : []),
+        echoes
+          ? { kind: 'finding', check: 'url', text: 'the source URL holds the address, and a page echoes its own URL; the page is not read' }
+          : pageLine(entry, pages.pages),
+      ],
+    };
+  });
 }
 
 export function formatResults(results: readonly EntryResult[]): string {
@@ -140,6 +191,17 @@ export function formatResults(results: readonly EntryResult[]): string {
   for (const { entry, lines } of results) {
     out.push(`${entry.name} ${checksumAddress(entry.address)} (${entry.kind})`, `  source     ${entry.source}`);
     for (const line of lines) out.push(`  ${line.check.padEnd(10)} ${line.kind === 'finding' ? 'FINDING ' : 'agrees  '}${line.text}`);
+  }
+  const bySlug = new Map<string, Map<string, string[]>>();
+  for (const { entry, site } of results) {
+    const sites = bySlug.get(entry.defillama ?? '(no defillama slug)') ?? new Map<string, string[]>();
+    sites.set(site, [...(sites.get(site) ?? []), entry.name]);
+    bySlug.set(entry.defillama ?? '(no defillama slug)', sites);
+  }
+  out.push('', 'sites per protocol, for the signer to check each is the protocol\'s own:');
+  for (const [slug, sites] of bySlug) {
+    out.push(`  ${slug}`);
+    for (const [site, names] of sites) out.push(`    ${site}: ${names.join(', ')}`);
   }
   const findings = results.flatMap((r) => r.lines.filter((l) => l.kind === 'finding').map(() => r.entry.name));
   out.push('', `${results.length} entries, ${findings.length} findings${findings.length > 0 ? ` (${[...new Set(findings)].join(', ')})` : ''}`);
@@ -181,9 +243,21 @@ export type ListingsRecording = {
   readonly fetched: string;
   readonly defillama: readonly { slug: string; name: string; url?: string; github: readonly string[] }[];
   readonly coingecko: readonly { id: string; symbol: string; name: string; platforms: { ethereum: Address } }[];
+  readonly pages: Readonly<Record<string, Page>>;
+  readonly commits: Readonly<Record<string, CommitCheck>>;
 };
 
-export function trimForRecording(entries: readonly RegistryEntry[], listings: Listings, fetched: Date): ListingsRecording {
+export function sourcePagesOf(recording: Pick<ListingsRecording, 'pages' | 'commits'>): SourcePages {
+  return { pages: new Map(Object.entries(recording.pages)), commits: new Map(Object.entries(recording.commits)) };
+}
+
+function trimPage(page: Page, addresses: readonly Address[]): Page {
+  if (page.kind === 'failed') return page;
+  const holds = (block: PageBlock | undefined) => block !== undefined && addresses.some((a) => block.text.toLowerCase().includes(a.slice(2)));
+  return { kind: 'served', blocks: page.blocks.filter((block, i) => holds(block) || holds(page.blocks[i + 1])) };
+}
+
+export function trimForRecording(entries: readonly RegistryEntry[], listings: Listings, pages: SourcePages, fetched: Date): ListingsRecording {
   const slugs = new Set(entries.flatMap((e) => (e.defillama === undefined ? [] : [e.defillama])));
   const addresses = new Set(entries.filter(hasCoin).map((e) => e.address));
   return {
@@ -194,5 +268,9 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
     coingecko: [...addresses]
       .flatMap((address) => listings.coinsByAddress.get(address) ?? [])
       .map(({ id, symbol, name, ethereum }) => ({ id, symbol, name, platforms: { ethereum } })),
+    pages: Object.fromEntries(
+      [...pages.pages].map(([url, page]) => [url, trimPage(page, entries.filter((e) => pageUrlOf(e.source) === url).map((e) => e.address))]),
+    ),
+    commits: Object.fromEntries(pages.commits),
   };
 }

@@ -21,6 +21,10 @@ export type RegistryEntry = {
   readonly kind: ContractKind;
   /** A page that names this address as this contract. */
   readonly source: string;
+  /** The text next to the address on the `source` page that names this contract or its role, such as `Bundler3`. */
+  readonly sourceLabel?: string;
+  /** Text the nearest heading above the address must hold, for a page whose rows name only a chain, such as `MessageTransmitter`. */
+  readonly sourceHeading?: string;
   readonly attributes: { readonly [A in Attribute]?: string };
   /** A factory's view function that answers true only for a contract it created, such as `isMetaMorpho(address)`. */
   readonly instanceCheck?: AbiFunction;
@@ -91,7 +95,7 @@ function instanceCheckOf(path: string, raw: unknown): AbiFunction {
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'defillama', 'coingecko', 'attributes', 'codeHash', 'instanceCheck']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'sourceLabel', 'sourceHeading', 'defillama', 'coingecko', 'attributes', 'codeHash', 'instanceCheck']);
   let address: Address;
   let codeHash: Hex | undefined;
   try {
@@ -106,6 +110,12 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
   if (kind === undefined) throw new RegistryError(`${path}.kind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
   if (typeof value.source !== 'string' || !/^https:\/\/\S+$/.test(value.source)) {
     throw new RegistryError(`${path}.source`, 'not an https URL');
+  }
+  for (const key of ['sourceLabel', 'sourceHeading'] as const) {
+    const text = value[key];
+    if (text !== undefined && (typeof text !== 'string' || !/^\S(?:[^\p{Cc}]{0,118}\S)?$/u.test(text))) {
+      throw new RegistryError(`${path}.${key}`, 'not page text of 1 to 120 characters');
+    }
   }
   const attributes: { [A in Attribute]?: string } = {};
   if (value.attributes !== undefined) {
@@ -131,6 +141,8 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     address,
     kind,
     source: value.source,
+    ...(value.sourceLabel === undefined ? {} : { sourceLabel: value.sourceLabel as string }),
+    ...(value.sourceHeading === undefined ? {} : { sourceHeading: value.sourceHeading as string }),
     attributes,
     ...(value.defillama === undefined ? {} : { defillama: value.defillama }),
     ...(value.coingecko === undefined ? {} : { coingecko: value.coingecko }),
