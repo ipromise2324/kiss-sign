@@ -8,7 +8,7 @@ import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import type { CallNode, ConstValue, LeafRule, Rule, Template, TemplateCall } from './template.ts';
+import type { CallNode, ConstValue, LeafRule, Quantity, Rule, Template, TemplateCall } from './template.ts';
 
 /**
  * Where a field differs. `callPath` names the call, such as `multiSend[1].multicall.bundle[1].data.erc4626Deposit`;
@@ -50,7 +50,37 @@ type Context = {
   readonly unverifiable: string[];
   readonly leaves: Leaf[];
   readonly root: Uint8Array;
+  /** Each uint leaf's value in the transaction, per operation, for a share price bound that names its path. */
+  readonly seen: Map<Values, Map<LeafRule, bigint>>;
 };
+
+const RAY = 10n ** 27n;
+const MAX_UINT = (1n << 256n) - 1n;
+
+function remember(rule: LeafRule, actual: ConstValue, context: Context): void {
+  if (actual.kind !== 'uint') return;
+  const seen = context.seen.get(context.values) ?? new Map<LeafRule, bigint>();
+  seen.set(rule, actual.value);
+  context.seen.set(context.values, seen);
+}
+
+/** The finding a share price bound gives, or undefined when the transaction's bound is at least as strict as the card's. */
+function checkSharePrice(rule: Extract<Rule, { kind: 'share-price' }>, price: bigint, context: Context): string | undefined {
+  const amount = (q: Quantity): bigint | undefined => {
+    if (q.kind === 'path') return context.seen.get(context.values)?.get(q.rule);
+    const value = context.values.get(q.field);
+    return value?.kind === 'amount' ? value.value : undefined;
+  };
+  const [assets, shares] = [amount(rule.assets), amount(rule.shares)];
+  if (assets === undefined || shares === undefined) {
+    context.unverifiable.push(`a share price bound has no value for ${[rule.assets, rule.shares].map((q) => (q.kind === 'path' ? q.path : q.field)).join(' or ')}`);
+    return undefined;
+  }
+  if (rule.shares.kind === 'path' && shares === MAX_UINT) return 'a stated share count, not the whole balance (2^256-1), to bound the price against';
+  const limit = shares === 0n ? 'any' : `${(assets * RAY) / shares}`;
+  if (rule.bound === 'max') return price * shares <= assets * RAY ? undefined : `at most ${limit}: ${assets} assets for ${shares} shares, scaled by 1e27`;
+  return price * shares >= assets * RAY ? undefined : `at least ${limit}: ${assets} assets for ${shares} shares, scaled by 1e27`;
+}
 
 function render(value: ConstValue): string {
   return typeof value.value === 'bigint' || typeof value.value === 'boolean' ? String(value.value) : value.value;
@@ -102,7 +132,13 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
 function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span | undefined, callPath: string, arg: string, context: Context): void {
   if (rule.kind === 'call' || rule.kind === 'items' || rule.kind === 'fields') throw new Error(`a ${rule.kind} rule is not a leaf`);
   context.leaves.push({ callPath, arg, bytes, rule, type });
+  remember(rule, actual, context);
   if (rule.kind === 'free') return;
+  if (rule.kind === 'share-price') {
+    const expected = actual.kind === 'uint' ? checkSharePrice(rule, actual.value, context) : 'a uint';
+    if (expected !== undefined) context.findings.push({ callPath, arg, bytes, expected, actual: render(actual) });
+    return;
+  }
   const expected = expectedOf(rule, context);
   if (expected === undefined) return;
   if (expected.kind === actual.kind && expected.value === actual.value) return;
@@ -113,6 +149,7 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
 function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: string, arg: string, context: Context, itemContexts?: readonly Context[]): void {
   if (rule.kind === 'free') {
     context.leaves.push({ callPath, arg, bytes: actual.span, rule, type });
+    if (actual.kind === 'uint') remember(rule, actual, context);
     return;
   }
   if (rule.kind === 'call') {
@@ -258,6 +295,7 @@ export function inspectTemplateFields(
   const unverifiable: string[] = [];
   const leaves: Leaf[] = [];
   const done = (check: FieldCheck): Inspection => ({ check, leaves });
+  const seen = new Map<Values, Map<LeafRule, bigint>>();
   const contextFor = (values: Values, root: Uint8Array): Context => ({
     safe: card.safe,
     registry,
@@ -266,6 +304,7 @@ export function inspectTemplateFields(
     unverifiable,
     leaves,
     root,
+    seen,
   });
   for (const { rule, values } of nonces) {
     compareLeaf(rule, { kind: 'uint', bits: 256 }, { kind: 'uint', value: tx.nonce }, undefined, 'safeTx', 'nonce', contextFor(values, new Uint8Array()));

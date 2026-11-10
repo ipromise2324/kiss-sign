@@ -3,7 +3,7 @@ import type { AbiType } from '../decode/abi.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import type { LeafRule, Template } from '../template/template.ts';
+import type { LeafRule, Quantity, Template } from '../template/template.ts';
 import { ResearchError, SOURCES, TooManyTransfers, searchBoth } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
 import { constText, shapesOf, studyTx } from './study.ts';
@@ -154,6 +154,10 @@ function describeRule(rule: LeafRule, sender: string): string {
       return `card ${rule.ref.field}${rule.ref.attribute === undefined ? '' : `.${rule.ref.attribute}`}`;
     case 'free':
       return 'free';
+    case 'share-price': {
+      const name = (q: Quantity): string => (q.kind === 'card' ? `card ${q.field}` : q.path);
+      return `${rule.bound} share price, against ${name(rule.assets)} per ${name(rule.shares)}`;
+    }
   }
 }
 
@@ -178,6 +182,7 @@ function held(rule: LeafRule, fit: Fit, i: number, rules: readonly LeafRule[], r
       return rules.every((other, j) => cardKey(other) !== key || fit.values[j] === value);
     }
     case 'free':
+    case 'share-price':
       return undefined;
   }
 }
@@ -230,7 +235,7 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
       const holding = fits.filter((_, k) => verdicts[k] === true);
       lines.push(`  ${paths[i]}  [${describeRule(rule, sender)}]`);
       const heldText =
-        rule.kind === 'free'
+        rule.kind === 'free' || rule.kind === 'share-price'
           ? ''
           : rule.kind === 'card'
             ? `same as the other leaves bound to ${describeRule(rule, sender)} in ${holding.length} of ${fits.length}; `

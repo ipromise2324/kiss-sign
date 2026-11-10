@@ -45,11 +45,19 @@ export type Rule =
   | { readonly kind: 'contract'; readonly name: string }
   | { readonly kind: 'const'; readonly value: ConstValue }
   | { readonly kind: 'free'; readonly reason: string; readonly claim: FreeClaim }
+  /**
+   * An ERC-4626 price bound in assets per share, scaled by 1e27, as Morpho's adapters take it. `max` must be at most, and
+   * `min` at least, `assets` × 1e27 / `shares`, so the transaction's bound is at least as strict as the card's amounts.
+   */
+  | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity }
   | { readonly kind: 'call'; readonly call: CallNode }
   /** An array of exactly this many items. */
   | { readonly kind: 'items'; readonly items: readonly Rule[] }
   /** A tuple's components, by position. */
   | { readonly kind: 'fields'; readonly fields: readonly Rule[] };
+
+/** A number a price bound is computed from: a card amount, or the value the transaction holds at an earlier template path. */
+export type Quantity = { readonly kind: 'card'; readonly field: string } | { readonly kind: 'path'; readonly path: string; readonly rule: LeafRule };
 
 /** A rule on one value, rather than on the parts of an array, a tuple or a decoded call. */
 export type LeafRule = Exclude<Rule, { readonly kind: 'call' | 'items' | 'fields' }>;
@@ -125,7 +133,8 @@ function exactKeys(path: string, value: Json, required: readonly string[], optio
   if (extra !== undefined) throw new TemplateError(`${path}.${extra}`, 'unexpected field');
 }
 
-type Scope = { readonly card: CardFields; readonly registry: Registry };
+/** `leaves` holds every leaf rule parsed so far by its path, for a price bound to name. */
+type Scope = { readonly card: CardFields; readonly registry: Registry; readonly leaves: Map<string, LeafRule> };
 
 type CardFields = ReadonlyMap<string, CardField>;
 
@@ -207,11 +216,36 @@ function free(path: string, raw: unknown, type: AbiType): Rule {
   return { kind: 'free', reason: text(`${path}.${claim}`, value[claim]), claim };
 }
 
+function quantity(path: string, raw: unknown, scope: Scope): Quantity {
+  const name = text(path, raw);
+  const field = cardFieldName(name);
+  if (field !== undefined) {
+    if (scope.card.get(field)?.kind !== 'amount') throw new TemplateError(path, `${JSON.stringify(name)} is not a card amount`);
+    return { kind: 'card', field };
+  }
+  const rule = scope.leaves.get(name);
+  if (rule === undefined) throw new TemplateError(path, `${JSON.stringify(name)} is neither card.<amount> nor the path of an earlier uint argument`);
+  return { kind: 'path', path: name, rule };
+}
+
+function sharePrice(path: string, raw: unknown, type: AbiType, scope: Scope, bound: 'max' | 'min'): Rule {
+  if (type.kind !== 'uint') throw new TemplateError(path, `a share price bound cannot bind a ${canonicalType(type)}`);
+  const value = object(path, raw);
+  exactKeys(path, value, ['assets', 'shares']);
+  return { kind: 'share-price', bound, assets: quantity(`${path}.assets`, value.assets, scope), shares: quantity(`${path}.shares`, value.shares, scope) };
+}
+
 function rule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
+  const parsed = parseRule(path, raw, type, scope);
+  if (type.kind === 'uint' && parsed.kind !== 'call' && parsed.kind !== 'items' && parsed.kind !== 'fields') scope.leaves.set(path, parsed);
+  return parsed;
+}
+
+function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
   const value = object(path, raw);
   const keys = Object.keys(value);
   const key = keys[0];
-  if (keys.length !== 1 || key === undefined) throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, const, free, call, items, fields');
+  if (keys.length !== 1 || key === undefined) throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, const, free, maxSharePrice, minSharePrice, call, items, fields');
   const body = value[key];
   const at = `${path}.${key}`;
   const cannotBind = () => new TemplateError(path, `a ${key} rule cannot bind a ${canonicalType(type)}`);
@@ -244,6 +278,10 @@ function rule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
     }
     case 'free':
       return free(at, body, type);
+    case 'maxSharePrice':
+      return sharePrice(at, body, type, scope, 'max');
+    case 'minSharePrice':
+      return sharePrice(at, body, type, scope, 'min');
     case 'call':
       needs(['bytes']);
       return { kind: 'call', call: callNode(at, body, scope) };
@@ -405,7 +443,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   });
   const fields = new Map<string, CardField>(pending.map(([name]) => [name, { kind: 'address' }]));
   for (const [name, build] of pending) fields.set(name, build(fields));
-  const scope: Scope = { card: fields, registry };
+  const scope: Scope = { card: fields, registry, leaves: new Map() };
   const nonce = value.nonce === undefined ? undefined : rule('nonce', value.nonce, { kind: 'uint', bits: 256 }, scope);
   const same = value.same === undefined ? [] : array('same', value.same).map((ref, i) => cardToken(`same[${i}]`, text(`same[${i}]`, ref), fields));
   if (value.same !== undefined && same.length < 2) throw new TemplateError('same', 'names fewer than two card references');
@@ -432,6 +470,9 @@ export function cardRefs(template: Template): CardRef[] {
   const refs: CardRef[] = [...template.same];
   const visit = (rule: Rule | undefined): void => {
     if (rule?.kind === 'card') refs.push(rule.ref);
+    else if (rule?.kind === 'share-price') {
+      for (const q of [rule.assets, rule.shares]) if (q.kind === 'card') refs.push({ field: q.field, attribute: undefined });
+    }
     else if (rule?.kind === 'call') rule.call.args.forEach(visit);
     else if (rule?.kind === 'items') rule.items.forEach(visit);
     else if (rule?.kind === 'fields') rule.fields.forEach(visit);

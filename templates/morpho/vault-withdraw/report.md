@@ -2,7 +2,7 @@
 
 The Safe withdraws an amount of a Morpho vault's asset from that vault, the way the Morpho app builds it through Bundler3: one official MultiSend with two calls. The first approves GeneralAdapter1 to spend the Safe's vault shares. The second is `Bundler3.multicall` with one bundle item: GeneralAdapter1 calls `erc4626Withdraw`, which withdraws the amount from the vault for the Safe and pays it to the Safe.
 
-The card is the vault and the amount of the asset. The design's "amount or all" is two templates: this one for an amount, `morpho/vault-withdraw-all` for all of the Safe's shares. The Morpho app builds them differently (`erc4626Withdraw` or `erc4626Redeem`), so a card names one of the two.
+The card is the vault, the amount of the asset, and `max-shares`, the most shares the withdrawal may burn. The design's "amount or all" is two templates: this one for an amount, `morpho/vault-withdraw-all` for all of the Safe's shares. The Morpho app builds them differently (`erc4626Withdraw` or `erc4626Redeem`), so a card names one of the two.
 
 Withdrawing from several vaults at once is a card with one operation per vault. The app then makes every share approval first and one `multicall` with one item per vault last. The multicall is marked `merge`, so the operations of one card share it, with their items in card order.
 
@@ -42,7 +42,7 @@ The third argument is a lower bound, the fewest assets per share the owner accep
 | bundle item | `to` | the adapter that runs it | `general-adapter1` |
 | | `erc4626Withdraw.vault` | the vault | the card's `vault` |
 | | `erc4626Withdraw.assets` | how much of the asset | the card's `amount` |
-| | `erc4626Withdraw.minSharePriceE27` | slippage bound | free: the effects require exactly the amount in and some shares out |
+| | `erc4626Withdraw.minSharePriceE27` | slippage bound, the fewest assets per share | `minSharePrice`: at least the card's `amount` × 1e27 / `max-shares`, so the withdrawal burns at most `max-shares` or reverts |
 | | `erc4626Withdraw.receiver` | who gets the asset | the Safe |
 | | `erc4626Withdraw.owner` | whose shares are burned | the Safe |
 
@@ -77,7 +77,7 @@ What the misfits taught:
 - **Sweeps.** 4 from 4 Safes (Apex) and 1 (Smokehouse) add two `erc20Transfer` items after the withdrawal.
 - **Migrations**, a redeem paid to GeneralAdapter1 and then a deposit into another vault, are not withdrawals and belong to a later template.
 
-The tests record withdrawals from two other Safes, `morpho-withdraw-apex` and `morpho-withdraw-apex-other-safe`. Each gives `MATCH` with its implied card, and a mutation of each of its 13 bound fields gives `MISMATCH`. A receiver or owner that is not the Safe, or another amount, is a `MISMATCH` at that field.
+The tests record withdrawals from two other Safes, `morpho-withdraw-apex` and `morpho-withdraw-apex-other-safe`. Each gives `MATCH` with its implied card, and a mutation of each of its 14 bound fields gives `MISMATCH`. A receiver or owner that is not the Safe, or another amount, is a `MISMATCH` at that field.
 
 ## ERC-7730
 

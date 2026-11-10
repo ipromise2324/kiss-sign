@@ -6,7 +6,7 @@ The Safe moves all of its shares of one Morpho vault into another vault of the s
 2. `erc4626Redeem` redeems every share of the old vault GeneralAdapter1 holds (`shares = 2^256-1`), owner and receiver GeneralAdapter1.
 3. `erc4626Deposit` deposits every unit of the new vault's asset GeneralAdapter1 holds (`assets = 2^256-1`) into the new vault, shares to the Safe.
 
-The card is `from` and `to`, two vaults.
+The card is `from` and `to`, two vaults, plus `min-assets`, the fewest assets the redeem may pay, and `min-shares`, the fewest new shares the Safe may get.
 
 ## Both vaults must hold the same asset
 
@@ -41,11 +41,11 @@ Its name on chain is "Steakhouse High Yield USDC" and `asset()` is USDC.
 | | `erc20TransferFrom.amount` | how many | free: the effects require the Safe to hold none afterwards |
 | item 1 | `erc4626Redeem.vault` | the old vault | the card's `from` |
 | | `erc4626Redeem.shares` | how many | 2^256-1, all the adapter holds |
-| | `erc4626Redeem.minSharePriceE27` | slippage bound | free |
+| | `erc4626Redeem.minSharePriceE27` | slippage bound | `minSharePrice`: at least `min-assets` × 1e27 / the `erc20TransferFrom.amount` of item 0; GeneralAdapter1 redeems at least those shares, so it pays at least `min-assets` or reverts |
 | | `erc4626Redeem.receiver`, `owner` | who gets the asset, whose shares | `general-adapter1` |
 | item 2 | `erc4626Deposit.vault` | the new vault | the card's `to` |
 | | `erc4626Deposit.assets` | how much | 2^256-1, all the adapter holds |
-| | `erc4626Deposit.maxSharePriceE27` | slippage bound | free |
+| | `erc4626Deposit.maxSharePriceE27` | slippage bound | `maxSharePrice`: at most `min-assets` × 1e27 / `min-shares`; the deposit puts in at least `min-assets`, so the Safe gets at least `min-shares` or it reverts |
 | | `erc4626Deposit.receiver` | who gets the new shares | the Safe |
 
 Every item targets GeneralAdapter1, sends 0 ETH, has `skipRevert` false and a zero `callbackHash`; `approve` and `multicall` may carry the app's 8-byte trailer. Effects: the Safe gives all of `from` and gets a positive number of `to` shares. Both price bounds are free, as in the deposit and withdrawal templates: the new shares are not on the card, so only "more than nothing" is checked.
@@ -68,7 +68,7 @@ The candidates were first found by listing, with Etherscan's `tokentx`, the vaul
 
 `pnpm simulate` ran both recorded migrations, `morpho-migrate-all-smokehouse` and `morpho-migrate-all-smokehouse-other-safe`. Both left the Safe holding no Smokehouse shares and gave it Steakhouse High Yield shares. The second gives `MATCH`. The first gives `MISMATCH` only because its share allowance to GeneralAdapter1 went from 60,953,196,422,022,121 to 0: the leftover described above.
 
-The tests require `MATCH` from the field checks for both, a mutation of each of the 26 bound fields to give `MISMATCH`, a new-shares receiver other than the Safe to give `MISMATCH` at that field, and a card with vaults of different assets to be refused.
+The tests require `MATCH` from the field checks for both, a mutation of each of the 28 bound fields to give `MISMATCH`, a new-shares receiver other than the Safe to give `MISMATCH` at that field, and a card with vaults of different assets to be refused.
 
 ## ERC-7730
 

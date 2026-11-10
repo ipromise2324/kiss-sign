@@ -52,7 +52,17 @@ function mutateBytes(type: AbiType, current: Uint8Array): Uint8Array | undefined
   }
 }
 
+const MAX_UINT = (1n << 256n) - 1n;
+
+/** A share price bound changes to its loosest value, since any stricter one still matches. */
 function mutate(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
+  if (leaf.rule.kind === 'share-price' && leaf.bytes !== undefined) {
+    const data = hexToBytes(tx.data.slice(2));
+    const loosest = leaf.rule.bound === 'max' ? MAX_UINT : 0n;
+    if (BigInt(`0x${bytesToHex(data.subarray(...leaf.bytes))}`) === loosest) return undefined;
+    data.set(uintWord(loosest), leaf.bytes[0]);
+    return { ...tx, data: `0x${bytesToHex(data)}` as Hex };
+  }
   if (leaf.bytes === undefined) {
     if (leaf.arg === 'to') return { ...tx, to: `0x${bytesToHex(mutateBytes(leaf.type, hexToBytes(tx.to.slice(2))) as Uint8Array)}` as Address };
     if (leaf.arg === 'value') return { ...tx, value: nextInt({ kind: 'uint', bits: 256 }, tx.value) };

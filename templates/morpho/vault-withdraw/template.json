@@ -8,6 +8,10 @@
     "amount": {
       "kind": "amount",
       "of": "vault.asset"
+    },
+    "max-shares": {
+      "kind": "amount",
+      "of": "vault"
     }
   },
   "calls": [
@@ -59,7 +63,10 @@
                         "card": "amount"
                       },
                       "minSharePriceE27": {
-                        "free": "slippage bound: the fewest assets per share the Safe accepts; the effects require the Safe to get exactly the amount and give a positive number of shares"
+                        "minSharePrice": {
+                          "assets": "card.amount",
+                          "shares": "card.max-shares"
+                        }
                       },
                       "receiver": {
                         "safe": true

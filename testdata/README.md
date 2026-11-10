@@ -196,11 +196,11 @@ The tests serve each provider its own recorded answer through the real reader, s
 
 ```sh
 export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
-pnpm simulate morpho-withdraw-all-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777"}}]}' --record morpho-withdraw-all
-pnpm simulate morpho-withdraw-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"300000000000"}}]}' --record morpho-withdraw-open-allowance
-pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc"}}]}' --record morpho-withdraw-two-vaults-all
+pnpm simulate morpho-withdraw-all-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777","min-assets":"25172004987"}}]}' --record morpho-withdraw-all
+pnpm simulate morpho-withdraw-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"300000000000","max-shares":"285585667181036150934684"}}]}' --record morpho-withdraw-open-allowance
+pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc","min-assets":"20245327154"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc","min-assets":"17322520385"}}]}' --record morpho-withdraw-two-vaults-all
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate morpho-vault-deposit \
-  --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180"}}]}' \
+  --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
   --record morpho-vault-deposit
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate eth-transfer-null-data \
   --card '{"operations":[{"template":"eth/transfer","values":{"amount":"4988797943068499801","recipient":"recipient"}}]}' \
@@ -299,7 +299,7 @@ The tests set up a clone and a `$KISS_SIGN_HOME` from its inputs, run `verify` w
 export KISS_SIGN_HOME=$HOME/.kiss-sign-lane-8
 bin/kiss-sign init --safe 0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0
 bin/kiss-sign template approve morpho/vault-deposit
-echo '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180"}}]}' > card.json
+echo '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' > card.json
 bin/kiss-sign card seal card.json
 node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-vault-deposit.json").service))' > tx.json
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
@@ -309,7 +309,7 @@ cp "$KISS_SIGN_HOME"/verdicts/0x0287ff55*.json testdata/verify/morpho-vault-depo
 export KISS_SIGN_HOME=$HOME/.kiss-sign-migrate
 bin/kiss-sign init --safe 0x3D548a77137E46B25F240CE0091266bAa5803177
 bin/kiss-sign template approve morpho/vault-migrate-all
-echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc"}}]}' > card.json
+echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' > card.json
 bin/kiss-sign card seal card.json
 node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-migrate-all-smokehouse.json").service))' > tx.json
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
@@ -318,6 +318,8 @@ cp "$KISS_SIGN_HOME"/verdicts/0x8e7bcfd5*.json testdata/verify/morpho-migrate-al
 ```
 
 Run it from a clean clone at origin/main, or the self-check stops it.
+
+Both files were recorded before the Morpho templates took a slippage limit, so they hold a card without one and the template text of that time. `replay` and the tests use the card and template a file holds, so they still give `MATCH`; a new recording uses the cards above.
 
 ## Safe history
 

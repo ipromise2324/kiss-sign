@@ -94,6 +94,7 @@ A template describes one operation for one protocol, for example `morpho/vault-d
   - equals the Safe;
   - equals a named contract;
   - equals a constant. A constant address is only the zero address, and constant `bytes` or a constant string is only empty, so no address or call is written into a template without a registry name;
+  - a share price bound, at least as strict as the price a card amount per a card amount or an earlier field gives (`maxSharePrice`, `minSharePrice`; see Intent card);
   - free, with a written reason. The mutation check treats free fields as free.
 
   Template load walks every argument's whole type, through tuples, arrays and decoded calls, and refuses a template that breaks these rules:
@@ -127,8 +128,9 @@ Card values per operation, covering the operations in the Safe's history:
 | Operation | Card values | Bound by the template |
 |---|---|---|
 | Transfer ETH or a token | token, amount, recipient | none |
-| Deposit into a vault (Morpho, Fluid) | vault, amount | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the vault |
-| Withdraw or redeem from a vault | vault, amount or `all` (two templates) | receiver and owner are the Safe |
+| Deposit into a vault (Morpho, Fluid) | vault, amount; for Morpho, the fewest shares to receive | the asset is the vault's asset; receiver is the Safe; the approval is exact and goes to the vault; Morpho's price bound guarantees at least the card's shares |
+| Withdraw or redeem from a vault | vault, amount or `all` (two templates); for Morpho, the most shares to burn, or for `all` the fewest assets to receive | receiver and owner are the Safe; Morpho's price bound guarantees the card's limit |
+| Move all of one Morpho vault into another | both vaults, the fewest assets to redeem, the fewest new shares to receive | the two vaults share one asset; each price bound guarantees its card limit |
 | Claim rewards (Fluid, Merkl, Morpho) | reward token | recipient is the Safe; amount and proof are free; the Safe gives nothing and receives only the reward token |
 | Receive USDC through CCTP | token, amount | the target is Circle's MessageTransmitter; the message and attestation are free; the Safe gives nothing and receives exactly the amount of the token |
 | Swap through a router (Uniswap, Odos) | sell token, sell amount, buy token, minimum buy amount | recipient is the Safe; the router is a named contract |
@@ -136,6 +138,7 @@ Card values per operation, covering the operations in the Safe's history:
 
 - One Safe transaction can batch several operations, for example withdrawing from two vaults. The card then lists each operation with its values, and the MultiSend must contain exactly those calls. An approval belongs to the operation that spends it, not to its own line.
 - Swap limits are stated as a minimum amount, not a slippage percentage, so the program never needs a price. The signer types the number.
+- A vault's slippage limit is stated the same way, as an amount the signer can compare with the app's preview: the fewest shares a deposit gets (`min-shares`), the most shares a withdrawal of an amount burns (`max-shares`), or the fewest assets a withdrawal of all gets (`min-assets`). Slippage protection acts when the transaction runs, which no simulation before it can see, so the transaction's own bound must carry the card's limit. A Morpho adapter takes the bound as a price in assets per share scaled by 1e27; the template binds it with `maxSharePrice` or `minSharePrice`, and the field check requires it to be at least as strict as the price the card's amounts give. For a deposit of 1,800,000.000180 USDC with `min-shares` 1,741,863.305677219101283940, `maxSharePriceE27` must be at most 1800000000180 × 10^27 / 1741863305677219101283940. A stricter bound matches too; a looser one is `MISMATCH` at that field. Where the share count is the Safe's whole balance, as in a withdrawal of all, the bound is checked against the share count the transaction states, and a transaction that states 2^256-1 (the whole balance, read when it runs) is `MISMATCH`, since its bound then guarantees nothing.
 - A recipient that is not the Safe must already be in the address book. Adding an entry is a separate step, done before signing, where the signer checks the full address against a source outside the chat.
 
 Sealed means hashed and stored where the AI cannot write.
@@ -181,7 +184,7 @@ These are protocol-free and change rarely.
   - no `delegatecall` except to the official MultiSend, and the rules apply again to every call inside it, at every level;
   - no owner, module, guard, threshold, fallback handler or implementation change;
   - the Safe's own fee fields are all zero: `safeTxGas`, `baseGas`, `gasPrice`, `gasToken`, `refundReceiver`. Otherwise a correctly hashed transaction can pay a refund to someone else.
-- The mutation check: change each bound field and confirm the template gives `MISMATCH`.
+- The mutation check: change each bound field and confirm the template gives `MISMATCH`. A share price bound changes to its loosest value, since a stricter one still matches.
 - A vault's `asset` in the registry is written during research. For each vault on the card whose `asset` the template relies on, the program reads the vault's `asset()` from both providers at the block the transaction runs on: the latest block for a pending transaction, the block before its receipt's for an executed one. It must be the token the registry names, or the verdict is `MISMATCH`; a read the providers do not agree on is `UNVERIFIABLE`.
 - Simulation through the Safe's own `execTransaction`, judged by the Safe's balance and allowance changes, not by protocol events. Every change to the Safe's balances must be one the template's effects explain, and no allowance from the Safe may end higher than it started; any other change is `MISMATCH`, whatever else the template says. An allowance may fall, as when a migration resets a leftover approval to zero, since a lower allowance lets no one take more than before. A transfer explains its payment by its card's recipient and amount; a deposit or a swap must also receive what its effects promise.
 - Permit2 allowances are allowances too. For every token and spender that a Permit2 `Approval`, `Permit`, `Lockdown` or `NonceInvalidation` event of the Safe's names, the program reads Permit2's `allowance(Safe, token, spender)` (amount, expiration, nonce) before and after the transaction. It may fall or expire: one that ends with an amount must end with no larger amount and no later expiration than it started with, or the verdict is `MISMATCH`. A raised nonce only voids signed permits, so it is shown and not judged. An allowance left at 2^160-1, which Permit2 never lowers when it is spent, is refused as unlimited by the floor rules.

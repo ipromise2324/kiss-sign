@@ -31,7 +31,7 @@ const OTHER = '0x1111111111111111111111111111111111111111';
 
 const context = (safe: Address = deposit.safe): CardContext => ({ templates, registry, addressBook: new Map(), safe });
 const depositCard = (amount = '1800000000180', count = 1): Card => ({
-  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount } })),
+  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount, 'min-shares': '1741863305677219101283940' } })),
 });
 
 function resolved(card: Card): ResolvedCard {
@@ -217,6 +217,7 @@ test('the template parses its card fields and effects', () => {
   assert.deepEqual([...template.card], [
     ['vault', { kind: 'contract', registryKind: 'vault' }],
     ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' } }],
+    ['min-shares', { kind: 'amount', of: { field: 'vault', attribute: undefined } }],
   ]);
   assert.deepEqual(template.effects, {
     gives: [{ token: { field: 'vault', attribute: 'asset' }, amount: { kind: 'card', field: 'amount' }, to: undefined }],
@@ -242,7 +243,7 @@ test('a card resolves an address kind through the Safe, the registry and the add
   const book = new Map([['alice', OTHER as Address]]);
   const resolveRecipient = (name: string, addressBook = book) => {
     const result = resolveCard(
-      { operations: [{ template: recipients.id, values: { vault: 'steakhouse-prime-usdc', amount: '1', recipient: name } }] },
+      { operations: [{ template: recipients.id, values: { vault: 'steakhouse-prime-usdc', amount: '1', 'min-shares': '1', recipient: name } }] },
       { templates: new Map([[recipients.id, recipients]]), registry, addressBook, safe: deposit.safe },
     );
     return result.kind === 'resolved' ? result.card.operations[0]?.values.get('recipient') : result.reason;
@@ -259,7 +260,7 @@ test('a sealed card loads back, and a modified sealed file is refused', () => {
   const card = depositCard();
   const hash = sealCard(home, card);
   const path = join(cardsDir(home), `${hash}.json`);
-  assert.equal(readFileSync(path, 'utf8'), '{"operations":[{"template":"morpho/vault-deposit","values":{"amount":"1800000000180","vault":"steakhouse-prime-usdc"}}]}');
+  assert.equal(readFileSync(path, 'utf8'), '{"operations":[{"template":"morpho/vault-deposit","values":{"amount":"1800000000180","min-shares":"1741863305677219101283940","vault":"steakhouse-prime-usdc"}}]}');
   assert.equal(sealCard(home, parseCard(JSON.parse(readFileSync(path, 'utf8')))), hash, 'sealing is idempotent');
   assert.deepEqual(loadSealed(home, hash), card);
   writeFileSync(path, readFileSync(path, 'utf8').replace('1800000000180', '1800000000181'));
