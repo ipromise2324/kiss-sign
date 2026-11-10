@@ -2,7 +2,8 @@
   "id": "morpho/vault-deposit",
   "card": {
     "vault": { "kind": "contract", "registryKind": "vault" },
-    "amount": { "kind": "amount", "of": "vault.asset" }
+    "amount": { "kind": "amount", "of": "vault.asset" },
+    "min-shares": { "kind": "amount", "of": "vault" }
   },
   "calls": [
     {
@@ -52,7 +53,7 @@
                     "args": {
                       "vault": { "card": "vault" },
                       "assets": { "card": "amount" },
-                      "maxSharePriceE27": { "free": "slippage bound; the simulation checks the shares the Safe receives" },
+                      "maxSharePriceE27": { "maxSharePrice": { "assets": "card.amount", "shares": "card.min-shares" } },
                       "receiver": { "safe": true }
                     }
                   }

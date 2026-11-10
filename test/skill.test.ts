@@ -19,7 +19,7 @@ async function usage(): Promise<string> {
     stdout: () => {},
     stderr: (t) => void (stderr += t),
     readSecret: undefined,
-    confirm: undefined,
+    ask: undefined,
     repoRoot: ROOT,
     transport: async () => assert.fail('no chain reads'),
     fetchJson: async () => assert.fail('no fetches'),

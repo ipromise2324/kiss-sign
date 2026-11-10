@@ -130,8 +130,11 @@ async function rowFor(ctx: Context, entry: HistoryTx): Promise<Row> {
 }
 
 function originMain(root: string): string {
+  const origin = fetchOriginMain(root);
+  if (origin.kind === 'fetched') return origin.commit;
+  if (origin.kind === 'refused') throw new HistoryError(`origin/main is not the official one: ${origin.problems.join('; ')}`);
   try {
-    return fetchOriginMain(root) ?? localOriginMain(root);
+    return localOriginMain(root);
   } catch {
     throw new HistoryError('this clone has no origin/main to read templates and the registry from');
   }

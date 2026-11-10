@@ -11,7 +11,9 @@ import { RegistryError } from '../registry.ts';
 import { SafeTxParseError } from '../safe/types.ts';
 import { TemplateError } from '../template/template.ts';
 import { VerifyError } from '../verify/verify.ts';
+import { cardNew } from './card-new.ts';
 import { FAILED, OK, USAGE, UsageError } from './io.ts';
+import { printManagedSettings } from './managed-settings.ts';
 import type { Io } from './io.ts';
 import { hiddenPrompt } from './prompt.ts';
 import { bookAdd, bookList, cardSeal, init, templateApprove } from './setup.ts';
@@ -75,6 +77,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
   init: { usage: 'init --safe <address>', run: init },
   'book add': { usage: 'book add <name> <address>', run: bookAdd },
   'book list': { usage: 'book list', run: bookList },
+  'card new': { usage: 'card new <protocol>/<operation>...', run: cardNew },
   'card seal': { usage: 'card seal <card.json>', run: cardSeal },
   'template approve': { usage: 'template approve <protocol>/<operation>', run: templateApprove },
   verify: { usage: 'verify --card <sealed card hash> (--tx <file> | --safe-tx-hash <hash>)', run: verify },
@@ -82,6 +85,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
   'key add': { usage: `key add <${KEYS.map(({ name }) => name).join('|')}>`, run: keyAdd },
   'key list': { usage: 'key list', run: keyList },
   'key remove': { usage: 'key remove <name>', run: keyRemove },
+  'managed-settings': { usage: 'managed-settings', run: printManagedSettings },
 };
 
 const USAGE_TEXT = `Usage:\n${Object.values(COMMANDS)
@@ -121,7 +125,7 @@ export function nodeIo(): Io {
     stdout: (text) => void process.stdout.write(text),
     stderr: (text) => void process.stderr.write(text),
     readSecret: process.stdin.isTTY ? (question) => hiddenPrompt(question, process.stdin, process.stderr) : undefined,
-    confirm: process.stdin.isTTY ? askYes : undefined,
+    ask: process.stdin.isTTY ? askLine : undefined,
     repoRoot: join(import.meta.dirname, '..', '..'),
     transport: httpsTransport(),
     fetchJson: async (url) => {
@@ -132,12 +136,12 @@ export function nodeIo(): Io {
   };
 }
 
-async function askYes(question: string): Promise<boolean> {
+async function askLine(question: string): Promise<string | undefined> {
   const terminal = createInterface({ input: process.stdin, output: process.stderr });
   try {
-    return /^y(es)?$/i.test((await terminal.question(question)).trim());
+    return await terminal.question(question);
   } catch {
-    return false;
+    return undefined;
   } finally {
     terminal.close();
   }

@@ -20,7 +20,7 @@ async function run(argv: string[], env: Record<string, string>, typed?: string) 
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     readSecret: typed === undefined ? undefined : async () => typed,
-    confirm: undefined,
+    ask: undefined,
     repoRoot: join(import.meta.dirname, '..'),
     transport: async () => assert.fail('key commands read no chain'),
     fetchJson: async () => assert.fail('key commands fetch nothing'),

@@ -4,9 +4,11 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { RegistryError, loadRegistry, parseRegistry } from '../src/registry.ts';
 import type { RegistryEntry } from '../src/registry.ts';
-import { checkSources, formatResults, parseCoinGeckoCoins, parseDefiLlamaProtocols, trimForRecording } from '../src/research/listings.ts';
+import { checkSources, formatResults, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording } from '../src/research/listings.ts';
 import type { Listings } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
+import { gatherSourcePages } from '../src/research/source-page.ts';
+import type { HttpGet, SourcePages } from '../src/research/source-page.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'sources', 'registry.json'), 'utf8'));
@@ -18,7 +20,8 @@ const listingsOf = (defillama: unknown, coingecko: unknown): Listings => ({
 });
 const listings = listingsOf(recording.defillama, recording.coingecko);
 
-const report = (entries: readonly RegistryEntry[], using: Listings = listings) => formatResults(checkSources(entries, using));
+const recordedPages = sourcePagesOf(recording);
+const report = (entries: readonly RegistryEntry[], using: Listings = listings, pages: SourcePages = recordedPages) => formatResults(checkSources(entries, using, pages));
 const entriesOf = (raw: Record<string, unknown>) => [...parseRegistry(raw).entries.values()];
 const FAKE = `0x${'11'.repeat(20)}`;
 const USDT = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
@@ -104,16 +107,16 @@ test('a token CoinGecko does not list, an unknown slug, and an entry with no slu
   assert.match(text, /coingecko {2}FINDING no CoinGecko listing at this address on ethereum/);
   assert.match(text, /defillama {2}FINDING DefiLlama lists no protocol "morpho-v9"/);
   assert.match(text, /defillama {2}FINDING the entry names no DefiLlama protocol; source not compared/);
-  assert.match(text, /3 entries, 3 findings \(unlisted, renamed, bare\)/);
+  assert.match(text, /3 entries, 6 findings \(unlisted, renamed, bare\)/);
 });
 
 test('a recording, read back, gives the same report as the listings it was trimmed from', () => {
   const entries = [...loadRegistry(ROOT).entries.values()];
   const twice = [...recording.defillama, { slug: 'safe', name: 'Safe Twin', url: 'https://safe.example' }];
   const full = listingsOf(twice, recording.coingecko);
-  const trimmed = JSON.parse(JSON.stringify(trimForRecording(entries, full, new Date('2026-11-11'))));
+  const trimmed = JSON.parse(JSON.stringify(trimForRecording(entries, full, recordedPages, new Date('2026-11-11'))));
   assert.equal(trimmed.fetched, '2026-11-11');
-  assert.equal(report(entries, listingsOf(trimmed.defillama, trimmed.coingecko)), report(entries, full));
+  assert.equal(report(entries, listingsOf(trimmed.defillama, trimmed.coingecko), sourcePagesOf(trimmed)), report(entries, full));
 });
 
 test('the registry refuses a defillama or coingecko value that is not a slug, and a coingecko id on a contract that is no ERC-20', () => {
@@ -129,4 +132,226 @@ test('the registry refuses a defillama or coingecko value that is not a slug, an
     () => entriesOf({ r: { address: FAKE, kind: 'router', source: 'https://example.org/u', coingecko: 'usd-coin' } }),
     (e: unknown) => e instanceof RegistryError && /r\.coingecko: a router has no coingecko/.test(e.message),
   );
+});
+
+const ADDR = '0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245';
+const OTHER = '0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0';
+const COMMIT = 'ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62';
+
+type Served = { status: number; text: string; headers?: Record<string, string> };
+const getFrom = (served: Record<string, Served>): HttpGet => async (url) => {
+  const answer = served[url];
+  if (answer === undefined) throw new Error(`unexpected GET ${url}`);
+  return answer;
+};
+const html = (body: string): Served => ({ status: 200, text: `<!doctype html><html><body>${body}</body></html>`, headers: { 'content-type': 'text/html' } });
+
+async function pageReport(fields: Record<string, unknown>, served: Record<string, Served>): Promise<string> {
+  const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'morpho-blue', ...fields } });
+  return report(entries, listings, await gatherSourcePages(entries.map((e) => e.source), getFrom(served)));
+}
+
+const DOCS = 'https://docs.morpho.org/addresses';
+const onDocs = (body: string, fields: Record<string, unknown> = {}) =>
+  pageReport({ source: DOCS, sourceLabel: 'Bundler3', ...fields }, { [DOCS]: html(body) });
+
+test('the registry: every labelled source page has its address next to its label, and every GitHub source is pinned to a default-branch commit', () => {
+  const text = report([...loadRegistry(ROOT).entries.values()]);
+  for (const entry of loadRegistry(ROOT).entries.values()) {
+    if (entry.sourceLabel !== undefined) assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}page {7}agrees {2}the page has the address \\d+ characters`), entry.name);
+  }
+  assert.match(text, /bundler3 .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address 5 characters after "Bundler3"/);
+  assert.match(text, /cctp-message-transmitter .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address \d+ characters after "Ethereum" under a heading naming "MessageTransmitter"/);
+  assert.match(text, /multisend-1\.3\.0-eip155 .*\n(?: {2}.*\n)*? {2}github {5}agrees {2}commit ca9cb0d2d5f5 of safe-global\/safe-deployments is on the default branch main/);
+  assert.match(text, /hyperithm-usdc-apex-0932 .*\n(?: {2}.*\n)*? {2}url {8}FINDING the source URL holds the address/);
+});
+
+test('an address in the label\'s own table row agrees; in another row, too far away, or past another address it is a finding', async () => {
+  assert.match(await onDocs(`<table><tr><td>Bundler3</td><td><a href="x">${ADDR}</a></td></tr></table>`), /page {7}agrees {2}the page has the address 1 characters after "Bundler3"/);
+  const apart = /page {7}FINDING the address is on the page, but not within 100 characters of "Bundler3" in one block with no other address between/;
+  assert.match(await onDocs(`<table><tr><td>Bundler3</td><td>${OTHER}</td></tr><tr><td>Adapter</td><td>${ADDR}</td></tr></table>`), apart);
+  assert.match(await onDocs(`<p>Bundler3 ${'word '.repeat(30)}${ADDR}</p>`), apart);
+  assert.match(await onDocs(`<p>Bundler3 ${OTHER} ${ADDR}</p>`), apart);
+  assert.match(await onDocs(`<p>Bundler3s ${ADDR}</p>`), apart);
+});
+
+const apartFrom = (label: string) => new RegExp(`page {7}FINDING the address is on the page, but not within 100 characters of "${label}"`);
+
+test('a label standing alone in the paragraph just before the address agrees; one inside other text or beside an address does not', async () => {
+  assert.match(await onDocs(`<p>Bundler3:</p><p><a>${ADDR}</a></p>`), /page {7}agrees {2}the page has the address 2 characters after "Bundler3"/);
+  assert.match(await onDocs(`<p>See the Bundler3 guide</p><p>${ADDR}</p>`), apartFrom('Bundler3'));
+  assert.match(await onDocs(`<p>${OTHER} is not Bundler3</p><p>${ADDR}</p>`), apartFrom('Bundler3'));
+});
+
+test('in a list of names and addresses, each address binds to its own name, whichever side the names stand on', async () => {
+  const nameFirst = `<p>Bundler3: ${ADDR} GeneralAdapter1: ${OTHER}</p>`;
+  assert.match(await onDocs(nameFirst), /page {7}agrees {2}the page has the address 2 characters after "Bundler3"/);
+  assert.match(await onDocs(nameFirst, { sourceLabel: 'GeneralAdapter1' }), apartFrom('GeneralAdapter1'));
+  const nameAfter = `<p>${OTHER} (Bundler3), ${ADDR} (GeneralAdapter1)</p>`;
+  assert.match(await onDocs(nameAfter, { sourceLabel: 'GeneralAdapter1' }), /page {7}agrees {2}the page has the address 2 characters before "GeneralAdapter1"/);
+  assert.match(await onDocs(nameAfter), apartFrom('Bundler3'));
+  assert.match(await onDocs(`<p>${ADDR} is Bundler3</p>`), /page {7}agrees {2}the page has the address 4 characters before "Bundler3"/);
+});
+
+const JSON_PAGE = 'https://docs.morpho.org/addresses.json';
+const onJson = (value: unknown, sourceLabel: string) =>
+  pageReport({ source: JSON_PAGE, sourceLabel }, { [JSON_PAGE]: { status: 200, text: JSON.stringify(value), headers: { 'content-type': 'application/json' } } });
+
+test('in JSON, a name binds to an address only within its own object', async () => {
+  const list = [{ address: OTHER, name: 'Bundler3' }, { address: ADDR, name: 'GeneralAdapter1' }];
+  assert.match(await onJson(list, 'GeneralAdapter1'), /page {7}agrees {2}the page has the address 6 characters before "GeneralAdapter1"/);
+  assert.match(await onJson(list, 'Bundler3'), apartFrom('Bundler3'));
+  assert.match(await onJson([{ name: 'Bundler3' }, { address: ADDR }], 'Bundler3'), apartFrom('Bundler3'));
+});
+
+test('a markdown deployments file binds each address to the row label under its own heading', async () => {
+  const md = 'https://docs.morpho.org/deployments.md';
+  const text = [
+    '## fToken_fUSDC',
+    '| network | address | etherscan | args |',
+    '|---|---|---|---|',
+    `| mainnet | ${ADDR} | [Link](https://etherscan.io/address/${ADDR}#code) | "${OTHER}" |`,
+    '## fToken_fUSDT',
+    '|---|---|---|---|',
+    `| mainnet | ${OTHER} | [Link](https://etherscan.io/address/${OTHER}#code) | "${ADDR}" |`,
+  ].join('\n');
+  const at = (sourceHeading: string) => pageReport({ source: md, sourceLabel: 'mainnet', sourceHeading }, { [md]: { status: 200, text, headers: { 'content-type': 'text/plain' } } });
+  assert.match(await at('fToken_fUSDC'), /page {7}agrees {2}the page has the address 3 characters after "mainnet" under a heading naming "fToken_fUSDC"/);
+  assert.match(await at('fToken_fUSDT'), apartFrom('mainnet'));
+});
+
+test('an address only a script, an attribute, or a comment holds is not on the page as served', async () => {
+  const absent = /page {7}FINDING the address is not found on the page as served \(https:\/\/docs\.morpho\.org\/addresses\)/;
+  assert.match(await onDocs(`<div id="root"></div><script>render({ name: "Bundler3", address: "${ADDR}" })</script>`), absent);
+  assert.match(await onDocs(`<p>Bundler3 <a href="https://etherscan.io/address/${ADDR}">here</a></p>`), absent);
+  assert.match(await onDocs(`<p>Bundler3 <!-- ${ADDR} --></p>`), absent);
+});
+
+test('text a browser hides is not on the page: hidden elements, the title, text areas, SVG, an unclosed script, and inside an attribute', async () => {
+  const absent = /page {7}FINDING the address is not found on the page as served/;
+  const shown = `Bundler3 ${ADDR}`;
+  for (const body of [
+    `<p style="display:none">${shown}</p>`,
+    `<p style="color: red; visibility : hidden">${shown}</p>`,
+    `<div hidden><div>x</div><p>${shown}</p></div>`,
+    `<span aria-hidden="true">${shown}</span>`,
+    `<title>${shown}</title>`,
+    `<textarea>${shown}</textarea>`,
+    `<svg><text>${shown}</text></svg>`,
+    `<template><p>${shown}</p></template>`,
+    `<p>x</p><script>${shown}`,
+    `<p>x</p><style>${shown}`,
+    `<img alt="x>${shown}">`,
+    `<img alt='x>${shown}'>`,
+    `<img alt="x>${shown}`,
+    `<p>x</p><!-- ${shown}`,
+  ]) {
+    assert.match(await onDocs(body), absent, body);
+  }
+});
+
+test('text after a hidden element, an attribute holding ">", or an element not hidden still shows', async () => {
+  const agrees = /page {7}agrees {2}the page has the address 1 characters after "Bundler3"/;
+  for (const body of [
+    `<div hidden><div>x</div></div><p>Bundler3 ${ADDR}</p>`,
+    `<img alt="a > b" hidden><p>Bundler3 ${ADDR}</p>`,
+    `<svg/><p>Bundler3 ${ADDR}</p>`,
+    `<p aria-hidden="false" style="display:block">Bundler3 ${ADDR}</p>`,
+    `<p title="hidden">Bundler3 ${ADDR}</p>`,
+  ]) {
+    assert.match(await onDocs(body), agrees, body);
+  }
+});
+
+test('an address in a broken letter case is a finding; lowercase and checksummed both count', async () => {
+  assert.match(await onDocs(`<p>Bundler3 ${ADDR.toLowerCase()}</p>`), /page {7}agrees/);
+  assert.match(await onDocs(`<p>Bundler3 0x${ADDR.slice(2).toUpperCase()}</p>`), /page {7}FINDING the address is on the page only in a letter case that is neither lowercase nor its EIP-55 checksum/);
+});
+
+test('a sourceHeading must be the nearest heading above the address', async () => {
+  const body = `<h3>TokenMessenger</h3><table><tr><td>Ethereum</td><td>${ADDR}</td></tr></table><h3>MessageTransmitter</h3><table><tr><td>Ethereum</td><td>${OTHER}</td></tr></table>`;
+  assert.match(await onDocs(body, { sourceLabel: 'Ethereum', sourceHeading: 'TokenMessenger' }), /agrees {2}the page has the address 1 characters after "Ethereum" under a heading naming "TokenMessenger"/);
+  assert.match(await onDocs(body, { sourceLabel: 'Ethereum', sourceHeading: 'MessageTransmitter' }), /FINDING the address is on the page, but not within 100 characters of "Ethereum" under a heading naming "MessageTransmitter"/);
+});
+
+test('an entry with no sourceLabel and a redirecting page are findings', async () => {
+  assert.match(await pageReport({ source: DOCS }, { [DOCS]: html(`<p>Bundler3 ${ADDR}</p>`) }), /page {7}FINDING the entry names no sourceLabel/);
+  const moved = await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: { status: 308, text: '', headers: { location: '/developers/addresses' } } });
+  assert.match(moved, /page {7}FINDING https:\/\/docs\.morpho\.org\/addresses answered HTTP 308, redirecting to https:\/\/docs\.morpho\.org\/developers\/addresses; name the page itself as the source/);
+});
+
+test('a source URL that holds the address is a finding, and its page is not read', async () => {
+  const source = `https://app.morpho.org/ethereum/vault/${ADDR.toLowerCase()}/bundler`;
+  const text = await pageReport({ source, sourceLabel: 'Bundler3' }, {});
+  assert.match(text, /url {8}FINDING the source URL holds the address, and a page echoes its own URL; the page is not read/);
+  assert.doesNotMatch(text, /page {7}agrees/);
+});
+
+const REPO_API = 'https://api.github.com/repos/safe-global/safe-deployments';
+const PINNED = `https://github.com/safe-global/safe-deployments/blob/${COMMIT}/src/assets/v1.3.0/multi_send.json`;
+const RAW = `https://raw.githubusercontent.com/safe-global/safe-deployments/${COMMIT}/src/assets/v1.3.0/multi_send.json`;
+const deployments = { status: 200, text: JSON.stringify({ contractName: 'MultiSend', deployments: { canonical: { address: ADDR }, eip155: { address: OTHER } } }) };
+const compareUrl = `${REPO_API}/compare/main...${COMMIT}?per_page=1`;
+const github = (compare: Served, repo: Served = { status: 200, text: JSON.stringify({ default_branch: 'main' }) }) =>
+  pageReport({ source: PINNED, sourceLabel: 'canonical', defillama: 'safe' }, { [REPO_API]: repo, [compareUrl]: compare, [RAW]: deployments });
+
+test('a pinned GitHub file is read raw at its commit, and a commit behind or equal to the default branch agrees', async () => {
+  const text = await github({ status: 200, text: JSON.stringify({ status: 'behind' }) });
+  assert.match(text, /github {5}agrees {2}commit ca9cb0d2d5f5 of safe-global\/safe-deployments is on the default branch main \(GitHub compare: behind\)/);
+  assert.match(text, /page {7}agrees {2}the page has the address 9 characters after "canonical"/);
+  assert.match(await github({ status: 200, text: JSON.stringify({ status: 'identical' }) }), /github {5}agrees .*\(GitHub compare: identical\)/);
+});
+
+test('a commit off the default branch, such as one only a fork holds, is a finding', async () => {
+  assert.match(await github({ status: 200, text: JSON.stringify({ status: 'diverged' }) }), /github {5}FINDING commit ca9cb0d2d5f5 of safe-global\/safe-deployments is not on the default branch main \(GitHub compare: diverged\)/);
+  assert.match(await github({ status: 200, text: JSON.stringify({ status: 'ahead' }) }), /github {5}FINDING .* is not on the default branch main \(GitHub compare: ahead\)/);
+  assert.match(await github({ status: 404, text: '{"message":"Not Found"}' }), /github {5}FINDING .* is not on the default branch main \(GitHub compare: no such commit in the repository\)/);
+});
+
+test('two files pinned in one repository ask GitHub for its default branch once', async () => {
+  const OTHER_COMMIT = 'b'.repeat(40);
+  const second = `https://github.com/safe-global/safe-deployments/blob/${OTHER_COMMIT}/src/assets/v1.4.1/multi_send.json`;
+  const served: Record<string, Served> = {
+    [REPO_API]: { status: 200, text: JSON.stringify({ default_branch: 'main' }) },
+    [compareUrl]: { status: 200, text: JSON.stringify({ status: 'behind' }) },
+    [`${REPO_API}/compare/main...${OTHER_COMMIT}?per_page=1`]: { status: 200, text: JSON.stringify({ status: 'identical' }) },
+    [RAW]: deployments,
+    [`https://raw.githubusercontent.com/safe-global/safe-deployments/${OTHER_COMMIT}/src/assets/v1.4.1/multi_send.json`]: deployments,
+  };
+  const asked: string[] = [];
+  const pages = await gatherSourcePages([PINNED, second], (url) => {
+    asked.push(url);
+    return getFrom(served)(url);
+  });
+  assert.equal(asked.filter((url) => url === REPO_API).length, 1);
+  assert.deepEqual([...pages.commits.values()].map((c) => c.kind), ['on-default', 'on-default']);
+});
+
+test('the GitHub rate limit is a finding that says the commit was not checked', async () => {
+  const limited = { status: 403, text: '{"message":"API rate limit exceeded for 1.2.3.4."}', headers: { 'x-ratelimit-remaining': '0' } };
+  assert.match(await github(limited, limited), /github {5}FINDING commit ca9cb0d2d5f5 of safe-global\/safe-deployments: the GitHub API rate limit is reached \(60 requests an hour without a token\); the commit is not checked, run again later/);
+  assert.match(await github({ status: 429, text: '' }), /github {5}FINDING .*: the GitHub API rate limit is reached/);
+});
+
+test('a GitHub source on a branch name, a tree, or the repository root is not pinned', async () => {
+  for (const source of ['https://github.com/safe-global/safe-deployments/blob/main/src/assets/v1.3.0/multi_send.json', `https://github.com/safe-global/safe-deployments/tree/${COMMIT}/src`, 'https://github.com/safe-global/safe-deployments']) {
+    const text = report(entriesOf({ m: { address: ADDR, kind: 'multisend', source, defillama: 'safe' } }));
+    assert.match(text, /github {5}FINDING not pinned to a commit: name the file as github\.com\/<org>\/<repo>\/blob\/<40-hex commit>\/<path>/, source);
+  }
+});
+
+test('the report lists the sites each protocol\'s sources use', () => {
+  const text = report([...loadRegistry(ROOT).entries.values()]);
+  assert.match(text, /sites per protocol, for the signer to check each is the protocol's own:\n/);
+  assert.match(text, /\n {2}safe\n {4}github\.com\/safe-global: multisend-1\.3\.0, multisend-1\.3\.0-eip155,/);
+  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}steakhouse\.financial: steakhouse-prime-usdc, smokehouse-usdc, steakhouse-high-yield-usdc\n/);
+});
+
+test('the registry refuses a sourceLabel that is empty, padded, or too long', () => {
+  for (const sourceLabel of ['', ' Bundler3', 'x'.repeat(121), 7]) {
+    assert.throws(
+      () => entriesOf({ r: { address: FAKE, kind: 'router', source: 'https://example.org/u', sourceLabel } }),
+      (e: unknown) => e instanceof RegistryError && /r\.sourceLabel: not page text of 1 to 120 characters/.test(e.message),
+    );
+  }
 });

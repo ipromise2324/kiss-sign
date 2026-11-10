@@ -2,7 +2,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -31,7 +31,10 @@ function write(path: string, text: string): string {
   return path;
 }
 
-/** A clone at its origin/main holding the fixture's template and registry, and a home set up as the signer set it up. */
+/**
+ * A clone at its origin/main holding the fixture's template and registry, and a home set up as the signer set it up. Its
+ * origin is the official URL, served offline from a local bare repository through core.sshCommand.
+ */
 function setUp(approved: string | null = template.approved) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-verify-'));
   const origin = join(base, 'origin.git');
@@ -43,6 +46,10 @@ function setUp(approved: string | null = template.approved) {
   git(repo, 'add', '-A');
   git(repo, 'commit', '--quiet', '-m', 'templates');
   git(repo, 'push', '--quiet', 'origin', 'main');
+  const ssh = write(join(base, 'ssh'), `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
+  chmodSync(ssh, 0o755);
+  git(repo, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
+  git(repo, 'config', 'core.sshCommand', ssh);
   const home = join(base, 'home');
   write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: fixture.inputs.safe }));
   write(join(home, 'cards', `${fixture.inputs.card.hash}.json`), fixture.inputs.card.text);
@@ -60,7 +67,7 @@ async function run(argv: string[], repo: string, home: string) {
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     readSecret: undefined,
-    confirm: undefined,
+    ask: undefined,
     repoRoot: repo,
     transport: replayTransport(fixture.exchanges, mainnetEndpoints(env)),
     fetchJson: async () => assert.fail('these tests give the transaction as a file'),
@@ -81,7 +88,7 @@ const hashLine = (stdout: string, label: string): string | undefined => new RegE
 test('the Morpho deposit verifies to MATCH and prints the hashes the hardware wallet shows', async () => {
   const { code, stdout, verdicts } = await verifyTx(service);
   assert.equal(code, 0, stdout);
-  assert.match(stdout, /^MATCH\n/);
+  assert.match(stdout, /^MATCH\nEvery call moves an asset of the Safe\.\n  domain hash/);
   const [domain, message, safeTxHash] = ['domain hash', 'message hash', 'safeTxHash'].map((label) => hashLine(stdout, label));
   assert.equal(domain, chain.domainSeparator);
   assert.equal(safeTxHash, chain.transactionHash);
@@ -175,4 +182,21 @@ test('replay reports a recorded verdict this program does not reproduce', async 
   assert.equal(code, 1);
   assert.match(stdout, /^MATCH\n/);
   assert.match(stderr, /the recorded verdict was MISMATCH; this program now gives another result/);
+});
+
+test('replay names an older verdict format and says to run verify again', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const path = write(join(dir, 'old.json'), JSON.stringify({ ...fixture, format: 'kiss-sign-verdict-1' }));
+  const { code, stderr } = await run(['replay', path], dir, dir);
+  assert.equal(code, 1);
+  assert.match(stderr, /format "kiss-sign-verdict-1", not kiss-sign-verdict-2; run verify again/);
+});
+
+test('replay says when only the call marks differ from the recorded ones', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const claimed = { ...fixture, result: { ...fixture.result, calls: { kind: 'unverifiable', reasons: ['edited'] } } };
+  const path = write(join(dir, 'calls.json'), JSON.stringify(claimed));
+  const { code, stderr } = await run(['replay', path], dir, dir);
+  assert.equal(code, 1);
+  assert.match(stderr, /the recorded verdict was MATCH; this program now gives the same verdict but different call marks or hashes/);
 });

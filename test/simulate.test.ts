@@ -40,7 +40,7 @@ const SHARES = 1742403090147006731022214n;
 const replay = (fixture: Fixture): Reader => replayReader(fixture.exchanges);
 
 const depositCard = (amount = AMOUNT, count = 1): Card => ({
-  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: `${amount}` } })),
+  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: `${amount}`, 'min-shares': '1741863305677219101283940' } })),
 });
 
 function resolved(card: Card): ResolvedCard {
@@ -75,6 +75,7 @@ const depositEffects = (overrides: Partial<Extract<Observed, { kind: 'executed' 
     [VAULT, SHARES],
   ]),
   allowances: [{ token: USDC, spender: GENERAL_ADAPTER1, before: 0n, after: 0n }],
+  permit2: [],
   ends: new Map(),
   safeState: { kind: 'receipt', logs: [] },
   ...overrides,

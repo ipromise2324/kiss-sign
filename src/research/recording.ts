@@ -4,7 +4,16 @@ import type { SourceExchange } from './sources.ts';
 
 /** One `past-txs --record` run: its query, every search answer, and every chain read with each provider's answer. */
 export type PastTxsRecording = {
-  readonly query: { readonly template: string; readonly token: string; readonly anchor: string; readonly from?: string; readonly fromBlock: string; readonly toBlock: string };
+  /** Without `fromBlock` and `toBlock`, the run used the default spread of windows. */
+  readonly query: {
+    readonly template: string;
+    readonly token: string;
+    readonly anchor: string;
+    readonly from?: string;
+    readonly fromBlock?: string;
+    readonly toBlock?: string;
+    readonly maxTxs: number;
+  };
   readonly sources: readonly SourceExchange[];
   readonly providers: readonly ProviderName[];
   readonly exchanges: readonly Exchange[];

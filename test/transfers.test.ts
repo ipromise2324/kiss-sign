@@ -205,6 +205,7 @@ test('a transfer to the Safe itself expects no net change, and any change is a m
     eth,
     tokens: new Map(tokens),
     allowances: [],
+    permit2: [],
     ends: new Map(),
     safeState: { kind: 'receipt', logs: [] },
   });

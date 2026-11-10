@@ -4,16 +4,29 @@ import type { Address, Hex } from '../safe/types.ts';
 
 export const EIP1967_IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbcn;
 export const EIP1967_BEACON_SLOT = 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50n;
+/** keccak256("org.zeppelinos.proxy.implementation"), where proxies older than EIP-1967 keep it, such as USDC's. */
+export const ZEPPELINOS_IMPLEMENTATION_SLOT = 0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3n;
 const IMPLEMENTATION_CALL = '0x5c60da1b' as Hex;
 
 const EIP1167_HEAD = '0x363d3d373d3d3d363d73';
 const EIP1167_TAIL = '5af43d82803e903d91602b57fd5bf3';
 
+export type SafeProxyName = 'Proxy 1.0.0' | 'Proxy 1.1.1' | 'GnosisSafeProxy 1.3.0' | 'SafeProxy 1.4.1' | 'SafeProxy 1.5.0';
+
 /**
- * The runtime code each Safe proxy factory deploys, as read from Safes these factories created. The proxy keeps its
- * singleton in slot 0 and delegates every call but `masterCopy()` to it.
+ * The runtime code each official Safe proxy factory deploys, as read from Safes these factories created
+ * (`testdata/safe-proxy/`). The proxy keeps its singleton in slot 0 and delegates every call to it, except
+ * `masterCopy()` from 1.1.1 on.
  */
-const SAFE_PROXY_CODE: ReadonlyMap<string, 'GnosisSafeProxy 1.3.0' | 'SafeProxy 1.4.1'> = new Map([
+const SAFE_PROXY_CODE: ReadonlyMap<string, SafeProxyName> = new Map([
+  [
+    '0x608060405273ffffffffffffffffffffffffffffffffffffffff600054163660008037600080366000845af43d6000803e6000811415603d573d6000fd5b3d6000f3fea165627a7a723058201e7d648b83cfac072cbccefc2ffc62a6999d4a050ee87a721942de1da9670db80029',
+    'Proxy 1.0.0',
+  ],
+  [
+    '0x608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea265627a7a72315820d8a00dc4fe6bf675a9d7416fc2d00bb3433362aa8186b750f76c4027269667ff64736f6c634300050e0032',
+    'Proxy 1.1.1',
+  ],
   [
     '0x608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea2646970667358221220d1429297349653a4918076d650332de1a1068c5f3e07c5c82360c277770b955264736f6c63430007060033',
     'GnosisSafeProxy 1.3.0',
@@ -22,18 +35,23 @@ const SAFE_PROXY_CODE: ReadonlyMap<string, 'GnosisSafeProxy 1.3.0' | 'SafeProxy 
     '0x608060405273ffffffffffffffffffffffffffffffffffffffff600054167fa619486e0000000000000000000000000000000000000000000000000000000060003514156050578060005260206000f35b3660008037600080366000845af43d6000803e60008114156070573d6000fd5b3d6000f3fea264697066735822122003d1488ee65e08fa41e58e888a9865554c535f2c77126a82cb4c0f917f31441364736f6c63430007060033',
     'SafeProxy 1.4.1',
   ],
+  [
+    '0x608060405260005463a619486e60003560e01c14156024578060601b606c5260206060f35b3660008037600080366000845af43d6000803e806040573d6000fd5b3d6000f3fea2646970667358221220e61834ebd2d8cd909d362bf67c47ef58fd665df38e6dd036ce65611101d072e964736f6c63430007060033',
+    'SafeProxy 1.5.0',
+  ],
 ]);
 
 export type Proxy =
   | { readonly kind: 'none' }
   | { readonly kind: 'eip1967'; readonly implementation: Address }
   | { readonly kind: 'eip1967-beacon'; readonly beacon: Address; readonly implementation: Address }
+  | { readonly kind: 'zeppelinos'; readonly implementation: Address }
   | { readonly kind: 'eip1167'; readonly implementation: Address }
-  | { readonly kind: 'safe'; readonly factory: 'GnosisSafeProxy 1.3.0' | 'SafeProxy 1.4.1'; readonly implementation: Address };
+  | { readonly kind: 'safe'; readonly factory: SafeProxyName; readonly implementation: Address };
 
 export type ProxyRefusal =
   | { readonly why: 'unverifiable'; readonly read: string }
-  | { readonly why: 'slot-not-an-address'; readonly slot: 'eip1967-implementation' | 'eip1967-beacon' | 'safe-singleton' }
+  | { readonly why: 'slot-not-an-address'; readonly slot: 'eip1967-implementation' | 'eip1967-beacon' | 'zeppelinos-implementation' | 'safe-singleton' }
   | { readonly why: 'beacon-answer-not-an-address'; readonly beacon: Address }
   | { readonly why: 'both-eip1967-slots-set' }
   | { readonly why: 'slot-without-delegatecall' };
@@ -62,7 +80,7 @@ export function minimalProxyTarget(code: Hex): Address | undefined {
   return `0x${code.slice(EIP1167_HEAD.length, EIP1167_HEAD.length + 40)}` as Address;
 }
 
-export function safeProxyFactory(code: Hex): 'GnosisSafeProxy 1.3.0' | 'SafeProxy 1.4.1' | undefined {
+export function safeProxyFactory(code: Hex): SafeProxyName | undefined {
   return SAFE_PROXY_CODE.get(code);
 }
 
@@ -79,9 +97,18 @@ const unverifiable = (read: Read<unknown> & { kind: 'unverifiable' }): Located =
 });
 const refused = (refusal: ProxyRefusal): Located => ({ kind: 'refused', refusal });
 
+async function zeppelinosWhenNoEip1967(reader: Reader, address: Address, code: Hex, at: BlockRef): Promise<Located> {
+  if (!hasDelegatecall(code)) return { kind: 'located', proxy: { kind: 'none' } };
+  const slot = await reader.getStorageAt(address, ZEPPELINOS_IMPLEMENTATION_SLOT, at);
+  if (slot.kind === 'unverifiable') return unverifiable(slot);
+  const implementation = addressWord(slot.value);
+  if (implementation === undefined) return refused({ why: 'slot-not-an-address', slot: 'zeppelinos-implementation' });
+  return { kind: 'located', proxy: implementation === null ? { kind: 'none' } : { kind: 'zeppelinos', implementation } };
+}
+
 /**
  * Which code a call to `address` runs. A minimal proxy and a Safe proxy are known by their whole code. An EIP-1967
- * slot counts only when the code can DELEGATECALL, since a slot is storage that any code may have written.
+ * or ZeppelinOS slot counts only when the code can DELEGATECALL, since a slot is storage that any code may have written.
  */
 export async function locate(reader: Reader, address: Address, code: Hex, at: BlockRef): Promise<Located> {
   const clone = minimalProxyTarget(code);
@@ -109,7 +136,7 @@ export async function locate(reader: Reader, address: Address, code: Hex, at: Bl
     if (!hasDelegatecall(code)) return refused({ why: 'slot-without-delegatecall' });
     return { kind: 'located', proxy: { kind: 'eip1967', implementation } };
   }
-  if (beacon === null) return { kind: 'located', proxy: { kind: 'none' } };
+  if (beacon === null) return zeppelinosWhenNoEip1967(reader, address, code, at);
   if (!hasDelegatecall(code)) return refused({ why: 'slot-without-delegatecall' });
   const answer = await reader.call({ to: beacon, data: IMPLEMENTATION_CALL }, at);
   if (answer.kind === 'unverifiable') return unverifiable(answer);

@@ -1,17 +1,19 @@
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import type { Reader } from '../chain/reader.ts';
+import type { Transaction } from '../chain/types.ts';
+import { safeProxyFactory } from '../contracts/proxy.ts';
 import { parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiType } from '../decode/abi.ts';
 import { decodeCall, wholeRegion } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
+import { OFFICIAL_SAFE_SINGLETONS } from '../safe/deployments.ts';
 import { EXECUTION_SUCCESS } from '../simulate/events.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { inspectTemplateFields } from '../template/check.ts';
 import type { Leaf } from '../template/check.ts';
-import type { CallNode, ConstValue, Rule, Template, TemplateCall } from '../template/template.ts';
+import type { CallNode, ConstValue, LeafRule, Rule, Template, TemplateCall } from '../template/template.ts';
 
-export type LeafRule = Exclude<Rule, { readonly kind: 'call' | 'items' | 'fields' }>;
 
 /**
  * The template with every leaf set free, so only its shape is checked (calls, selectors, canonical encoding, trailers),
@@ -20,6 +22,7 @@ export type LeafRule = Exclude<Rule, { readonly kind: 'call' | 'items' | 'fields
 export type Loosened = { readonly shape: Template; readonly anyTrailer: Template; readonly rules: readonly LeafRule[] };
 
 const MAX_TRAILER = 32;
+const ZERO = `0x${'00'.repeat(20)}` as Address;
 
 export function loosen(template: Template): Loosened {
   const rules: LeafRule[] = [];
@@ -33,7 +36,7 @@ export function loosen(template: Template): Loosened {
         return { kind: 'fields', fields: rule.fields.map((field) => looseRule(field, wideTrailer, record)) };
       default:
         if (record) rules.push(rule);
-        return { kind: 'free', reason: 'study' };
+        return { kind: 'free', reason: 'study', claim: 'scalar' };
     }
   };
   const looseCall = (node: CallNode, wideTrailer: boolean, record: boolean): CallNode => ({
@@ -52,22 +55,45 @@ export function loosen(template: Template): Loosened {
   return { shape, anyTrailer, rules };
 }
 
-export type NotSafeReason = 'not a call to execTransaction' | 'execTransaction calldata does not decode' | 'no ExecutionSuccess from the called Safe';
+export type NotStudiedReason = 'execTransaction calldata does not decode' | 'no ExecutionSuccess from the Safe' | 'calls no function the template calls';
+
+export type UnprovenReason = 'its code is not a known Safe proxy' | 'its singleton is not an official Safe singleton';
+
+/**
+ * Who made the template's calls: a proven Safe making all of them in one transaction, or an EOA making the template's
+ * call number `call` as its own transaction.
+ */
+export type Sender = { readonly kind: 'safe'; readonly address: Address } | { readonly kind: 'eoa'; readonly address: Address; readonly call: number };
 
 export type TxStudy =
   | { readonly kind: 'excluded' }
   | { readonly kind: 'unreadable'; readonly hash: Hex; readonly reason: string }
-  /** `selector` is the first four bytes the transaction called, which tell an EOA call from a relayer or a 4337 bundle. */
-  | { readonly kind: 'not-safe'; readonly hash: Hex; readonly why: NotSafeReason; readonly selector: string }
-  | { readonly kind: 'misfit'; readonly hash: Hex; readonly safe: Address; readonly reason: string }
-  /** `values` pairs with `Loosened.rules`; `paths` names each leaf. */
-  | { readonly kind: 'fit'; readonly hash: Hex; readonly safe: Address; readonly paths: readonly string[]; readonly types: readonly AbiType[]; readonly values: readonly string[] };
+  | { readonly kind: 'not-studied'; readonly hash: Hex; readonly why: NotStudiedReason; readonly selector: string }
+  | { readonly kind: 'unproven'; readonly hash: Hex; readonly contract: Address; readonly why: UnprovenReason }
+  | { readonly kind: 'misfit'; readonly hash: Hex; readonly sender: Sender; readonly reason: string }
+  /** `values` pairs with the rules of the sender's `Shape`; `paths` names each leaf. */
+  | { readonly kind: 'fit'; readonly hash: Hex; readonly sender: Sender; readonly paths: readonly string[]; readonly types: readonly AbiType[]; readonly values: readonly string[] };
 
 const EXEC_TRANSACTION = parseFunctionSignature(
   'execTransaction(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, bytes signatures)',
 );
 
-/** The SafeTx an `execTransaction` call carries. The nonce and version only feed the Safe's hash, which a study never computes. */
+const EMPTY_SAFE_TX: SafeTx = {
+  chainId: 1n,
+  safe: ZERO,
+  version: '1.4.1',
+  to: ZERO,
+  value: 0n,
+  data: '0x' as Hex,
+  operation: 0,
+  safeTxGas: 0n,
+  baseGas: 0n,
+  gasPrice: 0n,
+  gasToken: ZERO,
+  refundReceiver: ZERO,
+  nonce: 0n,
+};
+
 function safeTxOf(safe: Address, input: Hex): SafeTx | undefined {
   const call = decodeCall(EXEC_TRANSACTION, wholeRegion(hexToBytes(input.slice(2))));
   if (call.kind !== 'decoded') return undefined;
@@ -76,9 +102,8 @@ function safeTxOf(safe: Address, input: Hex): SafeTx | undefined {
   );
   if (operation !== 0n && operation !== 1n) return undefined;
   return {
-    chainId: 1n,
+    ...EMPTY_SAFE_TX,
     safe,
-    version: '1.4.1',
     to: to as Address,
     value: value as bigint,
     data: data as Hex,
@@ -88,7 +113,6 @@ function safeTxOf(safe: Address, input: Hex): SafeTx | undefined {
     gasPrice: gasPrice as bigint,
     gasToken: gasToken as Address,
     refundReceiver: refundReceiver as Address,
-    nonce: 0n,
   };
 }
 
@@ -161,13 +185,84 @@ function misfitReason(tx: SafeTx, loosened: Loosened, template: Template, regist
   return `${first.callPath}.${first.arg}: expected ${first.expected}, got ${first.actual}`;
 }
 
+export type Shape = { readonly template: Template; readonly loosened: Loosened };
+
+export function shapesOf(template: Template): { readonly whole: Shape; readonly calls: readonly Shape[] } {
+  const shape = (t: Template): Shape => ({ template: t, loosened: loosen(t) });
+  return { whole: shape(template), calls: template.calls.map((call) => shape({ ...template, calls: [call] })) };
+}
+
 export type StudyContext = {
-  readonly template: Template;
-  readonly loosened: Loosened;
+  readonly shapes: ReturnType<typeof shapesOf>;
   readonly registry: Registry;
   /** The configured Safe, left out of every result. */
   readonly exclude: Address | undefined;
 };
+
+type Proof = { readonly kind: 'proven' } | { readonly kind: 'unproven'; readonly why: UnprovenReason } | { readonly kind: 'unreadable'; readonly reason: string };
+
+async function proveSafe(reader: Reader, address: Address, blockNumber: bigint): Promise<Proof> {
+  const block = await reader.block(blockNumber - 1n);
+  if (block.kind === 'unverifiable') return { kind: 'unreadable', reason: block.reason };
+  const code = await reader.getCode(address, block.value);
+  if (code.kind === 'unverifiable') return { kind: 'unreadable', reason: code.reason };
+  if (safeProxyFactory(code.value) === undefined) return { kind: 'unproven', why: 'its code is not a known Safe proxy' };
+  const slot = await reader.getStorageAt(address, 0n, block.value);
+  if (slot.kind === 'unverifiable') return { kind: 'unreadable', reason: slot.reason };
+  const official = OFFICIAL_SAFE_SINGLETONS.some((s) => slot.value === `0x${'00'.repeat(12)}${s.address.slice(2)}`);
+  return official ? { kind: 'proven' } : { kind: 'unproven', why: 'its singleton is not an official Safe singleton' };
+}
+
+function judge(hash: Hex, tx: SafeTx, sender: Sender, shape: Shape, registry: Registry): TxStudy {
+  const { template, loosened } = shape;
+  const check = (t: Template) =>
+    inspectTemplateFields(tx, { safe: sender.address, operations: [{ template: template.id, values: new Map() }] }, new Map([[template.id, t]]), registry);
+  const inspection = check(loosened.shape);
+  if (inspection.check.kind !== 'match' || inspection.leaves.length !== loosened.rules.length) {
+    return { kind: 'misfit', hash, sender, reason: misfitReason(tx, loosened, template, registry, check) };
+  }
+  return {
+    kind: 'fit',
+    hash,
+    sender,
+    paths: inspection.leaves.map((leaf) => `${leaf.callPath}.${leaf.arg}`),
+    types: inspection.leaves.map((leaf) => leaf.type),
+    values: inspection.leaves.map((leaf) => leafValue(leaf, tx)),
+  };
+}
+
+async function studySafeTx(reader: Reader, tx: Transaction & { readonly to: Address; readonly blockNumber: bigint }, context: StudyContext): Promise<TxStudy> {
+  const { hash } = tx;
+  const proof = await proveSafe(reader, tx.to, tx.blockNumber);
+  if (proof.kind === 'unreadable') return { kind: 'unreadable', hash, reason: proof.reason };
+  if (proof.kind === 'unproven') return { kind: 'unproven', hash, contract: tx.to, why: proof.why };
+  const selector = tx.input.slice(0, 10);
+  const safeTx = safeTxOf(tx.to, tx.input);
+  if (safeTx === undefined) return { kind: 'not-studied', hash, why: 'execTransaction calldata does not decode', selector };
+  const receiptRead = await reader.getTransactionReceipt(hash);
+  if (receiptRead.kind === 'unverifiable') return { kind: 'unreadable', hash, reason: receiptRead.reason };
+  const receipt = receiptRead.value;
+  if (receipt === null || !receipt.logs.some((log) => log.address === tx.to && log.topics[0] === EXECUTION_SUCCESS)) {
+    return { kind: 'not-studied', hash, why: 'no ExecutionSuccess from the Safe', selector };
+  }
+  return judge(hash, safeTx, { kind: 'safe', address: tx.to }, context.shapes.whole, context.registry);
+}
+
+function studyDirectCall(tx: Transaction & { readonly to: Address }, context: StudyContext): TxStudy {
+  const selector = tx.input.length >= 10 ? tx.input.slice(0, 10) : 'no data';
+  const candidates = context.shapes.calls.flatMap((shape, call) => {
+    const templateCall = shape.template.calls[0];
+    const data = templateCall?.data;
+    const same = data === 'empty' ? tx.input.length === 2 : data !== undefined && selector === data.fn.selector;
+    // A named contract pins the call's target, so the same selector on another contract is another function.
+    const target = templateCall?.to.kind !== 'contract' || context.registry.entries.get(templateCall.to.name)?.address === tx.to;
+    return same && target ? [{ shape, call }] : [];
+  });
+  if (candidates.length === 0) return { kind: 'not-studied', hash: tx.hash, why: 'calls no function the template calls', selector };
+  const direct: SafeTx = { ...EMPTY_SAFE_TX, safe: tx.from, to: tx.to, value: tx.value, data: tx.input };
+  const studies = candidates.map(({ shape, call }) => judge(tx.hash, direct, { kind: 'eoa', address: tx.from, call }, shape, context.registry));
+  return studies.find((study) => study.kind === 'fit') ?? (studies[0] as TxStudy);
+}
 
 export async function studyTx(reader: Reader, hash: Hex, context: StudyContext): Promise<TxStudy> {
   const read = await reader.getTransaction(hash);
@@ -175,30 +270,9 @@ export async function studyTx(reader: Reader, hash: Hex, context: StudyContext):
   const tx = read.value;
   if (tx === null) return { kind: 'unreadable', hash, reason: 'neither provider knows the transaction' };
   if (context.exclude !== undefined && (tx.to === context.exclude || tx.from === context.exclude)) return { kind: 'excluded' };
-  const selector = tx.input.length >= 10 ? tx.input.slice(0, 10) : 'no data';
-  if (tx.to === null || !tx.input.startsWith(EXEC_TRANSACTION.selector)) return { kind: 'not-safe', hash, why: 'not a call to execTransaction', selector };
-  const safe = tx.to;
-  const safeTx = safeTxOf(safe, tx.input);
-  if (safeTx === undefined) return { kind: 'not-safe', hash, why: 'execTransaction calldata does not decode', selector };
-  const receiptRead = await reader.getTransactionReceipt(hash);
-  if (receiptRead.kind === 'unverifiable') return { kind: 'unreadable', hash, reason: receiptRead.reason };
-  const receipt = receiptRead.value;
-  if (receipt === null || !receipt.logs.some((log) => log.address === safe && log.topics[0] === EXECUTION_SUCCESS)) {
-    return { kind: 'not-safe', hash, why: 'no ExecutionSuccess from the called Safe', selector };
-  }
-  const { template, loosened, registry } = context;
-  const check = (t: Template) =>
-    inspectTemplateFields(safeTx, { safe, operations: [{ template: template.id, values: new Map() }] }, new Map([[template.id, t]]), registry);
-  const inspection = check(loosened.shape);
-  if (inspection.check.kind !== 'match' || inspection.leaves.length !== loosened.rules.length) {
-    return { kind: 'misfit', hash, safe, reason: misfitReason(safeTx, loosened, template, registry, check) };
-  }
-  return {
-    kind: 'fit',
-    hash,
-    safe,
-    paths: inspection.leaves.map((leaf) => `${leaf.callPath}.${leaf.arg}`),
-    types: inspection.leaves.map((leaf) => leaf.type),
-    values: inspection.leaves.map((leaf) => leafValue(leaf, safeTx)),
-  };
+  const { to, blockNumber } = tx;
+  if (to === null) return { kind: 'not-studied', hash, why: 'calls no function the template calls', selector: 'contract creation' };
+  if (blockNumber === null) return { kind: 'unreadable', hash, reason: 'the transaction is pending' };
+  if (tx.input.startsWith(EXEC_TRANSACTION.selector)) return studySafeTx(reader, { ...tx, to, blockNumber }, context);
+  return studyDirectCall({ ...tx, to }, context);
 }

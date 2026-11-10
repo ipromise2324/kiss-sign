@@ -149,7 +149,7 @@ test('a merged call takes every argument as items, with as many items in each, o
   const unequal = structuredClone(raw);
   unequal.calls[0].args.users.items.push({ safe: true });
   const loose = structuredClone(raw);
-  loose.calls[0].args.users = { free: 'x' };
+  loose.calls[0].args.amounts = { free: { proof: 'x' } };
   for (const broken of [unequal, loose]) {
     assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === 'calls[0].merge');
   }
@@ -247,6 +247,7 @@ test('the effects, not the fields, hold a CCTP message to the Safe and the card 
     eth: 0n,
     tokens: new Map(minted === 0n ? [] : [[usdc, minted]]),
     allowances: [],
+    permit2: [],
     ends: new Map(),
   });
   const judge = (minted: bigint) => judgeEffects(observed(minted), resolved(direct, receive(amount)), templates, registry);

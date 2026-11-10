@@ -10,8 +10,8 @@
       "value": { "const": "0" },
       "function": "receiveMessage(bytes message, bytes attestation)",
       "args": {
-        "message": { "free": "a packed CCTP message, which the engine cannot decode field by field; Circle's attesters sign it, so it cannot be changed without the attestation failing, and the effects require the Safe to get exactly the card amount of the card's token and nothing else, which fails for any other recipient or amount" },
-        "attestation": { "free": "Circle's attesters' signatures over the message: the transmitter reverts unless enough of them sign it" }
+        "message": { "free": { "proof": "a packed CCTP message, which the engine cannot decode field by field; Circle's attesters sign it, so it cannot be changed without the attestation failing, and the effects require the Safe to get exactly the card amount of the card's token and nothing else, which fails for any other recipient or amount" } },
+        "attestation": { "free": { "proof": "Circle's attesters' signatures over the message: the transmitter reverts unless enough of them sign it" } }
       }
     }
   ],

@@ -55,6 +55,10 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `cctp-receive-then-call.json` | `0x8a25A24EDE9482C4Fc0738F99611BE58F1c839AB`, Safe 1.4.1 | 48142 | `0xdd09c9b162d956d128a51a49cb3988789358d52560c0339021afdc05b00ff716`, block 24,800,869 | A `delegatecall` to MultiSend 1.4.1: CCTP V1 MessageTransmitter (`0x0a992d191DEeC32aFe36203Ad87D7d289a738F81`) `receiveMessage` of a message that mints USDC to another address, then a call to another contract. safeTxHash `0xaffef7919a235fa81f6ddfcd5b140eb0a56f618b47d17a124fc95fa9735f002c` |
 | `morpho-migrate-all-smokehouse.json` | `0x3D548a77137E46B25F240CE0091266bAa5803177`, Safe 1.4.1 | 11 | `0xd45381b2f9365376f4248c3fad7d35f6cf0239b96e54d8f9b842a83de78fdc21`, block 25,006,581 | MultiSendCallOnly: Smokehouse USDC `approve` of shares to GeneralAdapter1, then `Bundler3.multicall` moving them to GeneralAdapter1, redeeming all it holds, and depositing all its USDC into Steakhouse High Yield USDC (`0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`), shares to the Safe. The Safe had a leftover share allowance to GeneralAdapter1 before. safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
 | `morpho-migrate-all-smokehouse-other-safe.json` | `0xCDe8da7C6A5408C2491Ea8510Bd2652A2468B9ba`, Safe 1.4.1 | 26 | `0x73df3d85fc65aca5a18be6af230d75b1aa92a07ab64e5e70075a255f6be99ab1`, block 25,931,300 | The same migration from another Safe, with no leftover allowance. safeTxHash `0xb1916e3a23bda7ac1b9a8a302e595abc7f42dc3e91897d08349de0fecc5fbeff` |
+| `morpho-borrow-set-authorization.json` | `0xA159e0C56aafCf9c6c0A7bF4A81a613F6618e772`, Safe 1.4.1 | 14 | `0xb3d7350ee4dea41e3b0f04292ec346dca9f9687f212bd84643b026808ebfc191`, block 25,920,155 | MultiSendCallOnly 1.4.1: wstETH `approve` to GeneralAdapter1, then Morpho Blue (`0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb`) `setAuthorization` of GeneralAdapter1, then `Bundler3.multicall` supplying the wstETH as collateral and borrowing 350 USDC to the Safe. safeTxHash `0x0aa75b0fa21bb435a0a63eafa003e7b546a4c0b6d9172bf594383b4c0e65037e` |
+| `morpho-set-authorization.json` | `0xF33Cec38B56dc445399ae0D4ec834e83dA67e19c`, Safe 1.4.1 | 404 | `0xc66886d2109e78874d460f95e07d5c0b3a1372e197d2642af39448bb3cf235ba`, block 25,933,130 | Morpho Blue `setAuthorization` of GeneralAdapter1, sent on its own. safeTxHash `0x84ef6bee2a4aa95ad1c0ba8e9fa9b0ad2cbae3364b53c30f2506f508780db272` |
+| `uniswap-v4-add-liquidity-permit2.json` | `0xAD7DbDC63bb75C056AC55Fbd7c813ffA77d7DFC5`, Safe 1.3.0 | 125 | `0xab5bab5d60c2235f9d7e6d6ff214f871875f6fd5befc90e0df8b12ba7448e3cd`, block 26,350,094 | MultiSendCallOnly 1.3.0: PENDLE (`0x808507121b80c02388fad14726482e061b8da827`) `approve` to Permit2, Permit2 `approve` of the same amount to the Uniswap v4 PositionManager (`0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e`), `modifyLiquidities` minting a position, then a Permit2 `approve` and a PENDLE `approve` back to zero. safeTxHash `0x33061cab0c751522b1a7c994738fcad071596c0121203feec5b821f6bee6522e` |
+| `permit2-unlimited-approval.json` | `0xB3313a655b4c01abE5A46faDbB7855952863633A`, Safe 1.4.1 | 561 | `0x7eeaeb6fbd2f3fd131a47b75e9200e856149f6c686f85cc86d891f23244611c5`, block 26,361,406 | MultiSendCallOnly 1.4.1: Permit2 `approve`s of 2^160-1 WBTC and USDC to the Uniswap v4 PositionManager, then a PositionManager `multicall` minting a position. safeTxHash `0x5ddf364b6199c45b5bf4e631a52083d125bfadf538a3647cb050dc244b9fea2e` |
 
 The claim fixtures were found with `pnpm past-txs` on transfers of the reward token out of its distributor (`--from`), the CCTP one on USDC mints; see each template's `report.md`. Each Safe's nonce is its `nonce()` at the block before. No Safe in the searched blocks received a CCTP message in a transaction of its own, so `cctp-receive-then-call` serves the CCTP tests twice: whole, and with its first call taken out as a direct call.
 
@@ -95,7 +99,13 @@ pnpm record-safe-tx fluid-withdraw-usdt-other-safe 0x93BD8C5eb0eAB5BE7BfE156Ebfa
 pnpm record-safe-tx fluid-redeem-usdt-other-safe 0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb 44
 pnpm record-safe-tx morpho-migrate-all-smokehouse 0x3D548a77137E46B25F240CE0091266bAa5803177 11
 pnpm record-safe-tx morpho-migrate-all-smokehouse-other-safe 0xCDe8da7C6A5408C2491Ea8510Bd2652A2468B9ba 26
+pnpm record-safe-tx morpho-borrow-set-authorization 0xA159e0C56aafCf9c6c0A7bF4A81a613F6618e772 14
+pnpm record-safe-tx morpho-set-authorization 0xF33Cec38B56dc445399ae0D4ec834e83dA67e19c 404
+pnpm record-safe-tx uniswap-v4-add-liquidity-permit2 0xAD7DbDC63bb75C056AC55Fbd7c813ffA77d7DFC5 125
+pnpm record-safe-tx permit2-unlimited-approval 0xB3313a655b4c01abE5A46faDbB7855952863633A 561
 ```
+
+The `morpho-*-set-authorization` fixtures were found from Morpho Blue's `SetAuthorization` events, and the two Permit2 fixtures from Permit2's `Approval` events, in Etherscan's log search, keeping each transaction a Safe sent to itself through `execTransaction`.
 
 The `morpho-migrate-*` fixtures were found with `pnpm past-txs morpho/vault-migrate-all` on Smokehouse USDC share burns (see `templates/morpho/vault-migrate-all/report.md`). The `morpho-withdraw-*` and `morpho-bundles-*` fixtures were found with `pnpm past-txs` on share burns and mints (see the reports of `morpho/vault-withdraw`, `morpho/vault-withdraw-all` and `morpho/vault-bundles-deposit`), and each transaction looked up in the Safe Transaction Service by `transaction_hash`.
 
@@ -111,6 +121,8 @@ The last argument is a nonce (the executed transaction at that nonce) or a safeT
 - `sourcify`: Sourcify's answer (`/server/v2/contract/1/<address>?fields=compilation,stdJsonInput`) for the contract compiled.
 
 The tests replay the reads, compile the Sourcify source with the pinned solc from `vendor/solc/`, and require the proof.
+
+Code that can DELEGATECALL and has neither EIP-1967 slot set also has its ZeppelinOS implementation slot read, so the fixtures of such contracts hold that read too.
 
 | File | Address | Proxy | Code compiled |
 | --- | --- | --- | --- |
@@ -177,16 +189,20 @@ The tests serve each provider its own recorded answer through the real reader, s
 | `morpho-withdraw-all.json`, of `safe-tx/morpho-withdraw-all-apex-other-safe.json` | 23,725,210 | −23,966.697414743719468099 Hyperithm USDC Apex shares, all the Safe held, +25,175.574782 USDC; the share allowance to GeneralAdapter1 is 0 before and after |
 | `morpho-withdraw-open-allowance.json`, of `safe-tx/morpho-withdraw-apex-other-safe.json` | 23,726,457 | −285,544.697740669157631830 Hyperithm USDC Apex shares, +300,000 USDC; the share allowance to GeneralAdapter1 goes from 4,850,840,670,525,793,065 to 40,963,643,267,656,996,464 |
 | `morpho-withdraw-two-vaults-all.json` | 23,446,537 | −18,906.363414828162262882 Smokehouse USDC and −15,590.886101795651433674 Usual Boosted USDC shares, all of each, +37,568.419169 USDC; both share allowances 0 before and after |
+| `morpho-borrow-set-authorization.json` | 25,920,154 | −0.257294902094620447 wstETH, +350 USDC; the wstETH allowance to GeneralAdapter1 is 0 before and after. Run call by call, only `multiSend[1]`, the `setAuthorization`, moves no asset |
+| `morpho-set-authorization.json` | 25,933,129 | nothing; its one call moves no asset |
+| `uniswap-v4-add-liquidity-permit2.json` | 26,350,093 | −49,681.585621060343390213 PENDLE, +1 position NFT; the Permit2 allowance of PENDLE to the PositionManager goes from 0 until 1793633819 to 0 until 1793899307, nonce 0. Run call by call, only the last `approve`, to an allowance already at zero, moves no asset |
+| `permit2-unlimited-approval.json` | 26,361,405 | −0.057897278632288743 WBTC, −64.963110 USDC, +1 position NFT; the Permit2 allowances of WBTC and USDC to the PositionManager end at 2^160-1 until 1796627459 |
 
 ### Recording again
 
 ```sh
 export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
-pnpm simulate morpho-withdraw-all-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777"}}]}' --record morpho-withdraw-all
-pnpm simulate morpho-withdraw-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"300000000000"}}]}' --record morpho-withdraw-open-allowance
-pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc"}}]}' --record morpho-withdraw-two-vaults-all
+pnpm simulate morpho-withdraw-all-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777","min-assets":"25172004987"}}]}' --record morpho-withdraw-all
+pnpm simulate morpho-withdraw-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"300000000000","max-shares":"285585667181036150934684"}}]}' --record morpho-withdraw-open-allowance
+pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc","min-assets":"20245327154"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc","min-assets":"17322520385"}}]}' --record morpho-withdraw-two-vaults-all
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate morpho-vault-deposit \
-  --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180"}}]}' \
+  --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
   --record morpho-vault-deposit
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate eth-transfer-null-data \
   --card '{"operations":[{"template":"eth/transfer","values":{"amount":"4988797943068499801","recipient":"recipient"}}]}' \
@@ -201,24 +217,50 @@ pnpm simulate fluid-redeem-usdt --record fluid-redeem-usdt \
 pnpm simulate fluid-claim --record fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim","values":{"token":"fluid"}}]}'
 pnpm simulate merkl-claim --record merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}'
 pnpm simulate morpho-urd-claim --record morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}'
+pnpm simulate morpho-borrow-set-authorization --record morpho-borrow-set-authorization
+pnpm simulate morpho-set-authorization --record morpho-set-authorization
+pnpm simulate uniswap-v4-add-liquidity-permit2 --record uniswap-v4-add-liquidity-permit2
+pnpm simulate permit2-unlimited-approval --record permit2-unlimited-approval
 ```
+
+The last four have no template and no card, so they record no verdict; the tests read their effects, their Permit2 allowances and the call-by-call scan.
+
+## Perturbation tests
+
+`perturb/<name>.json` holds every request `pnpm perturb` sent to Alchemy and drpc, with each one's answer, for one test transaction: the unchanged run and each copy with one free field changed. `test/perturb.test.ts` replays them. `morpho-deposit-free-assets` uses a copy of `morpho/vault-deposit` whose `erc4626Deposit.assets` is free, kept in the recording, so the test can show a field the harness must fail.
+
+```sh
+export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
+pnpm perturb fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim","values":{"token":"fluid"}}]}' --record fluid-claim
+pnpm perturb merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}' --record merkl-claim
+pnpm perturb morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}' --record morpho-urd-claim
+pnpm perturb morpho-bundles-deposit --card '{"operations":[{"template":"morpho/vault-bundles-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"31583325527","min-shares":"30442521166571443751074"}}]}' --record morpho-bundles-deposit
+pnpm perturb morpho-withdraw-apex --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"583913520554","max-shares":"555874861469460312138864"}}]}' --record morpho-withdraw-apex
+pnpm perturb morpho-withdraw-all-apex --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777","min-assets":"1367287893326"}}]}' --record morpho-withdraw-all-apex
+pnpm perturb morpho-migrate-all-smokehouse --card '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' --record morpho-migrate-all-smokehouse
+pnpm perturb morpho-vault-deposit --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
+  --template <copy of templates/morpho/vault-deposit/template.json with erc4626Deposit.assets set to {"free": "..."}> --record morpho-deposit-free-assets
+```
+
+The first recording of `morpho-migrate-all-smokehouse` failed: an approval one share higher than its transfer left a 1-share allowance that the effects allow, since the Safe's allowance still fell. The template now binds the transfer's `amount` to the approval's `value` (`equals`).
 
 ## Past-transaction searches
 
 `research/<name>.json` holds one run of `scripts/past-txs.ts --record <name>`:
 
-- `query`: the template, the anchor token, the anchor kind, the sender when the search had one (`--from`), and the block range.
+- `query`: the template, the anchor token, the anchor kind, the sender when the search had one (`--from`), the block range when one was given (none means the default windows), and `--max-txs`.
 - `sources`: each request to Alchemy (`alchemy_getAssetTransfers`) and Etherscan (`logs/getLogs`), with its answer. No request holds a key.
-- `providers` and `exchanges`: each `eth_getTransactionByHash` and `eth_getTransactionReceipt`, with the answers of Alchemy and drpc.
+- `providers` and `exchanges`: each chain read (the head block, transactions, and for an `execTransaction` the block before, the contract's code and slot 0, and the receipt), with the answers of Alchemy and drpc.
 
 Before writing, the script drops every entry that mentions the configured Safe or one of its transactions, and refuses to write if any mention is left.
 
-The tests replay the run and require the counts a reader sees: per source, per field, and per misfit reason. A Safe set as the configured Safe disappears from every count, and a transaction removed from one source's answer is marked as found by the other only.
+The tests replay the run and require the counts a reader sees: per window, per source, per sender type, per field, and per misfit reason. A Safe set as the configured Safe disappears from every count, and a transaction removed from one source's answer is marked as found by the other only. A Safe whose recorded code or slot 0 is changed counts as a contract, not a proven Safe. A window whose recorded Alchemy answer is given a next page is halved, and the report names the blocks left out. An EOA's `multicall` sent to a contract other than Bundler3 counts as calling no function the template calls.
 
 | File | Anchor | Blocks | What it found |
 | --- | --- | --- | --- |
-| `morpho-vault-deposit.json` | Steakhouse Prime USDC shares minted | 26,044,000 to 26,052,000 | 65 transactions, all found by both sources; 3 executed by a Safe, 2 fitting `morpho/vault-deposit` |
-| `merkl-claim.json` | MORPHO moved out of the Merkl Distributor | 24,020,000 to 24,030,000 | 120 transactions, all found by both sources; 3 executed by a Safe, 1 fitting `merkl/claim` |
+| `morpho-vault-deposit.json` | Steakhouse Prime USDC shares minted | 26,044,000 to 26,052,000 | 65 transactions, all found by both sources; 3 from 1 proven Safe, 2 fitting `morpho/vault-deposit`; 25 from 24 EOAs calling `multicall` directly, 2 fitting that call |
+| `merkl-claim.json` | MORPHO moved out of the Merkl Distributor | 24,020,000 to 24,030,000 | 120 transactions, all found by both sources; 3 from 3 proven Safes, 1 fitting `merkl/claim`; 102 from 90 EOAs |
+| `morpho-vault-deposit-windows.json` | Steakhouse Prime USDC shares minted | the default 12 windows from head block 26,385,810 | 222 transactions, 2 studied per window, 18 in all |
 
 ### Recording again
 
@@ -231,7 +273,33 @@ That home's `config.json` names the Safe of `safe-tx/morpho-vault-deposit.json`,
 
 ```sh
 pnpm past-txs merkl/claim --token morpho --anchor any --from merkl-distributor --from-block 24020000 --to-block 24030000 --record merkl-claim
+pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc --anchor mint --max-txs 24 --record morpho-vault-deposit-windows
 ```
+
+The windows follow the head block, so recording the last one again moves them.
+
+## Safe proxy factories
+
+`safe-proxy/<name>.json` holds one run of `scripts/record-safe-proxy.ts <name> <transaction hash>`: the transaction in which an official mainnet proxy factory (`src/safe/deployments.ts`) created a Safe, and its chain reads (the receipt with the factory's `ProxyCreation`, the block, and the new proxy's code at that block), with the answers of Alchemy and drpc. The test requires one fixture per official factory and that each proxy's code is the known Safe proxy of that factory's version, so the code `past-txs` accepts as a Safe proxy is what an official factory deploys.
+
+| File | Factory | Transaction |
+| --- | --- | --- |
+| `proxy-factory-1-0-0.json` | 1.0.0 `0x12302fE9c02ff50939BaAaaf415fc226C078613C` | `0xc9403782c9771264889237538ca46ee714dbf394cc6f001acc53bc08e29a79e8` |
+| `proxy-factory-1-1-1.json` | 1.1.1 `0x76E2cFc1F5Fa8F6a5b3fC4c8F4788F0116861F9B` | `0x53e1d0bee0ad9aa0637c57dd528586ddb22218f53510b191a9247c19640ba779` |
+| `proxy-factory-1-3-0.json` | 1.3.0 `0xa6B71E26C5e0845f74c812102Ca7114b6a896AB2` | `0x12d7accd124bd70796fddbe56c1ea96a12903d250fc116d0269bcc6b0bb2d41d` |
+| `proxy-factory-1-3-0-eip155.json` | 1.3.0 `0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC` | `0xe6adcfb6c7c0298d6935057c936ea961f13c0ea637e3b79ac2a0eba9242ff49e` |
+| `proxy-factory-1-4-1.json` | 1.4.1 `0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67` | `0x48e7c7beacaa069da219fed256237f5fba5794c6f23803083d38c805b66b110c` |
+| `proxy-factory-1-5-0.json` | 1.5.0 `0x14F2982D601c9458F93bd70B218933A6f8165e7b` | `0x258d1aeb8652dc6cb0df9e3f1298b3abcb57ead26194c76a924c597e2a45516c` |
+
+Each transaction was found with Etherscan's `logs/getLogs` on the factory's address.
+
+### Recording again
+
+```sh
+pnpm record-safe-proxy proxy-factory-1-0-0 0xc9403782c9771264889237538ca46ee714dbf394cc6f001acc53bc08e29a79e8
+```
+
+and likewise for each row.
 
 ## Verdicts
 
@@ -244,6 +312,8 @@ The tests set up a clone and a `$KISS_SIGN_HOME` from its inputs, run `verify` w
 | `morpho-vault-deposit.json` | `safe-tx/morpho-vault-deposit.json`, executed, judged by its receipt | `MATCH`, safeTxHash `0x0287ff5583b9bda9564e871c98d292c1a5b433cba905b02df369bab37b20c84a` |
 | `morpho-migrate-all.json` | `safe-tx/morpho-migrate-all-smokehouse.json`, executed, judged by its receipt, card `smokehouse-usdc` to `steakhouse-high-yield-usdc` | `MATCH`, safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
 
+`test/code-pin.test.ts` evaluates `morpho-vault-deposit.json` with one recorded `eth_getCode` or `eth_getStorageAt` answer changed, or with a pin removed from its registry: changed code of the MultiSend, bundler3, general-adapter1, the vault, USDC or USDC's implementation, or USDC's ZeppelinOS slot pointing elsewhere, must give `MISMATCH`; a drpc answer that differs, or a touched entry with no pin, must give `UNVERIFIABLE`.
+
 `test/morpho-migrate.test.ts` evaluates `morpho-migrate-all.json` with its registry changed to name USDT as both vaults' asset, which the card's `same` then accepts, and requires `MISMATCH` from the vaults' recorded `asset()`. With the drpc answer to `asset()` changed it requires `UNVERIFIABLE`.
 
 ### Recording again
@@ -252,7 +322,7 @@ The tests set up a clone and a `$KISS_SIGN_HOME` from its inputs, run `verify` w
 export KISS_SIGN_HOME=$HOME/.kiss-sign-lane-8
 bin/kiss-sign init --safe 0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0
 bin/kiss-sign template approve morpho/vault-deposit
-echo '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180"}}]}' > card.json
+echo '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' > card.json
 bin/kiss-sign card seal card.json
 node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-vault-deposit.json").service))' > tx.json
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
@@ -262,7 +332,7 @@ cp "$KISS_SIGN_HOME"/verdicts/0x0287ff55*.json testdata/verify/morpho-vault-depo
 export KISS_SIGN_HOME=$HOME/.kiss-sign-migrate
 bin/kiss-sign init --safe 0x3D548a77137E46B25F240CE0091266bAa5803177
 bin/kiss-sign template approve morpho/vault-migrate-all
-echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc"}}]}' > card.json
+echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' > card.json
 bin/kiss-sign card seal card.json
 node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-migrate-all-smokehouse.json").service))' > tx.json
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
@@ -271,6 +341,8 @@ cp "$KISS_SIGN_HOME"/verdicts/0x8e7bcfd5*.json testdata/verify/morpho-migrate-al
 ```
 
 Run it from a clean clone at origin/main, or the self-check stops it.
+
+Both files were recorded before the Morpho templates took a slippage limit, so they hold a card without one and the template text of that time. `replay` and the tests use the card and template a file holds, so they still give `MATCH`; a new recording uses the cards above.
 
 ## Safe history
 
@@ -309,11 +381,19 @@ done
 
 ## Official-source listings
 
-`sources/<name>.json` is written by `pnpm check-sources --record <name>`: the date it was fetched, the DefiLlama protocols (`https://api.llama.fi/protocols`) the checked registry entries name in `defillama`, cut to `slug`, `name`, `url` and `github`, and the CoinGecko coins (`https://api.coingecko.com/api/v3/coins/list?include_platform=true`) whose Ethereum contract is a checked token, cut to `id`, `symbol`, `name` and `platforms.ethereum`. `test/check-sources.test.ts` runs the check on it offline.
+`sources/<name>.json` is written by `pnpm check-sources --record <name>`: the date it was fetched, the DefiLlama protocols (`https://api.llama.fi/protocols`) the checked registry entries name in `defillama`, cut to `slug`, `name`, `url` and `github`, and the CoinGecko coins (`https://api.coingecko.com/api/v3/coins/list?include_platform=true`) whose Ethereum contract is a checked token, cut to `id`, `symbol`, `name` and `platforms.ethereum`. It also holds `pages`, each source page's blocks that hold a checked address plus the block before each, with their headings, as the program read them, and `commits`, GitHub's answer for each pinned commit. `test/check-sources.test.ts` runs the check on it offline.
 
 | File | Fetched | Entries |
 | --- | --- | --- |
 | `registry.json` | 2026-11-10 | Every entry of `registry/contracts.json` at the time |
+
+## Vault evidence
+
+`vault-evidence/<name>.json` is written by `pnpm vault-evidence <vault> --record <name>`: the vault's registry name and every request with each provider's answer, as in `simulate/`. Block answers are cut to `number`, `hash`, `timestamp`, `gasLimit` and `mixHash`, and each Alchemy Transfers API page to its distinct recipients. The command refuses to write a recording that names the configured Safe, so a vault the Safe ever held cannot be recorded.
+
+| File | Vault | Block | What it shows |
+| --- | --- | --- | --- |
+| `steakhouse-high-yield-usdc.json` | Steakhouse High Yield Instant USDC (`0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`) | 26,385,872 | 13 monthly `totalAssets()` points, from 2,733,798 USDC to 43,152,031 USDC; 452 holders of 1,038 recipients, adding up to `totalSupply()`; the top 10 hold 53.52%. |
 
 ## Etherscan contract origins
 

@@ -6,14 +6,10 @@ import type { Registry, RegistryEntry } from '../registry.ts';
 import { addressOf, uintOf } from '../simulate/events.ts';
 import { cardRefs } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
+import type { ChainCheck } from './verdict.ts';
 
 /** A vault on the card whose registry `asset` a template relies on, and the token that attribute names. */
 export type AssetClaim = { readonly vault: RegistryEntry; readonly asset: RegistryEntry };
-
-export type AssetCheck =
-  | { readonly kind: 'pass' }
-  | { readonly kind: 'mismatch'; readonly findings: readonly string[] }
-  | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
 
 /** Each vault, once, whose `asset` attribute a template on the card reads. */
 export function assetClaims(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): AssetClaim[] {
@@ -32,7 +28,7 @@ export function assetClaims(card: ResolvedCard, templates: ReadonlyMap<string, T
 }
 
 /** Each claim's vault `asset()`, read at `at`, must be the token the registry names. */
-export async function checkAssets(reader: Reader, claims: readonly AssetClaim[], at: BlockRef): Promise<AssetCheck> {
+export async function checkAssets(reader: Reader, claims: readonly AssetClaim[], at: BlockRef): Promise<ChainCheck> {
   const findings: string[] = [];
   const reasons: string[] = [];
   for (const { vault, asset } of claims) {

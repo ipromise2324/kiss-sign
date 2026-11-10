@@ -42,6 +42,12 @@ export class CardError extends Error {
 
 const UINT256_LIMIT = 1n << 256n;
 
+/** A card amount or nonce: a base-unit integer in plain decimal digits, below 2^256. */
+export function parseUint256(raw: string): bigint | undefined {
+  const value = /^(0|[1-9][0-9]{0,77})$/.test(raw) ? BigInt(raw) : undefined;
+  return value !== undefined && value < UINT256_LIMIT ? value : undefined;
+}
+
 export function parseCard(raw: unknown): Card {
   const fail = (problem: string): never => {
     throw new CardError(problem);
@@ -104,8 +110,8 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
       switch (field.kind) {
         case 'amount':
         case 'nonce': {
-          const value = /^(0|[1-9][0-9]{0,77})$/.test(raw) ? BigInt(raw) : undefined;
-          if (value === undefined || value >= UINT256_LIMIT) {
+          const value = parseUint256(raw);
+          if (value === undefined) {
             return field.kind === 'amount' ? refuse('not-an-amount', name, 'not a base-unit integer') : refuse('not-a-nonce', name, 'not a nonce');
           }
           values.set(name, { kind: field.kind, value });

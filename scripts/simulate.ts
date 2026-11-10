@@ -11,16 +11,18 @@ import { recordingTransport } from '../src/chain/recording.ts';
 import { parseRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
-import type { Hex } from '../src/safe/types.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
 import { describeFinding, endsNeeded, expectedChanges, judgeEffects } from '../src/simulate/effects.ts';
+import type { EffectVerdict, Observed, Permit2Allowance } from '../src/simulate/effects.ts';
 import { observeExecuted } from '../src/simulate/executed.ts';
-import { simulateSafeTx } from '../src/simulate/simulate.ts';
+import { describeCallScan, scanCalls, simulateSafeTx } from '../src/simulate/simulate.ts';
 import type { Observation } from '../src/simulate/simulate.ts';
 import { loadTemplate } from '../src/template/template.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/simulate.ts (<safe-tx fixture name> | <safe> <nonce>) --card '<card json>'
-  [--registry <contracts.json>] [--book '<address book json>'] [--record <name>]`;
+const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/simulate.ts (<safe-tx fixture name> | <safe> <nonce>) [--card '<card json>']
+  [--registry <contracts.json>] [--book '<address book json>'] [--record <name>]
+Without --card it prints what the transaction did and which calls move no asset, and judges nothing.`;
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 const ROOT = join(import.meta.dirname, '..');
 
@@ -28,7 +30,7 @@ const { values: flags, positionals } = parseArgs({
   allowPositionals: true,
   options: { card: { type: 'string' }, registry: { type: 'string' }, book: { type: 'string' }, record: { type: 'string' } },
 });
-if (flags.card === undefined || positionals.length < 1 || positionals.length > 2) throw new Error(USAGE);
+if (positionals.length < 1 || positionals.length > 2) throw new Error(USAGE);
 if (flags.record !== undefined && (positionals.length !== 1 || !/^[a-z0-9-]+$/.test(flags.record))) {
   throw new Error('--record takes a name, and records only a safe-tx fixture, never a Safe given by address');
 }
@@ -72,15 +74,22 @@ if (version === undefined) {
 const tx = parseServiceTx(service, { chainId: 1n, version });
 
 const registry = parseRegistry(JSON.parse(readFileSync(flags.registry ?? join(ROOT, 'registry', 'contracts.json'), 'utf8')));
-const card = parseCard(JSON.parse(flags.card));
-const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(ROOT, op.template, registry)]));
-const addressBook = parseAddressBook(JSON.parse(flags.book ?? '{}'));
-const resolution = resolveCard(card, { templates, registry, addressBook, safe });
-if (resolution.kind === 'refused') throw new Error(`card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
-const resolved = resolution.card;
-const expectations = expectedChanges(resolved, templates, registry);
-const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset) => asset !== 'eth') : [];
-const ends = endsNeeded(expectations);
+function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Address[]; ends: Address[] } | undefined {
+  if (flags.card === undefined) return undefined;
+  const card = parseCard(JSON.parse(flags.card));
+  const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(ROOT, op.template, registry)]));
+  const addressBook = parseAddressBook(JSON.parse(flags.book ?? '{}'));
+  const resolution = resolveCard(card, { templates, registry, addressBook, safe });
+  if (resolution.kind === 'refused') throw new Error(`card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
+  const expectations = expectedChanges(resolution.card, templates, registry);
+  return {
+    judge: (observed) => judgeEffects(observed, resolution.card, templates, registry),
+    watch: expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset): asset is Address => asset !== 'eth') : [],
+    ends: endsNeeded(expectations),
+  };
+}
+const card = judged();
+const [watch, ends] = [card?.watch ?? [], card?.ends ?? []];
 
 const name = (address: string) => registry.byAddress.get(address as never)?.name ?? address;
 function print(label: string, observation: Observation): void {
@@ -96,6 +105,8 @@ function print(label: string, observation: Observation): void {
     for (const [token, delta] of observed.tokens) console.log(`  ${name(token)} ${delta > 0n ? '+' : ''}${delta}`);
     for (const [token, left] of observed.ends) console.log(`  ${name(token)} held after: ${left}`);
     for (const a of observed.allowances) console.log(`  allowance ${name(a.token)} to ${name(a.spender)}: ${a.before} -> ${a.after}`);
+    const show = ({ amount, expiration, nonce }: Permit2Allowance) => `${amount} until ${expiration} (nonce ${nonce})`;
+    for (const a of observed.permit2) console.log(`  Permit2 allowance ${name(a.token)} to ${name(a.spender)}: ${show(a.before)} -> ${show(a.after)}`);
     const evidence = observed.safeState;
     if (evidence.kind === 'read') {
       for (const [field, value] of Object.entries(evidence.before)) {
@@ -108,7 +119,8 @@ function print(label: string, observation: Observation): void {
   const floor = checkSimulatedFloor(observed, safe);
   if (floor.kind === 'pass') console.log('  simulated floor PASS');
   else console.log(`  simulated floor REFUSED\n${floor.findings.map((f) => `    ${f.rule}: ${f.detail}`).join('\n')}`);
-  const verdict = judgeEffects(observed, resolved, templates, registry);
+  if (card === undefined) return;
+  const verdict = card.judge(observed);
   if (verdict.kind === 'match') console.log('  verdict MATCH');
   else if (verdict.kind === 'mismatch') console.log(`  verdict MISMATCH\n${verdict.findings.map((f) => `    ${describeFinding(f, registry)}`).join('\n')}`);
   else console.log(`  verdict UNVERIFIABLE: ${verdict.reasons.join('; ')}`);
@@ -120,6 +132,8 @@ print(
   await simulateSafeTx(reader, { tx, parent, time: executedHeader.time, watch, ends }),
 );
 print(`from the receipt of ${txHash}`, await observeExecuted(reader, txHash, tx, ends));
+console.log(`\neach call run as a Safe transaction of its own at block ${parent.number}`);
+for (const line of describeCallScan(await scanCalls(reader, { tx, parent, time: executedHeader.time, watch }), registry)) console.log(`  ${line}`);
 
 if (flags.record !== undefined) {
   const out = join(ROOT, 'testdata', 'simulate', `${flags.record}.json`);
