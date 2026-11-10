@@ -25,7 +25,8 @@ Finds executed transactions of one operation through an anchor: an ERC-20 Transf
   transfer a token:       --token <token> --anchor any    (any transfer of the token)
   claim a reward:         --token <token> --anchor any --from <distributor>   (the distributor paying it out)
 It searches 12 windows of up to 7200 blocks spread over the last year, placed by the head block, and studies at most
---max-txs transactions shared between them. --from-block and --to-block replace the windows with one range.
+--max-txs (at least 12) transactions shared evenly between them. A window with more transfers than one page of a
+source is halved until they fit, and the report names the blocks left out. --from-block and --to-block replace the windows with one range.
 Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window; each transaction says which found it.
 Senders are counted by type: a proven Safe (Safe proxy code and an official singleton), a contract that is not a proven
 Safe, and an EOA making one of the template's calls directly.
@@ -54,6 +55,10 @@ const byHand = flags['from-block'] !== undefined || flags['to-block'] !== undefi
 const maxTxs = Number(flags['max-txs']);
 if (templateId === undefined || positionals.length !== 1 || flags.token === undefined || kind === undefined || (byHand && range === undefined) || !(Number.isInteger(maxTxs) && maxTxs >= 1)) {
   console.error(USAGE);
+  process.exit(64);
+}
+if (range === undefined && maxTxs < DEFAULT_SPREAD.count) {
+  console.error(`--max-txs must be at least ${DEFAULT_SPREAD.count}, one transaction per window`);
   process.exit(64);
 }
 if (flags.from !== undefined && kind !== 'any') {

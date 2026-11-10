@@ -18,7 +18,7 @@ export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint 
  */
 export type Sampling = { readonly kind: 'spread'; readonly count: number; readonly blocks: bigint } | { readonly kind: 'range'; readonly range: BlockRange };
 
-export const DEFAULT_SPREAD: Sampling = { kind: 'spread', count: 12, blocks: 7200n };
+export const DEFAULT_SPREAD: Extract<Sampling, { readonly kind: 'spread' }> = { kind: 'spread', count: 12, blocks: 7200n };
 
 const YEAR = (365n * 24n * 60n * 60n) / 12n;
 const FINALITY = 64n;
@@ -39,18 +39,19 @@ export type PastTxsDeps = {
   readonly reader: Reader;
   readonly registry: Registry;
   readonly exclude: Address | undefined;
-  /** The most transactions studied in a run, shared evenly between the windows. */
+  /** The most transactions studied in a run, shared evenly between the windows; below one per window none is studied. */
   readonly maxTxs: number;
 };
 
 type Kept = Exclude<TxStudy, { kind: 'excluded' }>;
 
-/** One window as searched: `found` transactions after exclusion, of which `studied` were read. */
-export type WindowRun = { readonly range: BlockRange; readonly found: number; readonly studied: number };
+/** One window as searched, `asked` before any halving: `found` transactions after exclusion, of which `studied` were read. */
+export type WindowRun = { readonly asked: BlockRange; readonly range: BlockRange; readonly found: number; readonly studied: number };
 
 export type PastTxs = {
   readonly query: PastTxsQuery;
   readonly windows: readonly WindowRun[];
+  readonly perWindow: number;
   /** Each kept transaction with the sources that found it. */
   readonly found: ReadonlyMap<Hex, readonly SourceName[]>;
   readonly studies: readonly Kept[];
@@ -113,16 +114,16 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     if (head.kind === 'unverifiable') throw new ResearchError(`the head block: ${head.reason}`);
     ranges = spreadWindows(head.value, sampling.count, sampling.blocks);
   }
-  const cap = Math.max(1, Math.floor(deps.maxTxs / ranges.length));
+  const perWindow = Math.floor(deps.maxTxs / ranges.length);
   const found = new Map<Hex, SourceName[]>();
   const excluded = new Set<Hex>();
-  const searched: { range: BlockRange; found: Hex[]; sample: Hex[] }[] = [];
+  const searched: { asked: BlockRange; range: BlockRange; found: Hex[]; sample: Hex[] }[] = [];
   for (const asked of ranges) {
     const { range, hits } = await searchWindow(query.anchor, asked, sampling.kind, deps.ask);
     const window = hashesBySource(hits, deps.exclude);
     for (const hash of window.excluded) excluded.add(hash);
     for (const [hash, sources] of window.found) found.set(hash, sources);
-    searched.push({ range, found: [...window.found.keys()], sample: spacedSample([...window.found.keys()], cap) });
+    searched.push({ asked, range, found: [...window.found.keys()], sample: spacedSample([...window.found.keys()], perWindow) });
   }
   const shapes = shapesOf(query.template);
   const context = { shapes, registry: deps.registry, exclude: deps.exclude };
@@ -135,8 +136,8 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     } else studies.push(study);
   }
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
-  const windows = searched.map(({ range, found, sample }) => ({ range, found: kept(found), studied: kept(sample) }));
-  return { query, windows, found, studies, shapes, excluded };
+  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
+  return { query, windows, perWindow, found, studies, shapes, excluded };
 }
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
@@ -259,10 +260,12 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   lines.push(`past transactions for ${template.id}`);
   lines.push(`anchor: Transfer of ${tokenName === undefined ? '' : `${tokenName} `}${checksumAddress(anchor.token)} ${direction}`);
   if (sampling.kind === 'spread') {
-    const cap = run.windows.length === 0 ? 0 : Math.max(...run.windows.map((w) => w.studied));
-    lines.push(`windows: ${sampling.count} of up to ${sampling.blocks} blocks, one every ${YEAR / BigInt(sampling.count)} blocks over the last year; at most ${cap} studied per window`);
+    lines.push(`windows: ${sampling.count} of up to ${sampling.blocks} blocks, one every ${YEAR / BigInt(sampling.count)} blocks over the last year; at most ${run.perWindow} studied per window`);
   } else lines.push('windows: one block range given by hand');
-  for (const w of run.windows) lines.push(`  blocks ${w.range.fromBlock} to ${w.range.toBlock}: ${w.found} found, ${w.studied} studied`);
+  for (const { asked, range, found, studied } of run.windows) {
+    const halved = asked.fromBlock === range.fromBlock ? '' : `; halved, too many transfers in ${asked.fromBlock} to ${asked.toBlock}, so ${asked.fromBlock} to ${range.fromBlock - 1n} not searched`;
+    lines.push(`  blocks ${range.fromBlock} to ${range.toBlock}: ${found} found, ${studied} studied${halved}`);
+  }
 
   const bySource = (source: SourceName) => [...run.found].filter(([, s]) => s.includes(source)).length;
   const only = (source: SourceName) => [...run.found].filter(([, s]) => s.length === 1 && s[0] === source).map(([hash]) => hash);

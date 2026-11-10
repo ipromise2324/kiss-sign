@@ -213,7 +213,7 @@ pnpm simulate morpho-urd-claim --record morpho-urd-claim --card '{"operations":[
 
 Before writing, the script drops every entry that mentions the configured Safe or one of its transactions, and refuses to write if any mention is left.
 
-The tests replay the run and require the counts a reader sees: per window, per source, per sender type, per field, and per misfit reason. A Safe set as the configured Safe disappears from every count, and a transaction removed from one source's answer is marked as found by the other only. A Safe whose recorded code or slot 0 is changed counts as a contract, not a proven Safe.
+The tests replay the run and require the counts a reader sees: per window, per source, per sender type, per field, and per misfit reason. A Safe set as the configured Safe disappears from every count, and a transaction removed from one source's answer is marked as found by the other only. A Safe whose recorded code or slot 0 is changed counts as a contract, not a proven Safe. A window whose recorded Alchemy answer is given a next page is halved, and the report names the blocks left out. An EOA's `multicall` sent to a contract other than Bundler3 counts as calling no function the template calls.
 
 | File | Anchor | Blocks | What it found |
 | --- | --- | --- | --- |

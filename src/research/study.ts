@@ -252,9 +252,12 @@ async function studySafeTx(reader: Reader, tx: Transaction & { readonly to: Addr
 function studyDirectCall(tx: Transaction & { readonly to: Address }, context: StudyContext): TxStudy {
   const selector = tx.input.length >= 10 ? tx.input.slice(0, 10) : 'no data';
   const candidates = context.shapes.calls.flatMap((shape, call) => {
-    const data = shape.template.calls[0]?.data;
+    const templateCall = shape.template.calls[0];
+    const data = templateCall?.data;
     const same = data === 'empty' ? tx.input.length === 2 : data !== undefined && selector === data.fn.selector;
-    return same ? [{ shape, call }] : [];
+    // A named contract pins the call's target, so the same selector on another contract is another function.
+    const target = templateCall?.to.kind !== 'contract' || context.registry.entries.get(templateCall.to.name)?.address === tx.to;
+    return same && target ? [{ shape, call }] : [];
   });
   if (candidates.length === 0) return { kind: 'not-studied', hash: tx.hash, why: 'calls no function the template calls', selector };
   const direct: SafeTx = { ...EMPTY_SAFE_TX, safe: tx.from, to: tx.to, value: tx.value, data: tx.input };

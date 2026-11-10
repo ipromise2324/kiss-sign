@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -9,7 +10,7 @@ import type { Sampling } from '../src/research/past-txs.ts';
 import { scrubRecording } from '../src/research/recording.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { replayAsk } from '../src/research/sources.ts';
-import type { AnchorKind, SourceExchange } from '../src/research/sources.ts';
+import type { AnchorKind, SourceExchange, SourceRequest } from '../src/research/sources.ts';
 import type { Address } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
@@ -88,6 +89,44 @@ test('a contract that runs execTransaction and emits ExecutionSuccess is not a S
   const foreignSingleton = await report({ exchanges: withAnswersReplaced('eth_getStorageAt', safe, `0x${'00'.repeat(12)}${'de'.repeat(20)}`) });
   assert.match(foreignSingleton, /^ {2}proven Safe: 0, from 0 Safes$/m);
   assert.match(foreignSingleton, new RegExp(`^ {4}3 its singleton is not an official Safe singleton: .*${FIT}`, 'm'));
+});
+
+test('the same function called on a contract other than the one the template names is not counted as the template call', async () => {
+  const direct = '0x8b418f72564aac961208cf6f6aea83a99d26d4a385f2f40b9087161ac205efd1';
+  const exchanges = recording.exchanges.map((e) =>
+    e.method === 'eth_getTransactionByHash' && JSON.stringify(e.params) === JSON.stringify([direct])
+      ? { ...e, answers: Object.fromEntries(Object.entries(e.answers).map(([p, a]) => [p, { ...(a as object), to: `0x${'de'.repeat(20)}` }])) }
+      : e,
+  );
+  const text = await report({ exchanges });
+  assert.match(text, /^ {2}EOA calling a function of the template directly: 24, from 24 EOAs$/m);
+  assert.match(text, /^ {4}38 calls no function the template calls \(/m);
+});
+
+test('a window with more transfers than one page is halved, and the report names the blocks left out', async () => {
+  const windowed: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'), 'utf8'));
+  const [full, half] = [26373601n, 26377201n];
+  const replay = replayAsk(windowed.sources);
+  const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
+  const ask = async (request: SourceRequest) => {
+    if (request.source === 'alchemy' && fromBlockOf(request) === full) return { ...((await replay(request)) as object), pageKey: 'more' };
+    if (fromBlockOf(request) !== half) return replay(request);
+    return replay(request.source === 'alchemy' ? { ...request, params: { ...request.params, fromBlock: `0x${full.toString(16)}` } } : { ...request, query: { ...request.query, fromBlock: full.toString() } });
+  };
+  const { query } = windowed;
+  const run = await pastTxs(
+    { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: DEFAULT_SPREAD },
+    { ask, reader: replayReader(windowed.exchanges), registry, exclude: undefined, maxTxs: query.maxTxs },
+  );
+  const text = renderPastTxs(run, registry);
+  assert.match(text, /^ {2}blocks 26377201 to 26380800: 45 found, 2 studied; halved, too many transfers in 26373601 to 26380800, so 26373601 to 26377200 not searched$/m);
+  assert.equal(text.match(/halved/g)?.length, 1);
+});
+
+test('--max-txs below one transaction per window is refused', () => {
+  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc', '--anchor', 'mint', '--max-txs', '11'], { encoding: 'utf8' });
+  assert.equal(run.status, 64);
+  assert.match(run.stderr, /--max-txs must be at least 12, one transaction per window/);
 });
 
 test('by default the windows are spread over the last year from the head block, and each window is sampled to its share', async () => {
