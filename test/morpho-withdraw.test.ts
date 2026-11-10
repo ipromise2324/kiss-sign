@@ -37,17 +37,21 @@ function resolved(tx: SafeTx, card: Card): ResolvedCard {
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;
 }
 
-const withdraw = (amount: string): Card['operations'][number] => ({ template: WITHDRAW, values: { vault: VAULT, amount } });
-const withdrawAll = (vault = VAULT): Card['operations'][number] => ({ template: ALL, values: { vault } });
+const LOOSE_MAX_SHARES = `${10n ** 40n}`;
+const withdraw = (amount: string, maxShares = LOOSE_MAX_SHARES): Card['operations'][number] => ({
+  template: WITHDRAW,
+  values: { vault: VAULT, amount, 'max-shares': maxShares },
+});
+const withdrawAll = (vault = VAULT, minAssets = '1'): Card['operations'][number] => ({ template: ALL, values: { vault, 'min-assets': minAssets } });
 const card = (...operations: Card['operations']): Card => ({ operations });
 const check = (tx: SafeTx, c: Card): FieldCheck => checkTemplateFields(tx, resolved(tx, c), templates, registry);
 const findings = (result: FieldCheck) => (result.kind === 'mismatch' ? result.findings.map((f) => `${f.callPath}.${f.arg}`) : result);
 
 const CASES = [
-  { name: 'morpho-withdraw-apex', op: withdraw('583913520554'), bound: 13, free: 2 },
-  { name: 'morpho-withdraw-apex-other-safe', op: withdraw('300000000000'), bound: 13, free: 2 },
-  { name: 'morpho-withdraw-all-apex', op: withdrawAll(), bound: 12, free: 3 },
-  { name: 'morpho-withdraw-all-apex-other-safe', op: withdrawAll(), bound: 12, free: 3 },
+  { name: 'morpho-withdraw-apex', op: withdraw('583913520554', '555874861469460312138864'), bound: 14, free: 1 },
+  { name: 'morpho-withdraw-apex-other-safe', op: withdraw('300000000000', '285585667181036150934684'), bound: 14, free: 1 },
+  { name: 'morpho-withdraw-all-apex', op: withdrawAll(VAULT, '1367287893326'), bound: 13, free: 2 },
+  { name: 'morpho-withdraw-all-apex-other-safe', op: withdrawAll(VAULT, '25172004987'), bound: 13, free: 2 },
 ] as const;
 
 for (const c of CASES) {
@@ -166,13 +170,16 @@ test('two withdrawals from one vault, one of them of all, cannot be judged', () 
   assert.equal(expectedChanges(resolved(tx, card(withdrawAll(), withdraw('1'))), templates, registry).kind, 'unverifiable');
 });
 
-const BOTH_ALL = card(withdrawAll('smokehouse-usdc'), withdrawAll('usual-boosted-usdc'));
-const ALL_THEN_AMOUNT = card(withdrawAll('smokehouse-usdc'), { template: WITHDRAW, values: { vault: 'usual-boosted-usdc', amount: '154000000000' } });
+const BOTH_ALL = card(withdrawAll('smokehouse-usdc', '20245327154'), withdrawAll('usual-boosted-usdc', '17322520385'));
+const ALL_THEN_AMOUNT = card(withdrawAll('smokehouse-usdc', '346769119920'), {
+  template: WITHDRAW,
+  values: { vault: 'usual-boosted-usdc', amount: '154000000000', 'max-shares': '139013506340509964396628' },
+});
 
 test('two withdrawals in one multicall match a card with two operations, and each bound field is caught', () => {
   const cases = [
-    ['morpho-withdraw-two-vaults-all', BOTH_ALL, 22, 6],
-    ['morpho-withdraw-two-vaults', ALL_THEN_AMOUNT, 23, 5],
+    ['morpho-withdraw-two-vaults-all', BOTH_ALL, 24, 4],
+    ['morpho-withdraw-two-vaults', ALL_THEN_AMOUNT, 25, 3],
   ] as const;
   for (const [name, c, bound, free] of cases) {
     const tx = safeTx(name);
@@ -226,4 +233,33 @@ test('an allowance that falls is allowed, one that rises and stays open is a mis
   assert.deepEqual(judge(490n, 0n), { kind: 'match' });
   assert.deepEqual(judge(0n, 0n), { kind: 'match' });
   assert.equal(judge(0n, 1n).kind, 'mismatch');
+});
+
+test('a card that allows fewer burned shares, or wants more assets, than the price bound guarantees is a mismatch at the bound', () => {
+  const amount = safeTx('morpho-withdraw-apex');
+  assert.deepEqual(findings(check(amount, card(withdraw('583913520554', '555874861469460312138863')))), [
+    'multiSend[1].multicall.bundle[0].data.erc4626Withdraw.minSharePriceE27',
+  ]);
+  const all = safeTx('morpho-withdraw-all-apex');
+  assert.deepEqual(findings(check(all, card(withdrawAll(VAULT, '1367287893327')))), ['multiSend[1].multicall.bundle[0].data.erc4626Redeem.minSharePriceE27']);
+});
+
+test('each operation of a merged multicall is held to its own card bound', () => {
+  const tx = safeTx('morpho-withdraw-two-vaults-all');
+  assert.deepEqual(findings(check(tx, card(withdrawAll('smokehouse-usdc', '20245327154'), withdrawAll('usual-boosted-usdc', '17322520386')))), [
+    'multiSend[2].multicall.bundle[1].data.erc4626Redeem.minSharePriceE27',
+  ]);
+});
+
+test('a redeem of 2^256-1 shares states no share count, so its price bound guarantees nothing and is a mismatch', () => {
+  const tx = safeTx('morpho-withdraw-all-apex');
+  const data = tx.data.slice(2);
+  const selector = data.indexOf('a7f6e606');
+  assert.ok(selector > 0 && data.indexOf('a7f6e606', selector + 1) === -1, 'one erc4626Redeem');
+  const sharesAt = selector + 8 + 64;
+  const max = { ...tx, data: `0x${data.slice(0, sharesAt)}${'f'.repeat(64)}${data.slice(sharesAt + 64)}` as Hex };
+  const result = check(max, card(withdrawAll(VAULT, '1')));
+  assert.equal(result.kind, 'mismatch');
+  const found = result.kind === 'mismatch' ? result.findings.find((f) => f.arg === 'minSharePriceE27') : undefined;
+  assert.match(found?.expected ?? '', /not the whole balance/);
 });

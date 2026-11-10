@@ -14,8 +14,8 @@
         "positionType_": { "free": "part of the Merkle leaf, checked against the root like cumulativeAmount_; it names which kind of Fluid position earned the reward" },
         "positionId_": { "free": "part of the Merkle leaf, checked against the root like cumulativeAmount_; it names the position, such as an fToken, that earned the reward" },
         "cycle_": { "free": "which published root the proof is against, the current or the previous one; the distributor refuses any other" },
-        "merkleProof_": { "free": "a Merkle proof: the distributor reverts unless it proves the leaf against the root" },
-        "metadata_": { "free": "part of the Merkle leaf, checked against the root like cumulativeAmount_; the distributor reads it nowhere else" }
+        "merkleProof_": { "free": { "proof": "a Merkle proof: the distributor reverts unless it proves the leaf against the root" } },
+        "metadata_": { "free": { "proof": "part of the Merkle leaf, checked against the root like cumulativeAmount_; the distributor reads it nowhere else" } }
       }
     }
   ],

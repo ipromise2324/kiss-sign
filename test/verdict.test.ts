@@ -69,7 +69,7 @@ const rows: readonly { name: string; changes: Partial<AllChecks>; verdict: strin
         kind: 'weak-template',
         bound: 12,
         free: 1,
-        uncaught: [{ leaf: { callPath: 'multiSend[0].approve', arg: 'spender', bytes: [0, 32], rule: 'contract', type: { kind: 'address' } }, mutated: 'match' }],
+        uncaught: [{ leaf: { callPath: 'multiSend[0].approve', arg: 'spender', bytes: [0, 32], rule: { kind: 'contract', name: 'general-adapter1' }, type: { kind: 'address' } }, mutated: 'match' }],
       },
     },
     verdict: 'UNVERIFIABLE',

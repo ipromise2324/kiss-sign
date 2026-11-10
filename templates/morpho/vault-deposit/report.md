@@ -37,7 +37,7 @@ Hyperithm USDC Apex (V2) was refused by `prove-abi` until this pull request. Sou
 | bundle[1] | `to` | the adapter | `general-adapter1` |
 | | `erc4626Deposit.vault` | the vault | the card's `vault` |
 | | `erc4626Deposit.assets` | how much | the card's `amount` |
-| | `erc4626Deposit.maxSharePriceE27` | slippage bound | free: the simulation checks the shares the Safe receives |
+| | `erc4626Deposit.maxSharePriceE27` | slippage bound, the most assets per share | `maxSharePrice`: at most the card's `amount` × 1e27 / `min-shares`, so the deposit gets at least the card's `min-shares` or reverts |
 | | `erc4626Deposit.receiver` | who gets the shares | the Safe |
 
 Every call sends 0 ETH, and every bundle item has `skipRevert` false and a zero `callbackHash`. Effects: the Safe gives exactly `amount` of the asset and gets a positive amount of the vault's shares; the allowance may not end higher than it started, so the approval is spent in full.
@@ -62,7 +62,7 @@ Alchemy and Etherscan found the same transactions in every run, and none was unr
 | Steakhouse Prime USDC (V2) | 893 | 46 from 14 Safes | 0 | 46 from 14 Safes |
 | Hyperithm USDC Apex (V2) | 2,779 | 3 from 2 Safes | 0 | 3 from 2 Safes |
 
-In every fitting transaction, each bound field held its rule: the receiver was the Safe, the spender and both bundle targets were GeneralAdapter1, the amount was the same in its four places, and every value was 0. `maxSharePriceE27` held a different value in each.
+In every fitting transaction, each bound field held its rule: the receiver was the Safe, the spender and both bundle targets were GeneralAdapter1, the amount was the same in its four places, and every value was 0. `maxSharePriceE27` held a different value in each. It was free then; it is now bound to the card's `min-shares`, which the tests take from each transaction's own bound.
 
 What the misfits taught:
 
@@ -74,7 +74,7 @@ What the misfits taught:
 - **No MultiSend.** 3 from 3 Safes into Smokehouse USDC, and 2 from 2 Safes into Apex V2, call `Bundler3.multicall` directly, with the approval given earlier. The approval is then not spent in the same transaction, which the effects rule refuses, so this shape is left out.
 - Apex V2 is mostly reached through its own `multicall` (`0xac9650d8`, 2,307 of 2,779 mints), from EOAs and contracts. Only 3 deposits in that range came from Safes, none through a MultiSend.
 
-The tests record four deposits from four other Safes: two into Smokehouse USDC (V1.0, `morpho-deposit-metamorpho-1-0` and `-other-safe`), and two into Hyperithm USDC Apex V1.1 with the `approve` trailer (`morpho-deposit-approve-trailer` and `-other-safe`). With `morpho-vault-deposit` (Steakhouse Prime USDC, Vault V2), each gives `MATCH` with its implied card, and a mutation of each of its 20 bound fields gives `MISMATCH`. Without the `approve` trailer allowance, both trailer fixtures fail at `canonical approve(address,uint256)`.
+The tests record four deposits from four other Safes: two into Smokehouse USDC (V1.0, `morpho-deposit-metamorpho-1-0` and `-other-safe`), and two into Hyperithm USDC Apex V1.1 with the `approve` trailer (`morpho-deposit-approve-trailer` and `-other-safe`). With `morpho-vault-deposit` (Steakhouse Prime USDC, Vault V2), each gives `MATCH` with its implied card, and a mutation of each of its 21 bound fields gives `MISMATCH`. Without the `approve` trailer allowance, both trailer fixtures fail at `canonical approve(address,uint256)`.
 
 ## ERC-7730
 

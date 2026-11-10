@@ -21,6 +21,7 @@
     "record-abi-case": "node scripts/record-abi-case.ts",
     "record-safe-proxy": "node scripts/record-safe-proxy.ts",
     "simulate": "node scripts/simulate.ts",
+    "perturb": "node scripts/perturb.ts",
     "past-txs": "node scripts/past-txs.ts",
     "history": "node scripts/history.ts",
     "attacks": "node scripts/attacks.ts"

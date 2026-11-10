@@ -2,7 +2,9 @@
   "id": "morpho/vault-migrate-all",
   "card": {
     "from": { "kind": "contract", "registryKind": "vault" },
-    "to": { "kind": "contract", "registryKind": "vault" }
+    "to": { "kind": "contract", "registryKind": "vault" },
+    "min-assets": { "kind": "amount", "of": "from.asset" },
+    "min-shares": { "kind": "amount", "of": "to" }
   },
   "same": ["from.asset", "to.asset"],
   "calls": [
@@ -35,7 +37,7 @@
                     "args": {
                       "token": { "card": "from" },
                       "receiver": { "contract": "general-adapter1" },
-                      "amount": { "free": "the Safe's whole share balance; the effects require the Safe to hold no shares of the vault afterwards" }
+                      "amount": { "equals": "calls[0].args.value" }
                     }
                   }
                 },
@@ -53,7 +55,7 @@
                     "args": {
                       "vault": { "card": "from" },
                       "shares": { "const": "115792089237316195423570985008687907853269984665640564039457584007913129639935" },
-                      "minSharePriceE27": { "free": "slippage bound: the fewest assets per share; the effects require the Safe to get a positive number of the new vault's shares" },
+                      "minSharePriceE27": { "minSharePrice": { "assets": "card.min-assets", "shares": "calls[1].args.bundle.items[0].fields.data.call.args.amount" } },
                       "receiver": { "contract": "general-adapter1" },
                       "owner": { "contract": "general-adapter1" }
                     }
@@ -73,7 +75,7 @@
                     "args": {
                       "vault": { "card": "to" },
                       "assets": { "const": "115792089237316195423570985008687907853269984665640564039457584007913129639935" },
-                      "maxSharePriceE27": { "free": "slippage bound: the most assets per share; the effects require the Safe to get a positive number of shares" },
+                      "maxSharePriceE27": { "maxSharePrice": { "assets": "card.min-assets", "shares": "card.min-shares" } },
                       "receiver": { "safe": true }
                     }
                   }

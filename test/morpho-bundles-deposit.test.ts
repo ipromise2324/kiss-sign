@@ -28,7 +28,10 @@ function resolved(tx: SafeTx, card: Card): ResolvedCard {
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;
 }
 
-const deposit = (amount: string): Card => ({ operations: [{ template: ID, values: { vault: 'steakhouse-prime-usdc', amount } }] });
+const MIN_SHARES: Record<string, string> = { '31583325527': '30442521166571443751074', '2700000000000': '2605667274057129893492827' };
+const deposit = (amount: string, minShares = MIN_SHARES[amount] ?? '1'): Card => ({
+  operations: [{ template: ID, values: { vault: 'steakhouse-prime-usdc', amount, 'min-shares': minShares } }],
+});
 const check = (tx: SafeTx, card: Card): FieldCheck => checkTemplateFields(tx, resolved(tx, card), templates, registry);
 
 const CASES = [
@@ -44,11 +47,11 @@ for (const c of CASES) {
   });
 
   test(`${c.name}: every bound field, changed alone, gives a mismatch`, () => {
-    assert.deepEqual(checkMutations(tx, resolved(tx, deposit(c.amount)), templates, registry), { kind: 'pass', bound: 11, free: 3 });
+    assert.deepEqual(checkMutations(tx, resolved(tx, deposit(c.amount)), templates, registry), { kind: 'pass', bound: 12, free: 2 });
   });
 
   test(`${c.name}: another amount on the card is a mismatch at both amounts`, () => {
-    const result = check(tx, deposit(`${BigInt(c.amount) + 1n}`));
+    const result = check(tx, deposit(`${BigInt(c.amount) + 1n}`, MIN_SHARES[c.amount]));
     assert.equal(result.kind, 'mismatch');
     const args = result.kind === 'mismatch' ? result.findings.map((f) => f.arg) : [];
     assert.deepEqual(args, ['value', 'assets']);
@@ -80,4 +83,9 @@ test('a deposit for another vault is a mismatch at the vault', () => {
   const apex = registry.entries.get('hyperithm-usdc-apex-0932')!.address;
   const result = check(replaceWord(tx, prime, apex), deposit('31583325527'));
   assert.deepEqual(result.kind === 'mismatch' ? result.findings.map((f) => f.arg) : result, ['vault']);
+});
+
+test('a card that asks for more shares than the price bound guarantees is a mismatch at the bound', () => {
+  const result = check(safeTx('morpho-bundles-deposit'), deposit('31583325527', '30442521166571443751075'));
+  assert.deepEqual(result.kind === 'mismatch' ? result.findings.map((f) => f.arg) : result, ['maxSharePriceE27']);
 });

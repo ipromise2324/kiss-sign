@@ -25,7 +25,7 @@ const DEPOSIT_PATH = 'multiSend[1].multicall.bundle[1].data.erc4626Deposit';
 const templatesOf = (t: Template) => new Map([[t.id, t]]);
 
 function card(templates: ReadonlyMap<string, Template>, amount = '1800000000180'): ResolvedCard {
-  const operations = [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount } }];
+  const operations = [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount, 'min-shares': '1741863305677219101283940' } }];
   const result = resolveCard({ operations }, { templates, registry, addressBook: new Map(), safe: deposit.safe });
   assert.equal(result.kind, 'resolved');
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;
@@ -41,13 +41,13 @@ const RECEIVER = (() => {
 })();
 
 test('every bound field of the Morpho deposit, changed alone, gives a mismatch', () => {
-  assert.deepEqual(mutations(), { kind: 'pass', bound: 20, free: 1 });
+  assert.deepEqual(mutations(), { kind: 'pass', bound: 21, free: 0 });
 });
 
-test('a template that frees the receiver still passes, with one more free field and one fewer bound', () => {
+test('a template that frees the deposited assets still passes, with one more free field and one fewer bound', () => {
   const weakened = structuredClone(rawTemplate);
-  weakened.calls[1].args.bundle.items[1].fields.data.call.args.receiver = { free: 'test: receiver left free' };
-  assert.deepEqual(mutations(parseTemplate(weakened, registry)), { kind: 'pass', bound: 19, free: 2 });
+  weakened.calls[1].args.bundle.items[1].fields.data.call.args.assets = { free: 'test: assets left free' };
+  assert.deepEqual(mutations(parseTemplate(weakened, registry)), { kind: 'pass', bound: 20, free: 1 });
 });
 
 test('a checker that ignores the receiver makes the template weak, naming the receiver', () => {
@@ -61,9 +61,9 @@ test('a checker that ignores the receiver makes the template weak, naming the re
   const result = mutations(template, blind);
   assert.equal(result.kind, 'weak-template');
   const { uncaught, bound, free } = result as Extract<MutationResult, { kind: 'weak-template' }>;
-  assert.deepEqual([bound, free], [20, 1]);
+  assert.deepEqual([bound, free], [21, 0]);
   assert.deepEqual(
-    uncaught.map(({ leaf, mutated }) => [leaf.callPath, leaf.arg, leaf.bytes, leaf.rule, mutated]),
+    uncaught.map(({ leaf, mutated }) => [leaf.callPath, leaf.arg, leaf.bytes, leaf.rule.kind, mutated]),
     [[DEPOSIT_PATH, 'receiver', RECEIVER, 'safe', 'match']],
   );
 });

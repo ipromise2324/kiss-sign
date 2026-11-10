@@ -71,7 +71,7 @@ test('card seal prints every name with its full address and stores the card unde
   const home = freshHome();
   await run(['init', '--safe', SAFE], home);
   const card = join(home, 'card.json');
-  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: '5' } }] }));
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: '5', 'min-shares': '4' } }] }));
   const sealed = await run(['card', 'seal', card], home, ['y']);
   assert.equal(sealed.code, 0, sealed.stderr);
   assert.match(sealed.stdout, /vault: steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51/);
@@ -111,14 +111,15 @@ async function sealedFile(values: Record<string, string>) {
 test('card new lists vaults with full addresses and seals the same card card seal would', async () => {
   const home = freshHome();
   await run(['init', '--safe', SAFE], home);
-  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5000000', 'y']);
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5000000', '4800000000000000000', 'y']);
   assert.equal(made.code, 0, made.stderr);
   assert.match(made.stdout, new RegExp(`\\d+\\. steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)`));
   assert.match(made.asked[1] ?? '', /amount \(base units of usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\): /);
+  assert.equal(made.asked[2], `min-shares (base units of steakhouse-prime-usdc ${STEAKHOUSE}): `);
   assert.match(made.stdout, new RegExp(`vault: steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)`));
-  assert.equal(made.asked[2], 'Is this what you mean to do? [y/N] ');
+  assert.equal(made.asked[3], 'Is this what you mean to do? [y/N] ');
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(made.stdout)?.[1];
-  assert.equal(hash, await sealedFile({ vault: 'steakhouse-prime-usdc', amount: '5000000' }));
+  assert.equal(hash, await sealedFile({ vault: 'steakhouse-prime-usdc', amount: '5000000', 'min-shares': '4800000000000000000' }));
 });
 
 test('card new offers a transfer recipient only from the address book or the Safe', async () => {
@@ -176,7 +177,7 @@ test('card new refuses a template that is not in the repository', async () => {
 test('card new seals nothing when the signer says no', async () => {
   const home = freshHome();
   await run(['init', '--safe', SAFE], home);
-  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', 'n']);
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', '4', 'n']);
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Nothing sealed/);
   assert.equal(existsSync(join(home, 'cards')), false);

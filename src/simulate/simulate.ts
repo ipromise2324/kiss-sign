@@ -1,7 +1,7 @@
 import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import type { Reader } from '../chain/reader.ts';
-import type { BlockHeader, SimulatedCall, SimulationCall, SimulationRequest } from '../chain/types.ts';
+import type { BlockHeader, EventLog, SimulatedCall, SimulationCall, SimulationRequest } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
 import { regionBytes, uintWord } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
@@ -13,7 +13,10 @@ import { PERMIT2, addressOf, executionOf, isEthTransfer, namesAddress, touchedBy
 import type { Allowance, Execution, Touched } from './events.ts';
 import { parseSafeState, safeStateCalls } from './safe-state.ts';
 
-export type Observation = { readonly kind: 'observed'; readonly observed: Observed } | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
+/** `logs` are every event the Safe transaction emitted, in order. */
+export type Observation =
+  | { readonly kind: 'observed'; readonly observed: Observed; readonly logs: readonly EventLog[] }
+  | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
 
 export type SimulationInput = {
   readonly tx: SafeTx;
@@ -180,7 +183,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   if (discovery.kind === 'unverifiable') return unverifiable(discovery.reason);
   const alone = discovery.value[0] as SimulatedCall;
   const execution = executionOfCall(alone, safe, safeTxHash);
-  if (execution !== 'success') return { kind: 'observed', observed: { kind: 'not-executed', why: execution } };
+  if (execution !== 'success') return { kind: 'observed', observed: { kind: 'not-executed', why: execution }, logs: alone.logs };
 
   const touched = touchedBy(alone.logs, safe);
   const tokens = [...new Set([...input.watch, ...input.ends, ...touched.tokens])];
@@ -240,6 +243,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
       ends: new Map(input.ends.map((token) => [token, after(1 + tokens.indexOf(token))])),
       safeState: { kind: 'read', before: stateBefore, after: stateAfter },
     },
+    logs: run.logs,
   };
 }
 

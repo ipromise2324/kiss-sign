@@ -31,7 +31,7 @@ const OTHER = '0x1111111111111111111111111111111111111111';
 
 const context = (safe: Address = deposit.safe): CardContext => ({ templates, registry, addressBook: new Map(), safe });
 const depositCard = (amount = '1800000000180', count = 1): Card => ({
-  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount } })),
+  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount, 'min-shares': '1741863305677219101283940' } })),
 });
 
 function resolved(card: Card): ResolvedCard {
@@ -165,10 +165,78 @@ test('a template rule that cannot bind its argument fails to load, naming the pa
   }
 });
 
+test('an address anywhere in the type tree is never free, and a constant address is only the zero address', () => {
+  const deposit = (t: any) => t.calls[1].args.bundle.items[1].fields.data.call.args;
+  const cases: [(t: any) => void, string, RegExp][] = [
+    [(t) => (deposit(t).receiver = { free: 'x' }), 'calls[1].args.bundle.items[1].fields.data.call.args.receiver.free', /address is never free/],
+    [(t) => (t.calls[1].args.bundle = { free: { proof: 'x' } }), 'calls[1].args.bundle.free', /address is never free/],
+    [(t) => (t.calls[1].args.bundle.items[1] = { free: { unread: 'x' } }), 'calls[1].args.bundle.items[1].free', /address is never free/],
+    [(t) => (deposit(t).receiver = { const: OTHER }), 'calls[1].args.bundle.items[1].fields.data.call.args.receiver.const', /zero address/],
+    [(t) => (t.calls[0].to = { const: OTHER }), 'calls[0].to.const', /zero address/],
+  ];
+  for (const [edit, path, problem] of cases) {
+    const broken = structuredClone(rawTemplate);
+    edit(broken);
+    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
+  }
+  const zero = structuredClone(rawTemplate);
+  deposit(zero).receiver = { const: '0x0000000000000000000000000000000000000000' };
+  assert.doesNotThrow(() => parseTemplate(zero, registry));
+});
+
+test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes are empty', () => {
+  const urd = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'urd-claim', 'template.json'), 'utf8'));
+  const claim = (t: any) => t.calls[0].args.bundle.items[0].fields.data.call.args;
+  const at = 'calls[0].args.bundle.items[0].fields.data.call.args';
+  const cases: [(t: any) => void, string, RegExp][] = [
+    [(t) => (claim(t).proof = { free: 'x' }), `${at}.proof.free`, /needs \{"proof": why\} or \{"unread": why\}/],
+    [(t) => (claim(t).proof = { free: { trust: 'x' } }), `${at}.proof.free`, /exactly one of proof, unread/],
+    [(t) => (t.calls[0].args.bundle.items[0].fields.data = { const: '0x00' }), 'calls[0].args.bundle.items[0].fields.data.const', /must be empty/],
+  ];
+  for (const [edit, path, problem] of cases) {
+    const broken = structuredClone(urd);
+    edit(broken);
+    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
+  }
+  const scalar = structuredClone(urd);
+  claim(scalar).claimable = { free: { proof: 'the leaf amount' } };
+  assert.equal(parseTemplate(scalar, registry).id, 'morpho/urd-claim');
+});
+
+test('a trailer allowance is at most 19 bytes, so a whole address never fits', () => {
+  const at = (maxBytes: number) => {
+    const raw = structuredClone(rawTemplate);
+    raw.calls[1].trailer.maxBytes = maxBytes;
+    return () => parseTemplate(raw, registry);
+  };
+  assert.doesNotThrow(at(19));
+  assert.throws(at(20), (error: unknown) => error instanceof TemplateError && error.path === 'calls[1].trailer.maxBytes' && /from 1 to 19/.test(error.message));
+});
+
+test('a share price bound or equals names a card amount or an earlier uint argument, or the template fails to load', () => {
+  const deposit = (t: any) => t.calls[1].args.bundle.items[1].fields.data.call.args;
+  const at = 'calls[1].args.bundle.items[1].fields.data.call.args';
+  const cases: [(t: any) => void, string][] = [
+    [(t) => (deposit(t).maxSharePriceE27 = { maxSharePrice: { assets: 'card.vault', shares: 'card.min-shares' } }), `${at}.maxSharePriceE27.maxSharePrice.assets`],
+    [(t) => (deposit(t).maxSharePriceE27 = { maxSharePrice: { assets: 'card.amount', shares: `${at}.maxSharePriceE27` } }), `${at}.maxSharePriceE27.maxSharePrice.shares`],
+    [(t) => (t.calls[0].args.value = { equals: `${at}.assets` }), 'calls[0].args.value.equals'],
+    [(t) => (deposit(t).receiver = { maxSharePrice: { assets: 'card.amount', shares: 'card.min-shares' } }), `${at}.receiver.maxSharePrice`],
+  ];
+  for (const [edit, path] of cases) {
+    const broken = structuredClone(rawTemplate);
+    edit(broken);
+    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path, path);
+  }
+  const earlier = structuredClone(rawTemplate);
+  deposit(earlier).assets = { equals: 'calls[0].args.value' };
+  assert.equal(parseTemplate(earlier, registry).id, 'morpho/vault-deposit');
+});
+
 test('the template parses its card fields and effects', () => {
   assert.deepEqual([...template.card], [
     ['vault', { kind: 'contract', registryKind: 'vault' }],
     ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' } }],
+    ['min-shares', { kind: 'amount', of: { field: 'vault', attribute: undefined } }],
   ]);
   assert.deepEqual(template.effects, {
     gives: [{ token: { field: 'vault', attribute: 'asset' }, amount: { kind: 'card', field: 'amount' }, to: undefined }],
@@ -194,7 +262,7 @@ test('a card resolves an address kind through the Safe, the registry and the add
   const book = new Map([['alice', OTHER as Address]]);
   const resolveRecipient = (name: string, addressBook = book) => {
     const result = resolveCard(
-      { operations: [{ template: recipients.id, values: { vault: 'steakhouse-prime-usdc', amount: '1', recipient: name } }] },
+      { operations: [{ template: recipients.id, values: { vault: 'steakhouse-prime-usdc', amount: '1', 'min-shares': '1', recipient: name } }] },
       { templates: new Map([[recipients.id, recipients]]), registry, addressBook, safe: deposit.safe },
     );
     return result.kind === 'resolved' ? result.card.operations[0]?.values.get('recipient') : result.reason;
@@ -211,7 +279,7 @@ test('a sealed card loads back, and a modified sealed file is refused', () => {
   const card = depositCard();
   const hash = sealCard(home, card);
   const path = join(cardsDir(home), `${hash}.json`);
-  assert.equal(readFileSync(path, 'utf8'), '{"operations":[{"template":"morpho/vault-deposit","values":{"amount":"1800000000180","vault":"steakhouse-prime-usdc"}}]}');
+  assert.equal(readFileSync(path, 'utf8'), '{"operations":[{"template":"morpho/vault-deposit","values":{"amount":"1800000000180","min-shares":"1741863305677219101283940","vault":"steakhouse-prime-usdc"}}]}');
   assert.equal(sealCard(home, parseCard(JSON.parse(readFileSync(path, 'utf8')))), hash, 'sealing is idempotent');
   assert.deepEqual(loadSealed(home, hash), card);
   writeFileSync(path, readFileSync(path, 'utf8').replace('1800000000180', '1800000000181'));

@@ -2,7 +2,7 @@
 
 The Safe deposits an amount of a Morpho vault's asset into that vault through VaultBundlesV1, the Morpho app's current deposit route: one official MultiSend with two calls. The first approves VaultBundlesV1 for exactly the amount. The second calls `vaultBundlesV1Deposit`, which pulls the amount from the Safe, deposits it into the vault, and has the vault mint the shares to the caller, the Safe.
 
-The card is the same as `morpho/vault-deposit`'s: the vault and the amount. The two templates are two routes to one operation, and a card names the one the app built.
+The card is the same as `morpho/vault-deposit`'s: the vault, the amount, and `min-shares`, the fewest shares the deposit may get. The two templates are two routes to one operation, and a card names the one the app built.
 
 ## Addresses and ABI
 
@@ -31,7 +31,7 @@ From the proven source of `vaultBundlesV1Deposit` and its library `TokenLib`:
 | | `value` | ETH sent, which the contract would wrap instead of pulling the asset | 0 |
 | | `vault` | the vault | the card's `vault` |
 | | `assets` | how much it pulls from the Safe | the card's `amount` |
-| | `maxSharePriceE27` | slippage bound | free: the effects require exactly the amount out and some shares in |
+| | `maxSharePriceE27` | slippage bound, the most assets per share | `maxSharePrice`: at most the card's `amount` × 1e27 / `min-shares`; with no referral fee, `vaultBundlesV1Deposit` deposits the whole `assets` and requires `assets × 1e27 / shares`, rounded up, to be at most the bound |
 | | `assetPermit.kind` | how it pulls the asset: 0 `transferFrom` after an approval, 1 an ERC-2612 permit, 2 a Permit2 signature | 0 |
 | | `assetPermit.data` | the permit for kind 1 or 2 | free: `pullToken` reads it only for kind 1 or 2 |
 | | `referralFeePct` | the share of `assets` sent to `referralFeeRecipient` instead of deposited, in WAD | 0 |
@@ -62,7 +62,7 @@ Misfits:
 - **Another MultiSend.** 6 from 2 Safes delegatecall a contract that is not an official MultiSend.
 - **Other routes.** 6 transactions deposit through other contracts, or directly into the vault after another call.
 
-The tests record two deposits from other Safes: `morpho-bundles-deposit` with the 8-byte trailer and `morpho-bundles-deposit-two-tags` with the 12-byte one. Each gives `MATCH` with its implied card, and a mutation of each of its 11 bound fields gives `MISMATCH`. A 10% referral fee, another vault, or another amount is a `MISMATCH` at that field.
+The tests record two deposits from other Safes: `morpho-bundles-deposit` with the 8-byte trailer and `morpho-bundles-deposit-two-tags` with the 12-byte one. Each gives `MATCH` with its implied card, and a mutation of each of its 12 bound fields gives `MISMATCH`. A 10% referral fee, another vault, or another amount is a `MISMATCH` at that field.
 
 ## ERC-7730
 

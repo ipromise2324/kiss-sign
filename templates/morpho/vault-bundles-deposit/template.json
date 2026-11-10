@@ -8,6 +8,10 @@
     "amount": {
       "kind": "amount",
       "of": "vault.asset"
+    },
+    "min-shares": {
+      "kind": "amount",
+      "of": "vault"
     }
   },
   "calls": [
@@ -44,7 +48,10 @@
           "card": "amount"
         },
         "maxSharePriceE27": {
-          "free": "slippage bound; the effects require the Safe to give exactly the amount and get a positive number of shares"
+          "maxSharePrice": {
+            "assets": "card.amount",
+            "shares": "card.min-shares"
+          }
         },
         "assetPermit": {
           "fields": {
@@ -52,7 +59,9 @@
               "const": "0"
             },
             "data": {
-              "free": "TokenLib.pullToken reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom"
+              "free": {
+                "unread": "TokenLib.pullToken reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom"
+              }
             }
           }
         },
