@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
@@ -31,7 +31,10 @@ function write(path: string, text: string): string {
   return path;
 }
 
-/** A clone whose origin/main holds this repository's template and registry, and a home holding one Safe's history. */
+/**
+ * A clone whose origin/main holds this repository's template and registry, and a home holding one Safe's history. Its
+ * origin is the official URL, served offline from a local bare repository through core.sshCommand.
+ */
 function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<string, unknown> = {}) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-history-'));
   const origin = join(base, 'origin.git');
@@ -44,6 +47,10 @@ function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<
   git(repo, 'add', '-A');
   git(repo, 'commit', '--quiet', '-m', 'templates');
   git(repo, 'push', '--quiet', 'origin', 'main');
+  const ssh = write(join(base, 'ssh'), `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
+  chmodSync(ssh, 0o755);
+  git(repo, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
+  git(repo, 'config', 'core.sshCommand', ssh);
   const txs = records(name);
   const home = join(base, 'home');
   write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: txs[0]!.safe }));

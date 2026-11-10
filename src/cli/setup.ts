@@ -105,11 +105,13 @@ export async function templateApprove(args: readonly string[], io: Io): Promise<
   const [id, ...extra] = args;
   if (id === undefined || extra.length > 0) throw new UsageError('template approve takes one template id, such as morpho/vault-deposit.');
   const confirm = terminalConfirm(io, 'template approve');
-  const commit = fetchOriginMain(io.repoRoot);
-  if (commit === undefined) {
-    io.stderr('kiss-sign: could not fetch origin, so nothing was approved.\n');
+  const origin = fetchOriginMain(io.repoRoot);
+  if (origin.kind !== 'fetched') {
+    const problems = origin.kind === 'refused' ? origin.problems : ['could not fetch origin'];
+    io.stderr(`kiss-sign: nothing was approved:\n${problems.map((problem) => `  ${problem}\n`).join('')}`);
     return FAILED;
   }
+  const { commit } = origin;
   let text: string;
   try {
     text = fileAt(io.repoRoot, commit, `${TEMPLATES_DIR}/${id}/template.json`);

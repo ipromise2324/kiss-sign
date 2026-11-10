@@ -12,6 +12,7 @@ import { SafeTxParseError } from '../safe/types.ts';
 import { TemplateError } from '../template/template.ts';
 import { VerifyError } from '../verify/verify.ts';
 import { FAILED, OK, USAGE, UsageError } from './io.ts';
+import { printManagedSettings } from './managed-settings.ts';
 import type { Io } from './io.ts';
 import { hiddenPrompt } from './prompt.ts';
 import { bookAdd, bookList, cardSeal, init, templateApprove } from './setup.ts';
@@ -82,6 +83,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
   'key add': { usage: `key add <${KEYS.map(({ name }) => name).join('|')}>`, run: keyAdd },
   'key list': { usage: 'key list', run: keyList },
   'key remove': { usage: 'key remove <name>', run: keyRemove },
+  'managed-settings': { usage: 'managed-settings', run: printManagedSettings },
 };
 
 const USAGE_TEXT = `Usage:\n${Object.values(COMMANDS)

@@ -130,6 +130,7 @@ Templates are reviewed once and reused, so they live in git, where every change 
 
 - Each operation has a folder, for example `templates/morpho/vault-deposit/`, holding `template.json`, `report.md`, and `tests/`.
 - The tests are real past transactions of the operation, each with the card values it implies. Every one must give `MATCH`, and every mutated copy must give `MISMATCH`. CI reruns the decoding, field checks, and mutation checks on every change. Simulation needs live providers, so it runs locally.
+- `.github/CODEOWNERS` names the signer as owner of `src/`, `bin/`, `package.json` and `pnpm-lock.yaml`. It binds only once branch protection requires code-owner review and the AI pushes from an account other than the signer's; both are GitHub settings the signer makes.
 - Git stores and records; it is not trusted. At signing, the program checks that the template's hash equals the hash recorded when the signer merged it. A template from someone else's repository is only a starting point: its report still has to be reviewed.
 
 ### The Safe's address is never published
@@ -195,13 +196,29 @@ Services used while building a template, besides the providers above. None of th
 
 kiss-sign runs from one clone of this repository. `kiss-sign verify` starts with a self-check before anything else:
 
-1. Fetch `origin`.
-2. The local checkout must be exactly `origin/main`: the same commit, with no local changes and no extra files in the program, the templates, or the settings.
-3. If anything differs, stop and name the files. Nothing is verified.
+1. Every URL of `origin` must be the official repository, `github.com/ipromise2324/kiss-sign`, in its https or ssh form. The URL is read with the same git config the fetch uses, after any `url.<base>.insteadOf` rewrite. An origin elsewhere is not fetched.
+2. Fetch `main` from `origin` into `origin/main`, ignoring any configured fetch refspec, which could map another branch there.
+3. Every object of that commit, the commit itself, its trees and its files, must hash to its name. Git does not check this when it reads an object, so a rewritten object file would otherwise change a template or the registry read from it.
+4. The local checkout must be exactly `origin/main`: `HEAD` at that commit, every file of the commit on disk with the same bytes and mode, hashed from disk rather than asked of `git status`, and no other file that the commit's root `.gitignore` does not ignore. The index, `.git/info/exclude`, `core.excludesFile`, attributes, filters, stat settings and an untracked `.gitignore` take no part in this step.
+5. If anything differs, stop and name the files. Nothing is verified.
 
 Templates are read from that commit, so a template counts only after its pull request is merged. `main` changes only through pull requests.
 
 This catches accidental edits and an AI that was tricked into changing a check or a template. It cannot catch an AI that deliberately rewrites both a check and the self-check itself, because the self-check is part of the same program. See Known limits and Later security upgrades.
+
+## The signer's steps run where the AI cannot write
+
+`verify`, `card seal` and `template approve` run from a clone and a `$KISS_SIGN_HOME` that no AI session can write. The self-check runs inside the program it checks, so it cannot be the only lock.
+
+The standard setup is a Claude Code managed-settings file. `kiss-sign managed-settings` prints it as JSON, with the clone it runs from and the resolved `$KISS_SIGN_HOME` filled in, and prints on stderr the `sudo` commands that install it. The signer installs it once, from their own terminal, on the device they sign on. kiss-sign never installs it. Managed settings sit above every user, project and local setting, and a file owned by root cannot be edited without `sudo`. The file sets:
+
+- `permissions.disableBypassPermissionsMode: "disable"`, so no session runs without permission checks;
+- `permissions.deny` with `Edit(//<clone>/**)`, `Read(//<clone>/**)`, `Edit(//<home>/**)`, `Read(//<home>/**)` and `Read(~/.kiss-sign/.env)`, where `//` marks an absolute path;
+- `sandbox.enabled`, `sandbox.failIfUnavailable` and `sandbox.allowUnsandboxedCommands: false`, so every shell command runs in the sandbox, which also enforces the deny rules on scripts, and Claude Code refuses to start when the sandbox cannot run.
+
+With it installed, the AI works in a different clone and opens pull requests from there. The deny rules also keep the AI's scripts from reading the API keys in `$KISS_SIGN_HOME/.env`, so a research script that needs a key runs in the signer's own terminal.
+
+Stricter options are a separate OS account for signing, which the AI's account cannot read or write, or a signing device with no AI on it.
 
 ## Known limits
 
@@ -210,16 +227,17 @@ This catches accidental edits and an AI that was tricked into changing a check o
 - drpc routes requests to third-party nodes, including public ones. Its independence from Alchemy is not proven.
 - Two providers stop one lying provider, not two that collude or share a backend.
 - Simulating an executed transaction on the parent block is not its exact pre-state, because earlier transactions in its block also changed state. For executed transactions, receipts read from two providers are the source of truth.
-- The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is not stopped this round.
+- The self-check runs inside the program it checks. An AI with shell access that deliberately rewrites both the program and its self-check is stopped only by the managed-settings file, which the signer installs, and only for Claude Code. Another agent needs its own equivalent.
 - The hardware wallet shows only the two hashes, not the decoded transaction. ERC-7730 clear signing does not yet cover Safe MultiSend batches.
 - A template is only as good as its review. The mutation check and the simulation are the backstops.
+- The v1 templates were written and merged by the AI without human review. The signer reviews them during final testing.
 - For an executed transaction, the Safe's ETH change is its balance at the execution block minus its balance at the parent block, since no log shows ETH sent as the value of `execTransaction` itself. Another transaction in the same block that moves the Safe's ETH changes that number too; the field checks still bind the value of every call the Safe makes.
 - For an executed transaction, a card that gives `all` of a token reads the Safe's balance of it at the parent block and at the end of the execution block, and is `UNVERIFIABLE` unless the two differ by exactly this transaction's change. Two other transactions in that block whose changes to the token cancel out go unnoticed.
 - For an executed transaction, the floor rules on the Safe's settings read the receipt's events. A storage write without an event shows only in a simulation. The static floor refuses a delegatecall from the Safe itself, but a call to an already enabled module can still make one through `execTransactionFromModule`.
 - The static floor refuses an ERC-20 approval only at or above 2^255, and a Permit2 approval only at the uint160 maximum. A token-specific sentinel such as 2^96-1 (UNI, COMP) passes the floor; the effects check refuses any measured allowance, ERC-20 or Permit2, that ends above its value before the transaction.
 - Not yet seen by effects: an NFT `setApprovalForAll`, ERC-1155 balances and approvals, Aave's `approveDelegation`, Compound Comet's `allow`, and allowances in the Safe AllowanceModule. A change to any of them moves no balance the program measures. Permit2 is read only at its canonical address. A transaction that lets the Safe accept EIP-1271 signatures moves no allowance now but enables a later `permit`; the floor rules already refuse the usual routes, a delegatecall to SignMessageLib and a fallback handler change. The static floor refuses `setApprovalForAll` when it is set, and a call that changes only one of them is marked as moving no asset.
 - The mark on calls that move no asset is per call the Safe makes. A call that moves an asset and also grants a permission, such as a `multicall` that deposits and authorizes, is not marked. Each call runs as its own Safe transaction, so a contract that reads the Safe's nonce or the transaction's origin can act differently than in the real batch; a call that does not execute that way makes the scan unreadable, which `verify` prints. For an executed transaction the scan is a simulation on the parent block, not its exact pre-state.
-- The self-check does not check where `origin` points, and it does not check gitignored code such as `node_modules/`. It refuses git replace refs and files hidden with skip-worktree or assume-unchanged, and ignores `GIT_*` variables from the caller.
+- The official repository URL is a constant in the program, so an AI that repoints `origin` to a fork whose program accepts that fork passes the self-check. The self-check's git calls take no `GIT_*` variable from the caller, follow no git replace ref, run no hook and ask no fsmonitor; all but the fetch and the origin URL read only the clone's own git config. The fetch reads the system and global config too, since a private repository needs the signer's credential helper there. So git config, in the clone or global, that runs a program or reroutes the connection during the fetch, such as `core.sshCommand`, a credential helper, a proxy or a turned-off TLS check, can run code or serve another repository under the official URL; the managed-settings file keeps the AI from writing the clone's git config and does not name the global one. The self-check does not check code the root `.gitignore` ignores, such as the root `node_modules/`; an ignored directory counts only at the root, so `src/node_modules/` is named. It refuses a clone whose git directory is not its own `.git`, such as a linked worktree, so the signing clone is a plain `git clone`. It also refuses git replace refs. It checks the clone once, so code that rewrites the clone or its objects after the check, while the program runs, is not caught. `template approve` and `history` fetch through the same origin check and object check, and `history` falls back to the local `origin/main`, unchecked, when the fetch fails.
 - `replay` trusts the verdict file it is given. It shows what a recorded verdict was based on; it is not permission to sign.
 - When the code on chain ends in a metadata trailer without a source hash, as solc writes with `bytecodeHash: "none"`, matching bytecode proves the ABI's selectors and types but not its parameter names, since no byte on chain depends on them.
 - When Sourcify holds only a partial match, the source compiles to the code on chain except the IPFS metadata hash, which hashes the source text. The proof masks that hash, so it too proves the ABI's selectors and types but not its parameter names.
@@ -233,7 +251,7 @@ Not built now. Listed so the path is clear.
 - **Light client (Helios).** Verifies every read against the beacon chain, so one provider is enough. Needs `eth_getProof` (Alchemy has it) and a local EVM to simulate on proven state.
 - **Local simulation (anvil).** Free and open source. Adds execution diversity. On its own it trusts the same RPC state.
 - **A paid or third provider.** Removes rate and range limits and adds an independent source.
-- **Lock the AI out of the program.** Ship `.claude/settings.json` with deny rules for program code, settings, `gh pr merge`, and pushes to `main`; these hold even in bypass-permissions mode. Add the agent's sandbox, so a script cannot write the program either. Other agents need their own equivalent.
+- **Keep the AI from merging.** Deny rules for `gh pr merge` and pushes to `main`, or a GitHub account for the AI without merge rights.
 - **Clear signing on the wallet (ERC-7730).** Export templates as display descriptors so the device shows the decoded call. Wait until wallets decode Safe MultiSend batches; until then, hash comparison stays.
 
 ## Next phase: CoW orders
