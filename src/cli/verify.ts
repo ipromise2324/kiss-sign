@@ -9,8 +9,10 @@ import { createReader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { loadApproved } from '../config.ts';
 import { kissSignHome } from '../keys.ts';
-import { REGISTRY_PATH } from '../registry.ts';
+import { REGISTRY_PATH, parseRegistry } from '../registry.ts';
+import type { Registry } from '../registry.ts';
 import { checksumAddress, parseHex } from '../safe/types.ts';
+import { describeCallScan } from '../simulate/simulate.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fileAt, selfCheck } from '../verify/self-check.ts';
 import { VERDICT_FORMAT, VerifyError, evaluate, parseVerdictFile } from '../verify/verify.ts';
@@ -23,8 +25,10 @@ const SERVICE = 'https://api.safe.global/tx-service/eth/api/v1';
 
 export const verdictsDir = (home: string): string => join(home, 'verdicts');
 
-function print({ verdict, hashes }: Evaluation, io: Io, replaying = false): void {
+function print({ verdict, hashes, calls }: Evaluation, registry: Registry, io: Io, replaying = false): void {
   io.stdout(`${verdict.kind}\n`);
+  if (verdict.kind !== 'MATCH') for (const cause of verdict.causes) for (const detail of cause.details) io.stdout(`  ${cause.check}: ${detail}\n`);
+  for (const line of describeCallScan(calls, registry)) io.stdout(`${line}\n`);
   if (verdict.kind === 'MATCH') {
     io.stdout(`  domain hash   ${hashes.domainHash}\n  message hash  ${hashes.messageHash}\n  safeTxHash    ${hashes.safeTxHash}\n`);
     io.stdout(
@@ -34,7 +38,6 @@ function print({ verdict, hashes }: Evaluation, io: Io, replaying = false): void
     );
     return;
   }
-  for (const cause of verdict.causes) for (const detail of cause.details) io.stdout(`  ${cause.check}: ${detail}\n`);
   io.stdout('No hashes are shown. Do not sign this transaction.\n');
 }
 
@@ -94,7 +97,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const path = join(dir, `${result.hashes.safeTxHash}-${Date.now()}.json`);
   writeFileSync(`${path}.tmp`, `${JSON.stringify(file, null, 2)}\n`, { mode: 0o600 });
   renameSync(`${path}.tmp`, path);
-  print(result, io);
+  print(result, parseRegistry(JSON.parse(inputs.registry)), io);
   io.stdout(`Verdict file: ${path}\n`);
   return result.verdict.kind === 'MATCH' ? OK : FAILED;
 }
@@ -105,7 +108,7 @@ export async function replay(args: readonly string[], io: Io): Promise<number> {
   if (path === undefined || extra.length > 0) throw new UsageError('replay takes the path of one verdict file.');
   const file = parseVerdictFile(JSON.parse(readFileSync(path, 'utf8')));
   const result = await evaluate(file.inputs, replayReader(file.exchanges));
-  print(result, io, true);
+  print(result, parseRegistry(JSON.parse(file.inputs.registry)), io, true);
   if (canonicalJson(result) !== canonicalJson(file.result)) {
     io.stderr(`kiss-sign: the recorded verdict was ${file.result.verdict.kind}; this program now gives another result.\n`);
     return FAILED;

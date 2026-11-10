@@ -75,6 +75,7 @@ const depositEffects = (overrides: Partial<Extract<Observed, { kind: 'executed' 
     [VAULT, SHARES],
   ]),
   allowances: [{ token: USDC, spender: GENERAL_ADAPTER1, before: 0n, after: 0n }],
+  permit2: [],
   ends: new Map(),
   safeState: { kind: 'receipt', logs: [] },
   ...overrides,

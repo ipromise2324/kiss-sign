@@ -81,7 +81,7 @@ const hashLine = (stdout: string, label: string): string | undefined => new RegE
 test('the Morpho deposit verifies to MATCH and prints the hashes the hardware wallet shows', async () => {
   const { code, stdout, verdicts } = await verifyTx(service);
   assert.equal(code, 0, stdout);
-  assert.match(stdout, /^MATCH\n/);
+  assert.match(stdout, /^MATCH\nEvery call moves an asset of the Safe\.\n  domain hash/);
   const [domain, message, safeTxHash] = ['domain hash', 'message hash', 'safeTxHash'].map((label) => hashLine(stdout, label));
   assert.equal(domain, chain.domainSeparator);
   assert.equal(safeTxHash, chain.transactionHash);

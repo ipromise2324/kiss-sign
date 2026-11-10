@@ -5,7 +5,7 @@ import { parseCard, resolveCard } from '../card.ts';
 import type { ResolvedCard } from '../card.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Reader } from '../chain/reader.ts';
-import type { BlockRef } from '../chain/types.ts';
+import type { BlockHeader, BlockRef } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
 import { checkFloor } from '../floor/floor.ts';
 import { checkObservation } from '../floor/summary.ts';
@@ -17,8 +17,8 @@ import { parseAddress, parseHex, parseSafeVersion } from '../safe/types.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { endsNeeded, expectedChanges } from '../simulate/effects.ts';
 import { observeExecuted } from '../simulate/executed.ts';
-import { simulateSafeTx } from '../simulate/simulate.ts';
-import type { Observation } from '../simulate/simulate.ts';
+import { scanCalls, simulateSafeTx } from '../simulate/simulate.ts';
+import type { CallScan, Observation } from '../simulate/simulate.ts';
 import { checkTemplateFields } from '../template/check.ts';
 import { checkMutations } from '../template/mutation.ts';
 import { parseTemplate } from '../template/template.ts';
@@ -44,7 +44,8 @@ export type VerifyInputs = {
   readonly addressBook: Readonly<Record<string, string>>;
 };
 
-export type Evaluation = { readonly verdict: Verdict; readonly hashes: SafeTxHashes };
+/** `calls` is information for the signer, not a check: which of the Safe's calls move none of its assets. */
+export type Evaluation = { readonly verdict: Verdict; readonly hashes: SafeTxHashes; readonly calls: CallScan };
 
 export const VERDICT_FORMAT = 'kiss-sign-verdict-1';
 
@@ -146,6 +147,20 @@ async function ranOn(reader: Reader, executed: Hex | undefined, latest: BlockRef
   return parent.kind === 'unverifiable' ? parent.reason : parent.value;
 }
 
+async function simulatedOn(reader: Reader, executed: Hex | undefined, latest: BlockRef): Promise<{ parent: BlockHeader; time: bigint } | string> {
+  const header = async (at: BlockRef | string): Promise<BlockHeader | string> => {
+    if (typeof at === 'string') return at;
+    const read = await reader.header(at);
+    return read.kind === 'unverifiable' ? read.reason : read.value;
+  };
+  const parent = await header(await ranOn(reader, executed, latest));
+  if (typeof parent === 'string') return parent;
+  if (executed === undefined) return { parent, time: parent.time + SLOT_SECONDS };
+  const block = await reader.block(parent.number + 1n);
+  const own = await header(block.kind === 'unverifiable' ? block.reason : block.value);
+  return typeof own === 'string' ? own : { parent, time: own.time };
+}
+
 /**
  * Runs every check on the inputs, reading the chain only through `reader`. The same inputs and the same chain answers
  * give the same verdict, which is what `replay` relies on.
@@ -163,24 +178,19 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   const executed = guard('the Safe transaction', () => executedIn(inputs.tx));
   const expected = expectedChanges(prepared.card, prepared.templates, prepared.registry);
   const ends = endsNeeded(expected);
+  const watch = expected.kind === 'expected' ? [...expected.changes.keys()].filter((asset) => asset !== 'eth') : [];
+  const on = await simulatedOn(reader, executed, latest.value);
   let observation: Observation;
-  if (executed !== undefined) {
-    observation = await observeExecuted(reader, executed, tx, ends);
-  } else {
-    const header = await reader.header(latest.value);
-    const watch = expected.kind === 'expected' ? [...expected.changes.keys()].filter((asset) => asset !== 'eth') : [];
-    observation =
-      header.kind === 'unverifiable'
-        ? { kind: 'unverifiable', reasons: [header.reason] }
-        : await simulateSafeTx(reader, { tx, parent: header.value, time: header.value.time + SLOT_SECONDS, watch, ends });
-  }
+  if (executed !== undefined) observation = await observeExecuted(reader, executed, tx, ends);
+  else observation = typeof on === 'string' ? { kind: 'unverifiable', reasons: [on] } : await simulateSafeTx(reader, { tx, ...on, watch, ends });
+  const calls: CallScan = typeof on === 'string' ? { kind: 'unverifiable', reasons: [on] } : await scanCalls(reader, { tx, ...on, watch });
   const claims = assetClaims(prepared.card, prepared.templates, prepared.registry);
   let assets: AssetCheck = { kind: 'pass' };
   if (claims.length > 0) {
     const at = await ranOn(reader, executed, latest.value);
     assets = typeof at === 'string' ? { kind: 'unverifiable', reasons: [at] } : await checkAssets(reader, claims, at);
   }
-  return { verdict: judge(prepared, tx, observation, assets), hashes: hashSafeTx(tx) };
+  return { verdict: judge(prepared, tx, observation, assets), hashes: hashSafeTx(tx), calls };
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);

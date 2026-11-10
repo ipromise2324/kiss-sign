@@ -145,6 +145,7 @@ const executed = (overrides: Partial<Extract<Observed, { kind: 'executed' }>>): 
   eth: 0n,
   tokens: new Map(),
   allowances: [],
+  permit2: [],
   ends: new Map(),
   safeState: { kind: 'read', before: STATE, after: STATE },
   ...overrides,

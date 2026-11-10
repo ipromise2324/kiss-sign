@@ -3,12 +3,14 @@ import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockHeader, SimulatedCall, SimulationCall, SimulationRequest } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
-import { uintWord } from '../decode/codec.ts';
+import { regionBytes, uintWord } from '../decode/codec.ts';
+import { unwrapSafeTx } from '../decode/multisend.ts';
 import { hashSafeTx } from '../safe/hash.ts';
+import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import type { AllowanceChange, Observed } from './effects.ts';
-import { addressOf, executionOf, isEthTransfer, namesAddress, touchedBy, uintOf } from './events.ts';
-import type { Allowance, Execution } from './events.ts';
+import type { AllowanceChange, Observed, Permit2Allowance, Permit2Change } from './effects.ts';
+import { PERMIT2, addressOf, executionOf, isEthTransfer, namesAddress, touchedBy, uintOf } from './events.ts';
+import type { Allowance, Execution, Touched } from './events.ts';
 import { parseSafeState, safeStateCalls } from './safe-state.ts';
 
 export type Observation = { readonly kind: 'observed'; readonly observed: Observed } | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
@@ -88,7 +90,9 @@ function addressList(data: Hex): Address[] | undefined {
 
 type Read = { readonly what: string; readonly call: SimulationCall };
 
-function readsOf(safe: Address, from: Address, tokens: readonly Address[], allowances: readonly Allowance[]): Read[] {
+type Measured = { readonly tokens: readonly Address[]; readonly allowances: readonly Allowance[]; readonly permit2: readonly Allowance[] };
+
+function readsOf(safe: Address, from: Address, { tokens, allowances, permit2 }: Measured): Read[] {
   const read = (what: string, to: Address, data: Uint8Array): Read => ({ what, call: { from, to, data: hex(data), gas: READ_GAS } });
   return [
     read('the ETH balance', ETH_BALANCE_READER, bytesOf(safe)),
@@ -96,7 +100,18 @@ function readsOf(safe: Address, from: Address, tokens: readonly Address[], allow
     ...allowances.map(({ token, spender }) =>
       read(`allowance to ${spender} at ${token}`, token, concatBytes(selector('allowance(address,address)'), addressWord(safe), addressWord(spender))),
     ),
+    ...permit2.map(({ token, spender }) =>
+      read(
+        `Permit2 allowance of ${token} to ${spender}`,
+        PERMIT2,
+        concatBytes(selector('allowance(address,address,address)'), addressWord(safe), addressWord(token), addressWord(spender)),
+      ),
+    ),
   ];
+}
+
+export function permit2AllowanceOf(data: Hex): Permit2Allowance | undefined {
+  return data.length === 2 + 3 * 64 ? { amount: uintOf(data, 0), expiration: uintOf(data, 1), nonce: uintOf(data, 2) } : undefined;
 }
 
 function executionOfCall(call: SimulatedCall, safe: Address, safeTxHash: Hex): Execution {
@@ -105,16 +120,15 @@ function executionOfCall(call: SimulatedCall, safe: Address, safeTxHash: Hex): E
   return execution === 'success' && word(call.returnData) !== 1n ? 'execution-failure' : execution;
 }
 
-/**
- * Runs the Safe transaction through the Safe's own `execTransaction`, signed by approved hashes of the first `threshold`
- * owners, on both providers. A first run finds the tokens and allowances the transaction touches; a second reads each
- * of them, and the Safe's own settings, just before and just after it, in the same block. The threshold and owners stay as
- * they are on chain.
- */
-export async function simulateSafeTx(reader: Reader, input: SimulationInput): Promise<Observation> {
+type Executor = {
+  readonly sender: Address;
+  readonly exec: (tx: SafeTx) => SimulationCall;
+  readonly blockApproving: (txs: readonly SafeTx[]) => Omit<SimulationRequest, 'calls'>;
+};
+
+async function executorFor(reader: Reader, input: { readonly tx: SafeTx; readonly parent: BlockHeader; readonly time: bigint }): Promise<Executor | { readonly reasons: readonly string[] }> {
   const { tx, parent } = input;
   const safe = tx.safe;
-  const unverifiable = (...reasons: string[]): Observation => ({ kind: 'unverifiable', reasons });
   const problems: string[] = [];
   const view = async <T>(signature: string, decode: (data: Hex) => T | undefined): Promise<T | undefined> => {
     const read = await reader.call({ to: safe, data: selectorOf(signature) }, parent);
@@ -123,24 +137,46 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
     return value;
   };
   const [owners, threshold, nonce] = await Promise.all([view('getOwners()', addressList), view('getThreshold()', word), view('nonce()', word)]);
-  if (owners === undefined || threshold === undefined || nonce === undefined) return unverifiable(...problems);
-  if (nonce !== tx.nonce) return unverifiable(`the Safe's nonce at block ${parent.number} is ${nonce}, the transaction's is ${tx.nonce}`);
-  if (threshold < 1n || threshold > BigInt(owners.length)) return unverifiable(`the Safe's threshold ${threshold} does not fit its ${owners.length} owners`);
+  if (owners === undefined || threshold === undefined || nonce === undefined) return { reasons: problems };
+  if (nonce !== tx.nonce) return { reasons: [`the Safe's nonce at block ${parent.number} is ${nonce}, the transaction's is ${tx.nonce}`] };
+  if (threshold < 1n || threshold > BigInt(owners.length)) return { reasons: [`the Safe's threshold ${threshold} does not fit its ${owners.length} owners`] };
 
-  const { safeTxHash } = hashSafeTx(tx);
   const approvers = [...owners].sort((a, b) => (BigInt(a) < BigInt(b) ? -1 : 1)).slice(0, Number(threshold));
   const sender = approvers[0] as Address;
-  const exec: SimulationCall = { from: sender, to: safe, data: execTransactionData(tx, approvers), gas: EXEC_GAS };
   const one = `0x${'1'.padStart(64, '0')}` as Hex;
-  const base: Omit<SimulationRequest, 'calls'> = {
-    block: { number: parent.number + 1n, time: input.time, gasLimit: parent.gasLimit, prevRandao: parent.mixHash },
-    stateOverrides: {
-      [safe]: { stateDiff: Object.fromEntries(approvers.map((owner) => [approvedHashSlot(owner, safeTxHash), one])) },
-      [ETH_BALANCE_READER]: { code: ETH_BALANCE_READER_CODE },
-    },
+  return {
+    sender,
+    exec: (each) => ({ from: sender, to: safe, data: execTransactionData(each, approvers), gas: EXEC_GAS }),
+    blockApproving: (txs) => ({
+      block: { number: parent.number + 1n, time: input.time, gasLimit: parent.gasLimit, prevRandao: parent.mixHash },
+      stateOverrides: {
+        [safe]: {
+          stateDiff: Object.fromEntries(
+            txs.flatMap((each) => approvers.map((owner) => [approvedHashSlot(owner, hashSafeTx(each).safeTxHash), one])),
+          ),
+        },
+        [ETH_BALANCE_READER]: { code: ETH_BALANCE_READER_CODE },
+      },
+    }),
   };
+}
 
-  const discovery = await reader.simulateV1({ ...base, calls: [exec] }, parent);
+/**
+ * Runs the Safe transaction on both providers. A first run finds the tokens, allowances and Permit2 allowances the
+ * transaction touches; a second reads each of them, and the Safe's own settings, just before and just after it, in the
+ * same block.
+ */
+export async function simulateSafeTx(reader: Reader, input: SimulationInput): Promise<Observation> {
+  const { tx } = input;
+  const safe = tx.safe;
+  const unverifiable = (...reasons: string[]): Observation => ({ kind: 'unverifiable', reasons });
+  const executor = await executorFor(reader, input);
+  if ('reasons' in executor) return unverifiable(...executor.reasons);
+  const { safeTxHash } = hashSafeTx(tx);
+  const exec = executor.exec(tx);
+  const base = executor.blockApproving([tx]);
+
+  const discovery = await reader.simulateV1({ ...base, calls: [exec] }, input.parent);
   if (discovery.kind === 'unverifiable') return unverifiable(discovery.reason);
   const alone = discovery.value[0] as SimulatedCall;
   const execution = executionOfCall(alone, safe, safeTxHash);
@@ -149,32 +185,43 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   const touched = touchedBy(alone.logs, safe);
   const tokens = [...new Set([...input.watch, ...input.ends, ...touched.tokens])];
   const allowances = [...touched.approvals.values()];
-  const reads = readsOf(safe, sender, tokens, allowances);
-  const stateCalls = safeStateCalls(safe, sender, tx.version);
+  const permit2 = [...touched.permit2.values()];
+  const reads = readsOf(safe, executor.sender, { tokens, allowances, permit2 });
+  const stateCalls = safeStateCalls(safe, executor.sender, tx.version);
   const around = [...reads.map((r) => r.call), ...stateCalls];
-  const measured = await reader.simulateV1({ ...base, calls: [...around, exec, ...around] }, parent);
+  const measured = await reader.simulateV1({ ...base, calls: [...around, exec, ...around] }, input.parent);
   if (measured.kind === 'unverifiable') return unverifiable(measured.reason);
   const calls = measured.value;
   const run = calls[around.length] as SimulatedCall;
   if (executionOfCall(run, safe, safeTxHash) !== 'success') return unverifiable('the transaction executed alone but not between the balance reads');
-  const again = touchedBy(run.logs, safe);
-  const unmeasured: string[] = [...again.tokens].filter((t) => !tokens.includes(t));
-  unmeasured.push(...[...again.approvals.keys()].filter((k) => !touched.approvals.has(k)));
+  const unmeasured = unmeasuredBy(touchedBy(run.logs, safe), touched, tokens);
   if (unmeasured.length > 0) return unverifiable(`between the balance reads the transaction touched what it did not touch alone: ${unmeasured.join(', ')}`);
 
   const after0 = around.length + 1;
-  const measuredReads: { readonly before: bigint; readonly after: bigint }[] = [];
+  const returned: { readonly before: Hex; readonly after: Hex }[] = [];
   for (const [i, read] of reads.entries()) {
-    const [before, after] = [calls[i], calls[after0 + i]].map((call) => (call?.status === 'success' ? word(call.returnData) : undefined));
-    if (before === undefined || after === undefined) return unverifiable(`${read.what} could not be read`);
-    measuredReads.push({ before, after });
+    const [before, after] = [calls[i], calls[after0 + i]];
+    if (before?.status !== 'success' || after?.status !== 'success') return unverifiable(`${read.what} could not be read`);
+    returned.push({ before: before.returnData, after: after.returnData });
+  }
+  const words: { readonly before: bigint; readonly after: bigint }[] = [];
+  for (const [i, { before, after }] of returned.slice(0, 1 + tokens.length + allowances.length).entries()) {
+    const [b, a] = [word(before), word(after)];
+    if (b === undefined || a === undefined) return unverifiable(`${(reads[i] as Read).what} could not be read`);
+    words.push({ before: b, after: a });
+  }
+  const permit2Changes: Permit2Change[] = [];
+  for (const [i, { before, after }] of returned.slice(words.length).entries()) {
+    const [b, a] = [permit2AllowanceOf(before), permit2AllowanceOf(after)];
+    if (b === undefined || a === undefined) return unverifiable(`${(reads[words.length + i] as Read).what} could not be read`);
+    permit2Changes.push({ ...(permit2[i] as Allowance), before: b, after: a });
   }
   const stateBefore = parseSafeState(calls.slice(reads.length, around.length), tx.version);
   const stateAfter = parseSafeState(calls.slice(after0 + reads.length), tx.version);
   if ('unreadable' in stateBefore) return unverifiable(`the Safe's ${stateBefore.unreadable} could not be read before the transaction`);
   if ('unreadable' in stateAfter) return unverifiable(`the Safe's ${stateAfter.unreadable} could not be read after the transaction`);
-  const before = (i: number) => (measuredReads[i] as { before: bigint }).before;
-  const after = (i: number) => (measuredReads[i] as { after: bigint }).after;
+  const before = (i: number) => (words[i] as { before: bigint }).before;
+  const after = (i: number) => (words[i] as { after: bigint }).after;
   const eth = after(0) - before(0);
   const traced = run.logs.filter(isEthTransfer).reduce((sum, log) => {
     const amount = uintOf(log.data);
@@ -189,8 +236,92 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
       eth,
       tokens: new Map(tokens.map((token, i) => [token, after(1 + i) - before(1 + i)])),
       allowances: allowanceChanges,
+      permit2: permit2Changes,
       ends: new Map(input.ends.map((token) => [token, after(1 + tokens.indexOf(token))])),
       safeState: { kind: 'read', before: stateBefore, after: stateAfter },
     },
   };
+}
+
+function unmeasuredBy(again: Touched, first: Touched, tokens: readonly Address[]): string[] {
+  return [
+    ...[...again.tokens].filter((t) => !tokens.includes(t)),
+    ...[...again.approvals.keys()].filter((k) => !first.approvals.has(k)),
+    ...[...again.permit2.keys()].filter((k) => !first.permit2.has(k)).map((k) => `Permit2 ${k}`),
+  ];
+}
+
+export type SafeCall = { readonly path: string; readonly to: Address; readonly selector: Hex | undefined };
+
+/**
+ * Which of the Safe's calls moved none of its assets: no ETH, no token balance, no allowance and no Permit2 allowance
+ * of the Safe's changed across it.
+ */
+export type CallScan =
+  | { readonly kind: 'scanned'; readonly movesNothing: readonly SafeCall[] }
+  | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
+
+/**
+ * Runs each call of the Safe transaction, MultiSend unwrapped, as a Safe transaction of its own through
+ * `execTransaction`, one after another in one block on the given parent, and reads everything any of them touched
+ * between each two. A call to the Safe itself without data is left out.
+ */
+export async function scanCalls(reader: Reader, input: Omit<SimulationInput, 'ends'>): Promise<CallScan> {
+  const { tx } = input;
+  const safe = tx.safe;
+  const unverifiable = (...reasons: string[]): CallScan => ({ kind: 'unverifiable', reasons });
+  const unwrapped = unwrapSafeTx(tx);
+  if (unwrapped.kind !== 'direct' && unwrapped.kind !== 'multisend') return unverifiable('the transaction does not unwrap into calls');
+  const inner = unwrapped.calls;
+  const txs = inner.map((call, i): SafeTx => ({ ...tx, to: call.to, value: call.value, data: hex(regionBytes(call.data)), operation: call.operation, nonce: tx.nonce + BigInt(i) }));
+  const executor = await executorFor(reader, input);
+  if ('reasons' in executor) return unverifiable(...executor.reasons);
+  const base = executor.blockApproving(txs);
+  const execs = txs.map(executor.exec);
+  const failed = (run: readonly SimulatedCall[], at: (i: number) => number): string | undefined => {
+    const i = txs.findIndex((each, n) => executionOfCall(run[at(n)] as SimulatedCall, safe, hashSafeTx(each).safeTxHash) !== 'success');
+    return i === -1 ? undefined : `${inner[i]?.path} did not execute as a Safe transaction of its own`;
+  };
+
+  const discovery = await reader.simulateV1({ ...base, calls: execs }, input.parent);
+  if (discovery.kind === 'unverifiable') return unverifiable(discovery.reason);
+  const discoveryFailed = failed(discovery.value, (i) => i);
+  if (discoveryFailed !== undefined) return unverifiable(discoveryFailed);
+  const touched = touchedBy(discovery.value.flatMap((call) => call.logs), safe);
+  const tokens = [...new Set([...input.watch, ...touched.tokens])];
+  const reads = readsOf(safe, executor.sender, { tokens, allowances: [...touched.approvals.values()], permit2: [...touched.permit2.values()] }).map((r) => r.call);
+  const stride = reads.length + 1;
+  const measured = await reader.simulateV1({ ...base, calls: [...execs.flatMap((exec) => [...reads, exec]), ...reads] }, input.parent);
+  if (measured.kind === 'unverifiable') return unverifiable(measured.reason);
+  const run = measured.value;
+  const measuredFailed = failed(run, (i) => i * stride + reads.length);
+  if (measuredFailed !== undefined) return unverifiable(measuredFailed);
+  const unmeasured = unmeasuredBy(touchedBy(run.flatMap((call) => call.logs), safe), touched, tokens);
+  if (unmeasured.length > 0) return unverifiable(`between the reads the calls touched what they did not touch alone: ${unmeasured.join(', ')}`);
+  const snapshot = (i: number): string | undefined => {
+    const block = run.slice(i * stride, i * stride + reads.length);
+    return block.every((call) => call.status === 'success') ? block.map((call) => call.returnData).join() : undefined;
+  };
+  const movesNothing: SafeCall[] = [];
+  for (const [i, call] of inner.entries()) {
+    const [before, after] = [snapshot(i), snapshot(i + 1)];
+    if (before === undefined || after === undefined) return unverifiable(`the Safe's assets could not be read around ${call.path}`);
+    const data = regionBytes(call.data);
+    const toSafeReceive = call.to === safe && data.length === 0;
+    if (before !== after || toSafeReceive) continue;
+    movesNothing.push({ path: call.path, to: call.to, selector: data.length >= 4 ? hex(data.subarray(0, 4)) : undefined });
+  }
+  return { kind: 'scanned', movesNothing };
+}
+
+export function describeCallScan(scan: CallScan, registry: Registry): string[] {
+  if (scan.kind === 'unverifiable') return [`Which calls move no asset of the Safe could not be read: ${scan.reasons.join('; ')}`];
+  if (scan.movesNothing.length === 0) return ['Every call moves an asset of the Safe.'];
+  return [
+    'These calls move no asset of the Safe. Whatever they do changes a setting or grants a permission:',
+    ...scan.movesNothing.map(({ path, to, selector }) => {
+      const name = registry.byAddress.get(to)?.name ?? 'unregistered';
+      return `  ${path} to ${name} ${to}, ${selector === undefined ? 'no data' : `selector ${selector}`}`;
+    }),
+  ];
 }
