@@ -6,6 +6,7 @@ import { kissSignHome } from '../src/keys.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { alchemyCall, trimVaultRecording, vaultEvidenceText } from '../src/research/vault-evidence.ts';
@@ -32,12 +33,19 @@ if (vault?.kind !== 'vault') {
 
 const endpoints = mainnetEndpoints(process.env);
 const recording = recordingTransport(httpsTransport(), endpoints);
-const reader = createReader(endpoints, recording.transport);
-const { read, text } = await vaultEvidenceText(reader, alchemyCall(recording.transport, endpoints[0].url), registry, vault);
+const unread: string[] = [];
+const note = (read: string) => void unread.push(read);
+const reader = createReader(endpoints, recording.transport, { note });
+const { read, text } = await vaultEvidenceText(reader, alchemyCall(recording.transport, endpoints[0].url, note), registry, vault);
 console.log(text);
 if (!read) process.exit(1);
 
 if (flags.record !== undefined) {
+  const refusal = unreadRefusal(unread);
+  if (refusal !== undefined) {
+    console.error(refusal);
+    process.exit(1);
+  }
   const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
   const fixture = { vault: vault.name, exchanges: trimVaultRecording(recording.exchanges()) };
   if (safe !== undefined && JSON.stringify(fixture).toLowerCase().includes(safe.slice(2))) {

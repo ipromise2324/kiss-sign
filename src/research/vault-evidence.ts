@@ -1,4 +1,6 @@
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
+import { retried, transientError, transientStatus } from '../chain/https.ts';
+import type { NoteUnread } from '../chain/https.ts';
 import type { Reader } from '../chain/reader.ts';
 import { proveInstance } from '../contracts/instance.ts';
 import type { Exchange } from '../chain/recording.ts';
@@ -13,18 +15,31 @@ import type { Address, Hex } from '../safe/types.ts';
 
 export type AlchemyCall = (method: string, params: readonly unknown[]) => Promise<unknown>;
 
-export function alchemyCall(transport: Transport, url: string): AlchemyCall {
+/** Asks again after each pause while Alchemy gives no answer, and notes a request that never got one. */
+export function alchemyCall(transport: Transport, url: string, note: NoteUnread, pausesMs?: readonly number[]): AlchemyCall {
   return async (method, params) => {
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method, params });
     let answer;
     try {
-      answer = await transport(url, JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }), AbortSignal.timeout(60_000));
-    } catch {
+      answer = await retried(`alchemy ${method}`, () => transport(url, body, AbortSignal.timeout(60_000)), transientStatus, note, pausesMs);
+    } catch (error) {
+      if (!transientError(error)) note(`alchemy ${method}: unreachable`);
       throw new Error('alchemy unreachable');
     }
-    if (answer.status !== 200) throw new Error(`alchemy answered HTTP ${answer.status}`);
-    const body = JSON.parse(answer.text) as { result?: unknown; error?: unknown };
-    if (body.error !== undefined && body.error !== null) throw new Error('alchemy refused the request');
-    return body.result;
+    const failed = (why: string): never => {
+      if (transientStatus(answer) === undefined) note(`alchemy ${method}: ${why}`);
+      throw new Error(`alchemy ${why}`);
+    };
+    if (answer.status !== 200) failed(`answered HTTP ${answer.status}`);
+    let reply: { result?: unknown; error?: unknown };
+    try {
+      reply = JSON.parse(answer.text) as typeof reply;
+    } catch {
+      return failed('sent no JSON');
+    }
+    if (typeof reply !== 'object' || reply === null) return failed('sent no JSON object');
+    if (reply.error !== undefined && reply.error !== null) failed('refused the request');
+    return reply.result;
   };
 }
 

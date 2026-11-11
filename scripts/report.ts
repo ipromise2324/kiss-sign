@@ -8,12 +8,13 @@ import { kissSignHome } from '../src/keys.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadAbiCases, recordAbiCase } from '../src/contracts/abi-case.ts';
 import { proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
-import { sourcifyHttps } from '../src/contracts/sourcify.ts';
+import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { fetchListing, listingsFor } from '../src/research/listings.ts';
 import { chainAt, loadSnapshot, trimForRecording as trimErc7730 } from '../src/research/erc7730.ts';
@@ -39,7 +40,7 @@ import {
 import type { Target } from '../src/research/report.ts';
 import { notesChanges, NotesError } from '../src/research/notes.ts';
 import { generatedHtml, generatedHtmlPath, htmlDifference } from '../src/research/report-html.ts';
-import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
+import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
@@ -53,6 +54,9 @@ the operation can touch, each span of its code pin checked on the chain, pnpm va
 can name, the past-txs recordings of the template studied again with each recorded transaction fetched again by hash
 through both providers, and pnpm erc7730 for every such entry. --vault prints the same for one vault, for a pull
 request that adds it.
+
+A read with no answer (no connection, a timeout, a server error or a rate limit) is asked again after each pause; one
+still without an answer prints as UNVERIFIABLE, never as FINDING, and --record then writes nothing.
 
 --record also writes the live answers to testdata/report/, records an ABI case for each entry testdata/abi/ lacks, and
 writes the committed report from those recordings alone: templates/<protocol>/<operation>/report.generated.md, or
@@ -159,26 +163,29 @@ if (flags.compare && !existsSync(committedPath)) {
 }
 const entries = entriesOf(subject, registry);
 const endpoints = mainnetEndpoints(process.env);
-const reader = createReader(endpoints, httpsTransport());
+const unread: string[] = [];
+const note = (read: string) => void unread.push(read);
+const reader = createReader(endpoints, httpsTransport(), { note });
 const latest = await reader.block('latest');
 if (latest.kind === 'unverifiable') throw new Error(latest.reason);
 
-const listings = await listingsFor(entries, suffixes, fetchListing);
+const listings = await listingsFor(entries, suffixes, (listing) => fetchListing(listing, note));
 const docs = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
-const pages = await gatherSourcePages([...entries.map((e) => e.source), ...docs], httpsGet);
+const pages = await gatherSourcePages([...entries.map((e) => e.source), ...docs], retryingGet(httpsGet, note));
 
 const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();
+const abiCases = new Map<string, unknown>();
 for (const entry of entries) {
-  const deps = { sourcify: sourcifyHttps, compilers };
+  const deps = { sourcify: retryingSourcify(sourcifyHttps, note), compilers };
   if (flags.record && !recorded.has(entry.address)) {
     const { proof, fixture } = await recordAbiCase(reader, entry.address, latest.value, latest.providers, deps);
-    writeFileSync(join(root, 'testdata', 'abi', `${entry.name.replace(/\./g, '-')}.json`), `${JSON.stringify(fixture, null, 2)}\n`);
+    abiCases.set(join(root, 'testdata', 'abi', `${entry.name.replace(/\./g, '-')}.json`), fixture);
     abi.set(entry.address, proof);
   } else abi.set(entry.address, await proveAbi(reader, entry.address, latest.value, deps));
 }
 
-const alchemy = alchemyCall(httpsTransport(), endpoints[0].url);
+const alchemy = alchemyCall(httpsTransport(), endpoints[0].url, note);
 const vaults = await vaultsAt(flags.compare ? readFileSync(committedPath, 'utf8') : '', vaultsOf(subject, registry), async (vault, at) => {
   console.error(`reading ${vault.name} at ${at === 'latest' ? 'the latest block' : `block ${at}`}`);
   return (await vaultEvidenceText(reader, alchemy, registry, vault, at)).text;
@@ -191,9 +198,9 @@ if ('unavailable' in snapshot) {
   process.exit(1);
 }
 const codeChain = recordingTransport(httpsTransport(), endpoints);
-const spans = await checkSpans(createReader(endpoints, codeChain.transport), entries);
+const spans = await checkSpans(createReader(endpoints, codeChain.transport, { note }), entries);
 const erc7730Chain = recordingTransport(httpsTransport(), endpoints);
-const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport)));
+const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport, { note })));
 
 const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
 const fetched = new Date();
@@ -223,6 +230,7 @@ async function compareHtml(): Promise<boolean> {
 }
 
 if (flags.compare) {
+  if (unread.length > 0) console.log([`NOTE  ${unread.length} read(s) got no answer after every retry; a fact that differs below may differ only for that:`, ...unread.map((read) => `  ${read}`)].join('\n'));
   const differences = compareReports(readFileSync(committedPath, 'utf8'), text);
   for (const line of differences) console.log(`DIFFERS  ${line}`);
   console.log(
@@ -236,6 +244,11 @@ if (flags.compare) {
 console.log(text);
 
 if (flags.record) {
+  const refusal = unreadRefusal(unread);
+  if (refusal !== undefined) {
+    console.error(refusal);
+    process.exit(1);
+  }
   const erc7730Section = { commit: snapshot.commit, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
   const recording = JSON.stringify(trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges()), null, 2);
   const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
@@ -243,6 +256,7 @@ if (flags.record) {
     console.error('the recording would name the configured Safe; nothing written');
     process.exit(1);
   }
+  for (const [path, fixture] of abiCases) writeFileSync(path, `${JSON.stringify(fixture, null, 2)}\n`);
   mkdirSync(dirname(join(root, reportRecordingPath(target))), { recursive: true });
   writeFileSync(join(root, reportRecordingPath(target)), `${recording}\n`);
   console.error(`recorded ${reportRecordingPath(target)}`);

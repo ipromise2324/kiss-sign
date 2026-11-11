@@ -3,8 +3,10 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { createReader } from '../src/chain/reader.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
 import { REPLAY_ENDPOINTS, replayTransport } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
+import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/vault-evidence.ts';
 
@@ -17,7 +19,7 @@ const TOTAL_SUPPLY = '0x18160ddd';
 async function evidenceFrom(exchanges: readonly Exchange[]): Promise<string> {
   const transport = replayTransport(exchanges, REPLAY_ENDPOINTS);
   const reader = createReader(REPLAY_ENDPOINTS, transport, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
-  const evidence = await gatherVaultEvidence(reader, alchemyCall(transport, REPLAY_ENDPOINTS[0].url), registry.entries.get(recorded.vault)!);
+  const evidence = await gatherVaultEvidence(reader, alchemyCall(transport, REPLAY_ENDPOINTS[0].url, () => {}, []), registry.entries.get(recorded.vault)!);
   assert.ok(!('kind' in evidence), 'the latest block is read');
   return formatVaultEvidence(evidence, registry);
 }
@@ -62,4 +64,42 @@ test('holders whose balances fall short of totalSupply() are UNVERIFIABLE: the h
 test('a Transfers API answer with no transfer list leaves the holders UNVERIFIABLE', async () => {
   const text = await evidenceFrom(edited((e) => e.method === 'alchemy_getAssetTransfers', 0, { alchemy: { error: 'nope' } }));
   assert.match(text, /holders {6}UNVERIFIABLE the Alchemy Transfers API sent no transfer list/);
+});
+
+/** The evidence when the Transfers API answers HTTP 503 `failures` times before it answers, each request asked again twice. */
+async function withFailingTransfers(failures: number): Promise<{ text: string; unread: string[] }> {
+  const replay = replayTransport(recorded.exchanges, REPLAY_ENDPOINTS);
+  let left = failures;
+  const flaky: Transport = async (url, body, signal) =>
+    (JSON.parse(body) as { method: string }).method === 'alchemy_getAssetTransfers' && left-- > 0 ? { status: 503, text: '' } : replay(url, body, signal);
+  const unread: string[] = [];
+  const reader = createReader(REPLAY_ENDPOINTS, replay, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [], note: (r) => unread.push(r) });
+  const evidence = await gatherVaultEvidence(reader, alchemyCall(flaky, REPLAY_ENDPOINTS[0].url, (r) => unread.push(r), [0, 0]), registry.entries.get(recorded.vault)!);
+  assert.ok(!('kind' in evidence), 'the latest block is read');
+  return { text: formatVaultEvidence(evidence, registry), unread };
+}
+
+test('a Transfers API that answers 503 and then answers is asked again, and the holders are counted', async () => {
+  const { text, unread } = await withFailingTransfers(2);
+  assert.match(text, /holders {6}452 addresses hold shares at block 26385872/);
+  assert.deepEqual(unread, []);
+});
+
+test('a Transfers API still answering 503 after every pause leaves the holders UNVERIFIABLE, and --record refuses to write', async () => {
+  const { text, unread } = await withFailingTransfers(Infinity);
+  assert.match(text, /holders {6}UNVERIFIABLE the Alchemy Transfers API failed \(alchemy answered HTTP 503\)/);
+  assert.deepEqual(unread, ['alchemy alchemy_getAssetTransfers: HTTP 503']);
+  assert.match(unreadRefusal(unread) ?? '', /^1 read\(s\) got no answer after every retry, so nothing is recorded/);
+});
+
+test('a Transfers API that refuses the request is noted, so --record refuses to keep holders it could not count', async () => {
+  const replay = replayTransport(recorded.exchanges, REPLAY_ENDPOINTS);
+  const refusing: Transport = async (url, body, signal) =>
+    (JSON.parse(body) as { method: string }).method === 'alchemy_getAssetTransfers' ? { status: 200, text: '{"jsonrpc":"2.0","id":1,"error":{"code":-32600}}' } : replay(url, body, signal);
+  const unread: string[] = [];
+  const reader = createReader(REPLAY_ENDPOINTS, replay, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
+  const evidence = await gatherVaultEvidence(reader, alchemyCall(refusing, REPLAY_ENDPOINTS[0].url, (r) => unread.push(r), [0, 0]), registry.entries.get(recorded.vault)!);
+  assert.ok(!('kind' in evidence), 'the latest block is read');
+  assert.match(formatVaultEvidence(evidence, registry), /holders {6}UNVERIFIABLE the Alchemy Transfers API failed \(alchemy refused the request\)/);
+  assert.deepEqual(unread, ['alchemy alchemy_getAssetTransfers: refused the request']);
 });

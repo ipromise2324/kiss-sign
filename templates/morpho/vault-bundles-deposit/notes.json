@@ -100,11 +100,6 @@
       "status": "concern",
       "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x5C20B550819128074FD538Edf79791733ccEdd18，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Instadapp 的 deployments.md 在 fToken_fUSDT 標題下列出它。",
       "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
-    },
-    "usdc/doc.0x095ea7b3.commit": {
-      "status": "confirmed",
-      "text": "AI 用 GitHub API 查 circlefin/stablecoin-evm：預設分支是 master，compare master...fc85788bc7c23cefe3df1a757133048bfddadeaa 回答 identical，就是 master 現在的 commit。morpho/vault-deposit 錄下的同一頁這一項是 PASS；這次程式大概是沒讀到 GitHub API。",
-      "recommendation": "可以接受。"
     }
   },
   "overview": [

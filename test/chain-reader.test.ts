@@ -94,9 +94,18 @@ test('a rate-limited provider is asked again after its own pauses, so a passing 
   assert.deepEqual(read, { kind: 'agreed', value: '0x6001', providers: ['alchemy', 'drpc'] });
 });
 
-test('a provider still rate-limited after every pause is a failed provider, not a disagreement', async () => {
-  const read = await createReader(ENDPOINTS, limitedFor(4), { timeoutMs: 50, retryPausesMs: [250], rateLimitPausesMs: [1, 1, 1] }).getCode(ADDRESS, AT);
+test('a provider still rate-limited after every pause is a failed provider, not a disagreement, and is noted for --record to refuse', async () => {
+  const unread: string[] = [];
+  const read = await createReader(ENDPOINTS, limitedFor(4), { timeoutMs: 50, retryPausesMs: [250], rateLimitPausesMs: [1, 1, 1], note: (r) => unread.push(r) }).getCode(ADDRESS, AT);
   assert.equal(unverifiable(read), 'eth_getCode: drpc failed (rate-limited)');
+  assert.deepEqual(unread, ['drpc eth_getCode: rate-limited']);
+});
+
+test('a provider rate-limited until its last pause and then answering is noted nowhere', async () => {
+  const unread: string[] = [];
+  const read = await createReader(ENDPOINTS, limitedFor(3), { timeoutMs: 50, retryPausesMs: [], rateLimitPausesMs: [1, 1, 1], note: (r) => unread.push(r) }).getCode(ADDRESS, AT);
+  assert.equal(read.kind, 'agreed');
+  assert.deepEqual(unread, []);
 });
 
 test('a malformed answer makes the read unverifiable', async () => {
