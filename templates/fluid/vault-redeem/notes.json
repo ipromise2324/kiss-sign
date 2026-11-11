@@ -1,0 +1,198 @@
+{
+  "title": "贖回 Fluid fToken 的剛好一筆份額",
+  "summary": "Safe 贖回你填的 fToken 份額數量（fUSDC 和 fUSDT 都是 6 位小數），換回它們值的資產。Fluid app 直接呼叫 fToken 的 ERC-4626 redeem(shares, Safe, Safe)，「全部提領」也用它。",
+  "flow": [
+    {
+      "after": 1,
+      "text": "fToken 燒掉 owner（Safe）的這些份額，請 Liquidity 層把它們值的資產直接轉給 receiver（Safe）。"
+    }
+  ],
+  "pastTxsConclusion": {
+    "status": "safe",
+    "text": "79 筆 EOA 的 redeem 和 1 個 Safe 的 1 筆都和模板同形狀；另外 2 個 Safe 做的是 withdraw 或提領加領獎勵。"
+  },
+  "verdict": {
+    "status": "safe",
+    "text": "fToken 不是代理合約，但錢放在可升級的 Liquidity 層；拿回多少資產由 fToken 計算。",
+    "recommendation": "可以用這個模板贖回；全部領出時，填 Safe 全部的 fToken 餘額。"
+  },
+  "judgments": [
+    {
+      "title": "card 上可以選 registry 裡任何一個 vault。",
+      "text": "模板是一般的 ERC-4626 redeem，card 選了 Morpho vault 時，檢查的是直接從那個 vault 贖回。能選哪些 vault 由 registry 決定。",
+      "recommendation": "用這個模板時只選 fluid-fusdc 或 fluid-fusdt。"
+    },
+    {
+      "title": "全部提領要填完整的份額餘額。",
+      "text": "card 沒有「全部」這個值；要全部領出，card 填 Safe 全部的 fToken 餘額。這樣你看得到剛好有多少份額離開 Safe。",
+      "recommendation": "全部領出前先查 Safe 的 fToken 餘額，填一樣的數字。"
+    }
+  ],
+  "reviews": {
+    "steakhouse-prime-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是策展人 Steakhouse 的文件，網域確實不是 DefiLlama 給 morpho-blue 登記的。AI 查了 Morpho API（https://api.morpho.org/graphql），它把 0xbeef088055857739C12CD3765F20b7679Def0f51（Steakhouse Prime USDC）列為 listed，資產是 USDC。策展人是 0x827e86072B06674a077f592A531dcE4590aDeCdB；vault-v2-factory 對它回答 isVaultV2 = true。",
+      "recommendation": "可以接受；這是策展人自己的頁面，不是 Morpho 的。"
+    },
+    "steakhouse-high-yield-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是策展人 Steakhouse 的文件，網域確實不是 DefiLlama 給 morpho-blue 登記的。AI 查了 Morpho API（https://api.morpho.org/graphql），它把 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757（Steakhouse High Yield USDC）列為 listed，資產是 USDC。策展人是 0x827e86072B06674a077f592A531dcE4590aDeCdB；vault-v2-factory 對它回答 isVaultV2 = true。",
+      "recommendation": "可以接受；這是策展人自己的頁面，不是 Morpho 的。"
+    },
+    "smokehouse-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是策展人 Steakhouse 的文件，網域確實不是 DefiLlama 給 morpho-blue 登記的。AI 查了 Morpho API（https://api.morpho.org/graphql），它把 0xBEeFFF209270748ddd194831b3fa287a5386f5bC（Smokehouse USDC）列為 listed，資產是 USDC。策展人是 0x827e86072B06674a077f592A531dcE4590aDeCdB；metamorpho-factory-1.0 對它回答 isMetaMorpho = true。",
+      "recommendation": "可以接受；這是策展人自己的頁面，不是 Morpho 的。"
+    },
+    "smokehouse-usdc/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 幣，AI 在 CoinGecko 完整幣表（含合約地址）裡也找不到 0xBEeFFF209270748ddd194831b3fa287a5386f5bC。Morpho API 列出它，metamorpho-factory-1.0 對它回答 isMetaMorpho = true。",
+      "recommendation": "可以接受；身分靠其他來源。"
+    },
+    "hyperithm-usdc-apex-7777/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 幣，AI 在 CoinGecko 完整幣表（含合約地址）裡也找不到 0x777791C4d6DC2CE140D00D2828a7C93503c67777。Morpho API 列出它，metamorpho-factory-1.1 對它回答 isMetaMorpho = true。",
+      "recommendation": "可以接受；身分靠其他來源。"
+    },
+    "hyperithm-usdc-apex-0932/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 幣，AI 在 CoinGecko 完整幣表（含合約地址）裡也找不到 0x093272C07700d3cA5301C3Bf9B3A392624179E2F。Morpho API 列出它，vault-v2-factory 對它回答 isVaultV2 = true。",
+      "recommendation": "可以接受；身分靠其他來源。"
+    },
+    "hyperithm-usdc-apex-7777/source.url": {
+      "status": "concern",
+      "text": "這個 app 頁面會照網址顯示地址，所以頁面本身證明不了什麼；AI 沒有用瀏覽器打開它。AI 查了 Morpho API（https://api.morpho.org/graphql），它把 0x777791C4d6DC2CE140D00D2828a7C93503c67777（Hyperithm USDC Apex）列為 listed，資產是 USDC。metamorpho-factory-1.1 對它回答 isMetaMorpho = true。",
+      "recommendation": "可以接受；用 Fluid 的模板時只選 fToken。"
+    },
+    "hyperithm-usdc-apex-0932/source.url": {
+      "status": "concern",
+      "text": "這個 app 頁面會照網址顯示地址，所以頁面本身證明不了什麼；AI 沒有用瀏覽器打開它。AI 查了 Morpho API（https://api.morpho.org/graphql），它把 0x093272C07700d3cA5301C3Bf9B3A392624179E2F（Hyperithm USDC Apex）列為 listed，資產是 USDC。vault-v2-factory 對它回答 isVaultV2 = true。",
+      "recommendation": "可以接受；用 Fluid 的模板時只選 fToken。"
+    },
+    "usual-boosted-usdc/source.url": {
+      "status": "concern",
+      "text": "這個 app 頁面會照網址顯示地址，所以頁面本身證明不了什麼；AI 沒有用瀏覽器打開它。AI 查了 Morpho API（https://api.morpho.org/graphql），它把 0xd63070114470f685b75B74D60EEc7c1113d33a3D（Usual Boosted USDC）列為 listed，資產是 USDC。metamorpho-factory-1.0 對它回答 isMetaMorpho = true。",
+      "recommendation": "可以接受；用 Fluid 的模板時只選 fToken。"
+    },
+    "fluid-fusdc/source.site": {
+      "status": "confirmed",
+      "text": "DefiLlama 給 fluid-lending 登記的網站是 https://www.fluid.io/（轉到 https://fluid.io/）。AI 不跑 JavaScript 直接讀那個頁面，它連到 https://github.com/Instadapp；來源檔案就在 Instadapp 組織的 fluid-contracts-public repo。",
+      "recommendation": "可以接受。想親眼確認，就打開 fluid.io，看頁尾的 GitHub 連結。"
+    },
+    "fluid-fusdt/source.site": {
+      "status": "confirmed",
+      "text": "DefiLlama 給 fluid-lending 登記的網站是 https://www.fluid.io/（轉到 https://fluid.io/）。AI 不跑 JavaScript 直接讀那個頁面，它連到 https://github.com/Instadapp；來源檔案就在 Instadapp 組織的 fluid-contracts-public repo。",
+      "recommendation": "可以接受。想親眼確認，就打開 fluid.io，看頁尾的 GitHub 連結。"
+    },
+    "fluid-fusdc/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 幣，AI 在 CoinGecko 完整幣表（含合約地址）裡也找不到 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33。鏈上 LendingFactory 0x54B91A0D94cb471F37f949c60F7Fa7935b551D03 的 allTokens() 列出這個地址；deployments.md 也把這個 factory 列在它的建構參數裡。",
+      "recommendation": "可以接受；身分靠其他來源。"
+    },
+    "fluid-fusdt/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 幣，AI 在 CoinGecko 完整幣表（含合約地址）裡也找不到 0x5C20B550819128074FD538Edf79791733ccEdd18。鏈上 LendingFactory 0x54B91A0D94cb471F37f949c60F7Fa7935b551D03 的 allTokens() 列出這個地址；deployments.md 也把這個 factory 列在它的建構參數裡。",
+      "recommendation": "可以接受；身分靠其他來源。"
+    },
+    "fluid-fusdc/doc.0xba087652.site": {
+      "status": "confirmed",
+      "text": "文件頁面在 Instadapp 組織的 fluid-contracts-public repo。AI 不跑 JavaScript 直接讀 DefiLlama 登記的網站 https://fluid.io/，它連到 https://github.com/Instadapp。",
+      "recommendation": "可以接受。"
+    }
+  },
+  "overview": [
+    {
+      "title": "升級和管理者",
+      "text": "fToken 不是代理合約。它的資金放在 Liquidity 層 0x52Aa899454998Be5b000Ad077a46Bbe360F4e497，那是可升級的代理合約，由延遲 1 天的 Timelock 升級。",
+      "sources": [
+        "https://curation.yearn.fi/report/fluid/"
+      ]
+    },
+    {
+      "title": "稽核",
+      "text": "Fluid 列出 MixBytes 和 Statemind 對 Liquidity 層的稽核；Yearn 的報告列出 PeckShield（2023-11）和 StateMind（2023-10 到 12 月）對 Lending 協議的稽核。",
+      "sources": [
+        "https://docs.fluid.instadapp.io/audits-and-security.html",
+        "https://curation.yearn.fi/report/fluid/"
+      ]
+    },
+    {
+      "title": "過去事故",
+      "text": "2026-05-31 Merkle 獎勵發放的操作金鑰外洩，損失約 21.5 萬美元，DefiLlama 說存款沒受影響。Yearn 說 2026 年 Resolv USR 事件在 Fluid 借貸市場留下約 1,000 到 1,750 萬美元壞帳，已全數補上，fToken 持有人沒有直接損失。",
+      "sources": [
+        "https://api.llama.fi/hacks",
+        "https://curation.yearn.fi/report/fluid/"
+      ]
+    },
+    {
+      "title": "其他",
+      "text": "Yearn 說 KelpDAO 事件後 Fluid 凍結了 rsETH 市場，Fluid 合約沒被攻擊。存款和提領不碰 Merkle 獎勵合約。",
+      "sources": [
+        "https://curation.yearn.fi/report/fluid/"
+      ]
+    }
+  ],
+  "entries": {
+    "fluid-fusdc": {
+      "notes": [
+        {
+          "text": "Instadapp 的 fluid-contracts-public 的 deployments.md 在 fToken_fUSDC 底下列出它，建構參數是 Liquidity 層 0x52Aa899454998Be5b000Ad077a46Bbe360F4e497、LendingFactory 0x54B91A0D94cb471F37f949c60F7Fa7935b551D03 和 USDC。Fluid app 讀的 API https://api.fluid.instadapp.io/v2/lending/1/tokens 也列出同一個地址和資產。",
+          "sources": [
+            "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md"
+          ]
+        },
+        {
+          "text": "Etherscan verified 名稱 fToken，solc 0.8.21，不是代理合約。由 0x8e7fB4D4FAbC504a4AD73D44e09080CB68960098 經 CREATE3 deployer 0x6387a549cA11E6783d39978D409d2C7f4F437ea5 建立，交易 0x3771681407c5f5d10c779a2bc685470c559652d83eb69d86b3af68ae7c6e0494，區塊 19247609。建立者不是 LendingFactory 本身；factory 的 allTokens() 列出它，那是 factory 自己的紀錄。"
+        }
+      ],
+      "role": "你贖回的 fToken；呼叫的對象。"
+    },
+    "fluid-fusdt": {
+      "notes": [
+        {
+          "text": "deployments.md 在 fToken_fUSDT 底下列出它，建構參數是同一個 Liquidity 層、LendingFactory 和 USDT；Fluid 的 API 也列出它。",
+          "sources": [
+            "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md"
+          ]
+        },
+        {
+          "text": "Etherscan verified 名稱 fToken，solc 0.8.21，不是代理合約。由 0x5D0E457DF85d9F1042C4b884e3d6Ca9e89494E3B 經 CREATE3 deployer 0xF7e3B06f43Ca9AEC2962Ead512e46ff643329656 建立，交易 0xb7a604f9de0d2c3aee3912cb4b46bee5e5a59744a2f80e3c670431e6bf8ab5cf，區塊 19247666；LendingFactory 的 allTokens() 列出它。"
+        }
+      ],
+      "role": "你贖回的 fToken；呼叫的對象。"
+    },
+    "usdc": {
+      "role": "fUSDC 的資產：Safe 收到的代幣。"
+    },
+    "usdt": {
+      "role": "fUSDT 的資產：Safe 收到的代幣。"
+    }
+  },
+  "fields": {
+    "1.to": "fToken",
+    "1.redeem.shares": "燒掉的份額數量",
+    "1.redeem.receiver": "誰收到資產",
+    "1.redeem.owner": "燒掉誰的份額"
+  },
+  "tests": [
+    {
+      "text": "錄了兩個 Safe 的贖回（fluid-redeem-usdt、fluid-redeem-usdt-other-safe），各自用隱含的 card 得到 MATCH；換 receiver 或份額數量都得到 MISMATCH。"
+    },
+    {
+      "text": "其中一筆在模擬和收據上都剛好付出 card 的份額、收到 USDT。"
+    }
+  ],
+  "details": [
+    {
+      "title": "過去交易的觀察",
+      "notes": [
+        {
+          "text": "搜尋 fUSDC 燒毀，Alchemy 和 Etherscan 各找到同樣的 434 筆，研究了 236 筆。79 筆是 77 個 EOA 直接呼叫 redeem，全部符合。3 筆來自 3 個 Safe：1 筆符合；1 筆用 withdraw（0xb460af94），那是 fluid/vault-withdraw；1 筆在一個 MultiSend 裡提領再領 Fluid 獎勵，是兩個操作放在一張 card 上。154 筆不呼叫 redeem，多數是 withdraw。"
+        },
+        {
+          "text": "地址、ABI 和協議狀況跟 fluid/vault-deposit 一樣，是同兩個 fToken。"
+        }
+      ]
+    }
+  ]
+}
