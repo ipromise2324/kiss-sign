@@ -15,8 +15,8 @@ import type { FreeClaim, Template } from './template.ts';
 /**
  * What a copy of the transaction with one free field changed did. `reverted`: it did not execute. `refused`: the
  * engine's field or effects check refuses it, so it could never be signed as a MATCH. `same`: it emitted the same logs and
- * changed the Safe's balances, allowances and the views its template reads the same way. `changed`: it ran, the engine would pass it, and something
- * differs, so the field steers the transaction where the engine does not look.
+ * changed the Safe's balances, allowances and the views its template reads the same way. `changed`: it ran, the engine
+ * would pass it, and something differs, so the field steers the transaction where the engine does not look.
  */
 export type Outcome = 'reverted' | 'refused' | 'same' | 'changed';
 

@@ -393,3 +393,24 @@ test('a view must name a registry contract, a function with its returns, bound a
     'effects.views[0].change.oracle: address is not a number; only a number is judged',
   );
 });
+
+test('a bytes32 bound to the market id matches that id and nothing else', () => {
+  const byId = parseTemplate(
+    {
+      id: 'test/market-id',
+      card: { market: { kind: 'market' } },
+      calls: [{ to: { card: 'market.lending' }, value: { const: '0' }, function: 'idToMarketParams(bytes32 id)', args: { id: { card: 'market.id' } } }],
+      effects: { gives: [], gets: [] },
+    },
+    registry,
+  );
+  const card = resolveCard({ operations: [{ template: byId.id, values: { market: 'usdc-cbbtc-86' } }] }, { templates: new Map([[byId.id, byId]]), registry, addressBook: new Map(), safe: SAFE });
+  assert.equal(card.kind, 'resolved');
+  const call = (id: string): SafeTx => ({ ...supplyTx(), to: at('morpho-blue'), operation: 0, data: `${selectorOf('idToMarketParams(bytes32)')}${id.slice(2)}` as Hex });
+  const resolvedCard = (card as Extract<Resolution, { kind: 'resolved' }>).card;
+  const fields = (tx: SafeTx) => checkTemplateFields(tx, resolvedCard, new Map([[byId.id, byId]]), registry);
+  assert.deepEqual(fields(call(ID)), { kind: 'match' });
+  const other = `0x${'46'.repeat(32)}`;
+  const result = fields(call(other));
+  assert.deepEqual(result.kind === 'mismatch' ? result.findings.map((f) => [f.arg, f.expected, f.actual]) : result, [['id', ID, other]]);
+});
