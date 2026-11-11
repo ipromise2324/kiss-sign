@@ -368,3 +368,66 @@ test('--compare names each file a pull request changes outside templates/, regis
   const changed = ['templates/morpho/vault-deposit/template.json', 'registry/contracts.json', 'testdata/report/x.json', 'src/research/report.ts', 'scripts/report.ts', 'templates-x/a.json', 'docs/design.md', 'package.json'];
   assert.deepEqual(programChanges(changed), ['src/research/report.ts', 'scripts/report.ts', 'templates-x/a.json', 'docs/design.md', 'package.json']);
 });
+
+test('a market field lists every market with its id, lltv and parts, binds each MarketParams part, and prints the views read', () => {
+  const contracts = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  const source = 'https://docs.morpho.org/get-started/resources/addresses';
+  const added = {
+    'morpho-blue': { address: '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb', kind: 'lending', source },
+    cbbtc: { address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', kind: 'token', source },
+    'cbbtc-usdc-oracle': { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', kind: 'oracle', source },
+    'adaptive-curve-irm': { address: '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', kind: 'irm', source },
+  };
+  const id = '0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64';
+  const reg = parseRegistry({ ...contracts, ...added }, {
+    'usdc-cbbtc-86': { lending: 'morpho-blue', loanToken: 'usdc', collateralToken: 'cbbtc', oracle: 'cbbtc-usdc-oracle', irm: 'adaptive-curve-irm', lltv: '860000000000000000', id },
+  });
+  const template = parseTemplate(
+    {
+      id: 'morpho/market-supply',
+      card: { market: { kind: 'market' }, amount: { kind: 'amount', of: 'market.loanToken' } },
+      calls: [
+        {
+          to: { card: 'market.lending' },
+          value: { const: '0' },
+          function: 'supply((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, uint256 shares, address onBehalf, bytes data)',
+          args: { marketParams: { card: 'market' }, assets: { card: 'amount' }, shares: { const: '0' }, onBehalf: { safe: true }, data: { const: '0x' } },
+        },
+      ],
+      effects: {
+        gives: [{ token: 'card.market.loanToken', amount: 'card.amount' }],
+        gets: [],
+        views: [
+          {
+            to: { contract: 'morpho-blue' },
+            function: 'position(bytes32 id, address user) returns (uint256 supplyShares, uint128 borrowShares, uint128 collateral)',
+            args: { id: { card: 'market.id' }, user: { safe: true } },
+            change: { supplyShares: 'increases', borrowShares: 'same' },
+          },
+        ],
+      },
+    },
+    reg,
+  );
+  const subject: Subject = { kind: 'template', template, docs: [] };
+  const text = quick(recording.pages, new Map(), subject, new Map(), [], new Map(), reg);
+  const full = (name: keyof typeof added) => `\`${name}\` \`${added[name].address}\``;
+  const usdc = '`usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`';
+  assert.ok(text.includes('| `market` | a market from `registry/markets.json`, picked by number from the list below |'));
+  assert.ok(
+    text.includes(
+      `| \`usdc-cbbtc-86\` | \`${id}\` | 860000000000000000 | lending ${full('morpho-blue')}; loanToken ${usdc}; collateralToken ${full('cbbtc')}; oracle ${full('cbbtc-usdc-oracle')}; irm ${full('adaptive-curve-irm')} |`,
+    ),
+  );
+  assert.ok(text.includes(`| \`supply.marketParams.oracle\` | the \`oracle\` of the card's \`market\`: one of ${full('cbbtc-usdc-oracle')} |`));
+  assert.ok(text.includes("| `supply.marketParams.lltv` | the `lltv` of the card's `market` |"));
+  assert.ok(
+    text.includes(
+      `| registry ${full('morpho-blue')} | \`position(bytes32,address)\`, selector \`0x93c52062\`, returns \`(uint256 supplyShares, uint128 borrowShares, uint128 collateral)\` | \`id\` the \`id\` of the card's \`market\`; \`user\` the Safe | \`supplyShares\` increases; \`borrowShares\` same |`,
+    ),
+  );
+  assert.deepEqual(
+    entriesOf(subject, reg).map((e) => e.name),
+    ['usdc', 'morpho-blue', 'cbbtc', 'cbbtc-usdc-oracle', 'adaptive-curve-irm'],
+  );
+});

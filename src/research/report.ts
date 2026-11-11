@@ -9,14 +9,14 @@ import type { AbiCase } from '../contracts/abi-case.ts';
 import { pinOf, readRunningCodeAt, samePin } from '../contracts/code.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
-import { paramName } from '../decode/abi.ts';
+import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { REGISTRY_PATH, isAttribute, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
+import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, isAttribute, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
-import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef } from '../template/template.ts';
+import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
 import { checkSources, githubLine, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
@@ -202,11 +202,22 @@ function namedInRules(template: Template): Set<string> {
     visit(call.value);
     if (call.data !== 'empty') call.data.args.forEach(visit);
   }
+  for (const view of template.effects.views) {
+    names.add(view.to);
+    view.args.forEach(visit);
+  }
   return names;
 }
 
-const cardCandidates = (template: Template, registry: Registry): RegistryEntry[] =>
-  [...registry.entries.values()].filter((entry) => [...template.card.values()].some((field) => field.kind === 'contract' && field.registryKind === entry.kind));
+const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
+
+/** Every registry entry a card field can name: a contract of the field's kind, or a part of any market. */
+function cardCandidates(template: Template, registry: Registry): RegistryEntry[] {
+  const inMarkets = new Set(hasMarket(template) ? [...registry.markets.values()].flatMap((market) => MARKET_ENTRY_PARTS.map((part) => market[part].name)) : []);
+  return [...registry.entries.values()].filter(
+    (entry) => inMarkets.has(entry.name) || [...template.card.values()].some((field) => field.kind === 'contract' && field.registryKind === entry.kind),
+  );
+}
 
 export const vaultsOf = (subject: Subject, registry: Registry): RegistryEntry[] =>
   subject.kind === 'vault' ? [subject.vault] : cardCandidates(subject.template, registry).filter((entry) => entry.kind === 'vault');
@@ -333,8 +344,10 @@ function refText(ref: CardRef): string {
 }
 
 function refAddresses(ref: CardRef, template: Template, registry: Registry): string {
-  if (template.card.get(ref.field)?.kind !== 'contract') return '';
-  return `: one of ${refNames(ref, template, registry).map((n) => full(registry.entries.get(n) as RegistryEntry)).join(', ')}`;
+  const kind = template.card.get(ref.field)?.kind;
+  const names = refNames(ref, template, registry);
+  if (kind !== 'contract' && (kind !== 'market' || names.length === 0)) return '';
+  return `: one of ${names.map((n) => full(registry.entries.get(n) as RegistryEntry)).join(', ')}`;
 }
 
 const FREE_CLAIMS = { scalar: 'free', proof: 'free, claimed `proof`: every changed value must revert or be refused', unread: 'free, claimed `unread`: no changed value may change anything' } as const;
@@ -403,6 +416,19 @@ function effectRow(side: string, effect: Effect, template: Template, registry: R
   return `| ${side} | ${tokenText(effect.token, template, registry)} | ${amount}${to} |`;
 }
 
+function argumentText(rule: Rule, param: AbiParam, template: Template, registry: Registry): string {
+  if (rule.kind !== 'fields' || param.type.kind !== 'tuple') return ruleText(rule, template, registry);
+  const { components } = param.type;
+  return `(${rule.fields.map((field, i) => `${code(paramName(components[i] as AbiParam, i))} ${argumentText(field, components[i] as AbiParam, template, registry)}`).join('; ')})`;
+}
+
+function viewRow(view: ViewEffect, template: Template, registry: Registry): string {
+  const returns = view.returns.map((r, i) => `${canonicalType(r.type)} ${paramName(r, i)}`).join(', ');
+  const args = view.fn.params.map((param, i) => `${code(paramName(param, i))} ${argumentText(view.args[i] as Rule, param, template, registry)}`).join('; ');
+  const changes = view.changes.map(({ value, change }) => `${code(paramName(view.returns[value] as AbiParam, value))} ${change}`).join('; ');
+  return `| registry ${full(registry.entries.get(view.to) as RegistryEntry)} | ${code(view.fn.signature)}, selector ${code(view.fn.selector)}, returns ${code(`(${returns})`)} | ${args} | ${changes} |`;
+}
+
 function templateSections(template: Template, docs: readonly DocLink[], inputs: ReportInputs): string[] {
   const { registry } = inputs;
   const out: string[] = ['## Card', '', '| Field | The signer gives |', '| --- | --- |'];
@@ -414,7 +440,9 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
           ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}`
           : field.kind === 'nonce'
             ? 'a Safe nonce'
-            : field.kind === 'address'
+            : field.kind === 'market'
+              ? `a market from ${code(MARKETS_PATH)}, picked by number from the list below`
+              : field.kind === 'address'
               ? 'a registry name, an address-book name, or the Safe, each confirmed by the signer'
               : 'an address-book name or the Safe, each confirmed by the signer';
     out.push(`| ${code(name)} | ${takes} |`);
@@ -426,6 +454,14 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
       if (entry.kind !== field.registryKind) continue;
       const attributes = Object.entries(entry.attributes).map(([key, target]) => `${key} ${full(registry.entries.get(target) as RegistryEntry)}`);
       out.push(`| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${attributes.join('; ')} |`);
+    }
+  }
+  for (const [name, field] of template.card) {
+    if (field.kind !== 'market') continue;
+    out.push('', `${code(name)} can name:`, '', '| Name | Market id | LLTV | Parts |', '| --- | --- | --- | --- |');
+    for (const market of registry.markets.values()) {
+      const parts = MARKET_ENTRY_PARTS.map((part) => `${part} ${full(market[part])}`);
+      out.push(`| ${code(market.name)} | ${code(market.id)} | ${market.lltv} | ${parts.join('; ')} |`);
     }
   }
   if (template.same.length > 0) out.push('', `Must name one address: ${template.same.map(refText).join(', ')}.`);
@@ -444,6 +480,10 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   out.push('## Effects', '', '| Side | Token | Amount |', '| --- | --- | --- |');
   for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
   for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  if (template.effects.views.length > 0) {
+    out.push('', 'The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:', '');
+    out.push('| Contract | Function | Arguments | Change |', '| --- | --- | --- | --- |', ...template.effects.views.map((view) => viewRow(view, template, registry)));
+  }
 
   out.push(
     '',
@@ -669,7 +709,8 @@ export async function replayReport(repoRoot: string, registry: Registry, target:
     spans: await checkSpans(replayReader(recording.code), entries),
     erc7730: (await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)))).text,
   };
-  const inputsFiles = 'vault' in target ? [REGISTRY_PATH] : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), REGISTRY_PATH];
+  const registryFiles = subject.kind === 'template' && hasMarket(subject.template) ? [REGISTRY_PATH, MARKETS_PATH] : [REGISTRY_PATH];
+  const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), ...registryFiles];
   const sources = [...inputsFiles, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
   const command = 'vault' in target ? `pnpm report --vault ${target.vault} --record` : `pnpm report ${target.template} --record`;
   return renderReport(inputs, { command, sources });
