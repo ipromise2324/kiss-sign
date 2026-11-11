@@ -205,6 +205,11 @@ export function localOriginMain(root: string): string {
   return git(root, 'rev-parse', 'refs/remotes/origin/main').trim();
 }
 
+/** The first line of the commit's message. */
+export function commitSubject(root: string, commit: string): string {
+  return git(root, 'log', '-1', '--no-show-signature', '--format=%s', commit).trimEnd();
+}
+
 /** A file's text at `commit`, so a template or the registry counts only once it is merged. */
 export function fileAt(root: string, commit: string, path: string): string {
   return git(root, 'show', `${commit}:${path}`);
