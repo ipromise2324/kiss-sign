@@ -15,7 +15,7 @@ import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
 import { sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { loadRegistry } from '../src/registry.ts';
-import { COINGECKO_COINS, DEFILLAMA_PROTOCOLS, fetchListing, parseCoinGeckoCoins, parseDefiLlamaProtocols } from '../src/research/listings.ts';
+import { fetchListing, listingsFor } from '../src/research/listings.ts';
 import { chainAt, loadSnapshot, trimForRecording as trimErc7730 } from '../src/research/erc7730.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import {
@@ -163,8 +163,7 @@ const reader = createReader(endpoints, httpsTransport());
 const latest = await reader.block('latest');
 if (latest.kind === 'unverifiable') throw new Error(latest.reason);
 
-const [defillama, coingecko] = await Promise.all([fetchListing(DEFILLAMA_PROTOCOLS), fetchListing(COINGECKO_COINS)]);
-const listings = { protocols: parseDefiLlamaProtocols(defillama), coinsByAddress: parseCoinGeckoCoins(coingecko), suffixes };
+const listings = await listingsFor(entries, suffixes, fetchListing);
 const docs = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
 const pages = await gatherSourcePages([...entries.map((e) => e.source), ...docs], httpsGet);
 

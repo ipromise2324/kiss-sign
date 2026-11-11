@@ -18,7 +18,7 @@ import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
 import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
-import { checkSources, githubLine, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
+import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
@@ -725,7 +725,7 @@ export async function replayInputs(
   const inputs: ReportInputs = {
     subject,
     registry,
-    listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes },
+    listings: await listingsFor(entries, suffixes, async (listing) => (listing === DEFILLAMA_PROTOCOLS ? recording.defillama : recording.coingecko)),
     pages: sourcePagesOf(recording),
     fetched: recording.fetched,
     abi: await replayAbiProofs(entries, loadAbiCases(repoRoot), compilers),

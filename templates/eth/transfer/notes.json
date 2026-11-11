@@ -1,0 +1,58 @@
+{
+  "title": "從 Safe 轉 ETH 給一個收款人",
+  "summary": "Safe 對收款人送出 card 上的 ETH 金額，不帶任何資料，不呼叫任何合約函式。",
+  "flow": [],
+  "pastTxsConclusion": {
+    "status": "safe",
+    "text": "past-txs 搜不到 ETH 轉帳；另外三個 Safe 的完整歷史裡 4 筆 ETH 轉帳都是這個形狀。"
+  },
+  "verdict": {
+    "status": "safe",
+    "text": "沒有合約參與；風險只在收款人，由你在通訊錄裡確認。",
+    "recommendation": "收款人用你從聊天以外來源確認過的通訊錄名字。"
+  },
+  "judgments": [
+    {
+      "title": "同一個區塊裡其他動到 Safe ETH 的交易會影響量測。",
+      "text": "已執行的交易，ETH 的變化是 Safe 在執行區塊和前一個區塊的餘額差，因為 execTransaction 本身送出的 ETH 沒有 log。同一個區塊裡另一筆動到 Safe ETH 的交易也會改變這個數。見 docs/design.md 的 Known limits。",
+      "recommendation": "可以接受。簽名前的檢查是模擬，不受這個影響。"
+    }
+  ],
+  "reviews": {},
+  "overview": [
+    {
+      "title": "沒有協議",
+      "text": "ETH 沒有合約，所以不是 registry 項目；模板用保留名稱 eth 指它，跟用 safe 指 Safe 一樣，registry 和通訊錄都不能用這兩個名字。"
+    }
+  ],
+  "entries": {},
+  "fields": {
+    "1.to": "誰收到 ETH",
+    "1.value": "多少 ETH，以 wei 計",
+    "1.data": "沒有資料；多一個 byte 就是 MISMATCH"
+  },
+  "tests": [
+    {
+      "text": "eth-transfer-null-data（4.988797943068499801 ETH，Transaction Service 把空資料回成 null）和 eth-transfer-first-nonce（0.001 ETH）用隱含的 card 都是 MATCH；換收款人、金額或加一個 byte 資料都是 MISMATCH。"
+    },
+    {
+      "text": "testdata/simulate/eth-transfer-null-data.json 用模擬和收據前後餘額兩種方式量 ETH 變化，都等於 card 金額。"
+    }
+  ],
+  "details": [
+    {
+      "title": "過去交易",
+      "notes": [
+        {
+          "text": "pnpm past-txs 以 ERC-20 的 Transfer log 為錨點，單純的 ETH 轉帳沒有這種 log，所以沒有錄下的搜尋。改從 Safe Transaction Service 列出另外三個 Safe 的完整執行歷史：3 個 Safe 共 4 筆單純的 ETH 轉帳，每筆都是直接呼叫、資料為空、value 等於金額、operation 0、手續費欄位都是 0。"
+        },
+        {
+          "text": "幾筆轉帳可以放進官方 MultiSend，card 每筆一個操作、照順序；程式會檢查外層交易不送 ETH。"
+        },
+        {
+          "text": "收款人是 safe 時，Safe 付給自己，所以它的餘額必須完全不變。"
+        }
+      ]
+    }
+  ]
+}
