@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -51,6 +51,25 @@ test('init writes the Safe on chain 1 and refuses to switch a home to another Sa
   const again = await run(['init', '--safe', RECIPIENT], home);
   assert.equal(again.code, 1);
   assert.match(again.stderr, /already set up for another Safe/);
+});
+
+test('init creates a key file readable by its owner only, with an empty line per key, and never overwrites one', async () => {
+  const home = freshHome();
+  const first = await run(['init', '--safe', SAFE], home);
+  const keyFile = join(home, '.env');
+  assert.equal(first.code, 0);
+  assert.match(first.stdout, new RegExp(`Created ${keyFile}, readable by you only`));
+  assert.match(first.stdout, /ALCHEMY_API_KEY, .*kiss-sign verify/);
+  assert.match(first.stdout, /ETHERSCAN_API_KEY, .*pnpm past-txs/);
+  assert.equal(statSync(keyFile).mode & 0o777, 0o600);
+  const lines = readFileSync(keyFile, 'utf8').split('\n').filter((line) => !line.startsWith('#') && line !== '');
+  assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'ETHERSCAN_API_KEY=']);
+
+  writeFileSync(keyFile, 'ALCHEMY_API_KEY=kept-by-the-signer\n');
+  const again = await run(['init', '--safe', SAFE], home);
+  assert.equal(again.code, 0);
+  assert.match(again.stdout, /is already there and was left as it is/);
+  assert.equal(readFileSync(keyFile, 'utf8'), 'ALCHEMY_API_KEY=kept-by-the-signer\n');
 });
 
 test('book add refuses without a terminal and adds nothing', async () => {

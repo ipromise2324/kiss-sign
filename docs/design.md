@@ -24,6 +24,7 @@ Two machines, joined only by `main` on GitHub.
 | 4. The first time a template or a vault is used, send a small amount first | Safe | The signers |
 | 5. Sign, comparing the full hashes | Hardware wallet | The signer |
 
+- The signing device needs a clone, `pnpm install && pnpm add -g .`, which links a `kiss-sign` command on `PATH` to the clone's `bin/kiss-sign`, so the self-check checks that clone and `git pull` updates what runs, and `kiss-sign init --safe <address>`, which also creates `$KISS_SIGN_HOME/.env` for the keys. The signing commands read no vendored download. The research scripts and `pnpm test` download the pinned solc builds, Public Suffix List and ERC-7730 archive they need on first use, each refused unless its sha256 is the pinned one.
 - With no AI on the signing device, nothing there can rewrite `verify`, the sealed cards, or the approved template hashes. The self-check guards against accidents; the separate device guards against an AI that means harm.
 - Branch protection on `main` protects the bridge between the two machines, since the signing device pulls `main`. It requires a pull request approved by the code owner, the signer, and the AI pushes from a GitHub account that cannot approve or merge. Both are GitHub settings the signer makes. On a private repository GitHub offers branch protection only with a paid plan; until it is on, nothing in GitHub stops an AI that can push from merging.
 - A small first transaction catches honest mistakes and crude attacks, such as a wrong vault or a template that sends funds elsewhere. It does not catch a contract that behaves differently for large amounts, or one that turns hostile later.
@@ -215,7 +216,7 @@ Every on-chain read uses two providers from different companies. Both must agree
 
 When the system resolver fails, kiss-sign resolves provider hosts over DNS over HTTPS. TLS certificate checks stay on, so a wrong address can only fail the connection.
 
-Keys enter through `kiss-sign key add <provider>` in a hidden prompt, never through the chat. They live in `$KISS_SIGN_HOME/.env` with mode 0600.
+Keys enter through `kiss-sign key add <provider>` in a hidden prompt, or the signer fills in the `$KISS_SIGN_HOME/.env` that `kiss-sign init` creates, with an empty line per key and mode 0600; never through the chat. `init` never overwrites an existing `.env`.
 
 ### Research services
 

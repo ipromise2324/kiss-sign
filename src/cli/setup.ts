@@ -5,7 +5,7 @@ import { parseCard, resolveCard, sealCard } from '../card.ts';
 import type { Card, ResolvedValue } from '../card.ts';
 import { ConfigError, loadApproved, loadConfig, saveApproved, saveConfig } from '../config.ts';
 import type { Config } from '../config.ts';
-import { kissSignHome } from '../keys.ts';
+import { KEYS, createKeyFile, keyFilePath, kissSignHome } from '../keys.ts';
 import { REGISTRY_PATH, isEntryName, loadRegistry, parseRegistry } from '../registry.ts';
 import { checksumAddress, parseAddress } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template.ts';
@@ -32,6 +32,10 @@ export async function init(args: readonly string[], io: Io): Promise<number> {
   }
   saveConfig(home, { chainId: 1n, safe });
   io.stdout(`kiss-sign checks transactions of the Safe ${checksumAddress(safe)} on Ethereum mainnet (chain 1).\n`);
+  const keyFile = keyFilePath(home);
+  io.stdout(createKeyFile(home) ? `Created ${keyFile}, readable by you only. Fill in after the = sign:\n` : `${keyFile} is already there and was left as it is. It takes:\n`);
+  for (const spec of KEYS) io.stdout(`  ${spec.env}, a free key from ${spec.signup}, for ${spec.usedBy}\n`);
+  io.stdout(`Or type a key at a hidden prompt with kiss-sign key add ${KEYS.map(({ name }) => name).join('|')}.\n`);
   return OK;
 }
 

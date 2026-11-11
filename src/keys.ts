@@ -4,8 +4,14 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 export const KEYS = [
-  { name: 'alchemy', label: 'Alchemy', env: 'ALCHEMY_API_KEY', signup: 'https://dashboard.alchemy.com/' },
-  { name: 'etherscan', label: 'Etherscan', env: 'ETHERSCAN_API_KEY', signup: 'https://etherscan.io/myapikey' },
+  {
+    name: 'alchemy',
+    label: 'Alchemy',
+    env: 'ALCHEMY_API_KEY',
+    signup: 'https://dashboard.alchemy.com/',
+    usedBy: 'kiss-sign verify, kiss-sign card new, and the pnpm research scripts',
+  },
+  { name: 'etherscan', label: 'Etherscan', env: 'ETHERSCAN_API_KEY', signup: 'https://etherscan.io/myapikey', usedBy: 'pnpm past-txs' },
 ] as const;
 
 export type KeySpec = (typeof KEYS)[number];
@@ -76,6 +82,25 @@ function writeAtomically(home: string, lines: readonly string[]): void {
     rmSync(temp, { force: true });
     throw error;
   }
+}
+
+/** Writes a key file with one empty line per key, readable by the owner only. False when a file is already there, which is left as it is. */
+export function createKeyFile(home: string): boolean {
+  mkdirSync(home, { recursive: true, mode: 0o700 });
+  const text = KEYS.map((spec) => `# ${spec.label}, a free key from ${spec.signup}, for ${spec.usedBy}.\n${spec.env}=\n`).join('');
+  let fd: number;
+  try {
+    fd = openSync(keyFilePath(home), 'wx', 0o600);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EEXIST') return false;
+    throw error;
+  }
+  try {
+    writeSync(fd, text);
+  } finally {
+    closeSync(fd);
+  }
+  return true;
 }
 
 export function saveKey(home: string, spec: KeySpec, value: string): void {

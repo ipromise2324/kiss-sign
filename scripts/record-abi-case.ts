@@ -6,6 +6,7 @@ import { describeRefusal } from '../src/contracts/prove.ts';
 import { pinnedCompilers } from '../src/contracts/solc.ts';
 import { sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { parseAddress, parseUint256 } from '../src/safe/types.ts';
+import { ensureVendored } from '../src/vendor.ts';
 
 const USAGE = 'usage: ALCHEMY_API_KEY=... node scripts/record-abi-case.ts <name> <address> [block]';
 
@@ -13,6 +14,7 @@ const [name, addressArg, blockArg] = process.argv.slice(2);
 if (name === undefined || addressArg === undefined || !/^[a-z0-9-]+$/.test(name)) throw new Error(USAGE);
 const address = parseAddress('address', addressArg);
 
+if (!(await ensureVendored(['solc']))) process.exit(1);
 const live = openMainnetReader(process.env);
 const block = await live.block(blockArg === undefined ? 'latest' : parseUint256('block', blockArg));
 if (block.kind === 'unverifiable') throw new Error(block.reason);

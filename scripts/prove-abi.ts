@@ -3,11 +3,13 @@ import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import { pinnedCompilers } from '../src/contracts/solc.ts';
 import { sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
+import { ensureVendored } from '../src/vendor.ts';
 
 const [addressArg] = process.argv.slice(2);
 if (addressArg === undefined) throw new Error('usage: ALCHEMY_API_KEY=... node scripts/prove-abi.ts <address>');
 const address = parseAddress('address', addressArg);
 
+if (!(await ensureVendored(['solc']))) process.exit(1);
 const reader = openMainnetReader(process.env);
 const block = await reader.block('latest');
 if (block.kind === 'unverifiable') throw new Error(block.reason);
