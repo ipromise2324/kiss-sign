@@ -1,0 +1,3 @@
+{
+  "claim(address,uint256,uint8,bytes32,uint256,bytes32[],bytes)": { "contract": "fluid-rewards-distributor", "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/merkleDistributor/main.sol" }
+}
