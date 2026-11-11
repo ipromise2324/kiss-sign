@@ -33,7 +33,7 @@ function write(path: string, text: string): string {
 
 /**
  * A clone at its origin/main holding the fixture's template and registry, and a home set up as the signer set it up. Its
- * origin is the official URL, served offline from a local bare repository through core.sshCommand.
+ * origin is the configured repository's URL, served offline from a local bare repository through core.sshCommand.
  */
 function setUp(approved: string | null = template.approved) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-verify-'));
@@ -48,10 +48,10 @@ function setUp(approved: string | null = template.approved) {
   git(repo, 'push', '--quiet', 'origin', 'main');
   const ssh = write(join(base, 'ssh'), `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
   chmodSync(ssh, 0o755);
-  git(repo, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
+  git(repo, 'remote', 'set-url', 'origin', 'git@github.com:signer/kiss-sign.git');
   git(repo, 'config', 'core.sshCommand', ssh);
   const home = join(base, 'home');
-  write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: fixture.inputs.safe }));
+  write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: fixture.inputs.safe, repo: 'github.com/signer/kiss-sign' }));
   write(join(home, 'cards', `${fixture.inputs.card.hash}.json`), fixture.inputs.card.text);
   if (approved !== null) write(join(home, 'approved-templates.json'), JSON.stringify({ [template.id]: approved }));
   return { base, repo, home };

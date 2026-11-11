@@ -36,12 +36,21 @@ kiss-sign turns the order around: you say what you want first, and the transacti
 
 ## The standard setup
 
-On the signing device, with Node 22 and pnpm:
+0. Fork this repository on GitHub.
+1. On the signing device, with Node 22 and pnpm, clone your fork:
 
 ```sh
-git clone https://github.com/ipromise2324/kiss-sign.git && cd kiss-sign
+git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
 pnpm install
 pnpm kiss-sign init --safe 0x…
+```
+
+Your fork's `main` is what `verify` trusts, and merging a pull request into it is your confirmation, whether it changes a template or the program. This repository is only a source of updates; pull them when you want them, then push them to your fork's `main` (through a pull request, if you protect `main`):
+
+```sh
+git remote add upstream https://github.com/ipromise2324/kiss-sign.git
+git pull upstream main
+git push origin main
 ```
 
 `init` creates `~/.kiss-sign/.env`, readable by you only, and prints the command that opens it. Paste `ALCHEMY_API_KEY`, a free key from Alchemy, after its `=` sign; `verify` and `card new` need it.

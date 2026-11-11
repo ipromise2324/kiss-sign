@@ -5,7 +5,7 @@ import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
-import { loadConfig } from '../src/config.ts';
+import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
@@ -71,7 +71,7 @@ const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, templateId, registry);
 const token = registry.entries.get(flags.token)?.address ?? parseAddress('--token', flags.token);
 const from = flags.from === undefined ? undefined : (registry.entries.get(flags.from)?.address ?? parseAddress('--from', flags.from));
-const exclude = loadConfig(kissSignHome(process.env))?.safe;
+const exclude = loadStoredConfig(kissSignHome(process.env))?.safe;
 if (exclude === undefined) console.error(`no Safe configured in ${kissSignHome(process.env)}, so nothing is excluded`);
 
 const endpoints = mainnetEndpoints(process.env);

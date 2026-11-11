@@ -4,7 +4,7 @@ import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
-import { loadConfig } from '../src/config.ts';
+import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { safeProxyCreated } from '../src/safe/deployments.ts';
 import { parseHex } from '../src/safe/types.ts';
@@ -30,7 +30,7 @@ const code = await reader.getCode(created.proxy, block.value);
 if (code.kind === 'unverifiable') throw new Error(code.reason);
 
 const fixture = { transaction: hash, exchanges: chain.exchanges() };
-const safe = loadConfig(kissSignHome(process.env))?.safe;
+const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
 if (safe !== undefined && JSON.stringify(fixture).toLowerCase().includes(safe.slice(2))) throw new Error('the recording mentions the configured Safe; nothing written');
 const out = join(import.meta.dirname, '..', 'testdata', 'safe-proxy', `${name}.json`);
 mkdirSync(join(out, '..'), { recursive: true });
