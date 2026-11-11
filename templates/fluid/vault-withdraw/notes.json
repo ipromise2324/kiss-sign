@@ -74,11 +74,6 @@
       "text": "這個 app 頁面會照網址顯示地址，所以頁面本身證明不了什麼；AI 沒有用瀏覽器打開它。AI 查了 Morpho API（https://api.morpho.org/graphql），它把 0xd63070114470f685b75B74D60EEc7c1113d33a3D（Usual Boosted USDC）列為 listed，資產是 USDC。metamorpho-factory-1.0 對它回答 isMetaMorpho = true。",
       "recommendation": "可以接受；用 Fluid 的模板時只選 fToken。"
     },
-    "fluid-fusdc/source.site": {
-      "status": "confirmed",
-      "text": "DefiLlama 給 fluid-lending 登記的網站是 https://www.fluid.io/（轉到 https://fluid.io/）。AI 不跑 JavaScript 直接讀那個頁面，它連到 https://github.com/Instadapp；來源檔案就在 Instadapp 組織的 fluid-contracts-public repo。",
-      "recommendation": "可以接受。想親眼確認，就打開 fluid.io，看頁尾的 GitHub 連結。"
-    },
     "fluid-fusdt/source.site": {
       "status": "confirmed",
       "text": "DefiLlama 給 fluid-lending 登記的網站是 https://www.fluid.io/（轉到 https://fluid.io/）。AI 不跑 JavaScript 直接讀那個頁面，它連到 https://github.com/Instadapp；來源檔案就在 Instadapp 組織的 fluid-contracts-public repo。",
@@ -93,11 +88,6 @@
       "status": "concern",
       "text": "registry 沒寫 CoinGecko 幣，AI 在 CoinGecko 完整幣表（含合約地址）裡也找不到 0x5C20B550819128074FD538Edf79791733ccEdd18。鏈上 LendingFactory 0x54B91A0D94cb471F37f949c60F7Fa7935b551D03 的 allTokens() 列出這個地址；deployments.md 也把這個 factory 列在它的建構參數裡。",
       "recommendation": "可以接受；身分靠其他來源。"
-    },
-    "fluid-fusdc/doc.0xb460af94.site": {
-      "status": "confirmed",
-      "text": "文件頁面在 Instadapp 組織的 fluid-contracts-public repo。AI 不跑 JavaScript 直接讀 DefiLlama 登記的網站 https://fluid.io/，它連到 https://github.com/Instadapp。",
-      "recommendation": "可以接受。"
     }
   },
   "overview": [

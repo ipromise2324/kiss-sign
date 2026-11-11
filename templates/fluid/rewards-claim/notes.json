@@ -2,8 +2,14 @@
   "title": "領取 Fluid 部位賺到的 FLUID 獎勵",
   "summary": "Safe 直接呼叫 Fluid 的 FluidMerkleDistributor（Fluid Rewards - Dec 2024）的 claim，把 Safe 在 Fluid 部位上賺到、還沒領的 FLUID 領回 Safe。",
   "flow": [
-    { "after": 1, "text": "distributor 檢查呼叫者就是 recipient_、cycle_ 是目前或上一個 cycle，並用 Merkle proof 對那個 cycle 的 root 驗證整個 leaf。" },
-    { "after": 1, "text": "驗證通過後，distributor 只把它自己的 TOKEN（FLUID）轉給 recipient_：累積金額減掉這個部位已經領過的。" }
+    {
+      "after": 1,
+      "text": "distributor 檢查呼叫者就是 recipient_、cycle_ 是目前或上一個 cycle，並用 Merkle proof 對那個 cycle 的 root 驗證整個 leaf。"
+    },
+    {
+      "after": 1,
+      "text": "驗證通過後，distributor 只把它自己的 TOKEN（FLUID）轉給 recipient_：累積金額減掉這個部位已經領過的。"
+    }
   ],
   "pastTxsConclusion": {
     "status": "safe",
@@ -31,16 +37,6 @@
       "status": "concern",
       "text": "AI 讀了固定 commit 的 deployments.md：地址 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb 出現 13 次，都在建構參數裡，例如「$FLUID MerkleDistributor (Fluid Rewards - Dec 2024)」那一列的最後一個參數；頁面沒有一個標籤直接寫它是 FLUID。鏈上 distributor 的 TOKEN() 回傳的就是這個地址，CoinGecko 也在這個地址列 instadapp。",
       "recommendation": "可以接受；地址的身分靠 CoinGecko 和 distributor 的 TOKEN() 兩個來源。"
-    },
-    "fluid-rewards-distributor/source.site": {
-      "status": "confirmed",
-      "text": "DefiLlama 給 fluid-lending 登記的網站是 https://www.fluid.io/（轉到 https://fluid.io/）。AI 不跑 JavaScript 直接讀那個頁面，它連到 https://github.com/Instadapp；來源檔案就在 Instadapp 組織的 fluid-contracts-public repo。",
-      "recommendation": "可以接受。想親眼確認，就打開 fluid.io，看頁尾的 GitHub 連結。"
-    },
-    "fluid-rewards-distributor/doc.0xbe5013dc.site": {
-      "status": "confirmed",
-      "text": "文件頁面也在 Instadapp 組織的 fluid-contracts-public repo。AI 不跑 JavaScript 直接讀 DefiLlama 登記的網站 https://fluid.io/，它連到 https://github.com/Instadapp。",
-      "recommendation": "可以接受。"
     }
   },
   "overview": [
@@ -51,12 +47,17 @@
     {
       "title": "稽核",
       "text": "Fluid 列出 MixBytes 和 Statemind 對 Liquidity 層的稽核；Yearn 的 curation 報告列出 PeckShield 和 StateMind 對 Lending 協議的稽核。AI 沒找到只針對這個 distributor 的稽核。",
-      "sources": ["https://docs.fluid.instadapp.io/audits-and-security.html", "https://curation.yearn.fi/report/fluid/"]
+      "sources": [
+        "https://docs.fluid.instadapp.io/audits-and-security.html",
+        "https://curation.yearn.fi/report/fluid/"
+      ]
     },
     {
       "title": "過去事故",
       "text": "2026-05-31 Fluid 的 Merkle 獎勵發放用的操作金鑰外洩，攻擊者核准假的分配，領走約 125,109 FLUID（約 21.5 萬美元）。DefiLlama 說核心合約、借貸市場和存款沒受影響。假的 root 可以把 distributor 的 FLUID 發給別人，但 Safe 的 claim 只會讓 Safe 多拿。",
-      "sources": ["https://api.llama.fi/hacks"]
+      "sources": [
+        "https://api.llama.fi/hacks"
+      ]
     }
   ],
   "entries": {
@@ -65,7 +66,9 @@
       "notes": [
         {
           "text": "Instadapp 的 fluid-contracts-public 的 deployments.md，在「$FLUID MerkleDistributor (Fluid Rewards - Dec 2024)」底下列出它，建構參數的名稱是 \"Fluid Rewards - Dec 2024\"。",
-          "sources": ["https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md"]
+          "sources": [
+            "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md"
+          ]
         },
         {
           "text": "Etherscan verified 名稱 FluidMerkleDistributor，solc 0.8.21，不是代理合約。建立者 0x910e413DBF3F6276Fe8213fF656726bDc142E08E，交易 0x32f0b630520be8ad573e9f555b5784d181be58cf8bd8251147ff99eef0c632d6，區塊 21430780。"
@@ -108,7 +111,9 @@
       "notes": [
         {
           "text": "證明過的原始碼（merkleDistributor/main.sol 的 claim）除非 msg.sender 等於 recipient_、cycle_ 是目前或上一個 cycle、proof 能把 leaf 雜湊到那個 cycle 的 root，否則就 revert。之後它只送 distributor 的 TOKEN，只送給 recipient_。所以沒綁死的欄位只決定 Safe 自己的獎勵付多少，不決定錢去哪裡或發生別的事。effects 檢查負責其餘：Safe 一定要多拿到 card 上的代幣，Safe 其他的餘額和授權都不能變。",
-          "sources": ["https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/merkleDistributor/main.sol"]
+          "sources": [
+            "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/merkleDistributor/main.sol"
+          ]
         }
       ]
     },
