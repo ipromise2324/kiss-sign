@@ -66,7 +66,7 @@ function quick(
     vaults,
     pastTxs,
     spans,
-    erc7730: 'not read',
+    erc7730: { text: 'not read', reports: [] },
   };
   return renderReport(inputs, { command: 'test', sources: [] });
 }
