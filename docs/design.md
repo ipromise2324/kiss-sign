@@ -34,7 +34,7 @@ Two machines, joined only by `main` on GitHub.
 
 ![Detailed flow: who acts at each step, what it does, which services it uses, and what it trusts](architecture-detail.png)
 
-Every service or step drawn in `docs/architecture.png` and `docs/architecture-detail.png` has a sentence in this document that says what is checked with it and who checks it, the program or the AI. The text is authoritative: where a picture and the text disagree, the picture is wrong and is redrawn. [Research services](#research-services) lists each service by step.
+Every service or step drawn in `docs/architecture.png` and `docs/architecture-detail.png` has a sentence in this document that says what is checked with it and who checks it, the program or the AI. The text is authoritative: where a picture and the text disagree, the picture is wrong and is redrawn. Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diagrams/render.sh` renders both with headless Chrome. [Research services](#research-services) lists each service by step.
 
 ### First time an operation is done: build its template
 
@@ -78,7 +78,7 @@ Every service or step drawn in `docs/architecture.png` and `docs/architecture-de
 
    The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
 7. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests. It never merges. For each test transaction with a free field, the program (`pnpm perturb`) runs the perturbation test below and records it, so CI replays it.
-8. **Signer reviews the pull request.** The signer reads the report and the template's rules on GitHub, runs `pnpm report <protocol>/<operation> --compare`, and asks for changes. Approving and merging the pull request is the confirmation. On the signing device, `pnpm kiss-sign template approve` records the hash of the merged template locally.
+8. **Signer reviews the pull request.** The signer reads the report and the template's rules on GitHub, runs `pnpm report <protocol>/<operation> --compare`, and asks for changes. Approving and merging the pull request is the confirmation. On the signing device, `pnpm kiss-sign template approve` prints the merged template, the `origin/main` commit it comes from with its subject line, and the template's keccak256, and on the signer's yes records that hash locally.
 
 ### Every signing
 
