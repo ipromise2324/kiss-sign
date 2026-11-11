@@ -2,16 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { loadRegistry } from '../src/registry.ts';
-import {
-  COINGECKO_COINS,
-  DEFILLAMA_PROTOCOLS,
-  checkSources,
-  fetchListing,
-  formatResults,
-  parseCoinGeckoCoins,
-  parseDefiLlamaProtocols,
-  trimForRecording,
-} from '../src/research/listings.ts';
+import { checkSources, fetchListing, formatResults, listingsFor, trimForRecording } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
 import { ensureVendored } from '../src/vendor.ts';
@@ -38,8 +29,7 @@ if (unknown.length > 0) {
 const entries = names.length === 0 ? [...registry.entries.values()] : names.map((name) => registry.entries.get(name)!);
 
 if (!(await ensureVendored(['psl']))) process.exit(1);
-const [defillama, coingecko] = await Promise.all([fetchListing(DEFILLAMA_PROTOCOLS), fetchListing(COINGECKO_COINS)]);
-const listings = { protocols: parseDefiLlamaProtocols(defillama), coinsByAddress: parseCoinGeckoCoins(coingecko), suffixes: loadPublicSuffixList() };
+const listings = await listingsFor(entries, loadPublicSuffixList(), fetchListing);
 const pages = await gatherSourcePages(entries.map((e) => e.source), httpsGet);
 console.log(formatResults(checkSources(entries, listings, pages)));
 
