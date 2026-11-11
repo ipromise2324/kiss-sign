@@ -53,6 +53,8 @@ git pull upstream main
 git push origin main
 ```
 
+Every signer runs the same `verify` program; templates and the registry are data it reads. A change to the program (`src/`, `scripts/`, `docs/design.md`) that you merge into your fork works for you at once, since your `verify` trusts your fork's `main`, the `repo` that `init` wrote into `~/.kiss-sign/config.json`. Also open it as a pull request to this repository, so other signers can review it and every fork keeps running the same program.
+
 `init` creates `~/.kiss-sign/.env`, readable by you only, and prints the command that opens it. Paste `ALCHEMY_API_KEY`, a free key from Alchemy, after its `=` sign; `verify` and `card new` need it.
 
 ```sh
@@ -60,7 +62,7 @@ open -e ~/.kiss-sign/.env            # macOS, in TextEdit
 ${EDITOR:-nano} ~/.kiss-sign/.env    # elsewhere
 ```
 
-Or type the key at a hidden prompt with `pnpm kiss-sign key add alchemy`. Run every command from the clone as `pnpm kiss-sign <command>`, such as `pnpm kiss-sign card new morpho/vault-deposit`. After a `git pull` that changes `package.json`, pnpm installs the new dependencies itself before it runs the command.
+Or enter the key with `pnpm kiss-sign key add alchemy`; what you type is not shown on screen. Run every command from the clone as `pnpm kiss-sign <command>`, such as `pnpm kiss-sign card new morpho/vault-deposit`. After a `git pull` that changes `package.json`, pnpm installs the new dependencies itself before it runs the command.
 
 To build templates or run the tests, `pnpm test` and the research scripts download the pinned compilers and lists they need on first use, and refuse any file whose sha256 differs from its pin.
 
