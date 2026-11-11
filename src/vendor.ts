@@ -67,7 +67,7 @@ export async function fetchVendored(kind: VendoredKind, io: VendorIo = nodeVendo
   if (pinned !== undefined) {
     const checked = await checkCommit({ kind: 'pinned', ...pinned, path: '' }, io.get, new Map());
     if (checked.kind !== 'on-default') {
-      io.log(`refused, commit ${pinned.commit}: ${checked.kind === 'unknown' ? checked.why : `not on the default branch ${checked.branch} (${checked.status})`}`);
+      io.log(`refused, commit ${pinned.commit}: ${'why' in checked ? checked.why : `not on the default branch ${checked.branch} (${checked.status})`}`);
       return false;
     }
     io.log(`commit ${pinned.commit} is on the default branch ${checked.branch} of ${pinned.owner}/${pinned.repo} (GitHub compare: ${checked.status})`);

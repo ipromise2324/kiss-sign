@@ -7,7 +7,8 @@ import type { RegistryEntry } from '../src/registry.ts';
 import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording } from '../src/research/listings.ts';
 import type { Listings } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
-import { gatherSourcePages } from '../src/research/source-page.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
+import { gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
 import type { HttpGet, SourcePages } from '../src/research/source-page.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -349,6 +350,64 @@ test('a source page whose server fails is UNVERIFIABLE, while a page it answers 
   const unreachable = await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, {});
   assert.match(unreachable, /page {7}UNVERIFIABLE docs\.morpho\.org unreachable/);
   assert.match(await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: { status: 404, text: '' } }), /page {7}FINDING https:\/\/docs\.morpho\.org\/addresses answered HTTP 404/);
+});
+
+const PINNED_ENTRY = { r: { address: ADDR, kind: 'router', defillama: 'safe', source: PINNED, sourceLabel: 'canonical' } };
+
+/** The report and the reads noted as unanswered when the compare API answers `compares` in turn, each read asked again twice. */
+async function retriedCompare(compares: Served[]): Promise<{ text: string; asked: number; unread: string[] }> {
+  const served: Record<string, Served> = { [REPO_API]: { status: 200, text: JSON.stringify({ default_branch: 'main' }) }, [RAW]: deployments };
+  const unread: string[] = [];
+  let asked = 0;
+  const get = retryingGet(
+    async (url) => {
+      if (url !== compareUrl) return getFrom(served)(url);
+      asked++;
+      return compares.shift() ?? assert.fail('asked more often than the pauses allow');
+    },
+    (read) => unread.push(read),
+    [0, 0],
+  );
+  const entries = entriesOf(PINNED_ENTRY);
+  return { text: report(entries, listings, await gatherSourcePages(entries.map((e) => e.source), get)), asked, unread };
+}
+
+const SERVER_ERROR: Served = { status: 503, text: '' };
+const RATE_LIMITED: Served = { status: 403, text: '{"message":"API rate limit exceeded"}', headers: { 'x-ratelimit-remaining': '0' } };
+
+test('a read that gets no answer is asked again after each pause, and the answer that ends it is the result', async () => {
+  const { text, asked, unread } = await retriedCompare([SERVER_ERROR, RATE_LIMITED, { status: 200, text: JSON.stringify({ status: 'behind' }) }]);
+  assert.equal(asked, 3);
+  assert.match(text, /github {5}agrees {2}commit ca9cb0d2d5f5 .*\(GitHub compare: behind\)/);
+  assert.deepEqual(unread, []);
+  assert.equal(unreadRefusal(unread), undefined, '--record writes');
+});
+
+test('an answer is final: a 404 is not asked again and stays a FINDING', async () => {
+  const { text, asked, unread } = await retriedCompare([{ status: 404, text: '{"message":"Not Found"}' }]);
+  assert.equal(asked, 1);
+  assert.match(text, /github {5}FINDING .*no such commit in the repository/);
+  assert.deepEqual(unread, []);
+});
+
+test('a read with no answer after every pause is UNVERIFIABLE, never a FINDING, and --record refuses to write', async () => {
+  const { text, asked, unread } = await retriedCompare([RATE_LIMITED, RATE_LIMITED, RATE_LIMITED]);
+  assert.equal(asked, 3);
+  assert.match(text, /github {5}UNVERIFIABLE .*rate limited \(HTTP 403\)/);
+  assert.doesNotMatch(text, /FINDING/);
+  assert.deepEqual(unread, [`${compareUrl}: rate limited (HTTP 403)`]);
+  assert.equal(
+    unreadRefusal(unread),
+    `1 read(s) got no answer after every retry, so nothing is recorded; run the command again later:\n  ${compareUrl}: rate limited (HTTP 403)`,
+  );
+
+  const thrown: string[] = [];
+  const pages = await gatherSourcePages(
+    [DOCS],
+    retryingGet(async () => assert.fail('ECONNRESET'), (read) => thrown.push(read), [0]),
+  );
+  assert.deepEqual(pages.pages.get(DOCS), { kind: 'unread', why: 'docs.morpho.org unreachable' });
+  assert.deepEqual(thrown, [`${DOCS}: unreachable or timed out`]);
 });
 
 test('a GitHub source on a branch name, a tree, or the repository root is not pinned', async () => {

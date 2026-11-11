@@ -1,10 +1,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { unreadRefusal } from '../src/chain/https.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { checkSources, fetchListing, formatResults, listingsFor, trimForRecording } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
+import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { ensureVendored } from '../src/vendor.ts';
 
 const USAGE = `usage: node scripts/check-sources.ts [<registry name>...] [--record <name>]
@@ -14,7 +15,9 @@ protocol's website, or its GitHub org with the protocol's orgs, and checks that 
 share's own coin id at its address. It reads each source page as served, without running its scripts, and looks for
 the address next to the entry's sourceLabel. A GitHub source must name a commit on the repository's default branch, and
 a source URL must not hold the address. It then lists the sites each protocol's sources use. With no names it checks
-every entry. Every disagreement prints as FINDING.`;
+every entry. Every disagreement prints as FINDING. A read with no answer (no connection, a timeout, a server error or a
+rate limit) is asked again after each pause; one still without an answer prints as UNVERIFIABLE, and --record then
+writes nothing.`;
 
 const { values: flags, positionals: names } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
@@ -30,10 +33,19 @@ const entries = names.length === 0 ? [...registry.entries.values()] : names.map(
 
 if (!(await ensureVendored(['psl']))) process.exit(1);
 const listings = await listingsFor(entries, loadPublicSuffixList(), fetchListing);
-const pages = await gatherSourcePages(entries.map((e) => e.source), httpsGet);
+const unread: string[] = [];
+const pages = await gatherSourcePages(
+  entries.map((e) => e.source),
+  retryingGet(httpsGet, (read) => void unread.push(read)),
+);
 console.log(formatResults(checkSources(entries, listings, pages)));
 
 if (flags.record !== undefined) {
+  const refusal = unreadRefusal(unread);
+  if (refusal !== undefined) {
+    console.error(refusal);
+    process.exit(1);
+  }
   const dir = join(root, 'testdata', 'sources');
   mkdirSync(dir, { recursive: true });
   const path = join(dir, `${flags.record}.json`);

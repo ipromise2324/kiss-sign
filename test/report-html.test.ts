@@ -352,12 +352,24 @@ test('a documentation page is keyed by selector, and one the program could not f
   const inputs = await quickInputs();
   const [doc] = subject.docs.filter((d) => d.contract.name === 'blue-bundles-v1');
   const pages = new Map(inputs.pages.pages);
-  pages.set(pageUrlOf(doc!.url), { kind: 'failed', why: 'timeout' });
+  pages.set(pageUrlOf(doc!.url), { kind: 'failed', why: 'HTTP 404' });
   const id = `blue-bundles-v1/doc.${doc!.fn.selector}.page`;
   const reviews = { ...(committedNotes.reviews as Record<string, unknown>), [id]: { status: 'concern', text: 'x', recommendation: 'y' } };
   const html = renderHtml({ ...inputs, pages: { ...inputs.pages, pages } }, parseNotes({ ...committedNotes, reviews }, keys), TITLE, []);
   assert.match(section(html, '需要你做的事'), new RegExp(`<li data-result="${id.replace(/\./g, '\\.')}">[^]*?程式沒讀到 <code>blueBundlesV1Supply</code> 的文件頁面`));
   assert.doesNotMatch(section(html, '需要你做的事'), /程式不跑 JavaScript，讀到的文件頁面/);
+});
+
+test('a documentation page that got no answer is UNVERIFIABLE for the signer to read again, never a FINDING', async () => {
+  const inputs = await quickInputs();
+  const [doc] = subject.docs.filter((d) => d.contract.name === 'blue-bundles-v1');
+  const pages = new Map(inputs.pages.pages);
+  pages.set(pageUrlOf(doc!.url), { kind: 'unread', why: 'HTTP 503' });
+  const id = `blue-bundles-v1/doc.${doc!.fn.selector}.page`;
+  const reviews = { ...(committedNotes.reviews as Record<string, unknown>), [id]: { status: 'concern', text: 'x', recommendation: 'y' } };
+  const html = renderHtml({ ...inputs, pages: { ...inputs.pages, pages } }, parseNotes({ ...committedNotes, reviews }, keys), TITLE, []);
+  assert.deepEqual(cardResults(html).get(id), { mark: 'warn', flag: 'UNVERIFIABLE' });
+  assert.match(section(html, '需要你做的事'), new RegExp(`<li data-result="${id.replace(/\./g, '\\.')}">[^]*?程式這次沒讀到 <code>blueBundlesV1Supply</code> 的文件頁面`));
 });
 
 test('--compare names every notes.json a branch changes, as text the AI wrote', () => {

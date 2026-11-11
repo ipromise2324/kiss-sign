@@ -23,13 +23,17 @@ export type Listings = {
 /**
  * Why a check did not agree: `conflict` for a disagreement or anything the program cannot excuse, `unlisted` when the
  * listing holds nothing to compare the source with, `not-served` when the page as served does not show the address,
- * `not-fetched` when the page could not be read.
+ * `not-fetched` when the page's server answered with something other than the page, such as a 404 or a redirect.
  */
 export type FindingCause = 'conflict' | 'unlisted' | 'not-served' | 'not-fetched';
 type CheckName = 'defillama' | 'coingecko' | 'url' | 'github' | 'page';
-/** What `check-sources` saw for one entry. A `finding` is for the signer to judge; `agrees` is evidence for the report. */
+/**
+ * What `check-sources` saw for one entry. A `finding` is for the signer to judge; `agrees` is evidence for the report;
+ * `unverifiable` means a read got no answer, which is no disagreement and is read again.
+ */
 export type Line =
   | { readonly kind: 'agrees'; readonly check: CheckName; readonly text: string }
+  | { readonly kind: 'unverifiable'; readonly check: CheckName; readonly text: string }
   | { readonly kind: 'finding'; readonly check: CheckName; readonly text: string; readonly cause: FindingCause };
 export type EntryResult = { readonly entry: RegistryEntry; readonly site: string; readonly lines: readonly Line[] };
 
@@ -146,6 +150,7 @@ export function githubLine(source: URL, commits: SourcePages['commits']): Line {
   if (ref.kind === 'unpinned') return finding('not pinned to a commit: name the file as github.com/<org>/<repo>/blob/<40-hex commit>/<path>');
   const check: CommitCheck = commits.get(commitKey(ref)) ?? { kind: 'unknown', why: 'the commit was not checked' };
   const at = `commit ${ref.commit.slice(0, 12)} of ${ref.owner}/${ref.repo}`;
+  if (check.kind === 'unread') return { kind: 'unverifiable', check: 'github', text: `${at}: ${check.why}` };
   if (check.kind === 'unknown') return finding(`${at}: ${check.why}`);
   if (check.kind === 'off-default') return finding(`${at} is not on the default branch ${check.branch} (GitHub compare: ${check.status})`);
   return { kind: 'agrees', check: 'github', text: `${at} is on the default branch ${check.branch} (GitHub compare: ${check.status})` };
@@ -155,6 +160,7 @@ function pageLine(entry: RegistryEntry, pages: SourcePages['pages']): Line {
   const finding = (text: string, cause: FindingCause = 'conflict'): Line => ({ kind: 'finding', check: 'page', text, cause });
   const url = pageUrlOf(entry.source);
   const page: Page = pages.get(url) ?? { kind: 'failed', why: `${url} was not fetched` };
+  if (page.kind === 'unread') return { kind: 'unverifiable', check: 'page', text: page.why };
   if (page.kind === 'failed') return finding(page.why, 'not-fetched');
   if (entry.sourceLabel === undefined) return finding('the entry names no sourceLabel, so where the address stands on the page is not checked');
   const label = `"${entry.sourceLabel}"`;
@@ -196,11 +202,13 @@ export function checkSources(entries: readonly RegistryEntry[], listings: Listin
   });
 }
 
+const LINE_WORDS: Readonly<Record<Line['kind'], string>> = { agrees: 'agrees  ', finding: 'FINDING ', unverifiable: 'UNVERIFIABLE ' };
+
 export function formatResults(results: readonly EntryResult[]): string {
   const out: string[] = [];
   for (const { entry, lines } of results) {
     out.push(`${entry.name} ${checksumAddress(entry.address)} (${entry.kind})`, `  source     ${entry.source}`);
-    for (const line of lines) out.push(`  ${line.check.padEnd(10)} ${line.kind === 'finding' ? 'FINDING ' : 'agrees  '}${line.text}`);
+    for (const line of lines) out.push(`  ${line.check.padEnd(10)} ${LINE_WORDS[line.kind]}${line.text}`);
   }
   const bySlug = new Map<string, Map<string, string[]>>();
   for (const { entry, site } of results) {
@@ -213,8 +221,10 @@ export function formatResults(results: readonly EntryResult[]): string {
     out.push(`  ${slug}`);
     for (const [site, names] of sites) out.push(`    ${site}: ${names.join(', ')}`);
   }
-  const findings = results.flatMap((r) => r.lines.filter((l) => l.kind === 'finding').map(() => r.entry.name));
-  out.push('', `${results.length} entries, ${findings.length} findings${findings.length > 0 ? ` (${[...new Set(findings)].join(', ')})` : ''}`);
+  const named = (kind: Line['kind']) => results.flatMap((r) => r.lines.filter((l) => l.kind === kind).map(() => r.entry.name));
+  const count = (names: readonly string[], what: string) => `${names.length} ${what}${names.length > 0 ? ` (${[...new Set(names)].join(', ')})` : ''}`;
+  const unverifiable = named('unverifiable');
+  out.push('', `${results.length} entries, ${count(named('finding'), 'findings')}${unverifiable.length > 0 ? `, ${count(unverifiable, 'unverifiable')}` : ''}`);
   return out.join('\n');
 }
 
@@ -263,7 +273,7 @@ export function sourcePagesOf(recording: Pick<ListingsRecording, 'pages' | 'comm
 
 /** Keeps the blocks holding one of `addresses`, the block before each, and the blocks holding one of `words`. */
 export function trimPage(page: Page, addresses: readonly Address[], words: readonly RegExp[] = []): Page {
-  if (page.kind === 'failed') return page;
+  if (page.kind !== 'served') return page;
   const holds = (block: PageBlock | undefined) => block !== undefined && addresses.some((a) => block.text.toLowerCase().includes(a.slice(2)));
   const says = (block: PageBlock) => words.some((word) => word.test(block.text));
   return { kind: 'served', blocks: page.blocks.filter((block, i) => holds(block) || holds(page.blocks[i + 1]) || says(block)) };

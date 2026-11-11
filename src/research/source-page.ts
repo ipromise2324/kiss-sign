@@ -1,19 +1,24 @@
 import { request } from 'node:https';
 import { fallbackLookup } from '../chain/dns.ts';
-import { requestText } from '../chain/https.ts';
-import type { HttpAnswer } from '../chain/https.ts';
+import { requestText, retried, transientStatus } from '../chain/https.ts';
+import type { HttpAnswer, NoteUnread } from '../chain/https.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 
 /** One unit of a page's text: a table row, a list item, a paragraph, a line, or one JSON leaf with its key path. */
 export type PageBlock = { readonly text: string; readonly heading?: string };
 
-export type Page = { readonly kind: 'served'; readonly blocks: readonly PageBlock[] } | { readonly kind: 'failed'; readonly why: string };
+/** `failed` is an answer that is not the page, such as a 404 or a redirect; `unread` is no answer at all, which no check may read as a disagreement. */
+export type Page =
+  | { readonly kind: 'served'; readonly blocks: readonly PageBlock[] }
+  | { readonly kind: 'failed'; readonly why: string }
+  | { readonly kind: 'unread'; readonly why: string };
 
 export type CommitCheck =
   | { readonly kind: 'on-default'; readonly branch: string; readonly status: 'behind' | 'identical' }
   | { readonly kind: 'off-default'; readonly branch: string; readonly status: string }
-  | { readonly kind: 'unknown'; readonly why: string };
+  | { readonly kind: 'unknown'; readonly why: string }
+  | { readonly kind: 'unread'; readonly why: string };
 
 export type SourcePages = { readonly pages: ReadonlyMap<string, Page>; readonly commits: ReadonlyMap<string, CommitCheck> };
 
@@ -266,8 +271,10 @@ export async function fetchPage(url: string, get: HttpGet): Promise<Page> {
   try {
     answer = await get(url);
   } catch {
-    return { kind: 'failed', why: `${new URL(url).hostname} unreachable` };
+    return { kind: 'unread', why: `${new URL(url).hostname} unreachable` };
   }
+  const transient = transientStatus(answer);
+  if (transient !== undefined) return { kind: 'unread', why: `${url} answered ${transient}` };
   if (answer.status >= 300 && answer.status < 400) {
     const location = header(answer, 'location');
     const target = URL.canParse(location, url) ? new URL(location, url).href : 'nowhere readable';
@@ -279,25 +286,20 @@ export async function fetchPage(url: string, get: HttpGet): Promise<Page> {
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-function rateLimited(answer: HttpAnswer): boolean {
-  return answer.status === 429 || (answer.status === 403 && (header(answer, 'x-ratelimit-remaining') === '0' || /rate limit/i.test(answer.text)));
-}
-
-type Unchecked = Extract<CommitCheck, { kind: 'unknown' }>;
-
-const RATE_LIMITED: Unchecked = {
-  kind: 'unknown',
-  why: 'the GitHub API rate limit is reached (60 requests an hour without a token); the commit is not checked, run again later',
-};
+type Unchecked = Extract<CommitCheck, { kind: 'unknown' | 'unread' }>;
 
 async function githubJson(url: string, get: HttpGet): Promise<{ kind: 'json'; status: number; body: unknown } | Unchecked> {
   let answer: HttpAnswer;
   try {
     answer = await get(url);
   } catch {
-    return { kind: 'unknown', why: 'api.github.com unreachable; the commit is not checked' };
+    return { kind: 'unread', why: 'api.github.com unreachable; the commit is not checked' };
   }
-  if (rateLimited(answer)) return RATE_LIMITED;
+  const transient = transientStatus(answer);
+  if (transient !== undefined) {
+    const limit = transient.startsWith('rate limited') ? ', the GitHub API rate limit (60 requests an hour without a token)' : '';
+    return { kind: 'unread', why: `api.github.com answered ${transient}${limit}; the commit is not checked, run again later` };
+  }
   try {
     return { kind: 'json', status: answer.status, body: JSON.parse(answer.text) };
   } catch {
@@ -352,6 +354,12 @@ export async function gatherSourcePages(sources: readonly string[], get: HttpGet
   }
   return { pages, commits };
 }
+
+/** `get`, asking again after each pause while it gets no answer, and noting each read that never got one. */
+export const retryingGet =
+  (get: HttpGet, note: NoteUnread, pausesMs?: readonly number[]): HttpGet =>
+  (url) =>
+    retried(url, () => get(url), transientStatus, note, pausesMs);
 
 /** GitHub's API refuses a request without a user agent. */
 export const httpsGet: HttpGet = (url) => {

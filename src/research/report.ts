@@ -338,7 +338,8 @@ const byAi = (text: string): string => `written by the AI in the template: ${inl
 /** Names, addresses, hashes, selectors and file paths, each parsed into a charset that holds no backtick or `|`. */
 const code = (text: string): string => `\`${text}\``;
 const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(checksumAddress(entry.address))}`;
-const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : line.kind === 'agrees' ? 'PASS' : 'FINDING');
+const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
+const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : VERDICTS[line.kind]);
 
 function refText(ref: CardRef): string {
   return ref.attribute === undefined ? `the card's ${code(ref.field)}` : `the ${code(ref.attribute)} of the card's ${code(ref.field)}`;
@@ -498,7 +499,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   for (const doc of docs) {
     const url = new URL(doc.url);
     const page = inputs.pages.pages.get(pageUrlOf(doc.url));
-    const named = page?.kind === 'served' && page.blocks.some((block) => wordOf(doc.fn).test(block.text)) ? 'PASS' : 'FINDING';
+    const named = page?.kind === 'unread' ? 'UNVERIFIABLE' : page?.kind === 'served' && page.blocks.some((block) => wordOf(doc.fn).test(block.text)) ? 'PASS' : 'FINDING';
     const github = isGitHubPage(url) ? verdict(githubLine(url, inputs.pages.commits)) : 'n/a';
     out.push(`| ${code(doc.fn.signature)} | ${code(doc.contract.name)} | <${doc.url}> | ${verdict(sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings))} | ${github} | ${named} |`);
   }
