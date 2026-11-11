@@ -28,6 +28,7 @@ import {
   pastTxsRecordings,
   programChanges,
   renderReport,
+  replayInputs,
   replayReport,
   reportRecordingPath,
   summarizePastTxs,
@@ -36,13 +37,14 @@ import {
   vaultsOf,
 } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
+import { generatedHtmlPath, loadNotes, renderHtml } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
-       node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) --offline
+       node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) (--offline | --render)
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
 docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
@@ -53,7 +55,8 @@ request that adds it.
 
 --record also writes the live answers to testdata/report/, records an ABI case for each entry testdata/abi/ lacks, and
 writes the committed report from those recordings alone: templates/<protocol>/<operation>/report.generated.md, or
-registry/reports/<vault>.generated.md. --offline prints that file's text from the recordings, reading nothing live.
+registry/reports/<vault>.generated.md, and for a template with notes.json, report.generated.html beside it. --offline
+prints the Markdown text from the recordings, reading nothing live; --render writes both files from them.
 --compare reads the listings, pages, ABI proofs, code spans and ERC-7730 attestations live, reads each vault again at the blocks
 the committed report names, fetches each recorded past transaction again by hash, and prints each fact that differs
 from the committed report; it exits 1 on any. It does not search for past transactions again. It first prints every
@@ -64,14 +67,21 @@ runs the code checked out here. Run --compare from main with --data, so the pull
 --compare checks.`;
 
 const { values: flags, positionals } = parseArgs({
-  options: { vault: { type: 'string' }, record: { type: 'boolean' }, offline: { type: 'boolean' }, compare: { type: 'boolean' }, data: { type: 'string' } },
+  options: {
+    vault: { type: 'string' },
+    record: { type: 'boolean' },
+    offline: { type: 'boolean' },
+    render: { type: 'boolean' },
+    compare: { type: 'boolean' },
+    data: { type: 'string' },
+  },
   allowPositionals: true,
 });
 const [id] = positionals;
 if (
   (id === undefined) === (flags.vault === undefined) ||
   positionals.length > 1 ||
-  [flags.record, flags.offline, flags.compare].filter(Boolean).length > 1 ||
+  [flags.record, flags.offline, flags.render, flags.compare].filter(Boolean).length > 1 ||
   (flags.data !== undefined && !flags.compare)
 ) {
   console.error(USAGE);
@@ -114,6 +124,28 @@ const compilers = cachedCompilers();
 
 if (flags.offline) {
   process.stdout.write(await replayReport(root, registry, target, compilers, suffixes));
+  process.exit(0);
+}
+
+/** Writes the committed reports from the repository and the recordings alone. */
+async function writeGenerated(): Promise<void> {
+  const { inputs, title } = await replayInputs(root, registry, target, compilers, suffixes);
+  const mdPath = join(root, generatedPath(target));
+  mkdirSync(dirname(mdPath), { recursive: true });
+  writeFileSync(mdPath, renderReport(inputs, title));
+  const written = [generatedPath(target)];
+  if (inputs.subject.kind === 'template') {
+    const notes = loadNotes(root, inputs.subject, registry);
+    if (notes !== undefined) {
+      writeFileSync(join(root, generatedHtmlPath(inputs.subject.template.id)), renderHtml(inputs, notes, title));
+      written.push(generatedHtmlPath(inputs.subject.template.id));
+    }
+  }
+  console.error(`wrote ${written.join(' and ')}`);
+}
+
+if (flags.render) {
+  await writeGenerated();
   process.exit(0);
 }
 
@@ -190,7 +222,6 @@ if (flags.record) {
   }
   mkdirSync(dirname(join(root, reportRecordingPath(target))), { recursive: true });
   writeFileSync(join(root, reportRecordingPath(target)), `${recording}\n`);
-  mkdirSync(dirname(committedPath), { recursive: true });
-  writeFileSync(committedPath, await replayReport(root, registry, target, compilers, suffixes));
-  console.error(`recorded ${reportRecordingPath(target)} and wrote ${generatedPath(target)}`);
+  console.error(`recorded ${reportRecordingPath(target)}`);
+  await writeGenerated();
 }

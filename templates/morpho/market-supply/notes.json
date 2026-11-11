@@ -1,0 +1,140 @@
+{
+  "title": "把借出代幣存進一個 Morpho Blue market",
+  "summary": "Safe 經由 BlueBundlesV1（Morpho app 現在處理 market 操作的路徑），把一個 market 的借出代幣存進 Morpho Blue 的那個 market。交易是一個官方 MultiSend，裡面有兩個呼叫。第一個 market 是 usdc-cbbtc-86，就是你用 app 連結指定的那個：借出 USDC、抵押品 cbBTC、LLTV 86%。",
+  "steps": [
+    "允許 BlueBundlesV1 從 Safe 拉走剛好你填的數量。",
+    "呼叫 blueBundlesV1Supply：它從 Safe 拉走這筆代幣，存進 Morpho Blue，記在呼叫者（也就是 Safe）名下。這個函式沒有收款人參數，所以部位只會記在 Safe 名下。"
+  ],
+  "judgments": [
+    {
+      "title": "BlueBundlesV1 很新。",
+      "text": "2026-08-25 才部署，上線約 2.5 個月。它的稽核有兩份（Blackthorn 和 Trustsec），日期都是部署當天。AI 沒讀這兩份 PDF，所以它們的發現和涵蓋的 commit 都沒查。它的程式碼指紋會擋下任何程式碼變更。",
+      "sources": ["https://github.com/morpho-org/bundles/tree/3537d0039bdc3ce7af1bbd3c02eb96a04e6e2c6b/audits"]
+    },
+    {
+      "title": "oracle 把 cbBTC 當成 BTC、把 USDC 當成 1 美元。",
+      "text": "它只讀 Chainlink 的 BTC/USD（0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c，偏差 0.5%，心跳一小時）。cbBTC 對 BTC 脫鉤，或 USDC 脫鉤，價格都不會反映，這個風險會變成存款人承擔的壞帳。這個 market 到目前沒有壞帳。",
+      "sources": ["https://reference-data-directory.vercel.app/feeds-mainnet.json"]
+    },
+    {
+      "title": "有四個合約找不到官方寫的部署者。",
+      "text": "沒有官方來源寫出 Morpho Blue、利率模型、BlueBundlesV1 或 cbBTC 的部署者。這四個的建立者檢查，只靠官方頁面列出它們的地址。"
+    },
+    {
+      "title": "AI 那台電腦讀不到 coinbase.com。",
+      "text": "www.coinbase.com 解析到 182.173.0.181，並給出自簽憑證，所以沒讀到 Coinbase 自己的 cbBTC 頁面。TLS 檢查保持開啟，沒有從那台主機讀任何東西。可能要檢查網路。"
+    }
+  ],
+  "entries": {
+    "usdc": {
+      "role": "你付出去的代幣：這個 market 的借出代幣。"
+    },
+    "morpho-blue": {
+      "role": "存款最後記帳的地方；簽名時從這裡讀 Safe 的部位。",
+      "notes": [
+        { "text": "Morpho 官方的合約地址頁把它列為「Morpho」。", "sources": ["https://docs.morpho.org/developers/contracts/addresses/"] },
+        { "text": "不可升級。它的管理者只能開放新的利率模型和 LLTV、設定手續費和手續費收款人。" },
+        { "text": "Blockscout 的事件記錄：最後一次 SetOwner 在區塊 18949595，交給 Safe 0xcBa28b38103307Ec8dA98377ffF9816C164f9AFa，現在仍是管理者。SetFee 和 SetFeeRecipient 從來沒執行過。Morpho API 顯示這個 market 的手續費是 0。" },
+        { "text": "稽核報告。", "sources": ["https://github.com/morpho-org/morpho-blue/tree/430bd61d8ab9238c1bde327eec2bfcd3f494fe9d/audits"] }
+      ]
+    },
+    "blue-bundles-v1": {
+      "role": "你授權的對象，也是第二個呼叫的對象。",
+      "notes": [
+        { "text": "Morpho 官方的合約地址頁把它列為「BlueBundlesV1」。", "sources": ["https://docs.morpho.org/developers/contracts/addresses/"] },
+        { "text": "Morpho 的 bundles 頁面說，Morpho 介面和 Morpho SDK（v6 起）的每個操作都經過 Bundles。SDK 做 Blue 存款時，授權對象和呼叫對象都是 bundles.blueBundlesV1（common.ts 第 126 行和第 304 行）。", "sources": ["https://docs.morpho.org/developers/contracts/bundles/", "https://github.com/morpho-org/sdks/blob/d336594e9669ef405c964f507224617ce064cdb1/packages/morpho-sdk/src/actions/blue/common.ts"] },
+        { "text": "部署它的發送者 0x3448F8C366047d76b6b58bb4ef225E4454B1b5ff，跟部署 VaultBundlesV1 的是同一個。" },
+        { "text": "BlueBundlesV1 也會給 Morpho Blue 無上限的借出代幣授權。那是 BlueBundlesV1 自己的授權，不是 Safe 的。" },
+        { "text": "錢包的 ERC-7730 描述檔對 blueBundlesV1Supply 顯示 assets、抵押品代幣、LLTV、推薦費、推薦費收款人和截止時間；它隱藏 marketParams.oracle（visible: never），沒有替 marketParams.loanToken 和 marketParams.irm 設欄位，也隱藏 permit。用它的錢包不會顯示是哪個 oracle 定價，兩個代幣和 LLTV 都相同、只差在 oracle 的 market，在那裡看起來一樣。模板綁住全部五個參數，card 也列出每一個的完整地址。" }
+      ]
+    },
+    "adaptive-curve-irm": {
+      "role": "利率模型；market 的五個參數之一。",
+      "notes": [
+        { "text": "Morpho 官方的合約地址頁把它列為「Adaptive Curve Irm」。", "sources": ["https://docs.morpho.org/developers/contracts/addresses/"] },
+        { "text": "稽核報告。", "sources": ["https://github.com/morpho-org/morpho-blue-irm/tree/58ce91fd04840372443a7080a5b32067b17b3d60/audits"] }
+      ]
+    },
+    "morpho-oracle-cbbtc-usdc-86": {
+      "role": "決定 cbBTC 值多少 USDC；market 的五個參數之一。",
+      "notes": [
+        { "text": "沒有不跑 JavaScript 就能讀到的頁面列出它。它在 registry 的來源是這個 market 的 app 頁面，地址要跑 JavaScript 才出現，所以來源檢查是 FINDING。registry 的測試把這一個列為例外，並要求它保持 FINDING。" },
+        { "text": "改用兩件事綁住它：一是 market id。你用 app 連結裡的 id 指定 market，而 id 是五個參數（oracle 也在內）的 keccak256。二是它的建立者：它由 MorphoChainlinkOracleV2 factory 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 建立，Morpho 官方地址頁把這個 factory 列為「Morpho ChainlinkOracleV2 Factory」。", "sources": ["https://docs.morpho.org/developers/contracts/addresses/"] },
+        { "text": "稽核報告。", "sources": ["https://github.com/morpho-org/morpho-blue-oracles/tree/f2f490cfd37f3feb06a5ccdc1b6ee2f789d561fa/audits"] }
+      ]
+    },
+    "cbbtc": {
+      "role": "這個 market 的抵押品代幣。",
+      "notes": [
+        { "text": "來源是 Coinbase 自己的 agentkit repo，固定在預設分支上的一個 commit，檔案裡 ethereum-mainnet 的 CBBTC 就是這個地址。CoinGecko 在這個地址列的是 coinbase-wrapped-btc。DefiLlama 沒有 cbBTC 這個協議，它的 coinbase 項目也沒寫 GitHub 組織，所以來源比對是 FINDING。" },
+        { "text": "跟 USDC 一樣，是可升級、有黑名單功能的 Coinbase 代幣。AI 沒找到可靠的脫鉤或事故報告。" }
+      ]
+    }
+  },
+  "fields": {
+    "1.to": "借出代幣",
+    "1.approve.spender": "誰可以拉走代幣",
+    "1.approve.value": "可以拉走多少",
+    "2.to": "BlueBundlesV1",
+    "2.blueBundlesV1Supply.marketParams.loanToken": "market 的借出代幣",
+    "2.blueBundlesV1Supply.marketParams.collateralToken": "market 的抵押品代幣",
+    "2.blueBundlesV1Supply.marketParams.oracle": "market 的 oracle",
+    "2.blueBundlesV1Supply.marketParams.irm": "market 的利率模型",
+    "2.blueBundlesV1Supply.marketParams.lltv": "market 的 LLTV",
+    "2.blueBundlesV1Supply.assets": "從 Safe 拉走多少",
+    "2.blueBundlesV1Supply.loanTokenPermit.kind": "怎麼拉代幣：0 用 transferFrom，1 用 ERC-2612，2 用 Permit2",
+    "2.blueBundlesV1Supply.loanTokenPermit.data": "permit 簽章",
+    "2.blueBundlesV1Supply.referralFeePct": "從 assets 扣下、送到別處的推薦費比例。要綁死，因為前後比對看不出來：收了推薦費，Safe 還是剛好付出 amount，存款份額還是會增加，只是增加得比較少。",
+    "2.blueBundlesV1Supply.referralFeeRecipient": "推薦費的收款人",
+    "2.blueBundlesV1Supply.deadline": "超過這個時間，呼叫就失敗"
+  },
+  "tests": [
+    { "text": "測試錄了另外兩個 Safe 存進這個 market 的交易：morpho-market-supply（Safe 0xeaeB0B27E39F1220cA6694edc282e634Fc154993，nonce 155，72,159.646110 USDC）和 morpho-market-supply-other-safe（Safe 0xbf87D9244CD8E4d9F49d3b6016F784493b199b36，nonce 200，20,000,000 USDC）。兩筆用它們隱含的 card，在欄位檢查、模擬和鏈上收據三種方式都得到 MATCH。" },
+    { "text": "mutation 檢查把 15 個被綁住的欄位一個一個改掉，每一個都得到 MISMATCH。" },
+    { "text": "第三筆存款 morpho-market-supply-unlimited-approval（第二個 Safe 的 nonce 222）授權了 2^256−1。它在授權那一欄得到 MISMATCH，effects 也把它當成「授權提高了卻沒用完」而擋下。" },
+    { "text": "perturbation 測試改 deadline：加一和減一都沒改變任何結果，改成 0 則交易失敗。每筆抽查到的 Safe 存款，loanTokenPermit.data 都是空的，所以沒有 byte 可以改。" },
+    { "text": "BlueBundlesV1 從區塊 25832676 才存在，所以 12 段區塊裡只有最近兩段有轉帳。Alchemy 和 Etherscan 找到同樣的 528 筆。抽查 40 筆：2 筆來自 2 個 Safe，兩筆都呼叫 BlueBundlesV1 的其他函式；8 筆來自 8 個 EOA，全部是模板裡 blueBundlesV1Supply 的形狀，推薦費都是 0、收款人都是零地址、market 的參數彼此一致；其中 7 筆用 permit（kind 1 或 2）代替授權，因為 EOA 能在同一筆交易裡簽 permit，而 Safe 是用授權。這 8 筆存進 7 個不同的 USDC market。另外 30 筆呼叫 BlueBundlesV1 的其他函式（借款、還款、提領）。" },
+    { "text": "為了找測試交易，AI 另外把 BlueBundlesV1 上線以來全部以 12,000 個區塊為一段搜過一遍。這次搜尋只是探索，沒有錄下來。它找到 7 個 Safe 的 13 筆符合模板形狀的交易，其中 5 筆存進這個 market。Safe 的不符合交易分成三類：沒有授權（Safe 只呼叫 blueBundlesV1Supply，用之前給的授權；跟 morpho/vault-bundles-deposit 一樣，模板要求同一筆交易裡授權，讓長期授權不進入簽名的形狀，所以這種形狀不收）；BlueBundlesV1 的其他函式（借款 0xb1268765、還款和提領 0x827d6bd8、遷移 0xc0229fe8，有時加上 Morpho 的 setAuthorization）；delegatecall 到不是官方 MultiSend 的合約。" },
+    { "text": "Morpho API 顯示這個 market 約有 3.496 億 USDC 存款、3.043 億借款（使用率 87%），沒有壞帳，存款來自 Steakhouse、Gauntlet、Spark 等策展人的 vault。它是主網九個 USDC/cbBTC market 裡最大的一個。" }
+  ],
+  "details": [
+    {
+      "title": "這個模板帶來的程式變更",
+      "notes": [
+        { "text": "card 上可以選 market。Morpho Blue 的 market 是五個參數，不是一個合約。registry/markets.json 替每個 market 取名字；market 的每個參數都是 registry 項目，market id 不是那五個參數的雜湊就拒絕。card 的 market 欄位列出每個參數的完整地址。" },
+        { "text": "view effects。存款不會有代幣轉進 Safe，Safe 的部位記在 Morpho Blue 裡面，餘額看不出來。模板要程式在交易前後各呼叫一次 Morpho Blue 的 position(id, Safe)：supplyShares 要增加，borrowShares 和 collateral 要不變。" },
+        { "text": "past-txs --to：找轉進某個地址的轉帳，這裡是轉進 BlueBundlesV1 的 USDC。" },
+        { "text": "Morpho Blue、oracle 和利率模型現在都是 registry 項目，所以每次簽名都會比對它們的程式碼指紋；之前的 Morpho 模板都沒有比對它們。" }
+      ]
+    },
+    {
+      "title": "card 為什麼只問兩件事",
+      "notes": [
+        { "text": "card 問的跟 Morpho app 的 market 頁面一樣：哪個 market、存多少。它沒有滑價限制，因為 blueBundlesV1Supply 沒有這個參數，而且 Morpho Blue 的存款份額價格只會隨利息上升、隨壞帳下降，沒有人能在同一個區塊裡用捐贈把它拉高；vault 才會這樣。" }
+      ]
+    },
+    {
+      "title": "Morpho API 的查詢和回答",
+      "notes": [
+        { "text": "查詢 https://api.morpho.org/graphql：markets(where: { uniqueKey_in: [\"0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64\"], chainId_in: [1] }) { items { marketId lltv morphoBlue { address } loanAsset { address } collateralAsset { address } oracle { address type } irmAddress creationBlockNumber listed warnings { type } badDebt { usd } realizedBadDebt { usd } } }" },
+        { "text": "回答：Morpho Blue 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb；借出代幣 USDC 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48；抵押品 cbBTC 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf；oracle 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a，類型 ChainlinkOracleV2；利率模型 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC；lltv 860000000000000000，建立於區塊 20679422，listed，沒有警告，壞帳 0，已實現壞帳 0。程式會用 market id 檢查這五個參數。" }
+      ]
+    },
+    {
+      "title": "部署紀錄（AI 從 Blockscout 的 API 讀，因為 Etherscan 擋自動讀取）",
+      "notes": [
+        { "text": "Morpho Blue 和利率模型：verified 名稱 Morpho 和 AdaptiveCurveIrm。兩個都在區塊 18883124 經由 CREATE2 deployer 0x4e59b44847b379578588920cA78FbF26c0B4956C 建立，發送者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，交易 0xba6a2e752ff5caee49cd4f69825ca00e47abc827ae51e7bda5c3ad56eae053b3 和 0xfb791de3516cb1091cc84f7d131333107ff236bff2012480d00dc889ac6ec22c。" },
+        { "text": "BlueBundlesV1：verified 名稱 BlueBundlesV1。區塊 25832676（2026-08-25）由 0x84aBfeC38AA800F86FF66599Ea508951b94C3BcC 在交易 0xa9f20a7d1bea97c3eb0370e9ca0953b7bb0b4a291db382875253372c8cd1e0c4 建立，發送者 0x3448F8C366047d76b6b58bb4ef225E4454B1b5ff。" },
+        { "text": "oracle：由上面的 factory 在交易 0x11b31d6e2008ad4176f062480a9c4aa53dc4d74efe471aea92040bf4a2d62e71 建立，區塊 20678797。" },
+        { "text": "cbBTC：verified 名稱 FiatTokenProxy，實作 FiatTokenV2_1 在 0x7458bfDC30034EB860B265E6068121D18Fa5Aa72。區塊 20570548 由 0x00000000001c3dC9A681A014e2732bF1419aFAec 在交易 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753 建立。" }
+      ]
+    },
+    {
+      "title": "協議健康",
+      "notes": [
+        { "text": "DefiLlama 的 hacks API 列出一筆 Morpho 相關事件：「LeadBlock's Morpho Blue Market」，2024-10-14，25 萬美元，是另一個 market 的 oracle 設定錯誤。", "sources": ["https://api.llama.fi/hacks"] },
+        { "text": "2025-04-10 Morpho app 的前端 SDK 改動，把授權送給 Bundler3 而不是它的 adapter。一個白帽搶先處理了漏洞，沒有資金損失，Morpho 說它的合約沒有受影響。", "sources": ["https://morpho.org/blog/morpho-app-incident-april-10-2025/"] }
+      ]
+    }
+  ]
+}
