@@ -281,6 +281,7 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
     /^[a-z0-9-]+\/[a-z0-9-]+$/.test(query.template) &&
     address(query.token) &&
     (query.from === undefined || address(query.from)) &&
+    (query.to === undefined || address(query.to)) &&
     (ANCHOR_KINDS as readonly string[]).includes(query.anchor) &&
     block(query.fromBlock) &&
     block(query.toBlock) &&
@@ -300,7 +301,12 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
   const run = await pastTxs(
     {
       template: loadTemplate(repoRoot, query.template, registry),
-      anchor: { token: query.token as Address, kind: query.anchor as AnchorKind, ...(query.from === undefined ? {} : { from: query.from as Address }) },
+      anchor: {
+        token: query.token as Address,
+        kind: query.anchor as AnchorKind,
+        ...(query.from === undefined ? {} : { from: query.from as Address }),
+        ...(query.to === undefined ? {} : { to: query.to as Address }),
+      },
       sampling:
         query.fromBlock === undefined || query.toBlock === undefined ? DEFAULT_SPREAD : { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } },
     },
@@ -535,7 +541,7 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined):
   return `${name} PROVEN | ${proxy} | ${contract}, solc ${code(proof.compiler)} | ${code(proof.codeHash)} | ${pinVerdict(entry, proof)} | ${masked} | ${proof.block.number} |`;
 }
 
-const COMMAND_FLAGS = ['token', 'anchor', 'from', 'fromBlock', 'toBlock', 'maxTxs'] as const;
+const COMMAND_FLAGS = ['token', 'anchor', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
 
 function pastTxsCommand({ query, file }: PastTxsSummary): string {
   const flag = (key: (typeof COMMAND_FLAGS)[number]) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;

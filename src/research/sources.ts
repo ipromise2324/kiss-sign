@@ -17,8 +17,18 @@ import type { Address, Hex } from '../safe/types.ts';
 export type AnchorKind = 'mint' | 'burn' | 'any';
 export const ANCHOR_KINDS: readonly AnchorKind[] = ['mint', 'burn', 'any'];
 
-/** `from`, with `any`, keeps only transfers out of that address, such as a rewards distributor paying a claim. */
-export type Anchor = { readonly token: Address; readonly kind: AnchorKind; readonly fromBlock: bigint; readonly toBlock: bigint; readonly from?: Address };
+/**
+ * With `any`, `from` keeps only transfers out of that address, such as a rewards distributor paying a claim, and `to`
+ * only transfers into one, such as Morpho Blue receiving a market's loan token on a supply.
+ */
+export type Anchor = {
+  readonly token: Address;
+  readonly kind: AnchorKind;
+  readonly fromBlock: bigint;
+  readonly toBlock: bigint;
+  readonly from?: Address;
+  readonly to?: Address;
+};
 
 export const SOURCES = ['alchemy', 'etherscan'] as const;
 export type SourceName = (typeof SOURCES)[number];
@@ -77,6 +87,7 @@ async function searchAlchemy(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     ...(anchor.kind === 'mint' ? { fromAddress: ZERO } : {}),
     ...(anchor.kind === 'burn' ? { toAddress: ZERO } : {}),
     ...(anchor.from !== undefined ? { fromAddress: anchor.from } : {}),
+    ...(anchor.to !== undefined ? { toAddress: anchor.to } : {}),
   };
   const answer = await ask({ source: 'alchemy', params: base });
   if (!isRecord(answer) || !Array.isArray(answer.transfers)) throw new ResearchError('alchemy sent no transfer list');
@@ -99,6 +110,8 @@ async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     ...(anchor.kind === 'mint' ? { topic0_1_opr: 'and', topic1: ZERO_WORD } : {}),
     ...(anchor.kind === 'burn' ? { topic0_2_opr: 'and', topic2: ZERO_WORD } : {}),
     ...(anchor.from !== undefined ? { topic0_1_opr: 'and', topic1: `0x${'00'.repeat(12)}${anchor.from.slice(2)}` } : {}),
+    ...(anchor.to !== undefined ? { topic0_2_opr: 'and', topic2: `0x${'00'.repeat(12)}${anchor.to.slice(2)}` } : {}),
+    ...(anchor.from !== undefined && anchor.to !== undefined ? { topic1_2_opr: 'and' } : {}),
     offset: String(PAGE),
   };
   const answer = await ask({ source: 'etherscan', query: { ...base, page: '1' } });

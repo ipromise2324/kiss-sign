@@ -9,8 +9,8 @@ import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs
 import type { Sampling } from '../src/research/past-txs.ts';
 import { scrubRecording } from '../src/research/recording.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
-import { replayAsk } from '../src/research/sources.ts';
-import type { AnchorKind, SourceExchange, SourceRequest } from '../src/research/sources.ts';
+import { replayAsk, searchBoth } from '../src/research/sources.ts';
+import type { Anchor, AnchorKind, SourceExchange, SourceRequest } from '../src/research/sources.ts';
 import type { Address } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
@@ -201,4 +201,66 @@ test('an anchor with a sender asks both sources only for transfers out of it, an
   const { from, ...unfiltered } = claims.query;
   assert.ok(from !== undefined);
   await assert.rejects(report({ recorded: { ...claims, query: unfiltered } }), /request not recorded/);
+});
+
+const LOAN = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address;
+const LENDING = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' as Address;
+const DISTRIBUTOR = '0x330eefa8a787552dc5cad3c3ca644844b1e61ddb' as Address;
+
+/** The requests a search sends for `anchor`, each answered as finding nothing. */
+async function requestsFor(anchor: Omit<Anchor, 'token' | 'kind' | 'fromBlock' | 'toBlock'>): Promise<SourceRequest[]> {
+  const sent: SourceRequest[] = [];
+  await searchBoth({ token: LOAN, kind: 'any', fromBlock: 10n, toBlock: 20n, ...anchor }, async (request) => {
+    sent.push(request);
+    return request.source === 'alchemy' ? { transfers: [] } : { status: '0', message: 'No records found', result: [] };
+  });
+  return sent;
+}
+
+const word = (address: Address): string => `0x${'00'.repeat(12)}${address.slice(2)}`;
+const alchemyBase = { fromBlock: '0xa', toBlock: '0x14', contractAddresses: [LOAN], category: ['erc20'], excludeZeroValue: false, withMetadata: false, order: 'asc', maxCount: '0x3e8' };
+const etherscanBase = { chainid: '1', module: 'logs', action: 'getLogs', address: LOAN, fromBlock: '10', toBlock: '20', topic0: '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' };
+
+test('--to searches transfers into the address: toAddress on Alchemy, the second topic on Etherscan', async () => {
+  assert.deepEqual(await requestsFor({ to: LENDING }), [
+    { source: 'alchemy', params: { ...alchemyBase, toAddress: LENDING } },
+    { source: 'etherscan', query: { ...etherscanBase, topic0_2_opr: 'and', topic2: word(LENDING), offset: '1000', page: '1' } },
+  ]);
+});
+
+test('--from with --to searches transfers from one address into the other, every topic joined by and', async () => {
+  assert.deepEqual(await requestsFor({ from: DISTRIBUTOR, to: LENDING }), [
+    { source: 'alchemy', params: { ...alchemyBase, fromAddress: DISTRIBUTOR, toAddress: LENDING } },
+    {
+      source: 'etherscan',
+      query: { ...etherscanBase, topic0_1_opr: 'and', topic1: word(DISTRIBUTOR), topic0_2_opr: 'and', topic2: word(LENDING), topic1_2_opr: 'and', offset: '1000', page: '1' },
+    },
+  ]);
+});
+
+test('--from alone sends the query it always sent, so its recordings still replay', async () => {
+  assert.deepEqual(
+    (await requestsFor({ from: DISTRIBUTOR })).map((r) => JSON.stringify(r)),
+    [
+      JSON.stringify({ source: 'alchemy', params: { ...alchemyBase, fromAddress: DISTRIBUTOR } }),
+      JSON.stringify({ source: 'etherscan', query: { ...etherscanBase, topic0_1_opr: 'and', topic1: word(DISTRIBUTOR), offset: '1000', page: '1' } }),
+    ],
+  );
+});
+
+test('the report names where the anchor transfers move', async () => {
+  const template = loadTemplate(ROOT, 'erc20/transfer', registry);
+  const run = (anchor: Omit<Anchor, 'token' | 'kind' | 'fromBlock' | 'toBlock'>) =>
+    pastTxs(
+      { template, anchor: { token: LOAN, kind: 'any', ...anchor }, sampling: { kind: 'range', range: { fromBlock: 10n, toBlock: 20n } } },
+      { ask: async (r) => (r.source === 'alchemy' ? { transfers: [] } : { status: '0', message: 'No records found' }), reader: replayReader([]), registry, exclude: undefined, maxTxs: 12 },
+    );
+  assert.match(renderPastTxs(await run({ to: LENDING }), registry), /^anchor: Transfer of usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 moved into 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb$/m);
+  assert.match(renderPastTxs(await run({ from: DISTRIBUTOR, to: LENDING }), registry), /moved out of morpho-urd into 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb$/m);
+});
+
+test('--to goes with --anchor any only', () => {
+  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc', '--anchor', 'mint', '--to', 'bundler3'], { encoding: 'utf8' });
+  assert.equal(run.status, 64);
+  assert.match(run.stderr, /--to goes with --anchor any/);
 });

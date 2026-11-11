@@ -10,6 +10,7 @@ export type PastTxsRecording = {
     readonly token: string;
     readonly anchor: string;
     readonly from?: string;
+    readonly to?: string;
     readonly fromBlock?: string;
     readonly toBlock?: string;
     readonly maxTxs: number;
