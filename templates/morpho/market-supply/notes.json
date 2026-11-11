@@ -35,7 +35,7 @@
   "reviews": {
     "morpho-oracle-cbbtc-usdc-86/source.page": {
       "status": "confirmed",
-      "text": "AI 用瀏覽器打開頁面，頁面顯示的 oracle 地址就是這個：「Oracle contract」旁邊是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a（畫面縮寫成 0xA6D6…182a），連到 Etherscan 的也是它。另外，Morpho API 對這個 market id 回答的 oracle 也是它；market id 包含 oracle 在內的五個參數，程式每次都重算。",
+      "text": "AI 用瀏覽器打開頁面，頁面顯示的 oracle 地址就是這個：「Oracle contract」旁邊是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a（畫面縮寫成 0xA6D6…182a），連到 Etherscan 的也是它。程式也問了 Morpho 官方 API：用這個 market id 問 marketById，回答的 oracle 就是它（見這張卡的官方 API 一項）；market id 包含 oracle 在內的五個參數，程式每次都重算。",
       "recommendation": "可以接受。想親眼確認，就打開 app 頁面，看 Oracle contract 是不是同一個地址。"
     }
   },
@@ -128,7 +128,7 @@
         }
       ],
       "checks": {
-        "source.page": "這個 app 頁面要跑 JavaScript 才會顯示地址；沒有不跑 JavaScript 就能讀到的頁面列出它。registry 的測試把它列為例外，並要求它保持 FINDING。"
+        "source.page": "這個 app 頁面要跑 JavaScript 才會顯示地址；沒有不跑 JavaScript 就能讀到的頁面列出它。registry 的測試把它列為例外，並要求它保持 FINDING；Morpho 官方 API 另外回答了這個地址。"
       }
     },
     "cbbtc": {

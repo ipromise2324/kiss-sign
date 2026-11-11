@@ -1,7 +1,8 @@
 import { request } from 'node:https';
-import { fallbackLookup } from '../chain/dns.ts';
+import { fallbackLookup, publicHost } from '../chain/dns.ts';
 import { requestText, retried, transientError, transientStatus } from '../chain/https.ts';
 import type { HttpAnswer, NoteUnread } from '../chain/https.ts';
+import type { ApiAnswers } from './api-source.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 
@@ -20,7 +21,8 @@ export type CommitCheck =
   | { readonly kind: 'unknown'; readonly why: string }
   | { readonly kind: 'unread'; readonly why: string };
 
-export type SourcePages = { readonly pages: ReadonlyMap<string, Page>; readonly commits: ReadonlyMap<string, CommitCheck> };
+/** What each page, commit and entry's API answered. An entry whose API request has no answer here was not read. */
+export type SourcePages = { readonly pages: ReadonlyMap<string, Page>; readonly commits: ReadonlyMap<string, CommitCheck>; readonly apis?: ApiAnswers };
 
 export type GitHubSourceRef =
   | { readonly kind: 'pinned'; readonly owner: string; readonly repo: string; readonly commit: string; readonly path: string }
@@ -271,7 +273,8 @@ export async function fetchPage(url: string, get: HttpGet): Promise<Page> {
   try {
     answer = await get(url);
   } catch (error) {
-    return { kind: transientError(error) ? 'unread' : 'failed', why: `${new URL(url).hostname} unreachable` };
+    const refused = (error as { code?: unknown }).code === 'ENOTPUBLIC';
+    return { kind: transientError(error) ? 'unread' : 'failed', why: refused ? (error as Error).message : `${new URL(url).hostname} unreachable` };
   }
   const transient = transientStatus(answer);
   if (transient !== undefined) return { kind: 'unread', why: `${url} answered ${transient}` };
@@ -339,7 +342,7 @@ export async function checkCommit(ref: Extract<GitHubSourceRef, { kind: 'pinned'
   return status === 'behind' || status === 'identical' ? { kind: 'on-default', branch, status } : { kind: 'off-default', branch, status };
 }
 
-export async function gatherSourcePages(sources: readonly string[], get: HttpGet): Promise<SourcePages> {
+export async function gatherSourcePages(sources: readonly string[], get: HttpGet, apis?: ApiAnswers): Promise<SourcePages> {
   const pages = new Map<string, Page>();
   const commits = new Map<string, CommitCheck>();
   const branches = new Map<string, DefaultBranch>();
@@ -352,7 +355,7 @@ export async function gatherSourcePages(sources: readonly string[], get: HttpGet
     const pageUrl = pageUrlOf(source);
     if (!pages.has(pageUrl)) pages.set(pageUrl, await fetchPage(pageUrl, get));
   }
-  return { pages, commits };
+  return { pages, commits, ...(apis === undefined ? {} : { apis }) };
 }
 
 /** `get`, asking again after each pause while it gets no answer, and noting each read that never got one. */
@@ -361,10 +364,12 @@ export const retryingGet =
   (url) =>
     retried(url, () => get(url), (answer) => transientStatus(answer, new URL(url).hostname === 'api.github.com'), note, pausesMs);
 
-/** GitHub's API refuses a request without a user agent. */
+/** GitHub's API refuses a request without a user agent. A host that is not public is refused: the URLs come from the registry. */
 export const httpsGet: HttpGet = (url) => {
   const target = new URL(url);
   if (target.protocol !== 'https:') return Promise.reject(new Error('not https'));
+  const refused = publicHost(target.hostname);
+  if (refused !== undefined) return Promise.reject(Object.assign(new Error(refused), { code: 'ENOTPUBLIC' }));
   return requestText(
     request,
     {
@@ -373,7 +378,7 @@ export const httpsGet: HttpGet = (url) => {
       headers: { 'user-agent': 'kiss-sign', accept: target.hostname === 'api.github.com' ? 'application/vnd.github+json' : 'text/html, application/json, text/plain' },
       servername: target.hostname,
       rejectUnauthorized: true,
-      lookup: fallbackLookup(),
+      lookup: fallbackLookup(undefined, true),
       signal: AbortSignal.timeout(60_000),
     },
     undefined,

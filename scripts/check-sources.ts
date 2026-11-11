@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { loadRegistry } from '../src/registry.ts';
+import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
 import { checkSources, fetchListing, formatResults, listingsFor, trimForRecording } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
@@ -14,7 +15,9 @@ Compares each registry entry's source domain (by the Public Suffix List in vendo
 protocol's website, or its GitHub org with the protocol's orgs, and checks that CoinGecko lists each token's or vault
 share's own coin id at its address. It reads each source page as served, without running its scripts, and looks for
 the address next to the entry's sourceLabel. A GitHub source must name a commit on the repository's default branch, and
-a source URL must not hold the address. It then lists the sites each protocol's sources use. With no names it checks
+a source URL must not hold the address. For an entry with an apiSource it asks the protocol's API, POSTing only the
+JSON body the registry holds, and requires the entry's address at the registry's path in the JSON answer, and compares
+the API's domain with the protocol's website as it does the source's. It then lists the sites each protocol's sources use. With no names it checks
 every entry. Every disagreement prints as FINDING. A read with no answer (no connection, a timeout, a server error or a
 rate limit) is asked again after each pause; one still without an answer prints as UNVERIFIABLE, and --record then
 writes nothing.`;
@@ -35,9 +38,11 @@ if (!(await ensureVendored(['psl']))) process.exit(1);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
 const listings = await listingsFor(entries, loadPublicSuffixList(), (listing) => fetchListing(listing, note));
+const apis = await gatherApiAnswers(entries, retryingSend(httpsApi, note));
 const pages = await gatherSourcePages(
   entries.map((e) => e.source),
   retryingGet(httpsGet, note),
+  apis,
 );
 console.log(formatResults(checkSources(entries, listings, pages)));
 

@@ -3,7 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { replayReader } from '../src/chain/recording.ts';
-import { loadRegistry } from '../src/registry.ts';
+import { REGISTRY_PATH, loadRegistry, marketsText, parseRegistry } from '../src/registry.ts';
 import { checkSources, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourceSiteLine, sourcePagesOf } from '../src/research/listings.ts';
 import { NOTES_FILE, NotesError, notesChanges, parseNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
@@ -12,6 +12,8 @@ import { checkSpans, entriesOf, loadSubject, renderReport, replayInputs, reportR
 import type { Line } from '../src/research/listings.ts';
 import type { DocLink, ReportInputs, ReportRecording } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
+import { apiKey } from '../src/research/api-source.ts';
+import type { ApiAnswer } from '../src/research/api-source.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 
@@ -69,7 +71,7 @@ function cardResults(html: string): Map<string, Shown> {
 function tableRows(markdown: string, heading: string): Map<string, string>[] {
   const start = markdown.indexOf(`${heading}\n`);
   assert.ok(start !== -1, `the Markdown report has ${heading}`);
-  const end = markdown.indexOf('\n## ', start + 1);
+  const end = markdown.indexOf('\n#', start + 1);
   const cells = (line: string) => line.split('|').slice(1, -1).map((cell) => cell.trim());
   const [header, , ...rows] = markdown.slice(start, end === -1 ? undefined : end).split('\n').filter((line) => line.startsWith('|'));
   const names = cells(header as string);
@@ -90,6 +92,7 @@ function sourceKinds(inputs: ReportInputs): { readonly unlisted: Set<string>; re
     echoes: new Set(results.filter(({ lines }) => lines.some((line) => line.check === 'url')).map(({ entry }) => entry.name)),
     unlisted: new Set([
       ...results.flatMap(({ entry, lines }) => (lines.some((line) => line.check === 'defillama' && unlisted(line)) ? [`${entry.name}/source.site`] : [])),
+      ...results.flatMap(({ entry, lines }) => (lines.some((line) => line.check === 'api-site' && unlisted(line)) ? [`${entry.name}/source.api.site`] : [])),
       ...inputs.subject.docs.flatMap((doc) =>
         unlisted(sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings)) ? [`${doc.contract.name}/doc.${doc.fn.selector}.site`] : [],
       ),
@@ -122,6 +125,13 @@ function assertFlagsKept(markdown: string, html: string, inputs: ReportInputs): 
     expected.set(`${entry}/source.coingecko`, row.get('CoinGecko coin') as string);
     expected.set(`${entry}/source.commit`, row.get('GitHub commit') as string);
     expected.set(`${entry}/${echoes.has(entry) ? 'source.url' : 'source.page'}`, row.get('Address on page') as string);
+  }
+  if (markdown.includes('### Official APIs\n')) {
+    for (const row of tableRows(markdown, '### Official APIs')) {
+      const entry = name(row.get('Entry') as string);
+      expected.set(`${entry}/source.api`, row.get('Address in answer') as string);
+      expected.set(`${entry}/source.api.site`, row.get('API site') as string);
+    }
   }
   const spans = new Map<string, number>();
   for (const row of tableRows(markdown, '## Code pins')) {
@@ -268,7 +278,7 @@ test('every link is a registry source, a docs.json page, a notes.json source or 
   const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
   const notes = loadNotes(ROOT, subject, registry)!;
   const allowed = new Set<string>([
-    ...entriesOf(subject, registry).map((e) => e.source),
+    ...entriesOf(subject, registry).flatMap((e) => [e.source, ...(e.apiSource === undefined ? [] : [e.apiSource.url])]),
     ...subject.docs.map((d) => d.url),
     ...[...notes.judgments, ...notes.overview, ...notes.tests, ...[...notes.entries.values()].flatMap((e) => e.notes), ...notes.details.flatMap((d) => d.notes)].flatMap((n) => n.sources),
   ]);
@@ -324,13 +334,54 @@ test('a real disagreement or a page the program cannot read is for the signer to
   assert.match(section(unread, '整體安全嗎'), /<code>morpho-blue<\/code>：<span class="sym warn">!<\/span> 程式碼從哪個區塊開始沒能確認（沒有檢查結果）/);
 });
 
+test('the official API is a result of its own: it never moves the page result, and its site never vouches for the source', async () => {
+  const inputs = await quickInputs();
+  const ORACLE = 'morpho-oracle-cbbtc-usdc-86';
+  const api = registry.entries.get(ORACLE)!.apiSource!;
+  const pageReview = { [`${ORACLE}/source.page`]: { status: 'confirmed', text: 'x', recommendation: 'y' } };
+  const shownWith = (answer: ApiAnswer, reviews: Record<string, unknown>) =>
+    cardResults(renderHtml({ ...inputs, pages: { ...inputs.pages, apis: new Map([[apiKey(api), answer]]) } }, parseNotes({ ...committedNotes, reviews: { ...pageReview, ...reviews } }, keys), TITLE, []));
+  const review = { [`${ORACLE}/source.api`]: { status: 'concern', text: 'x', recommendation: 'y' } };
+
+  const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
+  const committed = cardResults(html);
+  assert.deepEqual(committed.get(`${ORACLE}/source.api`), { mark: 'ok', flag: undefined });
+  assert.deepEqual(committed.get(`${ORACLE}/source.api.site`), { mark: 'ok', flag: undefined });
+  assert.deepEqual(committed.get(`${ORACLE}/source.page`), { mark: 'warn', flag: 'FINDING' }, 'an agreeing API does not excuse a page the program could not read');
+  assert.match(cards(html).get(ORACLE) ?? '', /<span class="mark ok">✓<\/span><div>官方 API 回答的地址就是這個：<a href="https:\/\/api\.morpho\.org\/graphql">/);
+
+  const other = shownWith({ kind: 'answered', json: { data: { marketById: { oracle: { address: '0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0' } } } } }, review);
+  assert.deepEqual(other.get(`${ORACLE}/source.api`), { mark: 'warn', flag: 'FINDING' }, 'another address in the answer is for the signer');
+  const missing = shownWith({ kind: 'answered', json: { errors: [] } }, review);
+  assert.deepEqual(missing.get(`${ORACLE}/source.api`), { mark: 'warn', flag: 'FINDING' }, 'nothing at the path is for the signer');
+  const unread = shownWith({ kind: 'unread', why: 'api.morpho.org answered HTTP 503' }, review);
+  assert.deepEqual(unread.get(`${ORACLE}/source.api`), { mark: 'warn', flag: 'UNVERIFIABLE' }, 'no answer is UNVERIFIABLE, never a FINDING');
+
+  // A GitHub source of a protocol DefiLlama names no organization for has nothing to compare; an API on its website,
+  // which answers for any market anyone created, does not make up for that.
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')) as Record<string, Record<string, unknown>>;
+  raw[ORACLE]!.source = `https://github.com/morpho-org/morpho-blue-oracles/blob/${'0'.repeat(40)}/README.md`;
+  const moved = parseRegistry(raw, JSON.parse(marketsText(ROOT)!));
+  const movedSubject = loadSubject(ROOT, moved, { template: ID });
+  const siteOf = async (answer: ApiAnswer, open: readonly string[]) => {
+    const reviews = Object.fromEntries(['source.page', 'source.commit', ...open].map((id) => [`${ORACLE}/${id}`, { status: 'concern', text: 'x', recommendation: 'y' }]));
+    const quick = await quickInputs();
+    const notes = { ...committedNotes, reviews, entries: {} };
+    const rendered = renderHtml({ ...quick, subject: movedSubject, registry: moved, pages: { ...quick.pages, apis: new Map([[apiKey(api), answer]]) } }, parseNotes(notes, notesKeys(movedSubject as never, moved)), TITLE, []);
+    return cardResults(rendered).get(`${ORACLE}/source.site`)?.mark;
+  };
+  assert.equal(await siteOf({ kind: 'answered', json: { data: { marketById: { oracle: { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a' } } } } }, ['source.site']), 'warn', 'an API agreeing on the protocol\'s website vouches for nothing');
+  assert.equal(await siteOf({ kind: 'unread', why: 'x' }, ['source.api', 'source.site']), 'warn', 'an API that did not answer this address vouches for nothing');
+  assert.equal(await siteOf({ kind: 'answered', json: { data: null } }, ['source.api', 'source.site']), 'warn');
+});
+
 test('a site DefiLlama lists nothing for is – only while another result vouches for the source; alone it is for the signer', async () => {
   const inputs = await quickInputs();
   const slug = registry.entries.get('morpho-blue')!.defillama!;
   const protocols = new Map([...inputs.listings.protocols].map(([key, listed]) => [key, key === slug ? listed.map((p) => ({ ...p, url: undefined, github: [] })) : listed]));
   const changed = { ...inputs, listings: { ...inputs.listings, protocols } };
   const [bundles] = subject.docs.filter((doc) => doc.contract.name === 'blue-bundles-v1');
-  const alone = ['morpho-blue/source.site', 'blue-bundles-v1/source.site', `blue-bundles-v1/doc.${bundles!.fn.selector}.site`, 'adaptive-curve-irm/source.site', 'morpho-oracle-cbbtc-usdc-86/source.site'];
+  const alone = ['morpho-blue/source.site', 'blue-bundles-v1/source.site', `blue-bundles-v1/doc.${bundles!.fn.selector}.site`, 'adaptive-curve-irm/source.site', 'morpho-oracle-cbbtc-usdc-86/source.site', 'morpho-oracle-cbbtc-usdc-86/source.api.site'];
   const review = { status: 'concern', text: 'x', recommendation: 'y' };
   const reviews = { ...(committedNotes.reviews as Record<string, unknown>), ...Object.fromEntries(alone.map((id) => [id, review])) };
   const html = renderHtml(changed, parseNotes({ ...committedNotes, reviews }, keys), TITLE, []);

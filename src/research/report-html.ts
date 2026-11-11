@@ -269,7 +269,15 @@ function rolesOf(entry: RegistryEntry, subject: Extract<Subject, { kind: 'templa
   return roles.filter((role, i) => roles.findIndex((r) => r.text === role.text) === i);
 }
 
-const SOURCE_KEYS: Readonly<Record<Line['check'], string>> = { defillama: 'source.site', coingecko: 'source.coingecko', github: 'source.commit', url: 'source.url', page: 'source.page' };
+const SOURCE_KEYS: Readonly<Record<Line['check'], string>> = {
+  defillama: 'source.site',
+  coingecko: 'source.coingecko',
+  github: 'source.commit',
+  url: 'source.url',
+  page: 'source.page',
+  api: 'source.api',
+  'api-site': 'source.api.site',
+};
 
 /** The site check of a page, against the DefiLlama protocol `slug`: `what` names the page, such as 來源. */
 function siteCheck(key: string, what: Html, url: URL, slug: string | undefined, line: Line, command?: Html): Check {
@@ -304,10 +312,11 @@ function sourceChecks(entry: RegistryEntry, lines: readonly Line[]): Check[] {
   const command = h`<code>pnpm check-sources ${entry.name}</code> 會印出比對的內容。`;
   const source = link(entry.source, github ? 'GitHub 上的來源檔案' : url.hostname);
   const sought = h`來源頁面 ${link(entry.source)}；要找的 ${entry.kind} 地址是 ${mono(checksumAddress(entry.address))}。`;
-  const order: readonly Line['check'][] = ['page', 'url', 'defillama', 'github', 'coingecko'];
+  const order: readonly Line['check'][] = ['page', 'url', 'api', 'defillama', 'api-site', 'github', 'coingecko'];
+  const api = entry.apiSource === undefined ? h`` : link(entry.apiSource.url);
   return [...lines].sort((a, b) => order.indexOf(a.check) - order.indexOf(b.check)).map((line): Check => {
     const key = SOURCE_KEYS[line.check];
-    if (line.kind === 'unverifiable') return unread(key, line.check === 'github' ? h`來源檔案 commit 的 GitHub 比對` : h`來源頁面`);
+    if (line.kind === 'unverifiable') return unread(key, line.check === 'github' ? h`來源檔案 commit 的 GitHub 比對` : line.check === 'api' ? h`官方 API` : h`來源頁面`);
     const ok = line.kind === 'agrees';
     switch (line.check) {
       case 'page':
@@ -323,6 +332,16 @@ function sourceChecks(entry: RegistryEntry, lines: readonly Line[]): Check[] {
         return ok
           ? pass(key, h`來源檔案固定在一個 commit，而且這個 commit 在 repo 的預設分支上`)
           : act(key, h`來源檔案的 commit 沒能確認在預設分支上`, h`可能沒固定在 commit、commit 不在預設分支，或 GitHub 讀不到。${command}`);
+      case 'api':
+        if (ok) return pass(key, h`官方 API 回答的地址就是這個：${api}`);
+        if (line.cause === 'not-fetched') return act(key, h`程式沒讀到官方 API 的回答`, h`官方 API ${api}。${command}`);
+        return act(key, h`官方 API 的回答跟這個地址對不上`, h`可能回答的是別的地址、回答裡沒有 registry 寫的欄位，或 registry 寫的查詢不對。官方 API ${api}。${command}`);
+      case 'api-site': {
+        // Never vouches: an API on the protocol's site answers for whatever it indexes or lets anyone post, such as a
+        // market anyone created, so it cannot show the source belongs to the protocol.
+        const { vouches: _, ...site } = siteCheck(key, h`官方 API `, new URL(entry.apiSource?.url ?? entry.source), entry.defillama, line, command);
+        return site;
+      }
       case 'coingecko':
         return ok
           ? { ...pass(key, h`CoinGecko 在這個地址列的就是 registry 寫的幣 ${c(entry.coingecko ?? '')}`), vouches: true }
