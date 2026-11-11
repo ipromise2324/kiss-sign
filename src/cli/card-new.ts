@@ -41,12 +41,19 @@ function choicesFor(field: Exclude<ChosenField, { kind: 'market' }>, { registry,
   }
 }
 
-/** A name the signer can pick, and the lines that show what it names. */
-type Option = { readonly name: string; readonly lines: readonly string[] };
+/** A name the signer can pick, the address or market id listed with it, and the lines that show what it names. */
+type Option = { readonly name: string; readonly id: Hex | Address; readonly lines: readonly string[] };
 
 function optionsFor(field: ChosenField, sources: Sources): readonly Option[] {
-  if (field.kind === 'market') return [...sources.registry.markets.values()].map((market) => ({ name: market.name, lines: marketLines(market) }));
-  return choicesFor(field, sources).map((c) => ({ name: c.name, lines: [`${c.name} ${checksumAddress(c.address)} (${c.from})`] }));
+  if (field.kind === 'market') return [...sources.registry.markets.values()].map((market) => ({ name: market.name, id: market.id, lines: marketLines(market) }));
+  return choicesFor(field, sources).map((c) => ({ name: c.name, id: c.address, lines: [`${c.name} ${checksumAddress(c.address)} (${c.from})`] }));
+}
+
+/** The choices a typed answer names: by its listed number, its exact name, or its full address or market id in any case. */
+function picked(typed: string, choices: readonly Option[]): readonly Option[] {
+  if (/^[1-9][0-9]{0,5}$/.test(typed)) return choices.slice(Number(typed) - 1, Number(typed));
+  if (/^0x[0-9a-f]+$/i.test(typed)) return choices.filter((c) => c.id.toLowerCase() === typed.toLowerCase());
+  return choices.filter((c) => c.name === typed);
 }
 
 /** What an amount counts: native ETH, a registry contract whose decimals() the chain answers, or a token outside the registry. */
@@ -165,9 +172,12 @@ async function fill(template: Template, ctx: Context): Promise<CardOperation> {
       ctx.io.stdout(`  ${i + 1}. ${first}\n`);
       for (const line of rest) ctx.io.stdout(`       ${line}\n`);
     }
-    const typed = await answer(ctx.ask, `${name} [1-${choices.length}]: `);
-    const choice = /^[1-9][0-9]{0,5}$/.test(typed) ? choices[Number(typed) - 1] : undefined;
-    if (choice === undefined) throw new CardError(`${name}: ${JSON.stringify(typed.slice(0, 80))} is not a number from 1 to ${choices.length}`);
+    const range = `1-${choices.length}`;
+    const typed = await answer(ctx.ask, `${name}: type its number (${range}): `);
+    const [choice, ...others] = picked(typed, choices);
+    const shown = JSON.stringify(typed.slice(0, 80));
+    if (choice === undefined) throw new CardError(`${name}: ${shown} is none of the listed choices; type the number in front of the one you mean (${range})`);
+    if (others.length > 0) throw new CardError(`${name}: ${shown} matches more than one listed choice; type the number in front of the one you mean (${range})`);
     values[name] = choice.name;
   }
   for (const [name, field] of fields.filter(isTyped)) values[name] = await typedValue(name, field, values, ctx);
