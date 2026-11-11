@@ -16,6 +16,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fetchOriginMain, fileAt, localOriginMain } from '../verify/self-check.ts';
+import type { GithubRepo } from '../verify/self-check.ts';
 import { VerifyError, evaluate, keccakText } from '../verify/verify.ts';
 import type { VerifyInputs } from '../verify/verify.ts';
 import { HistoryError, cacheDir, historyDir, loadHistory, mergeRegistry, txsPath } from './load.ts';
@@ -129,10 +130,10 @@ async function rowFor(ctx: Context, entry: HistoryTx): Promise<Row> {
   };
 }
 
-function originMain(root: string): string {
-  const origin = fetchOriginMain(root);
+function originMain(root: string, repo: GithubRepo): string {
+  const origin = fetchOriginMain(root, repo);
   if (origin.kind === 'fetched') return origin.commit;
-  if (origin.kind === 'refused') throw new HistoryError(`origin/main is not the official one: ${origin.problems.join('; ')}`);
+  if (origin.kind === 'refused') throw new HistoryError(`origin/main of ${repo} was refused: ${origin.problems.join('; ')}`);
   try {
     return localOriginMain(root);
   } catch {
@@ -142,12 +143,12 @@ function originMain(root: string): string {
 
 async function run(io: Io, out: string | undefined, refresh: boolean): Promise<number> {
   const home = kissSignHome(io.env);
-  const { safe } = requireConfig(home);
+  const { safe, repo } = requireConfig(home);
   if (out !== undefined && !relative(resolve(io.repoRoot), resolve(out)).startsWith('..')) {
     throw new UsageError('--out must be outside this repository, so the Safe history never lands in a commit.');
   }
   const history = loadHistory(home, safe);
-  const commit = originMain(io.repoRoot);
+  const commit = originMain(io.repoRoot, repo);
   const texts = new Map<string, string>();
   const templateText = (id: string): string => {
     let text = texts.get(id);

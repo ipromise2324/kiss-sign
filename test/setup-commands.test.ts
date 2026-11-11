@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -45,18 +46,76 @@ async function run(argv: string[], home: string, answers?: readonly Answer[], ch
 
 const freshHome = () => mkdtempSync(join(tmpdir(), 'kiss-sign-setup-'));
 
-test('init writes the Safe on chain 1 and refuses to switch a home to another Safe', async () => {
+/** The config init writes for SAFE in a clone of github.com/signer/kiss-sign. */
+const configure = (home: string) => writeFileSync(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign' }));
+
+/** A clone whose origin fetches from each of `urls`, for init to read. */
+function cloneWithOrigin(...urls: string[]): Chain {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-clone-'));
+  execFileSync('git', ['init', '--quiet', repoRoot]);
+  for (const [i, url] of urls.entries()) execFileSync('git', ['-C', repoRoot, 'remote', ...(i === 0 ? ['add', 'origin', url] : ['set-url', '--add', 'origin', url])]);
+  return { ...noChain, repoRoot };
+}
+
+const fork = cloneWithOrigin('https://github.com/signer/kiss-sign.git');
+
+test('init records the Safe on chain 1 and the repository origin names, and prints both', async () => {
   const home = freshHome();
-  assert.equal((await run(['init', '--safe', SAFE], home)).code, 0);
-  assert.deepEqual(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')), { chainId: 1, safe: SAFE });
-  const again = await run(['init', '--safe', RECIPIENT], home);
-  assert.equal(again.code, 1);
-  assert.match(again.stderr, /already set up for another Safe/);
+  const result = await run(['init', '--safe', SAFE], home, undefined, cloneWithOrigin('git@github.com:Signer/Kiss-Sign.git'));
+  assert.equal(result.code, 0, result.stderr);
+  assert.deepEqual(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')), { chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign' });
+  assert.ok(
+    result.stdout.startsWith(
+      `kiss-sign checks transactions of the Safe ${SAFE} on Ethereum mainnet (chain 1).\n` +
+        "It runs only what is on main of github.com/signer/kiss-sign, the repository this clone's origin names.\n" +
+        'Merging a pull request into that main is your confirmation.\n',
+    ),
+    result.stdout,
+  );
+});
+
+test('init refuses to switch a home to another Safe or another repository', async () => {
+  const home = freshHome();
+  assert.equal((await run(['init', '--safe', SAFE], home, undefined, fork)).code, 0);
+  const safe = await run(['init', '--safe', RECIPIENT], home, undefined, fork);
+  assert.equal(safe.code, 1);
+  assert.match(safe.stderr, /already set up for another Safe/);
+  const repo = await run(['init', '--safe', SAFE], home, undefined, cloneWithOrigin('https://github.com/other/kiss-sign.git'));
+  assert.equal(repo.code, 1);
+  assert.match(repo.stderr, /already set up for another repository, github\.com\/signer\/kiss-sign\. Remove its config\.json to change it\./);
+  assert.equal(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')).repo, 'github.com/signer/kiss-sign');
+});
+
+test('init run again with the same Safe adds the repository to a config written before it had one', async () => {
+  const home = freshHome();
+  writeFileSync(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: SAFE }));
+  const sealed = await run(['card', 'new', 'morpho/vault-deposit'], home, []);
+  assert.equal(sealed.code, 1);
+  assert.match(sealed.stderr, /names no repository to trust\. In your clone of your own fork, run pnpm kiss-sign init --safe <your Safe> again\./);
+  assert.equal((await run(['init', '--safe', SAFE], home, undefined, fork)).code, 0);
+  assert.deepEqual(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')), { chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign' });
+});
+
+test('init refuses a clone whose origin is not one GitHub repository, and writes nothing', async () => {
+  for (const [urls, problem] of [
+    [['/tmp/kiss-sign.git'], 'origin is /tmp/kiss-sign.git, not a GitHub https or ssh URL'],
+    [['https://gitlab.com/signer/kiss-sign.git'], 'origin is https://gitlab.com/signer/kiss-sign.git, not a GitHub https or ssh URL'],
+    [['https://github.com.evil.example/signer/kiss-sign.git'], 'origin is https://github.com.evil.example/signer/kiss-sign.git, not a GitHub https or ssh URL'],
+    [['https://github.com/signer/kiss-sign.git', 'https://github.com/other/kiss-sign.git'], 'origin names more than one repository: github.com/signer/kiss-sign, github.com/other/kiss-sign'],
+    [[], 'there is no origin remote'],
+  ] as const) {
+    const home = freshHome();
+    const result = await run(['init', '--safe', SAFE], home, undefined, cloneWithOrigin(...urls));
+    assert.equal(result.code, 1, urls.join(' '));
+    assert.equal(result.stderr, `kiss-sign: run init in a clone of your own fork on GitHub; nothing was set up:\n  ${problem}\n`);
+    assert.equal(existsSync(join(home, 'config.json')), false);
+    assert.equal(existsSync(join(home, '.env')), false);
+  }
 });
 
 test('init creates a key file readable by its owner only, with an empty line per key, and never overwrites one', async () => {
   const home = freshHome();
-  const first = await run(['init', '--safe', SAFE], home);
+  const first = await run(['init', '--safe', SAFE], home, undefined, fork);
   const keyFile = join(home, '.env');
   assert.equal(first.code, 0);
   assert.match(first.stdout, new RegExp(`Created the key file ${keyFile}, readable by you only`));
@@ -69,20 +128,20 @@ test('init creates a key file readable by its owner only, with an empty line per
   assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'ETHERSCAN_API_KEY=']);
 
   writeFileSync(keyFile, 'ALCHEMY_API_KEY=kept-by-the-signer\n');
-  const again = await run(['init', '--safe', SAFE], home);
+  const again = await run(['init', '--safe', SAFE], home, undefined, fork);
   assert.equal(again.code, 0);
   assert.match(again.stdout, /is already there and was left as it is/);
   assert.equal(readFileSync(keyFile, 'utf8'), 'ALCHEMY_API_KEY=kept-by-the-signer\n');
   assert.doesNotMatch(again.stdout, /Warning/);
 
   chmodSync(keyFile, 0o644);
-  const loose = await run(['init', '--safe', SAFE], home);
+  const loose = await run(['init', '--safe', SAFE], home, undefined, fork);
   assert.match(loose.stdout, new RegExp(`Warning: other users can read ${keyFile} \\(mode 644\\)\\. Run chmod 600 ${keyFile}\\.`));
 });
 
 test('init on macOS prints a command that opens the key file in TextEdit, quoting a path with a space', async () => {
   const home = join(freshHome(), 'my home');
-  const result = await run(['init', '--safe', SAFE], home, undefined, noChain, 'darwin');
+  const result = await run(['init', '--safe', SAFE], home, undefined, fork, 'darwin');
   assert.equal(result.code, 0);
   assert.ok(result.stdout.includes(`\n       open -e '${join(home, '.env')}'\n`), result.stdout);
 });
@@ -108,7 +167,7 @@ test('book add shows the full address, adds it on yes, and book list prints it',
 
 test('card seal prints every name with its full address and stores the card under its hash on yes', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const card = join(home, 'card.json');
   writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: '5', 'min-shares': '4' } }] }));
   const sealed = await run(['card', 'seal', card], home, ['y']);
@@ -120,7 +179,7 @@ test('card seal prints every name with its full address and stores the card unde
 
 test('card seal refuses a name in neither the registry nor the address book', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const card = join(home, 'card.json');
   writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'no-such-vault', amount: '5' } }] }));
   const result = await run(['card', 'seal', card], home, ['y']);
@@ -167,7 +226,7 @@ const numberOf = (name: string) => (stdout: string) => {
 
 async function sealedFile(values: Record<string, string>) {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const card = join(home, 'card.json');
   writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values }] }));
   const sealed = await run(['card', 'seal', card], home, ['y']);
@@ -176,7 +235,7 @@ async function sealedFile(values: Record<string, string>) {
 
 test('card new takes amounts in whole tokens, reads decimals on chain, and seals base units as card seal would', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', '4.8', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
   assert.match(made.stdout, new RegExp(`\\d+\\. steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)`));
@@ -194,7 +253,7 @@ test('card new takes amounts in whole tokens, reads decimals on chain, and seals
 
 test('card new reads each token\'s decimals once across operations', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const chain = mainnet();
   const vault = numberOf('steakhouse-prime-usdc');
   const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', '1', vault, '0.000001', '1', 'y'], chain);
@@ -208,7 +267,7 @@ test('card new reads each token\'s decimals once across operations', async () =>
 
 test('card new counts eth in 18 decimals without reading the chain', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   const made = await run(['card', 'new', 'eth/transfer'], home, [numberOf('alice'), '0.5', 'y'], { ...noChain, env: {} });
   assert.equal(made.code, 0, made.stderr);
@@ -218,7 +277,7 @@ test('card new counts eth in 18 decimals without reading the chain', async () =>
 
 test('card new offers a transfer recipient only from the address book or the Safe', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   const made = await run(['card', 'new', 'erc20/transfer'], home, [numberOf('usdc'), numberOf('alice'), '1', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
@@ -235,7 +294,7 @@ test('card new asks for base units when the token is no registry contract, so it
   const template = { ...transfer, id: 'test/any-token', card: { ...transfer.card, token: { kind: 'address' } } };
   writeFileSync(join(repoRoot, 'templates', 'test', 'any-token', 'template.json'), JSON.stringify(template));
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   const made = await run(['card', 'new', 'test/any-token'], home, [numberOf('alice'), '2', '5', 'y'], { ...decimalsChain({}), repoRoot });
   assert.equal(made.code, 0, made.stderr);
@@ -245,7 +304,7 @@ test('card new asks for base units when the token is no registry contract, so it
 
 test('card new refuses without a terminal before it asks anything', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const result = await run(['card', 'new', 'morpho/vault-deposit'], home);
   assert.equal(result.code, 64);
   assert.match(result.stderr, /confirm at a terminal/);
@@ -254,7 +313,7 @@ test('card new refuses without a terminal before it asks anything', async () => 
 
 test('card new refuses before it asks anything when no Alchemy key is set', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const result = await run(['card', 'new', 'morpho/vault-deposit'], home, ['1', '5', '4', 'y'], { ...mainnet(), env: {} });
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Alchemy needs an API key in ALCHEMY_API_KEY/);
@@ -266,7 +325,7 @@ const OVER_USDC = (2n ** 256n).toString().replace(/(\d{6})$/, '.$1');
 
 test('card new takes the largest amount below 2^256 base units', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), MAX_USDC, '0', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes(`  amount: ${MAX_USDC} usdc = ${2n ** 256n - 1n} base units\n`));
@@ -291,7 +350,7 @@ for (const [what, answers, message] of [
 ] as const) {
   test(`card new refuses ${what} and seals nothing`, async () => {
     const home = freshHome();
-    await run(['init', '--safe', SAFE], home);
+    configure(home);
     const result = await run(['card', 'new', 'morpho/vault-deposit'], home, answers, mainnet());
     assert.equal(result.code, 1);
     assert.match(result.stderr, message);
@@ -307,7 +366,7 @@ for (const [what, chain, message] of [
 ] as const) {
   test(`card new refuses when ${what}, before it asks for the amount`, async () => {
     const home = freshHome();
-    await run(['init', '--safe', SAFE], home);
+    configure(home);
     const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', '4', 'y'], chain);
     assert.equal(result.code, 1);
     assert.match(result.stderr, message);
@@ -318,7 +377,7 @@ for (const [what, chain, message] of [
 
 test('card new refuses a template that is not in the repository', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const result = await run(['card', 'new', 'morpho/no-such-operation'], home, ['1', 'y']);
   assert.equal(result.code, 1);
   assert.match(result.stderr, /no template morpho\/no-such-operation in templates\//);
@@ -327,7 +386,7 @@ test('card new refuses a template that is not in the repository', async () => {
 
 test('card new seals nothing when the signer says no', async () => {
   const home = freshHome();
-  await run(['init', '--safe', SAFE], home);
+  configure(home);
   const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', '4', 'n'], mainnet());
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Nothing sealed/);

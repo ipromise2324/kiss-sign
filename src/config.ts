@@ -2,9 +2,14 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SafeTxParseError, checksumAddress, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
+import { githubRepo } from './verify/self-check.ts';
+import type { GithubRepo } from './verify/self-check.ts';
 
-/** Written once by `init`. Ethereum mainnet only. */
-export type Config = { readonly chainId: 1n; readonly safe: Address };
+/** Written by `init`. Ethereum mainnet only. `repo` is the signer's own repository, whose main `verify` runs. */
+export type Config = { readonly chainId: 1n; readonly safe: Address; readonly repo: GithubRepo };
+
+/** config.json as stored. One written before `repo` existed has none until `init` runs again. */
+export type StoredConfig = { readonly safe: Address; readonly repo: GithubRepo | undefined };
 
 /** Template id to the keccak256 of its template.json, as the signer approved it. */
 export type ApprovedTemplates = ReadonlyMap<string, Hex>;
@@ -40,20 +45,36 @@ export function writeJson(home: string, path: string, value: unknown): void {
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** Undefined before `init`. */
-export function loadConfig(home: string): Config | undefined {
-  const raw = readJson(configPath(home));
+export function loadStoredConfig(home: string): StoredConfig | undefined {
+  const path = configPath(home);
+  const raw = readJson(path);
   if (raw === undefined) return undefined;
-  if (!isObject(raw) || raw.chainId !== 1) throw new ConfigError(`${configPath(home)}: must be { "chainId": 1, "safe": <address> }`);
+  if (!isObject(raw) || raw.chainId !== 1) throw new ConfigError(`${path}: must be { "chainId": 1, "safe": <address>, "repo": "github.com/<owner>/<name>" }`);
+  let safe: Address;
   try {
-    return { chainId: 1n, safe: parseAddress('safe', raw.safe) };
+    safe = parseAddress('safe', raw.safe);
   } catch (error) {
-    if (error instanceof SafeTxParseError) throw new ConfigError(`${configPath(home)}: ${error.message}`);
+    if (error instanceof SafeTxParseError) throw new ConfigError(`${path}: ${error.message}`);
     throw error;
   }
+  if (raw.repo === undefined) return { safe, repo: undefined };
+  const repo = typeof raw.repo === 'string' ? githubRepo(`https://${raw.repo}`) : undefined;
+  if (repo === undefined || repo !== raw.repo) throw new ConfigError(`${path}: repo must be github.com/<owner>/<name> in lowercase`);
+  return { safe, repo };
+}
+
+/** Undefined before `init`. */
+export function loadConfig(home: string): Config | undefined {
+  const stored = loadStoredConfig(home);
+  if (stored === undefined) return undefined;
+  if (stored.repo === undefined) {
+    throw new ConfigError(`${configPath(home)} names no repository to trust. In your clone of your own fork, run pnpm kiss-sign init --safe <your Safe> again.`);
+  }
+  return { chainId: 1n, safe: stored.safe, repo: stored.repo };
 }
 
 export function saveConfig(home: string, config: Config): void {
-  writeJson(home, configPath(home), { chainId: 1, safe: checksumAddress(config.safe) });
+  writeJson(home, configPath(home), { chainId: 1, safe: checksumAddress(config.safe), repo: config.repo });
 }
 
 export function loadApproved(home: string): ApprovedTemplates {

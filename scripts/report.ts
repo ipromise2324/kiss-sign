@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { loadConfig } from '../src/config.ts';
+import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
@@ -183,7 +183,7 @@ console.log(text);
 if (flags.record) {
   const erc7730Section = { commit: snapshot.commit, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
   const recording = JSON.stringify(trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges()), null, 2);
-  const safe = loadConfig(kissSignHome(process.env))?.safe;
+  const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
   if (safe !== undefined && recording.toLowerCase().includes(safe.slice(2))) {
     console.error('the recording would name the configured Safe; nothing written');
     process.exit(1);

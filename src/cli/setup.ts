@@ -3,13 +3,13 @@ import { parseArgs } from 'node:util';
 import { loadAddressBook, saveAddressBook } from '../address-book.ts';
 import { parseCard, resolveCard, sealCard } from '../card.ts';
 import type { Card, ResolvedValue } from '../card.ts';
-import { ConfigError, loadApproved, loadConfig, saveApproved, saveConfig } from '../config.ts';
+import { ConfigError, loadApproved, loadConfig, loadStoredConfig, saveApproved, saveConfig } from '../config.ts';
 import type { Config } from '../config.ts';
 import { KEYS, createKeyFile, keyFilePath, kissSignHome } from '../keys.ts';
 import { REGISTRY_PATH, isEntryName, loadRegistry, parseRegistry } from '../registry.ts';
 import { checksumAddress, parseAddress } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template.ts';
-import { fetchOriginMain, fileAt } from '../verify/self-check.ts';
+import { fetchOriginMain, fileAt, originRepo } from '../verify/self-check.ts';
 import { keccakText } from '../verify/verify.ts';
 import { FAILED, OK, UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
@@ -32,19 +32,31 @@ export async function init(args: readonly string[], io: Io): Promise<number> {
   const { values } = parseArgs({ args: [...args], options: { safe: { type: 'string' } }, strict: true });
   if (values.safe === undefined) throw new UsageError('init needs --safe <address>.');
   const safe = parseAddress('--safe', values.safe);
+  const origin = originRepo(io.repoRoot);
+  if (origin.kind === 'refused') {
+    io.stderr(`kiss-sign: run init in a clone of your own fork on GitHub; nothing was set up:\n${origin.problems.map((problem) => `  ${problem}\n`).join('')}`);
+    return FAILED;
+  }
+  const { repo } = origin;
   const home = kissSignHome(io.env);
-  const existing = loadConfig(home);
+  const existing = loadStoredConfig(home);
   if (existing !== undefined && existing.safe !== safe) {
     io.stderr(`kiss-sign: ${home} is already set up for another Safe. Remove its config.json to change it.\n`);
     return FAILED;
   }
-  saveConfig(home, { chainId: 1n, safe });
+  if (existing?.repo !== undefined && existing.repo !== repo) {
+    io.stderr(`kiss-sign: ${home} is already set up for another repository, ${existing.repo}. Remove its config.json to change it.\n`);
+    return FAILED;
+  }
+  saveConfig(home, { chainId: 1n, safe, repo });
   const keyFile = keyFilePath(home);
   const created = createKeyFile(home);
   const mode = statSync(keyFile).mode & 0o777;
   const width = Math.max(...KEYS.map(({ env }) => env.length)) + 2;
   const lines = [
     `kiss-sign checks transactions of the Safe ${checksumAddress(safe)} on Ethereum mainnet (chain 1).`,
+    `It runs only what is on main of ${repo}, the repository this clone's origin names.`,
+    'Merging a pull request into that main is your confirmation.',
     '',
     created ? `Created the key file ${keyFile}, readable by you only.` : `The key file ${keyFile} is already there and was left as it is.`,
     ...((mode & 0o077) === 0 ? [] : [`Warning: other users can read ${keyFile} (mode ${mode.toString(8)}). Run chmod 600 ${shellWord(keyFile)}.`]),
@@ -137,9 +149,11 @@ export async function templateApprove(args: readonly string[], io: Io): Promise<
   const [id, ...extra] = args;
   if (id === undefined || extra.length > 0) throw new UsageError('template approve takes one template id, such as morpho/vault-deposit.');
   const { confirm } = terminal(io, 'template approve');
-  const origin = fetchOriginMain(io.repoRoot);
+  const home = kissSignHome(io.env);
+  const { repo } = requireConfig(home);
+  const origin = fetchOriginMain(io.repoRoot, repo);
   if (origin.kind !== 'fetched') {
-    const problems = origin.kind === 'refused' ? origin.problems : ['could not fetch origin'];
+    const problems = origin.kind === 'refused' ? origin.problems : [`could not fetch ${repo}`];
     io.stderr(`kiss-sign: nothing was approved:\n${problems.map((problem) => `  ${problem}\n`).join('')}`);
     return FAILED;
   }
@@ -159,7 +173,6 @@ export async function templateApprove(args: readonly string[], io: Io): Promise<
     io.stderr('Nothing approved.\n');
     return FAILED;
   }
-  const home = kissSignHome(io.env);
   saveApproved(home, new Map([...loadApproved(home), [id, hash]]));
   io.stdout(`Approved ${id}.\n`);
   return OK;
