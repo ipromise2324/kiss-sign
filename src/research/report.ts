@@ -64,8 +64,8 @@ export type ReportInputs = {
   readonly pastTxs: readonly PastTxsSummary[];
   /** Each pinned entry's spans as `checkSpans` judged them, oldest first. */
   readonly spans: ReadonlyMap<Address, readonly string[]>;
-  /** What `pnpm erc7730` prints for the entries. */
-  readonly erc7730: string;
+  /** What `pnpm erc7730` prints for the entries, and the facts it prints them from. */
+  readonly erc7730: { readonly text: string; readonly reports: readonly EntryReport[] };
 };
 
 export class ReportError extends Error {
@@ -678,7 +678,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     '',
     `${code(`pnpm erc7730 ${entries.map((e) => e.name).join(' ')}`)}: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.`,
     '',
-    ...fenced(inputs.erc7730),
+    ...fenced(inputs.erc7730.text),
     '',
   );
   return out.join('\n');
@@ -726,7 +726,7 @@ export async function replayInputs(
     vaults: new Map(Object.entries(recording.vaults)),
     pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
     spans: await checkSpans(replayReader(recording.code), entries),
-    erc7730: (await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)))).text,
+    erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
   };
   const registryFiles = subject.kind === 'template' && hasMarket(subject.template) ? [REGISTRY_PATH, MARKETS_PATH] : [REGISTRY_PATH];
   const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), ...registryFiles];

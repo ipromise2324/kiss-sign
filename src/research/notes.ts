@@ -19,23 +19,33 @@ export type Notes = {
   readonly summary: string;
   /** What the transaction does, step by step. */
   readonly steps: readonly string[];
-  /** What the AI asks the signer to judge, beside the program's findings. */
+  /** What the AI asks the signer to judge, beside the program's findings: a few, each a sentence or two. */
   readonly judgments: readonly Note[];
-  /** By registry name: the entry's role in this operation, and what else the AI found about it. */
-  readonly entries: ReadonlyMap<string, { readonly role: string | undefined; readonly notes: readonly Note[] }>;
+  /**
+   * By registry name: the entry's role in this operation, what else the AI found about it, and by check key, such as
+   * `source.page`, one line the page shows under that program result. A line explains a result; it cannot hide one.
+   */
+  readonly entries: ReadonlyMap<string, EntryNotes>;
   /** By field key, as the report's field table names it, such as `1.approve.spender`: what the field means. */
   readonly fields: ReadonlyMap<string, string>;
-  /** The test transactions and what the past transactions taught. */
+  /** What the test transactions showed beyond what the program states: a few short lines. */
   readonly tests: readonly Note[];
   /** Folded groups at the end, such as where each contract was deployed from. */
   readonly details: readonly { readonly title: string; readonly notes: readonly Note[] }[];
 };
+
+export type EntryNotes = { readonly role: string | undefined; readonly notes: readonly Note[]; readonly checks: ReadonlyMap<string, string> };
 
 export class NotesError extends Error {
   override name = 'NotesError';
 }
 
 const MAX_TEXT = 2000;
+/** The page lists judgments and test lines above the fold, so each stays a sentence or two. */
+const MAX_SHORT = 200;
+const MAX_JUDGMENTS = 4;
+const MAX_TESTS = 2;
+const CHECK_KEY = /^[A-Za-z0-9_.-]{1,120}$/;
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -49,27 +59,28 @@ function keys(path: string, raw: unknown, required: readonly string[], optional:
   return raw;
 }
 
-function text(path: string, raw: unknown): string {
+function text(path: string, raw: unknown, max = MAX_TEXT): string {
   if (typeof raw !== 'string' || raw.trim() === '') throw new NotesError(`${path}: not a non-empty string`);
-  if (raw.length > MAX_TEXT) throw new NotesError(`${path}: longer than ${MAX_TEXT} characters`);
+  if (raw.length > max) throw new NotesError(`${path}: longer than ${max} characters`);
   if (CONTROL.test(raw)) throw new NotesError(`${path}: holds a control or bidirectional character`);
   return raw;
 }
 
-function list<T>(path: string, raw: unknown, item: (path: string, raw: unknown) => T): T[] {
+function list<T>(path: string, raw: unknown, item: (path: string, raw: unknown) => T, max = Infinity): T[] {
   if (raw === undefined) return [];
   if (!Array.isArray(raw)) throw new NotesError(`${path}: not a list`);
+  if (raw.length > max) throw new NotesError(`${path}: more than ${max} items`);
   return raw.map((r, i) => item(`${path}[${i}]`, r));
 }
 
-function note(path: string, raw: unknown): Note {
+function note(path: string, raw: unknown, max = MAX_TEXT): Note {
   const value = keys(path, raw, ['text'], ['title', 'sources']);
   const sources = list(`${path}.sources`, value.sources, (at, url) => {
     const parsed = parseHttpsUrl(url);
     if (parsed === undefined) throw new NotesError(`${at}: not an https URL in RFC 3986 characters`);
     return parsed;
   });
-  return { title: value.title === undefined ? undefined : text(`${path}.title`, value.title), text: text(`${path}.text`, value.text), sources };
+  return { title: value.title === undefined ? undefined : text(`${path}.title`, value.title, MAX_SHORT), text: text(`${path}.text`, value.text, max), sources };
 }
 
 function byName<T>(path: string, raw: unknown, known: ReadonlySet<string>, what: string, item: (path: string, raw: unknown) => T): Map<string, T> {
@@ -83,6 +94,8 @@ function byName<T>(path: string, raw: unknown, known: ReadonlySet<string>, what:
   );
 }
 
+const short = (path: string, raw: unknown): Note => note(path, raw, MAX_SHORT);
+
 /**
  * `notes.json`, refused unless every key is known: `entries` may name only the registry entries the report covers, and
  * `fields` only the keys of the report's field table.
@@ -93,13 +106,24 @@ export function parseNotes(raw: unknown, known: { readonly entries: ReadonlySet<
     title: text(`${NOTES_FILE}.title`, value.title),
     summary: text(`${NOTES_FILE}.summary`, value.summary),
     steps: list(`${NOTES_FILE}.steps`, value.steps, text),
-    judgments: list(`${NOTES_FILE}.judgments`, value.judgments, note),
+    judgments: list(`${NOTES_FILE}.judgments`, value.judgments, short, MAX_JUDGMENTS),
     entries: byName(`${NOTES_FILE}.entries`, value.entries, known.entries, 'a registry entry this report covers', (path, entry) => {
-      const fields = keys(path, entry, [], ['role', 'notes']);
-      return { role: fields.role === undefined ? undefined : text(`${path}.role`, fields.role), notes: list(`${path}.notes`, fields.notes, note) };
+      const fields = keys(path, entry, [], ['role', 'notes', 'checks']);
+      const checks = fields.checks === undefined ? {} : fields.checks;
+      if (!isRecord(checks)) throw new NotesError(`${path}.checks: not a JSON object`);
+      return {
+        role: fields.role === undefined ? undefined : text(`${path}.role`, fields.role, MAX_SHORT),
+        notes: list(`${path}.notes`, fields.notes, note),
+        checks: new Map(
+          Object.entries(checks).map(([key, line]) => {
+            if (!CHECK_KEY.test(key)) throw new NotesError(`${path}.checks: ${JSON.stringify(key.slice(0, 80))} is not a check key`);
+            return [key, text(`${path}.checks.${key}`, line, MAX_SHORT)];
+          }),
+        ),
+      };
     }),
     fields: byName(`${NOTES_FILE}.fields`, value.fields, known.fields, "a key of the report's field table", text),
-    tests: list(`${NOTES_FILE}.tests`, value.tests, note),
+    tests: list(`${NOTES_FILE}.tests`, value.tests, short, MAX_TESTS),
     details: list(`${NOTES_FILE}.details`, value.details, (path, group) => {
       const fields = keys(path, group, ['title', 'notes'], []);
       return { title: text(`${path}.title`, fields.title), notes: list(`${path}.notes`, fields.notes, note) };

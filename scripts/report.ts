@@ -37,7 +37,7 @@ import {
   vaultsOf,
 } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
-import { generatedHtmlPath, loadNotes, renderHtml } from '../src/research/report-html.ts';
+import { generatedHtmlPath, loadNotes, renderHtml, templateFixtures } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
@@ -137,7 +137,7 @@ async function writeGenerated(): Promise<void> {
   if (inputs.subject.kind === 'template') {
     const notes = loadNotes(root, inputs.subject, registry);
     if (notes !== undefined) {
-      writeFileSync(join(root, generatedHtmlPath(inputs.subject.template.id)), renderHtml(inputs, notes, title));
+      writeFileSync(join(root, generatedHtmlPath(inputs.subject.template.id)), renderHtml(inputs, notes, title, templateFixtures(root, inputs.subject.template, registry)));
       written.push(generatedHtmlPath(inputs.subject.template.id));
     }
   }
@@ -196,7 +196,7 @@ const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(cre
 
 const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
 const fetched = new Date();
-const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, erc7730: erc7730.text };
+const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, erc7730 };
 const command = id === undefined ? `pnpm report --vault ${flags.vault}` : `pnpm report ${id}`;
 const text = renderReport(live, { command, sources: ['live reads at the time it ran', ...pastTxs.map((p) => p.file)] });
 
