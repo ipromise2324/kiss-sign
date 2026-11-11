@@ -9,7 +9,7 @@ import type { Exchange } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
-import { endsNeeded, expectedChanges } from '../src/simulate/effects.ts';
+import { endsNeeded, expectedChanges, viewCalls } from '../src/simulate/effects.ts';
 import { topic } from '../src/simulate/events.ts';
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
 import type { Observation } from '../src/simulate/simulate.ts';
@@ -53,7 +53,7 @@ async function replayed(name: string): Promise<PerturbationReport> {
   const expectations = expectedChanges(resolved, templates, registry);
   const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset): asset is Address => asset !== 'eth') : [];
   return checkPerturbations(tx, resolved, templates, registry, (copy) =>
-    simulateSafeTx(reader, { tx: copy, parent, time: executed.time, watch, ends: endsNeeded(expectations) }),
+    simulateSafeTx(reader, { tx: copy, parent, time: executed.time, watch, ends: endsNeeded(expectations), views: viewCalls(resolved, templates, registry) }),
   );
 }
 
