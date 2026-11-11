@@ -1,4 +1,5 @@
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
+import { marketLines } from '../card.ts';
 import type { ResolvedValue } from '../card.ts';
 import { paramName } from '../decode/abi.ts';
 import { checkFloor } from '../floor/floor.ts';
@@ -40,6 +41,8 @@ function cardValue(value: ResolvedValue, template: string): string {
       const from = value.from === 'address-book' ? "the case's address book" : value.from === 'safe' ? 'the Safe' : 'registry';
       return `${value.name} ${checksumAddress(value.address)} (${from})`;
     }
+    case 'market':
+      return `${marketLines(value.market).join('; ')} (markets table)`;
   }
 }
 

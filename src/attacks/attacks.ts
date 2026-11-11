@@ -9,7 +9,7 @@ import type { Reader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
-import { parseRegistry, REGISTRY_PATH } from '../registry.ts';
+import { REGISTRY_PATH, loadRegistry, marketsText } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { SafeTx } from '../safe/types.ts';
@@ -79,6 +79,7 @@ function inputsFor(repoRoot: string, attack: AttackCase, tx: TxInput): VerifyInp
     return [{ id, text, approved: keccakText(text) }];
   });
   const cardText = canonicalJson(attack.card);
+  const markets = marketsText(repoRoot);
   return {
     commit: 'working tree',
     safe: checksumAddress(attack.safe),
@@ -86,6 +87,7 @@ function inputsFor(repoRoot: string, attack: AttackCase, tx: TxInput): VerifyInp
     card: { hash: keccakText(cardText), text: cardText },
     templates,
     registry: readFileSync(join(repoRoot, REGISTRY_PATH), 'utf8'),
+    ...(markets === undefined ? {} : { markets }),
     addressBook: Object.fromEntries([...attack.addressBook].map(([name, address]) => [name, checksumAddress(address)])),
   };
 }
@@ -106,7 +108,7 @@ async function attempt(label: string, run: () => Promise<Verdict> | Verdict): Pr
  */
 export async function judgeCase(repoRoot: string, attack: AttackCase, service: Readonly<Record<string, unknown>>, reader: Reader): Promise<CaseResult> {
   const tx = caseTx(attack, service);
-  const registry = parseRegistry(JSON.parse(readFileSync(join(repoRoot, REGISTRY_PATH), 'utf8')));
+  const registry = loadRegistry(repoRoot);
   const executed = inputsFor(repoRoot, attack, { format: 'service', json: service });
   let card: ResolvedCard | undefined;
   try {

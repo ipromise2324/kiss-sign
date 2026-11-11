@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-10",
+  "fetched": "2026-11-11",
   "defillama": [
     {
       "slug": "circle-usdc",
@@ -43,6 +43,12 @@
       "slug": "circle-cctp",
       "name": "Circle CCTP",
       "url": "https://www.circle.com/cross-chain-transfer-protocol",
+      "github": []
+    },
+    {
+      "slug": "coinbase",
+      "name": "Coinbase",
+      "url": "https://www.coinbase.com/",
       "github": []
     }
   ],
@@ -101,6 +107,14 @@
       "name": "Steakhouse High Yield USDC",
       "platforms": {
         "ethereum": "0xbeeff2c5bf38f90e3482a8b19f12e5a6d2fca757"
+      }
+    },
+    {
+      "id": "coinbase-wrapped-btc",
+      "symbol": "cbbtc",
+      "name": "Coinbase Wrapped BTC",
+      "platforms": {
+        "ethereum": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf"
       }
     }
   ],
@@ -185,6 +199,34 @@
       "kind": "served",
       "blocks": [
         {
+          "text": "| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------- |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
+          "text": "| Morpho | [ 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb ](https://etherscan.io/address/0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb#code) <AddressCopyButton address=\"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" /> | [morpho-blue](https://github.com/morpho-org/morpho-blue/tree/v1.0.0) |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
+          "text": "| Adaptive Curve Irm | [ 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC ](https://etherscan.io/address/0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC#code) <AddressCopyButton address=\"0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC\" /> | [morpho-blue-irm](https://github.com/morpho-org/morpho-blue-irm/tree/v1.0.0) |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
+          "text": "| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------- |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
+          "text": "| Morpho | [ 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb ](https://basescan.org/address/0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb#code) <AddressCopyButton address=\"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" /> | [morpho-blue](https://github.com/morpho-org/morpho-blue/tree/v1.0.0) |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
+          "text": "| :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
+          "text": "| Morpho | [ 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb ](https://sepolia.basescan.org/address/0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb#code) <AddressCopyButton address=\"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" /> | [morpho-org/morpho-blue](https://github.com/morpho-org/morpho-blue/tree/v1.0.0) |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
           "text": "| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------ |",
           "heading": "Morpho Vault V2 [#morpho-vault-v2]"
         },
@@ -218,6 +260,14 @@
         },
         {
           "text": "| VaultBundlesV1 | [ 0x02912516d49dE997db75B9D7858faAE59209650B ](https://etherscan.io/address/0x02912516d49dE997db75B9D7858faAE59209650B#code) <AddressCopyButton address=\"0x02912516d49dE997db75B9D7858faAE59209650B\" /> | [morpho-org/bundles](https://github.com/morpho-org/bundles/blob/main/src/vault/VaultBundlesV1.sol) |",
+          "heading": "Bundles [#bundles]"
+        },
+        {
+          "text": "| VaultExitBundlesV1 | [ 0xaf85aF286637A033BE7d59ED8cC566afa3309B02 ](https://etherscan.io/address/0xaf85aF286637A033BE7d59ED8cC566afa3309B02#code) <AddressCopyButton address=\"0xaf85aF286637A033BE7d59ED8cC566afa3309B02\" /> | [morpho-org/bundles](https://github.com/morpho-org/bundles/blob/main/src/vault-exit/VaultExitBundlesV1.sol) |",
+          "heading": "Bundles [#bundles]"
+        },
+        {
+          "text": "| BlueBundlesV1 | [ 0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD ](https://etherscan.io/address/0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD#code) <AddressCopyButton address=\"0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD\" /> | [morpho-org/bundles](https://github.com/morpho-org/bundles/blob/main/src/blue/BlueBundlesV1.sol) |",
           "heading": "Bundles [#bundles]"
         },
         {
@@ -467,6 +517,27 @@
           "heading": "Strategy"
         }
       ]
+    },
+    "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://raw.githubusercontent.com/coinbase/agentkit/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "EURC: \"0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        },
+        {
+          "text": "EURC: \"0x1abaea1f7c830bd89acc67ec4af516284b1bc33c\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        }
+      ]
     }
   },
   "commits": {
@@ -476,6 +547,11 @@
       "status": "identical"
     },
     "instadapp/fluid-contracts-public@404d73f91e6806f881f8dabeb30494f93f9e99b7": {
+      "kind": "on-default",
+      "branch": "main",
+      "status": "identical"
+    },
+    "coinbase/agentkit@f2f3e8c11a91d56a17979a229a172ba6e61a85c2": {
       "kind": "on-default",
       "branch": "main",
       "status": "identical"

@@ -15,8 +15,8 @@ import type { FreeClaim, Template } from './template.ts';
 /**
  * What a copy of the transaction with one free field changed did. `reverted`: it did not execute. `refused`: the
  * engine's field or effects check refuses it, so it could never be signed as a MATCH. `same`: it emitted the same logs and
- * changed the Safe's balances and allowances the same way. `changed`: it ran, the engine would pass it, and something
- * differs, so the field steers the transaction where the engine does not look.
+ * changed the Safe's balances, allowances and the views its template reads the same way. `changed`: it ran, the engine
+ * would pass it, and something differs, so the field steers the transaction where the engine does not look.
  */
 export type Outcome = 'reverted' | 'refused' | 'same' | 'changed';
 
@@ -91,7 +91,8 @@ function logText(logs: readonly EventLog[], safe: string): string {
 function effectsText(observed: Extract<Observed, { kind: 'executed' }>): string {
   const allowances = observed.allowances.map((a) => [a.token, a.spender, String(a.before), String(a.after)]);
   const permit2 = observed.permit2.map((p) => [p.token, p.spender, ...[p.before, p.after].flatMap((a) => [String(a.amount), String(a.expiration), String(a.nonce)])]);
-  return JSON.stringify([String(observed.eth), [...observed.tokens].map(([t, d]) => [t, String(d)]), allowances, permit2, [...observed.ends].map(([t, v]) => [t, String(v)])]);
+  const views = (observed.views ?? []).map((v) => [v.to, v.data, ...[v.before, v.after].map((a) => (a.kind === 'returned' ? a.data : 'unread'))]);
+  return JSON.stringify([String(observed.eth), [...observed.tokens].map(([t, d]) => [t, String(d)]), allowances, permit2, [...observed.ends].map(([t, v]) => [t, String(v)]), views]);
 }
 
 /**
@@ -133,7 +134,7 @@ export async function checkPerturbations(
       else if (observation.observed.kind !== 'executed') run('reverted', observation.observed.why);
       else if (judgeEffects(observation.observed, card, templates, registry).kind !== 'match') run('refused', 'effects');
       else if (logText(observation.logs, tx.safe) === baseLogs && effectsText(observation.observed) === baseEffects) run('same');
-      else run('changed', logText(observation.logs, tx.safe) === baseLogs ? "the Safe's balances or allowances differ" : 'the logs differ');
+      else run('changed', logText(observation.logs, tx.safe) === baseLogs ? "the Safe's balances, allowances or views differ" : 'the logs differ');
     }
   }
   const failed = runs.filter((r) => r.outcome === 'unverifiable' || r.leaf.rule.kind !== 'free' || !ALLOWED[r.leaf.rule.claim].includes(r.outcome));

@@ -209,3 +209,8 @@ export function localOriginMain(root: string): string {
 export function fileAt(root: string, commit: string, path: string): string {
   return git(root, 'show', `${commit}:${path}`);
 }
+
+/** The file's text at the commit, or undefined when the commit holds no file at `path`. */
+export function optionalFileAt(root: string, commit: string, path: string): string | undefined {
+  return git(root, 'ls-tree', '--name-only', commit, '--', path).trim() === path ? fileAt(root, commit, path) : undefined;
+}
