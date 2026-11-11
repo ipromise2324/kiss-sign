@@ -562,11 +562,16 @@ function plainChecks(template: Template, registry: Registry, trouble: { readonly
 const entryLink = (name: string): Html => h`<a href="#entry-${name}">${name}</a>`;
 const APPROVE = 'approve(address,uint256)';
 
-/** What one call does, in a few words: an ERC-20 approval names its spender and amount; any other call its function. */
+const sendsNoEth = (value: Rule): boolean => value.kind === 'const' && value.value.kind === 'uint' && value.value.value === 0n;
+
+/**
+ * What one call does, in a few words: a call with no data sends ETH, or with a value fixed at 0 does nothing but run;
+ * an ERC-20 approval names its spender and amount; any other call its function.
+ */
 function callStep(call: Template['calls'][number], template: Template, registry: Registry): Html {
   const to = namesOf(call.to, template, registry);
   const target = to.length === 0 ? ruleZh(call.to, template, registry) : joined(to.map(entryLink), ' 或 ');
-  if (call.data === 'empty') return h`Safe → ${target}：送出 ETH`;
+  if (call.data === 'empty') return sendsNoEth(call.value) ? h`Safe → ${target}：空呼叫，不帶資料、不送出 ETH` : h`Safe → ${target}：送出 ETH`;
   const [spender, value] = call.data.args;
   if (call.data.fn.signature === APPROVE && spender !== undefined && value !== undefined) {
     const who = namesOf(spender, template, registry);

@@ -426,6 +426,20 @@ test('the flow lists each call from the template, the AI lines after the call th
   assert.match(flow, /<a href="#entry-morpho-blue">morpho-blue<\/a>：程式在交易前後各讀一次 Safe 的 <code>position<\/code>/);
 });
 
+test('a call with no data sends ETH, and one whose value is fixed at 0 says it sends none', async () => {
+  const flows = new Map<string, string>();
+  const ids = ['safe/cancel', 'eth/transfer'];
+  const compilers = await warmCompilers(reportCases(ROOT, registry, ids.map((template) => ({ template }))));
+  for (const id of ids) {
+    const { inputs, title } = await replayInputs(ROOT, registry, { template: id }, compilers, suffixes);
+    if (inputs.subject.kind !== 'template') throw new Error('unreachable');
+    flows.set(id, section(renderHtml(inputs, loadNotes(ROOT, inputs.subject, registry)!, title, []), '這筆交易怎麼走'));
+  }
+  assert.match(flows.get('safe/cancel')!, /Safe → 你的 Safe：空呼叫，不帶資料、不送出 ETH<span class="by prog">/);
+  assert.doesNotMatch(flows.get('safe/cancel')!, /：送出 ETH/);
+  assert.match(flows.get('eth/transfer')!, /Safe → card 上的 <code>recipient<\/code>：送出 ETH<span class="by prog">/);
+});
+
 test('the past transactions and safety sections state the program\'s counts, and the protocol overview is visible', () => {
   const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
   const past = section(html, '研究了哪些過去的交易，結論是什麼');
