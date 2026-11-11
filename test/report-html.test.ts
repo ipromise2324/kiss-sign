@@ -104,7 +104,7 @@ test('notes.json is refused for an entry the report does not cover, an unknown f
   const refuse = (change: Record<string, unknown>, message: RegExp) => assert.throws(() => parseNotes({ ...committedNotes, ...change }, keys), (e: unknown) => e instanceof NotesError && message.test(e.message));
   refuse({ entries: { bundler3: { role: 'x' } } }, /"bundler3" is not a registry entry this report covers/);
   refuse({ fields: { '3.to': 'x' } }, /"3\.to" is not a key of the report's field table/);
-  refuse({ verdict: 'MATCH' }, /unknown key "verdict"/);
+  refuse({ result: 'MATCH' }, /unknown key "result"/);
   refuse({ summary: 'a‮b' }, /summary: holds a control or bidirectional character/);
   refuse({ judgments: [{ text: 'x', recommendation: 'y', sources: ['https://example.com/<a>'] }] }, /judgments\[0\]\.sources\[0\]: not an https URL/);
   refuse({ judgments: [{ text: 'x', recommendation: 'y', sources: ['javascript:alert(1)'] }] }, /not an https URL/);
@@ -117,6 +117,13 @@ test('notes.json is refused for an entry the report does not cover, an unknown f
   refuse({ overview: Array.from({ length: 7 }, () => ({ title: 't', text: 'x' })) }, /overview: more than 6 items/);
   refuse({ tests: Array.from({ length: 3 }, () => ({ text: 'x' })) }, /tests: more than 2 items/);
   refuse({ entries: { usdc: { checks: { abi: 'x'.repeat(201) } } } }, /entries\.usdc\.checks\.abi: longer than 200 characters/);
+  refuse({ flow: [{ after: 3, text: 'x' }] }, /flow\[0\]\.after: not the number of one of the template's 2 calls/);
+  refuse({ flow: [{ after: 0, text: 'x' }] }, /flow\[0\]\.after: not the number/);
+  refuse({ flow: Array.from({ length: 5 }, () => ({ after: 1, text: 'x' })) }, /flow: more than 4 items/);
+  refuse({ flow: [{ after: 1, text: 'x'.repeat(101) }] }, /flow\[0\]\.text: longer than 100 characters/);
+  refuse({ pastTxsConclusion: { status: 'confirmed', text: 'x' } }, /pastTxsConclusion\.status: not "safe" or "caution"/);
+  refuse({ verdict: { status: 'safe', text: 'x' } }, /verdict: recommendation is missing/);
+  refuse({ verdict: { status: 'safe', text: 'x', recommendation: 'x'.repeat(101) } }, /verdict\.recommendation: longer than 100 characters/);
   await assert.rejects(render({ ...committedNotes, entries: { usdc: { checks: { 'source.page.hidden': 'x' } } } }), (e: unknown) => e instanceof NotesError && /"source\.page\.hidden" is not a result of this entry/.test(e.message));
 });
 
@@ -132,7 +139,18 @@ test('every result the signer must look at needs the AI review, and a review of 
 test('AI text is escaped and always carries the AI tag; the page holds no script', async () => {
   const hostile = '<script>alert(1)</script><img src=x onerror=alert(1)>';
   const reviews = { 'morpho-oracle-cbbtc-usdc-86/source.page': { status: 'concern', text: hostile, recommendation: hostile } };
-  const html = await render({ ...committedNotes, title: hostile, judgments: [{ title: hostile, text: hostile, recommendation: hostile }], reviews, overview: [{ title: hostile, text: hostile }], fields: { '2.to': hostile }, entries: { usdc: { checks: { abi: hostile } } } });
+  const html = await render({
+    ...committedNotes,
+    title: hostile,
+    judgments: [{ title: hostile, text: hostile, recommendation: hostile }],
+    reviews,
+    overview: [{ title: hostile, text: hostile }],
+    fields: { '2.to': hostile },
+    entries: { usdc: { checks: { abi: hostile } } },
+    flow: [{ after: 1, text: hostile }],
+    pastTxsConclusion: { status: 'safe', text: hostile },
+    verdict: { status: 'safe', text: hostile, recommendation: hostile },
+  });
   assert.ok(!/<script|<img|onerror=/i.test(html.replace(/&lt;script|&lt;img|onerror=alert/g, '')), 'no tag or handler from the notes reaches the page');
   assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), 'the text shows escaped');
   assert.match(html, /<p class="lede">[^]*?<span class="by ai">AI 研究<\/span><\/p>/, 'the summary carries the AI tag');
@@ -143,7 +161,10 @@ test('AI text is escaped and always carries the AI tag; the page holds no script
     /讀到的來源頁面上沒有這個地址<span class="by prog">程式<\/span><\/div><div class="review concern"><div><b>AI 有疑慮：<\/b>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div><div class="rec"><b>建議：<\/b>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div><\/div>/,
     'the AI review sits under the program line, which keeps its program tag',
   );
-  assert.match(section(html, '細節'), /<span class="label">&lt;script&gt;[^<]*<\/span><div>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div>/, 'an overview line carries the AI tag');
+  assert.match(section(html, '整體安全嗎'), /<span class="label">&lt;script&gt;[^<]*<\/span><div>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div>/, 'an overview line carries the AI tag');
+  assert.match(section(html, '這筆交易怎麼走'), /<li class="ai"><span class="n">2<\/span><div>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div><\/li>/, 'an AI flow line carries the AI tag');
+  assert.match(section(html, '研究了哪些過去的交易，結論是什麼'), /AI 結論：沒看到問題<\/b> &lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span>/, 'the AI conclusion carries the AI tag');
+  assert.match(section(html, '整體安全嗎'), /AI 判斷：沒看到問題<\/b> &lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span>[^]*<b>建議：<\/b>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span>/, 'the AI verdict and its recommendation carry the AI tag');
   assert.match(html, /<td>&lt;script&gt;[^<]*&lt;\/script&gt;&lt;img src=x onerror=alert\(1\)&gt;<span class="by ai">AI 研究<\/span><\/td>/, 'a field meaning carries the AI tag');
   assert.match(cards(html).get('usdc') ?? '', /沒有用原始碼重新編譯來比對<span class="by prog">程式<\/span>[^]*?<div class="why">&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div>/, 'a line under a program result carries the AI tag and keeps the result');
 });
@@ -218,16 +239,38 @@ test('every line of a result list starts with its mark', () => {
   for (const list of lists) {
     for (const item of list.split('<li>').slice(1)) assert.match(item, /^<span class="mark (?:ok|warn|na|info)">/, `a result line without a mark: ${item.slice(0, 80)}`);
   }
-  const tested = section(html, '拿真實交易測過').match(/<li>/g)?.length ?? 0;
-  assert.ok(tested <= 4, `拿真實交易測過 has ${tested} lines`);
+  const past = section(html, '研究了哪些過去的交易，結論是什麼').match(/<li>/g)?.length ?? 0;
+  assert.ok(past <= 4, `the past transactions section has ${past} lines`);
 });
 
-test('the protocol overview is visible, and states from the code pins how long each contract has run unchanged', () => {
-  const details = section(readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8'), '細節');
-  const overview = details.slice(0, details.indexOf('<details>'));
-  assert.match(overview, /<h3>協議概況<\/h3>/);
-  assert.match(overview, /<code>morpho-blue<\/code>：程式碼自區塊 <span class="num">18883124<\/span> 起沒變過/);
-  assert.match(overview, /<span class="label">程式碼多久沒變<\/span>[^]*<span class="by prog">程式<\/span><\/div><\/li><\/ul>/);
+test('the page reads top to bottom in the signer\'s order, the signing checks open', () => {
+  const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
+  const headings = [...html.matchAll(/<h2>([^<]+)<\/h2>/g)].map((m) => m[1]);
+  assert.deepEqual(headings, ['每次簽名，程式會自動檢查', '這筆交易怎麼走', '研究了哪些過去的交易，結論是什麼', '整體安全嗎', '需要你做的事', 'ERC-7730 描述檔會怎麼顯示這筆交易', '每個地址確認了什麼', '細節']);
+  const checks = section(html, '每次簽名，程式會自動檢查');
+  assert.doesNotMatch(checks, /<details/, 'the signing checks are not folded');
+  assert.match(checks, /Safe 只付出你填的 usdc，沒有多付<span class="by prog">程式<\/span>/);
+  assert.match(checks, /交易前後在 morpho-blue 讀一次你的 Safe 的部位：supplyShares 要增加，其他不變<span class="by prog">程式<\/span>/);
+});
+
+test('the flow lists each call from the template, the AI lines after the call they belong to, then each read', () => {
+  const flow = section(readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8'), '這筆交易怎麼走');
+  const steps = [...flow.matchAll(/<li class="(prog|ai)"><span class="n">(\d+)<\/span>/g)].map((m) => `${m[1]} ${m[2]}`);
+  assert.deepEqual(steps, ['prog 1', 'prog 2', 'ai 3', 'ai 4', 'prog 5']);
+  assert.match(flow, /Safe → <a href="#entry-usdc">usdc<\/a>：授權 <a href="#entry-blue-bundles-v1">blue-bundles-v1<\/a> 拉走你在 card 填的數量（usdc）<span class="by prog">程式<\/span>/);
+  assert.match(flow, /Safe → <a href="#entry-blue-bundles-v1">blue-bundles-v1<\/a>：呼叫 <code>blueBundlesV1Supply<\/code><span class="by prog">程式<\/span>/);
+  assert.match(flow, /<a href="#entry-morpho-blue">morpho-blue<\/a>：程式在交易前後各讀一次 Safe 的 <code>position<\/code>/);
+});
+
+test('the past transactions and safety sections state the program\'s counts, and the protocol overview is visible', () => {
+  const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
+  const past = section(html, '研究了哪些過去的交易，結論是什麼');
+  assert.match(past, /抽查過去一年 40 筆相關交易（共找到 528 筆）：2 筆來自 Safe、8 筆來自一般錢包，8 筆和這個模板同形狀。<span class="by prog">程式<\/span>/);
+  assert.match(past, /<span class="mark ok">✓<\/span><div>拿 1 筆別的 Safe 真實執行過的交易測過：都 MATCH；欄位一個一個改掉 15 次，每次都被擋下。<span class="by prog">程式<\/span>/);
+  const safety = section(html, '整體安全嗎');
+  assert.match(safety, /6 個地址：3 個高信心、2 個中信心、1 個低信心<span class="by prog">程式<\/span>（低信心的 AI 已確認<span class="by ai">AI 研究<\/span>）/);
+  assert.match(safety, /<code>morpho-blue<\/code>：程式碼自區塊 <span class="num">18883124<\/span> 起沒變過/);
+  assert.match(safety, /<span class="label">程式碼多久沒變<\/span>[^]*<span class="by prog">程式<\/span><\/div><\/li><\/ul>/);
 });
 
 test('an address card\'s confidence comes from the program\'s results alone', async () => {

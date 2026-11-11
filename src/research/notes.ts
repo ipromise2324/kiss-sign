@@ -18,6 +18,12 @@ export type Judgment = Note & { readonly recommendation: string };
  */
 export type Review = { readonly status: 'confirmed' | 'concern'; readonly text: string; readonly recommendation: string };
 
+/** One line the AI adds to the transaction's flow, after the template's call `after` (1-based): a step inside that call. */
+export type FlowLine = { readonly after: number; readonly text: string };
+
+/** The AI's one-line conclusion: `safe` when it found nothing to worry about, `caution` otherwise. It never changes a program result. */
+export type Verdict = { readonly status: 'safe' | 'caution'; readonly text: string };
+
 /**
  * What the AI wrote for a template's HTML report, in the signer's language. The program shows every piece as written by
  * the AI and decides nothing from it.
@@ -26,8 +32,12 @@ export type Notes = {
   /** The report's heading: the operation in a few words. */
   readonly title: string;
   readonly summary: string;
-  /** What the transaction does, step by step. */
-  readonly steps: readonly string[];
+  /** What happens inside the template's calls, which the program cannot see: a few short lines, each placed after its call. */
+  readonly flow: readonly FlowLine[];
+  /** What the past transactions and the tests showed, in one line. */
+  readonly pastTxsConclusion: Verdict | undefined;
+  /** The AI's overall view of the operation's risk, in one line, and what it recommends. */
+  readonly verdict: (Verdict & { readonly recommendation: string }) | undefined;
   /** What the AI asks the signer to judge, beside the program's findings: a few, each a sentence or two. */
   readonly judgments: readonly Judgment[];
   /**
@@ -63,6 +73,9 @@ const MAX_JUDGMENTS = 4;
 const MAX_TESTS = 2;
 const MAX_OVERVIEW = 6;
 const MAX_REVIEW = 300;
+/** Flow lines and verdicts sit at the top of the page, so each stays one short line. */
+const MAX_LINE = 100;
+const MAX_FLOW = 4;
 const CHECK_KEY = /^[A-Za-z0-9_.-]{1,120}$/;
 const RESULT_ID = /^[A-Za-z0-9_.-]{1,80}(?:\/[A-Za-z0-9_.-]{1,120})?$/;
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
@@ -126,6 +139,29 @@ function review(path: string, raw: unknown): Review {
   return { status: value.status, text: text(`${path}.text`, value.text, MAX_REVIEW), recommendation: text(`${path}.recommendation`, value.recommendation, MAX_SHORT) };
 }
 
+function flowLine(path: string, raw: unknown, calls: number): FlowLine {
+  const value = keys(path, raw, ['after', 'text'], []);
+  if (typeof value.after !== 'number' || !Number.isInteger(value.after) || value.after < 1 || value.after > calls) {
+    throw new NotesError(`${path}.after: not the number of one of the template's ${calls} calls`);
+  }
+  return { after: value.after, text: text(`${path}.text`, value.text, MAX_LINE) };
+}
+
+function verdictStatus(path: string, raw: unknown): Verdict['status'] {
+  if (raw !== 'safe' && raw !== 'caution') throw new NotesError(`${path}: not "safe" or "caution"`);
+  return raw;
+}
+
+function conclusion(path: string, raw: unknown): Verdict {
+  const value = keys(path, raw, ['status', 'text'], []);
+  return { status: verdictStatus(`${path}.status`, value.status), text: text(`${path}.text`, value.text, MAX_LINE) };
+}
+
+function verdict(path: string, raw: unknown): Verdict & { readonly recommendation: string } {
+  const value = keys(path, raw, ['status', 'text', 'recommendation'], []);
+  return { ...conclusion(path, { status: value.status, text: value.text }), recommendation: text(`${path}.recommendation`, value.recommendation, MAX_LINE) };
+}
+
 function overviewItem(path: string, raw: unknown): Note {
   const item = note(path, raw, MAX_SHORT);
   if (item.title === undefined) throw new NotesError(`${path}: title is missing`);
@@ -134,16 +170,18 @@ function overviewItem(path: string, raw: unknown): Note {
 
 /**
  * `notes.json`, refused unless every key is known: `entries` may name only the registry entries the report covers, and
- * `fields` only the keys of the report's field table.
+ * `fields` only the keys of the report's field table, and `flow` only the template's `calls`.
  */
-export function parseNotes(raw: unknown, known: { readonly entries: ReadonlySet<string>; readonly fields: ReadonlySet<string> }): Notes {
-  const value = keys(NOTES_FILE, raw, ['title', 'summary', 'steps'], ['judgments', 'reviews', 'overview', 'entries', 'fields', 'tests', 'details']);
+export function parseNotes(raw: unknown, known: { readonly entries: ReadonlySet<string>; readonly fields: ReadonlySet<string>; readonly calls: number }): Notes {
+  const value = keys(NOTES_FILE, raw, ['title', 'summary'], ['flow', 'pastTxsConclusion', 'verdict', 'judgments', 'reviews', 'overview', 'entries', 'fields', 'tests', 'details']);
   const reviews = value.reviews === undefined ? {} : value.reviews;
   if (!isRecord(reviews)) throw new NotesError(`${NOTES_FILE}.reviews: not a JSON object`);
   return {
     title: text(`${NOTES_FILE}.title`, value.title),
     summary: text(`${NOTES_FILE}.summary`, value.summary),
-    steps: list(`${NOTES_FILE}.steps`, value.steps, text),
+    flow: list(`${NOTES_FILE}.flow`, value.flow, (path, line) => flowLine(path, line, known.calls), MAX_FLOW),
+    pastTxsConclusion: value.pastTxsConclusion === undefined ? undefined : conclusion(`${NOTES_FILE}.pastTxsConclusion`, value.pastTxsConclusion),
+    verdict: value.verdict === undefined ? undefined : verdict(`${NOTES_FILE}.verdict`, value.verdict),
     judgments: list(`${NOTES_FILE}.judgments`, value.judgments, judgment, MAX_JUDGMENTS),
     reviews: new Map(
       Object.entries(reviews).map(([id, item]) => {

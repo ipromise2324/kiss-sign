@@ -1,10 +1,19 @@
 {
   "title": "把借出代幣存進一個 Morpho Blue market",
-  "summary": "Safe 經由 BlueBundlesV1，把一個 market 的借出代幣存進 Morpho Blue 的那個 market，部位記在 Safe 名下。現在可選的 market 是 usdc-cbbtc-86：借出 USDC、抵押品 cbBTC、LLTV 86%。",
-  "steps": [
-    "允許 BlueBundlesV1 從 Safe 拉走剛好你填的數量。",
-    "呼叫 blueBundlesV1Supply：它從 Safe 拉走這筆代幣，存進 Morpho Blue，記在呼叫者（也就是 Safe）名下。這個函式沒有收款人參數，所以部位只會記在 Safe 名下。"
+  "summary": "把 USDC 存進 Morpho Blue 的 usdc-cbbtc-86 market（抵押品 cbBTC、LLTV 86%），存款記在你的 Safe 名下。",
+  "flow": [
+    { "after": 2, "text": "BlueBundlesV1 用第 1 步的授權，從 Safe 拉走你填的 USDC。" },
+    { "after": 2, "text": "BlueBundlesV1 把它存進 Morpho Blue，記在呼叫者（Safe）名下。這個函式沒有收款人參數。" }
   ],
+  "pastTxsConclusion": {
+    "status": "safe",
+    "text": "8 筆一般錢包的存款都和模板同形狀，推薦費都是 0、沒有推薦費收款人；AI 另外找到 7 個 Safe 的 13 筆同形狀交易。"
+  },
+  "verdict": {
+    "status": "caution",
+    "text": "要小心的是 BlueBundlesV1 很新、AI 沒讀它的稽核，以及 cbBTC 或 USDC 脫鉤的風險；這個 market 到目前沒有壞帳。",
+    "recommendation": "先存一小筆試試；能接受脫鉤風險再存大額。"
+  },
   "judgments": [
     {
       "title": "BlueBundlesV1 很新。",

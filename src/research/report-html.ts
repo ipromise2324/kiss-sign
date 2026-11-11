@@ -16,7 +16,7 @@ import type { FieldFact } from './erc7730.ts';
 import { checkSources, githubLine, sourceSiteLine } from './listings.ts';
 import type { Line } from './listings.ts';
 import { NOTES_FILE, NotesError, parseNotes, readNotes } from './notes.ts';
-import type { Judgment, Note, Notes, Review } from './notes.ts';
+import type { Judgment, Note, Notes, Review, Verdict } from './notes.ts';
 import { entriesOf, hasMarket, pinVerdict, refNames, spanKind, vaultsOf, wordOf } from './report.ts';
 import type { DocLink, PastTxsSummary, ReportInputs, ReportTitle, Subject } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
@@ -461,6 +461,108 @@ function signingChecks(template: Template, registry: Registry): Html[] {
   ];
 }
 
+const plainToken = (token: TokenRef, template: Template, registry: Registry): string => (token === 'eth' ? 'ETH' : refNames(token, template, registry).join(' 或 ') || '代幣');
+
+function plainEffect(side: 'gives' | 'gets', effect: Effect, template: Template, registry: Registry): Html {
+  const token = plainToken(effect.token, template, registry);
+  if (side === 'gets') return effect.amount.kind === 'card' ? h`模擬跑一次：Safe 收到你填的 ${token}` : h`模擬跑一次：Safe 收到 ${token}`;
+  if (effect.amount.kind === 'card') return h`模擬跑一次：Safe 只付出你填的 ${token}，沒有多付`;
+  return effect.amount.kind === 'all' ? h`模擬跑一次：Safe 付出全部的 ${token}` : h`模擬跑一次：Safe 付出一些 ${token}`;
+}
+
+/** A view effect's changes in a few words: the values that must move, then 其他不變 for the rest. */
+function plainChanges(view: ViewEffect): Html {
+  const moving = view.changes.filter(({ change }) => change !== 'same').map(({ value, change }) => h`${paramName(view.returns[value] as AbiParam, value)} ${CHANGES[change]}`);
+  return joined([...moving, ...(moving.length < view.changes.length ? [h`其他不變`] : [])], '，');
+}
+
+/** What every signing checks, one short line each, from the template; the full wording stays folded in 細節. */
+function plainChecks(template: Template, registry: Registry): Html[] {
+  const calls = template.calls.length;
+  const vaultAssets = [...template.card.values()].some((field) => field.kind === 'contract' && field.registryKind === 'vault');
+  return [
+    h`交易只做這 ${calls} 件事，每個數字都對得上你的 card`,
+    h`把每個欄位改掉一個再查一次，每次都被擋下（確認檢查真的有效）`,
+    ...template.effects.gives.map((effect) => plainEffect('gives', effect, template, registry)),
+    ...template.effects.gets.map((effect) => plainEffect('gets', effect, template, registry)),
+    h`Safe 的餘額沒有其他變化`,
+    h`沒有無上限的授權，也沒有留下沒用完的授權`,
+    ...template.effects.views.map((view) => h`交易前後在 ${view.to} 讀一次你的 Safe 的部位：${plainChanges(view)}`),
+    ...(vaultAssets ? [h`card 上的 vault 收的就是 registry 寫的代幣`] : []),
+    h`Safe 的設定（擁有者、門檻、模組）不會被改`,
+    h`每個合約的程式碼都沒被換過`,
+    h`兩家節點的答案要一致，不一致就不給 MATCH`,
+  ];
+}
+
+const entryLink = (name: string): Html => h`<a href="#entry-${name}">${name}</a>`;
+const APPROVE = 'approve(address,uint256)';
+
+/** What one call does, in a few words: an ERC-20 approval names its spender and amount; any other call its function. */
+function callStep(call: Template['calls'][number], template: Template, registry: Registry): Html {
+  const to = namesOf(call.to, template, registry);
+  const target = to.length === 0 ? ruleZh(call.to, template, registry) : joined(to.map(entryLink), ' 或 ');
+  if (call.data === 'empty') return h`Safe → ${target}：送出 ETH`;
+  const [spender, value] = call.data.args;
+  if (call.data.fn.signature === APPROVE && spender !== undefined && value !== undefined) {
+    const who = namesOf(spender, template, registry);
+    return h`Safe → ${target}：授權 ${who.length === 0 ? screenValue(spender, template, registry) : joined(who.map(entryLink), ' 或 ')} 拉走${screenValue(value, template, registry)}`;
+  }
+  return h`Safe → ${target}：呼叫 ${c(call.data.fn.name)}`;
+}
+
+/** The transaction as steps: each call, the AI's lines for what happens inside it, then each read before and after. */
+function flowSection(template: Template, registry: Registry, notes: Notes): Html {
+  const steps: { readonly text: Html; readonly by: 'prog' | 'ai' }[] = [];
+  template.calls.forEach((call, i) => {
+    steps.push({ text: callStep(call, template, registry), by: 'prog' });
+    for (const line of notes.flow.filter((f) => f.after === i + 1)) steps.push({ text: h`${line.text}`, by: 'ai' });
+  });
+  for (const view of template.effects.views) steps.push({ text: h`${entryLink(view.to)}：程式在交易前後各讀一次 Safe 的 ${c(view.fn.name)}，${plainChanges(view)}`, by: 'prog' });
+  const items = steps.map(({ text, by }, i) => h`<li class="${by}"><span class="n">${i + 1}</span><div>${text}${by === 'prog' ? PROGRAM : AI}</div></li>`);
+  return h`<ol class="flow">${items}</ol>`;
+}
+
+/** The past transactions in one line: how many were studied, from whom, and how many have the template's shape. */
+function pastTxsPlain(summary: PastTxsSummary): Html {
+  const { run } = summary;
+  const judged = run.studies.flatMap((s) => (s.kind === 'fit' || s.kind === 'misfit' ? [s] : []));
+  const safes = judged.filter((s) => s.sender.kind === 'safe').length;
+  const wallets = judged.filter((s) => s.sender.kind === 'eoa').length;
+  const fits = judged.filter((s) => s.kind === 'fit').length;
+  const when = run.query.sampling.kind === 'spread' ? '過去一年' : '一段指定區塊';
+  return h`<li>${INFO}<div>抽查${when} ${run.studies.length} 筆相關交易（共找到 ${run.found.size} 筆）：${safes} 筆來自 Safe、${wallets} 筆來自一般錢包，${fits} 筆和這個模板同形狀。${PROGRAM}</div></li>`;
+}
+
+/** The recorded Safe transactions in one line, or the ones that failed, which the action list holds too. */
+function fixturesPlain(fixtures: readonly FixtureRun[]): Html {
+  if (fixtures.length === 0) return h`<li>${MARKS.na}<div>沒有拿真實的 Safe 交易測過。${PROGRAM}</div></li>`;
+  const passed = fixtures.flatMap((run) => (run.kind === 'checked' && run.mutations.kind === 'pass' ? [run.mutations.bound] : []));
+  if (passed.length < fixtures.length) {
+    return h`<li>${MARKS.act}<div>拿 ${fixtures.length} 筆別的 Safe 真實執行過的交易測過，${fixtures.length - passed.length} 筆沒通過，見「需要你做的事」。${PROGRAM}</div></li>`;
+  }
+  const mutated = passed.reduce((a, b) => a + b, 0);
+  return h`<li>${MARKS.ok}<div>拿 ${fixtures.length} 筆別的 Safe 真實執行過的交易測過：都 MATCH；欄位一個一個改掉 ${mutated} 次，每次都被擋下。${PROGRAM}</div></li>`;
+}
+
+const VERDICT_WORDS: Readonly<Record<Verdict['status'], string>> = { safe: '沒看到問題', caution: '要小心' };
+
+const verdictLine = (label: string, verdict: Verdict): Html =>
+  h`<li>${INFO}<div><b class="verdict ${verdict.status}">${label}：${VERDICT_WORDS[verdict.status]}</b> ${verdict.text}${AI}</div></li>`;
+
+/** How many addresses have each confidence level, and whether the AI confirmed the low ones. */
+function confidenceCount(cards: readonly EntryCard[], notes: Notes): Html {
+  const levels = cards.map((card) => ({ card, level: confidenceOf(card.checks) }));
+  const counts = (['high', 'medium', 'low'] as const).flatMap((level) => {
+    const n = levels.filter((l) => l.level === level).length;
+    return n === 0 ? [] : [h`${n} 個${CONFIDENCE[level]}`];
+  });
+  const low = levels.filter((l) => l.level === 'low');
+  const doubted = low.some(({ card }) => card.checks.some((check) => check.status === 'act' && notes.reviews.get(`${card.entry.name}/${check.key}`)?.status !== 'confirmed'));
+  const reviewed = low.length === 0 ? '' : h`（低信心的 ${REVIEWED[doubted ? 'concern' : 'confirmed']}${AI}）`;
+  return h`<li>${INFO}<div>${cards.length} 個地址：${joined(counts, '、')}${PROGRAM}${reviewed}</div></li>`;
+}
+
 /** One line for a past-transactions recording; its raw output is folded under it. */
 function pastTxsLine(summary: PastTxsSummary): Html {
   const { run } = summary;
@@ -697,6 +799,16 @@ pre { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; overflow
 .overview > li { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 2px 14px; font-size: 15px; }
 .overview > li .label { color: var(--muted); font-size: 14px; }
 .overview ul { margin: 0; padding-left: 1.2em; }
+.flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.flow > li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 14px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; }
+.flow > li + li { margin-top: 26px; position: relative; }
+.flow > li + li::before { content: "↓"; position: absolute; top: -25px; left: 20px; color: var(--muted); font-size: 16px; line-height: 24px; }
+.flow > li.ai { margin-left: 28px; background: none; border-style: dashed; }
+.flow .n { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; margin-top: 2px; color: var(--accent); border: 1px solid var(--accent); }
+.flow > li.ai .n { color: var(--muted); border-style: dashed; border-color: var(--muted); }
+.verdict { margin-right: 4px; }
+.verdict.safe { color: var(--accent); }
+.verdict.caution { color: var(--warn); }
 @media (max-width: 560px) { .overview > li { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }`;
 
@@ -806,7 +918,8 @@ function actionSection(actions: readonly Action[], notes: Notes): Html {
 
 /** The protocol at a glance: the AI's overview lines, then how long each contract's code has run unchanged. */
 function overviewSection(entries: readonly RegistryEntry[], inputs: ReportInputs, notes: Notes): Html {
-  const ai = notes.overview.map((item) => h`<li><span class="label">${item.title}</span><div>${item.text}${AI}${sourcesOf(item)}</div></li>`);
+  const cited = (item: Note): Part => (item.sources.length === 0 ? '' : h` <span class="why">來源 ${joined(item.sources.map((url, i) => link(url, String(i + 1))), ' ')}</span>`);
+  const ai = notes.overview.map((item) => h`<li><span class="label">${item.title}</span><div>${item.text}${AI}${cited(item)}</div></li>`);
   const code = entries.map((entry) => {
     if (entry.code === undefined) return h`<li>${c(entry.name)}：registry 沒有記錄程式碼指紋</li>`;
     const { from } = entry.code.current;
@@ -881,6 +994,12 @@ export function renderHtml(inputs: ReportInputs, notes: Notes, title: ReportTitl
     ...notes.tests.map((n) => noteItem(n, INFO)),
   ];
   const rawPast = inputs.pastTxs.map((p) => h`<details><summary>過去交易搜尋的原始輸出：${p.file}</summary><pre>${p.text.trimEnd()}</pre></details>`);
+  const past = [
+    ...inputs.pastTxs.map(pastTxsPlain),
+    fixturesPlain(fixtures),
+    notes.pastTxsConclusion === undefined ? h`<li>${MARKS.na}<div>AI 沒有寫結論。${PROGRAM}</div></li>` : verdictLine('AI 結論', notes.pastTxsConclusion),
+  ];
+  const verdict = notes.verdict === undefined ? h`<li>${MARKS.na}<div>AI 沒有寫整體判斷。${PROGRAM}</div></li>` : h`${verdictLine('AI 判斷', notes.verdict)}<li>${INFO}<div>${recommend(notes.verdict.recommendation)}</div></li>`;
   const page = h`<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -904,9 +1023,24 @@ ${new Html(CSS)}
 </header>
 
 <section>
-<h2>你在 card 上填的</h2>
-${cardSection(template, registry)}
-<details><summary>交易的每一步${AI}</summary><ol class="steps">${notes.steps.map((step) => h`<li>${step}</li>`)}</ol></details>
+<h2>每次簽名，程式會自動檢查</h2>
+<ul class="checks">${plainChecks(template, registry).map((text) => h`<li>${MARKS.ok}<div>${text}${PROGRAM}</div></li>`)}</ul>
+</section>
+
+<section>
+<h2>這筆交易怎麼走</h2>
+${flowSection(template, registry, notes)}
+</section>
+
+<section>
+<h2>研究了哪些過去的交易，結論是什麼</h2>
+<ul class="checks">${past}</ul>
+</section>
+
+<section>
+<h2>整體安全嗎</h2>
+<ul class="checks">${verdict}${confidenceCount(cards, notes)}</ul>
+${overviewSection(entriesOf(subject, registry), inputs, notes)}
 </section>
 
 <section>
@@ -932,16 +1066,12 @@ ${cards.map((card) => entryArticle(card, notes))}
 </section>
 
 <section>
-<h2>拿真實交易測過</h2>
-${tested.length === 0 ? h`<p>沒有記錄。${PROGRAM}</p>` : h`<ul class="checks">${tested}</ul>`}
-${rawPast}
-</section>
-
-<section>
 <h2>細節</h2>
-<div class="panel"><h3>協議概況</h3>${overviewSection(entriesOf(subject, registry), inputs, notes)}</div>
-<details><summary>每次簽名前，程式會自動檢查的 ${signing.length} 件事</summary><ul class="checks">${signing.map((text) => checkItem(pass('signing', text), undefined))}</ul></details>
+<details><summary>你在 card 上填的</summary>${cardSection(template, registry)}</details>
+<details><summary>每次簽名前，程式會自動檢查的 ${signing.length} 件事（完整說明）</summary><ul class="checks">${signing.map((text) => checkItem(pass('signing', text), undefined))}</ul></details>
 <details><summary>交易裡每個欄位必須是什麼</summary>${fieldTable(groups, notes)}</details>
+<details><summary>拿真實交易測過的細節</summary>${tested.length === 0 ? h`<p>沒有記錄。${PROGRAM}</p>` : h`<ul class="checks">${tested}</ul>`}</details>
+${rawPast}
 ${detailsSection(inputs, entriesOf(subject, registry), notes, subject)}
 </section>
 
@@ -953,8 +1083,9 @@ ${detailsSection(inputs, entriesOf(subject, registry), notes, subject)}
 }
 
 /** The keys `notes.json` may use for a template's report. */
-export function notesKeys(subject: Extract<Subject, { kind: 'template' }>, registry: Registry): { entries: Set<string>; fields: Set<string> } {
+export function notesKeys(subject: Extract<Subject, { kind: 'template' }>, registry: Registry): { entries: Set<string>; fields: Set<string>; calls: number } {
   return {
+    calls: subject.template.calls.length,
     entries: new Set(entriesOf(subject, registry).map((e) => e.name)),
     fields: new Set(fieldGroups(subject.template, registry).flatMap((g) => g.rows.map((r) => r.key))),
   };
