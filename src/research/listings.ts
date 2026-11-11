@@ -286,3 +286,19 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
     commits: Object.fromEntries(pages.commits),
   };
 }
+
+/**
+ * The listings `entries` are compared with, reading only a list some entry needs. A recording trimmed to the entries
+ * holds a list none of them needs empty; an empty list an entry needs is refused, since it would hide every comparison.
+ */
+export async function listingsFor(
+  entries: readonly RegistryEntry[],
+  suffixes: Listings['suffixes'],
+  read: (listing: typeof DEFILLAMA_PROTOCOLS | typeof COINGECKO_COINS) => Promise<unknown>,
+): Promise<Listings> {
+  const [protocols, coinsByAddress] = await Promise.all([
+    entries.some((e) => e.defillama !== undefined) ? read(DEFILLAMA_PROTOCOLS).then(parseDefiLlamaProtocols) : new Map<string, DefiLlamaProtocol[]>(),
+    entries.some(hasCoin) ? read(COINGECKO_COINS).then(parseCoinGeckoCoins) : new Map<Address, CoinGeckoCoin[]>(),
+  ]);
+  return { protocols, coinsByAddress, suffixes };
+}
