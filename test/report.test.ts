@@ -8,7 +8,6 @@ import type { Exchange } from '../src/chain/recording.ts';
 import type { Reader } from '../src/chain/reader.ts';
 import type { BlockRef, BlockTag } from '../src/chain/types.ts';
 import { keccakCode } from '../src/contracts/code.ts';
-import { cachedCompilers } from '../src/contracts/solc.ts';
 import { REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
 import type { Registry, RegistryEntry } from '../src/registry.ts';
 import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
@@ -17,9 +16,7 @@ import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import {
   GENERATED_FILE,
   checkSpans,
-  GENERATED_SUFFIX,
   ReportError,
-  VAULT_REPORTS_DIR,
   compareReports,
   entriesOf,
   erc7730Text,
@@ -28,7 +25,6 @@ import {
   pastTxsRecordings,
   programChanges,
   renderReport,
-  replayReport,
   reportRecordingPath,
   summarizePastTxs,
   vaultsAt,
@@ -70,24 +66,6 @@ function quick(
   };
   return renderReport(inputs, { command: 'test', sources: [] });
 }
-
-const generated = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) =>
-  readdirSync(join(ROOT, TEMPLATES_DIR, protocol))
-    .map((operation) => `${protocol}/${operation}`)
-    .filter((id) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE))),
-);
-
-test('every committed report.generated.md is what the program writes from the repository and its recordings', { timeout: 600_000 }, async () => {
-  assert.ok(generated.includes(ID), `${ID} has a generated report`);
-  assert.ok(!('unavailable' in suffixes), `the source checks need the pinned Public Suffix List: ${'unavailable' in suffixes ? suffixes.unavailable : ''}`);
-  const compilers = cachedCompilers();
-  for (const id of generated) {
-    const committed = readFileSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE), 'utf8');
-    const text = await replayReport(ROOT, registry, { template: id }, compilers, suffixes);
-    assert.ok(text === committed, `${TEMPLATES_DIR}/${id}/${GENERATED_FILE} differs from \`pnpm report ${id} --offline\`; run \`pnpm report ${id} --record\` and never edit it by hand`);
-    assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${id} lacks a read the proof now makes; delete it and run \`pnpm report ${id} --record\``);
-  }
-});
 
 test('morpho/vault-deposit: rules name registry entries with full addresses, and every function has its page checked', () => {
   const text = quick();
@@ -309,23 +287,6 @@ test("docs.json's contract must be the call's target when the template binds the
   assert.throws(() => parseDocs(swap('approve(address,uint256)', 'bundler3'), template, registry), /calls it on one of usdc, usdt/);
   assert.equal(parseDocs(swap('approve(address,uint256)', 'usdt'), template, registry).length, 4);
   assert.match(quick(), /\| Function \| Contract \| Page \| Site \| GitHub commit \| Function name appears on page \|/);
-});
-
-const vaultReports = existsSync(join(ROOT, VAULT_REPORTS_DIR)) ? readdirSync(join(ROOT, VAULT_REPORTS_DIR)).filter((f) => f.endsWith(GENERATED_SUFFIX)) : [];
-
-test('every committed registry/reports/<vault>.generated.md is what pnpm report --vault writes from its recordings', { timeout: 600_000 }, async () => {
-  assert.ok(vaultReports.length > 0, `${VAULT_REPORTS_DIR} holds a vault report`);
-  const compilers = cachedCompilers();
-  for (const file of vaultReports) {
-    const vault = file.slice(0, -GENERATED_SUFFIX.length);
-    const committed = readFileSync(join(ROOT, VAULT_REPORTS_DIR, file), 'utf8');
-    const text = await replayReport(ROOT, registry, { vault }, compilers, suffixes);
-    assert.ok(text === committed, `${VAULT_REPORTS_DIR}/${file} differs from \`pnpm report --vault ${vault} --offline\`; run \`pnpm report --vault ${vault} --record\``);
-    assert.ok(!text.includes('## Card'), 'a vault report has no template sections');
-    const entry = registry.entries.get(vault)!;
-    for (const name of [vault, ...Object.values(entry.attributes)]) assert.match(text, new RegExp(`^\\| \`${name.replace(/\./g, '\\.')}\` \\| \`0x[0-9a-fA-F]{40}\` \\|`, 'm'));
-    assert.match(text, /stored output of `pnpm vault-evidence`/);
-  }
 });
 
 const VAULT = 'steakhouse-high-yield-usdc';

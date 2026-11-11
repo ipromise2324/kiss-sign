@@ -1,0 +1,136 @@
+<!doctype html>
+<!-- Source of docs/architecture.png. Every element is backed by a sentence in docs/design.md. Re-render with docs/diagrams/render.sh. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="render-width" content="960">
+<title>kiss-sign overview</title>
+<style>
+  :root {
+    --ink: #1b1f27; --muted: #57606a; --line: #d0d7de; --bg: #f6f8fa; --card: #ffffff;
+    --signer: #2463d1; --signer-bg: #e8f0fd;
+    --ai: #845200; --ai-bg: #fdf3e1;
+    --program: #136b42; --program-bg: #e3f4ea;
+    --mismatch: #c2262e; --unverifiable: #845200;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 960px; background: var(--bg); color: var(--ink); font: 17px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; padding: 36px 32px 32px; }
+  code { font: 0.9em ui-monospace, "SF Mono", Menlo, Consolas, monospace; background: #eef1f4; border-radius: 4px; padding: 1px 5px; }
+  header { display: flex; align-items: center; gap: 20px; margin-bottom: 18px; }
+  header svg { width: 64px; height: 64px; flex: none; }
+  h1 { font-size: 38px; line-height: 1; letter-spacing: -0.5px; }
+  h1 em { font-size: 22px; color: var(--signer); font-weight: 700; margin-left: 12px; letter-spacing: 0; }
+  header p { color: var(--muted); margin-top: 8px; }
+  .legend { display: flex; gap: 10px; margin: 0 0 18px; color: var(--muted); font-size: 15px; align-items: center; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 26px 10px; }
+  h2 { font-size: 21px; margin-bottom: 6px; }
+  h2 small { font-size: 15px; font-weight: 400; color: var(--muted); margin-left: 8px; }
+  ol { list-style: none; position: relative; }
+  ol::before { content: ""; position: absolute; left: 10px; top: 20px; bottom: 26px; border-left: 2px solid var(--line); }
+  li.step { position: relative; padding: 13px 0 13px 40px; border-bottom: 1px solid #eaeef2; }
+  li.step:last-child { border-bottom: 0; }
+  li.step::before { content: ""; position: absolute; left: 1px; top: 17px; width: 14px; height: 14px; border-radius: 50%; border: 3px solid var(--c); background: var(--card); }
+  .signer { --c: var(--signer); --cb: var(--signer-bg); }
+  .ai { --c: var(--ai); --cb: var(--ai-bg); }
+  .program { --c: var(--program); --cb: var(--program-bg); }
+  .title { font-size: 19px; font-weight: 700; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .who { font-size: 13px; font-weight: 600; color: var(--c); background: var(--cb); border-radius: 6px; padding: 1px 8px; }
+  .desc { color: var(--ink); margin-top: 3px; }
+  .sub { list-style: none; margin-top: 6px; }
+  .sub li { padding: 4px 0 4px 18px; position: relative; }
+  .sub li::before { content: ""; position: absolute; left: 2px; top: 13px; width: 7px; height: 7px; border-radius: 2px; background: var(--c); }
+  .sub b { font-weight: 650; }
+  .sub .note { color: var(--muted); }
+  .chip { display: inline-block; font-size: 13px; color: #24292f; border: 1px solid var(--line); border-radius: 999px; padding: 0 9px; margin: 2px 0 0 4px; background: #fbfcfd; white-space: nowrap; }
+  .between { color: var(--program); font-weight: 600; font-size: 15px; margin: 12px 0 12px 8px; }
+  .verdict { font: 700 16px ui-monospace, "SF Mono", Menlo, monospace; margin-top: 4px; }
+  .m { color: var(--program); } .x { color: var(--mismatch); } .u { color: var(--unverifiable); }
+</style>
+</head>
+<body>
+<header>
+  <svg viewBox="0 0 256 256" aria-hidden="true"><g fill="#1b1f27"><path d="M57.98 58.02 L173.98 174.02 L198.02 149.98 L82.02 33.98 Z"/><path d="M173.98 33.98 L57.98 149.98 L82.02 174.02 L198.02 58.02 Z"/><rect x="40" y="194" width="176" height="22"/></g></svg>
+  <div>
+    <h1>kiss-sign<em>Keep it simple, stupid, and sign.</em></h1>
+    <p>An AI writes templates. A fixed program runs them and decides. You sign only on <code>MATCH</code>.</p>
+  </div>
+</header>
+<div class="legend">Who acts:
+  <span class="signer"><span class="who">You, the signer</span></span>
+  <span class="ai"><span class="who">AI agent</span></span>
+  <span class="program"><span class="who">Program</span></span>
+</div>
+
+<section>
+  <h2>Set up once<small>on the signing device</small></h2>
+  <ol>
+    <li class="step signer"><div class="title">Fork, clone, init <span class="who">You</span></div>
+      <div class="desc">Fork kiss-sign on GitHub, clone your fork, <code>pnpm install</code>, <code>pnpm kiss-sign init --safe 0x…</code></div>
+      <ul class="sub">
+        <li>Your fork's <code>main</code> is the one <code>verify</code> trusts. <span class="chip">GitHub</span></li>
+        <li>API keys go in <code>$KISS_SIGN_HOME/.env</code>, never in the chat.</li>
+      </ul></li>
+  </ol>
+</section>
+
+<div class="between">↓ Building a template happens on another computer, with an AI agent</div>
+
+<section>
+  <h2>Build a template<small>once per operation, on a computer with an AI agent</small></h2>
+  <ol>
+    <li class="step signer"><div class="title">State the intent <span class="who">You</span></div>
+      <div class="desc">“Deposit USDC into the Morpho Apex vault”</div></li>
+    <li class="step ai"><div class="title">Research <span class="who">AI agent</span></div>
+      <ul class="sub">
+        <li><b>Official addresses</b> <span class="note">and what the protocol says about them</span> <span class="chip">Official site</span><span class="chip">GitHub</span><span class="chip">Protocol API, if any</span></li>
+        <li><b>Contract name and creator</b> <span class="chip">Etherscan</span></li>
+        <li><b>Protocol health</b> <span class="note">hacks, audits, upgrades</span> <span class="chip">DefiLlama hacks</span></li>
+        <li><b>Past transactions</b> <span class="note">the program finds and counts them; the AI reads the counts</span> <span class="chip">Alchemy</span><span class="chip">Etherscan</span></li>
+      </ul></li>
+    <li class="step program"><div class="title">Prove <span class="who">Program</span></div>
+      <ul class="sub">
+        <li><b>Sources match public listings</b> <span class="note">findings go to the report</span> <span class="chip">DefiLlama</span><span class="chip">CoinGecko</span><span class="chip">Source page</span></li>
+        <li><b>Code pins</b> <span class="note">each address's code, and since when it ran</span> <span class="chip">Alchemy</span><span class="chip">drpc</span></li>
+        <li><b>ABI matches the chain</b> <span class="chip">Sourcify</span> → <span class="chip">pinned solc</span> = <span class="note">bytecode</span></li>
+        <li><b>Vault history</b> <span class="chip">Alchemy</span><span class="chip">drpc</span></li>
+        <li><b>ERC-7730 descriptors</b> <span class="note">and who attested them</span> <span class="chip">ERC-7730 registry</span></li>
+      </ul></li>
+    <li class="step ai"><div class="title">Open a pull request <span class="who">AI agent</span></div>
+      <div class="desc">The template, its test transactions, and the AI's notes. It never merges.</div></li>
+    <li class="step program"><div class="title">Write the report <span class="who">Program</span></div>
+      <div class="desc">From the recordings, never by the AI: a Markdown report and, with the AI's notes, an HTML report with a confidence level per address.</div></li>
+    <li class="step signer"><div class="title">Review and merge <span class="who">You</span></div>
+      <div class="desc">Read the report, run <code>pnpm report … --compare</code> to read it all again live, then merge. Merging is your approval. <span class="chip">GitHub</span></div></li>
+  </ol>
+</section>
+
+<div class="between">↓ <code>git pull</code> brings the merged template to the signing device</div>
+
+<section>
+  <h2>Every signing<small>on the signing device, with no AI</small></h2>
+  <ol>
+    <li class="step signer"><div class="title">Approve the template <span class="who">You</span></div>
+      <div class="desc">First use only: <code>template approve</code> shows the template and its commit, and records its hash.</div></li>
+    <li class="step signer"><div class="title">Fill the card <span class="who">You</span></div>
+      <div class="desc">Pick each vault, market or recipient from a numbered list with full addresses. Type amounts in whole tokens, with decimals the program reads. The first time a template or vault is used, the card names a small amount. <span class="chip">Alchemy</span><span class="chip">drpc</span></div></li>
+    <li class="step signer"><div class="title">Seal the card <span class="who">You</span></div>
+      <div class="desc">Hashed and stored before you see the transaction.</div></li>
+    <li class="step signer"><div class="title">Propose on Safe <span class="who">You</span></div>
+      <div class="desc">kiss-sign reads it back and recomputes every hash. <span class="chip">Safe Transaction Service</span></div></li>
+    <li class="step program"><div class="title">Verify <span class="who">Program</span></div>
+      <ul class="sub">
+        <li><b>Self-check</b> <span class="note">the clone is exactly your fork's <code>main</code></span></li>
+        <li><b>Decode</b> <span class="note">byte for byte, every field against the template and the card</span></li>
+        <li><b>Mutations</b> <span class="note">each changed copy must give <code>MISMATCH</code></span></li>
+        <li><b>Code pins</b> <span class="note">every registry contract runs its pinned code</span></li>
+        <li><b>Simulate</b> <span class="note">balances, allowances and views must match the card</span> <span class="chip">Alchemy</span><span class="chip">drpc</span></li>
+      </ul></li>
+    <li class="step program"><div class="title">Verdict <span class="who">Program</span></div>
+      <div class="verdict"><span class="m">MATCH</span> · <span class="x">MISMATCH</span> · <span class="u">UNVERIFIABLE</span></div></li>
+    <li class="step signer"><div class="title">Sign on the wallet <span class="who">You</span></div>
+      <div class="desc">Only on <code>MATCH</code>: compare both hashes on the device's screen. <span class="chip">Hardware wallet</span></div></li>
+  </ol>
+</section>
+<script>document.body.dataset.height = Math.ceil(document.documentElement.getBoundingClientRect().height);</script>
+</body>
+</html>

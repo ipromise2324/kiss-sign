@@ -34,7 +34,7 @@ Two machines, joined only by `main` on GitHub.
 
 ![Detailed flow: who acts at each step, what it does, which services it uses, and what it trusts](architecture-detail.png)
 
-Every service or step drawn in `docs/architecture.png` and `docs/architecture-detail.png` has a sentence in this document that says what is checked with it and who checks it, the program or the AI. The text is authoritative: where a picture and the text disagree, the picture is wrong and is redrawn. [Research services](#research-services) lists each service by step.
+Every service or step drawn in `docs/architecture.png` and `docs/architecture-detail.png` has a sentence in this document that says what is checked with it and who checks it, the program or the AI. The text is authoritative: where a picture and the text disagree, the picture is wrong and is redrawn. Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diagrams/render.sh` renders both with headless Chrome. [Research services](#research-services) lists each service by step.
 
 ### First time an operation is done: build its template
 
@@ -78,7 +78,7 @@ Every service or step drawn in `docs/architecture.png` and `docs/architecture-de
 
    The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
 7. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests. It never merges. For each test transaction with a free field, the program (`pnpm perturb`) runs the perturbation test below and records it, so CI replays it.
-8. **Signer reviews the pull request.** The signer reads the report and the template's rules on GitHub, runs `pnpm report <protocol>/<operation> --compare`, and asks for changes. Approving and merging the pull request is the confirmation. On the signing device, `pnpm kiss-sign template approve` records the hash of the merged template locally.
+8. **Signer reviews the pull request.** The signer reads the report and the template's rules on GitHub, runs `pnpm report <protocol>/<operation> --compare`, and asks for changes. Approving and merging the pull request is the confirmation. On the signing device, `pnpm kiss-sign template approve` prints the merged template, the `origin/main` commit it comes from with its subject line, and the template's keccak256, and on the signer's yes records that hash locally.
 
 ### Every signing
 
@@ -184,7 +184,7 @@ Templates are reviewed once and reused, so they live in git, where every change 
 | Contract registry and markets table | Approved template hashes |
 
 - Each operation has a folder, for example `templates/morpho/vault-deposit/`, holding `template.json`, `report.md` or `notes.json` with `report.generated.html`, and, except for the templates listed under [Report not generated yet](#the-flow), `docs.json` and `report.generated.md`. Its tests are in `test/` and `testdata/`.
-- The tests are real past transactions of the operation, each with the card values it implies. Every one must give `MATCH`, and every mutated copy must give `MISMATCH`. CI (`.github/workflows/test.yml`, GitHub Actions) runs `pnpm typecheck` and the whole offline test suite on every push and pull request, with every action pinned by commit, after fetching the pinned solc builds and Public Suffix List and checking each file's sha256. It holds no secrets: the tests replay recorded chain answers, including recorded simulations, so live simulation and every live read run locally.
+- The tests are real past transactions of the operation, each with the card values it implies. Every one must give `MATCH`, and every mutated copy must give `MISMATCH`. CI (`.github/workflows/test.yml`, GitHub Actions) runs `pnpm typecheck` and the whole offline test suite on every push and pull request, with every action pinned by commit, after fetching the pinned solc builds and Public Suffix List and checking each file's sha256. It holds no secrets: the tests replay recorded chain answers, including recorded simulations, so live simulation and every live read run locally. To keep a run short, CI caches the solc outputs the tests compile, each keyed by the sha256 of the pinned compiler build and of the exact standard-JSON input, and the tests take only an exact match; every ABI proof still compares the cached bytecode with the code on chain on every run, while the ABI in a cached output is trusted as CI's own earlier output. Only the test helper reads this cache: `pnpm prove-abi`, `pnpm report`, `pnpm record-abi-case` and `verify` always compile.
 - Git stores and records; it is not trusted. At signing, the program checks that the template's hash equals the hash recorded when the signer merged it. A template from someone else's repository is only a starting point: its report still has to be reviewed.
 
 ### The Safe's address is never published
