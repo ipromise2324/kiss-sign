@@ -3,11 +3,14 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
-import { replayAbiCase } from '../src/contracts/abi-case.ts';
+import { loadAbiCases, replayAbiCase } from '../src/contracts/abi-case.ts';
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import { cachedCompilers, pinnedCompilers } from '../src/contracts/solc.ts';
 import type { Compilers } from '../src/contracts/solc.ts';
+import type { Registry } from '../src/registry.ts';
+import { entriesOf, loadSubject } from '../src/research/report.ts';
+import type { Target } from '../src/research/report.ts';
 
 /** Test-only: no command under src/, scripts/ or bin/ reads it, which test/solc-pool.test.ts checks. */
 export const SOLC_TEST_CACHE_DIR = join(import.meta.dirname, '..', '.cache', 'solc-test');
@@ -69,6 +72,13 @@ function compileInWorker(job: Job): Promise<string | undefined> {
     worker.once('error', reject);
     worker.once('exit', (code) => reject(new Error(`the solc ${job.version} worker exited with ${code}`)));
   });
+}
+
+/** The recorded ABI cases a replay of these reports proves again, as `replayReport` picks them. */
+export function reportCases(root: string, registry: Registry, targets: readonly Target[]): AbiCase[] {
+  const cases = loadAbiCases(root);
+  const entries = new Set(targets.flatMap((target) => entriesOf(loadSubject(root, registry, target), registry)));
+  return [...entries].flatMap((entry) => cases.get(entry.address) ?? []);
 }
 
 /**

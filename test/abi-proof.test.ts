@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import type { Read } from '../src/chain/reader.ts';
 import { namedSignatureOfAbiEntry, parseFunctionSignature } from '../src/decode/abi.ts';
-import { abiCaseBlock, abiCaseReader, abiCaseSourcify, loadAbiCases } from '../src/contracts/abi-case.ts';
+import { abiCaseBlock, abiCaseReader, abiCaseSourcify } from '../src/contracts/abi-case.ts';
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal, Refusal } from '../src/contracts/prove.ts';
@@ -18,11 +18,11 @@ import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SourcifyAnswer } from '../src/contracts/sourcify.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { GENERATED_FILE, GENERATED_SUFFIX, VAULT_REPORTS_DIR, entriesOf, loadSubject, replayReport } from '../src/research/report.ts';
+import { GENERATED_FILE, GENERATED_SUFFIX, VAULT_REPORTS_DIR, replayReport } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
-import { warmCompilers } from './solc-pool.ts';
+import { reportCases, warmCompilers } from './solc-pool.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -232,10 +232,8 @@ const generated = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) =>
 const vaultReports = existsSync(join(ROOT, VAULT_REPORTS_DIR)) ? readdirSync(join(ROOT, VAULT_REPORTS_DIR)).filter((f) => f.endsWith(GENERATED_SUFFIX)) : [];
 const vaultsReported = vaultReports.map((file) => file.slice(0, -GENERATED_SUFFIX.length));
 const reportTargets: Target[] = [...generated.map((template) => ({ template })), ...vaultsReported.map((vault) => ({ vault }))];
-const abiCases = loadAbiCases(ROOT);
-const reportCases = [...new Set(reportTargets.flatMap((target) => entriesOf(loadSubject(ROOT, registry, target), registry)))].flatMap((entry) => abiCases.get(entry.address) ?? []);
 
-const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases]);
+const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases(ROOT, registry, reportTargets)]);
 
 test('every committed generated report has its own test below', () => {
   assert.ok(generated.includes('morpho/vault-deposit'), `morpho/vault-deposit has a generated report`);
