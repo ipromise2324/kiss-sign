@@ -8,7 +8,7 @@ import { loadRegistry } from '../src/registry.ts';
 import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
 import { NOTES_FILE, NotesError, parseNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { GENERATED_HTML_FILE, loadNotes, notesKeys, renderHtml, templateFixtures } from '../src/research/report-html.ts';
+import { GENERATED_HTML_FILE, confidenceOf, loadNotes, notesKeys, renderHtml, templateFixtures } from '../src/research/report-html.ts';
 import { checkSpans, entriesOf, loadSubject, renderReport, replayInputs, reportRecordingPath } from '../src/research/report.ts';
 import type { ReportInputs, ReportRecording } from '../src/research/report.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
@@ -197,14 +197,16 @@ test('a real disagreement or a page the program cannot read is for the signer to
 
 test('the wallet section mocks each call\'s screen from the program\'s labels and the template\'s rules, and names what it hides', () => {
   const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
-  const wallet = section(html, '硬體錢包上會看到什麼');
+  const wallet = section(html, 'ERC-7730 描述檔會怎麼顯示這筆交易');
   const afterActions = html.slice(html.indexOf('<h2>需要你做的事</h2>') + 1);
-  assert.ok(afterActions.slice(afterActions.indexOf('<h2>')).startsWith('<h2>硬體錢包上會看到什麼</h2>'), 'the wallet section follows the action list');
+  assert.ok(afterActions.slice(afterActions.indexOf('<h2>')).startsWith('<h2>ERC-7730 描述檔會怎麼顯示這筆交易</h2>'), 'the wallet section follows the action list');
   assert.match(wallet, /<h3>呼叫 1：<code>approve<\/code>，對象 <code>usdc<\/code><\/h3><div class="screen raw"><div class="line">原始資料（看不懂的十六進位）<\/div><\/div>/);
   assert.match(wallet, /<div class="line"><span class="label">金額<\/span>你在 card 填的數量（usdc）<\/div>/);
   assert.match(wallet, /<div class="line"><span class="label">抵押品<\/span>cbbtc<\/div>/);
   assert.match(wallet, /<div class="line"><span class="label">LLTV<\/span>86%<\/div>/);
   assert.match(wallet, /<div class="line"><span class="label">截止時間<\/span>任意<\/div>/);
+  assert.match(wallet, /<div class="line"><span class="label">推薦費收款人<\/span>無（零地址）<\/div>/);
+  assert.doesNotMatch(wallet, /0x0{40}/);
   assert.match(wallet, /<b>錢包不會顯示：<\/b>借出代幣、oracle、利率模型、拉代幣方式。只看錢包分不出是哪個 market。<span class="by prog">程式<\/span>/);
   assert.doesNotMatch(html, /descriptorHash/, 'the raw ERC-7730 output stays in the Markdown report');
 });
@@ -226,4 +228,36 @@ test('the protocol overview is visible, and states from the code pins how long e
   assert.match(overview, /<h3>協議概況<\/h3>/);
   assert.match(overview, /<code>morpho-blue<\/code>：程式碼自區塊 <span class="num">18883124<\/span> 起沒變過/);
   assert.match(overview, /<span class="label">程式碼多久沒變<\/span>[^]*<span class="by prog">程式<\/span><\/div><\/li><\/ul>/);
+});
+
+test('an address card\'s confidence comes from the program\'s results alone', async () => {
+  const ok = (key: string) => ({ key, status: 'ok' as const });
+  const na = (key: string) => ({ key, status: 'na' as const });
+  const act = (key: string) => ({ key, status: 'act' as const });
+  const cases = [
+    { checks: [ok('source.page'), ok('source.site'), ok('abi'), ok('code.1')], level: 'high' },
+    { checks: [ok('source.page'), ok('code.1'), ok('code.2')], level: 'high' },
+    { checks: [ok('source.page'), na('source.site'), ok('code.1')], level: 'medium' },
+    { checks: [ok('source.page'), ok('abi'), na('code.1')], level: 'medium' },
+    { checks: [ok('source.site'), ok('abi'), ok('code.1')], level: 'medium' },
+    { checks: [ok('source.page'), ok('abi')], level: 'medium' },
+    { checks: [act('source.page'), ok('abi'), ok('code.1')], level: 'low' },
+    { checks: [ok('source.page'), na('abi'), act('code.1')], level: 'low' },
+  ] as const;
+  for (const { checks, level } of cases) assert.equal(confidenceOf(checks), level, checks.map((c) => `${c.key}:${c.status}`).join(' '));
+
+  const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
+  const levels = new Map([...cards(html)].map(([name, card]) => [name, card.match(/<span class="level (\w+)">([^<]*)/)?.slice(1).join(' ')]));
+  assert.deepEqual(Object.fromEntries(levels), {
+    usdc: 'medium 中信心',
+    'morpho-blue': 'high 高信心',
+    'blue-bundles-v1': 'high 高信心',
+    'adaptive-curve-irm': 'high 高信心',
+    'morpho-oracle-cbbtc-usdc-86': 'low 低信心 · AI 已確認',
+    cbbtc: 'medium 中信心',
+  });
+
+  const reviews = Object.fromEntries(Object.entries(committedNotes.reviews as Record<string, unknown>).map(([id, review]) => [id, { ...(review as object), status: 'concern' }]));
+  const doubted = await render({ ...committedNotes, reviews });
+  assert.match(cards(doubted).get('morpho-oracle-cbbtc-usdc-86') ?? '', /<span class="level low">低信心 · AI 有疑慮/, 'a review changes only the words beside the level');
 });

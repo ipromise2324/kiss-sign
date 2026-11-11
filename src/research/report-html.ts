@@ -55,8 +55,10 @@ const full = (entry: RegistryEntry): Html => h`${c(entry.name)} ${mono(checksumA
 const bullets = (items: readonly Part[]): Html => h`<ul class="steps" style="list-style:disc">${items}</ul>`;
 
 /** `ok` passed; `act` is for the signer to look at; `na` had nothing to compare, or was not done. */
-type Status = 'ok' | 'act' | 'na';
+export type Status = 'ok' | 'act' | 'na';
 const MARKS: Readonly<Record<Status, Html>> = { ok: h`<span class="mark ok">✓</span>`, act: h`<span class="mark warn">!</span>`, na: h`<span class="mark na">–</span>` };
+/** The same marks as plain text, for a line of running text such as a summary. */
+const SYMBOLS: Readonly<Record<Status, Html>> = { ok: h`<span class="sym ok">✓</span>`, act: h`<span class="sym warn">!</span>`, na: h`<span class="sym na">–</span>` };
 /** A line that states what was found, with no result to pass or fail. */
 const INFO = h`<span class="mark info">i</span>`;
 
@@ -65,6 +67,19 @@ const INFO = h`<span class="mark info">i</span>`;
  * prints for it. The program alone sets `status`: an AI line can explain a result but never change where it shows.
  */
 type Check = { readonly key: string; readonly status: Status; readonly flag?: 'FINDING' | 'REFUSED' | 'UNVERIFIABLE'; readonly text: Html; readonly why?: Html };
+
+/**
+ * How far the program's results for one address go, from the results alone: `low` when any needs the signer, `high` when
+ * none does, none was left undone, and both the official source page and the code pin span were checked, `medium` otherwise.
+ */
+export type Confidence = 'high' | 'medium' | 'low';
+export function confidenceOf(checks: readonly { readonly key: string; readonly status: Status }[]): Confidence {
+  if (checks.some((check) => check.status === 'act')) return 'low';
+  const passed = (key: RegExp) => checks.some((check) => check.status === 'ok' && key.test(check.key));
+  return checks.every((check) => check.status === 'ok') && passed(/^source\.page$/) && passed(/^code\.\d+$/) ? 'high' : 'medium';
+}
+const CONFIDENCE: Readonly<Record<Confidence, string>> = { high: '高信心', medium: '中信心', low: '低信心' };
+
 const pass = (key: string, text: Html): Check => ({ key, status: 'ok', text });
 const act = (key: string, text: Html, why?: Html): Check => ({ key, status: 'act', flag: 'FINDING', text, ...(why === undefined ? {} : { why }) });
 
@@ -528,7 +543,7 @@ function screenValue(rule: Rule, template: Template, registry: Registry): Html {
     case 'contract':
       return h`${rule.name}`;
     case 'const':
-      return h`${constText(rule.value)}`;
+      return rule.value.kind === 'address' && /^0x0{40}$/.test(rule.value.value) ? h`無（零地址）` : h`${constText(rule.value)}`;
     case 'free':
       return h`任意`;
     case 'equals':
@@ -654,8 +669,17 @@ summary { cursor: pointer; font-weight: 500; }
 details[open] summary { margin-bottom: 10px; }
 pre { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; overflow-x: auto; background: var(--code-bg); color: var(--ink); padding: 12px; border-radius: 6px; margin: 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--muted); align-items: center; }
-.legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend .mark, summary .mark { margin-top: 0; }
+.legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .mark { margin-top: 0; }
+.sym { font-weight: 700; }
+.sym.ok { color: var(--ok); }
+.sym.warn { color: var(--warn); }
+.sym.na { color: var(--na); }
+.level { font-size: 14px; font-weight: 700; padding: 1px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); }
+.level.high { color: var(--accent); background: var(--ok-bg); border-color: var(--accent); }
+.level.medium { color: var(--ink); background: var(--na-bg); border-color: var(--na); border-style: dashed; }
+.level.low { color: var(--warn); background: var(--warn-bg); border-color: var(--warn); }
+.level .by { font-weight: 500; }
 .tally { font-size: 14.5px; }
 .addr-body details, .panel details { background: none; border: 0; padding: 0; }
 .addr-body details summary, .panel details summary { color: var(--muted); font-size: 14.5px; font-weight: 400; }
@@ -736,11 +760,15 @@ function entryArticle(card: EntryCard, notes: Notes): Html {
   const role = ai?.role === undefined ? '' : h`<div class="role">${ai.role}${AI}</div>`;
   const acts = card.checks.filter((check) => check.status === 'act');
   const rest = card.checks.filter((check) => check.status !== 'act');
+  const level = confidenceOf(card.checks);
+  const concern = acts.some((check) => notes.reviews.get(`${entry.name}/${check.key}`)?.status !== 'confirmed');
+  const reviewed = level === 'low' ? h` · ${REVIEWED[concern ? 'concern' : 'confirmed']}${AI}` : '';
+  const kinds = (['ok', 'na'] as const).filter((status) => rest.some((check) => check.status === status)).map((status) => h`${SYMBOLS[status]} ${status === 'ok' ? '確認' : '沒比對'}`);
   const roles = card.roles.length === 0 ? '' : h`<p class="why">在這筆交易裡：${joined(card.roles, '；')}${PROGRAM}</p>`;
-  const folded = h`<details><summary>其他 ${rest.length} 項（${MARKS.ok} 確認、${MARKS.na} 沒比對）</summary>${roles}<ul class="checks">${rest.map((check) => checkItem(check, line(check)))}</ul></details>`;
+  const folded = h`<details><summary>其他 ${rest.length} 項（${joined(kinds, '、')}）</summary>${roles}<ul class="checks">${rest.map((check) => checkItem(check, line(check)))}</ul></details>`;
   const aiNotes = ai === undefined || ai.notes.length === 0 ? '' : h`<details><summary>AI 另外查到（${ai.notes.length} 則）</summary>${bullets(ai.notes.map((n) => noteItem(n)))}</details>`;
   return h`<article class="addr" id="entry-${entry.name}">
-<div class="addr-head"><div class="name"><h3>${entry.name}</h3><span class="role">${entry.kind}</span></div><div class="full">${checksumAddress(entry.address)}</div>${role}<div class="tally">${tally(card.checks)}${PROGRAM}</div></div>
+<div class="addr-head"><div class="name"><h3>${entry.name}</h3><span class="role">${entry.kind}</span><span class="level ${level}">${CONFIDENCE[level]}${reviewed}</span></div><div class="full">${checksumAddress(entry.address)}</div>${role}<div class="tally">${tally(card.checks)}${PROGRAM}</div></div>
 <div class="addr-body">${acts.length === 0 ? '' : h`<ul class="checks">${acts.map((check) => checkItem(check, line(check)))}</ul>`}${folded}${aiNotes}</div>
 </article>`;
 }
@@ -887,7 +915,8 @@ ${actionSection(actions, notes)}
 </section>
 
 <section>
-<h2>硬體錢包上會看到什麼</h2>
+<h2>ERC-7730 描述檔會怎麼顯示這筆交易</h2>
+<p class="note">支援 ERC-7730 明文簽名（clear signing）的錢包，會照描述檔顯示下面這幾行。</p>
 <div class="wallet">${walletSection(template, groups, inputs)}</div>
 </section>
 
@@ -898,6 +927,7 @@ ${actionSection(actions, notes)}
 <span>${MARKS.act}需要你看</span>
 <span>${MARKS.na}沒東西可比，或沒做</span>
 </div>
+<p class="note">信心等級只由程式的結果決定，AI 的說明和覆核改變不了它：<b>高信心</b>是官方來源列出這個地址、程式碼指紋的起始區塊在鏈上查過、沒有 !；<b>中信心</b>是沒有 !，但至少一項沒做（–）；<b>低信心</b>是至少一項 !，要打開看。${PROGRAM}</p>
 ${cards.map((card) => entryArticle(card, notes))}
 </section>
 
