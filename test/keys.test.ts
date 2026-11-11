@@ -19,6 +19,7 @@ async function run(argv: string[], env: Record<string, string>, typed?: string) 
     env,
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
+    platform: 'linux',
     readSecret: typed === undefined ? undefined : async () => typed,
     ask: undefined,
     repoRoot: join(import.meta.dirname, '..'),
@@ -98,5 +99,5 @@ test('key remove takes out only that key', async () => {
 test('an unknown command prints usage', async () => {
   const result = await run(['frobnicate'], {});
   assert.equal(result.code, 64);
-  assert.match(result.stderr, /kiss-sign key add/);
+  assert.match(result.stderr, /\n  pnpm kiss-sign key add <alchemy\|etherscan>\n/);
 });

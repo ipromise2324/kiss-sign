@@ -40,7 +40,7 @@ function approval(approvals: readonly TemplateApproval[]): Outcome {
   }
   return outcome(
     'unverifiable',
-    approvals.filter((a) => a.approved === undefined).map((a) => `${a.template} was never approved; run kiss-sign template approve ${a.template}`),
+    approvals.filter((a) => a.approved === undefined).map((a) => `${a.template} was never approved; run pnpm kiss-sign template approve ${a.template}`),
   );
 }
 
