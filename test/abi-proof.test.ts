@@ -12,10 +12,11 @@ import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal, Refusal } from '../src/contracts/prove.ts';
 import { EIP1967_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
-import { cachedCompilers, pinnedCompilers } from '../src/contracts/solc.ts';
+import { pinnedCompilers } from '../src/contracts/solc.ts';
 import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SourcifyAnswer } from '../src/contracts/sourcify.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
+import { warmCompilers } from './solc-pool.ts';
 
 const load = (name: string): AbiCase => JSON.parse(readFileSync(join(import.meta.dirname, '..', 'testdata', 'abi', `${name}.json`), 'utf8')) as AbiCase;
 
@@ -27,8 +28,6 @@ const unverifiable = <T>(reason: string): Read<T> => ({
     { provider: 'drpc', kind: 'failed', cause: 'no-answer' },
   ],
 });
-
-const compilers = cachedCompilers();
 
 const show = (result: AbiProof | AbiRefusal): string =>
   result.kind === 'proven' ? `proven ${result.contractName}` : `refused: ${describeRefusal(result.refusal)}`;
@@ -213,6 +212,8 @@ const CASES = [
 
 /** Sourcify holds these as partial matches: the source compiles to the code on chain except the metadata hash. */
 const PARTIAL = ['morpho-urd', 'cctp-message-transmitter'];
+
+const compilers = await warmCompilers(CASES.map((expected) => load(expected.name)));
 
 for (const expected of CASES) {
   test(`${expected.name}: the pinned solc rebuilds the code read on chain, so its ABI is proven`, async () => {
