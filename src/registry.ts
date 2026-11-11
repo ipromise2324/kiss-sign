@@ -1,11 +1,14 @@
-import { readFileSync } from 'node:fs';
+import { keccak_256 } from '@noble/hashes/sha3.js';
+import { bytesToHex, concatBytes } from '@noble/hashes/utils.js';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AbiSignatureError, parseFunctionSignature } from './decode/abi.ts';
+import { uintWord } from './decode/codec.ts';
 import type { AbiFunction } from './decode/abi.ts';
 import { SafeTxParseError, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 
-export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge'] as const;
+export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm'] as const;
 export type ContractKind = (typeof CONTRACT_KINDS)[number];
 
 /** What a registry entry may say about itself, each naming another registry entry, and which kinds may say it. */
@@ -62,12 +65,34 @@ export function pinAt(pins: CodePins, block: bigint): CodePin | undefined {
   return [...pins.earlier, pins.current].findLast((span) => span.from <= block)?.pin;
 }
 
+/** Morpho Blue's `MarketParams`, in its order: what a market's id hashes. */
+export const MARKET_PARAMS = ['loanToken', 'collateralToken', 'oracle', 'irm', 'lltv'] as const;
+export type MarketParams = { readonly [P in (typeof MARKET_PARAMS)[number]]: P extends 'lltv' ? bigint : Address };
+
+/** The registry entry each address part of a market names, by the kind it must be. */
+export const MARKET_ENTRIES = { lending: 'lending', loanToken: 'token', collateralToken: 'token', oracle: 'oracle', irm: 'irm' } as const satisfies Record<
+  string,
+  ContractKind
+>;
+export type MarketEntryPart = keyof typeof MARKET_ENTRIES;
+export const MARKET_ENTRY_PARTS = Object.keys(MARKET_ENTRIES) as readonly MarketEntryPart[];
+export const isMarketEntryPart = (raw: string): raw is MarketEntryPart => Object.hasOwn(MARKET_ENTRIES, raw);
+
+/** What a card reference may name of a market: one of its registry entries, its lltv, or its id. */
+export const MARKET_PARTS = ['lending', 'loanToken', 'collateralToken', 'oracle', 'irm', 'lltv', 'id'] as const satisfies readonly (MarketEntryPart | 'lltv' | 'id')[];
+export type MarketPart = (typeof MARKET_PARTS)[number];
+
+/** A Morpho Blue market from `registry/markets.json`: its parameters as registry entries, and the id they hash to. */
+export type Market = { readonly name: string; readonly id: Hex; readonly lltv: bigint } & { readonly [P in MarketEntryPart]: RegistryEntry };
+
 export type Registry = {
   readonly entries: ReadonlyMap<string, RegistryEntry>;
   readonly byAddress: ReadonlyMap<Address, RegistryEntry>;
+  readonly markets: ReadonlyMap<string, Market>;
 };
 
 export const REGISTRY_PATH = join('registry', 'contracts.json');
+export const MARKETS_PATH = join('registry', 'markets.json');
 
 /** Lowercase words joined by `-` or `.`, such as `multisend-call-only-1.4.1`. `safe` names the Safe itself, `eth` native ETH. */
 export const NAME = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
@@ -229,7 +254,48 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
   return { ...entry, instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck) };
 }
 
-export function parseRegistry(raw: unknown): Registry {
+/** Morpho's `MarketParamsLib.id`: keccak256 of the ABI-encoded `MarketParams`. */
+export function marketId(params: MarketParams): Hex {
+  const words = MARKET_PARAMS.map((part) => uintWord(part === 'lltv' ? params.lltv : BigInt(params[part])));
+  return `0x${bytesToHex(keccak_256(concatBytes(...words)))}` as Hex;
+}
+
+function marketOf(name: string, raw: unknown, entries: ReadonlyMap<string, RegistryEntry>): Market {
+  const path = `markets.${name}`;
+  const value = record(path, raw);
+  const keys = [...Object.keys(MARKET_ENTRIES), 'lltv', 'id'];
+  onlyKeys(path, value, keys);
+  const missing = keys.find((key) => !Object.hasOwn(value, key));
+  if (missing !== undefined) throw new RegistryError(`${path}.${missing}`, 'missing');
+  const parts = Object.fromEntries(
+    (Object.entries(MARKET_ENTRIES) as [MarketEntryPart, ContractKind][]).map(([part, kind]) => {
+      const target = value[part];
+      const entry = typeof target === 'string' ? entries.get(target) : undefined;
+      if (entry?.kind !== kind) throw new RegistryError(`${path}.${part}`, `${JSON.stringify(target)} is not ${/^[aeiou]/.test(kind) ? 'an' : 'a'} ${kind} in the registry`);
+      return [part, entry];
+    }),
+  ) as { readonly [P in MarketEntryPart]: RegistryEntry };
+  const lltv = typeof value.lltv === 'string' && /^(0|[1-9][0-9]{0,77})$/.test(value.lltv) ? BigInt(value.lltv) : undefined;
+  if (lltv === undefined || lltv >> 256n !== 0n) throw new RegistryError(`${path}.lltv`, 'not a decimal integer below 2^256');
+  const id = hash32(`${path}.id`, value.id);
+  const hashed = marketId({ loanToken: parts.loanToken.address, collateralToken: parts.collateralToken.address, oracle: parts.oracle.address, irm: parts.irm.address, lltv });
+  if (id !== hashed) throw new RegistryError(`${path}.id`, `is not the id of these parameters, which hash to ${hashed}`);
+  return { name, id, lltv, ...parts };
+}
+
+/** `registry/markets.json`: each market by name, every part resolved against the registry's entries. */
+function marketsOf(raw: unknown, entries: ReadonlyMap<string, RegistryEntry>): Map<string, Market> {
+  const markets = new Map<string, Market>();
+  for (const [name, rawMarket] of Object.entries(record('markets', raw))) {
+    if (!isEntryName(name)) throw new RegistryError(`markets.${name}`, 'not a market name');
+    if (entries.has(name)) throw new RegistryError(`markets.${name}`, 'is also a registry contract');
+    markets.set(name, marketOf(name, rawMarket, entries));
+  }
+  return markets;
+}
+
+/** The registry's contracts, and its markets from `rawMarkets`, the markets table, which may be absent. */
+export function parseRegistry(raw: unknown, rawMarkets: unknown = {}): Registry {
   const entries = new Map<string, RegistryEntry>();
   const byAddress = new Map<Address, RegistryEntry>();
   for (const [name, rawEntry] of Object.entries(record('registry', raw))) {
@@ -248,9 +314,16 @@ export function parseRegistry(raw: unknown): Registry {
       }
     }
   }
-  return { entries, byAddress };
+  return { entries, byAddress, markets: marketsOf(rawMarkets, entries) };
+}
+
+/** The markets table's text, or undefined when the repository has none. */
+export function marketsText(repoRoot: string): string | undefined {
+  const path = join(repoRoot, MARKETS_PATH);
+  return existsSync(path) ? readFileSync(path, 'utf8') : undefined;
 }
 
 export function loadRegistry(repoRoot: string): Registry {
-  return parseRegistry(JSON.parse(readFileSync(join(repoRoot, REGISTRY_PATH), 'utf8')));
+  const markets = marketsText(repoRoot);
+  return parseRegistry(JSON.parse(readFileSync(join(repoRoot, REGISTRY_PATH), 'utf8')), markets === undefined ? {} : JSON.parse(markets));
 }

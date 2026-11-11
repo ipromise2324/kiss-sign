@@ -8,7 +8,7 @@ import { unwrapSafeTx } from '../decode/multisend.ts';
 import { hashSafeTx } from '../safe/hash.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import type { AllowanceChange, Observed, Permit2Allowance, Permit2Change } from './effects.ts';
+import type { AllowanceChange, Observed, Permit2Allowance, Permit2Change, ViewAnswer, ViewCall, ViewReading } from './effects.ts';
 import { PERMIT2, addressOf, executionOf, isEthTransfer, namesAddress, touchedBy, uintOf } from './events.ts';
 import type { Allowance, Execution, Touched } from './events.ts';
 import { parseSafeState, safeStateCalls } from './safe-state.ts';
@@ -28,6 +28,8 @@ export type SimulationInput = {
   readonly watch: readonly Address[];
   /** Tokens whose balance after the transaction the result carries in `ends`. */
   readonly ends: readonly Address[];
+  /** View calls the result carries in `views`, read just before and just after the transaction. */
+  readonly views?: readonly ViewCall[];
 };
 
 /** Safe 1.1.1, 1.3.0 and 1.4.1: `mapping(address => mapping(bytes32 => uint256)) approvedHashes` is storage slot 8. */
@@ -35,6 +37,8 @@ const APPROVED_HASHES_SLOT = 8n;
 /** EIP-7825 caps a transaction's gas at 2^24. */
 const EXEC_GAS = 1n << 24n;
 const READ_GAS = 100_000n;
+/** A view effect may compute, such as interest accrued since the last update, so it gets more than a balance read. */
+const VIEW_GAS = 1_000_000n;
 
 /** Set by state override: returns the ETH balance of the address in the first 20 bytes of calldata. */
 const ETH_BALANCE_READER = '0x000000000000000000000000000000000000ba1a' as Address;
@@ -191,7 +195,9 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   const permit2 = [...touched.permit2.values()];
   const reads = readsOf(safe, executor.sender, { tokens, allowances, permit2 });
   const stateCalls = safeStateCalls(safe, executor.sender, tx.version);
-  const around = [...reads.map((r) => r.call), ...stateCalls];
+  const views = input.views ?? [];
+  const viewReads = views.map(({ to, data }) => ({ from: executor.sender, to, data, gas: VIEW_GAS }));
+  const around = [...reads.map((r) => r.call), ...stateCalls, ...viewReads];
   const measured = await reader.simulateV1({ ...base, calls: [...around, exec, ...around] }, input.parent);
   if (measured.kind === 'unverifiable') return unverifiable(measured.reason);
   const calls = measured.value;
@@ -219,8 +225,9 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
     if (b === undefined || a === undefined) return unverifiable(`${(reads[words.length + i] as Read).what} could not be read`);
     permit2Changes.push({ ...(permit2[i] as Allowance), before: b, after: a });
   }
-  const stateBefore = parseSafeState(calls.slice(reads.length, around.length), tx.version);
-  const stateAfter = parseSafeState(calls.slice(after0 + reads.length), tx.version);
+  const viewsAt = reads.length + stateCalls.length;
+  const stateBefore = parseSafeState(calls.slice(reads.length, viewsAt), tx.version);
+  const stateAfter = parseSafeState(calls.slice(after0 + reads.length, after0 + viewsAt), tx.version);
   if ('unreadable' in stateBefore) return unverifiable(`the Safe's ${stateBefore.unreadable} could not be read before the transaction`);
   if ('unreadable' in stateAfter) return unverifiable(`the Safe's ${stateAfter.unreadable} could not be read after the transaction`);
   const before = (i: number) => (words[i] as { before: bigint }).before;
@@ -232,6 +239,9 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   }, 0n);
   if (traced !== eth) return unverifiable(`the Safe's ETH balance changed by ${eth}, its traced ETH transfers by ${traced}`);
   const allowanceChanges: AllowanceChange[] = allowances.map((a, i) => ({ ...a, before: before(1 + tokens.length + i), after: after(1 + tokens.length + i) }));
+  const answer = (call: SimulatedCall | undefined): ViewAnswer =>
+    call?.status === 'success' ? { kind: 'returned', data: call.returnData } : { kind: 'unread', why: 'it reverted in the simulated block' };
+  const viewReadings: ViewReading[] = views.map((view, i) => ({ ...view, before: answer(calls[viewsAt + i]), after: answer(calls[after0 + viewsAt + i]) }));
   return {
     kind: 'observed',
     observed: {
@@ -242,6 +252,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
       permit2: permit2Changes,
       ends: new Map(input.ends.map((token) => [token, after(1 + tokens.indexOf(token))])),
       safeState: { kind: 'read', before: stateBefore, after: stateAfter },
+      ...(views.length === 0 ? {} : { views: viewReadings }),
     },
     logs: run.logs,
   };
@@ -270,7 +281,7 @@ export type CallScan =
  * `execTransaction`, one after another in one block on the given parent, and reads everything any of them touched
  * between each two. A call to the Safe itself without data is left out.
  */
-export async function scanCalls(reader: Reader, input: Omit<SimulationInput, 'ends'>): Promise<CallScan> {
+export async function scanCalls(reader: Reader, input: Omit<SimulationInput, 'ends' | 'views'>): Promise<CallScan> {
   const { tx } = input;
   const safe = tx.safe;
   const unverifiable = (...reasons: string[]): CallScan => ({ kind: 'unverifiable', reasons });

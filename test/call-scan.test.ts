@@ -42,7 +42,7 @@ test('a Morpho borrow from another Safe marks only its setAuthorization, the one
   assert.deepEqual(result, { kind: 'scanned', movesNothing: [{ path: 'multiSend[1]', to: MORPHO_BLUE, selector: SET_AUTHORIZATION }] });
   assert.deepEqual(describeCallScan(result, registry), [
     'These calls move no asset of the Safe. Whatever they do changes a setting or grants a permission:',
-    `  multiSend[1] to unregistered ${MORPHO_BLUE}, selector ${SET_AUTHORIZATION}`,
+    `  multiSend[1] to morpho-blue ${MORPHO_BLUE}, selector ${SET_AUTHORIZATION}`,
   ]);
 });
 

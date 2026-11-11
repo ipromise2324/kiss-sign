@@ -1,4 +1,5 @@
 import { bytesToHex } from '@noble/hashes/utils.js';
+import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { paramName } from '../decode/abi.ts';
 import type { AbiType } from '../decode/abi.ts';
@@ -109,18 +110,21 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
       return entry === undefined ? undefined : { kind: 'address', value: entry.address };
     }
     case 'card': {
-      const value = context.values.get(rule.ref.field);
-      if (value === undefined) {
-        context.unverifiable.push(`the card has no ${rule.ref.field}`);
+      const target = resolveRef(rule.ref, context.values, context.registry);
+      if ('problem' in target) {
+        context.unverifiable.push(target.problem);
         return undefined;
       }
-      if (value.kind === 'amount' || value.kind === 'nonce') return { kind: 'uint', value: value.value };
-      if (value.kind === 'address') return { kind: 'address', value: value.address };
-      if (rule.ref.attribute === undefined) return { kind: 'address', value: value.entry.address };
-      const name = value.entry.attributes[rule.ref.attribute];
-      const target = name === undefined ? undefined : context.registry.entries.get(name);
-      if (target === undefined) context.unverifiable.push(`the registry has no ${rule.ref.attribute} for ${value.name}`);
-      return target === undefined ? undefined : { kind: 'address', value: target.address };
+      switch (target.kind) {
+        case 'address':
+          return { kind: 'address', value: target.address };
+        case 'uint':
+          return { kind: 'uint', value: target.value };
+        case 'bytes32':
+          return { kind: 'fixed-bytes', value: target.value };
+        case 'market':
+          throw new Error('a whole market binds a tuple, part by part, never a leaf');
+      }
     }
     default:
       throw new Error(`a ${rule.kind} rule is not a leaf`);

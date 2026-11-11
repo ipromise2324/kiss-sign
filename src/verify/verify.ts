@@ -15,7 +15,7 @@ import { hashSafeTx } from '../safe/hash.ts';
 import { parseSafeWebAppTx, parseServiceTx } from '../safe/parse.ts';
 import { parseAddress, parseHex, parseSafeVersion } from '../safe/types.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
-import { endsNeeded, expectedChanges } from '../simulate/effects.ts';
+import { endsNeeded, expectedChanges, viewCalls } from '../simulate/effects.ts';
 import { observeExecuted } from '../simulate/executed.ts';
 import { scanCalls, simulateSafeTx } from '../simulate/simulate.ts';
 import type { CallScan, Observation } from '../simulate/simulate.ts';
@@ -40,6 +40,8 @@ export type VerifyInputs = {
   readonly card: { readonly hash: string; readonly text: string };
   readonly templates: readonly { readonly id: string; readonly text: string; readonly approved: string | null }[];
   readonly registry: string;
+  /** The markets table, absent when the commit has none, as in a verdict file from before markets. */
+  readonly markets?: string;
   /** Only the entries the card names. */
   readonly addressBook: Readonly<Record<string, string>>;
 };
@@ -107,7 +109,7 @@ export type Prepared = {
 };
 
 export function prepare(inputs: VerifyInputs): Prepared {
-  const registry = guard('the registry', () => parseRegistry(JSON.parse(inputs.registry)));
+  const registry = guard('the registry', () => parseRegistry(JSON.parse(inputs.registry), inputs.markets === undefined ? {} : JSON.parse(inputs.markets)));
   const safe = guard('the configured Safe', () => parseAddress('safe', inputs.safe));
   if (keccakText(inputs.card.text) !== inputs.card.hash) throw new VerifyError(`the card does not hash to ${inputs.card.hash}`);
   const card = guard('the card', () => parseCard(JSON.parse(inputs.card.text)));
@@ -179,10 +181,11 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   const expected = expectedChanges(prepared.card, prepared.templates, prepared.registry);
   const ends = endsNeeded(expected);
   const watch = expected.kind === 'expected' ? [...expected.changes.keys()].filter((asset) => asset !== 'eth') : [];
+  const views = viewCalls(prepared.card, prepared.templates, prepared.registry);
   const on = await simulatedOn(reader, executed, latest.value);
   let observation: Observation;
-  if (executed !== undefined) observation = await observeExecuted(reader, executed, tx, ends);
-  else observation = typeof on === 'string' ? { kind: 'unverifiable', reasons: [on] } : await simulateSafeTx(reader, { tx, ...on, watch, ends });
+  if (executed !== undefined) observation = await observeExecuted(reader, executed, tx, ends, views);
+  else observation = typeof on === 'string' ? { kind: 'unverifiable', reasons: [on] } : await simulateSafeTx(reader, { tx, ...on, watch, ends, views });
   const calls: CallScan = typeof on === 'string' ? { kind: 'unverifiable', reasons: [on] } : await scanCalls(reader, { tx, ...on, watch });
   const claims = assetClaims(prepared.card, prepared.templates, prepared.registry);
   const pinned = codeClaims(tx, prepared.card, prepared.templates, prepared.registry);
@@ -212,6 +215,7 @@ export function parseVerdictFile(raw: unknown): VerdictFile {
   }
   const { inputs, exchanges, result } = raw;
   if (!isRecord(inputs) || !isText(inputs.commit) || !isText(inputs.safe) || !isText(inputs.registry)) return refuse('inputs');
+  if (inputs.markets !== undefined && !isText(inputs.markets)) return refuse('inputs.markets');
   if (!isRecord(inputs.tx) || (inputs.tx.format !== 'service' && inputs.tx.format !== 'web-app')) return refuse('inputs.tx');
   if (!isRecord(inputs.card) || !isText(inputs.card.hash) || !isText(inputs.card.text)) return refuse('inputs.card');
   if (!isRecord(inputs.addressBook)) return refuse('inputs.addressBook');

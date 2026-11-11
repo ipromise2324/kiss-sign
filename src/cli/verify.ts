@@ -9,12 +9,12 @@ import { createReader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { loadApproved } from '../config.ts';
 import { kissSignHome } from '../keys.ts';
-import { REGISTRY_PATH, parseRegistry } from '../registry.ts';
+import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress, parseHex } from '../safe/types.ts';
 import { describeCallScan } from '../simulate/simulate.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
-import { fileAt, selfCheck } from '../verify/self-check.ts';
+import { fileAt, optionalFileAt, selfCheck } from '../verify/self-check.ts';
 import { VERDICT_FORMAT, VerifyError, evaluate, parseVerdictFile } from '../verify/verify.ts';
 import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
 import { FAILED, OK, UsageError } from './io.ts';
@@ -75,6 +75,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const book = loadAddressBook(home);
   const named = new Set(card.operations.flatMap((op) => Object.values(op.values)));
   const ids = [...new Set(card.operations.map((op) => op.template))];
+  const markets = optionalFileAt(io.repoRoot, check.commit, MARKETS_PATH);
   const inputs: VerifyInputs = {
     commit: check.commit,
     safe: checksumAddress(safe),
@@ -86,6 +87,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
       approved: approved.get(id) ?? null,
     })),
     registry: fileAt(io.repoRoot, check.commit, REGISTRY_PATH),
+    ...(markets === undefined ? {} : { markets }),
     addressBook: Object.fromEntries([...book].filter(([name]) => named.has(name)).map(([name, address]) => [name, checksumAddress(address)])),
   };
   const endpoints = mainnetEndpoints(io.env);

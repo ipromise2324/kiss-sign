@@ -5,7 +5,7 @@ import { selectorOf } from '../decode/abi.ts';
 import { uintWord } from '../decode/codec.ts';
 import { hashSafeTx } from '../safe/hash.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import type { AllowanceChange, Permit2Allowance, Permit2Change } from './effects.ts';
+import type { AllowanceChange, Permit2Allowance, Permit2Change, ViewAnswer, ViewCall, ViewReading } from './effects.ts';
 import { PERMIT2, TRANSFER, executionOf, isEthTransfer, namesAddress, touchedBy, uintOf } from './events.ts';
 import type { Allowance } from './events.ts';
 import { permit2AllowanceOf } from './simulate.ts';
@@ -36,9 +36,10 @@ const balanceCall = (safe: Address, token: Address) => ({
  * execution block. No log shows ETH that reaches the Safe as the value of `execTransaction` itself or without calling
  * it, and with every fee field zero the Safe pays no gas. The balance of each token in `ends` is read at the parent block
  * and at the execution block, and must differ by exactly this transaction's change; otherwise another transaction in
- * that block moved it.
+ * that block moved it. Each of `views` is read at the parent block and at the execution block, where another
+ * transaction in that block may have moved it too.
  */
-export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, ends: readonly Address[]): Promise<Observation> {
+export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, ends: readonly Address[], views: readonly ViewCall[] = []): Promise<Observation> {
   const safe = tx.safe;
   const unverifiable = (...reasons: string[]): Observation => ({ kind: 'unverifiable', reasons });
   const read = await reader.getTransactionReceipt(txHash);
@@ -110,7 +111,18 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, e
     }
     held.set(token, after);
   }
+  const viewAt = async (view: ViewCall, at: BlockRef): Promise<ViewAnswer> => {
+    const answer = await reader.call(view, at);
+    if (answer.kind === 'unverifiable') return { kind: 'unread', why: answer.reason };
+    return answer.value.kind === 'returned' ? { kind: 'returned', data: answer.value.data } : { kind: 'unread', why: `it reverted at block ${at.number}` };
+  };
+  const readings: ViewReading[] = [];
+  for (const view of views) {
+    const [before, after] = await Promise.all([viewAt(view, parent.value), viewAt(view, block.value)]);
+    readings.push({ ...view, before, after });
+  }
   const logs = receipt.logs.map(({ address, topics, data }) => ({ address, topics, data }));
   const eth = ethAfter.value - ethBefore.value;
-  return { kind: 'observed', observed: { kind: 'executed', eth, tokens, allowances, permit2, ends: held, safeState: { kind: 'receipt', logs } }, logs };
+  const observed = { kind: 'executed', eth, tokens, allowances, permit2, ends: held, safeState: { kind: 'receipt', logs } } as const;
+  return { kind: 'observed', observed: views.length === 0 ? observed : { ...observed, views: readings }, logs };
 }

@@ -157,8 +157,11 @@ const onDocs = (body: string, fields: Record<string, unknown> = {}) =>
 
 test('the registry: every labelled source page has its address next to its label, and every GitHub source is pinned to a default-branch commit', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
+  // No page served without scripts lists this oracle; the market id, which hashes the oracle's address, is what binds it.
+  const SHOWN_ONLY_BY_SCRIPT = new Set(['morpho-oracle-cbbtc-usdc-86']);
   for (const entry of loadRegistry(ROOT).entries.values()) {
-    if (entry.sourceLabel !== undefined) assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}page {7}agrees {2}the page has the address \\d+ characters`), entry.name);
+    if (SHOWN_ONLY_BY_SCRIPT.has(entry.name)) assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}page {7}FINDING the address is not found on the page as served`), entry.name);
+    else if (entry.sourceLabel !== undefined) assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}page {7}agrees {2}the page has the address \\d+ characters`), entry.name);
   }
   assert.match(text, /bundler3 .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address 5 characters after "Bundler3"/);
   assert.match(text, /cctp-message-transmitter .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address \d+ characters after "Ethereum" under a heading naming "MessageTransmitter"/);

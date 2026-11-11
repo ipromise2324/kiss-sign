@@ -8,13 +8,13 @@ import { createReader } from '../src/chain/reader.ts';
 import type { Read } from '../src/chain/reader.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
-import { parseRegistry } from '../src/registry.ts';
+import { marketsText, parseRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
-import { describeFinding, endsNeeded, expectedChanges, judgeEffects } from '../src/simulate/effects.ts';
-import type { EffectVerdict, Observed, Permit2Allowance } from '../src/simulate/effects.ts';
+import { describeFinding, endsNeeded, expectedChanges, judgeEffects, viewCalls } from '../src/simulate/effects.ts';
+import type { EffectVerdict, Observed, Permit2Allowance, ViewAnswer, ViewCall } from '../src/simulate/effects.ts';
 import { observeExecuted } from '../src/simulate/executed.ts';
 import { describeCallScan, scanCalls, simulateSafeTx } from '../src/simulate/simulate.ts';
 import type { Observation } from '../src/simulate/simulate.ts';
@@ -73,8 +73,9 @@ if (version === undefined) {
 }
 const tx = parseServiceTx(service, { chainId: 1n, version });
 
-const registry = parseRegistry(JSON.parse(readFileSync(flags.registry ?? join(ROOT, 'registry', 'contracts.json'), 'utf8')));
-function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Address[]; ends: Address[] } | undefined {
+const markets = marketsText(ROOT);
+const registry = parseRegistry(JSON.parse(readFileSync(flags.registry ?? join(ROOT, 'registry', 'contracts.json'), 'utf8')), markets === undefined ? {} : JSON.parse(markets));
+function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Address[]; ends: Address[]; views: ViewCall[] } | undefined {
   if (flags.card === undefined) return undefined;
   const card = parseCard(JSON.parse(flags.card));
   const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(ROOT, op.template, registry)]));
@@ -86,10 +87,11 @@ function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Addres
     judge: (observed) => judgeEffects(observed, resolution.card, templates, registry),
     watch: expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset): asset is Address => asset !== 'eth') : [],
     ends: endsNeeded(expectations),
+    views: viewCalls(resolution.card, templates, registry),
   };
 }
 const card = judged();
-const [watch, ends] = [card?.watch ?? [], card?.ends ?? []];
+const [watch, ends, views] = [card?.watch ?? [], card?.ends ?? [], card?.views ?? []];
 
 const name = (address: string) => registry.byAddress.get(address as never)?.name ?? address;
 function print(label: string, observation: Observation): void {
@@ -107,6 +109,8 @@ function print(label: string, observation: Observation): void {
     for (const a of observed.allowances) console.log(`  allowance ${name(a.token)} to ${name(a.spender)}: ${a.before} -> ${a.after}`);
     const show = ({ amount, expiration, nonce }: Permit2Allowance) => `${amount} until ${expiration} (nonce ${nonce})`;
     for (const a of observed.permit2) console.log(`  Permit2 allowance ${name(a.token)} to ${name(a.spender)}: ${show(a.before)} -> ${show(a.after)}`);
+    const answer = (a: ViewAnswer) => (a.kind === 'returned' ? a.data : `unread, ${a.why}`);
+    for (const v of observed.views ?? []) console.log(`  view ${name(v.to)} ${v.data.slice(0, 10)}: ${answer(v.before)} -> ${answer(v.after)}`);
     const evidence = observed.safeState;
     if (evidence.kind === 'read') {
       for (const [field, value] of Object.entries(evidence.before)) {
@@ -129,9 +133,9 @@ function print(label: string, observation: Observation): void {
 console.log(`nonce ${tx.nonce}, executed in block ${executed.number}; simulating on block ${parent.number}, agreed by ${reader.providers.join(' and ')}`);
 print(
   `simulated through execTransaction at block ${parent.number}`,
-  await simulateSafeTx(reader, { tx, parent, time: executedHeader.time, watch, ends }),
+  await simulateSafeTx(reader, { tx, parent, time: executedHeader.time, watch, ends, views }),
 );
-print(`from the receipt of ${txHash}`, await observeExecuted(reader, txHash, tx, ends));
+print(`from the receipt of ${txHash}`, await observeExecuted(reader, txHash, tx, ends, views));
 console.log(`\neach call run as a Safe transaction of its own at block ${parent.number}`);
 for (const line of describeCallScan(await scanCalls(reader, { tx, parent, time: executedHeader.time, watch }), registry)) console.log(`  ${line}`);
 
