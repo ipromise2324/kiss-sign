@@ -112,7 +112,7 @@ The perturbation test changed `deadline`: one more and one less changed nothing,
 
 ## ERC-7730
 
-The pinned registry has a descriptor for BlueBundlesV1 by exact address, and no attestation for it. It has no descriptor for Morpho Blue, the oracle, the IRM or cbBTC.
+The pinned registry has a descriptor for BlueBundlesV1 and one for Morpho Blue, each by exact address, and no attestation for either. The template never calls Morpho Blue directly; its descriptor shows all five market parameters for `supply`. It has no descriptor for the oracle, the IRM, cbBTC or USDC.
 
 For `blueBundlesV1Supply`, it shows `assets`, the collateral token, the LLTV, the fee, the fee recipient and the deadline. It hides `marketParams.oracle` (visible: never). It names no field for `marketParams.loanToken` or `marketParams.irm`, and hides the permit.
 
