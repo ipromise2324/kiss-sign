@@ -185,13 +185,11 @@ test('every committed report.generated.html is what the program writes from the 
   }
 });
 
-test('a template with notes.json has report.generated.html and no report.md, and an HTML report needs notes.json', () => {
+test('every template has notes.json and report.generated.html, and no report.md', () => {
   for (const id of templates) {
-    if (has(id, NOTES_FILE)) {
-      assert.ok(has(id, GENERATED_HTML_FILE), `${id} has ${NOTES_FILE} but no ${GENERATED_HTML_FILE}`);
-      assert.ok(!has(id, 'report.md'), `${id} has ${NOTES_FILE}, which replaces report.md`);
-    }
-    if (has(id, GENERATED_HTML_FILE)) assert.ok(has(id, NOTES_FILE), `${id} has ${GENERATED_HTML_FILE} but no ${NOTES_FILE}`);
+    assert.ok(has(id, NOTES_FILE), `${id} has no ${NOTES_FILE}`);
+    assert.ok(has(id, GENERATED_HTML_FILE), `${id} has no ${GENERATED_HTML_FILE}`);
+    assert.ok(!has(id, 'report.md'), `${id} has report.md, which notes.json replaced`);
   }
 });
 
