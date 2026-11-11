@@ -151,6 +151,7 @@ test('card new takes amounts in whole tokens, reads decimals on chain, and seals
   assert.ok(made.stdout.includes(`usdc ${USDC} has 6 decimals: decimals() at block ${HEAD}, where alchemy and drpc agree\n`));
   assert.ok(made.stdout.includes('  amount: 5 usdc = 5000000 base units\n'));
   assert.ok(made.stdout.includes('  min-shares: 4.8 steakhouse-prime-usdc = 4800000000000000000 base units\n'));
+  assert.ok(made.stdout.includes('amounts in whole tokens:\n  amount: 5 usdc = 5000000 base units\n  min-shares: 4.8 steakhouse-prime-usdc = 4800000000000000000 base units\n\n'));
   assert.match(made.stdout, new RegExp(`vault: steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)\\n  amount: 5000000\\n`));
   assert.equal(made.asked[3], 'Is this what you mean to do? [y/N] ');
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(made.stdout)?.[1];
@@ -166,6 +167,8 @@ test('card new reads each token\'s decimals once across operations', async () =>
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes('  amount: 1.25 usdc = 1250000 base units\n'));
   assert.ok(made.stdout.includes('  amount: 0.000001 usdc = 1 base units\n'));
+  assert.ok(made.stdout.includes('operation 1 amount: 1.25 usdc = 1250000 base units\n'));
+  assert.ok(made.stdout.includes('operation 2 amount: 0.000001 usdc = 1 base units\n'));
   assert.deepEqual(chain.calls.toSorted(), [STEAKHOUSE, STEAKHOUSE, USDC, USDC].map((a) => a.toLowerCase()).toSorted());
 });
 

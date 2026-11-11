@@ -125,11 +125,13 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   const decimals = unit.kind === 'eth' ? 18 : await ctx.decimals(unit.entry);
   const full = unit.kind === 'eth' ? 'eth' : `${token} ${checksumAddress(unit.entry.address)}`;
   const value = baseUnits(name, await answer(ctx.ask, `${name} (${full}, ${decimals} decimals): `), decimals, token);
-  ctx.io.stdout(`  ${name}: ${human(value, decimals)} ${token} = ${value} base units\n`);
+  const line = `${name}: ${human(value, decimals)} ${token} = ${value} base units`;
+  ctx.io.stdout(`  ${line}\n`);
+  ctx.amounts.push(line);
   return value.toString();
 }
 
-type Context = { readonly sources: Sources; readonly io: Io; readonly ask: Terminal['ask']; readonly decimals: TokenDecimals };
+type Context = { readonly sources: Sources; readonly io: Io; readonly ask: Terminal['ask']; readonly decimals: TokenDecimals; readonly amounts: string[] };
 
 const isTyped = (entry: [string, CardField]): entry is [string, TypedField] => entry[1].kind === 'amount' || entry[1].kind === 'nonce';
 const isChosen = (entry: [string, CardField]): entry is [string, ChosenField] => !isTyped(entry);
@@ -164,12 +166,15 @@ export async function cardNew(args: readonly string[], io: Io): Promise<number> 
     return loadTemplate(io.repoRoot, id, sources.registry);
   });
   const reader = templates.some(countsRegistryToken) ? openMainnetReader(io.env, io.transport) : undefined;
-  const ctx: Context = { sources, io, ask, decimals: chainDecimals(reader, io) };
+  const ctx: Context = { sources, io, ask, decimals: chainDecimals(reader, io), amounts: [] };
   const operations: CardOperation[] = [];
   for (const [i, template] of templates.entries()) {
     io.stdout(`operation ${i + 1}: ${template.id}\n`);
+    const before = ctx.amounts.length;
     operations.push(await fill(template, ctx));
+    if (templates.length > 1) ctx.amounts.splice(before, Infinity, ...ctx.amounts.slice(before).map((line) => `operation ${i + 1} ${line}`));
   }
   io.stdout('\n');
+  if (ctx.amounts.length > 0) io.stdout(`amounts in whole tokens:\n${ctx.amounts.map((line) => `  ${line}\n`).join('')}\n`);
   return seal({ operations }, io, confirm);
 }
