@@ -11,11 +11,13 @@ import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Hex, SafeTx } from '../src/safe/types.ts';
 import { judgeEffects, viewCalls } from '../src/simulate/effects.ts';
 import type { EffectVerdict } from '../src/simulate/effects.ts';
+import { observeExecuted, withSimulatedViews } from '../src/simulate/executed.ts';
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
+import type { Observation } from '../src/simulate/simulate.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
-import { loadTemplate } from '../src/template/template.ts';
+import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -71,11 +73,14 @@ test('a card naming no registry market is refused', () => {
   assert.equal(result.kind, 'refused');
 });
 
-type Fixture = { executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
-const recorded: Fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'simulate', 'morpho-market-supply.json'), 'utf8'));
+type Fixture = { transactionHash: Hex; template?: unknown; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
+const fixture = (name: string): Fixture => JSON.parse(readFileSync(join(ROOT, 'testdata', 'simulate', `${name}.json`), 'utf8'));
 
-async function simulatedVerdict(card: Card): Promise<EffectVerdict> {
+/** The recorded supply, simulated on its parent block and observed from its receipt, judged against the card. */
+async function recordedVerdicts(name: string, card: Card): Promise<{ simulated: EffectVerdict; executed: EffectVerdict }> {
+  const recorded = fixture(name);
   const tx = safeTx(CASES[0].name);
+  const used = recorded.template === undefined ? templates : new Map([['morpho/market-supply', parseTemplate(recorded.template, registry)]]);
   const reader = replayReader(recorded.exchanges);
   const header = async (at: { number: string; hash: Hex }) => {
     const read = await reader.header({ number: BigInt(at.number), hash: at.hash });
@@ -83,17 +88,29 @@ async function simulatedVerdict(card: Card): Promise<EffectVerdict> {
     return (read as Extract<typeof read, { kind: 'agreed' }>).value;
   };
   const [parent, executed] = [await header(recorded.parent), await header(recorded.executed)];
-  const views = viewCalls(resolved(tx, supply(CASES[0].amount)), templates, registry);
-  const observation = await simulateSafeTx(reader, { tx, parent, time: executed.time, watch: [USDC], ends: [], views });
-  assert.equal(observation.kind, 'observed', observation.kind === 'unverifiable' ? observation.reasons.join('; ') : '');
-  return judgeEffects((observation as Extract<typeof observation, { kind: 'observed' }>).observed, resolved(tx, card), templates, registry);
+  const views = viewCalls(resolved(tx, card), used, registry);
+  const simulated = await simulateSafeTx(reader, { tx, parent, time: executed.time, watch: [USDC], ends: [], views });
+  const fromReceipt = withSimulatedViews(await observeExecuted(reader, recorded.transactionHash, tx, [], views), simulated, views);
+  const judged = (observation: Observation): EffectVerdict => {
+    assert.equal(observation.kind, 'observed', observation.kind === 'unverifiable' ? observation.reasons.join('; ') : '');
+    return judgeEffects((observation as Extract<Observation, { kind: 'observed' }>).observed, resolved(tx, card), used, registry);
+  };
+  return { simulated: judged(simulated), executed: judged(fromReceipt) };
 }
 
-test('the recorded simulation gives USDC, raises the Safe\'s supply shares, and matches the card', async () => {
-  assert.deepEqual(await simulatedVerdict(supply(CASES[0].amount)), { kind: 'match' });
+test("the recorded supply gives USDC, raises the Safe's supply shares, and matches the card, simulated and from its receipt", async () => {
+  assert.deepEqual(await recordedVerdicts('morpho-market-supply', supply(CASES[0].amount)), { simulated: { kind: 'match' }, executed: { kind: 'match' } });
 });
 
-test('the recorded simulation does not match a card for a larger amount', async () => {
-  const verdict = await simulatedVerdict(supply(`${BigInt(CASES[0].amount) + 1n}`));
-  assert.equal(verdict.kind, 'mismatch');
+test('the recorded supply does not match a card for a larger amount', async () => {
+  const verdicts = await recordedVerdicts('morpho-market-supply', supply(`${BigInt(CASES[0].amount) + 1n}`));
+  assert.deepEqual([verdicts.simulated.kind, verdicts.executed.kind], ['mismatch', 'mismatch']);
+});
+
+test('a template view that writes state, USDC approve, is read by STATICCALL in the simulated block and is unverifiable, never a match', async () => {
+  const { simulated, executed } = await recordedVerdicts('morpho-market-supply-writing-view', supply(CASES[0].amount));
+  const refused = `usdc ${USDC} approve(${registry.entries.get('blue-bundles-v1')!.address}, 1) could not be read before the transaction in a simulated block: it reverted in the simulated block, read by STATICCALL: it failed, or it wrote state or emitted a log`;
+  assert.deepEqual(simulated, { kind: 'unverifiable', reasons: [refused] });
+  assert.equal(executed.kind, 'unverifiable');
+  assert.ok(executed.kind === 'unverifiable' && executed.reasons.includes(refused));
 });

@@ -14,6 +14,7 @@ import { MULTISEND } from '../src/decode/multisend.ts';
 import type { Reader } from '../src/chain/reader.ts';
 import { loadRegistry, parseRegistry } from '../src/registry.ts';
 import { describeFinding, judgeEffects } from '../src/simulate/effects.ts';
+import { withSimulatedViews } from '../src/simulate/executed.ts';
 import type { EffectVerdict, Observed, ViewAnswer } from '../src/simulate/effects.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
@@ -324,7 +325,7 @@ const supplied = (position?: { before: ViewAnswer; after: ViewAnswer }): Observe
   permit2: [],
   ends: new Map(),
   safeState: { kind: 'receipt', logs: [] },
-  ...(position === undefined ? {} : { views: [{ ...POSITION, ...position }] }),
+  ...(position === undefined ? {} : { views: [{ ...POSITION, ...position, readIn: 'simulation' as const }] }),
 });
 
 const judged = (observed: Observed, t: Template = template): EffectVerdict => judgeEffects(observed, resolved(), new Map([[t.id, t]]), registry);
@@ -337,9 +338,9 @@ test('a supply that credits the Safe supply shares and leaves its debt and colla
 
 test('supply shares that do not increase, or debt or collateral that moves, are each a mismatch naming the view and both values', () => {
   assert.deepEqual(described(judged(supplied({ before: answer(100n, 7n, 9n), after: answer(100n, 8n, 0n) }))), [
-    `${VIEW} supplyShares: 100 before, 100 after; the template needs it to increase`,
-    `${VIEW} borrowShares: 7 before, 8 after; the template needs it to stay the same`,
-    `${VIEW} collateral: 9 before, 0 after; the template needs it to stay the same`,
+    `${VIEW} supplyShares: 100 before, 100 after in a simulated block; the template needs it to increase`,
+    `${VIEW} borrowShares: 7 before, 8 after in a simulated block; the template needs it to stay the same`,
+    `${VIEW} collateral: 9 before, 0 after in a simulated block; the template needs it to stay the same`,
   ]);
 });
 
@@ -349,7 +350,7 @@ test('a view whose template says decreases matches a fall and refuses a rise', (
   const withdraw = parseTemplate(raw, registry);
   assert.deepEqual(judged(supplied({ before: answer(100n, 0n, 0n), after: answer(40n, 0n, 0n) }), withdraw), { kind: 'match' });
   assert.deepEqual(described(judged(supplied({ before: answer(100n, 0n, 0n), after: answer(140n, 0n, 0n) }), withdraw)), [
-    `${VIEW} supplyShares: 100 before, 140 after; the template needs it to decrease`,
+    `${VIEW} supplyShares: 100 before, 140 after in a simulated block; the template needs it to decrease`,
   ]);
 });
 
@@ -357,13 +358,37 @@ test('a view that was not read, reverted, or answered something else is unverifi
   assert.deepEqual(judged(supplied()), { kind: 'unverifiable', reasons: [`${VIEW} was not read`] });
   assert.deepEqual(judged(supplied({ before: answer(100n, 0n, 0n), after: { kind: 'unread', why: 'it reverted at block 9' } })), {
     kind: 'unverifiable',
-    reasons: [`${VIEW} could not be read after the transaction: it reverted at block 9`],
+    reasons: [`${VIEW} could not be read after the transaction in a simulated block: it reverted at block 9`],
   });
   assert.deepEqual(judged(supplied({ before: answer(100n, 0n), after: answer(200n, 0n, 0n) })), {
     kind: 'unverifiable',
-    reasons: [`${VIEW} could not be read before the transaction: its answer does not decode as uint256, uint128, uint128`],
+    reasons: [`${VIEW} could not be read before the transaction in a simulated block: its answer does not decode as uint256, uint128, uint128`],
   });
   assert.deepEqual(judged(supplied({ before: answer(100n, 1n << 128n, 0n), after: answer(200n, 0n, 0n) })).kind, 'unverifiable');
+});
+
+test('an executed supply is judged on its view both at its blocks and simulated alone, so another transaction in its block cannot pass for it', () => {
+  const atBlocks = { ...supplied(), views: [{ ...POSITION, before: answer(100n, 0n, 0n), after: answer(150n, 0n, 0n), readIn: 'blocks' as const }] };
+  const receipt = { kind: 'observed', observed: atBlocks, logs: [] } as const;
+  const alone = (before: ViewAnswer, after: ViewAnswer) =>
+    ({ kind: 'observed', observed: { ...supplied(), safeState: { kind: 'receipt', logs: [] }, views: [{ ...POSITION, before, after, readIn: 'simulation' as const }] }, logs: [] }) as const;
+  const judgedWith = (simulated: Parameters<typeof withSimulatedViews>[1]) => {
+    const merged = withSimulatedViews(receipt, simulated, [POSITION]);
+    assert.equal(merged.kind, 'observed');
+    return judged((merged as Extract<typeof merged, { kind: 'observed' }>).observed);
+  };
+  assert.deepEqual(judgedWith(alone(answer(100n, 0n, 0n), answer(140n, 0n, 0n))), { kind: 'match' });
+  assert.deepEqual(described(judgedWith(alone(answer(100n, 0n, 0n), answer(100n, 0n, 0n)))), [
+    `${VIEW} supplyShares: 100 before, 100 after in a simulated block; the template needs it to increase`,
+  ]);
+  assert.deepEqual(judgedWith({ kind: 'unverifiable', reasons: ['no agreed parent block'] }), {
+    kind: 'unverifiable',
+    reasons: [`${VIEW} could not be read before the transaction in a simulated block: no agreed parent block`],
+  });
+  assert.deepEqual(judgedWith({ kind: 'observed', observed: supplied(), logs: [] }), {
+    kind: 'unverifiable',
+    reasons: [`${VIEW} could not be read before the transaction in a simulated block: the simulation on the parent block did not read it`],
+  });
 });
 
 test('a balance the card does not explain is still a mismatch when the view is right', () => {
