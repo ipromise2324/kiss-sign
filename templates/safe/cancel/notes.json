@@ -1,0 +1,50 @@
+{
+  "title": "取消 Safe 佇列裡的一筆交易",
+  "summary": "在同一個 nonce 執行一筆對 Safe 自己送 0 ETH、不帶資料的交易；執行後，佇列裡那個 nonce 的交易永遠不能執行。",
+  "flow": [],
+  "pastTxsConclusion": {
+    "status": "safe",
+    "text": "past-txs 搜不到取消；另外三個 Safe 的歷史裡 9 筆取消都是這個形狀。"
+  },
+  "verdict": {
+    "status": "safe",
+    "text": "這筆交易不呼叫任何函式、不動任何資產；只要 nonce 是你要取消的那一筆。",
+    "recommendation": "card 的 nonce 照 Safe app 佇列裡要取消那筆交易的 nonce 填。"
+  },
+  "judgments": [],
+  "reviews": {},
+  "overview": [
+    {
+      "title": "沒有協議",
+      "text": "唯一的地址是 Safe 自己。Safe 收到 0 ETH、空資料時只執行它的 receive，不做別的事。"
+    }
+  ],
+  "entries": {},
+  "fields": {
+    "nonce": "要取代的佇列交易的 nonce",
+    "1.to": "Safe 自己",
+    "1.value": "不送 ETH",
+    "1.data": "沒有資料；多一個 byte 就是 MISMATCH"
+  },
+  "tests": [
+    {
+      "text": "safe-cancel（Safe 1.3.0 的 nonce 87）和 safe-cancel-other-safe（另一個 Safe 1.3.0 的 nonce 494）用隱含的 card 都是 MATCH；換 nonce、換對象、送 1 wei 或加資料都是 MISMATCH。"
+    }
+  ],
+  "details": [
+    {
+      "title": "過去交易",
+      "notes": [
+        {
+          "text": "pnpm past-txs 以 ERC-20 的 Transfer log 為錨點，取消沒有這種 log，所以沒有錄下的搜尋。改從 Safe Transaction Service 列出另外三個 Safe 的完整執行歷史：2 個 Safe 共 9 筆對自己、不帶資料的呼叫，每筆 value 0、operation 0、手續費欄位都是 0。"
+        },
+        {
+          "text": "同樣這些 Safe 還有 24 筆對自己、帶資料的呼叫（addOwnerWithThreshold、removeOwner、swapOwner、changeThreshold）。那些是改設定，不是取消，floor 會拒絕帶資料的對自己呼叫。"
+        },
+        {
+          "text": "模板把 Safe 交易自己的 nonce 綁在 card 的 nonce 上，所以要取消 nonce 12 的 card 永遠不會符合 nonce 13 的取消。程式模擬前會在鏈上讀 Safe 目前的 nonce，nonce 不是下一個的交易會被拒絕。"
+        }
+      ]
+    }
+  ]
+}
