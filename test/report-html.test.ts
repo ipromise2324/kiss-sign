@@ -3,7 +3,6 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { replayReader } from '../src/chain/recording.ts';
-import { cachedCompilers } from '../src/contracts/solc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
 import { NOTES_FILE, NotesError, notesChanges, parseNotes } from '../src/research/notes.ts';
@@ -13,6 +12,7 @@ import { checkSpans, entriesOf, loadSubject, renderReport, replayInputs, reportR
 import type { ReportInputs, ReportRecording } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
+import { reportCases, warmCompilers } from './solc-pool.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -146,7 +146,7 @@ function section(html: string, heading: string): string {
 test('every committed report.generated.html is what the program writes from the recordings and notes.json', { timeout: 600_000 }, async () => {
   const withNotes = templates.filter((id) => has(id, NOTES_FILE));
   assert.ok(withNotes.includes(ID), `${ID} has ${NOTES_FILE}`);
-  const compilers = cachedCompilers();
+  const compilers = await warmCompilers(reportCases(ROOT, registry, withNotes.map((template) => ({ template }))));
   for (const id of withNotes) {
     const { inputs, title } = await replayInputs(ROOT, registry, { template: id }, compilers, suffixes);
     if (inputs.subject.kind !== 'template') throw new Error('unreachable');

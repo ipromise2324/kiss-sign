@@ -1,7 +1,8 @@
 import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -12,12 +13,22 @@ import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal, Refusal } from '../src/contracts/prove.ts';
 import { EIP1967_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
-import { cachedCompilers, pinnedCompilers } from '../src/contracts/solc.ts';
+import { pinnedCompilers } from '../src/contracts/solc.ts';
 import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SourcifyAnswer } from '../src/contracts/sourcify.ts';
+import { loadRegistry } from '../src/registry.ts';
+import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
+import { GENERATED_FILE, GENERATED_SUFFIX, VAULT_REPORTS_DIR, replayReport } from '../src/research/report.ts';
+import type { Target } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
+import { TEMPLATES_DIR } from '../src/template/template.ts';
+import { reportCases, warmCompilers } from './solc-pool.ts';
 
-const load = (name: string): AbiCase => JSON.parse(readFileSync(join(import.meta.dirname, '..', 'testdata', 'abi', `${name}.json`), 'utf8')) as AbiCase;
+const ROOT = join(import.meta.dirname, '..');
+const registry = loadRegistry(ROOT);
+const suffixes = loadPublicSuffixList();
+
+const load = (name: string): AbiCase => JSON.parse(readFileSync(join(ROOT, 'testdata', 'abi', `${name}.json`), 'utf8')) as AbiCase;
 
 const unverifiable = <T>(reason: string): Read<T> => ({
   kind: 'unverifiable',
@@ -27,8 +38,6 @@ const unverifiable = <T>(reason: string): Read<T> => ({
     { provider: 'drpc', kind: 'failed', cause: 'no-answer' },
   ],
 });
-
-const compilers = cachedCompilers();
 
 const show = (result: AbiProof | AbiRefusal): string =>
   result.kind === 'proven' ? `proven ${result.contractName}` : `refused: ${describeRefusal(result.refusal)}`;
@@ -213,6 +222,48 @@ const CASES = [
 
 /** Sourcify holds these as partial matches: the source compiles to the code on chain except the metadata hash. */
 const PARTIAL = ['morpho-urd', 'cctp-message-transmitter'];
+
+const generated = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) =>
+  readdirSync(join(ROOT, TEMPLATES_DIR, protocol))
+    .map((operation) => `${protocol}/${operation}`)
+    .filter((id) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE))),
+);
+
+const vaultReports = existsSync(join(ROOT, VAULT_REPORTS_DIR)) ? readdirSync(join(ROOT, VAULT_REPORTS_DIR)).filter((f) => f.endsWith(GENERATED_SUFFIX)) : [];
+const vaultsReported = vaultReports.map((file) => file.slice(0, -GENERATED_SUFFIX.length));
+const reportTargets: Target[] = [...generated.map((template) => ({ template })), ...vaultsReported.map((vault) => ({ vault }))];
+
+const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases(ROOT, registry, reportTargets)]);
+
+test('every committed generated report has its own test below', () => {
+  assert.ok(generated.includes('morpho/vault-deposit'), `morpho/vault-deposit has a generated report`);
+  assert.ok(vaultsReported.length > 0, `${VAULT_REPORTS_DIR} holds a vault report`);
+  const checked = [...generated.map((id) => join(TEMPLATES_DIR, id, GENERATED_FILE)), ...vaultReports.map((file) => join(VAULT_REPORTS_DIR, file))].sort();
+  const committed = execFileSync('git', ['ls-files', `*${GENERATED_SUFFIX}`], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter((line) => line !== '').sort();
+  assert.deepEqual(checked, committed, 'each committed *.generated.md needs a test, and each generated report must be committed: git add a report you just wrote');
+});
+
+for (const id of generated) {
+  test(`${TEMPLATES_DIR}/${id}/${GENERATED_FILE} is what the program writes from the repository and its recordings`, { timeout: 600_000 }, async () => {
+    assert.ok(!('unavailable' in suffixes), `the source checks need the pinned Public Suffix List: ${'unavailable' in suffixes ? suffixes.unavailable : ''}`);
+    const committed = readFileSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE), 'utf8');
+    const text = await replayReport(ROOT, registry, { template: id }, compilers, suffixes);
+    assert.ok(text === committed, `${TEMPLATES_DIR}/${id}/${GENERATED_FILE} differs from \`pnpm report ${id} --offline\`; run \`pnpm report ${id} --record\` and never edit it by hand`);
+    assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${id} lacks a read the proof now makes; delete it and run \`pnpm report ${id} --record\``);
+  });
+}
+
+for (const vault of vaultsReported) {
+  test(`${VAULT_REPORTS_DIR}/${vault}${GENERATED_SUFFIX} is what pnpm report --vault writes from its recordings`, { timeout: 600_000 }, async () => {
+    const committed = readFileSync(join(ROOT, VAULT_REPORTS_DIR, `${vault}${GENERATED_SUFFIX}`), 'utf8');
+    const text = await replayReport(ROOT, registry, { vault }, compilers, suffixes);
+    assert.ok(text === committed, `${VAULT_REPORTS_DIR}/${vault}${GENERATED_SUFFIX} differs from \`pnpm report --vault ${vault} --offline\`; run \`pnpm report --vault ${vault} --record\``);
+    assert.ok(!text.includes('## Card'), 'a vault report has no template sections');
+    const entry = registry.entries.get(vault)!;
+    for (const name of [vault, ...Object.values(entry.attributes)]) assert.match(text, new RegExp(`^\\| \`${name.replace(/\./g, '\\.')}\` \\| \`0x[0-9a-fA-F]{40}\` \\|`, 'm'));
+    assert.match(text, /stored output of `pnpm vault-evidence`/);
+  });
+}
 
 for (const expected of CASES) {
   test(`${expected.name}: the pinned solc rebuilds the code read on chain, so its ABI is proven`, async () => {
