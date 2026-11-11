@@ -172,7 +172,7 @@ function chainReader(): Reader {
 }
 
 test('pin-code finds each change of the code by its first block, back to the block before deployment', async () => {
-  const history = await readCodeHistory(chainReader(), BUNDLER3 as Address, { number: 400n, hash: `0x${'00'.repeat(32)}` as Hex });
+  const history = await readCodeHistory(chainReader(), BUNDLER3 as Address, 400n, { hash: keccakCode('0x6002' as Hex) });
   assert.deepEqual(history, {
     kind: 'read',
     pins: { earlier: [{ from: 100n, pin: { hash: keccakCode('0x6001' as Hex) } }], current: { from: 250n, pin: { hash: keccakCode('0x6002' as Hex) } } },

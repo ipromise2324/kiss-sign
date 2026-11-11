@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-10",
+  "fetched": "2026-11-11",
   "defillama": [
     {
       "slug": "circle-usdc",
@@ -75,7 +75,7 @@
   },
   "commits": {},
   "vaults": {
-    "steakhouse-high-yield-usdc": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26386589\nvault        steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757\nlatest block 26386589 0x7db7634294dadca22b321a2814aa8f691bd98ab323db680338f7f4c2fe87ea0c\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-10  block 26386589  43,151,777.684712 usdc\n  2026-10-11  block 26170589  49,188,070.379005 usdc\n  2026-09-11  block 25954589  41,888,203.506592 usdc\n  2026-08-12  block 25738589  47,500,812.729804 usdc\n  2026-07-13  block 25522589  38,783,155.479086 usdc\n  2026-06-13  block 25306589  35,592,669.130720 usdc\n  2026-05-14  block 25090589  32,948,493.095950 usdc\n  2026-04-14  block 24874589  22,130,680.178808 usdc\n  2026-03-14  block 24658589  2,769,936.660170 usdc\n  2026-02-12  block 24442589  4,448,151.442704 usdc\n  2026-01-13  block 24226589  2,343,214.906277 usdc\n  2025-12-14  block 24010589  3,553,140.536659 usdc\n  2025-11-14  block 23794589  2,733,854.845279 usdc\n\nholders      452 addresses hold shares at block 26386589, of 1038 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 40781435995272770332350072\ntop 10       hold 53.52% of the shares; each: 18.03%, 8.57%, 4.29%, 4.23%, 3.86%, 3.53%, 3.34%, 2.84%, 2.44%, 2.38%"
+    "steakhouse-high-yield-usdc": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26389438\nvault        steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757\nlatest block 26389438 0x34c82db0bc1f6fb00933e6e3bf1365fe6b4e56e79c1dcd1fcb3a2a161605914e\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-11  block 26389438  42,328,090.585073 usdc\n  2026-10-12  block 26173438  48,854,387.659365 usdc\n  2026-09-11  block 25957438  42,316,029.955899 usdc\n  2026-08-12  block 25741438  47,454,921.177853 usdc\n  2026-07-13  block 25525438  39,195,227.077747 usdc\n  2026-06-13  block 25309438  35,587,259.954593 usdc\n  2026-05-14  block 25093438  33,004,237.084281 usdc\n  2026-04-14  block 24877438  21,760,434.467473 usdc\n  2026-03-15  block 24661438  2,770,072.526625 usdc\n  2026-02-13  block 24445438  4,446,315.381707 usdc\n  2026-01-14  block 24229438  2,343,340.972095 usdc\n  2025-12-14  block 24013438  3,553,315.997496 usdc\n  2025-11-14  block 23797438  2,734,098.299901 usdc\n\nholders      454 addresses hold shares at block 26389438, of 1041 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 40000432168951076806717984\ntop 10       hold 54.75% of the shares; each: 20.51%, 8.74%, 4.38%, 3.94%, 3.60%, 3.41%, 2.89%, 2.49%, 2.43%, 2.37%"
   },
   "erc7730": {
     "commit": "3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4",
@@ -87,5 +87,6 @@
       "index.calldata.json": "{\n  \"eip155:1:0xbeeff2c5bf38f90e3482a8b19f12e5a6d2fca757\": \"registry/morpho/calldata-steakhouse_financial-bbqUSDC-v2-1.json\"\n}\n"
     },
     "chain": []
-  }
+  },
+  "code": []
 }

@@ -6,12 +6,13 @@ import type { Exchange } from '../chain/recording.ts';
 import type { BlockTag } from '../chain/types.ts';
 import { ABI_CASES_DIR, loadAbiCases, replayAbiCase } from '../contracts/abi-case.ts';
 import type { AbiCase } from '../contracts/abi-case.ts';
+import { pinOf, readRunningCodeAt, samePin } from '../contracts/code.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { REGISTRY_PATH, parseHttpsUrl } from '../registry.ts';
-import type { HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
+import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
@@ -40,7 +41,12 @@ export type Target = { readonly template: string } | { readonly vault: string };
 export type Erc7730Section = { readonly commit: string; readonly files: Readonly<Record<string, string>>; readonly chain: readonly Exchange[] };
 
 /** A program-made recording of the live answers a template's report used, beside the ABI and past-transaction ones. */
-export type ReportRecording = ListingsRecording & { readonly vaults: Readonly<Record<string, string>>; readonly erc7730: Erc7730Section };
+export type ReportRecording = ListingsRecording & {
+  readonly vaults: Readonly<Record<string, string>>;
+  readonly erc7730: Erc7730Section;
+  /** The code reads that check each code span. */
+  readonly code: readonly Exchange[];
+};
 
 export type PastTxsSummary = { readonly file: string; readonly query: PastTxsRecording['query']; readonly text: string };
 
@@ -55,6 +61,8 @@ export type ReportInputs = {
   /** What `pnpm vault-evidence` printed, by vault name. Absent: not read. */
   readonly vaults: ReadonlyMap<string, string>;
   readonly pastTxs: readonly PastTxsSummary[];
+  /** Each pinned entry's spans as `checkSpans` judged them, oldest first. */
+  readonly spans: ReadonlyMap<Address, readonly string[]>;
   /** What `pnpm erc7730` prints for the entries. */
   readonly erc7730: string;
 };
@@ -225,6 +233,7 @@ export function trimReportRecording(
   fetched: Date,
   vaults: ReadonlyMap<string, string>,
   erc7730: Erc7730Section,
+  code: readonly Exchange[],
 ): ReportRecording {
   const base = trimForRecording(entries, listings, pages, fetched);
   const docs = subject.kind === 'template' ? subject.docs : [];
@@ -238,7 +247,7 @@ export function trimReportRecording(
       ),
     ]),
   );
-  return { ...base, pages: trimmed, vaults: Object.fromEntries(vaults), erc7730 };
+  return { ...base, pages: trimmed, vaults: Object.fromEntries(vaults), erc7730, code };
 }
 
 export async function erc7730Text(entries: readonly RegistryEntry[], registry: Registry, snapshot: Snapshot, chain: () => Promise<ChainAccess>): Promise<{ text: string; reports: EntryReport[] }> {
@@ -446,10 +455,58 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   return out;
 }
 
-function pinText(entry: RegistryEntry): string {
-  const pin = entry.code?.current.pin;
-  if (pin === undefined) return 'not pinned';
+function pinText(pin: CodePin): string {
   return pin.implementation === undefined ? code(pin.hash) : `${code(pin.hash)}; implementation ${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`;
+}
+
+/**
+ * Each span of each entry's code pin checked on the chain, oldest first: the code at its `from` is its pin, and the
+ * code at the block before is the span before's pin, or for the first span, code `pnpm pin-code` cannot pin. A lone
+ * pin from block 0, written before ranges, is not read. Prints no text a provider gave.
+ */
+export async function checkSpans(reader: Reader, entries: readonly RegistryEntry[]): Promise<Map<Address, string[]>> {
+  const checked = new Map<Address, string[]>();
+  for (const entry of entries) {
+    if (entry.code === undefined) continue;
+    const spans = [...entry.code.earlier, entry.code.current];
+    if (spans.length === 1 && entry.code.current.from === 0n) {
+      checked.set(entry.address, ['pinned before ranges, not read']);
+      continue;
+    }
+    const verdicts: string[] = [];
+    for (const [i, { from, pin }] of spans.entries()) {
+      const at = await readRunningCodeAt(reader, entry.address, from);
+      if (at.kind === 'refused') {
+        verdicts.push(at.refusal.why === 'unverifiable' ? `UNVERIFIABLE at block ${from}` : `FINDING: block ${from} runs no code it can pin, ${code(at.refusal.why)}`);
+        continue;
+      }
+      if (!samePin(pinOf(at.code), pin)) {
+        verdicts.push(`FINDING: block ${from} runs ${pinText(pinOf(at.code))}`);
+        continue;
+      }
+      if (from === 0n) {
+        verdicts.push('PASS');
+        continue;
+      }
+      const previous = spans[i - 1]?.pin;
+      const before = await readRunningCodeAt(reader, entry.address, from - 1n);
+      if (before.kind === 'refused' && before.refusal.why === 'unverifiable') verdicts.push(`UNVERIFIABLE at block ${from - 1n}`);
+      else if (before.kind === 'read' && (previous === undefined || !samePin(pinOf(before.code), previous))) verdicts.push(`FINDING: block ${from - 1n} runs ${pinText(pinOf(before.code))}`);
+      else if (before.kind === 'refused' && previous !== undefined) verdicts.push(`FINDING: block ${from - 1n} runs no code it can pin, ${code(before.refusal.why)}`);
+      else verdicts.push('PASS');
+    }
+    checked.set(entry.address, verdicts);
+  }
+  return checked;
+}
+
+function spanRows(entry: RegistryEntry, verdicts: readonly string[] | undefined): string[] {
+  const name = `| ${code(entry.name)} |`;
+  if (entry.code === undefined) return [`${name} | not pinned | | |`];
+  return [...entry.code.earlier, entry.code.current].map(({ from, pin }, i) => {
+    const implementation = pin.implementation === undefined ? 'none' : `${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`;
+    return `${name} ${from} | ${code(pin.hash)} | ${implementation} | ${verdicts?.[i] ?? 'not read'} |`;
+  });
 }
 
 /** The pin names the code the proof compiled: the proxy's code and its implementation's, or the contract's own. */
@@ -500,7 +557,7 @@ export function renderReport(inputs: ReportInputs, title: { readonly command: st
   const out: string[] = [
     `# Generated evidence: ${name}`,
     '',
-    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs and ERC-7730 attestations live, reads each vault again at the blocks its evidence names, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
+    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans and ERC-7730 attestations live, reads each vault again at the blocks its evidence names, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
     '',
   ];
   if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));
@@ -511,22 +568,33 @@ export function renderReport(inputs: ReportInputs, title: { readonly command: st
     '',
     `${code('pnpm check-sources')} on every entry the operation can touch. ${code(`pnpm check-sources ${entries.map((e) => e.name).join(' ')}`)} prints what each check compared.`,
     '',
-    '| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page | Code pin |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    '| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   for (const { entry, lines } of checked) {
     const of = (check: Line['check']) => lines.find((l) => l.check === check);
     out.push(
-      `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${verdict(of('defillama'))} | ${verdict(of('coingecko'))} | ${verdict(of('github'))} | ${verdict(of('page') ?? of('url'))} | ${pinText(entry)} |`,
+      `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${verdict(of('defillama'))} | ${verdict(of('coingecko'))} | ${verdict(of('github'))} | ${verdict(of('page') ?? of('url'))} |`,
     );
   }
   const findings = checked.flatMap((r) => r.lines.filter((l) => l.kind === 'finding'));
   out.push('', `${checked.length} entries, ${findings.length} findings.`, '');
 
   out.push(
+    '## Code pins',
+    '',
+    `Every span of each entry's registry code pin, oldest first: a span holds from its block to the block before the next span's. A transaction to sign must run the last span's code, and an executed one the code of the span that holds its block. ${code('pnpm pin-code')} writes the spans from the chain, not from a review of that code. Chain: whether, through both providers, the code at the span's first block is its pin, and the code at the block before is the previous span's pin, or for the first span, no code ${code('pnpm pin-code')} can pin. A lone pin from block 0 was written before ranges and is not read.`,
+    '',
+    '| Entry | From block | Code hash | Implementation | Chain |',
+    '| --- | --- | --- | --- | --- |',
+    ...entries.flatMap((entry) => spanRows(entry, inputs.spans.get(entry.address))),
+    '',
+  );
+
+  out.push(
     '## ABI proofs',
     '',
-    `${code('pnpm prove-abi')}: Sourcify's source, compiled with a pinned solc, against the code both providers return. Equals pin: whether the proved code, and the implementation behind a proxy, are the registry's code pin, which every signing requires.`,
+    `${code('pnpm prove-abi')}: Sourcify's source, compiled with a pinned solc, against the code both providers return. Equals pin: whether the proved code, and the implementation behind a proxy, are the last span of the registry's code pin, which every signing of a new transaction requires.`,
     '',
     '| Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |',
     '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
@@ -588,6 +656,7 @@ export async function replayReport(repoRoot: string, registry: Registry, target:
     abi: await replayAbiProofs(entries, loadAbiCases(repoRoot), compilers),
     vaults: new Map(Object.entries(recording.vaults)),
     pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
+    spans: await checkSpans(replayReader(recording.code), entries),
     erc7730: (await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)))).text,
   };
   const inputsFiles = 'vault' in target ? [REGISTRY_PATH] : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), REGISTRY_PATH];

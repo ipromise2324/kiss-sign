@@ -59,11 +59,12 @@ for (const name of names.length > 0 ? names : Object.keys(file)) {
     refused = true;
     continue;
   }
-  if (was !== undefined && ranged && samePin(was.current.pin, pinOf(head.code))) {
+  const headPin = pinOf(head.code);
+  if (was !== undefined && ranged && samePin(was.current.pin, headPin)) {
     console.log(`${where} ${pinText(was.current.pin)} from block ${was.current.from} (unchanged)`);
     continue;
   }
-  const history = await readCodeHistory(reader, address, block.value);
+  const history = await readCodeHistory(reader, address, block.value.number, headPin);
   if (history.kind === 'refused') {
     console.log(`REFUSED ${where}: ${describeRefusal(history.refusal)}`);
     refused = true;

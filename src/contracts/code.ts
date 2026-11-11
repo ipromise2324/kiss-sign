@@ -49,28 +49,31 @@ export type CodeHistory =
   | { readonly kind: 'read'; readonly pins: CodePins; readonly before: CodeRefusal | 'genesis' }
   | { readonly kind: 'refused'; readonly refusal: CodeRefusal };
 
+/** The code a call to `address` runs at block `number`, read at the block hash both providers agree on. */
+export async function readRunningCodeAt(reader: Reader, address: Address, number: bigint): Promise<CodeRead> {
+  const block = await reader.block(number);
+  return block.kind === 'unverifiable' ? { kind: 'refused', refusal: { why: 'unverifiable', read: block.reason } } : readRunningCode(reader, address, block.value);
+}
+
 /**
- * Walks back from `head` through every change of the code a call to `address` runs. For each pin it searches, by
- * halving the blocks from 0 to the latest block known to hold it, for the first block of the run that ends there, then
- * reads the block before that run and repeats until that block holds no pin. Each read goes through both providers at
- * an agreed block hash; one they disagree on refuses the whole history.
+ * Walks back from block `head`, where `address` runs `headPin`, through every change of the code a call to it runs.
+ * For each pin it searches, by halving the blocks from 0 to the latest block known to hold it, for the first block of
+ * the run that ends there, then reads the block before that run and repeats until that block holds no pin. Each read
+ * goes through both providers at an agreed block hash; one they disagree on refuses the whole history.
  */
-export async function readCodeHistory(reader: Reader, address: Address, head: BlockRef): Promise<CodeHistory> {
+export async function readCodeHistory(reader: Reader, address: Address, head: bigint, headPin: CodePin): Promise<CodeHistory> {
   const reads = new Map<bigint, CodeRead>();
   const readAt = async (number: bigint): Promise<CodeRead> => {
     let read = reads.get(number);
     if (read === undefined) {
-      const block = await reader.block(number);
-      read = block.kind === 'unverifiable' ? { kind: 'refused', refusal: { why: 'unverifiable', read: block.reason } } : await readRunningCode(reader, address, block.value);
+      read = await readRunningCodeAt(reader, address, number);
       reads.set(number, read);
     }
     return read;
   };
-  const headRead = await readRunningCode(reader, address, head);
-  if (headRead.kind === 'refused') return headRead;
   const found: CodeSpan[] = [];
-  let pin = pinOf(headRead.code);
-  let held = head.number;
+  let pin = headPin;
+  let held = head;
   for (;;) {
     let lo = -1n;
     while (held - lo > 1n) {
