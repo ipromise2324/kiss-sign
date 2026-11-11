@@ -5,15 +5,18 @@ import { test } from 'node:test';
 import { createReader } from '../src/chain/reader.ts';
 import { REPLAY_ENDPOINTS, replayReader, replayTransport } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
-import type { BlockTag } from '../src/chain/types.ts';
+import type { Reader } from '../src/chain/reader.ts';
+import type { BlockRef, BlockTag } from '../src/chain/types.ts';
+import { keccakCode } from '../src/contracts/code.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
 import { REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
-import type { RegistryEntry } from '../src/registry.ts';
+import type { Registry, RegistryEntry } from '../src/registry.ts';
 import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
 import { chainAt } from '../src/research/erc7730.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import {
   GENERATED_FILE,
+  checkSpans,
   GENERATED_SUFFIX,
   ReportError,
   VAULT_REPORTS_DIR,
@@ -34,7 +37,7 @@ import type { ReportInputs, ReportRecording, Subject } from '../src/research/rep
 import type { Page } from '../src/research/source-page.ts';
 import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/vault-evidence.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
-import type { Hex } from '../src/safe/types.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -50,16 +53,19 @@ function quick(
   subject: Subject = loadSubject(ROOT, registry, { template: ID }),
   vaults: ReportInputs['vaults'] = new Map(),
   pastTxs: ReportInputs['pastTxs'] = [],
+  spans: ReportInputs['spans'] = new Map(),
+  reg: Registry = registry,
 ): string {
   const inputs: ReportInputs = {
     subject,
-    registry,
+    registry: reg,
     listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes },
     pages: sourcePagesOf({ pages, commits: recording.commits }),
     fetched: recording.fetched,
     abi,
     vaults,
     pastTxs,
+    spans,
     erc7730: 'not read',
   };
   return renderReport(inputs, { command: 'test', sources: [] });
@@ -109,16 +115,44 @@ test('morpho/vault-deposit: the ERC-7730 section is computed again from the reco
   assert.ok(committed.includes(text), 'report.generated.md holds the section as computed');
 });
 
-test("the registry table prints each entry's code pin, and a proof of other code than the pin is a FINDING", () => {
+test("each entry's code pin prints with its implementation, and a proof of other code than the pin is a FINDING", async () => {
   const bundler3 = registry.entries.get('bundler3')!;
   const usdc = registry.entries.get('usdc')!;
-  assert.match(quick(), new RegExp(`\\| \`bundler3\` \\|.*\\| \`${bundler3.code!.hash}\` \\|$`, 'm'));
-  assert.match(quick(), new RegExp(`\\| \`usdc\` \\|.*\\| \`${usdc.code!.hash}\`; implementation \`0x43506849D7C04F9138D1A2050bbF3A0c054402dd\` \`${usdc.code!.implementation!.hash}\` \\|$`, 'm'));
+  const spans = await checkSpans(replayReader([]), [bundler3, usdc]);
+  assert.match(quick(recording.pages, new Map(), undefined, undefined, undefined, spans), new RegExp(`^\\| \`usdc\` \\| 0 \\| \`${usdc.code!.current.pin.hash}\` \\| \`0x43506849D7C04F9138D1A2050bbF3A0c054402dd\` \`${usdc.code!.current.pin.implementation!.hash}\` \\| pinned before ranges, not read \\|$`, 'm'));
   const proof = (codeHash: Hex) =>
     ({ kind: 'proven', proxy: { kind: 'none' }, proven: bundler3.address, codeHash, contractName: 'Bundler3', compiler: '0.8.28', immutablesMasked: 0, librariesMasked: 0, metadataHashMasked: false, block: { number: 1n } }) as unknown as AbiProof;
   const row = (codeHash: Hex) => quick(recording.pages, new Map([[bundler3.address, proof(codeHash)]])).split('\n').find((l) => l.startsWith('| `bundler3` |') && l.includes('PROVEN'))!;
-  assert.match(row(bundler3.code!.hash), /\| PASS \| 0 immutable/);
+  assert.match(row(bundler3.code!.current.pin.hash), /\| PASS \| 0 immutable/);
   assert.match(row(`0x${'00'.repeat(32)}` as Hex), /\| FINDING \| 0 immutable/);
+});
+
+/** A chain where every registry address has no code before block 100, `early` from 100, and 0x6002 from 250 on. */
+function chainReader(early: Hex): Reader {
+  const codeAt = (n: bigint): Hex => (n < 100n ? '0x' : n < 250n ? early : '0x6002') as Hex;
+  const agreed = <T>(value: T) => ({ kind: 'agreed', value, providers: ['alchemy', 'drpc'] }) as const;
+  return {
+    providers: ['alchemy', 'drpc'],
+    block: async (tag: BlockTag) => agreed({ number: tag, hash: `0x${'00'.repeat(32)}` as Hex }),
+    getCode: async (_address: Address, at: BlockRef) => agreed(codeAt(at.number)),
+    getStorageAt: async () => agreed(`0x${'00'.repeat(32)}` as Hex),
+  } as unknown as Reader;
+}
+
+test('the report prints every code span, and --compare flags an earlier span whose code the chain did not run', async () => {
+  const forged = keccakCode('0x6066' as Hex);
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  raw['bundler3'].code = { hash: keccakCode('0x6002' as Hex), from: 250, earlier: [{ from: 100, hash: forged }] };
+  const reg = parseRegistry(raw);
+  const subject = loadSubject(ROOT, reg, { template: ID });
+  const bundler3 = [reg.entries.get('bundler3')!];
+  const report = async (early: Hex) => quick(recording.pages, new Map(), subject, undefined, undefined, await checkSpans(chainReader(early), bundler3), reg);
+  const committed = await report('0x6066' as Hex);
+  assert.match(committed, new RegExp(`^\\| \`bundler3\` \\| 100 \\| \`${forged}\` \\| none \\| PASS \\|\n\\| \`bundler3\` \\| 250 \\| \`${keccakCode('0x6002' as Hex)}\` \\| none \\| PASS \\|$`, 'm'));
+  assert.deepEqual(compareReports(committed, await report('0x6001' as Hex)), [
+    `Code pins › \`bundler3\` › Chain: committed PASS, live FINDING: block 100 runs \`${keccakCode('0x6001' as Hex)}\``,
+    `Code pins › \`bundler3\` (2) › Chain: committed PASS, live FINDING: block 249 runs \`${keccakCode('0x6001' as Hex)}\``,
+  ]);
 });
 
 test('a page that does not name the function is a FINDING', () => {
@@ -248,10 +282,10 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
     .replace(/\| 2638\d{4} \|$/gm, '| 27000000 |');
   assert.notEqual(drifted, committed);
   assert.deepEqual(compareReports(committed, drifted), []);
-  const series = committed.replace(/  2026-11-10  block 26386392  130,697,719\.723756 usdc/, '  2026-11-10  block 26386392  140,000,000.000000 usdc');
+  const series = committed.replace(/  2026-11-11  block 26389409  128,465,170\.797662 usdc/, '  2026-11-11  block 26389409  140,000,000.000000 usdc');
   assert.deepEqual(compareReports(committed, series), [
-    '`steakhouse-prime-usdc` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed:   2026-11-10  block 26386392  130,697,719.723756 usdc',
-    '`steakhouse-prime-usdc` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live:   2026-11-10  block 26386392  140,000,000.000000 usdc',
+    '`steakhouse-prime-usdc` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed:   2026-11-11  block 26389409  128,465,170.797662 usdc',
+    '`steakhouse-prime-usdc` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live:   2026-11-11  block 26389409  140,000,000.000000 usdc',
   ]);
 
   const revoked = committed.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');

@@ -4,6 +4,7 @@ import type { BlockRef } from '../chain/types.ts';
 import { keccakCode } from '../contracts/code.ts';
 import { describeRefusal } from '../contracts/prove.ts';
 import { locate } from '../contracts/proxy.ts';
+import { pinAt } from '../registry.ts';
 import type { Registry, RegistryEntry } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
 import { cardRefs } from '../template/template.ts';
@@ -54,11 +55,16 @@ const PASS: ChainCheck = { kind: 'pass' };
 const mismatch = (finding: string): ChainCheck => ({ kind: 'mismatch', findings: [finding] });
 const unverifiable = (reason: string): ChainCheck => ({ kind: 'unverifiable', reasons: [reason] });
 
-async function compare(reader: Reader, entry: RegistryEntry, at: BlockRef): Promise<ChainCheck> {
+/** A transaction to sign runs today's code. One that ran is judged by the code its block held. */
+export type CodeTime = 'pending' | 'executed';
+
+async function compare(reader: Reader, entry: RegistryEntry, at: BlockRef, time: CodeTime): Promise<ChainCheck> {
   const where = `${entry.name} ${entry.address}`;
-  const pin = entry.code;
-  if (pin === undefined) return unverifiable(`${where} has no code pin in the registry; run pnpm pin-code ${entry.name}`);
+  const pins = entry.code;
+  if (pins === undefined) return unverifiable(`${where} has no code pin in the registry; run pnpm pin-code ${entry.name}`);
   const block = `at block ${at.number}`;
+  const pin = time === 'pending' ? pins.current.pin : pinAt(pins, at.number);
+  if (pin === undefined) return mismatch(`${where} ${block}: the registry pins its code only from block ${(pins.earlier[0] ?? pins.current).from}`);
   const own = await reader.getCode(entry.address, at);
   if (own.kind === 'unverifiable') return unverifiable(own.reason);
   const hash = keccakCode(own.value);
@@ -80,10 +86,13 @@ async function compare(reader: Reader, entry: RegistryEntry, at: BlockRef): Prom
   return PASS;
 }
 
-/** Each entry must run, at `at`, the code its registry pin names: the same code, and behind a proxy the same implementation. */
-export async function checkCode(reader: Reader, entries: readonly RegistryEntry[], at: BlockRef): Promise<ChainCheck> {
+/**
+ * Each entry must run, at `at`, the code its registry pin names: the same code, and behind a proxy the same
+ * implementation. A pending transaction needs the current pin; an executed one the pin whose span holds `at`.
+ */
+export async function checkCode(reader: Reader, entries: readonly RegistryEntry[], at: BlockRef, time: CodeTime): Promise<ChainCheck> {
   const results: ChainCheck[] = [];
-  for (const entry of entries) results.push(await compare(reader, entry, at));
+  for (const entry of entries) results.push(await compare(reader, entry, at, time));
   const findings = results.flatMap((r) => (r.kind === 'mismatch' ? r.findings : []));
   const reasons = results.flatMap((r) => (r.kind === 'unverifiable' ? r.reasons : []));
   if (findings.length > 0) return { kind: 'mismatch', findings };

@@ -193,7 +193,7 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   };
   const read = {
     assets: await readAt(claims, (block) => checkAssets(reader, claims, block)),
-    code: await readAt(pinned, (block) => checkCode(reader, pinned, block)),
+    code: await readAt(pinned, (block) => checkCode(reader, pinned, block, executed === undefined ? 'pending' : 'executed')),
   };
   return { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls };
 }
