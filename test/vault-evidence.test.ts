@@ -91,3 +91,15 @@ test('a Transfers API still answering 503 after every pause leaves the holders U
   assert.deepEqual(unread, ['alchemy alchemy_getAssetTransfers: HTTP 503']);
   assert.match(unreadRefusal(unread) ?? '', /^1 read\(s\) got no answer after every retry, so nothing is recorded/);
 });
+
+test('a Transfers API that refuses the request is noted, so --record refuses to keep holders it could not count', async () => {
+  const replay = replayTransport(recorded.exchanges, REPLAY_ENDPOINTS);
+  const refusing: Transport = async (url, body, signal) =>
+    (JSON.parse(body) as { method: string }).method === 'alchemy_getAssetTransfers' ? { status: 200, text: '{"jsonrpc":"2.0","id":1,"error":{"code":-32600}}' } : replay(url, body, signal);
+  const unread: string[] = [];
+  const reader = createReader(REPLAY_ENDPOINTS, replay, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
+  const evidence = await gatherVaultEvidence(reader, alchemyCall(refusing, REPLAY_ENDPOINTS[0].url, (r) => unread.push(r), [0, 0]), registry.entries.get(recorded.vault)!);
+  assert.ok(!('kind' in evidence), 'the latest block is read');
+  assert.match(formatVaultEvidence(evidence, registry), /holders {6}UNVERIFIABLE the Alchemy Transfers API failed \(alchemy refused the request\)/);
+  assert.deepEqual(unread, ['alchemy alchemy_getAssetTransfers: refused the request']);
+});

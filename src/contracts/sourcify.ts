@@ -1,6 +1,7 @@
 import { request } from 'node:https';
 import { fallbackLookup } from '../chain/dns.ts';
-import { requestText } from '../chain/https.ts';
+import { requestText, retried, transientStatus } from '../chain/https.ts';
+import type { NoteUnread } from '../chain/https.ts';
 import { record } from '../chain/types.ts';
 import { parseAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
@@ -50,6 +51,12 @@ export const sourcifyHttps: SourcifyGet = async (address) => {
     return { status: answer.status, body: undefined };
   }
 };
+
+/** `get`, asking again after each pause while Sourcify gives no answer, and noting an address that never got one. */
+export const retryingSourcify =
+  (get: SourcifyGet, note: NoteUnread, pausesMs?: readonly number[]): SourcifyGet =>
+  (address) =>
+    retried(`sourcify ${address}`, () => get(address), ({ status }) => transientStatus({ status, text: '' }), note, pausesMs);
 
 function text(fields: Record<string, unknown>, name: string): string {
   const value = fields[name];

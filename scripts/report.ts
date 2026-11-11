@@ -8,13 +8,13 @@ import { kissSignHome } from '../src/keys.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
-import { retried, transientStatus, unreadRefusal } from '../src/chain/https.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadAbiCases, recordAbiCase } from '../src/contracts/abi-case.ts';
 import { proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
-import { sourcifyHttps } from '../src/contracts/sourcify.ts';
+import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { fetchListing, listingsFor } from '../src/research/listings.ts';
 import { chainAt, loadSnapshot, trimForRecording as trimErc7730 } from '../src/research/erc7730.ts';
@@ -169,7 +169,7 @@ const reader = createReader(endpoints, httpsTransport(), { note });
 const latest = await reader.block('latest');
 if (latest.kind === 'unverifiable') throw new Error(latest.reason);
 
-const listings = await listingsFor(entries, suffixes, fetchListing);
+const listings = await listingsFor(entries, suffixes, (listing) => fetchListing(listing, note));
 const docs = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
 const pages = await gatherSourcePages([...entries.map((e) => e.source), ...docs], retryingGet(httpsGet, note));
 
@@ -177,8 +177,7 @@ const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();
 const abiCases = new Map<string, unknown>();
 for (const entry of entries) {
-  const sourcify = (address: Address) => retried(`sourcify ${address}`, () => sourcifyHttps(address), ({ status }) => transientStatus({ status, text: '' }), note);
-  const deps = { sourcify, compilers };
+  const deps = { sourcify: retryingSourcify(sourcifyHttps, note), compilers };
   if (flags.record && !recorded.has(entry.address)) {
     const { proof, fixture } = await recordAbiCase(reader, entry.address, latest.value, latest.providers, deps);
     abiCases.set(join(root, 'testdata', 'abi', `${entry.name.replace(/\./g, '-')}.json`), fixture);
@@ -231,6 +230,7 @@ async function compareHtml(): Promise<boolean> {
 }
 
 if (flags.compare) {
+  if (unread.length > 0) console.log([`NOTE  ${unread.length} read(s) got no answer after every retry; a fact that differs below may differ only for that:`, ...unread.map((read) => `  ${read}`)].join('\n'));
   const differences = compareReports(readFileSync(committedPath, 'utf8'), text);
   for (const line of differences) console.log(`DIFFERS  ${line}`);
   console.log(

@@ -347,8 +347,6 @@ test('a source page whose server fails is UNVERIFIABLE, while a page it answers 
   const failing = await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: { status: 502, text: '' } });
   assert.match(failing, /page {7}UNVERIFIABLE https:\/\/docs\.morpho\.org\/addresses answered HTTP 502/);
   assert.match(failing, /1 entries, 0 findings, 1 unverifiable \(r\)/);
-  const unreachable = await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, {});
-  assert.match(unreachable, /page {7}UNVERIFIABLE docs\.morpho\.org unreachable/);
   assert.match(await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: { status: 404, text: '' } }), /page {7}FINDING https:\/\/docs\.morpho\.org\/addresses answered HTTP 404/);
 });
 
@@ -401,13 +399,35 @@ test('a read with no answer after every pause is UNVERIFIABLE, never a FINDING, 
     `1 read(s) got no answer after every retry, so nothing is recorded; run the command again later:\n  ${compareUrl}: rate limited (HTTP 403)`,
   );
 
-  const thrown: string[] = [];
-  const pages = await gatherSourcePages(
-    [DOCS],
-    retryingGet(async () => assert.fail('ECONNRESET'), (read) => thrown.push(read), [0]),
-  );
+});
+
+const failing = (code: string): HttpGet => async () => {
+  throw Object.assign(new Error(code), { code });
+};
+
+test('a dropped connection is asked again and is UNVERIFIABLE; a name DNS says does not exist is an answer and a FINDING', async () => {
+  const dropped: string[] = [];
+  let asked = 0;
+  const reset = failing('ECONNRESET');
+  const pages = await gatherSourcePages([DOCS], retryingGet(async (url) => (asked++, reset(url)), (read) => dropped.push(read), [0]));
+  assert.equal(asked, 2);
   assert.deepEqual(pages.pages.get(DOCS), { kind: 'unread', why: 'docs.morpho.org unreachable' });
-  assert.deepEqual(thrown, [`${DOCS}: unreachable or timed out`]);
+  assert.deepEqual(dropped, [`${DOCS}: unreachable or timed out`]);
+
+  const gone: string[] = [];
+  let tried = 0;
+  const missing = failing('ENOTFOUND');
+  const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'morpho-blue', source: DOCS, sourceLabel: 'Bundler3' } });
+  const text = report(entries, listings, await gatherSourcePages([DOCS], retryingGet(async (url) => (tried++, missing(url)), (read) => gone.push(read), [0])));
+  assert.equal(tried, 1);
+  assert.match(text, /page {7}FINDING docs\.morpho\.org unreachable/);
+  assert.deepEqual(gone, []);
+});
+
+test('a 403 whose page mentions rate limits is a FINDING on a source page, and a rate limit only from GitHub\'s API', async () => {
+  const forbidden: Served = { status: 403, text: '<p>See our rate limits</p>' };
+  assert.match(await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: forbidden }), /page {7}FINDING https:\/\/docs\.morpho\.org\/addresses answered HTTP 403/);
+  assert.match(await github({ status: 403, text: '{"message":"You have exceeded a secondary rate limit"}' }), /github {5}UNVERIFIABLE .*rate limited \(HTTP 403\)/);
 });
 
 test('a GitHub source on a branch name, a tree, or the repository root is not pinned', async () => {

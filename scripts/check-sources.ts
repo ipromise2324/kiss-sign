@@ -32,11 +32,12 @@ if (unknown.length > 0) {
 const entries = names.length === 0 ? [...registry.entries.values()] : names.map((name) => registry.entries.get(name)!);
 
 if (!(await ensureVendored(['psl']))) process.exit(1);
-const listings = await listingsFor(entries, loadPublicSuffixList(), fetchListing);
 const unread: string[] = [];
+const note = (read: string) => void unread.push(read);
+const listings = await listingsFor(entries, loadPublicSuffixList(), (listing) => fetchListing(listing, note));
 const pages = await gatherSourcePages(
   entries.map((e) => e.source),
-  retryingGet(httpsGet, (read) => void unread.push(read)),
+  retryingGet(httpsGet, note),
 );
 console.log(formatResults(checkSources(entries, listings, pages)));
 

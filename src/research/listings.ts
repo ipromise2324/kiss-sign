@@ -1,6 +1,7 @@
 import { request } from 'node:https';
 import { fallbackLookup } from '../chain/dns.ts';
-import { requestText } from '../chain/https.ts';
+import { requestText, retried, transientStatus } from '../chain/https.ts';
+import type { NoteUnread } from '../chain/https.ts';
 import { COINGECKO_KINDS } from '../registry.ts';
 import type { RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.ts';
@@ -231,23 +232,25 @@ export function formatResults(results: readonly EntryResult[]): string {
 export const DEFILLAMA_PROTOCOLS = { hostname: 'api.llama.fi', path: '/protocols' } as const;
 export const COINGECKO_COINS = { hostname: 'api.coingecko.com', path: '/api/v3/coins/list?include_platform=true' } as const;
 
-/** Both answers are public and need no key. */
-export async function fetchListing(target: { readonly hostname: string; readonly path: string }): Promise<unknown> {
+/** Both answers are public and need no key. A list with no answer after every retry is noted, then refused. */
+export async function fetchListing(target: { readonly hostname: string; readonly path: string }, note: NoteUnread): Promise<unknown> {
   let answer;
   try {
-    answer = await requestText(
-      request,
-      {
-        hostname: target.hostname,
-        path: target.path,
-        headers: { accept: 'application/json', 'user-agent': 'kiss-sign' },
-        rejectUnauthorized: true,
-        lookup: fallbackLookup(),
-        signal: AbortSignal.timeout(60_000),
-      },
-      undefined,
-      64 * 1024 * 1024,
-    );
+    const read = () =>
+      requestText(
+        request,
+        {
+          hostname: target.hostname,
+          path: target.path,
+          headers: { accept: 'application/json', 'user-agent': 'kiss-sign' },
+          rejectUnauthorized: true,
+          lookup: fallbackLookup(),
+          signal: AbortSignal.timeout(60_000),
+        },
+        undefined,
+        64 * 1024 * 1024,
+      );
+    answer = await retried(`https://${target.hostname}${target.path}`, read, (a) => transientStatus(a), note);
   } catch {
     throw new ListingError(`${target.hostname} unreachable`);
   }

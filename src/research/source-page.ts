@@ -1,6 +1,6 @@
 import { request } from 'node:https';
 import { fallbackLookup } from '../chain/dns.ts';
-import { requestText, retried, transientStatus } from '../chain/https.ts';
+import { requestText, retried, transientError, transientStatus } from '../chain/https.ts';
 import type { HttpAnswer, NoteUnread } from '../chain/https.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
@@ -270,8 +270,8 @@ export async function fetchPage(url: string, get: HttpGet): Promise<Page> {
   let answer: HttpAnswer;
   try {
     answer = await get(url);
-  } catch {
-    return { kind: 'unread', why: `${new URL(url).hostname} unreachable` };
+  } catch (error) {
+    return { kind: transientError(error) ? 'unread' : 'failed', why: `${new URL(url).hostname} unreachable` };
   }
   const transient = transientStatus(answer);
   if (transient !== undefined) return { kind: 'unread', why: `${url} answered ${transient}` };
@@ -292,10 +292,10 @@ async function githubJson(url: string, get: HttpGet): Promise<{ kind: 'json'; st
   let answer: HttpAnswer;
   try {
     answer = await get(url);
-  } catch {
-    return { kind: 'unread', why: 'api.github.com unreachable; the commit is not checked' };
+  } catch (error) {
+    return { kind: transientError(error) ? 'unread' : 'unknown', why: 'api.github.com unreachable; the commit is not checked' };
   }
-  const transient = transientStatus(answer);
+  const transient = transientStatus(answer, true);
   if (transient !== undefined) {
     const limit = transient.startsWith('rate limited') ? ', the GitHub API rate limit (60 requests an hour without a token)' : '';
     return { kind: 'unread', why: `api.github.com answered ${transient}${limit}; the commit is not checked, run again later` };
@@ -359,7 +359,7 @@ export async function gatherSourcePages(sources: readonly string[], get: HttpGet
 export const retryingGet =
   (get: HttpGet, note: NoteUnread, pausesMs?: readonly number[]): HttpGet =>
   (url) =>
-    retried(url, () => get(url), transientStatus, note, pausesMs);
+    retried(url, () => get(url), (answer) => transientStatus(answer, new URL(url).hostname === 'api.github.com'), note, pausesMs);
 
 /** GitHub's API refuses a request without a user agent. */
 export const httpsGet: HttpGet = (url) => {

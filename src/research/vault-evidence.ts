@@ -1,5 +1,5 @@
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
-import { retried, transientStatus } from '../chain/https.ts';
+import { retried, transientError, transientStatus } from '../chain/https.ts';
 import type { NoteUnread } from '../chain/https.ts';
 import type { Reader } from '../chain/reader.ts';
 import { proveInstance } from '../contracts/instance.ts';
@@ -22,12 +22,23 @@ export function alchemyCall(transport: Transport, url: string, note: NoteUnread,
     let answer;
     try {
       answer = await retried(`alchemy ${method}`, () => transport(url, body, AbortSignal.timeout(60_000)), transientStatus, note, pausesMs);
-    } catch {
+    } catch (error) {
+      if (!transientError(error)) note(`alchemy ${method}: unreachable`);
       throw new Error('alchemy unreachable');
     }
-    if (answer.status !== 200) throw new Error(`alchemy answered HTTP ${answer.status}`);
-    const reply = JSON.parse(answer.text) as { result?: unknown; error?: unknown };
-    if (reply.error !== undefined && reply.error !== null) throw new Error('alchemy refused the request');
+    const failed = (why: string): never => {
+      if (transientStatus(answer) === undefined) note(`alchemy ${method}: ${why}`);
+      throw new Error(`alchemy ${why}`);
+    };
+    if (answer.status !== 200) failed(`answered HTTP ${answer.status}`);
+    let reply: { result?: unknown; error?: unknown };
+    try {
+      reply = JSON.parse(answer.text) as typeof reply;
+    } catch {
+      return failed('sent no JSON');
+    }
+    if (typeof reply !== 'object' || reply === null) return failed('sent no JSON object');
+    if (reply.error !== undefined && reply.error !== null) failed('refused the request');
     return reply.result;
   };
 }
