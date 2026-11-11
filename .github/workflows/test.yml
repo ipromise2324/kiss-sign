@@ -29,4 +29,12 @@ jobs:
       - run: pnpm fetch-solc
       - run: pnpm fetch-psl
       - run: pnpm typecheck
+      # Test-only solc outputs, each keyed by the pinned build's sha256 and the exact input; every proof still compares with the code on chain.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/solc-test
+          key: solc-test-${{ hashFiles('src/contracts/solc-pins.ts', 'testdata/abi/**', 'registry/**', 'templates/**') }}
+          restore-keys: solc-test-
       - run: pnpm test
+        env:
+          SOLC_TEST_CACHE: '1'
