@@ -36,7 +36,7 @@ function write(path: string, text: string): string {
 
 /**
  * A clone whose origin/main holds this repository's template and registry, and a home holding one Safe's history. Its
- * origin is the official URL, served offline from a local bare repository through core.sshCommand.
+ * origin is the configured repository's URL, served offline from a local bare repository through core.sshCommand.
  */
 function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<string, unknown> = {}) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-history-'));
@@ -52,11 +52,11 @@ function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<
   git(repo, 'push', '--quiet', 'origin', 'main');
   const ssh = write(join(base, 'ssh'), `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
   chmodSync(ssh, 0o755);
-  git(repo, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
+  git(repo, 'remote', 'set-url', 'origin', 'git@github.com:signer/kiss-sign.git');
   git(repo, 'config', 'core.sshCommand', ssh);
   const txs = records(name);
   const home = join(base, 'home');
-  write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: txs[0]!.safe }));
+  write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: txs[0]!.safe, repo: 'github.com/signer/kiss-sign' }));
   write(join(home, 'history', 'txs.jsonl'), txs.map((r) => `${JSON.stringify(r)}\n`).join(''));
   const intents = txs.map((r) => ({ nonce: r.nonce, date: String(r.executionDate).slice(0, 10), app: '', intent: `intent of nonce ${r.nonce}`, hash: r.transactionHash }));
   write(join(home, 'history', 'intents.json'), JSON.stringify(intents));

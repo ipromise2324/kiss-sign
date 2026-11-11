@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
-import { loadConfig } from '../src/config.ts';
+import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
@@ -38,7 +38,7 @@ console.log(text);
 if (!read) process.exit(1);
 
 if (flags.record !== undefined) {
-  const safe = loadConfig(kissSignHome(process.env))?.safe;
+  const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
   const fixture = { vault: vault.name, exchanges: trimVaultRecording(recording.exchanges()) };
   if (safe !== undefined && JSON.stringify(fixture).toLowerCase().includes(safe.slice(2))) {
     console.error('the configured Safe holds or once held these shares, so the recording would name it; nothing written');

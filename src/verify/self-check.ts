@@ -38,24 +38,37 @@ function gitRun(root: string, config: ConfigScope, args: readonly string[], opti
 
 const git = (root: string, ...args: string[]): string => gitRun(root, 'clone-only', args).toString('utf8');
 
-export const OFFICIAL_REPO = 'github.com/ipromise2324/kiss-sign';
+declare const githubRepoBrand: unique symbol;
+/** `github.com/<owner>/<repo>`, lowercased since GitHub ignores case there. */
+export type GithubRepo = string & { readonly [githubRepoBrand]: true };
 
-/** `github.com/<owner>/<repo>` for a GitHub https or ssh URL, lowercased since GitHub ignores case there; otherwise undefined. */
-export function githubRepo(url: string): string | undefined {
+/** The repository a GitHub https or ssh URL names; otherwise undefined. */
+export function githubRepo(url: string): GithubRepo | undefined {
   const match = /^(?:https:\/\/(?:[^@/]+@)?github\.com\/|ssh:\/\/git@github\.com(?::22)?\/|git@github\.com:)([\w.-]+\/[\w.-]+?)(?:\.git)?\/?$/i.exec(url);
-  return match === null ? undefined : `github.com/${match[1]!.toLowerCase()}`;
+  return match === null ? undefined : (`github.com/${match[1]!.toLowerCase()}` as GithubRepo);
 }
 
-const isOfficialRepo = (url: string) => githubRepo(url) === OFFICIAL_REPO;
+export type OriginRepo = { readonly kind: 'github'; readonly repo: GithubRepo } | { readonly kind: 'refused'; readonly problems: readonly string[] };
+
+/** The one GitHub repository every URL of `origin` names, read as the fetch reads it. `init` records it as the repository to trust. */
+export function originRepo(root: string): OriginRepo {
+  const urls = originUrls(root);
+  if (urls.length === 0) return { kind: 'refused', problems: ['there is no origin remote'] };
+  const foreign = urls.filter((url) => githubRepo(url) === undefined);
+  if (foreign.length > 0) return { kind: 'refused', problems: foreign.map((url) => `origin is ${url}, not a GitHub https or ssh URL`) };
+  const repos = [...new Set(urls.map((url) => githubRepo(url)!))];
+  if (repos.length > 1) return { kind: 'refused', problems: [`origin names more than one repository: ${repos.join(', ')}`] };
+  return { kind: 'github', repo: repos[0]! };
+}
 
 /**
- * Requires every URL of `origin` to be the official repository, fetches its main into origin/main, and requires every
- * object of that commit to hash to its name, so a template or the registry read from it is what origin serves. An origin
- * elsewhere is never fetched.
+ * Requires every URL of `origin` to be `repo`, the repository the signer's config names, fetches its main into
+ * origin/main, and requires every object of that commit to hash to its name, so a template or the registry read from it
+ * is what origin serves. An origin elsewhere is never fetched.
  */
-export function fetchOriginMain(root: string, isOfficial: (url: string) => boolean = isOfficialRepo): OriginMain {
+export function fetchOriginMain(root: string, repo: GithubRepo): OriginMain {
   const origins = originUrls(root);
-  const problems = origins.length === 0 ? ['there is no origin remote'] : origins.filter((url) => !isOfficial(url)).map((url) => `origin is ${url}, not ${OFFICIAL_REPO}`);
+  const problems = origins.length === 0 ? ['there is no origin remote'] : origins.filter((url) => githubRepo(url) !== repo).map((url) => `origin is ${url}, not ${repo}`);
   if (problems.length > 0) return { kind: 'refused', problems };
   try {
     // --refmap= ignores remote.origin.fetch, which could map another branch onto origin/main.
@@ -73,10 +86,10 @@ export function fetchOriginMain(root: string, isOfficial: (url: string) => boole
  * file of it on disk with the same bytes and mode, and no other file that its .gitignore does not ignore. Files are
  * hashed from disk rather than asked of git status, whose answer the index, filters and stat settings can change.
  */
-export function selfCheck(root: string, isOfficial: (url: string) => boolean = isOfficialRepo): SelfCheck {
-  const origin = fetchOriginMain(root, isOfficial);
+export function selfCheck(root: string, repo: GithubRepo): SelfCheck {
+  const origin = fetchOriginMain(root, repo);
   if (origin.kind === 'refused') return { kind: 'differs', problems: origin.problems };
-  if (origin.kind === 'unreachable') return { kind: 'differs', problems: ['could not fetch origin'] };
+  if (origin.kind === 'unreachable') return { kind: 'differs', problems: [`could not fetch ${repo}`] };
   const { commit } = origin;
   const problems: string[] = [];
   const own = realpathSync(join(root, '.git'));

@@ -7,6 +7,10 @@ import { test } from 'node:test';
 import { deflateSync } from 'node:zlib';
 import { main } from '../src/cli/main.ts';
 import { fileAt, githubRepo, selfCheck } from '../src/verify/self-check.ts';
+import type { GithubRepo } from '../src/verify/self-check.ts';
+
+const REPO = 'github.com/signer/kiss-sign' as GithubRepo;
+const SAFE = '0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0';
 
 const git = (cwd: string, ...args: string[]) =>
   execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -16,7 +20,10 @@ function write(root: string, path: string, text = 'x\n'): void {
   writeFileSync(join(root, path), text);
 }
 
-/** A bare origin and a clone of it whose main is pushed, as kiss-sign's own clone would be. */
+/**
+ * A bare origin and a clone of it whose main is pushed, as the signer's clone of their fork would be. Its origin is the
+ * configured repository's URL, served offline from the local bare origin through core.sshCommand.
+ */
 function cloneOfOrigin(): { origin: string; clone: string } {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-self-check-'));
   const origin = join(base, 'origin.git');
@@ -30,28 +37,46 @@ function cloneOfOrigin(): { origin: string; clone: string } {
   git(clone, 'add', '-A');
   git(clone, 'commit', '--quiet', '-m', 'first');
   git(clone, 'push', '--quiet', 'origin', 'main');
+  const ssh = join(base, 'ssh');
+  write(base, 'ssh', `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
+  chmodSync(ssh, 0o755);
+  git(clone, 'remote', 'set-url', 'origin', `git@github.com:${REPO.slice('github.com/'.length)}.git`);
+  git(clone, 'config', 'core.sshCommand', ssh);
   return { origin, clone };
 }
 
-/** Points origin at the official URL and serves it offline from the local bare origin through core.sshCommand. */
-function serveAsOfficial(origin: string, clone: string): void {
-  const ssh = join(dirname(clone), 'ssh');
-  write(dirname(ssh), 'ssh', `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
-  chmodSync(ssh, 0o755);
-  git(clone, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
-  git(clone, 'config', 'core.sshCommand', ssh);
+/** A home set up by init for the Safe and the configured repository. */
+function homeFor(repo: string | null = REPO): string {
+  const home = mkdtempSync(join(tmpdir(), 'kiss-sign-home-'));
+  writeFileSync(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: SAFE, ...(repo === null ? {} : { repo }) }));
+  return home;
 }
 
-const selfCheckTrustingBareOrigin = (root: string) => selfCheck(root, (url) => url.endsWith('/origin.git'));
+async function runIn(clone: string, home: string, argv: string[]) {
+  let stdout = '';
+  let stderr = '';
+  const code = await main(argv, {
+    env: { KISS_SIGN_HOME: home },
+    stdout: (text) => void (stdout += text),
+    stderr: (text) => void (stderr += text),
+    platform: 'linux',
+    readSecret: undefined,
+    ask: async () => assert.fail('a refused command asks nothing'),
+    repoRoot: clone,
+    transport: async () => assert.fail('a refused command reads no chain'),
+    fetchJson: async () => assert.fail('a refused command fetches nothing'),
+  });
+  return { code, stdout, stderr };
+}
 
 const problemsOf = (root: string) => {
-  const result = selfCheckTrustingBareOrigin(root);
+  const result = selfCheck(root, REPO);
   return result.kind === 'clean' ? [] : result.problems;
 };
 
 test('a clone exactly at origin/main passes the self-check', () => {
   const { clone } = cloneOfOrigin();
-  assert.deepEqual(selfCheckTrustingBareOrigin(clone), { kind: 'clean', commit: git(clone, 'rev-parse', 'HEAD').trim() });
+  assert.deepEqual(selfCheck(clone, REPO), { kind: 'clean', commit: git(clone, 'rev-parse', 'HEAD').trim() });
 });
 
 test('a fetch refspec that maps an unmerged branch onto origin/main is ignored', () => {
@@ -86,7 +111,7 @@ test('ignored paths such as vendor, node_modules and .worktrees do not count', (
   write(clone, 'vendor/solc/soljson.js');
   write(clone, 'node_modules/x/index.js');
   write(clone, '.worktrees/pr/file.ts');
-  assert.equal(selfCheckTrustingBareOrigin(clone).kind, 'clean');
+  assert.equal(selfCheck(clone, REPO).kind, 'clean');
 });
 
 test('a local commit not on origin/main fails the self-check', () => {
@@ -108,28 +133,27 @@ test('a newer origin/main is fetched, so a clone left behind fails the self-chec
   assert.match(problemsOf(clone).join('\n'), /^HEAD is /);
 });
 
-test('verify stops on a changed checkout, names the file, and verifies nothing', async () => {
-  const { origin, clone } = cloneOfOrigin();
-  serveAsOfficial(origin, clone);
+test('verify stops on a changed checkout, names the file and the configured repository, and verifies nothing', async () => {
+  const { clone } = cloneOfOrigin();
   write(clone, 'templates/morpho/vault-deposit/template.json', '{"edited":true}\n');
-  const home = mkdtempSync(join(tmpdir(), 'kiss-sign-home-'));
-  let stdout = '';
-  let stderr = '';
-  const code = await main(['verify', '--card', `0x${'00'.repeat(32)}`, '--tx', 'tx.json'], {
-    env: { KISS_SIGN_HOME: home },
-    stdout: (text) => void (stdout += text),
-    stderr: (text) => void (stderr += text),
-    platform: 'linux',
-    readSecret: undefined,
-    ask: undefined,
-    repoRoot: clone,
-    transport: async () => assert.fail('a failed self-check reads no chain'),
-    fetchJson: async () => assert.fail('a failed self-check fetches nothing'),
-  });
+  const home = homeFor();
+  const { code, stdout, stderr } = await runIn(clone, home, ['verify', '--card', `0x${'00'.repeat(32)}`, '--tx', 'tx.json']);
   assert.equal(code, 1);
-  assert.match(stderr, /not exactly origin\/main, so nothing was verified/);
+  assert.match(stderr, /not exactly main of github\.com\/signer\/kiss-sign, so nothing was verified/);
   assert.match(stderr, /changed: templates\/morpho\/vault-deposit\/template\.json/);
   assert.equal(stdout, '');
+  assert.equal(existsSync(join(home, 'verdicts')), false);
+});
+
+test('verify refuses a config that names no repository and says to run init again', async () => {
+  const { clone } = cloneOfOrigin();
+  const before = git(clone, 'rev-parse', 'refs/remotes/origin/main').trim();
+  const home = homeFor(null);
+  const { code, stdout, stderr } = await runIn(clone, home, ['verify', '--card', `0x${'00'.repeat(32)}`, '--tx', 'tx.json']);
+  assert.equal(code, 1);
+  assert.match(stderr, /names no repository to trust\. In your clone of your own fork, run pnpm kiss-sign init --safe <your Safe> again\./);
+  assert.equal(stdout, '');
+  assert.equal(git(clone, 'rev-parse', 'refs/remotes/origin/main').trim(), before);
   assert.equal(existsSync(join(home, 'verdicts')), false);
 });
 
@@ -166,60 +190,58 @@ test('GIT_DIR and GIT_WORK_TREE in the environment cannot point the self-check a
   }
 });
 
-test('a clone whose origin points to a fork is refused and the fork is never fetched', () => {
-  const { clone } = cloneOfOrigin();
-  git(clone, 'remote', 'set-url', 'origin', 'https://github.com/attacker/kiss-sign.git');
-  assert.deepEqual(selfCheck(clone), {
-    kind: 'differs',
-    problems: ['origin is https://github.com/attacker/kiss-sign.git, not github.com/ipromise2324/kiss-sign'],
-  });
+test('a clone whose origin is another repository than the configured one is refused and never fetched', () => {
+  for (const url of ['https://github.com/attacker/kiss-sign.git', 'https://github.com/upstream/kiss-sign.git', 'git@github.com:signer/kiss-sign-old.git']) {
+    const { clone } = cloneOfOrigin();
+    git(clone, 'remote', 'set-url', 'origin', url);
+    assert.deepEqual(selfCheck(clone, REPO), { kind: 'differs', problems: [`origin is ${url}, not github.com/signer/kiss-sign`] });
+  }
 });
 
-test('a url.insteadOf rewrite that sends the official URL to a fork is refused', () => {
+test('a url.insteadOf rewrite that sends the configured URL to another repository is refused', () => {
   const { clone } = cloneOfOrigin();
-  git(clone, 'remote', 'set-url', 'origin', 'https://github.com/ipromise2324/kiss-sign.git');
-  git(clone, 'config', 'url.https://github.com/attacker/.insteadOf', 'https://github.com/ipromise2324/');
-  assert.deepEqual(selfCheck(clone), {
+  git(clone, 'remote', 'set-url', 'origin', 'https://github.com/signer/kiss-sign.git');
+  git(clone, 'config', 'url.https://github.com/attacker/.insteadOf', 'https://github.com/signer/');
+  assert.deepEqual(selfCheck(clone, REPO), {
     kind: 'differs',
-    problems: ['origin is https://github.com/attacker/kiss-sign.git, not github.com/ipromise2324/kiss-sign'],
+    problems: ['origin is https://github.com/attacker/kiss-sign.git, not github.com/signer/kiss-sign'],
   });
 });
 
 test('a second fetch URL on origin pointing elsewhere is refused', () => {
   const { clone } = cloneOfOrigin();
-  git(clone, 'remote', 'set-url', 'origin', 'git@github.com:ipromise2324/kiss-sign.git');
   git(clone, 'remote', 'set-url', '--add', 'origin', 'git@github.com:attacker/kiss-sign.git');
-  assert.deepEqual(selfCheck(clone), {
+  assert.deepEqual(selfCheck(clone, REPO), {
     kind: 'differs',
-    problems: ['origin is git@github.com:attacker/kiss-sign.git, not github.com/ipromise2324/kiss-sign'],
+    problems: ['origin is git@github.com:attacker/kiss-sign.git, not github.com/signer/kiss-sign'],
   });
 });
 
-test('the official repository is recognised in its https and ssh forms, with or without .git', () => {
+test('the configured repository is recognised in its https and ssh forms, with or without .git, and look-alikes are not', () => {
   for (const url of [
-    'https://github.com/ipromise2324/kiss-sign',
-    'https://github.com/ipromise2324/kiss-sign.git',
-    'https://github.com/ipromise2324/kiss-sign/',
-    'https://ipromise2324@github.com/ipromise2324/kiss-sign.git',
-    'https://GitHub.com/IPromise2324/Kiss-Sign.git',
-    'git@github.com:ipromise2324/kiss-sign.git',
-    'git@github.com:ipromise2324/kiss-sign',
-    'ssh://git@github.com/ipromise2324/kiss-sign.git',
-    'ssh://git@github.com:22/ipromise2324/kiss-sign',
+    'https://github.com/signer/kiss-sign',
+    'https://github.com/signer/kiss-sign.git',
+    'https://github.com/signer/kiss-sign/',
+    'https://signer@github.com/signer/kiss-sign.git',
+    'https://GitHub.com/Signer/Kiss-Sign.git',
+    'git@github.com:signer/kiss-sign.git',
+    'git@github.com:signer/kiss-sign',
+    'ssh://git@github.com/signer/kiss-sign.git',
+    'ssh://git@github.com:22/signer/kiss-sign',
   ]) {
-    assert.equal(githubRepo(url), 'github.com/ipromise2324/kiss-sign', url);
+    assert.equal(githubRepo(url), REPO, url);
   }
   for (const url of [
     'https://github.com/attacker/kiss-sign.git',
-    'https://github.com/ipromise2324/kiss-sign-fork.git',
-    'https://github.com.evil.example/ipromise2324/kiss-sign.git',
-    'https://github.com@evil.example/ipromise2324/kiss-sign.git',
-    'http://github.com/ipromise2324/kiss-sign.git',
-    'git://github.com/ipromise2324/kiss-sign.git',
+    'https://github.com/signer/kiss-sign-fork.git',
+    'https://github.com.evil.example/signer/kiss-sign.git',
+    'https://github.com@evil.example/signer/kiss-sign.git',
+    'http://github.com/signer/kiss-sign.git',
+    'git://github.com/signer/kiss-sign.git',
     'file:///tmp/kiss-sign.git',
     '/tmp/origin.git',
   ]) {
-    assert.notEqual(githubRepo(url), 'github.com/ipromise2324/kiss-sign', url);
+    assert.notEqual(githubRepo(url), REPO, url);
   }
 });
 
@@ -289,7 +311,7 @@ test('the clone\'s hooks and fsmonitor do not run during the self-check', () => 
   script(join(base, 'hooks', 'reference-transaction'), `echo hook >> '${ran}'`);
   git(clone, 'config', 'core.hooksPath', join(base, 'hooks'));
   git(clone, 'config', 'core.fsmonitor', script(join(base, 'fsmonitor'), `echo fsmonitor >> '${ran}'; exit 1`));
-  assert.equal(selfCheckTrustingBareOrigin(clone).kind, 'clean');
+  assert.equal(selfCheck(clone, REPO).kind, 'clean');
   assert.equal(existsSync(ran), false, existsSync(ran) ? readFileSync(ran, 'utf8') : '');
 });
 
@@ -323,29 +345,19 @@ test('the global git config cannot hide files or run a hook', () => {
   assert.equal(existsSync(ran), false);
 });
 
-test('template approve refuses a clone whose origin is not the official repository and fetches nothing', async () => {
+test('template approve refuses a clone whose origin is not the configured repository and fetches nothing', async () => {
   const { origin, clone } = cloneOfOrigin();
   const other = join(dirname(clone), 'other');
   git(dirname(clone), 'clone', '--quiet', origin, other);
   write(other, 'templates/morpho/vault-deposit/template.json', '{"fork":true}\n');
   git(other, 'commit', '--quiet', '-am', 'fork');
   git(other, 'push', '--quiet', 'origin', 'main');
+  git(clone, 'remote', 'set-url', 'origin', origin);
   const before = git(clone, 'rev-parse', 'refs/remotes/origin/main').trim();
-  const home = mkdtempSync(join(tmpdir(), 'kiss-sign-home-'));
-  let stderr = '';
-  const code = await main(['template', 'approve', 'morpho/vault-deposit'], {
-    env: { KISS_SIGN_HOME: home },
-    stdout: () => {},
-    stderr: (text) => void (stderr += text),
-    platform: 'linux',
-    readSecret: undefined,
-    ask: async () => assert.fail('a refused origin asks nothing'),
-    repoRoot: clone,
-    transport: async () => assert.fail('approve reads no chain'),
-    fetchJson: async () => assert.fail('approve fetches nothing'),
-  });
+  const home = homeFor();
+  const { code, stderr } = await runIn(clone, home, ['template', 'approve', 'morpho/vault-deposit']);
   assert.equal(code, 1);
-  assert.match(stderr, new RegExp(`origin is ${origin}, not github\\.com/ipromise2324/kiss-sign`));
+  assert.match(stderr, new RegExp(`origin is ${origin}, not github\\.com/signer/kiss-sign`));
   assert.equal(git(clone, 'rev-parse', 'refs/remotes/origin/main').trim(), before);
   assert.equal(existsSync(join(home, 'approved-templates.json')), false);
 });
