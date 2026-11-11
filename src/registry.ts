@@ -1,6 +1,7 @@
 import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, concatBytes } from '@noble/hashes/utils.js';
 import { existsSync, readFileSync } from 'node:fs';
+import { isIP } from 'node:net';
 import { join } from 'node:path';
 import { AbiSignatureError, parseFunctionSignature } from './decode/abi.ts';
 import { uintWord } from './decode/codec.ts';
@@ -27,12 +28,30 @@ export type HttpsUrl = string & { readonly [httpsUrlBrand]: true };
 const HTTPS_URL = /^https:\/\/[A-Za-z0-9\-._~:/?#@!$&'()*+,;=%]+$/;
 export const parseHttpsUrl = (raw: unknown): HttpsUrl | undefined => (typeof raw === 'string' && HTTPS_URL.test(raw) && URL.canParse(raw) ? (raw as HttpsUrl) : undefined);
 
+/** A JSON value as `JSON.parse` returns it. */
+export type Json = null | boolean | number | string | readonly Json[] | { readonly [key: string]: Json };
+
+/** One step into a JSON answer: an object's key, or an array's index. */
+export type ApiPathStep = string | number;
+
+/**
+ * A protocol's own API that answers this address, asked with no key and no header of the AI's choosing: an https URL on
+ * a DNS name, a GET, or a POST of a JSON `body`, and the `path` that walks the JSON answer to the address.
+ */
+export type ApiSource = { readonly url: HttpsUrl; readonly path: readonly ApiPathStep[] } & ({ readonly method: 'GET' } | { readonly method: 'POST'; readonly body: Json });
+
+export const MAX_API_BODY_BYTES = 4096;
+export const MAX_API_PATH_STEPS = 16;
+const API_KEY_STEP = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/;
+
 export type RegistryEntry = {
   readonly name: string;
   readonly address: Address;
   readonly kind: ContractKind;
   /** A page that names this address as this contract. */
   readonly source: HttpsUrl;
+  /** The protocol's own API, asked as one more source of the address, for a `source` page that shows it only with JavaScript. */
+  readonly apiSource?: ApiSource;
   /** The text next to the address on the `source` page that names this contract or its role, such as `Bundler3`. */
   readonly sourceLabel?: string;
   /** Text the nearest heading above the address must hold, for a page whose rows name only a chain, such as `MessageTransmitter`. */
@@ -200,10 +219,62 @@ function codePinsOf(path: string, raw: unknown): CodePins {
   return { earlier, current };
 }
 
+/** Whether `text` holds 8 or more hex digits of `address` in a row, in any letter case: a prefix is enough to ask for it. */
+function namesAddress(text: string, address: Address): boolean {
+  const lower = text.toLowerCase();
+  const hex = address.slice(2);
+  for (let i = 0; i + 8 <= hex.length; i++) if (lower.includes(hex.slice(i, i + 8))) return true;
+  return false;
+}
+
+/** Printable ASCII with no backslash, plus tab and newline: a request needs no escape a server would decode into the address. */
+const PLAIN_TEXT = /^[\t\n\x20-\x5b\x5d-\x7e]*$/;
+
+/**
+ * The request and path of an `apiSource`. A request that names the entry's address is refused, since an API may echo
+ * what it is asked, as a page echoes its own URL; so is any escape a server decodes, which could spell it out of sight:
+ * a backslash or a character outside printable ASCII in the body, and an escaped `%` or backslash in the URL. A host must be a DNS name with no port or user, so the request goes
+ * where the URL reads, and not GitHub's, which serves JSON of any fork's commit under the parent repository's path.
+ */
+function apiSourceOf(path: string, raw: unknown, address: Address): ApiSource {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['url', 'method', 'body', 'path']);
+  const url = parseHttpsUrl(value.url);
+  if (url === undefined) throw new RegistryError(`${path}.url`, 'not an https URL');
+  const parsedUrl = new URL(url);
+  if (parsedUrl.port !== '' || parsedUrl.username !== '' || parsedUrl.password !== '' || isIP(parsedUrl.hostname) !== 0 || parsedUrl.hostname.startsWith('[') || !/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(parsedUrl.hostname)) {
+    throw new RegistryError(`${path}.url`, 'must name a DNS host with no port and no user');
+  }
+  if (/(^|\.)(github\.com|githubusercontent\.com)$/.test(parsedUrl.hostname)) throw new RegistryError(`${path}.url`, 'GitHub serves any fork\'s text under a repository\'s path; name the protocol\'s own API');
+  const steps = value.path;
+  if (!Array.isArray(steps) || steps.length === 0 || steps.length > MAX_API_PATH_STEPS) throw new RegistryError(`${path}.path`, `not a list of 1 to ${MAX_API_PATH_STEPS} steps`);
+  steps.forEach((step: unknown, i) => {
+    const ok = (typeof step === 'string' && API_KEY_STEP.test(step)) || (typeof step === 'number' && Number.isSafeInteger(step) && step >= 0 && step < 10_000);
+    if (!ok) throw new RegistryError(`${path}.path[${i}]`, 'not a key of letters, digits and _ or an index below 10000');
+  });
+  const walk = steps as ApiPathStep[];
+  const echoes = (text: string) => namesAddress(text, address);
+  if (/%(25|5c)/i.test(url)) throw new RegistryError(`${path}.url`, 'holds an escaped % or backslash');
+  if (echoes(url) || echoes(url.replace(/%([0-9a-fA-F]{2})/g, (_, byte: string) => String.fromCharCode(parseInt(byte, 16))))) throw new RegistryError(`${path}.url`, "holds the entry's address, and an API may echo what it is asked");
+  if (value.method === 'GET') {
+    if (value.body !== undefined) throw new RegistryError(`${path}.body`, 'a GET sends no body');
+    return { url, method: 'GET', path: walk };
+  }
+  if (value.method !== 'POST') throw new RegistryError(`${path}.method`, 'not GET or POST');
+  if (value.body === undefined) throw new RegistryError(`${path}.body`, 'a POST sends a JSON body');
+  const body = JSON.stringify(value.body);
+  if (Buffer.byteLength(body) > MAX_API_BODY_BYTES) throw new RegistryError(`${path}.body`, `longer than ${MAX_API_BODY_BYTES} bytes`);
+  const texts = (value: unknown): string[] =>
+    typeof value === 'string' ? [value] : typeof value === 'object' && value !== null ? Object.entries(value).flatMap(([key, item]) => [key, ...texts(item)]) : [String(value)];
+  if (!texts(value.body).every((text) => PLAIN_TEXT.test(text))) throw new RegistryError(`${path}.body`, 'holds a backslash or a character outside printable ASCII');
+  if (echoes(texts(value.body).join('\n'))) throw new RegistryError(`${path}.body`, "holds the entry's address, and an API may echo what it is asked");
+  return { url, method: 'POST', body: value.body as Json, path: walk };
+}
+
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'sourceLabel', 'sourceHeading', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
@@ -240,6 +311,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     address,
     kind,
     source,
+    ...(value.apiSource === undefined ? {} : { apiSource: apiSourceOf(`${path}.apiSource`, value.apiSource, address) }),
     ...(value.sourceLabel === undefined ? {} : { sourceLabel: value.sourceLabel as string }),
     ...(value.sourceHeading === undefined ? {} : { sourceHeading: value.sourceHeading as string }),
     attributes,

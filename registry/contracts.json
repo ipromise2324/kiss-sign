@@ -467,6 +467,23 @@
     "address": "0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a",
     "kind": "oracle",
     "source": "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
     "sourceLabel": "Oracle",
     "defillama": "morpho-blue",
     "code": {

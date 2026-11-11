@@ -82,6 +82,14 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 6 entries, 2 findings.
 
+### Official APIs
+
+Each entry's `apiSource`: the protocol's own API, asked with the request the registry holds, and the address at the path the registry names in its JSON answer. Address in answer: whether it is the entry's address. API site: the API's registrable domain against the DefiLlama protocol's website, as for the source. Both are counted in the findings above.
+
+| Entry | API | Path | Address in answer | API site |
+| --- | --- | --- | --- | --- |
+| `morpho-oracle-cbbtc-usdc-86` | POST <https://api.morpho.org/graphql> | `data.marketById.oracle.address` | PASS | PASS |
+
 ## Code pins
 
 Every span of each entry's registry code pin, oldest first: a span holds from its block to the block before the next span's. A transaction to sign must run the last span's code, and an executed one the code of the span that holds its block. `pnpm pin-code` writes the spans from the chain, not from a review of that code. Chain: whether, through both providers, the code at the span's first block is its pin, and the code at the block before is the previous span's pin, or for the first span, no code `pnpm pin-code` can pin. A lone pin from block 0 was written before ranges and is not read.
