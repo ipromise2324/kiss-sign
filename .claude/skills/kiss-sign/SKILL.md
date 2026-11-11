@@ -36,7 +36,11 @@ Research first, ask last. The route, the card, the checks, the registry entries 
 - **Extra limits.** A protection the app lacks, such as a cap on loan-to-value after a borrow, is your card design. Propose it in the report.
 - **Chain facts.** Read prices and other chain facts on chain, such as the market's oracle. Never guess them.
 - **Program changes.** When the program lacks a capability the operation needs, such as a borrow whose debt the effects check cannot see, research it anyway. Then change the program in the same pull request to the signer's fork, `docs/design.md` first. Prefer a generic capability a template declares as data, such as "read this view function with these bound arguments before and after the transaction, and require this change", over code for one protocol, so a later operation needs only a template.
-- **Questions.** Ask only what no evidence can settle, a genuine preference, once and briefly, at the end with the report.
+- **Questions.** Ask only what no evidence can settle, a genuine preference, once and briefly, at the end with the report. The one exception is which contract or market the signer means, when their sentence fits several: ask that first, and ask for the protocol app's link to it, which names it exactly. Never ask what the sentence already says, such as a vault when they said a market.
+- **Chain.** kiss-sign covers Ethereum mainnet only. Say so if the signer names another chain; never ask which chain.
+- **Full values.** Show every address, market id and hash in full, never shortened with `…`, whenever the signer is to check it.
+- **Short messages.** Every message to the signer is a few lines: what you will do next, and what, if anything, they must confirm. Leave the background, the reasoning and the internals for the report.
+- **How you write code.** When the program changes, write it the way the signer's own setup asks, such as their instructions or the development workflow they use; this skill prescribes none. Tell the signer you will follow their workflow, not which tool you run.
 
 Work on a branch. The program writes `templates/<protocol>/<operation>/report.generated.md` from the template, the registry and live reads (step 7). You write `report.md`, every section labelled as written by the AI. Never write, paste into, or edit `report.generated.md`.
 
