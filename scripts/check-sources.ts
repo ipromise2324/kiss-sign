@@ -14,6 +14,7 @@ import {
 } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
+import { ensureVendored } from '../src/vendor.ts';
 
 const USAGE = `usage: node scripts/check-sources.ts [<registry name>...] [--record <name>]
 
@@ -36,6 +37,7 @@ if (unknown.length > 0) {
 }
 const entries = names.length === 0 ? [...registry.entries.values()] : names.map((name) => registry.entries.get(name)!);
 
+if (!(await ensureVendored(['psl']))) process.exit(1);
 const [defillama, coingecko] = await Promise.all([fetchListing(DEFILLAMA_PROTOCOLS), fetchListing(COINGECKO_COINS)]);
 const listings = { protocols: parseDefiLlamaProtocols(defillama), coinsByAddress: parseCoinGeckoCoins(coingecko), suffixes: loadPublicSuffixList() };
 const pages = await gatherSourcePages(entries.map((e) => e.source), httpsGet);

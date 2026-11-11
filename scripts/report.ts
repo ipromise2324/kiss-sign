@@ -39,6 +39,7 @@ import type { Target } from '../src/research/report.ts';
 import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
+import { ensureVendored } from '../src/vendor.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
        node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) --offline
@@ -47,7 +48,7 @@ Prints the generated report of a template, read live: each field's rule from tem
 docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
 the operation can touch, each span of its code pin checked on the chain, pnpm vault-evidence for every vault its card
 can name, the past-txs recordings of the template studied again with each recorded transaction fetched again by hash
-through both providers, and pnpm erc7730 for every such entry (pnpm fetch-erc7730 first). --vault prints the same for one vault, for a pull
+through both providers, and pnpm erc7730 for every such entry. --vault prints the same for one vault, for a pull
 request that adds it.
 
 --record also writes the live answers to testdata/report/, records an ABI case for each entry testdata/abi/ lacks, and
@@ -107,6 +108,7 @@ if (flags.compare) {
 
 const root = flags.data === undefined ? codeRoot : dataAt(flags.data);
 const registry = loadRegistry(root);
+if (!(await ensureVendored(['solc', 'psl']))) process.exit(1);
 const suffixes = loadPublicSuffixList();
 const compilers = cachedCompilers();
 
@@ -149,6 +151,7 @@ const vaults = await vaultsAt(flags.compare ? readFileSync(committedPath, 'utf8'
   return (await vaultEvidenceText(reader, alchemy, registry, vault, at)).text;
 });
 
+if (!(await ensureVendored(['erc7730']))) process.exit(1);
 const snapshot = loadSnapshot();
 if ('unavailable' in snapshot) {
   console.error(snapshot.unavailable);
