@@ -310,12 +310,12 @@ test('card new lists each market with its id, its lltv and every part, and count
   const added = {
     'morpho-blue': { address: '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb', kind: 'lending', source },
     cbbtc: { address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', kind: 'token', source },
-    'cbbtc-usdc-oracle': { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', kind: 'oracle', source },
+    'morpho-oracle-cbbtc-usdc-86': { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', kind: 'oracle', source },
     'adaptive-curve-irm': { address: '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', kind: 'irm', source },
   };
   writeFileSync(join(repoRoot, 'registry', 'contracts.json'), JSON.stringify({ ...contracts, ...added }));
   const id = '0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64';
-  const market = { lending: 'morpho-blue', loanToken: 'usdc', collateralToken: 'cbbtc', oracle: 'cbbtc-usdc-oracle', irm: 'adaptive-curve-irm', lltv: '860000000000000000', id };
+  const market = { lending: 'morpho-blue', loanToken: 'usdc', collateralToken: 'cbbtc', oracle: 'morpho-oracle-cbbtc-usdc-86', irm: 'adaptive-curve-irm', lltv: '860000000000000000', id };
   writeFileSync(join(repoRoot, 'registry', 'markets.json'), JSON.stringify({ 'usdc-cbbtc-86': market }));
   mkdirSync(join(repoRoot, 'templates', 'test', 'market'), { recursive: true });
   const template = {
@@ -333,7 +333,7 @@ test('card new lists each market with its id, its lltv and every part, and count
     `lending morpho-blue ${added['morpho-blue'].address}`,
     `loanToken usdc ${USDC}`,
     `collateralToken cbbtc ${added.cbbtc.address}`,
-    `oracle cbbtc-usdc-oracle ${added['cbbtc-usdc-oracle'].address}`,
+    `oracle morpho-oracle-cbbtc-usdc-86 ${added['morpho-oracle-cbbtc-usdc-86'].address}`,
     `irm adaptive-curve-irm ${added['adaptive-curve-irm'].address}`,
   ];
   assert.ok(made.stdout.includes(`market:\n  1. usdc-cbbtc-86 id ${id}, lltv 0.86 (860000000000000000)\n${parts.map((line) => `       ${line}\n`).join('')}`), made.stdout);

@@ -30,7 +30,7 @@ const CONTRACTS = {
   'morpho-blue': { address: '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb', kind: 'lending', source: SOURCE },
   usdc: { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', kind: 'token', source: SOURCE },
   cbbtc: { address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', kind: 'token', source: SOURCE },
-  'cbbtc-usdc-oracle': { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', kind: 'oracle', source: SOURCE },
+  'morpho-oracle-cbbtc-usdc-86': { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', kind: 'oracle', source: SOURCE },
   'adaptive-curve-irm': { address: '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', kind: 'irm', source: SOURCE },
   'blue-bundles-v1': { address: '0xb0b0000000000000000000000000000000000b0b', kind: 'router', source: SOURCE },
 };
@@ -39,7 +39,7 @@ const MARKET = {
   lending: 'morpho-blue',
   loanToken: 'usdc',
   collateralToken: 'cbbtc',
-  oracle: 'cbbtc-usdc-oracle',
+  oracle: 'morpho-oracle-cbbtc-usdc-86',
   irm: 'adaptive-curve-irm',
   lltv: '860000000000000000',
   id: ID,
@@ -53,7 +53,7 @@ test('a market whose id is the hash of its parameters resolves each part to its 
   assert.equal(market?.lltv, 860000000000000000n);
   assert.deepEqual(
     [market?.lending.name, market?.loanToken.name, market?.collateralToken.name, market?.oracle.name, market?.irm.name],
-    ['morpho-blue', 'usdc', 'cbbtc', 'cbbtc-usdc-oracle', 'adaptive-curve-irm'],
+    ['morpho-blue', 'usdc', 'cbbtc', 'morpho-oracle-cbbtc-usdc-86', 'adaptive-curve-irm'],
   );
 });
 
@@ -163,7 +163,7 @@ const span = [0, 0] as const;
 const address = (value: Address): AbiValue => ({ kind: 'address', value, span });
 const uint = (value: bigint): AbiValue => ({ kind: 'uint', value, span });
 type Params = { loanToken: Address; collateralToken: Address; oracle: Address; irm: Address; lltv: bigint };
-const PARAMS: Params = { loanToken: at('usdc'), collateralToken: at('cbbtc'), oracle: at('cbbtc-usdc-oracle'), irm: at('adaptive-curve-irm'), lltv: 860000000000000000n };
+const PARAMS: Params = { loanToken: at('usdc'), collateralToken: at('cbbtc'), oracle: at('morpho-oracle-cbbtc-usdc-86'), irm: at('adaptive-curve-irm'), lltv: 860000000000000000n };
 
 const packed = (to: Address, data: Uint8Array): Uint8Array => concatBytes(Uint8Array.of(0), hexToBytes(to.slice(2)), uintWord(0n), uintWord(BigInt(data.length)), data);
 
@@ -305,7 +305,7 @@ test('verify requires a code pin for Morpho Blue and every contract the market o
   const noReads = new Proxy({}, { get: () => () => assert.fail('an entry without a pin is not read') }) as Reader;
   const result = await checkCode(noReads, claims, { number: 1n, hash: `0x${'00'.repeat(32)}` as Hex }, 'pending');
   const unpinned = result.kind === 'unverifiable' ? result.reasons.map((r) => r.split(' ')[0]).sort() : [];
-  assert.deepEqual(unpinned, ['adaptive-curve-irm', 'blue-bundles-v1', 'cbbtc', 'cbbtc-usdc-oracle', 'morpho-blue', 'usdc']);
+  assert.deepEqual(unpinned, ['adaptive-curve-irm', 'blue-bundles-v1', 'cbbtc', 'morpho-blue', 'morpho-oracle-cbbtc-usdc-86', 'usdc']);
 });
 
 /** Morpho Blue's `position(id, Safe)` for the card's market, encoded here by hand. */

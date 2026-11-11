@@ -255,8 +255,8 @@ test('the report names where the anchor transfers move', async () => {
       { template, anchor: { token: LOAN, kind: 'any', ...anchor }, sampling: { kind: 'range', range: { fromBlock: 10n, toBlock: 20n } } },
       { ask: async (r) => (r.source === 'alchemy' ? { transfers: [] } : { status: '0', message: 'No records found' }), reader: replayReader([]), registry, exclude: undefined, maxTxs: 12 },
     );
-  assert.match(renderPastTxs(await run({ to: LENDING }), registry), /^anchor: Transfer of usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 moved into 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb$/m);
-  assert.match(renderPastTxs(await run({ from: DISTRIBUTOR, to: LENDING }), registry), /moved out of morpho-urd into 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb$/m);
+  assert.match(renderPastTxs(await run({ to: LENDING }), registry), /^anchor: Transfer of usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 moved into morpho-blue$/m);
+  assert.match(renderPastTxs(await run({ from: DISTRIBUTOR, to: LENDING }), registry), /moved out of morpho-urd into morpho-blue$/m);
 });
 
 test('--to goes with --anchor any only', () => {

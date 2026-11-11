@@ -19,7 +19,7 @@
     "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     "kind": "token",
     "source": "https://tether.to/en/supported-protocols/",
-    "sourceLabel": "USD₮ contract address",
+    "sourceLabel": "USD\u20ae contract address",
     "defillama": "tether",
     "coingecko": "tether",
     "code": {
@@ -375,6 +375,66 @@
     },
     "code": {
       "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9"
+    }
+  },
+  "morpho-blue": {
+    "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
+    "kind": "lending",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Morpho",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c",
+      "from": 18883124
+    }
+  },
+  "blue-bundles-v1": {
+    "address": "0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD",
+    "kind": "router",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "BlueBundlesV1",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888",
+      "from": 25832676
+    }
+  },
+  "adaptive-curve-irm": {
+    "address": "0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC",
+    "kind": "irm",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Adaptive Curve Irm",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd",
+      "from": 18883124
+    }
+  },
+  "morpho-oracle-cbbtc-usdc-86": {
+    "address": "0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc",
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11",
+      "from": 20678797
+    }
+  },
+  "cbbtc": {
+    "address": "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+    "kind": "token",
+    "source": "https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts",
+    "sourceLabel": "CBBTC",
+    "defillama": "coinbase",
+    "coingecko": "coinbase-wrapped-btc",
+    "code": {
+      "hash": "0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71",
+      "implementation": {
+        "address": "0x7458bfDC30034EB860B265E6068121D18Fa5Aa72",
+        "hash": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
+      },
+      "from": 20570548
     }
   }
 }

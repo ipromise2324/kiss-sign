@@ -375,12 +375,12 @@ test('a market field lists every market with its id, lltv and parts, binds each 
   const added = {
     'morpho-blue': { address: '0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb', kind: 'lending', source },
     cbbtc: { address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', kind: 'token', source },
-    'cbbtc-usdc-oracle': { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', kind: 'oracle', source },
+    'morpho-oracle-cbbtc-usdc-86': { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', kind: 'oracle', source },
     'adaptive-curve-irm': { address: '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', kind: 'irm', source },
   };
   const id = '0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64';
   const reg = parseRegistry({ ...contracts, ...added }, {
-    'usdc-cbbtc-86': { lending: 'morpho-blue', loanToken: 'usdc', collateralToken: 'cbbtc', oracle: 'cbbtc-usdc-oracle', irm: 'adaptive-curve-irm', lltv: '860000000000000000', id },
+    'usdc-cbbtc-86': { lending: 'morpho-blue', loanToken: 'usdc', collateralToken: 'cbbtc', oracle: 'morpho-oracle-cbbtc-usdc-86', irm: 'adaptive-curve-irm', lltv: '860000000000000000', id },
   });
   const template = parseTemplate(
     {
@@ -416,10 +416,10 @@ test('a market field lists every market with its id, lltv and parts, binds each 
   assert.ok(text.includes('| `market` | a market from `registry/markets.json`, picked by number from the list below |'));
   assert.ok(
     text.includes(
-      `| \`usdc-cbbtc-86\` | \`${id}\` | 860000000000000000 | lending ${full('morpho-blue')}; loanToken ${usdc}; collateralToken ${full('cbbtc')}; oracle ${full('cbbtc-usdc-oracle')}; irm ${full('adaptive-curve-irm')} |`,
+      `| \`usdc-cbbtc-86\` | \`${id}\` | 860000000000000000 | lending ${full('morpho-blue')}; loanToken ${usdc}; collateralToken ${full('cbbtc')}; oracle ${full('morpho-oracle-cbbtc-usdc-86')}; irm ${full('adaptive-curve-irm')} |`,
     ),
   );
-  assert.ok(text.includes(`| \`supply.marketParams.oracle\` | the \`oracle\` of the card's \`market\`: one of ${full('cbbtc-usdc-oracle')} |`));
+  assert.ok(text.includes(`| \`supply.marketParams.oracle\` | the \`oracle\` of the card's \`market\`: one of ${full('morpho-oracle-cbbtc-usdc-86')} |`));
   assert.ok(text.includes("| `supply.marketParams.lltv` | the `lltv` of the card's `market` |"));
   assert.ok(
     text.includes(
@@ -428,6 +428,6 @@ test('a market field lists every market with its id, lltv and parts, binds each 
   );
   assert.deepEqual(
     entriesOf(subject, reg).map((e) => e.name),
-    ['usdc', 'morpho-blue', 'cbbtc', 'cbbtc-usdc-oracle', 'adaptive-curve-irm'],
+    ['usdc', 'morpho-blue', 'adaptive-curve-irm', 'morpho-oracle-cbbtc-usdc-86', 'cbbtc'],
   );
 });
