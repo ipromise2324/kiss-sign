@@ -9,7 +9,7 @@ import { NOTES_FILE, NotesError, notesChanges, parseNotes } from '../src/researc
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, confidenceOf, htmlDifference, loadNotes, notesKeys, renderHtml, templateFixtures } from '../src/research/report-html.ts';
 import { checkSpans, entriesOf, loadSubject, renderReport, replayInputs, reportRecordingPath } from '../src/research/report.ts';
-import type { ReportInputs, ReportRecording } from '../src/research/report.ts';
+import type { DocLink, ReportInputs, ReportRecording } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
@@ -84,9 +84,9 @@ const VOUCHES = /\/(?:source\.coingecko|source\.site|doc\.0x[0-9a-f]{8}\.site)$/
  * compare (a site DefiLlama lists nothing for, while another result of the entry vouches; a compiler not pinned). Every !
  * is in the action list under its own id.
  */
-function assertFlagsKept(markdown: string, html: string): void {
+function assertFlagsKept(markdown: string, html: string, pages: readonly DocLink[] = docs): void {
   const expected = new Map<string, string>();
-  const selectors = new Map(docs.map((doc) => [doc.fn.signature, doc.fn.selector]));
+  const selectors = new Map(pages.map((doc) => [doc.fn.signature, doc.fn.selector]));
   const name = (cell: string) => /^`([a-z0-9.-]+)`$/.exec(cell)?.[1] as string;
   for (const row of tableRows(markdown, '## Official documentation')) {
     const id = `${name(row.get('Contract') as string)}/doc.${selectors.get(name(row.get('Function') as string) ?? (row.get('Function') as string).slice(1, -1))}`;
@@ -151,7 +151,7 @@ test('every committed report.generated.html is what the program writes from the 
     const { inputs, title } = await replayInputs(ROOT, registry, { template: id }, compilers, suffixes);
     if (inputs.subject.kind !== 'template') throw new Error('unreachable');
     const html = renderHtml(inputs, loadNotes(ROOT, inputs.subject, registry)!, title, templateFixtures(ROOT, inputs.subject.template, registry));
-    assertFlagsKept(renderReport(inputs, title), html);
+    assertFlagsKept(renderReport(inputs, title), html, inputs.subject.docs);
     const committed = readFileSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_HTML_FILE), 'utf8');
     assert.equal(htmlDifference(committed, html), undefined, `${TEMPLATES_DIR}/${id}/${GENERATED_HTML_FILE} differs from what the program writes; run \`pnpm report ${id} --render\` and never edit it by hand`);
     if (id !== ID) continue;
