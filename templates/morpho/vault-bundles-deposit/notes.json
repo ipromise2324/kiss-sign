@@ -1,0 +1,246 @@
+{
+  "title": "經由 VaultBundlesV1 把代幣存進一個 Morpho vault",
+  "summary": "Safe 把一筆 vault 資產存進你選的 Morpho vault，走 Morpho app 現在的存款路線 VaultBundlesV1：先授權 VaultBundlesV1 剛好那個數量，再呼叫 vaultBundlesV1Deposit，份額給呼叫者，也就是 Safe。",
+  "flow": [
+    {
+      "after": 2,
+      "text": "VaultBundlesV1 用第 1 步的授權，從 Safe 拉走你填的數量。"
+    },
+    {
+      "after": 2,
+      "text": "它把資產存進 vault，vault 把份額鑄給呼叫者 Safe；這個函式沒有收款人參數。"
+    }
+  ],
+  "pastTxsConclusion": {
+    "status": "caution",
+    "text": "錄下的搜尋只找到 16 個一般錢包、沒有 Safe；AI 之前另外找到 8 個 Safe 的 21 筆符合交易。"
+  },
+  "verdict": {
+    "status": "caution",
+    "text": "VaultBundlesV1 很新（2026 年部署），AI 沒讀它的稽核；交易本身綁得很緊。",
+    "recommendation": "先存一小筆試試，再存大額。"
+  },
+  "judgments": [
+    {
+      "title": "VaultBundlesV1 很新。",
+      "text": "它在區塊 25,720,857 才部署。morpho-org/bundles 的 audits 資料夾裡講 vault bundles 的是 2026-08-07 Blackthorn 那份；AI 沒讀內容。README 說 bundles 用 Certora Prover 做了形式驗證。",
+      "sources": [
+        "https://github.com/morpho-org/bundles/tree/3537d0039bdc3ce7af1bbd3c02eb96a04e6e2c6b/audits"
+      ],
+      "recommendation": "先存一小筆試試。"
+    },
+    {
+      "title": "推薦費綁成 0。",
+      "text": "推薦費會從金額裡扣掉送到別處，剩下的才存；Safe 照樣付出剛好 amount、照樣拿到一些份額，effects 看不出來，所以模板把比例和收款人綁成 0。",
+      "recommendation": "可以接受；這是模板刻意的限制。"
+    }
+  ],
+  "reviews": {
+    "steakhouse-prime-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是 curator Steakhouse 的文件頁，所以對不上 DefiLlama 上 morpho-blue 的網站。DefiLlama 把 steakhouse.financial 登記為 steakhouse-financial 的網站；Morpho API 說 0xbeef088055857739C12CD3765F20b7679Def0f51 名叫 Steakhouse Prime USDC，curator 是 0x827e86072B06674a077f592A531dcE4590aDeCdB；vault-v2-factory 承認建立了它。",
+      "recommendation": "可以接受；這是 curator 自己的網站。"
+    },
+    "steakhouse-high-yield-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是 curator Steakhouse 的文件頁，所以對不上 DefiLlama 上 morpho-blue 的網站。DefiLlama 把 steakhouse.financial 登記為 steakhouse-financial 的網站；Morpho API 說 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757 名叫 Steakhouse High Yield USDC，curator 是 0x827e86072B06674a077f592A531dcE4590aDeCdB；vault-v2-factory 承認建立了它。",
+      "recommendation": "可以接受；這是 curator 自己的網站。"
+    },
+    "smokehouse-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是 curator Steakhouse 的文件頁，所以對不上 DefiLlama 上 morpho-blue 的網站。DefiLlama 把 steakhouse.financial 登記為 steakhouse-financial 的網站；Morpho API 說 0xBEeFFF209270748ddd194831b3fa287a5386f5bC 名叫 Smokehouse USDC，curator 是 0x827e86072B06674a077f592A531dcE4590aDeCdB；metamorpho-factory-1.0 承認建立了它。",
+      "recommendation": "可以接受；這是 curator 自己的網站。"
+    },
+    "smokehouse-usdc/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0xBEeFFF209270748ddd194831b3fa287a5386f5bC，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Steakhouse 文件頁在標籤旁列出它，Morpho API 列它為 listed vault。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "hyperithm-usdc-apex-7777/source.url": {
+      "status": "concern",
+      "text": "AI 用 headless Chrome（全新的暫存設定檔）打開這個 Morpho app 頁面：顯示 Hyperithm USDC Apex V1（curator Hyperithm），地址縮寫 0x7777...7777，Etherscan 連結是 0x777791C4d6DC2CE140D00D2828a7C93503c67777。但這個頁面會照網址顯示地址，證明不了地址屬於 Hyperithm。Morpho API 也列它為 listed vault，名稱相同。",
+      "recommendation": "可以接受，但最好之後換成 Hyperithm 自己列出地址的頁面。"
+    },
+    "hyperithm-usdc-apex-7777/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x777791C4d6DC2CE140D00D2828a7C93503c67777，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Morpho API 列它為 listed vault，名叫 Hyperithm USDC Apex；metamorpho-factory-1.1 承認是它建立的。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "hyperithm-usdc-apex-0932/source.url": {
+      "status": "concern",
+      "text": "AI 用 headless Chrome（全新的暫存設定檔）打開這個 Morpho app 頁面：顯示 Hyperithm USDC Apex（curator Hyperithm），地址縮寫 0x0932...9E2F，Etherscan 連結是 0x093272C07700d3cA5301C3Bf9B3A392624179E2F。但這個頁面會照網址顯示地址，證明不了地址屬於 Hyperithm。Morpho API 也列它為 listed vault，名稱相同。",
+      "recommendation": "可以接受，但最好之後換成 Hyperithm 自己列出地址的頁面。"
+    },
+    "hyperithm-usdc-apex-0932/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x093272C07700d3cA5301C3Bf9B3A392624179E2F，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Morpho API 列它為 listed Vault V2，名叫 Hyperithm USDC Apex；vault-v2-factory 承認是它建立的。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "usual-boosted-usdc/source.url": {
+      "status": "concern",
+      "text": "AI 用 headless Chrome（全新的暫存設定檔）打開這個 Morpho app 頁面：顯示 Usual Boosted USDC V1（curator MEV Capital），地址縮寫 0xd630...3a3D，Etherscan 連結是 0xd63070114470f685b75B74D60EEc7c1113d33a3D。但這個頁面會照網址顯示地址，證明不了地址屬於 MEV Capital。Morpho API 也列它為 listed vault，名稱相同。",
+      "recommendation": "可以接受，但最好之後換成 MEV Capital 自己列出地址的頁面。"
+    },
+    "fluid-fusdc/source.site": {
+      "status": "concern",
+      "text": "來源是 Instadapp 的 GitHub repo，DefiLlama 的 fluid-lending 沒登記 GitHub 組織，沒東西可比。AI 看到 Fluid 官網 fluid.io 連到 github.com/Instadapp；這個 commit 的 deployments.md 在 fToken_fUSDC 標題下列出 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33。",
+      "recommendation": "可以接受；GitHub 組織是 Fluid 官網連過去的那個。"
+    },
+    "fluid-fusdc/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Instadapp 的 deployments.md 在 fToken_fUSDC 標題下列出它。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "fluid-fusdt/source.site": {
+      "status": "concern",
+      "text": "來源是 Instadapp 的 GitHub repo，DefiLlama 的 fluid-lending 沒登記 GitHub 組織，沒東西可比。AI 看到 Fluid 官網 fluid.io 連到 github.com/Instadapp；這個 commit 的 deployments.md 在 fToken_fUSDT 標題下列出 0x5C20B550819128074FD538Edf79791733ccEdd18。",
+      "recommendation": "可以接受；GitHub 組織是 Fluid 官網連過去的那個。"
+    },
+    "fluid-fusdt/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x5C20B550819128074FD538Edf79791733ccEdd18，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Instadapp 的 deployments.md 在 fToken_fUSDT 標題下列出它。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "usdc/doc.0x095ea7b3.commit": {
+      "status": "confirmed",
+      "text": "AI 用 GitHub API 查 circlefin/stablecoin-evm：預設分支是 master，compare master...fc85788bc7c23cefe3df1a757133048bfddadeaa 回答 identical，就是 master 現在的 commit。morpho/vault-deposit 錄下的同一頁這一項是 PASS；這次程式大概是沒讀到 GitHub API。",
+      "recommendation": "可以接受。"
+    }
+  },
+  "overview": [
+    {
+      "title": "升級和管理者",
+      "text": "VaultBundlesV1 沒有代理合約、沒有 owner，不能升級。它的 NatSpec 說它是為 Vault V1（MetaMorpho V1 或 V1.1）和 Vault V2 設計和稽核的。"
+    },
+    {
+      "title": "過去事故",
+      "text": "DefiLlama 的駭客清單沒有 VaultBundlesV1 或 bundles 的事故；Morpho 唯一的一筆是 2024-10-14 LeadBlock market 的 oracle 設定錯誤。",
+      "sources": [
+        "https://api.llama.fi/hacks"
+      ]
+    },
+    {
+      "title": "留在合約裡的代幣",
+      "text": "README 警告留在 bundle 合約裡的代幣會遺失。存款不會留下東西：effects 檢查 Safe 剛好付出 amount。",
+      "sources": [
+        "https://github.com/morpho-org/bundles/blob/3537d0039bdc3ce7af1bbd3c02eb96a04e6e2c6b/README.md"
+      ]
+    },
+    {
+      "title": "vault 的損失從哪來",
+      "text": "損失來自 curator 分配到的 market，不是 vault 合約。2026 年 3 月 Morpho 共同創辦人說約 500 個 vault 裡有約 15 個明顯曝險於 Resolv 事件，都是高風險、長尾抵押品的 vault。",
+      "sources": [
+        "https://www.kucoin.com/news/flash/morpho-co-founder-15-vaults-affected-by-resolv-security-incident"
+      ]
+    },
+    {
+      "title": "壞帳",
+      "text": "V1.0 vault 的壞帳一次由所有存款人承擔；V1.1 vault 的份額價格不會下跌，「最後離開的人會承擔壞帳，除非有人處理」。",
+      "sources": [
+        "https://docs.morpho.org/curate/tutorials-v1/bad-debt/"
+      ]
+    }
+  ],
+  "entries": {
+    "steakhouse-prime-usdc": {
+      "role": "card 可以選的 vault：Morpho Vault V2，curator 是 Steakhouse。"
+    },
+    "steakhouse-high-yield-usdc": {
+      "role": "card 可以選的 vault：Morpho Vault V2，curator 是 Steakhouse。"
+    },
+    "smokehouse-usdc": {
+      "role": "card 可以選的 vault：MetaMorpho V1.0，curator 是 Steakhouse。"
+    },
+    "hyperithm-usdc-apex-7777": {
+      "role": "card 可以選的 vault：MetaMorpho V1.1，curator 是 Hyperithm。名字結尾是地址的最後四碼，跟 V2 那個區分。"
+    },
+    "hyperithm-usdc-apex-0932": {
+      "role": "card 可以選的 vault：Morpho Vault V2，curator 是 Hyperithm。名字結尾是地址的前四碼，跟 V1.1 那個區分。"
+    },
+    "usual-boosted-usdc": {
+      "role": "card 可以選的 vault：MetaMorpho V1.0，curator 是 MEV Capital。"
+    },
+    "fluid-fusdc": {
+      "role": "card 可以選的 vault：Fluid 的 fUSDC。這個模板是 Morpho 的路線，選 Fluid vault 通常對不上交易。"
+    },
+    "fluid-fusdt": {
+      "role": "card 可以選的 vault：Fluid 的 fUSDT。這個模板是 Morpho 的路線，選 Fluid vault 通常對不上交易。"
+    },
+    "metamorpho-factory-1.0": {
+      "role": "建立 MetaMorpho V1.0 vault 的 factory；程式問它某個 vault 是不是它建的。"
+    },
+    "metamorpho-factory-1.1": {
+      "role": "建立 MetaMorpho V1.1 vault 的 factory。"
+    },
+    "vault-v2-factory": {
+      "role": "建立 Morpho Vault V2 的 factory。"
+    },
+    "usdc": {
+      "role": "vault 的資產：你付出去的代幣。"
+    },
+    "vault-bundles-v1": {
+      "role": "Safe 授權的對象，也是第二個呼叫的對象；它從 Safe 拉資產、存進 vault。",
+      "notes": [
+        {
+          "text": "Morpho 官方地址頁列出 Ethereum 上的 VaultBundlesV1 在這個地址，並連到 morpho-org/bundles 的原始碼；Morpho app 的 SDK（morpho-org/sdks 的 addresses.ts）也把同一個地址寫成 mainnet 的 bundles.vaultBundlesV1。",
+          "sources": [
+            "https://docs.morpho.org/get-started/resources/addresses/"
+          ]
+        },
+        {
+          "text": "Etherscan：verified 名稱 VaultBundlesV1，編譯器 v0.8.34。區塊 25,720,857 的交易 0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd，由 0x3448F8C366047d76b6b58bb4ef225E4454B1b5ff 經合約 0x19f57e4080fc40812f806054fa79052e6050b9b6 建立。兩個來源都沒寫這個部署者，所以建立者這一項只靠兩個來源都列出這個地址。"
+        },
+        {
+          "text": "鏈上程式碼結尾是 bytecodeHash none 的 trailer，所以比對成功證明的是 selector 和型別，不包括參數名稱；下面的參數名稱取自 verified 原始碼。solc 0.8.34 的 sha256 跟 soliditylang 兩個清單、以及 GitHub release 的 soljson.js 都一樣。"
+        }
+      ]
+    }
+  },
+  "fields": {
+    "1.approve.spender": "誰可以拉走資產",
+    "1.approve.value": "可以拉走多少",
+    "2.value": "送出的 ETH；不是 0 時合約會把 ETH 包起來，不從 Safe 拉資產",
+    "2.vaultBundlesV1Deposit.vault": "存進哪個 vault",
+    "2.vaultBundlesV1Deposit.assets": "從 Safe 拉走多少",
+    "2.vaultBundlesV1Deposit.maxSharePriceE27": "滑價上限：每份最多付多少資產；沒有推薦費時，保證拿到至少 card 上的 min-shares",
+    "2.vaultBundlesV1Deposit.assetPermit.kind": "怎麼拉資產：0 用授權後的 transferFrom，1 用 ERC-2612 permit，2 用 Permit2",
+    "2.vaultBundlesV1Deposit.assetPermit.data": "kind 1 或 2 的 permit；kind 綁成 0，所以一個 byte 都不會被讀",
+    "2.vaultBundlesV1Deposit.referralFeePct": "從 assets 扣下、送給推薦人的比例（WAD）",
+    "2.vaultBundlesV1Deposit.referralFeeRecipient": "推薦費的收款人",
+    "2.vaultBundlesV1Deposit.deadline": "超過這個時間就失敗；只限制什麼時候能執行，不改變做什麼"
+  },
+  "tests": [
+    {
+      "text": "兩筆別的 Safe 的存款（8 byte trailer 和 12 byte trailer 各一筆）用各自的 card 都是 MATCH；10% 推薦費、換 vault、換金額都在該欄位得到 MISMATCH。"
+    }
+  ],
+  "details": [
+    {
+      "title": "過去交易的觀察",
+      "notes": [
+        {
+          "text": "錄下的搜尋找轉進 VaultBundlesV1 的 USDC；它只在最近兩段區塊有轉帳。Alchemy 和 Etherscan 都找到 387 筆，抽查 40 筆：16 筆來自 16 個一般錢包直接呼叫 vaultBundlesV1Deposit，推薦費都是 0、收款人都是零地址；15 筆用 permit（kind 1）代替授權，因為一般錢包能在同一筆交易裡簽 permit。其他 24 筆呼叫別的函式，大多是 0x932084a8（vaultBundlesV1Withdraw）。"
+        },
+        {
+          "text": "更早一次在區塊 26,200,000 到 26,380,000 對 Steakhouse Prime USDC 的搜尋（沒錄下）：893 筆鑄造份額裡 46 筆來自 14 個 Safe。trailer 放寬到 12 byte 後，8 個 Safe 的 21 筆符合形狀；20 筆每個欄位都照規則，另 1 筆授權 2^256−1，被當成無上限授權拒絕。不符合的：13 筆（4 個 Safe）沒有授權、用之前的授權；6 筆（2 個 Safe）delegatecall 到不是官方 MultiSend 的合約；6 筆走別的合約。"
+        }
+      ]
+    },
+    {
+      "title": "trailer",
+      "notes": [
+        {
+          "text": "vaultBundlesV1Deposit 後面可以多最多 12 byte。app 加 4 byte 時間戳和 4 byte 來源標記；46 筆裡 18 筆有第二個標記（25afea44 再加 2222da44）。參數照 offset 解碼，後面的 byte 不會被讀。授權沒有 trailer。"
+        }
+      ]
+    },
+    {
+      "title": "ERC-7730",
+      "notes": [
+        {
+          "text": "registry 裡有 VaultBundlesV1 的描述檔，把 vaultBundlesV1Deposit 顯示為存進 vault，顯示 vault、含手續費的 assets、推薦費、收款人（不是零時）和 deadline，隱藏 maxSharePriceE27 和 assetPermit。它也把推薦費算在金額裡，所以模板把推薦費綁成 0，而不是相信畫面上的顯示。"
+        }
+      ]
+    }
+  ]
+}
