@@ -1,0 +1,266 @@
+{
+  "title": "經由 Bundler3 從 Morpho vault 提領一筆數量",
+  "summary": "Safe 從你選的 Morpho vault 提領 card 上的資產數量：先授權 GeneralAdapter1 動用 Safe 的份額，再呼叫 Bundler3 的 multicall，由 GeneralAdapter1 的 erc4626Withdraw 把資產付給 Safe。",
+  "flow": [
+    {
+      "after": 2,
+      "text": "GeneralAdapter1 呼叫 vault 的 withdraw：燒掉 Safe 的份額，把 amount 付給 Safe。"
+    },
+    {
+      "after": 2,
+      "text": "要燒的份額超過 max-shares，價格下限就擋下，整筆失敗。"
+    }
+  ],
+  "pastTxsConclusion": {
+    "status": "caution",
+    "text": "錄下的搜尋沒有 Safe 符合；AI 之前在指定範圍找到 13 個 Safe 的 31 筆符合交易。"
+  },
+  "verdict": {
+    "status": "caution",
+    "text": "Morpho app 的提領會留下一點沒用完的份額授權，effects 會因此給 MISMATCH。",
+    "recommendation": "要全部提領就用 morpho/vault-withdraw-all；這個模板只在授權剛好用完時 MATCH。"
+  },
+  "judgments": [
+    {
+      "title": "app 的提領會被 effects 擋下。",
+      "text": "app 授權 assets × 1e27 / minSharePriceE27 份，執行時價格高於下限，實際燒得比較少，剩下的授權留著；effects 不收結束時比開始高的授權。",
+      "recommendation": "用 morpho/vault-withdraw-all，或請 app 給的授權剛好等於要燒的份額。"
+    },
+    {
+      "title": "留下的授權很小。",
+      "text": "GeneralAdapter1 只在 Safe 自己發起的 bundle 裡動用 Safe 的份額（owner == address(this) 或 initiator()）。要不要放寬這條設計規則，是你的決定，不是這個模板的。",
+      "recommendation": "目前維持；要放寬請另開討論。"
+    },
+    {
+      "title": "app 現在多半走 VaultBundlesV1。",
+      "text": "Morpho app 在 2026 年改走 VaultBundlesV1：更早對 Steakhouse Prime USDC 的搜尋裡，47 筆 Safe 提領有 40 筆呼叫 vaultBundlesV1Withdraw（0x932084a8），那條路線還沒有模板。",
+      "recommendation": "簽之前看交易呼叫的是 Bundler3 還是 VaultBundlesV1。"
+    }
+  ],
+  "reviews": {
+    "steakhouse-prime-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是 curator Steakhouse 的文件頁，所以對不上 DefiLlama 上 morpho-blue 的網站。DefiLlama 把 steakhouse.financial 登記為 steakhouse-financial 的網站；Morpho API 說 0xbeef088055857739C12CD3765F20b7679Def0f51 名叫 Steakhouse Prime USDC，curator 是 0x827e86072B06674a077f592A531dcE4590aDeCdB；vault-v2-factory 承認建立了它。",
+      "recommendation": "可以接受；這是 curator 自己的網站。"
+    },
+    "steakhouse-high-yield-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是 curator Steakhouse 的文件頁，所以對不上 DefiLlama 上 morpho-blue 的網站。DefiLlama 把 steakhouse.financial 登記為 steakhouse-financial 的網站；Morpho API 說 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757 名叫 Steakhouse High Yield USDC，curator 是 0x827e86072B06674a077f592A531dcE4590aDeCdB；vault-v2-factory 承認建立了它。",
+      "recommendation": "可以接受；這是 curator 自己的網站。"
+    },
+    "smokehouse-usdc/source.site": {
+      "status": "concern",
+      "text": "來源是 curator Steakhouse 的文件頁，所以對不上 DefiLlama 上 morpho-blue 的網站。DefiLlama 把 steakhouse.financial 登記為 steakhouse-financial 的網站；Morpho API 說 0xBEeFFF209270748ddd194831b3fa287a5386f5bC 名叫 Smokehouse USDC，curator 是 0x827e86072B06674a077f592A531dcE4590aDeCdB；metamorpho-factory-1.0 承認建立了它。",
+      "recommendation": "可以接受；這是 curator 自己的網站。"
+    },
+    "smokehouse-usdc/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0xBEeFFF209270748ddd194831b3fa287a5386f5bC，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Steakhouse 文件頁在標籤旁列出它，Morpho API 列它為 listed vault。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "hyperithm-usdc-apex-7777/source.url": {
+      "status": "concern",
+      "text": "AI 用 headless Chrome（全新的暫存設定檔）打開這個 Morpho app 頁面：顯示 Hyperithm USDC Apex V1（curator Hyperithm），地址縮寫 0x7777...7777，Etherscan 連結是 0x777791C4d6DC2CE140D00D2828a7C93503c67777。但這個頁面會照網址顯示地址，證明不了地址屬於 Hyperithm。Morpho API 也列它為 listed vault，名稱相同。",
+      "recommendation": "可以接受，但最好之後換成 Hyperithm 自己列出地址的頁面。"
+    },
+    "hyperithm-usdc-apex-7777/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x777791C4d6DC2CE140D00D2828a7C93503c67777，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Morpho API 列它為 listed vault，名叫 Hyperithm USDC Apex；metamorpho-factory-1.1 承認是它建立的。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "hyperithm-usdc-apex-0932/source.url": {
+      "status": "concern",
+      "text": "AI 用 headless Chrome（全新的暫存設定檔）打開這個 Morpho app 頁面：顯示 Hyperithm USDC Apex（curator Hyperithm），地址縮寫 0x0932...9E2F，Etherscan 連結是 0x093272C07700d3cA5301C3Bf9B3A392624179E2F。但這個頁面會照網址顯示地址，證明不了地址屬於 Hyperithm。Morpho API 也列它為 listed vault，名稱相同。",
+      "recommendation": "可以接受，但最好之後換成 Hyperithm 自己列出地址的頁面。"
+    },
+    "hyperithm-usdc-apex-0932/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x093272C07700d3cA5301C3Bf9B3A392624179E2F，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Morpho API 列它為 listed Vault V2，名叫 Hyperithm USDC Apex；vault-v2-factory 承認是它建立的。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "usual-boosted-usdc/source.url": {
+      "status": "concern",
+      "text": "AI 用 headless Chrome（全新的暫存設定檔）打開這個 Morpho app 頁面：顯示 Usual Boosted USDC V1（curator MEV Capital），地址縮寫 0xd630...3a3D，Etherscan 連結是 0xd63070114470f685b75B74D60EEc7c1113d33a3D。但這個頁面會照網址顯示地址，證明不了地址屬於 MEV Capital。Morpho API 也列它為 listed vault，名稱相同。",
+      "recommendation": "可以接受，但最好之後換成 MEV Capital 自己列出地址的頁面。"
+    },
+    "fluid-fusdc/source.site": {
+      "status": "concern",
+      "text": "來源是 Instadapp 的 GitHub repo，DefiLlama 的 fluid-lending 沒登記 GitHub 組織，沒東西可比。AI 看到 Fluid 官網 fluid.io 連到 github.com/Instadapp；這個 commit 的 deployments.md 在 fToken_fUSDC 標題下列出 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33。",
+      "recommendation": "可以接受；GitHub 組織是 Fluid 官網連過去的那個。"
+    },
+    "fluid-fusdc/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Instadapp 的 deployments.md 在 fToken_fUSDC 標題下列出它。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    },
+    "fluid-fusdt/source.site": {
+      "status": "concern",
+      "text": "來源是 Instadapp 的 GitHub repo，DefiLlama 的 fluid-lending 沒登記 GitHub 組織，沒東西可比。AI 看到 Fluid 官網 fluid.io 連到 github.com/Instadapp；這個 commit 的 deployments.md 在 fToken_fUSDT 標題下列出 0x5C20B550819128074FD538Edf79791733ccEdd18。",
+      "recommendation": "可以接受；GitHub 組織是 Fluid 官網連過去的那個。"
+    },
+    "fluid-fusdt/source.coingecko": {
+      "status": "concern",
+      "text": "registry 沒寫 CoinGecko 名稱。AI 用 CoinGecko API 查 0x5C20B550819128074FD538Edf79791733ccEdd18，回答 coin not found，CoinGecko 沒列它，所以沒有東西可比。其他證據：Instadapp 的 deployments.md 在 fToken_fUSDT 標題下列出它。",
+      "recommendation": "可以接受；vault 份額常常不在 CoinGecko 上。"
+    }
+  },
+  "overview": [
+    {
+      "title": "升級和管理者",
+      "text": "Bundler3、GeneralAdapter1 和這裡的 vault 都沒有代理合約；vault 的 curator 可以改變資金分配到哪些 market。"
+    },
+    {
+      "title": "提領要有流動性",
+      "text": "vault 要有足夠可以提領的流動性。V1.1 vault 有壞帳後，「最後離開的人會承擔壞帳，除非有人處理」。",
+      "sources": [
+        "https://docs.morpho.org/curate/tutorials-v1/bad-debt/"
+      ]
+    },
+    {
+      "title": "稽核",
+      "text": "Morpho 的稽核頁列出：MetaMorpho V1.0 有 Cantina 競賽和 Spearbit、OpenZeppelin（2023）；V1.1 有 Spearbit、OpenZeppelin（2024）；Vault V2 有 Spearbit、ChainSecurity、Blackthorn、Zellic 和 Cantina 競賽（2025）。",
+      "sources": [
+        "https://docs.morpho.org/get-started/resources/audits/"
+      ]
+    },
+    {
+      "title": "過去事故",
+      "text": "DefiLlama 的駭客清單只有一筆 Morpho：2024-10-14 LeadBlock 的 Morpho Blue market oracle 設定錯誤，損失 25 萬美元。",
+      "sources": [
+        "https://api.llama.fi/hacks"
+      ]
+    }
+  ],
+  "entries": {
+    "steakhouse-prime-usdc": {
+      "role": "card 可以選的 vault：Morpho Vault V2，curator 是 Steakhouse。",
+      "notes": [
+        {
+          "text": "approve 的官方文件指向 morpho-org/vault-v2 的 VaultV2.sol（固定 commit）；card 上每個 vault 都有自己的 approve，這頁只代表 Vault V2 的寫法。"
+        }
+      ]
+    },
+    "steakhouse-high-yield-usdc": {
+      "role": "card 可以選的 vault：Morpho Vault V2，curator 是 Steakhouse。"
+    },
+    "smokehouse-usdc": {
+      "role": "card 可以選的 vault：MetaMorpho V1.0，curator 是 Steakhouse。"
+    },
+    "hyperithm-usdc-apex-7777": {
+      "role": "card 可以選的 vault：MetaMorpho V1.1，curator 是 Hyperithm。名字結尾是地址的最後四碼，跟 V2 那個區分。"
+    },
+    "hyperithm-usdc-apex-0932": {
+      "role": "card 可以選的 vault：Morpho Vault V2，curator 是 Hyperithm。名字結尾是地址的前四碼，跟 V1.1 那個區分。"
+    },
+    "usual-boosted-usdc": {
+      "role": "card 可以選的 vault：MetaMorpho V1.0，curator 是 MEV Capital。",
+      "notes": [
+        {
+          "text": "鏈上名稱 Usual Boosted USDC，資產是 USDC。Etherscan：經 metamorpho-factory-1.0 在區塊 20,377,233 的交易 0x7f13d5fbdab8cd902247c96287bfcfe2d4e025e7fe1c959c7741e5af5cb6f173 建立；prove-abi 是 MetaMorpho，solc 0.8.21，遮了 32 段 immutable；isMetaMorpho 兩個節點都回答 true。"
+        }
+      ]
+    },
+    "fluid-fusdc": {
+      "role": "card 可以選的 vault：Fluid 的 fUSDC。這個模板是 Morpho 的路線，選 Fluid vault 通常對不上交易。"
+    },
+    "fluid-fusdt": {
+      "role": "card 可以選的 vault：Fluid 的 fUSDT。這個模板是 Morpho 的路線，選 Fluid vault 通常對不上交易。"
+    },
+    "metamorpho-factory-1.0": {
+      "role": "建立 MetaMorpho V1.0 vault 的 factory；程式問它某個 vault 是不是它建的。"
+    },
+    "metamorpho-factory-1.1": {
+      "role": "建立 MetaMorpho V1.1 vault 的 factory。"
+    },
+    "vault-v2-factory": {
+      "role": "建立 Morpho Vault V2 的 factory。"
+    },
+    "bundler3": {
+      "role": "Safe 的第二個呼叫對象；它依序執行 bundle 裡的每一項。",
+      "notes": [
+        {
+          "text": "Morpho 官方地址頁列出它。",
+          "sources": [
+            "https://docs.morpho.org/get-started/resources/addresses/"
+          ]
+        }
+      ]
+    },
+    "general-adapter1": {
+      "role": "Safe 授權的對象，也是每個 bundle 項目的執行者。",
+      "notes": [
+        {
+          "text": "Morpho 官方地址頁列出它。prove-abi 證明的合約名是 EthereumGeneralAdapter1，solc 0.8.28，遮了 58 段 immutable。",
+          "sources": [
+            "https://docs.morpho.org/get-started/resources/addresses/"
+          ]
+        }
+      ]
+    },
+    "usdc": {
+      "role": "vault 的資產：Safe 收到的代幣。"
+    },
+    "usdt": {
+      "role": "vault 的資產：Safe 收到的代幣（選 fUSDT 時）。"
+    }
+  },
+  "fields": {
+    "1.to": "要授權份額的 vault",
+    "1.approve.spender": "誰可以動用份額",
+    "1.approve.value": "最多可以動用多少份額；effects 要求授權結束時不高於開始",
+    "2.multicall.bundle[0].data → erc4626Withdraw.vault": "從哪個 vault 提領",
+    "2.multicall.bundle[0].data → erc4626Withdraw.assets": "提領多少資產",
+    "2.multicall.bundle[0].data → erc4626Withdraw.minSharePriceE27": "滑價下限：每份最少換多少資產；保證最多燒 card 上的 max-shares。跟 erc4626Deposit 的上限方向相反",
+    "2.multicall.bundle[0].data → erc4626Withdraw.receiver": "誰收到資產",
+    "2.multicall.bundle[0].data → erc4626Withdraw.owner": "燒誰的份額",
+    "2.merge": "一張 card 從幾個 vault 提領，app 先做每個份額授權，最後一個 multicall 每個 vault 一項，照 card 順序"
+  },
+  "tests": [
+    {
+      "text": "morpho-withdraw-open-allowance 顯示 app 的提領：授權從 4,850,840,670,525,793,065 份變成 40,963,643,267,656,996,464 份，所以 MISMATCH；欄位和餘額都對。"
+    },
+    {
+      "text": "兩個 vault 的提領 morpho-withdraw-two-vaults 用兩個操作的 card 得到 MATCH；這就是 multicall 要 merge 的原因。"
+    }
+  ],
+  "details": [
+    {
+      "title": "過去交易的觀察",
+      "notes": [
+        {
+          "text": "錄下的搜尋以 Smokehouse USDC 的份額銷毀為錨，12 段區塊各一天：Alchemy 和 Etherscan 都找到 186 筆，抽查 165 筆。只有 1 筆來自 Safe，它直接呼叫 Steakhouse High Yield USDC 的 withdraw（0xb460af94），不符合。32 筆來自 31 個一般錢包呼叫 Bundler3，但 bundle 是 3 或 4 項（提領後再清掃剩餘），也不符合。其他 132 筆呼叫別的函式，例如直接呼叫 vault 的 redeem 或 withdraw。"
+        },
+        {
+          "text": "更早幾次指定區塊範圍的搜尋（沒錄下）：Hyperithm USDC Apex V1.1 有 47 筆 Safe 銷毀、10 筆（5 個 Safe）符合；Smokehouse USDC 69 筆、21 筆（8 個 Safe）符合；Steakhouse Prime USDC 47 筆、0 筆符合。符合的 31 筆裡，receiver 和 owner 都是 Safe，spender 和項目目標都是 GeneralAdapter1，assets 等於數量，ETH 都是 0。"
+        },
+        {
+          "text": "不符合的：erc4626Redeem（全部提領，歸 morpho/vault-withdraw-all）；一次授權兩到五個 vault 再一個 multicall（9 個 Safe）；只呼叫 multicall、用之前的授權（effects 不收）；VaultBundlesV1 的 vaultBundlesV1Withdraw，它的授權也比用掉的多；提領後加兩項 erc20Transfer 清掃；先 redeem 到 GeneralAdapter1 再存進別的 vault 的遷移。"
+        }
+      ]
+    },
+    {
+      "title": "GeneralAdapter1 的函式",
+      "notes": [
+        {
+          "text": "證明過的 ABI 有 erc4626Withdraw(address vault, uint256 assets, uint256 minSharePriceE27, address receiver, address owner)。第三個參數是下限；證明抓到了一份把它寫成 maxSharePriceE27 的草稿。"
+        }
+      ]
+    },
+    {
+      "title": "trailer",
+      "notes": [
+        {
+          "text": "approve 和 multicall 後面都可以多最多 8 byte：Morpho app 加的 4 byte 時間戳和 4 byte 來源標記，兩個函式都不讀。"
+        }
+      ]
+    },
+    {
+      "title": "ERC-7730",
+      "notes": [
+        {
+          "text": "Bundler3 的描述檔描述 multicall 和 reenter，不描述 bundle 項目裡 adapter 的呼叫；GeneralAdapter1 沒有描述檔，所以這筆的 adapter 欄位沒有 ERC-7730 的說明。"
+        }
+      ]
+    }
+  ]
+}
