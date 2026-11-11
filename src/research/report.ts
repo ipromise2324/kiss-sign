@@ -20,6 +20,7 @@ import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, Vie
 import type { Line, Listings, ListingsRecording } from './listings.ts';
 import { checkSources, githubLine, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
+import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
@@ -48,7 +49,7 @@ export type ReportRecording = ListingsRecording & {
   readonly code: readonly Exchange[];
 };
 
-export type PastTxsSummary = { readonly file: string; readonly query: PastTxsRecording['query']; readonly text: string };
+export type PastTxsSummary = { readonly file: string; readonly query: PastTxsRecording['query']; readonly text: string; readonly run: PastTxs };
 
 export type ReportInputs = {
   readonly subject: Subject;
@@ -103,7 +104,7 @@ export function templateFunctions(template: Template): AbiFunction[] {
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** The registry names a card reference can resolve to, in registry order. */
-function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
+export function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
   const field = template.card.get(ref.field);
   const { attribute } = ref;
   if (field?.kind === 'market') {
@@ -209,7 +210,7 @@ function namedInRules(template: Template): Set<string> {
   return names;
 }
 
-const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
+export const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
 
 /** Every registry entry a card field can name: a contract of the field's kind, or a part of any market. */
 function cardCandidates(template: Template, registry: Registry): RegistryEntry[] {
@@ -237,7 +238,7 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
   return [...registry.entries.values()].filter((entry) => names.has(entry.name));
 }
 
-const wordOf = (fn: AbiFunction): RegExp => new RegExp(`(?<![A-Za-z0-9_$])${fn.name.replace(/\$/g, '\\$')}(?![A-Za-z0-9_$])`);
+export const wordOf = (fn: AbiFunction): RegExp => new RegExp(`(?<![A-Za-z0-9_$])${fn.name.replace(/\$/g, '\\$')}(?![A-Za-z0-9_$])`);
 
 /** Keeps of each page only what the report's checks read: the entries' addresses and the documented function names. */
 export function trimReportRecording(
@@ -323,7 +324,7 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
     },
     { ask: replayAsk(recording.sources), reader, registry, exclude: undefined, maxTxs: query.maxTxs },
   );
-  return { file, query, text: renderPastTxs(run, registry) };
+  return { file, query, text: renderPastTxs(run, registry), run };
 }
 
 /** Text the AI wrote, as literal Markdown on one line: every character Markdown or a table cell reads is escaped. */
@@ -550,6 +551,10 @@ export async function checkSpans(reader: Reader, entries: readonly RegistryEntry
   return checked;
 }
 
+/** What one verdict of `checkSpans` asks of the reader: nothing, a judgment, or nothing was read. */
+export const spanKind = (verdict: string): 'pass' | 'finding' | 'unverifiable' | 'not-read' =>
+  verdict === 'PASS' ? 'pass' : verdict.startsWith('FINDING') ? 'finding' : verdict.startsWith('UNVERIFIABLE') ? 'unverifiable' : 'not-read';
+
 function spanRows(entry: RegistryEntry, verdicts: readonly string[] | undefined): string[] {
   const name = `| ${code(entry.name)} |`;
   if (entry.code === undefined) return [`${name} | not pinned | | |`];
@@ -560,7 +565,7 @@ function spanRows(entry: RegistryEntry, verdicts: readonly string[] | undefined)
 }
 
 /** The pin names the code the proof compiled: the proxy's code and its implementation's, or the contract's own. */
-function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
+export function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
   const pin = entry.code?.current.pin;
   if (pin === undefined) return 'not pinned';
   const same = (a: string, b: string | undefined) => a.toLowerCase() === b?.toLowerCase();
@@ -600,7 +605,7 @@ function fenced(text: string): string[] {
 
 export const compareCommand = (subject: Subject): string => (subject.kind === 'template' ? `pnpm report ${subject.template.id} --compare` : `pnpm report --vault ${subject.vault.name} --compare`);
 
-export function renderReport(inputs: ReportInputs, title: { readonly command: string; readonly sources: readonly string[] }): string {
+export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   const { subject, registry } = inputs;
   const entries = entriesOf(subject, registry);
   const name = subject.kind === 'template' ? subject.template.id : subject.vault.name;
@@ -689,8 +694,22 @@ export async function replayAbiProofs(entries: readonly RegistryEntry[], cases: 
   return proofs;
 }
 
+export type ReportTitle = { readonly command: string; readonly sources: readonly string[] };
+
 /** The report from the repository and its recordings alone, as its committed `.generated.md` holds it. */
 export async function replayReport(repoRoot: string, registry: Registry, target: Target, compilers: Compilers, suffixes: Listings['suffixes']): Promise<string> {
+  const { inputs, title } = await replayInputs(repoRoot, registry, target, compilers, suffixes);
+  return renderReport(inputs, title);
+}
+
+/** Every input a generated report renders, from the repository and its recordings alone. */
+export async function replayInputs(
+  repoRoot: string,
+  registry: Registry,
+  target: Target,
+  compilers: Compilers,
+  suffixes: Listings['suffixes'],
+): Promise<{ readonly inputs: ReportInputs; readonly title: ReportTitle }> {
   const subject = loadSubject(repoRoot, registry, target);
   const recordingPath = reportRecordingPath(target);
   const recording = JSON.parse(readFileSync(join(repoRoot, recordingPath), 'utf8')) as ReportRecording;
@@ -713,7 +732,7 @@ export async function replayReport(repoRoot: string, registry: Registry, target:
   const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), ...registryFiles];
   const sources = [...inputsFiles, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
   const command = 'vault' in target ? `pnpm report --vault ${target.vault} --record` : `pnpm report ${target.template} --record`;
-  return renderReport(inputs, { command, sources });
+  return { inputs, title: { command, sources } };
 }
 
 /**
