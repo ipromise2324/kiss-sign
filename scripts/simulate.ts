@@ -8,7 +8,7 @@ import { createReader } from '../src/chain/reader.ts';
 import type { Read } from '../src/chain/reader.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
-import { parseRegistry } from '../src/registry.ts';
+import { marketsText, parseRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -73,7 +73,8 @@ if (version === undefined) {
 }
 const tx = parseServiceTx(service, { chainId: 1n, version });
 
-const registry = parseRegistry(JSON.parse(readFileSync(flags.registry ?? join(ROOT, 'registry', 'contracts.json'), 'utf8')));
+const markets = marketsText(ROOT);
+const registry = parseRegistry(JSON.parse(readFileSync(flags.registry ?? join(ROOT, 'registry', 'contracts.json'), 'utf8')), markets === undefined ? {} : JSON.parse(markets));
 function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Address[]; ends: Address[] } | undefined {
   if (flags.card === undefined) return undefined;
   const card = parseCard(JSON.parse(flags.card));

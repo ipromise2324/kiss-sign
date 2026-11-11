@@ -11,11 +11,11 @@ import type { Io } from '../cli/io.ts';
 import { requireConfig } from '../cli/setup.ts';
 import { checkFloor } from '../floor/floor.ts';
 import { kissSignHome } from '../keys.ts';
-import { REGISTRY_PATH } from '../registry.ts';
+import { MARKETS_PATH, REGISTRY_PATH } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
-import { fetchOriginMain, fileAt, localOriginMain } from '../verify/self-check.ts';
+import { fetchOriginMain, fileAt, localOriginMain, optionalFileAt } from '../verify/self-check.ts';
 import type { GithubRepo } from '../verify/self-check.ts';
 import { VerifyError, evaluate, keccakText } from '../verify/verify.ts';
 import type { VerifyInputs } from '../verify/verify.ts';
@@ -66,6 +66,7 @@ type Context = {
   readonly history: History;
   readonly commit: string;
   readonly registry: string;
+  readonly markets: string | undefined;
   readonly refresh: boolean;
   readonly templateText: (id: string) => string;
 };
@@ -84,6 +85,7 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
       return { id, text, approved: keccakText(text) };
     }),
     registry: ctx.registry,
+    ...(ctx.markets === undefined ? {} : { markets: ctx.markets }),
     addressBook: Object.fromEntries(
       [...ctx.history.book].filter(([name]) => named.has(name)).map(([name, { address }]) => [name, checksumAddress(address)]),
     ),
@@ -169,6 +171,7 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     history,
     commit,
     registry: mergeRegistry(fileAt(io.repoRoot, commit, REGISTRY_PATH), history.registryOverlay),
+    markets: optionalFileAt(io.repoRoot, commit, MARKETS_PATH),
     refresh,
     templateText,
   };

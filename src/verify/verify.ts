@@ -40,6 +40,8 @@ export type VerifyInputs = {
   readonly card: { readonly hash: string; readonly text: string };
   readonly templates: readonly { readonly id: string; readonly text: string; readonly approved: string | null }[];
   readonly registry: string;
+  /** The markets table, absent when the commit has none, as in a verdict file from before markets. */
+  readonly markets?: string;
   /** Only the entries the card names. */
   readonly addressBook: Readonly<Record<string, string>>;
 };
@@ -107,7 +109,7 @@ export type Prepared = {
 };
 
 export function prepare(inputs: VerifyInputs): Prepared {
-  const registry = guard('the registry', () => parseRegistry(JSON.parse(inputs.registry)));
+  const registry = guard('the registry', () => parseRegistry(JSON.parse(inputs.registry), inputs.markets === undefined ? {} : JSON.parse(inputs.markets)));
   const safe = guard('the configured Safe', () => parseAddress('safe', inputs.safe));
   if (keccakText(inputs.card.text) !== inputs.card.hash) throw new VerifyError(`the card does not hash to ${inputs.card.hash}`);
   const card = guard('the card', () => parseCard(JSON.parse(inputs.card.text)));
@@ -212,6 +214,7 @@ export function parseVerdictFile(raw: unknown): VerdictFile {
   }
   const { inputs, exchanges, result } = raw;
   if (!isRecord(inputs) || !isText(inputs.commit) || !isText(inputs.safe) || !isText(inputs.registry)) return refuse('inputs');
+  if (inputs.markets !== undefined && !isText(inputs.markets)) return refuse('inputs.markets');
   if (!isRecord(inputs.tx) || (inputs.tx.format !== 'service' && inputs.tx.format !== 'web-app')) return refuse('inputs.tx');
   if (!isRecord(inputs.card) || !isText(inputs.card.hash) || !isText(inputs.card.text)) return refuse('inputs.card');
   if (!isRecord(inputs.addressBook)) return refuse('inputs.addressBook');
