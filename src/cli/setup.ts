@@ -66,7 +66,7 @@ export async function init(args: readonly string[], io: Io): Promise<number> {
     'Next:',
     '  1. Open the key file and paste each key after its = sign:',
     `       ${openCommand(io.platform, keyFile)}`,
-    '     or type each key at a hidden prompt instead:',
+    '     Or enter each key with the command below; what you type is not shown on screen:',
     ...KEYS.map(({ name }) => `       pnpm kiss-sign key add ${name}`),
     '  2. See which keys are set:',
     '       pnpm kiss-sign key list',
