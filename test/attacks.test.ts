@@ -53,6 +53,7 @@ test('pnpm attacks prints, per case, the card with full addresses, the decoded c
     env: {},
     stdout: (text) => void (stdout += text),
     stderr: () => undefined,
+    platform: 'linux',
     readSecret: undefined,
     ask: undefined,
     repoRoot: ROOT,

@@ -89,7 +89,7 @@ const COMMANDS: Readonly<Record<string, Command>> = {
 };
 
 const USAGE_TEXT = `Usage:\n${Object.values(COMMANDS)
-  .map(({ usage }) => `  kiss-sign ${usage}\n`)
+  .map(({ usage }) => `  pnpm kiss-sign ${usage}\n`)
   .join('')}`;
 
 /** Errors whose message is written for the signer. */
@@ -124,6 +124,7 @@ export function nodeIo(): Io {
     env: process.env,
     stdout: (text) => void process.stdout.write(text),
     stderr: (text) => void process.stderr.write(text),
+    platform: process.platform,
     readSecret: process.stdin.isTTY ? (question) => hiddenPrompt(question, process.stdin, process.stderr) : undefined,
     ask: process.stdin.isTTY ? askLine : undefined,
     repoRoot: join(import.meta.dirname, '..', '..'),

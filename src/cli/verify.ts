@@ -33,7 +33,7 @@ function print({ verdict, hashes, calls }: Evaluation, registry: Registry, io: I
     io.stdout(`  domain hash   ${hashes.domainHash}\n  message hash  ${hashes.messageHash}\n  safeTxHash    ${hashes.safeTxHash}\n`);
     io.stdout(
       replaying
-        ? 'This is a replay of a recorded verdict, not permission to sign. Run kiss-sign verify before signing.\n'
+        ? 'This is a replay of a recorded verdict, not permission to sign. Run pnpm kiss-sign verify before signing.\n'
         : 'Compare the domain hash and the message hash on the hardware wallet before you sign.\n',
     );
     return;

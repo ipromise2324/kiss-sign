@@ -11,6 +11,7 @@ async function run(argv: string[], repoRoot: string, env: Record<string, string>
     env,
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
+    platform: 'linux',
     readSecret: undefined,
     ask: undefined,
     repoRoot,

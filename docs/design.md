@@ -38,7 +38,7 @@ Every service or step drawn in `docs/architecture.png` and `docs/architecture-de
 
 ### First time an operation is done: build its template
 
-1. **State the intent.** For example, "deposit USDC into the Morpho Apex vault." The AI turns it into a concrete operation.
+1. **State the intent.** For example, "deposit USDC into the Morpho Apex vault." The AI turns it into a concrete operation. It researches before it asks the signer anything: the route, such as a direct call or the protocol's bundler, follows from the contracts, the protocol's own app and past transactions (step 4), and the card values mirror what the protocol's own app asks a user to enter for the operation, plus only what safety strictly needs, each explained in the report. Chain facts such as a price are read on chain, never guessed. The AI asks the signer only for a preference no evidence can settle, once, with the report. An operation this design does not cover gets its design change proposed in the same pull request, this document first.
 2. **Research addresses.**
    - **Find:** the AI finds the protocol's contracts on its official site and GitHub and cross-checks them across sources.
    - **Protocol API:** when the protocol runs its own public API, such as Morpho's GraphQL API at `api.morpho.org`, the AI queries it as one more source: the contract's address and what the protocol says about it, such as a vault's curator and asset. The AI does this, not the program, because every protocol's API has its own shape; the report quotes the query and the answer. A protocol without an API has no entry here.
@@ -75,14 +75,14 @@ Every service or step drawn in `docs/architecture.png` and `docs/architecture-de
 
    The counts show the template matches normal use. They do not show it is safe, because fake transactions are cheap.
 7. **Write the template.** The AI writes a declarative template (below) and its test transactions, and opens a pull request with the template, the report, and the tests. It never merges. For each test transaction with a free field, the program (`pnpm perturb`) runs the perturbation test below and records it, so CI replays it.
-8. **Signer reviews the pull request.** The signer reads the report and the template's rules on GitHub, runs `pnpm report <protocol>/<operation> --compare`, and asks for changes. Approving and merging the pull request is the confirmation. On the signing device, `kiss-sign template approve` records the hash of the merged template locally.
+8. **Signer reviews the pull request.** The signer reads the report and the template's rules on GitHub, runs `pnpm report <protocol>/<operation> --compare`, and asks for changes. Approving and merging the pull request is the confirmation. On the signing device, `pnpm kiss-sign template approve` records the hash of the merged template locally.
 
 ### Every signing
 
 Every signing runs on the signing device, with no AI involved.
 
 9. **Fill the card.** The signer runs `git pull`, then `pnpm kiss-sign card new <protocol>/<operation>`, for example `morpho/vault-deposit` to deposit into Steakhouse USDC. For each card value the template needs, the prompt lists the registry entries of the right kind, the address-book entries, or the Safe by number, each with its name and full address, and the signer picks one. Every choice comes before every amount, so each amount's token is known when it is asked. An amount or a limit is typed in whole tokens, such as `5` or `1.25`, never in base units: the prompt names the token with its full address and its decimals, which the program reads by calling `decimals()` on the token through both providers at one block they agree on. ETH counts 18 decimals without a read. A vault's shares are a token too, so `min-shares` and `max-shares` are typed in shares with the vault's own decimals. A read the providers do not agree on, a revert, or an answer that is not one word of at most 77 refuses the card; the program never guesses decimals. The typed number must be plain digits with at most one point and no more digits after it than the token's decimals, below 2^256 base units once converted; the program converts it exactly with integers and prints it both ways, such as `amount: 1.25 usdc = 1250000 base units`, and lists every amount that way again just before the seal step asks for confirmation, which shows base units only. The card stores base units, so `card seal`, `verify` and `replay` never read decimals. A token that is not a registry contract, which a template allows only through an `address` card field, has no decimals the program trusts, so its amount is typed as a base-unit integer and the prompt says why. A nonce is typed as a plain integer. A card with several operations names several templates.
-10. **Seal it.** The program prints the card with every full address, and on the signer's yes hashes it and stores it in `$KISS_SIGN_HOME`, before the signer sees the Safe transaction. `kiss-sign card seal` does the same for a card written as a file. The template is not reviewed again; only the card's values are.
+10. **Seal it.** The program prints the card with every full address, and on the signer's yes hashes it and stores it in `$KISS_SIGN_HOME`, before the signer sees the Safe transaction. `pnpm kiss-sign card seal` does the same for a card written as a file. The template is not reviewed again; only the card's values are.
 11. **Propose on Safe.** kiss-sign reads the transaction from the Safe Transaction Service, or the signer pastes it. kiss-sign recomputes every hash itself.
 12. **Verify.** The program decodes the transaction with the template, checks every field, mutates the transaction to confirm the template catches changes, simulates it, and compares the Safe's net effects with the card. It also lists the calls that move no asset of the Safe, next to the verdict.
 13. **Small amount first.** The first time a template or a vault is used, the card from step 9 names a small amount. The full amount gets a new card once the small transaction has settled as expected.
@@ -116,7 +116,7 @@ A template describes one operation for one protocol, for example `morpho/vault-d
 
 ### Intent card
 
-The operation id plus this signing's values. The template is reviewed once; the card is the only thing the signer confirms at every signing. So the card holds only what changes between signings, and every other value is bound once, somewhere the signer already reviewed.
+The operation id plus this signing's values. The template is reviewed once; the card is the only thing the signer confirms at every signing. So the card holds only what changes between signings, and every other value is bound once, somewhere the signer already reviewed. The AI designs the card: its values are what the protocol's own app asks for the operation, and any extra limit it adds for safety is proposed and explained in the report.
 
 Where each value comes from:
 

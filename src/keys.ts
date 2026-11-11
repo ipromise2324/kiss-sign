@@ -9,7 +9,7 @@ export const KEYS = [
     label: 'Alchemy',
     env: 'ALCHEMY_API_KEY',
     signup: 'https://dashboard.alchemy.com/',
-    usedBy: 'kiss-sign verify, kiss-sign card new, and the pnpm research scripts',
+    usedBy: 'pnpm kiss-sign verify, pnpm kiss-sign card new, and the pnpm research scripts',
   },
   { name: 'etherscan', label: 'Etherscan', env: 'ETHERSCAN_API_KEY', signup: 'https://etherscan.io/myapikey', usedBy: 'pnpm past-txs' },
 ] as const;

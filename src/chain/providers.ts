@@ -24,7 +24,7 @@ export class MissingKeyError extends Error {
   constructor(spec: KeySpec) {
     super(
       `${spec.label} needs an API key in ${spec.env}, and none is set. Get a free key at ${spec.signup}, ` +
-        `then run \`kiss-sign key add ${spec.name}\` in your own terminal, not in a chat.`,
+        `then run \`pnpm kiss-sign key add ${spec.name}\` in your own terminal, not in a chat.`,
     );
   }
 }

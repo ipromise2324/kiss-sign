@@ -136,7 +136,7 @@ test('a missing Alchemy key names the variable, the signup URL, and key add in y
     assert.ok(error instanceof MissingKeyError);
     assert.match(error.message, /ALCHEMY_API_KEY/);
     assert.match(error.message, /https:\/\/dashboard\.alchemy\.com\//);
-    assert.match(error.message, /kiss-sign key add alchemy` in your own terminal, not in a chat/);
+    assert.match(error.message, /`pnpm kiss-sign key add alchemy` in your own terminal, not in a chat/);
     return true;
   });
 });
