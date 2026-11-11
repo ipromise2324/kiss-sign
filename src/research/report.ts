@@ -20,6 +20,7 @@ import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, Vie
 import type { Line, Listings, ListingsRecording } from './listings.ts';
 import { checkSources, githubLine, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
+import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
@@ -48,7 +49,7 @@ export type ReportRecording = ListingsRecording & {
   readonly code: readonly Exchange[];
 };
 
-export type PastTxsSummary = { readonly file: string; readonly query: PastTxsRecording['query']; readonly text: string };
+export type PastTxsSummary = { readonly file: string; readonly query: PastTxsRecording['query']; readonly text: string; readonly run: PastTxs };
 
 export type ReportInputs = {
   readonly subject: Subject;
@@ -62,9 +63,9 @@ export type ReportInputs = {
   readonly vaults: ReadonlyMap<string, string>;
   readonly pastTxs: readonly PastTxsSummary[];
   /** Each pinned entry's spans as `checkSpans` judged them, oldest first. */
-  readonly spans: ReadonlyMap<Address, readonly string[]>;
-  /** What `pnpm erc7730` prints for the entries. */
-  readonly erc7730: string;
+  readonly spans: ReadonlyMap<Address, readonly SpanCheck[]>;
+  /** What `pnpm erc7730` prints for the entries, and the facts it prints them from. */
+  readonly erc7730: { readonly text: string; readonly reports: readonly EntryReport[] };
 };
 
 export class ReportError extends Error {
@@ -103,7 +104,7 @@ export function templateFunctions(template: Template): AbiFunction[] {
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** The registry names a card reference can resolve to, in registry order. */
-function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
+export function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
   const field = template.card.get(ref.field);
   const { attribute } = ref;
   if (field?.kind === 'market') {
@@ -209,7 +210,7 @@ function namedInRules(template: Template): Set<string> {
   return names;
 }
 
-const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
+export const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
 
 /** Every registry entry a card field can name: a contract of the field's kind, or a part of any market. */
 function cardCandidates(template: Template, registry: Registry): RegistryEntry[] {
@@ -237,7 +238,7 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
   return [...registry.entries.values()].filter((entry) => names.has(entry.name));
 }
 
-const wordOf = (fn: AbiFunction): RegExp => new RegExp(`(?<![A-Za-z0-9_$])${fn.name.replace(/\$/g, '\\$')}(?![A-Za-z0-9_$])`);
+export const wordOf = (fn: AbiFunction): RegExp => new RegExp(`(?<![A-Za-z0-9_$])${fn.name.replace(/\$/g, '\\$')}(?![A-Za-z0-9_$])`);
 
 /** Keeps of each page only what the report's checks read: the entries' addresses and the documented function names. */
 export function trimReportRecording(
@@ -323,7 +324,7 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
     },
     { ask: replayAsk(recording.sources), reader, registry, exclude: undefined, maxTxs: query.maxTxs },
   );
-  return { file, query, text: renderPastTxs(run, registry) };
+  return { file, query, text: renderPastTxs(run, registry), run };
 }
 
 /** Text the AI wrote, as literal Markdown on one line: every character Markdown or a table cell reads is escaped. */
@@ -510,57 +511,67 @@ function pinText(pin: CodePin): string {
 }
 
 /**
+ * One span of a code pin as `checkSpans` judged it: `text` is what the Markdown report prints. `not-read` is a lone pin
+ * from block 0, written before ranges.
+ */
+export type SpanCheck = { readonly kind: 'pass' | 'finding' | 'unverifiable' | 'not-read'; readonly text: string };
+
+/**
  * Each span of each entry's code pin checked on the chain, oldest first: the code at its `from` is its pin, and the
  * code at the block before is the span before's pin, or for the first span, code `pnpm pin-code` cannot pin. A lone
  * pin from block 0, written before ranges, is not read. Prints no text a provider gave.
  */
-export async function checkSpans(reader: Reader, entries: readonly RegistryEntry[]): Promise<Map<Address, string[]>> {
-  const checked = new Map<Address, string[]>();
+export async function checkSpans(reader: Reader, entries: readonly RegistryEntry[]): Promise<Map<Address, SpanCheck[]>> {
+  const checked = new Map<Address, SpanCheck[]>();
   for (const entry of entries) {
     if (entry.code === undefined) continue;
     const spans = [...entry.code.earlier, entry.code.current];
     if (spans.length === 1 && entry.code.current.from === 0n) {
-      checked.set(entry.address, ['pinned before ranges, not read']);
+      checked.set(entry.address, [{ kind: 'not-read', text: 'pinned before ranges, not read' }]);
       continue;
     }
-    const verdicts: string[] = [];
+    const verdicts: SpanCheck[] = [];
+    const pass = (): number => verdicts.push({ kind: 'pass', text: 'PASS' });
+    const finding = (text: string): number => verdicts.push({ kind: 'finding', text: `FINDING: ${text}` });
+    const unverifiable = (block: bigint): number => verdicts.push({ kind: 'unverifiable', text: `UNVERIFIABLE at block ${block}` });
     for (const [i, { from, pin }] of spans.entries()) {
       const at = await readRunningCodeAt(reader, entry.address, from);
       if (at.kind === 'refused') {
-        verdicts.push(at.refusal.why === 'unverifiable' ? `UNVERIFIABLE at block ${from}` : `FINDING: block ${from} runs no code it can pin, ${code(at.refusal.why)}`);
+        if (at.refusal.why === 'unverifiable') unverifiable(from);
+        else finding(`block ${from} runs no code it can pin, ${code(at.refusal.why)}`);
         continue;
       }
       if (!samePin(pinOf(at.code), pin)) {
-        verdicts.push(`FINDING: block ${from} runs ${pinText(pinOf(at.code))}`);
+        finding(`block ${from} runs ${pinText(pinOf(at.code))}`);
         continue;
       }
       if (from === 0n) {
-        verdicts.push('PASS');
+        pass();
         continue;
       }
       const previous = spans[i - 1]?.pin;
       const before = await readRunningCodeAt(reader, entry.address, from - 1n);
-      if (before.kind === 'refused' && before.refusal.why === 'unverifiable') verdicts.push(`UNVERIFIABLE at block ${from - 1n}`);
-      else if (before.kind === 'read' && (previous === undefined || !samePin(pinOf(before.code), previous))) verdicts.push(`FINDING: block ${from - 1n} runs ${pinText(pinOf(before.code))}`);
-      else if (before.kind === 'refused' && previous !== undefined) verdicts.push(`FINDING: block ${from - 1n} runs no code it can pin, ${code(before.refusal.why)}`);
-      else verdicts.push('PASS');
+      if (before.kind === 'refused' && before.refusal.why === 'unverifiable') unverifiable(from - 1n);
+      else if (before.kind === 'read' && (previous === undefined || !samePin(pinOf(before.code), previous))) finding(`block ${from - 1n} runs ${pinText(pinOf(before.code))}`);
+      else if (before.kind === 'refused' && previous !== undefined) finding(`block ${from - 1n} runs no code it can pin, ${code(before.refusal.why)}`);
+      else pass();
     }
     checked.set(entry.address, verdicts);
   }
   return checked;
 }
 
-function spanRows(entry: RegistryEntry, verdicts: readonly string[] | undefined): string[] {
+function spanRows(entry: RegistryEntry, verdicts: readonly SpanCheck[] | undefined): string[] {
   const name = `| ${code(entry.name)} |`;
   if (entry.code === undefined) return [`${name} | not pinned | | |`];
   return [...entry.code.earlier, entry.code.current].map(({ from, pin }, i) => {
     const implementation = pin.implementation === undefined ? 'none' : `${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`;
-    return `${name} ${from} | ${code(pin.hash)} | ${implementation} | ${verdicts?.[i] ?? 'not read'} |`;
+    return `${name} ${from} | ${code(pin.hash)} | ${implementation} | ${verdicts?.[i]?.text ?? 'not read'} |`;
   });
 }
 
 /** The pin names the code the proof compiled: the proxy's code and its implementation's, or the contract's own. */
-function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
+export function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
   const pin = entry.code?.current.pin;
   if (pin === undefined) return 'not pinned';
   const same = (a: string, b: string | undefined) => a.toLowerCase() === b?.toLowerCase();
@@ -600,7 +611,7 @@ function fenced(text: string): string[] {
 
 export const compareCommand = (subject: Subject): string => (subject.kind === 'template' ? `pnpm report ${subject.template.id} --compare` : `pnpm report --vault ${subject.vault.name} --compare`);
 
-export function renderReport(inputs: ReportInputs, title: { readonly command: string; readonly sources: readonly string[] }): string {
+export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   const { subject, registry } = inputs;
   const entries = entriesOf(subject, registry);
   const name = subject.kind === 'template' ? subject.template.id : subject.vault.name;
@@ -673,7 +684,7 @@ export function renderReport(inputs: ReportInputs, title: { readonly command: st
     '',
     `${code(`pnpm erc7730 ${entries.map((e) => e.name).join(' ')}`)}: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.`,
     '',
-    ...fenced(inputs.erc7730),
+    ...fenced(inputs.erc7730.text),
     '',
   );
   return out.join('\n');
@@ -689,8 +700,22 @@ export async function replayAbiProofs(entries: readonly RegistryEntry[], cases: 
   return proofs;
 }
 
+export type ReportTitle = { readonly command: string; readonly sources: readonly string[] };
+
 /** The report from the repository and its recordings alone, as its committed `.generated.md` holds it. */
 export async function replayReport(repoRoot: string, registry: Registry, target: Target, compilers: Compilers, suffixes: Listings['suffixes']): Promise<string> {
+  const { inputs, title } = await replayInputs(repoRoot, registry, target, compilers, suffixes);
+  return renderReport(inputs, title);
+}
+
+/** Every input a generated report renders, from the repository and its recordings alone. */
+export async function replayInputs(
+  repoRoot: string,
+  registry: Registry,
+  target: Target,
+  compilers: Compilers,
+  suffixes: Listings['suffixes'],
+): Promise<{ readonly inputs: ReportInputs; readonly title: ReportTitle }> {
   const subject = loadSubject(repoRoot, registry, target);
   const recordingPath = reportRecordingPath(target);
   const recording = JSON.parse(readFileSync(join(repoRoot, recordingPath), 'utf8')) as ReportRecording;
@@ -707,13 +732,13 @@ export async function replayReport(repoRoot: string, registry: Registry, target:
     vaults: new Map(Object.entries(recording.vaults)),
     pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
     spans: await checkSpans(replayReader(recording.code), entries),
-    erc7730: (await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)))).text,
+    erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
   };
   const registryFiles = subject.kind === 'template' && hasMarket(subject.template) ? [REGISTRY_PATH, MARKETS_PATH] : [REGISTRY_PATH];
   const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), ...registryFiles];
   const sources = [...inputsFiles, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
   const command = 'vault' in target ? `pnpm report --vault ${target.vault} --record` : `pnpm report ${target.template} --record`;
-  return renderReport(inputs, { command, sources });
+  return { inputs, title: { command, sources } };
 }
 
 /**
