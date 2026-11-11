@@ -66,6 +66,7 @@ async function run(argv: string[], repo: string, home: string) {
     env,
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
+    platform: 'linux',
     readSecret: undefined,
     ask: undefined,
     repoRoot: repo,

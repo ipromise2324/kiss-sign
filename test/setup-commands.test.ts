@@ -17,7 +17,7 @@ type Chain = { readonly transport: Transport; readonly env?: Record<string, stri
 
 const noChain: Chain = { transport: async () => assert.fail('setup commands read no chain'), env: {} };
 
-async function run(argv: string[], home: string, answers?: readonly Answer[], chain: Chain = noChain) {
+async function run(argv: string[], home: string, answers?: readonly Answer[], chain: Chain = noChain, platform: NodeJS.Platform = 'linux') {
   let stdout = '';
   let stderr = '';
   const asked: string[] = [];
@@ -26,6 +26,7 @@ async function run(argv: string[], home: string, answers?: readonly Answer[], ch
     env: { KISS_SIGN_HOME: home, ...(chain.env ?? { ALCHEMY_API_KEY: 'test-key' }) },
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
+    platform,
     readSecret: undefined,
     ask:
       answers === undefined
@@ -58,9 +59,11 @@ test('init creates a key file readable by its owner only, with an empty line per
   const first = await run(['init', '--safe', SAFE], home);
   const keyFile = join(home, '.env');
   assert.equal(first.code, 0);
-  assert.match(first.stdout, new RegExp(`Created ${keyFile}, readable by you only`));
-  assert.match(first.stdout, /ALCHEMY_API_KEY, .*kiss-sign verify/);
-  assert.match(first.stdout, /ETHERSCAN_API_KEY, .*pnpm past-txs/);
+  assert.match(first.stdout, new RegExp(`Created the key file ${keyFile}, readable by you only`));
+  assert.match(first.stdout, /ALCHEMY_API_KEY +get it at https:\/\/dashboard\.alchemy\.com\/\n +needed by pnpm kiss-sign verify, pnpm kiss-sign card new/);
+  assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs/);
+  assert.match(first.stdout, new RegExp(`\\n {7}\\$\\{EDITOR:-nano\\} ${keyFile}\\n`));
+  assert.match(first.stdout, /\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add etherscan\n/);
   assert.equal(statSync(keyFile).mode & 0o777, 0o600);
   const lines = readFileSync(keyFile, 'utf8').split('\n').filter((line) => !line.startsWith('#') && line !== '');
   assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'ETHERSCAN_API_KEY=']);
@@ -75,6 +78,13 @@ test('init creates a key file readable by its owner only, with an empty line per
   chmodSync(keyFile, 0o644);
   const loose = await run(['init', '--safe', SAFE], home);
   assert.match(loose.stdout, new RegExp(`Warning: other users can read ${keyFile} \\(mode 644\\)\\. Run chmod 600 ${keyFile}\\.`));
+});
+
+test('init on macOS prints a command that opens the key file in TextEdit, quoting a path with a space', async () => {
+  const home = join(freshHome(), 'my home');
+  const result = await run(['init', '--safe', SAFE], home, undefined, noChain, 'darwin');
+  assert.equal(result.code, 0);
+  assert.ok(result.stdout.includes(`\n       open -e '${join(home, '.env')}'\n`), result.stdout);
 });
 
 test('book add refuses without a terminal and adds nothing', async () => {

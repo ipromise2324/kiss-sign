@@ -3,6 +3,8 @@ import type { Env } from '../keys.ts';
 
 export type Io = {
   readonly env: Env;
+  /** Which command opens a file in an editor. */
+  readonly platform: NodeJS.Platform;
   readonly stdout: (text: string) => void;
   readonly stderr: (text: string) => void;
   /** Undefined when stdin is not a terminal, so no key can arrive through a pipe or a chat. */

@@ -16,8 +16,16 @@ import type { Io, Terminal } from './io.ts';
 
 export function requireConfig(home: string): Config {
   const config = loadConfig(home);
-  if (config === undefined) throw new ConfigError(`no config in ${home}; run kiss-sign init --safe <address> first`);
+  if (config === undefined) throw new ConfigError(`no config in ${home}; run pnpm kiss-sign init --safe <address> first`);
   return config;
+}
+
+function shellWord(text: string): string {
+  return /^[\w@%+=:,./-]+$/.test(text) ? text : `'${text.replaceAll("'", `'\\''`)}'`;
+}
+
+function openCommand(platform: NodeJS.Platform, path: string): string {
+  return platform === 'darwin' ? `open -e ${shellWord(path)}` : `\${EDITOR:-nano} ${shellWord(path)}`;
 }
 
 export async function init(args: readonly string[], io: Io): Promise<number> {
@@ -31,13 +39,27 @@ export async function init(args: readonly string[], io: Io): Promise<number> {
     return FAILED;
   }
   saveConfig(home, { chainId: 1n, safe });
-  io.stdout(`kiss-sign checks transactions of the Safe ${checksumAddress(safe)} on Ethereum mainnet (chain 1).\n`);
   const keyFile = keyFilePath(home);
-  io.stdout(createKeyFile(home) ? `Created ${keyFile}, readable by you only. Fill in after the = sign:\n` : `${keyFile} is already there and was left as it is. It takes:\n`);
+  const created = createKeyFile(home);
   const mode = statSync(keyFile).mode & 0o777;
-  if ((mode & 0o077) !== 0) io.stdout(`Warning: other users can read ${keyFile} (mode ${mode.toString(8)}). Run chmod 600 ${keyFile}.\n`);
-  for (const spec of KEYS) io.stdout(`  ${spec.env}, a free key from ${spec.signup}, for ${spec.usedBy}\n`);
-  io.stdout(`Or type a key at a hidden prompt with kiss-sign key add ${KEYS.map(({ name }) => name).join('|')}.\n`);
+  const width = Math.max(...KEYS.map(({ env }) => env.length)) + 2;
+  const lines = [
+    `kiss-sign checks transactions of the Safe ${checksumAddress(safe)} on Ethereum mainnet (chain 1).`,
+    '',
+    created ? `Created the key file ${keyFile}, readable by you only.` : `The key file ${keyFile} is already there and was left as it is.`,
+    ...((mode & 0o077) === 0 ? [] : [`Warning: other users can read ${keyFile} (mode ${mode.toString(8)}). Run chmod 600 ${shellWord(keyFile)}.`]),
+    'It takes these keys, each free:',
+    ...KEYS.flatMap((spec) => [`  ${spec.env.padEnd(width)}get it at ${spec.signup}`, `  ${' '.repeat(width)}needed by ${spec.usedBy}`]),
+    '',
+    'Next:',
+    '  1. Open the key file and paste each key after its = sign:',
+    `       ${openCommand(io.platform, keyFile)}`,
+    '     or type each key at a hidden prompt instead:',
+    ...KEYS.map(({ name }) => `       pnpm kiss-sign key add ${name}`),
+    '  2. See which keys are set:',
+    '       pnpm kiss-sign key list',
+  ];
+  io.stdout(lines.map((line) => `${line}\n`).join(''));
   return OK;
 }
 

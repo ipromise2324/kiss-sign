@@ -44,7 +44,14 @@ pnpm install
 pnpm kiss-sign init --safe 0x…
 ```
 
-`init` creates `~/.kiss-sign/.env`, readable by you only. Fill in `ALCHEMY_API_KEY`, a free key from Alchemy, which `verify` and `card new` need. Run every command from the clone as `pnpm kiss-sign <command>`, such as `pnpm kiss-sign card new morpho/vault-deposit`. After a `git pull` that changes `package.json`, pnpm installs the new dependencies itself before it runs the command.
+`init` creates `~/.kiss-sign/.env`, readable by you only, and prints the command that opens it. Paste `ALCHEMY_API_KEY`, a free key from Alchemy, after its `=` sign; `verify` and `card new` need it.
+
+```sh
+open -e ~/.kiss-sign/.env            # macOS, in TextEdit
+${EDITOR:-nano} ~/.kiss-sign/.env    # elsewhere
+```
+
+Or type the key at a hidden prompt with `pnpm kiss-sign key add alchemy`. Run every command from the clone as `pnpm kiss-sign <command>`, such as `pnpm kiss-sign card new morpho/vault-deposit`. After a `git pull` that changes `package.json`, pnpm installs the new dependencies itself before it runs the command.
 
 To build templates or run the tests, `pnpm test` and the research scripts download the pinned compilers and lists they need on first use, and refuse any file whose sha256 differs from its pin.
 
