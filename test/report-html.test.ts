@@ -276,7 +276,7 @@ test('a real disagreement or a page the program cannot read is for the signer to
   assert.doesNotMatch(cbbtcOpen ?? '', /class="flag"/);
   assert.match(cbbtcFolded ?? '', /<span class="mark na">–<\/span><div><span class="flag">FINDING<\/span>沒比對來源的 GitHub 組織/);
   assert.match(cards(html).get('usdc') ?? '', /<details>[^]*<span class="mark na">–<\/span><div><span class="flag">FINDING<\/span>沒比對<code>approve<\/code> 的文件頁面的 GitHub 組織/);
-  assert.match(cards(html).get('usdc') ?? '', /<details>[^]*<span class="mark na">–<\/span><div><span class="flag">REFUSED<\/span>沒有用原始碼重新編譯來比對/);
+  assert.match(cards(html).get('usdc') ?? '', /<details>[^]*<span class="mark ok">✓<\/span><div>Sourcify 上的原始碼用固定版本的編譯器重新編譯後，跟鏈上的程式碼一樣（代理合約，比對的是背後的實作 <span class="mono">0x43506849D7C04F9138D1A2050bbF3A0c054402dd<\/span>）（<code>FiatTokenV2_2<\/code>，solc 0\.6\.12\+commit\.27d51765），也就是 registry 記錄的現在指紋/);
 
   const inputs = await quickInputs();
   const blue = registry.entries.get('morpho-blue')!;

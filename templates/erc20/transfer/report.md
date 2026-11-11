@@ -11,9 +11,9 @@ The Safe sends an amount of one registered ERC-20 token to one recipient: a dire
 
 Both issuers' pages name these addresses, and the ERC-7730 registry's Tether descriptor names the same USDT address.
 
-`pnpm prove-abi` refuses both today:
+`pnpm prove-abi` refused both when this template was written; USDC now proves:
 
-- USDC: `REFUSED 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 at block 26384474: solc 0.4.24+commit.e67f0147 is not pinned in src/contracts/solc-pins.ts`. The proxy keeps its implementation in the ZeppelinOS slot (`keccak256("org.zeppelinos.proxy.implementation")`), which `prove-abi` does not follow, so pinning 0.4.24 would prove the proxy's own ABI, not the token's.
+- USDC: `REFUSED 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 at block 26384474: solc 0.4.24+commit.e67f0147 is not pinned in src/contracts/solc-pins.ts`. The proxy keeps its implementation in the ZeppelinOS slot (`keccak256("org.zeppelinos.proxy.implementation")`), which `prove-abi` did not follow then. It follows that slot now, and with solc 0.6.12 pinned it proves the implementation `FiatTokenV2_2` at `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` (block 26392598), a Sourcify partial match with the metadata hash masked.
 - USDT: `REFUSED 0xdAC17F958D2ee523a2206206994597C13D831ec7 at block 26384587: solc 0.4.18+commit.9cf6e910 is not pinned in src/contracts/solc-pins.ts`. There is no proxy.
 
 So the one function this template calls, `transfer(address,uint256)` with selector `0xa9059cbb`, is taken from EIP-20 rather than from a proven ABI. Both verified sources on Etherscan declare it, and the decoder refuses any other selector. Proving these ABIs needs 0.4 compilers pinned and loaded, and the ZeppelinOS slot followed, which belong in their own pull request.

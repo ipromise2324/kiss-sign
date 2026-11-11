@@ -95,9 +95,12 @@ test('morpho/vault-deposit: the ERC-7730 section is computed again from the reco
 
 test("each entry's code pin prints with its implementation, and a proof of other code than the pin is a FINDING", async () => {
   const bundler3 = registry.entries.get('bundler3')!;
-  const usdc = registry.entries.get('usdc')!;
-  const spans = await checkSpans(replayReader([]), [bundler3, usdc]);
-  assert.match(quick(recording.pages, new Map(), undefined, undefined, undefined, spans), new RegExp(`^\\| \`usdc\` \\| 0 \\| \`${usdc.code!.current.pin.hash}\` \\| \`0x43506849D7C04F9138D1A2050bbF3A0c054402dd\` \`${usdc.code!.current.pin.implementation!.hash}\` \\| pinned before ranges, not read \\|$`, 'm'));
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  raw['usdc'].code = { hash: raw['usdc'].code.hash, implementation: raw['usdc'].code.implementation };
+  const reg = parseRegistry(raw);
+  const usdc = reg.entries.get('usdc')!;
+  const spans = await checkSpans(replayReader([]), [usdc]);
+  assert.match(quick(recording.pages, new Map(), loadSubject(ROOT, reg, { template: ID }), undefined, undefined, spans, reg), new RegExp(`^\\| \`usdc\` \\| 0 \\| \`${usdc.code!.current.pin.hash}\` \\| \`0x43506849D7C04F9138D1A2050bbF3A0c054402dd\` \`${usdc.code!.current.pin.implementation!.hash}\` \\| pinned before ranges, not read \\|$`, 'm'));
   const proof = (codeHash: Hex) =>
     ({ kind: 'proven', proxy: { kind: 'none' }, proven: bundler3.address, codeHash, contractName: 'Bundler3', compiler: '0.8.28', immutablesMasked: 0, librariesMasked: 0, metadataHashMasked: false, block: { number: 1n } }) as unknown as AbiProof;
   const row = (codeHash: Hex) => quick(recording.pages, new Map([[bundler3.address, proof(codeHash)]])).split('\n').find((l) => l.startsWith('| `bundler3` |') && l.includes('PROVEN'))!;
@@ -260,10 +263,12 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
     .replace(/\| 2638\d{4} \|$/gm, '| 27000000 |');
   assert.notEqual(drifted, committed);
   assert.deepEqual(compareReports(committed, drifted), []);
-  const series = committed.replace(/  2026-11-11  block 26389409  128,465,170\.797662 usdc/, '  2026-11-11  block 26389409  140,000,000.000000 usdc');
+  const point = /^  \d{4}-\d{2}-\d{2}  block \d+  [\d,.]+ usdc$/m.exec(committed)![0];
+  const raised = point.replace(/[\d,.]+ usdc$/, '140,000,000.000000 usdc');
+  const series = committed.replace(point, raised);
   assert.deepEqual(compareReports(committed, series), [
-    '`steakhouse-prime-usdc` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed:   2026-11-11  block 26389409  128,465,170.797662 usdc',
-    '`steakhouse-prime-usdc` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live:   2026-11-11  block 26389409  140,000,000.000000 usdc',
+    `\`steakhouse-prime-usdc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed: ${point}`,
+    `\`steakhouse-prime-usdc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
   ]);
 
   const revoked = committed.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');

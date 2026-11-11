@@ -6,6 +6,10 @@ export type SolcPin = { readonly file: string; readonly sha256: string };
  * on its own.
  */
 export const SOLC_PINS: Readonly<Record<string, SolcPin>> = {
+  '0.6.12+commit.27d51765': {
+    file: 'soljson-v0.6.12+commit.27d51765.js',
+    sha256: '3e1956c550ca48e289044c7c0bd892403081b4b5e17e77ce707c815ce6c4228f',
+  },
   '0.7.3+commit.9bfce1f6': {
     file: 'soljson-v0.7.3+commit.9bfce1f6.js',
     sha256: 'caf4b1f3e01fcf946aad2d22bbe046b9dc4fd50049a05c3458ff239e2c93a785',
