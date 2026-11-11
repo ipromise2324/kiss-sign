@@ -40,7 +40,7 @@ Research first, ask last. The route, the card, the checks, the registry entries 
 - **Chain.** kiss-sign covers Ethereum mainnet only. Say so if the signer names another chain; never ask which chain.
 - **Full values.** Show every address, market id and hash in full, never shortened with `…`, whenever the signer is to check it.
 - **Short messages.** Every message to the signer is a few lines: what you will do next, and what, if anything, they must confirm. Leave the background, the reasoning and the internals for the report.
-- **Your own tools.** Name no plugin, skill or tool of your own setup to the signer; describe the work, not your tooling.
+- **How you write code.** When the program changes, write it the way the signer's own setup asks, such as their instructions or the development workflow they use; this skill prescribes none. Tell the signer you will follow their workflow, not which tool you run.
 
 Work on a branch. The program writes `templates/<protocol>/<operation>/report.generated.md` from the template, the registry and live reads (step 7). You write `report.md`, every section labelled as written by the AI. Never write, paste into, or edit `report.generated.md`.
 
