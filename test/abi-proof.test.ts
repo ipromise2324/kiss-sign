@@ -218,10 +218,30 @@ const CASES = [
     immutables: 7,
     uses: ['receiveMessage(bytes message,bytes attestation)'],
   },
+  {
+    name: 'usdc',
+    proxy: 'zeppelinos',
+    proven: '0x43506849d7c04f9138d1a2050bbf3a0c054402dd',
+    contract: '/Users/aloysius.chan/Repositories/circlefin/stablecoin-evm-private-eurc-mainnet-eth/contracts/v2/FiatTokenV2_2.sol:FiatTokenV2_2',
+    compiler: '0.6.12+commit.27d51765',
+    functions: 55,
+    immutables: 0,
+    uses: ['approve(address spender,uint256 value)', 'transfer(address to,uint256 value)'],
+  },
+  {
+    name: 'cbbtc',
+    proxy: 'zeppelinos',
+    proven: '0x7458bfdc30034eb860b265e6068121d18fa5aa72',
+    contract: 'lib/stablecoin-evm/contracts/v2/FiatTokenV2_1.sol:FiatTokenV2_1',
+    compiler: '0.6.12+commit.27d51765',
+    functions: 50,
+    immutables: 0,
+    uses: ['approve(address spender,uint256 value)', 'transfer(address to,uint256 value)'],
+  },
 ] as const;
 
 /** Sourcify holds these as partial matches: the source compiles to the code on chain except the metadata hash. */
-const PARTIAL = ['morpho-urd', 'cctp-message-transmitter'];
+const PARTIAL = ['morpho-urd', 'cctp-message-transmitter', 'usdc'];
 
 const generated = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) =>
   readdirSync(join(ROOT, TEMPLATES_DIR, protocol))
