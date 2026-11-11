@@ -140,6 +140,8 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 | `merkl-distributor.json` | Merkl Distributor `0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae` | EIP-1967 | `Distributor` at `0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE`, solc 0.8.25, 5 immutable spans masked |
 | `morpho-urd.json` | Morpho Universal Rewards Distributor `0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb` | none | `UniversalRewardsDistributor`, solc 0.8.19. Sourcify holds a partial match: every byte equals except the IPFS metadata hash, which is masked |
 | `cctp-message-transmitter.json` | Circle CCTP V1 MessageTransmitter `0x0a992d191DEeC32aFe36203Ad87D7d289a738F81` | none | `MessageTransmitter`, solc 0.7.6, 7 immutable and 5 library spans masked. A partial match like `morpho-urd.json` |
+| `usdc.json` | USDC `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | ZeppelinOS | `FiatTokenV2_2` at `0x43506849D7C04F9138D1A2050bbF3A0c054402dd`, solc 0.6.12. A partial match like `morpho-urd.json` |
+| `cbbtc.json` | cbBTC `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | ZeppelinOS | `FiatTokenV2_1` at `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72`, solc 0.6.12 |
 | `safe-proxy-1-3-0.json` | the Safe of `safe-tx/eth-transfer-null-data.json`, `0x9467dcFD4519287e3878C018c02f5670465a9003` | Safe proxy (1.3.0 factory) | `GnosisSafeL2` at `0x3E5c63644E683549055b9Be8653de26E0B4CD36E`, solc 0.7.6 |
 
 ### Recording again
@@ -162,6 +164,8 @@ pnpm record-abi-case fluid-token 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb
 pnpm record-abi-case merkl-distributor 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae
 pnpm record-abi-case morpho-urd 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb
 pnpm record-abi-case cctp-message-transmitter 0x0a992d191DEeC32aFe36203Ad87D7d289a738F81
+pnpm record-abi-case usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+pnpm record-abi-case cbbtc 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf
 ```
 
 An optional third argument records at that block instead of the latest.

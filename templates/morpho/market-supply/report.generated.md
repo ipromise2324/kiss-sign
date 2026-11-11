@@ -88,7 +88,10 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 | Entry | From block | Code hash | Implementation | Chain |
 | --- | --- | --- | --- | --- |
-| `usdc` | 0 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | pinned before ranges, not read |
+| `usdc` | 6082465 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x0882477e7895bdC5cea7cB1552ed914aB157Fe56` `0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa` | PASS |
+| `usdc` | 10743414 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xB7277a6e95992041568D9391D09d0122023778A2` `0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3` | PASS |
+| `usdc` | 12317814 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF` `0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c` | PASS |
+| `usdc` | 18963716 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS |
 | `morpho-blue` | 18883124 | `0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c` | none | PASS |
 | `blue-bundles-v1` | 25832676 | `0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888` | none | PASS |
 | `adaptive-curve-irm` | 18883124 | `0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd` | none | PASS |
@@ -101,12 +104,12 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 | Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | REFUSED: `compiler-not-pinned` solc `0.6.12+commit.27d51765` | | | | | | 26386376 |
+| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
 | `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | PROVEN | none | `Morpho`, solc `0.8.19+commit.7dd6d404` | `0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c` | PASS | 2 immutable, 0 library spans masked | 26391177 |
 | `blue-bundles-v1` | `0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD` | PROVEN | none | `BlueBundlesV1`, solc `0.8.34+commit.80d5c536` | `0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888` | PASS | 18 immutable, 0 library spans masked | 26391177 |
 | `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | PROVEN | none | `AdaptiveCurveIrm`, solc `0.8.19+commit.7dd6d404` | `0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd` | PASS | 2 immutable, 0 library spans masked | 26391177 |
 | `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | PROVEN | none | `MorphoChainlinkOracleV2`, solc `0.8.21+commit.d9974bed` | `0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11` | PASS | 18 immutable, 0 library spans masked | 26391177 |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | REFUSED: `compiler-not-pinned` solc `0.6.12+commit.27d51765` | | | | | | 26391177 |
+| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
 
 ## Past transactions
 

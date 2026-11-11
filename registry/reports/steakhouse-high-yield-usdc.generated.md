@@ -20,9 +20,12 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 | Entry | From block | Code hash | Implementation | Chain |
 | --- | --- | --- | --- | --- |
-| `usdc` | 0 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | pinned before ranges, not read |
-| `vault-v2-factory` | 0 | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | none | pinned before ranges, not read |
-| `steakhouse-high-yield-usdc` | 0 | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | none | pinned before ranges, not read |
+| `usdc` | 6082465 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x0882477e7895bdC5cea7cB1552ed914aB157Fe56` `0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa` | PASS |
+| `usdc` | 10743414 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xB7277a6e95992041568D9391D09d0122023778A2` `0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3` | PASS |
+| `usdc` | 12317814 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF` `0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c` | PASS |
+| `usdc` | 18963716 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS |
+| `vault-v2-factory` | 23375073 | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | none | PASS |
+| `steakhouse-high-yield-usdc` | 23671563 | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | none | PASS |
 
 ## ABI proofs
 
@@ -30,7 +33,7 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 | Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | REFUSED: `compiler-not-pinned` solc `0.6.12+commit.27d51765` | | | | | | 26386376 |
+| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
 | `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | PROVEN | none | `VaultV2Factory`, solc `0.8.28+commit.7893614a` | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | PASS | 0 immutable, 0 library spans masked | 26386376 |
 | `steakhouse-high-yield-usdc` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26386376 |
 
@@ -41,28 +44,28 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `steakhouse-high-yield-usdc`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26389438
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26392729
 vault        steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757
-latest block 26389438 0x34c82db0bc1f6fb00933e6e3bf1365fe6b4e56e79c1dcd1fcb3a2a161605914e
+latest block 26392729 0xa654c8bc178762392acb0c2f8cc8d8956fc9cbb43b0bd95d27e4f2bcaad3c40e
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26389438  42,328,090.585073 usdc
-  2026-10-12  block 26173438  48,854,387.659365 usdc
-  2026-09-11  block 25957438  42,316,029.955899 usdc
-  2026-08-12  block 25741438  47,454,921.177853 usdc
-  2026-07-13  block 25525438  39,195,227.077747 usdc
-  2026-06-13  block 25309438  35,587,259.954593 usdc
-  2026-05-14  block 25093438  33,004,237.084281 usdc
-  2026-04-14  block 24877438  21,760,434.467473 usdc
-  2026-03-15  block 24661438  2,770,072.526625 usdc
-  2026-02-13  block 24445438  4,446,315.381707 usdc
-  2026-01-14  block 24229438  2,343,340.972095 usdc
-  2025-12-14  block 24013438  3,553,315.997496 usdc
-  2025-11-14  block 23797438  2,734,098.299901 usdc
+  2026-11-11  block 26392729  41,520,984.355608 usdc
+  2026-10-12  block 26176729  48,724,424.209052 usdc
+  2026-09-12  block 25960729  43,119,464.144740 usdc
+  2026-08-13  block 25744729  47,458,005.873697 usdc
+  2026-07-14  block 25528729  39,186,673.586000 usdc
+  2026-06-14  block 25312729  35,589,687.594358 usdc
+  2026-05-14  block 25096729  33,005,982.855833 usdc
+  2026-04-14  block 24880729  21,511,900.843449 usdc
+  2026-03-15  block 24664729  2,770,222.118743 usdc
+  2026-02-13  block 24448729  4,446,512.977880 usdc
+  2026-01-14  block 24232729  2,343,485.412636 usdc
+  2025-12-15  block 24016729  3,553,512.602593 usdc
+  2025-11-14  block 23800729  2,734,367.166339 usdc
 
-holders      454 addresses hold shares at block 26389438, of 1041 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 40000432168951076806717984
-top 10       hold 54.75% of the shares; each: 20.51%, 8.74%, 4.38%, 3.94%, 3.60%, 3.41%, 2.89%, 2.49%, 2.43%, 2.37%
+holders      456 addresses hold shares at block 26392729, of 1043 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 39234805927149560493952140
+top 10       hold 55.93% of the shares; each: 22.59%, 8.91%, 4.46%, 4.02%, 3.67%, 2.95%, 2.54%, 2.48%, 2.41%, 1.90%
 ```
 
 ## Past transactions
