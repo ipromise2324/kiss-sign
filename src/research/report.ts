@@ -63,7 +63,7 @@ export type ReportInputs = {
   readonly vaults: ReadonlyMap<string, string>;
   readonly pastTxs: readonly PastTxsSummary[];
   /** Each pinned entry's spans as `checkSpans` judged them, oldest first. */
-  readonly spans: ReadonlyMap<Address, readonly string[]>;
+  readonly spans: ReadonlyMap<Address, readonly SpanCheck[]>;
   /** What `pnpm erc7730` prints for the entries, and the facts it prints them from. */
   readonly erc7730: { readonly text: string; readonly reports: readonly EntryReport[] };
 };
@@ -511,56 +511,62 @@ function pinText(pin: CodePin): string {
 }
 
 /**
+ * One span of a code pin as `checkSpans` judged it: `text` is what the Markdown report prints. `not-read` is a lone pin
+ * from block 0, written before ranges.
+ */
+export type SpanCheck = { readonly kind: 'pass' | 'finding' | 'unverifiable' | 'not-read'; readonly text: string };
+
+/**
  * Each span of each entry's code pin checked on the chain, oldest first: the code at its `from` is its pin, and the
  * code at the block before is the span before's pin, or for the first span, code `pnpm pin-code` cannot pin. A lone
  * pin from block 0, written before ranges, is not read. Prints no text a provider gave.
  */
-export async function checkSpans(reader: Reader, entries: readonly RegistryEntry[]): Promise<Map<Address, string[]>> {
-  const checked = new Map<Address, string[]>();
+export async function checkSpans(reader: Reader, entries: readonly RegistryEntry[]): Promise<Map<Address, SpanCheck[]>> {
+  const checked = new Map<Address, SpanCheck[]>();
   for (const entry of entries) {
     if (entry.code === undefined) continue;
     const spans = [...entry.code.earlier, entry.code.current];
     if (spans.length === 1 && entry.code.current.from === 0n) {
-      checked.set(entry.address, ['pinned before ranges, not read']);
+      checked.set(entry.address, [{ kind: 'not-read', text: 'pinned before ranges, not read' }]);
       continue;
     }
-    const verdicts: string[] = [];
+    const verdicts: SpanCheck[] = [];
+    const pass = (): number => verdicts.push({ kind: 'pass', text: 'PASS' });
+    const finding = (text: string): number => verdicts.push({ kind: 'finding', text: `FINDING: ${text}` });
+    const unverifiable = (block: bigint): number => verdicts.push({ kind: 'unverifiable', text: `UNVERIFIABLE at block ${block}` });
     for (const [i, { from, pin }] of spans.entries()) {
       const at = await readRunningCodeAt(reader, entry.address, from);
       if (at.kind === 'refused') {
-        verdicts.push(at.refusal.why === 'unverifiable' ? `UNVERIFIABLE at block ${from}` : `FINDING: block ${from} runs no code it can pin, ${code(at.refusal.why)}`);
+        if (at.refusal.why === 'unverifiable') unverifiable(from);
+        else finding(`block ${from} runs no code it can pin, ${code(at.refusal.why)}`);
         continue;
       }
       if (!samePin(pinOf(at.code), pin)) {
-        verdicts.push(`FINDING: block ${from} runs ${pinText(pinOf(at.code))}`);
+        finding(`block ${from} runs ${pinText(pinOf(at.code))}`);
         continue;
       }
       if (from === 0n) {
-        verdicts.push('PASS');
+        pass();
         continue;
       }
       const previous = spans[i - 1]?.pin;
       const before = await readRunningCodeAt(reader, entry.address, from - 1n);
-      if (before.kind === 'refused' && before.refusal.why === 'unverifiable') verdicts.push(`UNVERIFIABLE at block ${from - 1n}`);
-      else if (before.kind === 'read' && (previous === undefined || !samePin(pinOf(before.code), previous))) verdicts.push(`FINDING: block ${from - 1n} runs ${pinText(pinOf(before.code))}`);
-      else if (before.kind === 'refused' && previous !== undefined) verdicts.push(`FINDING: block ${from - 1n} runs no code it can pin, ${code(before.refusal.why)}`);
-      else verdicts.push('PASS');
+      if (before.kind === 'refused' && before.refusal.why === 'unverifiable') unverifiable(from - 1n);
+      else if (before.kind === 'read' && (previous === undefined || !samePin(pinOf(before.code), previous))) finding(`block ${from - 1n} runs ${pinText(pinOf(before.code))}`);
+      else if (before.kind === 'refused' && previous !== undefined) finding(`block ${from - 1n} runs no code it can pin, ${code(before.refusal.why)}`);
+      else pass();
     }
     checked.set(entry.address, verdicts);
   }
   return checked;
 }
 
-/** What one verdict of `checkSpans` asks of the reader: nothing, a judgment, or nothing was read. */
-export const spanKind = (verdict: string): 'pass' | 'finding' | 'unverifiable' | 'not-read' =>
-  verdict === 'PASS' ? 'pass' : verdict.startsWith('FINDING') ? 'finding' : verdict.startsWith('UNVERIFIABLE') ? 'unverifiable' : 'not-read';
-
-function spanRows(entry: RegistryEntry, verdicts: readonly string[] | undefined): string[] {
+function spanRows(entry: RegistryEntry, verdicts: readonly SpanCheck[] | undefined): string[] {
   const name = `| ${code(entry.name)} |`;
   if (entry.code === undefined) return [`${name} | not pinned | | |`];
   return [...entry.code.earlier, entry.code.current].map(({ from, pin }, i) => {
     const implementation = pin.implementation === undefined ? 'none' : `${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`;
-    return `${name} ${from} | ${code(pin.hash)} | ${implementation} | ${verdicts?.[i] ?? 'not read'} |`;
+    return `${name} ${from} | ${code(pin.hash)} | ${implementation} | ${verdicts?.[i]?.text ?? 'not read'} |`;
   });
 }
 

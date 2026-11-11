@@ -13,8 +13,10 @@ export type Note = { readonly title: string | undefined; readonly text: string; 
 export type Judgment = Note & { readonly recommendation: string };
 
 /**
- * The AI's check of one program result the signer must look at: `confirmed` when what it checked agrees, `concern`
- * when it does not or could not check. The program shows it under the result and never changes the result for it.
+ * The AI's check of one program result the signer must look at. `confirmed` only when the AI checked the exact thing the
+ * result names and it agrees: for an address the program did not find on a source page, that page showed that address;
+ * for a code span, the code at that block. Evidence about anything else, however strong, is `concern`, as is a check
+ * the AI could not make. The program shows it under the result and never changes the result for it.
  */
 export type Review = { readonly status: 'confirmed' | 'concern'; readonly text: string; readonly recommendation: string };
 
@@ -29,7 +31,7 @@ export type Verdict = { readonly status: 'safe' | 'caution'; readonly text: stri
  * the AI and decides nothing from it.
  */
 export type Notes = {
-  /** The report's heading: the operation in a few words. */
+  /** The report's heading: the operation in a few words, at most 100 characters. */
   readonly title: string;
   readonly summary: string;
   /** What happens inside the template's calls, which the program cannot see: a few short lines, each placed after its call. */
@@ -177,7 +179,7 @@ export function parseNotes(raw: unknown, known: { readonly entries: ReadonlySet<
   const reviews = value.reviews === undefined ? {} : value.reviews;
   if (!isRecord(reviews)) throw new NotesError(`${NOTES_FILE}.reviews: not a JSON object`);
   return {
-    title: text(`${NOTES_FILE}.title`, value.title),
+    title: text(`${NOTES_FILE}.title`, value.title, MAX_LINE),
     summary: text(`${NOTES_FILE}.summary`, value.summary),
     flow: list(`${NOTES_FILE}.flow`, value.flow, (path, line) => flowLine(path, line, known.calls), MAX_FLOW),
     pastTxsConclusion: value.pastTxsConclusion === undefined ? undefined : conclusion(`${NOTES_FILE}.pastTxsConclusion`, value.pastTxsConclusion),
@@ -215,6 +217,9 @@ export function parseNotes(raw: unknown, known: { readonly entries: ReadonlySet<
 }
 
 export const notesPath = (template: string): string => join(TEMPLATES_DIR, template, NOTES_FILE);
+
+/** The changed files that hold text the AI wrote for a template's HTML report, which no program checks. */
+export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/notes\.json$/.test(file));
 
 /** The template's notes as JSON, or undefined when it has none. */
 export function readNotes(repoRoot: string, template: string): unknown {

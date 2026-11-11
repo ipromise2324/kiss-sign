@@ -37,7 +37,8 @@ import {
   vaultsOf,
 } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
-import { generatedHtmlPath, loadNotes, renderHtml, templateFixtures } from '../src/research/report-html.ts';
+import { notesChanges, NotesError } from '../src/research/notes.ts';
+import { generatedHtml, generatedHtmlPath, htmlDifference } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet } from '../src/research/source-page.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
@@ -59,8 +60,10 @@ registry/reports/<vault>.generated.md, and for a template with notes.json, repor
 prints the Markdown text from the recordings, reading nothing live; --render writes both files from them.
 --compare reads the listings, pages, ABI proofs, code spans and ERC-7730 attestations live, reads each vault again at the blocks
 the committed report names, fetches each recorded past transaction again by hash, and prints each fact that differs
-from the committed report; it exits 1 on any. It does not search for past transactions again. It first prints every
-file the pull request changes outside templates/, registry/ and testdata/ against origin/main.
+from the committed report; it exits 1 on any. It does not search for past transactions again. For a template with
+notes.json it also writes report.generated.html again from the recordings and notes with this code and requires the
+committed file to equal it byte for byte. It first prints every file the pull request changes outside templates/,
+registry/ and testdata/ against origin/main, and AI TEXT for each notes.json it changes.
 
 --data <git ref> takes templates/, registry/ and testdata/ from that ref, such as a fetched pull request branch, and
 runs the code checked out here. Run --compare from main with --data, so the pull request's own code cannot change what
@@ -113,6 +116,7 @@ if (flags.compare) {
     console.log(`PROGRAM CHANGE  ${head} changes ${program.length} file(s) outside templates/, registry/ and testdata/; review it as a program change, not a template:`);
     for (const file of program) console.log(`  ${file}`);
   }
+  for (const file of notesChanges(changed ?? [])) console.log(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
   if (flags.data === undefined) console.log('NOTE  this runs the code checked out here; to check a pull request, run --compare from main with --data <its branch>');
 }
 
@@ -134,12 +138,10 @@ async function writeGenerated(): Promise<void> {
   mkdirSync(dirname(mdPath), { recursive: true });
   writeFileSync(mdPath, renderReport(inputs, title));
   const written = [generatedPath(target)];
-  if (inputs.subject.kind === 'template') {
-    const notes = loadNotes(root, inputs.subject, registry);
-    if (notes !== undefined) {
-      writeFileSync(join(root, generatedHtmlPath(inputs.subject.template.id)), renderHtml(inputs, notes, title, templateFixtures(root, inputs.subject.template, registry)));
-      written.push(generatedHtmlPath(inputs.subject.template.id));
-    }
+  const html = generatedHtml(root, inputs, title);
+  if (html !== undefined && 'template' in target) {
+    writeFileSync(join(root, generatedHtmlPath(target.template)), html);
+    written.push(generatedHtmlPath(target.template));
   }
   console.error(`wrote ${written.join(' and ')}`);
 }
@@ -200,6 +202,27 @@ const live = { subject, registry, listings, pages, fetched: fetched.toISOString(
 const command = id === undefined ? `pnpm report --vault ${flags.vault}` : `pnpm report ${id}`;
 const text = renderReport(live, { command, sources: ['live reads at the time it ran', ...pastTxs.map((p) => p.file)] });
 
+/** The committed HTML report against what the code checked out here writes from the recordings and notes.json. */
+async function compareHtml(): Promise<boolean> {
+  if (!('template' in target)) return true;
+  const path = generatedHtmlPath(target.template);
+  const committed = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined;
+  let difference: string | undefined;
+  try {
+    const { inputs, title } = await replayInputs(root, registry, target, compilers, suffixes);
+    difference = htmlDifference(committed, generatedHtml(root, inputs, title));
+  } catch (e) {
+    if (!(e instanceof NotesError)) throw e;
+    difference = `the program refuses notes.json: ${e.message}`;
+  }
+  console.log(
+    difference === undefined
+      ? `${path}: equals, byte for byte, what this code writes from the recordings and notes.json`
+      : `DIFFERS  ${path} is not what this code writes from the recordings and notes.json; ${difference}`,
+  );
+  return difference === undefined;
+}
+
 if (flags.compare) {
   const differences = compareReports(readFileSync(committedPath, 'utf8'), text);
   for (const line of differences) console.log(`DIFFERS  ${line}`);
@@ -208,7 +231,8 @@ if (flags.compare) {
       ? `${generatedPath(target)}: every fact read live equals the committed report (not compared: the date the listings were read and the block each ABI proof was read at; past transactions were not searched again)`
       : `${generatedPath(target)}: ${differences.length} fact(s) differ from what was read live`,
   );
-  process.exit(differences.length === 0 ? 0 : 1);
+  const htmlSame = await compareHtml();
+  process.exit(differences.length === 0 && htmlSame ? 0 : 1);
 }
 console.log(text);
 

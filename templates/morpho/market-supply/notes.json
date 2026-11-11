@@ -35,8 +35,8 @@
   "reviews": {
     "morpho-oracle-cbbtc-usdc-86/source.page": {
       "status": "confirmed",
-      "text": "oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a，根據三處：Morpho API 對這個 market id 回答的 oracle 就是它；market id 是包含 oracle 在內五個參數的雜湊，程式每次都重算；Blockscout 的部署紀錄顯示它由 Morpho 官方地址頁列出的 ChainlinkOracleV2 factory 建立。AI 這次沒有用瀏覽器打開 app 頁面。",
-      "recommendation": "可以接受。想親眼確認，就用瀏覽器打開 app 頁面，看 oracle 地址是不是同一個。"
+      "text": "AI 用瀏覽器打開頁面，頁面顯示的 oracle 地址就是這個：「Oracle contract」旁邊是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a（畫面縮寫成 0xA6D6…182a），連到 Etherscan 的也是它。另外，Morpho API 對這個 market id 回答的 oracle 也是它；market id 包含 oracle 在內的五個參數，程式每次都重算。",
+      "recommendation": "可以接受。想親眼確認，就打開 app 頁面，看 Oracle contract 是不是同一個地址。"
     }
   },
   "overview": [

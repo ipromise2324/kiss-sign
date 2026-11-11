@@ -17,8 +17,8 @@ import { checkSources, githubLine, sourceSiteLine } from './listings.ts';
 import type { Line } from './listings.ts';
 import { NOTES_FILE, NotesError, parseNotes, readNotes } from './notes.ts';
 import type { Judgment, Note, Notes, Review, Verdict } from './notes.ts';
-import { entriesOf, hasMarket, pinVerdict, refNames, spanKind, vaultsOf, wordOf } from './report.ts';
-import type { DocLink, PastTxsSummary, ReportInputs, ReportTitle, Subject } from './report.ts';
+import { entriesOf, hasMarket, pinVerdict, refNames, vaultsOf, wordOf } from './report.ts';
+import type { DocLink, PastTxsSummary, ReportInputs, ReportTitle, SpanCheck, Subject } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourceName } from './sources.ts';
 import { constText } from './study.ts';
@@ -61,12 +61,26 @@ const MARKS: Readonly<Record<Status, Html>> = { ok: h`<span class="mark ok">✓<
 const SYMBOLS: Readonly<Record<Status, Html>> = { ok: h`<span class="sym ok">✓</span>`, act: h`<span class="sym warn">!</span>`, na: h`<span class="sym na">–</span>` };
 /** A line that states what was found, with no result to pass or fail. */
 const INFO = h`<span class="mark info">i</span>`;
+/** A line that says what a check does, not what it found. */
+const DOT = h`<span class="mark dot">•</span>`;
+/** Something the AI asks the signer to weigh: never the program's `!`. */
+const ASK = h`<span class="mark ai">?</span>`;
 
 /**
  * One program result, as the signer reads it. `key` names it in `notes.json`; `flag` is the word the Markdown report
  * prints for it. The program alone sets `status`: an AI line can explain a result but never change where it shows.
+ * `vouches` marks a passed comparison with a listing that says the source belongs to the protocol; `unvouched` is what a
+ * result with nothing to compare becomes when no other result of the entry vouches.
  */
-type Check = { readonly key: string; readonly status: Status; readonly flag?: 'FINDING' | 'REFUSED' | 'UNVERIFIABLE'; readonly text: Html; readonly why?: Html };
+type Check = {
+  readonly key: string;
+  readonly status: Status;
+  readonly flag?: 'FINDING' | 'REFUSED' | 'UNVERIFIABLE';
+  readonly text: Html;
+  readonly why?: Html;
+  readonly vouches?: true;
+  readonly unvouched?: Check;
+};
 
 /**
  * How far the program's results for one address go, from the results alone: `low` when any needs the signer, `high` when
@@ -87,8 +101,10 @@ const why = (text: Html | undefined): Part => (text === undefined ? '' : h`<div 
 const explained = (line: string | undefined): Part => (line === undefined ? '' : h`<div class="why">${line}${AI}</div>`);
 const flagOf = (check: Check): Part => (check.flag === undefined ? '' : h`<span class="flag">${check.flag}</span>`);
 
-const checkItem = (check: Check, line: string | undefined, head: Part = ''): Html =>
-  h`<li>${MARKS[check.status]}<div>${flagOf(check)}${head}${check.text}${PROGRAM}${why(check.why)}${explained(line)}</div></li>`;
+const resultAttr = (id: string | undefined): Part => (id === undefined ? '' : h` data-result="${id}"`);
+
+const checkItem = (check: Check, line: string | undefined, id?: string): Html =>
+  h`<li${resultAttr(id)}>${MARKS[check.status]}<div>${flagOf(check)}${check.text}${PROGRAM}${why(check.why)}${explained(line)}</div></li>`;
 
 const sourcesOf = (note: Note): Part => (note.sources.length === 0 ? '' : h`<div class="why">來源：${joined(note.sources.map((url) => link(url)), '、')}</div>`);
 
@@ -101,12 +117,15 @@ function noteItem(note: Note, mark?: Html): Html {
 const recommend = (text: string): Html => h`<div class="rec"><b>建議：</b>${text}${AI}</div>`;
 
 const judgmentItem = (judgment: Judgment): Html =>
-  h`<li>${MARKS.act}<div>${judgment.title === undefined ? '' : h`<b>${judgment.title}</b> `}${judgment.text}${AI}${sourcesOf(judgment)}${recommend(judgment.recommendation)}</div></li>`;
+  h`<li>${ASK}<div>${judgment.title === undefined ? '' : h`<b>${judgment.title}</b> `}${judgment.text}${AI}${sourcesOf(judgment)}${recommend(judgment.recommendation)}</div></li>`;
 
 const REVIEWED: Readonly<Record<Review['status'], string>> = { confirmed: 'AI 已確認', concern: 'AI 有疑慮' };
 
 const reviewBlock = (review: Review): Html =>
   h`<div class="review ${review.status}"><div><b>${REVIEWED[review.status]}：</b>${review.text}${AI}</div>${recommend(review.recommendation)}</div>`;
+
+/** The AI's review status of a card's results, shown beside the program's confidence and apart from it. */
+const reviewedTag = (status: Review['status']): Html => h`<span class="reviewed ${status}">${REVIEWED[status]}${AI}</span>`;
 
 const refZh = (ref: CardRef): Html => (ref.attribute === undefined ? h`card 上的 ${c(ref.field)}` : h`card 上 ${c(ref.field)} 的 ${c(ref.attribute)}`);
 
@@ -250,10 +269,21 @@ function siteCheck(key: string, what: Html, url: URL, slug: string | undefined, 
   const thing = github ? ' GitHub 組織' : '網站';
   const protocol = slug === undefined ? h`` : h` ${c(slug)}`;
   if (line.kind === 'agrees') {
-    return pass(key, github ? h`${what}的 GitHub 組織是 DefiLlama 上${protocol} 登記的組織` : h`${what}跟 DefiLlama 上${protocol} 登記的網站是同一個網域`);
+    return {
+      ...pass(key, github ? h`${what}的 GitHub 組織是 DefiLlama 上${protocol} 登記的組織` : h`${what}跟 DefiLlama 上${protocol} 登記的網站是同一個網域`),
+      vouches: true,
+    };
   }
   if (line.cause === 'unlisted') {
-    return { key, status: 'na', flag: 'FINDING', text: h`沒比對${what}的${thing}`, why: h`DefiLlama 上${protocol} 沒有登記${thing}，沒有東西可比。` };
+    const unlisted = h`DefiLlama 上${protocol} 沒有登記${thing}，${what}的${thing}沒比對。`;
+    return {
+      key,
+      status: 'na',
+      flag: 'FINDING',
+      text: h`沒比對${what}的${thing}`,
+      why: h`DefiLlama 上${protocol} 沒有登記${thing}，沒有東西可比；這個地址另有一項跟 CoinGecko 或 DefiLlama 的比對對上了。`,
+      unvouched: act(key, h`沒有第二個來源能證明這個來源屬於這個協議`, h`${unlisted}CoinGecko 和其他網站比對也沒有一項對上。${command ?? ''}`),
+    };
   }
   if (slug === undefined) return act(key, h`registry 沒寫它的 DefiLlama 名稱，${what}的${thing}沒比對`, command);
   return act(key, h`${what}的${thing}跟 DefiLlama 上${protocol} 登記的對不上`, h`可能不同、DefiLlama 有不只一個或沒有這個名稱，或讀不到 Public Suffix List。${command ?? ''}`);
@@ -285,22 +315,27 @@ function sourceChecks(entry: RegistryEntry, lines: readonly Line[]): Check[] {
           : act(key, h`來源檔案的 commit 沒能確認在預設分支上`, h`可能沒固定在 commit、commit 不在預設分支，或 GitHub 讀不到。${command}`);
       case 'coingecko':
         return ok
-          ? pass(key, h`CoinGecko 在這個地址列的就是 registry 寫的幣 ${c(entry.coingecko ?? '')}`)
+          ? { ...pass(key, h`CoinGecko 在這個地址列的就是 registry 寫的幣 ${c(entry.coingecko ?? '')}`), vouches: true }
           : act(key, h`CoinGecko 在這個地址沒有列出 registry 寫的幣`, h`可能沒列、列的是別的幣，或 registry 沒寫 CoinGecko 名稱。${command}`);
     }
   });
 }
 
+/** A documented function's results, keyed by its selector, since overloads share a name. */
 function docChecks(doc: DocLink, inputs: ReportInputs): Check[] {
   const url = new URL(doc.url);
   const page = inputs.pages.pages.get(pageUrlOf(doc.url));
-  const named = page?.kind === 'served' && page.blocks.some((block) => wordOf(doc.fn).test(block.text));
   const fn = c(doc.fn.name);
-  const key = (check: string) => `doc.${doc.fn.name}.${check}`;
+  const key = (check: string) => `doc.${doc.fn.selector}.${check}`;
+  const where = h`文件頁面 ${link(doc.url)}；函式 ${c(doc.fn.signature)}，selector ${c(doc.fn.selector)}。`;
+  const pageCheck =
+    page?.kind !== 'served'
+      ? act(key('page'), h`程式沒讀到 ${fn} 的文件頁面`, where)
+      : page.blocks.some((block) => wordOf(doc.fn).test(block.text))
+        ? pass(key('page'), h`官方文件頁面寫了 ${fn} 這個函式名稱：${link(doc.url)}`)
+        : act(key('page'), h`程式不跑 JavaScript，讀到的文件頁面上沒有 ${fn} 這個名稱`, where);
   const checks: Check[] = [
-    named
-      ? pass(key('page'), h`官方文件頁面寫了 ${fn} 這個函式名稱：${link(doc.url)}`)
-      : act(key('page'), h`程式不跑 JavaScript，讀到的文件頁面上沒有 ${fn} 這個名稱`, h`文件頁面 ${link(doc.url)}。`),
+    pageCheck,
     siteCheck(key('site'), h`${fn} 的文件頁面`, url, doc.contract.defillama, sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings)),
   ];
   if (isGitHubPage(url)) {
@@ -313,15 +348,16 @@ function docChecks(doc: DocLink, inputs: ReportInputs): Check[] {
   return checks;
 }
 
-function spanChecks(entry: RegistryEntry, verdicts: readonly string[] | undefined): Check[] {
+function spanChecks(entry: RegistryEntry, verdicts: readonly SpanCheck[] | undefined): Check[] {
   if (entry.code === undefined) return [{ key: 'code', status: 'act', text: h`registry 沒有記錄它的程式碼指紋`, why: h`簽名時碰到它會得到 UNVERIFIABLE。` }];
   const spans = [...entry.code.earlier, entry.code.current];
   return spans.map(({ from, pin }, i): Check => {
     const key = `code.${i + 1}`;
-    const verdict = verdicts?.[i] ?? 'not read';
+    const verdict = verdicts?.[i];
     const which = spans.length === 1 ? h`` : h`第 ${i + 1} / ${spans.length} 段：`;
     const proxy = pin.implementation === undefined ? h`` : h`（代理合約，背後的實作 ${mono(checksumAddress(pin.implementation.address))} 也算在內）`;
-    switch (spanKind(verdict)) {
+    if (verdict === undefined) return act(key, h`${which}程式沒有區塊 <span class="num">${from}</span> 這段程式碼的鏈上檢查結果`);
+    switch (verdict.kind) {
       case 'pass':
         return pass(key, h`${which}從區塊 <span class="num">${from}</span> 起執行的是記錄的程式碼${proxy}，前一個區塊${i === 0 ? '還沒有' : '是上一段的'}程式碼，兩個節點都確認`);
       case 'finding':
@@ -378,18 +414,24 @@ function marketChecks(entry: RegistryEntry, template: Template, registry: Regist
 
 type EntryCard = { readonly entry: RegistryEntry; readonly roles: readonly Html[]; readonly checks: readonly Check[] };
 
+/** A result with nothing to compare stays – only while another result of the same entry vouches for its source. */
+function settled(checks: readonly Check[]): Check[] {
+  const vouched = checks.some((check) => check.vouches === true);
+  return checks.map((check) => (check.unvouched !== undefined && !vouched ? check.unvouched : check));
+}
+
 function entryCards(subject: Extract<Subject, { kind: 'template' }>, inputs: ReportInputs, groups: readonly FieldGroup[]): EntryCard[] {
   const { registry } = inputs;
   return checkSources(entriesOf(subject, registry), inputs.listings, inputs.pages).map(({ entry, lines }) => ({
     entry,
     roles: rolesOf(entry, subject, registry, groups),
-    checks: [
+    checks: settled([
       ...sourceChecks(entry, lines),
       ...subject.docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docChecks(doc, inputs)),
       ...marketChecks(entry, subject.template, registry),
       abiCheck(entry, inputs.abi.get(entry.address)),
       ...spanChecks(entry, inputs.spans.get(entry.address)),
-    ],
+    ]),
   }));
 }
 
@@ -453,7 +495,7 @@ function signingChecks(template: Template, registry: Registry): Html[] {
     h`不允許無上限的授權、不允許 delegatecall 到官方 MultiSend 以外的合約、不允許改 Safe 的擁有者、模組、guard、門檻或實作；Safe 自己的手續費欄位都必須是 0。`,
     ...template.effects.gives.map((effect) => effectZh('gives', effect, template, registry)),
     ...template.effects.gets.map((effect) => effectZh('gets', effect, template, registry)),
-    h`Safe 的餘額只能有上面這些變化；交易結束後，Safe 給出的任何授權都不能比交易前高。`,
+    h`Safe 的 ETH 和 ERC-20 代幣餘額只能有上面這些變化（NFT、ERC-1155 等程式不量）；交易結束後，Safe 的每個 ERC-20 和 Permit2 授權都不能比交易前高。`,
     ...template.effects.views.map((view) => viewZh(view, template, registry)),
     ...(vaultAssets ? [h`card 上的 vault，它的 ${c('asset()')} 必須是 registry 寫的代幣。`] : []),
     h`這筆交易碰到的每個 registry 合約，現在執行的程式碼都必須是 registry 記錄的程式碼指紋，代理合約背後的實作也一樣。程式碼被換過就會擋下。`,
@@ -476,22 +518,29 @@ function plainChanges(view: ViewEffect): Html {
   return joined([...moving, ...(moving.length < view.changes.length ? [h`其他不變`] : [])], '，');
 }
 
-/** What every signing checks, one short line each, from the template; the full wording stays folded in 細節. */
-function plainChecks(template: Template, registry: Registry): Html[] {
+/**
+ * What every signing checks, one short line each, from the template; the full wording stays folded in 細節. Each line
+ * describes a check to come, so it carries a bullet, not ✓; a line whose check this report already found trouble with
+ * carries ! and points to the action list.
+ */
+function plainChecks(template: Template, registry: Registry, trouble: { readonly spans: number; readonly fixtures: number }): Html[] {
   const calls = template.calls.length;
   const vaultAssets = [...template.card.values()].some((field) => field.kind === 'contract' && field.registryKind === 'vault');
+  const effects = template.effects.gives.length + template.effects.gets.length;
+  const line = (text: Html, troubled = 0, what: Part = '') =>
+    troubled === 0 ? h`<li>${DOT}<div>${text}${PROGRAM}</div></li>` : h`<li>${MARKS.act}<div>${text}${PROGRAM}<div class="why">${what}見「需要你做的事」。</div></div></li>`;
   return [
-    h`交易只做這 ${calls} 件事，每個數字都對得上你的 card`,
-    h`把每個欄位改掉一個再查一次，每次都被擋下（確認檢查真的有效）`,
-    ...template.effects.gives.map((effect) => plainEffect('gives', effect, template, registry)),
-    ...template.effects.gets.map((effect) => plainEffect('gets', effect, template, registry)),
-    h`Safe 的餘額沒有其他變化`,
-    h`沒有無上限的授權，也沒有留下沒用完的授權`,
-    ...template.effects.views.map((view) => h`交易前後在 ${view.to} 讀一次你的 Safe 的部位：${plainChanges(view)}`),
-    ...(vaultAssets ? [h`card 上的 vault 收的就是 registry 寫的代幣`] : []),
-    h`Safe 的設定（擁有者、門檻、模組）不會被改`,
-    h`每個合約的程式碼都沒被換過`,
-    h`兩家節點的答案要一致，不一致就不給 MATCH`,
+    line(h`交易只做這 ${calls} 件事，每個被綁住的欄位都對得上你的 card 或固定值`),
+    line(h`把每個被綁住的欄位改掉一個再查一次，每次都要被擋下（確認檢查真的有效）`, trouble.fixtures, h`拿真實交易測這個模板時，有 ${trouble.fixtures} 筆沒通過；`),
+    ...template.effects.gives.map((effect) => line(plainEffect('gives', effect, template, registry))),
+    ...template.effects.gets.map((effect) => line(plainEffect('gets', effect, template, registry))),
+    line(h`Safe 的 ETH 和代幣餘額只有上面${effects === 1 ? '這個' : '這些'}變化（NFT 等不在檢查範圍）`),
+    line(h`沒有無上限的授權；交易後 Safe 的每個授權都不比交易前高`),
+    ...template.effects.views.map((view) => line(h`交易前後在 ${view.to} 讀一次你的 Safe 的部位：${plainChanges(view)}`)),
+    ...(vaultAssets ? [line(h`card 上的 vault 收的就是 registry 寫的代幣`)] : []),
+    line(h`Safe 的設定（擁有者、門檻、模組）不會被改`),
+    line(h`每個合約現在的程式碼都要是 registry 記錄的指紋`, trouble.spans, h`這份報告有 ${trouble.spans} 段程式碼指紋紀錄在鏈上沒能確認；`),
+    line(h`兩家節點的答案要一致，不一致就不給 MATCH`),
   ];
 }
 
@@ -519,7 +568,10 @@ function flowSection(template: Template, registry: Registry, notes: Notes): Html
     for (const line of notes.flow.filter((f) => f.after === i + 1)) steps.push({ text: h`${line.text}`, by: 'ai' });
   });
   for (const view of template.effects.views) steps.push({ text: h`${entryLink(view.to)}：程式在交易前後各讀一次 Safe 的 ${c(view.fn.name)}，${plainChanges(view)}`, by: 'prog' });
-  const items = steps.map(({ text, by }, i) => h`<li class="${by}"><span class="n">${i + 1}</span><div>${text}${by === 'prog' ? PROGRAM : AI}</div></li>`);
+  let n = 0;
+  const items = steps.map(({ text, by }) =>
+    by === 'prog' ? h`<li class="prog"><span class="n">${++n}</span><div>${text}${PROGRAM}</div></li>` : h`<li class="ai"><span class="n">↳</span><div>${text}${AI}</div></li>`,
+  );
   return h`<ol class="flow">${items}</ol>`;
 }
 
@@ -704,8 +756,8 @@ const CSS = `:root {
   --bg: #101318; --paper: #171b22; --raised: #1d232c; --ink: #e3e7ed; --muted: #9aa3b0; --rule: #2a313b; --accent: #7fa8de;
   --ok: #a9b8cb; --ok-bg: #242c37; --warn: #e3ac52; --warn-bg: #33281a; --na: #8b94a1; --na-bg: #222831; --code-bg: #1f252e;
   --screen: #07090c; --screen-ink: #d6dbe2; --screen-rule: #3a4350;
-  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-body: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 * { box-sizing: border-box; }
 html { background: var(--bg); }
@@ -738,6 +790,8 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outli
 .mark.warn { color: var(--warn); background: var(--warn-bg); }
 .mark.na { color: var(--na); background: var(--na-bg); }
 .mark.info { color: var(--accent); background: var(--ok-bg); font-family: var(--font-mono); font-size: 12px; }
+.mark.dot { color: var(--muted); background: none; }
+.mark.ai { color: var(--muted); background: none; border: 1px dashed var(--muted); }
 .why { color: var(--muted); font-size: 14.5px; }
 .result { display: block; }
 .review { margin-top: 8px; padding: 10px 14px; border-radius: 6px; background: var(--raised); border-left: 3px solid var(--na); display: grid; gap: 4px; font-size: 15px; }
@@ -781,7 +835,8 @@ pre { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; overflow
 .level.high { color: var(--accent); background: var(--ok-bg); border-color: var(--accent); }
 .level.medium { color: var(--ink); background: var(--na-bg); border-color: var(--na); border-style: dashed; }
 .level.low { color: var(--warn); background: var(--warn-bg); border-color: var(--warn); }
-.level .by { font-weight: 500; }
+.reviewed { font-size: 13.5px; color: var(--muted); }
+.reviewed.concern { color: var(--warn); }
 .tally { font-size: 14.5px; }
 .addr-body details, .panel details { background: none; border: 0; padding: 0; }
 .addr-body details summary, .panel details summary { color: var(--muted); font-size: 14.5px; font-weight: 400; }
@@ -812,8 +867,6 @@ pre { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; overflow
 @media (max-width: 560px) { .overview > li { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }`;
 
-
-const FONTS = 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap';
 
 function percent(lltv: bigint): string {
   const unit = 10n ** 16n;
@@ -874,14 +927,14 @@ function entryArticle(card: EntryCard, notes: Notes): Html {
   const rest = card.checks.filter((check) => check.status !== 'act');
   const level = confidenceOf(card.checks);
   const concern = acts.some((check) => notes.reviews.get(`${entry.name}/${check.key}`)?.status !== 'confirmed');
-  const reviewed = level === 'low' ? h` · ${REVIEWED[concern ? 'concern' : 'confirmed']}${AI}` : '';
+  const reviewed = level === 'low' ? reviewedTag(concern ? 'concern' : 'confirmed') : '';
   const kinds = (['ok', 'na'] as const).filter((status) => rest.some((check) => check.status === status)).map((status) => h`${SYMBOLS[status]} ${status === 'ok' ? '確認' : '沒比對'}`);
   const roles = card.roles.length === 0 ? '' : h`<p class="why">在這筆交易裡：${joined(card.roles, '；')}${PROGRAM}</p>`;
-  const folded = h`<details><summary>其他 ${rest.length} 項（${joined(kinds, '、')}）</summary>${roles}<ul class="checks">${rest.map((check) => checkItem(check, line(check)))}</ul></details>`;
+  const folded = h`<details><summary>其他 ${rest.length} 項（${joined(kinds, '、')}）</summary>${roles}<ul class="checks">${rest.map((check) => checkItem(check, line(check), `${entry.name}/${check.key}`))}</ul></details>`;
   const aiNotes = ai === undefined || ai.notes.length === 0 ? '' : h`<details><summary>AI 另外查到（${ai.notes.length} 則）</summary>${bullets(ai.notes.map((n) => noteItem(n)))}</details>`;
   return h`<article class="addr" id="entry-${entry.name}">
-<div class="addr-head"><div class="name"><h3>${entry.name}</h3><span class="role">${entry.kind}</span><span class="level ${level}">${CONFIDENCE[level]}${reviewed}</span></div><div class="full">${checksumAddress(entry.address)}</div>${role}<div class="tally">${tally(card.checks)}${PROGRAM}</div></div>
-<div class="addr-body">${acts.length === 0 ? '' : h`<ul class="checks">${acts.map((check) => checkItem(check, line(check)))}</ul>`}${folded}${aiNotes}</div>
+<div class="addr-head"><div class="name"><h3>${entry.name}</h3><span class="role">${entry.kind}</span><span class="level ${level}">${CONFIDENCE[level]}</span>${reviewed}</div><div class="full">${checksumAddress(entry.address)}</div>${role}<div class="tally">${tally(card.checks)}${PROGRAM}</div></div>
+<div class="addr-body">${acts.length === 0 ? '' : h`<ul class="checks">${acts.map((check) => checkItem(check, line(check), `${entry.name}/${check.key}`))}</ul>`}${folded}${aiNotes}</div>
 </article>`;
 }
 
@@ -909,7 +962,7 @@ function reviewsKnown(actions: readonly Action[], notes: Notes): void {
 /** Each program result for the signer to look at, its one line and then the AI's review of it, then the AI's few judgments. */
 function actionSection(actions: readonly Action[], notes: Notes): Html {
   const program = actions.map(
-    ({ id, check, head }) => h`<li>${MARKS[check.status]}<div><div class="result">${flagOf(check)}${head}${check.text}${PROGRAM}</div>${reviewBlock(notes.reviews.get(id) as Review)}</div></li>`,
+    ({ id, check, head }) => h`<li${resultAttr(id)}>${MARKS[check.status]}<div><div class="result">${flagOf(check)}${head}${check.text}${PROGRAM}</div>${reviewBlock(notes.reviews.get(id) as Review)}</div></li>`,
   );
   const items = [...program, ...notes.judgments.map(judgmentItem)];
   if (items.length === 0) return h`<p>沒有。</p>`;
@@ -923,9 +976,13 @@ function overviewSection(entries: readonly RegistryEntry[], inputs: ReportInputs
   const code = entries.map((entry) => {
     if (entry.code === undefined) return h`<li>${c(entry.name)}：registry 沒有記錄程式碼指紋</li>`;
     const { from } = entry.code.current;
-    const verdict = inputs.spans.get(entry.address)?.[entry.code.earlier.length] ?? 'not read';
-    const kind = spanKind(verdict);
-    const said = kind === 'pass' ? h`程式碼自區塊 <span class="num">${from}</span> 起沒變過` : kind === 'not-read' ? h`程式碼沒查從哪個區塊開始` : h`程式碼從哪個區塊開始沒能確認（${verdict.split(' ')[0]}）`;
+    const kind = inputs.spans.get(entry.address)?.[entry.code.earlier.length]?.kind;
+    const said =
+      kind === 'pass'
+        ? h`程式碼自區塊 <span class="num">${from}</span> 起沒變過`
+        : kind === 'not-read'
+          ? h`程式碼沒查從哪個區塊開始`
+          : h`${SYMBOLS.act} 程式碼從哪個區塊開始沒能確認（${kind === 'finding' ? 'FINDING' : kind === 'unverifiable' ? 'UNVERIFIABLE' : '沒有檢查結果'}）`;
     return h`<li>${c(entry.name)}：${said}</li>`;
   });
   return h`<ul class="overview">${ai}<li><span class="label">程式碼多久沒變</span><div><ul>${code}</ul>${PROGRAM}</div></li></ul>`;
@@ -948,7 +1005,7 @@ function detailsSection(inputs: ReportInputs, entries: readonly RegistryEntry[],
       ? [h`<tr><td>${c(entry.name)}</td><td colspan="4">沒有記錄</td></tr>`]
       : [...entry.code.earlier, entry.code.current].map(({ from, pin }, i) => {
           const implementation = pin.implementation === undefined ? '無' : h`${mono(checksumAddress(pin.implementation.address))} ${mono(pin.implementation.hash)}`;
-          return h`<tr><td>${c(entry.name)}</td><td class="num">${from}</td><td class="mono">${pin.hash}</td><td>${implementation}</td><td>${inputs.spans.get(entry.address)?.[i] ?? 'not read'}</td></tr>`;
+          return h`<tr><td>${c(entry.name)}</td><td class="num">${from}</td><td class="mono">${pin.hash}</td><td>${implementation}</td><td>${inputs.spans.get(entry.address)?.[i]?.text ?? 'not read'}</td></tr>`;
         }),
   );
   const abi = entries.map((entry) => {
@@ -999,7 +1056,18 @@ export function renderHtml(inputs: ReportInputs, notes: Notes, title: ReportTitl
     fixturesPlain(fixtures),
     notes.pastTxsConclusion === undefined ? h`<li>${MARKS.na}<div>AI 沒有寫結論。${PROGRAM}</div></li>` : verdictLine('AI 結論', notes.pastTxsConclusion),
   ];
-  const verdict = notes.verdict === undefined ? h`<li>${MARKS.na}<div>AI 沒有寫整體判斷。${PROGRAM}</div></li>` : h`${verdictLine('AI 判斷', notes.verdict)}<li>${INFO}<div>${recommend(notes.verdict.recommendation)}</div></li>`;
+  const open =
+    actions.length === 0
+      ? h`<li>${MARKS.ok}<div>程式的結果裡沒有要你看的項目。${PROGRAM}</div></li>`
+      : h`<li>${MARKS.act}<div>程式還有 ${actions.length} 項要你看，見「需要你做的事」。${PROGRAM}</div></li>`;
+  const verdict =
+    notes.verdict === undefined
+      ? h`<li>${MARKS.na}<div>AI 沒有寫整體判斷。${PROGRAM}</div></li>${open}`
+      : h`${verdictLine('AI 判斷', notes.verdict)}${open}<li>${INFO}<div>${recommend(notes.verdict.recommendation)}</div></li>`;
+  const trouble = {
+    spans: cards.reduce((n, card) => n + card.checks.filter((check) => check.status === 'act' && /^code(?:\.\d+)?$/.test(check.key)).length, 0),
+    fixtures: fixtureChecks.filter((check) => check.status === 'act').length,
+  };
   const page = h`<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -1007,7 +1075,6 @@ export function renderHtml(inputs: ReportInputs, notes: Notes, title: ReportTitl
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <title>${template.id} 報告</title>
-<link rel="stylesheet" href="${FONTS}">
 <style>
 ${new Html(CSS)}
 </style>
@@ -1017,14 +1084,14 @@ ${new Html(CSS)}
 
 <header>
 <div class="kicker">${template.id} · 資料讀於 ${inputs.fetched} · 以太坊主網</div>
-<h1>${notes.title}</h1>
+<h1>${notes.title}${AI}</h1>
 <p class="lede">${notes.summary}${AI}</p>
 <p class="note">標「程式」的是程式檢查的結果，可以重跑；標「AI 研究」的是 AI 寫的，程式沒有驗證。這頁由 ${c(title.command)} 產生，不要手動修改；合併前用 ${c(`pnpm report ${template.id} --compare`)} 重新即時讀一次。</p>
 </header>
 
 <section>
 <h2>每次簽名，程式會自動檢查</h2>
-<ul class="checks">${plainChecks(template, registry).map((text) => h`<li>${MARKS.ok}<div>${text}${PROGRAM}</div></li>`)}</ul>
+<ul class="checks">${plainChecks(template, registry, trouble)}</ul>
 </section>
 
 <section>
@@ -1068,7 +1135,7 @@ ${cards.map((card) => entryArticle(card, notes))}
 <section>
 <h2>細節</h2>
 <details><summary>你在 card 上填的</summary>${cardSection(template, registry)}</details>
-<details><summary>每次簽名前，程式會自動檢查的 ${signing.length} 件事（完整說明）</summary><ul class="checks">${signing.map((text) => checkItem(pass('signing', text), undefined))}</ul></details>
+<details><summary>每次簽名前，程式會自動檢查的 ${signing.length} 件事（完整說明）</summary><ul class="checks">${signing.map((text) => h`<li>${DOT}<div>${text}${PROGRAM}</div></li>`)}</ul></details>
 <details><summary>交易裡每個欄位必須是什麼</summary>${fieldTable(groups, notes)}</details>
 <details><summary>拿真實交易測過的細節</summary>${tested.length === 0 ? h`<p>沒有記錄。${PROGRAM}</p>` : h`<ul class="checks">${tested}</ul>`}</details>
 ${rawPast}
@@ -1095,4 +1162,33 @@ export function notesKeys(subject: Extract<Subject, { kind: 'template' }>, regis
 export function loadNotes(repoRoot: string, subject: Extract<Subject, { kind: 'template' }>, registry: Registry): Notes | undefined {
   const raw = readNotes(repoRoot, subject.template.id);
   return raw === undefined ? undefined : parseNotes(raw, notesKeys(subject, registry));
+}
+
+/** The template's HTML report as the program writes it from the recordings and `notes.json`; undefined without notes. */
+export function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): string | undefined {
+  const { subject, registry } = inputs;
+  if (subject.kind !== 'template') return undefined;
+  const notes = loadNotes(repoRoot, subject, registry);
+  return notes === undefined ? undefined : renderHtml(inputs, notes, title, templateFixtures(repoRoot, subject.template, registry));
+}
+
+/** Up to 160 characters of a line from where it first differs, quoted so no control character reaches the terminal. */
+const quoted = (line: string | undefined, at: number): string => {
+  if (line === undefined) return 'nothing';
+  const start = Math.max(0, at - 60);
+  return JSON.stringify(`${start > 0 ? '…' : ''}${line.slice(start, start + 160)}${start + 160 < line.length ? '…' : ''}`);
+};
+
+/** Where the committed HTML report differs from what the program writes, byte for byte, or undefined when it does not. */
+export function htmlDifference(committed: string | undefined, written: string | undefined): string | undefined {
+  if (committed === written) return undefined;
+  if (committed === undefined) return `there is ${NOTES_FILE} but no committed ${GENERATED_HTML_FILE}`;
+  if (written === undefined) return `${GENERATED_HTML_FILE} is committed but there is no ${NOTES_FILE} to write it from`;
+  const [was, now] = [committed.split('\n'), written.split('\n')];
+  const at = was.findIndex((line, i) => line !== now[i]);
+  const line = at === -1 ? was.length : at;
+  const [a, b] = [was[line] ?? '', now[line] ?? ''];
+  let column = 0;
+  while (column < a.length && a[column] === b[column]) column++;
+  return `line ${line + 1}: committed ${quoted(was[line], column)}, the program writes ${quoted(now[line], column)}`;
 }
