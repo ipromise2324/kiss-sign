@@ -1,0 +1,3 @@
+{
+  "receiveMessage(bytes,bytes)": { "contract": "cctp-message-transmitter", "url": "https://developers.circle.com/cctp/v1/evm-smart-contracts" }
+}
