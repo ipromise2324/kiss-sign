@@ -2,14 +2,14 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
-import { CardError, parseUint256 } from '../card.ts';
+import { CardError, marketLines, parseUint256 } from '../card.ts';
 import type { CardOperation } from '../card.ts';
 import { openMainnetReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import { kissSignHome } from '../keys.ts';
-import { loadRegistry } from '../registry.ts';
-import type { ContractKind, Registry, RegistryEntry } from '../registry.ts';
+import { isAttribute, isMarketEntryPart, loadRegistry } from '../registry.ts';
+import type { Attribute, ContractKind, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
@@ -26,7 +26,7 @@ type TypedField = Extract<CardField, { kind: 'amount' | 'nonce' }>;
 type ChosenField = Exclude<CardField, TypedField>;
 
 /** The names a field may hold, as resolveCard accepts them. */
-function choicesFor(field: ChosenField, { registry, book, safe }: Sources): readonly Choice[] {
+function choicesFor(field: Exclude<ChosenField, { kind: 'market' }>, { registry, book, safe }: Sources): readonly Choice[] {
   const contracts = (kind?: ContractKind): Choice[] =>
     [...registry.entries.values()].filter((e) => kind === undefined || e.kind === kind).map((e) => ({ name: e.name, address: e.address, from: 'registry' }));
   const self: Choice = { name: 'safe', address: safe, from: 'safe' };
@@ -41,17 +41,32 @@ function choicesFor(field: ChosenField, { registry, book, safe }: Sources): read
   }
 }
 
+/** A name the signer can pick, and the lines that show what it names. */
+type Option = { readonly name: string; readonly lines: readonly string[] };
+
+function optionsFor(field: ChosenField, sources: Sources): readonly Option[] {
+  if (field.kind === 'market') return [...sources.registry.markets.values()].map((market) => ({ name: market.name, lines: marketLines(market) }));
+  return choicesFor(field, sources).map((c) => ({ name: c.name, lines: [`${c.name} ${checksumAddress(c.address)} (${c.from})`] }));
+}
+
 /** What an amount counts: native ETH, a registry contract whose decimals() the chain answers, or a token outside the registry. */
 type Unit =
   | { readonly kind: 'eth' }
   | { readonly kind: 'registry'; readonly entry: RegistryEntry }
   | { readonly kind: 'unregistered'; readonly ref: string };
 
+/** The registry entry a chosen name, or the attribute or market part `attribute` names of it, is. */
+function entryOf(chosen: string, attribute: Attribute | MarketPart | undefined, registry: Registry): RegistryEntry | undefined {
+  if (attribute === undefined) return registry.entries.get(chosen);
+  if (isMarketEntryPart(attribute)) return registry.markets.get(chosen)?.[attribute];
+  const name = isAttribute(attribute) ? registry.entries.get(chosen)?.attributes[attribute] : undefined;
+  return name === undefined ? undefined : registry.entries.get(name);
+}
+
 function unitOf(of: TokenRef, values: Readonly<Record<string, string>>, registry: Registry): Unit {
   if (of === 'eth') return { kind: 'eth' };
   const chosen = values[of.field];
-  const name = chosen === undefined || of.attribute === undefined ? chosen : registry.entries.get(chosen)?.attributes[of.attribute];
-  const entry = name === undefined ? undefined : registry.entries.get(name);
+  const entry = chosen === undefined ? undefined : entryOf(chosen, of.attribute, registry);
   if (entry === undefined) return { kind: 'unregistered', ref: `card.${of.field}${of.attribute === undefined ? '' : `.${of.attribute}`}` };
   return { kind: 'registry', entry };
 }
@@ -141,10 +156,15 @@ async function fill(template: Template, ctx: Context): Promise<CardOperation> {
   const values: Record<string, string> = {};
   const fields = [...template.card];
   for (const [name, field] of fields.filter(isChosen)) {
-    const choices = choicesFor(field, ctx.sources);
-    if (choices.length === 0) throw new CardError(`${name}: the registry and address book hold nothing ${template.id} accepts here`);
+    const choices = optionsFor(field, ctx.sources);
+    if (choices.length === 0) {
+      throw new CardError(`${name}: ${field.kind === 'market' ? 'registry/markets.json holds no market' : `the registry and address book hold nothing ${template.id} accepts here`}`);
+    }
     ctx.io.stdout(`${name}:\n`);
-    for (const [i, c] of choices.entries()) ctx.io.stdout(`  ${i + 1}. ${c.name} ${checksumAddress(c.address)} (${c.from})\n`);
+    for (const [i, { lines: [first, ...rest] }] of choices.entries()) {
+      ctx.io.stdout(`  ${i + 1}. ${first}\n`);
+      for (const line of rest) ctx.io.stdout(`       ${line}\n`);
+    }
     const typed = await answer(ctx.ask, `${name} [1-${choices.length}]: `);
     const choice = /^[1-9][0-9]{0,5}$/.test(typed) ? choices[Number(typed) - 1] : undefined;
     if (choice === undefined) throw new CardError(`${name}: ${JSON.stringify(typed.slice(0, 80))} is not a number from 1 to ${choices.length}`);

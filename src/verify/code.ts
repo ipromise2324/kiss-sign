@@ -4,7 +4,7 @@ import type { BlockRef } from '../chain/types.ts';
 import { keccakCode } from '../contracts/code.ts';
 import { describeRefusal } from '../contracts/prove.ts';
 import { locate } from '../contracts/proxy.ts';
-import { pinAt } from '../registry.ts';
+import { MARKET_ENTRY_PARTS, isAttribute, pinAt } from '../registry.ts';
 import type { Registry, RegistryEntry } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
 import { cardRefs } from '../template/template.ts';
@@ -13,7 +13,8 @@ import type { ChainCheck } from './verdict.ts';
 
 /**
  * Every registry contract the transaction or the card names: the Safe transaction's target, each contract a template
- * rule names, each registry address on the card, and each entry a card reference's attribute names, such as a vault's asset.
+ * rule names, each registry address on the card, each entry a card reference's attribute names, such as a vault's asset,
+ * and each entry a market on the card names.
  */
 export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): RegistryEntry[] {
   const touched = new Map<string, RegistryEntry>();
@@ -34,11 +35,14 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
       if (value?.kind === 'contract') return value.entry;
       return value?.kind === 'address' && value.from === 'registry' ? registry.byAddress.get(value.address) : undefined;
     };
-    for (const field of op.values.keys()) add(named(field));
+    for (const [field, value] of op.values) {
+      add(named(field));
+      if (value.kind === 'market') for (const part of MARKET_ENTRY_PARTS) add(value.market[part]);
+    }
     const template = templates.get(op.template);
     if (template === undefined) continue;
-    for (const ref of cardRefs(template)) {
-      const target = ref.attribute === undefined ? undefined : named(ref.field)?.attributes[ref.attribute];
+    for (const { field, attribute } of cardRefs(template)) {
+      const target = attribute !== undefined && isAttribute(attribute) ? named(field)?.attributes[attribute] : undefined;
       add(target === undefined ? undefined : registry.entries.get(target));
     }
     visit(template.nonce);

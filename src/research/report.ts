@@ -11,7 +11,7 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { REGISTRY_PATH, parseHttpsUrl } from '../registry.ts';
+import { REGISTRY_PATH, isAttribute, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
@@ -105,10 +105,14 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
 /** The registry names a card reference can resolve to, in registry order. */
 function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
   const field = template.card.get(ref.field);
-  if (field?.kind !== 'contract') return [];
   const { attribute } = ref;
+  if (field?.kind === 'market') {
+    return attribute !== undefined && isMarketEntryPart(attribute) ? [...new Set([...registry.markets.values()].map((m) => m[attribute].name))] : [];
+  }
+  if (field?.kind !== 'contract') return [];
   const candidates = [...registry.entries.values()].filter((e) => e.kind === field.registryKind);
-  return [...new Set(attribute === undefined ? candidates.map((e) => e.name) : candidates.flatMap((e) => e.attributes[attribute] ?? []))];
+  if (attribute === undefined) return candidates.map((e) => e.name);
+  return isAttribute(attribute) ? [...new Set(candidates.flatMap((e) => e.attributes[attribute] ?? []))] : [];
 }
 
 function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {

@@ -75,6 +75,8 @@ export const MARKET_ENTRIES = { lending: 'lending', loanToken: 'token', collater
   ContractKind
 >;
 export type MarketEntryPart = keyof typeof MARKET_ENTRIES;
+export const MARKET_ENTRY_PARTS = Object.keys(MARKET_ENTRIES) as readonly MarketEntryPart[];
+export const isMarketEntryPart = (raw: string): raw is MarketEntryPart => Object.hasOwn(MARKET_ENTRIES, raw);
 
 /** What a card reference may name of a market: one of its registry entries, its lltv, or its id. */
 export const MARKET_PARTS = ['lending', 'loanToken', 'collateralToken', 'oracle', 'irm', 'lltv', 'id'] as const satisfies readonly (MarketEntryPart | 'lltv' | 'id')[];

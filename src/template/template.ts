@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
-import { ATTRIBUTES, CONTRACT_KINDS, isAttribute, isEntryName } from '../registry.ts';
-import type { Attribute, ContractKind, Registry } from '../registry.ts';
+import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName } from '../registry.ts';
+import type { Attribute, ContractKind, MarketPart, Registry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
@@ -17,10 +17,15 @@ export type CardField =
   /** Who receives a transfer: an address-book name or `safe`, never a registry contract. */
   | { readonly kind: 'recipient' }
   /** A Safe nonce. */
-  | { readonly kind: 'nonce' };
+  | { readonly kind: 'nonce' }
+  /** A Morpho Blue market from `registry/markets.json`. */
+  | { readonly kind: 'market' };
 
-/** `vault` or `vault.asset`: a card field, or an attribute of the registry entry that field names. */
-export type CardRef = { readonly field: string; readonly attribute: Attribute | undefined };
+/**
+ * `vault`, `vault.asset` or `market.loanToken`: a card field, an attribute of the registry entry that field names, or a
+ * part of the market it names.
+ */
+export type CardRef = { readonly field: string; readonly attribute: Attribute | MarketPart | undefined };
 
 /** Native ETH, which no contract holds, or a token a card field names. */
 export type TokenRef = 'eth' | CardRef;
@@ -142,6 +147,11 @@ function cardRef(path: string, raw: string, card: CardFields): CardRef {
   const target = field === undefined ? undefined : card.get(field);
   if (field === undefined || target === undefined || extra !== undefined) throw new TemplateError(path, `${JSON.stringify(raw)} is not a card field`);
   if (attribute === undefined) return { field, attribute: undefined };
+  if (target.kind === 'market') {
+    const part = MARKET_PARTS.find((p) => p === attribute);
+    if (part === undefined) throw new TemplateError(path, `${JSON.stringify(attribute)} is not one of ${MARKET_PARTS.join(', ')}`);
+    return { field, attribute: part };
+  }
   if (!isAttribute(attribute)) throw new TemplateError(path, `${JSON.stringify(attribute)} is not a registry attribute`);
   if (target.kind !== 'contract' || !(ATTRIBUTES[attribute].of as readonly ContractKind[]).includes(target.registryKind)) {
     throw new TemplateError(path, `card field ${field} has no ${attribute}`);
@@ -149,11 +159,20 @@ function cardRef(path: string, raw: string, card: CardFields): CardRef {
   return { field, attribute };
 }
 
-/** The ABI type a card reference resolves to. */
-function refType(ref: CardRef, card: CardFields): 'address' | 'uint' {
+/** What a card reference resolves to: an address, a number, a market's bytes32 id, or a whole market. */
+type RefType = 'address' | 'uint' | 'bytes32' | 'market';
+
+function refType(ref: CardRef, card: CardFields): RefType {
   const kind = card.get(ref.field)?.kind;
+  if (kind === 'market') return ref.attribute === undefined ? 'market' : ref.attribute === 'lltv' ? 'uint' : ref.attribute === 'id' ? 'bytes32' : 'address';
   return ref.attribute === undefined && (kind === 'amount' || kind === 'nonce') ? 'uint' : 'address';
 }
+
+const binds = (ref: Exclude<RefType, 'market'>, type: AbiType): boolean =>
+  ref === 'bytes32' ? type.kind === 'fixed-bytes' && type.size === 32 : type.kind === ref;
+
+/** Morpho Blue's `MarketParams`, which a whole card market binds part by part. */
+const isMarketParams = (type: AbiType): boolean => canonicalType(type) === '(address,address,address,address,uint256)';
 
 function cardToken(path: string, raw: string, card: CardFields): CardRef {
   const ref = cardRef(path, raw, card);
@@ -253,7 +272,12 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
   switch (key) {
     case 'card': {
       const ref = cardRef(at, text(at, body), scope.card);
-      needs([refType(ref, scope.card)]);
+      const resolves = refType(ref, scope.card);
+      if (resolves === 'market') {
+        if (!isMarketParams(type)) throw new TemplateError(path, `a whole market binds only a (address,address,address,address,uint256) tuple, not a ${canonicalType(type)}`);
+        return { kind: 'fields', fields: MARKET_PARAMS.map((part): Rule => ({ kind: 'card', ref: { field: ref.field, attribute: part } })) };
+      }
+      if (!binds(resolves, type)) throw cannotBind();
       return { kind: 'card', ref };
     }
     case 'safe':
@@ -404,8 +428,11 @@ function cardField(path: string, raw: unknown): (fields: CardFields) => CardFiel
     case 'nonce':
       exactKeys(path, value, ['kind']);
       return () => ({ kind: 'nonce' });
+    case 'market':
+      exactKeys(path, value, ['kind']);
+      return () => ({ kind: 'market' });
     default:
-      throw new TemplateError(`${path}.kind`, 'not one of contract, amount, address, nonce');
+      throw new TemplateError(`${path}.kind`, 'not one of contract, amount, address, recipient, nonce, market');
   }
 }
 

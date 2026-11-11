@@ -1,9 +1,26 @@
+import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { resolveCard } from '../src/card.ts';
+import type { Card, ResolvedCard, Resolution } from '../src/card.ts';
+import { canonicalJson } from '../src/canonical.ts';
+import { encodeCall, uintWord } from '../src/decode/codec.ts';
+import type { AbiValue } from '../src/decode/codec.ts';
+import { MULTISEND } from '../src/decode/multisend.ts';
+import type { Reader } from '../src/chain/reader.ts';
 import { loadRegistry, parseRegistry } from '../src/registry.ts';
+import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
+import { checkTemplateFields } from '../src/template/check.ts';
+import type { FieldCheck } from '../src/template/check.ts';
+import { checkMutations } from '../src/template/mutation.ts';
+import { parseTemplate } from '../src/template/template.ts';
+import type { Template } from '../src/template/template.ts';
+import { checkCode, codeClaims } from '../src/verify/code.ts';
+import { VerifyError, keccakText, prepare } from '../src/verify/verify.ts';
+import type { VerifyInputs } from '../src/verify/verify.ts';
 
 const SOURCE = 'https://docs.morpho.org/get-started/resources/addresses';
 const CONTRACTS = {
@@ -12,6 +29,7 @@ const CONTRACTS = {
   cbbtc: { address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf', kind: 'token', source: SOURCE },
   'cbbtc-usdc-oracle': { address: '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', kind: 'oracle', source: SOURCE },
   'adaptive-curve-irm': { address: '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', kind: 'irm', source: SOURCE },
+  'blue-bundles-v1': { address: '0xb0b0000000000000000000000000000000000b0b', kind: 'router', source: SOURCE },
 };
 const ID = '0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64';
 const MARKET = {
@@ -79,4 +97,199 @@ test('a repository without registry/markets.json has no markets, and one with it
   assert.equal(loadRegistry(root).markets.size, 0);
   writeFileSync(join(root, 'registry', 'markets.json'), JSON.stringify({ 'usdc-cbbtc-86': MARKET }));
   assert.deepEqual([...loadRegistry(root).markets.keys()], ['usdc-cbbtc-86']);
+});
+
+const registry = parseRegistry(CONTRACTS, { 'usdc-cbbtc-86': MARKET });
+const SAFE = '0x5afe00000000000000000000000000000000005a' as Address;
+const OTHER = '0x1111111111111111111111111111111111111111' as Address;
+const MULTISEND_CALL_ONLY = '0x9641d764fc13c8b624c04430c7356c1c7c8102e2' as Address;
+const at = (name: keyof typeof CONTRACTS): Address => CONTRACTS[name].address.toLowerCase() as Address;
+
+/** The supply template the brief names, as a template author writes it. */
+const SUPPLY = {
+  id: 'morpho/market-supply',
+  card: { market: { kind: 'market' }, amount: { kind: 'amount', of: 'market.loanToken' } },
+  calls: [
+    {
+      to: { card: 'market.loanToken' },
+      value: { const: '0' },
+      function: 'approve(address spender, uint256 value)',
+      args: { spender: { contract: 'blue-bundles-v1' }, value: { card: 'amount' } },
+    },
+    {
+      to: { contract: 'blue-bundles-v1' },
+      value: { const: '0' },
+      function:
+        'blueBundlesV1Supply((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, (uint8 kind, bytes data) loanTokenPermit, uint256 referralFeePct, address referralFeeRecipient, uint256 deadline)',
+      args: {
+        marketParams: { card: 'market' },
+        assets: { card: 'amount' },
+        loanTokenPermit: { fields: { kind: { const: '0' }, data: { free: { unread: 'test: no permit' } } } },
+        referralFeePct: { const: '0' },
+        referralFeeRecipient: { const: '0x0000000000000000000000000000000000000000' },
+        deadline: { free: 'test: a deadline only shortens when the call can run' },
+      },
+    },
+  ],
+  effects: { gives: [{ token: 'card.market.loanToken', amount: 'card.amount' }], gets: [] },
+};
+
+const template = parseTemplate(SUPPLY, registry);
+const templates = new Map([[template.id, template]]);
+const supplyCard = (market = 'usdc-cbbtc-86', amount = '5000000'): Card => ({ operations: [{ template: template.id, values: { market, amount } }] });
+const resolve = (card: Card): Resolution => resolveCard(card, { templates, registry, addressBook: new Map(), safe: SAFE });
+
+function resolved(card: Card = supplyCard()): ResolvedCard {
+  const result = resolve(card);
+  assert.equal(result.kind, 'resolved', result.kind === 'refused' ? result.detail : '');
+  return (result as Extract<Resolution, { kind: 'resolved' }>).card;
+}
+
+const span = [0, 0] as const;
+const address = (value: Address): AbiValue => ({ kind: 'address', value, span });
+const uint = (value: bigint): AbiValue => ({ kind: 'uint', value, span });
+type Params = { loanToken: Address; collateralToken: Address; oracle: Address; irm: Address; lltv: bigint };
+const PARAMS: Params = { loanToken: at('usdc'), collateralToken: at('cbbtc'), oracle: at('cbbtc-usdc-oracle'), irm: at('adaptive-curve-irm'), lltv: 860000000000000000n };
+
+const packed = (to: Address, data: Uint8Array): Uint8Array => concatBytes(Uint8Array.of(0), hexToBytes(to.slice(2)), uintWord(0n), uintWord(BigInt(data.length)), data);
+
+/** The Safe's batch: an exact approval of the loan token to the bundler, then the supply. */
+function supplyTx(params: Params = PARAMS, amount = 5000000n): SafeTx {
+  const [approve, supply] = template.calls.map((call) => (call.data === 'empty' ? assert.fail('a call with data') : call.data.fn));
+  const approveData = encodeCall({ fn: approve!, args: [address(at('blue-bundles-v1')), uint(amount)], trailer: undefined });
+  const marketParams: AbiValue = { kind: 'tuple', fields: [address(params.loanToken), address(params.collateralToken), address(params.oracle), address(params.irm), uint(params.lltv)], span };
+  const permit: AbiValue = { kind: 'tuple', fields: [uint(0n), { kind: 'bytes', value: new Uint8Array(), span }], span };
+  const supplyData = encodeCall({ fn: supply!, args: [marketParams, uint(amount), permit, uint(0n), address(`0x${'00'.repeat(20)}` as Address), uint(1_800_000_000n)], trailer: undefined });
+  const batch = concatBytes(packed(params.loanToken, approveData), packed(at('blue-bundles-v1'), supplyData));
+  const data = `0x${bytesToHex(encodeCall({ fn: MULTISEND, args: [{ kind: 'bytes', value: batch, span }], trailer: undefined }))}` as Hex;
+  const zero = `0x${'00'.repeat(20)}` as Address;
+  return { chainId: 1n, safe: SAFE, version: '1.4.1', to: MULTISEND_CALL_ONLY, value: 0n, data, operation: 1, safeTxGas: 0n, baseGas: 0n, gasPrice: 0n, gasToken: zero, refundReceiver: zero, nonce: 7n };
+}
+
+const check = (tx: SafeTx, card: ResolvedCard = resolved()): FieldCheck => checkTemplateFields(tx, card, templates, registry);
+
+test('a card names a market by its name, and resolves to that market with every part', () => {
+  const value = resolved().operations[0]?.values.get('market');
+  assert.equal(value?.kind, 'market');
+  assert.equal(value?.kind === 'market' ? value.market.id : undefined, ID);
+});
+
+test('a card naming no market, or a contract instead of one, is refused', () => {
+  assert.deepEqual(resolve(supplyCard('usdc-wbtc-86')), {
+    kind: 'refused',
+    reason: 'unknown-name',
+    at: 'operations[0].values.market',
+    detail: '"usdc-wbtc-86" is not a market in registry/markets.json',
+  });
+  assert.equal((resolve(supplyCard('usdc')) as Extract<Resolution, { kind: 'refused' }>).detail, '"usdc" is not a market in registry/markets.json');
+});
+
+test('a verdict input with the markets table resolves a market card, and one without it refuses the card', () => {
+  const cardText = canonicalJson(supplyCard());
+  const inputs: VerifyInputs = {
+    commit: 'test',
+    safe: SAFE,
+    tx: { format: 'web-app', json: {} },
+    card: { hash: keccakText(cardText), text: cardText },
+    templates: [{ id: template.id, text: JSON.stringify(SUPPLY), approved: null }],
+    registry: JSON.stringify(CONTRACTS),
+    markets: JSON.stringify({ 'usdc-cbbtc-86': MARKET }),
+    addressBook: {},
+  };
+  assert.equal(prepare(inputs).card.operations[0]?.values.get('market')?.kind, 'market');
+  const { markets: _, ...before } = inputs;
+  assert.throws(() => prepare(before), new VerifyError('the card is refused at operations[0].values.market: "usdc-cbbtc-86" is not a market in registry/markets.json'));
+});
+
+const refusal = (change: (raw: typeof SUPPLY) => void): string => {
+  const raw = structuredClone(SUPPLY);
+  change(raw);
+  try {
+    parseTemplate(raw, registry);
+  } catch (error) {
+    return (error as Error).message;
+  }
+  return 'accepted';
+};
+
+test('a whole market binds only a MarketParams tuple: four addresses and a uint256, in that order', () => {
+  const supply = SUPPLY.calls[1]!;
+  const withSignature = (params: string) => (raw: typeof SUPPLY) => {
+    raw.calls[1]!.function = supply.function.replace(/^blueBundlesV1Supply\(\([^)]*\) marketParams/, `blueBundlesV1Supply((${params}) marketParams`);
+  };
+  const shape = 'calls[1].args.marketParams: a whole market binds only a (address,address,address,address,uint256) tuple, not a';
+  assert.equal(refusal(withSignature('address a, address b, address c, address d')), `${shape} (address,address,address,address)`);
+  assert.equal(refusal(withSignature('address a, address b, address c, uint256 lltv, address d')), `${shape} (address,address,address,uint256,address)`);
+  assert.equal(refusal(withSignature('address a, address b, address c, address d, uint128 lltv')), `${shape} (address,address,address,address,uint128)`);
+  assert.equal(
+    refusal((raw) => {
+      (raw.calls[0]!.args as Record<string, unknown>).spender = { card: 'market' };
+    }),
+    'calls[0].args.spender: a whole market binds only a (address,address,address,address,uint256) tuple, not a address',
+  );
+});
+
+test('a market part binds a value of its own type, and a part a market lacks is refused', () => {
+  const bind = (rule: unknown) => (raw: typeof SUPPLY) => {
+    (raw.calls[1]!.args as Record<string, unknown>).referralFeePct = rule;
+  };
+  assert.equal(refusal(bind({ card: 'market.lltv' })), 'accepted');
+  assert.equal(refusal(bind({ card: 'market.id' })), 'calls[1].args.referralFeePct: a card rule cannot bind a uint256');
+  assert.equal(refusal(bind({ card: 'market.oracle' })), 'calls[1].args.referralFeePct: a card rule cannot bind a uint256');
+  assert.equal(refusal(bind({ card: 'market.curator' })), 'calls[1].args.referralFeePct.card: "curator" is not one of lending, loanToken, collateralToken, oracle, irm, lltv, id');
+  assert.equal(
+    refusal((raw) => {
+      raw.card.amount.of = 'market.lltv';
+    }),
+    'card.amount.of: must name a token',
+  );
+});
+
+test('the supply batch matches its template and the market on the card', () => {
+  assert.deepEqual(check(supplyTx()), { kind: 'match' });
+});
+
+test('each market parameter changed alone is a mismatch at that part, against the registry market', () => {
+  const path = 'multiSend[1].blueBundlesV1Supply';
+  const cases: [keyof Params, Address | bigint, string][] = [
+    ['loanToken', OTHER, PARAMS.loanToken],
+    ['collateralToken', at('usdc'), PARAMS.collateralToken],
+    ['oracle', OTHER, PARAMS.oracle],
+    ['irm', OTHER, PARAMS.irm],
+    ['lltv', 915000000000000000n, '860000000000000000'],
+  ];
+  for (const [part, value, expected] of cases) {
+    const result = check(supplyTx({ ...PARAMS, [part]: value }));
+    assert.equal(result.kind, 'mismatch', part);
+    const findings = (result as Extract<FieldCheck, { kind: 'mismatch' }>).findings.filter((f) => f.callPath === path);
+    assert.deepEqual(
+      findings.map((f) => [f.arg, f.expected, f.actual]),
+      [[`marketParams.${part}`, expected, String(value)]],
+      part,
+    );
+  }
+});
+
+test('a supply to another market than the card names is a mismatch, and so is a card naming another market', () => {
+  const other = parseRegistry(CONTRACTS, {
+    'usdc-cbbtc-86': MARKET,
+    'usdc-cbbtc-915': { ...MARKET, lltv: '915000000000000000', id: '0x46d5534a38e80d1d8e85d3421c1f1339abd47244c4799a657f44410be8581afc' },
+  });
+  assert.equal(other.markets.size, 2);
+  const card = resolveCard(supplyCard('usdc-cbbtc-915'), { templates, registry: other, addressBook: new Map(), safe: SAFE });
+  assert.equal(card.kind, 'resolved');
+  assert.equal(checkTemplateFields(supplyTx(), (card as Extract<Resolution, { kind: 'resolved' }>).card, templates, other).kind, 'mismatch');
+});
+
+test('the mutation check changes every bound field, the five market parameters among them, and each gives a mismatch', () => {
+  // approve: to, value, spender, amount; supply: to, value, 5 market parameters, assets, permit kind, fee, fee recipient.
+  assert.deepEqual(checkMutations(supplyTx(), resolved(), templates, registry), { kind: 'pass', bound: 15, free: 2 });
+});
+
+test('verify requires a code pin for Morpho Blue and every contract the market on the card names', async () => {
+  const claims = codeClaims(supplyTx(), resolved(), templates, registry);
+  const noReads = new Proxy({}, { get: () => () => assert.fail('an entry without a pin is not read') }) as Reader;
+  const result = await checkCode(noReads, claims, { number: 1n, hash: `0x${'00'.repeat(32)}` as Hex }, 'pending');
+  const unpinned = result.kind === 'unverifiable' ? result.reasons.map((r) => r.split(' ')[0]).sort() : [];
+  assert.deepEqual(unpinned, ['adaptive-curve-irm', 'blue-bundles-v1', 'cbbtc', 'cbbtc-usdc-oracle', 'morpho-blue', 'usdc']);
 });

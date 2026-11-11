@@ -1,3 +1,4 @@
+import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import type { Registry } from '../registry.ts';
 import type { Address } from '../safe/types.ts';
@@ -56,14 +57,9 @@ export type Expectations =
 type Resolved = { readonly address: Address } | { readonly problem: string };
 
 function addressOf(ref: CardRef, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): Resolved {
-  const value = values.get(ref.field);
-  if (value === undefined) return { problem: `the card has no ${ref.field}` };
-  if (value.kind === 'amount' || value.kind === 'nonce') return { problem: `card field ${ref.field} is a number, not an address` };
-  if (value.kind === 'address') return { address: value.address };
-  if (ref.attribute === undefined) return { address: value.entry.address };
-  const name = value.entry.attributes[ref.attribute];
-  const target = name === undefined ? undefined : registry.entries.get(name);
-  return target === undefined ? { problem: `the registry has no ${ref.attribute} for ${value.name}` } : { address: target.address };
+  const target = resolveRef(ref, values, registry);
+  if ('problem' in target) return target;
+  return target.kind === 'address' ? { address: target.address } : { problem: `card field ${ref.field} is a number, not an address` };
 }
 
 const assetOf = (ref: TokenRef, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): { readonly asset: Asset } | { readonly problem: string } => {

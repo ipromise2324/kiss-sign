@@ -4,9 +4,11 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AddressBook } from './address-book.ts';
 import { canonicalJson } from './canonical.ts';
-import type { Registry, RegistryEntry } from './registry.ts';
+import { MARKET_ENTRY_PARTS, isAttribute, isMarketEntryPart } from './registry.ts';
+import type { Market, Registry, RegistryEntry } from './registry.ts';
+import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
-import type { Template } from './template/template.ts';
+import type { CardRef, Template } from './template/template.ts';
 
 /** What the signer confirms at each signing: which templates, and each one's values. Addresses appear only as names. */
 export type Card = { readonly operations: readonly CardOperation[] };
@@ -16,7 +18,8 @@ export type ResolvedValue =
   | { readonly kind: 'contract'; readonly name: string; readonly entry: RegistryEntry }
   | { readonly kind: 'amount'; readonly value: bigint }
   | { readonly kind: 'nonce'; readonly value: bigint }
-  | { readonly kind: 'address'; readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' };
+  | { readonly kind: 'address'; readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' }
+  | { readonly kind: 'market'; readonly market: Market };
 
 export type ResolvedOperation = { readonly template: string; readonly values: ReadonlyMap<string, ResolvedValue> };
 export type ResolvedCard = { readonly safe: Address; readonly operations: readonly ResolvedOperation[] };
@@ -133,6 +136,12 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
           values.set(name, resolved);
           break;
         }
+        case 'market': {
+          const market = context.registry.markets.get(raw);
+          if (market === undefined) return refuse('unknown-name', name, `${JSON.stringify(raw)} is not a market in registry/markets.json`);
+          values.set(name, { kind: 'market', market });
+          break;
+        }
         case 'recipient': {
           const booked = context.addressBook.get(raw);
           if (raw === 'safe') values.set(name, { kind: 'address', name: raw, address: context.safe, from: 'safe' });
@@ -143,12 +152,10 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
       }
     }
     const named = template.same.map((ref) => {
-      const value = values.get(ref.field);
-      if (value?.kind === 'address') return { text: `${ref.field} ${value.name}`, address: value.address };
-      if (value?.kind !== 'contract') return { text: ref.field, address: undefined };
-      const name = ref.attribute === undefined ? value.name : value.entry.attributes[ref.attribute];
-      const text = ref.attribute === undefined ? `${ref.field} ${value.name}` : `${ref.field}.${ref.attribute} ${name ?? 'none'}`;
-      return { text, address: name === undefined ? undefined : context.registry.entries.get(name)?.address };
+      const target = resolveRef(ref, values, context.registry);
+      const label = ref.attribute === undefined ? ref.field : `${ref.field}.${ref.attribute}`;
+      if ('problem' in target) return { text: `${label} none`, address: undefined };
+      return target.kind === 'address' ? { text: `${label} ${target.name}`, address: target.address } : { text: label, address: undefined };
     });
     if (named.some((n) => n.address === undefined || n.address !== named[0]?.address)) {
       return refuse('not-the-same', '', `${template.id} needs one address for ${named.map((n) => n.text).join(' and ')}`);
@@ -156,6 +163,49 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
     operations.push({ template: template.id, values });
   }
   return { kind: 'resolved', card: { safe: context.safe, operations } };
+}
+
+/** What a card reference names on a resolved card: an address with its name, a number, a market's id, or a whole market. */
+export type RefTarget =
+  | { readonly kind: 'address'; readonly name: string; readonly address: Address }
+  | { readonly kind: 'uint'; readonly value: bigint }
+  | { readonly kind: 'bytes32'; readonly value: Hex }
+  | { readonly kind: 'market'; readonly market: Market };
+
+export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): RefTarget | { readonly problem: string } {
+  const value = values.get(ref.field);
+  const { attribute } = ref;
+  if (value === undefined) return { problem: `the card has no ${ref.field}` };
+  switch (value.kind) {
+    case 'amount':
+    case 'nonce':
+      return { kind: 'uint', value: value.value };
+    case 'address':
+      return { kind: 'address', name: value.name, address: value.address };
+    case 'contract': {
+      if (attribute === undefined) return { kind: 'address', name: value.name, address: value.entry.address };
+      const name = isAttribute(attribute) ? value.entry.attributes[attribute] : undefined;
+      const target = name === undefined ? undefined : registry.entries.get(name);
+      return target === undefined ? { problem: `the registry has no ${attribute} for ${value.name}` } : { kind: 'address', name: target.name, address: target.address };
+    }
+    case 'market': {
+      const { market } = value;
+      if (attribute === undefined) return { kind: 'market', market };
+      if (attribute === 'lltv') return { kind: 'uint', value: market.lltv };
+      if (attribute === 'id') return { kind: 'bytes32', value: market.id };
+      if (!isMarketEntryPart(attribute)) return { problem: `a market has no ${attribute}` };
+      return { kind: 'address', name: market[attribute].name, address: market[attribute].address };
+    }
+  }
+}
+
+/** A market as the signer checks it: its name, id and lltv, then each part's registry name and full address. */
+export function marketLines(market: Market): string[] {
+  const lltv = `${market.lltv / 10n ** 18n}.${(market.lltv % 10n ** 18n).toString().padStart(18, '0')}`.replace(/\.?0+$/, '');
+  return [
+    `${market.name} id ${market.id}, lltv ${lltv} (${market.lltv})`,
+    ...MARKET_ENTRY_PARTS.map((part) => `${part} ${market[part].name} ${checksumAddress(market[part].address)}`),
+  ];
 }
 
 const SEAL = /^0x[0-9a-f]{64}$/;
