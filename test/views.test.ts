@@ -15,6 +15,9 @@ const SAFE = '0x5afe00000000000000000000000000000000005a' as Address;
 const OWNER = '0x0000000000000000000000000000000000000a11' as Address;
 const LENDING = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' as Address;
 const ZERO = `0x${'00'.repeat(20)}` as Address;
+/** The simulation reads each view through a STATICCALL forwarder at this address, the view's target in the first word. */
+const STATIC_READER = '0x00000000000000000000000000000000000057a7' as Address;
+const isViewRead = (call: { to: Address; data: Hex }) => call.to === STATIC_READER && call.data === `0x${LENDING.slice(2).padStart(64, '0')}${VIEW.data.slice(2)}`;
 const TX: SafeTx = {
   chainId: 1n,
   safe: SAFE,
@@ -69,7 +72,7 @@ function simulatingReader(view: { before: SimulatedCall; after: SimulatedCall },
       return agreed(
         request.calls.map((call, i): SimulatedCall => {
           if (i === exec) return { status: 'success', returnData: words(1n), logs: [SUCCESS] };
-          if (call.to === LENDING) return i < exec ? view.before : view.after;
+          if (isViewRead(call)) return i < exec ? view.before : view.after;
           if (call.to === SAFE) return { status: 'success', returnData: safeAnswer(call.data), logs: [] };
           return { status: 'success', returnData: words(5n), logs: [] };
         }),
@@ -90,17 +93,17 @@ test('a pending transaction reads each view in the measured block, just before a
   const requests: SimulationRequest[] = [];
   const reader = simulatingReader({ before: returned(words(100n, 0n, 0n)), after: returned(words(200n, 0n, 0n)) }, requests);
   const observed = executed(await simulateSafeTx(reader, { tx: TX, parent: PARENT, time: PARENT.time + 12n, watch: [], ends: [], views: [VIEW] }));
-  assert.deepEqual(observed.views, [{ ...VIEW, before: { kind: 'returned', data: words(100n, 0n, 0n) }, after: { kind: 'returned', data: words(200n, 0n, 0n) } }]);
+  assert.deepEqual(observed.views, [{ ...VIEW, before: { kind: 'returned', data: words(100n, 0n, 0n) }, after: { kind: 'returned', data: words(200n, 0n, 0n) }, readIn: 'simulation' }]);
   const measured = requests[1]?.calls ?? [];
   const exec = measured.findIndex((call) => call.data.startsWith(EXEC));
-  assert.deepEqual([measured[exec - 1]?.to, measured.at(-1)?.to], [LENDING, LENDING], 'the view is the last read on each side');
-  assert.equal(requests[0]?.calls.some((call) => call.to === LENDING), false, 'the discovery run reads no view');
+  assert.ok(isViewRead(measured[exec - 1]!) && isViewRead(measured.at(-1)!), 'the view is the last read on each side');
+  assert.equal(requests[0]?.calls.some(isViewRead), false, 'the discovery run reads no view');
 });
 
 test('a view that reverts in the simulated block is unread, and the balances are still measured', async () => {
   const reader = simulatingReader({ before: returned(words(1n, 0n, 0n)), after: { status: 'reverted', returnData: '0x' as Hex, logs: [] } }, []);
   const observed = executed(await simulateSafeTx(reader, { tx: TX, parent: PARENT, time: PARENT.time + 12n, watch: [], ends: [], views: [VIEW] }));
-  assert.deepEqual(observed.views?.[0]?.after, { kind: 'unread', why: 'it reverted in the simulated block' });
+  assert.deepEqual(observed.views?.[0]?.after, { kind: 'unread', why: 'it reverted in the simulated block, read by STATICCALL, where writing state or emitting a log reverts' });
   assert.equal(observed.eth, 0n);
 });
 
@@ -110,7 +113,8 @@ test('without views the measured block holds only the balance and Safe reads, an
   assert.equal('views' in observed, false);
   // The ETH balance read and the six Safe reads of a 1.4.1 Safe, on each side of the transaction.
   assert.equal(requests[1]?.calls.length, 7 + 1 + 7);
-  assert.equal(requests[1]?.calls.some((call) => call.to === LENDING), false);
+  assert.equal(requests[1]?.calls.some((call) => call.to === LENDING || call.to === STATIC_READER), false);
+  assert.equal(STATIC_READER in (requests[1]?.stateOverrides ?? {}), false, 'no forwarder is installed without views');
 });
 
 test('an executed transaction reads each view at the parent block and at the execution block', async () => {
@@ -136,5 +140,5 @@ test('an executed transaction reads each view at the parent block and at the exe
   };
   const observed = executed(await observeExecuted(reader, `0x${'cc'.repeat(32)}` as Hex, TX, [], [VIEW]));
   assert.deepEqual(at.toSorted(), [PARENT.number, BLOCK.number]);
-  assert.deepEqual(observed.views, [{ ...VIEW, before: { kind: 'returned', data: words(100n, 0n, 0n) }, after: { kind: 'unread', why: 'it reverted at block 101' } }]);
+  assert.deepEqual(observed.views, [{ ...VIEW, before: { kind: 'returned', data: words(100n, 0n, 0n) }, after: { kind: 'unread', why: 'it reverted at block 101' }, readIn: 'blocks' }]);
 });

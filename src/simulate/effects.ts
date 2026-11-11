@@ -24,12 +24,18 @@ export const permit2Raised = ({ before, after }: Permit2Change): boolean =>
 export type ViewCall = { readonly to: Address; readonly data: Hex };
 /** What a view answered, or why it gave no answer, such as a revert or providers that disagree. */
 export type ViewAnswer = { readonly kind: 'returned'; readonly data: Hex } | { readonly kind: 'unread'; readonly why: string };
-export type ViewReading = ViewCall & { readonly before: ViewAnswer; readonly after: ViewAnswer };
+/**
+ * Where a reading was taken: just around the transaction in a simulated block, or, for an executed transaction, at its
+ * parent block and its execution block, which other transactions in that block also change.
+ */
+export type ViewReadIn = 'simulation' | 'blocks';
+export type ViewReading = ViewCall & { readonly before: ViewAnswer; readonly after: ViewAnswer; readonly readIn: ViewReadIn };
 
 /**
  * What the Safe's own balances did: net changes, signed, and every allowance from the Safe that was measured. `ends`
  * holds the Safe's balance after the transaction of each token that was asked for, as a card that gives all of it needs.
- * `views` holds each view a template asked for, read before and after; it is absent when none was asked for.
+ * `views` holds each view a template asked for, read before and after, once for each place it was read; it is absent
+ * when none was asked for.
  */
 export type Effects = {
   readonly eth: bigint;
@@ -57,7 +63,7 @@ export type EffectFinding =
   | { readonly kind: 'not-all'; readonly asset: Address; readonly left: bigint }
   | ({ readonly kind: 'open-allowance' } & AllowanceChange)
   | ({ readonly kind: 'open-permit2-allowance' } & Permit2Change)
-  | { readonly kind: 'view'; readonly to: Address; readonly call: string; readonly value: string; readonly change: ViewChange; readonly before: bigint; readonly after: bigint };
+  | { readonly kind: 'view'; readonly to: Address; readonly call: string; readonly value: string; readonly change: ViewChange; readonly before: bigint; readonly after: bigint; readonly readIn: ViewReadIn };
 
 export type EffectVerdict =
   | { readonly kind: 'match' }
@@ -242,6 +248,11 @@ function numbersOf(view: ViewEffect, answer: ViewAnswer): readonly (bigint | und
   return values.map((value) => (value.kind === 'uint' || value.kind === 'int' ? value.value : undefined));
 }
 
+const READ_IN: Readonly<Record<ViewReadIn, string>> = {
+  simulation: 'in a simulated block',
+  blocks: 'at the parent block and the execution block',
+};
+
 const CHANGED: Readonly<Record<ViewChange, (before: bigint, after: bigint) => boolean>> = {
   increases: (before, after) => after > before,
   decreases: (before, after) => after < before,
@@ -288,24 +299,25 @@ export function judgeEffects(
   unread.push(...expectedReads.reasons);
   for (const { view, call, text } of expectedReads.views) {
     const where = `${nameOf(call.to, registry)} ${text}`;
-    const reading = observed.views?.find((r) => r.to === call.to && r.data === call.data);
-    if (reading === undefined) {
-      unread.push(`${where} was not read`);
-      continue;
-    }
-    const [before, after] = [numbersOf(view, reading.before), numbersOf(view, reading.after)];
-    if (typeof before === 'string') {
-      unread.push(`${where} could not be read before the transaction: ${before}`);
-      continue;
-    }
-    if (typeof after === 'string') {
-      unread.push(`${where} could not be read after the transaction: ${after}`);
-      continue;
-    }
-    for (const { value, change } of view.changes) {
-      // Template load lets a change name only a number.
-      const [was, now] = [before[value] as bigint, after[value] as bigint];
-      if (!CHANGED[change](was, now)) findings.push({ kind: 'view', to: call.to, call: text, value: view.returns[value]?.name ?? String(value), change, before: was, after: now });
+    const readings = observed.views?.filter((r) => r.to === call.to && r.data === call.data) ?? [];
+    if (readings.length === 0) unread.push(`${where} was not read`);
+    for (const reading of readings) {
+      const [before, after] = [numbersOf(view, reading.before), numbersOf(view, reading.after)];
+      if (typeof before === 'string') {
+        unread.push(`${where} could not be read before the transaction ${READ_IN[reading.readIn]}: ${before}`);
+        continue;
+      }
+      if (typeof after === 'string') {
+        unread.push(`${where} could not be read after the transaction ${READ_IN[reading.readIn]}: ${after}`);
+        continue;
+      }
+      for (const { value, change } of view.changes) {
+        // Template load lets a change name only a number.
+        const [was, now] = [before[value] as bigint, after[value] as bigint];
+        if (!CHANGED[change](was, now)) {
+          findings.push({ kind: 'view', to: call.to, call: text, value: view.returns[value]?.name ?? String(value), change, before: was, after: now, readIn: reading.readIn });
+        }
+      }
     }
   }
   if (findings.length > 0) return { kind: 'mismatch', findings };
@@ -330,7 +342,7 @@ export function describeFinding(finding: EffectFinding, registry: Registry): str
   }
   if (finding.kind === 'view') {
     const want = { increases: 'increase', decreases: 'decrease', same: 'stay the same' }[finding.change];
-    return `${nameOf(finding.to, registry)} ${finding.call} ${finding.value}: ${finding.before} before, ${finding.after} after; the template needs it to ${want}`;
+    return `${nameOf(finding.to, registry)} ${finding.call} ${finding.value}: ${finding.before} before, ${finding.after} after ${READ_IN[finding.readIn]}; the template needs it to ${want}`;
   }
   if (finding.kind === 'open-permit2-allowance') {
     const show = ({ amount, expiration, nonce }: Permit2Allowance) => `${amount} until ${expiration} (nonce ${nonce})`;

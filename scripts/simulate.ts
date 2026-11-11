@@ -15,22 +15,24 @@ import type { Address, Hex } from '../src/safe/types.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
 import { describeFinding, endsNeeded, expectedChanges, judgeEffects, viewCalls } from '../src/simulate/effects.ts';
 import type { EffectVerdict, Observed, Permit2Allowance, ViewAnswer, ViewCall } from '../src/simulate/effects.ts';
-import { observeExecuted } from '../src/simulate/executed.ts';
+import { observeExecuted, withSimulatedViews } from '../src/simulate/executed.ts';
 import { describeCallScan, scanCalls, simulateSafeTx } from '../src/simulate/simulate.ts';
 import type { Observation } from '../src/simulate/simulate.ts';
-import { loadTemplate } from '../src/template/template.ts';
+import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/simulate.ts (<safe-tx fixture name> | <safe> <nonce>) [--card '<card json>']
-  [--registry <contracts.json>] [--book '<address book json>'] [--record <name>]
-Without --card it prints what the transaction did and which calls move no asset, and judges nothing.`;
+  [--template <template.json>] [--registry <contracts.json>] [--book '<address book json>'] [--record <name>]
+Without --card it prints what the transaction did and which calls move no asset, and judges nothing.
+--template replaces the card's template of that id, for a negative test.`;
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 const ROOT = join(import.meta.dirname, '..');
 
 const { values: flags, positionals } = parseArgs({
   allowPositionals: true,
-  options: { card: { type: 'string' }, registry: { type: 'string' }, book: { type: 'string' }, record: { type: 'string' } },
+  options: { card: { type: 'string' }, template: { type: 'string' }, registry: { type: 'string' }, book: { type: 'string' }, record: { type: 'string' } },
 });
 if (positionals.length < 1 || positionals.length > 2) throw new Error(USAGE);
+if (flags.template !== undefined && flags.card === undefined) throw new Error('--template replaces a template of the card, so it needs --card');
 if (flags.record !== undefined && (positionals.length !== 1 || !/^[a-z0-9-]+$/.test(flags.record))) {
   throw new Error('--record takes a name, and records only a safe-tx fixture, never a Safe given by address');
 }
@@ -79,6 +81,10 @@ function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Addres
   if (flags.card === undefined) return undefined;
   const card = parseCard(JSON.parse(flags.card));
   const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(ROOT, op.template, registry)]));
+  if (flags.template !== undefined) {
+    const template = parseTemplate(JSON.parse(readFileSync(flags.template, 'utf8')), registry);
+    templates.set(template.id, template);
+  }
   const addressBook = parseAddressBook(JSON.parse(flags.book ?? '{}'));
   const resolution = resolveCard(card, { templates, registry, addressBook, safe });
   if (resolution.kind === 'refused') throw new Error(`card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
@@ -110,7 +116,7 @@ function print(label: string, observation: Observation): void {
     const show = ({ amount, expiration, nonce }: Permit2Allowance) => `${amount} until ${expiration} (nonce ${nonce})`;
     for (const a of observed.permit2) console.log(`  Permit2 allowance ${name(a.token)} to ${name(a.spender)}: ${show(a.before)} -> ${show(a.after)}`);
     const answer = (a: ViewAnswer) => (a.kind === 'returned' ? a.data : `unread, ${a.why}`);
-    for (const v of observed.views ?? []) console.log(`  view ${name(v.to)} ${v.data.slice(0, 10)}: ${answer(v.before)} -> ${answer(v.after)}`);
+    for (const v of observed.views ?? []) console.log(`  view ${name(v.to)} ${v.data.slice(0, 10)} (${v.readIn}): ${answer(v.before)} -> ${answer(v.after)}`);
     const evidence = observed.safeState;
     if (evidence.kind === 'read') {
       for (const [field, value] of Object.entries(evidence.before)) {
@@ -131,11 +137,9 @@ function print(label: string, observation: Observation): void {
 }
 
 console.log(`nonce ${tx.nonce}, executed in block ${executed.number}; simulating on block ${parent.number}, agreed by ${reader.providers.join(' and ')}`);
-print(
-  `simulated through execTransaction at block ${parent.number}`,
-  await simulateSafeTx(reader, { tx, parent, time: executedHeader.time, watch, ends, views }),
-);
-print(`from the receipt of ${txHash}`, await observeExecuted(reader, txHash, tx, ends, views));
+const simulated = await simulateSafeTx(reader, { tx, parent, time: executedHeader.time, watch, ends, views });
+print(`simulated through execTransaction at block ${parent.number}`, simulated);
+print(`from the receipt of ${txHash}`, withSimulatedViews(await observeExecuted(reader, txHash, tx, ends, views), simulated, views));
 console.log(`\neach call run as a Safe transaction of its own at block ${parent.number}`);
 for (const line of describeCallScan(await scanCalls(reader, { tx, parent, time: executedHeader.time, watch }), registry)) console.log(`  ${line}`);
 
@@ -144,6 +148,7 @@ if (flags.record !== undefined) {
   const fixture = {
     safeTx: positionals[0],
     transactionHash: txHash,
+    ...(flags.template === undefined ? {} : { template: JSON.parse(readFileSync(flags.template, 'utf8')) }),
     executed: { number: executed.number.toString(), hash: executed.hash },
     parent: { number: parent.number.toString(), hash: parent.hash },
     providers: reader.providers,

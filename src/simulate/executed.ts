@@ -37,7 +37,7 @@ const balanceCall = (safe: Address, token: Address) => ({
  * it, and with every fee field zero the Safe pays no gas. The balance of each token in `ends` is read at the parent block
  * and at the execution block, and must differ by exactly this transaction's change; otherwise another transaction in
  * that block moved it. Each of `views` is read at the parent block and at the execution block, where another
- * transaction in that block may have moved it too.
+ * transaction in that block may have moved it too; `withSimulatedViews` adds a reading of this transaction alone.
  */
 export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, ends: readonly Address[], views: readonly ViewCall[] = []): Promise<Observation> {
   const safe = tx.safe;
@@ -119,10 +119,25 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, e
   const readings: ViewReading[] = [];
   for (const view of views) {
     const [before, after] = await Promise.all([viewAt(view, parent.value), viewAt(view, block.value)]);
-    readings.push({ ...view, before, after });
+    readings.push({ ...view, before, after, readIn: 'blocks' });
   }
   const logs = receipt.logs.map(({ address, topics, data }) => ({ address, topics, data }));
   const eth = ethAfter.value - ethBefore.value;
   const observed = { kind: 'executed', eth, tokens, allowances, permit2, ends: held, safeState: { kind: 'receipt', logs } } as const;
   return { kind: 'observed', observed: views.length === 0 ? observed : { ...observed, views: readings }, logs };
+}
+
+/**
+ * Adds to an executed transaction's view readings those of a simulation of it alone on its parent block, so a change
+ * another transaction in the execution block made to a view cannot pass for this one's: the effects check judges both.
+ * A simulation that did not run leaves each view unread there.
+ */
+export function withSimulatedViews(executed: Observation, simulated: Observation, views: readonly ViewCall[]): Observation {
+  if (views.length === 0 || executed.kind !== 'observed' || executed.observed.kind !== 'executed') return executed;
+  const unread = (why: string): readonly ViewReading[] => views.map((view) => ({ ...view, before: { kind: 'unread', why }, after: { kind: 'unread', why }, readIn: 'simulation' }));
+  let readings: readonly ViewReading[];
+  if (simulated.kind === 'unverifiable') readings = unread(simulated.reasons.join('; '));
+  else if (simulated.observed.kind === 'not-executed') readings = unread(`alone on the parent block it did not execute: ${simulated.observed.why}`);
+  else readings = simulated.observed.views ?? [];
+  return { ...executed, observed: { ...executed.observed, views: [...(executed.observed.views ?? []), ...readings] } };
 }
