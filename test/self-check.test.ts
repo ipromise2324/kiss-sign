@@ -52,21 +52,25 @@ function homeFor(repo: string | null = REPO): string {
   return home;
 }
 
-async function runIn(clone: string, home: string, argv: string[]) {
+async function runIn(clone: string, home: string, argv: string[], answers?: string[]) {
   let stdout = '';
   let stderr = '';
+  const asked: string[] = [];
   const code = await main(argv, {
     env: { KISS_SIGN_HOME: home },
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     platform: 'linux',
     readSecret: undefined,
-    ask: async () => assert.fail('a refused command asks nothing'),
+    ask: async (question) => {
+      asked.push(question);
+      return answers?.shift() ?? assert.fail('a refused command asks nothing');
+    },
     repoRoot: clone,
     transport: async () => assert.fail('a refused command reads no chain'),
     fetchJson: async () => assert.fail('a refused command fetches nothing'),
   });
-  return { code, stdout, stderr };
+  return { code, stdout, stderr, asked };
 }
 
 const problemsOf = (root: string) => {
@@ -360,6 +364,38 @@ test('template approve refuses a clone whose origin is not the configured reposi
   assert.match(stderr, new RegExp(`origin is ${origin}, not github\\.com/signer/kiss-sign`));
   assert.equal(git(clone, 'rev-parse', 'refs/remotes/origin/main').trim(), before);
   assert.equal(existsSync(join(home, 'approved-templates.json')), false);
+});
+
+test('template approve names the template, the main commit and its subject, and what the fingerprint is for', async () => {
+  const { origin, clone } = cloneOfOrigin();
+  const ROOT = join(import.meta.dirname, '..');
+  const path = 'templates/morpho/vault-deposit/template.json';
+  const text = readFileSync(join(ROOT, path), 'utf8');
+  write(clone, path, text);
+  write(clone, 'registry/contracts.json', readFileSync(join(ROOT, 'registry/contracts.json'), 'utf8'));
+  git(clone, 'commit', '--quiet', '-am', 'feat(morpho): deposit into a vault (#7)');
+  git(clone, 'push', '--quiet', origin, 'main');
+  const commit = git(clone, 'rev-parse', 'HEAD').trim();
+  const home = homeFor();
+  const { code, stdout, asked } = await runIn(clone, home, ['template', 'approve', 'morpho/vault-deposit'], ['y']);
+  assert.equal(code, 0);
+  const hash = JSON.parse(readFileSync(join(home, 'approved-templates.json'), 'utf8'))['morpho/vault-deposit'];
+  assert.match(hash, /^0x[0-9a-f]{64}$/);
+  assert.equal(
+    stdout,
+    [
+      'Template: morpho/vault-deposit',
+      `From main of ${REPO}, commit ${commit}:`,
+      '  "feat(morpho): deposit into a vault (#7)"',
+      `Fingerprint of ${path} at that commit:`,
+      `  ${hash}`,
+      'verify uses this fingerprint to refuse any other version of this template until you approve it again.',
+      'There is nothing to compare by hand. Answer y only if this is the merged change you reviewed.',
+      'Approved morpho/vault-deposit.',
+      '',
+    ].join('\n'),
+  );
+  assert.deepEqual(asked, ['Approve morpho/vault-deposit as merged in that commit? [y/N] ']);
 });
 
 test('a node_modules folder below the root is named, since Node would load it before the root one', () => {

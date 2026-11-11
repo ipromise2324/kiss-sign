@@ -265,6 +265,26 @@ test('card new reads each token\'s decimals once across operations', async () =>
   assert.deepEqual(chain.calls.toSorted(), [STEAKHOUSE, STEAKHOUSE, USDC, USDC].map((a) => a.toLowerCase()).toSorted());
 });
 
+test('card new asks for a choice by its number, and takes its exact listed name or full address too', async () => {
+  for (const pick of [numberOf('steakhouse-prime-usdc'), 'steakhouse-prime-usdc', STEAKHOUSE.toLowerCase(), STEAKHOUSE.toUpperCase().replace('0X', '0x')]) {
+    const home = freshHome();
+    configure(home);
+    const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [pick, '5', '4.8', 'y'], mainnet());
+    assert.equal(made.code, 0, made.stderr);
+    assert.match(made.asked[0]!, /^vault: type its number \(1-\d+\): $/);
+    assert.match(made.stdout, new RegExp(`  vault: steakhouse-prime-usdc ${STEAKHOUSE}`));
+  }
+});
+
+test('card new refuses an address listed under two choices and asks for the number', async () => {
+  const home = freshHome();
+  configure(home);
+  await run(['book', 'add', 'treasury', SAFE], home, ['y']);
+  const result = await run(['card', 'new', 'eth/transfer'], home, [SAFE.toLowerCase(), '1', 'y']);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /recipient: ".*" matches more than one listed choice; type the number in front of the one you mean \(1-2\)/);
+});
+
 test('card new counts eth in 18 decimals without reading the chain', async () => {
   const home = freshHome();
   configure(home);
@@ -302,7 +322,7 @@ test('card new asks for base units when the token is no registry contract, so it
   assert.match(made.stdout, /amount: 5\n/);
 });
 
-test('card new lists each market with its id, its lltv and every part, and counts its amount in the loan token', async () => {
+test('card new lists each market with its id, its lltv and every part, takes the id as the answer, and counts its amount in the loan token', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
   cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
   const contracts = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
@@ -327,8 +347,9 @@ test('card new lists each market with its id, its lltv and every part, and count
   writeFileSync(join(repoRoot, 'templates', 'test', 'market', 'template.json'), JSON.stringify(template));
   const home = freshHome();
   configure(home);
-  const made = await run(['card', 'new', 'test/market'], home, ['1', '2.5', 'y'], { ...decimalsChain({ [USDC]: 6 }), repoRoot });
+  const made = await run(['card', 'new', 'test/market'], home, [id, '2.5', 'y'], { ...decimalsChain({ [USDC]: 6 }), repoRoot });
   assert.equal(made.code, 0, made.stderr);
+  assert.equal(made.asked[0], 'market: type its number (1-1): ');
   const parts = [
     `lending morpho-blue ${added['morpho-blue'].address}`,
     `loanToken usdc ${USDC}`,
@@ -372,9 +393,12 @@ test('card new takes the largest amount below 2^256 base units', async () => {
 });
 
 for (const [what, answers, message] of [
-  ['a number past the list', ['9999', '5', 'y'], /vault: "9999" is not a number from 1 to \d+/],
-  ['zero', ['0', '5', 'y'], /vault: "0" is not a number/],
-  ['a name instead of a number', ['steakhouse-prime-usdc', '5', 'y'], /is not a number/],
+  ['a number past the list', ['9999', '5', 'y'], /vault: "9999" is none of the listed choices; type the number in front of the one you mean \(1-\d+\)/],
+  ['zero', ['0', '5', 'y'], /vault: "0" is none of the listed choices/],
+  ['an empty answer', ['', '5', 'y'], /vault: "" is none of the listed choices/],
+  ['a name that is not listed', ['steakhouse', '5', 'y'], /vault: "steakhouse" is none of the listed choices/],
+  ['a listed name in another case', ['Steakhouse-Prime-USDC', '5', 'y'], /vault: "Steakhouse-Prime-USDC" is none of the listed choices/],
+  ['part of a listed address', [STEAKHOUSE.slice(0, 20), '5', 'y'], /is none of the listed choices/],
   ['more fractional digits than usdc has decimals', [numberOf('steakhouse-prime-usdc'), '1.0000001', 'y'], /amount: "1.0000001" has more than 6 digits after the point, and usdc has 6 decimals/],
   ['a negative amount', [numberOf('steakhouse-prime-usdc'), '-5', 'y'], /amount: "-5" is not a plain decimal number/],
   ['an empty amount', [numberOf('steakhouse-prime-usdc'), '', 'y'], /amount: "" is not a plain decimal number/],
