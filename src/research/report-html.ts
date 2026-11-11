@@ -16,7 +16,7 @@ import type { FieldFact } from './erc7730.ts';
 import { checkSources, githubLine, sourceSiteLine } from './listings.ts';
 import type { Line } from './listings.ts';
 import { NOTES_FILE, NotesError, parseNotes, readNotes } from './notes.ts';
-import type { Note, Notes } from './notes.ts';
+import type { Judgment, Note, Notes, Review } from './notes.ts';
 import { entriesOf, hasMarket, pinVerdict, refNames, spanKind, vaultsOf, wordOf } from './report.ts';
 import type { DocLink, PastTxsSummary, ReportInputs, ReportTitle, Subject } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
@@ -57,6 +57,8 @@ const bullets = (items: readonly Part[]): Html => h`<ul class="steps" style="lis
 /** `ok` passed; `act` is for the signer to look at; `na` had nothing to compare, or was not done. */
 type Status = 'ok' | 'act' | 'na';
 const MARKS: Readonly<Record<Status, Html>> = { ok: h`<span class="mark ok">✓</span>`, act: h`<span class="mark warn">!</span>`, na: h`<span class="mark na">–</span>` };
+/** A line that states what was found, with no result to pass or fail. */
+const INFO = h`<span class="mark info">i</span>`;
 
 /**
  * One program result, as the signer reads it. `key` names it in `notes.json`; `flag` is the word the Markdown report
@@ -73,12 +75,23 @@ const flagOf = (check: Check): Part => (check.flag === undefined ? '' : h`<span 
 const checkItem = (check: Check, line: string | undefined, head: Part = ''): Html =>
   h`<li>${MARKS[check.status]}<div>${flagOf(check)}${head}${check.text}${PROGRAM}${why(check.why)}${explained(line)}</div></li>`;
 
-function noteItem(note: Note, mark?: Status): Html {
+const sourcesOf = (note: Note): Part => (note.sources.length === 0 ? '' : h`<div class="why">來源：${joined(note.sources.map((url) => link(url)), '、')}</div>`);
+
+function noteItem(note: Note, mark?: Html): Html {
   const title = note.title === undefined ? '' : h`<b>${note.title}</b> `;
-  const sources = note.sources.length === 0 ? '' : h`<div class="why">來源：${joined(note.sources.map((url) => link(url)), '、')}</div>`;
-  const body = h`${title}${note.text}${AI}${sources}`;
-  return mark === undefined ? h`<li>${body}</li>` : h`<li>${MARKS[mark]}<div>${body}</div></li>`;
+  const body = h`${title}${note.text}${AI}${sourcesOf(note)}`;
+  return mark === undefined ? h`<li>${body}</li>` : h`<li>${mark}<div>${body}</div></li>`;
 }
+
+const recommend = (text: string): Html => h`<div class="rec"><b>建議：</b>${text}${AI}</div>`;
+
+const judgmentItem = (judgment: Judgment): Html =>
+  h`<li>${MARKS.act}<div>${judgment.title === undefined ? '' : h`<b>${judgment.title}</b> `}${judgment.text}${AI}${sourcesOf(judgment)}${recommend(judgment.recommendation)}</div></li>`;
+
+const REVIEWED: Readonly<Record<Review['status'], string>> = { confirmed: 'AI 已確認', concern: 'AI 有疑慮' };
+
+const reviewBlock = (review: Review): Html =>
+  h`<div class="review ${review.status}"><div><b>${REVIEWED[review.status]}：</b>${review.text}${AI}</div>${recommend(review.recommendation)}</div>`;
 
 const refZh = (ref: CardRef): Html => (ref.attribute === undefined ? h`card 上的 ${c(ref.field)}` : h`card 上 ${c(ref.field)} 的 ${c(ref.attribute)}`);
 
@@ -131,13 +144,14 @@ function namesOf(rule: Rule, template: Template, registry: Registry): string[] {
   return [];
 }
 
-type FieldRow = { readonly key: string; readonly path: string; readonly rule: Html; readonly names: readonly string[]; readonly bound: boolean };
+/** `of` is the template's rule, absent for a row the program states itself, such as a call's selector. */
+type FieldRow = { readonly key: string; readonly path: string; readonly of: Rule | undefined; readonly rule: Html; readonly names: readonly string[]; readonly bound: boolean };
 type FieldGroup = { readonly call: number | undefined; readonly title: Html; readonly rows: readonly FieldRow[] };
 
 /** The template's field table: one group per call, one row per field, keyed `<call>.<path>` for `notes.json`. */
 function fieldGroups(template: Template, registry: Registry): FieldGroup[] {
-  const row = (key: string, path: string, rule: Rule): FieldRow => ({ key, path, rule: ruleZh(rule, template, registry), names: namesOf(rule, template, registry), bound: rule.kind !== 'free' });
-  const fixed = (key: string, path: string, rule: Html): FieldRow => ({ key, path, rule, names: [], bound: true });
+  const row = (key: string, path: string, rule: Rule): FieldRow => ({ key, path, of: rule, rule: ruleZh(rule, template, registry), names: namesOf(rule, template, registry), bound: rule.kind !== 'free' });
+  const fixed = (key: string, path: string, rule: Html): FieldRow => ({ key, path, of: undefined, rule, names: [], bound: true });
   const callRows = (call: number, node: CallNode, prefix: string): FieldRow[] => {
     const trailer = node.trailer === undefined ? h`參數後面不能附加任何資料` : h`參數後面最多附加 ${node.trailer.maxBytes} bytes`;
     const path = `${prefix}${node.fn.name}`;
@@ -235,7 +249,7 @@ function sourceChecks(entry: RegistryEntry, lines: readonly Line[]): Check[] {
   const github = isGitHubPage(url);
   const command = h`<code>pnpm check-sources ${entry.name}</code> 會印出比對的內容。`;
   const source = link(entry.source, github ? 'GitHub 上的來源檔案' : url.hostname);
-  const confirm = h`請在瀏覽器打開 ${link(entry.source)}，確認頁面上的 ${entry.kind} 地址是 ${mono(checksumAddress(entry.address))}`;
+  const sought = h`來源頁面 ${link(entry.source)}；要找的 ${entry.kind} 地址是 ${mono(checksumAddress(entry.address))}。`;
   const order: readonly Line['check'][] = ['page', 'url', 'defillama', 'github', 'coingecko'];
   return [...lines].sort((a, b) => order.indexOf(a.check) - order.indexOf(b.check)).map((line): Check => {
     const key = SOURCE_KEYS[line.check];
@@ -243,8 +257,8 @@ function sourceChecks(entry: RegistryEntry, lines: readonly Line[]): Check[] {
     switch (line.check) {
       case 'page':
         if (ok) return pass(key, h`登記的來源頁面（不跑 JavaScript 直接讀）在標籤旁邊列出這個地址：${source}`);
-        if (line.cause === 'not-served') return act(key, h`程式不跑 JavaScript，讀到的來源頁面上沒有這個地址。${confirm}`);
-        if (line.cause === 'not-fetched') return act(key, h`程式沒讀到來源頁面。${confirm}`, command);
+        if (line.cause === 'not-served') return act(key, h`程式不跑 JavaScript，讀到的來源頁面上沒有這個地址`, sought);
+        if (line.cause === 'not-fetched') return act(key, h`程式沒讀到來源頁面`, h`${sought}${command}`);
         return act(key, h`來源頁面上有這個地址，但不在標籤旁邊：${source}`, h`可能不在標籤旁邊、大小寫不對，或 registry 沒寫標籤。${command}`);
       case 'url':
         return act(key, h`登記的來源網址本身就含有這個地址：${source}`, h`很多頁面會把自己的網址顯示出來，所以頁面上出現這個地址證明不了什麼，程式不讀這種頁面。`);
@@ -271,7 +285,7 @@ function docChecks(doc: DocLink, inputs: ReportInputs): Check[] {
   const checks: Check[] = [
     named
       ? pass(key('page'), h`官方文件頁面寫了 ${fn} 這個函式名稱：${link(doc.url)}`)
-      : act(key('page'), h`程式不跑 JavaScript，讀到的文件頁面上沒有 ${fn} 這個名稱。請在瀏覽器打開 ${link(doc.url)}，確認頁面寫了 ${fn}`),
+      : act(key('page'), h`程式不跑 JavaScript，讀到的文件頁面上沒有 ${fn} 這個名稱`, h`文件頁面 ${link(doc.url)}。`),
     siteCheck(key('site'), h`${fn} 的文件頁面`, url, doc.contract.defillama, sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings)),
   ];
   if (isGitHubPage(url)) {
@@ -444,7 +458,7 @@ function pastTxsLine(summary: PastTxsSummary): Html {
   const fits = (list: readonly { readonly kind: string }[]) => list.filter((s) => s.kind === 'fit').length;
   const other = kept.length - fromSafe.length - fromEoa.length;
   const when = run.query.sampling.kind === 'spread' ? '過去一年' : '一段指定區塊';
-  return h`<li>${when}的交易（${c(summary.file)}）：Alchemy 找到 ${by('alchemy')} 筆、Etherscan ${by('etherscan')} 筆；抽查 ${kept.length} 筆，Safe 送出的 ${fromSafe.length} 筆裡 ${fits(fromSafe)} 筆符合模板，EOA 直接呼叫的 ${fromEoa.length} 筆裡 ${fits(fromEoa)} 筆符合，其他 ${other} 筆不是這個操作。${PROGRAM}</li>`;
+  return h`<li>${INFO}<div>${when}的交易（${c(summary.file)}）：Alchemy 找到 ${by('alchemy')} 筆、Etherscan ${by('etherscan')} 筆；抽查 ${kept.length} 筆，Safe 送出的 ${fromSafe.length} 筆裡 ${fits(fromSafe)} 筆符合模板，EOA 直接呼叫的 ${fromEoa.length} 筆裡 ${fits(fromEoa)} 筆符合，其他 ${other} 筆不是這個操作。${PROGRAM}</div></li>`;
 }
 
 type Shown = 'shown' | 'shown-unless' | 'optional' | 'hidden' | 'absent' | 'unknown';
@@ -467,70 +481,117 @@ function shownOf(arg: string, fields: readonly { readonly path: string; readonly
   return field === undefined ? 'absent' : (SHOWN[field.visible] ?? 'unknown');
 }
 
-/** How a wallet that reads ERC-7730 would show each call the template makes, from the descriptor facts alone. */
-function walletSection(template: Template, groups: readonly FieldGroup[], inputs: ReportInputs): { readonly body: Html; readonly unshown: number } {
-  let unshown = 0;
+/**
+ * The signer's words for a call argument, by its path from the call's arguments or by its own name. A descriptor's label
+ * text is never shown: any argument not here shows its ABI name.
+ */
+const LABELS: Readonly<Record<string, string>> = {
+  'loanTokenPermit.kind': '拉代幣方式',
+  'loanTokenPermit.data': 'permit 簽章',
+  assets: '金額',
+  amount: '金額',
+  value: '金額',
+  shares: '份額',
+  spender: '授權對象',
+  receiver: '收款人',
+  onBehalf: '代表誰',
+  owner: '擁有者',
+  loanToken: '借出代幣',
+  collateralToken: '抵押品',
+  oracle: 'oracle',
+  irm: '利率模型',
+  lltv: 'LLTV',
+  deadline: '截止時間',
+  referralFeePct: '推薦費比例',
+  referralFeeRecipient: '推薦費收款人',
+};
+const labelOf = (arg: string): string => LABELS[arg] ?? LABELS[arg.split('.').at(-1) as string] ?? (arg.split('.').at(-1) as string);
+
+/** A field's rule as one short value on the mock wallet screen, such as `cbbtc` or `86%`. */
+function screenValue(rule: Rule, template: Template, registry: Registry): Html {
+  switch (rule.kind) {
+    case 'card': {
+      const field = template.card.get(rule.ref.field);
+      if (field?.kind === 'amount') {
+        const tokens = field.of === 'eth' ? ['ETH'] : refNames(field.of, template, registry);
+        return h`你在 card 填的數量${tokens.length === 0 ? '' : h`（${tokens.join('、')}）`}`;
+      }
+      if (field?.kind === 'market' && rule.ref.attribute === 'lltv') {
+        return h`${joined([...registry.markets.values()].map((m) => percent(m.lltv) || String(m.lltv)), '、')}`;
+      }
+      if (field?.kind === 'market' && rule.ref.attribute === undefined) return h`${joined([...registry.markets.values()].map((m) => m.name), '、')}`;
+      const names = refNames(rule.ref, template, registry);
+      return names.length === 0 ? h`card 上的 ${rule.ref.field}` : h`${names.join('、')}`;
+    }
+    case 'safe':
+      return h`你的 Safe`;
+    case 'contract':
+      return h`${rule.name}`;
+    case 'const':
+      return h`${constText(rule.value)}`;
+    case 'free':
+      return h`任意`;
+    case 'equals':
+      return screenValue(rule.rule, template, registry);
+    default:
+      return ruleZh(rule, template, registry);
+  }
+}
+
+/** Whether a rule names a part of a card market, which a wallet must show for the signer to tell markets apart. */
+const namesMarketPart = (rule: Rule, template: Template): boolean =>
+  rule.kind === 'equals' ? namesMarketPart(rule.rule, template) : rule.kind === 'card' && template.card.get(rule.ref.field)?.kind === 'market';
+
+const RAW_SCREEN = h`<div class="screen raw"><div class="line">原始資料（看不懂的十六進位）</div></div>`;
+
+/** A mock of the hardware-wallet screen for each call the template makes, from the ERC-7730 descriptor facts alone. */
+function walletSection(template: Template, groups: readonly FieldGroup[], inputs: ReportInputs): Html {
+  const { registry } = inputs;
   const calls = template.calls.flatMap((call, i) => {
     if (call.data === 'empty') return [];
     const n = i + 1;
     const fn = call.data.fn;
     const rows = (groups.find((g) => g.call === n)?.rows ?? []).flatMap((row) => {
       const arg = argPath(row, template, n);
-      return arg === undefined ? [] : [{ row, arg }];
+      return arg === undefined || row.of === undefined ? [] : [{ row, arg, rule: row.of }];
     });
-    return namesOf(call.to, template, inputs.registry).map((name) => {
+    return namesOf(call.to, template, registry).map((name) => {
       const head = h`<h3>呼叫 ${n}：${c(fn.name)}，對象 ${c(name)}</h3>`;
       const report = inputs.erc7730.reports.find((r) => r.entry.name === name);
-      if (report === undefined) return h`${head}<p>沒有讀 ERC-7730。${PROGRAM}</p>`;
-      if (report.descriptors.length === 0) return h`${head}<p>沒有描述檔，錢包會顯示原始資料。${PROGRAM}</p>`;
+      if (report === undefined) return h`<div class="device">${head}${RAW_SCREEN}<p class="note">程式沒有讀這個合約的 ERC-7730 描述檔。${PROGRAM}</p></div>`;
       const found = report.descriptors.flatMap((d) => d.functions.filter((f) => f.selector === fn.selector).map((f) => ({ d, f })));
-      if (found.length === 0) return h`${head}<p>描述檔沒有這個函式，錢包會顯示原始資料。${PROGRAM}</p>`;
+      if (found.length === 0) return h`<div class="device">${head}${RAW_SCREEN}<p class="note">沒有描述這個函式的描述檔，錢包只能顯示原始資料。${PROGRAM}</p></div>`;
       return found.map(({ d, f }) => {
         const fields = flatFields(f.fields, '');
-        const items = rows.map(({ row, arg }) => {
-          const shown = shownOf(arg, fields, f.excluded);
-          const leaf = c(arg.split('.').at(-1) as string);
-          const rule = row.bound ? h`模板綁住它：${row.rule}` : h`模板不限`;
-          const flagged = row.bound && shown !== 'shown' && shown !== 'shown-unless';
-          if (flagged) unshown++;
-          const said: Record<Shown, Html> = {
-            shown: h`錢包會顯示`,
-            'shown-unless': h`錢包會顯示（填某些值時不顯示）`,
-            optional: h`錢包不一定顯示 ${leaf}`,
-            hidden: h`錢包不會顯示 ${leaf}`,
-            absent: h`描述檔沒有這個欄位，錢包不會顯示 ${leaf}`,
-            unknown: h`程式看不懂描述檔對這個欄位的顯示設定`,
-          };
-          const mark: Status = flagged ? 'act' : shown === 'shown' || shown === 'shown-unless' ? 'ok' : 'na';
-          return h`<li>${MARKS[mark]}<div>${c(arg)}：${said[shown]}。${rule}</div></li>`;
-        });
-        return h`${head}<p class="note">描述檔 ${c(d.path)}${PROGRAM}</p><ul class="checks">${items}</ul>`;
+        const seen = rows.map((r) => ({ ...r, shown: shownOf(r.arg, fields, f.excluded) }));
+        const lines = seen.filter((r) => r.shown === 'shown' || r.shown === 'shown-unless').map((r) => h`<div class="line"><span class="label">${labelOf(r.arg)}</span>${screenValue(r.rule, template, registry)}</div>`);
+        const unseen = (which: readonly Shown[]) => seen.filter((r) => r.row.bound && which.includes(r.shown));
+        const hidden = unseen(['hidden', 'absent', 'unknown']);
+        const maybe = unseen(['optional']);
+        const says: Html[] = [];
+        if (hidden.length > 0) {
+          const market = hidden.some((r) => namesMarketPart(r.rule, template)) ? '只看錢包分不出是哪個 market。' : '這些只有 kiss-sign 會檢查。';
+          says.push(h`<p class="unseen"><b>錢包不會顯示：</b>${hidden.map((r) => labelOf(r.arg)).join('、')}。${market}${PROGRAM}</p>`);
+        }
+        if (maybe.length > 0) says.push(h`<p class="unseen"><b>錢包不一定顯示：</b>${maybe.map((r) => labelOf(r.arg)).join('、')}。${PROGRAM}</p>`);
+        const screen = lines.length === 0 ? RAW_SCREEN : h`<div class="screen">${lines}</div>`;
+        return h`<div class="device">${head}${screen}${says}<p class="note">描述檔 ${c(d.path)}${PROGRAM}</p></div>`;
       });
     });
   });
-  const body = h`<p class="note">從 repo 固定版本的 ERC-7730 registry 讀出、錢包用來顯示交易的描述檔，只當第二意見；完整內容在 ${c('report.generated.md')}。</p>${calls}`;
-  return { body, unshown };
+  return h`<p class="note">畫面是程式用 repo 固定版本的 ERC-7730 描述檔排出來的：只列描述檔說錢包會顯示的欄位，名稱用中文或參數原名，值是模板對它的規定。實際字樣以錢包為準，描述檔的原文不放在這頁。</p>${calls}`;
 }
 
 const CSS = `:root {
-  --bg: #f7f8f7; --paper: #ffffff; --ink: #18201e; --muted: #5d6965; --rule: #dfe4e2; --accent: #1d5f8a;
-  --ok: #1d7a3c; --ok-bg: #e4f3e8; --warn: #8f5600; --warn-bg: #fcf0d9; --na: #66716d; --na-bg: #eceeed; --code-bg: #eff2f1;
+  color-scheme: dark;
+  --bg: #101318; --paper: #171b22; --raised: #1d232c; --ink: #e3e7ed; --muted: #9aa3b0; --rule: #2a313b; --accent: #7fa8de;
+  --ok: #a9b8cb; --ok-bg: #242c37; --warn: #e3ac52; --warn-bg: #33281a; --na: #8b94a1; --na-bg: #222831; --code-bg: #1f252e;
+  --screen: #07090c; --screen-ink: #d6dbe2; --screen-rule: #3a4350;
   --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #111615; --paper: #182020; --ink: #e3eae7; --muted: #9aa7a2; --rule: #2b3634;
-    --accent: #79b8e3; --ok: #7fd49a; --ok-bg: #1a3223; --warn: #f2bb62; --warn-bg: #3a2b12;
-    --na: #a0aba7; --na-bg: #252e2c; --code-bg: #212a28; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #111615; --paper: #182020; --ink: #e3eae7; --muted: #9aa7a2; --rule: #2b3634;
-  --accent: #79b8e3; --ok: #7fd49a; --ok-bg: #1a3223; --warn: #f2bb62; --warn-bg: #3a2b12;
-  --na: #a0aba7; --na-bg: #252e2c; --code-bg: #212a28; color-scheme: dark;
-}
 * { box-sizing: border-box; }
+html { background: var(--bg); }
 body {
   background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.7; margin: 0;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 80px;
@@ -538,15 +599,15 @@ body {
 .wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 40px; }
 header { padding-top: 40px; display: grid; gap: 8px; }
 .kicker { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
-h1 { font-size: clamp(25px, 4.5vw, 32px); line-height: 1.3; margin: 0; text-wrap: balance; }
-h2 { font-size: 21px; margin: 0; text-wrap: balance; }
-h3 { font-size: 17px; margin: 0; }
+h1 { font-size: clamp(25px, 4.5vw, 32px); line-height: 1.3; margin: 0; text-wrap: balance; color: var(--ink); }
+h2 { font-size: 21px; margin: 0; text-wrap: balance; color: var(--ink); }
+h3 { font-size: 17px; margin: 0; color: var(--ink); }
 p { margin: 0; max-width: 66ch; }
 section { display: grid; gap: 14px; }
 .lede { font-size: 17px; }
 .note { color: var(--muted); font-size: 14.5px; }
 .mono, code { font-family: var(--font-mono); font-size: 0.84em; overflow-wrap: anywhere; }
-code { background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+code { background: var(--code-bg); color: var(--ink); padding: 1px 5px; border-radius: 4px; }
 a { color: var(--accent); overflow-wrap: anywhere; }
 a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .steps { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; }
@@ -554,11 +615,20 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outli
 .panel.attention { border-color: var(--warn); }
 .checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .checks li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 4px 10px; align-items: start; }
-.mark { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; margin-top: 3px; }
+.panel.attention .checks { gap: 18px; }
+.mark { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; vertical-align: middle; place-items: center; font-size: 13px; font-weight: 700; margin-top: 3px; }
 .mark.ok { color: var(--ok); background: var(--ok-bg); }
 .mark.warn { color: var(--warn); background: var(--warn-bg); }
 .mark.na { color: var(--na); background: var(--na-bg); }
+.mark.info { color: var(--accent); background: var(--ok-bg); font-family: var(--font-mono); font-size: 12px; }
 .why { color: var(--muted); font-size: 14.5px; }
+.result { display: block; }
+.review { margin-top: 8px; padding: 10px 14px; border-radius: 6px; background: var(--raised); border-left: 3px solid var(--na); display: grid; gap: 4px; font-size: 15px; }
+.review.confirmed { border-left-color: var(--accent); }
+.review.confirmed > div:first-child b { color: var(--accent); }
+.review.concern { border-left-color: var(--warn); background: var(--warn-bg); }
+.review.concern > div:first-child b { color: var(--warn); }
+.rec { font-size: 14.5px; color: var(--ink); margin-top: 4px; }
 .flag { font-family: var(--font-mono); font-size: 12px; color: var(--warn); margin-right: 6px; }
 .by { font-size: 12px; font-weight: 500; letter-spacing: .03em; padding: 0 7px; border-radius: 999px; white-space: nowrap; vertical-align: 1px; margin-left: 6px; }
 .by.prog { color: var(--accent); border: 1px solid var(--accent); }
@@ -569,30 +639,41 @@ a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outli
 .addr-head .full { font-family: var(--font-mono); font-size: 14px; overflow-wrap: anywhere; }
 .role { color: var(--muted); font-size: 15px; }
 .addr-body { padding: 16px 20px; display: grid; gap: 14px; }
-.ai-notes { border-top: 1px dashed var(--rule); padding-top: 12px; display: grid; gap: 6px; font-size: 14.5px; color: var(--muted); }
-.ai-notes ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 .table-frame { overflow-x: auto; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; }
-table { border-collapse: collapse; width: 100%; font-size: 15px; line-height: 1.55; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; line-height: 1.55; color: var(--ink); }
 th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--rule); }
-th { font-size: 13px; color: var(--muted); font-weight: 500; background: var(--code-bg); }
+th { font-size: 13px; color: var(--muted); font-weight: 500; background: var(--raised); }
 tr:last-child td { border-bottom: 0; }
 td.path { width: 32%; }
 td.path code { overflow-wrap: normal; word-break: normal; }
 td.nowrap { white-space: nowrap; }
-td.group { background: var(--code-bg); font-weight: 500; font-size: 14px; }
+td.group { background: var(--raised); font-weight: 500; font-size: 14px; }
 .num { font-variant-numeric: tabular-nums; }
 details { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 18px; }
 summary { cursor: pointer; font-weight: 500; }
 details[open] summary { margin-bottom: 10px; }
-pre { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; overflow-x: auto; background: var(--code-bg); padding: 12px; border-radius: 6px; margin: 0; }
+pre { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; overflow-x: auto; background: var(--code-bg); color: var(--ink); padding: 12px; border-radius: 6px; margin: 0; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--muted); align-items: center; }
 .legend span { display: inline-flex; align-items: center; gap: 6px; }
-.legend .mark { margin-top: 0; }
+.legend .mark, summary .mark { margin-top: 0; }
 .tally { font-size: 14.5px; }
 .addr-body details, .panel details { background: none; border: 0; padding: 0; }
 .addr-body details summary, .panel details summary { color: var(--muted); font-size: 14.5px; font-weight: 400; }
-.wallet { display: grid; gap: 14px; }
-.wallet h3 { font-size: 15.5px; }
+.wallet { display: grid; gap: 22px; }
+.device { display: grid; gap: 10px; }
+.device h3 { font-size: 15.5px; }
+.screen { background: var(--screen); color: var(--screen-ink); border: 2px solid var(--screen-rule); border-radius: 12px; padding: 14px 16px; max-width: 420px; font-family: var(--font-mono); font-size: 13.5px; display: grid; gap: 8px; }
+.screen .line { display: grid; gap: 0; border-bottom: 1px solid var(--screen-rule); padding-bottom: 6px; overflow-wrap: anywhere; }
+.screen .line:last-child { border-bottom: 0; padding-bottom: 0; }
+.screen .label { color: var(--muted); font-family: var(--font-body); font-size: 12.5px; }
+.screen.raw { color: var(--muted); }
+.unseen { font-size: 15px; }
+.unseen b { color: var(--warn); }
+.overview { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.overview > li { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 2px 14px; font-size: 15px; }
+.overview > li .label { color: var(--muted); font-size: 14px; }
+.overview ul { margin: 0; padding-left: 1.2em; }
+@media (max-width: 560px) { .overview > li { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }`;
 
 
@@ -600,7 +681,7 @@ const FONTS = 'https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;50
 
 function percent(lltv: bigint): string {
   const unit = 10n ** 16n;
-  return lltv % unit === 0n ? `（${lltv / unit}%）` : '';
+  return lltv % unit === 0n ? `${lltv / unit}%` : '';
 }
 
 function cardSection(template: Template, registry: Registry): Html {
@@ -630,7 +711,7 @@ function cardSection(template: Template, registry: Registry): Html {
     }
     if (field.kind === 'market') {
       const items = [...registry.markets.values()].map(
-        (m) => h`<tr><td>${c(m.name)}</td><td class="mono">${m.id}</td><td class="num">${m.lltv}${percent(m.lltv)}</td></tr>`,
+        (m) => h`<tr><td>${c(m.name)}</td><td class="mono">${m.id}</td><td class="num">${m.lltv}${percent(m.lltv) === '' ? '' : `（${percent(m.lltv)}）`}</td></tr>`,
       );
       lists.push(
         h`<details><summary>card 的 ${c(name)} 可以選的 market（五個參數見各地址）</summary><div class="table-frame"><table><thead><tr><th>名稱</th><th>market id</th><th>LLTV</th></tr></thead><tbody>${items}</tbody></table></div></details>`,
@@ -664,17 +745,49 @@ function entryArticle(card: EntryCard, notes: Notes): Html {
 </article>`;
 }
 
-/** Every program result for the signer to look at, then the AI's few judgments. */
-function actionSection(cards: readonly EntryCard[], fixtures: readonly Check[], notes: Notes): Html {
-  const program = [
+/** A program result the signer must look at, with its id in `notes.json`'s `reviews`. */
+type Action = { readonly id: string; readonly check: Check; readonly head: Part };
+
+function actionsOf(cards: readonly EntryCard[], fixtures: readonly Check[]): Action[] {
+  return [
     ...cards.flatMap(({ entry, checks }) =>
-      checks.filter((check) => check.status === 'act').map((check) => checkItem(check, notes.entries.get(entry.name)?.checks.get(check.key), h`<b><a href="#entry-${entry.name}">${entry.name}</a>：</b>`)),
+      checks.filter((check) => check.status === 'act').map((check) => ({ id: `${entry.name}/${check.key}`, check, head: h`<b><a href="#entry-${entry.name}">${entry.name}</a>：</b>` })),
     ),
-    ...fixtures.filter((check) => check.status === 'act').map((check) => checkItem(check, undefined)),
+    ...fixtures.filter((check) => check.status === 'act').map((check) => ({ id: check.key, check, head: '' })),
   ];
-  const items = [...program, ...notes.judgments.map((note) => noteItem(note, 'act'))];
+}
+
+/** Refuses notes that leave a result the signer must look at without the AI's review, or review any other result. */
+function reviewsKnown(actions: readonly Action[], notes: Notes): void {
+  const ids = actions.map((action) => action.id);
+  const missing = ids.find((id) => !notes.reviews.has(id));
+  if (missing !== undefined) throw new NotesError(`${NOTES_FILE}.reviews: "${missing}" is a result the signer must look at and has no review`);
+  const extra = [...notes.reviews.keys()].find((id) => !ids.includes(id));
+  if (extra !== undefined) throw new NotesError(`${NOTES_FILE}.reviews: "${extra}" is not a result the signer must look at; those are ${ids.join(', ') || 'none'}`);
+}
+
+/** Each program result for the signer to look at, its one line and then the AI's review of it, then the AI's few judgments. */
+function actionSection(actions: readonly Action[], notes: Notes): Html {
+  const program = actions.map(
+    ({ id, check, head }) => h`<li>${MARKS[check.status]}<div><div class="result">${flagOf(check)}${head}${check.text}${PROGRAM}</div>${reviewBlock(notes.reviews.get(id) as Review)}</div></li>`,
+  );
+  const items = [...program, ...notes.judgments.map(judgmentItem)];
   if (items.length === 0) return h`<p>沒有。</p>`;
   return h`<div class="panel attention"><ul class="checks">${items}</ul></div>`;
+}
+
+/** The protocol at a glance: the AI's overview lines, then how long each contract's code has run unchanged. */
+function overviewSection(entries: readonly RegistryEntry[], inputs: ReportInputs, notes: Notes): Html {
+  const ai = notes.overview.map((item) => h`<li><span class="label">${item.title}</span><div>${item.text}${AI}${sourcesOf(item)}</div></li>`);
+  const code = entries.map((entry) => {
+    if (entry.code === undefined) return h`<li>${c(entry.name)}：registry 沒有記錄程式碼指紋</li>`;
+    const { from } = entry.code.current;
+    const verdict = inputs.spans.get(entry.address)?.[entry.code.earlier.length] ?? 'not read';
+    const kind = spanKind(verdict);
+    const said = kind === 'pass' ? h`程式碼自區塊 <span class="num">${from}</span> 起沒變過` : kind === 'not-read' ? h`程式碼沒查從哪個區塊開始` : h`程式碼從哪個區塊開始沒能確認（${verdict.split(' ')[0]}）`;
+    return h`<li>${c(entry.name)}：${said}</li>`;
+  });
+  return h`<ul class="overview">${ai}<li><span class="label">程式碼多久沒變</span><div><ul>${code}</ul>${PROGRAM}</div></li></ul>`;
 }
 
 function fieldTable(groups: readonly FieldGroup[], notes: Notes): Html {
@@ -731,12 +844,13 @@ export function renderHtml(inputs: ReportInputs, notes: Notes, title: ReportTitl
   const cards = entryCards(subject, inputs, groups);
   checkLinesKnown(cards, notes);
   const fixtureChecks = fixtures.map(fixtureCheck);
-  const wallet = walletSection(template, groups, inputs);
+  const actions = actionsOf(cards, fixtureChecks);
+  reviewsKnown(actions, notes);
   const signing = signingChecks(template, registry);
   const tested = [
     ...fixtureChecks.map((check) => checkItem(check, undefined)),
     ...inputs.pastTxs.map(pastTxsLine),
-    ...notes.tests.map((n) => noteItem(n)),
+    ...notes.tests.map((n) => noteItem(n, INFO)),
   ];
   const rawPast = inputs.pastTxs.map((p) => h`<details><summary>過去交易搜尋的原始輸出：${p.file}</summary><pre>${p.text.trimEnd()}</pre></details>`);
   const page = h`<!doctype html>
@@ -744,6 +858,7 @@ export function renderHtml(inputs: ReportInputs, notes: Notes, title: ReportTitl
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <title>${template.id} 報告</title>
 <link rel="stylesheet" href="${FONTS}">
 <style>
@@ -768,7 +883,12 @@ ${cardSection(template, registry)}
 
 <section>
 <h2>需要你做的事</h2>
-${actionSection(cards, fixtureChecks, notes)}
+${actionSection(actions, notes)}
+</section>
+
+<section>
+<h2>硬體錢包上會看到什麼</h2>
+<div class="wallet">${walletSection(template, groups, inputs)}</div>
 </section>
 
 <section>
@@ -789,9 +909,9 @@ ${rawPast}
 
 <section>
 <h2>細節</h2>
+<div class="panel"><h3>協議概況</h3>${overviewSection(entriesOf(subject, registry), inputs, notes)}</div>
 <details><summary>每次簽名前，程式會自動檢查的 ${signing.length} 件事</summary><ul class="checks">${signing.map((text) => checkItem(pass('signing', text), undefined))}</ul></details>
 <details><summary>交易裡每個欄位必須是什麼</summary>${fieldTable(groups, notes)}</details>
-<details><summary>錢包會怎麼顯示這筆交易（ERC-7730）${wallet.unshown === 0 ? '' : `：${wallet.unshown} 個模板綁住的欄位錢包不顯示`}</summary><div class="wallet">${wallet.body}</div></details>
 ${detailsSection(inputs, entriesOf(subject, registry), notes, subject)}
 </section>
 

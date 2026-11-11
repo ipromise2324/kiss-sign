@@ -106,23 +106,44 @@ test('notes.json is refused for an entry the report does not cover, an unknown f
   refuse({ fields: { '3.to': 'x' } }, /"3\.to" is not a key of the report's field table/);
   refuse({ verdict: 'MATCH' }, /unknown key "verdict"/);
   refuse({ summary: 'a‮b' }, /summary: holds a control or bidirectional character/);
-  refuse({ judgments: [{ text: 'x', sources: ['https://example.com/<a>'] }] }, /judgments\[0\]\.sources\[0\]: not an https URL/);
-  refuse({ judgments: [{ text: 'x', sources: ['javascript:alert(1)'] }] }, /not an https URL/);
-  refuse({ judgments: [{ text: 'x'.repeat(201) }] }, /judgments\[0\]\.text: longer than 200 characters/);
-  refuse({ judgments: Array.from({ length: 5 }, () => ({ text: 'x' })) }, /judgments: more than 4 items/);
+  refuse({ judgments: [{ text: 'x', recommendation: 'y', sources: ['https://example.com/<a>'] }] }, /judgments\[0\]\.sources\[0\]: not an https URL/);
+  refuse({ judgments: [{ text: 'x', recommendation: 'y', sources: ['javascript:alert(1)'] }] }, /not an https URL/);
+  refuse({ judgments: [{ text: 'x'.repeat(201), recommendation: 'y' }] }, /judgments\[0\]\.text: longer than 200 characters/);
+  refuse({ judgments: [{ text: 'x' }] }, /judgments\[0\]: recommendation is missing/);
+  refuse({ judgments: Array.from({ length: 5 }, () => ({ text: 'x', recommendation: 'y' })) }, /judgments: more than 4 items/);
+  refuse({ reviews: { 'usdc/abi': { status: 'ok', text: 'x', recommendation: 'y' } } }, /reviews\.usdc\/abi\.status: not "confirmed" or "concern"/);
+  refuse({ reviews: { 'usdc/abi': { status: 'confirmed', text: 'x' } } }, /reviews\.usdc\/abi: recommendation is missing/);
+  refuse({ overview: [{ text: 'x' }] }, /overview\[0\]: title is missing/);
+  refuse({ overview: Array.from({ length: 7 }, () => ({ title: 't', text: 'x' })) }, /overview: more than 6 items/);
   refuse({ tests: Array.from({ length: 3 }, () => ({ text: 'x' })) }, /tests: more than 2 items/);
   refuse({ entries: { usdc: { checks: { abi: 'x'.repeat(201) } } } }, /entries\.usdc\.checks\.abi: longer than 200 characters/);
   await assert.rejects(render({ ...committedNotes, entries: { usdc: { checks: { 'source.page.hidden': 'x' } } } }), (e: unknown) => e instanceof NotesError && /"source\.page\.hidden" is not a result of this entry/.test(e.message));
 });
 
+test('every result the signer must look at needs the AI review, and a review of any other result is refused', async () => {
+  const reviews = committedNotes.reviews as Record<string, unknown>;
+  const refused = (notes: unknown, message: RegExp) => assert.rejects(render(notes), (e: unknown) => e instanceof NotesError && message.test(e.message));
+  await refused({ ...committedNotes, reviews: {} }, /"morpho-oracle-cbbtc-usdc-86\/source\.page" is a result the signer must look at and has no review/);
+  const extra = { status: 'confirmed', text: 'x', recommendation: 'y' };
+  await refused({ ...committedNotes, reviews: { ...reviews, 'usdc/abi': extra } }, /"usdc\/abi" is not a result the signer must look at/);
+  await refused({ ...committedNotes, reviews: { ...reviews, 'morpho-blue/code.1': extra } }, /"morpho-blue\/code\.1" is not a result the signer must look at/);
+});
+
 test('AI text is escaped and always carries the AI tag; the page holds no script', async () => {
   const hostile = '<script>alert(1)</script><img src=x onerror=alert(1)>';
-  const html = await render({ ...committedNotes, title: hostile, judgments: [{ title: hostile, text: hostile }], fields: { '2.to': hostile }, entries: { usdc: { checks: { abi: hostile } } } });
+  const reviews = { 'morpho-oracle-cbbtc-usdc-86/source.page': { status: 'concern', text: hostile, recommendation: hostile } };
+  const html = await render({ ...committedNotes, title: hostile, judgments: [{ title: hostile, text: hostile, recommendation: hostile }], reviews, overview: [{ title: hostile, text: hostile }], fields: { '2.to': hostile }, entries: { usdc: { checks: { abi: hostile } } } });
   assert.ok(!/<script|<img|onerror=/i.test(html.replace(/&lt;script|&lt;img|onerror=alert/g, '')), 'no tag or handler from the notes reaches the page');
   assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'), 'the text shows escaped');
   assert.match(html, /<p class="lede">[^]*?<span class="by ai">AI 研究<\/span><\/p>/, 'the summary carries the AI tag');
   const judged = section(html, '需要你做的事');
-  assert.match(judged, /<li><span class="mark warn">!<\/span><div><b>&lt;script&gt;[^]*?<span class="by ai">AI 研究<\/span><\/div><\/li>/, 'an AI judgment carries the AI tag');
+  assert.match(judged, /<li><span class="mark warn">!<\/span><div><b>&lt;script&gt;[^<]*<\/b> &lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><div class="rec"><b>建議：<\/b>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div><\/div><\/li>/, 'an AI judgment and its recommendation carry the AI tag');
+  assert.match(
+    judged,
+    /讀到的來源頁面上沒有這個地址<span class="by prog">程式<\/span><\/div><div class="review concern"><div><b>AI 有疑慮：<\/b>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div><div class="rec"><b>建議：<\/b>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div><\/div>/,
+    'the AI review sits under the program line, which keeps its program tag',
+  );
+  assert.match(section(html, '細節'), /<span class="label">&lt;script&gt;[^<]*<\/span><div>&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div>/, 'an overview line carries the AI tag');
   assert.match(html, /<td>&lt;script&gt;[^<]*&lt;\/script&gt;&lt;img src=x onerror=alert\(1\)&gt;<span class="by ai">AI 研究<\/span><\/td>/, 'a field meaning carries the AI tag');
   assert.match(cards(html).get('usdc') ?? '', /沒有用原始碼重新編譯來比對<span class="by prog">程式<\/span>[^]*?<div class="why">&lt;script&gt;[^<]*<span class="by ai">AI 研究<\/span><\/div>/, 'a line under a program result carries the AI tag and keeps the result');
 });
@@ -133,7 +154,7 @@ test('every link is a registry source, a docs.json page, a notes.json source, an
   const allowed = new Set<string>([
     ...entriesOf(subject, registry).map((e) => e.source),
     ...subject.docs.map((d) => d.url),
-    ...[...notes.judgments, ...notes.tests, ...[...notes.entries.values()].flatMap((e) => e.notes), ...notes.details.flatMap((d) => d.notes)].flatMap((n) => n.sources),
+    ...[...notes.judgments, ...notes.overview, ...notes.tests, ...[...notes.entries.values()].flatMap((e) => e.notes), ...notes.details.flatMap((d) => d.notes)].flatMap((n) => n.sources),
   ]);
   const links = [...html.matchAll(/(?:href|src)="([^"]*)"/g)].map((m) => (m[1] as string).replace(/&amp;/g, '&').replace(/&#39;/g, "'"));
   assert.ok(links.length > 0);
@@ -147,7 +168,11 @@ test('a real disagreement or a page the program cannot read is for the signer to
   const todo = section(html, '需要你做的事');
   assert.match(
     todo,
-    /FINDING<\/span><b><a href="#entry-morpho-oracle-cbbtc-usdc-86">morpho-oracle-cbbtc-usdc-86<\/a>：<\/b>程式不跑 JavaScript，讀到的來源頁面上沒有這個地址。請在瀏覽器打開 <a href="https:\/\/app\.morpho\.org\/[^"]+">[^<]+<\/a>，確認頁面上的 oracle 地址是 <span class="mono">0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a<\/span>/,
+    /FINDING<\/span><b><a href="#entry-morpho-oracle-cbbtc-usdc-86">morpho-oracle-cbbtc-usdc-86<\/a>：<\/b>程式不跑 JavaScript，讀到的來源頁面上沒有這個地址<span class="by prog">程式<\/span><\/div><div class="review confirmed"><div><b>AI 已確認：<\/b>/,
+  );
+  assert.match(
+    cards(html).get('morpho-oracle-cbbtc-usdc-86') ?? '',
+    /讀到的來源頁面上沒有這個地址<span class="by prog">程式<\/span><div class="why">來源頁面 <a href="https:\/\/app\.morpho\.org\/[^"]+">[^<]+<\/a>；要找的 oracle 地址是 <span class="mono">0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a<\/span>。/,
   );
   assert.doesNotMatch(todo, /entry-(?:cbbtc|usdc)"/, 'nothing to compare is not a thing to do');
   const [cbbtcOpen, cbbtcFolded] = (cards(html).get('cbbtc') ?? '').split('<details>');
@@ -161,17 +186,44 @@ test('a real disagreement or a page the program cannot read is for the signer to
   const irm = registry.entries.get('adaptive-curve-irm')!;
   const spans = new Map([...inputs.spans, [blue.address, ['FINDING: block 18883124 runs `0x00`']], [irm.address, ['UNVERIFIABLE at block 18883123']]]);
   const changed = { ...inputs, spans };
-  const rendered = renderHtml(changed, parseNotes(committedNotes, keys), TITLE, []);
+  const review = { status: 'concern', text: 'x', recommendation: 'y' };
+  const reviews = { ...(committedNotes.reviews as Record<string, unknown>), 'morpho-blue/code.1': review, 'adaptive-curve-irm/code.1': review };
+  const rendered = renderHtml(changed, parseNotes({ ...committedNotes, reviews }, keys), TITLE, []);
   assertFlagsKept(renderReport(changed, TITLE), rendered);
   const injected = section(rendered, '需要你做的事');
   assert.match(injected, /FINDING<\/span><b><a href="#entry-morpho-blue">morpho-blue<\/a>：<\/b>區塊 <span class="num">18883124<\/span> 前後的程式碼跟記錄的不符/);
   assert.match(injected, /UNVERIFIABLE<\/span><b><a href="#entry-adaptive-curve-irm">adaptive-curve-irm<\/a>：<\/b>區塊 <span class="num">18883124<\/span> 前後的程式碼讀不到/);
 });
 
-test('the wallet section shows, for each call, the fields an ERC-7730 wallet hides that the template binds', () => {
+test('the wallet section mocks each call\'s screen from the program\'s labels and the template\'s rules, and names what it hides', () => {
   const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
-  assert.match(html, /<h3>呼叫 1：<code>approve<\/code>，對象 <code>usdc<\/code><\/h3><p>沒有描述檔，錢包會顯示原始資料。/);
-  assert.match(html, /<span class="mark warn">!<\/span><div><code>marketParams\.oracle<\/code>：錢包不會顯示 <code>oracle<\/code>。模板綁住它/);
-  assert.match(html, /<span class="mark ok">✓<\/span><div><code>assets<\/code>：錢包會顯示。模板綁住它：card 上的 <code>amount<\/code>/);
+  const wallet = section(html, '硬體錢包上會看到什麼');
+  const afterActions = html.slice(html.indexOf('<h2>需要你做的事</h2>') + 1);
+  assert.ok(afterActions.slice(afterActions.indexOf('<h2>')).startsWith('<h2>硬體錢包上會看到什麼</h2>'), 'the wallet section follows the action list');
+  assert.match(wallet, /<h3>呼叫 1：<code>approve<\/code>，對象 <code>usdc<\/code><\/h3><div class="screen raw"><div class="line">原始資料（看不懂的十六進位）<\/div><\/div>/);
+  assert.match(wallet, /<div class="line"><span class="label">金額<\/span>你在 card 填的數量（usdc）<\/div>/);
+  assert.match(wallet, /<div class="line"><span class="label">抵押品<\/span>cbbtc<\/div>/);
+  assert.match(wallet, /<div class="line"><span class="label">LLTV<\/span>86%<\/div>/);
+  assert.match(wallet, /<div class="line"><span class="label">截止時間<\/span>任意<\/div>/);
+  assert.match(wallet, /<b>錢包不會顯示：<\/b>借出代幣、oracle、利率模型、拉代幣方式。只看錢包分不出是哪個 market。<span class="by prog">程式<\/span>/);
   assert.doesNotMatch(html, /descriptorHash/, 'the raw ERC-7730 output stays in the Markdown report');
+});
+
+test('every line of a result list starts with its mark', () => {
+  const html = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8');
+  const lists = [...html.matchAll(/<ul class="checks">([^]*?)<\/ul>/g)].map((m) => m[1] as string);
+  assert.ok(lists.length > 0);
+  for (const list of lists) {
+    for (const item of list.split('<li>').slice(1)) assert.match(item, /^<span class="mark (?:ok|warn|na|info)">/, `a result line without a mark: ${item.slice(0, 80)}`);
+  }
+  const tested = section(html, '拿真實交易測過').match(/<li>/g)?.length ?? 0;
+  assert.ok(tested <= 4, `拿真實交易測過 has ${tested} lines`);
+});
+
+test('the protocol overview is visible, and states from the code pins how long each contract has run unchanged', () => {
+  const details = section(readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_HTML_FILE), 'utf8'), '細節');
+  const overview = details.slice(0, details.indexOf('<details>'));
+  assert.match(overview, /<h3>協議概況<\/h3>/);
+  assert.match(overview, /<code>morpho-blue<\/code>：程式碼自區塊 <span class="num">18883124<\/span> 起沒變過/);
+  assert.match(overview, /<span class="label">程式碼多久沒變<\/span>[^]*<span class="by prog">程式<\/span><\/div><\/li><\/ul>/);
 });

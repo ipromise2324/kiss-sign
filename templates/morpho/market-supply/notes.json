@@ -11,18 +11,51 @@
       "text": "2026-08-25 才部署，上線約 2.5 個月。兩份稽核（Blackthorn、Trustsec）日期都是部署當天；AI 沒讀這兩份 PDF，它們的發現和涵蓋的 commit 都沒查。",
       "sources": [
         "https://github.com/morpho-org/bundles/tree/3537d0039bdc3ce7af1bbd3c02eb96a04e6e2c6b/audits"
-      ]
+      ],
+      "recommendation": "先存一小筆試試。想更放心，可以等 AI 讀完這兩份稽核報告再存大額。"
     },
     {
       "title": "oracle 把 cbBTC 當成 BTC、把 USDC 當成 1 美元。",
       "text": "它只讀 Chainlink 的 BTC/USD。cbBTC 對 BTC 脫鉤或 USDC 脫鉤時價格不會反映，會變成存款人承擔的壞帳；這個 market 到目前沒有壞帳。",
       "sources": [
         "https://reference-data-directory.vercel.app/feeds-mainnet.json"
+      ],
+      "recommendation": "能接受 cbBTC 或 USDC 脫鉤的風險才存。這是這個 market 本身的風險，不是這筆交易的問題。"
+    }
+  ],
+  "reviews": {
+    "morpho-oracle-cbbtc-usdc-86/source.page": {
+      "status": "confirmed",
+      "text": "oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a，根據三處：Morpho API 對這個 market id 回答的 oracle 就是它；market id 是包含 oracle 在內五個參數的雜湊，程式每次都重算；Blockscout 的部署紀錄顯示它由 Morpho 官方地址頁列出的 ChainlinkOracleV2 factory 建立。AI 這次沒有用瀏覽器打開 app 頁面。",
+      "recommendation": "可以接受。想親眼確認，就用瀏覽器打開 app 頁面，看 oracle 地址是不是同一個。"
+    }
+  },
+  "overview": [
+    {
+      "title": "升級和管理者",
+      "text": "Morpho Blue 不可升級。管理者是 Safe 0xcBa28b38103307Ec8dA98377ffF9816C164f9AFa（最後一次 SetOwner 在區塊 18949595），只能開放新的利率模型和 LLTV、設定手續費；手續費從沒設過。USDC 和 cbBTC 是可升級、有黑名單功能的代幣。"
+    },
+    {
+      "title": "稽核",
+      "text": "Morpho Blue、利率模型、oracle、BlueBundlesV1 各自的 repo 都有稽核報告資料夾，連結如下。BlueBundlesV1 那兩份 AI 沒讀內容。",
+      "sources": [
+        "https://github.com/morpho-org/morpho-blue/tree/430bd61d8ab9238c1bde327eec2bfcd3f494fe9d/audits",
+        "https://github.com/morpho-org/morpho-blue-irm/tree/58ce91fd04840372443a7080a5b32067b17b3d60/audits",
+        "https://github.com/morpho-org/morpho-blue-oracles/tree/f2f490cfd37f3feb06a5ccdc1b6ee2f789d561fa/audits",
+        "https://github.com/morpho-org/bundles/tree/3537d0039bdc3ce7af1bbd3c02eb96a04e6e2c6b/audits"
       ]
     },
     {
-      "title": "四個合約找不到官方寫的部署者。",
-      "text": "Morpho Blue、利率模型、BlueBundlesV1、cbBTC 的建立者檢查，只靠官方頁面列出它們的地址。"
+      "title": "過去事故",
+      "text": "2024-10-14 另一個 market（LeadBlock）的 oracle 設定錯誤，損失 25 萬美元。2025-04-10 Morpho app 前端的改動造成漏洞，白帽搶先處理，沒有資金損失，Morpho 說合約沒受影響。",
+      "sources": [
+        "https://api.llama.fi/hacks",
+        "https://morpho.org/blog/morpho-app-incident-april-10-2025/"
+      ]
+    },
+    {
+      "title": "市場規模",
+      "text": "Morpho API 顯示這個 market 約有 3.496 億 USDC 存款、3.043 億借款（使用率 87%），沒有壞帳；是主網九個 USDC/cbBTC market 裡最大的。"
     }
   ],
   "entries": {
@@ -36,18 +69,6 @@
           "text": "Morpho 官方的合約地址頁把它列為「Morpho」。",
           "sources": [
             "https://docs.morpho.org/developers/contracts/addresses/"
-          ]
-        },
-        {
-          "text": "不可升級。它的管理者只能開放新的利率模型和 LLTV、設定手續費和手續費收款人。"
-        },
-        {
-          "text": "Blockscout 的事件記錄：最後一次 SetOwner 在區塊 18949595，交給 Safe 0xcBa28b38103307Ec8dA98377ffF9816C164f9AFa，現在仍是管理者。SetFee 和 SetFeeRecipient 從來沒執行過。Morpho API 顯示這個 market 的手續費是 0。"
-        },
-        {
-          "text": "稽核報告。",
-          "sources": [
-            "https://github.com/morpho-org/morpho-blue/tree/430bd61d8ab9238c1bde327eec2bfcd3f494fe9d/audits"
           ]
         }
       ]
@@ -84,12 +105,6 @@
           "sources": [
             "https://docs.morpho.org/developers/contracts/addresses/"
           ]
-        },
-        {
-          "text": "稽核報告。",
-          "sources": [
-            "https://github.com/morpho-org/morpho-blue-irm/tree/58ce91fd04840372443a7080a5b32067b17b3d60/audits"
-          ]
         }
       ]
     },
@@ -100,12 +115,6 @@
           "text": "改用兩件事綁住它：一是 market id。你用 app 連結裡的 id 指定 market，而 id 是五個參數（oracle 也在內）的 keccak256。二是它的建立者：它由 MorphoChainlinkOracleV2 factory 0x3A7bB36Ee3f3eE32A60e9f2b33c1e5f2E83ad766 建立，Morpho 官方地址頁把這個 factory 列為「Morpho ChainlinkOracleV2 Factory」。",
           "sources": [
             "https://docs.morpho.org/developers/contracts/addresses/"
-          ]
-        },
-        {
-          "text": "稽核報告。",
-          "sources": [
-            "https://github.com/morpho-org/morpho-blue-oracles/tree/f2f490cfd37f3feb06a5ccdc1b6ee2f789d561fa/audits"
           ]
         }
       ],
@@ -201,9 +210,6 @@
         },
         {
           "text": "回答：Morpho Blue 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb；借出代幣 USDC 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48；抵押品 cbBTC 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf；oracle 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a，類型 ChainlinkOracleV2；利率模型 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC；lltv 860000000000000000，建立於區塊 20679422，listed，沒有警告，壞帳 0，已實現壞帳 0。程式會用 market id 檢查這五個參數。"
-        },
-        {
-          "text": "Morpho API 顯示這個 market 約有 3.496 億 USDC 存款、3.043 億借款（使用率 87%），沒有壞帳，存款來自 Steakhouse、Gauntlet、Spark 等策展人的 vault。它是主網九個 USDC/cbBTC market 裡最大的一個。"
         }
       ]
     },
@@ -221,23 +227,6 @@
         },
         {
           "text": "cbBTC：verified 名稱 FiatTokenProxy，實作 FiatTokenV2_1 在 0x7458bfDC30034EB860B265E6068121D18Fa5Aa72。區塊 20570548 由 0x00000000001c3dC9A681A014e2732bF1419aFAec 在交易 0x09001d384305288073faa8f5cf3051c6cc13d55b66114064be17e12f71469753 建立。"
-        }
-      ]
-    },
-    {
-      "title": "協議健康",
-      "notes": [
-        {
-          "text": "DefiLlama 的 hacks API 列出一筆 Morpho 相關事件：「LeadBlock's Morpho Blue Market」，2024-10-14，25 萬美元，是另一個 market 的 oracle 設定錯誤。",
-          "sources": [
-            "https://api.llama.fi/hacks"
-          ]
-        },
-        {
-          "text": "2025-04-10 Morpho app 的前端 SDK 改動，把授權送給 Bundler3 而不是它的 adapter。一個白帽搶先處理了漏洞，沒有資金損失，Morpho 說它的合約沒有受影響。",
-          "sources": [
-            "https://morpho.org/blog/morpho-app-incident-april-10-2025/"
-          ]
         }
       ]
     }

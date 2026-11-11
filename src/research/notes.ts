@@ -9,6 +9,15 @@ export const NOTES_FILE = 'notes.json';
 /** One thing the AI says, with the pages it read it on. */
 export type Note = { readonly title: string | undefined; readonly text: string; readonly sources: readonly HttpsUrl[] };
 
+/** Something the AI asks the signer to judge, and what it recommends. */
+export type Judgment = Note & { readonly recommendation: string };
+
+/**
+ * The AI's check of one program result the signer must look at: `confirmed` when what it checked agrees, `concern`
+ * when it does not or could not check. The program shows it under the result and never changes the result for it.
+ */
+export type Review = { readonly status: 'confirmed' | 'concern'; readonly text: string; readonly recommendation: string };
+
 /**
  * What the AI wrote for a template's HTML report, in the signer's language. The program shows every piece as written by
  * the AI and decides nothing from it.
@@ -20,7 +29,14 @@ export type Notes = {
   /** What the transaction does, step by step. */
   readonly steps: readonly string[];
   /** What the AI asks the signer to judge, beside the program's findings: a few, each a sentence or two. */
-  readonly judgments: readonly Note[];
+  readonly judgments: readonly Judgment[];
+  /**
+   * By result id, `<registry name>/<check key>` or a fixture's `fixture.<name>`: the AI's review of that result. Every
+   * result the signer must look at needs one, and no other result may have one.
+   */
+  readonly reviews: ReadonlyMap<string, Review>;
+  /** The protocol at a glance, each line a short label and a sentence or two: upgrades and admin, audits, incidents, size. */
+  readonly overview: readonly Note[];
   /**
    * By registry name: the entry's role in this operation, what else the AI found about it, and by check key, such as
    * `source.page`, one line the page shows under that program result. A line explains a result; it cannot hide one.
@@ -45,7 +61,10 @@ const MAX_TEXT = 2000;
 const MAX_SHORT = 200;
 const MAX_JUDGMENTS = 4;
 const MAX_TESTS = 2;
+const MAX_OVERVIEW = 6;
+const MAX_REVIEW = 300;
 const CHECK_KEY = /^[A-Za-z0-9_.-]{1,120}$/;
+const RESULT_ID = /^[A-Za-z0-9_.-]{1,80}(?:\/[A-Za-z0-9_.-]{1,120})?$/;
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -96,17 +115,43 @@ function byName<T>(path: string, raw: unknown, known: ReadonlySet<string>, what:
 
 const short = (path: string, raw: unknown): Note => note(path, raw, MAX_SHORT);
 
+function judgment(path: string, raw: unknown): Judgment {
+  const { recommendation, ...rest } = keys(path, raw, ['text', 'recommendation'], ['title', 'sources']);
+  return { ...note(path, rest, MAX_SHORT), recommendation: text(`${path}.recommendation`, recommendation, MAX_SHORT) };
+}
+
+function review(path: string, raw: unknown): Review {
+  const value = keys(path, raw, ['status', 'text', 'recommendation'], []);
+  if (value.status !== 'confirmed' && value.status !== 'concern') throw new NotesError(`${path}.status: not "confirmed" or "concern"`);
+  return { status: value.status, text: text(`${path}.text`, value.text, MAX_REVIEW), recommendation: text(`${path}.recommendation`, value.recommendation, MAX_SHORT) };
+}
+
+function overviewItem(path: string, raw: unknown): Note {
+  const item = note(path, raw, MAX_SHORT);
+  if (item.title === undefined) throw new NotesError(`${path}: title is missing`);
+  return item;
+}
+
 /**
  * `notes.json`, refused unless every key is known: `entries` may name only the registry entries the report covers, and
  * `fields` only the keys of the report's field table.
  */
 export function parseNotes(raw: unknown, known: { readonly entries: ReadonlySet<string>; readonly fields: ReadonlySet<string> }): Notes {
-  const value = keys(NOTES_FILE, raw, ['title', 'summary', 'steps'], ['judgments', 'entries', 'fields', 'tests', 'details']);
+  const value = keys(NOTES_FILE, raw, ['title', 'summary', 'steps'], ['judgments', 'reviews', 'overview', 'entries', 'fields', 'tests', 'details']);
+  const reviews = value.reviews === undefined ? {} : value.reviews;
+  if (!isRecord(reviews)) throw new NotesError(`${NOTES_FILE}.reviews: not a JSON object`);
   return {
     title: text(`${NOTES_FILE}.title`, value.title),
     summary: text(`${NOTES_FILE}.summary`, value.summary),
     steps: list(`${NOTES_FILE}.steps`, value.steps, text),
-    judgments: list(`${NOTES_FILE}.judgments`, value.judgments, short, MAX_JUDGMENTS),
+    judgments: list(`${NOTES_FILE}.judgments`, value.judgments, judgment, MAX_JUDGMENTS),
+    reviews: new Map(
+      Object.entries(reviews).map(([id, item]) => {
+        if (!RESULT_ID.test(id)) throw new NotesError(`${NOTES_FILE}.reviews: ${JSON.stringify(id.slice(0, 80))} is not a result id`);
+        return [id, review(`${NOTES_FILE}.reviews.${id}`, item)];
+      }),
+    ),
+    overview: list(`${NOTES_FILE}.overview`, value.overview, overviewItem, MAX_OVERVIEW),
     entries: byName(`${NOTES_FILE}.entries`, value.entries, known.entries, 'a registry entry this report covers', (path, entry) => {
       const fields = keys(path, entry, [], ['role', 'notes', 'checks']);
       const checks = fields.checks === undefined ? {} : fields.checks;
