@@ -4,13 +4,13 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { replayReader } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
-import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
+import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, sourceSiteLine } from '../src/research/listings.ts';
 import { NOTES_FILE, NotesError, notesChanges, parseNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, confidenceOf, htmlDifference, loadNotes, notesKeys, renderHtml, templateFixtures } from '../src/research/report-html.ts';
 import { checkSpans, entriesOf, loadSubject, renderReport, replayInputs, reportRecordingPath } from '../src/research/report.ts';
 import type { ReportInputs, ReportRecording } from '../src/research/report.ts';
-import { pageUrlOf } from '../src/research/source-page.ts';
+import { pageUrlOf, sourceHoldsAddress } from '../src/research/source-page.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 
@@ -20,7 +20,6 @@ const suffixes = loadPublicSuffixList();
 const ID = 'morpho/market-supply';
 const subject = loadSubject(ROOT, registry, { template: ID });
 if (subject.kind !== 'template') throw new Error('unreachable');
-const { docs } = subject;
 const keys = notesKeys(subject, registry);
 const committedNotes = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, NOTES_FILE), 'utf8')) as Record<string, unknown>;
 
@@ -84,9 +83,19 @@ const VOUCHES = /\/(?:source\.coingecko|source\.site|doc\.0x[0-9a-f]{8}\.site)$/
  * compare (a site DefiLlama lists nothing for, while another result of the entry vouches; a compiler not pinned). Every !
  * is in the action list under its own id.
  */
-function assertFlagsKept(markdown: string, html: string): void {
+function assertFlagsKept(markdown: string, html: string, inputs: ReportInputs): void {
+  if (inputs.subject.kind !== 'template') throw new Error('unreachable');
   const expected = new Map<string, string>();
-  const selectors = new Map(docs.map((doc) => [doc.fn.signature, doc.fn.selector]));
+  const selectors = new Map(inputs.subject.docs.map((doc) => [doc.fn.signature, doc.fn.selector]));
+  const pageOf = new Map<string, { readonly url: string; readonly slug: string | undefined }>([
+    ...[...inputs.registry.entries.values()].map((e) => [`${e.name}/source.site`, { url: e.source, slug: e.defillama }] as const),
+    ...inputs.subject.docs.map((d) => [`${d.contract.name}/doc.${d.fn.selector}.site`, { url: d.url, slug: d.contract.defillama }] as const),
+  ]);
+  const unlisted = (id: string) => {
+    const page = pageOf.get(id);
+    const line = page === undefined ? undefined : sourceSiteLine(page.url, page.slug, inputs.listings);
+    return line?.kind === 'finding' && line.cause === 'unlisted';
+  };
   const name = (cell: string) => /^`([a-z0-9.-]+)`$/.exec(cell)?.[1] as string;
   for (const row of tableRows(markdown, '## Official documentation')) {
     const id = `${name(row.get('Contract') as string)}/doc.${selectors.get(name(row.get('Function') as string) ?? (row.get('Function') as string).slice(1, -1))}`;
@@ -99,7 +108,8 @@ function assertFlagsKept(markdown: string, html: string): void {
     expected.set(`${entry}/source.site`, row.get('DefiLlama site') as string);
     expected.set(`${entry}/source.coingecko`, row.get('CoinGecko coin') as string);
     expected.set(`${entry}/source.commit`, row.get('GitHub commit') as string);
-    expected.set(`${entry}/source.page`, row.get('Address on page') as string);
+    const { source, address } = inputs.registry.entries.get(entry)!;
+    expected.set(`${entry}/${sourceHoldsAddress(source, address) ? 'source.url' : 'source.page'}`, row.get('Address on page') as string);
   }
   const spans = new Map<string, number>();
   for (const row of tableRows(markdown, '## Code pins')) {
@@ -126,7 +136,7 @@ function assertFlagsKept(markdown: string, html: string): void {
       assert.equal(result.flag, flag, `${id} keeps its word ${flag}`);
       const entry = id.split('/')[0] as string;
       const vouched = [...shown].some(([other, r]) => other.startsWith(`${entry}/`) && VOUCHES.test(other) && r.mark === 'ok');
-      const nothingToCompare = (/\.site$/.test(id) && vouched) || /compiler-not-pinned/.test(cell);
+      const nothingToCompare = (/\.site$/.test(id) && vouched && unlisted(id)) || /compiler-not-pinned/.test(cell);
       assert.equal(result.mark, nothingToCompare ? 'na' : 'warn', `${id} (${cell}) is for the signer unless it had nothing to compare`);
     }
   }
@@ -151,7 +161,7 @@ test('every committed report.generated.html is what the program writes from the 
     const { inputs, title } = await replayInputs(ROOT, registry, { template: id }, compilers, suffixes);
     if (inputs.subject.kind !== 'template') throw new Error('unreachable');
     const html = renderHtml(inputs, loadNotes(ROOT, inputs.subject, registry)!, title, templateFixtures(ROOT, inputs.subject.template, registry));
-    assertFlagsKept(renderReport(inputs, title), html);
+    assertFlagsKept(renderReport(inputs, title), html, inputs);
     const committed = readFileSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_HTML_FILE), 'utf8');
     assert.equal(htmlDifference(committed, html), undefined, `${TEMPLATES_DIR}/${id}/${GENERATED_HTML_FILE} differs from what the program writes; run \`pnpm report ${id} --render\` and never edit it by hand`);
     if (id !== ID) continue;
@@ -290,7 +300,7 @@ test('a real disagreement or a page the program cannot read is for the signer to
   const review = { status: 'concern', text: 'x', recommendation: 'y' };
   const reviews = { ...(committedNotes.reviews as Record<string, unknown>), 'morpho-blue/code.1': review, 'adaptive-curve-irm/code.1': review };
   const rendered = renderHtml(changed, parseNotes({ ...committedNotes, reviews }, keys), TITLE, []);
-  assertFlagsKept(renderReport(changed, TITLE), rendered);
+  assertFlagsKept(renderReport(changed, TITLE), rendered, changed);
   const injected = section(rendered, '需要你做的事');
   assert.match(injected, /FINDING<\/span><b><a href="#entry-morpho-blue">morpho-blue<\/a>：<\/b>區塊 <span class="num">18883124<\/span> 前後的程式碼跟記錄的不符/);
   assert.match(injected, /UNVERIFIABLE<\/span><b><a href="#entry-adaptive-curve-irm">adaptive-curve-irm<\/a>：<\/b>區塊 <span class="num">18883124<\/span> 前後的程式碼讀不到/);
@@ -314,7 +324,7 @@ test('a site DefiLlama lists nothing for is – only while another result vouche
   const review = { status: 'concern', text: 'x', recommendation: 'y' };
   const reviews = { ...(committedNotes.reviews as Record<string, unknown>), ...Object.fromEntries(alone.map((id) => [id, review])) };
   const html = renderHtml(changed, parseNotes({ ...committedNotes, reviews }, keys), TITLE, []);
-  assertFlagsKept(renderReport(changed, TITLE), html);
+  assertFlagsKept(renderReport(changed, TITLE), html, changed);
   const todo = section(html, '需要你做的事');
   for (const id of alone) {
     assert.match(todo, new RegExp(`<li data-result="${id.replace(/\./g, '\\.')}"><span class="mark warn">!</span><div><div class="result"><span class="flag">FINDING</span><b><a [^>]+>[^<]+</a>：</b>沒有第二個來源能證明這個來源屬於這個協議<span class="by prog">程式</span>`), id);
