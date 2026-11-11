@@ -330,10 +330,25 @@ test('two files pinned in one repository ask GitHub for its default branch once'
   assert.deepEqual([...pages.commits.values()].map((c) => c.kind), ['on-default', 'on-default']);
 });
 
-test('the GitHub rate limit is a finding that says the commit was not checked', async () => {
+test('a GitHub rate limit or a GitHub server error is UNVERIFIABLE, never a FINDING: no answer is no disagreement', async () => {
   const limited = { status: 403, text: '{"message":"API rate limit exceeded for 1.2.3.4."}', headers: { 'x-ratelimit-remaining': '0' } };
-  assert.match(await github(limited, limited), /github {5}FINDING commit ca9cb0d2d5f5 of safe-global\/safe-deployments: the GitHub API rate limit is reached \(60 requests an hour without a token\); the commit is not checked, run again later/);
-  assert.match(await github({ status: 429, text: '' }), /github {5}FINDING .*: the GitHub API rate limit is reached/);
+  const unchecked = /github {5}UNVERIFIABLE commit ca9cb0d2d5f5 of safe-global\/safe-deployments: api\.github\.com answered rate limited \(HTTP 403\), the GitHub API rate limit \(60 requests an hour without a token\); the commit is not checked, run again later/;
+  for (const text of [await github(limited, limited), await github(limited)]) {
+    assert.match(text, unchecked);
+    assert.doesNotMatch(text, /github {5}FINDING/);
+  }
+  assert.match(await github({ status: 429, text: '' }), /github {5}UNVERIFIABLE .*: api\.github\.com answered rate limited \(HTTP 429\)/);
+  assert.match(await github({ status: 503, text: '' }), /github {5}UNVERIFIABLE .*: api\.github\.com answered HTTP 503; the commit is not checked, run again later/);
+  assert.match(await github({ status: 200, text: JSON.stringify({ status: 'behind' }) }, { status: 404, text: '{"message":"Not Found"}' }), /github {5}FINDING .*: GitHub has no repository safe-global\/safe-deployments/);
+});
+
+test('a source page whose server fails is UNVERIFIABLE, while a page it answers is missing stays a FINDING', async () => {
+  const failing = await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: { status: 502, text: '' } });
+  assert.match(failing, /page {7}UNVERIFIABLE https:\/\/docs\.morpho\.org\/addresses answered HTTP 502/);
+  assert.match(failing, /1 entries, 0 findings, 1 unverifiable \(r\)/);
+  const unreachable = await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, {});
+  assert.match(unreachable, /page {7}UNVERIFIABLE docs\.morpho\.org unreachable/);
+  assert.match(await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: { status: 404, text: '' } }), /page {7}FINDING https:\/\/docs\.morpho\.org\/addresses answered HTTP 404/);
 });
 
 test('a GitHub source on a branch name, a tree, or the repository root is not pinned', async () => {
