@@ -44,7 +44,7 @@ pnpm install && pnpm add -g .
 kiss-sign init --safe 0x…
 ```
 
-`init` creates `~/.kiss-sign/.env`, readable by you only. Fill in `ALCHEMY_API_KEY`, a free key from Alchemy, which `verify` and `card new` need. `pnpm add -g .` links a `kiss-sign` command on your `PATH` to this clone, so `git pull` updates what it runs. If pnpm says its global bin directory is not in `PATH`, run `pnpm setup` once and open a new terminal.
+`init` creates `~/.kiss-sign/.env`, readable by you only. Fill in `ALCHEMY_API_KEY`, a free key from Alchemy, which `verify` and `card new` need. `pnpm add -g .` links a `kiss-sign` command on your `PATH` to this clone, so `git pull` updates what it runs; run `pnpm install` after each `git pull`, or a new dependency stops `kiss-sign` until you do. If pnpm says its global bin directory is not in `PATH`, run `pnpm setup` once and open a new terminal.
 
 To build templates or run the tests, `pnpm test` and the research scripts download the pinned compilers and lists they need on first use, and refuse any file whose sha256 differs from its pin.
 

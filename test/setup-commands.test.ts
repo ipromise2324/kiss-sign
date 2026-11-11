@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -70,6 +70,11 @@ test('init creates a key file readable by its owner only, with an empty line per
   assert.equal(again.code, 0);
   assert.match(again.stdout, /is already there and was left as it is/);
   assert.equal(readFileSync(keyFile, 'utf8'), 'ALCHEMY_API_KEY=kept-by-the-signer\n');
+  assert.doesNotMatch(again.stdout, /Warning/);
+
+  chmodSync(keyFile, 0o644);
+  const loose = await run(['init', '--safe', SAFE], home);
+  assert.match(loose.stdout, new RegExp(`Warning: other users can read ${keyFile} \\(mode 644\\)\\. Run chmod 600 ${keyFile}\\.`));
 });
 
 test('book add refuses without a terminal and adds nothing', async () => {
