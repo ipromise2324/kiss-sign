@@ -2,6 +2,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { Env } from '../keys.ts';
 import { mainnetEndpoints } from './providers.ts';
 import type { Endpoint, ProviderName } from './providers.ts';
+import type { NoteUnread } from './https.ts';
 import { httpsTransport } from './rpc.ts';
 import type { Transport } from './rpc.ts';
 import { parseBlockHeader, parseBlockRef, parseData, parseReceipt, parseSimulation, parseTransaction, hash32, quantity } from './types.ts';
@@ -41,6 +42,8 @@ export type ReaderOptions = {
   readonly retryPausesMs?: readonly number[];
   /** Pauses after a rate-limited answer, long enough for a public endpoint's window to pass. */
   readonly rateLimitPausesMs?: readonly number[];
+  /** Told of each provider that gave no answer after every retry, so a recording can refuse to keep the read. */
+  readonly note?: NoteUnread;
 };
 
 type Answer = { readonly kind: 'result'; readonly value: unknown } | { readonly kind: 'reverted' };
@@ -146,7 +149,10 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
       const result = await attempt(endpoint, method, params);
       if (result.kind === 'failed') {
         const pause = result.cause === 'rate-limited' ? rateLimitPauses[limited++] : pauses[failed++];
-        if (pause === undefined) return { provider: endpoint.provider, kind: 'failed', cause: result.cause };
+        if (pause === undefined) {
+          options.note?.(`${endpoint.provider} ${method.name}: ${result.cause}`);
+          return { provider: endpoint.provider, kind: 'failed', cause: result.cause };
+        }
         await new Promise((resolve) => setTimeout(resolve, pause));
         continue;
       }

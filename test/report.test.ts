@@ -141,6 +141,11 @@ test('a page that does not name the function is a FINDING', () => {
   assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/docs\.morpho\.org\/developers\/contracts\/bundles\/> \| PASS \| n\/a \| FINDING \|/);
 });
 
+test('a page that got no answer is UNVERIFIABLE, never a FINDING', () => {
+  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.includes('docs.morpho.org/developers/contracts/bundles') ? ({ kind: 'unread', why: `${url} answered HTTP 503` } as Page) : page]));
+  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/docs\.morpho\.org\/developers\/contracts\/bundles\/> \| PASS \| n\/a \| UNVERIFIABLE \|/);
+});
+
 test('the report prints no text from a page or a listing', () => {
   const text = quick();
   const foreign = [...recording.coingecko.flatMap((c) => [c.name, c.symbol]), ...recording.defillama.map((p) => p.name)].filter((t) => t.length > 0 && !/^[a-z0-9-]+$/.test(t));
@@ -295,7 +300,7 @@ const vaultRecording: { exchanges: Exchange[] } = JSON.parse(readFileSync(join(R
 test('--compare reads each vault again at the blocks its evidence names, so a changed month, holder count or top-10 share differs', async () => {
   const transport = replayTransport(vaultRecording.exchanges, REPLAY_ENDPOINTS);
   const reader = createReader(REPLAY_ENDPOINTS, transport, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
-  const alchemy = alchemyCall(transport, REPLAY_ENDPOINTS[0].url);
+  const alchemy = alchemyCall(transport, REPLAY_ENDPOINTS[0].url, () => {}, []);
   const read = async (vault: RegistryEntry, at: BlockTag) => {
     const evidence = await gatherVaultEvidence(reader, alchemy, vault, at);
     return 'kind' in evidence ? `UNVERIFIABLE ${evidence.reason}` : formatVaultEvidence(evidence, registry);

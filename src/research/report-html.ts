@@ -96,6 +96,14 @@ const CONFIDENCE: Readonly<Record<Confidence, string>> = { high: '高信心', me
 
 const pass = (key: string, text: Html): Check => ({ key, status: 'ok', text });
 const act = (key: string, text: Html, why?: Html): Check => ({ key, status: 'act', flag: 'FINDING', text, ...(why === undefined ? {} : { why }) });
+/** A read that got no answer: no disagreement, but nothing checked either, so the signer still looks at it. */
+const unread = (key: string, what: Html): Check => ({
+  key,
+  status: 'act',
+  flag: 'UNVERIFIABLE',
+  text: h`程式這次沒讀到${what}（網路或對方服務失敗），沒有比對`,
+  why: h`這不是比對不合。重新執行 <code>pnpm report --record</code> 再讀一次。`,
+});
 
 const why = (text: Html | undefined): Part => (text === undefined ? '' : h`<div class="why">${text}</div>`);
 const explained = (line: string | undefined): Part => (line === undefined ? '' : h`<div class="why">${line}${AI}</div>`);
@@ -274,6 +282,7 @@ function siteCheck(key: string, what: Html, url: URL, slug: string | undefined, 
       vouches: true,
     };
   }
+  if (line.kind === 'unverifiable') return unread(key, h`${what}`);
   if (line.cause === 'unlisted') {
     const unlisted = h`DefiLlama 上${protocol} 沒有登記${thing}，${what}的${thing}沒比對。`;
     return {
@@ -298,6 +307,7 @@ function sourceChecks(entry: RegistryEntry, lines: readonly Line[]): Check[] {
   const order: readonly Line['check'][] = ['page', 'url', 'defillama', 'github', 'coingecko'];
   return [...lines].sort((a, b) => order.indexOf(a.check) - order.indexOf(b.check)).map((line): Check => {
     const key = SOURCE_KEYS[line.check];
+    if (line.kind === 'unverifiable') return unread(key, line.check === 'github' ? h`來源檔案 commit 的 GitHub 比對` : h`來源頁面`);
     const ok = line.kind === 'agrees';
     switch (line.check) {
       case 'page':
@@ -329,7 +339,9 @@ function docChecks(doc: DocLink, inputs: ReportInputs): Check[] {
   const key = (check: string) => `doc.${doc.fn.selector}.${check}`;
   const where = h`文件頁面 ${link(doc.url)}；函式 ${c(doc.fn.signature)}，selector ${c(doc.fn.selector)}。`;
   const pageCheck =
-    page?.kind !== 'served'
+    page?.kind === 'unread'
+      ? unread(key('page'), h` ${fn} 的文件頁面`)
+      : page?.kind !== 'served'
       ? act(key('page'), h`程式沒讀到 ${fn} 的文件頁面`, where)
       : page.blocks.some((block) => wordOf(doc.fn).test(block.text))
         ? pass(key('page'), h`官方文件頁面寫了 ${fn} 這個函式名稱：${link(doc.url)}`)
@@ -339,10 +351,13 @@ function docChecks(doc: DocLink, inputs: ReportInputs): Check[] {
     siteCheck(key('site'), h`${fn} 的文件頁面`, url, doc.contract.defillama, sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings)),
   ];
   if (isGitHubPage(url)) {
+    const commit = githubLine(url, inputs.pages.commits).kind;
     checks.push(
-      githubLine(url, inputs.pages.commits).kind === 'agrees'
+      commit === 'agrees'
         ? pass(key('commit'), h`${fn} 的文件固定在一個 commit，而且在預設分支上`)
-        : act(key('commit'), h`${fn} 的文件 commit 沒能確認在預設分支上`),
+        : commit === 'unverifiable'
+          ? unread(key('commit'), h` ${fn} 文件 commit 的 GitHub 比對`)
+          : act(key('commit'), h`${fn} 的文件 commit 沒能確認在預設分支上`),
     );
   }
   return checks;
@@ -547,11 +562,16 @@ function plainChecks(template: Template, registry: Registry, trouble: { readonly
 const entryLink = (name: string): Html => h`<a href="#entry-${name}">${name}</a>`;
 const APPROVE = 'approve(address,uint256)';
 
-/** What one call does, in a few words: an ERC-20 approval names its spender and amount; any other call its function. */
+const sendsNoEth = (value: Rule): boolean => value.kind === 'const' && value.value.kind === 'uint' && value.value.value === 0n;
+
+/**
+ * What one call does, in a few words: a call with no data sends ETH, or with a value fixed at 0 does nothing but run;
+ * an ERC-20 approval names its spender and amount; any other call its function.
+ */
 function callStep(call: Template['calls'][number], template: Template, registry: Registry): Html {
   const to = namesOf(call.to, template, registry);
   const target = to.length === 0 ? ruleZh(call.to, template, registry) : joined(to.map(entryLink), ' 或 ');
-  if (call.data === 'empty') return h`Safe → ${target}：送出 ETH`;
+  if (call.data === 'empty') return sendsNoEth(call.value) ? h`Safe → ${target}：空呼叫，不帶資料、不送出 ETH` : h`Safe → ${target}：送出 ETH`;
   const [spender, value] = call.data.args;
   if (call.data.fn.signature === APPROVE && spender !== undefined && value !== undefined) {
     const who = namesOf(spender, template, registry);

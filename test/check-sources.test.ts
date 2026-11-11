@@ -7,7 +7,8 @@ import type { RegistryEntry } from '../src/registry.ts';
 import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording } from '../src/research/listings.ts';
 import type { Listings } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
-import { gatherSourcePages } from '../src/research/source-page.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
+import { gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
 import type { HttpGet, SourcePages } from '../src/research/source-page.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -330,10 +331,103 @@ test('two files pinned in one repository ask GitHub for its default branch once'
   assert.deepEqual([...pages.commits.values()].map((c) => c.kind), ['on-default', 'on-default']);
 });
 
-test('the GitHub rate limit is a finding that says the commit was not checked', async () => {
+test('a GitHub rate limit or a GitHub server error is UNVERIFIABLE, never a FINDING: no answer is no disagreement', async () => {
   const limited = { status: 403, text: '{"message":"API rate limit exceeded for 1.2.3.4."}', headers: { 'x-ratelimit-remaining': '0' } };
-  assert.match(await github(limited, limited), /github {5}FINDING commit ca9cb0d2d5f5 of safe-global\/safe-deployments: the GitHub API rate limit is reached \(60 requests an hour without a token\); the commit is not checked, run again later/);
-  assert.match(await github({ status: 429, text: '' }), /github {5}FINDING .*: the GitHub API rate limit is reached/);
+  const unchecked = /github {5}UNVERIFIABLE commit ca9cb0d2d5f5 of safe-global\/safe-deployments: api\.github\.com answered rate limited \(HTTP 403\), the GitHub API rate limit \(60 requests an hour without a token\); the commit is not checked, run again later/;
+  for (const text of [await github(limited, limited), await github(limited)]) {
+    assert.match(text, unchecked);
+    assert.doesNotMatch(text, /github {5}FINDING/);
+  }
+  assert.match(await github({ status: 429, text: '' }), /github {5}UNVERIFIABLE .*: api\.github\.com answered rate limited \(HTTP 429\)/);
+  assert.match(await github({ status: 503, text: '' }), /github {5}UNVERIFIABLE .*: api\.github\.com answered HTTP 503; the commit is not checked, run again later/);
+  assert.match(await github({ status: 200, text: JSON.stringify({ status: 'behind' }) }, { status: 404, text: '{"message":"Not Found"}' }), /github {5}FINDING .*: GitHub has no repository safe-global\/safe-deployments/);
+});
+
+test('a source page whose server fails is UNVERIFIABLE, while a page it answers is missing stays a FINDING', async () => {
+  const failing = await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: { status: 502, text: '' } });
+  assert.match(failing, /page {7}UNVERIFIABLE https:\/\/docs\.morpho\.org\/addresses answered HTTP 502/);
+  assert.match(failing, /1 entries, 0 findings, 1 unverifiable \(r\)/);
+  assert.match(await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: { status: 404, text: '' } }), /page {7}FINDING https:\/\/docs\.morpho\.org\/addresses answered HTTP 404/);
+});
+
+const PINNED_ENTRY = { r: { address: ADDR, kind: 'router', defillama: 'safe', source: PINNED, sourceLabel: 'canonical' } };
+
+/** The report and the reads noted as unanswered when the compare API answers `compares` in turn, each read asked again twice. */
+async function retriedCompare(compares: Served[]): Promise<{ text: string; asked: number; unread: string[] }> {
+  const served: Record<string, Served> = { [REPO_API]: { status: 200, text: JSON.stringify({ default_branch: 'main' }) }, [RAW]: deployments };
+  const unread: string[] = [];
+  let asked = 0;
+  const get = retryingGet(
+    async (url) => {
+      if (url !== compareUrl) return getFrom(served)(url);
+      asked++;
+      return compares.shift() ?? assert.fail('asked more often than the pauses allow');
+    },
+    (read) => unread.push(read),
+    [0, 0],
+  );
+  const entries = entriesOf(PINNED_ENTRY);
+  return { text: report(entries, listings, await gatherSourcePages(entries.map((e) => e.source), get)), asked, unread };
+}
+
+const SERVER_ERROR: Served = { status: 503, text: '' };
+const RATE_LIMITED: Served = { status: 403, text: '{"message":"API rate limit exceeded"}', headers: { 'x-ratelimit-remaining': '0' } };
+
+test('a read that gets no answer is asked again after each pause, and the answer that ends it is the result', async () => {
+  const { text, asked, unread } = await retriedCompare([SERVER_ERROR, RATE_LIMITED, { status: 200, text: JSON.stringify({ status: 'behind' }) }]);
+  assert.equal(asked, 3);
+  assert.match(text, /github {5}agrees {2}commit ca9cb0d2d5f5 .*\(GitHub compare: behind\)/);
+  assert.deepEqual(unread, []);
+  assert.equal(unreadRefusal(unread), undefined, '--record writes');
+});
+
+test('an answer is final: a 404 is not asked again and stays a FINDING', async () => {
+  const { text, asked, unread } = await retriedCompare([{ status: 404, text: '{"message":"Not Found"}' }]);
+  assert.equal(asked, 1);
+  assert.match(text, /github {5}FINDING .*no such commit in the repository/);
+  assert.deepEqual(unread, []);
+});
+
+test('a read with no answer after every pause is UNVERIFIABLE, never a FINDING, and --record refuses to write', async () => {
+  const { text, asked, unread } = await retriedCompare([RATE_LIMITED, RATE_LIMITED, RATE_LIMITED]);
+  assert.equal(asked, 3);
+  assert.match(text, /github {5}UNVERIFIABLE .*rate limited \(HTTP 403\)/);
+  assert.doesNotMatch(text, /FINDING/);
+  assert.deepEqual(unread, [`${compareUrl}: rate limited (HTTP 403)`]);
+  assert.equal(
+    unreadRefusal(unread),
+    `1 read(s) got no answer after every retry, so nothing is recorded; run the command again later:\n  ${compareUrl}: rate limited (HTTP 403)`,
+  );
+
+});
+
+const failing = (code: string): HttpGet => async () => {
+  throw Object.assign(new Error(code), { code });
+};
+
+test('a dropped connection is asked again and is UNVERIFIABLE; a name DNS says does not exist is an answer and a FINDING', async () => {
+  const dropped: string[] = [];
+  let asked = 0;
+  const reset = failing('ECONNRESET');
+  const pages = await gatherSourcePages([DOCS], retryingGet(async (url) => (asked++, reset(url)), (read) => dropped.push(read), [0]));
+  assert.equal(asked, 2);
+  assert.deepEqual(pages.pages.get(DOCS), { kind: 'unread', why: 'docs.morpho.org unreachable' });
+  assert.deepEqual(dropped, [`${DOCS}: unreachable or timed out`]);
+
+  const gone: string[] = [];
+  let tried = 0;
+  const missing = failing('ENOTFOUND');
+  const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'morpho-blue', source: DOCS, sourceLabel: 'Bundler3' } });
+  const text = report(entries, listings, await gatherSourcePages([DOCS], retryingGet(async (url) => (tried++, missing(url)), (read) => gone.push(read), [0])));
+  assert.equal(tried, 1);
+  assert.match(text, /page {7}FINDING docs\.morpho\.org unreachable/);
+  assert.deepEqual(gone, []);
+});
+
+test('a 403 whose page mentions rate limits is a FINDING on a source page, and a rate limit only from GitHub\'s API', async () => {
+  const forbidden: Served = { status: 403, text: '<p>See our rate limits</p>' };
+  assert.match(await pageReport({ source: DOCS, sourceLabel: 'Bundler3' }, { [DOCS]: forbidden }), /page {7}FINDING https:\/\/docs\.morpho\.org\/addresses answered HTTP 403/);
+  assert.match(await github({ status: 403, text: '{"message":"You have exceeded a secondary rate limit"}' }), /github {5}UNVERIFIABLE .*rate limited \(HTTP 403\)/);
 });
 
 test('a GitHub source on a branch name, a tree, or the repository root is not pinned', async () => {

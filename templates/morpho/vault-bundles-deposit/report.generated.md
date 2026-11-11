@@ -64,7 +64,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 | Function | Contract | Page | Site | GitHub commit | Function name appears on page |
 | --- | --- | --- | --- | --- | --- |
-| `approve(address,uint256)` | `usdc` | <https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol> | FINDING | FINDING | PASS |
+| `approve(address,uint256)` | `usdc` | <https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol> | FINDING | PASS | PASS |
 | `vaultBundlesV1Deposit(address,uint256,uint256,(uint8,bytes),uint256,address,uint256)` | `vault-bundles-v1` | <https://docs.morpho.org/developers/contracts/bundles/> | PASS | n/a | PASS |
 
 ## Registry entries
@@ -142,135 +142,135 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `steakhouse-prime-usdc`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26392966
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26393823
 vault        steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51
-latest block 26392966 0xabd9781ccc39e57388dbbddb7c2849c95ecf272de9d29c51cea9e30a2d1653db
+latest block 26393823 0xff927ad71eaecf20acbc4bc11abd8262aa54709e1fabd37a261773a50988b2d8
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26392966  130,741,464.923642 usdc
-  2026-10-12  block 26176966  111,413,492.374516 usdc
-  2026-09-12  block 25960966  104,405,933.110910 usdc
-  2026-08-13  block 25744966  95,213,946.767828 usdc
-  2026-07-14  block 25528966  64,021,744.478673 usdc
-  2026-06-14  block 25312966  62,582,715.708276 usdc
-  2026-05-15  block 25096966  61,212,432.163898 usdc
-  2026-04-14  block 24880966  8,022,440.401142 usdc
-  2026-03-15  block 24664966  11,099,984.038321 usdc
-  2026-02-13  block 24448966  11,688,367.496515 usdc
-  2026-01-14  block 24232966  5,926,758.660913 usdc
-  2025-12-15  block 24016966  5,994,887.393748 usdc
-  2025-11-15  block 23800966  0.020027 usdc
+  2026-11-11  block 26393823  130,201,043.324351 usdc
+  2026-10-12  block 26177823  112,414,924.045907 usdc
+  2026-09-12  block 25961823  104,540,980.681240 usdc
+  2026-08-13  block 25745823  94,965,993.621786 usdc
+  2026-07-14  block 25529823  63,954,747.804392 usdc
+  2026-06-14  block 25313823  63,451,292.666411 usdc
+  2026-05-15  block 25097823  62,592,238.539648 usdc
+  2026-04-15  block 24881823  8,022,562.027099 usdc
+  2026-03-15  block 24665823  11,088,806.927674 usdc
+  2026-02-13  block 24449823  11,688,483.894798 usdc
+  2026-01-14  block 24233823  5,926,827.436208 usdc
+  2025-12-15  block 24017823  5,994,956.535405 usdc
+  2025-11-15  block 23801823  0.020027 usdc
 
-holders      778 addresses hold shares at block 26392966, of 1454 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 125782302320522255827233758
-top 10       hold 52.75% of the shares; each: 18.86%, 8.55%, 6.07%, 4.61%, 3.31%, 2.82%, 2.33%, 2.30%, 2.29%, 1.61%
+holders      778 addresses hold shares at block 26393823, of 1454 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 125260565785516487763437774
+top 10       hold 52.49% of the shares; each: 18.65%, 8.59%, 6.10%, 4.63%, 3.13%, 2.83%, 2.34%, 2.31%, 2.30%, 1.62%
 ```
 
 ### `smokehouse-usdc`
 
 ```text
-admitted     metamorpho-factory-1.0 answered isMetaMorpho(address) = true at block 26392968
+admitted     metamorpho-factory-1.0 answered isMetaMorpho(address) = true at block 26393825
 vault        smokehouse-usdc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC
-latest block 26392968 0xcf4bec33540bc0b535faf533f6490e11922081cd275945281b4fce69c48fffeb
+latest block 26393825 0xd32eba71b8254cb8b0af322aeb1fbf6d57be3d9bd8f08e2c5c902f2194b34aea
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26392968  10,728,224.250953 usdc
-  2026-10-12  block 26176968  12,734,711.030814 usdc
-  2026-09-12  block 25960968  13,503,083.236891 usdc
-  2026-08-13  block 25744968  15,810,137.121682 usdc
-  2026-07-14  block 25528968  17,876,412.711713 usdc
-  2026-06-14  block 25312968  18,628,294.643599 usdc
-  2026-05-15  block 25096968  25,024,227.417726 usdc
-  2026-04-14  block 24880968  61,096,583.026734 usdc
-  2026-03-15  block 24664968  59,426,066.427084 usdc
-  2026-02-13  block 24448968  65,848,768.981379 usdc
-  2026-01-14  block 24232968  131,509,421.894395 usdc
-  2025-12-15  block 24016968  146,810,463.444816 usdc
-  2025-11-15  block 23800968  86,128,251.966394 usdc
+  2026-11-11  block 26393825  10,728,413.818999 usdc
+  2026-10-12  block 26177825  12,734,957.167458 usdc
+  2026-09-12  block 25961825  13,503,308.163327 usdc
+  2026-08-13  block 25745825  15,810,413.317895 usdc
+  2026-07-14  block 25529825  17,876,756.380759 usdc
+  2026-06-14  block 25313825  18,564,296.264015 usdc
+  2026-05-15  block 25097825  25,004,472.584644 usdc
+  2026-04-15  block 24881825  61,562,445.515506 usdc
+  2026-03-15  block 24665825  59,426,864.380128 usdc
+  2026-02-13  block 24449825  65,914,235.592550 usdc
+  2026-01-14  block 24233825  131,458,984.648502 usdc
+  2025-12-15  block 24017825  146,789,691.001043 usdc
+  2025-11-15  block 23801825  86,129,328.548319 usdc
 
-holders      428 addresses hold shares at block 26392968, of 2521 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 9430766894154016780909575
+holders      428 addresses hold shares at block 26393825, of 2521 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 9430766424312438733680405
 top 10       hold 77.81% of the shares; each: 28.20%, 15.00%, 8.60%, 5.18%, 4.23%, 4.21%, 3.64%, 3.24%, 3.05%, 2.45%
 ```
 
 ### `hyperithm-usdc-apex-7777`
 
 ```text
-admitted     metamorpho-factory-1.1 answered isMetaMorpho(address) = true at block 26392972
+admitted     metamorpho-factory-1.1 answered isMetaMorpho(address) = true at block 26393829
 vault        hyperithm-usdc-apex-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777
-latest block 26392972 0xccde20dfc5c36a62eaa089da2d8f17e0b7020d68ea0757b6ad6752e684b1c473
+latest block 26393829 0x67fcf7c0458afab0cf6aa265739212126748048e0f3ada8fb3638f4a5190460e
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26392972  1,212,095.549602 usdc
-  2026-10-12  block 26176972  1,610,619.976360 usdc
-  2026-09-12  block 25960972  1,966,223.953604 usdc
-  2026-08-13  block 25744972  2,385,476.663487 usdc
-  2026-07-14  block 25528972  2,344,449.083099 usdc
-  2026-06-14  block 25312972  2,889,190.906417 usdc
-  2026-05-15  block 25096972  3,557,628.372916 usdc
-  2026-04-14  block 24880972  24,019,476.764597 usdc
-  2026-03-15  block 24664972  22,005,777.222998 usdc
-  2026-02-13  block 24448972  21,819,883.948447 usdc
-  2026-01-14  block 24232972  19,645,163.288062 usdc
-  2025-12-15  block 24016972  25,269,447.703363 usdc
-  2025-11-15  block 23800972  31,150,186.920250 usdc
+  2026-11-11  block 26393829  1,212,124.346519 usdc
+  2026-10-12  block 26177829  1,622,252.562542 usdc
+  2026-09-12  block 25961829  1,966,272.410196 usdc
+  2026-08-13  block 25745829  2,385,538.860702 usdc
+  2026-07-14  block 25529829  2,344,502.237305 usdc
+  2026-06-14  block 25313829  2,897,372.600386 usdc
+  2026-05-15  block 25097829  3,557,688.783594 usdc
+  2026-04-15  block 24881829  14,019,889.687577 usdc
+  2026-03-15  block 24665829  22,006,139.758905 usdc
+  2026-02-13  block 24449829  21,820,312.157068 usdc
+  2026-01-14  block 24233829  19,640,203.699974 usdc
+  2025-12-15  block 24017829  25,269,885.881676 usdc
+  2025-11-15  block 23801829  31,127,521.668408 usdc
 
-holders      219 addresses hold shares at block 26392972, of 1590 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 1078922523277071120432289
+holders      219 addresses hold shares at block 26393829, of 1590 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 1078922523277071120432289
 top 10       hold 85.86% of the shares; each: 18.52%, 17.55%, 16.71%, 8.39%, 7.75%, 5.42%, 3.62%, 2.74%, 2.62%, 2.54%
 ```
 
 ### `hyperithm-usdc-apex-0932`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26392975
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26393831
 vault        hyperithm-usdc-apex-0932 0x093272C07700d3cA5301C3Bf9B3A392624179E2F
-latest block 26392975 0xb9610ba0193ea1e900d3176911f3ef77655a5b16aef7bf4fa3e113411588c942
+latest block 26393831 0xef162720eb685300f0930ed6f51c3e0a5f8ae9d92f210e6a0946d9055d83acda
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26392975  7,503,712.381866 usdc
-  2026-10-12  block 26176975  12,362,976.731271 usdc
-  2026-09-12  block 25960975  8,539,248.741259 usdc
-  2026-08-13  block 25744975  4,872,670.969762 usdc
-  2026-07-14  block 25528975  12,312,038.729418 usdc
-  2026-06-14  block 25312975  5,145,249.143782 usdc
-  2026-05-15  block 25096975  12,759,410.490745 usdc
-  2026-04-14  block 24880975  18,005,256.936386 usdc
-  2026-03-15  block 24664975  9,425,612.824676 usdc
-  2026-02-13  block 24448975  7,832,196.370358 usdc
-  2026-01-14  block 24232975  160,155.854817 usdc
-  2025-12-15  block 24016975  159,344.150017 usdc
-  2025-11-15  block 23800975  3,327.592703 usdc
+  2026-11-11  block 26393831  7,503,875.656815 usdc
+  2026-10-12  block 26177831  12,363,226.111943 usdc
+  2026-09-12  block 25961831  8,539,125.497605 usdc
+  2026-08-13  block 25745831  4,872,782.830658 usdc
+  2026-07-14  block 25529831  12,312,360.001054 usdc
+  2026-06-14  block 25313831  5,145,374.143218 usdc
+  2026-05-15  block 25097831  12,759,614.872911 usdc
+  2026-04-15  block 24881831  8,005,534.179383 usdc
+  2026-03-15  block 24665831  9,425,752.369158 usdc
+  2026-02-13  block 24449831  7,832,334.540586 usdc
+  2026-01-14  block 24233831  160,158.848664 usdc
+  2025-12-15  block 24017831  159,346.633741 usdc
+  2025-11-15  block 23801831  3,327.706749 usdc
 
-holders      170 addresses hold shares at block 26392975, of 352 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 7017447511051495095416181
+holders      170 addresses hold shares at block 26393831, of 352 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 7017447511051495095416181
 top 10       hold 90.04% of the shares; each: 51.74%, 13.85%, 5.43%, 4.90%, 3.43%, 3.34%, 2.53%, 2.09%, 1.46%, 1.27%
 ```
 
 ### `usual-boosted-usdc`
 
 ```text
-admitted     metamorpho-factory-1.0 answered isMetaMorpho(address) = true at block 26392976
+admitted     metamorpho-factory-1.0 answered isMetaMorpho(address) = true at block 26393832
 vault        usual-boosted-usdc 0xd63070114470f685b75B74D60EEc7c1113d33a3D
-latest block 26392976 0x27a2700255c672fb4c05990bec59e5cf4e1bd76bdacea152fc10af78bb976ad6
+latest block 26393832 0xabd77073c7d30e61036db4b2fc9a4b0ff9ce37dc3b52d4ef005d217005b946c1
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26392976  1,801,458.853833 usdc
-  2026-10-12  block 26176976  1,961,896.608570 usdc
-  2026-09-12  block 25960976  2,120,119.178845 usdc
-  2026-08-13  block 25744976  3,539,823.440315 usdc
-  2026-07-14  block 25528976  4,422,515.089121 usdc
-  2026-06-14  block 25312976  4,481,894.976327 usdc
-  2026-05-15  block 25096976  4,948,300.953583 usdc
-  2026-04-14  block 24880976  6,823,213.751392 usdc
-  2026-03-15  block 24664976  9,699,210.208303 usdc
-  2026-02-13  block 24448976  19,276,269.747687 usdc
-  2026-01-14  block 24232976  20,523,758.129103 usdc
-  2025-12-15  block 24016976  27,458,834.184166 usdc
-  2025-11-15  block 23800976  29,022,011.743760 usdc
+  2026-11-11  block 26393832  1,801,497.637632 usdc
+  2026-10-12  block 26177832  1,961,937.673530 usdc
+  2026-09-12  block 25961832  2,120,155.585672 usdc
+  2026-08-13  block 25745832  3,539,905.139176 usdc
+  2026-07-14  block 25529832  4,422,599.110525 usdc
+  2026-06-14  block 25313832  4,481,960.222461 usdc
+  2026-05-15  block 25097832  4,948,373.950119 usdc
+  2026-04-15  block 24881832  6,823,289.542112 usdc
+  2026-03-15  block 24665832  9,699,364.877319 usdc
+  2026-02-13  block 24449832  19,276,500.325588 usdc
+  2026-01-14  block 24233832  20,524,117.260426 usdc
+  2025-12-15  block 24017832  27,452,107.084003 usdc
+  2025-11-15  block 23801832  28,650,955.135577 usdc
 
-holders      940 addresses hold shares at block 26392976, of 7246 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 1586353555606401872263501
+holders      940 addresses hold shares at block 26393832, of 7246 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 1586353555606401872263501
 top 10       hold 66.47% of the shares; each: 18.05%, 14.20%, 5.88%, 5.88%, 5.80%, 4.44%, 3.39%, 3.33%, 2.99%, 2.50%
 ```
 
@@ -279,26 +279,26 @@ top 10       hold 66.47% of the shares; each: 18.05%, 14.20%, 5.88%, 5.88%, 5.80
 ```text
 NOTE fluid-fusdc names no factory, so no factory vouches for the code these numbers come from
 vault        fluid-fusdc 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33
-latest block 26392981 0xd7811adf754169725ebb9711e921c500a835c951c9e2d487fe4fb16bf30bc86e
+latest block 26393837 0x51c81769b96fb833f1f2cda35d6b3fd6fad4b717ae608d879ea56ac597455524
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26392981  133,766,854.164171 usdc
-  2026-10-12  block 26176981  134,912,761.866498 usdc
-  2026-09-12  block 25960981  154,640,596.271064 usdc
-  2026-08-13  block 25744981  150,588,780.904171 usdc
-  2026-07-14  block 25528981  134,599,834.336402 usdc
-  2026-06-14  block 25312981  105,948,543.982288 usdc
-  2026-05-15  block 25096981  194,989,633.287159 usdc
-  2026-04-14  block 24880981  190,149,903.332912 usdc
-  2026-03-15  block 24664981  220,744,700.330857 usdc
-  2026-02-13  block 24448981  263,679,645.837821 usdc
-  2026-01-14  block 24232981  292,370,606.618295 usdc
-  2025-12-15  block 24016981  272,937,939.218173 usdc
-  2025-11-15  block 23800981  261,915,613.876817 usdc
+  2026-11-11  block 26393837  133,808,188.501362 usdc
+  2026-10-12  block 26177837  138,041,555.520554 usdc
+  2026-09-12  block 25961837  154,578,999.385068 usdc
+  2026-08-13  block 25745837  151,963,008.203776 usdc
+  2026-07-14  block 25529837  134,427,532.788434 usdc
+  2026-06-14  block 25313837  105,949,386.783860 usdc
+  2026-05-15  block 25097837  194,996,796.491631 usdc
+  2026-04-15  block 24881837  190,201,280.092500 usdc
+  2026-03-15  block 24665837  220,706,698.953653 usdc
+  2026-02-13  block 24449837  260,278,286.473117 usdc
+  2026-01-14  block 24233837  292,030,172.205495 usdc
+  2025-12-15  block 24017837  273,792,116.626636 usdc
+  2025-11-15  block 23801837  262,786,615.069397 usdc
 
-holders      2114 addresses hold shares at block 26392981, of 10920 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 109028160984291
-top 10       hold 41.42% of the shares; each: 9.65%, 8.37%, 5.98%, 3.60%, 3.09%, 2.46%, 2.39%, 2.05%, 1.97%, 1.87%
+holders      2115 addresses hold shares at block 26393837, of 10921 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 109059934795810
+top 10       hold 41.40% of the shares; each: 9.64%, 8.36%, 5.98%, 3.60%, 3.09%, 2.46%, 2.39%, 2.05%, 1.97%, 1.86%
 ```
 
 ### `fluid-fusdt`
@@ -306,53 +306,53 @@ top 10       hold 41.42% of the shares; each: 9.65%, 8.37%, 5.98%, 3.60%, 3.09%,
 ```text
 NOTE fluid-fusdt names no factory, so no factory vouches for the code these numbers come from
 vault        fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18
-latest block 26392986 0x4c3b4853e7c2bd1a349b931ed526cbd30eefb48cdaffa4a98b519c46df8d0cc8
+latest block 26393842 0x39a00c450289981b32e503dc159f8a8ae375b3b94148ed272e42c09cc6403eaa
 asset()      usdt 0xdAC17F958D2ee523a2206206994597C13D831ec7, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26392986  126,950,253.772158 usdt
-  2026-10-12  block 26176986  130,008,363.193569 usdt
-  2026-09-12  block 25960986  134,795,375.818837 usdt
-  2026-08-13  block 25744986  138,722,885.667012 usdt
-  2026-07-14  block 25528986  130,514,559.466076 usdt
-  2026-06-14  block 25312986  107,793,992.445150 usdt
-  2026-05-15  block 25096986  144,860,011.361757 usdt
-  2026-04-14  block 24880986  126,351,020.787627 usdt
-  2026-03-15  block 24664986  154,059,553.834315 usdt
-  2026-02-13  block 24448986  159,632,296.342709 usdt
-  2026-01-14  block 24232986  184,839,564.031622 usdt
-  2025-12-15  block 24016986  237,211,712.709652 usdt
-  2025-11-15  block 23800986  200,353,703.362353 usdt
+  2026-11-11  block 26393842  126,342,114.087099 usdt
+  2026-10-12  block 26177842  130,008,051.007542 usdt
+  2026-09-12  block 25961842  134,786,133.127739 usdt
+  2026-08-13  block 25745842  138,704,750.802148 usdt
+  2026-07-14  block 25529842  130,541,520.225519 usdt
+  2026-06-14  block 25313842  107,797,881.093796 usdt
+  2026-05-15  block 25097842  144,699,345.551085 usdt
+  2026-04-15  block 24881842  126,365,496.916309 usdt
+  2026-03-15  block 24665842  154,111,500.375626 usdt
+  2026-02-13  block 24449842  162,286,277.374092 usdt
+  2026-01-14  block 24233842  184,530,282.528691 usdt
+  2025-12-15  block 24017842  239,803,896.750731 usdt
+  2025-11-15  block 23801842  201,029,066.094774 usdt
 
-holders      1374 addresses hold shares at block 26392986, of 6770 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 104503719561835
-top 10       hold 37.25% of the shares; each: 6.33%, 5.09%, 4.35%, 4.07%, 3.81%, 3.52%, 2.94%, 2.45%, 2.42%, 2.27%
+holders      1378 addresses hold shares at block 26393842, of 6772 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 103999075806346
+top 10       hold 36.64% of the shares; each: 5.57%, 5.12%, 4.38%, 4.09%, 3.83%, 3.53%, 2.95%, 2.46%, 2.43%, 2.28%
 ```
 
 ### `steakhouse-high-yield-usdc`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26392990
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26393845
 vault        steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757
-latest block 26392990 0xd112f0383e9b585f1f0644293463681c606bba1a6fc3d53f97bf236d3ea29a9c
+latest block 26393845 0xdb5ae6211242e42cac1bd7c415e85b4ad2dc02125f06cbd9aaad0d785db65252
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-11  block 26392990  41,472,007.016406 usdc
-  2026-10-12  block 26176990  48,724,716.951812 usdc
-  2026-09-12  block 25960990  43,103,052.624475 usdc
-  2026-08-13  block 25744990  47,458,372.111075 usdc
-  2026-07-14  block 25528990  39,187,083.640329 usdc
-  2026-06-14  block 25312990  35,589,883.545733 usdc
-  2026-05-15  block 25096990  33,006,116.923297 usdc
-  2026-04-14  block 24880990  21,512,027.283817 usdc
-  2026-03-15  block 24664990  2,770,233.702877 usdc
-  2026-02-13  block 24448990  4,446,528.622806 usdc
-  2026-01-14  block 24232990  2,343,496.898509 usdc
-  2025-12-15  block 24016990  3,553,528.018801 usdc
-  2025-11-15  block 23800990  2,734,387.957096 usdc
+  2026-11-11  block 26393845  44,123,456.821428 usdc
+  2026-10-12  block 26177845  48,751,027.166210 usdc
+  2026-09-12  block 25961845  42,694,393.615208 usdc
+  2026-08-13  block 25745845  46,968,252.329978 usdc
+  2026-07-14  block 25529845  39,148,219.310693 usdc
+  2026-06-14  block 25313845  35,650,760.608325 usdc
+  2026-05-15  block 25097845  33,006,556.179639 usdc
+  2026-04-15  block 24881845  21,985,275.953348 usdc
+  2026-03-15  block 24665845  2,770,271.033582 usdc
+  2026-02-13  block 24449845  4,446,580.566029 usdc
+  2026-01-14  block 24233845  2,343,534.742892 usdc
+  2025-12-15  block 24017845  3,534,808.518661 usdc
+  2025-11-15  block 23801845  2,735,354.886699 usdc
 
-holders      455 addresses hold shares at block 26392990, of 1043 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 39188305507158987304090178
-top 10       hold 55.99% of the shares; each: 22.62%, 8.92%, 4.47%, 4.02%, 3.67%, 2.95%, 2.54%, 2.48%, 2.42%, 1.90%
+holders      457 addresses hold shares at block 26393845, of 1045 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 41692977134679686915698085
+top 10       hold 56.85% of the shares; each: 21.26%, 8.39%, 6.01%, 4.20%, 3.78%, 3.45%, 2.78%, 2.39%, 2.33%, 2.27%
 ```
 
 ## Past transactions
@@ -501,7 +501,7 @@ smokehouse-usdc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC (vault)
     field      owner addressName
   attestation  registry/morpho/sigs/calldata-steakhouse_financial-bbqUSDC.eip155-1-0x3846c3A30E62075Fa916216b35EF04B8F53931f6.json
     signer     0x3846c3A30E62075Fa916216b35EF04B8F53931f6, listed in auditors/
-    result     VALID: ERC-8176 schema and domain, data equals this descriptorHash, uid matches its fields, signature recovers 0x3846c3A30E62075Fa916216b35EF04B8F53931f6 (both providers), never expires, not revoked as of block 26392995 (getRevokeOffchain, both providers)
+    result     VALID: ERC-8176 schema and domain, data equals this descriptorHash, uid matches its fields, signature recovers 0x3846c3A30E62075Fa916216b35EF04B8F53931f6 (both providers), never expires, not revoked as of block 26393850 (getRevokeOffchain, both providers)
 
 hyperithm-usdc-apex-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 (vault)
   descriptor   none: no calldata descriptor lists this address on chain 1 or is scoped by its factory metamorpho-factory-1.1
@@ -558,7 +558,7 @@ usual-boosted-usdc 0xd63070114470f685b75B74D60EEc7c1113d33a3D (vault)
     field      owner addressName
   attestation  registry/morpho/sigs/calldata-mev_capital-USUALUSDC+.eip155-1-0x3846c3A30E62075Fa916216b35EF04B8F53931f6.json
     signer     0x3846c3A30E62075Fa916216b35EF04B8F53931f6, listed in auditors/
-    result     VALID: ERC-8176 schema and domain, data equals this descriptorHash, uid matches its fields, signature recovers 0x3846c3A30E62075Fa916216b35EF04B8F53931f6 (both providers), never expires, not revoked as of block 26392995 (getRevokeOffchain, both providers)
+    result     VALID: ERC-8176 schema and domain, data equals this descriptorHash, uid matches its fields, signature recovers 0x3846c3A30E62075Fa916216b35EF04B8F53931f6 (both providers), never expires, not revoked as of block 26393850 (getRevokeOffchain, both providers)
 
 vault-bundles-v1 0x02912516d49dE997db75B9D7858faAE59209650B (router)
   descriptor   registry/morpho/calldata-VaultBundlesV1.json

@@ -4,7 +4,8 @@ import { openMainnetReader } from '../src/chain/reader.ts';
 import { recordAbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal } from '../src/contracts/prove.ts';
 import { pinnedCompilers } from '../src/contracts/solc.ts';
-import { sourcifyHttps } from '../src/contracts/sourcify.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
+import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { parseAddress, parseUint256 } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 
@@ -19,7 +20,14 @@ const live = openMainnetReader(process.env);
 const block = await live.block(blockArg === undefined ? 'latest' : parseUint256('block', blockArg));
 if (block.kind === 'unverifiable') throw new Error(block.reason);
 
-const { proof, fixture } = await recordAbiCase(live, address, block.value, block.providers, { compilers: pinnedCompilers(), sourcify: sourcifyHttps });
+const unread: string[] = [];
+const sourcify = retryingSourcify(sourcifyHttps, (read) => void unread.push(read));
+const { proof, fixture } = await recordAbiCase(live, address, block.value, block.providers, { compilers: pinnedCompilers(), sourcify });
+const refusal = unreadRefusal(unread);
+if (refusal !== undefined) {
+  console.error(refusal);
+  process.exit(1);
+}
 const out = join(import.meta.dirname, '..', 'testdata', 'abi', `${name}.json`);
 mkdirSync(join(out, '..'), { recursive: true });
 writeFileSync(out, `${JSON.stringify(fixture, null, 2)}\n`);
