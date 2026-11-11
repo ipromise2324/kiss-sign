@@ -40,11 +40,11 @@ On the signing device, with Node 22 and pnpm:
 
 ```sh
 git clone https://github.com/ipromise2324/kiss-sign.git && cd kiss-sign
-pnpm install && pnpm add -g .
-kiss-sign init --safe 0x…
+pnpm install
+pnpm kiss-sign init --safe 0x…
 ```
 
-`init` creates `~/.kiss-sign/.env`, readable by you only. Fill in `ALCHEMY_API_KEY`, a free key from Alchemy, which `verify` and `card new` need. `pnpm add -g .` links a `kiss-sign` command on your `PATH` to this clone, so `git pull` updates what it runs; run `pnpm install` after each `git pull`, or a new dependency stops `kiss-sign` until you do. If pnpm says its global bin directory is not in `PATH`, run `pnpm setup` once and open a new terminal.
+`init` creates `~/.kiss-sign/.env`, readable by you only. Fill in `ALCHEMY_API_KEY`, a free key from Alchemy, which `verify` and `card new` need. Run every command from the clone as `pnpm kiss-sign <command>`, such as `pnpm kiss-sign card new morpho/vault-deposit`. After a `git pull` that changes `package.json`, pnpm installs the new dependencies itself before it runs the command.
 
 To build templates or run the tests, `pnpm test` and the research scripts download the pinned compilers and lists they need on first use, and refuse any file whose sha256 differs from its pin.
 
@@ -54,7 +54,7 @@ Two machines, joined only by `main` on GitHub.
 |---|---|---|
 | 1. Research, write the template, open a pull request | A computer with an AI agent | The AI. It never merges. |
 | 2. Read the report and the template, approve and merge | GitHub | You, through branch protection |
-| 3. `git pull`, fill the card with `kiss-sign card new`, seal, verify | A signing device with no AI agent installed | You |
+| 3. `git pull`, fill the card with `pnpm kiss-sign card new`, seal, verify | A signing device with no AI agent installed | You |
 | 4. The first time a template or a vault is used, send a small amount first | Safe | The signers |
 | 5. Sign, comparing the full hashes | Hardware wallet | You |
 

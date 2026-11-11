@@ -2,9 +2,6 @@
   "name": "kiss-sign",
   "version": "0.0.0",
   "private": true,
-  "bin": {
-    "kiss-sign": "bin/kiss-sign"
-  },
   "type": "module",
   "engines": {
     "node": ">=22.21"
@@ -31,7 +28,8 @@
     "past-txs": "node scripts/past-txs.ts",
     "history": "node scripts/history.ts",
     "attacks": "node scripts/attacks.ts",
-    "report": "node scripts/report.ts"
+    "report": "node scripts/report.ts",
+    "kiss-sign": "node bin/kiss-sign"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
