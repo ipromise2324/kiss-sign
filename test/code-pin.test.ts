@@ -6,6 +6,12 @@ import type { Exchange } from '../src/chain/recording.ts';
 import { replayReader } from '../src/chain/recording.ts';
 import { ZEPPELINOS_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
 import { RegistryError, loadRegistry, parseRegistry } from '../src/registry.ts';
+import type { BlockRef, BlockTag } from '../src/chain/types.ts';
+import type { Reader } from '../src/chain/reader.ts';
+import { keccakCode, readCodeHistory } from '../src/contracts/code.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
+import { checkCode } from '../src/verify/code.ts';
+import type { Verdict } from '../src/verify/verdict.ts';
 import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile, VerifyInputs } from '../src/verify/verify.ts';
 
@@ -105,4 +111,71 @@ test('a code pin with an implementation but no implementation hash is refused', 
   const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
   delete raw.usdc.code.implementation.hash;
   assert.throws(() => parseRegistry(raw), (error: unknown) => error instanceof RegistryError && error.message === 'usdc.code.implementation.hash: not 0x-prefixed even-length hex');
+});
+
+const PARENT = { number: 26048222n, hash: '0xb7f7661dfa747c98c1765100e40139b9e67e773fd143891d2ea46555a846f2b2' as Hex };
+const BUNDLER3_PIN = '0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454';
+const UPGRADED = `0x${'ab'.repeat(32)}`;
+
+const bundler3Code = (code: Record<string, unknown>) => withRegistry((entries) => (entries.bundler3!.code = code));
+const findings = (verdict: Verdict) => (verdict.kind === 'MISMATCH' ? verdict.causes.map((c) => `${c.check}: ${c.details.join('; ')}`) : []);
+
+test('a past transaction that ran before an upgrade MATCHes the earlier pin whose span holds its block', async () => {
+  const inputs = bundler3Code({ hash: UPGRADED, from: Number(PARENT.number) + 1, earlier: [{ from: 20000000, hash: BUNDLER3_PIN }] });
+  assert.deepEqual(await verdictOf(recorded.exchanges, inputs), { kind: 'MATCH' });
+});
+
+test('a past transaction is judged by the pin of its own block, so the earlier code is MISMATCH once a later span holds it', async () => {
+  const inputs = bundler3Code({ hash: UPGRADED, from: Number(PARENT.number), earlier: [{ from: 20000000, hash: BUNDLER3_PIN }] });
+  assert.deepEqual(findings(await verdictOf(recorded.exchanges, inputs)), [
+    `contract-code: bundler3 ${BUNDLER3} has code hash ${BUNDLER3_PIN} at block ${PARENT.number}, the registry pins ${UPGRADED}`,
+  ]);
+});
+
+test('a past transaction at a block before every recorded span is MISMATCH, even when its code equals a pin', async () => {
+  const inputs = bundler3Code({ hash: BUNDLER3_PIN, from: Number(PARENT.number) + 1 });
+  assert.deepEqual(findings(await verdictOf(recorded.exchanges, inputs)), [
+    `contract-code: bundler3 ${BUNDLER3} at block ${PARENT.number}: the registry pins its code only from block ${PARENT.number + 1n}`,
+  ]);
+});
+
+test('a transaction to sign needs the current pin: code that only an earlier pin names is MISMATCH', async () => {
+  const registry = parseRegistry({
+    ...JSON.parse(recorded.inputs.registry),
+    bundler3: { ...JSON.parse(recorded.inputs.registry).bundler3, code: { hash: UPGRADED, from: 26000000, earlier: [{ from: 20000000, hash: BUNDLER3_PIN }] } },
+  });
+  const entry = [registry.entries.get('bundler3')!];
+  assert.deepEqual(await checkCode(replayReader(recorded.exchanges), entry, PARENT, 'pending'), {
+    kind: 'mismatch',
+    findings: [`bundler3 ${BUNDLER3} has code hash ${BUNDLER3_PIN} at block ${PARENT.number}, the registry pins ${UPGRADED}`],
+  });
+});
+
+test('earlier pins out of block order, or under a current pin with no from, are refused', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
+  raw.bundler3.code = { hash: UPGRADED, from: 300, earlier: [{ from: 200, hash: BUNDLER3_PIN }, { from: 100, hash: BUNDLER3_PIN }] };
+  assert.throws(() => parseRegistry(raw), { message: 'bundler3.code.earlier[1].from: not after 200, the from of the pin before it' });
+  raw.bundler3.code = { hash: UPGRADED, earlier: [{ from: 100, hash: BUNDLER3_PIN }] };
+  assert.throws(() => parseRegistry(raw), { message: 'bundler3.code.from: not after 100, the from of the pin before it' });
+});
+
+/** A chain where `address` has no code before block 100, code 0x6001 from 100, and code 0x6002 from 250 to the head at 400. */
+function chainReader(): Reader {
+  const codeAt = (n: bigint): Hex => (n < 100n ? '0x' : n < 250n ? '0x6001' : '0x6002') as Hex;
+  const agreed = <T>(value: T) => ({ kind: 'agreed', value, providers: ['alchemy', 'drpc'] }) as const;
+  return {
+    providers: ['alchemy', 'drpc'],
+    block: async (tag: BlockTag) => agreed({ number: tag === 'latest' ? 400n : tag, hash: `0x${'00'.repeat(32)}` as Hex }),
+    getCode: async (_address: Address, at: BlockRef) => agreed(codeAt(at.number)),
+    getStorageAt: async () => agreed(`0x${'00'.repeat(32)}` as Hex),
+  } as unknown as Reader;
+}
+
+test('pin-code finds each change of the code by its first block, back to the block before deployment', async () => {
+  const history = await readCodeHistory(chainReader(), BUNDLER3 as Address, { number: 400n, hash: `0x${'00'.repeat(32)}` as Hex });
+  assert.deepEqual(history, {
+    kind: 'read',
+    pins: { earlier: [{ from: 100n, pin: { hash: keccakCode('0x6001' as Hex) } }], current: { from: 250n, pin: { hash: keccakCode('0x6002' as Hex) } } },
+    before: { why: 'no-code', at: BUNDLER3 },
+  });
 });

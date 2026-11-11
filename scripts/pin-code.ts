@@ -2,17 +2,20 @@ import { readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { openMainnetReader } from '../src/chain/reader.ts';
-import { pinOf, readRunningCode } from '../src/contracts/code.ts';
+import { pinOf, readCodeHistory, readRunningCode, samePin } from '../src/contracts/code.ts';
 import { describeRefusal } from '../src/contracts/prove.ts';
 import { mergeRegistry } from '../src/history/load.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { REGISTRY_PATH, parseRegistry } from '../src/registry.ts';
+import type { CodePin, CodePins, CodeSpan } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/pin-code.ts [<registry name>...] [--history]
 
 Reads, through both providers at one agreed block, the code at each entry's address and, behind a proxy, the
-implementation and its code, and writes their keccak256 into the entry's "code". With no names it pins every entry.
+implementation and its code, and writes their keccak256 into the entry's "code". For an entry with no pin, a pin
+written before ranges, or a pin that changed, it then searches the blocks back to the deployment for each change of
+that code and writes each earlier pin with the block it starts at. With no names it pins every entry.
 --history pins the local entries in $KISS_SIGN_HOME/history/registry.json instead of registry/contracts.json.`;
 
 const { values: flags, positionals: names } = parseArgs({ options: { history: { type: 'boolean', default: false } }, allowPositionals: true });
@@ -25,6 +28,18 @@ if (unknown.length > 0) {
   console.error(`not in ${path}: ${unknown.join(', ')}\n\n${USAGE}`);
   process.exit(1);
 }
+const parse = () => (flags.history ? parseRegistry(JSON.parse(mergeRegistry(readFileSync(repoPath, 'utf8'), file))) : parseRegistry(file));
+const recorded = parse();
+
+const pinJson = (pin: CodePin) =>
+  pin.implementation === undefined ? { hash: pin.hash } : { hash: pin.hash, implementation: { address: checksumAddress(pin.implementation.address), hash: pin.implementation.hash } };
+const codeJson = ({ earlier, current }: CodePins) => ({
+  ...pinJson(current.pin),
+  from: Number(current.from),
+  ...(earlier.length === 0 ? {} : { earlier: earlier.map((span) => ({ from: Number(span.from), ...pinJson(span.pin) })) }),
+});
+const pinText = (pin: CodePin) =>
+  pin.implementation === undefined ? pin.hash : `${pin.hash}, implementation ${checksumAddress(pin.implementation.address)} ${pin.implementation.hash}`;
 
 const reader = openMainnetReader(process.env);
 const block = await reader.block('latest');
@@ -35,24 +50,40 @@ let refused = false;
 for (const name of names.length > 0 ? names : Object.keys(file)) {
   const entry = file[name] as Record<string, unknown>;
   const address = parseAddress(`${name}.address`, entry.address);
-  const read = await readRunningCode(reader, address, block.value);
-  if (read.kind === 'refused') {
-    console.log(`REFUSED ${name} ${checksumAddress(address)}: ${describeRefusal(read.refusal)}`);
+  const where = `${name} ${checksumAddress(address)}`;
+  const was = recorded.entries.get(name)?.code;
+  const ranged = typeof entry.code === 'object' && entry.code !== null && 'from' in entry.code;
+  const head = await readRunningCode(reader, address, block.value);
+  if (head.kind === 'refused') {
+    console.log(`REFUSED ${where}: ${describeRefusal(head.refusal)}`);
     refused = true;
     continue;
   }
-  const pin = pinOf(read.code);
-  const before = JSON.stringify(entry.code);
-  entry.code = pin.implementation === undefined ? pin : { hash: pin.hash, implementation: { address: checksumAddress(pin.implementation.address), hash: pin.implementation.hash } };
-  const status = before === undefined ? 'new' : before === JSON.stringify(entry.code) ? 'unchanged' : `CHANGED, was ${before}`;
-  const behind = pin.implementation === undefined ? '' : `, ${read.code.proxy.kind} proxy for ${checksumAddress(pin.implementation.address)} ${pin.implementation.hash}`;
-  console.log(`${name} ${checksumAddress(address)} ${pin.hash}${behind} (${status})`);
+  if (was !== undefined && ranged && samePin(was.current.pin, pinOf(head.code))) {
+    console.log(`${where} ${pinText(was.current.pin)} from block ${was.current.from} (unchanged)`);
+    continue;
+  }
+  const history = await readCodeHistory(reader, address, block.value);
+  if (history.kind === 'refused') {
+    console.log(`REFUSED ${where}: ${describeRefusal(history.refusal)}`);
+    refused = true;
+    continue;
+  }
+  const { pins } = history;
+  const spans: CodeSpan[] = [...pins.earlier, pins.current];
+  const status = was === undefined ? 'new' : samePin(was.current.pin, pins.current.pin) ? 'unchanged, ranges read' : `CHANGED, was ${pinText(was.current.pin)}`;
+  console.log(`${where} (${status})`);
+  const first = spans[0] as CodeSpan;
+  console.log(history.before === 'genesis' ? '  held since block 0' : `  before block ${first.from}: ${describeRefusal(history.before)}`);
+  for (const span of spans) console.log(`  from block ${span.from}: ${pinText(span.pin)}`);
+  for (const old of was === undefined ? [] : [...was.earlier, was.current]) {
+    if (!spans.some((span) => samePin(span.pin, old.pin))) console.log(`  FINDING: the pin recorded from block ${old.from}, ${pinText(old.pin)}, is in no span read`);
+  }
+  entry.code = codeJson(pins);
 }
 
-const text = `${JSON.stringify(file, null, 2)}\n`;
-if (flags.history) mergeRegistry(readFileSync(repoPath, 'utf8'), file);
-else parseRegistry(file);
-writeFileSync(`${path}.tmp`, text, { mode: flags.history ? 0o600 : 0o644 });
+parse();
+writeFileSync(`${path}.tmp`, `${JSON.stringify(file, null, 2)}\n`, { mode: flags.history ? 0o600 : 0o644 });
 renameSync(`${path}.tmp`, path);
 console.log(`\nWrote ${path}`);
 if (refused) process.exit(1);

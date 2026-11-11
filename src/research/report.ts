@@ -447,14 +447,14 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
 }
 
 function pinText(entry: RegistryEntry): string {
-  const pin = entry.code;
+  const pin = entry.code?.current.pin;
   if (pin === undefined) return 'not pinned';
   return pin.implementation === undefined ? code(pin.hash) : `${code(pin.hash)}; implementation ${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`;
 }
 
 /** The pin names the code the proof compiled: the proxy's code and its implementation's, or the contract's own. */
 function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
-  const pin = entry.code;
+  const pin = entry.code?.current.pin;
   if (pin === undefined) return 'not pinned';
   const same = (a: string, b: string | undefined) => a.toLowerCase() === b?.toLowerCase();
   const matches =
