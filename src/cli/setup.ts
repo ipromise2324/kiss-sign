@@ -9,7 +9,7 @@ import { KEYS, createKeyFile, keyFilePath, kissSignHome } from '../keys.ts';
 import { REGISTRY_PATH, isEntryName, loadRegistry, parseRegistry } from '../registry.ts';
 import { checksumAddress, parseAddress } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template.ts';
-import { fetchOriginMain, fileAt, originRepo } from '../verify/self-check.ts';
+import { commitSubject, fetchOriginMain, fileAt, originRepo } from '../verify/self-check.ts';
 import { keccakText } from '../verify/verify.ts';
 import { FAILED, OK, UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
@@ -172,8 +172,20 @@ export async function templateApprove(args: readonly string[], io: Io): Promise<
   const template = parseTemplate(JSON.parse(text), parseRegistry(JSON.parse(fileAt(io.repoRoot, commit, REGISTRY_PATH))));
   if (template.id !== id) throw new UsageError(`${TEMPLATES_DIR}/${id}/template.json names itself ${template.id}.`);
   const hash = keccakText(text);
-  io.stdout(`${id} at origin/main ${commit.slice(0, 12)} hashes to ${hash}\n`);
-  if (!(await confirm('Approve this template as merged? [y/N] '))) {
+  io.stdout(
+    [
+      `Template: ${id}`,
+      `From main of ${repo}, commit ${commit}:`,
+      // JSON escapes any control character the subject carries, so it cannot steer the terminal.
+      `  ${JSON.stringify(commitSubject(io.repoRoot, commit))}`,
+      `Fingerprint of ${TEMPLATES_DIR}/${id}/template.json at that commit:`,
+      `  ${hash}`,
+      'verify uses this fingerprint to refuse any other version of this template until you approve it again.',
+      'There is nothing to compare by hand. Answer y only if this is the merged change you reviewed.',
+      '',
+    ].join('\n'),
+  );
+  if (!(await confirm(`Approve ${id} as merged in that commit? [y/N] `))) {
     io.stderr('Nothing approved.\n');
     return FAILED;
   }
