@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>morpho/urd-claim 報告</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #101318; --paper: #171b22; --raised: #1d232c; --ink: #e3e7ed; --muted: #9aa3b0; --rule: #2a313b; --accent: #7fa8de;
+  --ok: #a9b8cb; --ok-bg: #242c37; --warn: #e3ac52; --warn-bg: #33281a; --na: #8b94a1; --na-bg: #222831; --code-bg: #1f252e;
+  --screen: #07090c; --screen-ink: #d6dbe2; --screen-rule: #3a4350;
+  --font-body: system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans CJK TC", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.7; margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 80px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 40px; }
+header { padding-top: 40px; display: grid; gap: 8px; }
+.kicker { font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+h1 { font-size: clamp(25px, 4.5vw, 32px); line-height: 1.3; margin: 0; text-wrap: balance; color: var(--ink); }
+h2 { font-size: 21px; margin: 0; text-wrap: balance; color: var(--ink); }
+h3 { font-size: 17px; margin: 0; color: var(--ink); }
+p { margin: 0; max-width: 66ch; }
+section { display: grid; gap: 14px; }
+.lede { font-size: 17px; }
+.note { color: var(--muted); font-size: 14.5px; }
+.mono, code { font-family: var(--font-mono); font-size: 0.84em; overflow-wrap: anywhere; }
+code { background: var(--code-bg); color: var(--ink); padding: 1px 5px; border-radius: 4px; }
+a { color: var(--accent); overflow-wrap: anywhere; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; }
+.panel { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; display: grid; gap: 12px; }
+.panel.attention { border-color: var(--warn); }
+.checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.checks li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 4px 10px; align-items: start; }
+.panel.attention .checks { gap: 18px; }
+.mark { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; vertical-align: middle; place-items: center; font-size: 13px; font-weight: 700; margin-top: 3px; }
+.mark.ok { color: var(--ok); background: var(--ok-bg); }
+.mark.warn { color: var(--warn); background: var(--warn-bg); }
+.mark.na { color: var(--na); background: var(--na-bg); }
+.mark.info { color: var(--accent); background: var(--ok-bg); font-family: var(--font-mono); font-size: 12px; }
+.mark.dot { color: var(--muted); background: none; }
+.mark.ai { color: var(--muted); background: none; border: 1px dashed var(--muted); }
+.why { color: var(--muted); font-size: 14.5px; }
+.result { display: block; }
+.review { margin-top: 8px; padding: 10px 14px; border-radius: 6px; background: var(--raised); border-left: 3px solid var(--na); display: grid; gap: 4px; font-size: 15px; }
+.review.confirmed { border-left-color: var(--accent); }
+.review.confirmed > div:first-child b { color: var(--accent); }
+.review.concern { border-left-color: var(--warn); background: var(--warn-bg); }
+.review.concern > div:first-child b { color: var(--warn); }
+.rec { font-size: 14.5px; color: var(--ink); margin-top: 4px; }
+.flag { font-family: var(--font-mono); font-size: 12px; color: var(--warn); margin-right: 6px; }
+.by { font-size: 12px; font-weight: 500; letter-spacing: .03em; padding: 0 7px; border-radius: 999px; white-space: nowrap; vertical-align: 1px; margin-left: 6px; }
+.by.prog { color: var(--accent); border: 1px solid var(--accent); }
+.by.ai { color: var(--muted); border: 1px dashed var(--muted); }
+.addr { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+.addr-head { padding: 16px 20px 12px; display: grid; gap: 4px; border-bottom: 1px solid var(--rule); }
+.addr-head .name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.addr-head .full { font-family: var(--font-mono); font-size: 14px; overflow-wrap: anywhere; }
+.role { color: var(--muted); font-size: 15px; }
+.addr-body { padding: 16px 20px; display: grid; gap: 14px; }
+.table-frame { overflow-x: auto; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; line-height: 1.55; color: var(--ink); }
+th, td { text-align: left; vertical-align: top; padding: 10px 14px; border-bottom: 1px solid var(--rule); }
+th { font-size: 13px; color: var(--muted); font-weight: 500; background: var(--raised); }
+tr:last-child td { border-bottom: 0; }
+td.path { width: 32%; }
+td.path code { overflow-wrap: normal; word-break: normal; }
+td.nowrap { white-space: nowrap; }
+td.group { background: var(--raised); font-weight: 500; font-size: 14px; }
+.num { font-variant-numeric: tabular-nums; }
+details { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 18px; }
+summary { cursor: pointer; font-weight: 500; }
+details[open] summary { margin-bottom: 10px; }
+pre { font-family: var(--font-mono); font-size: 12px; line-height: 1.5; overflow-x: auto; background: var(--code-bg); color: var(--ink); padding: 12px; border-radius: 6px; margin: 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--muted); align-items: center; }
+.legend > span { display: inline-flex; align-items: center; gap: 6px; }
+.legend .mark { margin-top: 0; }
+.sym { font-weight: 700; }
+.sym.ok { color: var(--ok); }
+.sym.warn { color: var(--warn); }
+.sym.na { color: var(--na); }
+.level { font-size: 14px; font-weight: 700; padding: 1px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--muted); }
+.level.high { color: var(--accent); background: var(--ok-bg); border-color: var(--accent); }
+.level.medium { color: var(--ink); background: var(--na-bg); border-color: var(--na); border-style: dashed; }
+.level.low { color: var(--warn); background: var(--warn-bg); border-color: var(--warn); }
+.reviewed { font-size: 13.5px; color: var(--muted); }
+.reviewed.concern { color: var(--warn); }
+.tally { font-size: 14.5px; }
+.addr-body details, .panel details { background: none; border: 0; padding: 0; }
+.addr-body details summary, .panel details summary { color: var(--muted); font-size: 14.5px; font-weight: 400; }
+.wallet { display: grid; gap: 22px; }
+.device { display: grid; gap: 10px; }
+.device h3 { font-size: 15.5px; }
+.screen { background: var(--screen); color: var(--screen-ink); border: 2px solid var(--screen-rule); border-radius: 12px; padding: 14px 16px; max-width: 420px; font-family: var(--font-mono); font-size: 13.5px; display: grid; gap: 8px; }
+.screen .line { display: grid; gap: 0; border-bottom: 1px solid var(--screen-rule); padding-bottom: 6px; overflow-wrap: anywhere; }
+.screen .line:last-child { border-bottom: 0; padding-bottom: 0; }
+.screen .label { color: var(--muted); font-family: var(--font-body); font-size: 12.5px; }
+.screen.raw { color: var(--muted); }
+.unseen { font-size: 15px; }
+.unseen b { color: var(--warn); }
+.overview { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.overview > li { display: grid; grid-template-columns: 8.5em minmax(0, 1fr); gap: 2px 14px; font-size: 15px; }
+.overview > li .label { color: var(--muted); font-size: 14px; }
+.overview ul { margin: 0; padding-left: 1.2em; }
+.flow { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.flow > li { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: start; padding: 10px 14px; background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; }
+.flow > li + li { margin-top: 26px; position: relative; }
+.flow > li + li::before { content: "↓"; position: absolute; top: -25px; left: 20px; color: var(--muted); font-size: 16px; line-height: 24px; }
+.flow > li.ai { margin-left: 28px; background: none; border-style: dashed; }
+.flow .n { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; margin-top: 2px; color: var(--accent); border: 1px solid var(--accent); }
+.flow > li.ai .n { color: var(--muted); border-style: dashed; border-color: var(--muted); }
+.verdict { margin-right: 4px; }
+.verdict.safe { color: var(--accent); }
+.verdict.caution { color: var(--warn); }
+@media (max-width: 560px) { .overview > li { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+<div class="kicker">morpho/urd-claim · 資料讀於 2026-11-11 · 以太坊主網</div>
+<h1>從 Morpho 的 Universal Rewards Distributor 領取獎勵<span class="by ai">AI 研究</span></h1>
+<p class="lede">Safe 經由 Bundler3 呼叫 Morpho 的 Universal Rewards Distributor（URD）的 claim，把你在 card 上選的獎勵代幣領到 Safe。這是 Morpho app 領獎勵的做法。<span class="by ai">AI 研究</span></p>
+<p class="note">標「程式」的是程式檢查的結果，可以重跑；標「AI 研究」的是 AI 寫的，程式沒有驗證。這頁由 <code>pnpm report morpho/urd-claim --record</code> 產生，不要手動修改；合併前用 <code>pnpm report morpho/urd-claim --compare</code> 重新即時讀一次。</p>
+</header>
+
+<section>
+<h2>每次簽名，程式會自動檢查</h2>
+<ul class="checks"><li><span class="mark dot">•</span><div>交易只做這 1 件事，每個被綁住的欄位都對得上你的 card 或固定值<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>把每個被綁住的欄位改掉一個再查一次，每次都要被擋下（確認檢查真的有效）<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>模擬跑一次：Safe 收到 usdc 或 usdt 或 fluid 或 morpho 或 cbbtc<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>Safe 的 ETH 和代幣餘額只有上面這個變化（NFT 等不在檢查範圍）<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>沒有無上限的授權；交易後 Safe 的每個授權都不比交易前高<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>Safe 的設定（擁有者、門檻、模組）不會被改<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>每個合約現在的程式碼都要是 registry 記錄的指紋<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>兩家節點的答案要一致，不一致就不給 MATCH<span class="by prog">程式</span></div></li></ul>
+</section>
+
+<section>
+<h2>這筆交易怎麼走</h2>
+<ol class="flow"><li class="prog"><span class="n">1</span><div>Safe → <a href="#entry-bundler3">bundler3</a>：呼叫 <code>multicall</code><span class="by prog">程式</span></div></li><li class="ai"><span class="n">↳</span><div>Bundler3 對每個獎勵代幣各呼叫一次 URD 的 claim(Safe, 代幣, 累計數量, proof)。<span class="by ai">AI 研究</span></div></li><li class="ai"><span class="n">↳</span><div>URD 驗證 proof 後，把還沒領的部分轉給 account，也就是 Safe；不管是誰呼叫都一樣。<span class="by ai">AI 研究</span></div></li></ol>
+</section>
+
+<section>
+<h2>研究了哪些過去的交易，結論是什麼</h2>
+<ul class="checks"><li><span class="mark info">i</span><div>抽查過去一年 20 筆相關交易（共找到 20 筆）：3 筆來自 Safe、7 筆來自一般錢包，6 筆和這個模板同形狀。<span class="by prog">程式</span></div></li><li><span class="mark ok">✓</span><div>拿 1 筆別的 Safe 真實執行過的交易測過：都 MATCH；欄位一個一個改掉 8 次，每次都被擋下。<span class="by prog">程式</span></div></li><li><span class="mark info">i</span><div><b class="verdict caution">AI 結論：要小心</b> 最近一年的搜尋只找到 1 筆 Safe 的領取符合模板，另有 5 個一般錢包同形狀；樣本很小。<span class="by ai">AI 研究</span></div></li></ul>
+</section>
+
+<section>
+<h2>整體安全嗎</h2>
+<ul class="checks"><li><span class="mark info">i</span><div><b class="verdict safe">AI 判斷：沒看到問題</b> 領獎勵只會讓 Safe 收到代幣；錯的 root 只會付錢給別人，拿不走 Safe 的東西。<span class="by ai">AI 研究</span></div></li><li><span class="mark warn">!</span><div>程式還有 1 項要你看，見「需要你做的事」。<span class="by prog">程式</span></div></li><li><span class="mark info">i</span><div><div class="rec"><b>建議：</b>可以用。簽之前照常跑 verify。<span class="by ai">AI 研究</span></div></div></li><li><span class="mark info">i</span><div>7 個地址：3 個高信心、3 個中信心、1 個低信心<span class="by prog">程式</span>（低信心的 AI 有疑慮<span class="by ai">AI 研究</span>）</div></li></ul>
+<ul class="overview"><li><span class="label">升級和管理者</span><div>URD 不是代理合約，不能升級。它的 owner 和 root 更新者可以設定新的 root（setRoot，或 submitRoot 加上 timelock 後的 acceptRoot）。錯的 root 能讓別人多領，拿不走 Safe 的東西。<span class="by ai">AI 研究</span></div></li><li><span class="label">過去事故</span><div>DefiLlama 的駭客清單只有一筆 Morpho：2024 年 10 月 LeadBlock 的 Morpho Blue market 的 oracle 設定錯誤，跟 URD 無關。<span class="by ai">AI 研究</span> <span class="why">來源 <a href="https://api.llama.fi/hacks">1</a></span></div></li><li><span class="label">程式碼多久沒變</span><div><ul><li><code>usdc</code>：程式碼自區塊 <span class="num">18963716</span> 起沒變過</li><li><code>usdt</code>：程式碼自區塊 <span class="num">4634748</span> 起沒變過</li><li><code>bundler3</code>：程式碼自區塊 <span class="num">21643807</span> 起沒變過</li><li><code>fluid</code>：程式碼自區塊 <span class="num">12183236</span> 起沒變過</li><li><code>morpho</code>：程式碼自區塊 <span class="num">21157386</span> 起沒變過</li><li><code>morpho-urd</code>：程式碼自區塊 <span class="num">19405449</span> 起沒變過</li><li><code>cbbtc</code>：程式碼自區塊 <span class="num">20570548</span> 起沒變過</li></ul><span class="by prog">程式</span></div></li></ul>
+</section>
+
+<section>
+<h2>需要你做的事</h2>
+<div class="panel attention"><ul class="checks"><li data-result="fluid/source.page"><span class="mark warn">!</span><div><div class="result"><span class="flag">FINDING</span><b><a href="#entry-fluid">fluid</a>：</b>來源頁面上有這個地址，但不在標籤旁邊：<a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">GitHub 上的來源檔案</a><span class="by prog">程式</span></div><div class="review concern"><div><b>AI 有疑慮：</b>AI 讀了這個 commit 的 deployments.md 原始檔：0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb 只出現在幾個 vault 和 DEX 部署設定裡的 supplyToken、token0 欄位，沒有自己的標籤；registry 也沒寫 sourceLabel。CoinGecko 在這個地址列的 instadapp 對得上。<span class="by ai">AI 研究</span></div><div class="rec"><b>建議：</b>只有要領 FLUID 時才要在意；可以接受，但這個來源比不上有標籤的地址頁。<span class="by ai">AI 研究</span></div></div></div></li><li><span class="mark ai">?</span><div><b>過去交易的樣本很小。</b> 程式在過去一年的 12 段區塊裡只找到 3 筆 Safe 的領取，1 筆符合模板；另外 2 筆直接呼叫 URD 的 claim，沒經過 Bundler3。<span class="by ai">AI 研究</span><div class="rec"><b>建議：</b>可以接受；這個模板的安全靠 proof 和 effects 檢查，不靠樣本數。<span class="by ai">AI 研究</span></div></div></li></ul></div>
+</section>
+
+<section>
+<h2>ERC-7730 描述檔會怎麼顯示這筆交易</h2>
+<p class="note">支援 ERC-7730 明文簽名（clear signing）的錢包，會照描述檔顯示下面這幾行。</p>
+<div class="wallet"><p class="note">畫面是程式用 repo 固定版本的 ERC-7730 描述檔排出來的：只列描述檔說錢包會顯示的欄位，名稱用中文或參數原名，值是模板對它的規定。實際字樣以錢包為準，描述檔的原文不放在這頁。</p><div class="device"><h3>呼叫 1：<code>multicall</code>，對象 <code>bundler3</code></h3><div class="screen raw"><div class="line">原始資料（看不懂的十六進位）</div></div><p class="unseen"><b>錢包不會顯示：</b>bundle、to、金額、skipRevert、callbackHash。這些只有 kiss-sign 會檢查。<span class="by prog">程式</span></p><p class="note">描述檔 <code>registry/morpho/calldata-MorphoBundlerV3.json</code><span class="by prog">程式</span></p></div></div>
+</section>
+
+<section>
+<h2>每個地址確認了什麼</h2>
+<div class="legend">
+<span><span class="mark ok">✓</span>確認了</span>
+<span><span class="mark warn">!</span>需要你看</span>
+<span><span class="mark na">–</span>沒東西可比，或沒做</span>
+</div>
+<p class="note">信心等級只由程式的結果決定，AI 的說明和覆核改變不了它：<b>高信心</b>是官方來源列出這個地址、程式碼指紋的起始區塊在鏈上查過、沒有 !；<b>中信心</b>是沒有 !，但至少一項沒做（–）；<b>低信心</b>是至少一項 !，要打開看。<span class="by prog">程式</span></p>
+<article class="addr" id="entry-usdc">
+<div class="addr-head"><div class="name"><h3>usdc</h3><span class="role">token</span><span class="level high">高信心</span></div><div class="full">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="tally">8 項確認<span class="by prog">程式</span></div></div>
+<div class="addr-body"><details><summary>其他 8 項（<span class="sym ok">✓</span> 確認）</summary><p class="why">在這筆交易裡：呼叫 1 的 <code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>reward</code>；card 的 <code>token</code> 可以選它；Safe 收到的代幣<span class="by prog">程式</span></p><ul class="checks"><li data-result="usdc/source.page"><span class="mark ok">✓</span><div>登記的來源頁面（不跑 JavaScript 直接讀）在標籤旁邊列出這個地址：<a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com</a><span class="by prog">程式</span></div></li><li data-result="usdc/source.site"><span class="mark ok">✓</span><div>來源跟 DefiLlama 上 <code>circle-usdc</code> 登記的網站是同一個網域<span class="by prog">程式</span></div></li><li data-result="usdc/source.coingecko"><span class="mark ok">✓</span><div>CoinGecko 在這個地址列的就是 registry 寫的幣 <code>usd-coin</code><span class="by prog">程式</span></div></li><li data-result="usdc/abi"><span class="mark ok">✓</span><div>Sourcify 上的原始碼用固定版本的編譯器重新編譯後，跟鏈上的程式碼一樣（代理合約，比對的是背後的實作 <span class="mono">0x43506849D7C04F9138D1A2050bbF3A0c054402dd</span>）（<code>FiatTokenV2_2</code>，solc 0.6.12+commit.27d51765），也就是 registry 記錄的現在指紋<span class="by prog">程式</span></div></li><li data-result="usdc/code.1"><span class="mark ok">✓</span><div>第 1 / 4 段：從區塊 <span class="num">6082465</span> 起執行的是記錄的程式碼（代理合約，背後的實作 <span class="mono">0x0882477e7895bdC5cea7cB1552ed914aB157Fe56</span> 也算在內），前一個區塊還沒有程式碼，兩個節點都確認<span class="by prog">程式</span></div></li><li data-result="usdc/code.2"><span class="mark ok">✓</span><div>第 2 / 4 段：從區塊 <span class="num">10743414</span> 起執行的是記錄的程式碼（代理合約，背後的實作 <span class="mono">0xB7277a6e95992041568D9391D09d0122023778A2</span> 也算在內），前一個區塊是上一段的程式碼，兩個節點都確認<span class="by prog">程式</span></div></li><li data-result="usdc/code.3"><span class="mark ok">✓</span><div>第 3 / 4 段：從區塊 <span class="num">12317814</span> 起執行的是記錄的程式碼（代理合約，背後的實作 <span class="mono">0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF</span> 也算在內），前一個區塊是上一段的程式碼，兩個節點都確認<span class="by prog">程式</span></div></li><li data-result="usdc/code.4"><span class="mark ok">✓</span><div>第 4 / 4 段：從區塊 <span class="num">18963716</span> 起執行的是記錄的程式碼（代理合約，背後的實作 <span class="mono">0x43506849D7C04F9138D1A2050bbF3A0c054402dd</span> 也算在內），前一個區塊是上一段的程式碼，兩個節點都確認<span class="by prog">程式</span></div></li></ul></details></div>
+</article><article class="addr" id="entry-usdt">
+<div class="addr-head"><div class="name"><h3>usdt</h3><span class="role">token</span><span class="level medium">中信心</span></div><div class="full">0xdAC17F958D2ee523a2206206994597C13D831ec7</div><div class="tally">4 項確認、1 項沒比對<span class="by prog">程式</span></div></div>
+<div class="addr-body"><details><summary>其他 5 項（<span class="sym ok">✓</span> 確認、<span class="sym na">–</span> 沒比對）</summary><p class="why">在這筆交易裡：呼叫 1 的 <code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>reward</code>；card 的 <code>token</code> 可以選它；Safe 收到的代幣<span class="by prog">程式</span></p><ul class="checks"><li data-result="usdt/source.page"><span class="mark ok">✓</span><div>登記的來源頁面（不跑 JavaScript 直接讀）在標籤旁邊列出這個地址：<a href="https://tether.to/en/supported-protocols/">tether.to</a><span class="by prog">程式</span></div></li><li data-result="usdt/source.site"><span class="mark ok">✓</span><div>來源跟 DefiLlama 上 <code>tether</code> 登記的網站是同一個網域<span class="by prog">程式</span></div></li><li data-result="usdt/source.coingecko"><span class="mark ok">✓</span><div>CoinGecko 在這個地址列的就是 registry 寫的幣 <code>tether</code><span class="by prog">程式</span></div></li><li data-result="usdt/abi"><span class="mark na">–</span><div><span class="flag">REFUSED</span>沒有用原始碼重新編譯來比對<span class="by prog">程式</span><div class="why">它需要的編譯器 solc 0.4.18+commit.9cf6e910 還沒固定在 repo 裡。</div></div></li><li data-result="usdt/code.1"><span class="mark ok">✓</span><div>從區塊 <span class="num">4634748</span> 起執行的是記錄的程式碼，前一個區塊還沒有程式碼，兩個節點都確認<span class="by prog">程式</span></div></li></ul></details></div>
+</article><article class="addr" id="entry-bundler3">
+<div class="addr-head"><div class="name"><h3>bundler3</h3><span class="role">router</span><span class="level high">高信心</span></div><div class="full">0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245</div><div class="role">Safe 呼叫的合約；它再呼叫 URD 的 claim。<span class="by ai">AI 研究</span></div><div class="tally">6 項確認<span class="by prog">程式</span></div></div>
+<div class="addr-body"><details><summary>其他 6 項（<span class="sym ok">✓</span> 確認）</summary><p class="why">在這筆交易裡：呼叫 1 的對象；<code>multicall</code> 的官方文件屬於它<span class="by prog">程式</span></p><ul class="checks"><li data-result="bundler3/source.page"><span class="mark ok">✓</span><div>登記的來源頁面（不跑 JavaScript 直接讀）在標籤旁邊列出這個地址：<a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org</a><span class="by prog">程式</span></div></li><li data-result="bundler3/source.site"><span class="mark ok">✓</span><div>來源跟 DefiLlama 上 <code>morpho-blue</code> 登記的網站是同一個網域<span class="by prog">程式</span></div></li><li data-result="bundler3/doc.0x374f435d.page"><span class="mark ok">✓</span><div>官方文件頁面寫了 <code>multicall</code> 這個函式名稱：<a href="https://docs.morpho.org/developers/contracts/bundles/">https://docs.morpho.org/developers/contracts/bundles/</a><span class="by prog">程式</span></div></li><li data-result="bundler3/doc.0x374f435d.site"><span class="mark ok">✓</span><div><code>multicall</code> 的文件頁面跟 DefiLlama 上 <code>morpho-blue</code> 登記的網站是同一個網域<span class="by prog">程式</span></div></li><li data-result="bundler3/abi"><span class="mark ok">✓</span><div>Sourcify 上的原始碼用固定版本的編譯器重新編譯後，跟鏈上的程式碼一樣（<code>Bundler3</code>，solc 0.8.28+commit.7893614a），也就是 registry 記錄的現在指紋<span class="by prog">程式</span></div></li><li data-result="bundler3/code.1"><span class="mark ok">✓</span><div>從區塊 <span class="num">21643807</span> 起執行的是記錄的程式碼，前一個區塊還沒有程式碼，兩個節點都確認<span class="by prog">程式</span></div></li></ul></details></div>
+</article><article class="addr" id="entry-fluid">
+<div class="addr-head"><div class="name"><h3>fluid</h3><span class="role">token</span><span class="level low">低信心</span><span class="reviewed concern">AI 有疑慮<span class="by ai">AI 研究</span></span></div><div class="full">0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb</div><div class="tally">4 項確認、1 項需要你看、1 項沒比對<span class="by prog">程式</span></div></div>
+<div class="addr-body"><ul class="checks"><li data-result="fluid/source.page"><span class="mark warn">!</span><div><span class="flag">FINDING</span>來源頁面上有這個地址，但不在標籤旁邊：<a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">GitHub 上的來源檔案</a><span class="by prog">程式</span><div class="why">可能不在標籤旁邊、大小寫不對，或 registry 沒寫標籤。<code>pnpm check-sources fluid</code> 會印出比對的內容。</div></div></li></ul><details><summary>其他 5 項（<span class="sym ok">✓</span> 確認、<span class="sym na">–</span> 沒比對）</summary><p class="why">在這筆交易裡：呼叫 1 的 <code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>reward</code>；card 的 <code>token</code> 可以選它；Safe 收到的代幣<span class="by prog">程式</span></p><ul class="checks"><li data-result="fluid/source.site"><span class="mark na">–</span><div><span class="flag">FINDING</span>沒比對來源的 GitHub 組織<span class="by prog">程式</span><div class="why">DefiLlama 上 <code>fluid-lending</code> 沒有登記 GitHub 組織，沒有東西可比；這個地址另有一項跟 CoinGecko 或 DefiLlama 的比對對上了。</div></div></li><li data-result="fluid/source.commit"><span class="mark ok">✓</span><div>來源檔案固定在一個 commit，而且這個 commit 在 repo 的預設分支上<span class="by prog">程式</span></div></li><li data-result="fluid/source.coingecko"><span class="mark ok">✓</span><div>CoinGecko 在這個地址列的就是 registry 寫的幣 <code>instadapp</code><span class="by prog">程式</span></div></li><li data-result="fluid/abi"><span class="mark ok">✓</span><div>Sourcify 上的原始碼用固定版本的編譯器重新編譯後，跟鏈上的程式碼一樣（<code>InstaToken</code>，solc 0.7.3+commit.9bfce1f6），也就是 registry 記錄的現在指紋<span class="by prog">程式</span></div></li><li data-result="fluid/code.1"><span class="mark ok">✓</span><div>從區塊 <span class="num">12183236</span> 起執行的是記錄的程式碼，前一個區塊還沒有程式碼，兩個節點都確認<span class="by prog">程式</span></div></li></ul></details></div>
+</article><article class="addr" id="entry-morpho">
+<div class="addr-head"><div class="name"><h3>morpho</h3><span class="role">token</span><span class="level high">高信心</span></div><div class="full">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</div><div class="tally">5 項確認<span class="by prog">程式</span></div></div>
+<div class="addr-body"><details><summary>其他 5 項（<span class="sym ok">✓</span> 確認）</summary><p class="why">在這筆交易裡：呼叫 1 的 <code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>reward</code>；card 的 <code>token</code> 可以選它；Safe 收到的代幣<span class="by prog">程式</span></p><ul class="checks"><li data-result="morpho/source.page"><span class="mark ok">✓</span><div>登記的來源頁面（不跑 JavaScript 直接讀）在標籤旁邊列出這個地址：<a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org</a><span class="by prog">程式</span></div></li><li data-result="morpho/source.site"><span class="mark ok">✓</span><div>來源跟 DefiLlama 上 <code>morpho-blue</code> 登記的網站是同一個網域<span class="by prog">程式</span></div></li><li data-result="morpho/source.coingecko"><span class="mark ok">✓</span><div>CoinGecko 在這個地址列的就是 registry 寫的幣 <code>morpho</code><span class="by prog">程式</span></div></li><li data-result="morpho/abi"><span class="mark ok">✓</span><div>Sourcify 上的原始碼用固定版本的編譯器重新編譯後，跟鏈上的程式碼一樣（代理合約，比對的是背後的實作 <span class="mono">0x4364fd2371b6318159366abFA51f190df5C24852</span>）（<code>MorphoTokenEthereum</code>，solc 0.8.27+commit.40a35a09），也就是 registry 記錄的現在指紋<span class="by prog">程式</span></div></li><li data-result="morpho/code.1"><span class="mark ok">✓</span><div>從區塊 <span class="num">21157386</span> 起執行的是記錄的程式碼（代理合約，背後的實作 <span class="mono">0x4364fd2371b6318159366abFA51f190df5C24852</span> 也算在內），前一個區塊還沒有程式碼，兩個節點都確認<span class="by prog">程式</span></div></li></ul></details></div>
+</article><article class="addr" id="entry-morpho-urd">
+<div class="addr-head"><div class="name"><h3>morpho-urd</h3><span class="role">distributor</span><span class="level medium">中信心</span></div><div class="full">0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb</div><div class="role">發獎勵的合約；Bundler3 代 Safe 呼叫它的 claim。<span class="by ai">AI 研究</span></div><div class="tally">6 項確認、1 項沒比對<span class="by prog">程式</span></div></div>
+<div class="addr-body"><details><summary>其他 7 項（<span class="sym ok">✓</span> 確認、<span class="sym na">–</span> 沒比對）</summary><p class="why">在這筆交易裡：呼叫 1 的 <code>bundle[0]</code> 參數：<code>to</code>；<code>claim</code> 的官方文件屬於它<span class="by prog">程式</span></p><ul class="checks"><li data-result="morpho-urd/source.page"><span class="mark ok">✓</span><div>登記的來源頁面（不跑 JavaScript 直接讀）在標籤旁邊列出這個地址：<a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org</a><span class="by prog">程式</span></div></li><li data-result="morpho-urd/source.site"><span class="mark ok">✓</span><div>來源跟 DefiLlama 上 <code>morpho-blue</code> 登記的網站是同一個網域<span class="by prog">程式</span></div></li><li data-result="morpho-urd/doc.0xfabed412.page"><span class="mark ok">✓</span><div>官方文件頁面寫了 <code>claim</code> 這個函式名稱：<a href="https://github.com/morpho-org/universal-rewards-distributor/blob/3de504b130835a12482e00e1c83dcf369448c80b/src/UniversalRewardsDistributor.sol">https://github.com/morpho-org/universal-rewards-distributor/blob/3de504b130835a12482e00e1c83dcf369448c80b/src/UniversalRewardsDistributor.sol</a><span class="by prog">程式</span></div></li><li data-result="morpho-urd/doc.0xfabed412.site"><span class="mark na">–</span><div><span class="flag">FINDING</span>沒比對<code>claim</code> 的文件頁面的 GitHub 組織<span class="by prog">程式</span><div class="why">DefiLlama 上 <code>morpho-blue</code> 沒有登記 GitHub 組織，沒有東西可比；這個地址另有一項跟 CoinGecko 或 DefiLlama 的比對對上了。</div></div></li><li data-result="morpho-urd/doc.0xfabed412.commit"><span class="mark ok">✓</span><div><code>claim</code> 的文件固定在一個 commit，而且在預設分支上<span class="by prog">程式</span></div></li><li data-result="morpho-urd/abi"><span class="mark ok">✓</span><div>Sourcify 上的原始碼用固定版本的編譯器重新編譯後，跟鏈上的程式碼一樣（<code>UniversalRewardsDistributor</code>，solc 0.8.19+commit.7dd6d404），也就是 registry 記錄的現在指紋<span class="by prog">程式</span></div></li><li data-result="morpho-urd/code.1"><span class="mark ok">✓</span><div>從區塊 <span class="num">19405449</span> 起執行的是記錄的程式碼，前一個區塊還沒有程式碼，兩個節點都確認<span class="by prog">程式</span></div></li></ul></details><details><summary>AI 另外查到（3 則）</summary><ul class="steps" style="list-style:disc"><li>Morpho 官方的地址頁把它列為「Universal Rewards Distributor (used with the Market Rewards Program Registry)」，並連到 Etherscan。<span class="by ai">AI 研究</span><div class="why">來源：<a href="https://docs.morpho.org/get-started/resources/addresses/">https://docs.morpho.org/get-started/resources/addresses/</a></div></li><li>Etherscan 上的名稱是 UniversalRewardsDistributor，solc 0.8.19，沒有代理。建立者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，交易 0x091c1b2fb8ceaf652fe7fab281e49409d5c00e39c1ab9fcb9c883ab2a1f17ed2，區塊 19,405,449。<span class="by ai">AI 研究</span></li><li>Sourcify 上只有 partial match，編出來的程式碼只有結尾的 IPFS metadata 雜湊不同；prove-abi 只在這種情況遮掉那個雜湊，其他每個 byte 都比對。所以證明的是 selector 和型別，不包括參數名稱。<span class="by ai">AI 研究</span></li></ul></details></div>
+</article><article class="addr" id="entry-cbbtc">
+<div class="addr-head"><div class="name"><h3>cbbtc</h3><span class="role">token</span><span class="level medium">中信心</span></div><div class="full">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</div><div class="tally">5 項確認、1 項沒比對<span class="by prog">程式</span></div></div>
+<div class="addr-body"><details><summary>其他 6 項（<span class="sym ok">✓</span> 確認、<span class="sym na">–</span> 沒比對）</summary><p class="why">在這筆交易裡：呼叫 1 的 <code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>reward</code>；card 的 <code>token</code> 可以選它；Safe 收到的代幣<span class="by prog">程式</span></p><ul class="checks"><li data-result="cbbtc/source.page"><span class="mark ok">✓</span><div>登記的來源頁面（不跑 JavaScript 直接讀）在標籤旁邊列出這個地址：<a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">GitHub 上的來源檔案</a><span class="by prog">程式</span></div></li><li data-result="cbbtc/source.site"><span class="mark na">–</span><div><span class="flag">FINDING</span>沒比對來源的 GitHub 組織<span class="by prog">程式</span><div class="why">DefiLlama 上 <code>coinbase</code> 沒有登記 GitHub 組織，沒有東西可比；這個地址另有一項跟 CoinGecko 或 DefiLlama 的比對對上了。</div></div></li><li data-result="cbbtc/source.commit"><span class="mark ok">✓</span><div>來源檔案固定在一個 commit，而且這個 commit 在 repo 的預設分支上<span class="by prog">程式</span></div></li><li data-result="cbbtc/source.coingecko"><span class="mark ok">✓</span><div>CoinGecko 在這個地址列的就是 registry 寫的幣 <code>coinbase-wrapped-btc</code><span class="by prog">程式</span></div></li><li data-result="cbbtc/abi"><span class="mark ok">✓</span><div>Sourcify 上的原始碼用固定版本的編譯器重新編譯後，跟鏈上的程式碼一樣（代理合約，比對的是背後的實作 <span class="mono">0x7458bfDC30034EB860B265E6068121D18Fa5Aa72</span>）（<code>FiatTokenV2_1</code>，solc 0.6.12+commit.27d51765），也就是 registry 記錄的現在指紋<span class="by prog">程式</span></div></li><li data-result="cbbtc/code.1"><span class="mark ok">✓</span><div>從區塊 <span class="num">20570548</span> 起執行的是記錄的程式碼（代理合約，背後的實作 <span class="mono">0x7458bfDC30034EB860B265E6068121D18Fa5Aa72</span> 也算在內），前一個區塊還沒有程式碼，兩個節點都確認<span class="by prog">程式</span></div></li></ul></details></div>
+</article>
+</section>
+
+<section>
+<h2>細節</h2>
+<details><summary>你在 card 上填的</summary><div class="table-frame"><table><thead><tr><th>card 欄位</th><th>填什麼 <span class="by prog">程式</span></th></tr></thead><tbody><tr><td class="nowrap"><code>token</code></td><td>從 registry 裡 kind 是 <code>token</code> 的合約選一個</td></tr></tbody></table></div><details><summary>card 的 <code>token</code> 可以選的合約</summary><div class="table-frame"><table><thead><tr><th>名稱</th><th>地址</th></tr></thead><tbody><tr><td><code>usdc</code></td><td class="mono">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</td></tr><tr><td><code>usdt</code></td><td class="mono">0xdAC17F958D2ee523a2206206994597C13D831ec7</td></tr><tr><td><code>fluid</code></td><td class="mono">0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb</td></tr><tr><td><code>morpho</code></td><td class="mono">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</td></tr><tr><td><code>cbbtc</code></td><td class="mono">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</td></tr></tbody></table></div></details></details>
+<details><summary>每次簽名前，程式會自動檢查的 7 件事（完整說明）</summary><ul class="checks"><li><span class="mark dot">•</span><div>交易只有這 1 個呼叫，每個欄位都符合「交易裡每個欄位必須是什麼」的表，而且交易要能逐 byte 重新編碼成一樣的內容。<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>程式把每個被綁住的欄位一個一個改掉，確認模板每次都給 MISMATCH。<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>不允許無上限的授權、不允許 delegatecall 到官方 MultiSend 以外的合約、不允許改 Safe 的擁有者、模組、guard、門檻或實作；Safe 自己的手續費欄位都必須是 0。<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>模擬執行後，Safe 收到 card 上的 <code>token</code>，只能是 <code>usdc</code> <span class="mono">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>、<code>usdt</code> <span class="mono">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>、<code>fluid</code> <span class="mono">0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb</span>、<code>morpho</code> <span class="mono">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>、<code>cbbtc</code> <span class="mono">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>，數量大於 0。<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>Safe 的 ETH 和 ERC-20 代幣餘額只能有上面這些變化（NFT、ERC-1155 等程式不量）；交易結束後，Safe 的每個 ERC-20 和 Permit2 授權都不能比交易前高。<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>這筆交易碰到的每個 registry 合約，現在執行的程式碼都必須是 registry 記錄的程式碼指紋，代理合約背後的實作也一樣。程式碼被換過就會擋下。<span class="by prog">程式</span></div></li><li><span class="mark dot">•</span><div>以上的鏈上資料都向兩家不同公司的節點讀；兩邊答案不一樣，結果就是 UNVERIFIABLE，不會給 MATCH。<span class="by prog">程式</span></div></li></ul></details>
+<details><summary>交易裡每個欄位必須是什麼</summary><div class="table-frame"><table><thead><tr><th>欄位</th><th>意思 <span class="by ai">AI 研究</span></th><th>必須是 <span class="by prog">程式</span></th></tr></thead><tbody><tr><td class="group" colspan="3">呼叫 1 / 1：<code>multicall</code></td></tr><tr><td class="path"><code>to</code></td><td></td><td>registry 的 <code>bundler3</code> <span class="mono">0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245</span></td></tr><tr><td class="path"><code>value</code></td><td></td><td>固定為 <code>0</code></td></tr><tr><td class="path"><code>multicall</code></td><td></td><td>呼叫 <code>multicall((address,bytes,uint256,bool,bytes32)[])</code>，selector <code>0x374f435d</code>；參數後面最多附加 8 bytes</td></tr><tr><td class="path"><code>multicall.<wbr>bundle</code></td><td></td><td>剛好 1 項</td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>to</code></td><td></td><td>registry 的 <code>morpho-urd</code> <span class="mono">0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb</span></td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>data → claim</code></td><td></td><td>呼叫 <code>claim(address,address,uint256,bytes32[])</code>，selector <code>0xfabed412</code>；參數後面不能附加任何資料</td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>account</code></td><td>誰收到獎勵<span class="by ai">AI 研究</span></td><td>你的 Safe</td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>reward</code></td><td>哪個獎勵代幣<span class="by ai">AI 研究</span></td><td>card 上的 <code>token</code>，只能是 <code>usdc</code> <span class="mono">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>、<code>usdt</code> <span class="mono">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>、<code>fluid</code> <span class="mono">0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb</span>、<code>morpho</code> <span class="mono">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>、<code>cbbtc</code> <span class="mono">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span></td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>claimable</code></td><td>Merkle leaf 裡的累計數量；URD 只付累計數量減掉已領的部分<span class="by ai">AI 研究</span></td><td>不限</td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>data → claim.<wbr>proof</code></td><td>Merkle proof；URD 驗不過就整筆失敗<span class="by ai">AI 研究</span></td><td>不限（模板宣稱：改成別的值，交易一定失敗或被擋下）</td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>value</code></td><td></td><td>固定為 <code>0</code></td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>skipRevert</code></td><td></td><td>固定為 <code>false</code></td></tr><tr><td class="path"><code>multicall.<wbr>bundle[0].<wbr>callbackHash</code></td><td></td><td>固定為 <code>0x0000000000000000000000000000000000000000000000000000000000000000</code></td></tr><tr><td class="path"><code>merge</code></td><td>一張 card 上有幾個獎勵代幣，就在同一個 multicall 裡放幾個項目，照 card 的順序<span class="by ai">AI 研究</span></td><td>同一張 card 上的幾個操作共用這個呼叫</td></tr></tbody></table></div></details>
+<details><summary>拿真實交易測過的細節</summary><ul class="checks"><li><span class="mark ok">✓</span><div><code>morpho-urd-claim</code>（別的 Safe 已執行的交易，配上錄下的 card）：每個欄位都符合；8 個被綁住的欄位一個一個改掉，每次都得到 MISMATCH<span class="by prog">程式</span></div></li><li><span class="mark info">i</span><div>過去一年的交易（<code>testdata/research/morpho-urd-claim.json</code>）：Alchemy 找到 20 筆、Etherscan 20 筆；抽查 20 筆，Safe 送出的 3 筆裡 1 筆符合模板，EOA 直接呼叫的 7 筆裡 5 筆符合，其他 10 筆不是這個操作。<span class="by prog">程式</span></div></li><li><span class="mark info">i</span><div>morpho-urd-claim 模擬和用鏈上收據都只收到 +3,824.55 MORPHO，沒有別的變化，得到 MATCH；換一個 account 或換一個代幣都是 MISMATCH。<span class="by ai">AI 研究</span></div></li></ul></details>
+<details><summary>過去交易搜尋的原始輸出：testdata/research/morpho-urd-claim.json</summary><pre>past transactions for morpho/urd-claim
+anchor: Transfer of morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 moved out of morpho-urd
+windows: 12 of up to 7200 blocks, one every 219000 blocks over the last year; at most 20 studied per window
+  blocks 23971801 to 23979000: 3 found, 3 studied
+  blocks 24190801 to 24198000: 5 found, 5 studied
+  blocks 24409801 to 24417000: 3 found, 3 studied
+  blocks 24628801 to 24636000: 3 found, 3 studied
+  blocks 24847801 to 24855000: 5 found, 5 studied
+  blocks 25066801 to 25074000: 0 found, 0 studied
+  blocks 25285801 to 25293000: 0 found, 0 studied
+  blocks 25504801 to 25512000: 0 found, 0 studied
+  blocks 25723801 to 25731000: 0 found, 0 studied
+  blocks 25942801 to 25950000: 0 found, 0 studied
+  blocks 26161801 to 26169000: 0 found, 0 studied
+  blocks 26380801 to 26388000: 1 found, 1 studied
+sources: alchemy found 20, etherscan found 20; both 20, only alchemy 0, only etherscan 0
+senders, of 20 transactions studied:
+  proven Safe: 3, from 3 Safes
+  contract, not a proven Safe: 0, from 0 contracts
+  EOA calling a function of the template directly: 7, from 7 EOAs
+  neither: 10
+    10 calls no function the template calls (called 0xfabed412 in 10)
+by proven Safes, the whole template in one transaction:
+fit the template&#39;s shape: 1 transaction from 1 Safe; misfits: 2 from 2 Safes
+fields, over the 1 fitting transaction:
+  call.to  [contract bundler3]
+    equalled contract bundler3 in 1 of 1 (1 Safe); values: bundler3 in 1
+  call.value  [const 0]
+    equalled const 0 in 1 of 1 (1 Safe); values: 0 in 1
+  call.multicall.bundle[0].to  [contract morpho-urd]
+    equalled contract morpho-urd in 1 of 1 (1 Safe); values: morpho-urd in 1
+  call.multicall.bundle[0].data.claim.account  [the Safe]
+    equalled the Safe in 1 of 1 (1 Safe); values: the Safe in 1
+  call.multicall.bundle[0].data.claim.reward  [card token]
+    same as the other leaves bound to card token in 1 of 1; values: morpho in 1
+  call.multicall.bundle[0].data.claim.claimable  [free]
+    values: 630315551315418633619 in 1
+  call.multicall.bundle[0].data.claim.proof  [free]
+    values: 0x0000000000000000…(544 bytes) in 1
+  call.multicall.bundle[0].value  [const 0]
+    equalled const 0 in 1 of 1 (1 Safe); values: 0 in 1
+  call.multicall.bundle[0].skipRevert  [const false]
+    equalled const false in 1 of 1 (1 Safe); values: false in 1
+  call.multicall.bundle[0].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
+    equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 1 of 1 (1 Safe); values: 0x0000000000000000…(32 bytes) in 1
+misfits, by reason:
+  2 from 2 Safes: calls morpho-urd.claim
+    e.g. 0x1e1632c031bccf21c8a80651a564325a5ad16e23ebd3224566a4c4a7ebbcb244, 0x8ea7d460bd68baab08c828adcad451b9da614e8b649ece751d661ac7ef78397a
+examples that fit: 0xabb885b9511f63fab459f12d0dcc077581963221384087a354704ab48b5cb4eb
+by EOAs, call 1 of 1 (multicall) as its own transaction:
+fit the call&#39;s shape: 5 transactions from 5 EOAs; misfits: 2 from 2 EOAs
+fields, over the 5 fitting transactions:
+  call.to  [contract bundler3]
+    equalled contract bundler3 in 5 of 5 (5 EOAs); values: bundler3 in 5
+  call.value  [const 0]
+    equalled const 0 in 5 of 5 (5 EOAs); values: 0 in 5
+  call.multicall.bundle[0].to  [contract morpho-urd]
+    equalled contract morpho-urd in 5 of 5 (5 EOAs); values: morpho-urd in 5
+  call.multicall.bundle[0].data.claim.account  [the sender]
+    equalled the sender in 5 of 5 (5 EOAs); values: the sender in 5
+  call.multicall.bundle[0].data.claim.reward  [card token]
+    same as the other leaves bound to card token in 5 of 5; values: morpho in 5
+  call.multicall.bundle[0].data.claim.claimable  [free]
+    values: 5 distinct values
+  call.multicall.bundle[0].data.claim.proof  [free]
+    values: 5 distinct values
+  call.multicall.bundle[0].value  [const 0]
+    equalled const 0 in 5 of 5 (5 EOAs); values: 0 in 5
+  call.multicall.bundle[0].skipRevert  [const false]
+    equalled const false in 5 of 5 (5 EOAs); values: false in 5
+  call.multicall.bundle[0].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
+    equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 5 of 5 (5 EOAs); values: 0x0000000000000000…(32 bytes) in 5
+misfits, by reason:
+  2 from 2 EOAs: call.multicall.bundle: expected 1 items, got 3 items
+    e.g. 0x414a6be530df4610b37db731df7b1ccbea2f93ad8a95d0b6a6fcf07751d76689, 0x1d5fc6a48a946c2912f3a02e8713d01d01973dc08a3817026163c8364380ea55
+examples that fit: 0x3fc956c037e4ebb836c6fb9fcb79759c7cbcace614d8da799b67cece300790ba, 0xa161e33ca061a962d20861d17624fc75adc13da6f2060c85ec2e9840c263d8b4, 0xe32a480c964fa44f4873765943f79245729e7592442f97924c21a6022b23f1aa</pre></details>
+<details><summary>程式碼指紋（每一段從哪個區塊開始）</summary><div class="table-frame"><table><thead><tr><th>合約</th><th>起始區塊</th><th>程式碼指紋</th><th>背後的實作</th><th>鏈上檢查</th></tr></thead><tbody><tr><td><code>usdc</code></td><td class="num">6082465</td><td class="mono">0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505</td><td><span class="mono">0x0882477e7895bdC5cea7cB1552ed914aB157Fe56</span> <span class="mono">0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa</span></td><td>PASS</td></tr><tr><td><code>usdc</code></td><td class="num">10743414</td><td class="mono">0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505</td><td><span class="mono">0xB7277a6e95992041568D9391D09d0122023778A2</span> <span class="mono">0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3</span></td><td>PASS</td></tr><tr><td><code>usdc</code></td><td class="num">12317814</td><td class="mono">0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505</td><td><span class="mono">0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF</span> <span class="mono">0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c</span></td><td>PASS</td></tr><tr><td><code>usdc</code></td><td class="num">18963716</td><td class="mono">0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505</td><td><span class="mono">0x43506849D7C04F9138D1A2050bbF3A0c054402dd</span> <span class="mono">0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea</span></td><td>PASS</td></tr><tr><td><code>usdt</code></td><td class="num">4634748</td><td class="mono">0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55</td><td>無</td><td>PASS</td></tr><tr><td><code>bundler3</code></td><td class="num">21643807</td><td class="mono">0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454</td><td>無</td><td>PASS</td></tr><tr><td><code>fluid</code></td><td class="num">12183236</td><td class="mono">0x8cf49f6749c84d0c4fad1cac5dcd25451e3714b0d0e2bda19610e97809ae017e</td><td>無</td><td>PASS</td></tr><tr><td><code>morpho</code></td><td class="num">21157386</td><td class="mono">0x9d47be5e1fade278a449fcd67e4fc7b69ce5c451c36ad7c4f380280d127f5532</td><td><span class="mono">0x4364fd2371b6318159366abFA51f190df5C24852</span> <span class="mono">0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9</span></td><td>PASS</td></tr><tr><td><code>morpho-urd</code></td><td class="num">19405449</td><td class="mono">0xbef9dc65dccc9a019287d0bf6604654d23cbfbac0880842cfe9eac3f856ea252</td><td>無</td><td>PASS</td></tr><tr><td><code>cbbtc</code></td><td class="num">20570548</td><td class="mono">0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71</td><td><span class="mono">0x7458bfDC30034EB860B265E6068121D18Fa5Aa72</span> <span class="mono">0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547</span></td><td>PASS</td></tr></tbody></table></div></details>
+<details><summary>原始碼重新編譯的結果</summary><div class="table-frame"><table><thead><tr><th>合約</th><th>結果</th><th>程式碼指紋</th><th>比對時遮掉的部分</th><th>讀取區塊</th></tr></thead><tbody><tr><td><code>usdc</code></td><td>PROVEN，solc 0.6.12+commit.27d51765</td><td class="mono">0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea</td><td>0 個 immutable、0 段 library 位址比對時遮掉；metadata hash 不同</td><td class="num">26386376</td></tr><tr><td><code>usdt</code></td><td colspan="3">REFUSED <code>compiler-not-pinned</code></td><td class="num">26386376</td></tr><tr><td><code>bundler3</code></td><td>PROVEN，solc 0.8.28+commit.7893614a</td><td class="mono">0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454</td><td>0 個 immutable、0 段 library 位址比對時遮掉</td><td class="num">26383744</td></tr><tr><td><code>fluid</code></td><td>PROVEN，solc 0.7.3+commit.9bfce1f6</td><td class="mono">0x8cf49f6749c84d0c4fad1cac5dcd25451e3714b0d0e2bda19610e97809ae017e</td><td>0 個 immutable、0 段 library 位址比對時遮掉</td><td class="num">26385844</td></tr><tr><td><code>morpho</code></td><td>PROVEN，solc 0.8.27+commit.40a35a09</td><td class="mono">0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9</td><td>2 個 immutable、0 段 library 位址比對時遮掉</td><td class="num">26383745</td></tr><tr><td><code>morpho-urd</code></td><td>PROVEN，solc 0.8.19+commit.7dd6d404</td><td class="mono">0xbef9dc65dccc9a019287d0bf6604654d23cbfbac0880842cfe9eac3f856ea252</td><td>0 個 immutable、0 段 library 位址比對時遮掉；metadata hash 不同</td><td class="num">26385362</td></tr><tr><td><code>cbbtc</code></td><td>PROVEN，solc 0.6.12+commit.27d51765</td><td class="mono">0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547</td><td>0 個 immutable、0 段 library 位址比對時遮掉</td><td class="num">26391177</td></tr></tbody></table></div></details>
+
+<details><summary>為什麼 claimable 和 proof 可以不綁<span class="by ai">AI 研究</span></summary><ul class="steps" style="list-style:disc"><li>證明過的 claim 會先檢查 proof 能把 (account, reward, claimable) 算回 root，而且 claimable 比已領的多，然後只把差額的 reward 轉給 account，別的什麼都不做。effects 檢查要求 Safe 收到更多 card 上的代幣，其他都不能變。<span class="by ai">AI 研究</span></li></ul></details><details><summary>過去交易的觀察<span class="by ai">AI 研究</span></summary><ul class="steps" style="list-style:disc"><li>更早一次在區塊 22,800,000 到 22,820,000 的搜尋：Alchemy 和 Etherscan 都找到 137 筆，其中 5 個 Safe 各 1 筆，1 筆符合。不符合的：一個 Safe 在同一個 bundle 領兩個代幣（等於 card 上兩個操作）；一個先做 Merkl 領取再做這個 multicall（有 merkl-and-morpho-urd-claim 測試）；兩個呼叫別的合約。137 筆裡有 103 筆是一般錢包直接呼叫 Bundler3 或 URD。這次搜尋沒有錄下來。<span class="by ai">AI 研究</span></li></ul></details><details><summary>ERC-7730<span class="by ai">AI 研究</span></summary><ul class="steps" style="list-style:disc"><li>AI 之前查 LedgerHQ 的 clear-signing-erc7730-registry 時，沒有描述檔指到這個 URD。程式在生成報告裡列出它在固定版本裡找到的結果。<span class="by ai">AI 研究</span></li></ul></details>
+</section>
+
+</div>
+</body>
+</html>

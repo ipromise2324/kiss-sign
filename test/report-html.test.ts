@@ -4,13 +4,14 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { replayReader } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
-import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, sourceSiteLine } from '../src/research/listings.ts';
+import { checkSources, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourceSiteLine, sourcePagesOf } from '../src/research/listings.ts';
 import { NOTES_FILE, NotesError, notesChanges, parseNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, confidenceOf, htmlDifference, loadNotes, notesKeys, renderHtml, templateFixtures } from '../src/research/report-html.ts';
 import { checkSpans, entriesOf, loadSubject, renderReport, replayInputs, reportRecordingPath } from '../src/research/report.ts';
-import type { ReportInputs, ReportRecording } from '../src/research/report.ts';
-import { pageUrlOf, sourceHoldsAddress } from '../src/research/source-page.ts';
+import type { Line } from '../src/research/listings.ts';
+import type { DocLink, ReportInputs, ReportRecording } from '../src/research/report.ts';
+import { pageUrlOf } from '../src/research/source-page.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 
@@ -78,6 +79,25 @@ function tableRows(markdown: string, heading: string): Map<string, string>[] {
 const VOUCHES = /\/(?:source\.coingecko|source\.site|doc\.0x[0-9a-f]{8}\.site)$/;
 
 /**
+ * The site results whose DefiLlama protocol lists no website or GitHub organization to compare with, and the page
+ * results the report keys `source.url` because the source URL holds the address.
+ */
+function sourceKinds(inputs: ReportInputs): { readonly unlisted: Set<string>; readonly echoes: Set<string> } {
+  if (inputs.subject.kind !== 'template') throw new Error('unreachable');
+  const unlisted = (line: Line) => line.kind === 'finding' && line.cause === 'unlisted';
+  const results = checkSources(entriesOf(inputs.subject, registry), inputs.listings, inputs.pages);
+  return {
+    echoes: new Set(results.filter(({ lines }) => lines.some((line) => line.check === 'url')).map(({ entry }) => entry.name)),
+    unlisted: new Set([
+      ...results.flatMap(({ entry, lines }) => (lines.some((line) => line.check === 'defillama' && unlisted(line)) ? [`${entry.name}/source.site`] : [])),
+      ...inputs.subject.docs.flatMap((doc) =>
+        unlisted(sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings)) ? [`${doc.contract.name}/doc.${doc.fn.selector}.site`] : [],
+      ),
+    ]),
+  };
+}
+
+/**
  * Every result the Markdown report prints for an entry, a page, a code pin span or an ABI proof, against the same result
  * in the address cards: a PASS is ✓; a FINDING, REFUSED or UNVERIFIABLE keeps its word and is ! unless it had nothing to
  * compare (a site DefiLlama lists nothing for, while another result of the entry vouches; a compiler not pinned). Every !
@@ -85,17 +105,10 @@ const VOUCHES = /\/(?:source\.coingecko|source\.site|doc\.0x[0-9a-f]{8}\.site)$/
  */
 function assertFlagsKept(markdown: string, html: string, inputs: ReportInputs): void {
   if (inputs.subject.kind !== 'template') throw new Error('unreachable');
+  const pages: readonly DocLink[] = inputs.subject.docs;
+  const { unlisted, echoes } = sourceKinds(inputs);
   const expected = new Map<string, string>();
-  const selectors = new Map(inputs.subject.docs.map((doc) => [doc.fn.signature, doc.fn.selector]));
-  const pageOf = new Map<string, { readonly url: string; readonly slug: string | undefined }>([
-    ...[...inputs.registry.entries.values()].map((e) => [`${e.name}/source.site`, { url: e.source, slug: e.defillama }] as const),
-    ...inputs.subject.docs.map((d) => [`${d.contract.name}/doc.${d.fn.selector}.site`, { url: d.url, slug: d.contract.defillama }] as const),
-  ]);
-  const unlisted = (id: string) => {
-    const page = pageOf.get(id);
-    const line = page === undefined ? undefined : sourceSiteLine(page.url, page.slug, inputs.listings);
-    return line?.kind === 'finding' && line.cause === 'unlisted';
-  };
+  const selectors = new Map(pages.map((doc) => [doc.fn.signature, doc.fn.selector]));
   const name = (cell: string) => /^`([a-z0-9.-]+)`$/.exec(cell)?.[1] as string;
   for (const row of tableRows(markdown, '## Official documentation')) {
     const id = `${name(row.get('Contract') as string)}/doc.${selectors.get(name(row.get('Function') as string) ?? (row.get('Function') as string).slice(1, -1))}`;
@@ -108,8 +121,7 @@ function assertFlagsKept(markdown: string, html: string, inputs: ReportInputs): 
     expected.set(`${entry}/source.site`, row.get('DefiLlama site') as string);
     expected.set(`${entry}/source.coingecko`, row.get('CoinGecko coin') as string);
     expected.set(`${entry}/source.commit`, row.get('GitHub commit') as string);
-    const { source, address } = inputs.registry.entries.get(entry)!;
-    expected.set(`${entry}/${sourceHoldsAddress(source, address) ? 'source.url' : 'source.page'}`, row.get('Address on page') as string);
+    expected.set(`${entry}/${echoes.has(entry) ? 'source.url' : 'source.page'}`, row.get('Address on page') as string);
   }
   const spans = new Map<string, number>();
   for (const row of tableRows(markdown, '## Code pins')) {
@@ -136,7 +148,7 @@ function assertFlagsKept(markdown: string, html: string, inputs: ReportInputs): 
       assert.equal(result.flag, flag, `${id} keeps its word ${flag}`);
       const entry = id.split('/')[0] as string;
       const vouched = [...shown].some(([other, r]) => other.startsWith(`${entry}/`) && VOUCHES.test(other) && r.mark === 'ok');
-      const nothingToCompare = (/\.site$/.test(id) && vouched && unlisted(id)) || /compiler-not-pinned/.test(cell);
+      const nothingToCompare = (unlisted.has(id) && vouched) || /compiler-not-pinned/.test(cell);
       assert.equal(result.mark, nothingToCompare ? 'na' : 'warn', `${id} (${cell}) is for the signer unless it had nothing to compare`);
     }
   }
