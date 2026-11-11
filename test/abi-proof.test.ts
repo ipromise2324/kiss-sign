@@ -240,7 +240,7 @@ test('every committed generated report has its own test below', () => {
   assert.ok(vaultsReported.length > 0, `${VAULT_REPORTS_DIR} holds a vault report`);
   const checked = [...generated.map((id) => join(TEMPLATES_DIR, id, GENERATED_FILE)), ...vaultReports.map((file) => join(VAULT_REPORTS_DIR, file))].sort();
   const committed = execFileSync('git', ['ls-files', `*${GENERATED_SUFFIX}`], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter((line) => line !== '').sort();
-  assert.deepEqual(checked, committed);
+  assert.deepEqual(checked, committed, 'each committed *.generated.md needs a test, and each generated report must be committed: git add a report you just wrote');
 });
 
 for (const id of generated) {

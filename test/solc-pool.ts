@@ -104,7 +104,7 @@ export async function warmCompilers(cases: readonly AbiCase[], cacheDir: string 
       if (cacheDir !== undefined) writeEntry(cacheDir, job, output);
     }
   };
-  await Promise.all(Array.from({ length: Math.min(queue.length, availableParallelism()) }, run));
+  await Promise.all(Array.from({ length: Math.min(queue.length, availableParallelism(), 4) }, run));
   const pinned = cachedCompilers();
   return (version) => {
     const load = pinned(version);
