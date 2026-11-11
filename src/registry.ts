@@ -41,12 +41,26 @@ export type RegistryEntry = {
   readonly defillama?: string;
   /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
   readonly coingecko?: string;
-  /** The code a call to this address ran when `pnpm pin-code` read it; verify requires the same code at every signing. */
-  readonly code?: CodePin;
+  /** The code a call to this address ran at each block `pnpm pin-code` found; verify requires the code of the block it reads. */
+  readonly code?: CodePins;
 };
 
 /** keccak256 of the runtime code at the address, and behind a proxy, the implementation it delegates to and its code's. */
 export type CodePin = { readonly hash: Hex; readonly implementation?: { readonly address: Address; readonly hash: Hex } };
+
+/** A pin and the first block whose state held its code. It holds until the block before the next span's `from`. */
+export type CodeSpan = { readonly from: bigint; readonly pin: CodePin };
+
+/**
+ * The code each block ran, oldest first: `earlier` spans with strictly increasing `from`, then `current`, which holds
+ * from its `from` to the latest block. A block before the first `from` has no pin.
+ */
+export type CodePins = { readonly earlier: readonly CodeSpan[]; readonly current: CodeSpan };
+
+/** The pin of the span that holds `block`, if any. */
+export function pinAt(pins: CodePins, block: bigint): CodePin | undefined {
+  return [...pins.earlier, pins.current].findLast((span) => span.from <= block)?.pin;
+}
 
 export type Registry = {
   readonly entries: ReadonlyMap<string, RegistryEntry>;
@@ -119,9 +133,12 @@ function hash32(path: string, raw: unknown): Hex {
   return hash;
 }
 
-function codePinOf(path: string, raw: unknown): CodePin {
-  const value = record(path, raw);
-  onlyKeys(path, value, ['hash', 'implementation']);
+function blockOf(path: string, raw: unknown): bigint {
+  if (typeof raw !== 'number' || !Number.isSafeInteger(raw) || raw < 0) throw new RegistryError(path, 'not a block number');
+  return BigInt(raw);
+}
+
+function codePinOf(path: string, value: Record<string, unknown>): CodePin {
   const hash = hash32(`${path}.hash`, value.hash);
   if (value.implementation === undefined) return { hash };
   const implementation = record(`${path}.implementation`, value.implementation);
@@ -135,12 +152,35 @@ function codePinOf(path: string, raw: unknown): CodePin {
   };
 }
 
+/** `from` may be absent only on a pin with no earlier ones, as `pnpm pin-code` wrote before it read ranges: it holds from block 0. */
+function codePinsOf(path: string, raw: unknown): CodePins {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['hash', 'implementation', 'from', 'earlier']);
+  const current = { from: value.from === undefined ? 0n : blockOf(`${path}.from`, value.from), pin: codePinOf(path, value) };
+  if (value.earlier === undefined) return { earlier: [], current };
+  if (!Array.isArray(value.earlier) || value.earlier.length === 0) throw new RegistryError(`${path}.earlier`, 'not a non-empty list of pins');
+  const earlier = value.earlier.map((rawSpan: unknown, i): CodeSpan => {
+    const at = `${path}.earlier[${i}]`;
+    const span = record(at, rawSpan);
+    onlyKeys(at, span, ['from', 'hash', 'implementation']);
+    return { from: blockOf(`${at}.from`, span.from), pin: codePinOf(at, span) };
+  });
+  const spans = [...earlier, current];
+  spans.forEach((span, i) => {
+    const before = spans[i - 1];
+    if (before !== undefined && span.from <= before.from) {
+      throw new RegistryError(i === earlier.length ? `${path}.from` : `${path}.earlier[${i}].from`, `not after ${before.from}, the from of the pin before it`);
+    }
+  });
+  return { earlier, current };
+}
+
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
   onlyKeys(path, value, ['address', 'kind', 'source', 'sourceLabel', 'sourceHeading', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
-  const code = value.code === undefined ? undefined : codePinOf(`${path}.code`, value.code);
+  const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
   if (kind === undefined) throw new RegistryError(`${path}.kind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
   const source = parseHttpsUrl(value.source);
