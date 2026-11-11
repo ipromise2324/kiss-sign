@@ -8,13 +8,13 @@
   },
   "scripts": {
     "prepare": "git config core.hooksPath .githooks",
-    "test": "node --test",
+    "test": "node scripts/fetch-vendored.ts --missing solc psl && node --test",
     "typecheck": "tsc --noEmit",
     "check-push": "node scripts/check-push.ts",
     "record-safe-tx": "node scripts/record-safe-tx.ts",
-    "fetch-solc": "node scripts/fetch-solc.ts",
-    "fetch-psl": "node scripts/fetch-psl.ts",
-    "fetch-erc7730": "node scripts/fetch-erc7730.ts",
+    "fetch-solc": "node scripts/fetch-vendored.ts solc",
+    "fetch-psl": "node scripts/fetch-vendored.ts psl",
+    "fetch-erc7730": "node scripts/fetch-vendored.ts erc7730",
     "prove-abi": "node scripts/prove-abi.ts",
     "prove-instance": "node scripts/prove-instance.ts",
     "pin-code": "node scripts/pin-code.ts",
@@ -28,7 +28,8 @@
     "past-txs": "node scripts/past-txs.ts",
     "history": "node scripts/history.ts",
     "attacks": "node scripts/attacks.ts",
-    "report": "node scripts/report.ts"
+    "report": "node scripts/report.ts",
+    "kiss-sign": "node bin/kiss-sign"
   },
   "devDependencies": {
     "@types/node": "22.20.5",
