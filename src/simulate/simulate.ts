@@ -43,6 +43,13 @@ const VIEW_GAS = 1_000_000n;
 /** Set by state override: returns the ETH balance of the address in the first 20 bytes of calldata. */
 const ETH_BALANCE_READER = '0x000000000000000000000000000000000000ba1a' as Address;
 const ETH_BALANCE_READER_CODE = '0x60003560601c3160005260206000f3' as Hex;
+/**
+ * Set by state override: STATICCALLs the address in the first calldata word with the rest of the calldata and returns
+ * or reverts with its answer. A view read in the simulated block shares state with the transaction, so the EVM itself
+ * must refuse a "view" that writes storage or emits a log: under STATICCALL either reverts.
+ */
+const STATIC_READER = '0x00000000000000000000000000000000000057a7' as Address;
+const STATIC_READER_CODE = '0x60203603806020600037600060008260006000355afa3d600060003e6023573d6000fd5b3d6000f3' as Hex;
 
 const hex = (bytes: Uint8Array): Hex => `0x${bytesToHex(bytes)}` as Hex;
 const bytesOf = (data: Hex | Address): Uint8Array => hexToBytes(data.slice(2));
@@ -196,9 +203,10 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   const reads = readsOf(safe, executor.sender, { tokens, allowances, permit2 });
   const stateCalls = safeStateCalls(safe, executor.sender, tx.version);
   const views = input.views ?? [];
-  const viewReads = views.map(({ to, data }) => ({ from: executor.sender, to, data, gas: VIEW_GAS }));
+  const viewReads = views.map(({ to, data }) => ({ from: executor.sender, to: STATIC_READER, data: `0x${bytesToHex(concatBytes(addressWord(to), bytesOf(data)))}` as Hex, gas: VIEW_GAS }));
   const around = [...reads.map((r) => r.call), ...stateCalls, ...viewReads];
-  const measured = await reader.simulateV1({ ...base, calls: [...around, exec, ...around] }, input.parent);
+  const overrides = views.length === 0 ? base.stateOverrides : { ...base.stateOverrides, [STATIC_READER]: { code: STATIC_READER_CODE } };
+  const measured = await reader.simulateV1({ ...base, stateOverrides: overrides, calls: [...around, exec, ...around] }, input.parent);
   if (measured.kind === 'unverifiable') return unverifiable(measured.reason);
   const calls = measured.value;
   const run = calls[around.length] as SimulatedCall;
@@ -240,8 +248,8 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   if (traced !== eth) return unverifiable(`the Safe's ETH balance changed by ${eth}, its traced ETH transfers by ${traced}`);
   const allowanceChanges: AllowanceChange[] = allowances.map((a, i) => ({ ...a, before: before(1 + tokens.length + i), after: after(1 + tokens.length + i) }));
   const answer = (call: SimulatedCall | undefined): ViewAnswer =>
-    call?.status === 'success' ? { kind: 'returned', data: call.returnData } : { kind: 'unread', why: 'it reverted in the simulated block' };
-  const viewReadings: ViewReading[] = views.map((view, i) => ({ ...view, before: answer(calls[viewsAt + i]), after: answer(calls[after0 + viewsAt + i]) }));
+    call?.status === 'success' ? { kind: 'returned', data: call.returnData } : { kind: 'unread', why: 'it reverted in the simulated block, read by STATICCALL: it failed, or it wrote state or emitted a log' };
+  const viewReadings: ViewReading[] = views.map((view, i) => ({ ...view, before: answer(calls[viewsAt + i]), after: answer(calls[after0 + viewsAt + i]), readIn: 'simulation' }));
   return {
     kind: 'observed',
     observed: {
