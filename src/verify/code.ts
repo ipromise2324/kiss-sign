@@ -14,7 +14,7 @@ import type { ChainCheck } from './verdict.ts';
 /**
  * Every registry contract the transaction or the card names: the Safe transaction's target, each contract a template
  * rule names, each registry address on the card, each entry a card reference's attribute names, such as a vault's asset,
- * and each entry a market on the card names.
+ * each entry a market on the card names, and the contract of each view a template reads.
  */
 export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): RegistryEntry[] {
   const touched = new Map<string, RegistryEntry>();
@@ -50,6 +50,10 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
       visit(call.to);
       visit(call.value);
       if (call.data !== 'empty') call.data.args.forEach(visit);
+    }
+    for (const view of template.effects.views) {
+      add(registry.entries.get(view.to));
+      view.args.forEach(visit);
     }
   }
   return [...touched.values()];

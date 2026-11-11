@@ -9,9 +9,12 @@ import type { Card, ResolvedCard, Resolution } from '../src/card.ts';
 import { canonicalJson } from '../src/canonical.ts';
 import { encodeCall, uintWord } from '../src/decode/codec.ts';
 import type { AbiValue } from '../src/decode/codec.ts';
+import { selectorOf } from '../src/decode/abi.ts';
 import { MULTISEND } from '../src/decode/multisend.ts';
 import type { Reader } from '../src/chain/reader.ts';
 import { loadRegistry, parseRegistry } from '../src/registry.ts';
+import { describeFinding, judgeEffects } from '../src/simulate/effects.ts';
+import type { EffectVerdict, Observed, ViewAnswer } from '../src/simulate/effects.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck } from '../src/template/check.ts';
@@ -131,7 +134,18 @@ const SUPPLY = {
       },
     },
   ],
-  effects: { gives: [{ token: 'card.market.loanToken', amount: 'card.amount' }], gets: [] },
+  effects: {
+    gives: [{ token: 'card.market.loanToken', amount: 'card.amount' }],
+    gets: [],
+    views: [
+      {
+        to: { contract: 'morpho-blue' },
+        function: 'position(bytes32 id, address user) returns (uint256 supplyShares, uint128 borrowShares, uint128 collateral)',
+        args: { id: { card: 'market.id' }, user: { safe: true } },
+        change: { supplyShares: 'increases', borrowShares: 'same', collateral: 'same' },
+      },
+    ],
+  },
 };
 
 const template = parseTemplate(SUPPLY, registry);
@@ -292,4 +306,90 @@ test('verify requires a code pin for Morpho Blue and every contract the market o
   const result = await checkCode(noReads, claims, { number: 1n, hash: `0x${'00'.repeat(32)}` as Hex }, 'pending');
   const unpinned = result.kind === 'unverifiable' ? result.reasons.map((r) => r.split(' ')[0]).sort() : [];
   assert.deepEqual(unpinned, ['adaptive-curve-irm', 'blue-bundles-v1', 'cbbtc', 'cbbtc-usdc-oracle', 'morpho-blue', 'usdc']);
+});
+
+/** Morpho Blue's `position(id, Safe)` for the card's market, encoded here by hand. */
+const POSITION = {
+  to: at('morpho-blue'),
+  data: `${selectorOf('position(bytes32,address)')}${ID.slice(2)}${SAFE.slice(2).padStart(64, '0')}` as Hex,
+};
+const answer = (...words: bigint[]): ViewAnswer => ({ kind: 'returned', data: `0x${words.map((w) => w.toString(16).padStart(64, '0')).join('')}` as Hex });
+
+/** What the supply did to the Safe: it gave the card's amount of the loan token, and its position read as given. */
+const supplied = (position?: { before: ViewAnswer; after: ViewAnswer }): Observed => ({
+  kind: 'executed',
+  eth: 0n,
+  tokens: new Map([[PARAMS.loanToken, -5000000n]]),
+  allowances: [],
+  permit2: [],
+  ends: new Map(),
+  safeState: { kind: 'receipt', logs: [] },
+  ...(position === undefined ? {} : { views: [{ ...POSITION, ...position }] }),
+});
+
+const judged = (observed: Observed, t: Template = template): EffectVerdict => judgeEffects(observed, resolved(), new Map([[t.id, t]]), registry);
+const described = (verdict: EffectVerdict): string[] => (verdict.kind === 'mismatch' ? verdict.findings.map((f) => describeFinding(f, registry)) : [verdict.kind]);
+const VIEW = `morpho-blue ${at('morpho-blue')} position(${ID}, ${SAFE})`;
+
+test('a supply that credits the Safe supply shares and leaves its debt and collateral alone matches', () => {
+  assert.deepEqual(judged(supplied({ before: answer(100n, 7n, 9n), after: answer(4_900_100n, 7n, 9n) })), { kind: 'match' });
+});
+
+test('supply shares that do not increase, or debt or collateral that moves, are each a mismatch naming the view and both values', () => {
+  assert.deepEqual(described(judged(supplied({ before: answer(100n, 7n, 9n), after: answer(100n, 8n, 0n) }))), [
+    `${VIEW} supplyShares: 100 before, 100 after; the template needs it to increase`,
+    `${VIEW} borrowShares: 7 before, 8 after; the template needs it to stay the same`,
+    `${VIEW} collateral: 9 before, 0 after; the template needs it to stay the same`,
+  ]);
+});
+
+test('a view whose template says decreases matches a fall and refuses a rise', () => {
+  const raw = structuredClone(SUPPLY);
+  raw.effects.views[0]!.change = { supplyShares: 'decreases' } as never;
+  const withdraw = parseTemplate(raw, registry);
+  assert.deepEqual(judged(supplied({ before: answer(100n, 0n, 0n), after: answer(40n, 0n, 0n) }), withdraw), { kind: 'match' });
+  assert.deepEqual(described(judged(supplied({ before: answer(100n, 0n, 0n), after: answer(140n, 0n, 0n) }), withdraw)), [
+    `${VIEW} supplyShares: 100 before, 140 after; the template needs it to decrease`,
+  ]);
+});
+
+test('a view that was not read, reverted, or answered something else is unverifiable, and never a match', () => {
+  assert.deepEqual(judged(supplied()), { kind: 'unverifiable', reasons: [`${VIEW} was not read`] });
+  assert.deepEqual(judged(supplied({ before: answer(100n, 0n, 0n), after: { kind: 'unread', why: 'it reverted at block 9' } })), {
+    kind: 'unverifiable',
+    reasons: [`${VIEW} could not be read after the transaction: it reverted at block 9`],
+  });
+  assert.deepEqual(judged(supplied({ before: answer(100n, 0n), after: answer(200n, 0n, 0n) })), {
+    kind: 'unverifiable',
+    reasons: [`${VIEW} could not be read before the transaction: its answer does not decode as uint256, uint128, uint128`],
+  });
+  assert.deepEqual(judged(supplied({ before: answer(100n, 1n << 128n, 0n), after: answer(200n, 0n, 0n) })).kind, 'unverifiable');
+});
+
+test('a balance the card does not explain is still a mismatch when the view is right', () => {
+  const observed = { ...supplied({ before: answer(1n, 0n, 0n), after: answer(2n, 0n, 0n) }), tokens: new Map([[PARAMS.loanToken, -6000000n]]) } as Observed;
+  assert.equal(judged(observed).kind, 'mismatch');
+});
+
+test('a view must name a registry contract, a function with its returns, bound arguments and numeric return values to judge', () => {
+  const view = (change: (v: (typeof SUPPLY)['effects']['views'][number]) => void) => (raw: typeof SUPPLY) => change(raw.effects.views[0]!);
+  assert.equal(refusal(view((v) => void (v.to = { card: 'market.lending' } as never))), 'effects.views[0].to: must name a registry contract');
+  assert.match(refusal(view((v) => void (v.function = 'position(bytes32 id, address user)'))), /^effects\.views\[0\]\.function: .* expected "returns \("$/);
+  assert.equal(
+    refusal(view((v) => void (v.args = { id: { free: 'any market' }, user: { safe: true } } as never))),
+    "effects.views[0].args.id: a view's argument is bound by card, safe, contract or const, not free",
+  );
+  assert.equal(refusal(view((v) => void (v.change = { shares: 'increases' } as never))), 'effects.views[0].change.shares: not a named return value of position');
+  assert.equal(refusal(view((v) => void (v.change = { supplyShares: 'grows' } as never))), 'effects.views[0].change.supplyShares: not one of increases, decreases, same');
+  assert.equal(refusal(view((v) => void (v.change = {} as never))), 'effects.views[0].change: names no return value');
+  assert.equal(
+    refusal(
+      view((v) => {
+        v.function = 'idToMarketParams(bytes32 id) returns (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv)';
+        v.args = { id: { card: 'market.id' } } as never;
+        v.change = { oracle: 'same' } as never;
+      }),
+    ),
+    'effects.views[0].change.oracle: address is not a number; only a number is judged',
+  );
 });

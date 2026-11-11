@@ -1,8 +1,13 @@
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
+import { canonicalType } from '../decode/abi.ts';
+import type { AbiParam, AbiType } from '../decode/abi.ts';
+import { decodeValues, encodeCall } from '../decode/codec.ts';
+import type { AbiValue } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
-import type { Address } from '../safe/types.ts';
-import type { CardRef, Template, TokenRef } from '../template/template.ts';
+import type { Address, Hex } from '../safe/types.ts';
+import type { CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect } from '../template/template.ts';
 import type { Execution } from './events.ts';
 import type { SafeStateEvidence } from './safe-state.ts';
 
@@ -15,9 +20,16 @@ export type Permit2Change = { readonly token: Address; readonly spender: Address
 export const permit2Raised = ({ before, after }: Permit2Change): boolean =>
   after.amount > 0n && (after.amount > before.amount || after.expiration > before.expiration);
 
+/** A view call as sent: the contract and the calldata. */
+export type ViewCall = { readonly to: Address; readonly data: Hex };
+/** What a view answered, or why it gave no answer, such as a revert or providers that disagree. */
+export type ViewAnswer = { readonly kind: 'returned'; readonly data: Hex } | { readonly kind: 'unread'; readonly why: string };
+export type ViewReading = ViewCall & { readonly before: ViewAnswer; readonly after: ViewAnswer };
+
 /**
  * What the Safe's own balances did: net changes, signed, and every allowance from the Safe that was measured. `ends`
  * holds the Safe's balance after the transaction of each token that was asked for, as a card that gives all of it needs.
+ * `views` holds each view a template asked for, read before and after; it is absent when none was asked for.
  */
 export type Effects = {
   readonly eth: bigint;
@@ -25,6 +37,7 @@ export type Effects = {
   readonly allowances: readonly AllowanceChange[];
   readonly permit2: readonly Permit2Change[];
   readonly ends: ReadonlyMap<Address, bigint>;
+  readonly views?: readonly ViewReading[];
 };
 
 export type Observed =
@@ -43,7 +56,8 @@ export type EffectFinding =
   | { readonly kind: 'balance'; readonly asset: Asset; readonly expected: Exclude<Expected, { kind: 'all' }>; readonly actual: bigint }
   | { readonly kind: 'not-all'; readonly asset: Address; readonly left: bigint }
   | ({ readonly kind: 'open-allowance' } & AllowanceChange)
-  | ({ readonly kind: 'open-permit2-allowance' } & Permit2Change);
+  | ({ readonly kind: 'open-permit2-allowance' } & Permit2Change)
+  | { readonly kind: 'view'; readonly to: Address; readonly call: string; readonly value: string; readonly change: ViewChange; readonly before: bigint; readonly after: bigint };
 
 export type EffectVerdict =
   | { readonly kind: 'match' }
@@ -134,6 +148,106 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
   return reasons.length > 0 ? { kind: 'unverifiable', reasons } : { kind: 'expected', changes };
 }
 
+/** A view a template on the card reads, its arguments bound to this card, and the call as it reads in a finding. */
+export type ExpectedView = { readonly view: ViewEffect; readonly call: ViewCall; readonly text: string };
+
+type Bound = { readonly safe: Address; readonly values: ReadonlyMap<string, ResolvedValue>; readonly registry: Registry };
+
+/** The value a bound argument rule gives, or why the card cannot give it. */
+function argument(rule: Rule, type: AbiType, bound: Bound): AbiValue | string {
+  const span = [0, 0] as const;
+  switch (rule.kind) {
+    case 'fields': {
+      if (type.kind !== 'tuple') return `a tuple rule on a ${type.kind}`;
+      const fields = rule.fields.map((field, i) => argument(field, (type.components[i] as AbiParam).type, bound));
+      const problem = fields.find((field) => typeof field === 'string');
+      return problem ?? { kind: 'tuple', fields: fields as AbiValue[], span };
+    }
+    case 'items': {
+      if (type.kind !== 'array' && type.kind !== 'fixed-array') return `an items rule on a ${type.kind}`;
+      const items = rule.items.map((item) => argument(item, type.item, bound));
+      const problem = items.find((item) => typeof item === 'string');
+      return problem ?? { kind: 'array', items: items as AbiValue[], span };
+    }
+    case 'safe':
+      return { kind: 'address', value: bound.safe, span };
+    case 'contract': {
+      const entry = bound.registry.entries.get(rule.name);
+      return entry === undefined ? `the registry has no ${rule.name}` : { kind: 'address', value: entry.address, span };
+    }
+    case 'const': {
+      const { value } = rule;
+      if (value.kind === 'bytes' || value.kind === 'string') return { kind: value.kind, value: hexToBytes(value.value.slice(2)), span };
+      return { ...value, span } as AbiValue;
+    }
+    case 'card': {
+      const target = resolveRef(rule.ref, bound.values, bound.registry);
+      if ('problem' in target) return target.problem;
+      if (target.kind === 'address') return { kind: 'address', value: target.address, span };
+      if (target.kind === 'uint') return { kind: 'uint', value: target.value, span };
+      if (target.kind === 'bytes32') return { kind: 'fixed-bytes', value: target.value, span };
+      return 'a whole market is bound part by part';
+    }
+    default:
+      return `a ${rule.kind} rule gives no value before the transaction`;
+  }
+}
+
+function valueText(value: AbiValue): string {
+  switch (value.kind) {
+    case 'tuple':
+      return `(${value.fields.map(valueText).join(', ')})`;
+    case 'array':
+      return `[${value.items.map(valueText).join(', ')}]`;
+    case 'bytes':
+    case 'string':
+      return `0x${bytesToHex(value.value)}`;
+    default:
+      return String(value.value);
+  }
+}
+
+/** Every view the card's templates read, with its calldata for this card, and why any could not be built. */
+export function expectedViews(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): { readonly views: readonly ExpectedView[]; readonly reasons: readonly string[] } {
+  const views: ExpectedView[] = [];
+  const reasons: string[] = [];
+  for (const op of card.operations) {
+    for (const view of templates.get(op.template)?.effects.views ?? []) {
+      const to = registry.entries.get(view.to);
+      const args = view.fn.params.map((param, i) => argument(view.args[i] as Rule, param.type, { safe: card.safe, values: op.values, registry }));
+      const problem = to === undefined ? `the registry has no ${view.to}` : args.find((arg) => typeof arg === 'string');
+      if (to === undefined || problem !== undefined) {
+        reasons.push(`${view.fn.signature} on ${view.to}: ${problem}`);
+        continue;
+      }
+      const values = args as AbiValue[];
+      const data = `0x${bytesToHex(encodeCall({ fn: view.fn, args: values, trailer: undefined }))}` as Hex;
+      views.push({ view, call: { to: to.address, data }, text: `${view.fn.name}(${values.map(valueText).join(', ')})` });
+    }
+  }
+  return { views, reasons };
+}
+
+/** The view calls to read before and after the transaction, each once. */
+export function viewCalls(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): ViewCall[] {
+  const calls = new Map(expectedViews(card, templates, registry).views.map(({ call }) => [`${call.to}${call.data}`, call]));
+  return [...calls.values()];
+}
+
+/** Each return value of a view's answer, as a number where it is one, or why the answer has none. */
+function numbersOf(view: ViewEffect, answer: ViewAnswer): readonly (bigint | undefined)[] | string {
+  if (answer.kind === 'unread') return answer.why;
+  const values = decodeValues(view.returns.map((r) => r.type), hexToBytes(answer.data.slice(2)));
+  if (values === undefined) return `its answer does not decode as ${view.returns.map((r) => canonicalType(r.type)).join(', ')}`;
+  return values.map((value) => (value.kind === 'uint' || value.kind === 'int' ? value.value : undefined));
+}
+
+const CHANGED: Readonly<Record<ViewChange, (before: bigint, after: bigint) => boolean>> = {
+  increases: (before, after) => after > before,
+  decreases: (before, after) => after < before,
+  same: (before, after) => after === before,
+};
+
 const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): boolean =>
   expected.kind === 'exactly' ? actual === expected.change : expected.kind === 'more-than' ? actual > expected.change : actual < expected.change;
 
@@ -170,6 +284,30 @@ export function judgeEffects(
     if (allowance.after > allowance.before) findings.push({ kind: 'open-allowance', ...allowance });
   }
   for (const allowance of observed.permit2) if (permit2Raised(allowance)) findings.push({ kind: 'open-permit2-allowance', ...allowance });
+  const expectedReads = expectedViews(card, templates, registry);
+  unread.push(...expectedReads.reasons);
+  for (const { view, call, text } of expectedReads.views) {
+    const where = `${nameOf(call.to, registry)} ${text}`;
+    const reading = observed.views?.find((r) => r.to === call.to && r.data === call.data);
+    if (reading === undefined) {
+      unread.push(`${where} was not read`);
+      continue;
+    }
+    const [before, after] = [numbersOf(view, reading.before), numbersOf(view, reading.after)];
+    if (typeof before === 'string') {
+      unread.push(`${where} could not be read before the transaction: ${before}`);
+      continue;
+    }
+    if (typeof after === 'string') {
+      unread.push(`${where} could not be read after the transaction: ${after}`);
+      continue;
+    }
+    for (const { value, change } of view.changes) {
+      // Template load lets a change name only a number.
+      const [was, now] = [before[value] as bigint, after[value] as bigint];
+      if (!CHANGED[change](was, now)) findings.push({ kind: 'view', to: call.to, call: text, value: view.returns[value]?.name ?? String(value), change, before: was, after: now });
+    }
+  }
   if (findings.length > 0) return { kind: 'mismatch', findings };
   return unread.length > 0 ? { kind: 'unverifiable', reasons: unread } : { kind: 'match' };
 }
@@ -189,6 +327,10 @@ export function describeFinding(finding: EffectFinding, registry: Registry): str
   if (finding.kind === 'not-all') return `${nameOf(finding.asset, registry)} still held ${finding.left} after the transaction, the card gives all of it`;
   if (finding.kind === 'open-allowance') {
     return `approval raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${finding.before} before, ${finding.after} after`;
+  }
+  if (finding.kind === 'view') {
+    const want = { increases: 'increase', decreases: 'decrease', same: 'stay the same' }[finding.change];
+    return `${nameOf(finding.to, registry)} ${finding.call} ${finding.value}: ${finding.before} before, ${finding.after} after; the template needs it to ${want}`;
   }
   if (finding.kind === 'open-permit2-allowance') {
     const show = ({ amount, expiration, nonce }: Permit2Allowance) => `${amount} until ${expiration} (nonce ${nonce})`;

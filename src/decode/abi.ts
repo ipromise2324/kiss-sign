@@ -179,15 +179,32 @@ export function selectorOf(signature: string): Hex {
  */
 export function parseFunctionSignature(text: string): AbiFunction {
   const reader = new Reader(text);
-  const name = reader.identifier();
-  if (name === undefined) return reader.fail('expected a function name');
-  if (text[reader.at] !== '(') reader.fail('expected "("');
-  reader.at += 1;
-  const params = reader.params(0);
+  const fn = functionOf(reader);
   reader.skipSpaces();
   if (reader.at !== text.length) reader.fail('unexpected text after ")"');
+  return fn;
+}
+
+function functionOf(reader: Reader): AbiFunction {
+  const name = reader.identifier();
+  if (name === undefined) return reader.fail('expected a function name');
+  if (reader.text[reader.at] !== '(') reader.fail('expected "("');
+  reader.at += 1;
+  const params = reader.params(0);
   const signature = `${name}(${params.map((p) => canonicalType(p.type)).join(',')})`;
   return { name, params, signature, selector: selectorOf(signature) };
+}
+
+/** Parses `name(type name, ...) returns (type name, ...)`, a view function with the values it returns. */
+export function parseViewSignature(text: string): { readonly fn: AbiFunction; readonly returns: readonly AbiParam[] } {
+  const reader = new Reader(text);
+  const fn = functionOf(reader);
+  if (reader.identifier() !== 'returns' || !reader.take('(')) reader.fail('expected "returns ("');
+  const returns = reader.params(0);
+  if (returns.length === 0) reader.fail('returns nothing');
+  reader.skipSpaces();
+  if (reader.at !== text.length) reader.fail('unexpected text after ")"');
+  return { fn, returns };
 }
 
 type JsonParam = { readonly name?: unknown; readonly type?: unknown; readonly components?: unknown };

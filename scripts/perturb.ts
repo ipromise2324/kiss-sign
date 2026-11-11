@@ -10,7 +10,7 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Hex } from '../src/safe/types.ts';
-import { endsNeeded, expectedChanges } from '../src/simulate/effects.ts';
+import { endsNeeded, expectedChanges, viewCalls } from '../src/simulate/effects.ts';
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
 import { checkPerturbations } from '../src/template/perturb.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
@@ -55,7 +55,7 @@ const parent = agreed(await reader.header(agreed(await reader.block(receipt.bloc
 const time = agreed(await reader.header(executed)).time;
 
 const report = await checkPerturbations(tx, resolution.card, templates, registry, (copy) =>
-  simulateSafeTx(reader, { tx: copy, parent, time, watch, ends: endsNeeded(expectations) }),
+  simulateSafeTx(reader, { tx: copy, parent, time, watch, ends: endsNeeded(expectations), views: viewCalls(resolution.card, templates, registry) }),
 );
 console.log(`${fixtureName}: every free field changed, simulated on block ${parent.number} by ${reader.providers.join(' and ')}`);
 if (report.kind === 'not-run') console.log(`  not run: ${report.reason}`);

@@ -175,6 +175,17 @@ export function decodeCall(fn: AbiFunction, region: Region, options: DecodeOptio
   }
 }
 
+/** Decodes return data of `types`, accepting only its canonical encoding with nothing after it. */
+export function decodeValues(types: readonly AbiType[], data: Uint8Array): readonly AbiValue[] | undefined {
+  try {
+    const read = decodeTuple(data, types, 0, data.length);
+    return read.end === data.length && firstDifference(encodeTuple(types, read.value), data) === undefined ? read.value : undefined;
+  } catch (error) {
+    if (error instanceof Failure) return undefined;
+    throw error;
+  }
+}
+
 export function uintWord(value: bigint): Uint8Array {
   return hexToBytes(BigInt.asUintN(256, value).toString(16).padStart(64, '0'));
 }

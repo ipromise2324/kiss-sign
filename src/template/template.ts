@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature } from '../decode/abi.ts';
+import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
 import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName } from '../registry.ts';
 import type { Attribute, ContractKind, MarketPart, Registry } from '../registry.ts';
@@ -88,6 +88,22 @@ export type EffectAmount = { readonly kind: 'card'; readonly field: string } | {
 /** `to`, on what the Safe gives, names the receiver; the Safe giving to itself changes nothing. */
 export type Effect = { readonly token: TokenRef; readonly amount: EffectAmount; readonly to: CardRef | undefined };
 
+export const VIEW_CHANGES = ['increases', 'decreases', 'same'] as const;
+export type ViewChange = (typeof VIEW_CHANGES)[number];
+
+/**
+ * A view function on a registry contract, called just before and just after the transaction with every argument
+ * bound. Each return value `changes` names must change that way; the others are not judged.
+ */
+export type ViewEffect = {
+  readonly to: string;
+  readonly fn: AbiFunction;
+  readonly args: readonly Rule[];
+  readonly returns: readonly AbiParam[];
+  /** By the return value's position, which `returns` names. */
+  readonly changes: readonly { readonly value: number; readonly change: ViewChange }[];
+};
+
 export type Template = {
   readonly id: string;
   readonly card: ReadonlyMap<string, CardField>;
@@ -96,7 +112,7 @@ export type Template = {
   /** Card references that must all name the same address, such as two vaults' assets; a card where they differ is refused. */
   readonly same: readonly CardRef[];
   readonly calls: readonly TemplateCall[];
-  readonly effects: { readonly gives: readonly Effect[]; readonly gets: readonly Effect[] };
+  readonly effects: { readonly gives: readonly Effect[]; readonly gets: readonly Effect[]; readonly views: readonly ViewEffect[] };
 };
 
 export const TEMPLATES_DIR = 'templates';
@@ -462,6 +478,42 @@ function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'
   return { token: ref, amount: { kind: 'card', field: amountField }, to };
 }
 
+/** A view's arguments are known before the transaction runs: bound by card, safe, contract or const, never free. */
+function boundArgument(path: string, rule: Rule): void {
+  if (rule.kind === 'fields') rule.fields.forEach((field, i) => boundArgument(`${path}[${i}]`, field));
+  else if (rule.kind === 'items') rule.items.forEach((item, i) => boundArgument(`${path}[${i}]`, item));
+  else if (!['card', 'safe', 'contract', 'const'].includes(rule.kind)) throw new TemplateError(path, `a view's argument is bound by card, safe, contract or const, not ${rule.kind}`);
+}
+
+function view(path: string, raw: unknown, scope: Scope): ViewEffect {
+  const value = object(path, raw);
+  exactKeys(path, value, ['to', 'function', 'args', 'change']);
+  const to = rule(`${path}.to`, value.to, { kind: 'address' }, scope);
+  if (to.kind !== 'contract') throw new TemplateError(`${path}.to`, 'must name a registry contract');
+  let parsed: ReturnType<typeof parseViewSignature>;
+  try {
+    parsed = parseViewSignature(text(`${path}.function`, value.function));
+  } catch (error) {
+    if (error instanceof AbiSignatureError) throw new TemplateError(`${path}.function`, error.message);
+    throw error;
+  }
+  const { fn, returns } = parsed;
+  const args = params(`${path}.args`, value.args, fn.params, scope);
+  args.forEach((arg, i) => boundArgument(`${path}.args.${paramName(fn.params[i] as AbiParam, i)}`, arg));
+  const changes = Object.entries(object(`${path}.change`, value.change)).map(([name, change]) => {
+    const at = `${path}.change.${name}`;
+    const index = returns.findIndex((param) => param.name === name);
+    const type = returns[index]?.type;
+    if (type === undefined) throw new TemplateError(at, `not a named return value of ${fn.name}`);
+    if (type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(at, `${canonicalType(type)} is not a number; only a number is judged`);
+    const known = VIEW_CHANGES.find((c) => c === change);
+    if (known === undefined) throw new TemplateError(at, `not one of ${VIEW_CHANGES.join(', ')}`);
+    return { value: index, change: known };
+  });
+  if (changes.length === 0) throw new TemplateError(`${path}.change`, 'names no return value');
+  return { to: to.name, fn, args, returns, changes };
+}
+
 export function parseTemplate(raw: unknown, registry: Registry): Template {
   const value = object('template', raw);
   exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same']);
@@ -481,7 +533,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   const calls = rawCalls.map((call, i) => templateCall(`calls[${i}]`, call, scope, i === rawCalls.length - 1));
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
   const effects = object('effects', value.effects);
-  exactKeys('effects', effects, ['gives', 'gets']);
+  exactKeys('effects', effects, ['gives', 'gets'], ['views']);
   return {
     id,
     card: fields,
@@ -491,6 +543,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     effects: {
       gives: array('effects.gives', effects.gives).map((e, i) => effect(`effects.gives[${i}]`, e, scope, 'gives')),
       gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets')),
+      views: effects.views === undefined ? [] : array('effects.views', effects.views).map((v, i) => view(`effects.views[${i}]`, v, scope)),
     },
   };
 }
@@ -513,6 +566,7 @@ export function cardRefs(template: Template): CardRef[] {
     visit(call.value);
     if (call.data !== 'empty') call.data.args.forEach(visit);
   }
+  for (const { args } of template.effects.views) args.forEach(visit);
   for (const field of template.card.values()) if (field.kind === 'amount' && field.of !== 'eth') refs.push(field.of);
   for (const { token, to } of [...template.effects.gives, ...template.effects.gets]) {
     if (token !== 'eth') refs.push(token);
