@@ -22,6 +22,7 @@ import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePages
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
+import { pathText } from './api-source.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
@@ -641,6 +642,23 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   }
   const findings = checked.flatMap((r) => r.lines.filter((l) => l.kind === 'finding'));
   out.push('', `${checked.length} entries, ${findings.length} findings.`, '');
+  const asked = checked.filter(({ entry }) => entry.apiSource !== undefined);
+  if (asked.length > 0) {
+    out.push(
+      '### Official APIs',
+      '',
+      `Each entry's ${code('apiSource')}: the protocol's own API, asked with the request the registry holds, and the address at the path the registry names in its JSON answer. Address in answer: whether it is the entry's address. API site: the API's registrable domain against the DefiLlama protocol's website, as for the source. Both are counted in the findings above.`,
+      '',
+      '| Entry | API | Path | Address in answer | API site |',
+      '| --- | --- | --- | --- | --- |',
+      ...asked.map(({ entry, lines }) => {
+        const of = (check: Line['check']) => lines.find((l) => l.check === check);
+        const api = entry.apiSource as NonNullable<RegistryEntry['apiSource']>;
+        return `| ${code(entry.name)} | ${api.method} <${api.url}> | ${code(pathText(api.path))} | ${verdict(of('api'))} | ${verdict(of('api-site'))} |`;
+      }),
+      '',
+    );
+  }
 
   out.push(
     '## Code pins',

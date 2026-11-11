@@ -16,6 +16,7 @@ import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
 import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { loadRegistry } from '../src/registry.ts';
+import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
 import { fetchListing, listingsFor } from '../src/research/listings.ts';
 import { chainAt, loadSnapshot, trimForRecording as trimErc7730 } from '../src/research/erc7730.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
@@ -62,7 +63,7 @@ still without an answer prints as UNVERIFIABLE, never as FINDING, and --record t
 writes the committed report from those recordings alone: templates/<protocol>/<operation>/report.generated.md, or
 registry/reports/<vault>.generated.md, and for a template with notes.json, report.generated.html beside it. --offline
 prints the Markdown text from the recordings, reading nothing live; --render writes both files from them.
---compare reads the listings, pages, ABI proofs, code spans and ERC-7730 attestations live, reads each vault again at the blocks
+--compare reads the listings, pages, official APIs, ABI proofs, code spans and ERC-7730 attestations live, reads each vault again at the blocks
 the committed report names, fetches each recorded past transaction again by hash, and prints each fact that differs
 from the committed report; it exits 1 on any. It does not search for past transactions again. For a template with
 notes.json it also writes report.generated.html again from the recordings and notes with this code and requires the
@@ -171,7 +172,7 @@ if (latest.kind === 'unverifiable') throw new Error(latest.reason);
 
 const listings = await listingsFor(entries, suffixes, (listing) => fetchListing(listing, note));
 const docs = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
-const pages = await gatherSourcePages([...entries.map((e) => e.source), ...docs], retryingGet(httpsGet, note));
+const pages = await gatherSourcePages([...entries.map((e) => e.source), ...docs], retryingGet(httpsGet, note), await gatherApiAnswers(entries, retryingSend(httpsApi, note)));
 
 const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();
