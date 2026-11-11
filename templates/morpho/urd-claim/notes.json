@@ -1,0 +1,83 @@
+{
+  "title": "從 Morpho 的 Universal Rewards Distributor 領取獎勵",
+  "summary": "Safe 經由 Bundler3 呼叫 Morpho 的 Universal Rewards Distributor（URD）的 claim，把你在 card 上選的獎勵代幣領到 Safe。這是 Morpho app 領獎勵的做法。",
+  "flow": [
+    { "after": 1, "text": "Bundler3 對每個獎勵代幣各呼叫一次 URD 的 claim(Safe, 代幣, 累計數量, proof)。" },
+    { "after": 1, "text": "URD 驗證 proof 後，把還沒領的部分轉給 account，也就是 Safe；不管是誰呼叫都一樣。" }
+  ],
+  "pastTxsConclusion": {
+    "status": "caution",
+    "text": "最近一年的搜尋只找到 1 筆 Safe 的領取符合模板，另有 5 個一般錢包同形狀；樣本很小。"
+  },
+  "verdict": {
+    "status": "safe",
+    "text": "領獎勵只會讓 Safe 收到代幣；錯的 root 只會付錢給別人，拿不走 Safe 的東西。",
+    "recommendation": "可以用。簽之前照常跑 verify。"
+  },
+  "judgments": [
+    {
+      "title": "過去交易的樣本很小。",
+      "text": "程式在過去一年的 12 段區塊裡只找到 3 筆 Safe 的領取，1 筆符合模板；另外 2 筆直接呼叫 URD 的 claim，沒經過 Bundler3。",
+      "recommendation": "可以接受；這個模板的安全靠 proof 和 effects 檢查，不靠樣本數。"
+    }
+  ],
+  "reviews": {
+    "fluid/source.page": {
+      "status": "concern",
+      "text": "AI 讀了這個 commit 的 deployments.md 原始檔：0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb 只出現在幾個 vault 和 DEX 部署設定裡的 supplyToken、token0 欄位，沒有自己的標籤；registry 也沒寫 sourceLabel。CoinGecko 在這個地址列的 instadapp 對得上。",
+      "recommendation": "只有要領 FLUID 時才要在意；可以接受，但這個來源比不上有標籤的地址頁。"
+    }
+  },
+  "overview": [
+    {
+      "title": "升級和管理者",
+      "text": "URD 不是代理合約，不能升級。它的 owner 和 root 更新者可以設定新的 root（setRoot，或 submitRoot 加上 timelock 後的 acceptRoot）。錯的 root 能讓別人多領，拿不走 Safe 的東西。"
+    },
+    {
+      "title": "過去事故",
+      "text": "DefiLlama 的駭客清單只有一筆 Morpho：2024 年 10 月 LeadBlock 的 Morpho Blue market 的 oracle 設定錯誤，跟 URD 無關。",
+      "sources": ["https://api.llama.fi/hacks"]
+    }
+  ],
+  "entries": {
+    "morpho-urd": {
+      "role": "發獎勵的合約；Bundler3 代 Safe 呼叫它的 claim。",
+      "notes": [
+        { "text": "Morpho 官方的地址頁把它列為「Universal Rewards Distributor (used with the Market Rewards Program Registry)」，並連到 Etherscan。", "sources": ["https://docs.morpho.org/get-started/resources/addresses/"] },
+        { "text": "Etherscan 上的名稱是 UniversalRewardsDistributor，solc 0.8.19，沒有代理。建立者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，交易 0x091c1b2fb8ceaf652fe7fab281e49409d5c00e39c1ab9fcb9c883ab2a1f17ed2，區塊 19,405,449。" },
+        { "text": "Sourcify 上只有 partial match，編出來的程式碼只有結尾的 IPFS metadata 雜湊不同；prove-abi 只在這種情況遮掉那個雜湊，其他每個 byte 都比對。所以證明的是 selector 和型別，不包括參數名稱。" }
+      ]
+    },
+    "bundler3": { "role": "Safe 呼叫的合約；它再呼叫 URD 的 claim。" }
+  },
+  "fields": {
+    "1.multicall.bundle[0].data → claim.account": "誰收到獎勵",
+    "1.multicall.bundle[0].data → claim.reward": "哪個獎勵代幣",
+    "1.multicall.bundle[0].data → claim.claimable": "Merkle leaf 裡的累計數量；URD 只付累計數量減掉已領的部分",
+    "1.multicall.bundle[0].data → claim.proof": "Merkle proof；URD 驗不過就整筆失敗",
+    "1.merge": "一張 card 上有幾個獎勵代幣，就在同一個 multicall 裡放幾個項目，照 card 的順序"
+  },
+  "tests": [
+    { "text": "morpho-urd-claim 模擬和用鏈上收據都只收到 +3,824.55 MORPHO，沒有別的變化，得到 MATCH；換一個 account 或換一個代幣都是 MISMATCH。" }
+  ],
+  "details": [
+    {
+      "title": "為什麼 claimable 和 proof 可以不綁",
+      "notes": [
+        { "text": "證明過的 claim 會先檢查 proof 能把 (account, reward, claimable) 算回 root，而且 claimable 比已領的多，然後只把差額的 reward 轉給 account，別的什麼都不做。effects 檢查要求 Safe 收到更多 card 上的代幣，其他都不能變。" }
+      ]
+    },
+    {
+      "title": "過去交易的觀察",
+      "notes": [
+        { "text": "更早一次在區塊 22,800,000 到 22,820,000 的搜尋：Alchemy 和 Etherscan 都找到 137 筆，其中 5 個 Safe 各 1 筆，1 筆符合。不符合的：一個 Safe 在同一個 bundle 領兩個代幣（等於 card 上兩個操作）；一個先做 Merkl 領取再做這個 multicall（有 merkl-and-morpho-urd-claim 測試）；兩個呼叫別的合約。137 筆裡有 103 筆是一般錢包直接呼叫 Bundler3 或 URD。這次搜尋沒有錄下來。" }
+      ]
+    },
+    {
+      "title": "ERC-7730",
+      "notes": [
+        { "text": "AI 之前查 LedgerHQ 的 clear-signing-erc7730-registry 時，沒有描述檔指到這個 URD。程式在生成報告裡列出它在固定版本裡找到的結果。" }
+      ]
+    }
+  ]
+}
