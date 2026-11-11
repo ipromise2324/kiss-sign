@@ -248,7 +248,7 @@ export async function simulateSafeTx(reader: Reader, input: SimulationInput): Pr
   if (traced !== eth) return unverifiable(`the Safe's ETH balance changed by ${eth}, its traced ETH transfers by ${traced}`);
   const allowanceChanges: AllowanceChange[] = allowances.map((a, i) => ({ ...a, before: before(1 + tokens.length + i), after: after(1 + tokens.length + i) }));
   const answer = (call: SimulatedCall | undefined): ViewAnswer =>
-    call?.status === 'success' ? { kind: 'returned', data: call.returnData } : { kind: 'unread', why: 'it reverted in the simulated block, read by STATICCALL, where writing state or emitting a log reverts' };
+    call?.status === 'success' ? { kind: 'returned', data: call.returnData } : { kind: 'unread', why: 'it reverted in the simulated block, read by STATICCALL: it failed, or it wrote state or emitted a log' };
   const viewReadings: ViewReading[] = views.map((view, i) => ({ ...view, before: answer(calls[viewsAt + i]), after: answer(calls[after0 + viewsAt + i]), readIn: 'simulation' }));
   return {
     kind: 'observed',

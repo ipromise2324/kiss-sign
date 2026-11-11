@@ -109,7 +109,7 @@ test('the recorded supply does not match a card for a larger amount', async () =
 
 test('a template view that writes state, USDC approve, is read by STATICCALL in the simulated block and is unverifiable, never a match', async () => {
   const { simulated, executed } = await recordedVerdicts('morpho-market-supply-writing-view', supply(CASES[0].amount));
-  const refused = `usdc ${USDC} approve(${registry.entries.get('blue-bundles-v1')!.address}, 1) could not be read before the transaction in a simulated block: it reverted in the simulated block, read by STATICCALL, where writing state or emitting a log reverts`;
+  const refused = `usdc ${USDC} approve(${registry.entries.get('blue-bundles-v1')!.address}, 1) could not be read before the transaction in a simulated block: it reverted in the simulated block, read by STATICCALL: it failed, or it wrote state or emitted a log`;
   assert.deepEqual(simulated, { kind: 'unverifiable', reasons: [refused] });
   assert.equal(executed.kind, 'unverifiable');
   assert.ok(executed.kind === 'unverifiable' && executed.reasons.includes(refused));

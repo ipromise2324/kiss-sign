@@ -129,15 +129,19 @@ export async function observeExecuted(reader: Reader, txHash: Hex, tx: SafeTx, e
 
 /**
  * Adds to an executed transaction's view readings those of a simulation of it alone on its parent block, so a change
- * another transaction in the execution block made to a view cannot pass for this one's: the effects check judges both.
- * A simulation that did not run leaves each view unread there.
+ * another transaction in the execution block made to a view must also show in this one alone: the effects check judges
+ * both. A view the simulation did not read, or a simulation that did not run, leaves that view unread there.
  */
 export function withSimulatedViews(executed: Observation, simulated: Observation, views: readonly ViewCall[]): Observation {
   if (views.length === 0 || executed.kind !== 'observed' || executed.observed.kind !== 'executed') return executed;
-  const unread = (why: string): readonly ViewReading[] => views.map((view) => ({ ...view, before: { kind: 'unread', why }, after: { kind: 'unread', why }, readIn: 'simulation' }));
+  const unreadAs = (view: ViewCall, why: string): ViewReading => ({ ...view, before: { kind: 'unread', why }, after: { kind: 'unread', why }, readIn: 'simulation' });
+  const unread = (why: string): readonly ViewReading[] => views.map((view) => unreadAs(view, why));
   let readings: readonly ViewReading[];
   if (simulated.kind === 'unverifiable') readings = unread(simulated.reasons.join('; '));
   else if (simulated.observed.kind === 'not-executed') readings = unread(`alone on the parent block it did not execute: ${simulated.observed.why}`);
-  else readings = simulated.observed.views ?? [];
+  else {
+    const read = simulated.observed.views ?? [];
+    readings = views.map((view) => read.find((r) => r.to === view.to && r.data === view.data) ?? unreadAs(view, 'the simulation on the parent block did not read it'));
+  }
   return { ...executed, observed: { ...executed.observed, views: [...(executed.observed.views ?? []), ...readings] } };
 }

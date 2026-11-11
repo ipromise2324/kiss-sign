@@ -103,7 +103,7 @@ test('a pending transaction reads each view in the measured block, just before a
 test('a view that reverts in the simulated block is unread, and the balances are still measured', async () => {
   const reader = simulatingReader({ before: returned(words(1n, 0n, 0n)), after: { status: 'reverted', returnData: '0x' as Hex, logs: [] } }, []);
   const observed = executed(await simulateSafeTx(reader, { tx: TX, parent: PARENT, time: PARENT.time + 12n, watch: [], ends: [], views: [VIEW] }));
-  assert.deepEqual(observed.views?.[0]?.after, { kind: 'unread', why: 'it reverted in the simulated block, read by STATICCALL, where writing state or emitting a log reverts' });
+  assert.deepEqual(observed.views?.[0]?.after, { kind: 'unread', why: 'it reverted in the simulated block, read by STATICCALL: it failed, or it wrote state or emitted a log' });
   assert.equal(observed.eth, 0n);
 });
 

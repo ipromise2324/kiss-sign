@@ -385,6 +385,10 @@ test('an executed supply is judged on its view both at its blocks and simulated 
     kind: 'unverifiable',
     reasons: [`${VIEW} could not be read before the transaction in a simulated block: no agreed parent block`],
   });
+  assert.deepEqual(judgedWith({ kind: 'observed', observed: supplied(), logs: [] }), {
+    kind: 'unverifiable',
+    reasons: [`${VIEW} could not be read before the transaction in a simulated block: the simulation on the parent block did not read it`],
+  });
 });
 
 test('a balance the card does not explain is still a mismatch when the view is right', () => {
