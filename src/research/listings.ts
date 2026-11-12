@@ -24,12 +24,13 @@ export type Listings = {
 };
 
 /**
- * Why a check did not agree: `conflict` for a disagreement or anything the program cannot excuse, `unlisted` when the
- * listing holds nothing to compare the source with, `not-served` when the page as served does not show the address,
- * `not-fetched` when the page's or API's server answered with something other than the page or JSON, such as a 404 or
- * a redirect.
+ * Why a check did not agree: `differs` for a real disagreement (another domain, GitHub org or coin, or an API answer
+ * that is not the entry's address), `unexplained` for anything else the program cannot excuse, such as a slug DefiLlama
+ * does not list or an address away from its label, `unlisted` when the listing holds nothing to compare with,
+ * `not-served` when the page as served does not show the address, `not-fetched` when the page's or API's server
+ * answered with something other than the page or JSON, such as a 404 or a redirect.
  */
-export type FindingCause = 'conflict' | 'unlisted' | 'not-served' | 'not-fetched';
+export type FindingCause = 'differs' | 'unexplained' | 'unlisted' | 'not-served' | 'not-fetched';
 /** `api` is the address the entry's `apiSource` answers; `api-site` its URL's site against the DefiLlama protocol, as `defillama` compares the source's. */
 type CheckName = 'defillama' | 'coingecko' | 'url' | 'github' | 'page' | 'api' | 'api-site';
 /**
@@ -104,7 +105,7 @@ function githubSource(url: URL, what: string): GitHubSource {
 }
 
 function websiteLine(source: URL, protocol: DefiLlamaProtocol, label: string, suffixes: Listings['suffixes'], what: string): Line {
-  const finding = (text: string, cause: FindingCause = 'conflict'): Line => ({ kind: 'finding', check: 'defillama', text, cause });
+  const finding = (text: string, cause: FindingCause = 'unexplained'): Line => ({ kind: 'finding', check: 'defillama', text, cause });
   if ('unavailable' in suffixes) return finding(`Public Suffix List unavailable (${suffixes.unavailable}); ${what} domain not compared`);
   if (protocol.url === undefined) return finding(`DefiLlama has no website for ${label}; ${what} host ${source.hostname} not compared`, 'unlisted');
   const ours = registrableDomain(source.hostname, suffixes);
@@ -112,12 +113,12 @@ function websiteLine(source: URL, protocol: DefiLlamaProtocol, label: string, su
   const theirs = registrableDomain(protocol.url.hostname, suffixes);
   if (theirs === undefined) return finding(`${label}'s website ${protocol.url.hostname} has no registrable domain under the Public Suffix List; not compared`);
   if (ours === theirs) return { kind: 'agrees', check: 'defillama', text: `${what} domain ${ours} equals ${label}'s website ${protocol.url.hostname} (${theirs})` };
-  return finding(`${what} domain ${ours} differs from ${label}'s website ${protocol.url.hostname} (${theirs})`);
+  return finding(`${what} domain ${ours} differs from ${label}'s website ${protocol.url.hostname} (${theirs})`, 'differs');
 }
 
 /** Compares the registrable domain, or GitHub org, of `source` with what DefiLlama lists for the protocol `slug`; `what` names the URL in the text. */
 export function sourceSiteLine(source: string, slug: string | undefined, listings: Listings, what = 'source'): Line {
-  const finding = (text: string, cause: FindingCause = 'conflict'): Line => ({ kind: 'finding', check: 'defillama', text, cause });
+  const finding = (text: string, cause: FindingCause = 'unexplained'): Line => ({ kind: 'finding', check: 'defillama', text, cause });
   if (slug === undefined) return finding(`the entry names no DefiLlama protocol; ${what} not compared`);
   const listed = listings.protocols.get(slug) ?? [];
   const [protocol] = listed;
@@ -131,26 +132,26 @@ export function sourceSiteLine(source: string, slug: string | undefined, listing
   if (protocol.github.length === 0) return finding(`${what} is GitHub org ${github.org}; DefiLlama names no GitHub org for ${label}, so it is not compared`, 'unlisted');
   const orgs = protocol.github.map((g) => g.toLowerCase());
   if (orgs.includes(github.org)) return { kind: 'agrees', check: 'defillama', text: `GitHub org ${github.org} is one ${label} names: ${orgs.join(', ')}` };
-  return finding(`${what} is GitHub org ${github.org}; ${label} names ${orgs.join(', ')}`);
+  return finding(`${what} is GitHub org ${github.org}; ${label} names ${orgs.join(', ')}`, 'differs');
 }
 
 const coinLabel = (c: CoinGeckoCoin) => `${c.id} (${c.symbol.toUpperCase()}, "${c.name}")`;
 
 function coingeckoLine(entry: RegistryEntry, coinsByAddress: Listings['coinsByAddress']): Line {
-  const finding = (text: string): Line => ({ kind: 'finding', check: 'coingecko', text, cause: 'conflict' });
+  const finding = (text: string, cause: FindingCause): Line => ({ kind: 'finding', check: 'coingecko', text, cause });
   const coins = coinsByAddress.get(entry.address) ?? [];
   const [coin] = coins;
   const names = entry.coingecko === undefined ? 'the entry names no CoinGecko coin' : `the entry names coin ${entry.coingecko}`;
-  if (coin === undefined) return finding(`no CoinGecko listing at this address on ethereum (${names})`);
-  if (coins.length > 1) return finding(`CoinGecko lists more than one coin at this address: ${coins.map(coinLabel).join(', ')}`);
-  if (coin.id !== entry.coingecko) return finding(`${names}; CoinGecko lists ${coinLabel(coin)} at this address`);
+  if (coin === undefined) return finding(`no CoinGecko listing at this address on ethereum (${names})`, 'unlisted');
+  if (coins.length > 1) return finding(`CoinGecko lists more than one coin at this address: ${coins.map(coinLabel).join(', ')}`, 'differs');
+  if (coin.id !== entry.coingecko) return finding(`${names}; CoinGecko lists ${coinLabel(coin)} at this address`, entry.coingecko === undefined ? 'unexplained' : 'differs');
   return { kind: 'agrees', check: 'coingecko', text: `CoinGecko lists ${coinLabel(coin)} at this address, the coin the entry names` };
 }
 
 const hasCoin = (entry: RegistryEntry) => COINGECKO_KINDS.includes(entry.kind);
 
 export function githubLine(source: URL, commits: SourcePages['commits']): Line {
-  const finding = (text: string): Line => ({ kind: 'finding', check: 'github', text, cause: 'conflict' });
+  const finding = (text: string): Line => ({ kind: 'finding', check: 'github', text, cause: 'unexplained' });
   const ref = githubRef(source);
   if (ref.kind === 'unpinned') return finding('not pinned to a commit: name the file as github.com/<org>/<repo>/blob/<40-hex commit>/<path>');
   const check: CommitCheck = commits.get(commitKey(ref)) ?? { kind: 'unknown', why: 'the commit was not checked' };
@@ -162,7 +163,7 @@ export function githubLine(source: URL, commits: SourcePages['commits']): Line {
 }
 
 function pageLine(entry: RegistryEntry, pages: SourcePages['pages']): Line {
-  const finding = (text: string, cause: FindingCause = 'conflict'): Line => ({ kind: 'finding', check: 'page', text, cause });
+  const finding = (text: string, cause: FindingCause = 'unexplained'): Line => ({ kind: 'finding', check: 'page', text, cause });
   const url = pageUrlOf(entry.source);
   const page: Page = pages.get(url) ?? { kind: 'failed', why: `${url} was not fetched` };
   if (page.kind === 'unread') return { kind: 'unverifiable', check: 'page', text: page.why };
@@ -185,7 +186,7 @@ function pageLine(entry: RegistryEntry, pages: SourcePages['pages']): Line {
 
 /** The address the entry's API answers at its path must be the entry's own. */
 function apiLine(entry: RegistryEntry, api: NonNullable<RegistryEntry['apiSource']>, apis: SourcePages['apis']): Line {
-  const finding = (text: string, cause: FindingCause = 'conflict'): Line => ({ kind: 'finding', check: 'api', text, cause });
+  const finding = (text: string, cause: FindingCause = 'unexplained'): Line => ({ kind: 'finding', check: 'api', text, cause });
   const asked = `${api.method} ${api.url}`;
   const answer: ApiAnswer = apis?.get(apiKey(api)) ?? { kind: 'failed', why: `${asked} was not asked` };
   if (answer.kind === 'unread') return { kind: 'unverifiable', check: 'api', text: answer.why };
@@ -194,13 +195,13 @@ function apiLine(entry: RegistryEntry, api: NonNullable<RegistryEntry['apiSource
   const walked = walkPath(answer.json, api.path);
   switch (walked.kind) {
     case 'missing':
-      return finding(`${asked} answers nothing at ${pathText(api.path.slice(0, walked.at + 1))}`);
+      return finding(`${asked} answers nothing at ${pathText(api.path.slice(0, walked.at + 1))}`, 'differs');
     case 'not-address':
-      return finding(`${asked} answers no address at ${at}`);
+      return finding(`${asked} answers no address at ${at}`, 'differs');
     case 'found':
       return walked.address === entry.address
         ? { kind: 'agrees', check: 'api', text: `${asked} answers ${checksumAddress(walked.address)} at ${at}, the entry's address` }
-        : finding(`${asked} answers ${checksumAddress(walked.address)} at ${at}, not the entry's address ${checksumAddress(entry.address)}`);
+        : finding(`${asked} answers ${checksumAddress(walked.address)} at ${at}, not the entry's address ${checksumAddress(entry.address)}`, 'differs');
   }
 }
 
@@ -221,7 +222,7 @@ export function checkSources(entries: readonly RegistryEntry[], listings: Listin
         ...(hasCoin(entry) ? [coingeckoLine(entry, listings.coinsByAddress)] : []),
         ...(isGitHubPage(source) ? [githubLine(source, pages.commits)] : []),
         echoes
-          ? { kind: 'finding', check: 'url', text: 'the source URL holds the address, and a page echoes its own URL; the page is not read', cause: 'conflict' }
+          ? { kind: 'finding', check: 'url', text: 'the source URL holds the address, and a page echoes its own URL; the page is not read', cause: 'unexplained' }
           : pageLine(entry, pages.pages),
         ...(entry.apiSource === undefined
           ? []
