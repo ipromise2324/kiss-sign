@@ -38,6 +38,8 @@ export type Finding =
   | { readonly kind: 'proof-not-pin' }
   /** The vault's registry factory answered that it did not create the vault. */
   | { readonly kind: 'not-created' }
+  /** The vault's registry factory answered neither true nor false. */
+  | { readonly kind: 'factory-other-answer' }
   | { readonly kind: 'refused'; readonly why: string }
   /** A recorded transaction of the template the program now judges otherwise. */
   | { readonly kind: 'judged-otherwise'; readonly why: 'card-refused' | 'fields' | 'mutation-uncaught' | 'perturbation'; readonly detail: string }
@@ -76,6 +78,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'pin-not-run': 'bad',
   'proof-not-pin': 'bad',
   'not-created': 'bad',
+  'factory-other-answer': 'bad',
   refused: 'bad',
   'judged-otherwise': 'bad',
   'no-answer': 'warn',
@@ -104,6 +107,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'pin-not-run': undefined,
   'proof-not-pin': undefined,
   'not-created': undefined,
+  'factory-other-answer': undefined,
   refused: undefined,
   'judged-otherwise': undefined,
   'no-answer': '讀不到',
@@ -259,12 +263,13 @@ function marketResults(entry: RegistryEntry, inputs: ReportInputs): Draft[] {
 const FACTORY_FINDINGS: Readonly<Record<ReturnType<typeof factoryAnswer>, Finding>> = {
   admitted: { kind: 'agrees' },
   'not-created': { kind: 'not-created' },
+  'other-answer': { kind: 'factory-other-answer' },
   unread: { kind: 'factory-unread' },
 };
 
 function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Draft[] {
   if (entry.kind !== 'vault' || entry.attributes.factory === undefined) return [];
-  const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name))];
+  const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry.attributes.factory)];
   return [{ id: `${entry.name}/factory.admitted`, line: 'sources', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding }];
 }
 

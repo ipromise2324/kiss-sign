@@ -288,13 +288,18 @@ export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry)
 const ADMITTED = 'admitted     ';
 
 /**
- * Whether stored `pnpm vault-evidence` output says the vault's factory created it, from its first line: `admitted`, or
- * a REFUSED in which the factory answered. Anything else, such as a read with no answer, or no output, is unread.
+ * What stored `pnpm vault-evidence` output says the vault's registry factory answered, from its first line: `admitted`
+ * when that factory answered true, `not-created` when it answered false, `other-answer` when it answered neither.
+ * Anything else, such as a read with no answer, an answer from another factory, or no output, is unread.
  */
-export function factoryAnswer(text: string | undefined): 'admitted' | 'not-created' | 'unread' {
+export function factoryAnswer(text: string | undefined, factory: string): 'admitted' | 'not-created' | 'other-answer' | 'unread' {
   if (text === undefined) return 'unread';
-  if (text.startsWith(ADMITTED)) return 'admitted';
-  return /^REFUSED \S+ answered /.test(text) ? 'not-created' : 'unread';
+  if (text.startsWith(`${ADMITTED}${factory} answered `)) return 'admitted';
+  const refused = `REFUSED ${factory} answered `;
+  if (!text.startsWith(refused)) return 'unread';
+  const rest = text.slice(refused.length).split('\n')[0]!;
+  if (/^\S+ false for \S+: it did not create it;/.test(rest)) return 'not-created';
+  return /^\S+ with .*, not true or false;/.test(rest) ? 'other-answer' : 'unread';
 }
 
 /**

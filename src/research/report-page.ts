@@ -180,6 +180,7 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   'pin-not-run': { title: '鏈上跑的不是登記的程式碼', why: '鏈上在這段區塊範圍跑的程式碼，跟 code pin 記錄的不一樣。' },
   'proof-not-pin': { title: '證明的程式碼不是現在登記的', why: 'ABI 證明用的程式碼，不是 code pin 現在的那一份。' },
   'not-created': { title: '工廠說這個 vault 不是它建的', why: '登記的工廠合約回答，這個地址不是它建立的 vault，所以它不屬於工廠的協議。' },
+  'factory-other-answer': { title: '工廠的回答不是 true 或 false', why: '問登記的工廠是否建立了這個 vault，它沒有回答 true 或 false（例如 revert），所以不能說這個 vault 屬於工廠的協議。' },
   refused: { title: 'ABI 證明被拒絕', why: '重新編譯 Sourcify 的原始碼，得不到鏈上的程式碼。' },
   'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
   'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
