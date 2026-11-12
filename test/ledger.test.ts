@@ -152,8 +152,8 @@ const ROWS: readonly Row[] = [
   { what: 'an entry with no code pin', change: { entry: without('code'), abi: undefined }, id: 'vault/code', kind: 'not-pinned', state: 'warn' },
   { what: 'a proof of an entry with no pin', change: { entry: without('code') }, id: 'vault/abi', kind: 'not-pinned', state: 'warn' },
   { what: 'no site listed, and CoinGecko vouches', change: { protocol: { ...BASE.protocol!, url: undefined } }, id: 'vault/source.site', kind: 'unlisted', state: 'na' },
-  { what: 'a compiler not pinned', change: { abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }, id: 'vault/abi', kind: 'compiler-not-pinned', state: 'na' },
-  { what: 'a pin recorded before spans', change: { spans: [{ kind: 'not-read', text: '' }] }, id: 'vault/code.1', kind: 'pinned-before-spans', state: 'na' },
+  { what: 'a compiler not pinned', change: { abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }, id: 'vault/abi', kind: 'compiler-not-pinned', state: 'warn' },
+  { what: 'a pin recorded before spans', change: { spans: [{ kind: 'not-read', text: '' }] }, id: 'vault/code.1', kind: 'pinned-before-spans', state: 'warn' },
 ];
 
 for (const row of ROWS) {
@@ -211,8 +211,9 @@ test('an address source line names a differing site, another address, or nothing
 
 test('confidence: high when every result passed with a source page and a span, medium with a result not compared, low for the signer', () => {
   assert.equal(confidence(ledgerOf({}), ENTRY), 'high');
-  assert.equal(confidence(ledgerOf({ abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }), ENTRY), 'medium');
-  assert.equal(confidence(ledgerOf({ spans: [{ kind: 'not-read', text: '' }] }), ENTRY), 'medium');
+  assert.equal(confidence(ledgerOf({ protocol: { ...BASE.protocol!, url: undefined } }), ENTRY), 'medium');
+  assert.equal(confidence(ledgerOf({ abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }), ENTRY), 'low');
+  assert.equal(confidence(ledgerOf({ spans: [{ kind: 'not-read', text: '' }] }), ENTRY), 'low');
   assert.equal(confidence(ledgerOf({ spans: [{ kind: 'unverifiable', text: '' }] }), ENTRY), 'low');
 });
 
@@ -220,7 +221,7 @@ test('the strip counts addresses and recorded transactions, each by the worst of
   const ledger = ledgerOf({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') }, abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }), fixtures: [judged(MUTATIONS_PASS, PERTURB_PASS)] });
   assert.deepEqual(strip(ledger), [
     { line: 'sources', state: 'bad', passed: 0, counted: 1 },
-    { line: 'abi', state: 'na', passed: 0, counted: 0 },
+    { line: 'abi', state: 'warn', passed: 0, counted: 1 },
     { line: 'code', state: 'ok', passed: 1, counted: 1 },
     { line: 'params', state: 'ok', passed: 1, counted: 1 },
   ]);

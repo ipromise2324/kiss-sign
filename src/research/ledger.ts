@@ -84,8 +84,8 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'no-chain-result': 'warn',
   'not-pinned': 'warn',
   unlisted: 'na',
-  'compiler-not-pinned': 'na',
-  'pinned-before-spans': 'na',
+  'compiler-not-pinned': 'warn',
+  'pinned-before-spans': 'warn',
   'no-abi-case': 'warn',
 };
 

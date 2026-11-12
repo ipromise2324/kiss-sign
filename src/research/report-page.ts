@@ -193,6 +193,8 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   'no-chain-result': { title: '程式碼區段沒有鏈上結果', why: '這段 code pin 沒有從鏈上讀到判定。' },
   'not-pinned': { title: '沒有 code pin', why: '這個合約沒有登記程式碼，簽名時會是 UNVERIFIABLE。' },
   'no-abi-case': { title: '沒有 ABI 證明的紀錄', why: 'testdata/abi 沒有這個合約的 ABI 證明，程式沒有比對它的原始碼。' },
+  'compiler-not-pinned': { title: '編譯器沒有釘選', why: '這個合約用的 solc 版本沒有釘選，程式沒有重新編譯它的原始碼。' },
+  'pinned-before-spans': { title: 'code pin 沒有區段紀錄', why: '這個 code pin 寫在記錄區塊範圍之前，程式沒有讀鏈上從哪個區塊起跑這份程式碼。' },
 };
 
 const ZERO_ADDRESS = `0x${'0'.repeat(40)}`;
