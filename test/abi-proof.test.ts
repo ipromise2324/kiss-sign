@@ -238,10 +238,20 @@ const CASES = [
     immutables: 0,
     uses: ['approve(address spender,uint256 value)', 'transfer(address to,uint256 value)'],
   },
+  {
+    name: 'usdt',
+    proxy: 'none',
+    proven: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    contract: 'TetherToken.sol:TetherToken',
+    compiler: '0.4.18+commit.9cf6e910',
+    functions: 32,
+    immutables: 0,
+    uses: ['approve(address _spender,uint256 _value)', 'transfer(address _to,uint256 _value)'],
+  },
 ] as const;
 
 /** Sourcify holds these as partial matches: the source compiles to the code on chain except the metadata hash. */
-const PARTIAL = ['morpho-urd', 'cctp-message-transmitter', 'usdc'];
+const PARTIAL = ['morpho-urd', 'cctp-message-transmitter', 'usdc', 'usdt'];
 
 const generated = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) =>
   readdirSync(join(ROOT, TEMPLATES_DIR, protocol))
@@ -364,6 +374,20 @@ test('a partial match whose code on chain differs outside the metadata hash is r
     if (read.method !== 'getCode') return read;
     const code = read.value as string;
     const at = code.length - 2 * 60;
+    return { ...read, value: `${code.slice(0, at)}${code[at] === '0' ? '1' : '0'}${code.slice(at + 1)}` };
+  });
+  const refused = refusal(
+    await proveAbi(abiCaseReader({ ...fixture, reads }), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }),
+  );
+  assert.equal(refused.why, 'bytecode-mismatch');
+});
+
+test('a partial match with a Swarm metadata hash is refused when the code on chain differs just before its trailer', async () => {
+  const fixture = load('usdt');
+  const reads = fixture.reads.map((read) => {
+    if (read.method !== 'getCode') return read;
+    const code = read.value as string;
+    const at = code.length - 2 * 45;
     return { ...read, value: `${code.slice(0, at)}${code[at] === '0' ? '1' : '0'}${code.slice(at + 1)}` };
   });
   const refused = refusal(

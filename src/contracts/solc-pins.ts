@@ -1,11 +1,16 @@
 export type SolcPin = { readonly file: string; readonly sha256: string };
 
 /**
- * Each sha256 is the one soliditylang's `bin/list.json` and `emscripten-wasm32/list.json` both give, and equals the
- * sha256 of the `soljson.js` asset of the same release on GitHub (github.com/argotorg/solidity), downloaded and hashed
- * on its own.
+ * Each sha256 is the one soliditylang's `bin/list.json` gives, and equals the sha256 of the `soljson.js` asset of the
+ * same release on GitHub (github.com/argotorg/solidity), downloaded and hashed on its own. From 0.6.2 on,
+ * `emscripten-wasm32/list.json` gives the same sha256; before it, that list holds a wasm build made later from the same
+ * commit, a different file that no GitHub release carries, so it does not vouch for the pin.
  */
 export const SOLC_PINS: Readonly<Record<string, SolcPin>> = {
+  '0.4.18+commit.9cf6e910': {
+    file: 'soljson-v0.4.18+commit.9cf6e910.js',
+    sha256: '905e3d253406973f545666d79cd64c5c85985992f68fa35935f60249e311d74f',
+  },
   '0.6.12+commit.27d51765': {
     file: 'soljson-v0.6.12+commit.27d51765.js',
     sha256: '3e1956c550ca48e289044c7c0bd892403081b4b5e17e77ce707c815ce6c4228f',

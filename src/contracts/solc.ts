@@ -18,11 +18,14 @@ export type CompilerLoad =
 export type Compilers = (version: string) => CompilerLoad;
 
 type Emscripten = {
+  readonly _solidity_compile?: unknown;
+  readonly _compileStandard?: unknown;
+  readonly _solidity_reset?: unknown;
   cwrap(
-    name: 'solidity_compile',
+    name: 'solidity_compile' | 'compileStandard',
     returns: 'string',
-    args: readonly ['string', 'number', 'number'],
-  ): (input: string, callback: 0, context: 0) => string;
+    args: readonly ['string', 'number', 'number'] | readonly ['string', 'number'],
+  ): (input: string, callback: 0, context?: 0) => string;
   cwrap(name: 'solidity_reset', returns: null, args: readonly []): () => void;
 };
 
@@ -34,18 +37,27 @@ export const sha256Hex = (bytes: Uint8Array): string => createHash('sha256').upd
  */
 function instantiate(version: string, source: string): Solc {
   const context = createContext(Object.create(null), { codeGeneration: { strings: false, wasm: true } });
+  // Old builds such as 0.4.18 see no known environment here and call a global `print` unless Module has one. Defined
+  // inside the context, these functions reach only the context's Function.
+  runInContext('var Module = { print: function () {}, printErr: function () {} };', context);
   runInContext(source, context, { filename: `soljson-${version}.js` });
   const module = (context as { Module?: Emscripten }).Module;
   if (module === undefined) throw new Error(`solc ${version} did not define Module`);
-  const compile = module.cwrap('solidity_compile', 'string', ['string', 'number', 'number']);
-  const reset = module.cwrap('solidity_reset', null, []);
+  const compile =
+    module._solidity_compile !== undefined
+      ? module.cwrap('solidity_compile', 'string', ['string', 'number', 'number'])
+      : module._compileStandard !== undefined
+        ? module.cwrap('compileStandard', 'string', ['string', 'number'])
+        : undefined;
+  if (compile === undefined) throw new Error(`solc ${version} exports no standard JSON entry point`);
+  const reset = module._solidity_reset === undefined ? undefined : module.cwrap('solidity_reset', null, []);
   return {
     version,
     compile: (input) => {
       try {
         return compile(input, 0, 0);
       } finally {
-        reset();
+        reset?.();
       }
     },
   };
