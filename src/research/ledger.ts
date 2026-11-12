@@ -7,6 +7,7 @@ import type { Line } from './listings.ts';
 import { entriesOf, hasMarket, pinVerdict, wordOf } from './report.ts';
 import type { DocLink, ReportInputs, SpanCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
+import { factoryAnswer } from './vault-evidence.ts';
 
 /** ok passed; warn evidence missing (amber); bad a real disagreement (red); na nothing to compare (grey). */
 export type State = 'ok' | 'warn' | 'bad' | 'na';
@@ -35,6 +36,8 @@ export type Finding =
   | { readonly kind: 'pin-not-run' }
   /** The ABI proof proved code other than the current pin. */
   | { readonly kind: 'proof-not-pin' }
+  /** The vault's registry factory answered that it did not create the vault. */
+  | { readonly kind: 'not-created' }
   | { readonly kind: 'refused'; readonly why: string }
   /** A recorded transaction of the template the program now judges otherwise. */
   | { readonly kind: 'judged-otherwise'; readonly why: 'card-refused' | 'fields' | 'mutation-uncaught' | 'perturbation'; readonly detail: string }
@@ -54,6 +57,8 @@ export type Finding =
   | { readonly kind: 'page-not-fetched' }
   | { readonly kind: 'name-not-on-page' }
   | { readonly kind: 'no-chain-result' }
+  /** No stored `pnpm vault-evidence` output holds the vault's factory's answer. */
+  | { readonly kind: 'factory-unread' }
   /** No code pin: signing would answer UNVERIFIABLE. */
   | { readonly kind: 'not-pinned' }
   /** DefiLlama lists no website or GitHub org, and CoinGecko lists the entry's coin at its address, or, for another site, the source's site agrees. */
@@ -70,6 +75,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'other-answer': 'bad',
   'pin-not-run': 'bad',
   'proof-not-pin': 'bad',
+  'not-created': 'bad',
   refused: 'bad',
   'judged-otherwise': 'bad',
   'no-answer': 'warn',
@@ -82,6 +88,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'page-not-fetched': 'warn',
   'name-not-on-page': 'warn',
   'no-chain-result': 'warn',
+  'factory-unread': 'warn',
   'not-pinned': 'warn',
   unlisted: 'na',
   'compiler-not-pinned': 'warn',
@@ -96,6 +103,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'other-answer': '是另一個地址',
   'pin-not-run': undefined,
   'proof-not-pin': undefined,
+  'not-created': undefined,
   refused: undefined,
   'judged-otherwise': undefined,
   'no-answer': '讀不到',
@@ -108,6 +116,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'page-not-fetched': '讀不到',
   'name-not-on-page': '讀不到',
   'no-chain-result': undefined,
+  'factory-unread': undefined,
   'not-pinned': undefined,
   unlisted: '沒資料可比',
   'compiler-not-pinned': undefined,
@@ -247,6 +256,18 @@ function marketResults(entry: RegistryEntry, inputs: ReportInputs): Draft[] {
   );
 }
 
+const FACTORY_FINDINGS: Readonly<Record<ReturnType<typeof factoryAnswer>, Finding>> = {
+  admitted: { kind: 'agrees' },
+  'not-created': { kind: 'not-created' },
+  unread: { kind: 'factory-unread' },
+};
+
+function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Draft[] {
+  if (entry.kind !== 'vault' || entry.attributes.factory === undefined) return [];
+  const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name))];
+  return [{ id: `${entry.name}/factory.admitted`, line: 'sources', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding }];
+}
+
 function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined): Finding {
   if (proof === undefined) return { kind: 'no-abi-case' };
   if (proof.kind === 'refused') {
@@ -295,8 +316,8 @@ function fixtureFinding(judgement: FixtureJudgement): Finding {
 }
 
 /**
- * Every result of the report: for each entry `entriesOf` names, in registry order, its source results, documentation
- * pages, market parts, ABI proof and code pin spans, with the vouching rule applied; then each recorded transaction.
+ * Every result of the report: for each entry `entriesOf` names, in registry order, its source results, a vault's
+ * factory answer, documentation pages, market parts, ABI proof and code pin spans, with the vouching rule applied; then each recorded transaction.
  */
 export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[]): Ledger {
   const { subject } = inputs;
@@ -305,6 +326,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
   const results = checked.flatMap(({ entry, lines }) =>
     unvouchedUnlistedHasNoSecondSource(entry, [
       ...sourceResults(entry, lines),
+      ...factoryResults(entry, inputs),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
       ...marketResults(entry, inputs),
       { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address)) },

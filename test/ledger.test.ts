@@ -43,6 +43,10 @@ const ENTRY: RegistryEntry = {
   code: { earlier: [], current: { from: 100n, pin: { hash: PIN } } },
 };
 
+const VAULT: RegistryEntry = { ...ENTRY, kind: 'vault', attributes: { factory: 'vault-factory' } };
+const evidence = (text: string) => ({ entry: VAULT, vaults: new Map([['vault', text]]) });
+const ADMITTED = 'admitted     vault-factory answered isVault(address) = true at block 100\nvault        vault 0x';
+
 const without = (key: 'sourceLabel' | 'code' | 'coingecko', entry: RegistryEntry = ENTRY): RegistryEntry => {
   const { [key]: _, ...rest } = entry;
   return rest;
@@ -60,6 +64,7 @@ type Setup = {
   readonly spans: readonly SpanCheck[] | undefined;
   readonly documented: boolean;
   readonly fixtures: readonly FixtureJudgement[];
+  readonly vaults: ReadonlyMap<string, string>;
 };
 
 const BASE: Setup = {
@@ -74,6 +79,7 @@ const BASE: Setup = {
   spans: [{ kind: 'pass', text: '' }],
   documented: true,
   fixtures: [],
+  vaults: new Map(),
 };
 
 const proven = (codeHash: Hex): AbiProof => ({ kind: 'proven', proxy: { kind: 'none' }, codeHash }) as unknown as AbiProof;
@@ -105,6 +111,7 @@ function ledgerOf(change: Partial<Setup>): Ledger {
     },
     abi: new Map(s.abi === undefined ? [] : [[ADDRESS, s.abi]]),
     spans: new Map(s.spans === undefined ? [] : [[ADDRESS, s.spans]]),
+    vaults: s.vaults,
   } as unknown as ReportInputs;
   return judge(inputs, s.fixtures);
 }
@@ -125,6 +132,12 @@ const ROWS: readonly Row[] = [
   { what: 'a code pin the chain did not run', change: { spans: [{ kind: 'finding', text: '' }] }, id: 'vault/code.1', kind: 'pin-not-run', state: 'bad' },
   { what: 'a proof of code other than the pin', change: { abi: proven(`0x${'22'.repeat(32)}` as Hex) }, id: 'vault/abi', kind: 'proof-not-pin', state: 'bad' },
   { what: 'a proof refused for a reason other than its compiler', change: { abi: refused({ why: 'bytecode-mismatch' }) }, id: 'vault/abi', kind: 'refused', state: 'bad' },
+  { what: 'a vault its factory created', change: evidence(ADMITTED), id: 'vault/factory.admitted', kind: 'agrees', state: 'ok' },
+  { what: 'a vault its factory answered it did not create', change: evidence("REFUSED vault-factory answered isVault(address) false for vault: it did not create it; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'not-created', state: 'bad' },
+  { what: 'a vault whose factory answered neither true nor false', change: evidence("REFUSED vault-factory answered isVault(address) with a revert, not true or false; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'not-created', state: 'bad' },
+  { what: "a vault whose factory's answer got no reply", change: evidence("REFUSED the providers disagree; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
+  { what: 'a vault whose block was not read', change: evidence('UNVERIFIABLE no block'), id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
+  { what: 'a vault with no stored evidence', change: { entry: VAULT }, id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: 'a card the template now refuses', change: { fixtures: [{ name: 'safe-tx-1', outcome: { kind: 'card-refused', why: 'wrong-kind' } }] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'fields that no longer match', change: { fixtures: [judged({ kind: 'not-run', check: { kind: 'mismatch' } }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'fields the template or registry leaves UNVERIFIABLE', change: { fixtures: [judged({ kind: 'not-run', check: { kind: 'unverifiable', reasons: ['the registry has no usdc'] } }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
@@ -166,6 +179,13 @@ for (const row of ROWS) {
 
 test('every finding kind has a row', () => {
   assert.deepEqual(new Set(ROWS.map((row) => row.kind)), new Set(Object.keys(STATE_OF)));
+});
+
+test('only a vault that names a factory has a factory result', () => {
+  const ids = (entry: RegistryEntry) => ledgerOf({ entry, vaults: new Map([['vault', ADMITTED]]) }).results.map((r) => r.id);
+  assert.ok(ids(VAULT).includes('vault/factory.admitted'));
+  assert.ok(!ids({ ...VAULT, attributes: {} }).some((id) => id.endsWith('/factory.admitted')));
+  assert.ok(!ids(ENTRY).some((id) => id.endsWith('/factory.admitted')));
 });
 
 test('a source site DefiLlama lists nothing for is vouched by CoinGecko only, never by a documentation page or the API site', () => {

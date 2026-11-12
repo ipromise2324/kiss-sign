@@ -285,6 +285,18 @@ export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry)
   return out.join('\n');
 }
 
+const ADMITTED = 'admitted     ';
+
+/**
+ * Whether stored `pnpm vault-evidence` output says the vault's factory created it, from its first line: `admitted`, or
+ * a REFUSED in which the factory answered. Anything else, such as a read with no answer, or no output, is unread.
+ */
+export function factoryAnswer(text: string | undefined): 'admitted' | 'not-created' | 'unread' {
+  if (text === undefined) return 'unread';
+  if (text.startsWith(ADMITTED)) return 'admitted';
+  return /^REFUSED \S+ answered /.test(text) ? 'not-created' : 'unread';
+}
+
 /**
  * What `pnpm vault-evidence` prints: a vault that names a factory is read only after that factory answers that it
  * created the vault, since the numbers come from the vault's own code. Everything is read as of one block, `at`.
@@ -305,7 +317,7 @@ export async function vaultEvidenceText(
   } else {
     const admitted = await proveInstance(reader, registry, vault.name, block.value);
     if (admitted.kind === 'refused') return { read: false, text: `REFUSED ${admitted.why}; the vault's code is not read` };
-    lines.push(`admitted     ${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${block.value.number}`);
+    lines.push(`${ADMITTED}${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${block.value.number}`);
   }
   const evidence = await gatherVaultEvidence(reader, alchemy, vault, block.value.number);
   if ('kind' in evidence) return { read: false, text: [...lines, `UNVERIFIABLE ${evidence.reason}`].join('\n') };
