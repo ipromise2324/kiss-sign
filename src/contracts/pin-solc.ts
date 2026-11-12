@@ -6,11 +6,31 @@ export const SOLC_WASM_LIST = 'https://binaries.soliditylang.org/wasm/list.json'
 const GITHUB_REPO = 'argotorg/solidity';
 
 export type Fetched<T> = { readonly kind: 'ok'; readonly value: T } | { readonly kind: 'failed'; readonly status: number };
+export type Download = Fetched<Uint8Array> | { readonly kind: 'too-large'; readonly limit: number };
+
+/** The most bytes the GitHub asset may hold; every soljson.js is far smaller. */
+export const SOLC_ASSET_LIMIT = 64 * 1024 * 1024;
 
 export type PinSolcIo = {
   readonly json: (url: string) => Promise<Fetched<unknown>>;
-  readonly bytes: (url: string) => Promise<Fetched<Uint8Array>>;
+  readonly bytes: (url: string) => Promise<Download>;
 };
+
+/** The response body, or undefined as soon as its declared length or the bytes read pass `limit`. */
+export async function readCapped(response: Response, limit: number): Promise<Uint8Array | undefined> {
+  if (Number(response.headers.get('content-length') ?? 0) > limit) {
+    await response.body?.cancel();
+    return undefined;
+  }
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for await (const chunk of response.body ?? []) {
+    size += chunk.length;
+    if (size > limit) return undefined;
+    chunks.push(chunk);
+  }
+  return new Uint8Array(Buffer.concat(chunks, size));
+}
 
 export const nodePinSolcIo: PinSolcIo = {
   json: async (url) => {
@@ -19,7 +39,9 @@ export const nodePinSolcIo: PinSolcIo = {
   },
   bytes: async (url) => {
     const response = await fetch(url, { headers: { 'user-agent': 'kiss-sign' } });
-    return response.ok ? { kind: 'ok', value: new Uint8Array(await response.arrayBuffer()) } : { kind: 'failed', status: response.status };
+    if (!response.ok) return { kind: 'failed', status: response.status };
+    const value = await readCapped(response, SOLC_ASSET_LIMIT);
+    return value === undefined ? { kind: 'too-large', limit: SOLC_ASSET_LIMIT } : { kind: 'ok', value };
   },
 };
 
@@ -53,7 +75,8 @@ function listedSha256(list: unknown, version: string): { readonly path: string; 
 
 /**
  * Finds the sha256 of solc `version` that soliditylang's `bin/list.json` gives and the `soljson.js` asset of the same
- * GitHub release hashes to, and, from 0.6.2 on, that `wasm/list.json` gives too. Any source missing or disagreeing refuses.
+ * GitHub release hashes to, and, from 0.6.2 on, that `wasm/list.json` gives too; that list is on the same host as
+ * `bin/list.json`, so it is no independent source. Any source missing or disagreeing refuses.
  */
 export async function resolveSolcPin(version: string, io: PinSolcIo): Promise<Resolution> {
   const reads: string[] = [];
@@ -82,6 +105,7 @@ export async function resolveSolcPin(version: string, io: PinSolcIo): Promise<Re
 
   const asset = await io.bytes(assetUrl);
   if (asset.kind === 'failed') return refuse(`${assetUrl} answered status ${asset.status}`);
+  if (asset.kind === 'too-large') return refuse(`${assetUrl} holds more than ${asset.limit} bytes`);
   const assetSha256 = createHash('sha256').update(asset.value).digest('hex');
   reads.push(`${assetUrl}: ${asset.value.length} bytes, sha256 ${assetSha256}`);
   if (assetSha256 !== listed.sha256) return refuse(`the GitHub asset has sha256 ${assetSha256}, but ${SOLC_BIN_LIST} gives ${listed.sha256}`);

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { addSolcPin, resolveSolcPin, SOLC_BIN_LIST, SOLC_WASM_LIST } from '../src/contracts/pin-solc.ts';
+import { addSolcPin, readCapped, resolveSolcPin, SOLC_BIN_LIST, SOLC_WASM_LIST } from '../src/contracts/pin-solc.ts';
 import type { Fetched, PinSolcIo } from '../src/contracts/pin-solc.ts';
 import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SolcPin } from '../src/contracts/solc-pins.ts';
@@ -90,6 +90,15 @@ test('a missing release, a release with no soljson.js, or a failed download is r
   assert.match(await refusal(OLD, offline(OLD, { json: { [releaseUrl(OLD)]: elsewhere } })), /has no soljson\.js asset at/);
   const noAsset = offline(OLD);
   assert.equal(await refusal(OLD, { ...noAsset, bytes: async () => ({ kind: 'failed', status: 404 }) }), `${assetUrl(OLD)} answered status 404`);
+});
+
+test('a GitHub asset over the size limit is refused, whether its length is declared or only read', async () => {
+  assert.equal(await refusal(OLD, { ...offline(OLD), bytes: async () => ({ kind: 'too-large', limit: 64 }) }), `${assetUrl(OLD)} holds more than 64 bytes`);
+  const streamed = (sizes: readonly number[]) =>
+    new Response(new ReadableStream({ start: (c) => (sizes.forEach((n) => c.enqueue(new Uint8Array(n))), c.close()) }));
+  assert.equal((await readCapped(streamed([40, 24]), 64))?.length, 64);
+  assert.equal(await readCapped(streamed([40, 25]), 64), undefined);
+  assert.equal(await readCapped(new Response(new Uint8Array(65), { headers: { 'content-length': '65' } }), 64), undefined);
 });
 
 test('a version the list lacks, a build that is not the release, or no release version at all is refused', async () => {
