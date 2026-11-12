@@ -62,7 +62,7 @@
 </div>
 
 <section>
-  <h2>Set up once<small>on the signing device</small></h2>
+  <h2>Set up once<small>on your computer</small></h2>
   <ol>
     <li class="step signer"><div class="title">Fork, clone, init <span class="who">You</span></div>
       <div class="desc">Fork kiss-sign on GitHub, clone your fork, <code>pnpm install</code>, <code>pnpm kiss-sign init --safe 0x…</code></div>
@@ -73,10 +73,10 @@
   </ol>
 </section>
 
-<div class="between">↓ Building a template happens on another computer, with an AI agent</div>
+<div class="between">↓ The AI may work on the same computer</div>
 
 <section>
-  <h2>Build a template<small>once per operation, on a computer with an AI agent</small></h2>
+  <h2>Build a template<small>once per operation, with an AI agent</small></h2>
   <ol>
     <li class="step signer"><div class="title">State the intent <span class="who">You</span></div>
       <div class="desc">“Deposit USDC into the Morpho Apex vault”</div></li>
@@ -104,10 +104,10 @@
   </ol>
 </section>
 
-<div class="between">↓ <code>git pull</code> brings the merged template to the signing device</div>
+<div class="between">↓ <code>git pull</code> brings the merged template to your clone</div>
 
 <section>
-  <h2>Every signing<small>on the signing device, with no AI</small></h2>
+  <h2>Every signing<small>in your own terminal</small></h2>
   <ol>
     <li class="step signer"><div class="title">Approve the template <span class="who">You</span></div>
       <div class="desc">First use only: <code>template approve</code> shows the template and its commit, and records its hash.</div></li>
@@ -127,6 +127,8 @@
       </ul></li>
     <li class="step program"><div class="title">Verdict <span class="who">Program</span></div>
       <div class="verdict"><span class="m">MATCH</span> · <span class="x">MISMATCH</span> · <span class="u">UNVERIFIABLE</span></div></li>
+    <li class="step signer"><div class="title">Independent check <span class="who">You · hardened tier</span></div>
+      <div class="desc">On a second computer with no AI and no kiss-sign, <code>check.sh &lt;nonce&gt;</code> computes the hashes and decodes each call. Compare the hashes with the wallet and the calls with your sealed card. <span class="chip">Safe Transaction Service</span></div></li>
     <li class="step signer"><div class="title">Sign on the wallet <span class="who">You</span></div>
       <div class="desc">Only on <code>MATCH</code>: compare both hashes on the device's screen. <span class="chip">Hardware wallet</span></div></li>
   </ol>
