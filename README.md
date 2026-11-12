@@ -26,7 +26,7 @@ Clear signing (ERC-7730) makes the final screen readable, but you still have to 
 kiss-sign turns the order around: you say what you want first, and the transaction is checked against it.
 
 1. **An AI writes a template** the first time you do an operation, and you review and merge it as a pull request with its evidence.
-2. **You fill a short card** at a prompt on your signing device, picking each vault or recipient from a list with its full address, and confirm it before you see any transaction.
+2. **You fill a short card** at a prompt in your own terminal, picking each vault or recipient from a list with its full address, and confirm it before you see any transaction.
 3. **A fixed program checks** the transaction against the template and your card, then prints a verdict:
    - `MATCH`: it does exactly what the card says. Compare the two hashes on your hardware wallet and sign.
    - `MISMATCH`: something differs. Do not sign.
@@ -34,10 +34,10 @@ kiss-sign turns the order around: you say what you want first, and the transacti
 
 ![kiss-sign flow: build a template once per operation, then check every signing](docs/architecture.png)
 
-## The standard setup
+## Setup
 
 0. Fork this repository on GitHub.
-1. On the signing device, with Node 22 and pnpm, clone your fork:
+1. On your computer, with Node 22 and pnpm, clone your fork:
 
 ```sh
 git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
@@ -66,22 +66,27 @@ Or enter the key with `pnpm kiss-sign key add alchemy`; what you type is not sho
 
 To build templates or run the tests, `pnpm test` and the research scripts download the pinned compilers and lists they need on first use, and refuse any file whose sha256 differs from its pin.
 
-Two machines, joined only by `main` on GitHub.
+## Two tiers
+
+kiss-sign does not try to stop a prompt-injected AI. Pick how much else you trust.
+
+**Basic: kiss-sign only.** Everything runs on one computer, and your AI may run there too.
 
 | Step | Where | Who |
 |---|---|---|
-| 1. Research, write the template, open a pull request | A computer with an AI agent | The AI. It never merges. |
-| 2. Read the report and the template, approve and merge | GitHub | You, through branch protection |
-| 3. `git pull`, fill the card with `pnpm kiss-sign card new`, seal, verify | A signing device with no AI agent installed | You |
+| 1. Research, write the template, open a pull request | Your computer | The AI. It never merges. |
+| 2. Read the report and the template, run `pnpm report … --compare`, approve and merge | GitHub, and your computer | You |
+| 3. `git pull`, approve the template, fill the card with `pnpm kiss-sign card new`, seal, verify | Your computer, in your own terminal | You |
 | 4. The first time a template or a vault is used, send a small amount first | Safe | The signers |
 | 5. Sign, comparing the full hashes | Hardware wallet | You |
 
-- **No AI on the signing device.** Nothing there can rewrite `verify`, your cards, or your template approvals.
-- **Branch protection on `main`.** It guards the bridge between the two machines, since the signing device pulls `main`. Once you turn it on, only your approval merges a pull request, and the AI pushes from an account that cannot approve or merge. Both are GitHub settings you make; on a private repository GitHub offers branch protection only with a paid plan.
+As long as nothing on your computer rewrites kiss-sign or your cards, it stops attacks from outside kiss-sign: a tampered Safe web app, as in the Bybit hack, a transaction that differs from your card, and balance changes the template does not explain. It does not stop kiss-sign itself being wrong or changed: a bug, an AI that edits the program or your cards on the same computer, a merge made with your own GitHub credentials, or a harmful pull request you merged.
+
+**Hardened: add an independent computer.** That computer runs no AI and no kiss-sign, only Foundry's `cast`, `curl`, `jq` and one short script from a separate repository, `ipromise2324/kiss-sign-check`. Before you sign, you type `check.sh <nonce>` there. It fetches the transaction from the Safe Transaction Service, computes its hashes itself, splits a MultiSend, checks each function name against its selector, decodes each call, and labels every address from your own hand-made `known-addresses.txt`. You compare its hashes with the hardware wallet and its decoded calls with your sealed card. Calls nested inside another call's bytes, such as a bundler's batch, stay bytes. kiss-sign then cannot make you sign something other than what that computer decodes. Whether an address is the protocol's real contract still rests on kiss-sign's checks, the report and your own address list, and only kiss-sign compares the transaction with your card. See [The independent check](docs/design.md#the-independent-check-hardened-tier).
+
+- **Branch protection on `main`.** Still recommended, since `verify` trusts `main`. Once you turn it on, only your approval merges a pull request, and the AI pushes from an account that cannot approve or merge. That holds only while the AI cannot use your own GitHub credentials. Both are GitHub settings you make; on a private repository GitHub offers branch protection only with a paid plan.
 - **A small amount first.** It catches honest mistakes and crude attacks. It does not catch a contract that behaves differently for large amounts, or one that turns hostile later.
 - **A permission or parameter change** moves no value, so a small amount cannot test it. It relies on the program's checks and on the template's review.
-
-If you run an AI on your signing device anyway, `kiss-sign managed-settings` prints a Claude Code managed-settings file that keeps it out of the signing clone. See [Optional hardening](docs/design.md#optional-hardening-an-ai-on-the-signing-device).
 
 ## Keep it simple, stupid, and sign
 
@@ -106,8 +111,8 @@ The diagram shows the flow. This is what each step actually does, and what it is
 
 **At every signing:**
 
-- **The program checks itself first.** Before anything else, `verify` requires the local checkout to equal the merged `main` exactly. *Stops:* a template or the program being changed after you approved it.
-- **The card is sealed before you see the transaction.** You fill and confirm the card yourself on the signing device first, and kiss-sign stores it under its hash. *Stops:* the transaction shaping what you think you asked for.
+- **The program checks itself first.** Before anything else, `verify` requires the local checkout to equal the merged `main` exactly. *Stops:* a template or the program being changed in the clone after you approved it. It cannot stop a change that rewrites the self-check too; the hardened tier's independent check does not depend on it.
+- **The card is sealed before you see the transaction.** You fill and confirm the card yourself first, and kiss-sign stores it under its hash. *Stops:* the transaction shaping what you think you asked for.
 - **Every hash is recomputed.** kiss-sign trusts no hash from the Safe web app or its API. *Stops:* a tampered interface showing one transaction while you sign another, as in the Bybit hack.
 - **Decode, then re-encode byte for byte.** The re-encoded transaction must equal the original exactly. *Stops:* extra bytes hidden in the calldata.
 - **Mutation check.** kiss-sign changes each bound field, and every changed copy must give `MISMATCH`. *Stops:* a template that looks strict but binds nothing.
@@ -119,7 +124,8 @@ The diagram shows the flow. This is what each step actually does, and what it is
 
   *Stops:* the attacks that take over the Safe itself, such as the upgrades behind the Bybit and WazirX hacks.
 - **Simulation on two providers.** The transaction runs through the Safe's `execTransaction` with `eth_simulateV1` on Alchemy and drpc. Every change to the Safe's balances and allowances must be one the card explains, and both providers must agree. *Stops:* hidden side effects and a lying provider.
-- **Hashes on the hardware wallet.** On `MATCH`, kiss-sign prints the domain hash and message hash, and you compare them on the wallet's screen. *Stops:* a compromised computer swapping the transaction at the last step.
+- **Hashes on the hardware wallet.** On `MATCH`, kiss-sign prints the domain hash and message hash, and you compare them on the wallet's screen. *Stops:* a tampered Safe web app or browser swapping the transaction at the last step.
+- **In the hardened tier, an independent check.** A second computer with no AI and no kiss-sign fetches the transaction, computes its hashes and decodes it. *Stops:* kiss-sign itself, wrong or changed, showing you one transaction while the hash commits to another.
 
 ## What you confirm each time
 

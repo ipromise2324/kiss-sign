@@ -70,7 +70,7 @@
 </div>
 
 <section>
-  <h2>Build a template<small>once per operation, on a computer with an AI agent</small></h2>
+  <h2>Build a template<small>once per operation, with an AI agent</small></h2>
   <div class="grid">
     <div class="box signer"><div class="head"><span>Signer</span><span>step 1</span></div>
       <h3><i>1</i>State the intent</h3>
@@ -147,13 +147,13 @@
   </div>
 </section>
 
-<div class="between">↓ <code>git pull</code> on the signing device: <code>verify</code> trusts only your fork's <code>main</code></div>
+<div class="between">↓ <code>git pull</code> in your clone: <code>verify</code> trusts only your fork's <code>main</code></div>
 
 <section>
-  <h2>Every signing<small>on the signing device, with no AI</small></h2>
+  <h2>Every signing<small>in your own terminal; the AI may run on the same computer</small></h2>
   <div class="grid">
     <div class="box signer"><div class="head"><span>Signer · once</span><span>setup</span></div>
-      <h3><i>9</i>Set up the device</h3>
+      <h3><i>9</i>Set up the clone</h3>
       <ul>
         <li>Clone your fork, <code>pnpm install</code></li>
         <li><code>init --safe 0x…</code> records your fork as the repository to trust</li>
@@ -223,12 +223,17 @@
         <li>A verdict file; <code>replay</code> recomputes it offline</li>
       </ul></div>
 
+    <div class="box signer"><div class="head"><span>Signer · hardened tier</span><span>step 14</span></div>
+      <h3><i>18</i>Independent check</h3>
+      <p>On a second computer with no AI and no kiss-sign, <code>check.sh &lt;nonce&gt;</code> fetches the transaction, computes its hashes and decodes each call. Compare the hashes with the wallet and the calls with your sealed card.</p>
+      <div class="chips"><span class="chip">Safe Transaction Service</span><span class="chip">cast</span></div></div>
+    <div class="arrow">→</div>
     <div class="box signer"><div class="head"><span>Signer</span><span>step 14</span></div>
-      <h3><i>18</i>Sign on the wallet</h3>
+      <h3><i>19</i>Sign on the wallet</h3>
       <p>Only on <code>MATCH</code>: compare the domain hash and the message hash on the device's screen, every character, then sign.</p>
       <div class="chips"><span class="chip">Hardware wallet</span></div></div>
     <div class="arrow"></div>
-    <div class="store local" style="grid-column: 3 / 6"><h3>Local only, never pushed: <code>$KISS_SIGN_HOME</code></h3>
+    <div class="store local"><h3>Local only, never pushed: <code>$KISS_SIGN_HOME</code></h3>
       <ul><li>Config: the Safe, the repository to trust, providers</li><li>API keys in <code>.env</code></li><li>Address book</li><li>Sealed cards and verdict files</li><li>Approved template hashes</li></ul></div>
   </div>
 </section>
@@ -236,7 +241,7 @@
 <div class="trust">
   <div><b>Two providers</b>Every chain read goes to Alchemy and drpc. If they disagree, the verdict is <code>UNVERIFIABLE</code>.</div>
   <div><b>Pinned downloads</b>solc, the Public Suffix List and the ERC-7730 archive load on first use, refused unless the sha256 is pinned. Signing reads none.</div>
-  <div><b>Doubt fails closed</b>An AI fooled during signing can at worst cause <code>MISMATCH</code> or <code>UNVERIFIABLE</code>, never a wrong <code>MATCH</code>.</div>
+  <div><b>Doubt fails closed</b>An AI fooled during signing can at worst cause <code>MISMATCH</code> or <code>UNVERIFIABLE</code>, while the program is your <code>main</code>. A program rewritten on your computer is the basic tier's limit.</div>
 </div>
 <script>document.body.dataset.height = Math.ceil(document.documentElement.getBoundingClientRect().height);</script>
 </body>
