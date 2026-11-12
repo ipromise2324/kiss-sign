@@ -63,7 +63,7 @@ test('a recorded search reports both sources, senders by type, and how each temp
   assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe$/m);
   assert.match(text, /erc4626Deposit\.receiver {2}\[the Safe\]\n {4}equalled the Safe in 2 of 2 \(1 Safe\); values: the Safe in 2$/m);
   assert.match(text, /erc4626Deposit\.assets {2}\[card amount\]\n {4}same as the other leaves bound to card amount in 2 of 2; /m);
-  assert.match(text, /approve\.spender {2}\[contract general-adapter1\]\n {4}equalled contract general-adapter1 in 2 of 2 /m);
+  assert.match(text, /approve\.spender {2}\[contract general-adapter-1\]\n {4}equalled contract general-adapter-1 in 2 of 2 /m);
   assert.match(text, new RegExp(`^ {2}1 from 1 Safe: calls usdc\\.approve, vault-bundles-v1\\.0x6bbba4e0\\n {4}e\\.g\\. ${MISFIT}$`, 'm'));
   assert.match(text, new RegExp(`^examples that fit: ${FIT}, `, 'm'));
 });

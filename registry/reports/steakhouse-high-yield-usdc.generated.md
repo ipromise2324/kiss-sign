@@ -34,7 +34,7 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
-| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | PROVEN | none | `VaultV2Factory`, solc `0.8.28+commit.7893614a` | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | PASS | 0 immutable, 0 library spans masked | 26386376 |
+| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | PROVEN | none | `VaultV2Factory`, solc `0.8.28+commit.7893614a` | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | PASS | 0 immutable, 0 library spans masked | 26399583 |
 | `steakhouse-high-yield-usdc` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26386376 |
 
 ## Vaults

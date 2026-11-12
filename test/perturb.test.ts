@@ -60,11 +60,11 @@ test('a deposit whose assets were left free fails, naming the field and the valu
 const APPROVE_HASH = topic('ApproveHash(bytes32,address)');
 const WITHDRAW = 'morpho-withdraw-apex';
 const WITHDRAW_CARD: Card = {
-  operations: [{ template: 'morpho/vault-withdraw', values: { vault: 'hyperithm-usdc-apex-7777', amount: '583913520554', 'max-shares': '555874861469460312138864' } }],
+  operations: [{ template: 'morpho/vault-withdraw', values: { vault: 'hyperithm-usdc-apex-v1-7777', amount: '583913520554', 'max-shares': '555874861469460312138864' } }],
 };
 
 const WITHDRAWN = new Map([
-  [registry.entries.get('hyperithm-usdc-apex-7777')!.address, -1n],
+  [registry.entries.get('hyperithm-usdc-apex-v1-7777')!.address, -1n],
   [registry.entries.get('usdc')!.address, 583913520554n],
 ]);
 

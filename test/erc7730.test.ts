@@ -44,8 +44,8 @@ const withRevokeAnswer = (answers: Record<string, string>): Exchange[] =>
 const word = (n: number) => `0x${n.toString(16).padStart(64, '0')}`;
 
 test('a vault with a descriptor: its path, scope, hashes, functions and a valid attestation, checked on both providers', async () => {
-  const text = await report(['smokehouse-usdc']);
-  assert.match(text, /smokehouse-usdc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC \(vault\)\n {2}descriptor {3}registry\/morpho\/calldata-steakhouse_financial-bbqUSDC\.json\n {2}applies {6}by exact address/);
+  const text = await report(['smokehouse-usdc-v1-f5bc']);
+  assert.match(text, /smokehouse-usdc-v1-f5bc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC \(vault\)\n {2}descriptor {3}registry\/morpho\/calldata-steakhouse_financial-bbqUSDC\.json\n {2}applies {6}by exact address/);
   assert.match(text, /index {8}index\.calldata\.json names this file/);
   assert.match(text, /includes {5}ercs\/calldata-erc4626-vaults\.json/);
   assert.match(text, /file {9}sha256 c78dcaa71eadfef7cd91a417e7dbd6f548cb820f53b8b3847417691c7740a2ef of the file's bytes/);
@@ -65,7 +65,7 @@ test('a token without a descriptor says so, and that the index has no entry', as
 });
 
 test('no text the descriptor writers chose reaches the output', async () => {
-  const text = (await report(['smokehouse-usdc', 'usdc'])).replace(/\S+\.json/g, '<file path>');
+  const text = (await report(['smokehouse-usdc-v1-f5bc', 'usdc'])).replace(/\S+\.json/g, '<file path>');
   const written: string[] = [];
   const walk = (v: unknown, key = ''): void => {
     if (typeof v === 'string' && ['label', 'intent', 'owner', 'url', 'legalName', 'contractName', 'deployEvent', 'name', 'organization'].includes(key)) written.push(v);
@@ -78,17 +78,17 @@ test('no text the descriptor writers chose reaches the output', async () => {
 });
 
 test('a revocation the attester recorded on EAS turns the attestation REVOKED', async () => {
-  const text = await report(['smokehouse-usdc'], { chain: withRevokeAnswer({ alchemy: word(1790000000), drpc: word(1790000000) }) });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { chain: withRevokeAnswer({ alchemy: word(1790000000), drpc: word(1790000000) }) });
   assert.match(text, new RegExp(`result {5}REVOKED by ${AUDITOR} at unix time 1790000000 \\(getRevokeOffchain at block \\d+, both providers\\)`));
 });
 
 test('providers that disagree on the revocation leave the attestation UNVERIFIABLE', async () => {
-  const text = await report(['smokehouse-usdc'], { chain: withRevokeAnswer({ drpc: word(1790000000) }) });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { chain: withRevokeAnswer({ drpc: word(1790000000) }) });
   assert.match(text, /result {5}UNVERIFIABLE: getRevokeOffchain: /);
 });
 
 test('without the chain an attestation is UNVERIFIABLE, not valid', async () => {
-  const text = await report(['smokehouse-usdc'], { chain: 'none' });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { chain: 'none' });
   assert.match(text, /result {5}UNVERIFIABLE: ALCHEMY_API_KEY is not set, so the chain was not read/);
 });
 
@@ -96,7 +96,7 @@ test('a changed included file changes the descriptorHash, so the attestation no 
   const files = editJson(INCLUDED, (doc) => {
     doc.display.formats['deposit(uint256 assets, address receiver)'].fields[2].visible = 'never';
   });
-  const text = await report(['smokehouse-usdc'], { files });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { files });
   assert.doesNotMatch(text, /descriptorHash 0x5d894d892e605db377c8d58b73cd7afc45b17c47ff4f2f4c97ab4e032c42e4c6/);
   assert.match(text, /field {6}receiver addressName \(visible: never\)/);
   assert.match(text, /result {5}INVALID: it attests another descriptorHash/);
@@ -106,7 +106,7 @@ test('an attestation whose fields were changed after signing fails its uid', asy
   const files = editJson(SIG, (doc) => {
     doc.sig.message.expirationTime = '1';
   });
-  const text = await report(['smokehouse-usdc'], { files });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { files });
   assert.match(text, /result {5}INVALID: its uid is not the one its fields give/);
 });
 
@@ -114,7 +114,7 @@ test('a file that names another signer than the signature recovers is INVALID', 
   const files = editJson(SIG, (doc) => {
     doc.signer = '0x1111111111111111111111111111111111111111';
   });
-  const text = await report(['smokehouse-usdc'], { files });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { files });
   assert.match(text, /signer {5}0x1111111111111111111111111111111111111111, not listed in auditors\//);
   assert.match(text, new RegExp(`result {5}INVALID: its signature recovers ${AUDITOR}, not the signer the file names`));
 });
@@ -123,10 +123,10 @@ test('a descriptor scoped by the vault\'s factory applies to it, and the output 
   const files = editJson(DESCRIPTOR, (doc) => {
     doc.context.contract = { factory: { deployEvent: 'CreateMetaMorpho(address)', deployments: [{ chainId: 1, address: '0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101' }] } };
   });
-  const text = await report(['smokehouse-usdc'], { files });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { files });
   assert.match(
     text,
-    /applies {6}BY FACTORY 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101 \(the registry's factory metamorpho-factory-1\.0\): ERC-7730 applies it to ANY contract that factory deploys, including an attacker's/,
+    /applies {6}BY FACTORY 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101 \(the registry's factory metamorpho-factory-v1-0\): ERC-7730 applies it to ANY contract that factory deploys, including an attacker's/,
   );
   assert.doesNotMatch(text, /by exact address/);
   assert.match(text, /2 descriptor\(s\) scoped by factory: registry\/morpho\/calldata-steakhouse_financial-bbqUSDC\.json, registry\/railnet\/calldata-Conduit\.json/);
@@ -137,7 +137,7 @@ test('a parameter no field names is listed, and a field the descriptor hides sho
     const fields = doc.display.formats['withdraw(uint256 assets, address receiver, address owner)'].fields;
     doc.display.formats['withdraw(uint256 assets, address receiver, address owner)'].fields = fields.filter((f: { path: string }) => f.path !== 'owner');
   });
-  const text = await report(['smokehouse-usdc'], { files });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { files });
   assert.match(text, /function {5}0xb460af94 withdraw\(uint256,address,address\)\n {4}field {6}assets tokenAmount\n {4}field {6}receiver addressName\n {4}no field {3}owner/);
 });
 
@@ -153,7 +153,7 @@ test('a schema written in another case is INVALID, so its uid cannot dodge a rev
   const files = editJson(SIG, (doc) => {
     doc.sig.message.schema = `0x${doc.sig.message.schema.slice(2).toUpperCase()}`;
   });
-  const text = await report(['smokehouse-usdc'], { files, chain: withRevokeAnswer({ alchemy: word(1790000000), drpc: word(1790000000) }) });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { files, chain: withRevokeAnswer({ alchemy: word(1790000000), drpc: word(1790000000) }) });
   assert.match(text, /result {5}INVALID: its schema is not the ERC-8176 schema, written in lowercase/);
   assert.doesNotMatch(text, /result {5}VALID/);
 });
@@ -162,6 +162,6 @@ test('a file that names no signer still says whether the recovered signer is a l
   const files = editJson(SIG, (doc) => {
     delete doc.signer;
   });
-  const text = await report(['smokehouse-usdc'], { files });
+  const text = await report(['smokehouse-usdc-v1-f5bc'], { files });
   assert.match(text, new RegExp(`signer {5}${AUDITOR}, listed in auditors/`));
 });

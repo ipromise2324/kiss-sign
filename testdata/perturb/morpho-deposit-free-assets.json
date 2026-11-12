@@ -39,7 +39,7 @@
         "function": "approve(address spender, uint256 value)",
         "args": {
           "spender": {
-            "contract": "general-adapter1"
+            "contract": "general-adapter-1"
           },
           "value": {
             "card": "amount"
@@ -64,7 +64,7 @@
               {
                 "fields": {
                   "to": {
-                    "contract": "general-adapter1"
+                    "contract": "general-adapter-1"
                   },
                   "data": {
                     "call": {
@@ -74,7 +74,7 @@
                           "card": "vault.asset"
                         },
                         "receiver": {
-                          "contract": "general-adapter1"
+                          "contract": "general-adapter-1"
                         },
                         "amount": {
                           "card": "amount"
@@ -96,7 +96,7 @@
               {
                 "fields": {
                   "to": {
-                    "contract": "general-adapter1"
+                    "contract": "general-adapter-1"
                   },
                   "data": {
                     "call": {

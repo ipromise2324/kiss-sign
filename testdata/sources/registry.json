@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-11",
+  "fetched": "2026-11-12",
   "defillama": [
     {
       "slug": "circle-usdc",
@@ -49,6 +49,12 @@
       "slug": "coinbase",
       "name": "Coinbase",
       "url": "https://www.coinbase.com/",
+      "github": []
+    },
+    {
+      "slug": "steakhouse-financial",
+      "name": "Steakhouse Financial",
+      "url": "https://www.steakhouse.financial/",
       "github": []
     }
   ],
@@ -115,6 +121,14 @@
       "name": "Coinbase Wrapped BTC",
       "platforms": {
         "ethereum": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf"
+      }
+    },
+    {
+      "id": "steakhouse-usdt-morpho-vault",
+      "symbol": "steakusdt",
+      "name": "Steakhouse USDT Morpho Vault",
+      "platforms": {
+        "ethereum": "0xbeef047a543e45807105e51a8bbefcc5950fcfba"
       }
     }
   ],
@@ -313,35 +327,6 @@
         }
       ]
     },
-    "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "Steakhouse USDC Ethereum Stablecoin Prime Instant USDC Ethereum v1 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
-          "heading": "Legacy Vaults"
-        },
-        {
-          "text": "Smokehouse USDC Ethereum Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
-          "heading": "Legacy Vaults"
-        },
-        {
-          "text": "Steakhouse USDT Stablecoin Prime Instant USDC Ethereum v1 0xbeef047a543e45807105e51a8bbefcc5950fcfba",
-          "heading": "Legacy Vaults"
-        },
-        {
-          "text": "Smokehouse USDC Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
-          "heading": "Legacy Vaults"
-        }
-      ]
-    },
-    "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex": {
-      "kind": "served",
-      "blocks": []
-    },
-    "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex": {
-      "kind": "served",
-      "blocks": []
-    },
     "https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc": {
       "kind": "served",
       "blocks": []
@@ -538,6 +523,43 @@
           "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
         }
       ]
+    },
+    "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Steakhouse USDC Ethereum Stablecoin Prime Instant USDC Ethereum v1 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Smokehouse USDC Ethereum Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Steakhouse USDC Stablecoin Prime Instant USDC Ethereum v1 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Steakhouse USDT Stablecoin Prime Instant USDC Ethereum v1 0xbeef047a543e45807105e51a8bbefcc5950fcfba",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Smokehouse USDC Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+          "heading": "Legacy Vaults"
+        }
+      ]
+    },
+    "https://app.morpho.org/ethereum/vault/0xA0804346780b4c2e3bE118ac957D1DB82F9d7484/smokehouse-usdt": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex": {
+      "kind": "served",
+      "blocks": []
     }
   },
   "commits": {

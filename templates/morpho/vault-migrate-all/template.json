@@ -13,7 +13,7 @@
       "value": { "const": "0" },
       "function": "approve(address spender, uint256 value)",
       "args": {
-        "spender": { "contract": "general-adapter1" },
+        "spender": { "contract": "general-adapter-1" },
         "value": { "free": "the Safe's whole share balance, read when the transaction is built; the effects require the Safe to hold no shares afterwards and the allowance to end no higher than it started" }
       },
       "trailer": {
@@ -30,13 +30,13 @@
           "items": [
             {
               "fields": {
-                "to": { "contract": "general-adapter1" },
+                "to": { "contract": "general-adapter-1" },
                 "data": {
                   "call": {
                     "function": "erc20TransferFrom(address token, address receiver, uint256 amount)",
                     "args": {
                       "token": { "card": "from" },
-                      "receiver": { "contract": "general-adapter1" },
+                      "receiver": { "contract": "general-adapter-1" },
                       "amount": { "equals": "calls[0].args.value" }
                     }
                   }
@@ -48,7 +48,7 @@
             },
             {
               "fields": {
-                "to": { "contract": "general-adapter1" },
+                "to": { "contract": "general-adapter-1" },
                 "data": {
                   "call": {
                     "function": "erc4626Redeem(address vault, uint256 shares, uint256 minSharePriceE27, address receiver, address owner)",
@@ -56,8 +56,8 @@
                       "vault": { "card": "from" },
                       "shares": { "const": "115792089237316195423570985008687907853269984665640564039457584007913129639935" },
                       "minSharePriceE27": { "minSharePrice": { "assets": "card.min-assets", "shares": "calls[1].args.bundle.items[0].fields.data.call.args.amount" } },
-                      "receiver": { "contract": "general-adapter1" },
-                      "owner": { "contract": "general-adapter1" }
+                      "receiver": { "contract": "general-adapter-1" },
+                      "owner": { "contract": "general-adapter-1" }
                     }
                   }
                 },
@@ -68,7 +68,7 @@
             },
             {
               "fields": {
-                "to": { "contract": "general-adapter1" },
+                "to": { "contract": "general-adapter-1" },
                 "data": {
                   "call": {
                     "function": "erc4626Deposit(address vault, uint256 assets, uint256 maxSharePriceE27, address receiver)",

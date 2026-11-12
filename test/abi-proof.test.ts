@@ -72,7 +72,7 @@ const CASES = [
     uses: ['multicall((address to,bytes data,uint256 value,bool skipRevert,bytes32 callbackHash)[] bundle)'],
   },
   {
-    name: 'general-adapter1',
+    name: 'general-adapter-1',
     proxy: 'none',
     proven: GENERAL_ADAPTER1,
     contract: 'src/adapters/EthereumGeneralAdapter1.sol:EthereumGeneralAdapter1',
@@ -327,7 +327,7 @@ test('a proxy names its implementation, and a Safe proxy names its factory', asy
 
 test("GeneralAdapter1's source is refused for Bundler3's code", async () => {
   const bundler3 = load('bundler3');
-  const adapter = load('general-adapter1').sourcify[GENERAL_ADAPTER1] as SourcifyAnswer;
+  const adapter = load('general-adapter-1').sourcify[GENERAL_ADAPTER1] as SourcifyAnswer;
   const lying = { [BUNDLER3]: { status: 200, body: { ...(adapter.body as object), address: BUNDLER3 } } };
   const refused = refusal(await proveAbi(abiCaseReader(bundler3), BUNDLER3, abiCaseBlock(bundler3), { sourcify: abiCaseSourcify(lying), compilers }));
   assert.equal(refused.why, 'bytecode-mismatch');

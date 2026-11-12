@@ -26,9 +26,9 @@ const refusal = (card: Card) => {
 };
 
 test('a migration between two vaults of one asset resolves, and between vaults of different assets is refused', () => {
-  assert.equal(refusal({ operations: [{ template: ALL, values: { from: 'hyperithm-usdc-apex-7777', to: 'steakhouse-prime-usdc', 'min-assets': '1', 'min-shares': '1' } }] }), 'resolved');
+  assert.equal(refusal({ operations: [{ template: ALL, values: { from: 'hyperithm-usdc-apex-v1-7777', to: 'steakhouse-prime-usdc', 'min-assets': '1', 'min-shares': '1' } }] }), 'resolved');
   assert.equal(
-    refusal({ operations: [{ template: ALL, values: { from: 'hyperithm-usdc-apex-7777', to: 'fluid-fusdt', 'min-assets': '1', 'min-shares': '1' } }] }),
+    refusal({ operations: [{ template: ALL, values: { from: 'hyperithm-usdc-apex-v1-7777', to: 'fluid-fusdt', 'min-assets': '1', 'min-shares': '1' } }] }),
     'not-the-same at operations[0]: morpho/vault-migrate-all needs one address for from.asset usdc and to.asset usdt',
   );
 });
@@ -44,7 +44,7 @@ function safeTx(name: string): SafeTx {
 }
 
 const migrate = (minAssets: string, minShares: string): Card => ({
-  operations: [{ template: ALL, values: { from: 'smokehouse-usdc', to: 'steakhouse-high-yield-usdc', 'min-assets': minAssets, 'min-shares': minShares } }],
+  operations: [{ template: ALL, values: { from: 'smokehouse-usdc-v1-f5bc', to: 'steakhouse-high-yield-usdc', 'min-assets': minAssets, 'min-shares': minShares } }],
 });
 const BOUNDS: Record<string, [string, string]> = {
   'morpho-migrate-all-smokehouse': ['11959243449', '11619105060826236536810'],

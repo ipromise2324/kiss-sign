@@ -131,17 +131,6 @@
       "from": 21643807
     }
   },
-  "general-adapter1": {
-    "address": "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0",
-    "kind": "adapter",
-    "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "EthereumGeneralAdapter1",
-    "defillama": "morpho-blue",
-    "code": {
-      "hash": "0xf9cc71076c5b97dca248a8085a0faaad24a5768948474306a20e345a739dd74c",
-      "from": 21872136
-    }
-  },
   "steakhouse-prime-usdc": {
     "address": "0xbeef088055857739C12CD3765F20b7679Def0f51",
     "kind": "vault",
@@ -158,31 +147,6 @@
       "from": 23671611
     }
   },
-  "metamorpho-factory-1.0": {
-    "address": "0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101",
-    "kind": "factory",
-    "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "MetaMorpho Factory",
-    "sourceHeading": "Morpho Vault V1",
-    "defillama": "morpho-blue",
-    "instanceCheck": "isMetaMorpho(address)",
-    "code": {
-      "hash": "0x948cb0a2bf347795e99af306e37423dacabb048db2c650b34cd800d1dffba283",
-      "from": 18925584
-    }
-  },
-  "metamorpho-factory-1.1": {
-    "address": "0x1897A8997241C1cD4bD0698647e4EB7213535c24",
-    "kind": "factory",
-    "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "MetaMorpho Factory V1.1",
-    "defillama": "morpho-blue",
-    "instanceCheck": "isMetaMorpho(address)",
-    "code": {
-      "hash": "0xc96dffc14441bb58cc55e7bdb1382f87dc718ffd44927f304177f235e94fa004",
-      "from": 21439510
-    }
-  },
   "vault-v2-factory": {
     "address": "0xA1D94F746dEfa1928926b84fB2596c06926C0405",
     "kind": "factory",
@@ -195,49 +159,6 @@
       "from": 23375073
     }
   },
-  "smokehouse-usdc": {
-    "address": "0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
-    "kind": "vault",
-    "source": "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults",
-    "sourceLabel": "Smokehouse USDC",
-    "defillama": "morpho-blue",
-    "attributes": {
-      "asset": "usdc",
-      "factory": "metamorpho-factory-1.0"
-    },
-    "code": {
-      "hash": "0x8bff8e3326458676fbf3faf1d7e5f07469c3d8923c38cc70b3dcc9c1ee372753",
-      "from": 21337719
-    }
-  },
-  "hyperithm-usdc-apex-7777": {
-    "address": "0x777791C4d6DC2CE140D00D2828a7C93503c67777",
-    "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex",
-    "defillama": "morpho-blue",
-    "attributes": {
-      "asset": "usdc",
-      "factory": "metamorpho-factory-1.1"
-    },
-    "code": {
-      "hash": "0x872152c0dae0845c12d4d8088b927f5fd1049c1757e9f282b4b74c089ed8b294",
-      "from": 21922190
-    }
-  },
-  "hyperithm-usdc-apex-0932": {
-    "address": "0x093272C07700d3cA5301C3Bf9B3A392624179E2F",
-    "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
-    "defillama": "morpho-blue",
-    "attributes": {
-      "asset": "usdc",
-      "factory": "vault-v2-factory"
-    },
-    "code": {
-      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
-      "from": 23666454
-    }
-  },
   "usual-boosted-usdc": {
     "address": "0xd63070114470f685b75B74D60EEc7c1113d33a3D",
     "kind": "vault",
@@ -246,7 +167,7 @@
     "coingecko": "mev-capital-usual-boosted-usdc-morpho-vault",
     "attributes": {
       "asset": "usdc",
-      "factory": "metamorpho-factory-1.0"
+      "factory": "metamorpho-factory-v1-0"
     },
     "code": {
       "hash": "0x962bef2305e60f683bf25cd0f822341c121ce763442e4c674a6cc746801febaa",
@@ -507,29 +428,6 @@
       "from": 20570548
     }
   },
-  "usdt": {
-    "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-    "kind": "token",
-    "source": "https://tether.to/en/supported-protocols/",
-    "sourceLabel": "USD₮ contract address",
-    "defillama": "tether",
-    "coingecko": "tether",
-    "code": {
-      "hash": "0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55",
-      "from": 4634748
-    }
-  },
-  "bundler3": {
-    "address": "0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245",
-    "kind": "router",
-    "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "Bundler3",
-    "defillama": "morpho-blue",
-    "code": {
-      "hash": "0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454",
-      "from": 21643807
-    }
-  },
   "general-adapter-1": {
     "address": "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0",
     "kind": "adapter",
@@ -545,7 +443,8 @@
     "address": "0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101",
     "kind": "factory",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "MetaMorpho Factory [OLD]",
+    "sourceLabel": "MetaMorpho Factory",
+    "sourceHeading": "Morpho Vault V1",
     "defillama": "morpho-blue",
     "instanceCheck": "isMetaMorpho(address)",
     "code": {
@@ -563,18 +462,6 @@
     "code": {
       "hash": "0xc96dffc14441bb58cc55e7bdb1382f87dc718ffd44927f304177f235e94fa004",
       "from": 21439510
-    }
-  },
-  "vault-v2-factory": {
-    "address": "0xA1D94F746dEfa1928926b84fB2596c06926C0405",
-    "kind": "factory",
-    "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "VaultV2Factory",
-    "defillama": "morpho-blue",
-    "instanceCheck": "isVaultV2(address)",
-    "code": {
-      "hash": "0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503",
-      "from": 23375073
     }
   },
   "steakhouse-usdt-v1-cfba": {

@@ -32,7 +32,7 @@ const templates = new Map([[template.id, template]]);
 
 const USDC = registry.entries.get('usdc')!.address;
 const VAULT = registry.entries.get('steakhouse-prime-usdc')!.address;
-const GENERAL_ADAPTER1 = registry.entries.get('general-adapter1')!.address;
+const GENERAL_ADAPTER1 = registry.entries.get('general-adapter-1')!.address;
 const OTHER = '0x1111111111111111111111111111111111111111' as Address;
 const AMOUNT = 1800000000180n;
 const SHARES = 1742403090147006731022214n;

@@ -127,7 +127,7 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 | File | Address | Proxy | Code compiled |
 | --- | --- | --- | --- |
 | `bundler3.json` | Morpho Bundler3 `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | none | `Bundler3`, solc 0.8.28 |
-| `general-adapter1.json` | Morpho GeneralAdapter1 `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` | none | `EthereumGeneralAdapter1`, solc 0.8.28, 58 immutable spans masked |
+| `general-adapter-1.json` | Morpho GeneralAdapter1 `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` | none | `EthereumGeneralAdapter1`, solc 0.8.28, 58 immutable spans masked |
 | `morpho-token-eip1967.json` | MORPHO token `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | EIP-1967 | `MorphoTokenEthereum` at `0x4364fd2371b6318159366abFA51f190df5C24852`, solc 0.8.27 |
 | `morpho-vault-v2-apex.json` | Morpho Vault V2 Hyperithm USDC Apex `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | none | `VaultV2`, solc 0.8.28, 12 immutable spans masked. Sourcify's settings ask for an IPFS metadata hash, the code on chain carries none, so it is compiled without one |
 | `metamorpho-v1-0-steakhouse-usdt.json` | MetaMorpho V1.0 Steakhouse USDT `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa` | none | `MetaMorpho`, solc 0.8.21, 32 immutable spans masked |
@@ -150,7 +150,7 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
 pnpm fetch-solc
 pnpm record-abi-case bundler3 0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245
-pnpm record-abi-case general-adapter1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
+pnpm record-abi-case general-adapter-1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
 pnpm record-abi-case morpho-token-eip1967 0x58D97B57BB95320F9a05dC918Aef65434969c2B2
 pnpm record-abi-case safe-proxy-1-3-0 0x9467dcFD4519287e3878C018c02f5670465a9003
 pnpm record-abi-case morpho-vault-v2-apex 0x093272C07700d3cA5301C3Bf9B3A392624179E2F
@@ -202,9 +202,9 @@ The tests serve each provider its own recorded answer through the real reader, s
 
 ```sh
 export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
-pnpm simulate morpho-withdraw-all-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777","min-assets":"25172004987"}}]}' --record morpho-withdraw-all
-pnpm simulate morpho-withdraw-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"300000000000","max-shares":"285585667181036150934684"}}]}' --record morpho-withdraw-open-allowance
-pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc","min-assets":"20245327154"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc","min-assets":"17322520385"}}]}' --record morpho-withdraw-two-vaults-all
+pnpm simulate morpho-withdraw-all-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-v1-7777","min-assets":"25172004987"}}]}' --record morpho-withdraw-all
+pnpm simulate morpho-withdraw-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-v1-7777","amount":"300000000000","max-shares":"285585667181036150934684"}}]}' --record morpho-withdraw-open-allowance
+pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc-v1-f5bc","min-assets":"20245327154"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc","min-assets":"17322520385"}}]}' --record morpho-withdraw-two-vaults-all
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate morpho-vault-deposit \
   --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
   --record morpho-vault-deposit
@@ -239,9 +239,9 @@ pnpm perturb fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim
 pnpm perturb merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}' --record merkl-claim
 pnpm perturb morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}' --record morpho-urd-claim
 pnpm perturb morpho-bundles-deposit --card '{"operations":[{"template":"morpho/vault-bundles-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"31583325527","min-shares":"30442521166571443751074"}}]}' --record morpho-bundles-deposit
-pnpm perturb morpho-withdraw-apex --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-7777","amount":"583913520554","max-shares":"555874861469460312138864"}}]}' --record morpho-withdraw-apex
-pnpm perturb morpho-withdraw-all-apex --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-7777","min-assets":"1367287893326"}}]}' --record morpho-withdraw-all-apex
-pnpm perturb morpho-migrate-all-smokehouse --card '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' --record morpho-migrate-all-smokehouse
+pnpm perturb morpho-withdraw-apex --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-v1-7777","amount":"583913520554","max-shares":"555874861469460312138864"}}]}' --record morpho-withdraw-apex
+pnpm perturb morpho-withdraw-all-apex --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-v1-7777","min-assets":"1367287893326"}}]}' --record morpho-withdraw-all-apex
+pnpm perturb morpho-migrate-all-smokehouse --card '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc-v1-f5bc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' --record morpho-migrate-all-smokehouse
 pnpm perturb morpho-vault-deposit --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
   --template <copy of templates/morpho/vault-deposit/template.json with erc4626Deposit.assets set to {"free": "..."}> --record morpho-deposit-free-assets
 ```
@@ -314,9 +314,9 @@ The tests set up a clone and a `$KISS_SIGN_HOME` from its inputs, run `verify` w
 | File | Transaction | Verdict |
 | --- | --- | --- |
 | `morpho-vault-deposit.json` | `safe-tx/morpho-vault-deposit.json`, executed, judged by its receipt | `MATCH`, safeTxHash `0x0287ff5583b9bda9564e871c98d292c1a5b433cba905b02df369bab37b20c84a` |
-| `morpho-migrate-all.json` | `safe-tx/morpho-migrate-all-smokehouse.json`, executed, judged by its receipt, card `smokehouse-usdc` to `steakhouse-high-yield-usdc` | `MATCH`, safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
+| `morpho-migrate-all.json` | `safe-tx/morpho-migrate-all-smokehouse.json`, executed, judged by its receipt, card `smokehouse-usdc-v1-f5bc` to `steakhouse-high-yield-usdc` | `MATCH`, safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
 
-`test/code-pin.test.ts` evaluates `morpho-vault-deposit.json` with one recorded `eth_getCode` or `eth_getStorageAt` answer changed, or with a pin removed from its registry: changed code of the MultiSend, bundler3, general-adapter1, the vault, USDC or USDC's implementation, or USDC's ZeppelinOS slot pointing elsewhere, must give `MISMATCH`; a drpc answer that differs, or a touched entry with no pin, must give `UNVERIFIABLE`.
+`test/code-pin.test.ts` evaluates `morpho-vault-deposit.json` with one recorded `eth_getCode` or `eth_getStorageAt` answer changed, or with a pin removed from its registry: changed code of the MultiSend, bundler3, general-adapter-1, the vault, USDC or USDC's implementation, or USDC's ZeppelinOS slot pointing elsewhere, must give `MISMATCH`; a drpc answer that differs, or a touched entry with no pin, must give `UNVERIFIABLE`.
 
 `test/morpho-migrate.test.ts` evaluates `morpho-migrate-all.json` with its registry changed to name USDT as both vaults' asset, which the card's `same` then accepts, and requires `MISMATCH` from the vaults' recorded `asset()`. With the drpc answer to `asset()` changed it requires `UNVERIFIABLE`.
 
@@ -336,7 +336,7 @@ cp "$KISS_SIGN_HOME"/verdicts/0x0287ff55*.json testdata/verify/morpho-vault-depo
 export KISS_SIGN_HOME=$HOME/.kiss-sign-migrate
 bin/kiss-sign init --safe 0x3D548a77137E46B25F240CE0091266bAa5803177
 bin/kiss-sign template approve morpho/vault-migrate-all
-echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' > card.json
+echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc-v1-f5bc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' > card.json
 bin/kiss-sign card seal card.json
 node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-migrate-all-smokehouse.json").service))' > tx.json
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
@@ -405,8 +405,8 @@ done
 
 | File | Commit | Entries | What it shows |
 | --- | --- | --- | --- |
-| `smokehouse-usdc-and-usdc.json` | `3bebbd05` | `smokehouse-usdc`, `usdc` | Smokehouse USDC's descriptor `registry/morpho/calldata-steakhouse_financial-bbqUSDC.json`, by exact address, with one VALID attestation by `0x3846c3A30E62075Fa916216b35EF04B8F53931f6`; USDC with no descriptor |
+| `smokehouse-usdc-and-usdc.json` | `3bebbd05` | `smokehouse-usdc-v1-f5bc`, `usdc` | Smokehouse USDC's descriptor `registry/morpho/calldata-steakhouse_financial-bbqUSDC.json`, by exact address, with one VALID attestation by `0x3846c3A30E62075Fa916216b35EF04B8F53931f6`; USDC with no descriptor |
 
 ### Recording again
 
-`ALCHEMY_API_KEY=... pnpm erc7730 smokehouse-usdc usdc --record smokehouse-usdc-and-usdc`, after `pnpm fetch-erc7730`. The block, and so the test's expected block number, changes with each recording; the tests match any block.
+`ALCHEMY_API_KEY=... pnpm erc7730 smokehouse-usdc-v1-f5bc usdc --record smokehouse-usdc-and-usdc`, after `pnpm fetch-erc7730`. The block, and so the test's expected block number, changes with each recording; the tests match any block.

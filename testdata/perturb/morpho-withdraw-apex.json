@@ -5,7 +5,7 @@
       {
         "template": "morpho/vault-withdraw",
         "values": {
-          "vault": "hyperithm-usdc-apex-7777",
+          "vault": "hyperithm-usdc-apex-v1-7777",
           "amount": "583913520554",
           "max-shares": "555874861469460312138864"
         }

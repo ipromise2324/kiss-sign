@@ -24,7 +24,7 @@ const registry = loadRegistry(ROOT);
 const WITHDRAW = 'morpho/vault-withdraw';
 const ALL = 'morpho/vault-withdraw-all';
 const templates = new Map([WITHDRAW, ALL].map((id) => [id, loadTemplate(ROOT, id, registry)]));
-const VAULT = 'hyperithm-usdc-apex-7777';
+const VAULT = 'hyperithm-usdc-apex-v1-7777';
 
 function safeTx(name: string): SafeTx {
   const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', `${name}.json`), 'utf8'));
@@ -94,7 +94,7 @@ test('a withdrawal of all is not a withdrawal of an amount, and the other way ro
 });
 
 test('a withdrawal from another vault is a mismatch', () => {
-  const result = check(safeTx('morpho-withdraw-all-apex'), card(withdrawAll('smokehouse-usdc')));
+  const result = check(safeTx('morpho-withdraw-all-apex'), card(withdrawAll('smokehouse-usdc-v1-f5bc')));
   assert.deepEqual(findings(result), ['multiSend[0].to', 'multiSend[1].multicall.bundle[0].data.erc4626Redeem.vault']);
 });
 
@@ -170,8 +170,8 @@ test('two withdrawals from one vault, one of them of all, cannot be judged', () 
   assert.equal(expectedChanges(resolved(tx, card(withdrawAll(), withdraw('1'))), templates, registry).kind, 'unverifiable');
 });
 
-const BOTH_ALL = card(withdrawAll('smokehouse-usdc', '20245327154'), withdrawAll('usual-boosted-usdc', '17322520385'));
-const ALL_THEN_AMOUNT = card(withdrawAll('smokehouse-usdc', '346769119920'), {
+const BOTH_ALL = card(withdrawAll('smokehouse-usdc-v1-f5bc', '20245327154'), withdrawAll('usual-boosted-usdc', '17322520385'));
+const ALL_THEN_AMOUNT = card(withdrawAll('smokehouse-usdc-v1-f5bc', '346769119920'), {
   template: WITHDRAW,
   values: { vault: 'usual-boosted-usdc', amount: '154000000000', 'max-shares': '139013506340509964396628' },
 });
@@ -190,13 +190,13 @@ test('two withdrawals in one multicall match a card with two operations, and eac
 
 test('the operations of a merged multicall must be on the card, in its order', () => {
   const tx = safeTx('morpho-withdraw-two-vaults-all');
-  assert.deepEqual(findings(check(tx, card(withdrawAll('usual-boosted-usdc'), withdrawAll('smokehouse-usdc')))), [
+  assert.deepEqual(findings(check(tx, card(withdrawAll('usual-boosted-usdc'), withdrawAll('smokehouse-usdc-v1-f5bc')))), [
     'multiSend[0].to',
     'multiSend[1].to',
     'multiSend[2].multicall.bundle[0].data.erc4626Redeem.vault',
     'multiSend[2].multicall.bundle[1].data.erc4626Redeem.vault',
   ]);
-  assert.deepEqual(findings(check(tx, card(withdrawAll('smokehouse-usdc')))), ['multiSend[1].to', 'multiSend[1].selector', 'multiSend[2].call']);
+  assert.deepEqual(findings(check(tx, card(withdrawAll('smokehouse-usdc-v1-f5bc')))), ['multiSend[1].to', 'multiSend[1].selector', 'multiSend[2].call']);
 });
 
 test('two redeems of all, from two vaults, match their effects simulated and from their receipt', async () => {
@@ -221,7 +221,7 @@ test('a redeem of all whose shares another transaction in the same block also mo
 });
 
 test('an allowance that falls is allowed, one that rises and stays open is a mismatch', () => {
-  const spender = registry.entries.get('general-adapter1')!.address;
+  const spender = registry.entries.get('general-adapter-1')!.address;
   const judge = (before: bigint, after: bigint): EffectVerdict => {
     const tx = safeTx('morpho-withdraw-all-apex');
     const observed = {
@@ -246,7 +246,7 @@ test('a card that allows fewer burned shares, or wants more assets, than the pri
 
 test('each operation of a merged multicall is held to its own card bound', () => {
   const tx = safeTx('morpho-withdraw-two-vaults-all');
-  assert.deepEqual(findings(check(tx, card(withdrawAll('smokehouse-usdc', '20245327154'), withdrawAll('usual-boosted-usdc', '17322520386')))), [
+  assert.deepEqual(findings(check(tx, card(withdrawAll('smokehouse-usdc-v1-f5bc', '20245327154'), withdrawAll('usual-boosted-usdc', '17322520386')))), [
     'multiSend[2].multicall.bundle[1].data.erc4626Redeem.minSharePriceE27',
   ]);
 });

@@ -5,7 +5,7 @@
       {
         "template": "morpho/vault-migrate-all",
         "values": {
-          "from": "smokehouse-usdc",
+          "from": "smokehouse-usdc-v1-f5bc",
           "to": "steakhouse-high-yield-usdc",
           "min-assets": "11959243449",
           "min-shares": "11619105060826236536810"

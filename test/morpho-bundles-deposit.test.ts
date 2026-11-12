@@ -80,7 +80,7 @@ test('a referral fee taken from the deposit is a mismatch', () => {
 test('a deposit for another vault is a mismatch at the vault', () => {
   const tx = safeTx('morpho-bundles-deposit');
   const prime = registry.entries.get('steakhouse-prime-usdc')!.address;
-  const apex = registry.entries.get('hyperithm-usdc-apex-0932')!.address;
+  const apex = registry.entries.get('hyperithm-usdc-apex-v2-9e2f')!.address;
   const result = check(replaceWord(tx, prime, apex), deposit('31583325527'));
   assert.deepEqual(result.kind === 'mismatch' ? result.findings.map((f) => f.arg) : result, ['vault']);
 });

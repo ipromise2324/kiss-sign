@@ -39,11 +39,6 @@
     }
   ],
   "reviews": {
-    "metamorpho-factory-v1-0/source.page": {
-      "status": "confirmed",
-      "text": "AI 用 headless Chrome 跑完腳本打開這一頁：「MetaMorpho Factory [OLD]」下一行就是 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101。程式讀的是沒跑腳本的原始 HTML，地址不在標籤後 100 字以內。",
-      "recommendation": "可以接受。想自己確認，用瀏覽器打開這頁搜尋 MetaMorpho Factory [OLD]。"
-    },
     "smokehouse-usdc-v1-f5bc/source.coingecko": {
       "status": "concern",
       "text": "CoinGecko 沒有列這個 vault 的股份代幣，很多 vault 都沒有。這個地址的主要證據是 Steakhouse 文件頁（程式讀到地址）和 MetaMorpho 舊版工廠回答 isMetaMorpho = true。",

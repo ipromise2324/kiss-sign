@@ -170,7 +170,7 @@ test('the registry: every labelled source page has its address next to its label
   assert.match(text, /bundler3 .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address 5 characters after "Bundler3"/);
   assert.match(text, /cctp-message-transmitter .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address \d+ characters after "Ethereum" under a heading naming "MessageTransmitter"/);
   assert.match(text, /multisend-1\.3\.0-eip155 .*\n(?: {2}.*\n)*? {2}github {5}agrees {2}commit ca9cb0d2d5f5 of safe-global\/safe-deployments is on the default branch main/);
-  assert.match(text, /hyperithm-usdc-apex-0932 .*\n(?: {2}.*\n)*? {2}url {8}FINDING the source URL holds the address/);
+  assert.match(text, /hyperithm-usdc-apex-v2-9e2f .*\n(?: {2}.*\n)*? {2}url {8}FINDING the source URL holds the address/);
 });
 
 test('an address in the label\'s own table row agrees; in another row, too far away, or past another address it is a finding', async () => {
@@ -444,7 +444,8 @@ test('the report lists the sites each protocol\'s sources use', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
   assert.match(text, /sites per protocol, for the signer to check each is the protocol's own:\n/);
   assert.match(text, /\n {2}safe\n {4}github\.com\/safe-global: multisend-1\.3\.0, multisend-1\.3\.0-eip155,/);
-  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}steakhouse\.financial: steakhouse-prime-usdc, smokehouse-usdc, steakhouse-high-yield-usdc\n/);
+  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}steakhouse\.financial: steakhouse-prime-usdc, steakhouse-high-yield-usdc\n/);
+  assert.match(text, /\n {2}steakhouse-financial\n {4}steakhouse\.financial: steakhouse-usdt-v1-cfba, smokehouse-usdc-v1-f5bc\n/);
 });
 
 test('the registry refuses a sourceLabel that is empty, padded, or too long', () => {
