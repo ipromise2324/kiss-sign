@@ -307,7 +307,7 @@ The hardened tier adds a computer that runs no AI and no kiss-sign. It runs Foun
 
 1. fetches the transaction with that nonce from the Safe Transaction Service;
 2. computes the domain hash, the message hash and the safeTxHash itself;
-3. splits a MultiSend into its calls;
+3. splits a MultiSend into its calls, and decodes again any call nested in another call's bytes whose function is in its `known-functions.txt`;
 4. checks each function name against the 4-byte selector of the call's data with `cast sig`;
 5. decodes each call with `cast decode-calldata`;
 6. labels every address with its name from `known-addresses.txt`.
@@ -326,7 +326,7 @@ The signer then compares the hashes with the hardware wallet's screen, and the d
 |---|---|
 | kiss-sign cannot make the signer sign something other than what the independent computer decodes. | That an address is the protocol's real contract. That stays on kiss-sign's checks, the report, and the signer's own address list. |
 | The hash math and which transaction is signed are checked without kiss-sign. | That the transaction does what the signer meant. Only kiss-sign compares the transaction with the card and simulates it. |
-| | That a call nested inside another call's bytes, such as a bundler's batch, is readable. Only MultiSend is split; nested calls show as bytes. |
+| | That every call is readable. A call nested inside another call's bytes, such as a bundler's batch, is decoded only when its selector is in the repository's `known-functions.txt`; any other is shown as an unknown function, loudly. |
 
 ## Known limits
 
