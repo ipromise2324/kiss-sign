@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { resolveCard } from '../src/card.ts';
 import { parseRegistry } from '../src/registry.ts';
 import type { Address } from '../src/safe/types.ts';
-import { TemplateError, parseTemplate, scopeEntries } from '../src/template/template.ts';
+import { TemplateError, calledProtocols, parseTemplate, scopeEntries } from '../src/template/template.ts';
 
 const registry = parseRegistry({
   usdc: { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', kind: 'token', source: 'https://developers.circle.com/stablecoins/usdc-contract-addresses', defillama: 'circle-usdc' },
@@ -68,4 +68,10 @@ test('template load counts a slug carried only through a factory, and not a vaul
     () => scoped('steakhouse-financial'),
     (e: unknown) => e instanceof TemplateError && e.message === 'card.vault.defillama: no registry vault belongs to the DefiLlama protocol "steakhouse-financial"',
   );
+});
+
+test("a vault called directly is grouped under its factory's protocol, a vault with no factory under its own", () => {
+  const called = (slug: string) => [...calledProtocols(scoped(slug), registry)].map(([protocol, entries]) => [protocol, entries.map((e) => e.name)]);
+  assert.deepEqual(called('morpho-blue'), [['morpho-blue', ['steakhouse-prime-usdc']]]);
+  assert.deepEqual(called('fluid-lending'), [['fluid-lending', ['fluid-fusdc']]]);
 });

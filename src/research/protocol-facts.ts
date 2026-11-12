@@ -8,7 +8,7 @@ import type { BlockRef } from '../chain/types.ts';
 import type { Market, Registry, RegistryEntry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { bindView, numbersOf } from '../simulate/effects.ts';
-import { callTargetEntries, calledProtocols, scopeEntries } from '../template/template.ts';
+import { callTargetEntries, calledProtocols, protocolOf, scopeEntries } from '../template/template.ts';
 import type { Fact, Template, TokenRef } from '../template/template.ts';
 import { DEFILLAMA_PROTOCOLS, ListingError } from './listings.ts';
 
@@ -70,7 +70,7 @@ export function factsScope(template: Template, registry: Registry, entries: read
   const reads = template.facts.flatMap((fact) => valuesOf(template, fact.field, registry).map((value) => ({ fact, value })));
   return {
     protocols: [...calledProtocols(template, registry)].map(([slug, contracts]) => ({ slug, contracts })),
-    unlisted: callTargetEntries(template, registry).filter((entry) => entry.kind !== 'token' && entry.defillama === undefined),
+    unlisted: callTargetEntries(template, registry).filter((entry) => entry.kind !== 'token' && protocolOf(entry, registry).slug === undefined),
     reads,
     tokens: entries.filter((entry) => entry.kind === 'token' || entry.kind === 'vault'),
   };

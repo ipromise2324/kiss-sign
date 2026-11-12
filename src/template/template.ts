@@ -17,7 +17,7 @@ export type EntryScope = { readonly registryKind: ContractKind; readonly protoco
  * The DefiLlama protocol an entry belongs to. An entry with a `factory` belongs to its factory's protocol, which the
  * chain proves through the factory's `instanceCheck`; its own `defillama` names the site that lists it, such as a curator's.
  */
-function protocolOf(entry: RegistryEntry, registry: Registry): { readonly slug: string | undefined; readonly why: string } {
+export function protocolOf(entry: RegistryEntry, registry: Registry): { readonly slug: string | undefined; readonly why: string } {
   const factory = entry.attributes.factory;
   if (factory === undefined) return { slug: entry.defillama, why: '' };
   return { slug: registry.entries.get(factory)?.defillama, why: ` (its factory ${factory})` };
@@ -686,11 +686,15 @@ export function callTargetEntries(template: Template, registry: Registry): Regis
   return [...names].map((name) => registry.entries.get(name) as RegistryEntry);
 }
 
-/** The DefiLlama protocols the template's calls go to, each with its call targets; a token's issuer is not such a protocol. */
+/**
+ * The DefiLlama protocols the template's calls go to, each with its call targets, an entry with a `factory` under its
+ * factory's protocol; a token's issuer is not such a protocol.
+ */
 export function calledProtocols(template: Template, registry: Registry): ReadonlyMap<string, readonly RegistryEntry[]> {
   const protocols = new Map<string, RegistryEntry[]>();
   for (const entry of callTargetEntries(template, registry)) {
-    if (entry.kind !== 'token' && entry.defillama !== undefined) protocols.set(entry.defillama, [...(protocols.get(entry.defillama) ?? []), entry]);
+    const { slug } = protocolOf(entry, registry);
+    if (entry.kind !== 'token' && slug !== undefined) protocols.set(slug, [...(protocols.get(slug) ?? []), entry]);
   }
   return protocols;
 }
