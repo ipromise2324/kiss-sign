@@ -74,8 +74,6 @@ export type Header = {
 
 export type StripItem = { readonly line: StripLine | 'providers'; readonly name: string; readonly state: State; readonly count: string | undefined; readonly explain: string };
 
-// ── 流程 ──
-
 export type Who = 'you-type' | 'you-pick' | 'fixed' | 'free';
 export type Chip = { readonly who: Who; readonly label: string };
 
@@ -105,8 +103,6 @@ export type Sequence = { readonly lifelines: readonly Lifeline[]; readonly arrow
 
 export type Flow = { readonly diagram: Sequence; readonly example: Inline | undefined; readonly calls: readonly CallBlock[]; readonly after: readonly AfterRow[] };
 
-// ── Protocol ──
-
 export type ProtocolRow = {
   readonly label: string;
   readonly value: Inline;
@@ -115,8 +111,6 @@ export type ProtocolRow = {
   readonly nested: readonly { readonly label: Inline; readonly value: Inline; readonly ai: AiText | undefined }[];
 };
 export type ProtocolBlock = { readonly read: string; readonly intro: AiText; readonly rows: readonly ProtocolRow[]; readonly sources: readonly { readonly label: string; readonly href: HttpsUrl | undefined }[] };
-
-// ── 待確認 ──
 
 export type ReviewRow = {
   readonly id: ResultId;
@@ -128,11 +122,7 @@ export type ReviewRow = {
 };
 export type Judgment = { readonly text: AiText; readonly recommendation: AiText };
 
-// ── 錢包顯示 ──
-
 export type WalletCall = { readonly n: number; readonly title: Inline; readonly rows: readonly { readonly label: Inline; readonly value: Inline }[] | 'no-descriptor' };
-
-// ── 地址 ──
 
 export type SourceLine =
   | { readonly by: 'program'; readonly label: string; readonly href: HttpsUrl | undefined; readonly state: State; readonly phrase: string | undefined }
@@ -150,8 +140,6 @@ export type AddressRow = {
   readonly sources: readonly SourceLine[];
 };
 
-// ── 過去交易 ──
-
 export type PastRecording = { readonly file: string; readonly count: string; readonly rows: readonly { readonly label: string; readonly value: Inline; readonly note: Inline }[] };
 
 /** Everything the HTML report reads beyond the Markdown report's inputs. */
@@ -160,8 +148,6 @@ export type HtmlInputs = ReportInputs & {
   /** The first recorded test transaction of the template, with its card. */
   readonly example: { readonly name: string; readonly tx: SafeTx; readonly card: ResolvedCard } | undefined;
 };
-
-// ─── Words ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const STRIP_NAMES: Readonly<Record<StripLine | 'providers', string>> = { sources: '地址來源', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', providers: '雙節點比對' };
 const CONFIDENCE_WORDS: Readonly<Record<Confidence, string>> = { high: '高信心', medium: '中信心', low: '低信心' };
@@ -262,8 +248,6 @@ const shortUrl = (url: HttpsUrl): string => {
   return label;
 };
 
-// ─── Context ─────────────────────────────────────────────────────────────────────────────────────────────────────────
-
 type Context = {
   readonly inputs: HtmlInputs;
   readonly template: Template;
@@ -316,8 +300,6 @@ function targetOf(rule: Rule, context: Context): { readonly label: string; reado
   return { label: name ?? `card.${rule.ref.field}${rule.ref.attribute === undefined ? '' : `.${rule.ref.attribute}`}`, names };
 }
 
-// ─── Who decides ─────────────────────────────────────────────────────────────────────────────────────────────────────
-
 const SHORT: Readonly<Record<Who, string>> = { 'you-type': '你填', 'you-pick': '你選', fixed: '固定', free: '不限' };
 
 function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly field: string | undefined } | undefined {
@@ -363,8 +345,6 @@ function chipsOf(node: ArgNode, template: Template): Chip[] {
   for (const leaf of found) byWho.set(leaf.who, [...(byWho.get(leaf.who) ?? []), leaf.node.name]);
   return [...byWho].map(([who, names]) => ({ who, label: `${names.join('、')} ${SHORT[who]}` }));
 }
-
-// ─── Argument rows ───────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** The card market field a `fields` rule binds whole, part by part. */
 function wholeMarket(rule: Rule, template: Template): string | undefined {
@@ -479,8 +459,6 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
   };
 }
 
-// ─── The example transaction ─────────────────────────────────────────────────────────────────────────────────────────
-
 /** Each argument's value in the example, keyed as `argumentTree` keys it; empty when any call does not decode. */
 function exampleValues(template: Template, tx: SafeTx): Map<string, AbiValue> {
   const values = new Map<string, AbiValue>();
@@ -508,8 +486,6 @@ function exampleValues(template: Template, tx: SafeTx): Map<string, AbiValue> {
   });
   return ok ? values : new Map();
 }
-
-// ─── Sections ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 function lifelines(context: Context): { readonly lines: Lifeline[]; readonly names: (readonly string[])[]; readonly callTo: number[] } {
   const { template, registry } = context;
@@ -940,8 +916,8 @@ function stripItems(ledger: Ledger): StripItem[] {
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
     sources: (p, c) =>
       p === c
-        ? `程式在 ${c} 個地址的來源頁、協議 API 和 CoinGecko 讀到同一個地址。`
-        : `${c - p} 個地址有結果要你看，見「待確認」。其餘 ${p} 個在來源頁、協議 API 和 CoinGecko 讀到同一個地址。`,
+        ? `程式在 ${c} 個地址的來源頁讀到登記的地址；有協議 API 或 CoinGecko 的，也是同一個地址。`
+        : `${c - p} 個地址有結果要你看，見「待確認」。其餘 ${p} 個在來源頁讀到登記的地址。`,
     abi: () => 'Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。',
     code: () => `每次簽名都確認這 ${subjects} 個合約還是研究時那份程式碼。被升級或換掉就擋下。`,
     params: (_, c) => `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`,

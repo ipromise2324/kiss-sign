@@ -147,7 +147,7 @@ async function writeGenerated(): Promise<void> {
   mkdirSync(dirname(mdPath), { recursive: true });
   writeFileSync(mdPath, renderReport(inputs, title));
   const written = [generatedPath(target)];
-  const html = generatedHtml(root, inputs);
+  const html = await generatedHtml(root, inputs, title);
   if (html !== undefined && 'template' in target) {
     writeFileSync(join(root, generatedHtmlPath(target.template)), html);
     written.push(generatedHtmlPath(target.template));
@@ -233,8 +233,8 @@ async function compareHtml(): Promise<boolean> {
   const committed = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined;
   let difference: string | undefined;
   try {
-    const { inputs } = await replayInputs(root, registry, target, compilers, suffixes);
-    difference = htmlDifference(committed, generatedHtml(root, inputs));
+    const { inputs, title } = await replayInputs(root, registry, target, compilers, suffixes);
+    difference = htmlDifference(committed, await generatedHtml(root, inputs, title));
   } catch (e) {
     if (!(e instanceof NotesError)) throw e;
     difference = `the program refuses notes.json: ${e.message}`;
