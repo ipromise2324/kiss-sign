@@ -1,15 +1,24 @@
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parseCard, resolveCard } from '../card.ts';
 import type { ResolvedCard } from '../card.ts';
+import { replayReader } from '../chain/recording.ts';
+import type { Exchange } from '../chain/recording.ts';
+import type { Read } from '../chain/reader.ts';
 import type { EventLog } from '../chain/types.ts';
 import { uintWord } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
-import type { Hex, SafeTx } from '../safe/types.ts';
-import { judgeEffects } from '../simulate/effects.ts';
+import { parseServiceTx } from '../safe/parse.ts';
+import type { Address, Hex, SafeTx } from '../safe/types.ts';
+import { endsNeeded, expectedChanges, judgeEffects, viewCalls } from '../simulate/effects.ts';
 import type { Observed } from '../simulate/effects.ts';
 import { EXECUTION_SUCCESS } from '../simulate/events.ts';
+import { simulateSafeTx } from '../simulate/simulate.ts';
 import type { Observation } from '../simulate/simulate.ts';
 import { checkTemplateFields, inspectTemplateFields } from './check.ts';
 import type { Leaf } from './check.ts';
+import { loadTemplate, parseTemplate } from './template.ts';
 import type { FreeClaim, Template } from './template.ts';
 
 /**
@@ -139,4 +148,47 @@ export async function checkPerturbations(
   }
   const failed = runs.filter((r) => r.outcome === 'unverifiable' || r.leaf.rule.kind !== 'free' || !ALLOWED[r.leaf.rule.claim].includes(r.outcome));
   return failed.length === 0 ? { kind: 'pass', runs } : { kind: 'fail', runs, failed };
+}
+
+export const PERTURB_DIR = join('testdata', 'perturb');
+
+/** A `pnpm perturb --record` file: the Safe transaction it changed, the card, any replacing template, and the chain's answers. */
+type PerturbRecording = {
+  readonly safeTx: string;
+  readonly card: unknown;
+  readonly template?: unknown;
+  readonly executed: { readonly number: string; readonly hash: Hex };
+  readonly parent: { readonly number: string; readonly hash: Hex };
+  readonly exchanges: readonly Exchange[];
+};
+
+const agreed = <T>(read: Read<T>, what: string): T => {
+  if (read.kind === 'unverifiable') throw new Error(`${what}: ${read.reason}`);
+  return read.value;
+};
+
+/**
+ * Runs `checkPerturbations` again on the recording `testdata/perturb/<name>.json`, offline: its card resolved against the
+ * repository's templates and registry, every copy simulated from the recorded chain answers on the recorded parent block.
+ */
+export async function replayPerturbRecording(repoRoot: string, name: string, registry: Registry): Promise<PerturbationReport> {
+  const recording = JSON.parse(readFileSync(join(repoRoot, PERTURB_DIR, `${name}.json`), 'utf8')) as PerturbRecording;
+  const fixture = JSON.parse(readFileSync(join(repoRoot, 'testdata', 'safe-tx', `${recording.safeTx}.json`), 'utf8'));
+  const tx = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
+  const card = parseCard(recording.card);
+  const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(repoRoot, op.template, registry)]));
+  if (recording.template !== undefined) {
+    const replacing = parseTemplate(recording.template, registry);
+    templates.set(replacing.id, replacing);
+  }
+  const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  if (resolution.kind === 'refused') throw new Error(`${PERTURB_DIR}/${name}.json: card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
+  const reader = replayReader(recording.exchanges);
+  const header = async (at: PerturbRecording['parent']) => agreed(await reader.header({ number: BigInt(at.number), hash: at.hash }), `${PERTURB_DIR}/${name}.json block ${at.number}`);
+  const [parent, executed] = [await header(recording.parent), await header(recording.executed)];
+  const expectations = expectedChanges(resolution.card, templates, registry);
+  const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset): asset is Address => asset !== 'eth') : [];
+  return checkPerturbations(tx, resolution.card, templates, registry, (copy) =>
+    simulateSafeTx(reader, { tx: copy, parent, time: executed.time, watch, ends: endsNeeded(expectations), views: viewCalls(resolution.card, templates, registry) }),
+  );
 }
