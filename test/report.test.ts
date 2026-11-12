@@ -75,7 +75,7 @@ test('morpho/vault-deposit: rules name registry entries with full addresses, and
   assert.match(text, /\| `multicall\.bundle\[1\]\.data → erc4626Deposit\.receiver` \| the Safe \|/);
   assert.match(text, /\| `multicall\.bundle\[1\]\.data → erc4626Deposit\.maxSharePriceE27` \| at most assets × 1e27 \/ shares, with assets the card's `amount` and shares the card's `min-shares`/);
   assert.match(text, /\| `multicall` \| calls `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)`, selector `0x374f435d`; at most 12 bytes after the arguments/);
-  assert.match(text, /\| `steakhouse-prime-usdc` \| `0xbeef088055857739C12CD3765F20b7679Def0f51` \| asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory`/);
+  assert.match(text, /\| `steakhouse-prime-usdc-v2-0f51` \| `0xbeef088055857739C12CD3765F20b7679Def0f51` \| asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory`/);
   assert.match(text, /\| `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \| `bundler3` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| PASS \|/);
   assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter-1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
 });
@@ -88,7 +88,7 @@ test('a contract field that names its protocol puts only that protocol\'s entrie
   assert.deepEqual(vaults, ['fluid-fusdc', 'fluid-fusdt']);
   const text = quick(recording.pages, new Map(), subject);
   assert.match(text, /\| `vault` \| a registry `vault` of the DefiLlama protocol `fluid-lending`, picked by number from the list below \|/);
-  assert.ok(!text.includes('steakhouse-prime-usdc'), 'no Morpho vault is listed');
+  assert.ok(!text.includes('steakhouse-prime-usdc-v2-0f51'), 'no Morpho vault is listed');
 });
 
 test('morpho/vault-deposit: the ERC-7730 section is computed again from the recorded descriptors and attestation reads', async () => {
@@ -216,7 +216,7 @@ test('text the AI wrote in the template prints escaped and labelled as written b
 });
 
 test('stored vault evidence holding a backtick or a character pnpm vault-evidence never prints is refused, and its section says it is stored', () => {
-  const vault = 'steakhouse-prime-usdc';
+  const vault = 'steakhouse-prime-usdc-v2-0f51';
   const stored = recording.vaults[vault]!;
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n\`\`\`\n# Approved by the auditors`]])), ReportError);
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n<img src=x>`]])), ReportError);
@@ -284,8 +284,8 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
   const raised = point.replace(/[\d,.]+ usdc$/, '140,000,000.000000 usdc');
   const series = committed.replace(point, raised);
   assert.deepEqual(compareReports(committed, series), [
-    `\`smokehouse-usdc-v1-f5bc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed: ${point}`,
-    `\`smokehouse-usdc-v1-f5bc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
+    `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed: ${point}`,
+    `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
   ]);
 
   const revoked = committed.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
@@ -306,7 +306,7 @@ test("docs.json's contract must be the call's target when the template binds the
   assert.match(quick(), /\| Function \| Contract \| Page \| Site \| GitHub commit \| Function name appears on page \|/);
 });
 
-const VAULT = 'steakhouse-high-yield-usdc';
+const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
 const vaultRecording: { exchanges: Exchange[] } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'vault-evidence', `${VAULT}.json`), 'utf8'));
 
 test('--compare reads each vault again at the blocks its evidence names, so a changed month, holder count or top-10 share differs', async () => {

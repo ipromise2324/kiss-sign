@@ -25,7 +25,7 @@ const DEPOSIT_PATH = 'multiSend[1].multicall.bundle[1].data.erc4626Deposit';
 const templatesOf = (t: Template) => new Map([[t.id, t]]);
 
 function card(templates: ReadonlyMap<string, Template>, amount = '1800000000180'): ResolvedCard {
-  const operations = [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount, 'min-shares': '1741863305677219101283940' } }];
+  const operations = [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': '1741863305677219101283940' } }];
   const result = resolveCard({ operations }, { templates, registry, addressBook: new Map(), safe: deposit.safe });
   assert.equal(result.kind, 'resolved');
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;

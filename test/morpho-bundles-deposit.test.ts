@@ -30,7 +30,7 @@ function resolved(tx: SafeTx, card: Card): ResolvedCard {
 
 const MIN_SHARES: Record<string, string> = { '31583325527': '30442521166571443751074', '2700000000000': '2605667274057129893492827' };
 const deposit = (amount: string, minShares = MIN_SHARES[amount] ?? '1'): Card => ({
-  operations: [{ template: ID, values: { vault: 'steakhouse-prime-usdc', amount, 'min-shares': minShares } }],
+  operations: [{ template: ID, values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': minShares } }],
 });
 const check = (tx: SafeTx, card: Card): FieldCheck => checkTemplateFields(tx, resolved(tx, card), templates, registry);
 
@@ -79,7 +79,7 @@ test('a referral fee taken from the deposit is a mismatch', () => {
 
 test('a deposit for another vault is a mismatch at the vault', () => {
   const tx = safeTx('morpho-bundles-deposit');
-  const prime = registry.entries.get('steakhouse-prime-usdc')!.address;
+  const prime = registry.entries.get('steakhouse-prime-usdc-v2-0f51')!.address;
   const apex = registry.entries.get('hyperithm-usdc-apex-v2-9e2f')!.address;
   const result = check(replaceWord(tx, prime, apex), deposit('31583325527'));
   assert.deepEqual(result.kind === 'mismatch' ? result.findings.map((f) => f.arg) : result, ['vault']);

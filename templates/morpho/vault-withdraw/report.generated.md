@@ -14,11 +14,11 @@ Written by `pnpm report morpho/vault-withdraw --record` from `templates/morpho/v
 
 | Name | Address | Attributes |
 | --- | --- | --- |
-| `steakhouse-prime-usdc` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory` `0xA1D94F746dEfa1928926b84fB2596c06926C0405` |
-| `usual-boosted-usdc` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `metamorpho-factory-v1-0` `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` |
+| `steakhouse-prime-usdc-v2-0f51` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory` `0xA1D94F746dEfa1928926b84fB2596c06926C0405` |
+| `usual-boosted-usdc-v1-3a3d` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `metamorpho-factory-v1-0` `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` |
 | `fluid-fusdc` | `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |
 | `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | asset `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` |
-| `steakhouse-high-yield-usdc` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory` `0xA1D94F746dEfa1928926b84fB2596c06926C0405` |
+| `steakhouse-high-yield-usdc-v2-a757` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory` `0xA1D94F746dEfa1928926b84fB2596c06926C0405` |
 | `steakhouse-usdt-v1-cfba` | `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa` | asset `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`; factory `metamorpho-factory-v1-0` `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` |
 | `smokehouse-usdc-v1-f5bc` | `0xBEeFFF209270748ddd194831b3fa287a5386f5bC` | asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `metamorpho-factory-v1-0` `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` |
 | `smokehouse-usdt-v1-7484` | `0xA0804346780b4c2e3bE118ac957D1DB82F9d7484` | asset `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`; factory `metamorpho-factory-v1-1` `0x1897A8997241C1cD4bD0698647e4EB7213535c24` |
@@ -31,7 +31,7 @@ Written by `pnpm report morpho/vault-withdraw --record` from `templates/morpho/v
 
 | Field | Rule |
 | --- | --- |
-| `to` | the card's `vault`: one of `steakhouse-prime-usdc` `0xbeef088055857739C12CD3765F20b7679Def0f51`, `usual-boosted-usdc` `0xd63070114470f685b75B74D60EEc7c1113d33a3D`, `fluid-fusdc` `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`, `fluid-fusdt` `0x5C20B550819128074FD538Edf79791733ccEdd18`, `steakhouse-high-yield-usdc` `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`, `steakhouse-usdt-v1-cfba` `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa`, `smokehouse-usdc-v1-f5bc` `0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, `smokehouse-usdt-v1-7484` `0xA0804346780b4c2e3bE118ac957D1DB82F9d7484`, `hyperithm-usdc-apex-v1-7777` `0x777791C4d6DC2CE140D00D2828a7C93503c67777`, `hyperithm-usdc-apex-v2-9e2f` `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` |
+| `to` | the card's `vault`: one of `steakhouse-prime-usdc-v2-0f51` `0xbeef088055857739C12CD3765F20b7679Def0f51`, `usual-boosted-usdc-v1-3a3d` `0xd63070114470f685b75B74D60EEc7c1113d33a3D`, `fluid-fusdc` `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`, `fluid-fusdt` `0x5C20B550819128074FD538Edf79791733ccEdd18`, `steakhouse-high-yield-usdc-v2-a757` `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`, `steakhouse-usdt-v1-cfba` `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa`, `smokehouse-usdc-v1-f5bc` `0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, `smokehouse-usdt-v1-7484` `0xA0804346780b4c2e3bE118ac957D1DB82F9d7484`, `hyperithm-usdc-apex-v1-7777` `0x777791C4d6DC2CE140D00D2828a7C93503c67777`, `hyperithm-usdc-apex-v2-9e2f` `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` |
 | `value` | constant `0` |
 | `approve` | calls `approve(address,uint256)`, selector `0x095ea7b3`; at most 8 bytes after the arguments; written by the AI in the template: the Morpho app appends a 4-byte timestamp and a 4-byte origin tag, as on multicall; approve reads only its two arguments |
 | `approve.spender` | registry `general-adapter-1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` |
@@ -47,7 +47,7 @@ Written by `pnpm report morpho/vault-withdraw --record` from `templates/morpho/v
 | `multicall.bundle` | exactly 1 item |
 | `multicall.bundle[0].to` | registry `general-adapter-1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` |
 | `multicall.bundle[0].data → erc4626Withdraw` | calls `erc4626Withdraw(address,uint256,uint256,address,address)`, selector `0xc9565706`; no bytes after the arguments |
-| `multicall.bundle[0].data → erc4626Withdraw.vault` | the card's `vault`: one of `steakhouse-prime-usdc` `0xbeef088055857739C12CD3765F20b7679Def0f51`, `usual-boosted-usdc` `0xd63070114470f685b75B74D60EEc7c1113d33a3D`, `fluid-fusdc` `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`, `fluid-fusdt` `0x5C20B550819128074FD538Edf79791733ccEdd18`, `steakhouse-high-yield-usdc` `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`, `steakhouse-usdt-v1-cfba` `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa`, `smokehouse-usdc-v1-f5bc` `0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, `smokehouse-usdt-v1-7484` `0xA0804346780b4c2e3bE118ac957D1DB82F9d7484`, `hyperithm-usdc-apex-v1-7777` `0x777791C4d6DC2CE140D00D2828a7C93503c67777`, `hyperithm-usdc-apex-v2-9e2f` `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` |
+| `multicall.bundle[0].data → erc4626Withdraw.vault` | the card's `vault`: one of `steakhouse-prime-usdc-v2-0f51` `0xbeef088055857739C12CD3765F20b7679Def0f51`, `usual-boosted-usdc-v1-3a3d` `0xd63070114470f685b75B74D60EEc7c1113d33a3D`, `fluid-fusdc` `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`, `fluid-fusdt` `0x5C20B550819128074FD538Edf79791733ccEdd18`, `steakhouse-high-yield-usdc-v2-a757` `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`, `steakhouse-usdt-v1-cfba` `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa`, `smokehouse-usdc-v1-f5bc` `0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, `smokehouse-usdt-v1-7484` `0xA0804346780b4c2e3bE118ac957D1DB82F9d7484`, `hyperithm-usdc-apex-v1-7777` `0x777791C4d6DC2CE140D00D2828a7C93503c67777`, `hyperithm-usdc-apex-v2-9e2f` `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` |
 | `multicall.bundle[0].data → erc4626Withdraw.assets` | the card's `amount` |
 | `multicall.bundle[0].data → erc4626Withdraw.minSharePriceE27` | at least assets × 1e27 / shares, with assets the card's `amount` and shares the card's `max-shares` |
 | `multicall.bundle[0].data → erc4626Withdraw.receiver` | the Safe |
@@ -62,7 +62,7 @@ Several operations on one card share this call; written by the AI in the templat
 
 | Side | Token | Amount |
 | --- | --- | --- |
-| the Safe gives | the card's `vault`: one of `steakhouse-prime-usdc` `0xbeef088055857739C12CD3765F20b7679Def0f51`, `usual-boosted-usdc` `0xd63070114470f685b75B74D60EEc7c1113d33a3D`, `fluid-fusdc` `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`, `fluid-fusdt` `0x5C20B550819128074FD538Edf79791733ccEdd18`, `steakhouse-high-yield-usdc` `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`, `steakhouse-usdt-v1-cfba` `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa`, `smokehouse-usdc-v1-f5bc` `0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, `smokehouse-usdt-v1-7484` `0xA0804346780b4c2e3bE118ac957D1DB82F9d7484`, `hyperithm-usdc-apex-v1-7777` `0x777791C4d6DC2CE140D00D2828a7C93503c67777`, `hyperithm-usdc-apex-v2-9e2f` `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | more than nothing |
+| the Safe gives | the card's `vault`: one of `steakhouse-prime-usdc-v2-0f51` `0xbeef088055857739C12CD3765F20b7679Def0f51`, `usual-boosted-usdc-v1-3a3d` `0xd63070114470f685b75B74D60EEc7c1113d33a3D`, `fluid-fusdc` `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33`, `fluid-fusdt` `0x5C20B550819128074FD538Edf79791733ccEdd18`, `steakhouse-high-yield-usdc-v2-a757` `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`, `steakhouse-usdt-v1-cfba` `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa`, `smokehouse-usdc-v1-f5bc` `0xBEeFFF209270748ddd194831b3fa287a5386f5bC`, `smokehouse-usdt-v1-7484` `0xA0804346780b4c2e3bE118ac957D1DB82F9d7484`, `hyperithm-usdc-apex-v1-7777` `0x777791C4d6DC2CE140D00D2828a7C93503c67777`, `hyperithm-usdc-apex-v2-9e2f` `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | more than nothing |
 | the Safe gets | the `asset` of the card's `vault`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` | the card's `amount` |
 
 ## Official documentation
@@ -71,25 +71,25 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 | Function | Contract | Page | Site | GitHub commit | Function name appears on page |
 | --- | --- | --- | --- | --- | --- |
-| `approve(address,uint256)` | `steakhouse-prime-usdc` | <https://github.com/morpho-org/vault-v2/blob/ae294f22fcf8b5306f99101e23d8ec963e3116d1/src/VaultV2.sol> | FINDING | PASS | PASS |
+| `approve(address,uint256)` | `steakhouse-prime-usdc-v2-0f51` | <https://github.com/morpho-org/vault-v2/blob/ae294f22fcf8b5306f99101e23d8ec963e3116d1/src/VaultV2.sol> | FINDING | PASS | PASS |
 | `multicall((address,bytes,uint256,bool,bytes32)[])` | `bundler3` | <https://docs.morpho.org/developers/contracts/bundles/> | PASS | n/a | PASS |
 | `erc4626Withdraw(address,uint256,uint256,address,address)` | `general-adapter-1` | <https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol> | FINDING | PASS | PASS |
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt bundler3 steakhouse-prime-usdc vault-v2-factory usual-boosted-usdc fluid-fusdc fluid-fusdt steakhouse-high-yield-usdc general-adapter-1 metamorpho-factory-v1-0 metamorpho-factory-v1-1 steakhouse-usdt-v1-cfba smokehouse-usdc-v1-f5bc smokehouse-usdt-v1-7484 hyperithm-usdc-apex-v1-7777 hyperithm-usdc-apex-v2-9e2f` prints what each check compared.
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt bundler3 steakhouse-prime-usdc-v2-0f51 vault-v2-factory usual-boosted-usdc-v1-3a3d fluid-fusdc fluid-fusdt steakhouse-high-yield-usdc-v2-a757 general-adapter-1 metamorpho-factory-v1-0 metamorpho-factory-v1-1 steakhouse-usdt-v1-cfba smokehouse-usdc-v1-f5bc smokehouse-usdt-v1-7484 hyperithm-usdc-apex-v1-7777 hyperithm-usdc-apex-v2-9e2f` prints what each check compared.
 
 | Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
 | `bundler3` | `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | router | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `steakhouse-prime-usdc` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | vault | <https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant> | FINDING | PASS | n/a | PASS |
+| `steakhouse-prime-usdc-v2-0f51` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | vault | <https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant> | FINDING | PASS | n/a | PASS |
 | `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `usual-boosted-usdc` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | vault | <https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc> | PASS | PASS | n/a | FINDING |
+| `usual-boosted-usdc-v1-3a3d` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | vault | <https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc> | PASS | PASS | n/a | FINDING |
 | `fluid-fusdc` | `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | vault | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | FINDING | FINDING | PASS | PASS |
 | `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | vault | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | FINDING | FINDING | PASS | PASS |
-| `steakhouse-high-yield-usdc` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | vault | <https://www.steakhouse.financial/docs/products/vault-products/current/high-yield-instant> | FINDING | PASS | n/a | PASS |
+| `steakhouse-high-yield-usdc-v2-a757` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | vault | <https://www.steakhouse.financial/docs/products/vault-products/current/high-yield-instant> | FINDING | PASS | n/a | PASS |
 | `general-adapter-1` | `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` | adapter | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
 | `metamorpho-factory-v1-0` | `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
 | `metamorpho-factory-v1-1` | `0x1897A8997241C1cD4bD0698647e4EB7213535c24` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
@@ -113,12 +113,12 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `usdc` | 18963716 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS |
 | `usdt` | 4634748 | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | none | PASS |
 | `bundler3` | 21643807 | `0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454` | none | PASS |
-| `steakhouse-prime-usdc` | 23671611 | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | none | PASS |
+| `steakhouse-prime-usdc-v2-0f51` | 23671611 | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | none | PASS |
 | `vault-v2-factory` | 23375073 | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | none | PASS |
-| `usual-boosted-usdc` | 20377233 | `0x962bef2305e60f683bf25cd0f822341c121ce763442e4c674a6cc746801febaa` | none | PASS |
+| `usual-boosted-usdc-v1-3a3d` | 20377233 | `0x962bef2305e60f683bf25cd0f822341c121ce763442e4c674a6cc746801febaa` | none | PASS |
 | `fluid-fusdc` | 19247609 | `0x131b2014b67d86e5a1fcd6be7b6817b76ae9ac1663266f88366e526666297828` | none | PASS |
 | `fluid-fusdt` | 19247666 | `0x662b760b02d5258965404cd8daca2c1ce5ef5567417cedec5a0acf895b775195` | none | PASS |
-| `steakhouse-high-yield-usdc` | 23671563 | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | none | PASS |
+| `steakhouse-high-yield-usdc-v2-a757` | 23671563 | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | none | PASS |
 | `general-adapter-1` | 21872136 | `0xf9cc71076c5b97dca248a8085a0faaad24a5768948474306a20e345a739dd74c` | none | PASS |
 | `metamorpho-factory-v1-0` | 18925584 | `0x948cb0a2bf347795e99af306e37423dacabb048db2c650b34cd800d1dffba283` | none | PASS |
 | `metamorpho-factory-v1-1` | 21439510 | `0xc96dffc14441bb58cc55e7bdb1382f87dc718ffd44927f304177f235e94fa004` | none | PASS |
@@ -137,12 +137,12 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | PROVEN | none | `TetherToken`, solc `0.4.18+commit.9cf6e910` | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26399489 |
 | `bundler3` | `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | PROVEN | none | `Bundler3`, solc `0.8.28+commit.7893614a` | `0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454` | PASS | 0 immutable, 0 library spans masked | 26399583 |
-| `steakhouse-prime-usdc` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26386376 |
+| `steakhouse-prime-usdc-v2-0f51` | `0xbeef088055857739C12CD3765F20b7679Def0f51` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26386376 |
 | `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | PROVEN | none | `VaultV2Factory`, solc `0.8.28+commit.7893614a` | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | PASS | 0 immutable, 0 library spans masked | 26399583 |
-| `usual-boosted-usdc` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | PROVEN | none | `MetaMorpho`, solc `0.8.21+commit.d9974bed` | `0x962bef2305e60f683bf25cd0f822341c121ce763442e4c674a6cc746801febaa` | PASS | 32 immutable, 0 library spans masked | 26386376 |
+| `usual-boosted-usdc-v1-3a3d` | `0xd63070114470f685b75B74D60EEc7c1113d33a3D` | PROVEN | none | `MetaMorpho`, solc `0.8.21+commit.d9974bed` | `0x962bef2305e60f683bf25cd0f822341c121ce763442e4c674a6cc746801febaa` | PASS | 32 immutable, 0 library spans masked | 26386376 |
 | `fluid-fusdc` | `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | PROVEN | none | `fToken`, solc `0.8.21+commit.d9974bed` | `0x131b2014b67d86e5a1fcd6be7b6817b76ae9ac1663266f88366e526666297828` | PASS | 38 immutable, 0 library spans masked | 26384739 |
 | `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | PROVEN | none | `fToken`, solc `0.8.21+commit.d9974bed` | `0x662b760b02d5258965404cd8daca2c1ce5ef5567417cedec5a0acf895b775195` | PASS | 38 immutable, 0 library spans masked | 26384738 |
-| `steakhouse-high-yield-usdc` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26386376 |
+| `steakhouse-high-yield-usdc-v2-a757` | `0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26386376 |
 | `general-adapter-1` | `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` | PROVEN | none | `EthereumGeneralAdapter1`, solc `0.8.28+commit.7893614a` | `0xf9cc71076c5b97dca248a8085a0faaad24a5768948474306a20e345a739dd74c` | PASS | 58 immutable, 0 library spans masked | 26399583 |
 | `metamorpho-factory-v1-0` | `0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101` | PROVEN | none | `MetaMorphoFactory`, solc `0.8.21+commit.d9974bed` | `0x948cb0a2bf347795e99af306e37423dacabb048db2c650b34cd800d1dffba283` | PASS | 2 immutable, 0 library spans masked | 26399583 |
 | `metamorpho-factory-v1-1` | `0x1897A8997241C1cD4bD0698647e4EB7213535c24` | PROVEN | none | `MetaMorphoV1_1Factory`, solc `0.8.26+commit.8a97fa7a` | `0xc96dffc14441bb58cc55e7bdb1382f87dc718ffd44927f304177f235e94fa004` | PASS | 2 immutable, 0 library spans masked | 26399583 |
@@ -156,11 +156,11 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `pnpm test`; `pnpm report --compare` reads it again at the blocks it names.
 
-### `steakhouse-prime-usdc`
+### `steakhouse-prime-usdc-v2-0f51`
 
 ```text
 admitted     vault-v2-factory answered isVaultV2(address) = true at block 26393013
-vault        steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51
+vault        steakhouse-prime-usdc-v2-0f51 0xbeef088055857739C12CD3765F20b7679Def0f51
 latest block 26393013 0x596b43b1dc0ca951fdc36c446a6fe28cfbfc50002ff725225337da26c2ee4ca4
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
@@ -183,11 +183,11 @@ holders      778 addresses hold shares at block 26393013, of 1454 that ever rece
 top 10       hold 52.75% of the shares; each: 18.86%, 8.55%, 6.07%, 4.61%, 3.31%, 2.82%, 2.33%, 2.30%, 2.29%, 1.61%
 ```
 
-### `usual-boosted-usdc`
+### `usual-boosted-usdc-v1-3a3d`
 
 ```text
 admitted     metamorpho-factory-v1-0 answered isMetaMorpho(address) = true at block 26393023
-vault        usual-boosted-usdc 0xd63070114470f685b75B74D60EEc7c1113d33a3D
+vault        usual-boosted-usdc-v1-3a3d 0xd63070114470f685b75B74D60EEc7c1113d33a3D
 latest block 26393023 0xb6af02e03dc736ea465955727a9dbe942fc1fc1e0de404e1cb1506f25548bb40
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
@@ -264,11 +264,11 @@ holders      1374 addresses hold shares at block 26393033, of 6770 that ever rec
 top 10       hold 37.25% of the shares; each: 6.33%, 5.09%, 4.35%, 4.07%, 3.81%, 3.52%, 2.94%, 2.45%, 2.42%, 2.27%
 ```
 
-### `steakhouse-high-yield-usdc`
+### `steakhouse-high-yield-usdc-v2-a757`
 
 ```text
 admitted     vault-v2-factory answered isVaultV2(address) = true at block 26393036
-vault        steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757
+vault        steakhouse-high-yield-usdc-v2-a757 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757
 latest block 26393036 0x1c7e2291508c761154ee3873da69aae006683c9ee5984f5ff81c24dc4bb6afc7
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
@@ -420,7 +420,7 @@ senders, of 165 transactions studied:
 by proven Safes, the whole template in one transaction:
 fit the template's shape: 0 transactions from 0 Safes; misfits: 1 from 1 Safe
 misfits, by reason:
-  1 from 1 Safe: calls steakhouse-high-yield-usdc.0xb460af94
+  1 from 1 Safe: calls steakhouse-high-yield-usdc-v2-a757.0xb460af94
     e.g. 0x254503d4cab1b0f8fd8c6056480d219a6e98c755b446329ce33b007e9c172dfe
 by EOAs, call 2 of 2 (multicall) as its own transaction:
 fit the call's shape: 0 transactions from 0 EOAs; misfits: 32 from 31 EOAs
@@ -433,7 +433,7 @@ misfits, by reason:
 
 ## ERC-7730
 
-`pnpm erc7730 usdc usdt bundler3 steakhouse-prime-usdc vault-v2-factory usual-boosted-usdc fluid-fusdc fluid-fusdt steakhouse-high-yield-usdc general-adapter-1 metamorpho-factory-v1-0 metamorpho-factory-v1-1 steakhouse-usdt-v1-cfba smokehouse-usdc-v1-f5bc smokehouse-usdt-v1-7484 hyperithm-usdc-apex-v1-7777 hyperithm-usdc-apex-v2-9e2f`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdc usdt bundler3 steakhouse-prime-usdc-v2-0f51 vault-v2-factory usual-boosted-usdc-v1-3a3d fluid-fusdc fluid-fusdt steakhouse-high-yield-usdc-v2-a757 general-adapter-1 metamorpho-factory-v1-0 metamorpho-factory-v1-1 steakhouse-usdt-v1-cfba smokehouse-usdc-v1-f5bc smokehouse-usdt-v1-7484 hyperithm-usdc-apex-v1-7777 hyperithm-usdc-apex-v2-9e2f`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -469,7 +469,7 @@ bundler3 0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245 (router)
     field      #.bundle.[].data calldata
   attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
 
-steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51 (vault)
+steakhouse-prime-usdc-v2-0f51 0xbeef088055857739C12CD3765F20b7679Def0f51 (vault)
   descriptor   registry/morpho/calldata-steakhouse_financial-steakUSDC-v2-1.json
   applies      by exact address (context.contract.deployments lists it on chain 1)
   index        index.calldata.json names this file
@@ -499,7 +499,7 @@ vault-v2-factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405 (factory)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 
-usual-boosted-usdc 0xd63070114470f685b75B74D60EEc7c1113d33a3D (vault)
+usual-boosted-usdc-v1-3a3d 0xd63070114470f685b75B74D60EEc7c1113d33a3D (vault)
   descriptor   registry/morpho/calldata-mev_capital-USUALUSDC+.json
   applies      by exact address (context.contract.deployments lists it on chain 1)
   index        index.calldata.json names this file
@@ -534,7 +534,7 @@ fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18 (vault)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 
-steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757 (vault)
+steakhouse-high-yield-usdc-v2-a757 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757 (vault)
   descriptor   registry/morpho/calldata-steakhouse_financial-bbqUSDC-v2-1.json
   applies      by exact address (context.contract.deployments lists it on chain 1)
   index        index.calldata.json names this file

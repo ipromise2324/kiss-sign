@@ -34,7 +34,7 @@ test('the registry: Circle, Tether, Safe and Morpho sources agree with DefiLlama
   assert.match(text, /coingecko {2}agrees {2}CoinGecko lists usd-coin \(USDC, "USDC"\) at this address, the coin the entry names/);
   assert.match(text, /multisend-call-only-1\.4\.1 .*\n.*\n {2}defillama {2}agrees {2}GitHub org safe-global is one safe \(Safe\) names: safe-global/);
   assert.match(text, /bundler3 .*\n.*\n {2}defillama {2}agrees {2}source domain morpho\.org equals morpho-blue/);
-  assert.match(text, /steakhouse-prime-usdc .*\n.*\n.*\n {2}coingecko {2}agrees {2}CoinGecko lists steakhouse-usdc \(STEAKUSDC/);
+  assert.match(text, /steakhouse-prime-usdc-v2-0f51 .*\n.*\n.*\n {2}coingecko {2}agrees {2}CoinGecko lists steakhouse-usdc \(STEAKUSDC/);
   for (const [name, entry] of registry.entries) {
     if (entry.kind === 'token') assert.match(text, new RegExp(`${name} .*\\n.*\\n.*\\n {2}coingecko {2}agrees`), name);
   }
@@ -444,8 +444,8 @@ test('the report lists the sites each protocol\'s sources use', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
   assert.match(text, /sites per protocol, for the signer to check each is the protocol's own:\n/);
   assert.match(text, /\n {2}safe\n {4}github\.com\/safe-global: multisend-1\.3\.0, multisend-1\.3\.0-eip155,/);
-  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}steakhouse\.financial: steakhouse-prime-usdc, steakhouse-high-yield-usdc\n/);
-  assert.match(text, /\n {2}steakhouse-financial\n {4}steakhouse\.financial: steakhouse-usdt-v1-cfba, smokehouse-usdc-v1-f5bc\n/);
+  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {2}steakhouse-financial\n/);
+  assert.match(text, /\n {2}steakhouse-financial\n {4}steakhouse\.financial: steakhouse-prime-usdc-v2-0f51, steakhouse-high-yield-usdc-v2-a757, steakhouse-usdt-v1-cfba, smokehouse-usdc-v1-f5bc\n/);
 });
 
 test('the registry refuses a sourceLabel that is empty, padded, or too long', () => {

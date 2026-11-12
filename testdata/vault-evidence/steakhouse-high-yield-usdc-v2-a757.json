@@ -1,5 +1,5 @@
 {
-  "vault": "steakhouse-high-yield-usdc",
+  "vault": "steakhouse-high-yield-usdc-v2-a757",
   "exchanges": [
     {
       "method": "eth_blockNumber",

@@ -5,7 +5,7 @@
       {
         "template": "morpho/vault-deposit",
         "values": {
-          "vault": "steakhouse-prime-usdc",
+          "vault": "steakhouse-prime-usdc-v2-0f51",
           "amount": "1800000000180",
           "min-shares": "1741863305677219101283940"
         }

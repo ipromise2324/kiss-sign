@@ -14,7 +14,7 @@ const registry = parseRegistry({
     defillama: 'morpho-blue',
     instanceCheck: 'isVaultV2(address)',
   },
-  'steakhouse-prime-usdc': {
+  'steakhouse-prime-usdc-v2-0f51': {
     address: '0xbeef088055857739C12CD3765F20b7679Def0f51',
     kind: 'vault',
     source: 'https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant',
@@ -49,11 +49,11 @@ function resolve(slug: string, vault: string) {
 }
 
 test('a vault with a factory belongs to its factory\'s protocol, not to the curator its own slug names', () => {
-  assert.equal(resolve('morpho-blue', 'steakhouse-prime-usdc'), 'resolved');
-  assert.deepEqual(scopeEntries({ registryKind: 'vault', protocol: 'morpho-blue' }, registry).map((e) => e.name), ['steakhouse-prime-usdc']);
-  assert.deepEqual(resolve('fluid-lending', 'steakhouse-prime-usdc'), {
+  assert.equal(resolve('morpho-blue', 'steakhouse-prime-usdc-v2-0f51'), 'resolved');
+  assert.deepEqual(scopeEntries({ registryKind: 'vault', protocol: 'morpho-blue' }, registry).map((e) => e.name), ['steakhouse-prime-usdc-v2-0f51']);
+  assert.deepEqual(resolve('fluid-lending', 'steakhouse-prime-usdc-v2-0f51'), {
     reason: 'wrong-protocol',
-    detail: 'steakhouse-prime-usdc is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending',
+    detail: 'steakhouse-prime-usdc-v2-0f51 is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending',
   });
 });
 
@@ -72,6 +72,6 @@ test('template load counts a slug carried only through a factory, and not a vaul
 
 test("a vault called directly is grouped under its factory's protocol, a vault with no factory under its own", () => {
   const called = (slug: string) => [...calledProtocols(scoped(slug), registry)].map(([protocol, entries]) => [protocol, entries.map((e) => e.name)]);
-  assert.deepEqual(called('morpho-blue'), [['morpho-blue', ['steakhouse-prime-usdc']]]);
+  assert.deepEqual(called('morpho-blue'), [['morpho-blue', ['steakhouse-prime-usdc-v2-0f51']]]);
   assert.deepEqual(called('fluid-lending'), [['fluid-lending', ['fluid-fusdc']]]);
 });

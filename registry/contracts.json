@@ -131,12 +131,12 @@
       "from": 21643807
     }
   },
-  "steakhouse-prime-usdc": {
+  "steakhouse-prime-usdc-v2-0f51": {
     "address": "0xbeef088055857739C12CD3765F20b7679Def0f51",
     "kind": "vault",
     "source": "https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant",
     "sourceLabel": "Steakhouse Prime Instant USDC",
-    "defillama": "morpho-blue",
+    "defillama": "steakhouse-financial",
     "coingecko": "steakhouse-usdc",
     "attributes": {
       "asset": "usdc",
@@ -159,7 +159,7 @@
       "from": 23375073
     }
   },
-  "usual-boosted-usdc": {
+  "usual-boosted-usdc-v1-3a3d": {
     "address": "0xd63070114470f685b75B74D60EEc7c1113d33a3D",
     "kind": "vault",
     "source": "https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc",
@@ -335,12 +335,12 @@
       "from": 16730025
     }
   },
-  "steakhouse-high-yield-usdc": {
+  "steakhouse-high-yield-usdc-v2-a757": {
     "address": "0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757",
     "kind": "vault",
     "source": "https://www.steakhouse.financial/docs/products/vault-products/current/high-yield-instant",
     "sourceLabel": "Steakhouse High Yield Instant USDC",
-    "defillama": "morpho-blue",
+    "defillama": "steakhouse-financial",
     "coingecko": "steakhouse-high-yield-usdc",
     "attributes": {
       "asset": "usdc",

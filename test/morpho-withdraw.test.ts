@@ -170,10 +170,10 @@ test('two withdrawals from one vault, one of them of all, cannot be judged', () 
   assert.equal(expectedChanges(resolved(tx, card(withdrawAll(), withdraw('1'))), templates, registry).kind, 'unverifiable');
 });
 
-const BOTH_ALL = card(withdrawAll('smokehouse-usdc-v1-f5bc', '20245327154'), withdrawAll('usual-boosted-usdc', '17322520385'));
+const BOTH_ALL = card(withdrawAll('smokehouse-usdc-v1-f5bc', '20245327154'), withdrawAll('usual-boosted-usdc-v1-3a3d', '17322520385'));
 const ALL_THEN_AMOUNT = card(withdrawAll('smokehouse-usdc-v1-f5bc', '346769119920'), {
   template: WITHDRAW,
-  values: { vault: 'usual-boosted-usdc', amount: '154000000000', 'max-shares': '139013506340509964396628' },
+  values: { vault: 'usual-boosted-usdc-v1-3a3d', amount: '154000000000', 'max-shares': '139013506340509964396628' },
 });
 
 test('two withdrawals in one multicall match a card with two operations, and each bound field is caught', () => {
@@ -190,7 +190,7 @@ test('two withdrawals in one multicall match a card with two operations, and eac
 
 test('the operations of a merged multicall must be on the card, in its order', () => {
   const tx = safeTx('morpho-withdraw-two-vaults-all');
-  assert.deepEqual(findings(check(tx, card(withdrawAll('usual-boosted-usdc'), withdrawAll('smokehouse-usdc-v1-f5bc')))), [
+  assert.deepEqual(findings(check(tx, card(withdrawAll('usual-boosted-usdc-v1-3a3d'), withdrawAll('smokehouse-usdc-v1-f5bc')))), [
     'multiSend[0].to',
     'multiSend[1].to',
     'multiSend[2].multicall.bundle[0].data.erc4626Redeem.vault',
@@ -246,7 +246,7 @@ test('a card that allows fewer burned shares, or wants more assets, than the pri
 
 test('each operation of a merged multicall is held to its own card bound', () => {
   const tx = safeTx('morpho-withdraw-two-vaults-all');
-  assert.deepEqual(findings(check(tx, card(withdrawAll('smokehouse-usdc-v1-f5bc', '20245327154'), withdrawAll('usual-boosted-usdc', '17322520386')))), [
+  assert.deepEqual(findings(check(tx, card(withdrawAll('smokehouse-usdc-v1-f5bc', '20245327154'), withdrawAll('usual-boosted-usdc-v1-3a3d', '17322520386')))), [
     'multiSend[2].multicall.bundle[1].data.erc4626Redeem.minSharePriceE27',
   ]);
 });

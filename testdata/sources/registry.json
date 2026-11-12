@@ -28,6 +28,12 @@
       "github": []
     },
     {
+      "slug": "steakhouse-financial",
+      "name": "Steakhouse Financial",
+      "url": "https://www.steakhouse.financial/",
+      "github": []
+    },
+    {
       "slug": "fluid-lending",
       "name": "Fluid Lending",
       "url": "https://www.fluid.io/",
@@ -49,12 +55,6 @@
       "slug": "coinbase",
       "name": "Coinbase",
       "url": "https://www.coinbase.com/",
-      "github": []
-    },
-    {
-      "slug": "steakhouse-financial",
-      "name": "Steakhouse Financial",
-      "url": "https://www.steakhouse.financial/",
       "github": []
     }
   ],
@@ -472,7 +472,7 @@
           "heading": "DistributionCreator"
         },
         {
-          "text": "On the vast majority of EVM chains, the Distributor is deployed at `0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae` and the DistributionCreator is deployed at `0x8BB4C975Ff3c250e0ceEA271728547f3802B36Fd`.",
+          "text": "On the vast majority of EVM chains, the Distributor is deployed at 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae and the DistributionCreator is deployed at 0x8BB4C975Ff3c250e0ceEA271728547f3802B36Fd.",
           "heading": "DistributionCreator"
         }
       ]

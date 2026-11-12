@@ -204,9 +204,9 @@ The tests serve each provider its own recorded answer through the real reader, s
 export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
 pnpm simulate morpho-withdraw-all-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-v1-7777","min-assets":"25172004987"}}]}' --record morpho-withdraw-all
 pnpm simulate morpho-withdraw-apex-other-safe --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-v1-7777","amount":"300000000000","max-shares":"285585667181036150934684"}}]}' --record morpho-withdraw-open-allowance
-pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc-v1-f5bc","min-assets":"20245327154"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc","min-assets":"17322520385"}}]}' --record morpho-withdraw-two-vaults-all
+pnpm simulate morpho-withdraw-two-vaults-all --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"smokehouse-usdc-v1-f5bc","min-assets":"20245327154"}},{"template":"morpho/vault-withdraw-all","values":{"vault":"usual-boosted-usdc-v1-3a3d","min-assets":"17322520385"}}]}' --record morpho-withdraw-two-vaults-all
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate morpho-vault-deposit \
-  --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
+  --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc-v2-0f51","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
   --record morpho-vault-deposit
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) pnpm simulate eth-transfer-null-data \
   --card '{"operations":[{"template":"eth/transfer","values":{"amount":"4988797943068499801","recipient":"recipient"}}]}' \
@@ -238,11 +238,11 @@ export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
 pnpm perturb fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim","values":{"token":"fluid"}}]}' --record fluid-claim
 pnpm perturb merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}' --record merkl-claim
 pnpm perturb morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}' --record morpho-urd-claim
-pnpm perturb morpho-bundles-deposit --card '{"operations":[{"template":"morpho/vault-bundles-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"31583325527","min-shares":"30442521166571443751074"}}]}' --record morpho-bundles-deposit
+pnpm perturb morpho-bundles-deposit --card '{"operations":[{"template":"morpho/vault-bundles-deposit","values":{"vault":"steakhouse-prime-usdc-v2-0f51","amount":"31583325527","min-shares":"30442521166571443751074"}}]}' --record morpho-bundles-deposit
 pnpm perturb morpho-withdraw-apex --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-v1-7777","amount":"583913520554","max-shares":"555874861469460312138864"}}]}' --record morpho-withdraw-apex
 pnpm perturb morpho-withdraw-all-apex --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-v1-7777","min-assets":"1367287893326"}}]}' --record morpho-withdraw-all-apex
-pnpm perturb morpho-migrate-all-smokehouse --card '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc-v1-f5bc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' --record morpho-migrate-all-smokehouse
-pnpm perturb morpho-vault-deposit --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
+pnpm perturb morpho-migrate-all-smokehouse --card '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc-v1-f5bc","to":"steakhouse-high-yield-usdc-v2-a757","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' --record morpho-migrate-all-smokehouse
+pnpm perturb morpho-vault-deposit --card '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc-v2-0f51","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' \
   --template <copy of templates/morpho/vault-deposit/template.json with erc4626Deposit.assets set to {"free": "..."}> --record morpho-deposit-free-assets
 ```
 
@@ -269,7 +269,7 @@ The tests replay the run and require the counts a reader sees: per window, per s
 ### Recording again
 
 ```sh
-KISS_SIGN_HOME=$HOME/.kiss-sign-lane-9 pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc --anchor mint \
+KISS_SIGN_HOME=$HOME/.kiss-sign-lane-9 pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc-v2-0f51 --anchor mint \
   --from-block 26044000 --to-block 26052000 --record morpho-vault-deposit
 ```
 
@@ -277,7 +277,7 @@ That home's `config.json` names the Safe of `safe-tx/morpho-vault-deposit.json`,
 
 ```sh
 pnpm past-txs merkl/claim --token morpho --anchor any --from merkl-distributor --from-block 24020000 --to-block 24030000 --record merkl-claim
-pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc --anchor mint --max-txs 24 --record morpho-vault-deposit-windows
+pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc-v2-0f51 --anchor mint --max-txs 24 --record morpho-vault-deposit-windows
 ```
 
 The windows follow the head block, so recording the last one again moves them.
@@ -314,7 +314,7 @@ The tests set up a clone and a `$KISS_SIGN_HOME` from its inputs, run `verify` w
 | File | Transaction | Verdict |
 | --- | --- | --- |
 | `morpho-vault-deposit.json` | `safe-tx/morpho-vault-deposit.json`, executed, judged by its receipt | `MATCH`, safeTxHash `0x0287ff5583b9bda9564e871c98d292c1a5b433cba905b02df369bab37b20c84a` |
-| `morpho-migrate-all.json` | `safe-tx/morpho-migrate-all-smokehouse.json`, executed, judged by its receipt, card `smokehouse-usdc-v1-f5bc` to `steakhouse-high-yield-usdc` | `MATCH`, safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
+| `morpho-migrate-all.json` | `safe-tx/morpho-migrate-all-smokehouse.json`, executed, judged by its receipt, card `smokehouse-usdc-v1-f5bc` to `steakhouse-high-yield-usdc-v2-a757` | `MATCH`, safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
 
 `test/code-pin.test.ts` evaluates `morpho-vault-deposit.json` with one recorded `eth_getCode` or `eth_getStorageAt` answer changed, or with a pin removed from its registry: changed code of the MultiSend, bundler3, general-adapter-1, the vault, USDC or USDC's implementation, or USDC's ZeppelinOS slot pointing elsewhere, must give `MISMATCH`; a drpc answer that differs, or a touched entry with no pin, must give `UNVERIFIABLE`.
 
@@ -326,7 +326,7 @@ The tests set up a clone and a `$KISS_SIGN_HOME` from its inputs, run `verify` w
 export KISS_SIGN_HOME=$HOME/.kiss-sign-lane-8
 bin/kiss-sign init --safe 0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0
 bin/kiss-sign template approve morpho/vault-deposit
-echo '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' > card.json
+echo '{"operations":[{"template":"morpho/vault-deposit","values":{"vault":"steakhouse-prime-usdc-v2-0f51","amount":"1800000000180","min-shares":"1741863305677219101283940"}}]}' > card.json
 bin/kiss-sign card seal card.json
 node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-vault-deposit.json").service))' > tx.json
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
@@ -336,7 +336,7 @@ cp "$KISS_SIGN_HOME"/verdicts/0x0287ff55*.json testdata/verify/morpho-vault-depo
 export KISS_SIGN_HOME=$HOME/.kiss-sign-migrate
 bin/kiss-sign init --safe 0x3D548a77137E46B25F240CE0091266bAa5803177
 bin/kiss-sign template approve morpho/vault-migrate-all
-echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc-v1-f5bc","to":"steakhouse-high-yield-usdc","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' > card.json
+echo '{"operations":[{"template":"morpho/vault-migrate-all","values":{"from":"smokehouse-usdc-v1-f5bc","to":"steakhouse-high-yield-usdc-v2-a757","min-assets":"11959243449","min-shares":"11619105060826236536810"}}]}' > card.json
 bin/kiss-sign card seal card.json
 node -e 'process.stdout.write(JSON.stringify(require("./testdata/safe-tx/morpho-migrate-all-smokehouse.json").service))' > tx.json
 ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
@@ -397,7 +397,7 @@ done
 
 | File | Vault | Block | What it shows |
 | --- | --- | --- | --- |
-| `steakhouse-high-yield-usdc.json` | Steakhouse High Yield Instant USDC (`0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`) | 26,385,872 | 13 monthly `totalAssets()` points, from 2,733,798 USDC to 43,152,031 USDC; 452 holders of 1,038 recipients, adding up to `totalSupply()`; the top 10 hold 53.52%. |
+| `steakhouse-high-yield-usdc-v2-a757.json` | Steakhouse High Yield Instant USDC (`0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`) | 26,385,872 | 13 monthly `totalAssets()` points, from 2,733,798 USDC to 43,152,031 USDC; 452 holders of 1,038 recipients, adding up to `totalSupply()`; the top 10 hold 53.52%. |
 
 ## ERC-7730 descriptors
 
