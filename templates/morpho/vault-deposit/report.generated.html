@@ -296,7 +296,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who">固定</span>改了就 MISMATCH</span>
     <span><span class="who app">app 填，不限</span>換成別的值，結果一樣</span>
   </div>
-  <p class="lead keylead">每個參數的第一行是 <code>cast decode-calldata</code> 會印出的值。標「例」的你填、你選和 app 填的值取自第一筆測試交易 <code>morpho-vault-deposit-v2</code>，金額 <span class="num">1,000,611.448606</span> usdc、<span class="num">973,551.731159989631767877</span> hyperithm-usdc-apex-v2-9e2f。</p>
+  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。標「例」的你填、你選和 app 填的值取自第一筆測試交易 <code>morpho-vault-deposit-v2</code>，金額 <span class="num">1,000,611.448606</span> usdc、<span class="num">973,551.731159989631767877</span> hyperithm-usdc-apex-v2-9e2f。</p>
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div>
@@ -315,15 +315,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">bundler3.</span>multicall</span><span class="sel">0x374f435d</span></div>
     <div class="arg" data-field="2.multicall.bundle">
       <div class="nm"><span class="pn">bundle</span><span class="who">固定</span></div>
-      <div class="val"><div class="raw">[(0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0, 0xd96ca0b9000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000004a6c312ec70e8747a587ee860a0353cd42be0ae0000000000000000000000000000000000000000000000000000000e8f917071e, 0, false, 0x0000000000000000000000000000000000000000000000000000000000000000), (0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0, 0x6ef5eeae000000000000000000000000093272c07700d3ca5301c3bf9b3a392624179e2f000000000000000000000000000000000000000000000000000000e8f917071e0000000000000000000000000000000000000000000000000003a6c62283b3ff000000000000000000000000db6e9e7390e9acc34619e56efa48ade01cff6f12, 0, false, 0x0000000000000000000000000000000000000000000000000000000000000000)]<span class="ex">例</span></div><div class="is">2 個項目</div>
+      <div class="val"><div class="is">2 項</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Bundler3 依序執行的步驟清單，這裡固定兩步：先拉代幣，再存進 vault。任何一步失敗，整筆交易失敗。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">[0]</div><div><div class="raw">(0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0, 0xd96ca0b9000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000004a6c312ec70e8747a587ee860a0353cd42be0ae0000000000000000000000000000000000000000000000000000000e8f917071e, 0, false, 0x0000000000000000000000000000000000000000000000000000000000000000)<span class="ex">例</span></div><div class="is">5 個部分</div>
+        <div class="part"><div class="pn">[0]</div><div><div class="is">5 個部分</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>第一步：把代幣從 Safe 拉進 GeneralAdapter1。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
-        <div class="part"><div class="pn">data</div><div><div class="raw">0xd96ca0b9000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb480000000000000000000000004a6c312ec70e8747a587ee860a0353cd42be0ae0000000000000000000000000000000000000000000000000000000e8f917071e<span class="ex">例</span></div><div class="is">呼叫 <code>erc20TransferFrom</code></div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc20TransferFrom</code> (<span class="addr">0xd96ca0b9</span>)</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">token<div class="pchips"><span class="who you">你選：vault</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48<span class="ex">例</span></div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的 vault</span></div>
@@ -340,12 +340,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">固定值</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>只有需要回呼的步驟才用，固定為 0。</span></span></div></div></div>
       </div></div>
-        <div class="part"><div class="pn">[1]</div><div><div class="raw">(0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0, 0x6ef5eeae000000000000000000000000093272c07700d3ca5301c3bf9b3a392624179e2f000000000000000000000000000000000000000000000000000000e8f917071e0000000000000000000000000000000000000000000000000003a6c62283b3ff000000000000000000000000db6e9e7390e9acc34619e56efa48ade01cff6f12, 0, false, 0x0000000000000000000000000000000000000000000000000000000000000000)<span class="ex">例</span></div><div class="is">5 個部分</div>
+        <div class="part"><div class="pn">[1]</div><div><div class="is">5 個部分</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>第二步：GeneralAdapter1 把代幣存進 vault，股份給 Safe。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
-        <div class="part"><div class="pn">data</div><div><div class="raw">0x6ef5eeae000000000000000000000000093272c07700d3ca5301c3bf9b3a392624179e2f000000000000000000000000000000000000000000000000000000e8f917071e0000000000000000000000000000000000000000000000000003a6c62283b3ff000000000000000000000000db6e9e7390e9acc34619e56efa48ade01cff6f12<span class="ex">例</span></div><div class="is">呼叫 <code>erc4626Deposit</code></div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc4626Deposit</code> (<span class="addr">0x6ef5eeae</span>)</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">vault<div class="pchips"><span class="who you">你選：vault</span></div></div><div><div class="raw">0x093272C07700d3cA5301C3Bf9B3A392624179E2F<span class="ex">例</span></div><div class="is"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a> <span class="f3">你選的 vault</span></div>

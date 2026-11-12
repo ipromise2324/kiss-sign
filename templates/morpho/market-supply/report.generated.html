@@ -298,7 +298,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who">固定</span>改了就 MISMATCH</span>
     <span><span class="who app">app 填，不限</span>換成別的值，結果一樣</span>
   </div>
-  <p class="lead keylead">每個參數的第一行是 <code>cast decode-calldata</code> 會印出的值。標「例」的你填、你選和 app 填的值取自第一筆測試交易 <code>morpho-market-supply</code>，金額 <span class="num">72,159.64611</span> usdc。</p>
+  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。標「例」的你填、你選和 app 填的值取自第一筆測試交易 <code>morpho-market-supply</code>，金額 <span class="num">72,159.64611</span> usdc。</p>
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div>
@@ -339,7 +339,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="arg" data-field="2.blueBundlesV1Supply.loanTokenPermit">
       <div class="nm"><span class="pn">loanTokenPermit</span><span class="who">kind 固定</span><span class="who app">data 不限</span></div>
-      <div class="val"><div class="raw">(0, 0x)<span class="ex">例</span></div><div class="is">2 個部分</div>
+      <div class="val"><div class="is">2 個部分</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>告訴合約怎麼從 Safe 拿到代幣。kind 0 用呼叫 1 的 approve；1 和 2 是簽名授權（ERC-2612、Permit2），Safe 用不到。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">kind</div><div><div class="raw">0</div><div class="is">固定為 0</div>

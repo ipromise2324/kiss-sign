@@ -407,15 +407,16 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     case 'share-price':
       return { words: [rule.bound === 'max' ? '價格上限' : '價格下限'], qualifier: ['依你填的數量算出，交易裡的要一樣嚴或更嚴'] };
     case 'call':
-      return { words: ['呼叫 ', { code: rule.call.fn.name }], qualifier: undefined };
+      return { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
     case 'items':
-      return { words: [`${rule.items.length} 個項目`], qualifier: undefined };
+      return { words: [`${rule.items.length} 項`], qualifier: undefined };
     case 'fields':
       return { words: [`${rule.fields.length} 個部分`], qualifier: undefined };
   }
 }
 
 function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
+  if (node.rule.kind === 'call' || node.rule.kind === 'items' || node.rule.kind === 'fields') return undefined;
   if (node.rule.kind === 'const') return { cast: constCast(node.rule.value), example: false };
   if (node.rule.kind === 'contract') return { cast: checksumAddress((context.registry.entries.get(node.rule.name) as RegistryEntry).address), example: false };
   const example = context.values.get(node.key);

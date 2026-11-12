@@ -180,7 +180,7 @@ function flowBody(flow: Flow): Html {
     <span><span class="who">固定</span>改了就 MISMATCH</span>
     <span><span class="who app">app 填，不限</span>換成別的值，結果一樣</span>
   </div>
-  <p class="lead keylead">每個參數的第一行是 <code>cast decode-calldata</code> 會印出的值。${flow.example === undefined ? '沒有測試交易可以當例子，你填和 app 填的值只寫規則。' : h`標「例」的${text(flow.example)}`}</p>
+  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。${flow.example === undefined ? '沒有測試交易可以當例子，你填和 app 填的值只寫規則。' : h`標「例」的${text(flow.example)}`}</p>
   ${flow.calls.map(
     (call) => h`
   <div class="cb">

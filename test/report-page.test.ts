@@ -6,7 +6,7 @@ import { loadRegistry } from '../src/registry.ts';
 import { forSigner, judge, stateOf, worst } from '../src/research/ledger.ts';
 import type { FieldFact } from '../src/research/erc7730.ts';
 import type { State } from '../src/research/ledger.ts';
-import { NotesError, notesScope } from '../src/research/notes.ts';
+import { NotesError, notesScope, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
 import type { ArgRow, Body, HtmlInputs, Page } from '../src/research/report-page.ts';
@@ -23,9 +23,15 @@ const target = { template: 'morpho/market-supply' };
 let inputs: HtmlInputs;
 let title: ReportTitle;
 let template: Template;
+const deposit = { template: 'morpho/vault-deposit' };
+let depositPage: Page;
 
 before(async () => {
-  const compilers = await warmCompilers(reportCases(ROOT, registry, [target]));
+  const compilers = await warmCompilers(reportCases(ROOT, registry, [target, deposit]));
+  const depositReplayed = await replayInputs(ROOT, registry, deposit, compilers, loadPublicSuffixList());
+  const depositTemplate = depositReplayed.inputs.subject.kind === 'template' ? depositReplayed.inputs.subject.template : assert.fail('a template report');
+  const depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(ROOT, depositTemplate, registry), example: firstRecordedTx(ROOT, depositTemplate, registry) };
+  depositPage = buildPage(depositInputs, readNotes(ROOT, deposit.template), depositReplayed.title);
   const replayed = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
   title = replayed.title;
   template = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
@@ -98,10 +104,49 @@ test('each argument says who decides it and prints what cast decode-calldata pri
     { who: 'fixed', label: 'kind 固定' },
     { who: 'free', label: 'data 不限' },
   ]);
-  assert.deepEqual(permit.value, { cast: '(0, 0x)', example: true });
+  assert.equal(permit.value, undefined);
+  assert.equal(plain(permit.words), '2 個部分');
+  assert.deepEqual(
+    permit.parts.flatMap((g) => g.rows).map((p) => [p.name, p.value?.cast]),
+    [
+      ['kind', '0'],
+      ['data', '0x'],
+    ],
+  );
   assert.deepEqual(arg(page, '2.blueBundlesV1Supply.deadline').chips, [{ who: 'free', label: 'app 填，不限' }]);
   assert.equal(plain(arg(page, '2.blueBundlesV1Supply.referralFeeRecipient').words), '無（零地址）');
   assert.equal(arg(page, '2.blueBundlesV1Supply.deadline').ai.ai, 'field 2.blueBundlesV1Supply.deadline');
+});
+
+test('a container prints its summary in place of the hex and nests its parts; a leaf prints what cast prints', () => {
+  const rows = (row: ArgRow): ArgRow[] => row.parts.flatMap((g) => g.rows);
+  const bundle = arg(depositPage, '2.multicall.bundle');
+  assert.equal(bundle.value, undefined);
+  assert.equal(plain(bundle.words), '2 項');
+  const [first, second] = rows(bundle);
+  assert.deepEqual([first?.key, first?.value, plain(first?.words)], ['2.multicall.bundle[0]', undefined, '5 個部分']);
+  const data = (item: ArgRow | undefined): ArgRow => rows(item ?? assert.fail('an item')).find((p) => p.name === 'data') ?? assert.fail('no data');
+  assert.equal(data(first).value, undefined);
+  assert.equal(plain(data(first).words), 'erc20TransferFrom (0xd96ca0b9)');
+  assert.equal(plain(data(second).words), 'erc4626Deposit (0x6ef5eeae)');
+
+  const adapter = (registry.entries.get('general-adapter-1') ?? assert.fail('general-adapter-1')).address;
+  const leaf = (item: ArgRow | undefined, name: string): string | undefined => rows(item ?? assert.fail('an item')).find((p) => p.name === name)?.value?.cast;
+  assert.equal(leaf(first, 'to')?.toLowerCase(), adapter);
+  assert.equal(leaf(first, 'value'), '0');
+  assert.equal(leaf(first, 'skipRevert'), 'false');
+  assert.equal(leaf(first, 'callbackHash'), `0x${'0'.repeat(64)}`);
+  const amount = arg(depositPage, '1.approve.value').value;
+  assert.equal(amount?.example, true);
+  assert.deepEqual(leaf(data(first), 'amount'), amount?.cast);
+  assert.deepEqual(leaf(data(second), 'assets'), amount?.cast);
+  assert.equal(leaf(data(first), 'receiver')?.toLowerCase(), adapter);
+
+  const all = (row: ArgRow): ArgRow[] => [row, ...rows(row).flatMap(all)];
+  for (const row of args(depositPage).flatMap(all)) {
+    if (row.parts.length > 0) assert.equal(row.value, undefined, `${row.key} is a container`);
+    else assert.ok(row.value === undefined || !/^[[(]/.test(row.value.cast), `${row.key} is a leaf`);
+  }
 });
 
 test('without a recorded test transaction a card or free value prints its rule only', () => {
