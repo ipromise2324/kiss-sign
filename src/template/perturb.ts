@@ -2,7 +2,7 @@ import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseCard, resolveCard } from '../card.ts';
-import type { ResolvedCard } from '../card.ts';
+import type { Card, ResolvedCard } from '../card.ts';
 import { replayReader } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Read } from '../chain/reader.ts';
@@ -214,19 +214,27 @@ export type FixtureJudgement = {
     | { readonly kind: 'judged'; readonly mutations: MutationResult; readonly perturbation: PerturbationReport };
 };
 
+/** Each `testdata/perturb/` recording, by file name, whose card names only `template` and replaces no template. */
+function recordingsOf(repoRoot: string, template: Template): { readonly name: string; readonly recording: PerturbRecording; readonly card: Card }[] {
+  return readdirSync(join(repoRoot, PERTURB_DIR))
+    .filter((f) => f.endsWith('.json'))
+    .sort()
+    .flatMap((file) => {
+      const name = file.replace(/\.json$/, '');
+      const recording = readRecording(repoRoot, name);
+      const card = parseCard(recording.card);
+      return recording.template === undefined && card.operations.every((op) => op.template === template.id) ? [{ name, recording, card }] : [];
+    });
+}
+
 /**
- * Every `testdata/perturb/` recording whose card names only `template` and replaces no template, in file-name order:
- * its card resolved, its bound fields mutated (`checkMutations`) and its free fields perturbed again from the recording.
- * Each is named by its Safe transaction fixture.
+ * Every recording `recordingsOf` names, in file-name order: its card resolved, its bound fields mutated
+ * (`checkMutations`) and its free fields perturbed again from the recording. Each is named by its Safe transaction fixture.
  */
 export async function judgeFixtures(repoRoot: string, template: Template, registry: Registry): Promise<FixtureJudgement[]> {
   const templates = new Map([[template.id, template]]);
   const judged: FixtureJudgement[] = [];
-  for (const file of readdirSync(join(repoRoot, PERTURB_DIR)).filter((f) => f.endsWith('.json')).sort()) {
-    const name = file.replace(/\.json$/, '');
-    const recording = readRecording(repoRoot, name);
-    const card = parseCard(recording.card);
-    if (recording.template !== undefined || !card.operations.every((op) => op.template === template.id)) continue;
+  for (const { name, recording, card } of recordingsOf(repoRoot, template)) {
     const tx = recordedTx(repoRoot, recording);
     const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
     if (resolution.kind === 'refused') {
@@ -238,4 +246,13 @@ export async function judgeFixtures(repoRoot: string, template: Template, regist
     judged.push({ name: recording.safeTx, outcome: { kind: 'judged', mutations, perturbation } });
   }
   return judged;
+}
+
+/** The template's first recorded test transaction, the first of `recordingsOf`, with its card; undefined when its card is refused or there is none. */
+export function firstRecordedTx(repoRoot: string, template: Template, registry: Registry): { readonly name: string; readonly tx: SafeTx; readonly card: ResolvedCard } | undefined {
+  const [first] = recordingsOf(repoRoot, template);
+  if (first === undefined) return undefined;
+  const tx = recordedTx(repoRoot, first.recording);
+  const resolution = resolveCard(first.card, { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: tx.safe });
+  return resolution.kind === 'resolved' ? { name: first.recording.safeTx, tx, card: resolution.card } : undefined;
 }

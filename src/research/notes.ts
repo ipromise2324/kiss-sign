@@ -44,30 +44,51 @@ export type NotesScope = {
   readonly reviews: readonly ResultId[];
 };
 
+/** One argument, tuple part, array item or nested call's argument of a template call, with its HTML report field key. */
+export type ArgNode = {
+  readonly key: string;
+  readonly name: string;
+  readonly param: AbiParam | undefined;
+  readonly rule: Rule;
+  /** Tuple parts, array items, or a nested call's arguments. */
+  readonly children: readonly ArgNode[];
+};
+
 /**
- * The HTML report's field key of every argument, tuple part and array item of the template's calls, in call order:
+ * Each function call of the template, by its 1-based call number, with its arguments as a tree in call order. A key is
  * `<call>.<function>.<argument>`, a part after a dot (`2.blueBundlesV1Supply.marketParams.oracle`), an item in brackets,
  * and a nested call's arguments after its function's name (`1.multicall.bundle[1].data.erc4626Deposit.assets`).
  */
-export function fieldKeys(template: Template): string[] {
-  const keys: string[] = [];
-  const call = (prefix: string, node: CallNode): void => node.fn.params.forEach((param, i) => arg(`${prefix}.${paramName(param, i)}`, node.args[i] as Rule, param));
-  const arg = (key: string, rule: Rule, param: AbiParam | undefined): void => {
-    keys.push(key);
-    if (rule.kind === 'call') call(`${key}.${rule.call.fn.name}`, rule.call);
+export function argumentTree(template: Template): { readonly n: number; readonly node: CallNode; readonly args: readonly ArgNode[] }[] {
+  const call = (prefix: string, node: CallNode): ArgNode[] => node.fn.params.map((param, i) => arg(`${prefix}.${paramName(param, i)}`, paramName(param, i), node.args[i] as Rule, param));
+  const arg = (key: string, name: string, rule: Rule, param: AbiParam | undefined): ArgNode => {
+    if (rule.kind === 'call') return { key, name, param, rule, children: call(`${key}.${rule.call.fn.name}`, rule.call) };
     if (rule.kind === 'items') {
       const item = param?.type.kind === 'array' || param?.type.kind === 'fixed-array' ? { name: undefined, type: param.type.item } : undefined;
-      rule.items.forEach((r, i) => arg(`${key}[${i}]`, r, item));
+      return { key, name, param, rule, children: rule.items.map((r, i) => arg(`${key}[${i}]`, `[${i}]`, r, item)) };
     }
     if (rule.kind === 'fields') {
       const components = param?.type.kind === 'tuple' ? param.type.components : [];
-      rule.fields.forEach((r, i) => arg(`${key}.${components[i] === undefined ? String(i) : paramName(components[i], i)}`, r, components[i]));
+      return {
+        key,
+        name,
+        param,
+        rule,
+        children: rule.fields.map((r, i) => {
+          const part = components[i] === undefined ? String(i) : paramName(components[i], i);
+          return arg(`${key}.${part}`, part, r, components[i]);
+        }),
+      };
     }
+    return { key, name, param, rule, children: [] };
   };
-  template.calls.forEach((c, i) => {
-    if (c.data !== 'empty') call(`${i + 1}.${c.data.fn.name}`, c.data);
-  });
-  return keys;
+  return template.calls.flatMap((c, i) => (c.data === 'empty' ? [] : [{ n: i + 1, node: c.data, args: call(`${i + 1}.${c.data.fn.name}`, c.data) }]));
+}
+
+/** Every key of `argumentTree`, depth first: every argument and tuple part notes.json's `fields` must explain. */
+export function fieldKeys(template: Template): string[] {
+  const keys = (nodes: readonly ArgNode[]): string[] => nodes.flatMap((node) => [node.key, ...keys(node.children)]);
+  return argumentTree(template).flatMap((call) => keys(call.args));
 }
 
 export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Template): NotesScope {
