@@ -55,6 +55,14 @@ test('a compiler that returns anything but a string, or throws an object, is ref
     'Module._solidity_compile = 1; Module.cwrap = function () { return function () { throw { message: 42 }; }; };',
   );
   assert.throws(() => throwsObject.compile('{}'), /^Error: soljson-0\.0\.0-throws\.js threw$/);
+  const throwsFromGetter = instantiate(
+    '0.0.0-getter',
+    'Module._solidity_compile = 1; Module.cwrap = function () { return function () { throw { get message() { throw {}; } }; }; };',
+  );
+  assert.throws(
+    () => throwsFromGetter.compile('{}'),
+    (error: unknown) => error instanceof Error && /^soljson-0\.0\.0-getter\.js threw$/.test(error.message),
+  );
 });
 
 test('a build with no standard JSON entry point is refused', () => {

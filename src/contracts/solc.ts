@@ -43,7 +43,12 @@ function runSandboxed(code: string, context: object, filename: string): unknown 
   try {
     return runInContext(code, context, { filename });
   } catch (error) {
-    const message = (error as { message?: unknown } | null | undefined)?.message;
+    let message: unknown;
+    try {
+      message = (error as { message?: unknown } | null | undefined)?.message;
+    } catch {
+      message = undefined;
+    }
     throw new Error(typeof message === 'string' ? `${filename} threw: ${message}` : `${filename} threw`);
   }
 }
