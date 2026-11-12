@@ -99,11 +99,31 @@ test('the Morpho deposit verifies to MATCH and prints the hashes the hardware wa
   assert.match(stdout, new RegExp(`Verdict file: ${verdicts[0]}`));
 });
 
+test('after MATCH, verify prints the calls it expects for the signer to compare with check.sh', async () => {
+  const { stdout } = await verifyTx(service);
+  const block = stdout.slice(stdout.indexOf('獨立檢查'));
+  assert.match(block, new RegExp(`^獨立檢查（加強等級）：在獨立電腦執行 \\./check\\.sh ${service.nonce}，逐項比對\nnonce: +${service.nonce}\nsafeTxHash: +${chain.transactionHash}\n`));
+  assert.deepEqual([...block.matchAll(/── 呼叫 #(\d+)/g)].map((m) => m[1]), ['1', '2', '3']);
+  assert.match(block, /\n呼叫數: 3\nVerdict file: /);
+  assert.deepEqual(
+    [...block.matchAll(/cast sig = (0x[0-9a-f]{8})/g)].map((m) => m[1]),
+    ['0x8d80ff0a', '0x095ea7b3', '0x374f435d', '0xd96ca0b9', '0x6ef5eeae'],
+  );
+  assert.deepEqual(
+    [...block.matchAll(/to: +(0x[0-9a-fA-F]{40})/g)].map((m) => m[1]!.toLowerCase()),
+    [service.to, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', '0x6566194141eefa99af43bb5aa71460ca2dc90245', ...Array(2).fill('0x4a6c312ec70e8747a587ee860a0353cd42be0ae0')].map((a) => String(a).toLowerCase()),
+  );
+  assert.equal(block.match(/引數 \d+: +1800000000180\b/g)?.length, 3);
+  assert.match(block, /引數 3: +1033376152028289\n/);
+  assert.match(block, /注意: 呼叫 #3 的資料在引數之後多出 8 bytes: 0x[0-9a-f]{16}\n/);
+});
+
 test('the verdict file verify writes replays to the same verdict', async () => {
   const { repo, home, verdicts } = await verifyTx(service);
   const replayed = await run(['replay', verdicts[0]!], repo, home);
   assert.equal(replayed.code, 0, replayed.stderr);
   assert.match(replayed.stdout, /^MATCH\n[\s\S]*Same verdict as recorded\.\n$/);
+  assert.doesNotMatch(replayed.stdout, /獨立檢查|呼叫/);
 });
 
 test('a copy with its receiver changed is MISMATCH, names the check and the field, and shows no hashes', async () => {
@@ -118,7 +138,7 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   assert.equal(code, 1);
   assert.match(stdout, /^MISMATCH\n/);
   assert.match(stdout, /fields: multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}/);
-  assert.doesNotMatch(stdout, /domain hash|message hash|safeTxHash/);
+  assert.doesNotMatch(stdout, /domain hash|message hash|safeTxHash|獨立檢查|呼叫/);
 });
 
 test('a template that differs from its approved hash is MISMATCH', async () => {
