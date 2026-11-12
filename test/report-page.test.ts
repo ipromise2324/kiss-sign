@@ -175,6 +175,13 @@ test('the diagram has a lifeline for the Safe, each call target and each view ta
   );
 });
 
+test('a contract a flow line names gets its own lifeline, so every inside arrow ends on one', () => {
+  const { diagram } = body(depositPage, 'flow').flow;
+  assert.deepEqual(diagram.lifelines.map((l) => l.name), ['你的 Safe', 'usdc', 'bundler3', 'general-adapter-1']);
+  const inside = diagram.arrows.flatMap((a) => (a.kind === 'inside' ? [[a.from, a.to]] : []));
+  assert.deepEqual(inside, [[2, 3], [3, 1]]);
+});
+
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {
   const { block } = body(pageOf(inputs), 'protocol');
   const row = (label: string) => block.rows.find((r) => r.label === label) ?? assert.fail(`no ${label} row`);

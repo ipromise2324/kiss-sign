@@ -525,6 +525,9 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
     return add(target.label, target.names);
   });
   for (const view of template.effects.views) add(view.to, [view.to]);
+  for (const name of context.notes.flow.flatMap((line) => [line.from, line.to])) {
+    if (!names.some((of) => of.includes(name))) add(name, [name]);
+  }
   return { lines, names, callTo };
 }
 
