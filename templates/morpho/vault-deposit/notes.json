@@ -4,7 +4,7 @@
   "verdict": { "status": "caution", "text": "可以用。三個 vault 沒有策展人的官方頁列地址，選它們前先看待確認。" },
   "flow": [
     { "after": 2, "from": "bundler3", "to": "general-adapter-1", "text": "依序呼叫 erc20TransferFrom 和 erc4626Deposit" },
-    { "after": 2, "from": "general-adapter-1", "to": "usdc", "text": "用 transferFrom 從 Safe 拉走你填的金額" }
+    { "after": 2, "from": "general-adapter-1", "to": "usdc", "text": "用 transferFrom 從 Safe 拉走你填的金額的 vault 資產代幣" }
   ],
   "protocols": {
     "morpho-blue": {
@@ -122,7 +122,7 @@
     "2.multicall.bundle[1].data": "這一步要執行的函式和參數，下面逐項列出。",
     "2.multicall.bundle[1].data.erc4626Deposit.vault": "存進哪一個 vault。這就是你在卡片上選的 vault。",
     "2.multicall.bundle[1].data.erc4626Deposit.assets": "存進 vault 的代幣數量，等於存款金額。",
-    "2.multicall.bundle[1].data.erc4626Deposit.maxSharePriceE27": "每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，保證你至少拿到最少股份。",
+    "2.multicall.bundle[1].data.erc4626Deposit.maxSharePriceE27": "每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，依 vault 自己回報的股份數，你至少拿到最少股份。",
     "2.multicall.bundle[1].data.erc4626Deposit.receiver": "收股份的地址，固定是 Safe。",
     "2.multicall.bundle[1].value": "附帶的 ETH，固定為 0。",
     "2.multicall.bundle[1].skipRevert": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。",
