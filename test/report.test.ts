@@ -70,14 +70,14 @@ function quick(
 
 test('morpho/vault-deposit: rules name registry entries with full addresses, and every function has its page checked', () => {
   const text = quick();
-  assert.match(text, /\| `approve\.spender` \| registry `general-adapter1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` \|/);
+  assert.match(text, /\| `approve\.spender` \| registry `general-adapter-1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` \|/);
   assert.match(text, /\| `to` \| the `asset` of the card's `vault`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` \|/);
   assert.match(text, /\| `multicall\.bundle\[1\]\.data → erc4626Deposit\.receiver` \| the Safe \|/);
   assert.match(text, /\| `multicall\.bundle\[1\]\.data → erc4626Deposit\.maxSharePriceE27` \| at most assets × 1e27 \/ shares, with assets the card's `amount` and shares the card's `min-shares`/);
-  assert.match(text, /\| `multicall` \| calls `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)`, selector `0x374f435d`; at most 8 bytes after the arguments/);
+  assert.match(text, /\| `multicall` \| calls `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)`, selector `0x374f435d`; at most 12 bytes after the arguments/);
   assert.match(text, /\| `steakhouse-prime-usdc` \| `0xbeef088055857739C12CD3765F20b7679Def0f51` \| asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory`/);
-  assert.match(text, /\| `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \| `bundler3` \| <https:\/\/docs\.morpho\.org\/developers\/contracts\/bundles\/> \| PASS \| n\/a \| PASS \|/);
-  assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
+  assert.match(text, /\| `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \| `bundler3` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| PASS \|/);
+  assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter-1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
 });
 
 test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
@@ -96,10 +96,10 @@ test('morpho/vault-deposit: the ERC-7730 section is computed again from the reco
   const entries = entriesOf(loadSubject(ROOT, registry, { template: ID }), registry);
   const { text } = await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)));
   assert.match(text, /^ERC-7730 registry github\.com\/ethereum\/clear-signing-erc7730-registry at commit [0-9a-f]{40}$/m);
-  assert.match(text, /general-adapter1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 \(adapter\)\n {2}descriptor {3}none/);
+  assert.match(text, /general-adapter-1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 \(adapter\)\n {2}descriptor {3}none/);
   assert.match(
     text,
-    /smokehouse-usdc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC \(vault\)\n {2}descriptor {3}registry\/morpho\/calldata-steakhouse_financial-bbqUSDC\.json\n {2}applies {6}by exact address[^]*?signer {5}0x3846c3A30E62075Fa916216b35EF04B8F53931f6, listed in auditors\/\n {4}result {5}VALID/,
+    /smokehouse-usdc-v1-f5bc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC \(vault\)\n {2}descriptor {3}registry\/morpho\/calldata-steakhouse_financial-bbqUSDC\.json\n {2}applies {6}by exact address[^]*?signer {5}0x3846c3A30E62075Fa916216b35EF04B8F53931f6, listed in auditors\/\n {4}result {5}VALID/,
   );
   const committed = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_FILE), 'utf8');
   assert.ok(committed.includes(text), 'report.generated.md holds the section as computed');
@@ -149,13 +149,13 @@ test('the report prints every code span, and --compare flags an earlier span who
 });
 
 test('a page that does not name the function is a FINDING', () => {
-  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.includes('docs.morpho.org/developers/contracts/bundles') ? ({ kind: 'served', blocks: [] } as Page) : page]));
-  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/docs\.morpho\.org\/developers\/contracts\/bundles\/> \| PASS \| n\/a \| FINDING \|/);
+  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'served', blocks: [] } as Page) : page]));
+  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| FINDING \|/);
 });
 
 test('a page that got no answer is UNVERIFIABLE, never a FINDING', () => {
-  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.includes('docs.morpho.org/developers/contracts/bundles') ? ({ kind: 'unread', why: `${url} answered HTTP 503` } as Page) : page]));
-  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/docs\.morpho\.org\/developers\/contracts\/bundles\/> \| PASS \| n\/a \| UNVERIFIABLE \|/);
+  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'unread', why: `${url} answered HTTP 503` } as Page) : page]));
+  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| UNVERIFIABLE \|/);
 });
 
 test('the report prints no text from a page or a listing', () => {
@@ -270,7 +270,7 @@ test('every template folder holds report.generated.md, or design.md lists it amo
 });
 
 test('--compare prints a verdict that changed, and ignores the date and the block an ABI proof was read at', () => {
-  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.includes('docs.morpho.org/developers/contracts/bundles') ? ({ kind: 'served', blocks: [] } as Page) : page]));
+  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'served', blocks: [] } as Page) : page]));
   const differences = compareReports(quick(), quick(pages));
   assert.deepEqual(differences, ['Official documentation › `multicall((address,bytes,uint256,bool,bytes32)[])` › Function name appears on page: committed PASS, live FINDING']);
 
@@ -284,8 +284,8 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
   const raised = point.replace(/[\d,.]+ usdc$/, '140,000,000.000000 usdc');
   const series = committed.replace(point, raised);
   assert.deepEqual(compareReports(committed, series), [
-    `\`steakhouse-prime-usdc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed: ${point}`,
-    `\`steakhouse-prime-usdc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
+    `\`smokehouse-usdc-v1-f5bc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed: ${point}`,
+    `\`smokehouse-usdc-v1-f5bc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
   ]);
 
   const revoked = committed.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
@@ -299,8 +299,8 @@ test("docs.json's contract must be the call's target when the template binds the
   const template = loadTemplate(ROOT, ID, registry);
   const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
   const swap = (sig: string, contract: string) => ({ ...valid, [sig]: { ...valid[sig]!, contract } });
-  assert.throws(() => parseDocs(swap('erc4626Deposit(address,uint256,uint256,address)', 'bundler3'), template, registry), /erc4626Deposit\(address,uint256,uint256,address\)\.contract is bundler3, but the template calls it on general-adapter1/);
-  assert.throws(() => parseDocs(swap('multicall((address,bytes,uint256,bool,bytes32)[])', 'general-adapter1'), template, registry), /calls it on bundler3/);
+  assert.throws(() => parseDocs(swap('erc4626Deposit(address,uint256,uint256,address)', 'bundler3'), template, registry), /erc4626Deposit\(address,uint256,uint256,address\)\.contract is bundler3, but the template calls it on general-adapter-1/);
+  assert.throws(() => parseDocs(swap('multicall((address,bytes,uint256,bool,bytes32)[])', 'general-adapter-1'), template, registry), /calls it on bundler3/);
   assert.throws(() => parseDocs(swap('approve(address,uint256)', 'bundler3'), template, registry), /calls it on one of usdc, usdt/);
   assert.equal(parseDocs(swap('approve(address,uint256)', 'usdt'), template, registry).length, 4);
   assert.match(quick(), /\| Function \| Contract \| Page \| Site \| GitHub commit \| Function name appears on page \|/);
