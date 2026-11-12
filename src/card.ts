@@ -125,7 +125,7 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
         case 'contract': {
           const entry = context.registry.entries.get(raw);
           if (entry === undefined) return refuse('unknown-name', name, `${JSON.stringify(raw)} is not in the contract registry`);
-          const refused = contractRefusal(field.scope, entry);
+          const refused = contractRefusal(field.scope, entry, context.registry);
           if (refused !== undefined) return refuse(refused.reason, name, refused.detail);
           values.set(name, { kind: 'contract', name: raw, entry });
           break;

@@ -9,23 +9,39 @@ import type { Address, Hex } from '../safe/types.ts';
 
 /**
  * The registry entries a contract card field accepts: those of `registryKind`, and when `protocol` is set, only those
- * whose `defillama` slug it is.
+ * that belong to the DefiLlama protocol of that slug.
  */
 export type EntryScope = { readonly registryKind: ContractKind; readonly protocol: string | undefined };
 
+/**
+ * The DefiLlama protocol an entry belongs to. An entry with a `factory` belongs to its factory's protocol, which the
+ * chain proves through the factory's `instanceCheck`; its own `defillama` names the site that lists it, such as a curator's.
+ */
+function protocolOf(entry: RegistryEntry, registry: Registry): { readonly slug: string | undefined; readonly why: string } {
+  const factory = entry.attributes.factory;
+  if (factory === undefined) return { slug: entry.defillama, why: '' };
+  return { slug: registry.entries.get(factory)?.defillama, why: ` (its factory ${factory})` };
+}
+
 /** Why `entry` cannot fill a contract card field of `scope`, or undefined when it can. */
-export function contractRefusal(scope: EntryScope, entry: RegistryEntry): { readonly reason: 'wrong-contract-kind' | 'wrong-protocol'; readonly detail: string } | undefined {
+export function contractRefusal(
+  scope: EntryScope,
+  entry: RegistryEntry,
+  registry: Registry,
+): { readonly reason: 'wrong-contract-kind' | 'wrong-protocol'; readonly detail: string } | undefined {
   if (entry.kind !== scope.registryKind) return { reason: 'wrong-contract-kind', detail: `${entry.name} is a ${entry.kind}, not a ${scope.registryKind}` };
-  if (scope.protocol !== undefined && entry.defillama !== scope.protocol) {
-    return { reason: 'wrong-protocol', detail: `${entry.name} is a ${entry.kind} of ${entry.defillama ?? 'no DefiLlama protocol'}, not of ${scope.protocol}` };
+  if (scope.protocol === undefined) return undefined;
+  const protocol = protocolOf(entry, registry);
+  if (protocol.slug !== scope.protocol) {
+    return { reason: 'wrong-protocol', detail: `${entry.name} is a ${entry.kind} of ${protocol.slug ?? 'no DefiLlama protocol'}${protocol.why}, not of ${scope.protocol}` };
   }
   return undefined;
 }
 
-export const inScope = (scope: EntryScope, entry: RegistryEntry): boolean => contractRefusal(scope, entry) === undefined;
+export const inScope = (scope: EntryScope, entry: RegistryEntry, registry: Registry): boolean => contractRefusal(scope, entry, registry) === undefined;
 
 /** Every registry entry a contract card field of `scope` accepts, in registry order. */
-export const scopeEntries = (scope: EntryScope, registry: Registry): RegistryEntry[] => [...registry.entries.values()].filter((entry) => inScope(scope, entry));
+export const scopeEntries = (scope: EntryScope, registry: Registry): RegistryEntry[] => [...registry.entries.values()].filter((entry) => inScope(scope, entry, registry));
 
 /** What the signer fills in at each signing. */
 export type CardField =
@@ -469,7 +485,7 @@ function cardField(path: string, raw: unknown, registry: Registry): (fields: Car
       if (registryKind === undefined) throw new TemplateError(`${path}.registryKind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
       const scope = { registryKind, protocol: value.defillama === undefined ? undefined : text(`${path}.defillama`, value.defillama) };
       if (scope.protocol !== undefined && scopeEntries(scope, registry).length === 0) {
-        throw new TemplateError(`${path}.defillama`, `no registry ${registryKind} carries the DefiLlama slug ${JSON.stringify(scope.protocol.slice(0, 80))}`);
+        throw new TemplateError(`${path}.defillama`, `no registry ${registryKind} belongs to the DefiLlama protocol ${JSON.stringify(scope.protocol.slice(0, 80))}`);
       }
       return () => ({ kind: 'contract', scope });
     }

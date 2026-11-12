@@ -177,7 +177,7 @@ export const hasMarket = (template: Template): boolean => [...template.card.valu
 function cardCandidates(template: Template, registry: Registry): RegistryEntry[] {
   const inMarkets = new Set(hasMarket(template) ? [...registry.markets.values()].flatMap((market) => MARKET_ENTRY_PARTS.map((part) => market[part].name)) : []);
   return [...registry.entries.values()].filter(
-    (entry) => inMarkets.has(entry.name) || [...template.card.values()].some((field) => field.kind === 'contract' && inScope(field.scope, entry)),
+    (entry) => inMarkets.has(entry.name) || [...template.card.values()].some((field) => field.kind === 'contract' && inScope(field.scope, entry, registry)),
   );
 }
 

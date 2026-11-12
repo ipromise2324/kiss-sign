@@ -267,9 +267,9 @@ test('a contract field that names its protocol takes only that protocol\'s entri
   };
   assert.equal(resolve('morpho-blue', 'steakhouse-prime-usdc'), 'resolved');
   assert.deepEqual(resolve('morpho-blue', 'fluid-fusdc'), { reason: 'wrong-protocol', at: 'operations[0].values.vault', detail: 'fluid-fusdc is a vault of fluid-lending, not of morpho-blue' });
-  assert.deepEqual(resolve('fluid-lending', 'steakhouse-prime-usdc'), { reason: 'wrong-protocol', at: 'operations[0].values.vault', detail: 'steakhouse-prime-usdc is a vault of morpho-blue, not of fluid-lending' });
+  assert.deepEqual(resolve('fluid-lending', 'steakhouse-prime-usdc'), { reason: 'wrong-protocol', at: 'operations[0].values.vault', detail: 'steakhouse-prime-usdc is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending' });
   assert.deepEqual(resolve('fluid-lending', 'usdc'), { reason: 'wrong-contract-kind', at: 'operations[0].values.vault', detail: 'usdc is a token, not a vault' });
-  assert.throws(() => scoped('fluid'), (e: unknown) => e instanceof TemplateError && e.message === 'card.vault.defillama: no registry vault carries the DefiLlama slug "fluid"');
+  assert.throws(() => scoped('fluid'), (e: unknown) => e instanceof TemplateError && e.message === 'card.vault.defillama: no registry vault belongs to the DefiLlama protocol "fluid"');
 });
 
 test('a card resolves an address kind through the Safe, the registry and the address book', () => {
