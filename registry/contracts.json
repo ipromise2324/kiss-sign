@@ -506,5 +506,104 @@
       },
       "from": 20570548
     }
+  },
+  "usdt": {
+    "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    "kind": "token",
+    "source": "https://tether.to/en/supported-protocols/",
+    "sourceLabel": "USD₮ contract address",
+    "defillama": "tether",
+    "coingecko": "tether"
+  },
+  "bundler3": {
+    "address": "0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245",
+    "kind": "router",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Bundler3",
+    "defillama": "morpho-blue"
+  },
+  "general-adapter-1": {
+    "address": "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0",
+    "kind": "adapter",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "EthereumGeneralAdapter1",
+    "defillama": "morpho-blue"
+  },
+  "metamorpho-factory-v1-0": {
+    "address": "0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101",
+    "kind": "factory",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MetaMorpho Factory [OLD]",
+    "defillama": "morpho-blue",
+    "instanceCheck": "isMetaMorpho(address)"
+  },
+  "metamorpho-factory-v1-1": {
+    "address": "0x1897A8997241C1cD4bD0698647e4EB7213535c24",
+    "kind": "factory",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MetaMorpho Factory V1.1",
+    "defillama": "morpho-blue",
+    "instanceCheck": "isMetaMorpho(address)"
+  },
+  "vault-v2-factory": {
+    "address": "0xA1D94F746dEfa1928926b84fB2596c06926C0405",
+    "kind": "factory",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "VaultV2Factory",
+    "defillama": "morpho-blue",
+    "instanceCheck": "isVaultV2(address)"
+  },
+  "steakhouse-usdt-v1-cfba": {
+    "address": "0xbEef047a543E45807105E51A8BBEFCc5950fcfBa",
+    "kind": "vault",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults",
+    "sourceLabel": "Steakhouse USDT",
+    "defillama": "steakhouse-financial",
+    "attributes": {
+      "asset": "usdt",
+      "factory": "metamorpho-factory-v1-0"
+    },
+    "coingecko": "steakhouse-usdt-morpho-vault"
+  },
+  "smokehouse-usdc-v1-f5bc": {
+    "address": "0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+    "kind": "vault",
+    "source": "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults",
+    "sourceLabel": "Smokehouse USDC Ethereum",
+    "defillama": "steakhouse-financial",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-v1-0"
+    }
+  },
+  "smokehouse-usdt-v1-7484": {
+    "address": "0xA0804346780b4c2e3bE118ac957D1DB82F9d7484",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xA0804346780b4c2e3bE118ac957D1DB82F9d7484/smokehouse-usdt",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdt",
+      "factory": "metamorpho-factory-v1-1"
+    }
+  },
+  "hyperithm-usdc-apex-v1-7777": {
+    "address": "0x777791C4d6DC2CE140D00D2828a7C93503c67777",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "metamorpho-factory-v1-1"
+    }
+  },
+  "hyperithm-usdc-apex-v2-9e2f": {
+    "address": "0x093272C07700d3cA5301C3Bf9B3A392624179E2F",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory"
+    }
   }
 }
