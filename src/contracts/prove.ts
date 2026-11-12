@@ -72,7 +72,7 @@ export function describeRefusal(refusal: Refusal): string {
     case 'unsupported-language':
       return `the source is ${refusal.language}; only Solidity is compiled`;
     case 'compiler-not-pinned':
-      return `solc ${refusal.version} is not pinned in src/contracts/solc-pins.ts`;
+      return `solc ${refusal.version} is not pinned in src/contracts/solc-pins.ts; run \`pnpm pin-solc ${refusal.version}\``;
     case 'compiler-missing':
       return `${refusal.path} is missing; run \`pnpm fetch-solc\``;
     case 'compiler-hash-mismatch':

@@ -425,6 +425,7 @@ test('a compiler version with no pin is refused', async () => {
   answer.body.compilation.compilerVersion = '0.8.29+commit.ab55807c';
   const refused = refusal(await proveAbi(abiCaseReader(fixture), BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({ [BUNDLER3]: answer }), compilers }));
   assert.deepEqual(refused, { why: 'compiler-not-pinned', version: '0.8.29+commit.ab55807c' });
+  assert.match(describeRefusal(refused), /run `pnpm pin-solc 0\.8\.29\+commit\.ab55807c`$/);
 });
 
 test('an unverifiable code read is refused, not proven', async () => {
