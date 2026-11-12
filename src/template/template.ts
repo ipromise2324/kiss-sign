@@ -115,13 +115,31 @@ export type ViewChange = (typeof VIEW_CHANGES)[number];
  * A view function on a registry contract, called just before and just after the transaction with every argument
  * bound. Each return value `changes` names must change that way; the others are not judged.
  */
-export type ViewEffect = {
+/** A view call on a registry contract with every argument bound before any transaction runs. */
+export type BoundView = {
   readonly to: string;
   readonly fn: AbiFunction;
   readonly args: readonly Rule[];
   readonly returns: readonly AbiParam[];
+};
+
+export type ViewEffect = BoundView & {
   /** By the return value's position, which `returns` names. */
   readonly changes: readonly { readonly value: number; readonly change: ViewChange }[];
+};
+
+/**
+ * A view the report reads for every value of one card field, `field`, to show the size of what it names. `verify` never
+ * reads it. Every named return value is shown, counted in its unit's decimals; `ratio`, by return position, is printed
+ * as a percentage.
+ */
+export type Fact = BoundView & {
+  readonly field: string;
+  /** By the return value's position, which `returns` names. */
+  readonly units: readonly { readonly value: number; readonly unit: TokenRef }[];
+  readonly ratio: readonly [number, number] | undefined;
+  /** Where the protocol defines the ratio; present exactly when `ratio` is. */
+  readonly reason: string | undefined;
 };
 
 export type Template = {
@@ -133,6 +151,7 @@ export type Template = {
   readonly same: readonly CardRef[];
   readonly calls: readonly TemplateCall[];
   readonly effects: { readonly gives: readonly Effect[]; readonly gets: readonly Effect[]; readonly views: readonly ViewEffect[] };
+  readonly facts: readonly Fact[];
 };
 
 export const TEMPLATES_DIR = 'templates';
@@ -509,9 +528,8 @@ function boundArgument(path: string, rule: Rule): void {
   else if (!['card', 'safe', 'contract', 'const'].includes(rule.kind)) throw new TemplateError(path, `a view's argument is bound by card, safe, contract or const, not ${rule.kind}`);
 }
 
-function view(path: string, raw: unknown, scope: Scope): ViewEffect {
-  const value = object(path, raw);
-  exactKeys(path, value, ['to', 'function', 'args', 'change']);
+/** `to`, `function` and `args` of a view, as `effects.views` and `facts` write them. */
+function boundView(path: string, value: Json, scope: Scope): BoundView {
   const to = rule(`${path}.to`, value.to, { kind: 'address' }, scope);
   if (to.kind !== 'contract') throw new TemplateError(`${path}.to`, 'must name a registry contract');
   let parsed: ReturnType<typeof parseViewSignature>;
@@ -524,6 +542,13 @@ function view(path: string, raw: unknown, scope: Scope): ViewEffect {
   const { fn, returns } = parsed;
   const args = params(`${path}.args`, value.args, fn.params, scope);
   args.forEach((arg, i) => boundArgument(`${path}.args.${paramName(fn.params[i] as AbiParam, i)}`, arg));
+  return { to: to.name, fn, args, returns };
+}
+
+function view(path: string, raw: unknown, scope: Scope): ViewEffect {
+  const value = object(path, raw);
+  exactKeys(path, value, ['to', 'function', 'args', 'change']);
+  const { to, fn, args, returns } = boundView(path, value, scope);
   const changes = Object.entries(object(`${path}.change`, value.change)).map(([name, change]) => {
     const at = `${path}.change.${name}`;
     const index = returns.findIndex((param) => param.name === name);
@@ -535,12 +560,61 @@ function view(path: string, raw: unknown, scope: Scope): ViewEffect {
     return { value: index, change: known };
   });
   if (changes.length === 0) throw new TemplateError(`${path}.change`, 'names no return value');
-  return { to: to.name, fn, args, returns, changes };
+  return { to, fn, args, returns, changes };
+}
+
+function ruleLeaves(rule: Rule): Rule[] {
+  if (rule.kind === 'fields') return rule.fields.flatMap(ruleLeaves);
+  if (rule.kind === 'items') return rule.items.flatMap(ruleLeaves);
+  return [rule];
+}
+
+function fact(path: string, raw: unknown, scope: Scope): Fact {
+  const value = object(path, raw);
+  exactKeys(path, value, ['to', 'function', 'args', 'units'], ['ratio', 'reason']);
+  const view = boundView(path, value, scope);
+  const leaves = view.args.flatMap(ruleLeaves);
+  if (leaves.some((rule) => rule.kind === 'safe')) throw new TemplateError(`${path}.args`, "a fact never reads the Safe's state");
+  const fields = [...new Set(leaves.flatMap((rule) => (rule.kind === 'card' ? [rule.ref.field] : [])))];
+  const [field] = fields;
+  if (field === undefined || fields.length > 1) throw new TemplateError(`${path}.args`, `must name exactly one card field, not ${fields.length}`);
+  const kind = scope.card.get(field)?.kind;
+  if (kind !== 'contract' && kind !== 'market') throw new TemplateError(`${path}.args`, `card field ${field} is not a contract or a market field`);
+  const units = Object.entries(object(`${path}.units`, value.units)).map(([name, raw]) => {
+    const at = `${path}.units.${name}`;
+    const index = view.returns.findIndex((param) => param.name === name);
+    const type = view.returns[index]?.type;
+    if (type === undefined) throw new TemplateError(at, `not a named return value of ${view.fn.name}`);
+    if (type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(at, `${canonicalType(type)} is not a number; only a number is counted in a token`);
+    const token = text(at, raw);
+    if (token === 'eth') return { value: index, unit: 'eth' as const };
+    const ref = cardFieldName(token);
+    if (ref === undefined) throw new TemplateError(at, 'must be eth or card.<field>');
+    const unit = cardToken(at, ref, scope.card);
+    if (unit.field !== field) throw new TemplateError(at, `must be a token of card field ${field}, which the fact reads for`);
+    return { value: index, unit };
+  });
+  const unnamed = view.returns.find((param) => param.name !== undefined && !units.some((u) => view.returns[u.value] === param));
+  if (unnamed !== undefined) throw new TemplateError(`${path}.units`, `names no unit for ${unnamed.name}; leave a return value unnamed to leave it unshown`);
+  let ratio: Fact['ratio'];
+  if (value.ratio !== undefined) {
+    const pair = array(`${path}.ratio`, value.ratio);
+    const of = pair.map((name, i) => units.find((u) => view.returns[u.value]?.name === text(`${path}.ratio[${i}]`, name)));
+    const [a, b] = of;
+    if (pair.length !== 2 || a === undefined || b === undefined || a === b) throw new TemplateError(`${path}.ratio`, 'must name two different named return values');
+    if (JSON.stringify(a.unit) !== JSON.stringify(b.unit)) throw new TemplateError(`${path}.ratio`, 'names two values counted in different tokens');
+    ratio = [a.value, b.value];
+  }
+  const reason = value.reason === undefined ? undefined : text(`${path}.reason`, value.reason);
+  if ((ratio === undefined) !== (reason === undefined)) {
+    throw new TemplateError(`${path}.reason`, ratio === undefined ? 'explains a ratio the fact does not name' : 'missing: say where the protocol defines the ratio');
+  }
+  return { ...view, field, units, ratio, reason };
 }
 
 export function parseTemplate(raw: unknown, registry: Registry): Template {
   const value = object('template', raw);
-  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same']);
+  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same', 'facts']);
   const id = text('id', value.id);
   if (!ID.test(id)) throw new TemplateError('id', 'not <protocol>/<operation>');
   const pending = Object.entries(object('card', value.card)).map(([name, field]) => {
@@ -569,6 +643,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
       gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets')),
       views: effects.views === undefined ? [] : array('effects.views', effects.views).map((v, i) => view(`effects.views[${i}]`, v, scope)),
     },
+    facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope)),
   };
 }
 
