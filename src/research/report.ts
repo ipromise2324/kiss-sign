@@ -15,7 +15,7 @@ import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, isAttribute, isMarketE
 import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
+import { TEMPLATES_DIR, inScope, loadTemplate, scopeEntries } from '../template/template.ts';
 import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
 import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
@@ -112,7 +112,7 @@ export function refNames(ref: CardRef, template: Template, registry: Registry): 
     return attribute !== undefined && isMarketEntryPart(attribute) ? [...new Set([...registry.markets.values()].map((m) => m[attribute].name))] : [];
   }
   if (field?.kind !== 'contract') return [];
-  const candidates = [...registry.entries.values()].filter((e) => e.kind === field.registryKind);
+  const candidates = scopeEntries(field.scope, registry);
   if (attribute === undefined) return candidates.map((e) => e.name);
   return isAttribute(attribute) ? [...new Set(candidates.flatMap((e) => e.attributes[attribute] ?? []))] : [];
 }
@@ -217,7 +217,7 @@ export const hasMarket = (template: Template): boolean => [...template.card.valu
 function cardCandidates(template: Template, registry: Registry): RegistryEntry[] {
   const inMarkets = new Set(hasMarket(template) ? [...registry.markets.values()].flatMap((market) => MARKET_ENTRY_PARTS.map((part) => market[part].name)) : []);
   return [...registry.entries.values()].filter(
-    (entry) => inMarkets.has(entry.name) || [...template.card.values()].some((field) => field.kind === 'contract' && field.registryKind === entry.kind),
+    (entry) => inMarkets.has(entry.name) || [...template.card.values()].some((field) => field.kind === 'contract' && inScope(field.scope, entry)),
   );
 }
 
@@ -438,7 +438,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   for (const [name, field] of template.card) {
     const takes =
       field.kind === 'contract'
-        ? `a registry ${code(field.registryKind)}, picked by number from the list below`
+        ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}, picked by number from the list below`
         : field.kind === 'amount'
           ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}`
           : field.kind === 'nonce'
@@ -453,8 +453,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   for (const [name, field] of template.card) {
     if (field.kind !== 'contract') continue;
     out.push('', `${code(name)} can name:`, '', '| Name | Address | Attributes |', '| --- | --- | --- |');
-    for (const entry of registry.entries.values()) {
-      if (entry.kind !== field.registryKind) continue;
+    for (const entry of scopeEntries(field.scope, registry)) {
       const attributes = Object.entries(entry.attributes).map(([key, target]) => `${key} ${full(registry.entries.get(target) as RegistryEntry)}`);
       out.push(`| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${attributes.join('; ')} |`);
     }

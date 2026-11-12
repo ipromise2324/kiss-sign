@@ -79,6 +79,17 @@ test('morpho/vault-deposit: rules name registry entries with full addresses, and
   assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
 });
 
+test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
+  const template = parseTemplate({ ...raw, card: { ...raw.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } }, registry);
+  const subject: Subject = { ...loadSubject(ROOT, registry, { template: 'fluid/vault-deposit' }), template } as Subject;
+  const vaults = entriesOf(subject, registry).filter((entry) => entry.kind === 'vault').map((entry) => entry.name);
+  assert.deepEqual(vaults, ['fluid-fusdc', 'fluid-fusdt']);
+  const text = quick(recording.pages, new Map(), subject);
+  assert.match(text, /\| `vault` \| a registry `vault` of the DefiLlama protocol `fluid-lending`, picked by number from the list below \|/);
+  assert.ok(!text.includes('steakhouse-prime-usdc'), 'no Morpho vault is listed');
+});
+
 test('morpho/vault-deposit: the ERC-7730 section is computed again from the recorded descriptors and attestation reads', async () => {
   const snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
   const entries = entriesOf(loadSubject(ROOT, registry, { template: ID }), registry);

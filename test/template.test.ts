@@ -234,7 +234,7 @@ test('a share price bound or equals names a card amount or an earlier uint argum
 
 test('the template parses its card fields and effects', () => {
   assert.deepEqual([...template.card], [
-    ['vault', { kind: 'contract', registryKind: 'vault' }],
+    ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: undefined } }],
     ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' } }],
     ['min-shares', { kind: 'amount', of: { field: 'vault', attribute: undefined } }],
   ]);
@@ -256,6 +256,20 @@ test('a card name the registry and address book do not know is refused', () => {
   assert.deepEqual(refusal(card({ vault: 'steakhouse-prime-usdc', amount: '1.5' })), ['not-an-amount', 'operations[0].values.amount']);
   assert.deepEqual(refusal(card({ vault: 'steakhouse-prime-usdc' })), ['missing-value', 'operations[0].values.amount']);
   assert.deepEqual(refusal({ operations: [{ template: 'morpho/vault-withdraw', values: {} }] }), ['unknown-template', 'operations[0]']);
+});
+
+test('a contract field that names its protocol takes only that protocol\'s entries of its kind', () => {
+  const scoped = (slug: string) => parseTemplate({ ...rawTemplate, card: { ...rawTemplate.card, vault: { kind: 'contract', registryKind: 'vault', defillama: slug } } }, registry);
+  const resolve = (slug: string, vault: string) => {
+    const t = scoped(slug);
+    const result = resolveCard({ operations: [{ template: t.id, values: { vault, amount: '1', 'min-shares': '1' } }] }, { ...context(), templates: new Map([[t.id, t]]) });
+    return result.kind === 'refused' ? { reason: result.reason, at: result.at, detail: result.detail } : result.kind;
+  };
+  assert.equal(resolve('morpho-blue', 'steakhouse-prime-usdc'), 'resolved');
+  assert.deepEqual(resolve('morpho-blue', 'fluid-fusdc'), { reason: 'wrong-protocol', at: 'operations[0].values.vault', detail: 'fluid-fusdc is a vault of fluid-lending, not of morpho-blue' });
+  assert.deepEqual(resolve('fluid-lending', 'steakhouse-prime-usdc'), { reason: 'wrong-protocol', at: 'operations[0].values.vault', detail: 'steakhouse-prime-usdc is a vault of morpho-blue, not of fluid-lending' });
+  assert.deepEqual(resolve('fluid-lending', 'usdc'), { reason: 'wrong-contract-kind', at: 'operations[0].values.vault', detail: 'usdc is a token, not a vault' });
+  assert.throws(() => scoped('fluid'), (e: unknown) => e instanceof TemplateError && e.message === 'card.vault.defillama: no registry vault carries the DefiLlama slug "fluid"');
 });
 
 test('a card resolves an address kind through the Safe, the registry and the address book', () => {

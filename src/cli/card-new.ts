@@ -10,10 +10,10 @@ import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import { kissSignHome } from '../keys.ts';
 import { isAttribute, isMarketEntryPart, loadRegistry } from '../registry.ts';
-import type { Attribute, ContractKind, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import type { Attribute, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
+import { TEMPLATES_DIR, loadTemplate, scopeEntries } from '../template/template.ts';
 import type { CardField, Template, TokenRef } from '../template/template.ts';
 import { UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
@@ -28,13 +28,12 @@ type ChosenField = Exclude<CardField, TypedField>;
 
 /** The names a field may hold, as resolveCard accepts them. */
 function choicesFor(field: Exclude<ChosenField, { kind: 'market' }>, { registry, book, safe }: Sources): readonly Choice[] {
-  const contracts = (kind?: ContractKind): Choice[] =>
-    [...registry.entries.values()].filter((e) => kind === undefined || e.kind === kind).map((e) => ({ name: e.name, address: e.address, from: 'registry' }));
+  const contracts = (): Choice[] => [...registry.entries.values()].map((e) => ({ name: e.name, address: e.address, from: 'registry' }));
   const self: Choice = { name: 'safe', address: safe, from: 'safe' };
   const booked = [...book].map(([name, address]): Choice => ({ name, address, from: 'address-book' }));
   switch (field.kind) {
     case 'contract':
-      return contracts(field.registryKind);
+      return scopeEntries(field.scope, registry).map((e) => ({ name: e.name, address: e.address, from: 'registry' }));
     case 'address':
       return [self, ...contracts(), ...booked];
     case 'recipient':

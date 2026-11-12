@@ -322,6 +322,21 @@ test('card new asks for base units when the token is no registry contract, so it
   assert.match(made.stdout, /amount: 5\n/);
 });
 
+test('card new lists only the entries of the protocol a contract field names, and refuses any other', async () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
+  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  const fluid = JSON.parse(readFileSync(join(ROOT, 'templates', 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
+  mkdirSync(join(repoRoot, 'templates', 'test', 'fluid-only'), { recursive: true });
+  const template = { ...fluid, id: 'test/fluid-only', card: { ...fluid.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } };
+  writeFileSync(join(repoRoot, 'templates', 'test', 'fluid-only', 'template.json'), JSON.stringify(template));
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'test/fluid-only'], home, ['steakhouse-prime-usdc'], { ...mainnet(), repoRoot });
+  assert.equal(made.code, 1);
+  assert.match(made.stdout, /vault:\n  1\. fluid-fusdc 0x\w{40} \(registry\)\n  2\. fluid-fusdt 0x\w{40} \(registry\)\n/);
+  assert.match(made.stderr, /vault: "steakhouse-prime-usdc" is none of the listed choices/);
+});
+
 test('card new lists each market with its id, its lltv and every part, takes the id as the answer, and counts its amount in the loan token', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
   cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });

@@ -3,13 +3,33 @@ import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
 import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName } from '../registry.ts';
-import type { Attribute, ContractKind, MarketPart, Registry } from '../registry.ts';
+import type { Attribute, ContractKind, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
+/**
+ * The registry entries a contract card field accepts: those of `registryKind`, and when `protocol` is set, only those
+ * whose `defillama` slug it is.
+ */
+export type EntryScope = { readonly registryKind: ContractKind; readonly protocol: string | undefined };
+
+/** Why `entry` cannot fill a contract card field of `scope`, or undefined when it can. */
+export function contractRefusal(scope: EntryScope, entry: RegistryEntry): { readonly reason: 'wrong-contract-kind' | 'wrong-protocol'; readonly detail: string } | undefined {
+  if (entry.kind !== scope.registryKind) return { reason: 'wrong-contract-kind', detail: `${entry.name} is a ${entry.kind}, not a ${scope.registryKind}` };
+  if (scope.protocol !== undefined && entry.defillama !== scope.protocol) {
+    return { reason: 'wrong-protocol', detail: `${entry.name} is a ${entry.kind} of ${entry.defillama ?? 'no DefiLlama protocol'}, not of ${scope.protocol}` };
+  }
+  return undefined;
+}
+
+export const inScope = (scope: EntryScope, entry: RegistryEntry): boolean => contractRefusal(scope, entry) === undefined;
+
+/** Every registry entry a contract card field of `scope` accepts, in registry order. */
+export const scopeEntries = (scope: EntryScope, registry: Registry): RegistryEntry[] => [...registry.entries.values()].filter((entry) => inScope(scope, entry));
+
 /** What the signer fills in at each signing. */
 export type CardField =
-  | { readonly kind: 'contract'; readonly registryKind: ContractKind }
+  | { readonly kind: 'contract'; readonly scope: EntryScope }
   /** A base-unit integer of the token `of` names. */
   | { readonly kind: 'amount'; readonly of: TokenRef }
   /** A registry name, an address-book name, or `safe`. */
@@ -169,7 +189,7 @@ function cardRef(path: string, raw: string, card: CardFields): CardRef {
     return { field, attribute: part };
   }
   if (!isAttribute(attribute)) throw new TemplateError(path, `${JSON.stringify(attribute)} is not a registry attribute`);
-  if (target.kind !== 'contract' || !(ATTRIBUTES[attribute].of as readonly ContractKind[]).includes(target.registryKind)) {
+  if (target.kind !== 'contract' || !(ATTRIBUTES[attribute].of as readonly ContractKind[]).includes(target.scope.registryKind)) {
     throw new TemplateError(path, `card field ${field} has no ${attribute}`);
   }
   return { field, attribute };
@@ -421,14 +441,18 @@ function templateCall(path: string, raw: unknown, scope: Scope, last: boolean): 
 }
 
 /** A field's parser waits for the full field list, since `amount.of` may name a field declared after it. */
-function cardField(path: string, raw: unknown): (fields: CardFields) => CardField {
+function cardField(path: string, raw: unknown, registry: Registry): (fields: CardFields) => CardField {
   const value = object(path, raw);
   switch (value.kind) {
     case 'contract': {
-      exactKeys(path, value, ['kind', 'registryKind']);
+      exactKeys(path, value, ['kind', 'registryKind'], ['defillama']);
       const registryKind = CONTRACT_KINDS.find((k) => k === value.registryKind);
       if (registryKind === undefined) throw new TemplateError(`${path}.registryKind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
-      return () => ({ kind: 'contract', registryKind });
+      const scope = { registryKind, protocol: value.defillama === undefined ? undefined : text(`${path}.defillama`, value.defillama) };
+      if (scope.protocol !== undefined && scopeEntries(scope, registry).length === 0) {
+        throw new TemplateError(`${path}.defillama`, `no registry ${registryKind} carries the DefiLlama slug ${JSON.stringify(scope.protocol.slice(0, 80))}`);
+      }
+      return () => ({ kind: 'contract', scope });
     }
     case 'amount': {
       exactKeys(path, value, ['kind', 'of']);
@@ -521,7 +545,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   if (!ID.test(id)) throw new TemplateError('id', 'not <protocol>/<operation>');
   const pending = Object.entries(object('card', value.card)).map(([name, field]) => {
     if (!isEntryName(name) || name.includes('.')) throw new TemplateError(`card.${name}`, 'not a card field name');
-    return [name, cardField(`card.${name}`, field)] as const;
+    return [name, cardField(`card.${name}`, field, registry)] as const;
   });
   const fields = new Map<string, CardField>(pending.map(([name]) => [name, { kind: 'address' }]));
   for (const [name, build] of pending) fields.set(name, build(fields));
