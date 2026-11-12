@@ -190,6 +190,7 @@ test('card seal refuses a name in neither the registry nor the address book', as
 
 const STEAKHOUSE = '0xbeef088055857739C12CD3765F20b7679Def0f51';
 const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+const VAULT_V2_FACTORY = '0xA1D94F746dEfa1928926b84fB2596c06926C0405';
 const HEAD = 21_000_000;
 const HEAD_HASH = `0x${'ab'.repeat(32)}`;
 
@@ -233,12 +234,12 @@ async function sealedFile(values: Record<string, string>) {
   return /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
 }
 
-test('card new takes amounts in whole tokens, reads decimals on chain, and seals base units as card seal would', async () => {
+test('card new lists a vault with the factory that created it, takes amounts in whole tokens, reads decimals on chain, and seals base units as card seal would', async () => {
   const home = freshHome();
   configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', '4.8', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
-  assert.match(made.stdout, new RegExp(`\\d+\\. steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)`));
+  assert.match(made.stdout, new RegExp(`  \\d+\\. steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)  \\(factory vault-v2-factory ${VAULT_V2_FACTORY}\\)\n`));
   assert.equal(made.asked[1], `amount (usdc ${USDC}, 6 decimals): `);
   assert.equal(made.asked[2], `min-shares (steakhouse-prime-usdc ${STEAKHOUSE}, 18 decimals): `);
   assert.ok(made.stdout.includes(`usdc ${USDC} has 6 decimals: decimals() at block ${HEAD}, where alchemy and drpc agree\n`));

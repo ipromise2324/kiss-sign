@@ -19,7 +19,8 @@ import { UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
 import { requireConfig, seal } from './setup.ts';
 
-type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' };
+/** A name a field may hold; a registry entry carries the factory that created it, so two vaults of one display name stay apart. */
+type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe'; readonly factory?: RegistryEntry };
 
 type Sources = { readonly registry: Registry; readonly book: AddressBook; readonly safe: Address };
 
@@ -28,12 +29,16 @@ type ChosenField = Exclude<CardField, TypedField>;
 
 /** The names a field may hold, as resolveCard accepts them. */
 function choicesFor(field: Exclude<ChosenField, { kind: 'market' }>, { registry, book, safe }: Sources): readonly Choice[] {
-  const contracts = (): Choice[] => [...registry.entries.values()].map((e) => ({ name: e.name, address: e.address, from: 'registry' }));
+  const listed = (e: RegistryEntry): Choice => {
+    const factory = e.attributes.factory === undefined ? undefined : registry.entries.get(e.attributes.factory);
+    return { name: e.name, address: e.address, from: 'registry', ...(factory === undefined ? {} : { factory }) };
+  };
+  const contracts = (): Choice[] => [...registry.entries.values()].map(listed);
   const self: Choice = { name: 'safe', address: safe, from: 'safe' };
   const booked = [...book].map(([name, address]): Choice => ({ name, address, from: 'address-book' }));
   switch (field.kind) {
     case 'contract':
-      return scopeEntries(field.scope, registry).map((e) => ({ name: e.name, address: e.address, from: 'registry' }));
+      return scopeEntries(field.scope, registry).map(listed);
     case 'address':
       return [self, ...contracts(), ...booked];
     case 'recipient':
@@ -46,7 +51,10 @@ type Option = { readonly name: string; readonly id: Hex | Address; readonly line
 
 function optionsFor(field: ChosenField, sources: Sources): readonly Option[] {
   if (field.kind === 'market') return [...sources.registry.markets.values()].map((market) => ({ name: market.name, id: market.id, lines: marketLines(market) }));
-  return choicesFor(field, sources).map((c) => ({ name: c.name, id: c.address, lines: [`${c.name} ${checksumAddress(c.address)} (${c.from})`] }));
+  return choicesFor(field, sources).map((c) => {
+    const factory = c.factory === undefined ? '' : `  (factory ${c.factory.name} ${checksumAddress(c.factory.address)})`;
+    return { name: c.name, id: c.address, lines: [`${c.name} ${checksumAddress(c.address)} (${c.from})${factory}`] };
+  });
 }
 
 /** The choices a typed answer names: by its listed number, its exact name, or its full address or market id in any case. */
