@@ -185,7 +185,7 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
 }
 
 /** The registry entries the template's calls go to, nested calls' targets included, in call order. */
-function callTargetEntries(template: Template, registry: Registry): RegistryEntry[] {
+export function callTargetEntries(template: Template, registry: Registry): RegistryEntry[] {
   const empty = template.calls.flatMap((call) => (call.data === 'empty' ? (targetNames(call.to, template, registry) ?? []) : []));
   const names = new Set([...callTargets(template, registry).values()].flat().concat(empty));
   return [...names].map((name) => registry.entries.get(name) as RegistryEntry);
