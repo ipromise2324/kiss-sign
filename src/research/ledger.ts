@@ -285,7 +285,6 @@ function fixtureFinding(judgement: FixtureJudgement): Finding {
   const { outcome } = judgement;
   if (outcome.kind === 'card-refused') return { kind: 'judged-otherwise', why: 'card-refused', detail: outcome.why };
   const { mutations, perturbation } = outcome;
-  if (mutations.kind === 'not-run' && mutations.check.kind === 'unverifiable') return { kind: 'no-answer' };
   if (mutations.kind === 'not-run') return { kind: 'judged-otherwise', why: 'fields', detail: `the fields give ${mutations.check.kind.toUpperCase()}` };
   if (mutations.kind === 'weak-template') return { kind: 'judged-otherwise', why: 'mutation-uncaught', detail: `${mutations.uncaught.length} bound fields changed and not caught` };
   if (perturbation.kind === 'not-run' && perturbation.cause === 'unverifiable') return { kind: 'no-answer' };
