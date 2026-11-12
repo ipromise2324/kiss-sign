@@ -4,7 +4,7 @@ import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { paramName } from '../decode/abi.ts';
 import type { AbiType } from '../decode/abi.ts';
 import { decodeCall } from '../decode/codec.ts';
-import type { AbiValue, Region, Span } from '../decode/codec.ts';
+import type { AbiValue, DecodeFailure, DecodedCall, Region, Span } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
@@ -188,8 +188,12 @@ function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: strin
   compareLeaf(rule, type, leaf, actual.span, callPath, arg, context);
 }
 
+/** `region` decoded as `node`'s function, allowing the trailer the template allows. */
+export const decodeTemplateCall = (node: CallNode, region: Region): DecodedCall | DecodeFailure =>
+  decodeCall(node.fn, region, { trailerMaxBytes: node.trailer?.maxBytes ?? 0 });
+
 function checkCall(node: CallNode, region: Region, callPath: string, context: Context, itemContexts?: readonly Context[]): void {
-  const decoded = decodeCall(node.fn, region, { trailerMaxBytes: node.trailer?.maxBytes ?? 0 });
+  const decoded = decodeTemplateCall(node, region);
   switch (decoded.kind) {
     case 'wrong-selector':
       context.findings.push({ callPath, arg: 'selector', bytes: [decoded.at, decoded.at + 4], expected: `${decoded.expected} ${node.fn.signature}`, actual: decoded.actual });
@@ -225,13 +229,13 @@ function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context, it
 
 export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[] };
 
-type Values = ReadonlyMap<string, ResolvedValue>;
+export type Values = ReadonlyMap<string, ResolvedValue>;
 
 /** One operation's items in a merged call, per argument, checked with that operation's card values. */
 type Part = { readonly args: readonly (readonly Rule[])[]; readonly values: Values };
 
 /** A call the transaction must make. A merged call holds every part, in card order, in each of its array arguments. */
-type ExpectedCall = { readonly call: TemplateCall; readonly values: Values; readonly parts: readonly Part[] | undefined };
+export type ExpectedCall = { readonly call: TemplateCall; readonly values: Values; readonly parts: readonly Part[] | undefined };
 
 function mergeKey(call: TemplateCall): string {
   const data = call.data === 'empty' ? undefined : call.data;
@@ -243,7 +247,7 @@ function mergeKey(call: TemplateCall): string {
  * The calls the card's operations make, in card order. Calls a template marks `merge` are made once per target and
  * function, after every other call, with each operation's items in card order.
  */
-function expectedCalls(operations: readonly { readonly template: Template; readonly values: Values }[]): ExpectedCall[] {
+export function expectedCalls(operations: readonly { readonly template: Template; readonly values: Values }[]): ExpectedCall[] {
   const plain: ExpectedCall[] = [];
   const merged = new Map<string, { call: TemplateCall; values: Values; parts: Part[] }>();
   for (const { template, values } of operations) {

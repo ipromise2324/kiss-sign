@@ -4,18 +4,22 @@ import { parseArgs } from 'node:util';
 import { loadAddressBook } from '../address-book.ts';
 import { cardsDir, loadSealed } from '../card.ts';
 import { canonicalJson } from '../canonical.ts';
+import { readDecimals } from '../chain/decimals.ts';
 import { mainnetEndpoints } from '../chain/providers.ts';
 import { createReader } from '../chain/reader.ts';
+import type { Reader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { loadApproved } from '../config.ts';
 import { kissSignHome } from '../keys.ts';
 import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress, parseHex } from '../safe/types.ts';
+import type { Address } from '../safe/types.ts';
 import { describeCallScan } from '../simulate/simulate.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fileAt, optionalFileAt, selfCheck } from '../verify/self-check.ts';
-import { VERDICT_FORMAT, VerifyError, evaluate, parseVerdictFile } from '../verify/verify.ts';
+import { amountTokens, callTree, renderCallTree } from '../verify/expected.ts';
+import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile } from '../verify/verify.ts';
 import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
 import { FAILED, OK, UsageError } from './io.ts';
 import type { Io } from './io.ts';
@@ -39,6 +43,18 @@ function print({ verdict, hashes, calls }: Evaluation, registry: Registry, io: I
     return;
   }
   io.stdout('No hashes are shown. Do not sign this transaction.\n');
+}
+
+async function tokenDecimals(reader: Reader, tokens: readonly Address[]): Promise<Map<Address, number>> {
+  const decimals = new Map<Address, number>();
+  if (tokens.length === 0) return decimals;
+  const latest = await reader.block('latest');
+  if (latest.kind === 'unverifiable') return decimals;
+  for (const token of tokens) {
+    const read = await readDecimals(reader, token, latest.value);
+    if (typeof read === 'number') decimals.set(token, read);
+  }
+  return decimals;
 }
 
 async function txInput(file: string | undefined, safeTxHash: string | undefined, io: Io): Promise<TxInput> {
@@ -92,7 +108,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   };
   const endpoints = mainnetEndpoints(io.env);
   const recorder = recordingTransport(io.transport, endpoints);
-  const result = await evaluate(inputs, createReader(endpoints, recorder.transport));
+  const { evaluation: result, tx, prepared } = await evaluateTx(inputs, createReader(endpoints, recorder.transport));
   const file: VerdictFile = { format: VERDICT_FORMAT, inputs, exchanges: recorder.exchanges(), result };
   const dir = verdictsDir(home);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
@@ -100,6 +116,11 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   writeFileSync(`${path}.tmp`, `${JSON.stringify(file, null, 2)}\n`, { mode: 0o600 });
   renameSync(`${path}.tmp`, path);
   print(result, parseRegistry(JSON.parse(inputs.registry)), io);
+  if (result.verdict.kind === 'MATCH') {
+    const decimals = await tokenDecimals(createReader(endpoints, io.transport), amountTokens(prepared.card, prepared.templates, prepared.registry));
+    io.stdout(`\n獨立檢查（加強等級）：在獨立電腦執行 ./check.sh ${tx.nonce}，逐項比對\n`);
+    for (const line of renderCallTree(callTree(tx, { ...prepared, decimals }))) io.stdout(`${line}\n`);
+  }
   io.stdout(`Verdict file: ${path}\n`);
   return result.verdict.kind === 'MATCH' ? OK : FAILED;
 }

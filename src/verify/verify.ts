@@ -1,6 +1,7 @@
 import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { parseAddressBook } from '../address-book.ts';
+import type { AddressBook } from '../address-book.ts';
 import { parseCard, resolveCard } from '../card.ts';
 import type { ResolvedCard } from '../card.ts';
 import type { Exchange } from '../chain/recording.ts';
@@ -106,6 +107,7 @@ export type Prepared = {
   readonly card: ResolvedCard;
   readonly templates: ReadonlyMap<string, Template>;
   readonly approvals: readonly TemplateApproval[];
+  readonly addressBook: AddressBook;
 };
 
 export function prepare(inputs: VerifyInputs): Prepared {
@@ -123,7 +125,7 @@ export function prepare(inputs: VerifyInputs): Prepared {
   const addressBook = guard('the address book', () => parseAddressBook(inputs.addressBook));
   const resolution = resolveCard(card, { templates, registry, addressBook, safe });
   if (resolution.kind === 'refused') throw new VerifyError(`the card is refused at ${resolution.at}: ${resolution.detail}`);
-  return { registry, safe, card: resolution.card, templates, approvals };
+  return { registry, safe, card: resolution.card, templates, approvals, addressBook };
 }
 
 /** Every check on the transaction, given what a simulation or its receipt showed it doing. */
@@ -168,6 +170,11 @@ async function simulatedOn(reader: Reader, executed: Hex | undefined, latest: Bl
  * give the same verdict, which is what `replay` relies on.
  */
 export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Evaluation> {
+  return (await evaluateTx(inputs, reader)).evaluation;
+}
+
+/** `evaluate`, with the transaction it judged and the inputs it prepared, for showing what that transaction does. */
+export async function evaluateTx(inputs: VerifyInputs, reader: Reader): Promise<{ readonly evaluation: Evaluation; readonly tx: SafeTx; readonly prepared: Prepared }> {
   const prepared = prepare(inputs);
   const { safe } = prepared;
   const latest = await reader.block('latest');
@@ -198,7 +205,7 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
     assets: await readAt(claims, (block) => checkAssets(reader, claims, block)),
     code: await readAt(pinned, (block) => checkCode(reader, pinned, block, executed === undefined ? 'pending' : 'executed')),
   };
-  return { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls };
+  return { evaluation: { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls }, tx, prepared };
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);

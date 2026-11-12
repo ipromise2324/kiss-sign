@@ -4,6 +4,7 @@ import { loadAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
 import { CardError, marketLines, parseUint256 } from '../card.ts';
 import type { CardOperation } from '../card.ts';
+import { readDecimals, wholeTokens } from '../chain/decimals.ts';
 import { openMainnetReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
@@ -78,8 +79,6 @@ function unitOf(of: TokenRef, values: Readonly<Record<string, string>>, registry
   return { kind: 'registry', entry };
 }
 
-const DECIMALS = '0x313ce567' as Hex;
-const MAX_DECIMALS = 77;
 const UINT256_LIMIT = 1n << 256n;
 
 type TokenDecimals = (entry: RegistryEntry) => Promise<number>;
@@ -100,15 +99,11 @@ function chainDecimals(reader: Reader | undefined, io: Io): TokenDecimals {
       const block = await reader.block('latest');
       at = block.kind === 'agreed' ? block.value : refuse(block.reason);
     }
-    const read = await reader.call({ to: entry.address, data: DECIMALS }, at);
-    if (read.kind === 'unverifiable') return refuse(read.reason);
-    if (read.value.kind === 'reverted') return refuse('decimals() reverted');
-    if (read.value.data.length !== 66) return refuse(`decimals() answered ${(read.value.data.length - 2) / 2} bytes, not one word`);
-    const decimals = BigInt(read.value.data);
-    if (decimals > BigInt(MAX_DECIMALS)) return refuse(`decimals() answered ${decimals}`);
-    known.set(entry.address, Number(decimals));
+    const decimals = await readDecimals(reader, entry.address, at);
+    if (typeof decimals !== 'number') return refuse(decimals.problem);
+    known.set(entry.address, decimals);
     io.stdout(`${token} has ${decimals} decimals: decimals() at block ${at.number}, where ${reader.providers.join(' and ')} agree\n`);
-    return Number(decimals);
+    return decimals;
   };
 }
 
@@ -123,12 +118,6 @@ function baseUnits(name: string, typed: string, decimals: number, token: string)
   const value = whole.length > 78 ? UINT256_LIMIT : BigInt(whole + fraction.padEnd(decimals, '0'));
   if (value >= UINT256_LIMIT) throw new CardError(`${name}: ${shown} is 2^256 base units or more`);
   return value;
-}
-
-function human(value: bigint, decimals: number): string {
-  const scale = 10n ** BigInt(decimals);
-  const fraction = (value % scale).toString().padStart(decimals, '0').replace(/0+$/, '');
-  return `${value / scale}${fraction === '' ? '' : `.${fraction}`}`;
 }
 
 async function answer(ask: Terminal['ask'], question: string): Promise<string> {
@@ -147,7 +136,7 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   const decimals = unit.kind === 'eth' ? 18 : await ctx.decimals(unit.entry);
   const full = unit.kind === 'eth' ? 'eth' : `${token} ${checksumAddress(unit.entry.address)}`;
   const value = baseUnits(name, await answer(ctx.ask, `${name} (${full}, ${decimals} decimals): `), decimals, token);
-  const line = `${name}: ${human(value, decimals)} ${token} = ${value} base units`;
+  const line = `${name}: ${wholeTokens(value, decimals)} ${token} = ${value} base units`;
   ctx.io.stdout(`  ${line}\n`);
   ctx.amounts.push(line);
   return value.toString();
