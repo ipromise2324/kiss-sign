@@ -6,10 +6,10 @@ import { replayReader } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { DEFILLAMA_PROTOCOLS, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
-import { DEFILLAMA_HACKS, FactsRecordingError, factsRecording, parseFactsRecording, protocolFacts, replaySources } from '../src/research/protocol-facts.ts';
+import { DEFILLAMA_HACKS, FactsRecordingError, factsRecording, factsScope, parseFactsRecording, protocolFacts, replaySources } from '../src/research/protocol-facts.ts';
 import type { FactsRecording, FactsSources, ProtocolFacts } from '../src/research/protocol-facts.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { compareReports, entriesOf, factsScopeOf, loadSubject, renderReport, reportRecordingPath } from '../src/research/report.ts';
+import { compareReports, entriesOf, loadSubject, renderReport, reportRecordingPath } from '../src/research/report.ts';
 import type { ReportRecording } from '../src/research/report.ts';
 import type { Hex } from '../src/safe/types.ts';
 
@@ -21,7 +21,7 @@ const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath({ templ
 const recorded = parseFactsRecording(recording.facts) as FactsRecording;
 const subject = loadSubject(ROOT, registry, { template: ID });
 const entries = entriesOf(subject, registry);
-const scope = factsScopeOf(subject.kind === 'template' ? subject.template : assert.fail(), registry, entries);
+const scope = factsScope(subject.kind === 'template' ? subject.template : assert.fail(), registry, entries);
 const block = { number: BigInt(recorded.block.number), hash: recorded.block.hash };
 
 /** DefiLlama's answers as served: every field of the wire shape, most of which the facts never read. */

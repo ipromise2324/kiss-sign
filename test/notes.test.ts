@@ -78,6 +78,14 @@ test('an unknown key is refused, at any level', () => {
   refused(edited(['protocols', 'morpho-blue', 'audits', 'title'], 'x'), 'notes.json.protocols.morpho-blue.audits: unknown key "title"');
 });
 
+test('a key an object inherits is refused as unknown, at any level', () => {
+  refused(edited(['constructor'], 'x'), 'notes.json: unknown key "constructor"');
+  refused(edited(['verdict', 'toString'], 'x'), 'notes.json.verdict: unknown key "toString"');
+  refused(JSON.parse(`{"__proto__": {}, ${JSON.stringify(VALID).slice(1)}`), 'notes.json: unknown key "__proto__"');
+  refused(edited(['protocols', 'constructor'], {}), 'notes.json.protocols: "constructor" is not a protocol the protocol facts cover');
+  refused(edited(['fields', 'hasOwnProperty'], 'x'), 'notes.json.fields: "hasOwnProperty" is not an argument of the template');
+});
+
 test('a missing title, summary or verdict is refused', () => {
   refused(edited(['title'], undefined), 'notes.json: title is missing');
   refused(edited(['verdict', 'text'], undefined), 'notes.json.verdict: text is missing');
@@ -125,7 +133,7 @@ test('a source that is not an https URL is refused', () => {
 });
 
 test('a control or bidirectional character is refused', () => {
-  refused(edited(['summary'], 'a\u202eb'), 'notes.json.summary: holds a control or bidirectional character');
+  for (const mark of ['\u202e', '\u200e', '\u200f', '\u061c']) refused(edited(['summary'], `a${mark}b`), 'notes.json.summary: holds a control or bidirectional character');
 });
 
 test('text over its limit is refused: 2,000, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict', () => {

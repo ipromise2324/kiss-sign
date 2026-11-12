@@ -1,3 +1,4 @@
+import { hexToBytes } from '@noble/hashes/utils.js';
 import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { wholeTokens } from '../chain/decimals.ts';
@@ -12,15 +13,15 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
+import { refNames } from '../template/template.ts';
 import type { CardRef, ConstValue, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import { addressRows, confidence, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
-import { constText } from './study.ts';
-import type { ProtocolFacts } from './protocol-facts.ts';
-import { refNames } from './report.ts';
+import { factsScope } from './protocol-facts.ts';
+import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
 declare const anchorBrand: unique symbol;
@@ -45,7 +46,6 @@ const research = (text: string, sources: readonly HttpsUrl[] = [], tag = 'AI 研
 
 export type RailCount = { readonly kind: 'text'; readonly text: string } | { readonly kind: 'state'; readonly state: State | 'ask'; readonly n: number };
 
-/** Sections in page order. The contents rail is `sections.map`, so a link and its section cannot disagree. */
 export type Page = {
   readonly id: string;
   readonly header: Header;
@@ -134,7 +134,6 @@ export type AddressRow = {
   readonly state: State;
   readonly role: AiText | undefined;
   readonly confidence: Confidence;
-  /** Beside the confidence and apart from it; it never moves it. */
   readonly reviewed: 'AI 已確認' | 'AI 有疑慮' | undefined;
   readonly address: string;
   readonly sources: readonly SourceLine[];
@@ -193,6 +192,7 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   'name-not-on-page': { title: '文件頁上找不到函式名稱', why: '文件頁的原始網頁裡沒有這個函式的名稱。' },
   'no-chain-result': { title: '程式碼區段沒有鏈上結果', why: '這段 code pin 沒有從鏈上讀到判定。' },
   'not-pinned': { title: '沒有 code pin', why: '這個合約沒有登記程式碼，簽名時會是 UNVERIFIABLE。' },
+  'no-abi-case': { title: '沒有 ABI 證明的紀錄', why: 'testdata/abi 沒有這個合約的 ABI 證明，程式沒有比對它的原始碼。' },
 };
 
 const ZERO_ADDRESS = `0x${'0'.repeat(40)}`;
@@ -232,7 +232,23 @@ const lltvWords = (lltv: bigint): string => `${percent(lltv, 10n ** 18n).replace
 
 const marketWords = (market: Market): string => `${market.loanToken.name} / ${market.collateralToken.name}，LLTV ${lltvWords(market.lltv)}`;
 
-const constCast = (value: ConstValue): string => (value.kind === 'address' ? checksumAddress(value.value) : constText(value));
+export const constCast = (value: ConstValue): string => {
+  const span = [0, 0] as const;
+  switch (value.kind) {
+    case 'uint':
+    case 'int':
+      return castValue({ kind: value.kind, value: value.value, span });
+    case 'address':
+      return castValue({ kind: value.kind, value: value.value, span });
+    case 'bool':
+      return castValue({ kind: value.kind, value: value.value, span });
+    case 'fixed-bytes':
+      return castValue({ kind: value.kind, value: value.value, span });
+    case 'bytes':
+    case 'string':
+      return castValue({ kind: value.kind, value: hexToBytes(value.value.slice(2)), span });
+  }
+};
 
 const link = (entry: RegistryEntry): Span => ({ href: entryAnchor(entry.name), label: entry.name });
 
@@ -328,7 +344,6 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
 const chipLabel = (who: Who, field: string | undefined): string =>
   who === 'free' ? 'app 填，不限' : field === undefined || who === 'fixed' ? SHORT[who] : `${SHORT[who]}：${FIELD_WORDS[field] ?? field}`;
 
-/** The leaves under a node, each with who decides it. */
 function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; readonly who: Who; readonly field: string | undefined }[] {
   if (node.rule.kind === 'call') return [];
   if (node.children.length > 0) return node.children.flatMap((child) => leaves(child, template));
@@ -380,7 +395,7 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
         const entry = context.registry.byAddress.get(rule.value.value);
         return { words: rule.value.value === ZERO_ADDRESS ? ['無（零地址）'] : entry === undefined ? ['固定的地址'] : [link(entry)], qualifier: undefined };
       }
-      const text = constText(rule.value);
+      const text = constCast(rule.value);
       return { words: [text.length <= 24 ? `固定為 ${text}` : '固定值'], qualifier: undefined };
     }
     case 'card':
@@ -604,88 +619,114 @@ function flowSection(context: Context): Section {
   };
 }
 
+type ProtocolNote = NonNullable<ReturnType<Notes['protocols']['get']>>;
+
+function sheetRows(context: Context, sheet: ProtocolSheet, facts: ProtocolFacts, note: ProtocolNote | undefined): ProtocolRow[] {
+  const { template, registry } = context;
+  const rows: ProtocolRow[] = [];
+  const { listing } = sheet;
+  if (listing.kind === 'unread') rows.push({ label: 'TVL', value: ['讀不到'], sub: undefined, ai: undefined, nested: [] });
+  else {
+    const { tvl, ethereumTvl, listedFrom } = listing.value;
+    rows.push({ label: 'TVL', value: tvl === undefined ? ['DefiLlama 沒給'] : [{ num: usd(tvl) }], sub: ethereumTvl === undefined ? undefined : ['Ethereum 上 ', { num: usd(ethereumTvl) }], ai: undefined, nested: [] });
+    rows.push({ label: '上線', value: [listedFrom === undefined ? 'DefiLlama 沒給' : { num: listedFrom }], sub: ['DefiLlama 開始列的日期'], ai: undefined, nested: [] });
+  }
+  const proxyWords = { proxy: '是 proxy，可以換實作', 'not a proxy': '不是 proxy', 'not pinned': '沒有 code pin' } as const;
+  const [only, ...more] = sheet.contracts;
+  rows.push(
+    only !== undefined && more.length === 0
+      ? { label: 'proxy', value: [proxyWords[only.proxy]], sub: [link(only.entry), '，從 code pin 讀到'], ai: undefined, nested: [] }
+      : {
+          label: 'proxy',
+          value: [`${sheet.contracts.length} 個合約`],
+          sub: ['從 code pin 讀到'],
+          ai: undefined,
+          nested: sheet.contracts.map(({ entry, proxy }) => ({ label: [link(entry)], value: [proxyWords[proxy]], ai: undefined })),
+        },
+  );
+  if (note !== undefined) rows.push({ label: '稽核', value: [], sub: undefined, ai: research(note.audits.text, note.audits.sources), nested: [] });
+  const incidents = note?.incidents ?? [];
+  rows.push({
+    label: '事故',
+    value: listing.kind === 'unread' ? ['讀不到'] : [`${sheet.hacks.length} 起`],
+    sub: ['DefiLlama hacks 列在這個協議或它上層協議下的'],
+    ai: undefined,
+    nested: sheet.hacks.map((hack, i) => {
+      const incident = incidents[i];
+      return {
+        label: [{ num: hack.date }],
+        value: [hack.amount === undefined ? '金額沒給' : { num: usd(hack.amount) }],
+        ai: incident === undefined ? undefined : research(incident.text, incident.sources),
+      };
+    }),
+  });
+  for (const fact of template.facts.filter((f) => registry.entries.get(f.to)?.defillama === sheet.slug)) {
+    for (const reading of facts.readings.filter((r) => r.fact === fact)) {
+      const value = reading.value;
+      const nested: ProtocolRow['nested'][number][] = [];
+      if (reading.read.kind === 'unread') nested.push({ label: [{ code: fact.fn.name }], value: ['讀不到'], ai: undefined });
+      else {
+        const amounts = reading.read.value;
+        fact.units.forEach((unit, i) => {
+          const amount = amounts[i] as (typeof amounts)[number];
+          const decimals = amount.token === 'eth' ? 18 : decimalsOf(context, amount.token);
+          const name = amount.token === 'eth' ? 'ETH' : (registry.byAddress.get(amount.token)?.name ?? '');
+          nested.push({
+            label: [{ code: paramName(fact.returns[unit.value] as AbiParam, unit.value) }],
+            value: decimals === undefined ? [{ num: amount.amount.toString() }, ' 最小單位'] : [{ num: tokens(amount.amount, decimals, 2) }, ` ${name}`],
+            ai: undefined,
+          });
+        });
+        if (fact.ratio !== undefined) {
+          const [a, b] = fact.ratio;
+          const at = (position: number) => amounts[fact.units.findIndex((u) => u.value === position)]?.amount as bigint;
+          const named = (position: number) => paramName(fact.returns[position] as AbiParam, position);
+          nested.push({ label: [{ code: `${named(a)} / ${named(b)}` }], value: [{ num: percent(at(a), at(b)) }], ai: undefined });
+        }
+      }
+      rows.push({
+        label: value.kind === 'market' ? value.market.name : value.entry.name,
+        value: value.kind === 'market' ? [marketWords(value.market)] : [link(value.entry)],
+        sub: [`${fact.to}.${fact.fn.name}，區塊 ${facts.block.number}`],
+        ai: undefined,
+        nested,
+      });
+    }
+  }
+  return rows;
+}
+
+function unreadRows(note: ProtocolNote | undefined): ProtocolRow[] {
+  return [
+    { label: '協議資料', value: ['沒讀到'], sub: ['這份報告的紀錄沒有協議資料：TVL、上線日期、proxy、事故和 facts 都沒有程式結果'], ai: undefined, nested: [] },
+    ...(note === undefined
+      ? []
+      : [
+          { label: '稽核', value: [], sub: undefined, ai: research(note.audits.text, note.audits.sources), nested: [] },
+          { label: '事故', value: ['沒讀到'], sub: undefined, ai: undefined, nested: note.incidents.map((incident, i) => ({ label: [`${i + 1}`], value: [], ai: research(incident.text, incident.sources) })) },
+        ]),
+  ];
+}
+
 function protocolSections(context: Context): Section[] {
   const { facts, notes, template, registry } = context;
-  if (facts === undefined) return [];
-  return facts.protocols.map((sheet): Section => {
-    const note = notes.protocols.get(sheet.slug);
-    const rows: ProtocolRow[] = [];
-    const { listing } = sheet;
-    if (listing.kind === 'unread') rows.push({ label: 'TVL', value: ['讀不到'], sub: undefined, ai: undefined, nested: [] });
-    else {
-      const { tvl, ethereumTvl, listedFrom } = listing.value;
-      rows.push({ label: 'TVL', value: tvl === undefined ? ['DefiLlama 沒給'] : [{ num: usd(tvl) }], sub: ethereumTvl === undefined ? undefined : ['Ethereum 上 ', { num: usd(ethereumTvl) }], ai: undefined, nested: [] });
-      rows.push({ label: '上線', value: [listedFrom === undefined ? 'DefiLlama 沒給' : { num: listedFrom }], sub: ['DefiLlama 開始列的日期'], ai: undefined, nested: [] });
-    }
-    const proxyWords = { proxy: '是 proxy，可以換實作', 'not a proxy': '不是 proxy', 'not pinned': '沒有 code pin' } as const;
-    rows.push({
-      label: 'proxy',
-      value: sheet.contracts.length === 1 ? [`${proxyWords[(sheet.contracts[0] as (typeof sheet.contracts)[number]).proxy]}`] : [`${sheet.contracts.length} 個合約`],
-      sub: sheet.contracts.length === 1 ? [link((sheet.contracts[0] as (typeof sheet.contracts)[number]).entry), '，從 code pin 讀到'] : ['從 code pin 讀到'],
-      ai: undefined,
-      nested: sheet.contracts.length === 1 ? [] : sheet.contracts.map(({ entry, proxy }) => ({ label: [link(entry)], value: [proxyWords[proxy]], ai: undefined })),
-    });
-    if (note !== undefined) rows.push({ label: '稽核', value: [], sub: undefined, ai: research(note.audits.text, note.audits.sources), nested: [] });
-    const incidents = note?.incidents ?? [];
-    rows.push({
-      label: '事故',
-      value: listing.kind === 'unread' ? ['讀不到'] : [`${sheet.hacks.length} 起`],
-      sub: ['DefiLlama hacks 列在這個協議或它上層協議下的'],
-      ai: undefined,
-      nested: sheet.hacks.map((hack, i) => {
-        const incident = incidents[i];
-        return {
-          label: [{ num: hack.date }],
-          value: [hack.amount === undefined ? '金額沒給' : { num: usd(hack.amount) }],
-          ai: incident === undefined ? undefined : research(incident.text, incident.sources),
-        };
-      }),
-    });
-    for (const fact of template.facts.filter((f) => registry.entries.get(f.to)?.defillama === sheet.slug)) {
-      for (const reading of facts.readings.filter((r) => r.fact === fact)) {
-        const value = reading.value;
-        const nested: ProtocolRow['nested'][number][] = [];
-        if (reading.read.kind === 'unread') nested.push({ label: [{ code: fact.fn.name }], value: ['讀不到'], ai: undefined });
-        else {
-          const amounts = reading.read.value;
-          fact.units.forEach((unit, i) => {
-            const amount = amounts[i] as (typeof amounts)[number];
-            const decimals = amount.token === 'eth' ? 18 : decimalsOf(context, amount.token);
-            const name = amount.token === 'eth' ? 'ETH' : (registry.byAddress.get(amount.token)?.name ?? '');
-            nested.push({
-              label: [{ code: paramName(fact.returns[unit.value] as AbiParam, unit.value) }],
-              value: decimals === undefined ? [{ num: amount.amount.toString() }, ' 最小單位'] : [{ num: tokens(amount.amount, decimals, 2) }, ` ${name}`],
-              ai: undefined,
-            });
-          });
-          if (fact.ratio !== undefined) {
-            const [a, b] = fact.ratio;
-            const at = (position: number) => amounts[fact.units.findIndex((u) => u.value === position)]?.amount as bigint;
-            const named = (position: number) => paramName(fact.returns[position] as AbiParam, position);
-            nested.push({ label: [{ code: `${named(a)} / ${named(b)}` }], value: [{ num: percent(at(a), at(b)) }], ai: undefined });
-          }
-        }
-        rows.push({
-          label: value.kind === 'market' ? value.market.name : value.entry.name,
-          value: value.kind === 'market' ? [marketWords(value.market)] : [link(value.entry)],
-          sub: [`${fact.to}.${fact.fn.name}，區塊 ${facts.block.number}`],
-          ai: undefined,
-          nested,
-        });
-      }
-    }
-    const apis = context.ledger.entries.filter((e) => e.defillama === sheet.slug && e.apiSource !== undefined).map((e) => e.apiSource?.url as HttpsUrl);
+  const slugs = (facts?.protocols ?? factsScope(template, registry, context.ledger.entries).protocols).map((p) => p.slug);
+  return slugs.map((slug): Section => {
+    const note = notes.protocols.get(slug);
+    const sheet = facts?.protocols.find((s) => s.slug === slug);
+    const rows = facts === undefined || sheet === undefined ? unreadRows(note) : sheetRows(context, sheet, facts, note);
+    const apis = context.ledger.entries.flatMap((e) => (e.defillama === slug && e.apiSource !== undefined ? [e.apiSource.url] : []));
     const sources = [
-      { label: 'DefiLlama', href: parseHttpsUrl(`https://defillama.com/protocol/${sheet.slug}`) },
+      { label: 'DefiLlama', href: parseHttpsUrl(`https://defillama.com/protocol/${slug}`) },
       { label: 'DefiLlama hacks', href: parseHttpsUrl('https://defillama.com/hacks') },
       { label: '鏈上', href: undefined },
       ...[...new Set(apis)].map((href) => ({ label: '協議 API', href })),
     ];
     return {
-      anchor: anchor(`protocol-${sheet.slug}`),
-      label: sheet.slug,
+      anchor: anchor(`protocol-${slug}`),
+      label: slug,
       count: undefined,
-      body: { kind: 'protocol', block: { read: context.inputs.fetched, intro: research((note?.intro ?? '') || sheet.slug), rows, sources } },
+      body: { kind: 'protocol', block: { read: context.inputs.fetched, intro: research((note?.intro ?? '') || slug), rows, sources } },
     };
   });
 }
@@ -799,11 +840,10 @@ function walletSection(context: Context): Section {
       return found;
     };
     const rows = shown.map((field) => {
-      const last = field.path.split('.').at(-1) ?? field.path;
-      const label: Inline = [WALLET_WORDS[last] ?? last];
       if (field.path === '@.value') return { label: ['送出的 ETH'], value: ruleWords(call.value, context) };
       const target = find(field.path);
-      return { label, value: target === undefined ? ['—'] : ruleWords(target.rule, context) };
+      if (target === undefined) return { label: ['不是這個函式的參數'], value: ['—'] };
+      return { label: [Object.hasOwn(WALLET_WORDS, target.name) ? (WALLET_WORDS[target.name] as string) : target.name], value: ruleWords(target.rule, context) };
     });
     const shownPaths = shown.map((f) => f.path.replace(/^#\./, ''));
     const covered = (path: string) => shownPaths.some((p) => path === p || path.startsWith(`${p}.`));

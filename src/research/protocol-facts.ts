@@ -8,7 +8,7 @@ import type { BlockRef } from '../chain/types.ts';
 import type { Market, Registry, RegistryEntry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { bindView, numbersOf } from '../simulate/effects.ts';
-import { scopeEntries } from '../template/template.ts';
+import { callTargetEntries, calledProtocols, scopeEntries } from '../template/template.ts';
 import type { Fact, Template, TokenRef } from '../template/template.ts';
 import { DEFILLAMA_PROTOCOLS, ListingError } from './listings.ts';
 
@@ -66,22 +66,11 @@ export type FactsScope = {
   readonly tokens: readonly RegistryEntry[];
 };
 
-/**
- * `targets` are the registry entries the template's calls go to, in call order; `entries` every entry the operation
- * can touch. Tokens are left out of the protocols: a token's issuer is not the protocol the operation uses.
- */
-export function factsScope(template: Template, registry: Registry, targets: readonly RegistryEntry[], entries: readonly RegistryEntry[]): FactsScope {
-  const protocols = new Map<string, RegistryEntry[]>();
-  const unlisted: RegistryEntry[] = [];
-  for (const entry of targets) {
-    if (entry.kind === 'token') continue;
-    if (entry.defillama === undefined) unlisted.push(entry);
-    else protocols.set(entry.defillama, [...(protocols.get(entry.defillama) ?? []), entry]);
-  }
+export function factsScope(template: Template, registry: Registry, entries: readonly RegistryEntry[]): FactsScope {
   const reads = template.facts.flatMap((fact) => valuesOf(template, fact.field, registry).map((value) => ({ fact, value })));
   return {
-    protocols: [...protocols].map(([slug, contracts]) => ({ slug, contracts })),
-    unlisted,
+    protocols: [...calledProtocols(template, registry)].map(([slug, contracts]) => ({ slug, contracts })),
+    unlisted: callTargetEntries(template, registry).filter((entry) => entry.kind !== 'token' && entry.defillama === undefined),
     reads,
     tokens: entries.filter((entry) => entry.kind === 'token' || entry.kind === 'vault'),
   };

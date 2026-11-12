@@ -129,7 +129,8 @@ const ROWS: readonly Row[] = [
   { what: 'fields that no longer match', change: { fixtures: [judged({ kind: 'not-run', check: { kind: 'mismatch' } }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'a bound field changed and not caught', change: { fixtures: [judged({ kind: 'weak-template', bound: 3, free: 1, uncaught: [{}] }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'a perturbation its claim forbids', change: { fixtures: [judged(MUTATIONS_PASS, failedRuns('changed', 'unverifiable'))] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
-  { what: 'a perturbation that could not run', change: { fixtures: [judged(MUTATIONS_PASS, { kind: 'not-run', reason: 'reverted' })] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
+  { what: 'a perturbation whose transaction no longer executes', change: { fixtures: [judged(MUTATIONS_PASS, { kind: 'not-run', cause: 'not-executed', reason: 'reverted' })] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
+  { what: 'a perturbation whose transaction as recorded got no answer', change: { fixtures: [judged(MUTATIONS_PASS, { kind: 'not-run', cause: 'unverifiable', reason: 'providers disagree' })] }, id: 'fixture.safe-tx-1', kind: 'no-answer', state: 'warn' },
   { what: 'perturbations failed only for want of an answer', change: { fixtures: [judged(MUTATIONS_PASS, failedRuns('unverifiable'))] }, id: 'fixture.safe-tx-1', kind: 'no-answer', state: 'warn' },
   { what: 'a recorded transaction judged as before', change: { fixtures: [judged(MUTATIONS_PASS, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'agrees', state: 'ok' },
   { what: 'a source page with no answer', change: { page: { kind: 'unread', why: 'timeout' } }, id: 'vault/source.page', kind: 'no-answer', state: 'warn' },
@@ -146,12 +147,12 @@ const ROWS: readonly Row[] = [
   { what: 'a documentation page naming the function', change: {}, id: 'vault/doc.0x095ea7b3.page', kind: 'agrees', state: 'ok' },
   { what: 'a span with no chain result', change: { spans: undefined }, id: 'vault/code.1', kind: 'no-chain-result', state: 'warn' },
   { what: 'a span with no answer', change: { spans: [{ kind: 'unverifiable', text: '' }] }, id: 'vault/code.1', kind: 'no-answer', state: 'warn' },
+  { what: 'no ABI case', change: { abi: undefined }, id: 'vault/abi', kind: 'no-abi-case', state: 'warn' },
   { what: 'an entry with no code pin', change: { entry: without('code'), abi: undefined }, id: 'vault/code', kind: 'not-pinned', state: 'warn' },
   { what: 'a proof of an entry with no pin', change: { entry: without('code') }, id: 'vault/abi', kind: 'not-pinned', state: 'warn' },
   { what: 'no site listed, and CoinGecko vouches', change: { protocol: { ...BASE.protocol!, url: undefined } }, id: 'vault/source.site', kind: 'unlisted', state: 'na' },
   { what: 'a compiler not pinned', change: { abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }, id: 'vault/abi', kind: 'compiler-not-pinned', state: 'na' },
   { what: 'a pin recorded before spans', change: { spans: [{ kind: 'not-read', text: '' }] }, id: 'vault/code.1', kind: 'pinned-before-spans', state: 'na' },
-  { what: 'no ABI case', change: { abi: undefined }, id: 'vault/abi', kind: 'no-abi-case', state: 'na' },
 ];
 
 for (const row of ROWS) {
@@ -166,14 +167,22 @@ test('every finding kind has a row', () => {
   assert.deepEqual(new Set(ROWS.map((row) => row.kind)), new Set(Object.keys(STATE_OF)));
 });
 
-test('a site DefiLlama lists nothing for is vouched by another site comparison, never by the API site', () => {
-  const github = { entry: { ...without('coingecko'), kind: 'vault', source: GITHUB, apiSource: API }, protocol: { ...BASE.protocol!, github: [] } } as const;
-  const ledger = ledgerOf(github);
+test('a source site DefiLlama lists nothing for is vouched by CoinGecko only, never by a documentation page or the API site', () => {
+  const github = { entry: { ...ENTRY, source: GITHUB, apiSource: API }, protocol: { ...BASE.protocol!, github: [] } } as const;
+  const ledger = ledgerOf({ ...github, coins: [] });
+  assert.equal(resultOf(ledger, 'vault/doc.0x095ea7b3.site').finding.kind, 'agrees');
   assert.equal(resultOf(ledger, 'vault/source.api.site').finding.kind, 'agrees');
-  assert.equal(resultOf(ledger, 'vault/source.site').finding.kind, 'unlisted', 'the documentation page on the protocol site vouches');
-  const alone = ledgerOf({ ...github, documented: false });
-  assert.equal(resultOf(alone, 'vault/source.api.site').finding.kind, 'agrees');
-  assert.equal(resultOf(alone, 'vault/source.site').finding.kind, 'no-second-source');
+  assert.equal(resultOf(ledger, 'vault/source.site').finding.kind, 'no-second-source');
+  assert.equal(resultOf(ledgerOf(github), 'vault/source.site').finding.kind, 'unlisted', 'CoinGecko lists the coin at the address');
+});
+
+test("a documentation page's site DefiLlama lists nothing for is vouched by the source page's site", () => {
+  const github = { entry: { ...ENTRY, source: GITHUB }, protocol: { ...BASE.protocol!, url: undefined }, coins: [] } as const;
+  const ledger = ledgerOf(github);
+  assert.equal(resultOf(ledger, 'vault/source.site').finding.kind, 'agrees');
+  assert.equal(resultOf(ledger, 'vault/doc.0x095ea7b3.site').finding.kind, 'unlisted');
+  const unvouched = ledgerOf({ ...github, protocol: { ...BASE.protocol!, url: undefined, github: ['someone'] } });
+  assert.equal(resultOf(unvouched, 'vault/doc.0x095ea7b3.site').finding.kind, 'no-second-source');
 });
 
 test('an API that agrees moves no other result: a page the program cannot read stays for the signer', () => {
@@ -201,13 +210,13 @@ test('an address source line names a differing site, another address, or nothing
 
 test('confidence: high when every result passed with a source page and a span, medium with a result not compared, low for the signer', () => {
   assert.equal(confidence(ledgerOf({}), ENTRY), 'high');
-  assert.equal(confidence(ledgerOf({ abi: undefined }), ENTRY), 'medium');
+  assert.equal(confidence(ledgerOf({ abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }), ENTRY), 'medium');
   assert.equal(confidence(ledgerOf({ spans: [{ kind: 'not-read', text: '' }] }), ENTRY), 'medium');
   assert.equal(confidence(ledgerOf({ spans: [{ kind: 'unverifiable', text: '' }] }), ENTRY), 'low');
 });
 
 test('the strip counts addresses and recorded transactions, each by the worst of its results on that line', () => {
-  const ledger = ledgerOf({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') }, abi: undefined, fixtures: [judged(MUTATIONS_PASS, PERTURB_PASS)] });
+  const ledger = ledgerOf({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') }, abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }), fixtures: [judged(MUTATIONS_PASS, PERTURB_PASS)] });
   assert.deepEqual(strip(ledger), [
     { line: 'sources', state: 'bad', passed: 0, counted: 1 },
     { line: 'abi', state: 'na', passed: 0, counted: 0 },

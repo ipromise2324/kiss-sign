@@ -56,7 +56,7 @@ export type Finding =
   | { readonly kind: 'no-chain-result' }
   /** No code pin: signing would answer UNVERIFIABLE. */
   | { readonly kind: 'not-pinned' }
-  /** DefiLlama lists no website or GitHub org, and another result of the entry vouches for its source. */
+  /** DefiLlama lists no website or GitHub org, and CoinGecko lists the entry's coin at its address, or, for another site, the source's site agrees. */
   | { readonly kind: 'unlisted' }
   | { readonly kind: 'compiler-not-pinned'; readonly version: string }
   | { readonly kind: 'pinned-before-spans' }
@@ -86,7 +86,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   unlisted: 'na',
   'compiler-not-pinned': 'na',
   'pinned-before-spans': 'na',
-  'no-abi-case': 'na',
+  'no-abi-case': 'warn',
 };
 
 const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
@@ -137,7 +137,7 @@ export const stateOf = (result: Result): State => STATE_OF[result.finding.kind];
 export const needsSigner = (result: Result): boolean => stateOf(result) === 'bad' || stateOf(result) === 'warn';
 
 /** A draft result: `vouches` marks a passed comparison saying the source belongs to the protocol. */
-type Draft = Result & { readonly vouches?: true };
+type Draft = Result & { readonly vouches?: 'coin' | 'source-site' };
 
 const LINE_KEYS: Readonly<Record<Line['check'], string>> = {
   page: 'source.page',
@@ -211,22 +211,14 @@ function sourceResults(entry: RegistryEntry, lines: readonly Line[]): Draft[] {
     .map((line): Draft => {
       const source = LINE_SOURCE[line.check];
       const finding = lineFinding(entry, line);
-      const vouches = finding.kind === 'agrees' && (line.check === 'defillama' || line.check === 'coingecko');
-      return { id: `${entry.name}/${LINE_KEYS[line.check]}`, line: 'sources', about, source, link: linkOf(entry, source), finding, ...(vouches ? { vouches: true } : {}) };
+      const vouches = finding.kind !== 'agrees' ? undefined : line.check === 'coingecko' ? 'coin' : line.check === 'defillama' ? 'source-site' : undefined;
+      return { id: `${entry.name}/${LINE_KEYS[line.check]}`, line: 'sources', about, source, link: linkOf(entry, source), finding, ...(vouches === undefined ? {} : { vouches }) };
     });
 }
 
 function docResults(doc: DocLink, inputs: ReportInputs): Draft[] {
   const about = { kind: 'entry', entry: doc.contract } as const;
-  const result = (check: string, finding: Finding, vouches = false): Draft => ({
-    id: `${doc.contract.name}/doc.${doc.fn.selector}.${check}`,
-    line: 'sources',
-    about,
-    source: undefined,
-    link: undefined,
-    finding,
-    ...(vouches ? { vouches: true } : {}),
-  });
+  const result = (check: string, finding: Finding): Draft => ({ id: `${doc.contract.name}/doc.${doc.fn.selector}.${check}`, line: 'sources', about, source: undefined, link: undefined, finding });
   const page = inputs.pages.pages.get(pageUrlOf(doc.url));
   const pageFinding: Finding =
     page?.kind === 'unread'
@@ -237,7 +229,7 @@ function docResults(doc: DocLink, inputs: ReportInputs): Draft[] {
           ? { kind: 'agrees' }
           : { kind: 'name-not-on-page' };
   const site = siteFinding(sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings));
-  const results = [result('page', pageFinding), result('site', site, site.kind === 'agrees')];
+  const results = [result('page', pageFinding), result('site', site)];
   const url = new URL(doc.url);
   if (isGitHubPage(url)) {
     const commit = githubLine(url, inputs.pages.commits);
@@ -282,10 +274,11 @@ function spanResults(entry: RegistryEntry, verdicts: readonly SpanCheck[] | unde
   });
 }
 
-/** A site DefiLlama lists nothing for stays – only while another result of the same entry vouches for its source. */
-function settled(drafts: readonly Draft[]): Result[] {
-  const vouched = drafts.some((draft) => draft.vouches === true);
-  return drafts.map(({ vouches: _, ...result }) => (result.finding.kind === 'unlisted' && !vouched ? { ...result, finding: { kind: 'no-second-source' } } : result));
+function unvouchedUnlistedHasNoSecondSource(entry: RegistryEntry, drafts: readonly Draft[]): Result[] {
+  const coin = drafts.some((draft) => draft.vouches === 'coin');
+  const sourceSite = drafts.some((draft) => draft.vouches === 'source-site');
+  const vouched = (result: Result) => coin || (sourceSite && result.id !== `${entry.name}/${LINE_KEYS.defillama}`);
+  return drafts.map(({ vouches: _, ...result }) => (result.finding.kind === 'unlisted' && !vouched(result) ? { ...result, finding: { kind: 'no-second-source' } } : result));
 }
 
 function fixtureFinding(judgement: FixtureJudgement): Finding {
@@ -294,6 +287,7 @@ function fixtureFinding(judgement: FixtureJudgement): Finding {
   const { mutations, perturbation } = outcome;
   if (mutations.kind === 'not-run') return { kind: 'judged-otherwise', why: 'fields', detail: `the fields give ${mutations.check.kind.toUpperCase()}` };
   if (mutations.kind === 'weak-template') return { kind: 'judged-otherwise', why: 'mutation-uncaught', detail: `${mutations.uncaught.length} bound fields changed and not caught` };
+  if (perturbation.kind === 'not-run' && perturbation.cause === 'unverifiable') return { kind: 'no-answer' };
   if (perturbation.kind === 'not-run') return { kind: 'judged-otherwise', why: 'perturbation', detail: perturbation.reason };
   if (perturbation.kind === 'pass') return { kind: 'agrees' };
   if (perturbation.failed.every((run) => run.outcome === 'unverifiable')) return { kind: 'no-answer' };
@@ -309,7 +303,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
   const docs = subject.kind === 'template' ? subject.docs : [];
   const checked = checkSources(entriesOf(subject, inputs.registry), inputs.listings, inputs.pages);
   const results = checked.flatMap(({ entry, lines }) =>
-    settled([
+    unvouchedUnlistedHasNoSecondSource(entry, [
       ...sourceResults(entry, lines),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
       ...marketResults(entry, inputs),

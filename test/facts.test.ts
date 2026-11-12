@@ -40,6 +40,10 @@ test('a fact is read for the one card field its arguments name, counts each name
 test('a fact is refused for each broken rule, by its message', () => {
   refused({ to: { card: 'market.lending' } }, 'facts[0].to: must name a registry contract');
   refused({ extra: 1 }, 'facts[0].extra: unexpected field');
+  refused(
+    { to: { contract: 'usdc' }, function: 'f(bytes32 id) returns (uint128 totalSupplyAssets, uint128 totalBorrowAssets)' },
+    'facts[0].to: usdc is not a contract of a DefiLlama protocol a call targets (morpho-blue), so the report would show the fact under no protocol',
+  );
   refused({ function: 'position(bytes32 id, address user) returns (uint256 supplyShares)', args: { id: { card: 'market.id' }, user: { safe: true } }, units: { supplyShares: LOAN }, ratio: undefined, reason: undefined }, "facts[0].args: a fact never reads the Safe's state");
   refused({ args: { id: { const: `0x${'00'.repeat(32)}` } } }, 'facts[0].args: must name exactly one card field, not 0');
   refused({ function: 'f(bytes32 id, uint256 x) returns (uint128 totalSupplyAssets, uint128 totalBorrowAssets)', args: { id: { card: 'market.id' }, x: { card: 'amount' } } }, 'facts[0].args: must name exactly one card field, not 2');

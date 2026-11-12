@@ -18,7 +18,7 @@ import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
 import { fetchListing, listingsFor } from '../src/research/listings.ts';
-import { factsRecording, parseFactsRecording, protocolFacts } from '../src/research/protocol-facts.ts';
+import { factsRecording, factsScope, parseFactsRecording, protocolFacts } from '../src/research/protocol-facts.ts';
 import { chainAt, loadSnapshot, trimForRecording as trimErc7730 } from '../src/research/erc7730.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import {
@@ -26,7 +26,6 @@ import {
   compareReports,
   entriesOf,
   erc7730Text,
-  factsScopeOf,
   generatedPath,
   loadSubject,
   pastTxsRecordings,
@@ -217,7 +216,7 @@ const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(cre
 const factsChain = recordingTransport(httpsTransport(), endpoints);
 const committedFacts = flags.compare && subject.kind === 'template' ? parseFactsRecording(JSON.parse(readFileSync(join(root, reportRecordingPath(target)), 'utf8')).facts) : undefined;
 const factsBlock = committedFacts === undefined ? latest.value : { number: BigInt(committedFacts.block.number), hash: committedFacts.block.hash };
-const scope = subject.kind === 'template' ? factsScopeOf(subject.template, registry, entries) : undefined;
+const scope = subject.kind === 'template' ? factsScope(subject.template, registry, entries) : undefined;
 const facts = scope === undefined ? undefined : await protocolFacts(scope, registry, { defillama: listing, reader: createReader(endpoints, factsChain.transport, { note }), block: factsBlock });
 
 const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));

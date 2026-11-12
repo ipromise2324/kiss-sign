@@ -92,10 +92,10 @@ const NODE_TOP = 14;
 const NODE_HEIGHT = 44;
 const AI_TAG_WIDTH = 56;
 
+const CJK_FIRST = 0x2e80;
 /** About how wide 14px text draws: a CJK character a full em, anything else about half. */
-const textWidth = (text: string): number => [...text].reduce((w, c) => w + ((c.codePointAt(0) ?? 0) >= 0x2e80 ? 14 : 7.6), 0);
+const textWidth = (text: string): number => [...text].reduce((w, c) => w + ((c.codePointAt(0) ?? 0) >= CJK_FIRST ? 14 : 7.6), 0);
 
-/** Inline SVG of the calls: lifelines, numbered call arrows, dashed inside arrows and green arrows back to the Safe. */
 function diagram(sequence: Sequence): Html {
   const x = (i: number) => FIRST_X + i * SPACING;
   const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X);

@@ -18,6 +18,23 @@ const registry = loadRegistry(ROOT);
 const templates = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
 const has = (id: string, file: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, file));
 const withNotes = templates.filter((id) => has(id, NOTES_FILE));
+const NOT_YET_REBUILT: ReadonlySet<string> = new Set([
+  'cctp/receive',
+  'erc20/transfer',
+  'eth/transfer',
+  'fluid/rewards-claim',
+  'fluid/vault-deposit',
+  'fluid/vault-redeem',
+  'fluid/vault-withdraw',
+  'merkl/claim',
+  'morpho/urd-claim',
+  'morpho/vault-bundles-deposit',
+  'morpho/vault-deposit',
+  'morpho/vault-migrate-all',
+  'morpho/vault-withdraw',
+  'morpho/vault-withdraw-all',
+  'safe/cancel',
+]);
 
 const replayed = new Map<string, { readonly inputs: ReportInputs; readonly title: ReportTitle; readonly html: string }>();
 
@@ -36,8 +53,13 @@ test('a template commits report.generated.html exactly when it has notes.json, a
   }
 });
 
+test('only a template not yet rebuilt may lack notes.json', () => {
+  for (const id of templates) assert.ok(has(id, NOTES_FILE) || NOT_YET_REBUILT.has(id), `${id} has no ${NOTES_FILE} and is not in the list of templates not yet rebuilt`);
+  for (const id of NOT_YET_REBUILT) assert.ok(templates.includes(id) && !has(id, NOTES_FILE), `${id} is listed as not yet rebuilt but has ${NOTES_FILE} or no folder`);
+});
+
 test('a template without notes.json gets no HTML report', async () => {
-  const id = templates.find((t) => !has(t, NOTES_FILE)) ?? assert.fail('every template has notes');
+  const id = [...NOT_YET_REBUILT][0] ?? assert.fail('every template has notes');
   const subject = loadSubject(ROOT, registry, { template: id });
   assert.equal(await generatedHtml(ROOT, { subject, registry } as ReportInputs, { command: '', sources: [] }), undefined);
 });

@@ -11,12 +11,12 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, isAttribute, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
+import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
-import { TEMPLATES_DIR, inScope, loadTemplate, scopeEntries } from '../template/template.ts';
+import { TEMPLATES_DIR, callTargets, inScope, loadTemplate, refNames, scopeEntries } from '../template/template.ts';
 import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
 import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
@@ -111,53 +111,6 @@ export function templateFunctions(template: Template): AbiFunction[] {
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-/** The registry names a card reference can resolve to, in registry order. */
-export function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
-  const field = template.card.get(ref.field);
-  const { attribute } = ref;
-  if (field?.kind === 'market') {
-    return attribute !== undefined && isMarketEntryPart(attribute) ? [...new Set([...registry.markets.values()].map((m) => m[attribute].name))] : [];
-  }
-  if (field?.kind !== 'contract') return [];
-  const candidates = scopeEntries(field.scope, registry);
-  if (attribute === undefined) return candidates.map((e) => e.name);
-  return isAttribute(attribute) ? [...new Set(candidates.flatMap((e) => e.attributes[attribute] ?? []))] : [];
-}
-
-function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
-  if (rule.kind === 'contract') return [rule.name];
-  const names = rule.kind === 'card' ? refNames(rule.ref, template, registry) : [];
-  return names.length > 0 ? names : undefined;
-}
-
-/**
- * For each function, by signature, the registry names the template calls it on: a call's `to`, or for a call nested in
- * a tuple, such as a Bundler3 bundle item, the tuple's one address field. Absent when no call site binds its target.
- */
-function callTargets(template: Template, registry: Registry): Map<string, string[]> {
-  const targets = new Map<string, string[]>();
-  const visitCall = (node: CallNode, target: Rule | undefined): void => {
-    const names = target === undefined ? undefined : targetNames(target, template, registry);
-    if (names !== undefined) targets.set(node.fn.signature, [...new Set([...(targets.get(node.fn.signature) ?? []), ...names])]);
-    node.fn.params.forEach((param, i) => visitArg(node.args[i] as Rule, param));
-  };
-  const visitArg = (rule: Rule, param: AbiParam | undefined): void => {
-    if (rule.kind === 'call') visitCall(rule.call, undefined);
-    if (rule.kind === 'items') {
-      const item = param?.type.kind === 'array' || param?.type.kind === 'fixed-array' ? { name: undefined, type: param.type.item } : undefined;
-      rule.items.forEach((r) => visitArg(r, item));
-    }
-    if (rule.kind === 'fields') {
-      const components = param?.type.kind === 'tuple' ? param.type.components : [];
-      const addresses = components.flatMap((c, i) => (c.type.kind === 'address' ? [rule.fields[i] as Rule] : []));
-      const target = addresses.length === 1 ? addresses[0] : undefined;
-      rule.fields.forEach((r, i) => (r.kind === 'call' ? visitCall(r.call, target) : visitArg(r, components[i])));
-    }
-  };
-  for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data, call.to);
-  return targets;
-}
-
 /**
  * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`. Nothing else. The
  * contract must be one the template calls the function on, when the template binds that target.
@@ -183,17 +136,6 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
     return { fn, contract, url };
   });
 }
-
-/** The registry entries the template's calls go to, nested calls' targets included, in call order. */
-export function callTargetEntries(template: Template, registry: Registry): RegistryEntry[] {
-  const empty = template.calls.flatMap((call) => (call.data === 'empty' ? (targetNames(call.to, template, registry) ?? []) : []));
-  const names = new Set([...callTargets(template, registry).values()].flat().concat(empty));
-  return [...names].map((name) => registry.entries.get(name) as RegistryEntry);
-}
-
-/** What a template's report reads for its protocol facts. */
-export const factsScopeOf = (template: Template, registry: Registry, entries: readonly RegistryEntry[]): FactsScope =>
-  factsScope(template, registry, callTargetEntries(template, registry), entries);
 
 export function loadSubject(repoRoot: string, registry: Registry, target: Target): Subject {
   if ('vault' in target) {
@@ -632,7 +574,6 @@ export const compareCommand = (subject: Subject): string => (subject.kind === 't
 
 const usdText = (usd: number | undefined): string => (usd === undefined ? 'none given' : Math.round(usd).toString());
 
-/** `amount` in base units, and in whole tokens when its decimals were read. */
 function amountText(amount: bigint, token: 'eth' | Address, facts: ProtocolFacts, registry: Registry): string {
   if (token === 'eth') return `${code(amount.toString())} (${wholeTokens(amount, 18)} ETH)`;
   const name = registry.byAddress.get(token)?.name ?? checksumAddress(token);
@@ -640,7 +581,6 @@ function amountText(amount: bigint, token: 'eth' | Address, facts: ProtocolFacts
   return decimals?.kind === 'read' ? `${code(amount.toString())} (${wholeTokens(amount, decimals.value)} ${code(name)})` : `${code(amount.toString())} base units of ${code(name)}`;
 }
 
-/** `a / b` as a percentage, rounded down to two places. */
 function ratioText(a: bigint, b: bigint): string {
   if (b === 0n) return 'n/a, divides by zero';
   const basis = (a * 10_000n) / b;
@@ -826,7 +766,7 @@ export async function replayReport(repoRoot: string, registry: Registry, target:
 
 async function replayFacts(template: Template, registry: Registry, entries: readonly RegistryEntry[], raw: unknown): Promise<ProtocolFacts | undefined> {
   const recorded = parseFactsRecording(raw);
-  return recorded === undefined ? undefined : protocolFacts(factsScopeOf(template, registry, entries), registry, replaySources(recorded));
+  return recorded === undefined ? undefined : protocolFacts(factsScope(template, registry, entries), registry, replaySources(recorded));
 }
 
 /** Every input a generated report renders, from the repository and its recordings alone. */

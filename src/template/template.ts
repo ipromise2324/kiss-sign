@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
-import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName } from '../registry.ts';
+import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName, isMarketEntryPart } from '../registry.ts';
 import type { Attribute, ContractKind, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
@@ -111,10 +111,6 @@ export type Effect = { readonly token: TokenRef; readonly amount: EffectAmount; 
 export const VIEW_CHANGES = ['increases', 'decreases', 'same'] as const;
 export type ViewChange = (typeof VIEW_CHANGES)[number];
 
-/**
- * A view function on a registry contract, called just before and just after the transaction with every argument
- * bound. Each return value `changes` names must change that way; the others are not judged.
- */
 /** A view call on a registry contract with every argument bound before any transaction runs. */
 export type BoundView = {
   readonly to: string;
@@ -123,6 +119,10 @@ export type BoundView = {
   readonly returns: readonly AbiParam[];
 };
 
+/**
+ * A view function on a registry contract, called just before and just after the transaction with every argument
+ * bound. Each return value `changes` names must change that way; the others are not judged.
+ */
 export type ViewEffect = BoundView & {
   /** By the return value's position, which `returns` names. */
   readonly changes: readonly { readonly value: number; readonly change: ViewChange }[];
@@ -569,10 +569,14 @@ function ruleLeaves(rule: Rule): Rule[] {
   return [rule];
 }
 
-function fact(path: string, raw: unknown, scope: Scope): Fact {
+function fact(path: string, raw: unknown, scope: Scope, protocols: ReadonlyMap<string, readonly RegistryEntry[]>): Fact {
   const value = object(path, raw);
   exactKeys(path, value, ['to', 'function', 'args', 'units'], ['ratio', 'reason']);
   const view = boundView(path, value, scope);
+  const slug = scope.registry.entries.get(view.to)?.defillama;
+  if (slug === undefined || !protocols.has(slug)) {
+    throw new TemplateError(`${path}.to`, `${view.to} is not a contract of a DefiLlama protocol a call targets (${[...protocols.keys()].join(', ') || 'none'}), so the report would show the fact under no protocol`);
+  }
   const leaves = view.args.flatMap(ruleLeaves);
   if (leaves.some((rule) => rule.kind === 'safe')) throw new TemplateError(`${path}.args`, "a fact never reads the Safe's state");
   const fields = [...new Set(leaves.flatMap((rule) => (rule.kind === 'card' ? [rule.ref.field] : [])))];
@@ -612,6 +616,69 @@ function fact(path: string, raw: unknown, scope: Scope): Fact {
   return { ...view, field, units, ratio, reason };
 }
 
+/** The registry names a card reference can resolve to, in registry order. */
+export function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
+  const field = template.card.get(ref.field);
+  const { attribute } = ref;
+  if (field?.kind === 'market') {
+    return attribute !== undefined && isMarketEntryPart(attribute) ? [...new Set([...registry.markets.values()].map((m) => m[attribute].name))] : [];
+  }
+  if (field?.kind !== 'contract') return [];
+  const candidates = scopeEntries(field.scope, registry);
+  if (attribute === undefined) return candidates.map((e) => e.name);
+  return isAttribute(attribute) ? [...new Set(candidates.flatMap((e) => e.attributes[attribute] ?? []))] : [];
+}
+
+function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
+  if (rule.kind === 'contract') return [rule.name];
+  const names = rule.kind === 'card' ? refNames(rule.ref, template, registry) : [];
+  return names.length > 0 ? names : undefined;
+}
+
+/**
+ * For each function, by signature, the registry names the template calls it on: a call's `to`, or for a call nested in
+ * a tuple, such as a Bundler3 bundle item, the tuple's one address field. Absent when no call site binds its target.
+ */
+export function callTargets(template: Template, registry: Registry): Map<string, string[]> {
+  const targets = new Map<string, string[]>();
+  const visitCall = (node: CallNode, target: Rule | undefined): void => {
+    const names = target === undefined ? undefined : targetNames(target, template, registry);
+    if (names !== undefined) targets.set(node.fn.signature, [...new Set([...(targets.get(node.fn.signature) ?? []), ...names])]);
+    node.fn.params.forEach((param, i) => visitArg(node.args[i] as Rule, param));
+  };
+  const visitArg = (rule: Rule, param: AbiParam | undefined): void => {
+    if (rule.kind === 'call') visitCall(rule.call, undefined);
+    if (rule.kind === 'items') {
+      const item = param?.type.kind === 'array' || param?.type.kind === 'fixed-array' ? { name: undefined, type: param.type.item } : undefined;
+      rule.items.forEach((r) => visitArg(r, item));
+    }
+    if (rule.kind === 'fields') {
+      const components = param?.type.kind === 'tuple' ? param.type.components : [];
+      const addresses = components.flatMap((c, i) => (c.type.kind === 'address' ? [rule.fields[i] as Rule] : []));
+      const target = addresses.length === 1 ? addresses[0] : undefined;
+      rule.fields.forEach((r, i) => (r.kind === 'call' ? visitCall(r.call, target) : visitArg(r, components[i])));
+    }
+  };
+  for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data, call.to);
+  return targets;
+}
+
+/** The registry entries the template's calls go to, nested calls' targets included, in call order. */
+export function callTargetEntries(template: Template, registry: Registry): RegistryEntry[] {
+  const empty = template.calls.flatMap((call) => (call.data === 'empty' ? (targetNames(call.to, template, registry) ?? []) : []));
+  const names = new Set([...callTargets(template, registry).values()].flat().concat(empty));
+  return [...names].map((name) => registry.entries.get(name) as RegistryEntry);
+}
+
+/** The DefiLlama protocols the template's calls go to, each with its call targets; a token's issuer is not such a protocol. */
+export function calledProtocols(template: Template, registry: Registry): ReadonlyMap<string, readonly RegistryEntry[]> {
+  const protocols = new Map<string, RegistryEntry[]>();
+  for (const entry of callTargetEntries(template, registry)) {
+    if (entry.kind !== 'token' && entry.defillama !== undefined) protocols.set(entry.defillama, [...(protocols.get(entry.defillama) ?? []), entry]);
+  }
+  return protocols;
+}
+
 export function parseTemplate(raw: unknown, registry: Registry): Template {
   const value = object('template', raw);
   exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same', 'facts']);
@@ -632,7 +699,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
   const effects = object('effects', value.effects);
   exactKeys('effects', effects, ['gives', 'gets'], ['views']);
-  return {
+  const template: Template = {
     id,
     card: fields,
     nonce,
@@ -643,8 +710,10 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
       gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets')),
       views: effects.views === undefined ? [] : array('effects.views', effects.views).map((v, i) => view(`effects.views[${i}]`, v, scope)),
     },
-    facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope)),
+    facts: [],
   };
+  const protocols = calledProtocols(template, registry);
+  return { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
 }
 
 /** Every card reference the template makes. */

@@ -4,11 +4,11 @@ import { paramName } from '../decode/abi.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl } from '../registry.ts';
-import { TEMPLATES_DIR } from '../template/template.ts';
+import { TEMPLATES_DIR, callTargetEntries } from '../template/template.ts';
 import type { CallNode, Rule, Template } from '../template/template.ts';
 import { needsSigner } from './ledger.ts';
+import { factsScope } from './protocol-facts.ts';
 import type { Ledger, ResultId } from './ledger.ts';
-import { callTargetEntries, factsScopeOf } from './report.ts';
 import type { ReportInputs } from './report.ts';
 
 export const NOTES_FILE = 'notes.json';
@@ -95,7 +95,7 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
   const { registry } = inputs;
   const protocols: Map<string, number | 'unread'> =
     inputs.facts === undefined
-      ? new Map(factsScopeOf(template, registry, ledger.entries).protocols.map(({ slug }) => [slug, 'unread']))
+      ? new Map(factsScope(template, registry, ledger.entries).protocols.map(({ slug }) => [slug, 'unread']))
       : new Map(inputs.facts.protocols.map((sheet) => [sheet.slug, sheet.listing.kind === 'read' ? sheet.hacks.length : 'unread']));
   return {
     calls: template.calls.length,
@@ -112,8 +112,9 @@ type Opt<T> = { readonly optional: P<T>; readonly absent: T };
 type Shape = Readonly<Record<string, P<unknown> | Opt<unknown>>>;
 type Parsed<S extends Shape> = { readonly [K in keyof S]: S[K] extends Opt<infer T> ? T : S[K] extends P<infer T> ? T : never };
 
-const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
+const CONTROL = /[\u0000-\u001f\u007f-\u009f\u061c\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const own = (record: Record<string, unknown>, key: string): unknown => (Object.hasOwn(record, key) ? record[key] : undefined);
 const refuse = (path: string, rule: string): never => {
   throw new NotesError(`${path}: ${rule}`);
 };
@@ -158,13 +159,14 @@ const obj =
   <S extends Shape>(shape: S): P<Parsed<S>> =>
   (path, raw, scope) => {
     if (!isRecord(raw)) return refuse(path, 'not a JSON object');
-    const extra = Object.keys(raw).find((key) => !(key in shape));
+    const extra = Object.keys(raw).find((key) => !Object.hasOwn(shape, key));
     if (extra !== undefined) refuse(path, `unknown key ${shown(extra)}`);
     const out: Record<string, unknown> = {};
     for (const [key, field] of Object.entries(shape)) {
-      if (typeof field !== 'function') out[key] = raw[key] === undefined ? field.absent : field.optional(`${path}.${key}`, raw[key], scope);
-      else if (raw[key] === undefined) refuse(path, `${key} is missing`);
-      else out[key] = field(`${path}.${key}`, raw[key], scope);
+      const value = own(raw, key);
+      if (typeof field !== 'function') out[key] = value === undefined ? field.absent : field.optional(`${path}.${key}`, value, scope);
+      else if (value === undefined) refuse(path, `${key} is missing`);
+      else out[key] = field(`${path}.${key}`, value, scope);
     }
     return out as Parsed<S>;
   };
@@ -177,9 +179,9 @@ const keyed =
     const names = allowed(scope);
     const extra = Object.keys(raw).find((key) => !names.includes(key));
     if (extra !== undefined) refuse(path, `${shown(extra)} is not ${what}`);
-    const missing = required ? names.find((name) => raw[name] === undefined) : undefined;
+    const missing = required ? names.find((name) => own(raw, name) === undefined) : undefined;
     if (missing !== undefined) refuse(path, `${missing} is missing`);
-    return new Map(names.filter((name) => raw[name] !== undefined).map((name) => [name, item(name)(`${path}.${name}`, raw[name], scope)]));
+    return new Map(names.filter((name) => own(raw, name) !== undefined).map((name) => [name, item(name)(`${path}.${name}`, own(raw, name), scope)]));
   };
 
 const where =
@@ -198,7 +200,6 @@ const protocolNotes = (slug: string) =>
     return hacks === 'unread' || protocol.incidents.length === hacks ? undefined : `incidents lists ${protocol.incidents.length}; DefiLlama lists ${hacks} hacks`;
   });
 
-/** Every key notes.json may hold, with its limit. */
 const NOTES_SCHEMA = obj({
   title: str(100),
   summary: str(2000),

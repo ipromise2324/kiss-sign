@@ -4,14 +4,15 @@ import { before, test } from 'node:test';
 import type { AbiRefusal } from '../src/contracts/prove.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { forSigner, judge, stateOf, worst } from '../src/research/ledger.ts';
+import type { FieldFact } from '../src/research/erc7730.ts';
 import type { State } from '../src/research/ledger.ts';
 import { NotesError, notesScope } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { buildPage } from '../src/research/report-page.ts';
+import { buildPage, constCast } from '../src/research/report-page.ts';
 import type { ArgRow, Body, HtmlInputs, Page } from '../src/research/report-page.ts';
 import { replayInputs } from '../src/research/report.ts';
 import type { ReportTitle } from '../src/research/report.ts';
-import type { Address } from '../src/safe/types.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
@@ -146,6 +147,20 @@ test('the protocol block holds the recorded facts and the market reading with it
   );
 });
 
+test('without recorded protocol facts each protocol still shows its AI notes and one line that the program read nothing', () => {
+  const page = pageOf({ ...inputs, facts: undefined });
+  const { block } = body(page, 'protocol');
+  assert.equal(block.intro.ai, 'intro morpho-blue');
+  assert.deepEqual(
+    block.rows.map((r) => [r.label, plain(r.value), r.ai?.ai]),
+    [
+      ['協議資料', '沒讀到', undefined],
+      ['稽核', '', 'audits'],
+      ['事故', '沒讀到', undefined],
+    ],
+  );
+});
+
 test('the oracle the program cannot read on its page is the one row to review, open in 地址, and the verdict icon is amber', () => {
   const page = pageOf(inputs);
   assert.deepEqual(
@@ -190,6 +205,32 @@ test('the wallet table shows the template rule, and names the bound arguments th
   );
   assert.match(plain(wallet.lines[0]), /marketParams\.oracle/);
   assert.match(plain(wallet.lines[1]), /分不出來/);
+});
+
+test('a wallet row is labelled by the argument it shows, never by a descriptor path that names no argument', () => {
+  const extra: FieldFact[] = ['constructor', '#.marketParams.toString', '#.loanTokenPermit'].map((path) => ({ kind: 'field', path, format: 'raw', visible: 'always' }));
+  const reports = inputs.erc7730.reports.map((report) => ({
+    ...report,
+    descriptors: report.descriptors.map((d) => ({ ...d, functions: d.functions.map((f) => ({ ...f, fields: [...f.fields, ...extra] })) })),
+  }));
+  const rows = body(pageOf({ ...inputs, erc7730: { ...inputs.erc7730, reports } }), 'wallet').calls[1]?.rows;
+  assert.ok(Array.isArray(rows));
+  assert.deepEqual(
+    rows.slice(-3).map((r) => [plain(r.label), plain(r.value)]),
+    [
+      ['不是這個函式的參數', '—'],
+      ['不是這個函式的參數', '—'],
+      ['loanTokenPermit', '見上方'],
+    ],
+  );
+});
+
+test('a constant prints as cast decode-calldata prints it', () => {
+  assert.equal(constCast({ kind: 'string', value: '0x6869' as Hex }), '"hi"');
+  assert.equal(constCast({ kind: 'bytes', value: '0x6869' as Hex }), '0x6869');
+  assert.equal(constCast({ kind: 'address', value: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address }), '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48');
+  assert.equal(constCast({ kind: 'uint', value: 5n }), '5');
+  assert.equal(constCast({ kind: 'bool', value: false }), 'false');
 });
 
 test('past transactions count the fitting ones of EOAs and of proven Safes', () => {

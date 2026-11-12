@@ -36,7 +36,7 @@ export type Run = { readonly leaf: Leaf; readonly value: string; readonly outcom
 export type PerturbationReport =
   | { readonly kind: 'pass'; readonly runs: readonly Run[] }
   | { readonly kind: 'fail'; readonly runs: readonly Run[]; readonly failed: readonly Run[] }
-  | { readonly kind: 'not-run'; readonly reason: string };
+  | { readonly kind: 'not-run'; readonly cause: 'fields' | 'unverifiable' | 'not-executed'; readonly reason: string };
 
 const ALLOWED: Readonly<Record<FreeClaim, readonly Outcome[]>> = {
   scalar: ['reverted', 'refused', 'same'],
@@ -120,10 +120,10 @@ export async function checkPerturbations(
   simulate: (tx: SafeTx) => Promise<Observation>,
 ): Promise<PerturbationReport> {
   const { check, leaves } = inspectTemplateFields(tx, card, templates, registry);
-  if (check.kind !== 'match') return { kind: 'not-run', reason: `the transaction's fields give ${check.kind}` };
+  if (check.kind !== 'match') return { kind: 'not-run', cause: 'fields', reason: `the transaction's fields give ${check.kind}` };
   const base = await simulate(tx);
-  if (base.kind === 'unverifiable') return { kind: 'not-run', reason: base.reasons.join('; ') };
-  if (base.observed.kind !== 'executed') return { kind: 'not-run', reason: `the transaction did not execute: ${base.observed.why}` };
+  if (base.kind === 'unverifiable') return { kind: 'not-run', cause: 'unverifiable', reason: base.reasons.join('; ') };
+  if (base.observed.kind !== 'executed') return { kind: 'not-run', cause: 'not-executed', reason: `the transaction did not execute: ${base.observed.why}` };
   const baseLogs = logText(base.logs, tx.safe);
   const baseEffects = effectsText(base.observed);
   const data = hexToBytes(tx.data.slice(2));
