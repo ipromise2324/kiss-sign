@@ -13,6 +13,7 @@ import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, isAttribute, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
+import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR, inScope, loadTemplate, scopeEntries } from '../template/template.ts';
@@ -20,6 +21,8 @@ import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, Vie
 import type { Line, Listings, ListingsRecording } from './listings.ts';
 import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
+import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
+import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { pathText } from './api-source.ts';
@@ -48,6 +51,8 @@ export type ReportRecording = ListingsRecording & {
   readonly erc7730: Erc7730Section;
   /** The code reads that check each code span. */
   readonly code: readonly Exchange[];
+  /** A template's protocol facts, parsed by `parseFactsRecording`; absent in a vault's and in older recordings. */
+  readonly facts?: unknown;
 };
 
 export type PastTxsSummary = { readonly file: string; readonly query: PastTxsRecording['query']; readonly text: string; readonly run: PastTxs };
@@ -67,6 +72,8 @@ export type ReportInputs = {
   readonly spans: ReadonlyMap<Address, readonly SpanCheck[]>;
   /** What `pnpm erc7730` prints for the entries, and the facts it prints them from. */
   readonly erc7730: { readonly text: string; readonly reports: readonly EntryReport[] };
+  /** A template's protocol facts; undefined for a vault, or when the recording predates them. */
+  readonly facts: ProtocolFacts | undefined;
 };
 
 export class ReportError extends Error {
@@ -176,6 +183,17 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
     return { fn, contract, url };
   });
 }
+
+/** The registry entries the template's calls go to, nested calls' targets included, in call order. */
+function callTargetEntries(template: Template, registry: Registry): RegistryEntry[] {
+  const empty = template.calls.flatMap((call) => (call.data === 'empty' ? (targetNames(call.to, template, registry) ?? []) : []));
+  const names = new Set([...callTargets(template, registry).values()].flat().concat(empty));
+  return [...names].map((name) => registry.entries.get(name) as RegistryEntry);
+}
+
+/** What a template's report reads for its protocol facts. */
+export const factsScopeOf = (template: Template, registry: Registry, entries: readonly RegistryEntry[]): FactsScope =>
+  factsScope(template, registry, callTargetEntries(template, registry), entries);
 
 export function loadSubject(repoRoot: string, registry: Registry, target: Target): Subject {
   if ('vault' in target) {
@@ -612,6 +630,84 @@ function fenced(text: string): string[] {
 
 export const compareCommand = (subject: Subject): string => (subject.kind === 'template' ? `pnpm report ${subject.template.id} --compare` : `pnpm report --vault ${subject.vault.name} --compare`);
 
+const usdText = (usd: number | undefined): string => (usd === undefined ? 'none given' : Math.round(usd).toString());
+
+/** `amount` in base units, and in whole tokens when its decimals were read. */
+function amountText(amount: bigint, token: 'eth' | Address, facts: ProtocolFacts, registry: Registry): string {
+  if (token === 'eth') return `${code(amount.toString())} (${wholeTokens(amount, 18)} ETH)`;
+  const name = registry.byAddress.get(token)?.name ?? checksumAddress(token);
+  const decimals = facts.decimals.get(token);
+  return decimals?.kind === 'read' ? `${code(amount.toString())} (${wholeTokens(amount, decimals.value)} ${code(name)})` : `${code(amount.toString())} base units of ${code(name)}`;
+}
+
+/** `a / b` as a percentage, rounded down to two places. */
+function ratioText(a: bigint, b: bigint): string {
+  if (b === 0n) return 'n/a, divides by zero';
+  const basis = (a * 10_000n) / b;
+  return `${basis / 100n}.${(basis % 100n).toString().padStart(2, '0')}%`;
+}
+
+function readingRow(reading: FactReading, facts: ProtocolFacts, registry: Registry): string {
+  const { fact, value, read } = reading;
+  const name = value.kind === 'market' ? value.market.name : value.entry.name;
+  if (read.kind === 'unread') return `| ${code(name)} | not read: ${read.why} |${' |'.repeat(fact.units.length - 1 + (fact.ratio === undefined ? 0 : 1))}`;
+  const cells = read.value.map(({ amount, token }) => amountText(amount, token, facts, registry));
+  if (fact.ratio !== undefined) {
+    const at = (position: number) => read.value[fact.units.findIndex((u) => u.value === position)]?.amount as bigint;
+    cells.push(ratioText(at(fact.ratio[0]), at(fact.ratio[1])));
+  }
+  return `| ${code(name)} | ${cells.join(' | ')} |`;
+}
+
+function factsSection(template: Template, facts: ProtocolFacts | undefined, registry: Registry): string[] {
+  const out = ['## Protocol facts', ''];
+  if (facts === undefined) return [...out, `Not read: this report's recording predates the protocol facts; ${code(`pnpm report ${template.id} --record`)} reads them.`, ''];
+  out.push(
+    `What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and ${code('verify')} never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and ${code('decimals()')} is read through both providers at block ${facts.block.number} ${code(facts.block.hash)}; a read they do not agree on prints as not read.`,
+    '',
+  );
+  if (facts.protocols.length === 0) out.push('No call of this template goes to a contract other than a token.', '');
+  else {
+    out.push('| Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |', '| --- | --- | --- | --- | --- | --- |');
+    for (const { slug, listing } of facts.protocols) {
+      if (listing.kind === 'unread') out.push(`| ${code(slug)} | not read: ${listing.why} | | | | |`);
+      else {
+        const { id, parent, listedFrom, tvl, ethereumTvl } = listing.value;
+        out.push(`| ${code(slug)} | ${code(id)} | ${parent === undefined ? 'none' : code(parent)} | ${listedFrom ?? 'none given'} | ${usdText(tvl)} | ${usdText(ethereumTvl)} |`);
+      }
+    }
+    out.push('', '| Protocol | Hack date | Amount (USD) |', '| --- | --- | --- |');
+    for (const { slug, listing, hacks } of facts.protocols) {
+      if (listing.kind === 'unread') out.push(`| ${code(slug)} | not read | |`);
+      else if (hacks.length === 0) out.push(`| ${code(slug)} | none filed under its id or its parent's | |`);
+      else for (const hack of hacks) out.push(`| ${code(slug)} | ${hack.date} | ${usdText(hack.amount)} |`);
+    }
+    out.push('', '| Contract | Address | Protocol | Proxy, from its code pin |', '| --- | --- | --- | --- |');
+    for (const { slug, contracts } of facts.protocols) {
+      for (const { entry, proxy } of contracts) out.push(`| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${code(slug)} | ${proxy} |`);
+    }
+    out.push('');
+  }
+  for (const entry of facts.unlisted) out.push(`${full(entry)} names no DefiLlama protocol, so no protocol facts are read for it.`, '');
+  for (const fact of template.facts) {
+    const names = fact.units.map((u) => paramName(fact.returns[u.value] as AbiParam, u.value));
+    const ratio = fact.ratio === undefined ? [] : [`${paramName(fact.returns[fact.ratio[0]] as AbiParam, fact.ratio[0])} / ${paramName(fact.returns[fact.ratio[1]] as AbiParam, fact.ratio[1])}`];
+    out.push(`### ${code(fact.fn.signature)} on ${code(fact.to)}`, '', `For each value the card's ${code(fact.field)} can name.${fact.reason === undefined ? '' : ` The ratio: ${byAi(fact.reason)}`}`, '');
+    out.push(`| Value | ${[...names, ...ratio].join(' | ')} |`, `| --- |${' --- |'.repeat(names.length + ratio.length)}`);
+    for (const reading of facts.readings.filter((r) => r.fact === fact)) out.push(readingRow(reading, facts, registry));
+    out.push('');
+  }
+  if (facts.decimals.size > 0) {
+    out.push('### Token decimals', '', '| Token | Address | decimals() |', '| --- | --- | --- |');
+    for (const [address, decimals] of facts.decimals) {
+      const entry = registry.byAddress.get(address) as RegistryEntry;
+      out.push(`| ${code(entry.name)} | ${code(checksumAddress(address))} | ${decimals.kind === 'read' ? decimals.value : `not read: ${decimals.why}`} |`);
+    }
+    out.push('');
+  }
+  return out;
+}
+
 export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   const { subject, registry } = inputs;
   const entries = entriesOf(subject, registry);
@@ -619,7 +715,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   const out: string[] = [
     `# Generated evidence: ${name}`,
     '',
-    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans and ERC-7730 attestations live, reads each vault again at the blocks its evidence names, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
+    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
     '',
   ];
   if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));
@@ -691,6 +787,8 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     }
   }
 
+  if (subject.kind === 'template') out.push(...factsSection(subject.template, inputs.facts, registry));
+
   out.push('## Past transactions', '');
   if (inputs.pastTxs.length === 0) out.push(`No ${code('pnpm past-txs --record')} recording names this ${subject.kind}.`, '');
   for (const summary of inputs.pastTxs) {
@@ -726,6 +824,11 @@ export async function replayReport(repoRoot: string, registry: Registry, target:
   return renderReport(inputs, title);
 }
 
+async function replayFacts(template: Template, registry: Registry, entries: readonly RegistryEntry[], raw: unknown): Promise<ProtocolFacts | undefined> {
+  const recorded = parseFactsRecording(raw);
+  return recorded === undefined ? undefined : protocolFacts(factsScopeOf(template, registry, entries), registry, replaySources(recorded));
+}
+
 /** Every input a generated report renders, from the repository and its recordings alone. */
 export async function replayInputs(
   repoRoot: string,
@@ -751,6 +854,7 @@ export async function replayInputs(
     pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
     spans: await checkSpans(replayReader(recording.code), entries),
     erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
+    facts: subject.kind === 'template' ? await replayFacts(subject.template, registry, entries, recording.facts) : undefined,
   };
   const registryFiles = subject.kind === 'template' && hasMarket(subject.template) ? [REGISTRY_PATH, MARKETS_PATH] : [REGISTRY_PATH];
   const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), ...registryFiles];
@@ -765,8 +869,11 @@ export async function replayInputs(
  */
 type Facts = { readonly cells: Map<string, string>; readonly lines: Map<string, string[]> };
 
-/** The block an answer was read at, which changes between two honest reads. A vault's evidence is read again at its own blocks. */
-const IGNORED_COLUMNS = new Set(['Block']);
+/**
+ * What changes between two honest reads: the block an answer was read at, and DefiLlama's TVL. A vault's evidence and
+ * the protocol facts are read again at their own blocks.
+ */
+const IGNORED_COLUMNS = new Set(['Block', 'TVL (USD, DefiLlama)', 'Ethereum TVL (USD, DefiLlama)']);
 const atBlock = (line: string): string => line.replace(/\bblock \d+/g, 'block N');
 
 function factsOf(markdown: string): Facts {

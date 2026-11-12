@@ -31,7 +31,8 @@ test('a fact is read for the one card field its arguments name, counts each name
     { value: 2, unit: { field: 'market', attribute: 'loanToken' } },
   ]);
   assert.deepEqual(parsed?.ratio, [2, 0]);
-  assert.deepEqual(parseTemplate(raw, registry).facts, []);
+  const { facts, ...bare } = raw;
+  assert.deepEqual(parseTemplate(bare, registry).facts, []);
   const { ratio, reason, ...plain } = fact;
   assert.equal(parseTemplate({ ...raw, facts: [plain] }, registry).facts[0]?.ratio, undefined);
 });

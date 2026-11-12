@@ -7,7 +7,7 @@ import { decodeValues, encodeCall } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import type { CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect } from '../template/template.ts';
+import type { BoundView, CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect } from '../template/template.ts';
 import type { Execution } from './events.ts';
 import type { SafeStateEvidence } from './safe-state.ts';
 
@@ -157,7 +157,8 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
 /** A view a template on the card reads, its arguments bound to this card, and the call as it reads in a finding. */
 export type ExpectedView = { readonly view: ViewEffect; readonly call: ViewCall; readonly text: string };
 
-type Bound = { readonly safe: Address; readonly values: ReadonlyMap<string, ResolvedValue>; readonly registry: Registry };
+/** What a view's arguments are bound to. A fact never reads the Safe, so it binds none. */
+type Bound = { readonly safe: Address | undefined; readonly values: ReadonlyMap<string, ResolvedValue>; readonly registry: Registry };
 
 /** The value a bound argument rule gives, or why the card cannot give it. */
 function argument(rule: Rule, type: AbiType, bound: Bound): AbiValue | string {
@@ -176,7 +177,7 @@ function argument(rule: Rule, type: AbiType, bound: Bound): AbiValue | string {
       return problem ?? { kind: 'array', items: items as AbiValue[], span };
     }
     case 'safe':
-      return { kind: 'address', value: bound.safe, span };
+      return bound.safe === undefined ? 'no Safe is bound' : { kind: 'address', value: bound.safe, span };
     case 'contract': {
       const entry = bound.registry.entries.get(rule.name);
       return entry === undefined ? `the registry has no ${rule.name}` : { kind: 'address', value: entry.address, span };
@@ -213,22 +214,27 @@ function valueText(value: AbiValue): string {
   }
 }
 
+/** The call a view makes with its arguments bound, and how it reads in a finding, or why they cannot be bound. */
+export function bindView(view: BoundView, bound: Bound): { readonly call: ViewCall; readonly text: string } | { readonly problem: string } {
+  const to = bound.registry.entries.get(view.to);
+  if (to === undefined) return { problem: `the registry has no ${view.to}` };
+  const args = view.fn.params.map((param, i) => argument(view.args[i] as Rule, param.type, bound));
+  const problem = args.find((arg) => typeof arg === 'string');
+  if (problem !== undefined) return { problem };
+  const values = args as AbiValue[];
+  const data = `0x${bytesToHex(encodeCall({ fn: view.fn, args: values, trailer: undefined }))}` as Hex;
+  return { call: { to: to.address, data }, text: `${view.fn.name}(${values.map(valueText).join(', ')})` };
+}
+
 /** Every view the card's templates read, with its calldata for this card, and why any could not be built. */
 export function expectedViews(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): { readonly views: readonly ExpectedView[]; readonly reasons: readonly string[] } {
   const views: ExpectedView[] = [];
   const reasons: string[] = [];
   for (const op of card.operations) {
     for (const view of templates.get(op.template)?.effects.views ?? []) {
-      const to = registry.entries.get(view.to);
-      const args = view.fn.params.map((param, i) => argument(view.args[i] as Rule, param.type, { safe: card.safe, values: op.values, registry }));
-      const problem = to === undefined ? `the registry has no ${view.to}` : args.find((arg) => typeof arg === 'string');
-      if (to === undefined || problem !== undefined) {
-        reasons.push(`${view.fn.signature} on ${view.to}: ${problem}`);
-        continue;
-      }
-      const values = args as AbiValue[];
-      const data = `0x${bytesToHex(encodeCall({ fn: view.fn, args: values, trailer: undefined }))}` as Hex;
-      views.push({ view, call: { to: to.address, data }, text: `${view.fn.name}(${values.map(valueText).join(', ')})` });
+      const bound = bindView(view, { safe: card.safe, values: op.values, registry });
+      if ('problem' in bound) reasons.push(`${view.fn.signature} on ${view.to}: ${bound.problem}`);
+      else views.push({ view, ...bound });
     }
   }
   return { views, reasons };
@@ -241,7 +247,7 @@ export function viewCalls(card: ResolvedCard, templates: ReadonlyMap<string, Tem
 }
 
 /** Each return value of a view's answer, as a number where it is one, or why the answer has none. */
-function numbersOf(view: ViewEffect, answer: ViewAnswer): readonly (bigint | undefined)[] | string {
+export function numbersOf(view: BoundView, answer: ViewAnswer): readonly (bigint | undefined)[] | string {
   if (answer.kind === 'unread') return answer.why;
   const values = decodeValues(view.returns.map((r) => r.type), hexToBytes(answer.data.slice(2)));
   if (values === undefined) return `its answer does not decode as ${view.returns.map((r) => canonicalType(r.type)).join(', ')}`;

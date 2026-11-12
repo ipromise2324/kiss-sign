@@ -63,6 +63,7 @@ function quick(
     pastTxs,
     spans,
     erc7730: { text: 'not read', reports: [] },
+    facts: undefined,
   };
   return renderReport(inputs, { command: 'test', sources: [] });
 }
