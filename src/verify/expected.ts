@@ -85,7 +85,7 @@ export function amountTokens(card: ResolvedCard, templates: ReadonlyMap<string, 
   const tokens = new Set<Address>();
   for (const op of card.operations) {
     for (const field of templates.get(op.template)?.card.values() ?? []) {
-      if (field.kind !== 'amount' || field.of === 'eth') continue;
+      if (field.kind !== 'amount' || field.of === 'eth' || op.values.get(field.of.field)?.kind !== 'contract') continue;
       const target = resolveRef(field.of, op.values, registry);
       if ('kind' in target && target.kind === 'address') tokens.add(target.address);
     }
@@ -98,6 +98,7 @@ function wholeTokenAmount(rule: Rule | undefined, value: AbiValue, values: Value
   const field = walk.templateOf.get(values)?.card.get(rule.ref.field);
   if (field?.kind !== 'amount') return undefined;
   if (field.of === 'eth') return `${wholeTokens(value.value, 18)} ETH`;
+  if (values.get(field.of.field)?.kind !== 'contract') return undefined;
   const token = resolveRef(field.of, values, walk.registry);
   if (!('kind' in token) || token.kind !== 'address') return undefined;
   const decimals = walk.decimals.get(token.address);
