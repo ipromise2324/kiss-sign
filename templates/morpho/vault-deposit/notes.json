@@ -1,0 +1,136 @@
+{
+  "title": "存入 Morpho vault",
+  "summary": "Safe 先授權 GeneralAdapter1 剛好你填的金額，再呼叫 Bundler3 的 multicall：GeneralAdapter1 從 Safe 拉走這筆代幣，存進你選的 vault，股份直接給 Safe。每股價格不能高過你填的最少股份換算出的價格，否則整筆失敗。",
+  "verdict": { "status": "caution", "text": "可以用。三個 vault 沒有策展人的官方頁列地址，選它們前先看待確認。" },
+  "flow": [
+    { "after": 2, "from": "bundler3", "to": "general-adapter-1", "text": "依序呼叫 erc20TransferFrom 和 erc4626Deposit" },
+    { "after": 2, "from": "general-adapter-1", "to": "usdc", "text": "用 transferFrom 從 Safe 拉走你填的金額" }
+  ],
+  "protocols": {
+    "morpho-blue": {
+      "intro": "Morpho 的 vault 把存款分配到多個 Morpho Blue market 放貸。vault 由策展人管理，Morpho 的工廠合約負責建立它們。",
+      "audits": {
+        "text": "Bundler3 的 GitHub 列了 3 份稽核（Spearbit 兩份、OpenZeppelin 一份）。Vault V2 的 GitHub 列了 10 份（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。MetaMorpho 的 GitHub 列了 Cantina 和 OpenZeppelin 的稽核。",
+        "sources": [
+          "https://github.com/morpho-org/bundler3/tree/main/audits",
+          "https://github.com/morpho-org/vault-v2/tree/main/audits",
+          "https://github.com/morpho-org/metamorpho/tree/main/audits"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": "同名的 vault 有兩個：Hyperithm USDC Apex 的 V1（0x777791C4d6DC2CE140D00D2828a7C93503c67777）和 V2（0x093272C07700d3cA5301C3Bf9B3A392624179E2F），代號都是 hyperUSDCa。",
+      "recommendation": "在 card new 用名稱尾碼和工廠分辨，跟 Morpho app 網址上的地址逐字比對。"
+    },
+    {
+      "text": "Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。",
+      "recommendation": "遇到 MISMATCH 不要簽；回報後再決定是否新增模板。"
+    },
+    {
+      "text": "Steakhouse 把 Steakhouse USDT 和 Smokehouse USDC 列在 Legacy Vaults 頁，說明它們不再是重點產品，建議轉到現行產品線。",
+      "recommendation": "長期存放前，先看 Steakhouse 現行產品是否更適合。"
+    },
+    {
+      "text": "Hyperithm 的兩個 vault 規模變動大：V1 一年內從約 3,460 萬降到約 121 萬 USDC；V2 一年前只有約 3,300，現在約 750 萬，最大持有人占 51.77%。",
+      "recommendation": "只存你能接受暫時提不出的金額，先送小額。"
+    }
+  ],
+  "reviews": {
+    "metamorpho-factory-v1-0/source.page": {
+      "status": "confirmed",
+      "text": "AI 用 headless Chrome 跑完腳本打開這一頁：「MetaMorpho Factory [OLD]」下一行就是 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101。程式讀的是沒跑腳本的原始 HTML，地址不在標籤後 100 字以內。",
+      "recommendation": "可以接受。想自己確認，用瀏覽器打開這頁搜尋 MetaMorpho Factory [OLD]。"
+    },
+    "smokehouse-usdc-v1-f5bc/source.coingecko": {
+      "status": "concern",
+      "text": "CoinGecko 沒有列這個 vault 的股份代幣，很多 vault 都沒有。這個地址的主要證據是 Steakhouse 文件頁（程式讀到地址）和 MetaMorpho 舊版工廠回答 isMetaMorpho = true。",
+      "recommendation": "可以接受，不影響存款。"
+    },
+    "smokehouse-usdt-v1-7484/source.url": {
+      "status": "concern",
+      "text": "AI 沒找到 Steakhouse 列出這個地址的頁面。用瀏覽器打開 Morpho app 的 vault 頁，顯示 Steakhouse Financial 的說明，curator 是 3/9 多簽。網址本身含地址，所以這只證明 Morpho app 有這個 vault。MetaMorpho V1.1 工廠回答 isMetaMorpho = true。",
+      "recommendation": "要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。"
+    },
+    "smokehouse-usdt-v1-7484/source.coingecko": {
+      "status": "concern",
+      "text": "CoinGecko 沒有列這個 vault 的股份代幣。地址的證據只有 Morpho app 頁和工廠回答，見同一個 vault 的來源網址那項。",
+      "recommendation": "可以接受，不影響存款。"
+    },
+    "hyperithm-usdc-apex-v1-7777/source.url": {
+      "status": "concern",
+      "text": "AI 沒找到 Hyperithm 列出地址的官方頁。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Hyperithm USDC Apex，curator 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V2 vault 是同一個 curator。MetaMorpho V1.1 工廠回答 isMetaMorpho = true。",
+      "recommendation": "要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。"
+    },
+    "hyperithm-usdc-apex-v1-7777/source.coingecko": {
+      "status": "concern",
+      "text": "CoinGecko 沒有列這個 vault 的股份代幣。地址的證據只有 Morpho app 頁和工廠回答，見同一個 vault 的來源網址那項。",
+      "recommendation": "可以接受，不影響存款。"
+    },
+    "hyperithm-usdc-apex-v2-9e2f/source.url": {
+      "status": "concern",
+      "text": "AI 沒找到 Hyperithm 列出地址的官方頁。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。VaultV2Factory 回答 isVaultV2 = true。",
+      "recommendation": "要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。"
+    },
+    "hyperithm-usdc-apex-v2-9e2f/source.coingecko": {
+      "status": "concern",
+      "text": "CoinGecko 沒有列這個 vault 的股份代幣。地址的證據只有 Morpho app 頁和工廠回答，見同一個 vault 的來源網址那項。",
+      "recommendation": "可以接受，不影響存款。"
+    }
+  },
+  "entries": {
+    "usdc": { "role": "存進 USDC vault 的代幣" },
+    "usdt": { "role": "存進 USDT vault 的代幣" },
+    "bundler3": { "role": "Morpho 的打包合約，依序執行 bundle 裡的每一步，並記住發起人是 Safe" },
+    "general-adapter-1": { "role": "接收授權，替 Safe 拉代幣並存進 vault" },
+    "metamorpho-factory-v1-0": { "role": "MetaMorpho 舊版工廠，建立了 Steakhouse USDT 和 Smokehouse USDC" },
+    "metamorpho-factory-v1-1": { "role": "MetaMorpho V1.1 工廠，建立了 Smokehouse USDT 和 Hyperithm V1" },
+    "vault-v2-factory": { "role": "Morpho Vault V2 工廠，建立了 Hyperithm V2" },
+    "steakhouse-usdt-v1-cfba": { "role": "Steakhouse 管理的 USDT vault（V1，Legacy）" },
+    "smokehouse-usdc-v1-f5bc": { "role": "Steakhouse 管理的高收益 USDC vault（V1，Legacy）" },
+    "smokehouse-usdt-v1-7484": {
+      "role": "Steakhouse 管理的高收益 USDT vault（V1）",
+      "sources": [
+        { "text": "用瀏覽器打開 Morpho app 的 vault 頁", "url": "https://app.morpho.org/ethereum/vault/0xA0804346780b4c2e3bE118ac957D1DB82F9d7484/smokehouse-usdt", "result": "attention" }
+      ]
+    },
+    "hyperithm-usdc-apex-v1-7777": {
+      "role": "Hyperithm 管理的 USDC vault（V1）",
+      "sources": [
+        { "text": "用瀏覽器打開 Morpho app 的 vault 頁", "url": "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex", "result": "attention" }
+      ]
+    },
+    "hyperithm-usdc-apex-v2-9e2f": {
+      "role": "Hyperithm 管理的 USDC vault（V2）",
+      "sources": [
+        { "text": "用瀏覽器打開 Morpho app 的 vault 頁", "url": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex", "result": "attention" }
+      ]
+    }
+  },
+  "fields": {
+    "1.approve.spender": "被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 GeneralAdapter1，呼叫 2 裡它用 transferFrom 拉走這筆錢。",
+    "1.approve.value": "授權的上限，等於存款金額。呼叫 2 會整筆拉走，交易後授權回到 0。",
+    "2.multicall.bundle": "Bundler3 依序執行的步驟清單，這裡固定兩步：先拉代幣，再存進 vault。任何一步失敗，整筆交易失敗。",
+    "2.multicall.bundle[0]": "第一步：把代幣從 Safe 拉進 GeneralAdapter1。",
+    "2.multicall.bundle[0].to": "這一步呼叫的合約，固定是 GeneralAdapter1。",
+    "2.multicall.bundle[0].data": "這一步要執行的函式和參數，下面逐項列出。",
+    "2.multicall.bundle[0].data.erc20TransferFrom.token": "要拉的代幣，等於 vault 的資產（USDC 或 USDT）。",
+    "2.multicall.bundle[0].data.erc20TransferFrom.receiver": "代幣先轉到 GeneralAdapter1 自己，下一步再由它存進 vault。",
+    "2.multicall.bundle[0].data.erc20TransferFrom.amount": "從 Safe 拉的數量，等於存款金額。Bundler3 記錄發起人是 Safe，所以只能拉 Safe 的錢。",
+    "2.multicall.bundle[0].value": "附帶的 ETH，固定為 0。",
+    "2.multicall.bundle[0].skipRevert": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。",
+    "2.multicall.bundle[0].callbackHash": "只有需要回呼的步驟才用，固定為 0。",
+    "2.multicall.bundle[1]": "第二步：GeneralAdapter1 把代幣存進 vault，股份給 Safe。",
+    "2.multicall.bundle[1].to": "這一步呼叫的合約，固定是 GeneralAdapter1。",
+    "2.multicall.bundle[1].data": "這一步要執行的函式和參數，下面逐項列出。",
+    "2.multicall.bundle[1].data.erc4626Deposit.vault": "存進哪一個 vault。這就是你在卡片上選的 vault。",
+    "2.multicall.bundle[1].data.erc4626Deposit.assets": "存進 vault 的代幣數量，等於存款金額。",
+    "2.multicall.bundle[1].data.erc4626Deposit.maxSharePriceE27": "每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，保證你至少拿到最少股份。",
+    "2.multicall.bundle[1].data.erc4626Deposit.receiver": "收股份的地址，固定是 Safe。",
+    "2.multicall.bundle[1].value": "附帶的 ETH，固定為 0。",
+    "2.multicall.bundle[1].skipRevert": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。",
+    "2.multicall.bundle[1].callbackHash": "只有需要回呼的步驟才用，固定為 0。"
+  }
+}
