@@ -401,16 +401,50 @@ test('a constant prints as cast decode-calldata prints it', () => {
   assert.equal(constCast({ kind: 'bool', value: false }), 'false');
 });
 
-test('past transactions count, per kind of sender, those using the operation and those with the template shape', () => {
+test('past transactions count, per kind of sender, those using the operation and those with the template shape and rules', () => {
   const [recording] = body(pageOf(inputs), 'past').recordings;
   assert.deepEqual(
     recording?.blocks.map((b) => [b.title, plain(b.lead)]),
     [
       ['Safe', '0 筆用了這個操作的呼叫（0 個 Safe），0 筆跟模板一樣。'],
-      ['EOA 直接呼叫 blueBundlesV1Supply', '8 筆用了這個操作的呼叫（8 個地址），8 筆跟模板一樣。'],
+      ['EOA 直接呼叫 blueBundlesV1Supply', '8 筆用了這個操作的呼叫（8 個地址），1 筆跟模板一樣。'],
     ],
   );
   assert.equal(plain(recording?.search), 'Alchemy 和 Etherscan 找到的完全一樣（528 = 528）。');
+});
+
+test('a past transaction with the template shape but a value its rule forbids, such as a signed permit, is not exactly the template', () => {
+  const past = body(pageOf(inputs), 'past');
+  assert.equal(
+    plain(past.same),
+    '過去有 1 筆交易跟模板一模一樣：Safe 0 筆、EOA 1 筆（1 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 1 筆：0x2f82601d…。',
+  );
+  assert.deepEqual(
+    past.recordings[0]?.blocks[1]?.groups.map((g) => [g.count, g.senders, plain(g.reason)]),
+    [
+      [4, 4, 'call.blueBundlesV1Supply.loanTokenPermit.kind 的值跟模板不同：模板要 0，交易是 1'],
+      [3, 3, 'call.blueBundlesV1Supply.loanTokenPermit.kind 的值跟模板不同：模板要 0，交易是 2'],
+    ],
+  );
+});
+
+test('a Safe transaction whose receiver is not the Safe that sent it is not exactly the template', () => {
+  const stranger = (hash: Hex): Address => `0x${hash.slice(2, 42)}` as Address;
+  const moved = depositInputs.pastTxs.map((p) => ({
+    ...p,
+    run: { ...p.run, studies: p.run.studies.map((s) => (s.kind === 'fit' && s.sender.kind === 'safe' ? { ...s, sender: { ...s.sender, address: stranger(s.hash) } } : s)) },
+  }));
+  const past = body(buildPage({ ...depositInputs, pastTxs: moved }, depositNotes, depositTitle), 'past');
+  assert.match(plain(past.same), /^過去有 26 筆交易跟模板一模一樣：Safe 0 筆、EOA 26 筆/);
+  const safe = past.recordings[0]?.blocks[0];
+  assert.equal(plain(safe?.lead), '8 筆用了這個操作的呼叫（8 個 Safe），0 筆跟模板一樣。');
+  assert.deepEqual(
+    safe?.groups.map((g) => [g.count, plain(g.reason)]),
+    [
+      [6, 'multiSend[1].multicall.bundle[1].data.erc4626Deposit.receiver 不是送出交易的 Safe 或地址'],
+      [2, '呼叫跟模板不同，模板是 approve → multicall'],
+    ],
+  );
 });
 
 test('a bundle with another number of items is grouped and named by the functions its items call, each example linked to Etherscan', () => {
@@ -435,7 +469,7 @@ test('a bundle with another number of items is grouped and named by the function
   assert.ok(!JSON.stringify(early).includes('符合'), 'no verdict word');
 });
 
-test('過去交易 leads with how many past transactions had exactly the template shape, each counted once, and the latest of them', () => {
+test('過去交易 leads with how many past transactions were exactly the template, each counted once, and the latest of them', () => {
   assert.equal(
     plain(body(depositPage, 'past').same),
     '過去有 32 筆交易跟模板一模一樣：Safe 6 筆（2 個 Safe）、EOA 26 筆（17 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 3 筆：0x88258583…、0xa56ce3d8…、0x15133c00…。',
