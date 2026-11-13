@@ -21,6 +21,8 @@ import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, 
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { factsScope } from './protocol-facts.ts';
+import { readStoredEvidence } from './vault-evidence.ts';
+import type { StoredPoint } from './vault-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
@@ -59,6 +61,7 @@ export type Section = { readonly anchor: Anchor; readonly label: string; readonl
 export type Body =
   | { readonly kind: 'flow'; readonly flow: Flow }
   | { readonly kind: 'protocol'; readonly block: ProtocolBlock }
+  | { readonly kind: 'vault'; readonly vault: VaultBlock }
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
   | { readonly kind: 'wallet'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
@@ -112,6 +115,16 @@ export type ProtocolRow = {
   readonly nested: readonly { readonly label: Inline; readonly value: Inline; readonly ai: AiText | undefined }[];
 };
 export type ProtocolBlock = { readonly read: string; readonly intro: AiText; readonly rows: readonly ProtocolRow[]; readonly sources: readonly { readonly label: string; readonly href: HttpsUrl | undefined }[] };
+
+/** One monthly `totalAssets()` reading: `share` of the largest reading, undefined when there is no amount to draw. */
+export type VaultBar = { readonly date: string; readonly words: string; readonly share: number | undefined };
+export type VaultBlock = {
+  readonly lead: Inline;
+  readonly rows: readonly { readonly label: string; readonly value: Inline; readonly note: Inline }[];
+  /** Oldest first. */
+  readonly bars: readonly VaultBar[];
+  readonly most: string | undefined;
+};
 
 export type ReviewRow = {
   readonly id: ResultId;
@@ -752,6 +765,55 @@ function protocolSections(context: Context): Section[] {
   });
 }
 
+const POINT_WORDS: Readonly<Record<Exclude<StoredPoint['assets']['kind'], 'amount'>, string>> = { unread: '讀不到', 'no-code': '還沒有程式碼', reverted: 'totalAssets() revert' };
+
+/** The card's vault in a per-vault report, from its stored `pnpm vault-evidence` output alone. */
+function vaultSection(context: Context): Section[] {
+  const { subject } = context.inputs;
+  if (subject.kind !== 'template' || subject.vault === undefined) return [];
+  const vault = subject.vault;
+  const text = context.inputs.vaults.get(vault.name);
+  const section = (block: VaultBlock): Section[] => [{ anchor: anchor(`vault-${vault.name}`), label: '金庫', count: undefined, body: { kind: 'vault', vault: block } }];
+  const lead: Inline = [link(vault), '：程式記錄的 ', { code: 'pnpm vault-evidence' }, ' 輸出，每個數字都同時問兩家節點。這裡不換算成美元。'];
+  if (text === undefined) return section({ lead: [link(vault), '：沒有 ', { code: 'pnpm vault-evidence' }, ' 的記錄。'], rows: [], bars: [], most: undefined });
+  const evidence = readStoredEvidence(text);
+  const unit = evidence.asset?.name === undefined ? '' : ` ${evidence.asset.name}`;
+  const amount = (value: bigint): string => (evidence.asset === undefined ? `${value} 最小單位` : `${tokens(value, evidence.asset.decimals, 2)}${unit}`);
+  const most = evidence.points.reduce<bigint | undefined>((top, p) => (p.assets.kind === 'amount' && (top === undefined || p.assets.amount > top) ? p.assets.amount : top), undefined);
+  const bars = evidence.points.map(
+    (p): VaultBar => ({
+      date: p.date ?? '日期不明',
+      words: p.assets.kind === 'amount' ? amount(p.assets.amount) : POINT_WORDS[p.assets.kind],
+      share: p.assets.kind !== 'amount' || most === undefined || most === 0n ? undefined : Number(p.assets.amount) / Number(most),
+    }),
+  );
+  const latest = evidence.points.at(-1);
+  const { factory } = vault.attributes;
+  const rows: VaultBlock['rows'] = [
+    {
+      label: '工廠',
+      value:
+        evidence.admitted !== undefined
+          ? [evidence.admitted.factory, ' 回答 ', { code: evidence.admitted.check }, ' = true']
+          : [factory === undefined ? '沒有登記工廠，沒有工廠為它的程式碼背書' : `沒有記錄到 ${factory} 回答它建立了這個 vault`],
+      note: evidence.admitted === undefined ? [] : [`區塊 ${evidence.admitted.block}`],
+    },
+    {
+      label: '現在的 totalAssets',
+      value: latest === undefined ? ['讀不到'] : [{ num: latest.assets.kind === 'amount' ? amount(latest.assets.amount) : POINT_WORDS[latest.assets.kind] }],
+      note: latest === undefined ? [] : [`${latest.date ?? '日期不明'}，區塊 ${latest.block}`],
+    },
+    ...(evidence.holders === undefined
+      ? [{ label: '持有人', value: ['讀不到'], note: [] }]
+      : [
+          { label: '持有人', value: [{ num: `${evidence.holders.holders}` }, ' 個地址持有，曾經收過的 ', { num: `${evidence.holders.candidates}` }, ' 個'], note: [] },
+          { label: '最大持有人', value: [{ num: evidence.holders.largest ?? '讀不到' }], note: ['占全部股份'] },
+          { label: '前 10 名', value: [{ num: evidence.holders.top10 }], note: ['占全部股份'] },
+        ]),
+  ];
+  return section({ lead, rows, bars, most: most === undefined ? undefined : amount(most) });
+}
+
 function reviewTitle(result: Result, context: Context): { readonly title: Inline; readonly why: Inline } {
   const words = FINDING_WORDS[result.finding.kind] ?? { title: '要你看', why: '' };
   if (result.about.kind === 'fixture') {
@@ -1024,7 +1086,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     card: example?.card.operations.find((op) => op.template === template.id)?.values,
     values: example === undefined ? new Map() : exampleValues(template, example.tx),
   };
-  const sections = [flowSection(context), ...protocolSections(context), reviewSection(context), walletSection(context), addressSection(context), pastSection(context), signingSection(context)];
+  const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), addressSection(context), pastSection(context), signingSection(context)];
   const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', notesPath(template.id), ...(subject.vault === undefined ? [] : [notesPath(template.id, subject.vault.name)])];
   return {
     id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,

@@ -132,6 +132,10 @@ svg .codebox{fill:var(--hover);stroke:var(--line2)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
 svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
 svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 
@@ -237,7 +241,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
 </nav>
 
 <div class="main">
@@ -260,7 +264,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
   </details>
 </header>
 
@@ -394,6 +398,59 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
   </dl>
   <p class="srcline">程式在 2026-11-12 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
+</section>
+
+<section id="vault-hyperithm-usdc-apex-v2-9e2f">
+  <h2>金庫</h2>
+  <p class="lead"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a>：程式記錄的 <code>pnpm vault-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
+  <dl class="props">
+    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26399950</dd></div>
+    <div><dt>現在的 totalAssets</dt><dd><span class="num">7,499,999.38 usdc</span></dd><dd class="src">2026-11-12，區塊 26399950</dd></div>
+    <div><dt>持有人</dt><dd><span class="num">170</span> 個地址持有，曾經收過的 <span class="num">353</span> 個</dd><dd class="src"></dd></div>
+    <div><dt>最大持有人</dt><dd><span class="num">51.77%</span></dd><dd class="src">占全部股份</dd></div>
+    <div><dt>前 10 名</dt><dd><span class="num">90.10%</span></dd><dd class="src">占全部股份</dd></div>
+  </dl>
+  <h3>每月的 totalAssets</h3>
+  <div class="diagram">
+  <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
+    <title id="vt">每月的 totalAssets</title>
+    <desc id="vd">13 個月，2025-11-15 到 2026-11-12，最高 19,682,215.59 usdc</desc>
+    <text class="tick" x="16" y="18">最高 19,682,215.59 usdc</text>
+    <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
+    <rect class="bar" x="25.7" y="149" width="29.0" height="1"><title>2025-11-15：3,328.47 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="149" width="29.0" height="1"><title>2025-12-16：159,365.26 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
+    <rect class="bar" x="122.3" y="149" width="29.0" height="1"><title>2026-01-15：160,181.47 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="85" width="29.0" height="65"><title>2026-02-14：10,961,763.77 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="bar" x="218.9" y="119" width="29.0" height="31"><title>2026-03-16：5,257,183.22 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
+    <rect class="bar" x="267.2" y="95" width="29.0" height="55"><title>2026-04-15：9,330,100.39 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="315.5" y="124" width="29.0" height="26"><title>2026-05-15：4,424,959.28 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
+    <rect class="bar" x="363.8" y="116" width="29.0" height="34"><title>2026-06-15：5,810,774.24 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="412.1" y="78" width="29.0" height="72"><title>2026-07-15：12,276,257.44 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
+    <rect class="bar" x="460.4" y="122" width="29.0" height="28"><title>2026-08-14：4,813,567.63 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="508.7" y="101" width="29.0" height="49"><title>2026-09-13：8,390,865.85 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
+    <rect class="bar" x="557.0" y="34" width="29.0" height="116"><title>2026-10-13：19,682,215.59 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar last" x="605.4" y="106" width="29.0" height="44"><title>2026-11-12：7,499,999.38 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>
+  <details class="fold">
+    <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>13 個月的數字</summary>
+    <dl class="props">
+      <div><dt class="num">2025-11-15</dt><dd class="num">3,328.47 usdc</dd></div>
+      <div><dt class="num">2025-12-16</dt><dd class="num">159,365.26 usdc</dd></div>
+      <div><dt class="num">2026-01-15</dt><dd class="num">160,181.47 usdc</dd></div>
+      <div><dt class="num">2026-02-14</dt><dd class="num">10,961,763.77 usdc</dd></div>
+      <div><dt class="num">2026-03-16</dt><dd class="num">5,257,183.22 usdc</dd></div>
+      <div><dt class="num">2026-04-15</dt><dd class="num">9,330,100.39 usdc</dd></div>
+      <div><dt class="num">2026-05-15</dt><dd class="num">4,424,959.28 usdc</dd></div>
+      <div><dt class="num">2026-06-15</dt><dd class="num">5,810,774.24 usdc</dd></div>
+      <div><dt class="num">2026-07-15</dt><dd class="num">12,276,257.44 usdc</dd></div>
+      <div><dt class="num">2026-08-14</dt><dd class="num">4,813,567.63 usdc</dd></div>
+      <div><dt class="num">2026-09-13</dt><dd class="num">8,390,865.85 usdc</dd></div>
+      <div><dt class="num">2026-10-13</dt><dd class="num">19,682,215.59 usdc</dd></div>
+      <div><dt class="num">2026-11-12</dt><dd class="num">7,499,999.38 usdc</dd></div>
+    </dl>
+  </details>
 </section>
 
 <section id="review">

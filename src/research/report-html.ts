@@ -4,7 +4,7 @@ import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Body, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SourceLine } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Body, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SourceLine, VaultBlock } from './report-page.ts';
 import { reportDir } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
@@ -246,6 +246,61 @@ function protocolBody(block: ProtocolBlock): Html {
   <p class="srcline">程式在 ${block.read} 讀 ${block.sources.map((s, i) => h`${i === 0 ? '' : i === block.sources.length - 1 ? '和' : '、'}${s.href === undefined ? s.label : h`<a href="${s.href}">${s.label}</a>`}`)}。標 AI 研究的是 AI 查的。</p>`;
 }
 
+const CHART_WIDTH = 660;
+const CHART_TOP = 34;
+const CHART_BASE = 150;
+const CHART_SIDE = 16;
+
+/** The monthly `totalAssets()` readings as bars, oldest first: each titled with its date and amount, a month with no amount a dashed stub. */
+function chart(block: VaultBlock): Html {
+  const step = (CHART_WIDTH - 2 * CHART_SIDE) / Math.max(1, block.bars.length);
+  const bars = block.bars.map((bar, i) => {
+    const x = CHART_SIDE + i * step + step * 0.2;
+    const w = step * 0.6;
+    const height = bar.share === undefined ? 0 : Math.max(1, Math.round(bar.share * (CHART_BASE - CHART_TOP)));
+    const mark =
+      bar.share === undefined
+        ? h`<rect class="barna" x="${x.toFixed(1)}" y="${CHART_BASE - 12}" width="${w.toFixed(1)}" height="12"><title>${bar.date}：${bar.words}</title></rect>`
+        : h`<rect class="bar${i === block.bars.length - 1 ? ' last' : ''}" x="${x.toFixed(1)}" y="${CHART_BASE - height}" width="${w.toFixed(1)}" height="${height}"><title>${bar.date}：${bar.words}</title></rect>`;
+    const [year, month] = bar.date.split('-');
+    const first = i === 0 || month === '01';
+    return h`
+    ${mark}<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 18}" text-anchor="middle">${month === undefined ? '?' : `${Number(month)}月`}</text>${
+      first && year !== undefined && month !== undefined ? h`<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 34}" text-anchor="middle">${year}</text>` : ''
+    }`;
+  });
+  const span = block.bars.length === 0 ? '' : `${block.bars[0]?.date} 到 ${block.bars.at(-1)?.date}`;
+  return h`<div class="diagram">
+  <svg viewBox="0 0 ${CHART_WIDTH} ${CHART_BASE + 44}" role="img" aria-labelledby="vt vd">
+    <title id="vt">每月的 totalAssets</title>
+    <desc id="vd">${block.bars.length} 個月，${span}，最高 ${block.most ?? '讀不到'}</desc>
+    <text class="tick" x="${CHART_SIDE}" y="18">最高 ${block.most ?? '讀不到'}</text>
+    <line class="axis" x1="${CHART_SIDE}" y1="${CHART_BASE}" x2="${CHART_WIDTH - CHART_SIDE}" y2="${CHART_BASE}"/>${bars}
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>`;
+}
+
+function vaultBody(block: VaultBlock): Html {
+  return h`
+  <p class="lead">${text(block.lead)}</p>${
+    block.rows.length === 0
+      ? ''
+      : h`
+  <dl class="props">${block.rows.map((row) => h`
+    <div><dt>${row.label}</dt><dd>${text(row.value)}</dd><dd class="src">${text(row.note)}</dd></div>`)}
+  </dl>
+  <h3>每月的 totalAssets</h3>
+  ${chart(block)}
+  <details class="fold">
+    <summary>${decor('chev')}${block.bars.length} 個月的數字</summary>
+    <dl class="props">${block.bars.map((bar) => h`
+      <div><dt class="num">${bar.date}</dt><dd class="num">${bar.words}</dd></div>`)}
+    </dl>
+  </details>`
+  }`;
+}
+
 function reviewBody(body: Extract<Body, { kind: 'review' }>): Html {
   const empty = body.rows.length === 0 && body.judgments.length === 0;
   return h`
@@ -359,6 +414,8 @@ function section(s: Section): Html {
         return flowBody(s.body.flow);
       case 'protocol':
         return protocolBody(s.body.block);
+      case 'vault':
+        return vaultBody(s.body.vault);
       case 'review':
         return reviewBody(s.body);
       case 'wallet':
@@ -590,6 +647,10 @@ svg .codebox{fill:var(--hover);stroke:var(--line2)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
 svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
 svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
 @media (max-width:700px){.scrollhint{display:block}}
 

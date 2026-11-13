@@ -257,11 +257,14 @@ A 13px label in a 1px 6px-radius outline. Four words, from the template's rule f
 ### Sequence Diagram
 Inline SVG in a Sunk Graphite frame with a Hairline border. Participants are 44px-tall 6px-radius nodes (Row Hover fill, Strong Hairline stroke) with a 590 14px name and a 12.5px Ink 3 role, each dropping a dotted lifeline (2 4). Arrows: solid 1.4px Ink with a filled head for a call the Safe sends, numbered in mono Ink 3 with the function name in 14px mono; dashed 1.2px Ink 3 (4 4) for what a contract does internally, captioned in 14px Ink 2, where a function or argument name the AI wrote between backticks sits in 13px mono Ink on its own 6px-radius Row Hover box, like inline code in prose with a Strong Hairline stroke, each part placed at its own x so the caption ends inside the frame; one solid 1.4px Pass Green arrow back to the Safe with a 590 green caption for what the Safe receives. The SVG carries a `<title>` and a `<desc>` that narrates the calls in words.
 
+### Bar Chart
+Inline SVG in the Sequence Diagram's frame, 660 wide at least and scrolling inside the frame on a narrow screen. One bar per reading, oldest first, on a Strong Hairline baseline: Strong Hairline fill, the latest in Ink 2; a reading with no amount is a dashed Ink 3 stub. Month labels and the year at the first bar and each January sit under it in 12px Ink 3, and the largest reading in 12px Ink 3 at the top left. Colour marks no state here. Each bar carries a `<title>` with its date and amount, the SVG a `<title>` and a `<desc>`, and the readings follow as rows in a fold.
+
 ### Contents Rail
 A `<nav>` in the left column, sticky 32px from the top: a 13px 590 Ink 3 "目錄", then an ordered list behind a 1px Hairline left rule, one 14px Ink 2 link per section, each 6px tall padding and 14px from the rule. A count sits right-aligned in Ink 3 (such as 2 個呼叫 or 6), and 待確認 shows its state icon with its count. Hover lightens the link to Ink and draws its piece of the rule in Ink 2. At 1040px and below the rail hides, and the same list folds under the verdict as a `<details>` named 目錄, laid out as a grid of 150px columns. Sections carry `scroll-margin-top` so a jump lands below the top edge.
 
 ### Folds
-`<details>` with a hidden marker, a chevron and Ink 2 15px summary text that lightens to Ink on hover. Used only for things that passed or ran automatically.
+`<details>` with a hidden marker, a chevron and Ink 2 15px summary text that lightens to Ink on hover. Used only for things that passed or ran automatically, and for the numbers a chart already draws.
 
 ### Signing Steps
 An ordered list of hairline rows with a mono Ink 3 counter ("1."), inline code for commands and expected output, and a two-column hash grid (Ink 3 name, Ink 2 value).

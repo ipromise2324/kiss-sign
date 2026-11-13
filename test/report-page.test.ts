@@ -207,6 +207,37 @@ test("a per-vault report shows its vault as the card's value, with or without a 
   assert.equal(depositPage.id, 'morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f');
 });
 
+test("a per-vault report shows the vault's stored evidence after the protocol, with no USD value", () => {
+  assert.deepEqual(
+    depositPage.sections.map((s) => s.anchor),
+    ['flow', 'protocol-morpho-blue', 'vault-hyperithm-usdc-apex-v2-9e2f', 'review', 'wallet', 'addresses', 'past', 'sign'],
+  );
+  const { vault } = body(depositPage, 'vault');
+  assert.deepEqual(
+    vault.rows.map((r) => [r.label, plain(r.value)]),
+    [
+      ['工廠', 'vault-v2-factory 回答 isVaultV2(address) = true'],
+      ['現在的 totalAssets', '7,499,999.38 usdc'],
+      ['持有人', '170 個地址持有，曾經收過的 353 個'],
+      ['最大持有人', '51.77%'],
+      ['前 10 名', '90.10%'],
+    ],
+  );
+  assert.equal(vault.bars.length, 13);
+  assert.deepEqual(vault.bars[0], { date: '2025-11-15', words: '3,328.47 usdc', share: 3328_477670 / 19682215_591996 });
+  assert.deepEqual(vault.bars.at(-1)?.date, '2026-11-12');
+  assert.equal(vault.most, '19,682,215.59 usdc');
+  assert.ok(!JSON.stringify(vault).includes('$'), 'no USD value');
+});
+
+test('a month the providers disagree on reads 讀不到 and draws no bar', () => {
+  const name = 'hyperithm-usdc-apex-v2-9e2f';
+  const text = (depositInputs.vaults.get(name) ?? assert.fail('stored evidence')).replace(/(2026-10-13 {2}block \d+ {2}).*/, '$1UNVERIFIABLE eth_call: alchemy and drpc disagree');
+  const { vault } = body(buildPage({ ...depositInputs, vaults: new Map([[name, text]]) }, depositNotes, depositTitle), 'vault');
+  assert.deepEqual(vault.bars.find((b) => b.date === '2026-10-13'), { date: '2026-10-13', words: '讀不到', share: undefined });
+  assert.equal(vault.most, '12,276,257.44 usdc');
+});
+
 test('each past-transactions recording names the entry its search anchored on', () => {
   const { recordings } = body(depositPage, 'past');
   assert.ok(recordings.length > 0);
