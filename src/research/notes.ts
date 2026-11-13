@@ -5,6 +5,7 @@ import type { AbiParam } from '../decode/abi.ts';
 import { parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl } from '../registry.ts';
 import { TEMPLATES_DIR, callTargetEntries } from '../template/template.ts';
+import { vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, Rule, Template } from '../template/template.ts';
 import { needsSigner } from './ledger.ts';
 import { factsScope } from './protocol-facts.ts';
@@ -17,15 +18,45 @@ export class NotesError extends Error {
   override name = 'NotesError';
 }
 
-export const notesPath = (template: string): string => join(TEMPLATES_DIR, template, NOTES_FILE);
+/** The template's notes, or with `vault` the notes of that vault's report of it. */
+export const notesPath = (template: string, vault?: string): string => join(vault === undefined ? join(TEMPLATES_DIR, template) : vaultReportDir(template, vault), NOTES_FILE);
 
-/** The changed files that hold text the AI wrote for a template's HTML report, which no program checks. */
-export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/notes\.json$/.test(file));
+/** The changed files that hold text the AI wrote for a template's HTML report, a vault's included, which no program checks. */
+export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/(vaults\/[^/]+\/)?notes\.json$/.test(file));
 
-/** The template's notes as JSON, or undefined when it has none. */
-export function readNotes(repoRoot: string, template: string): unknown {
-  const path = join(repoRoot, notesPath(template));
-  return existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined;
+const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
+
+/** What a vault's notes may hold: the text about that vault alone. Everything else every vault's report shares. */
+const VAULT_KEYS: readonly string[] = ['verdict', 'judgments', 'reviews', 'entries'];
+const KEYED = ['reviews', 'entries'];
+
+/**
+ * The template's notes and a vault's, as one: each key once, except that `judgments` join and `reviews` and `entries`
+ * join by name. A vault's notes may hold only `VAULT_KEYS`, and a key or name both define is refused.
+ */
+export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string): unknown {
+  if (vault === undefined || !isRecord(shared)) return shared;
+  if (!isRecord(vault)) return refuse(vaultPath, 'not a JSON object');
+  const merged: Record<string, unknown> = { ...shared };
+  for (const key of Object.keys(vault)) {
+    const value = own(vault, key);
+    if (!VAULT_KEYS.includes(key)) refuse(vaultPath, `${shown(key)} belongs in the template's ${NOTES_FILE}, which every vault's report shares`);
+    const before = own(shared, key);
+    if (before === undefined) merged[key] = value;
+    else if (key === 'judgments' && Array.isArray(before) && Array.isArray(value)) merged[key] = [...before, ...value];
+    else if (KEYED.includes(key) && isRecord(before) && isRecord(value)) {
+      const twice = Object.keys(value).find((name) => own(before, name) !== undefined);
+      if (twice !== undefined) refuse(`${vaultPath}.${key}`, `${shown(twice)} is in the template's ${NOTES_FILE} too`);
+      merged[key] = { ...before, ...value };
+    } else refuse(vaultPath, `${key} is in the template's ${NOTES_FILE} too`);
+  }
+  return merged;
+}
+
+/** The notes a report reads, as JSON: the template's, merged with the vault's for a per-vault report; undefined without the template's. */
+export function readNotes(repoRoot: string, template: string, vault?: string): unknown {
+  const shared = readJson(join(repoRoot, notesPath(template)));
+  return vault === undefined ? shared : mergeNotes(shared, readJson(join(repoRoot, notesPath(template, vault))), notesPath(template, vault));
 }
 
 /** What notes.json may name and must name, derived from the template, the report's inputs and its ledger. */

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
-<title>morpho/vault-deposit 報告</title>
+<title>morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f 報告</title>
 <style>
 :root{
   --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
@@ -237,30 +237,30 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>12</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">15</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
 </nav>
 
 <div class="main">
 
 <header>
   <h1><span class="aiw" data-ai><span>存入 Morpho vault</span><span class="byai">AI 研究</span></span></h1>
-  <span class="opid">morpho/vault-deposit</span>
+  <span class="opid">morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f</span>
   <p class="sub"><span class="aiw" data-ai><span>Safe 先授權 GeneralAdapter1 剛好你填的金額，再呼叫 Bundler3 的 <code>multicall</code>：GeneralAdapter1 從 Safe 拉走這筆代幣，存進你選的 vault，股份直接給 Safe。每股價格不能高過你填的最少股份換算出的價格，否則整筆失敗。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
-    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">10 / 15</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">5 個地址有結果要你看，見「待確認」。其餘 10 個在來源頁讀到登記的地址。</span></span></li>
-    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">15 / 15</span>
+    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">4 / 5</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 個地址有結果要你看，見「待確認」。其餘 4 個在來源頁讀到登記的地址。</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">5 / 5</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。</span></span></li>
-    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">15 / 15</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認這 15 個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">5 / 5</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認這 5 個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
     <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>參數保護 <span class="n num">1 / 1</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">程式把 1 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
   </ul>
-  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。四個 vault 沒有策展人的官方頁列地址，選它們前先看待確認。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>12</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">15</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
   </details>
 </header>
 
@@ -330,7 +330,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">data</div><div><div class="is"><code>erc20TransferFrom</code> (<span class="addr">0xd96ca0b9</span>)</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">token<div class="pchips"><span class="who you">你選：vault</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48<span class="ex">例</span></div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的 vault</span></div>
+        <div class="part"><div class="pn">token<div class="pchips"><span class="who you">你選：vault</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的 vault 的 asset</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要拉的代幣，等於 vault 的資產（USDC 或 USDT）。</span></span></div></div></div>
         <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>代幣先轉到 GeneralAdapter1 自己，下一步再由它存進 vault。</span></span></div></div></div>
@@ -352,7 +352,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">data</div><div><div class="is"><code>erc4626Deposit</code> (<span class="addr">0x6ef5eeae</span>)</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">vault<div class="pchips"><span class="who you">你選：vault</span></div></div><div><div class="raw">0x093272C07700d3cA5301C3Bf9B3A392624179E2F<span class="ex">例</span></div><div class="is"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a> <span class="f3">你選的 vault</span></div>
+        <div class="part"><div class="pn">vault<div class="pchips"><span class="who you">你選：vault</span></div></div><div><div class="raw">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</div><div class="is"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a> <span class="f3">你選的 vault</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進哪一個 vault。這就是你在卡片上選的 vault。</span></span></div></div></div>
         <div class="part"><div class="pn">assets<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="raw">1000611448606<span class="ex">例</span></div><div class="is"><span class="num">1,000,611.448606</span> usdc <span class="f3">6 位小數</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進 vault 的代幣數量，等於存款金額。</span></span></div></div></div>
@@ -397,51 +397,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c">12 項</span></h2>
+  <h2>待確認 <span class="c">5 項</span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
-    <div class="row" data-state="warn" data-result="usual-boosted-usdc-v1-3a3d/source.url">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">usual-boosted-usdc-v1-3a3d：來源網址本身含有地址</div>
-        <div class="meta">網址裡帶著地址，頁面上的地址可能只是照網址印出來，不能證明什麼。<a href="#a-usual-boosted-usdc-v1-3a3d">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 MEV Capital 列出地址的頁面，它的網站連不上，DefiLlama 也沒列網站。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Usual Boosted USDC V1，curator 欄寫 MEV Capital，Etherscan 連結指向 0xd63070114470f685b75B74D60EEc7c1113d33a3D。網址本身含地址。MetaMorpho 舊版工廠回答 <code>isMetaMorpho</code> = true。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row" data-state="warn" data-result="smokehouse-usdc-v1-f5bc/source.coingecko">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">smokehouse-usdc-v1-f5bc：CoinGecko 沒有列這個地址</div>
-        <div class="meta">CoinGecko 在這個地址沒有列幣，或登記沒有給 CoinGecko id。<a href="#a-smokehouse-usdc-v1-f5bc">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>CoinGecko 沒有列這個 vault 的股份代幣，很多 vault 都沒有。這個地址的主要證據是 Steakhouse 文件頁（程式讀到地址）和 MetaMorpho 舊版工廠回答 <code>isMetaMorpho</code> = true。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受，不影響存款。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row" data-state="warn" data-result="smokehouse-usdt-v1-7484/source.url">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">smokehouse-usdt-v1-7484：來源網址本身含有地址</div>
-        <div class="meta">網址裡帶著地址，頁面上的地址可能只是照網址印出來，不能證明什麼。<a href="#a-smokehouse-usdt-v1-7484">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Steakhouse 列出這個地址的頁面。用瀏覽器打開 Morpho app 的 vault 頁，顯示 Steakhouse Financial 的說明，curator 是 3/9 多簽。網址本身含地址，所以這只證明 Morpho app 有這個 vault。MetaMorpho V1.1 工廠回答 <code>isMetaMorpho</code> = true。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row" data-state="warn" data-result="smokehouse-usdt-v1-7484/source.coingecko">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">smokehouse-usdt-v1-7484：CoinGecko 沒有列這個地址</div>
-        <div class="meta">CoinGecko 在這個地址沒有列幣，或登記沒有給 CoinGecko id。<a href="#a-smokehouse-usdt-v1-7484">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>CoinGecko 沒有列這個 vault 的股份代幣。地址的證據只有 Morpho app 頁和工廠回答，見同一個 vault 的來源網址那項。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受，不影響存款。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row" data-state="warn" data-result="hyperithm-usdc-apex-v1-7777/source.url">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">hyperithm-usdc-apex-v1-7777：來源網址本身含有地址</div>
-        <div class="meta">網址裡帶著地址，頁面上的地址可能只是照網址印出來，不能證明什麼。<a href="#a-hyperithm-usdc-apex-v1-7777">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Hyperithm 列出地址的官方頁。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Hyperithm USDC Apex，curator 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V2 vault 是同一個 curator。MetaMorpho V1.1 工廠回答 <code>isMetaMorpho</code> = true。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row" data-state="warn" data-result="hyperithm-usdc-apex-v1-7777/source.coingecko">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">hyperithm-usdc-apex-v1-7777：CoinGecko 沒有列這個地址</div>
-        <div class="meta">CoinGecko 在這個地址沒有列幣，或登記沒有給 CoinGecko id。<a href="#a-hyperithm-usdc-apex-v1-7777">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>CoinGecko 沒有列這個 vault 的股份代幣。地址的證據只有 Morpho app 頁和工廠回答，見同一個 vault 的來源網址那項。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受，不影響存款。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
     <div class="row" data-state="warn" data-result="hyperithm-usdc-apex-v2-9e2f/source.url">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">hyperithm-usdc-apex-v2-9e2f：來源網址本身含有地址</div>
@@ -458,22 +416,17 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>同名的 vault 有兩個：Hyperithm USDC Apex 的 V1（0x777791C4d6DC2CE140D00D2828a7C93503c67777）和 V2（0x093272C07700d3cA5301C3Bf9B3A392624179E2F），代號都是 hyperUSDCa。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>在 card new 用名稱尾碼和工廠分辨，跟 Morpho app 網址上的地址逐字比對。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>遇到 MISMATCH 不要簽；回報後再決定是否新增模板。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Steakhouse 把 Steakhouse USDT 和 Smokehouse USDC 列在 Legacy Vaults 頁，說明它們不再是重點產品，建議轉到現行產品線。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>長期存放前，先看 Steakhouse 現行產品是否更適合。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>同名的 vault 有兩個：Hyperithm USDC Apex 的 V1（0x777791C4d6DC2CE140D00D2828a7C93503c67777）和 V2（0x093272C07700d3cA5301C3Bf9B3A392624179E2F），代號都是 hyperUSDCa。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>在 card new 用名稱尾碼和工廠分辨，跟 Morpho app 網址上的地址逐字比對。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>幾個 vault 規模變動大：Hyperithm V1 一年內從約 3,460 萬降到約 121 萬 USDC；V2 從約 3,300 升到約 750 萬，最大持有人占 51.77%；Usual Boosted USDC 從約 2,830 萬降到約 180 萬，前 10 名占 66.51%。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 一年內從約 3,300 升到約 750 萬 USDC，2026-10 曾到約 1,970 萬；最大持有人占 51.77%，前 10 名占 90.10%。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只存你能接受暫時提不出的金額，先送小額。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
   </div>
@@ -483,49 +436,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
   <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。右邊是模板的規則，不是描述檔的文字。</p>
   <dl class="props two">
-    <div><dt>1 usdc.approve</dt><dd>
-      <dl class="nest flat">
-        <div><dt>被授權者</dt><dd><a href="#a-general-adapter-1">general-adapter-1</a></dd></div>
-        <div><dt>金額</dt><dd>你填的 amount</dd></div>
-      </dl></dd></div>
+    <div><dt>1 usdc.approve</dt><dd class="f3">沒有描述檔，只顯示原始資料</dd></div>
     <div><dt>2 bundler3.multicall</dt><dd>
       <dl class="nest flat">
         <div><dt><code>bundle.[0].data</code></dt><dd>呼叫 <code>erc20TransferFrom</code>，參數見流程</dd></div>
         <div><dt><code>bundle.[1].data</code></dt><dd>呼叫 <code>erc4626Deposit</code>，參數見流程</dd></div>
       </dl></dd></div>
   </dl>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>呼叫 1：列的是 usdt 的描述檔；usdc 沒有描述檔，錢包只顯示原始資料。</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>呼叫 2：錢包不顯示 <code>bundle.[0].to</code>、<code>bundle.[0].value</code>、<code>bundle.[0].skipRevert</code>、<code>bundle.[0].callbackHash</code>、<code>bundle.[1].to</code>、<code>bundle.[1].value</code>、<code>bundle.[1].skipRevert</code>、<code>bundle.[1].callbackHash</code>。</span></div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>現在的硬體錢包解不開 Safe 的 MultiSend，簽名時比對 hash。</span></div>
 </section>
 
 <section id="addresses">
-  <h2>地址 <span class="c">15 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">高信心：程式在來源頁讀到地址，code pin 也在鏈上確認過，沒有要你看的結果。中信心：沒有要你看的結果，但有一項沒資料可比，或少了來源頁或 code pin 的確認。低信心：有結果要你看。標「–」的是沒資料可比，不算問題。AI 補查不改變信心等級。</span></span></h2>
+  <h2>地址 <span class="c">5 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">高信心：程式在來源頁讀到地址，code pin 也在鏈上確認過，沒有要你看的結果。中信心：沒有要你看的結果，但有一項沒資料可比，或少了來源頁或 code pin 的確認。低信心：有結果要你看。標「–」的是沒資料可比，不算問題。AI 補查不改變信心等級。</span></span></h2>
   <div class="rows">
-    <div class="ad" id="a-usual-boosted-usdc-v1-3a3d" data-state="warn">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><span class="nm">usual-boosted-usdc-v1-3a3d</span><span class="role"><span class="aiw" data-ai><span>MEV Capital 管理的 USDC vault（V1，Usual Boosted USDC）</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
-      <div class="body"><span class="addr">0xd63070114470f685b75B74D60EEc7c1113d33a3D</span>
-        <div class="srcs"><span data-state="warn"><a href="https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>讀不到</span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/mev-capital-usual-boosted-usdc-morpho-vault">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="warn"><span class="aiw" data-ai><span class="byai">AI</span><span>用瀏覽器打開 Morpho app 的 vault 頁 <a class="aisrc" href="https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc">來源</a></span></span><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg></span></span></div></div>
-    </div>
-    <div class="ad" id="a-smokehouse-usdc-v1-f5bc" data-state="warn">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><span class="nm">smokehouse-usdc-v1-f5bc</span><span class="role"><span class="aiw" data-ai><span>Steakhouse 管理的高收益 USDC vault（V1，Legacy）</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
-      <div class="body"><span class="addr">0xBEeFFF209270748ddd194831b3fa287a5386f5bC</span>
-        <div class="srcs"><span data-state="ok"><a href="https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults">www.steakhouse.financial/docs/products/vault-products</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="warn">CoinGecko<span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>沒資料可比</span></span><span data-state="ok"><a href="https://defillama.com/protocol/steakhouse-financial">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-    </div>
-    <div class="ad" id="a-smokehouse-usdt-v1-7484" data-state="warn">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><span class="nm">smokehouse-usdt-v1-7484</span><span class="role"><span class="aiw" data-ai><span>Steakhouse 管理的高收益 USDT vault（V1）</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
-      <div class="body"><span class="addr">0xA0804346780b4c2e3bE118ac957D1DB82F9d7484</span>
-        <div class="srcs"><span data-state="warn"><a href="https://app.morpho.org/ethereum/vault/0xA0804346780b4c2e3bE118ac957D1DB82F9d7484/smokehouse-usdt">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>讀不到</span></span><span data-state="warn">CoinGecko<span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>沒資料可比</span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="warn"><span class="aiw" data-ai><span class="byai">AI</span><span>用瀏覽器打開 Morpho app 的 vault 頁 <a class="aisrc" href="https://app.morpho.org/ethereum/vault/0xA0804346780b4c2e3bE118ac957D1DB82F9d7484/smokehouse-usdt">來源</a></span></span><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg></span></span></div></div>
-    </div>
-    <div class="ad" id="a-hyperithm-usdc-apex-v1-7777" data-state="warn">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><span class="nm">hyperithm-usdc-apex-v1-7777</span><span class="role"><span class="aiw" data-ai><span>Hyperithm 管理的 USDC vault（V1）</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
-      <div class="body"><span class="addr">0x777791C4d6DC2CE140D00D2828a7C93503c67777</span>
-        <div class="srcs"><span data-state="warn"><a href="https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>讀不到</span></span><span data-state="warn">CoinGecko<span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>沒資料可比</span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="warn"><span class="aiw" data-ai><span class="byai">AI</span><span>用瀏覽器打開 Morpho app 的 vault 頁 <a class="aisrc" href="https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex">來源</a></span></span><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg></span></span></div></div>
-    </div>
     <div class="ad" id="a-hyperithm-usdc-apex-v2-9e2f" data-state="warn">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><span class="nm">hyperithm-usdc-apex-v2-9e2f</span><span class="role"><span class="aiw" data-ai><span>Hyperithm 管理的 USDC vault（V2）</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
@@ -533,18 +457,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="srcs"><span data-state="warn"><a href="https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>讀不到</span></span><span data-state="warn">CoinGecko<span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>沒資料可比</span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="warn"><span class="aiw" data-ai><span class="byai">AI</span><span>用瀏覽器打開 Morpho app 的 vault 頁 <a class="aisrc" href="https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex">來源</a></span></span><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg></span></span></div></div>
     </div>
     <details class="fold">
-      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 10 個沒有要你看的結果</summary>
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 4 個沒有要你看的結果</summary>
     <div class="ad" id="a-usdc" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>存進 USDC vault 的代幣</span><span class="byai">AI 研究</span></span><span class="conf">中信心</span></span></div>
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
         <div class="srcs"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-    </div>
-    <div class="ad" id="a-usdt" data-state="ok">
-      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">usdt</span><span class="role"><span class="aiw" data-ai><span>存進 USDT vault 的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
-      <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
-        <div class="srcs"><span data-state="ok"><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/tether">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
     </div>
     <div class="ad" id="a-bundler3" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
@@ -552,23 +470,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245</span>
         <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
     </div>
-    <div class="ad" id="a-steakhouse-prime-usdc-v2-0f51" data-state="ok">
-      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">steakhouse-prime-usdc-v2-0f51</span><span class="role"><span class="aiw" data-ai><span>Steakhouse 管理的 USDC vault（V2，Prime Instant）</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
-      <div class="body"><span class="addr">0xbeef088055857739C12CD3765F20b7679Def0f51</span>
-        <div class="srcs"><span data-state="ok"><a href="https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant">www.steakhouse.financial/docs/products/vault-products</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/steakhouse-usdc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/steakhouse-financial">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-    </div>
     <div class="ad" id="a-vault-v2-factory" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">vault-v2-factory</span><span class="role"><span class="aiw" data-ai><span>Morpho Vault V2 工廠，建立了兩個 Steakhouse V2 vault 和 Hyperithm V2</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div><span class="nm">vault-v2-factory</span><span class="role"><span class="aiw" data-ai><span>Morpho Vault V2 工廠，它回答 <code>isVaultV2</code> = true，這個 vault 是它建立的</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xA1D94F746dEfa1928926b84fB2596c06926C0405</span>
         <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-    </div>
-    <div class="ad" id="a-steakhouse-high-yield-usdc-v2-a757" data-state="ok">
-      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">steakhouse-high-yield-usdc-v2-a757</span><span class="role"><span class="aiw" data-ai><span>Steakhouse 管理的高收益 USDC vault（V2，High Yield Instant）</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
-      <div class="body"><span class="addr">0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757</span>
-        <div class="srcs"><span data-state="ok"><a href="https://www.steakhouse.financial/docs/products/vault-products/current/high-yield-instant">www.steakhouse.financial/docs/products/vault-products</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/steakhouse-high-yield-usdc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/steakhouse-financial">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
     </div>
     <div class="ad" id="a-general-adapter-1" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
@@ -576,36 +482,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="body"><span class="addr">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</span>
         <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
     </div>
-    <div class="ad" id="a-metamorpho-factory-v1-0" data-state="ok">
-      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">metamorpho-factory-v1-0</span><span class="role"><span class="aiw" data-ai><span>MetaMorpho 舊版工廠，建立了 Steakhouse USDT、Smokehouse USDC 和 Usual Boosted USDC</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
-      <div class="body"><span class="addr">0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101</span>
-        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-    </div>
-    <div class="ad" id="a-metamorpho-factory-v1-1" data-state="ok">
-      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">metamorpho-factory-v1-1</span><span class="role"><span class="aiw" data-ai><span>MetaMorpho V1.1 工廠，建立了 Smokehouse USDT 和 Hyperithm V1</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
-      <div class="body"><span class="addr">0x1897A8997241C1cD4bD0698647e4EB7213535c24</span>
-        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-    </div>
-    <div class="ad" id="a-steakhouse-usdt-v1-cfba" data-state="ok">
-      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">steakhouse-usdt-v1-cfba</span><span class="role"><span class="aiw" data-ai><span>Steakhouse 管理的 USDT vault（V1，Legacy）</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
-      <div class="body"><span class="addr">0xbEef047a543E45807105E51A8BBEFCc5950fcfBa</span>
-        <div class="srcs"><span data-state="ok"><a href="https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults">www.steakhouse.financial/docs/products/vault-products</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/steakhouse-usdt-morpho-vault">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/steakhouse-financial">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-    </div>
     </details>
   </div>
 </section>
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">搜尋 steakhouse-usdt-v1-cfba 的 鑄造（存款），找到 254 筆，研究 192 筆，記錄在 <code>testdata/research/morpho-vault-deposit-v1.json</code>。符合指的是交易的形狀跟模板一樣。</p>
-  <dl class="props">
-    <div><dt>EOA 直接呼叫</dt><dd><span class="num">2 / 19</span> 符合</dd><dd class="src">16 個地址</dd></div>
-    <div><dt>Safe</dt><dd><span class="num">0 / 2</span> 符合</dd><dd class="src">2 個 Safe</dd></div>
-    <div><dt>搜尋來源</dt><dd>Alchemy 和 Etherscan 找到的完全一樣</dd><dd class="src"><span class="num">254 = 254</span></dd></div>
-  </dl>
   <p class="lead">搜尋 hyperithm-usdc-apex-v2-9e2f 的 鑄造（存款），找到 489 筆，研究 489 筆，記錄在 <code>testdata/research/morpho-vault-deposit-v2-early.json</code>。符合指的是交易的形狀跟模板一樣。</p>
   <dl class="props">
     <div><dt>EOA 直接呼叫</dt><dd><span class="num">25 / 354</span> 符合</dd><dd class="src">150 個地址</dd></div>
@@ -617,18 +499,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div><dt>EOA 直接呼叫</dt><dd><span class="num">2 / 11</span> 符合</dd><dd class="src">8 個地址</dd></div>
     <div><dt>Safe</dt><dd><span class="num">0 / 1</span> 符合</dd><dd class="src">1 個 Safe</dd></div>
     <div><dt>搜尋來源</dt><dd>Alchemy 和 Etherscan 找到的完全一樣</dd><dd class="src"><span class="num">170 = 170</span></dd></div>
-  </dl>
-  <p class="lead">搜尋 steakhouse-prime-usdc-v2-0f51 的 鑄造（存款），找到 222 筆，研究 18 筆，記錄在 <code>testdata/research/morpho-vault-deposit-windows.json</code>。符合指的是交易的形狀跟模板一樣。</p>
-  <dl class="props">
-    <div><dt>EOA 直接呼叫</dt><dd><span class="num">0 / 6</span> 符合</dd><dd class="src">6 個地址</dd></div>
-    <div><dt>Safe</dt><dd><span class="num">0 / 0</span> 符合</dd><dd class="src">0 個 Safe</dd></div>
-    <div><dt>搜尋來源</dt><dd>Alchemy 和 Etherscan 找到的完全一樣</dd><dd class="src"><span class="num">222 = 222</span></dd></div>
-  </dl>
-  <p class="lead">搜尋 steakhouse-prime-usdc-v2-0f51 的 鑄造（存款），找到 65 筆，研究 65 筆，記錄在 <code>testdata/research/morpho-vault-deposit.json</code>。符合指的是交易的形狀跟模板一樣。</p>
-  <dl class="props">
-    <div><dt>EOA 直接呼叫</dt><dd><span class="num">2 / 25</span> 符合</dd><dd class="src">24 個地址</dd></div>
-    <div><dt>Safe</dt><dd><span class="num">2 / 3</span> 符合</dd><dd class="src">1 個 Safe</dd></div>
-    <div><dt>搜尋來源</dt><dd>Alchemy 和 Etherscan 找到的完全一樣</dd><dd class="src"><span class="num">65 = 65</span></dd></div>
   </dl>
 </section>
 
@@ -647,12 +517,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 給出的 usdc 剛好是你填的金額</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 收到 hyperithm-usdc-apex-v2-9e2f</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
-      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>碰到的 15 個登記合約，程式碼還是 code pin 記錄的那份</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>碰到的 5 個登記合約，程式碼還是 code pin 記錄的那份</span></li>
     </ul>
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report morpho/vault-deposit --record</code> 從 <code>templates/morpho/vault-deposit/template.json</code>、<code>templates/morpho/vault-deposit/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-vault-deposit.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-vault-deposit-v1.json</code>、<code>testdata/research/morpho-vault-deposit-v2-early.json</code>、<code>testdata/research/morpho-vault-deposit-v2.json</code>、<code>testdata/research/morpho-vault-deposit-windows.json</code>、<code>testdata/research/morpho-vault-deposit.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-deposit/notes.json</code> 寫出，資料在 2026-11-12 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report morpho/vault-deposit --vault-of hyperithm-usdc-apex-v2-9e2f --record</code> 從 <code>templates/morpho/vault-deposit/template.json</code>、<code>templates/morpho/vault-deposit/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-vault-deposit/hyperithm-usdc-apex-v2-9e2f.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-vault-deposit-v2-early.json</code>、<code>testdata/research/morpho-vault-deposit-v2.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-deposit/notes.json</code>、<code>templates/morpho/vault-deposit/vaults/hyperithm-usdc-apex-v2-9e2f/notes.json</code> 寫出，資料在 2026-11-12 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>

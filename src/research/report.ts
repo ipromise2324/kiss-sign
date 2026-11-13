@@ -17,6 +17,7 @@ import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR, callTargets, inScope, loadTemplate, refNames, scopeEntries } from '../template/template.ts';
+import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
 import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
@@ -34,13 +35,16 @@ import { constText } from './study.ts';
 import { ANCHOR_KINDS, replayAsk } from './sources.ts';
 import type { AnchorKind } from './sources.ts';
 
-export type Subject = { readonly kind: 'template'; readonly template: Template; readonly docs: readonly DocLink[] } | { readonly kind: 'vault'; readonly vault: RegistryEntry };
+/** A template, with the one vault its report covers when it is reported per vault; or one registry vault alone. */
+export type Subject =
+  | { readonly kind: 'template'; readonly template: Template; readonly docs: readonly DocLink[]; readonly vault: RegistryEntry | undefined }
+  | { readonly kind: 'vault'; readonly vault: RegistryEntry };
 
 /** The official page the AI names for one function. The program checks the page; the AI writes no text about it. */
 export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: HttpsUrl };
 
-/** What a report is of: a template by id, or one registry vault by name. */
-export type Target = { readonly template: string } | { readonly vault: string };
+/** What a report is of: a template by id, with `cardVault` for one reported per vault; or one registry vault by name. */
+export type Target = { readonly template: string; readonly cardVault?: string } | { readonly vault: string };
 
 /** The ERC-7730 files the section read, cut as `pnpm erc7730 --record` cuts them, and the attestation reads. */
 export type Erc7730Section = { readonly commit: string; readonly files: Readonly<Record<string, string>>; readonly chain: readonly Exchange[] };
@@ -82,16 +86,33 @@ export class ReportError extends Error {
 
 export const DOCS_FILE = 'docs.json';
 export const GENERATED_SUFFIX = '.generated.md';
-export const GENERATED_FILE = `report${GENERATED_SUFFIX}`;
+export { GENERATED_FILE };
 export const VAULT_REPORTS_DIR = join('registry', 'reports');
 export const REPORT_RECORDINGS_DIR = join('testdata', 'report');
 const RESEARCH_DIR = join('testdata', 'research');
 
-export const generatedPath = (target: Target): string =>
-  'vault' in target ? join(VAULT_REPORTS_DIR, `${target.vault}${GENERATED_SUFFIX}`) : join(TEMPLATES_DIR, target.template, GENERATED_FILE);
+/** The folder a template report's files sit in: the template's, or for a per-vault report its vault's under it. */
+export const reportDir = (target: { readonly template: string; readonly cardVault?: string }): string =>
+  target.cardVault === undefined ? join(TEMPLATES_DIR, target.template) : vaultReportDir(target.template, target.cardVault);
 
-export const reportRecordingPath = (target: Target): string =>
-  'vault' in target ? join(REPORT_RECORDINGS_DIR, 'vaults', `${target.vault}.json`) : join(REPORT_RECORDINGS_DIR, `${target.template.replace('/', '-')}.json`);
+export const generatedPath = (target: Target): string => ('vault' in target ? join(VAULT_REPORTS_DIR, `${target.vault}${GENERATED_SUFFIX}`) : join(reportDir(target), GENERATED_FILE));
+
+export function reportRecordingPath(target: Target): string {
+  if ('vault' in target) return join(REPORT_RECORDINGS_DIR, 'vaults', `${target.vault}.json`);
+  const name = target.template.replace('/', '-');
+  return target.cardVault === undefined ? join(REPORT_RECORDINGS_DIR, `${name}.json`) : join(REPORT_RECORDINGS_DIR, name, `${target.cardVault}.json`);
+}
+
+/** Every template report the repository holds: one per template, or one per reported vault of a template reported per vault. */
+export function templateTargets(repoRoot: string, registry: Registry): { readonly template: string; readonly cardVault?: string }[] {
+  const dir = join(repoRoot, TEMPLATES_DIR);
+  return readdirSync(dir)
+    .sort()
+    .flatMap((protocol) => readdirSync(join(dir, protocol)).sort().map((operation) => `${protocol}/${operation}`))
+    .flatMap((template) =>
+      reportUnit(loadTemplate(repoRoot, template, registry)).kind === 'vault' ? [...reportedVaultsIn(repoRoot, template)].sort().map((cardVault) => ({ template, cardVault })) : [{ template }],
+    );
+}
 
 /** Every function the template calls, nested calls included, once each, in the order the template names them. */
 export function templateFunctions(template: Template): AbiFunction[] {
@@ -137,15 +158,47 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
   });
 }
 
-export function loadSubject(repoRoot: string, registry: Registry, target: Target): Subject {
+/**
+ * The registry as a per-vault report reads it: `vault` is the only entry the field accepts. Every other entry of that
+ * scope is left out, so neither it nor an asset or factory only it names reaches any section.
+ */
+function onlyVault(registry: Registry, template: Template, field: string, vault: RegistryEntry): Registry {
+  const card = template.card.get(field);
+  const others = new Set(card?.kind === 'contract' ? scopeEntries(card.scope, registry).filter((e) => e.name !== vault.name).map((e) => e.name) : []);
+  const kept = [...registry.entries.values()].filter((entry) => !others.has(entry.name));
+  const dangling = kept.flatMap((entry) => Object.values(entry.attributes)).find((name) => others.has(name));
+  if (dangling !== undefined) throw new ReportError(`${dangling} is another vault the field accepts, but a registry entry the report keeps names it`);
+  return { entries: new Map(kept.map((entry) => [entry.name, entry])), byAddress: new Map(kept.map((entry) => [entry.address, entry])), markets: registry.markets };
+}
+
+/**
+ * What a report covers and the registry it reads. A template reported per vault needs `cardVault`, a vault its field
+ * accepts, and reads the registry as if that vault were the only one; any other template refuses `cardVault`.
+ */
+export function loadReport(repoRoot: string, registry: Registry, target: Target): { readonly subject: Subject; readonly registry: Registry } {
   if ('vault' in target) {
     const vault = registry.entries.get(target.vault);
     if (vault?.kind !== 'vault') throw new ReportError(`${target.vault} is not a vault in the registry`);
-    return { kind: 'vault', vault };
+    return { subject: { kind: 'vault', vault }, registry };
   }
   const template = loadTemplate(repoRoot, target.template, registry);
+  const unit = reportUnit(template);
+  if (unit.kind === 'several-vaults') throw new ReportError(severalVaults(template.id));
+  if (unit.kind === 'template' && target.cardVault !== undefined) throw new ReportError(`${template.id} has one report, not one per vault; leave out the vault`);
+  if (unit.kind === 'vault' && target.cardVault === undefined) {
+    const reported = [...reportedVaultsIn(repoRoot, template.id)].sort();
+    throw new ReportError(`${template.id} is reported per vault; name the vault (${reported.length === 0 ? 'no vault has a report yet' : `reports exist for ${reported.join(', ')}`})`);
+  }
+  let seen = registry;
+  let vault: RegistryEntry | undefined;
+  if (unit.kind === 'vault') {
+    const field = template.card.get(unit.field);
+    vault = registry.entries.get(target.cardVault as string);
+    if (vault === undefined || field?.kind !== 'contract' || !inScope(field.scope, vault, registry)) throw new ReportError(`${target.cardVault} is not a vault the card's ${unit.field} of ${template.id} accepts`);
+    seen = onlyVault(registry, template, unit.field, vault);
+  }
   const docs = JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, target.template, DOCS_FILE), 'utf8')) as unknown;
-  return { kind: 'template', template, docs: parseDocs(docs, template, registry) };
+  return { subject: { kind: 'template', template, docs: parseDocs(docs, template, seen), vault }, registry: seen };
 }
 
 function namedInRules(template: Template): Set<string> {
@@ -241,7 +294,8 @@ export function pastTxsRecordings(repoRoot: string, subject: Subject): { readonl
     .map((f) => ({ file: join(RESEARCH_DIR, f), recording: JSON.parse(readFileSync(join(dir, f), 'utf8')) as PastTxsRecording }))
     .filter(({ file, recording: { query } }) => {
       if (!printableQuery(file, query)) throw new ReportError(`${file}: its name or query holds a value \`pnpm past-txs --record\` never writes`);
-      return subject.kind === 'template' ? query.template === subject.template.id : query.token.toLowerCase() === subject.vault.address;
+      const onVault = subject.vault === undefined || query.token.toLowerCase() === subject.vault.address;
+      return subject.kind === 'template' ? query.template === subject.template.id && onVault : onVault;
     });
 }
 
@@ -570,7 +624,11 @@ function fenced(text: string): string[] {
   return ['```text', text, '```'];
 }
 
-export const compareCommand = (subject: Subject): string => (subject.kind === 'template' ? `pnpm report ${subject.template.id} --compare` : `pnpm report --vault ${subject.vault.name} --compare`);
+/** The `pnpm report` arguments that name a subject's report. */
+export const reportArgs = (subject: Subject): string =>
+  subject.kind === 'vault' ? `--vault ${subject.vault.name}` : `${subject.template.id}${subject.vault === undefined ? '' : ` --vault-of ${subject.vault.name}`}`;
+
+export const compareCommand = (subject: Subject): string => `pnpm report ${reportArgs(subject)} --compare`;
 
 const usdText = (usd: number | undefined): string => (usd === undefined ? 'none given' : Math.round(usd).toString());
 
@@ -772,12 +830,12 @@ async function replayFacts(template: Template, registry: Registry, entries: read
 /** Every input a generated report renders, from the repository and its recordings alone. */
 export async function replayInputs(
   repoRoot: string,
-  registry: Registry,
+  full: Registry,
   target: Target,
   compilers: Compilers,
   suffixes: Listings['suffixes'],
 ): Promise<{ readonly inputs: ReportInputs; readonly title: ReportTitle }> {
-  const subject = loadSubject(repoRoot, registry, target);
+  const { subject, registry } = loadReport(repoRoot, full, target);
   const recordingPath = reportRecordingPath(target);
   const recording = JSON.parse(readFileSync(join(repoRoot, recordingPath), 'utf8')) as ReportRecording;
   const entries = entriesOf(subject, registry);
@@ -799,7 +857,7 @@ export async function replayInputs(
   const registryFiles = subject.kind === 'template' && hasMarket(subject.template) ? [REGISTRY_PATH, MARKETS_PATH] : [REGISTRY_PATH];
   const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), ...registryFiles];
   const sources = [...inputsFiles, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
-  const command = 'vault' in target ? `pnpm report --vault ${target.vault} --record` : `pnpm report ${target.template} --record`;
+  const command = `pnpm report ${reportArgs(subject)} --record`;
   return { inputs, title: { command, sources } };
 }
 

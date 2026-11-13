@@ -47,6 +47,7 @@ const research = (text: string, sources: readonly HttpsUrl[] = [], tag = 'AI 研
 export type RailCount = { readonly kind: 'text'; readonly text: string } | { readonly kind: 'state'; readonly state: State | 'ask'; readonly n: number };
 
 export type Page = {
+  /** The operation id, and for a per-vault report the vault it covers. */
   readonly id: string;
   readonly header: Header;
   readonly sections: readonly Section[];
@@ -374,8 +375,17 @@ function wholeMarket(rule: Rule, template: Template): string | undefined {
   return field !== undefined && fields.every((f) => f === field) && template.card.get(field)?.kind === 'market' ? field : undefined;
 }
 
+/** The one entry a contract card reference can name, as in a per-vault report, where the card can name only its vault. */
+function onlyEntry(ref: CardRef, context: Context): RegistryEntry | undefined {
+  if (context.template.card.get(ref.field)?.kind !== 'contract') return undefined;
+  const names = refNames(ref, context.template, context.registry);
+  return names.length === 1 ? context.registry.entries.get(names[0] as string) : undefined;
+}
+
 function cardWords(ref: CardRef, key: string, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
   const field = context.template.card.get(ref.field);
+  const only = onlyEntry(ref, context);
+  if (only !== undefined) return { words: [link(only)], qualifier: [`你選的 ${ref.field}${ref.attribute === undefined ? '' : ` 的 ${ref.attribute}`}`] };
   const example = context.values.get(key);
   if (field?.kind === 'amount') {
     if (example?.kind !== 'uint') return { words: ['你填的金額'], qualifier: undefined };
@@ -424,6 +434,8 @@ function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
   if (node.rule.kind === 'call' || node.rule.kind === 'items' || node.rule.kind === 'fields') return undefined;
   if (node.rule.kind === 'const') return { cast: constCast(node.rule.value), example: false };
   if (node.rule.kind === 'contract') return { cast: checksumAddress((context.registry.entries.get(node.rule.name) as RegistryEntry).address), example: false };
+  const only = node.rule.kind === 'card' ? onlyEntry(node.rule.ref, context) : undefined;
+  if (only !== undefined) return { cast: checksumAddress(only.address), example: false };
   const example = context.values.get(node.key);
   return example === undefined ? undefined : { cast: castValue(example), example: true };
 }
@@ -1013,9 +1025,9 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     values: example === undefined ? new Map() : exampleValues(template, example.tx),
   };
   const sections = [flowSection(context), ...protocolSections(context), reviewSection(context), walletSection(context), addressSection(context), pastSection(context), signingSection(context)];
-  const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', notesPath(template.id)];
+  const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', notesPath(template.id), ...(subject.vault === undefined ? [] : [notesPath(template.id, subject.vault.name)])];
   return {
-    id: template.id,
+    id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,
     header: {
       title: research(notes.title),
       summary: research(notes.summary),

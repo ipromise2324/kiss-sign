@@ -4,7 +4,7 @@ import { before, test } from 'node:test';
 import type { AbiRefusal } from '../src/contracts/prove.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { forSigner, judge, stateOf, worst } from '../src/research/ledger.ts';
-import type { FieldFact } from '../src/research/erc7730.ts';
+import type { EntryReport, FieldFact } from '../src/research/erc7730.ts';
 import type { State } from '../src/research/ledger.ts';
 import { NotesError, notesScope, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
@@ -23,15 +23,20 @@ const target = { template: 'morpho/market-supply' };
 let inputs: HtmlInputs;
 let title: ReportTitle;
 let template: Template;
-const deposit = { template: 'morpho/vault-deposit' };
+const deposit = { template: 'morpho/vault-deposit', cardVault: 'hyperithm-usdc-apex-v2-9e2f' };
 let depositPage: Page;
+let depositInputs: HtmlInputs;
+let depositNotes: unknown;
+let depositTitle: ReportTitle;
 
 before(async () => {
   const compilers = await warmCompilers(reportCases(ROOT, registry, [target, deposit]));
   const depositReplayed = await replayInputs(ROOT, registry, deposit, compilers, loadPublicSuffixList());
   const depositTemplate = depositReplayed.inputs.subject.kind === 'template' ? depositReplayed.inputs.subject.template : assert.fail('a template report');
-  const depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(ROOT, depositTemplate, registry), example: firstRecordedTx(ROOT, depositTemplate, registry) };
-  depositPage = buildPage(depositInputs, readNotes(ROOT, deposit.template), depositReplayed.title);
+  depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(ROOT, depositTemplate, registry), example: firstRecordedTx(ROOT, depositTemplate, depositReplayed.inputs.registry) };
+  depositNotes = readNotes(ROOT, deposit.template, deposit.cardVault);
+  depositTitle = depositReplayed.title;
+  depositPage = buildPage(depositInputs, depositNotes, depositTitle);
   const replayed = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
   title = replayed.title;
   template = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
@@ -175,15 +180,31 @@ test('the diagram has a lifeline for the Safe, each call target and each view ta
   );
 });
 
-test('the wallet rows match a descriptor by argument name without underscores and by each array item, and name a token with no descriptor', () => {
-  const { calls, lines } = body(depositPage, 'wallet');
-  const rows = (n: number) => {
-    const call = calls.find((c) => c.n === n) ?? assert.fail(`no call ${n}`);
-    return call.rows === 'no-descriptor' ? assert.fail('a descriptor') : call.rows.map((r) => [plain(r.label), plain(r.value)]);
+test('the wallet rows match a descriptor by each array item, by argument name without underscores, and show a token with no descriptor as raw data', () => {
+  const rowsOf = (page: Page, n: number) => {
+    const call = body(page, 'wallet').calls.find((c) => c.n === n) ?? assert.fail(`no call ${n}`);
+    return call.rows === 'no-descriptor' ? call.rows : call.rows.map((r) => [plain(r.label), plain(r.value)]);
   };
-  assert.deepEqual(rows(1), [['被授權者', 'general-adapter-1'], ['金額', '你填的 amount']]);
-  assert.deepEqual(rows(2), [['bundle.[0].data', '呼叫 erc20TransferFrom，參數見流程'], ['bundle.[1].data', '呼叫 erc4626Deposit，參數見流程']]);
-  assert.ok(lines.some((l) => plain(l) === '呼叫 1：列的是 usdt 的描述檔；usdc 沒有描述檔，錢包只顯示原始資料。'));
+  assert.equal(rowsOf(depositPage, 1), 'no-descriptor');
+  assert.deepEqual(rowsOf(depositPage, 2), [['bundle.[0].data', '呼叫 erc20TransferFrom，參數見流程'], ['bundle.[1].data', '呼叫 erc4626Deposit，參數見流程']]);
+  const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
+  const field = (path: string) => ({ kind: 'field', path, format: 'raw', visible: 'always' }) as const;
+  const usdtLike = { functions: [{ selector: '0x095ea7b3', signature: 'approve(address,uint256)', fields: [field('_spender'), field('_value')], notShown: [] }] } as unknown as EntryReport['descriptors'][number];
+  const reports = [...depositInputs.erc7730.reports, { entry: usdc, factory: undefined, index: undefined, descriptors: [usdtLike] }];
+  const page = buildPage({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, depositNotes, depositTitle);
+  assert.deepEqual(rowsOf(page, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的 amount']]);
+});
+
+test("a per-vault report shows its vault as the card's value, with or without a test transaction", () => {
+  const vault = (page: Page) => arg(page, '2.multicall.bundle').parts.flatMap((g) => g.rows)[1]?.parts.flatMap((g) => g.rows).find((r) => r.name === 'data')?.parts.flatMap((g) => g.rows).find((r) => r.name === 'vault');
+  const hyperithm = registry.entries.get('hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the vault');
+  for (const page of [depositPage, buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle)]) {
+    const row = vault(page) ?? assert.fail('the vault row');
+    assert.equal(row.value?.cast.toLowerCase(), hyperithm.address);
+    assert.equal(row.value?.example, false);
+    assert.equal(plain(row.words), 'hyperithm-usdc-apex-v2-9e2f');
+  }
+  assert.equal(depositPage.id, 'morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f');
 });
 
 test('each past-transactions recording names the entry its search anchored on', () => {

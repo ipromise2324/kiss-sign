@@ -1,14 +1,15 @@
 import { join } from 'node:path';
-import { TEMPLATES_DIR } from '../template/template.ts';
+import { loadRegistry } from '../registry.ts';
 import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
 import type { AddressRow, AiText, ArgRow, Body, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SourceLine } from './report-page.ts';
+import { reportDir } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
 export const GENERATED_HTML_FILE = 'report.generated.html';
-export const generatedHtmlPath = (template: string): string => join(TEMPLATES_DIR, template, GENERATED_HTML_FILE);
+export const generatedHtmlPath = (target: { readonly template: string; readonly cardVault?: string }): string => join(reportDir(target), GENERATED_HTML_FILE);
 
 /** Markup the renderer made. Every other value is escaped on its way into it. */
 class Html {
@@ -424,10 +425,11 @@ ${page.sections.map((s) => section(s).text).join('')}
 export async function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): Promise<string | undefined> {
   const { subject, registry } = inputs;
   if (subject.kind !== 'template') return undefined;
-  const raw = readNotes(repoRoot, subject.template.id);
+  const raw = readNotes(repoRoot, subject.template.id, subject.vault?.name);
   if (raw === undefined) return undefined;
   const { template } = subject;
-  const html = { ...inputs, fixtures: await judgeFixtures(repoRoot, template, registry), example: firstRecordedTx(repoRoot, template, registry) };
+  // The test transactions check the template, whichever vault they name; the example must name the report's own vault.
+  const html = { ...inputs, fixtures: await judgeFixtures(repoRoot, template, loadRegistry(repoRoot)), example: firstRecordedTx(repoRoot, template, registry) };
   return renderPage(buildPage(html, raw, title));
 }
 

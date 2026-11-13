@@ -18,7 +18,7 @@ import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SourcifyAnswer } from '../src/contracts/sourcify.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { GENERATED_FILE, GENERATED_SUFFIX, VAULT_REPORTS_DIR, replayReport } from '../src/research/report.ts';
+import { GENERATED_SUFFIX, VAULT_REPORTS_DIR, generatedPath, replayReport, templateTargets } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
@@ -253,33 +253,31 @@ const CASES = [
 /** Sourcify holds these as partial matches: the source compiles to the code on chain except the metadata hash. */
 const PARTIAL = ['morpho-urd', 'cctp-message-transmitter', 'usdc', 'usdt'];
 
-const generated = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) =>
-  readdirSync(join(ROOT, TEMPLATES_DIR, protocol))
-    .map((operation) => `${protocol}/${operation}`)
-    .filter((id) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE))),
-);
+const generated = templateTargets(ROOT, registry).filter((target) => existsSync(join(ROOT, generatedPath(target))));
 
 const vaultReports = existsSync(join(ROOT, VAULT_REPORTS_DIR)) ? readdirSync(join(ROOT, VAULT_REPORTS_DIR)).filter((f) => f.endsWith(GENERATED_SUFFIX)) : [];
 const vaultsReported = vaultReports.map((file) => file.slice(0, -GENERATED_SUFFIX.length));
-const reportTargets: Target[] = [...generated.map((template) => ({ template })), ...vaultsReported.map((vault) => ({ vault }))];
+const reportTargets: Target[] = [...generated, ...vaultsReported.map((vault) => ({ vault }))];
 
 const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases(ROOT, registry, reportTargets)]);
 
 test('every committed generated report has its own test below', () => {
-  assert.ok(generated.includes('morpho/vault-deposit'), `morpho/vault-deposit has a generated report`);
+  assert.ok(generated.some((target) => target.template === 'morpho/vault-deposit'), `morpho/vault-deposit has a generated report`);
   assert.ok(vaultsReported.length > 0, `${VAULT_REPORTS_DIR} holds a vault report`);
-  const checked = [...generated.map((id) => join(TEMPLATES_DIR, id, GENERATED_FILE)), ...vaultReports.map((file) => join(VAULT_REPORTS_DIR, file))].sort();
+  const checked = [...generated.map(generatedPath), ...vaultReports.map((file) => join(VAULT_REPORTS_DIR, file))].sort();
   const committed = execFileSync('git', ['ls-files', `*${GENERATED_SUFFIX}`], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter((line) => line !== '').sort();
   assert.deepEqual(checked, committed, 'each committed *.generated.md needs a test, and each generated report must be committed: git add a report you just wrote');
 });
 
-for (const id of generated) {
-  test(`${TEMPLATES_DIR}/${id}/${GENERATED_FILE} is what the program writes from the repository and its recordings`, { timeout: 600_000 }, async () => {
+for (const target of generated) {
+  const path = generatedPath(target);
+  const args = target.cardVault === undefined ? target.template : `${target.template} --vault-of ${target.cardVault}`;
+  test(`${path} is what the program writes from the repository and its recordings`, { timeout: 600_000 }, async () => {
     assert.ok(!('unavailable' in suffixes), `the source checks need the pinned Public Suffix List: ${'unavailable' in suffixes ? suffixes.unavailable : ''}`);
-    const committed = readFileSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE), 'utf8');
-    const text = await replayReport(ROOT, registry, { template: id }, compilers, suffixes);
-    assert.ok(text === committed, `${TEMPLATES_DIR}/${id}/${GENERATED_FILE} differs from \`pnpm report ${id} --offline\`; run \`pnpm report ${id} --record\` and never edit it by hand`);
-    assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${id} lacks a read the proof now makes; delete it and run \`pnpm report ${id} --record\``);
+    const committed = readFileSync(join(ROOT, path), 'utf8');
+    const text = await replayReport(ROOT, registry, target, compilers, suffixes);
+    assert.ok(text === committed, `${path} differs from \`pnpm report ${args} --offline\`; run \`pnpm report ${args} --record\` and never edit it by hand`);
+    assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${args} lacks a read the proof now makes; delete it and run \`pnpm report ${args} --record\``);
   });
 }
 

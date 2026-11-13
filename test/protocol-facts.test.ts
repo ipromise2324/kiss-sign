@@ -9,7 +9,7 @@ import { DEFILLAMA_PROTOCOLS, parseCoinGeckoCoins, parseDefiLlamaProtocols, sour
 import { DEFILLAMA_HACKS, FactsRecordingError, factsRecording, factsScope, parseFactsRecording, protocolFacts, replaySources } from '../src/research/protocol-facts.ts';
 import type { FactsRecording, FactsSources, ProtocolFacts } from '../src/research/protocol-facts.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { compareReports, entriesOf, loadSubject, renderReport, reportRecordingPath } from '../src/research/report.ts';
+import { compareReports, entriesOf, loadReport, renderReport, reportRecordingPath } from '../src/research/report.ts';
 import type { ReportRecording } from '../src/research/report.ts';
 import type { Hex } from '../src/safe/types.ts';
 
@@ -19,7 +19,7 @@ const suffixes = loadPublicSuffixList();
 const ID = 'morpho/market-supply';
 const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath({ template: ID })), 'utf8')) as ReportRecording;
 const recorded = parseFactsRecording(recording.facts) as FactsRecording;
-const subject = loadSubject(ROOT, registry, { template: ID });
+const subject = loadReport(ROOT, registry, { template: ID }).subject;
 const entries = entriesOf(subject, registry);
 const scope = factsScope(subject.kind === 'template' ? subject.template : assert.fail(), registry, entries);
 const block = { number: BigInt(recorded.block.number), hash: recorded.block.hash };

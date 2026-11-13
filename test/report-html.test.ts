@@ -3,52 +3,51 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import { loadRegistry } from '../src/registry.ts';
-import { NOTES_FILE, notesChanges, readNotes } from '../src/research/notes.ts';
+import { NOTES_FILE, notesChanges, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, generatedHtml, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
-import { DOCS_FILE, loadSubject, replayInputs } from '../src/research/report.ts';
+import { DOCS_FILE, loadReport, replayInputs, templateTargets } from '../src/research/report.ts';
 import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
+import { NOT_YET_REBUILT } from '../src/template/vault-reports.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
 const templates = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
 const has = (id: string, file: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, file));
-const withNotes = templates.filter((id) => has(id, NOTES_FILE));
-const NOT_YET_REBUILT: ReadonlySet<string> = new Set([
-  'cctp/receive',
-  'erc20/transfer',
-  'eth/transfer',
-  'fluid/rewards-claim',
-  'fluid/vault-deposit',
-  'fluid/vault-redeem',
-  'fluid/vault-withdraw',
-  'merkl/claim',
-  'morpho/urd-claim',
-  'morpho/vault-bundles-deposit',
-  'morpho/vault-migrate-all',
-  'morpho/vault-withdraw',
-  'morpho/vault-withdraw-all',
-  'safe/cancel',
-]);
+/** Each report of a template with notes.json, by its HTML path: one per template, or one per reported vault. */
+const withNotes = new Map(templateTargets(ROOT, registry).filter((t) => has(t.template, NOTES_FILE)).map((t) => [generatedHtmlPath(t), t]));
+const notesOf = (path: string): unknown => {
+  const target = withNotes.get(path) ?? assert.fail(path);
+  return readNotes(ROOT, target.template, target.cardVault);
+};
 
 const replayed = new Map<string, { readonly inputs: ReportInputs; readonly title: ReportTitle; readonly html: string }>();
 
 before(async () => {
-  const compilers = await warmCompilers(reportCases(ROOT, registry, withNotes.map((template) => ({ template }))));
-  for (const id of withNotes) {
-    const { inputs, title } = await replayInputs(ROOT, registry, { template: id }, compilers, loadPublicSuffixList());
-    replayed.set(id, { inputs, title, html: (await generatedHtml(ROOT, inputs, title)) ?? assert.fail(`${id} has notes but no HTML`) });
+  const compilers = await warmCompilers(reportCases(ROOT, registry, [...withNotes.values()]));
+  for (const [path, target] of withNotes) {
+    const { inputs, title } = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
+    replayed.set(path, { inputs, title, html: (await generatedHtml(ROOT, inputs, title)) ?? assert.fail(`${path}: notes but no HTML`) });
   }
 });
 
-test('a template commits report.generated.html exactly when it has notes.json, and none has report.md', () => {
-  for (const id of templates) {
-    assert.equal(has(id, GENERATED_HTML_FILE), has(id, NOTES_FILE), `${id}: ${GENERATED_HTML_FILE} without ${NOTES_FILE}, or the reverse`);
-    assert.ok(!has(id, 'report.md'), `${id} has report.md, which notes.json replaced`);
+test('a report commits report.generated.html exactly when its template has notes.json, and none has report.md', () => {
+  for (const target of templateTargets(ROOT, registry)) {
+    assert.equal(existsSync(join(ROOT, generatedHtmlPath(target))), has(target.template, NOTES_FILE), `${generatedHtmlPath(target)}: ${GENERATED_HTML_FILE} without ${NOTES_FILE}, or the reverse`);
+  }
+  for (const id of templates) assert.ok(!has(id, 'report.md'), `${id} has report.md, which notes.json replaced`);
+});
+
+test('a template reported per vault keeps no report of its own, and each vault report has its notes.json', () => {
+  const perVault = templates.filter((id) => templateTargets(ROOT, registry).some((t) => t.template === id && t.cardVault !== undefined));
+  assert.ok(perVault.includes('morpho/vault-deposit'));
+  for (const id of perVault) {
+    for (const file of [GENERATED_HTML_FILE, 'report.generated.md']) assert.ok(!has(id, file), `${id} is reported per vault but has ${file}`);
+    for (const target of templateTargets(ROOT, registry).filter((t) => t.template === id)) assert.ok(existsSync(join(ROOT, notesPath(id, target.cardVault))), `${target.cardVault} has no ${NOTES_FILE}`);
   }
 });
 
@@ -59,13 +58,13 @@ test('only a template not yet rebuilt may lack notes.json', () => {
 
 test('a template without notes.json gets no HTML report', async () => {
   const id = [...NOT_YET_REBUILT][0] ?? assert.fail('every template has notes');
-  const subject = loadSubject(ROOT, registry, { template: id });
+  const { subject } = loadReport(ROOT, registry, { template: id });
   assert.equal(await generatedHtml(ROOT, { subject, registry } as ReportInputs, { command: '', sources: [] }), undefined);
 });
 
 test('the committed HTML report is what the program writes from the recordings and notes.json, byte for byte', () => {
-  assert.ok(withNotes.length > 0);
-  for (const [id, { html }] of replayed) assert.equal(htmlDifference(readFileSync(join(ROOT, generatedHtmlPath(id)), 'utf8'), html), undefined, id);
+  assert.ok(withNotes.size > 0);
+  for (const [path, { html }] of replayed) assert.equal(htmlDifference(readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
 });
 
 const unescape = (text: string): string => text.replace(/&#(\d+);/g, (_, n: string) => String.fromCharCode(Number(n)));
@@ -110,8 +109,8 @@ test('the HTML report holds no script and loads nothing', () => {
 
 test('every link is a URL the registry, docs.json or notes.json holds, one of the three the program builds, or an id on the page', () => {
   for (const [id, { html }] of replayed) {
-    const notes = readNotes(ROOT, id);
-    const docs = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, id, DOCS_FILE), 'utf8')) as Record<string, { url: string }>;
+    const notes = notesOf(id);
+    const docs = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, withNotes.get(id)?.template ?? '', DOCS_FILE), 'utf8')) as Record<string, { url: string }>;
     const allowed = new Set<string>([
       'https://defillama.com/hacks',
       ...[...registry.entries.values()].flatMap((e) => [
@@ -137,16 +136,16 @@ test('every text the AI wrote is inside an element with its dashed AI tag, and n
     const { rest, cut } = withoutAi(html);
     assert.ok(cut.length > 0, id);
     for (const element of cut) assert.match(element, /class="(byai|tagt)"/, `${id}: AI text without its tag: ${element.slice(0, 120)}`);
-    const plain = noteTexts(readNotes(ROOT, id)).flatMap((text) => text.split('`').filter((part, i) => i % 2 === 0 && part.length >= 6));
+    const plain = noteTexts(notesOf(id)).flatMap((text) => text.split('`').filter((part, i) => i % 2 === 0 && part.length >= 6));
     for (const text of plain) assert.ok(!unescape(rest).includes(text), `${id}: ${text} outside an AI element`);
   }
 });
 
 test('AI text is HTML-escaped', async () => {
-  const id = withNotes[0] as string;
+  const id = [...withNotes.keys()][0] as string;
   const { inputs, title } = replayed.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
-  const raw = readNotes(ROOT, id) as Record<string, unknown>;
+  const raw = notesOf(id) as Record<string, unknown>;
   const html = renderPage(
     buildPage(
       { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) },
@@ -161,10 +160,10 @@ test('AI text is HTML-escaped', async () => {
 });
 
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
-  const id = withNotes[0] as string;
+  const id = [...withNotes.keys()][0] as string;
   const { inputs, title } = replayed.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
-  const raw = readNotes(ROOT, id) as { flow: { text: string }[] } & Record<string, unknown>;
+  const raw = notesOf(id) as { flow: { text: string }[] } & Record<string, unknown>;
   const flow = raw.flow.map((line, i) => (i === 0 ? { ...line, text: '依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`' } : line));
   const html = renderPage(
     buildPage(

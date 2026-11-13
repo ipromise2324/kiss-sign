@@ -3,10 +3,10 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { loadRegistry } from '../src/registry.ts';
 import type { Ledger, Result } from '../src/research/ledger.ts';
-import { NotesError, fieldKeys, notesScope, parseNotes } from '../src/research/notes.ts';
+import { NotesError, fieldKeys, mergeNotes, notesChanges, notesScope, parseNotes } from '../src/research/notes.ts';
 import type { NotesScope } from '../src/research/notes.ts';
 import type { ProtocolFacts } from '../src/research/protocol-facts.ts';
-import { entriesOf, loadSubject } from '../src/research/report.ts';
+import { entriesOf, loadReport } from '../src/research/report.ts';
 import type { ReportInputs } from '../src/research/report.ts';
 import { loadTemplate } from '../src/template/template.ts';
 
@@ -167,6 +167,44 @@ test('a status, verdict or AI source result outside its words is refused', () =>
   refused(edited(['entries', 'usdc', 'sources', 0, 'result'], 'ok'), 'notes.json.entries.usdc.sources[0].result: not one of pass, attention, fail');
 });
 
+const VAULT_PATH = 'templates/morpho/vault-deposit/vaults/v/notes.json';
+const SHARED = Object.fromEntries(Object.entries(VALID).filter(([key]) => key !== 'verdict'));
+const mergeRefused = (vault: unknown, message: string) =>
+  assert.throws(
+    () => mergeNotes(SHARED, vault, VAULT_PATH),
+    (error: unknown) => error instanceof NotesError && error.message === message,
+  );
+
+test("a vault's notes join the template's: its verdict, judgments after the shared ones, and reviews and entries by name", () => {
+  const shared = { ...SHARED, reviews: {}, entries: { usdc: { role: '借出的代幣' } } };
+  const vault = { verdict: VALID.verdict, judgments: [{ text: '這個 vault', recommendation: '先送小額' }], reviews: VALID.reviews, entries: { cbbtc: { role: '抵押品' } } };
+  const notes = parseNotes(mergeNotes(shared, vault, VAULT_PATH), SCOPE);
+  assert.equal(notes.verdict.text, '要小心');
+  assert.deepEqual(notes.judgments.map((j) => j.text), ['判斷', '這個 vault']);
+  assert.deepEqual([...notes.reviews.keys()], ['morpho-oracle/source.page']);
+  assert.deepEqual([...(notes.entries?.keys() ?? [])], ['usdc', 'cbbtc']);
+});
+
+test("a key or name both notes define is refused, and a vault's notes hold only verdict, judgments, reviews and entries", () => {
+  mergeRefused({ verdict: VALID.verdict, entries: { usdc: { role: '又一次' } } }, `${VAULT_PATH}.entries: "usdc" is in the template's notes.json too`);
+  mergeRefused({ reviews: { 'morpho-oracle/source.page': VALID.reviews['morpho-oracle/source.page'] } }, `${VAULT_PATH}.reviews: "morpho-oracle/source.page" is in the template's notes.json too`);
+  assert.throws(() => mergeNotes(VALID, { verdict: VALID.verdict }, VAULT_PATH), (e: unknown) => e instanceof NotesError && e.message === `${VAULT_PATH}: verdict is in the template's notes.json too`);
+  mergeRefused({ title: '別的標題' }, `${VAULT_PATH}: "title" belongs in the template's notes.json, which every vault's report shares`);
+  mergeRefused(['verdict'], `${VAULT_PATH}: not a JSON object`);
+});
+
+test('the judgments of both notes count toward the limit of four', () => {
+  const judgment = { text: '判斷', recommendation: '建議' };
+  const merged = mergeNotes({ ...SHARED, judgments: [judgment, judgment, judgment] }, { verdict: VALID.verdict, judgments: [judgment, judgment] }, VAULT_PATH);
+  assert.throws(() => parseNotes(merged, SCOPE), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.judgments: more than 4 items');
+});
+
+test("--compare names a vault's notes.json too", () => {
+  assert.deepEqual(notesChanges(['templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json', 'templates/morpho/vault-deposit/vaults/x/report.generated.html']), [
+    'templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json',
+  ]);
+});
+
 test('field keys walk every argument, tuple part, array item and nested call of the template', () => {
   assert.deepEqual(fieldKeys(template).slice(0, 4), ['1.approve.spender', '1.approve.value', '2.blueBundlesV1Supply.marketParams', '2.blueBundlesV1Supply.marketParams.loanToken']);
   assert.ok(fieldKeys(template).includes('2.blueBundlesV1Supply.loanTokenPermit.data'));
@@ -176,7 +214,7 @@ test('field keys walk every argument, tuple part, array item and nested call of 
 });
 
 test('the scope of morpho/market-supply: its calls, their targets and views, its protocols, every field, and the results for the signer', () => {
-  const subject = loadSubject(ROOT, registry, { template: 'morpho/market-supply' });
+  const subject = loadReport(ROOT, registry, { template: 'morpho/market-supply' }).subject;
   const entries = entriesOf(subject, registry);
   const result = (id: string, kind: 'agrees' | 'no-answer'): Result => ({ id, line: 'sources', about: { kind: 'entry', entry: entries[0]! }, source: 'page', link: undefined, finding: { kind } });
   const ledger: Ledger = { entries, results: [result('usdc/source.page', 'agrees'), result('usdc/source.api', 'no-answer')] };

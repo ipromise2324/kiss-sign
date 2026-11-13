@@ -323,6 +323,55 @@ test('card new asks for base units when the token is no registry contract, so it
   assert.match(made.stdout, /amount: 5\n/);
 });
 
+/** A report for `vault` under the template, as `pnpm report --vault-of` writes it; the gate reads only that the file is there. */
+function reportVault(repoRoot: string, template: string, vault: string): void {
+  mkdirSync(join(repoRoot, 'templates', template, 'vaults', vault), { recursive: true });
+  writeFileSync(join(repoRoot, 'templates', template, 'vaults', vault, 'report.generated.md'), '# report\n');
+}
+
+test('card new lists only the vaults with a report for a template reported per vault', async () => {
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, ['smokehouse-usdc-v1-f5bc'], mainnet());
+  assert.equal(made.code, 1);
+  const listed = [...made.stdout.matchAll(/^ {2}\d+\. ([a-z0-9.-]+) 0x/gm)].map((m) => m[1]);
+  assert.deepEqual(listed, ['steakhouse-prime-usdc-v2-0f51', 'hyperithm-usdc-apex-v2-9e2f']);
+  assert.match(made.stderr, /vault: "smokehouse-usdc-v1-f5bc" is none of the listed choices/);
+});
+
+test('card new refuses a template reported per vault when no vault has a report', async () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
+  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  cpSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), join(repoRoot, 'templates', 'morpho', 'vault-deposit', 'template.json'));
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, ['1'], { ...mainnet(), repoRoot });
+  assert.equal(made.code, 1);
+  assert.match(made.stderr, /vault: no vault has a report for morpho\/vault-deposit; build one first/);
+  assert.deepEqual(made.asked, []);
+});
+
+test('card seal refuses a vault with no report for the template, before it asks anything', async () => {
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'smokehouse-usdc-v1-f5bc', amount: '5', 'min-shares': '4' } }] }));
+  const result = await run(['card', 'seal', card], home, ['y']);
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for morpho/vault-deposit; build one first\n');
+  assert.deepEqual(result.asked, []);
+  assert.equal(existsSync(join(home, 'cards')), false);
+});
+
+test('card seal accepts the same vault for a template that predates per-vault reports', async () => {
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-withdraw', values: { vault: 'smokehouse-usdc-v1-f5bc', amount: '5', 'max-shares': '4' } }] }));
+  const result = await run(['card', 'seal', card], home, ['y']);
+  assert.equal(result.code, 0, result.stderr);
+});
+
 test('card new lists only the entries of the protocol a contract field names, and refuses any other', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
   cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
@@ -330,6 +379,7 @@ test('card new lists only the entries of the protocol a contract field names, an
   mkdirSync(join(repoRoot, 'templates', 'test', 'fluid-only'), { recursive: true });
   const template = { ...fluid, id: 'test/fluid-only', card: { ...fluid.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } };
   writeFileSync(join(repoRoot, 'templates', 'test', 'fluid-only', 'template.json'), JSON.stringify(template));
+  for (const vault of ['fluid-fusdc', 'fluid-fusdt', 'steakhouse-prime-usdc-v2-0f51']) reportVault(repoRoot, 'test/fluid-only', vault);
   const home = freshHome();
   configure(home);
   const made = await run(['card', 'new', 'test/fluid-only'], home, ['steakhouse-prime-usdc-v2-0f51'], { ...mainnet(), repoRoot });

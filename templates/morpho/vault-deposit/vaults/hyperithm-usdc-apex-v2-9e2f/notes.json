@@ -1,0 +1,43 @@
+{
+  "verdict": {
+    "status": "caution",
+    "text": "可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。"
+  },
+  "judgments": [
+    {
+      "text": "同名的 vault 有兩個：Hyperithm USDC Apex 的 V1（0x777791C4d6DC2CE140D00D2828a7C93503c67777）和 V2（0x093272C07700d3cA5301C3Bf9B3A392624179E2F），代號都是 hyperUSDCa。",
+      "recommendation": "在 card new 用名稱尾碼和工廠分辨，跟 Morpho app 網址上的地址逐字比對。"
+    },
+    {
+      "text": "這個 vault 一年內從約 3,300 升到約 750 萬 USDC，2026-10 曾到約 1,970 萬；最大持有人占 51.77%，前 10 名占 90.10%。",
+      "recommendation": "只存你能接受暫時提不出的金額，先送小額。"
+    }
+  ],
+  "reviews": {
+    "hyperithm-usdc-apex-v2-9e2f/source.url": {
+      "status": "concern",
+      "text": "AI 沒找到 Hyperithm 列出地址的官方頁。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。VaultV2Factory 回答 `isVaultV2` = true。",
+      "recommendation": "要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。"
+    },
+    "hyperithm-usdc-apex-v2-9e2f/source.coingecko": {
+      "status": "concern",
+      "text": "CoinGecko 沒有列這個 vault 的股份代幣。地址的證據只有 Morpho app 頁和工廠回答，見同一個 vault 的來源網址那項。",
+      "recommendation": "可以接受，不影響存款。"
+    }
+  },
+  "entries": {
+    "hyperithm-usdc-apex-v2-9e2f": {
+      "role": "Hyperithm 管理的 USDC vault（V2）",
+      "sources": [
+        {
+          "text": "用瀏覽器打開 Morpho app 的 vault 頁",
+          "url": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
+          "result": "attention"
+        }
+      ]
+    },
+    "vault-v2-factory": {
+      "role": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+    }
+  }
+}

@@ -27,7 +27,9 @@ import {
   entriesOf,
   erc7730Text,
   generatedPath,
-  loadSubject,
+  loadReport,
+  ReportError,
+  reportArgs,
   pastTxsRecordings,
   programChanges,
   renderReport,
@@ -47,8 +49,8 @@ import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.t
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
-       node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) (--offline | --render)
+const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
+       node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) (--offline | --render)
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
 docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
@@ -57,6 +59,10 @@ can name, the protocol facts (DefiLlama's TVL, listing date and hacks for each p
 for every value its card field can name, and each token's decimals()), the past-txs recordings of the template studied
 again with each recorded transaction fetched again by hash through both providers, and pnpm erc7730 for every such
 entry. --vault prints the same for one vault, for a pull request that adds it.
+
+A template whose card names a vault is reported per vault: --vault-of names the vault, and the report reads the
+registry as if that vault were the only one the card can name. Its files sit in templates/<protocol>/<operation>/vaults/<vault>/
+and its recording in testdata/report/<protocol>-<operation>/<vault>.json.
 
 A read with no answer (no connection, a timeout, a server error or a rate limit) is asked again after each pause; one
 still without an answer prints as UNVERIFIABLE, never as FINDING, and --record then writes nothing.
@@ -80,6 +86,7 @@ runs the code checked out here. Run --compare from main with --data, so the pull
 const { values: flags, positionals } = parseArgs({
   options: {
     vault: { type: 'string' },
+    'vault-of': { type: 'string' },
     record: { type: 'boolean' },
     offline: { type: 'boolean' },
     render: { type: 'boolean' },
@@ -93,12 +100,13 @@ if (
   (id === undefined) === (flags.vault === undefined) ||
   positionals.length > 1 ||
   [flags.record, flags.offline, flags.render, flags.compare].filter(Boolean).length > 1 ||
-  (flags.data !== undefined && !flags.compare)
+  (flags.data !== undefined && !flags.compare) ||
+  (flags['vault-of'] !== undefined && id === undefined)
 ) {
   console.error(USAGE);
   process.exit(2);
 }
-const target: Target = id === undefined ? { vault: flags.vault! } : { template: id };
+const target: Target = id === undefined ? { vault: flags.vault! } : flags['vault-of'] === undefined ? { template: id } : { template: id, cardVault: flags['vault-of'] };
 
 const codeRoot = join(import.meta.dirname, '..');
 const git = (...args: string[]): Buffer => execFileSync('git', args, { cwd: codeRoot, maxBuffer: 1 << 30, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -129,27 +137,36 @@ if (flags.compare) {
 }
 
 const root = flags.data === undefined ? codeRoot : dataAt(flags.data);
-const registry = loadRegistry(root);
+const fullRegistry = loadRegistry(root);
+let loaded: ReturnType<typeof loadReport>;
+try {
+  loaded = loadReport(root, fullRegistry, target);
+} catch (e) {
+  if (!(e instanceof ReportError)) throw e;
+  console.error(`REFUSED  ${e.message}`);
+  process.exit(2);
+}
+const { subject, registry } = loaded;
 if (!(await ensureVendored(['solc', 'psl']))) process.exit(1);
 const suffixes = loadPublicSuffixList();
 const compilers = cachedCompilers();
 
 if (flags.offline) {
-  process.stdout.write(await replayReport(root, registry, target, compilers, suffixes));
+  process.stdout.write(await replayReport(root, fullRegistry, target, compilers, suffixes));
   process.exit(0);
 }
 
 /** Writes the committed reports from the repository and the recordings alone. */
 async function writeGenerated(): Promise<void> {
-  const { inputs, title } = await replayInputs(root, registry, target, compilers, suffixes);
+  const { inputs, title } = await replayInputs(root, fullRegistry, target, compilers, suffixes);
   const mdPath = join(root, generatedPath(target));
   mkdirSync(dirname(mdPath), { recursive: true });
   writeFileSync(mdPath, renderReport(inputs, title));
   const written = [generatedPath(target)];
   const html = await generatedHtml(root, inputs, title);
   if (html !== undefined && 'template' in target) {
-    writeFileSync(join(root, generatedHtmlPath(target.template)), html);
-    written.push(generatedHtmlPath(target.template));
+    writeFileSync(join(root, generatedHtmlPath(target)), html);
+    written.push(generatedHtmlPath(target));
   }
   console.error(`wrote ${written.join(' and ')}`);
 }
@@ -159,7 +176,6 @@ if (flags.render) {
   process.exit(0);
 }
 
-const subject = loadSubject(root, registry, target);
 const committedPath = join(root, generatedPath(target));
 if (flags.compare && !existsSync(committedPath)) {
   console.error(`${generatedPath(target)} does not exist; there is nothing to compare with`);
@@ -222,17 +238,17 @@ const facts = scope === undefined ? undefined : await protocolFacts(scope, regis
 const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
 const fetched = new Date();
 const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, erc7730, facts };
-const command = id === undefined ? `pnpm report --vault ${flags.vault}` : `pnpm report ${id}`;
+const command = `pnpm report ${reportArgs(subject)}`;
 const text = renderReport(live, { command, sources: ['live reads at the time it ran', ...pastTxs.map((p) => p.file)] });
 
 /** The committed HTML report against what the code checked out here writes from the recordings and notes.json. */
 async function compareHtml(): Promise<boolean> {
   if (!('template' in target)) return true;
-  const path = generatedHtmlPath(target.template);
+  const path = generatedHtmlPath(target);
   const committed = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined;
   let difference: string | undefined;
   try {
-    const { inputs, title } = await replayInputs(root, registry, target, compilers, suffixes);
+    const { inputs, title } = await replayInputs(root, fullRegistry, target, compilers, suffixes);
     difference = htmlDifference(committed, await generatedHtml(root, inputs, title));
   } catch (e) {
     if (!(e instanceof NotesError)) throw e;
