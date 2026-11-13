@@ -145,9 +145,14 @@ export type WalletCall = { readonly n: number; readonly title: Inline; readonly 
 /** A template of two or more calls goes through MultiSend, which no hardware wallet decodes, so it has no per-call view. */
 export type WalletView = { readonly kind: 'multisend'; readonly calls: number } | { readonly kind: 'calls'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] };
 
-export type SourceLine =
-  | { readonly by: 'program'; readonly label: string; readonly href: HttpsUrl | undefined; readonly state: State; readonly phrase: string | undefined }
-  | { readonly by: 'ai'; readonly text: AiText; readonly state: State };
+/** A result on an address row: its state, and the words a result that did not pass adds to its icon. */
+export type RowResult = { readonly state: State; readonly phrase: string | undefined };
+/** A page's or the API's site, compared with what DefiLlama lists for the entry's protocol `slug`. */
+export type SiteResult = RowResult & { readonly slug: string | undefined; readonly href: HttpsUrl | undefined };
+/** A program source: whether it showed the address, and for a page or the API its site, a second result. */
+export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined };
+/** A source the AI checked by hand: its text and link, and its result in words, which is no program result. */
+export type AiSource = { readonly text: AiText; readonly result: 'AI 判斷：沒問題' | 'AI 判斷：要注意' | 'AI 判斷：有問題' };
 
 export type AddressRow = {
   readonly anchor: Anchor;
@@ -160,6 +165,7 @@ export type AddressRow = {
   readonly sources: readonly SourceLine[];
   /** The places that confirmed the address, in plain words. */
   readonly confirmed: string;
+  readonly aiSources: readonly AiSource[];
 };
 
 /** Transactions that did not have the template's shape for one reason; `calls` names their calls when the reason is about calls. */
@@ -196,7 +202,7 @@ const FREE_WORDS: Readonly<Record<Extract<Rule, { kind: 'free' }>['claim'], stri
   proof: '合約會驗證它，換成別的值交易就失敗',
   unread: '合約不讀它，換成別的值結果一樣',
 };
-const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}`>, string>> = { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠', defillama: 'DefiLlama' };
+const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}`>, string>> = { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠' };
 
 /** What a confirmation is called in the line that counts them: the `source` page is 官方頁, each of `moreSources` its short URL. */
 const confirmationWord = (entry: RegistryEntry, source: ProgramSource): string => {
@@ -207,7 +213,7 @@ const confirmationWord = (entry: RegistryEntry, source: ProgramSource): string =
 
 const confirmedWords = (entry: RegistryEntry, by: readonly ProgramSource[]): string =>
   by.length === 0 ? '沒有任何地方確認' : `${by.length >= MIN_CONFIRMATIONS ? '在' : '只在'} ${by.length} 個地方確認：${by.map((source) => confirmationWord(entry, source)).join('、')}`;
-const AI_RESULTS = { pass: 'ok', attention: 'warn', fail: 'bad' } as const satisfies Readonly<Record<string, State>>;
+const AI_RESULTS = { pass: 'AI 判斷：沒問題', attention: 'AI 判斷：要注意', fail: 'AI 判斷：有問題' } as const;
 
 /** What the program says about a result for the signer: a title naming what disagreed or could not be read, and why. */
 const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; readonly why: string } } = {
@@ -996,16 +1002,15 @@ function addressSection(context: Context): Section {
       return review === undefined ? [] : [review];
     });
     const note = notes.entries?.get(entry.name);
-    const program = sourcesOf(ledger, entry).map(
+    const sources = sourcesOf(ledger, entry).map(
       (line): SourceLine => ({
-        by: 'program',
         label: line.source === 'page' || line.source.startsWith('more.') ? shortUrl(line.link as HttpsUrl) : SOURCE_LABELS[line.source as keyof typeof SOURCE_LABELS],
         href: line.link,
         state: line.state,
         phrase: line.phrase,
+        site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, href: line.site.link },
       }),
     );
-    const ai = (note?.sources ?? []).map((s): SourceLine => ({ by: 'ai', text: research(s.text, [s.url], 'AI'), state: AI_RESULTS[s.result] }));
     return {
       anchor: entryAnchor(entry.name),
       name: entry.name,
@@ -1014,8 +1019,9 @@ function addressSection(context: Context): Section {
       confidence: level,
       reviewed: reviews.length === 0 ? undefined : reviews.some((r) => r.status === 'concern') ? 'AI 有疑慮' : 'AI 已確認',
       address: checksumAddress(entry.address),
-      sources: [...program, ...ai],
+      sources,
       confirmed: confirmedWords(entry, confirmations(ledger, entry)),
+      aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'AI'), result: AI_RESULTS[s.result] })),
     };
   };
   const { open, folded } = addressRows(ledger);
