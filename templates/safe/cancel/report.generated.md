@@ -22,38 +22,23 @@ The Safe transaction's nonce: the card's `nonce`.
 
 ## Effects
 
-| Side | Token | Amount |
-| --- | --- | --- |
+The Safe gives and gets nothing: any change to its balances is a `MISMATCH`.
 
 ## Official documentation
 
-Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.
-
-| Function | Contract | Page | Site | GitHub commit | Function name appears on page |
-| --- | --- | --- | --- | --- | --- |
+The template calls no function, so `docs.json` names no page.
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources ` prints what each check compared.
-
-| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-
-0 entries, 0 findings.
+The operation touches no registry entry.
 
 ## Code pins
 
-Every span of each entry's registry code pin, oldest first: a span holds from its block to the block before the next span's. A transaction to sign must run the last span's code, and an executed one the code of the span that holds its block. `pnpm pin-code` writes the spans from the chain, not from a review of that code. Chain: whether, through both providers, the code at the span's first block is its pin, and the code at the block before is the previous span's pin, or for the first span, no code `pnpm pin-code` can pin. A lone pin from block 0 was written before ranges and is not read.
-
-| Entry | From block | Code hash | Implementation | Chain |
-| --- | --- | --- | --- | --- |
+The operation touches no registry entry.
 
 ## ABI proofs
 
-`pnpm prove-abi`: Sourcify's source, compiled with a pinned solc, against the code both providers return. Equals pin: whether the proved code, and the implementation behind a proxy, are the last span of the registry's code pin, which every signing of a new transaction requires.
-
-| Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+The operation touches no registry entry.
 
 ## Protocol facts
 
@@ -65,9 +50,4 @@ No `pnpm past-txs --record` recording names this template.
 
 ## ERC-7730
 
-`pnpm erc7730 `: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
-
-```text
-ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
-1 descriptor(s) scoped by factory: registry/railnet/calldata-Conduit.json; one applies below only when its factory is the entry's registry factory
-```
+The operation touches no registry entry, so no descriptor can apply.

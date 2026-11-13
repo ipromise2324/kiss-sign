@@ -96,7 +96,7 @@ test('each argument says who decides it and prints what cast decode-calldata pri
   assert.equal(plain(value.qualifier), '6 位小數');
 
   const market = arg(page, '2.blueBundlesV1Supply.marketParams');
-  assert.deepEqual(market.chips, [{ who: 'you-pick', label: '你選：market' }]);
+  assert.deepEqual(market.chips, [{ who: 'you-pick', label: '你選：市場' }]);
   assert.equal(market.value, undefined);
   assert.equal(plain(market.words), 'usdc / cbbtc，LLTV 86%');
   assert.match(plain(market.id), /0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/);
@@ -128,7 +128,7 @@ test('each argument says who decides it and prints what cast decode-calldata pri
   );
   assert.deepEqual(arg(page, '2.blueBundlesV1Supply.deadline').chips, [{ who: 'free', label: 'app 填，不限' }]);
   assert.equal(plain(arg(page, '2.blueBundlesV1Supply.referralFeeRecipient').words), '無（零地址）');
-  assert.equal(arg(page, '2.blueBundlesV1Supply.deadline').ai.ai, 'field 2.blueBundlesV1Supply.deadline');
+  assert.equal(arg(page, '2.blueBundlesV1Supply.deadline').ai?.ai, 'field 2.blueBundlesV1Supply.deadline');
 });
 
 test('a container prints its summary in place of the hex and nests its parts; a leaf prints what cast prints', () => {
@@ -210,7 +210,7 @@ test('the wallet rows match a descriptor by each array item, by argument name wi
   const field = (path: string) => ({ kind: 'field', path, format: 'raw', visible: 'always' }) as const;
   const usdtLike = { functions: [{ selector: '0x095ea7b3', signature: 'approve(address,uint256)', fields: [field('_spender'), field('_value')], notShown: [] }] } as unknown as EntryReport['descriptors'][number];
   const reports = [...depositInputs.erc7730.reports, { entry: usdc, factory: undefined, index: undefined, descriptors: [usdtLike] }];
-  assert.deepEqual(rowsOf({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的 amount']]);
+  assert.deepEqual(rowsOf({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的金額']]);
 });
 
 test("a per-vault report shows its vault as the card's value, with or without a test transaction", () => {
@@ -286,7 +286,14 @@ test('the vault its factory alone confirms is the one 待確認; every address r
 test('each past-transactions recording names the entry its search anchored on', () => {
   const { recordings } = body(depositPage, 'past');
   assert.ok(recordings.length > 0);
-  for (const r of recordings) assert.match(r.count, /^搜尋 [a-z0-9-]+ 的 鑄造（存款），找到 \d+ 筆，研究 \d+ 筆$/);
+  for (const r of recordings) assert.match(r.count, /^搜尋 [a-z0-9-]+ 的鑄造（存款），找到 \d+ 筆，研究 \d+ 筆$/);
+});
+
+test('a mint of a token that is not a vault is a mint, not a deposit', () => {
+  const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
+  const pastTxs = depositInputs.pastTxs.map((r) => ({ ...r, query: { ...r.query, token: usdc.address } }));
+  const page = buildPage({ ...depositInputs, pastTxs }, depositNotes, depositTitle);
+  for (const r of body(page, 'past').recordings) assert.match(r.count, /^搜尋 usdc 的鑄造，/);
 });
 
 test('a contract a flow line names gets its own lifeline, so every inside arrow ends on one', () => {
@@ -361,9 +368,9 @@ test('the wallet table shows the template rule, and names the bound arguments th
     rows.map((r) => [plain(r.label), plain(r.value)]),
     [
       ['送出的 ETH', '0'],
-      ['金額', '你填的 amount'],
-      ['抵押代幣', '你選的 market 的 collateralToken'],
-      ['LLTV', '你選的 market 的 lltv'],
+      ['金額', '你填的金額'],
+      ['抵押代幣', '你選的市場的抵押代幣'],
+      ['LLTV', '你選的市場的 LLTV'],
       ['推薦費比例', '0'],
       ['推薦費收款地址', '無（零地址）'],
       ['期限', '不限'],
@@ -431,7 +438,7 @@ test('a bundle with another number of items is grouped and named by the function
     ],
   );
   assert.deepEqual(eoa?.groups[0]?.examples[0], { href: 'https://etherscan.io/tx/0x94ba5b792613b7a04c2235f47062cf3f991524be9dffadd0fa595a16783a73ea', label: '0x94ba5b79…' });
-  assert.match(plain(early?.others[0]), /^另外 127 筆是別的操作，不列入：deposit 62 筆、/);
+  assert.match(plain(early?.others[0]), /^另外 127 筆是別的操作，不列入：hyperithm-usdc-apex-v2-9e2f\.deposit 62 筆、0x3151cEE0cdb517C0E7Db2B55FF5085e7D1809d90\.0xbaae8abf 32 筆、/);
   assert.ok(!JSON.stringify(early).includes('符合'), 'no verdict word');
 });
 
@@ -501,3 +508,63 @@ for (const variant of VARIANTS) {
     assert.ok(review.rows.every((r) => stateOf(ledger.results.find((x) => x.id === r.id) ?? assert.fail(r.id)) === r.state));
   });
 }
+
+/** A template with no contract call: its page, from the template's report recording and notes that hold only what the scope requires. */
+async function bareCase(id: string): Promise<Page> {
+  const of = { template: id };
+  const replayed = await replayInputs(ROOT, registry, of, await warmCompilers(reportCases(ROOT, registry, [of])), loadPublicSuffixList());
+  const subject = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject : assert.fail('a template report');
+  const html = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, subject.template, registry), example: firstRecordedTx(ROOT, subject.template, registry) };
+  return buildPage(html, { ...notesFor(html), flow: [] }, replayed.title);
+}
+
+test('an ETH transfer: no address section or address strip lines, its to/value/data rules in words, and a wallet line for a call with no data', async () => {
+  const page = await bareCase('eth/transfer');
+  assert.deepEqual(page.sections.map((s) => s.anchor), ['flow', 'review', 'wallet', 'past', 'next']);
+  assert.deepEqual(page.header.strip.map((s) => [s.line, s.state, s.count]), [['params', 'na', '沒有測試'], ['providers', 'ok', undefined]]);
+  assert.match(page.header.strip[0]?.explain ?? '', /^模板沒有不限的參數/);
+  const { flow } = body(page, 'flow');
+  assert.deepEqual(flow.calls.map((c) => c.head), [{ kind: 'no-data', text: '轉 ETH 給收款人' }]);
+  assert.deepEqual(flow.calls[0]?.args.map((a) => [a.name, a.chips.map((c) => c.label), plain(a.words), a.ai]), [
+    ['to', ['你選：收款人'], '你選的收款人', undefined],
+    ['value', ['你填：金額'], '你填的金額', undefined],
+    ['data', ['固定'], '沒有資料', undefined],
+  ]);
+  assert.deepEqual(flow.key.map((k) => k.label), ['你填', '你選', '固定']);
+  assert.equal(flow.decoded, false);
+  assert.deepEqual(flow.diagram.lifelines.map((l) => l.name), ['你的 Safe', '收款人']);
+  assert.deepEqual(flow.after.map((r) => plain(r.note)), ['剛好你填的金額，給收款人']);
+  assert.deepEqual(body(page, 'wallet').view, { kind: 'no-data' });
+  const next = body(page, 'next');
+  assert.ok(next.steps.some((s) => plain(s.say).includes('先用小額')), 'a typed amount keeps the small first trial');
+  assert.ok(!next.automatic.some((line) => plain(line).includes('code pin')), 'no code pin line without a registry entry');
+});
+
+test('a cancellation: a self-call of 0 ETH is no transfer, its nonce rule has its own row, and no effect says the Safe gives and gets nothing', async () => {
+  const page = await bareCase('safe/cancel');
+  const { flow } = body(page, 'flow');
+  assert.deepEqual(flow.diagram.lifelines.map((l) => l.name), ['你的 Safe']);
+  assert.deepEqual(flow.diagram.arrows, [{ kind: 'call', n: 1, to: 0, fn: '0 ETH、沒有資料' }]);
+  assert.match(flow.diagram.narration, /Safe 呼叫自己，0 ETH、沒有資料/);
+  assert.deepEqual(flow.calls.map((c) => c.head), [{ kind: 'no-data', text: '呼叫你的 Safe，0 ETH、沒有資料' }]);
+  assert.deepEqual(flow.safeTx.map((r) => [r.name, r.chips.map((c) => c.label), plain(r.words)]), [['nonce', ['你填：nonce'], '你填的 nonce']]);
+  assert.deepEqual(flow.after, []);
+  const next = body(page, 'next');
+  assert.ok(!next.steps.some((s) => plain(s.say).includes('先用小額')), 'no amount, so no small first trial');
+  assert.ok(next.automatic.some((line) => plain(line) === 'Safe 交易的 nonce 是你填的 nonce'));
+  assert.ok(next.automatic.some((line) => plain(line) === '模擬後 Safe 的餘額一點都不能變'));
+  assert.ok(!JSON.stringify(page).includes('card.'), 'no internal name');
+});
+
+test('the who-decides key gives a free field the meaning of the claim the template makes for it', async () => {
+  const proof = body(await bareCase('cctp/receive'), 'flow').flow.key.filter((k) => k.who === 'free');
+  assert.deepEqual(proof.map((k) => k.means), ['換成別的值，交易就失敗']);
+  const supply = body(pageOf(inputs), 'flow').flow.key.filter((k) => k.who === 'free');
+  assert.ok(supply.some((k) => k.means === '換成別的值，結果一樣或交易失敗'), JSON.stringify(supply));
+});
+
+test('no strip explanation counts one thing as many', async () => {
+  for (const page of [depositPage, pageOf(inputs), await bareCase('cctp/receive')]) {
+    for (const item of page.header.strip) assert.doesNotMatch(item.explain, /(^|[^\d])1 個(地址)?都|其餘 1 個|這 1 個/, item.explain);
+  }
+});

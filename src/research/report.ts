@@ -505,18 +505,21 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     out.push('');
   });
 
-  out.push('## Effects', '', '| Side | Token | Amount |', '| --- | --- | --- |');
-  for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
-  for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  out.push('## Effects', '');
+  if (template.effects.gives.length + template.effects.gets.length === 0) out.push(`The Safe gives and gets nothing: any change to its balances is a ${code('MISMATCH')}.`);
+  else {
+    out.push('| Side | Token | Amount |', '| --- | --- | --- |');
+    for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
+    for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  }
   if (template.effects.views.length > 0) {
     out.push('', 'The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:', '');
     out.push('| Contract | Function | Arguments | Change |', '| --- | --- | --- | --- |', ...template.effects.views.map((view) => viewRow(view, template, registry)));
   }
 
+  out.push('', '## Official documentation', '');
+  if (docs.length === 0) return [...out, `The template calls no function, so ${code(DOCS_FILE)} names no page.`, ''];
   out.push(
-    '',
-    '## Official documentation',
-    '',
     `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.`,
     '',
     '| Function | Contract | Page | Site | GitHub commit | Function name appears on page |',
@@ -672,6 +675,9 @@ function readingRow(reading: FactReading, facts: ProtocolFacts, registry: Regist
 function factsSection(template: Template, facts: ProtocolFacts | undefined, registry: Registry): string[] {
   const out = ['## Protocol facts', ''];
   if (facts === undefined) return [...out, `Not read: this report's recording predates the protocol facts; ${code(`pnpm report ${template.id} --record`)} reads them.`, ''];
+  if (facts.protocols.length + facts.unlisted.length + template.facts.length + facts.decimals.size === 0) {
+    return [...out, 'Nothing to read: no call of this template goes to a registry contract other than a token, it declares no facts view, and no registry token or vault is in its scope.', ''];
+  }
   out.push(
     `What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and ${code('verify')} never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and ${code('decimals()')} is read through both providers at block ${facts.block.number} ${code(facts.block.hash)}; a read they do not agree on prints as not read.`,
     '',
@@ -718,18 +724,8 @@ function factsSection(template: Template, facts: ProtocolFacts | undefined, regi
   return out;
 }
 
-export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
-  const { subject, registry } = inputs;
-  const entries = entriesOf(subject, registry);
-  const name = subject.kind === 'template' ? subject.template.id : subject.vault.name;
-  const out: string[] = [
-    `# Generated evidence: ${name}`,
-    '',
-    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
-    '',
-  ];
-  if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));
-
+function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs): string[] {
+  const out: string[] = [];
   const checked = checkSources(entries, inputs.listings, inputs.pages);
   out.push(
     '## Registry entries',
@@ -800,6 +796,24 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address))),
     '',
   );
+  return out;
+}
+
+export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
+  const { subject, registry } = inputs;
+  const entries = entriesOf(subject, registry);
+  const name = subject.kind === 'template' ? subject.template.id : subject.vault.name;
+  const out: string[] = [
+    `# Generated evidence: ${name}`,
+    '',
+    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
+    '',
+  ];
+  if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));
+
+  if (entries.length === 0) {
+    for (const heading of ['Registry entries', 'Code pins', 'ABI proofs']) out.push(`## ${heading}`, '', 'The operation touches no registry entry.', '');
+  } else out.push(...entrySections(entries, inputs));
 
   const vaults = vaultsOf(subject, registry);
   if (vaults.length > 0) {
@@ -819,14 +833,16 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     out.push(`### ${code(summary.file)}`, '', `Recorded with ${code(pastTxsCommand(summary))}, and studied again here with the template as it is now.`, '', ...fenced(summary.text.trimEnd()), '');
   }
 
-  out.push(
-    '## ERC-7730',
-    '',
-    `${code(`pnpm erc7730 ${entries.map((e) => e.name).join(' ')}`)}: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.`,
-    '',
-    ...fenced(inputs.erc7730.text),
-    '',
-  );
+  out.push('## ERC-7730', '');
+  if (entries.length === 0) out.push('The operation touches no registry entry, so no descriptor can apply.', '');
+  else {
+    out.push(
+      `${code(`pnpm erc7730 ${entries.map((e) => e.name).join(' ')}`)}: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.`,
+      '',
+      ...fenced(inputs.erc7730.text),
+      '',
+    );
+  }
   return out.join('\n');
 }
 
