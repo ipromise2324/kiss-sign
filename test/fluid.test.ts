@@ -59,6 +59,7 @@ const CASES: readonly Case[] = [
   { name: 'fluid-withdraw-usdt-other-safe', template: 'fluid/vault-withdraw', vault: 'fluid-fusdt', bound: 5 },
   { name: 'fluid-redeem-usdt', template: 'fluid/vault-redeem', vault: 'fluid-fusdt', bound: 5 },
   { name: 'fluid-redeem-usdt-other-safe', template: 'fluid/vault-redeem', vault: 'fluid-fusdt', bound: 5 },
+  { name: 'fluid-redeem-usdc-other-safe', template: 'fluid/vault-redeem', vault: 'fluid-fusdc', bound: 5 },
 ];
 
 /** The card a past transaction implies: its vault, and the amount its vault call names. */
@@ -204,6 +205,12 @@ test('a redemption gives exactly the card shares and must get some USDT back', a
   }
   const verdict = judge(tx, receipt, impliedCard(c, tx, firstArg(tx) - 1n));
   assert.equal(verdict.kind, 'mismatch');
+});
+
+test('a redemption card naming a Morpho vault is refused before any check', () => {
+  const tx = safeTx('fluid-redeem-usdt-other-safe');
+  const result = resolveCard({ operations: [{ template: 'fluid/vault-redeem', values: { vault: 'steakhouse-prime-usdc-v2-0f51', shares: '1' } }] }, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  assert.deepEqual(result.kind === 'refused' ? [result.reason, result.detail] : result.kind, ['wrong-protocol', 'steakhouse-prime-usdc-v2-0f51 is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending']);
 });
 
 test('a card that both deposits into and withdraws from one vault cannot state the shares, so it is unverifiable', async () => {
