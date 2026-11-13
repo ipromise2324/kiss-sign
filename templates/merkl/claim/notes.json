@@ -1,0 +1,143 @@
+{
+  "title": "從 Merkl 領取獎勵",
+  "summary": "Safe 呼叫 Merkl Distributor 的 `claim`，用 Merkl 公布的 Merkle 證明領出你選的獎勵代幣。Safe 不付出任何東西，也不留下授權；Distributor 只轉出累計總額減去已領的差額。",
+  "verdict": {
+    "status": "safe",
+    "text": "可以領。Safe 只收不付；領 FLUID 前先看待確認，第一次用這個模板先領小額。"
+  },
+  "flow": [],
+  "protocols": {
+    "merkl": {
+      "intro": "Merkl 是 Angle Labs 做的獎勵發放平台：鏈下算好每個地址累計能領多少，把 Merkle root 放上 Distributor，使用者帶證明來領。",
+      "audits": {
+        "text": "merkl-contracts 的 README 列了兩份 Code4rena 稽核：2023 年 8 月和 2025 年 11 月。Merkl 文件說每次更新 root 後有 1 到 2 小時的爭議期，由幾個獨立的爭議機器人重新驗算。",
+        "sources": [
+          "https://github.com/AngleProtocol/merkl-contracts/blob/18d656de7b6c166fe840b0f4fa871f63d6b34769/README.md",
+          "https://code4rena.com/reports/2023-06-angle",
+          "https://code4rena.com/reports/2025-11-merkl",
+          "https://docs.merkl.xyz/security-practices"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": "Distributor 可升級。權限表 0x0E632a15EbCBa463151B5367B4fCF91313e389a6 的紀錄裡，治理者只有 4/6 的 Safe 0x529619a10129396a2F642cae32099C1eA7FA2834：能升級、隨時換 Merkle root、用 `recoverERC20` 拿走未領的獎勵。鏈上讀到換 root 後的爭議期是 3600 秒。",
+      "sources": [
+        "https://etherscan.io/address/0x0E632a15EbCBa463151B5367B4fCF91313e389a6#events",
+        "https://etherscan.io/address/0x529619a10129396a2F642cae32099C1eA7FA2834",
+        "https://etherscan.io/address/0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae#readProxyContract"
+      ],
+      "recommendation": "可以接受。升級會讓 code pin 對不上，verify 就不給 MATCH；最壞是領不到，不會從 Safe 拿走東西。"
+    },
+    {
+      "text": "獎勵不一定轉給 Safe：如果 Safe 曾用 `setClaimRecipient` 設過收款地址，`claim` 會轉去那個地址。治理者和 guardian 也能替 Safe 呼叫 `claim`，但錢一樣轉給 Safe 或它設的地址。",
+      "sources": [
+        "https://etherscan.io/address/0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE#code"
+      ],
+      "recommendation": "不用另外做事：獎勵沒進 Safe，交易後檢查就會 MISMATCH。"
+    },
+    {
+      "text": "Safe 常把好幾種代幣放進同一個 `claim` 的四個陣列。抽樣研究的 10 筆 Safe 領 MORPHO 交易裡，7 筆一次領 2 到 6 種，7 筆都含登記表沒有的代幣。card 要依同樣順序列出每一種，每一種都要在登記表裡。",
+      "recommendation": "verify 在 `tokens` 某一項報 MISMATCH，就是代幣或順序跟 card 不同；照 Safe app 交易明細的 tokens 順序重做 card。沒登記的代幣要先開 PR 加。"
+    },
+    {
+      "text": "FLUID 代幣（InstaToken）是委派合約：函式都轉給 `implementation` 指向的實作，Instadapp 能換掉，而 code pin 和 ABI 證明只看到外殼。報告上方「合約沒被換掉」對 FLUID 只涵蓋外殼。",
+      "sources": [
+        "https://etherscan.io/address/0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb#code"
+      ],
+      "recommendation": "領 FLUID 風險較低：Safe 只收不付，交易後仍檢查 Safe 的 FLUID 有增加。但先看待確認的地址說明。"
+    }
+  ],
+  "reviews": {
+    "fluid/address": {
+      "status": "concern",
+      "text": "程式只有 CoinGecko 確認。AI 讀了 Instadapp 的 deployments.md：0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb 出現好幾次，但都在別的合約的建構參數裡，例如 Fluid 獎勵的 MerkleDistributor，沒有一列是代幣本身。Fluid 文件的合約地址頁沒有列它。",
+      "recommendation": "只算一個來源確認。要領 FLUID，先自己在 Fluid app 或 Etherscan 比對代幣地址。"
+    }
+  },
+  "entries": {
+    "merkl-distributor": {
+      "role": "Merkl 在以太坊的獎勵發放合約，Safe 呼叫它的 `claim`",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 ERC1967Proxy，創建者 0x9f76a95AA7535bb0893cf88A146396e00ed21A12，和 merkl-contracts 的部署紀錄相同",
+          "url": "https://etherscan.io/address/0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae#code",
+          "result": "pass"
+        },
+        {
+          "text": "merkl-contracts 的 mainnet 部署紀錄：Distributor 是這個地址，部署者 0x9f76a95AA7535bb0893cf88A146396e00ed21A12",
+          "url": "https://github.com/AngleProtocol/merkl-contracts/blob/18d656de7b6c166fe840b0f4fa871f63d6b34769/archive/deployments/mainnet/Distributor.json",
+          "result": "pass"
+        },
+        {
+          "text": "現在的實作 0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE：Etherscan 合約名 Distributor，部署者 0xA9DdD91249DFdd450E81E1c56Ab60E1A62651701，和 2026 年 1 月升級紀錄相同",
+          "url": "https://github.com/AngleProtocol/merkl-contracts/blob/18d656de7b6c166fe840b0f4fa871f63d6b34769/deployments/upgrade-270126/mainnet-upgrade-implementations.json",
+          "result": "pass"
+        }
+      ]
+    },
+    "usdc": {
+      "role": "可選的獎勵代幣：Circle 發行的 USDC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "usdt": {
+      "role": "可選的獎勵代幣：Tether 發行的 USDT",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
+          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "fluid": {
+      "role": "可選的獎勵代幣：Fluid（原 Instadapp INST）的治理代幣",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 InstaToken，創建者 0xf6839085F692bDe6A8062573E3DA35E7e947C21E；是委派合約",
+          "url": "https://etherscan.io/address/0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb#code",
+          "result": "attention"
+        }
+      ]
+    },
+    "morpho": {
+      "role": "可選的獎勵代幣：Morpho 的治理代幣，Morpho 的獎勵經 Merkl 發放",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
+          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "cbbtc": {
+      "role": "可選的獎勵代幣：Coinbase 發行的 cbBTC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
+          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "pastTxsConclusion": "其他形狀多是一次領好幾種代幣（Safe 2 到 6 種），幾乎都含登記表沒有的代幣，要先登記才會 MATCH；另有 1 個 Safe 的 2 筆經非官方 MultiSend 的 delegatecall，模板不收是對的。",
+  "fields": {
+    "1.claim.users": "要領獎勵的地址清單，一種代幣一項。四個陣列一樣長，第 i 項一起組成一筆領取。",
+    "1.claim.users[0]": "領獎勵的人，模板固定是 Safe，所以只能領 Safe 自己的獎勵。",
+    "1.claim.tokens": "要領的獎勵代幣清單，順序和 card 上的操作相同。",
+    "1.claim.tokens[0]": "這一項要領的代幣，等於你在 card 選的獎勵代幣。",
+    "1.claim.amounts": "每一項的累計獎勵金額清單。",
+    "1.claim.amounts[0]": "Merkl 算出 Safe 到目前為止累計能領的總額，不是這次的金額。合約轉出總額減去已領的部分；證明對不上就整筆失敗。",
+    "1.claim.proofs": "每一項的 Merkle 證明清單。",
+    "1.claim.proofs[0]": "證明這一項的 (user, token, amount) 在 Distributor 目前的 Merkle root 裡，由 Merkl app 產生。"
+  }
+}

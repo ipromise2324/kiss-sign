@@ -192,12 +192,12 @@ test('a template whose trailer allowance is shorter than real use lists those tr
 });
 
 test('an anchor with a sender asks both sources only for transfers out of it, and the report names it', async () => {
-  const claims: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'merkl-claim.json'), 'utf8'));
+  const claims: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'merkl-claim-morpho.json'), 'utf8'));
   const text = await report({ recorded: claims });
   assert.match(text, /^anchor: Transfer of morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 moved out of merkl-distributor$/m);
-  assert.match(text, /^ {2}blocks 24020000 to 24030000: 120 found, 120 studied$/m);
-  assert.match(text, /^sources: alchemy found 120, etherscan found 120; both 120, /m);
-  assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 2 from 2 Safes$/m);
+  assert.match(text, /^ {2}blocks 25738201 to 25745400: 5 found, 5 studied$/m);
+  assert.match(text, /^sources: alchemy found 768, etherscan found 768; both 768, /m);
+  assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 9 from 8 Safes$/m);
   const { from, ...unfiltered } = claims.query;
   assert.ok(from !== undefined);
   await assert.rejects(report({ recorded: { ...claims, query: unfiltered } }), /request not recorded/);

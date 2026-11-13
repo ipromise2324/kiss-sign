@@ -283,6 +283,12 @@
     "kind": "distributor",
     "source": "https://developers.merkl.xyz/resources/chains-and-contracts",
     "sourceLabel": "Distributor",
+    "moreSources": [
+      {
+        "url": "https://github.com/AngleProtocol/merkl-contracts/blob/18d656de7b6c166fe840b0f4fa871f63d6b34769/UPGRADE_DEPLOYMENT.md",
+        "label": "Distributor Proxy"
+      }
+    ],
     "defillama": "merkl",
     "code": {
       "hash": "0x45a8f258094615c6b45b6fec0fab1bf25c6f28244b6c33a303d9ba952ec10d2d",

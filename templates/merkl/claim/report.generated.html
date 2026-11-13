@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>merkl/claim 報告</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.srcs .byai{margin-right:8px}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="目錄">
+  <h2>目錄</h2>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-merkl">merkl</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>從 Merkl 領取獎勵</span><span class="byai">AI 研究</span></span></h1>
+  <span class="opid">merkl/claim</span>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫 Merkl Distributor 的 <code>claim</code>，用 Merkl 公布的 Merkle 證明領出你選的獎勵代幣。Safe 不付出任何東西，也不留下授權；Distributor 只轉出累計總額減去已領的差額。</span><span class="byai">AI 研究</span></span></p>
+  <ul class="checks">
+    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">5 / 6</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 個地址有結果要你看，見「待確認」。其餘 5 個都至少在 2 個地方確認。</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">6 / 6</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">6 / 6</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認這 6 個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
+    <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>參數保護 <span class="n num">1 / 1</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">程式把 1 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
+  </ul>
+  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以領。Safe 只收不付；領 FLUID 前先看待確認，第一次用這個模板先領小額。</span><span class="byai">AI 研究：可以用</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-merkl">merkl</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>流程 <span class="c">1 個呼叫</span></h2>
+  <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
+  <div class="diagram">
+  <svg viewBox="0 0 660 176" role="img" aria-labelledby="dt dd">
+    <title id="dt">交易流程</title>
+    <desc id="dd">呼叫 1：Safe 呼叫 merkl-distributor 的 claim。結果：你得到 morpho。</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="168"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="168"/>
+    <rect class="node" x="194.5" y="14" width="171" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">merkl-distributor</text><text class="nodes" x="280" y="50" text-anchor="middle">發放合約</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">claim</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <text class="capg" x="104" y="142">你得到 morpho</text>
+    <line class="gain" x1="280" y1="152" x2="93" y2="152" marker-end="url(#m-gets)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="key">
+    <span class="k0">誰決定</span>
+    <span><span class="who you">你填</span>每次簽名填</span>
+    <span><span class="who you">你選</span>每次簽名選</span>
+    <span><span class="who">固定</span>改了就 MISMATCH</span>
+    <span><span class="who app">app 填，不限</span>換成別的值，結果一樣</span>
+  </div>
+  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。標「例」的你填、你選和 app 填的值取自第一筆測試交易 <code>merkl-claim</code>。</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">merkl-distributor.</span>claim</span><span class="sel">0x71ee95c0</span></div>
+    <div class="arg" data-field="1.claim.users">
+      <div class="nm"><span class="pn">users</span><span class="who">固定</span></div>
+      <div class="val"><div class="is">1 項</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要領獎勵的地址清單，一種代幣一項。四個陣列一樣長，第 i 項一起組成一筆領取。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="raw">0x79beA6B85433BFa83324991AeBA1C7d05ADBA18f<span class="ex">例</span></div><div class="is">你的 Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>領獎勵的人，模板固定是 Safe，所以只能領 Safe 自己的獎勵。</span></span></div></div></div>
+      </div>
+    </div>
+    <div class="arg" data-field="1.claim.tokens">
+      <div class="nm"><span class="pn">tokens</span><span class="who you">你選：token</span></div>
+      <div class="val"><div class="is">1 項</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要領的獎勵代幣清單，順序和 card 上的操作相同。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="raw">0x58D97B57BB95320F9a05dC918Aef65434969c2B2<span class="ex">例</span></div><div class="is"><a href="#a-morpho">morpho</a> <span class="f3">你選的 token</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一項要領的代幣，等於你在 card 選的獎勵代幣。</span></span></div></div></div>
+      </div>
+    </div>
+    <div class="arg" data-field="1.claim.amounts">
+      <div class="nm"><span class="pn">amounts</span><span class="who app">app 填，不限</span></div>
+      <div class="val"><div class="is">1 項</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每一項的累計獎勵金額清單。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="raw">100951036832327882581<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Merkl 算出 Safe 到目前為止累計能領的總額，不是這次的金額。合約轉出總額減去已領的部分；證明對不上就整筆失敗。</span></span></div></div></div>
+      </div>
+    </div>
+    <div class="arg" data-field="1.claim.proofs">
+      <div class="nm"><span class="pn">proofs</span><span class="who app">app 填，不限</span></div>
+      <div class="val"><div class="is">1 項</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每一項的 Merkle 證明清單。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="raw">[0x65e15c33830030482c1510c2d0ff0f595658c02273e56e0e9a4b1705f25c0b85, 0x0f75a50526439fcb163c0314d9a21e3383c087a05e2d4368f59977fb28bdc058, 0x9f4729b513b020d26312f0feb398916074166b1c1616124d3ff409312729fcb9, 0xf6b9e03a8189dbbef7673a33dc9b8182e1cb386038f1f40f27af6c288fa49e94, 0xe77888920c5814c12e6058288ab256de8cad4c703db37d77db9c76bf4efed2ee, 0x636eeae803e25736ce86cc0a07c1fe9317f2affc203298401d6a83f30b6be35f, 0x630ce7240b5a9bc3716ea352174fddc240557541c30d6ed8acf38e7db6f82ef5, 0xca422eaf3bbf4910a11321ad9d5f6ee346346211610964560b3c6b682d189e0a, 0x8f9f4da46a9105079e9b2067e5be32c5b79f6b1533c353f61d7c458349118dc2, 0xf15be01d4fe1827a758259c406b851a6a632909a0bd519d5bb6db4de8b50680d, 0x2a51c29414c7337a0fa37217b7603a8cc54a777dadca0c81625fb1160fa77d19, 0x77519000929a8ef7eee0922011c446033c60b17c1e34a42f8f003ec681e8a97a, 0x1c28e3370d29484c8738794276a541e44913589bd97c33bd7d3bcd69035d92be, 0x51804f57b5604289e633ae205fca7467ac65420a20129361e2fcb9158690b7bd, 0x8b73ed9b232eb6cb9f5a628aab1722e8700137d1b30f8c82ef5a8f1a7ccb4c6a, 0xaf94d8bb73fcc8d3c3fde91eb0a7514f07d1c9ea53d56f924c41b323d348fb2d, 0x86d0ca69f9b141c292795239042743c4d60069862b43d4f238c1a121ccf64104, 0xfa34412aef6827f011245c865dbd6ed944e7107db5c76ecc7f95ce087bebc036, 0x214d7d9ba1102e946e3cfed1952037fb11d1be12f6bf526149ea1c4f95f10c3c]<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">合約會驗證它，換成別的值交易就失敗</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>證明這一項的 (user, token, amount) 在 Distributor 目前的 Merkle root 裡，由 Merkl app 產生。</span></span></div></div></div>
+      </div>
+    </div>
+  </div>
+  <h3>交易後</h3>
+  <dl class="props">
+    <div><dt>Safe 的 morpho</dt><dd class="pos">多於 0</dd><dd class="src">要多於 0</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-merkl">
+  <h2>merkl</h2>
+  <p class="intro"><span class="aiw" data-ai><span>Merkl 是 Angle Labs 做的獎勵發放平台：鏈下算好每個地址累計能領多少，把 Merkle root 放上 Distributor，使用者帶證明來領。</span><span class="byai">AI 研究</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$0.00</span></span><span class="sub2">Ethereum 上 <span class="num">$0.00</span></span></dd></div>
+    <div><dt>上線</dt><dd><span><span class="num">2023-05-15</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
+    <div><dt>proxy</dt><dd><span>是 proxy，可以換實作</span><span class="sub2"><a href="#a-merkl-distributor">merkl-distributor</a>，從 code pin 讀到</span></dd></div>
+    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>merkl-contracts 的 README 列了兩份 Code4rena 稽核：2023 年 8 月和 2025 年 11 月。Merkl 文件說每次更新 root 後有 1 到 2 小時的爭議期，由幾個獨立的爭議機器人重新驗算。 <a class="aisrc" href="https://github.com/AngleProtocol/merkl-contracts/blob/18d656de7b6c166fe840b0f4fa871f63d6b34769/README.md">來源 1</a> <a class="aisrc" href="https://code4rena.com/reports/2023-06-angle">來源 2</a> <a class="aisrc" href="https://code4rena.com/reports/2025-11-merkl">來源 3</a> <a class="aisrc" href="https://docs.merkl.xyz/security-practices">來源 4</a></span><span class="byai">AI 研究</span></span></dd></div>
+    <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
+  </dl>
+  <p class="srcline">程式在 2026-11-13 讀 <a href="https://defillama.com/protocol/merkl">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
+</section>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row" data-state="warn" data-result="fluid/address">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t">fluid：地址只在 1 個地方確認：CoinGecko</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或 vault 的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-fluid">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有 CoinGecko 確認。AI 讀了 Instadapp 的 deployments.md：0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb 出現好幾次，但都在別的合約的建構參數裡，例如 Fluid 獎勵的 MerkleDistributor，沒有一列是代幣本身。Fluid 文件的合約地址頁沒有列它。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只算一個來源確認。要領 FLUID，先自己在 Fluid app 或 Etherscan 比對代幣地址。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Distributor 可升級。權限表 0x0E632a15EbCBa463151B5367B4fCF91313e389a6 的紀錄裡，治理者只有 4/6 的 Safe 0x529619a10129396a2F642cae32099C1eA7FA2834：能升級、隨時換 Merkle root、用 <code>recoverERC20</code> 拿走未領的獎勵。鏈上讀到換 root 後的爭議期是 3600 秒。 <a class="aisrc" href="https://etherscan.io/address/0x0E632a15EbCBa463151B5367B4fCF91313e389a6#events">來源 1</a> <a class="aisrc" href="https://etherscan.io/address/0x529619a10129396a2F642cae32099C1eA7FA2834">來源 2</a> <a class="aisrc" href="https://etherscan.io/address/0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae#readProxyContract">來源 3</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。升級會讓 code pin 對不上，verify 就不給 MATCH；最壞是領不到，不會從 Safe 拿走東西。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>獎勵不一定轉給 Safe：如果 Safe 曾用 <code>setClaimRecipient</code> 設過收款地址，<code>claim</code> 會轉去那個地址。治理者和 guardian 也能替 Safe 呼叫 <code>claim</code>，但錢一樣轉給 Safe 或它設的地址。 <a class="aisrc" href="https://etherscan.io/address/0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE#code">來源</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>不用另外做事：獎勵沒進 Safe，交易後檢查就會 MISMATCH。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Safe 常把好幾種代幣放進同一個 <code>claim</code> 的四個陣列。抽樣研究的 10 筆 Safe 領 MORPHO 交易裡，7 筆一次領 2 到 6 種，7 筆都含登記表沒有的代幣。card 要依同樣順序列出每一種，每一種都要在登記表裡。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>verify 在 <code>tokens</code> 某一項報 MISMATCH，就是代幣或順序跟 card 不同；照 Safe app 交易明細的 tokens 順序重做 card。沒登記的代幣要先開 PR 加。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>FLUID 代幣（InstaToken）是委派合約：函式都轉給 <code>implementation</code> 指向的實作，Instadapp 能換掉，而 code pin 和 ABI 證明只看到外殼。報告上方「合約沒被換掉」對 FLUID 只涵蓋外殼。 <a class="aisrc" href="https://etherscan.io/address/0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb#code">來源</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>領 FLUID 風險較低：Safe 只收不付，交易後仍檢查 Safe 的 FLUID 有增加。但先看待確認的地址說明。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
+  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。右邊是模板的規則，不是描述檔的文字。</p>
+  <dl class="props two">
+    <div><dt>1 merkl-distributor.claim</dt><dd class="f3">沒有描述檔，只顯示原始資料</dd></div>
+  </dl>
+</section>
+
+<section id="addresses">
+  <h2>地址 <span class="c">6 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題。AI 補查不改變信心等級。</span></span></h2>
+  <div class="rows">
+    <div class="ad" id="a-fluid" data-state="warn">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><span class="nm">fluid</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣：Fluid（原 Instadapp INST）的治理代幣</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb</span>
+        <div class="srcs"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="na"><a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span><span data-state="warn"><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 InstaToken，創建者 0xf6839085F692bDe6A8062573E3DA35E7e947C21E；是委派合約 <a class="aisrc" href="https://etherscan.io/address/0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb#code">來源</a></span></span><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg></span></span></div>
+        <div class="confirmed">只在 1 個地方確認：CoinGecko</div></div>
+    </div>
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 5 個沒有要你看的結果</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣：Circle 發行的 USDC</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-usdt" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdt</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣：Tether 發行的 USDT</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
+        <div class="srcs"><span data-state="ok"><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/tether">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-morpho" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">morpho</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣：Morpho 的治理代幣，Morpho 的獎勵經 Merkl 發放</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-merkl-distributor" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">merkl-distributor</span><span class="role"><span class="aiw" data-ai><span>Merkl 在以太坊的獎勵發放合約，Safe 呼叫它的 <code>claim</code></span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae</span>
+        <div class="srcs"><span data-state="ok"><a href="https://developers.merkl.xyz/resources/chains-and-contracts">developers.merkl.xyz/resources/chains-and-contracts</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://github.com/AngleProtocol/merkl-contracts/blob/18d656de7b6c166fe840b0f4fa871f63d6b34769/UPGRADE_DEPLOYMENT.md">github.com/AngleProtocol/merkl-contracts</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/merkl">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 ERC1967Proxy，創建者 0x9f76a95AA7535bb0893cf88A146396e00ed21A12，和 merkl-contracts 的部署紀錄相同 <a class="aisrc" href="https://etherscan.io/address/0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae#code">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>merkl-contracts 的 mainnet 部署紀錄：Distributor 是這個地址，部署者 0x9f76a95AA7535bb0893cf88A146396e00ed21A12 <a class="aisrc" href="https://github.com/AngleProtocol/merkl-contracts/blob/18d656de7b6c166fe840b0f4fa871f63d6b34769/archive/deployments/mainnet/Distributor.json">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>現在的實作 0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE：Etherscan 合約名 Distributor，部署者 0xA9DdD91249DFdd450E81E1c56Ab60E1A62651701，和 2026 年 1 月升級紀錄相同 <a class="aisrc" href="https://github.com/AngleProtocol/merkl-contracts/blob/18d656de7b6c166fe840b0f4fa871f63d6b34769/deployments/upgrade-270126/mainnet-upgrade-implementations.json">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/AngleProtocol/merkl-contracts</div></div>
+    </div>
+    <div class="ad" id="a-cbbtc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣：Coinbase 發行的 cbBTC</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
+        <div class="srcs"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="na"><a href="https://defillama.com/protocol/coinbase">DefiLlama</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>過去交易</h2>
+  <p class="lead">過去有 <span class="num">171</span> 筆交易跟模板一模一樣：Safe <span class="num">3</span> 筆（3 個 Safe）、EOA <span class="num">168</span> 筆（152 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 morpho 轉帳時、usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 3 筆：<a href="https://etherscan.io/tx/0x59f194426e2b6965f9c32792f8e501eddf74fa19cd5980f1e9a17835d0edf566">0x59f19442…</a>、<a href="https://etherscan.io/tx/0xf76b14e67afaffc1a40de9d8561ca7ef9d278988a78c0ee76e415e269ef51a8b">0xf76b14e6…</a>、<a href="https://etherscan.io/tx/0xd48169949b401abb38991ca65a906ba74407c38fc9e9339497ba2a4427f3b5ef">0xd4816994…</a>。</p>
+  <p class="intro"><span class="aiw" data-ai><span>其他形狀多是一次領好幾種代幣（Safe 2 到 6 種），幾乎都含登記表沒有的代幣，要先登記才會 MATCH；另有 1 個 Safe 的 2 筆經非官方 MultiSend 的 delegatecall，模板不收是對的。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 morpho 的 轉帳，找到 768 筆，研究 182 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/merkl-claim-morpho.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">768 = 768</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">10</span> 筆用了這個操作的呼叫（9 個 Safe），<span class="num">1</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">3 筆</span><div><div><code>users</code> 有 2 項，模板是 1 項<span class="f3">，來自 3 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xf0381a85da02430b09fa7ff884e354c9eea0170dc703e9ac57f577df4d870afb">0xf0381a85…</a>、<a href="https://etherscan.io/tx/0xb895026484b8e027296c3585a66c43847967b4b4e5f5c348d2306deaae003641">0xb8950264…</a>、<a href="https://etherscan.io/tx/0xde0d4ece4728f29a00b761fa02e4235177ecda2326562fb49d1a0447d27b9cda">0xde0d4ece…</a></div></div></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div><code>users</code> 有 3 項，模板是 1 項<span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x13d380e3a78407ffadbb66a153f7455f41d0076580273e6f92cc5aa84ff7b5b2">0x13d380e3…</a>、<a href="https://etherscan.io/tx/0xf42522c2bd99d5d78bc5b871d6fd9c6fefa8b2490c302f3967a1256f1d2a0e06">0xf42522c2…</a></div></div></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div>delegatecall 到不是官方 MultiSend 的合約<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x292c929c56ab250a6640f142bf54bc25ec94d0fc483faf4175617f342dfb471f">0x292c929c…</a>、<a href="https://etherscan.io/tx/0xd07ed5a45c2fd662a9255d581ba18d0bbb4d7d115c5cb6f0a7e94efd605e98ba">0xd07ed5a4…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>users</code> 有 6 項，模板是 1 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x1f4a1143826348eaecfcd7665275e288fdbd84cf4d48f572adeb2569ec30686a">0x1f4a1143…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>users</code> 有 4 項，模板是 1 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xfa367dd205b05b58291b8e8a78988df409341f73fd616c078957da1ff9502311">0xfa367dd2…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 claim</span><span><span class="num">148</span> 筆用了這個操作的呼叫（142 個地址），<span class="num">57</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">56 筆</span><div><div><code>users</code> 有 2 項，模板是 1 項<span class="f3">，來自 55 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x03f0af00721385933eefb8c8eef5c8267a669caf5136421ba2d1fb52df23c29d">0x03f0af00…</a>、<a href="https://etherscan.io/tx/0x285ccb00929910f4f8f4c927d4d89b14bdedc8fe3ec9ed5ea6c0142dd04aa5de">0x285ccb00…</a>、<a href="https://etherscan.io/tx/0xe30d91b54872a8a2c8551656d111945bdec854c06669bc35abc6f5dc14711b26">0xe30d91b5…</a></div></div></div>
+    <div class="pg"><span class="pc num">19 筆</span><div><div><code>users</code> 有 3 項，模板是 1 項<span class="f3">，來自 19 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x3c7517cbfd75a38b46ebf81f00bbaf97338e449d443699dfeb665eab4726284b">0x3c7517cb…</a>、<a href="https://etherscan.io/tx/0x757687f67f2e349beb0783197ad52977e5c546d97f9615ce6767566099b88ea4">0x757687f6…</a>、<a href="https://etherscan.io/tx/0xe925ff91fa7d46619e0866b6d8e6cb247489d1364d25f5a46ec03efe9bbe1e33">0xe925ff91…</a></div></div></div>
+    <div class="pg"><span class="pc num">7 筆</span><div><div><code>users</code> 有 4 項，模板是 1 項<span class="f3">，來自 6 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x1b6900228a77a51117fbd3abead928512c5ffdfdf7fd90554395d89edb85411a">0x1b690022…</a>、<a href="https://etherscan.io/tx/0x702f7aa26028f61eb3bed0d27070dd7b23bf56287d71533208a8257fa537c622">0x702f7aa2…</a>、<a href="https://etherscan.io/tx/0x8c56d4c2c0a58b27f7c465bc9a36abb4ba59e9052b58abf035597eb7fb83dad4">0x8c56d4c2…</a></div></div></div>
+    <div class="pg"><span class="pc num">3 筆</span><div><div><code>users</code> 有 6 項，模板是 1 項<span class="f3">，來自 3 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x992526e871aa335c1db0cd5c0e3ca94aabff15b85431af7e44b09f712b10764f">0x992526e8…</a>、<a href="https://etherscan.io/tx/0xe157970f22e90ab3c38305352deb128a202a06d81e4b62bcb6b903aa12e15482">0xe157970f…</a>、<a href="https://etherscan.io/tx/0x4b9d5cea359ce0543da42e633eafd873ed782118710eb56515a37a82870b2f45">0x4b9d5cea…</a></div></div></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div><code>users</code> 有 5 項，模板是 1 項<span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x6bd3c1486e8adcbc3e44c27fb38c3524d2420b4f6e151996bb9d6f7b3f000c4c">0x6bd3c148…</a>、<a href="https://etherscan.io/tx/0x277590113cce4e867b631ebe46f91dac997afc6e890686f0201daf2c28c5ef44">0x27759011…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>users</code> 有 7 項，模板是 1 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xbd24a8b2ba3033900e0ad3385a6aa2ad354cade750d58448c60fb3e36c7cd785">0xbd24a8b2…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>users</code> 有 8 項，模板是 1 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x634f092face7d77ecaa0f94a80d33b9df7b670a4e8b873cf8ffa97c0e1f1f0d1">0x634f092f…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>users</code> 有 15 項，模板是 1 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xccf8346072742c51cbdb453c638f22e3bcfe44e20dc107e6c0085c8755517dc5">0xccf83460…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>users</code> 有 17 項，模板是 1 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x82e9a2e642c27eb3e25c9f072f038c847371a425aa57d1a861abf08fe0ed9f3d">0x82e9a2e6…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 24 筆是別的操作，不列入：<code>0x1fad948c</code> 6 筆、<code>0xb73be3a5</code> 5 筆、<code>0x73371f26</code> 2 筆、<code>0x09c56431</code> 1 筆，還有別的。</span></div>
+  <h3>搜尋 usdc 的 轉帳，找到 431 筆，研究 206 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/merkl-claim-usdc.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">431 = 431</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">4</span> 筆用了這個操作的呼叫（4 個 Safe），<span class="num">2</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div><code>users</code> 有 2 項，模板是 1 項<span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x58f64cc8da56a1ee9135db7afdfe6c287e4d09dcbd983d9a4c92608485441686">0x58f64cc8…</a>、<a href="https://etherscan.io/tx/0x20d8d181f3b19f5430391ccff0ab83200ac415c86f15638be005aa3641f333b7">0x20d8d181…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 claim</span><span><span class="num">191</span> 筆用了這個操作的呼叫（172 個地址），<span class="num">111</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">40 筆</span><div><div><code>users</code> 有 2 項，模板是 1 項<span class="f3">，來自 39 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x285ccb00929910f4f8f4c927d4d89b14bdedc8fe3ec9ed5ea6c0142dd04aa5de">0x285ccb00…</a>、<a href="https://etherscan.io/tx/0x4ce676761a3093b06568ded0a39e102b96702d1ba16aaf657ff49454f90a4af8">0x4ce67676…</a>、<a href="https://etherscan.io/tx/0x05283fb62bdfd612e4811eabf413234e7498b4d89aaf80823a4f35db960fa002">0x05283fb6…</a></div></div></div>
+    <div class="pg"><span class="pc num">23 筆</span><div><div><code>users</code> 有 3 項，模板是 1 項<span class="f3">，來自 23 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x3c7517cbfd75a38b46ebf81f00bbaf97338e449d443699dfeb665eab4726284b">0x3c7517cb…</a>、<a href="https://etherscan.io/tx/0xaf3ee78c798909d49cd11f874ce6fe96ec53b4a22c340eb65944a51676d995a0">0xaf3ee78c…</a>、<a href="https://etherscan.io/tx/0x69c304c0613cd22332d91b19e28544e807aadcdbe6efa239d33b209cbe5cbe23">0x69c304c0…</a></div></div></div>
+    <div class="pg"><span class="pc num">5 筆</span><div><div><code>users</code> 有 4 項，模板是 1 項<span class="f3">，來自 5 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xd7ce0f134cc75395a63beac8010d43d5beee8549147058cfeedd39e01b58aeda">0xd7ce0f13…</a>、<a href="https://etherscan.io/tx/0xd12f2b846fe43cc4c40610cf2d8ba4cf9da2ab3e008566f168fca5822521a211">0xd12f2b84…</a>、<a href="https://etherscan.io/tx/0xdf22f01386edbf62d2925059eb19c8d34eeedca0616d49f320b887ec70d8eaf1">0xdf22f013…</a></div></div></div>
+    <div class="pg"><span class="pc num">3 筆</span><div><div><code>users</code> 有 6 項，模板是 1 項<span class="f3">，來自 3 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x4eec33741c0d5a6f3bba72b7dc5d6369c2461b1f35776730d03a7c99178aa31c">0x4eec3374…</a>、<a href="https://etherscan.io/tx/0x5d1386e9f585413482814f33a06889c529d759bc391a3e0b2199a32965a02c18">0x5d1386e9…</a>、<a href="https://etherscan.io/tx/0x77e3d6f7dd12f3f664c3f23618165387875bf6d9624d5501fe5a61f3cbd69e9c">0x77e3d6f7…</a></div></div></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div><code>users</code> 有 8 項，模板是 1 項<span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x634f092face7d77ecaa0f94a80d33b9df7b670a4e8b873cf8ffa97c0e1f1f0d1">0x634f092f…</a>、<a href="https://etherscan.io/tx/0x5cc2c7a6c2f588349d79c6bdf9730bd3ca47004319a9dd3a67a92f8fecf71b3f">0x5cc2c7a6…</a></div></div></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div><code>users</code> 有 5 項，模板是 1 項<span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x318a6cd52c384bc253b9451c400a67354838967322a86e4789037f6a64518767">0x318a6cd5…</a>、<a href="https://etherscan.io/tx/0x0c8bf820e80d0b62274185989a4880cfb62f8b797669bea6244c07ec49ff25c5">0x0c8bf820…</a></div></div></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div><code>users</code> 有 7 項，模板是 1 項<span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x1443f9355e38dabbc04f58c09b82eed9cb83630d73d8ffc61b43320de6e27ae4">0x1443f935…</a>、<a href="https://etherscan.io/tx/0xddcfe01badbeeb11321a4b486a9335260cbceb1cdd525855ce7c56caa9bddb70">0xddcfe01b…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>users</code> 有 11 項，模板是 1 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x5b143089942ed1aa6c80051d77f972d56803cf40cd1ad87c9e261883d56a7de7">0x5b143089…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>users</code> 有 12 項，模板是 1 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x725dcce2d265949a1a7abbb296b93d3f7037bb5f0b71fdd96f15b00a11857b5f">0x725dcce2…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.encoding</code> 的值跟模板不同：模板要 <span class="addr">canonical claim(address[],address[],uint256[],bytes32[][])</span>，交易是 <span class="addr">differs at byte 2564</span><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xfb549271936d0c2d30cbd2528699ebdbccb4f704236a64b43af9cdf84efbc1f6">0xfb549271…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 11 筆是別的操作，不列入：<code>claimWithRecipient</code> 3 筆、<code>0x224d8703</code> 2 筆、<code>0x22abedb7</code> 2 筆、<code>0xf216f38a</code> 1 筆，還有別的。</span></div>
+  </details>
+</section>
+
+<section id="next">
+  <h2>下一步</h2>
+  <ol class="steps">
+    <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>bin/kiss-sign template approve merkl/claim</code></pre>
+      <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
+    <li><div>做卡片<pre class="cmd"><code>bin/kiss-sign card new merkl/claim</code></pre>
+      <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
+    <li><div><code>token</code>：它列出可選的 token，每個附完整地址。選你要的那個，名字和完整地址都要對。</div></li>
+    <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
+      <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
+    <li><div>在 Safe web app 提出交易（第一次用這個模板，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。</p>
+      <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
+    <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 <code>verify</code> 網頁上的逐列比對。</p></div></li>
+    <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 網頁上的逐字比對，一樣才簽。
+      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>程式每次簽名自動做的事</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>交易只有這 1 個呼叫，MultiSend 也一個個解開</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>每個參數符合上面的規則，重新編碼要一模一樣</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 收到 morpho</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>碰到的 6 個登記合約，程式碼還是 code pin 記錄的那份</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">由 <code>pnpm report merkl/claim --record</code> 從 <code>templates/merkl/claim/template.json</code>、<code>templates/merkl/claim/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/merkl-claim.json</code>、<code>testdata/abi</code>、<code>testdata/research/merkl-claim-morpho.json</code>、<code>testdata/research/merkl-claim-usdc.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/merkl/claim/notes.json</code> 寫出，資料在 2026-11-13 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>
