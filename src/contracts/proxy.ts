@@ -1,6 +1,8 @@
 import type { Read, Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
+import { fallbackDelegation } from './delegate.ts';
+import type { Unfollowable } from './delegate.ts';
 
 export const EIP1967_IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbcn;
 export const EIP1967_BEACON_SLOT = 0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50n;
@@ -54,26 +56,31 @@ export type ProxyRefusal =
   | { readonly why: 'slot-not-an-address'; readonly slot: 'eip1967-implementation' | 'eip1967-beacon' | 'zeppelinos-implementation' | 'safe-singleton' }
   | { readonly why: 'beacon-answer-not-an-address'; readonly beacon: Address }
   | { readonly why: 'both-eip1967-slots-set' }
-  | { readonly why: 'slot-without-delegatecall' };
+  | { readonly why: 'slot-without-delegatecall' }
+  | { readonly why: 'unknown-delegator'; readonly at: Address; readonly pc: number }
+  | { readonly why: 'fallback-unfollowable'; readonly at: Address; readonly pc: number; readonly cause: Unfollowable };
 
 export type Located = { readonly kind: 'located'; readonly proxy: Proxy } | { readonly kind: 'refused'; readonly refusal: ProxyRefusal };
 
+const CALLCODE = 0xf2;
 const DELEGATECALL = 0xf4;
 const PUSH1 = 0x60;
 const PUSH32 = 0x7f;
 
 /** Walks opcodes so push data is skipped, and stops at Solidity's CBOR metadata, whose length is its last two bytes. */
-export function hasDelegatecall(code: Hex): boolean {
+function hasOpcode(code: Hex, opcodes: readonly number[]): boolean {
   const bytes = Buffer.from(code.slice(2), 'hex');
   const trailer = bytes.length >= 2 ? (bytes[bytes.length - 2] ?? 0) * 256 + (bytes[bytes.length - 1] ?? 0) + 2 : 0;
   const end = trailer <= bytes.length && (bytes[bytes.length - trailer] ?? 0) >= 0xa0 ? bytes.length - trailer : bytes.length;
   for (let at = 0; at < end; at++) {
     const op = bytes[at] ?? 0;
-    if (op === DELEGATECALL) return true;
+    if (opcodes.includes(op)) return true;
     if (op >= PUSH1 && op <= PUSH32) at += op - PUSH1 + 1;
   }
   return false;
 }
+
+export const hasDelegatecall = (code: Hex): boolean => hasOpcode(code, [DELEGATECALL]);
 
 export function minimalProxyTarget(code: Hex): Address | undefined {
   if (code.length !== 2 + 45 * 2 || !code.startsWith(EIP1167_HEAD) || !code.endsWith(EIP1167_TAIL)) return undefined;
@@ -97,18 +104,41 @@ const unverifiable = (read: Read<unknown> & { kind: 'unverifiable' }): Located =
 });
 const refused = (refusal: ProxyRefusal): Located => ({ kind: 'refused', refusal });
 
+/**
+ * Code that is no proxy the program knows may still hand a call it has no function for to code whose address it
+ * reads from state, as the FLUID token's delegator does. That code is neither proven nor pinned, so it is refused.
+ */
+export function unknownDelegation(address: Address, code: Hex): ProxyRefusal | undefined {
+  if (!hasOpcode(code, [DELEGATECALL, CALLCODE])) return undefined;
+  const fallback = fallbackDelegation(code);
+  switch (fallback.kind) {
+    case 'fixed':
+      return undefined;
+    case 'delegates':
+      return { why: 'unknown-delegator', at: address, pc: fallback.pc };
+    case 'unresolved':
+      return { why: 'fallback-unfollowable', at: address, pc: fallback.pc, cause: fallback.why };
+  }
+}
+
+function notAProxy(address: Address, code: Hex): Located {
+  const refusal = unknownDelegation(address, code);
+  return refusal === undefined ? { kind: 'located', proxy: { kind: 'none' } } : refused(refusal);
+}
+
 async function zeppelinosWhenNoEip1967(reader: Reader, address: Address, code: Hex, at: BlockRef): Promise<Located> {
   if (!hasDelegatecall(code)) return { kind: 'located', proxy: { kind: 'none' } };
   const slot = await reader.getStorageAt(address, ZEPPELINOS_IMPLEMENTATION_SLOT, at);
   if (slot.kind === 'unverifiable') return unverifiable(slot);
   const implementation = addressWord(slot.value);
   if (implementation === undefined) return refused({ why: 'slot-not-an-address', slot: 'zeppelinos-implementation' });
-  return { kind: 'located', proxy: implementation === null ? { kind: 'none' } : { kind: 'zeppelinos', implementation } };
+  return implementation === null ? notAProxy(address, code) : { kind: 'located', proxy: { kind: 'zeppelinos', implementation } };
 }
 
 /**
  * Which code a call to `address` runs. A minimal proxy and a Safe proxy are known by their whole code. An EIP-1967
  * or ZeppelinOS slot counts only when the code can DELEGATECALL, since a slot is storage that any code may have written.
+ * Code that is none of these and delegates its fallback to an address from state is refused.
  */
 export async function locate(reader: Reader, address: Address, code: Hex, at: BlockRef): Promise<Located> {
   const clone = minimalProxyTarget(code);

@@ -4,7 +4,7 @@ import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import type { CodePin, CodePins, CodeSpan } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { locate, minimalProxyTarget, safeProxyFactory } from './proxy.ts';
+import { locate, minimalProxyTarget, safeProxyFactory, unknownDelegation } from './proxy.ts';
 import type { Proxy, ProxyRefusal } from './proxy.ts';
 
 export type CodeRefusal = ProxyRefusal | { readonly why: 'no-code'; readonly at: Address } | { readonly why: 'chained-proxy'; readonly at: Address };
@@ -33,6 +33,8 @@ export async function readRunningCode(reader: Reader, address: Address, at: Bloc
   const runs = await codeAt(reader, proxy.implementation, at);
   if (typeof runs !== 'string') return refused(runs);
   if (minimalProxyTarget(runs) !== undefined || safeProxyFactory(runs) !== undefined) return refused({ why: 'chained-proxy', at: proxy.implementation });
+  const delegation = unknownDelegation(proxy.implementation, runs);
+  if (delegation !== undefined) return refused(delegation);
   return { kind: 'read', code: { own, proxy, runs } };
 }
 
