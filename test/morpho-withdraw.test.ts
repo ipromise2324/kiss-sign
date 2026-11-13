@@ -263,3 +263,9 @@ test('a redeem of 2^256-1 shares states no share count, so its price bound guara
   const found = result.kind === 'mismatch' ? result.findings.find((f) => f.arg === 'minSharePriceE27') : undefined;
   assert.match(found?.expected ?? '', /not the whole balance/);
 });
+
+test('a card naming a vault of another protocol is refused before any check', () => {
+  const tx = safeTx('morpho-withdraw-apex');
+  const result = resolveCard(card({ template: WITHDRAW, values: { vault: 'fluid-fusdc', amount: '1', 'max-shares': '1' } }), { templates, registry, addressBook: new Map(), safe: tx.safe });
+  assert.deepEqual(result.kind === 'refused' ? [result.reason, result.detail] : result.kind, ['wrong-protocol', 'fluid-fusdc is a vault of fluid-lending, not of morpho-blue']);
+});

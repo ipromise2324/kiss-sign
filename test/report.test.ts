@@ -277,7 +277,7 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
     `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
   ]);
 
-  const attested = readFileSync(join(ROOT, TEMPLATES_DIR, 'morpho/vault-withdraw', GENERATED_FILE), 'utf8');
+  const attested = readFileSync(join(ROOT, TEMPLATES_DIR, 'morpho/vault-withdraw-all', GENERATED_FILE), 'utf8');
   const revoked = attested.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
   assert.equal(compareReports(attested, revoked).length, 2);
   assert.match(compareReports(attested, revoked).join('\n'), /^ERC-7730 › [a-z0-9.-]+ 0x[0-9a-fA-F]{40} \(\w+\) › only live: .*REVOKED: ERC-8176/m);

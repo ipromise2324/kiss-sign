@@ -236,6 +236,7 @@ test('card seal refuses a name in neither the registry nor the address book', as
 
 const STEAKHOUSE = '0xbeef088055857739C12CD3765F20b7679Def0f51';
 const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+const APEX_V2 = '0x093272C07700d3cA5301C3Bf9B3A392624179E2F';
 const VAULT_V2_FACTORY = '0xA1D94F746dEfa1928926b84fB2596c06926C0405';
 const HEAD = 21_000_000;
 const HEAD_HASH = `0x${'ab'.repeat(32)}`;
@@ -337,10 +338,11 @@ test('card new reads a computed field\'s inner read first, here the Safe\'s shar
 test('card new rounds a ceiling up, as a withdrawal\'s max-shares', async () => {
   const home = freshHome();
   configure(home);
-  const made = await run(['card', 'new', 'morpho/vault-withdraw'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '0.000001', 'y'], mainnet((_p, to, selector, arg) => (selector === PREVIEW_WITHDRAW && to.toLowerCase() === STEAKHOUSE.toLowerCase() ? arg * 1999n : undefined)));
+  const views: Views = (_p, to, selector, arg) => (selector === PREVIEW_WITHDRAW && to.toLowerCase() === APEX_V2.toLowerCase() ? arg * 1999n : undefined);
+  const made = await run(['card', 'new', 'morpho/vault-withdraw'], home, [numberOf('hyperithm-usdc-apex-v2-9e2f'), '0.000001', 'y'], decimalsChain({ [USDC]: 6, [APEX_V2]: 18 }, {}, views));
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes('  slippage: 0.10%, more than expected'));
-  assert.ok(made.stdout.includes('  max-shares: 0.000000000000002001 steakhouse-prime-usdc-v2-0f51 = 2001 base units\n'), made.stdout);
+  assert.ok(made.stdout.includes('  max-shares: 0.000000000000002001 hyperithm-usdc-apex-v2-9e2f = 2001 base units\n'), made.stdout);
 });
 
 for (const [what, views, message] of [
@@ -402,15 +404,16 @@ test('card new and card seal stop before asking anything when templates or regis
 test('card new reads each token\'s decimals once across operations', async () => {
   const home = freshHome();
   configure(home);
-  const chain = mainnet();
-  const vault = numberOf('steakhouse-prime-usdc-v2-0f51');
-  const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', vault, '0.000001', 'y'], chain);
+  const views: Views = (_p, to, selector, arg) => ((selector === PREVIEW_DEPOSIT || selector === PREVIEW_WITHDRAW) && to.toLowerCase() === APEX_V2.toLowerCase() ? arg * 980_000_000_000n : undefined);
+  const chain = decimalsChain({ [USDC]: 6, [APEX_V2]: 18 }, {}, views);
+  const vault = numberOf('hyperithm-usdc-apex-v2-9e2f');
+  const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', 'hyperithm-usdc-apex-v2-9e2f', '0.000001', 'y'], chain);
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes('  amount: 1.25 usdc = 1250000 base units\n'));
   assert.ok(made.stdout.includes('  amount: 0.000001 usdc = 1 base units\n'));
   assert.ok(made.stdout.includes('operation 1 amount: 1.25 usdc = 1250000 base units\n'));
   assert.ok(made.stdout.includes('operation 2 amount: 0.000001 usdc = 1 base units\n'));
-  assert.deepEqual(chain.calls.toSorted(), [STEAKHOUSE, STEAKHOUSE, USDC, USDC].map((a) => a.toLowerCase()).toSorted());
+  assert.deepEqual(chain.calls.toSorted(), [APEX_V2, APEX_V2, USDC, USDC].map((a) => a.toLowerCase()).toSorted());
 });
 
 test('card new asks for a choice by its number, and takes its exact listed name or full address too', async () => {
@@ -532,7 +535,7 @@ test('card seal accepts the same vault for a template that predates per-vault re
   const home = freshHome();
   configure(home);
   const card = join(home, 'card.json');
-  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-withdraw', values: { vault: 'smokehouse-usdc-v1-f5bc', amount: '5', 'max-shares': '4' } }] }));
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-withdraw-all', values: { vault: 'smokehouse-usdc-v1-f5bc', 'min-assets': '4' } }] }));
   const result = await run(['card', 'seal', card], home, ['y']);
   assert.equal(result.code, 0, result.stderr);
 });

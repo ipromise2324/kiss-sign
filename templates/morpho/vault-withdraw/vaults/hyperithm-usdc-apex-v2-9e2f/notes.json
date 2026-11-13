@@ -1,0 +1,35 @@
+{
+  "verdict": {
+    "status": "caution",
+    "text": "Morpho app 現在不走這條路線；經 Bundler3 提領指定金額，交易前沒有授權時一定判 MISMATCH。"
+  },
+  "pastTxsConclusion": "這個 vault 的 30 筆提領，27 筆直接呼叫 vault 自己的函式（`multicall`、`withdraw`、`redeem` 等），3 筆經另一個合約；沒有一筆經 Bundler3，也沒有一筆來自 Safe。",
+  "judgments": [
+    {
+      "text": "這是 Vault V2。AI 查到另一個 Vault V2 經 Bundler3 的提領，剩下的授權約是燒掉股份的 0.030%；MetaMorpho 的中位數約 0.0015%。這個 vault 從沒有經 Bundler3 的提領可查。",
+      "recommendation": "從這個 vault 提領指定金額，預期 verify 判 MISMATCH；全部提出改用 morpho/vault-withdraw-all。"
+    }
+  ],
+  "reviews": {
+    "hyperithm-usdc-apex-v2-9e2f/address": {
+      "status": "concern",
+      "text": "AI 向 Morpho API 查 Ethereum 上全部 558 個 Vault V2，名為 Hyperithm USDC Apex 的只有 0x093272C07700d3cA5301C3Bf9B3A392624179E2F，資產是 USDC，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325。AI 沒找到不靠網址帶地址就列出它的官方頁。",
+      "recommendation": "先在 Morpho app 的 vault 列表點進去比對地址，第一次送小額。"
+    }
+  },
+  "entries": {
+    "hyperithm-usdc-apex-v2-9e2f": {
+      "role": "Hyperithm 管理的 USDC vault（V2），提領時燒掉它的股份",
+      "sources": [
+        {
+          "text": "Morpho API 的 `vaultV2s` 列表（Ethereum）：名為 Hyperithm USDC Apex 的只有這個地址，symbol hyperUSDCa，資產 USDC",
+          "url": "https://api.morpho.org/graphql",
+          "result": "pass"
+        }
+      ]
+    },
+    "vault-v2-factory": {
+      "role": "Morpho Vault V2 工廠，建立這個 vault"
+    }
+  }
+}

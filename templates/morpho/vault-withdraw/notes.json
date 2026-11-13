@@ -1,0 +1,72 @@
+{
+  "title": "從 Morpho vault 提出指定金額",
+  "summary": "Safe 先授權 GeneralAdapter1 動用你選的 vault 的股份，再呼叫 Bundler3 的 `multicall`：GeneralAdapter1 從 vault 提出你填的金額，資產直接給 Safe，燒掉 Safe 的股份。每股價格不能低過「金額 ÷ 卡片算出的最多股份」，否則整筆失敗。",
+  "flow": [
+    {
+      "after": 2,
+      "from": "bundler3",
+      "to": "general-adapter-1",
+      "text": "呼叫 `erc4626Withdraw`：用呼叫 1 的授權從 vault 提出你填的金額給 Safe"
+    }
+  ],
+  "protocols": {
+    "morpho-blue": {
+      "intro": "Morpho 的 vault 把存款分配到多個 Morpho Blue market 放貸。vault 由策展人管理，Morpho 的工廠合約負責建立它們。",
+      "audits": {
+        "text": "Bundler3 的 GitHub 列了 3 份稽核（Spearbit 兩份、OpenZeppelin 一份）。Vault V2 的 GitHub 列了 10 份（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。MetaMorpho 的 GitHub 列了 Cantina 和 OpenZeppelin 的稽核。",
+        "sources": [
+          "https://github.com/morpho-org/bundler3/tree/main/audits",
+          "https://github.com/morpho-org/vault-v2/tree/main/audits",
+          "https://github.com/morpho-org/metamorpho/tree/main/audits"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": "Morpho app 經 Bundler3 提領指定金額時，授權的股份比實際燒掉的多一點，剩下的留在 GeneralAdapter1。交易前授權是 0 時，交易後授權比交易前高，verify 一定判 MISMATCH。AI 從區塊 21,000,000 起查登記的 Morpho vault（每個最多 1000 筆），其他合約（不一定是 Safe）的 54 筆這種提領，交易後授權都沒歸零。",
+      "sources": [
+        "https://etherscan.io/tx/0x8e4fa26536a141d8afa825f334b73119d2c32765a77d436c8099723f64f64ddd",
+        "https://etherscan.io/tx/0xf8938099a83c4980efdd758a3deb604224e7cf85a9589f63ab468e008968a630"
+      ],
+      "recommendation": "遇到這個 MISMATCH 不要簽。要全部提出時，用 morpho/vault-withdraw-all。"
+    },
+    {
+      "text": "Morpho SDK 2026-09-25 以前直接呼叫 vault 的 `withdraw`，之後改呼叫 VaultBundlesV1 的 `vaultBundlesV1Withdraw`，兩者都不走 Bundler3。區塊 25,500,000（約 2026-07 中）之後，AI 在登記的 Morpho vault 上沒找到任何合約經 Bundler3 提領指定金額。",
+      "sources": [
+        "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-sdk/src/actions/vaultV2/withdraw.ts",
+        "https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d"
+      ],
+      "recommendation": "簽之前看 Safe 交易呼叫的是 Bundler3、vault 本身還是 VaultBundlesV1；後兩種還沒有模板，verify 會判 MISMATCH。"
+    }
+  ],
+  "reviews": {},
+  "entries": {
+    "usdc": {
+      "role": "vault 的資產，提領後給 Safe 的代幣"
+    },
+    "bundler3": {
+      "role": "Morpho 的打包合約，依序執行 bundle 裡的每一步，並記住發起人是 Safe"
+    },
+    "general-adapter-1": {
+      "role": "接收股份授權，替 Safe 從 vault 提領"
+    }
+  },
+  "fields": {
+    "1.approve.spender": "被授權動用 Safe 股份的合約，固定是 Morpho 的 GeneralAdapter1。它只能在 Safe 自己發起的 bundle 裡動用：`erc4626Withdraw` 要求 owner 就是發起人。",
+    "1.approve.value": "授權 GeneralAdapter1 最多燒掉多少股份。app 填的值比實際燒掉的多一點；交易後授權比交易前高時，verify 判 MISMATCH。",
+    "2.multicall.bundle": "Bundler3 依序執行的步驟清單，這裡只有一步：從 vault 提領。這一步失敗，整筆交易失敗。",
+    "2.multicall.bundle[0]": "唯一一步：GeneralAdapter1 從 vault 提出你填的金額給 Safe。",
+    "2.multicall.bundle[0].to": "這一步呼叫的合約，固定是 GeneralAdapter1。",
+    "2.multicall.bundle[0].data": "這一步要執行的函式和參數，下面逐項列出。",
+    "2.multicall.bundle[0].data.erc4626Withdraw.vault": "從哪一個 vault 提領。這就是你在卡片上選的 vault。",
+    "2.multicall.bundle[0].data.erc4626Withdraw.assets": "要提出的資產數量，等於你填的金額。vault 依當時的價格燒掉對應的股份。",
+    "2.multicall.bundle[0].data.erc4626Withdraw.minSharePriceE27": "每股最低價格（提出的資產 ÷ 燒掉的股份，乘以 1e27）。實際價格低於它，整筆失敗。程式要求它不低於「金額 ÷ 最多股份」，所以燒掉的股份不會超過卡片算出的最多股份。",
+    "2.multicall.bundle[0].data.erc4626Withdraw.receiver": "收資產的地址，固定是 Safe。",
+    "2.multicall.bundle[0].data.erc4626Withdraw.owner": "被燒掉股份的地址，固定是 Safe。GeneralAdapter1 只接受 owner 是發起人（Safe）或它自己。",
+    "2.multicall.bundle[0].value": "附帶的 ETH，固定為 0。",
+    "2.multicall.bundle[0].skipRevert": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。",
+    "2.multicall.bundle[0].callbackHash": "只有需要回呼的步驟才用，固定為 0。"
+  }
+}
