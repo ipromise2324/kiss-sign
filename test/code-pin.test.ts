@@ -111,7 +111,18 @@ test('pinned code that delegates a call it has no function for to an address in 
   const verdict = await verdictOf(answering('eth_getCode', codeOf(vault), delegator), inputs);
   assert.equal(verdict.kind, 'MISMATCH');
   assert.deepEqual(verdict.kind === 'MISMATCH' ? verdict.causes.map((c) => c.check) : [], ['contract-code']);
-  assert.match(JSON.stringify(verdict), new RegExp(`steakhouse-prime-usdc ${vault} at block \\d+: ${vault} is no proxy the program knows, yet a call it has no function for is delegated`));
+  assert.match(JSON.stringify(verdict), new RegExp(`steakhouse-prime-usdc ${vault} at block \\d+: ${vault} hands a call it has no function for, at byte 156 of its code, to code the program neither proves nor pins`));
+});
+
+test('a pinned implementation that delegates a call it has no function for to an address in its storage is MISMATCH', async () => {
+  const implementation = '0x43506849d7c04f9138d1a2050bbf3a0c054402dd';
+  const delegator = JSON.parse(readFileSync(join(ROOT, 'testdata', 'abi', 'fluid-token.json'), 'utf8')).reads[0].value as Hex;
+  const inputs = withRegistry((entries) => {
+    (entries.usdc!.code as { implementation: { hash: Hex } }).implementation.hash = keccakCode(delegator);
+  });
+  const verdict = await verdictOf(answering('eth_getCode', codeOf(implementation), delegator), inputs);
+  assert.equal(verdict.kind, 'MISMATCH');
+  assert.match(JSON.stringify(verdict), new RegExp(`usdc ${USDC} at block \\d+: ${implementation} hands a call it has no function for`));
 });
 
 test('every entry in registry/contracts.json carries a code pin', () => {

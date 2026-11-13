@@ -3,7 +3,7 @@ import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import { keccakCode } from '../contracts/code.ts';
 import { describeRefusal } from '../contracts/prove.ts';
-import { locate } from '../contracts/proxy.ts';
+import { locate, unknownDelegation } from '../contracts/proxy.ts';
 import { MARKET_ENTRY_PARTS, isAttribute, pinAt } from '../registry.ts';
 import type { Registry, RegistryEntry } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
@@ -91,7 +91,8 @@ async function compare(reader: Reader, entry: RegistryEntry, at: BlockRef, time:
   if (runs.kind === 'unverifiable') return unverifiable(runs.reason);
   const runsHash = keccakCode(runs.value);
   if (runsHash !== was.hash) return mismatch(`${where}'s implementation ${was.address} has code hash ${runsHash} ${block}, the registry pins ${was.hash}`);
-  return PASS;
+  const delegation = unknownDelegation(was.address, runs.value);
+  return delegation === undefined ? PASS : mismatch(`${where} ${block}: ${describeRefusal(delegation)}`);
 }
 
 /**

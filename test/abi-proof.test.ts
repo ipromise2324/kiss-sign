@@ -453,7 +453,7 @@ test('the FLUID token hands a call it has no function for to an implementation i
   assert.deepEqual(refused, { why: 'unknown-delegator', at: fixture.address, pc: 156 });
   assert.equal(
     describeRefusal(refused),
-    '0x6f40d4a6237c257fff2db00fa0510deeecd303eb is no proxy the program knows, yet a call it has no function for is delegated, at byte 156 of its code, to an address read from state, so the code that runs is unknown',
+    '0x6f40d4a6237c257fff2db00fa0510deeecd303eb hands a call it has no function for, at byte 156 of its code, to code the program neither proves nor pins',
   );
 });
 
@@ -482,9 +482,32 @@ test("a fallback that delegates to the address another contract answered is refu
   assert.equal(refused.why, 'unknown-delegator');
 });
 
-test('a fallback that delegates to a constant address in its code is not refused for delegating, so the proof goes on to its source', async () => {
+test('a fallback that delegates to a constant address is refused, since the code there is neither proven nor pinned', async () => {
   const refused = refusal(await proveUnknown(`5f5f5f5f73${'be'.repeat(20)}5af400`));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test('a fallback that delegates to an address in the call data is not refused for delegating, so the proof goes on to its source', async () => {
+  const refused = refusal(await proveUnknown('5f5f5f5f60043560a01b60a01c5af400'));
   assert.deepEqual(refused, { why: 'not-on-sourcify', at: UNKNOWN });
+});
+
+test('a fallback that runs code from storage through CALLCODE alone is refused', async () => {
+  const refused = refusal(await proveUnknown('5f5f365f5f5f545af200'));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test('a delegator whose last two bytes read like a metadata length is still refused', async () => {
+  const refused = refusal(await proveUnknown('5f5f365f5f545af4000002'));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test('an EIP-1967 slot does not vouch for code that delegates through another slot', async () => {
+  const fixture = load('fluid-token');
+  const slot = `0x${EIP1967_IMPLEMENTATION_SLOT.toString(16)}`;
+  const reader = abiCaseReader(fixture, [{ method: 'getStorageAt', args: [fixture.address, slot], value: `0x${BUNDLER3.slice(2).padStart(64, '0')}` }]);
+  const refused = refusal(await proveAbi(reader, fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
+  assert.deepEqual(refused, { why: 'unknown-delegator', at: fixture.address, pc: 156 });
 });
 
 test('contracts that DELEGATECALL only to themselves or to a target the call names keep their proven ABI', async () => {
