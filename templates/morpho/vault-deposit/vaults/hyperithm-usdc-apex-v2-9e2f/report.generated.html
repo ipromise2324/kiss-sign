@@ -481,8 +481,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，docs.morpho.org 還列著。記錄裡 Safe 經 Bundler3 存款的最後一筆在 2026-09-24，之後抽樣的區段沒有看到。 <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">來源</a></span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽之前在 Morpho app 確認交易還經過 Bundler3；app 改走別的合約時 verify 會判 MISMATCH，不要簽。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t"><span class="aiw" data-ai><span>Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，改列 VaultBundlesV1（0x02912516d49dE997db75B9D7858faAE59209650B）；docs.morpho.org 兩個都列。記錄裡 2026-09 底之後的存款多半經 VaultBundlesV1，Morpho app 現在可能不再走這個模板的路線。 <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">來源</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽之前看 Safe 交易呼叫的是 Bundler3 還是 VaultBundlesV1；經 VaultBundlesV1 的要用 morpho/vault-bundles-deposit 模板，用這個模板 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
