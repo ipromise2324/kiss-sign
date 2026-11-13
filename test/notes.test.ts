@@ -168,17 +168,19 @@ test('a status, verdict or AI source result outside its words is refused', () =>
 });
 
 const VAULT_PATH = 'templates/morpho/vault-deposit/vaults/v/notes.json';
+/** What these vault notes may name, as if each entry they review or describe were the vault or its factory. */
+const OWNED = new Set(['usdc', 'cbbtc', 'morpho-oracle']);
 const SHARED = Object.fromEntries(Object.entries(VALID).filter(([key]) => key !== 'verdict'));
 const mergeRefused = (vault: unknown, message: string) =>
   assert.throws(
-    () => mergeNotes(SHARED, vault, VAULT_PATH),
+    () => mergeNotes(SHARED, vault, VAULT_PATH, OWNED),
     (error: unknown) => error instanceof NotesError && error.message === message,
   );
 
 test("a vault's notes join the template's: its verdict, judgments after the shared ones, and reviews and entries by name", () => {
   const shared = { ...SHARED, reviews: {}, entries: { usdc: { role: '借出的代幣' } } };
   const vault = { verdict: VALID.verdict, judgments: [{ text: '這個 vault', recommendation: '先送小額' }], reviews: VALID.reviews, entries: { cbbtc: { role: '抵押品' } } };
-  const notes = parseNotes(mergeNotes(shared, vault, VAULT_PATH), SCOPE);
+  const notes = parseNotes(mergeNotes(shared, vault, VAULT_PATH, OWNED), SCOPE);
   assert.equal(notes.verdict.text, '要小心');
   assert.deepEqual(notes.judgments.map((j) => j.text), ['判斷', '這個 vault']);
   assert.deepEqual([...notes.reviews.keys()], ['morpho-oracle/source.page']);
@@ -188,14 +190,28 @@ test("a vault's notes join the template's: its verdict, judgments after the shar
 test("a key or name both notes define is refused, and a vault's notes hold only verdict, judgments, reviews and entries", () => {
   mergeRefused({ verdict: VALID.verdict, entries: { usdc: { role: '又一次' } } }, `${VAULT_PATH}.entries: "usdc" is in the template's notes.json too`);
   mergeRefused({ reviews: { 'morpho-oracle/source.page': VALID.reviews['morpho-oracle/source.page'] } }, `${VAULT_PATH}.reviews: "morpho-oracle/source.page" is in the template's notes.json too`);
-  assert.throws(() => mergeNotes(VALID, { verdict: VALID.verdict }, VAULT_PATH), (e: unknown) => e instanceof NotesError && e.message === `${VAULT_PATH}: verdict is in the template's notes.json too`);
+  assert.throws(() => mergeNotes(VALID, { verdict: VALID.verdict }, VAULT_PATH, OWNED), (e: unknown) => e instanceof NotesError && e.message === `${VAULT_PATH}: verdict is in the template's notes.json too`);
   mergeRefused({ title: '別的標題' }, `${VAULT_PATH}: "title" belongs in the template's notes.json, which every vault's report shares`);
   mergeRefused(['verdict'], `${VAULT_PATH}: not a JSON object`);
 });
 
+test("a vault's notes review and describe only the vault and its factory", () => {
+  const owned = new Set(['vault-a', 'vault-factory']);
+  const review = VALID.reviews['morpho-oracle/source.page'];
+  const vault = { verdict: VALID.verdict, reviews: { 'vault-a/source.url': review, 'vault-factory/abi': review }, entries: { 'vault-a': { role: '金庫' }, 'vault-factory': { role: '工廠' } } };
+  const merged = mergeNotes(SHARED, vault, VAULT_PATH, owned) as { entries: Record<string, unknown> };
+  assert.deepEqual(Object.keys(merged.entries).slice(-2), ['vault-a', 'vault-factory']);
+  const refusedFor = (notes: unknown, message: string) =>
+    assert.throws(() => mergeNotes(SHARED, notes, VAULT_PATH, owned), (e: unknown) => e instanceof NotesError && e.message === message);
+  const shared = "is not about vault-a or vault-factory; a shared contract belongs in the template's notes.json";
+  refusedFor({ entries: { 'bundler3': { role: '共用' } } }, `${VAULT_PATH}.entries: "bundler3" ${shared}`);
+  refusedFor({ reviews: { 'bundler3/abi': review } }, `${VAULT_PATH}.reviews: "bundler3/abi" ${shared}`);
+  refusedFor({ reviews: { 'fixture.deposit': review } }, `${VAULT_PATH}.reviews: "fixture.deposit" ${shared}`);
+});
+
 test('the judgments of both notes count toward the limit of four', () => {
   const judgment = { text: '判斷', recommendation: '建議' };
-  const merged = mergeNotes({ ...SHARED, judgments: [judgment, judgment, judgment] }, { verdict: VALID.verdict, judgments: [judgment, judgment] }, VAULT_PATH);
+  const merged = mergeNotes({ ...SHARED, judgments: [judgment, judgment, judgment] }, { verdict: VALID.verdict, judgments: [judgment, judgment] }, VAULT_PATH, OWNED);
   assert.throws(() => parseNotes(merged, SCOPE), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.judgments: more than 4 items');
 });
 

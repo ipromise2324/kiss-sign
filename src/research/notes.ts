@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { paramName } from '../decode/abi.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { parseHttpsUrl } from '../registry.ts';
-import type { HttpsUrl } from '../registry.ts';
+import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import { TEMPLATES_DIR, callTargetEntries } from '../template/template.ts';
 import { vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, Rule, Template } from '../template/template.ts';
@@ -32,15 +32,20 @@ const KEYED = ['reviews', 'entries'];
 
 /**
  * The template's notes and a vault's, as one: each key once, except that `judgments` join and `reviews` and `entries`
- * join by name. A vault's notes may hold only `VAULT_KEYS`, and a key or name both define is refused.
+ * join by name. A vault's notes may hold only `VAULT_KEYS`, may review and describe only the entries in `owned`, the
+ * vault and its factory, and a key or name both define is refused.
  */
-export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string): unknown {
+export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, owned: ReadonlySet<string>): unknown {
   if (vault === undefined || !isRecord(shared)) return shared;
   if (!isRecord(vault)) return refuse(vaultPath, 'not a JSON object');
   const merged: Record<string, unknown> = { ...shared };
   for (const key of Object.keys(vault)) {
     const value = own(vault, key);
     if (!VAULT_KEYS.includes(key)) refuse(vaultPath, `${shown(key)} belongs in the template's ${NOTES_FILE}, which every vault's report shares`);
+    if (KEYED.includes(key) && isRecord(value)) {
+      const other = Object.keys(value).find((name) => !owned.has(key === 'reviews' ? name.split('/')[0]! : name));
+      if (other !== undefined) refuse(`${vaultPath}.${key}`, `${shown(other)} is not about ${[...owned].join(' or ')}; a shared contract belongs in the template's ${NOTES_FILE}`);
+    }
     const before = own(shared, key);
     if (before === undefined) merged[key] = value;
     else if (key === 'judgments' && Array.isArray(before) && Array.isArray(value)) merged[key] = [...before, ...value];
@@ -54,9 +59,12 @@ export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string): 
 }
 
 /** The notes a report reads, as JSON: the template's, merged with the vault's for a per-vault report; undefined without the template's. */
-export function readNotes(repoRoot: string, template: string, vault?: string): unknown {
+export function readNotes(repoRoot: string, template: string, vault?: RegistryEntry): unknown {
   const shared = readJson(join(repoRoot, notesPath(template)));
-  return vault === undefined ? shared : mergeNotes(shared, readJson(join(repoRoot, notesPath(template, vault))), notesPath(template, vault));
+  if (vault === undefined) return shared;
+  const path = notesPath(template, vault.name);
+  const { factory } = vault.attributes;
+  return mergeNotes(shared, readJson(join(repoRoot, path)), path, new Set(factory === undefined ? [vault.name] : [vault.name, factory]));
 }
 
 /** What notes.json may name and must name, derived from the template, the report's inputs and its ledger. */

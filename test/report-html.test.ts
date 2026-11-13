@@ -23,7 +23,7 @@ const has = (id: string, file: string) => existsSync(join(ROOT, TEMPLATES_DIR, i
 const withNotes = new Map(templateTargets(ROOT, registry).filter((t) => has(t.template, NOTES_FILE)).map((t) => [generatedHtmlPath(t), t]));
 const notesOf = (path: string): unknown => {
   const target = withNotes.get(path) ?? assert.fail(path);
-  return readNotes(ROOT, target.template, target.cardVault);
+  return readNotes(ROOT, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
 };
 
 const replayed = new Map<string, { readonly inputs: ReportInputs; readonly title: ReportTitle; readonly html: string }>();

@@ -34,7 +34,7 @@ before(async () => {
   const depositReplayed = await replayInputs(ROOT, registry, deposit, compilers, loadPublicSuffixList());
   const depositTemplate = depositReplayed.inputs.subject.kind === 'template' ? depositReplayed.inputs.subject.template : assert.fail('a template report');
   depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(ROOT, depositTemplate, registry), example: firstRecordedTx(ROOT, depositTemplate, depositReplayed.inputs.registry) };
-  depositNotes = readNotes(ROOT, deposit.template, deposit.cardVault);
+  depositNotes = readNotes(ROOT, deposit.template, registry.entries.get(deposit.cardVault));
   depositTitle = depositReplayed.title;
   depositPage = buildPage(depositInputs, depositNotes, depositTitle);
   const replayed = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
