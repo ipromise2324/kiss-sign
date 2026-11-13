@@ -493,6 +493,7 @@ by proven Safes, the whole template in one transaction:
 fit the template's shape: 0 transactions from 0 Safes; misfits: 0 from 0 Safes
 by EOAs, call 2 of 2 (vaultBundlesV1Deposit) as its own transaction:
 fit the call's shape: 16 transactions from 16 EOAs; misfits: 0 from 0 EOAs
+  exactly the template: 0 from 0 EOAs; outside the registry: 16 from 16 EOAs (an address outside the registry at call.vaultBundlesV1Deposit.vault in 16)
 fields, over the 16 fitting transactions:
   call.to  [contract vault-bundles-v1]
     equalled contract vault-bundles-v1 in 16 of 16 (16 EOAs); values: vault-bundles-v1 in 16

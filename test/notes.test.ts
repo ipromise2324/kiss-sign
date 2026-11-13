@@ -99,7 +99,7 @@ test('a flow line after a call the template does not make is refused', () => {
 });
 
 test('a flow line naming a contract no call or view targets is refused', () => {
-  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target');
+  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target, nor a token the effects move');
 });
 
 test('more than four flow lines or judgments are refused', () => {
@@ -228,6 +228,19 @@ test('the judgments of both notes count toward the limit of four', () => {
   const judgment = { text: '判斷', recommendation: '建議' };
   const merged = mergeNotes({ ...SHARED, judgments: [judgment, judgment, judgment] }, { verdict: VALID.verdict, judgments: [judgment, judgment] }, VAULT_PATH, OWNED);
   assert.throws(() => parseNotes(merged, SCOPE), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.judgments: more than 4 items');
+});
+
+test("a vault's flow lines join the template's after them, and both count toward the limit of four", () => {
+  const line = (text: string) => ({ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text });
+  const merged = mergeNotes({ ...SHARED, flow: [line('共用')] }, { verdict: VALID.verdict, flow: [line('這個金庫')] }, VAULT_PATH, OWNED);
+  assert.deepEqual(parseNotes(merged, SCOPE).flow.map((f) => f.text), ['共用', '這個金庫']);
+  const tooMany = mergeNotes({ ...SHARED, flow: [line('a'), line('b'), line('c')] }, { verdict: VALID.verdict, flow: [line('d'), line('e')] }, VAULT_PATH, OWNED);
+  assert.throws(() => parseNotes(tooMany, SCOPE), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.flow: more than 4 items');
+});
+
+test("a template's flow line that names the vault or its asset is refused, since another vault's report could not name it", () => {
+  const shared = { ...SHARED, flow: [{ after: 2, from: 'blue-bundles-v1', to: 'usdc', text: '拉走資產' }] };
+  assert.throws(() => mergeNotes(shared, undefined, VAULT_PATH, OWNED), (e: unknown) => e instanceof NotesError && e.message === `notes.json.flow: "usdc" differs per vault; its flow line belongs in ${VAULT_PATH}`);
 });
 
 test("--compare names a vault's notes.json too", () => {
