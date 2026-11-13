@@ -77,7 +77,7 @@ test('the page of morpho/market-supply puts its sections in the signer order', {
   const page = pageOf(inputs);
   assert.deepEqual(
     page.sections.map((s) => s.anchor),
-    ['flow', 'protocol-morpho-blue', 'review', 'wallet', 'addresses', 'past', 'sign'],
+    ['flow', 'protocol-morpho-blue', 'review', 'wallet', 'addresses', 'past', 'next'],
   );
   assert.deepEqual(page.sections[0]?.count, { kind: 'text', text: '2 個呼叫' });
 });
@@ -228,7 +228,7 @@ test("a per-vault report shows its vault as the card's value, with or without a 
 test("a per-vault report shows the vault's stored evidence after the protocol, with no USD value", () => {
   assert.deepEqual(
     depositPage.sections.map((s) => s.anchor),
-    ['flow', 'protocol-morpho-blue', 'vault-hyperithm-usdc-apex-v2-9e2f', 'review', 'wallet', 'addresses', 'past', 'sign'],
+    ['flow', 'protocol-morpho-blue', 'vault-hyperithm-usdc-apex-v2-9e2f', 'review', 'wallet', 'addresses', 'past', 'next'],
   );
   const { vault } = body(depositPage, 'vault');
   assert.deepEqual(

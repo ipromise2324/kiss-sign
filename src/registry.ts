@@ -119,8 +119,9 @@ export type Registry = {
   readonly markets: ReadonlyMap<string, Market>;
 };
 
-export const REGISTRY_PATH = join('registry', 'contracts.json');
-export const MARKETS_PATH = join('registry', 'markets.json');
+export const REGISTRY_DIR = 'registry';
+export const REGISTRY_PATH = join(REGISTRY_DIR, 'contracts.json');
+export const MARKETS_PATH = join(REGISTRY_DIR, 'markets.json');
 
 /** Lowercase words joined by `-` or `.`, such as `multisend-call-only-1.4.1`. `safe` names the Safe itself, `eth` native ETH. */
 export const NAME = /^[a-z0-9]+([.-][a-z0-9]+)*$/;

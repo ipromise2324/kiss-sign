@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
-import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName, isMarketEntryPart } from '../registry.ts';
-import type { Attribute, ContractKind, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
+import type { Attribute, ContractKind, HttpsUrl, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
@@ -46,8 +46,8 @@ export const scopeEntries = (scope: EntryScope, registry: Registry): RegistryEnt
 /** What the signer fills in at each signing. */
 export type CardField =
   | { readonly kind: 'contract'; readonly scope: EntryScope }
-  /** A base-unit integer of the token `of` names. */
-  | { readonly kind: 'amount'; readonly of: TokenRef }
+  /** A base-unit integer of the token `of` names; `computed` when the protocol's app fills it in, so `card new` reads it instead of asking. */
+  | { readonly kind: 'amount'; readonly of: TokenRef; readonly computed: Computed | undefined }
   /** A registry name, an address-book name, or `safe`. */
   | { readonly kind: 'address' }
   /** Who receives a transfer: an address-book name or `safe`, never a registry contract. */
@@ -65,6 +65,23 @@ export type CardRef = { readonly field: string; readonly attribute: Attribute | 
 
 /** Native ETH, which no contract holds, or a token a card field names. */
 export type TokenRef = 'eth' | CardRef;
+
+/** A view call `card new` makes on the contract `to` names, returning one uint256. */
+export type ComputedRead = { readonly to: CardRef; readonly fn: AbiFunction; readonly args: readonly ComputedArg[] };
+export type ComputedArg = { readonly kind: 'card'; readonly ref: CardRef } | { readonly kind: 'safe' } | { readonly kind: 'read'; readonly read: ComputedRead };
+
+/**
+ * A card amount the protocol's app fills in by itself: `read` less (`floor`, rounded down) or plus (`ceiling`, rounded
+ * up) the protocol's default slippage and an optional margin, both in basis points.
+ */
+export type Computed = {
+  readonly read: ComputedRead;
+  readonly bound: 'floor' | 'ceiling';
+  readonly default: { readonly bps: number; readonly source: HttpsUrl };
+  readonly margin: { readonly bps: number; readonly why: string } | undefined;
+};
+
+export const slippageBps = (computed: Computed): number => computed.default.bps + (computed.margin?.bps ?? 0);
 
 export type ConstValue =
   | { readonly kind: 'uint' | 'int'; readonly value: bigint }
@@ -490,9 +507,9 @@ function cardField(path: string, raw: unknown, registry: Registry): (fields: Car
       return () => ({ kind: 'contract', scope });
     }
     case 'amount': {
-      exactKeys(path, value, ['kind', 'of']);
+      exactKeys(path, value, ['kind', 'of'], ['computed']);
       const of = text(`${path}.of`, value.of);
-      return (fields) => ({ kind: 'amount', of: of === 'eth' ? 'eth' : cardToken(`${path}.of`, of, fields) });
+      return (fields) => ({ kind: 'amount', of: of === 'eth' ? 'eth' : cardToken(`${path}.of`, of, fields), computed: undefined });
     }
     case 'address':
       exactKeys(path, value, ['kind']);
@@ -509,6 +526,77 @@ function cardField(path: string, raw: unknown, registry: Registry): (fields: Car
     default:
       throw new TemplateError(`${path}.kind`, 'not one of contract, amount, address, recipient, nonce, market');
   }
+}
+
+const MAX_BPS = 1000;
+
+function bps(path: string, raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < 0 || raw > MAX_BPS) throw new TemplateError(path, `not a whole number of basis points from 0 to ${MAX_BPS}`);
+  return raw;
+}
+
+/**
+ * The fields a computed field may read from: each field declared before it, and each field declared after it that is not
+ * computed, since every typed and chosen value is known before any computed one is read.
+ */
+type Readable = (field: string) => boolean;
+
+function computedArg(path: string, raw: unknown, type: AbiType, scope: Scope, readable: Readable): ComputedArg {
+  const isUint256 = type.kind === 'uint' && type.bits === 256;
+  if (type.kind !== 'address' && !isUint256) throw new TemplateError(path, `${canonicalType(type)} is neither address nor uint256`);
+  if (raw === 'safe') {
+    if (type.kind !== 'address') throw new TemplateError(path, 'the Safe is an address, not a uint256');
+    return { kind: 'safe' };
+  }
+  if (typeof raw === 'string') {
+    const name = cardFieldName(raw);
+    if (name === undefined) throw new TemplateError(path, 'must be "safe", card.<field> or a read');
+    const ref = cardRef(path, name, scope.card);
+    if (!readable(ref.field)) throw new TemplateError(path, `card field ${ref.field} is computed after this one or is this one`);
+    const fits = type.kind === 'address' ? refType(ref, scope.card) === 'address' : scope.card.get(ref.field)?.kind === 'amount' && ref.attribute === undefined;
+    if (!fits) throw new TemplateError(path, `card.${name} is not an ${type.kind === 'address' ? 'address' : 'amount'}`);
+    return { kind: 'card', ref };
+  }
+  if (!isUint256) throw new TemplateError(path, 'a read returns a uint256, not an address');
+  return { kind: 'read', read: computedRead(path, raw, scope, readable) };
+}
+
+function computedRead(path: string, raw: unknown, scope: Scope, readable: Readable): ComputedRead {
+  const value = object(path, raw);
+  exactKeys(path, value, ['to', 'function', 'args']);
+  const to = cardFieldName(text(`${path}.to`, value.to));
+  if (to === undefined) throw new TemplateError(`${path}.to`, 'must be card.<field>');
+  const ref = cardToken(`${path}.to`, to, scope.card);
+  const { fn, returns } = viewSignature(`${path}.function`, value.function);
+  const [only] = returns;
+  if (returns.length !== 1 || only?.type.kind !== 'uint' || only.type.bits !== 256) throw new TemplateError(`${path}.function`, 'must return exactly one uint256');
+  const args = object(`${path}.args`, value.args);
+  exactKeys(`${path}.args`, args, fn.params.map((param, i) => paramName(param, i)));
+  return { to: ref, fn, args: fn.params.map((param, i) => computedArg(`${path}.args.${paramName(param, i)}`, args[paramName(param, i)], param.type, scope, readable)) };
+}
+
+/** A computed amount field, `computed` of card field `name`; `order` lists the card's fields with whether each is computed. */
+function computed(path: string, raw: unknown, name: string, scope: Scope, order: readonly (readonly [string, boolean])[]): Computed {
+  const value = object(path, raw);
+  exactKeys(path, value, ['read', 'bound', 'default'], ['margin']);
+  const at = order.findIndex(([field]) => field === name);
+  const readable: Readable = (field) => {
+    const i = order.findIndex(([f]) => f === field);
+    return i !== at && (i < at || !(order[i]?.[1] ?? false));
+  };
+  const read = computedRead(`${path}.read`, value.read, scope, readable);
+  if (value.bound !== 'floor' && value.bound !== 'ceiling') throw new TemplateError(`${path}.bound`, 'not one of floor, ceiling');
+  const fallback = object(`${path}.default`, value.default);
+  exactKeys(`${path}.default`, fallback, ['bps', 'source']);
+  const source = parseHttpsUrl(fallback.source);
+  if (source === undefined) throw new TemplateError(`${path}.default.source`, 'not an https URL');
+  let margin: Computed['margin'];
+  if (value.margin !== undefined) {
+    const m = object(`${path}.margin`, value.margin);
+    exactKeys(`${path}.margin`, m, ['bps', 'why']);
+    margin = { bps: bps(`${path}.margin.bps`, m.bps), why: text(`${path}.margin.why`, m.why) };
+  }
+  return { read, bound: value.bound, default: { bps: bps(`${path}.default.bps`, fallback.bps), source }, margin };
 }
 
 /** `card.<field>` with the prefix removed, or undefined when `raw` lacks it. */
@@ -544,18 +632,20 @@ function boundArgument(path: string, rule: Rule): void {
   else if (!['card', 'safe', 'contract', 'const'].includes(rule.kind)) throw new TemplateError(path, `a view's argument is bound by card, safe, contract or const, not ${rule.kind}`);
 }
 
+function viewSignature(path: string, raw: unknown): ReturnType<typeof parseViewSignature> {
+  try {
+    return parseViewSignature(text(path, raw));
+  } catch (error) {
+    if (error instanceof AbiSignatureError) throw new TemplateError(path, error.message);
+    throw error;
+  }
+}
+
 /** `to`, `function` and `args` of a view, as `effects.views` and `facts` write them. */
 function boundView(path: string, value: Json, scope: Scope): BoundView {
   const to = rule(`${path}.to`, value.to, { kind: 'address' }, scope);
   if (to.kind !== 'contract') throw new TemplateError(`${path}.to`, 'must name a registry contract');
-  let parsed: ReturnType<typeof parseViewSignature>;
-  try {
-    parsed = parseViewSignature(text(`${path}.function`, value.function));
-  } catch (error) {
-    if (error instanceof AbiSignatureError) throw new TemplateError(`${path}.function`, error.message);
-    throw error;
-  }
-  const { fn, returns } = parsed;
+  const { fn, returns } = viewSignature(`${path}.function`, value.function);
   const args = params(`${path}.args`, value.args, fn.params, scope);
   args.forEach((arg, i) => boundArgument(`${path}.args.${paramName(fn.params[i] as AbiParam, i)}`, arg));
   return { to: to.name, fn, args, returns };
@@ -711,6 +801,12 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   const fields = new Map<string, CardField>(pending.map(([name]) => [name, { kind: 'address' }]));
   for (const [name, build] of pending) fields.set(name, build(fields));
   const scope: Scope = { card: fields, registry, uintLeaves: new Map() };
+  const rawCard = object('card', value.card);
+  const order = pending.map(([name]) => [name, object(`card.${name}`, rawCard[name]).computed !== undefined] as const);
+  for (const [name, isComputed] of order) {
+    const field = fields.get(name);
+    if (isComputed && field?.kind === 'amount') fields.set(name, { ...field, computed: computed(`card.${name}.computed`, object(`card.${name}`, rawCard[name]).computed, name, scope, order) });
+  }
   const nonce = value.nonce === undefined ? undefined : rule('nonce', value.nonce, { kind: 'uint', bits: 256 }, scope);
   const same = value.same === undefined ? [] : array('same', value.same).map((ref, i) => cardToken(`same[${i}]`, text(`same[${i}]`, ref), fields));
   if (value.same !== undefined && same.length < 2) throw new TemplateError('same', 'names fewer than two card references');
