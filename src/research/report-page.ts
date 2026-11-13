@@ -815,9 +815,10 @@ function ruleWords(rule: Rule, context: Context): Inline {
     case 'share-price':
       return [rule.bound === 'max' ? '價格上限' : '價格下限'];
     case 'call':
+      return ['呼叫 ', { code: rule.call.fn.name }, '，參數見流程'];
     case 'items':
     case 'fields':
-      return ['見上方'];
+      return ['見流程'];
   }
 }
 
@@ -829,32 +830,40 @@ function walletSection(context: Context): Section {
     const call = template.calls[n - 1] as TemplateCall;
     const target = targetOf(call.to, context);
     const title: Inline = [`${n} ${target.label}.${node.fn.name}`];
-    const fn = reports
+    const described = reports
       .filter((r) => target.names.includes(r.entry.name) || registry.entries.get(target.label)?.address === r.entry.address)
-      .flatMap((r) => r.descriptors.flatMap((d) => d.functions))
-      .find((f) => f.selector === node.fn.selector);
-    if (fn === undefined) return { n, title, rows: 'no-descriptor' };
+      .flatMap((r) => r.descriptors.flatMap((d) => d.functions).filter((f) => f.selector === node.fn.selector).map((fn) => ({ entry: r.entry.name, fn })));
+    const first = described[0];
+    if (first === undefined) return { n, title, rows: 'no-descriptor' };
+    const fn = first.fn;
+    const describedNames = new Set(described.map((d) => d.entry));
+    const without = target.names.filter((name) => !describedNames.has(name));
+    if (without.length > 0) lines.push([`呼叫 ${n}：列的是 ${[...describedNames].join('、')} 的描述檔；${without.join('、')} 沒有描述檔，錢包只顯示原始資料。`]);
     const flat = (facts: readonly FieldFact[], prefix = ''): { path: string; format: string; visible: string }[] =>
       facts.flatMap((f) => (f.kind === 'group' ? flat(f.fields, `${prefix}${f.path}.`) : [{ path: `${prefix}${f.path}`, format: f.format, visible: f.visible }]));
     const shown = flat(fn.fields).filter((f) => f.visible !== 'never' && f.format !== 'none');
-    const find = (path: string): ArgNode | undefined => {
-      const segments = path.replace(/^#\./, '').split('.');
-      let nodes: readonly ArgNode[] = args;
-      let found: ArgNode | undefined;
-      for (const segment of segments) {
-        found = nodes.find((a) => a.name === segment);
-        if (found === undefined) return undefined;
-        nodes = found.children;
+    // A descriptor names arguments as its contract's ABI does, and a template call to a card token is decoded with one
+    // token's ABI, so USDT's `_spender` is the `spender` of USDC's: names compare without leading underscores.
+    const same = (a: string, b: string): boolean => a.replace(/^_+/, '') === b.replace(/^_+/, '');
+    const find = (path: string): { readonly path: string; readonly node: ArgNode }[] => {
+      let found: { readonly path: string; readonly node: ArgNode }[] = [{ path: '', node: { children: args } as ArgNode }];
+      for (const segment of path.replace(/^#\./, '').split('.')) {
+        found = found.flatMap(({ path: at, node }) =>
+          node.children.filter((a) => (segment === '[]' ? /^\[\d+\]$/.test(a.name) : same(a.name, segment))).map((a) => ({ path: `${at}${at === '' ? '' : '.'}${a.name}`, node: a })),
+        );
       }
       return found;
     };
-    const rows = shown.map((field) => {
-      if (field.path === '@.value') return { label: ['送出的 ETH'], value: ruleWords(call.value, context) };
-      const target = find(field.path);
-      if (target === undefined) return { label: ['不是這個函式的參數'], value: ['—'] };
-      return { label: [Object.hasOwn(WALLET_WORDS, target.name) ? (WALLET_WORDS[target.name] as string) : target.name], value: ruleWords(target.rule, context) };
+    const rows = shown.flatMap((field): { readonly label: Inline; readonly value: Inline }[] => {
+      if (field.path === '@.value') return [{ label: ['送出的 ETH'], value: ruleWords(call.value, context) }];
+      const targets = find(field.path);
+      if (targets.length === 0) return [{ label: ['不是這個函式的參數'], value: ['—'] }];
+      return targets.map(({ path, node }) => ({
+        label: targets.length > 1 ? [{ code: path }] : [Object.hasOwn(WALLET_WORDS, node.name) ? (WALLET_WORDS[node.name] as string) : node.name],
+        value: ruleWords(node.rule, context),
+      }));
     });
-    const shownPaths = shown.map((f) => f.path.replace(/^#\./, ''));
+    const shownPaths = shown.flatMap((f) => find(f.path).map((t) => t.path));
     const covered = (path: string) => shownPaths.some((p) => path === p || path.startsWith(`${p}.`));
     const hidden: string[] = [];
     const visit = (nodes: readonly ArgNode[], prefix: string): void => {
@@ -908,8 +917,12 @@ function addressSection(context: Context): Section {
   };
 }
 
+const ANCHOR_WORDS: Readonly<Record<string, string>> = { mint: '鑄造（存款）', burn: '銷毀（提款）', any: '轉帳' };
+
 function pastSection(context: Context): Section {
-  const recordings = context.inputs.pastTxs.map(({ file, run }): PastRecording => {
+  const nameOf = (address: string): string =>
+    [...context.registry.entries.values()].find((e) => e.address.toLowerCase() === address.toLowerCase())?.name ?? address;
+  const recordings = context.inputs.pastTxs.map(({ file, query, run }): PastRecording => {
     const studied = run.studies.filter((s) => s.kind === 'fit' || s.kind === 'misfit');
     const of = (kind: 'safe' | 'eoa') => {
       const group = studied.filter((s) => s.sender.kind === kind);
@@ -921,7 +934,7 @@ function pastSection(context: Context): Section {
     const same = [...run.found.values()].every((s) => s.length === 2);
     return {
       file,
-      count: `找到 ${run.found.size} 筆，研究 ${run.studies.length} 筆`,
+      count: `搜尋 ${nameOf(query.token)} 的 ${ANCHOR_WORDS[query.anchor]}，找到 ${run.found.size} 筆，研究 ${run.studies.length} 筆`,
       rows: [
         { label: 'EOA 直接呼叫', value: [{ num: `${eoa.fit} / ${eoa.all}` }, ' 符合'], note: [`${eoa.senders} 個地址`] },
         { label: 'Safe', value: [{ num: `${safe.fit} / ${safe.all}` }, ' 符合'], note: [`${safe.senders} 個 Safe`] },

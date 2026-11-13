@@ -175,6 +175,23 @@ test('the diagram has a lifeline for the Safe, each call target and each view ta
   );
 });
 
+test('the wallet rows match a descriptor by argument name without underscores and by each array item, and name a token with no descriptor', () => {
+  const { calls, lines } = body(depositPage, 'wallet');
+  const rows = (n: number) => {
+    const call = calls.find((c) => c.n === n) ?? assert.fail(`no call ${n}`);
+    return call.rows === 'no-descriptor' ? assert.fail('a descriptor') : call.rows.map((r) => [plain(r.label), plain(r.value)]);
+  };
+  assert.deepEqual(rows(1), [['被授權者', 'general-adapter-1'], ['金額', '你填的 amount']]);
+  assert.deepEqual(rows(2), [['bundle.[0].data', '呼叫 erc20TransferFrom，參數見流程'], ['bundle.[1].data', '呼叫 erc4626Deposit，參數見流程']]);
+  assert.ok(lines.some((l) => plain(l) === '呼叫 1：列的是 usdt 的描述檔；usdc 沒有描述檔，錢包只顯示原始資料。'));
+});
+
+test('each past-transactions recording names the entry its search anchored on', () => {
+  const { recordings } = body(depositPage, 'past');
+  assert.ok(recordings.length > 0);
+  for (const r of recordings) assert.match(r.count, /^搜尋 [a-z0-9-]+ 的 鑄造（存款），找到 \d+ 筆，研究 \d+ 筆$/);
+});
+
 test('a contract a flow line names gets its own lifeline, so every inside arrow ends on one', () => {
   const { diagram } = body(depositPage, 'flow').flow;
   assert.deepEqual(diagram.lifelines.map((l) => l.name), ['你的 Safe', 'usdc', 'bundler3', 'general-adapter-1']);
@@ -272,7 +289,7 @@ test('a wallet row is labelled by the argument it shows, never by a descriptor p
     [
       ['不是這個函式的參數', '—'],
       ['不是這個函式的參數', '—'],
-      ['loanTokenPermit', '見上方'],
+      ['loanTokenPermit', '見流程'],
     ],
   );
 });
