@@ -12,6 +12,7 @@ import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT } from '../src/template/vault-reports.ts';
+import { PREDATE_REPORT } from './predate-report.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -54,6 +55,10 @@ test('a template reported per vault keeps no report of its own, and each vault r
 test('only a template not yet rebuilt may lack notes.json', () => {
   for (const id of templates) assert.ok(has(id, NOTES_FILE) || NOT_YET_REBUILT.has(id), `${id} has no ${NOTES_FILE} and is not in the list of templates not yet rebuilt`);
   for (const id of NOT_YET_REBUILT) assert.ok(templates.includes(id) && !has(id, NOTES_FILE), `${id} is listed as not yet rebuilt but has ${NOTES_FILE} or no folder`);
+});
+
+test('the list of templates not yet rebuilt only shrinks: each one predates the generated report', () => {
+  for (const id of NOT_YET_REBUILT) assert.ok(PREDATE_REPORT.has(id), `${id} is listed as not yet rebuilt, but only a template older than the generated report may be`);
 });
 
 test('a template without notes.json gets no HTML report', async () => {

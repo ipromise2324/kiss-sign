@@ -37,6 +37,7 @@ import type { AbiProof } from '../src/contracts/prove.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { reportedVaultsIn } from '../src/template/vault-reports.ts';
+import { PREDATE_REPORT } from './predate-report.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -231,23 +232,6 @@ test('stored vault evidence holding a backtick or a character pnpm vault-evidenc
 });
 
 const NOT_GENERATED = /^\s*- \*\*Report not generated yet:\*\*(.*)$/m;
-/** The templates that predate the generated report. design.md's list may only shrink: a new template needs its report. */
-const PREDATE_REPORT = new Set([
-  'cctp/receive',
-  'erc20/transfer',
-  'eth/transfer',
-  'fluid/rewards-claim',
-  'fluid/vault-deposit',
-  'fluid/vault-redeem',
-  'fluid/vault-withdraw',
-  'merkl/claim',
-  'morpho/urd-claim',
-  'morpho/vault-bundles-deposit',
-  'morpho/vault-migrate-all',
-  'morpho/vault-withdraw',
-  'morpho/vault-withdraw-all',
-  'safe/cancel',
-]);
 
 /** What is wrong with design.md's not-generated list, given the template folders and which hold a generated report. */
 function notGeneratedProblems(design: string, folders: readonly string[], hasReport: (id: string) => boolean): string[] {
