@@ -389,7 +389,7 @@ function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
   <p class="intro">${ai(body.conclusion)}</p>`}
   <details class="fold">
   <summary>${decor('chev')}其他做法</summary>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>${body.recordings.map(
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同，模板對參數的規定凡是從交易本身看得出來的也都成立；其他的依原因分組，各附最多 3 筆例子。</p>${body.recordings.map(
     (r) => h`
   <h3>${r.count}</h3>
   <p class="lead">記錄在 <code>${r.file}</code>。${text(r.search)}</p>${r.blocks.map(

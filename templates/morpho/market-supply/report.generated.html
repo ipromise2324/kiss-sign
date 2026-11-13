@@ -494,17 +494,21 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去有 <span class="num">8</span> 筆交易跟模板一模一樣：Safe <span class="num">0</span> 筆、EOA <span class="num">8</span> 筆（8 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 3 筆：<a href="https://etherscan.io/tx/0x6adc75b9a6e900fc741b705a9fe9ff5ea95929607f5ed169c07cf28d9b553932">0x6adc75b9…</a>、<a href="https://etherscan.io/tx/0x42dd33654c862fee8663cf40e57594eeef6ad1ed0916331a6bf18b036618ced7">0x42dd3365…</a>、<a href="https://etherscan.io/tx/0x368e54bdb221041b55ea5583c7bde64bca7489a57bd28a71e812d742d3894aaf">0x368e54bd…</a>。</p>
+  <p class="lead">過去有 <span class="num">1</span> 筆交易跟模板一模一樣：Safe <span class="num">0</span> 筆、EOA <span class="num">1</span> 筆（1 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 1 筆：<a href="https://etherscan.io/tx/0x2f82601df5b6acc049147a1161897c18876ba8cc4b8e5aeb8c8e16fa234a6c67">0x2f82601d…</a>。</p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同，模板對參數的規定凡是從交易本身看得出來的也都成立；其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 usdc 的 轉帳，找到 528 筆，研究 40 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/morpho-market-supply.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">528 = 528</span>）。</p>
   <div class="pblock">
     <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一樣。</span></div>
   </div>
   <div class="pblock">
-    <div class="ph"><span class="pt">EOA 直接呼叫 blueBundlesV1Supply</span><span><span class="num">8</span> 筆用了這個操作的呼叫（8 個地址），<span class="num">8</span> 筆跟模板一樣。</span></div>
+    <div class="ph"><span class="pt">EOA 直接呼叫 blueBundlesV1Supply</span><span><span class="num">8</span> 筆用了這個操作的呼叫（8 個地址），<span class="num">1</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">4 筆</span><div><div><code>call.blueBundlesV1Supply.loanTokenPermit.kind</code> 的值跟模板不同：模板要 <span class="addr">0</span>，交易是 <span class="addr">1</span><span class="f3">，來自 4 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xe0f9e7dfda5351d8a799f41d93ba5e8f0ce8bf36efcb2449a360d175fec80d79">0xe0f9e7df…</a>、<a href="https://etherscan.io/tx/0x368e54bdb221041b55ea5583c7bde64bca7489a57bd28a71e812d742d3894aaf">0x368e54bd…</a>、<a href="https://etherscan.io/tx/0x42dd33654c862fee8663cf40e57594eeef6ad1ed0916331a6bf18b036618ced7">0x42dd3365…</a></div></div></div>
+    <div class="pg"><span class="pc num">3 筆</span><div><div><code>call.blueBundlesV1Supply.loanTokenPermit.kind</code> 的值跟模板不同：模板要 <span class="addr">0</span>，交易是 <span class="addr">2</span><span class="f3">，來自 3 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xd129fe67f1685edbfbf458f9b98ca5f609c843d0ccd58363344147766c1d5088">0xd129fe67…</a>、<a href="https://etherscan.io/tx/0x2c75272313863be5b128d1866487e9839a9a2ed125e0e56e93302ffd8101df4a">0x2c752723…</a>、<a href="https://etherscan.io/tx/0x11df8733266bbaa53fe7d6b6dcfa67d54dd962be294616a420cee6ab18ccfbab">0x11df8733…</a></div></div></div>
   </div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 32 筆是別的操作，不列入：<code>blueBundlesV1RepayAndWithdrawCollateral</code> 14 筆、<code>blueBundlesV1SupplyCollateralAndBorrow</code> 13 筆、<code>blueBundlesV1Withdraw</code> 4 筆、<code>0x1fad948c</code> 1 筆。</span></div>
   </details>
