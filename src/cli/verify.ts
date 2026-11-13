@@ -149,8 +149,8 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   io.stdout(`Verdict file: ${path}\n`);
   io.stdout(
     verdict.kind === 'MATCH'
-      ? `Page with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\n`
-      : `Page with every check: ${page}\n`,
+      ? `kiss-sign verify page, nonce ${tx.nonce}, MATCH, with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\n`
+      : `kiss-sign verify page, nonce ${tx.nonce}, ${verdict.kind}, with every check: ${page}\n`,
   );
   io.stdout(`Open it with: ${io.platform === 'darwin' ? 'open' : 'xdg-open'} ${shellWord(page)}\n`);
   return result.verdict.kind === 'MATCH' ? OK : FAILED;

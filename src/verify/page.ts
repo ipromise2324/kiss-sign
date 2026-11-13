@@ -158,12 +158,20 @@ function causesSection(verdict: Verdict): Html {
 </section>`;
 }
 
+/** Sets this page apart from check.sh's, which uses another accent. */
+const PAGE_CSS = `:root{--accent:#6ea8fe}
+.who{border-left:4px solid var(--accent);padding-left:18px}
+.who .prog{color:var(--accent)}
+.cl .nm .byai{margin:0 6px 0 2px}`;
+
 /** The page `verify` writes beside its verdict file: no script, nothing loaded from outside, every value escaped. */
 export function verdictPage(page: VerdictPage): string {
   const banner = BANNER[page.verdict.kind];
   const body = h`<header>
-  <h1>kiss-sign verify</h1>
-  <span class="opid">nonce ${`${page.nonce}`}</span>
+  <div class="who">
+    <h1><span class="prog">kiss-sign verify</span> · nonce ${`${page.nonce}`} · ${page.verdict.kind}</h1>
+    <p class="sub">kiss-sign 在工作電腦上對照你的卡片檢查這筆交易。</p>
+  </div>
   <div class="banner ${banner.state}">${icon(banner.state)}${banner.text}</div>
   <ul class="checks">${CHECKS.map(([check, name]) => h`
     <li>${icon(stateOf(page.verdict, check))}${name}</li>`)}
@@ -174,7 +182,7 @@ ${causesSection(page.verdict)}
 ${cardSection(page)}
 ${effectsSection(page)}
 ${callsSection(page)}
-<footer class="foot">這頁由 <code>kiss-sign verify</code> 寫出，不含 AI 文字。判決檔：<code>${page.verdictFile}</code>，可以用 <code>bin/kiss-sign replay</code> 重算。</footer>`;
+<footer class="foot">這頁由 <code>kiss-sign verify</code> 寫出。標 AI 的是模板裡 AI 寫的理由，程式不檢查它；其他都不是 AI 文字。判決檔：<code>${page.verdictFile}</code>，可以用 <code>bin/kiss-sign replay</code> 重算。</footer>`;
   const text = `<!doctype html>
 <html lang="zh-Hant">
 <head>
@@ -182,10 +190,11 @@ ${callsSection(page)}
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
-<title>kiss-sign verify ${page.verdict.kind} nonce ${page.nonce}</title>
+<title>kiss-sign verify · nonce ${page.nonce} · ${page.verdict.kind}</title>
 <style>
 ${CSS}
 ${CHECKLIST_CSS}
+${PAGE_CSS}
 </style>
 </head>
 <body>

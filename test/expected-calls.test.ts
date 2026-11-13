@@ -92,8 +92,8 @@ test('a Bundler3 deposit lists its bundle calls and the trailers the template al
   assert.equal(tree.count, 3);
   assert.deepEqual(numbers(text), [1, 2, 3]);
   assert.deepEqual(selectors(text), ['0x8d80ff0a', '0x095ea7b3', '0x374f435d', '0xd96ca0b9', '0x6ef5eeae']);
-  assert.match(text, /\nC2-extra 0x6915469b25afea44 \| \n/);
-  assert.match(text, /\nC3-extra 0x6915469b25afea44 \| \n/);
+  assert.match(text, /\nC2-extra 0x6915469b25afea44 \| 模板允許這個呼叫最多 12 bytes，這裡 8 bytes，在範圍內\n/);
+  assert.match(text, /\nC3-extra 0x6915469b25afea44 \| 模板允許這個呼叫最多 12 bytes，這裡 8 bytes，在範圍內\n/);
   assert.match(text, /\n\[C3\.1\] Bundler3 呼叫 1\/2\nC3\.1-to 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 \| general-adapter-1\nC3\.1-value 0 \| \n/);
   assert.match(text, /\n\[C3\.2\] Bundler3 呼叫 2\/2\n/);
   assert.match(text, /\nC3\.2-a3 1054633213541066 \| \n/);
@@ -125,7 +125,7 @@ test('the recorded migration verify judged to MATCH shows the transaction it jud
   assert.deepEqual(numbers(text), [1, 2, 3]);
   assert.deepEqual(selectors(text), ['0x8d80ff0a', '0x095ea7b3', '0x374f435d', '0xd96ca0b9', '0xa7f6e606', '0x6ef5eeae']);
   assert.deepEqual([...text.matchAll(/\] Bundler3 呼叫 (\d\/\d)/g)].map((m) => m[1]), ['1/3', '2/3', '3/3']);
-  assert.match(text, /\nC3-extra 0x69f5ccb925afea44 \| \n/);
+  assert.match(text, /\nC3-extra 0x69f5ccb925afea44 \| 模板允許這個呼叫最多 8 bytes，這裡 8 bytes，在範圍內\n/);
   assert.doesNotMatch(text, /沒有範本可以解碼/);
 });
 

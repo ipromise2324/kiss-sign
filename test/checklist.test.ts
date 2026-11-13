@@ -44,11 +44,33 @@ const PINNED: readonly { readonly fixture: string; readonly card: Card; readonly
 for (const { fixture, card, book } of PINNED) {
   test(`the 比對清單 of ${fixture} is, byte for byte, the block check.sh writes for it, names aside`, () => {
     const { tree } = treeOf(card, fixture, book);
-    const ours = `${checklistHtml(checklist(tree)).replace(/<span class="nm">[^<]*<\/span>/g, '')}\n`;
+    const ours = `${checklistHtml(checklist(tree)).replace(/<span class="nm">.*<\/span><\/div>$/gm, '</div>')}\n`;
     const theirs = readFileSync(join(ROOT, 'testdata', 'checklist', `${fixture}.checklist.html`), 'utf8');
     assert.equal(ours, theirs);
   });
 }
+
+test('the -extra row names the template\'s allowance as a program fact and its reason as AI text, its value as check.sh writes it', () => {
+  const { tree, card } = treeOf(CARD);
+  const page = verdictPage({
+    verdict: { kind: 'MATCH' },
+    nonce: tree.nonce,
+    card,
+    cardHash: `0x${'00'.repeat(32)}`,
+    registry,
+    expected: { kind: 'expected', changes: new Map() },
+    calls: { kind: 'scanned', movesNothing: [] },
+    tree,
+    verdictFile: '/verdicts/x.json',
+  });
+  const extra = page.split('\n').find((line) => line.includes('<span class="id">C3-extra</span>'));
+  assert.match(
+    extra ?? '',
+    /<span class="v">0x[0-9a-f]{16}<\/span><span class="nm">模板允許這個呼叫最多 12 bytes，這裡 8 bytes，在範圍內 <span class="aiw" data-ai><span class="byai">AI<\/span><span>the Morpho app appends [^<]*<\/span><\/span><\/span><\/div>$/,
+  );
+  assert.match(page, new RegExp(`<title>kiss-sign verify · nonce ${tree.nonce} · MATCH</title>`));
+  assert.match(page, new RegExp(`<h1><span class="prog">kiss-sign verify</span> · nonce ${tree.nonce} · MATCH</h1>`));
+});
 
 test('a row value from outside is escaped as jq @html escapes it, and characters that hide or reorder text are replaced', () => {
   const line = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: '"><img src=x onerror=alert(1)><script>\u202eevil\u200f\u0007', name: "it's\u2066" });

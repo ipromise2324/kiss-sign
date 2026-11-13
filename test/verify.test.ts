@@ -99,7 +99,7 @@ test('the Morpho deposit verifies to MATCH, prints its safeTxHash, and writes a 
   assert.equal(verdicts.length, 1);
   assert.equal(pages.length, 1);
   const page = verdicts[0]!.replace(/\.json$/, '.html');
-  assert.equal(stdout, `MATCH\n  safeTxHash  ${chain.transactionHash}\nVerdict file: ${verdicts[0]}\nPage with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\nOpen it with: xdg-open ${page}\n`);
+  assert.equal(stdout, `MATCH\n  safeTxHash  ${chain.transactionHash}\nVerdict file: ${verdicts[0]}\nkiss-sign verify page, nonce ${service.nonce}, MATCH, with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\nOpen it with: xdg-open ${page}\n`);
   const [domain, message, safeTxHash] = ['tx-domain', 'tx-message', 'tx-safeTxHash'].map((id) => rowValue(pages[0]!, id));
   assert.equal(domain, chain.domainSeparator);
   assert.equal(safeTxHash, chain.transactionHash);

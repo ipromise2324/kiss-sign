@@ -6,7 +6,7 @@ import type { BundleCall, CallData, CallTree, Label, Labeled, SafeCall } from '.
 /** One line of the 比對清單, which check.sh writes line for line the same for the same transaction, except `name`. */
 export type ChecklistLine =
   | { readonly kind: 'group'; readonly id: string; readonly title: string }
-  | { readonly kind: 'row'; readonly id: string; readonly key: string; readonly value: string; readonly name: string };
+  | { readonly kind: 'row'; readonly id: string; readonly key: string; readonly value: string; readonly name: string; readonly ai?: string };
 
 const INVISIBLE = /[\u0000-\u001f\u007f-\u009f\u00ad\u034f\u061c\u115f\u1160\u180e\u200b-\u200f\u2028-\u202e\u2060-\u206f\u3164\ufe00-\ufe0f\ufeff\uffa0\ufff9-\ufffb\u{e0000}-\u{e007f}\u{e0100}-\u{e01ef}]/gu;
 export const visible = (text: string): string => text.replace(INVISIBLE, '�');
@@ -32,7 +32,8 @@ export function checklistLineHtml(line: ChecklistLine): string {
   const value = visible(line.value);
   const summary = folded(value);
   const shown = summary === undefined ? html(value) : `<details><summary>${html(summary)}</summary><span class="full">${html(value)}</span></details>`;
-  return `<div class="r"><span class="id">${html(visible(line.id))}</span><span class="k">${html(line.key)}</span><span class="v">${shown}</span><span class="nm">${html(visible(line.name))}</span></div>`;
+  const ai = line.ai === undefined ? '' : ` <span class="aiw" data-ai><span class="byai">AI</span><span>${html(visible(line.ai))}</span></span>`;
+  return `<div class="r"><span class="id">${html(visible(line.id))}</span><span class="k">${html(line.key)}</span><span class="v">${shown}</span><span class="nm">${html(visible(line.name))}${ai}</span></div>`;
 }
 
 export const CHECKLIST_START = '<!-- 比對清單 -->';
@@ -66,7 +67,11 @@ function dataLines(id: string, data: CallData): ChecklistLine[] {
     row(`${id}-fn`, '函式', `${data.signature} ${data.selector}`),
     ...data.args.map((arg, i) => row(`${id}-a${i + 1}`, `引數 ${i + 1}`, arg.text, named.get(arg.text) ?? (arg.amount === undefined ? '' : `= ${arg.amount}`))),
   ];
-  if (data.trailer !== undefined) lines.push(row(`${id}-extra`, '引數後多出的 bytes', data.trailer));
+  if (data.trailer !== undefined) {
+    const { hex, allowance } = data.trailer;
+    const fact = `模板允許這個呼叫最多 ${allowance.maxBytes} bytes，這裡 ${(hex.length - 2) / 2} bytes，在範圍內`;
+    lines.push({ kind: 'row', id: `${id}-extra`, key: '引數後多出的 bytes', value: hex, name: fact, ai: allowance.why });
+  }
   const nested = data.nested;
   if (nested?.kind === 'multisend') lines.push(...nested.calls.flatMap(safeCallLines));
   if (nested?.kind === 'bundle') lines.push(...nested.calls.flatMap((call, i) => bundleCallLines(`${id}.${i + 1}`, call, `Bundler3 呼叫 ${i + 1}/${nested.calls.length}`)));

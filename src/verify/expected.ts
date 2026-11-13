@@ -11,7 +11,7 @@ import { hashSafeTx } from '../safe/hash.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { decodeTemplateCall, expectedCalls } from '../template/check.ts';
 import type { ExpectedCall, Values } from '../template/check.ts';
-import type { CallNode, Rule, Template } from '../template/template.ts';
+import type { CallNode, Rule, Template, TrailerAllowance } from '../template/template.ts';
 
 /** What kiss-sign knows an address as: the Safe, the zero address, a registry entry or an address-book entry. */
 export type Label =
@@ -30,8 +30,8 @@ export type Decoded = {
   readonly signature: string;
   readonly selector: Hex;
   readonly args: readonly ShownArg[];
-  /** Bytes after the arguments, which the template allows. */
-  readonly trailer: Hex | undefined;
+  /** Bytes after the arguments, and the template's allowance they fall within. */
+  readonly trailer: { readonly hex: Hex; readonly allowance: TrailerAllowance } | undefined;
   /** Every address among the arguments, outside bytes, once each, ordered by its lowercase hex. */
   readonly addresses: readonly Labeled[];
   readonly nested: Nested | undefined;
@@ -157,7 +157,7 @@ function callData(node: CallNode | 'empty' | undefined, region: Region, values: 
     signature: node.fn.signature,
     selector: node.fn.selector,
     args,
-    trailer: decoded.trailer === undefined ? undefined : hex(decoded.trailer.value),
+    trailer: decoded.trailer === undefined || node.trailer === undefined ? undefined : { hex: hex(decoded.trailer.value), allowance: node.trailer },
     addresses: found.map((address) => labeled(address, walk)),
     nested,
   };
