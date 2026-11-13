@@ -12,7 +12,7 @@ import { abiCaseBlock, abiCaseReader, abiCaseSourcify } from '../src/contracts/a
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal, Refusal } from '../src/contracts/prove.ts';
-import { EIP1967_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
+import { EIP1967_BEACON_SLOT, EIP1967_IMPLEMENTATION_SLOT, ZEPPELINOS_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
 import { pinnedCompilers } from '../src/contracts/solc.ts';
 import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SourcifyAnswer } from '../src/contracts/sourcify.ts';
@@ -177,16 +177,6 @@ const CASES = [
     functions: 21,
     immutables: 2,
     uses: ['claim(address recipient_,uint256 cumulativeAmount_,uint8 positionType_,bytes32 positionId_,uint256 cycle_,bytes32[] merkleProof_,bytes metadata_)'],
-  },
-  {
-    name: 'fluid-token',
-    proxy: 'none',
-    proven: '0x6f40d4a6237c257fff2db00fa0510deeecd303eb',
-    contract: 'contracts/TokenDelegator.sol:InstaToken',
-    compiler: '0.7.3+commit.9bfce1f6',
-    functions: 7,
-    immutables: 0,
-    uses: [],
   },
   {
     name: 'merkl-distributor',
@@ -455,6 +445,63 @@ test('an EIP-1967 slot on code that cannot DELEGATECALL is refused', async () =>
   const reader = abiCaseReader(fixture, [{ method: 'getStorageAt', args: [BUNDLER3, slot], value: `0x${GENERAL_ADAPTER1.slice(2).padStart(64, '0')}` }]);
   const refused = refusal(await proveAbi(reader, BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
   assert.equal(refused.why, 'slot-without-delegatecall');
+});
+
+test('the FLUID token hands a call it has no function for to an implementation in its storage, so its ABI is refused, not proven', async () => {
+  const fixture = load('fluid-token');
+  const refused = refusal(await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
+  assert.deepEqual(refused, { why: 'unknown-delegator', at: fixture.address, pc: 156 });
+  assert.equal(
+    describeRefusal(refused),
+    '0x6f40d4a6237c257fff2db00fa0510deeecd303eb is no proxy the program knows, yet a call it has no function for is delegated, at byte 156 of its code, to an address read from state, so the code that runs is unknown',
+  );
+});
+
+const UNKNOWN = `0x${'d0'.repeat(20)}` as Address;
+const noSlots = (address: Address) =>
+  [EIP1967_IMPLEMENTATION_SLOT, EIP1967_BEACON_SLOT, ZEPPELINOS_IMPLEMENTATION_SLOT].map((slot) => ({
+    method: 'getStorageAt',
+    args: [address, `0x${slot.toString(16)}`],
+    value: `0x${'0'.repeat(64)}`,
+  }));
+const DELEGATE_TO_MEMORY_WORD_0 = '5f5f5f5f5f515af400';
+
+async function proveUnknown(code: string): Promise<AbiProof | AbiRefusal> {
+  const fixture = load('bundler3');
+  const reader = abiCaseReader(fixture, [{ method: 'getCode', args: [UNKNOWN], value: `0x${code}` }, ...noSlots(UNKNOWN)]);
+  return proveAbi(reader, UNKNOWN, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({}), compilers });
+}
+
+test('a fallback that delegates to an address it moved from storage through memory is refused', async () => {
+  const refused = refusal(await proveUnknown(`5f545f52${DELEGATE_TO_MEMORY_WORD_0}`));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test("a fallback that delegates to the address another contract answered is refused, as a beacon's would be", async () => {
+  const refused = refusal(await proveUnknown(`60205f5f5f5f73${'be'.repeat(20)}5af150${DELEGATE_TO_MEMORY_WORD_0}`));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test('a fallback that delegates to a constant address in its code is not refused for delegating, so the proof goes on to its source', async () => {
+  const refused = refusal(await proveUnknown(`5f5f5f5f73${'be'.repeat(20)}5af400`));
+  assert.deepEqual(refused, { why: 'not-on-sourcify', at: UNKNOWN });
+});
+
+test('contracts that DELEGATECALL only to themselves or to a target the call names keep their proven ABI', async () => {
+  for (const name of ['fluid-rewards-distributor', 'steakhouse-prime-usdc', 'metamorpho-v1-1-apex']) {
+    const fixture = load(name);
+    const proof = proven(await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
+    assert.equal(proof.proxy.kind, 'none', name);
+  }
+});
+
+test('an EIP-1967 implementation that itself delegates its fallback to an address in its storage is refused', async () => {
+  const fixture = load('morpho-token-eip1967');
+  const delegator = load('fluid-token').reads.find((read) => read.method === 'getCode')!.value;
+  const implementation = '0x4364fd2371b6318159366abfa51f190df5c24852' as Address;
+  const reader = abiCaseReader(fixture, [{ method: 'getCode', args: [implementation], value: delegator }]);
+  const refused = refusal(await proveAbi(reader, fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
+  assert.deepEqual(refused, { why: 'unknown-delegator', at: implementation, pc: 156 });
 });
 
 test('an address with no code is refused', async () => {

@@ -102,6 +102,18 @@ test('a pin that names no implementation for a contract that now delegates is MI
   assert.match(JSON.stringify(verdict), /usdc 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 delegates to 0x43506849d7c04f9138d1a2050bbf3a0c054402dd at block \d+, the registry pins no implementation/);
 });
 
+test('pinned code that delegates a call it has no function for to an address in its storage is MISMATCH', async () => {
+  const vault = '0xbeef088055857739c12cd3765f20b7679def0f51';
+  const delegator = JSON.parse(readFileSync(join(ROOT, 'testdata', 'abi', 'fluid-token.json'), 'utf8')).reads[0].value as Hex;
+  const inputs = withRegistry((entries) => {
+    entries['steakhouse-prime-usdc']!.code = { hash: keccakCode(delegator) };
+  });
+  const verdict = await verdictOf(answering('eth_getCode', codeOf(vault), delegator), inputs);
+  assert.equal(verdict.kind, 'MISMATCH');
+  assert.deepEqual(verdict.kind === 'MISMATCH' ? verdict.causes.map((c) => c.check) : [], ['contract-code']);
+  assert.match(JSON.stringify(verdict), new RegExp(`steakhouse-prime-usdc ${vault} at block \\d+: ${vault} is no proxy the program knows, yet a call it has no function for is delegated`));
+});
+
 test('every entry in registry/contracts.json carries a code pin', () => {
   const unpinned = [...loadRegistry(ROOT).entries.values()].filter((entry) => entry.code === undefined).map((entry) => entry.name);
   assert.deepEqual(unpinned, []);
