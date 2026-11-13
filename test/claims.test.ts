@@ -94,6 +94,13 @@ const CASES = [
     recipient: ['call.multicall.bundle[0].data.claim.account'],
   },
   {
+    name: 'morpho-urd-claim-other-safe',
+    card: card(claim('morpho/urd-claim', 'morpho')),
+    bound: 8,
+    free: 2,
+    recipient: ['call.multicall.bundle[0].data.claim.account'],
+  },
+  {
     name: 'merkl-and-morpho-urd-claim',
     card: card(claim('merkl/claim', 'aethrlusd'), claim('morpho/urd-claim', 'morpho')),
     bound: 12,
@@ -202,8 +209,10 @@ test('a Merkl claim gets MORPHO, simulated and from its receipt; a card for anot
   );
 });
 
-test('a Morpho URD claim through Bundler3 gets MORPHO, simulated and from its receipt', async () => {
-  assert.deepEqual(await observe('morpho-urd-claim', card(claim('morpho/urd-claim', 'morpho'))), MATCH);
+test('a Morpho URD claim through Bundler3 gets MORPHO, simulated and from its receipt, for two Safes', async () => {
+  for (const name of ['morpho-urd-claim', 'morpho-urd-claim-other-safe']) {
+    assert.deepEqual(await observe(name, card(claim('morpho/urd-claim', 'morpho'))), MATCH, name);
+  }
 });
 
 /**

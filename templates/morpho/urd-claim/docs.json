@@ -1,4 +1,4 @@
 {
   "multicall((address,bytes,uint256,bool,bytes32)[])": { "contract": "bundler3", "url": "https://docs.morpho.org/developers/contracts/bundles/" },
-  "claim(address,address,uint256,bytes32[])": { "contract": "morpho-urd", "url": "https://github.com/morpho-org/universal-rewards-distributor/blob/3de504b130835a12482e00e1c83dcf369448c80b/src/UniversalRewardsDistributor.sol" }
+  "claim(address,address,uint256,bytes32[])": { "contract": "morpho-urd", "url": "https://docs.morpho.org/developers/contracts/rewards/" }
 }

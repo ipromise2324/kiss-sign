@@ -1,0 +1,123 @@
+{
+  "title": "從 Morpho URD 領取舊獎勵",
+  "summary": "Safe 呼叫 Bundler3 的 `multicall`，每種獎勵代幣一步，向 Morpho 的 Universal Rewards Distributor（URD）呼叫 `claim`，把 Safe 累積到的獎勵代幣領回 Safe。URD 用 Merkle 證明核對 Safe 能領的總額，扣掉已經領過的，差額只會轉給 `account`，也就是 Safe。Safe 不付出任何東西，也不留下授權。Morpho 在 2025 年 7 月把獎勵改由 Merkl 發放，URD 只剩以前沒領的獎勵。",
+  "verdict": {
+    "status": "caution",
+    "text": "只對得上以前 Morpho app 經 Bundler3 的領法。URD 已停用，官方舊獎勵頁現在導向直接呼叫 `claim`，那種交易這個模板不收。"
+  },
+  "flow": [
+    {
+      "after": 1,
+      "from": "bundler3",
+      "to": "morpho-urd",
+      "text": "呼叫 `claim`，`account` 是 Safe"
+    }
+  ],
+  "protocols": {
+    "morpho-blue": {
+      "intro": "Morpho 是借貸協議。URD 是它發獎勵用的合約，Bundler3 是它把多個步驟包成一筆交易的合約，兩者都不能升級。",
+      "audits": {
+        "text": "URD 的 GitHub 列了 3 份稽核：Cantina（2023-11-14）、OpenZeppelin 的 Morpho Blue 周邊合約稽核（2023-11-16）和 Cantina 競賽（2024-01-05）。Bundler3 的 GitHub 列了 Spearbit 兩份（2025-01-02、2025-02-17）和 OpenZeppelin 一份（2025-02-18）。",
+        "sources": [
+          "https://github.com/morpho-org/universal-rewards-distributor/tree/3de504b130835a12482e00e1c83dcf369448c80b/audits",
+          "https://github.com/morpho-org/bundler3/tree/b4014349e3527f44ceaab697b26e29f2b11457f3/audits"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": "URD 已停用。官方舊獎勵頁 rewards-legacy.morpho.org 的 Claim 連到 Etherscan 的 Write Contract，直接呼叫 URD 的 `claim`，不經過 Bundler3。",
+      "sources": [
+        "https://docs.morpho.org/developers/rewards/get-started/",
+        "https://rewards-legacy.morpho.org/"
+      ],
+      "recommendation": "不必用 Safe 簽：任何錢包都能從舊獎勵頁的 Etherscan 連結替 Safe 呼叫 `claim`（`account` 填 Safe），代幣只轉給 Safe。要經 Safe 領，先請 AI 另建直接呼叫 `claim` 的模板。"
+    },
+    {
+      "text": "過去一年研究的 29 筆裡沒有 Safe 用這個形狀領；21 筆直接呼叫 URD 的 `claim`，經 Bundler3 的只有 3 筆 EOA。3 筆測試交易來自 3 個 Safe，在 2025 年 6 月和 12 月，用的是當時 Morpho app 的 Bundler3 領法。",
+      "recommendation": "這個模板只適合重現這種舊領法；新的領取走判斷 1 的路。"
+    },
+    {
+      "text": "卡片列出登記裡的 5 種代幣。AI 查 Alchemy 的轉帳紀錄，URD 發過其中的 MORPHO、USDC 和 USDT，沒看到 FLUID 或 cbBTC。舊版 MORPHO（0x9994E35Db50125E0DF82e4c2dde62496CE330999）等其他獎勵代幣不在登記裡，這個模板領不了。",
+      "recommendation": "選舊獎勵頁列給 Safe、而且由 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb 發的代幣。別的發放合約或沒證明的代幣，交易會失敗或 MISMATCH。"
+    },
+    {
+      "text": "URD 的 owner 是 Morpho 的獎勵 multisig（一個 Safe）0xF057afeEc22E220f47AD4220871364e9E828b2e9，能用 `setRoot` 立刻換掉 Merkle 根，跳過 5 天的 timelock。換根只改變誰能領多少；`claim` 只轉給 `account`。",
+      "sources": [
+        "https://etherscan.io/address/0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb#readContract",
+        "https://docs.morpho.org/developers/contracts/rewards/"
+      ],
+      "recommendation": "可以接受。verify 只要求 Safe 收到多於 0 的這種代幣，金額以舊獎勵頁為準。"
+    }
+  ],
+  "reviews": {
+    "fluid/address": {
+      "status": "concern",
+      "text": "程式只有 CoinGecko 確認。Fluid 技術文件的合約地址頁沒有列它；Instadapp GitHub 的 deployments.md 有 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb，但都在別的合約的參數裡，沒有一列是代幣本身。AI 用 Alchemy 查 URD 發出的轉帳，沒看到 FLUID。",
+      "recommendation": "這個模板不要選 FLUID：URD 沒發過，選了只會失敗。"
+    },
+    "morpho-urd/address": {
+      "status": "confirmed",
+      "text": "程式只在 Morpho 文件的地址頁確認。AI 下載 Morpho 官方舊獎勵頁 rewards-legacy.morpho.org，它的頁內腳本把 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb 列在 Ethereum 的發放合約清單裡。Etherscan 顯示它由 MORPHO 代幣的部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 建立。",
+      "recommendation": "可以接受。舊獎勵頁列了 12 個 Ethereum 發放合約；確認 Safe 那一列的 Claim 連結是這個地址，別的這個模板不收。"
+    }
+  },
+  "entries": {
+    "bundler3": {
+      "role": "替 Safe 依序執行 bundle 裡的步驟，這裡只有一步",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 Bundler3，創建者 0x6B5e029687e8f995aeF05aFb23442c3c4E3D1839",
+          "url": "https://etherscan.io/address/0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "morpho-urd": {
+      "role": "Morpho 的獎勵發放合約，核對 Merkle 證明後把獎勵轉給 Safe",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 UniversalRewardsDistributor，由 Morpho 的部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 經 URD 工廠建立",
+          "url": "https://etherscan.io/address/0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb#code",
+          "result": "pass"
+        },
+        {
+          "text": "Morpho 的舊獎勵頁在它的 Ethereum 發放合約清單裡列出這個地址",
+          "url": "https://rewards-legacy.morpho.org/",
+          "result": "pass"
+        }
+      ]
+    },
+    "morpho": {
+      "role": "可選的獎勵代幣：Morpho 的治理代幣，URD 發得最多的就是它"
+    },
+    "usdc": {
+      "role": "可選的獎勵代幣：Circle 發行的 USDC"
+    },
+    "usdt": {
+      "role": "可選的獎勵代幣：Tether 發行的 USDT"
+    },
+    "fluid": {
+      "role": "可選的獎勵代幣，但 URD 從沒發過 FLUID"
+    },
+    "cbbtc": {
+      "role": "可選的獎勵代幣，但 URD 從沒發過 cbBTC"
+    }
+  },
+  "pastTxsConclusion": "直接呼叫 `claim` 的 21 筆裡，17 筆是 0xf6c6459a9d991A8cA26E726685151a3ff721BC0F 替別人的帳戶領：誰都能替帳戶領，代幣只轉給帳戶。2 筆 EOA 的 bundle 多領舊版 MORPHO 再換成新版。",
+  "fields": {
+    "1.multicall.bundle": "Bundler3 依序執行的步驟清單，這裡固定只有一步：向 URD 領獎勵。卡片上有好幾種代幣時，每種代幣一步。",
+    "1.multicall.bundle[0]": "唯一的一步：呼叫 URD 的 `claim`。",
+    "1.multicall.bundle[0].to": "這一步呼叫的合約，固定是 Morpho 的 URD。",
+    "1.multicall.bundle[0].data": "這一步要執行的函式和參數，下面逐項列出。",
+    "1.multicall.bundle[0].data.claim.account": "領獎勵的帳戶，固定是 Safe。URD 只把代幣轉給這個地址，不管是誰送出交易。",
+    "1.multicall.bundle[0].data.claim.reward": "要領的獎勵代幣，等於你在卡片上選的代幣。",
+    "1.multicall.bundle[0].data.claim.claimable": "Safe 到目前累積能領的總額，不是這次領的數量。URD 轉出總額減掉已經領過的部分；數字不對，Merkle 證明就對不上，交易失敗。測試交易改掉它都失敗。",
+    "1.multicall.bundle[0].data.claim.proof": "Merkle 證明，證明 Safe、代幣和總額這一組在 URD 目前的根裡。改掉任何一個值，交易就失敗。",
+    "1.multicall.bundle[0].value": "附帶的 ETH，固定為 0。",
+    "1.multicall.bundle[0].skipRevert": "這一步失敗時是否略過。固定為 false：失敗就整筆失敗。",
+    "1.multicall.bundle[0].callbackHash": "只有需要回呼的步驟才用，固定為 0。"
+  }
+}

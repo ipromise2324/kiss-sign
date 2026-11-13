@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>morpho/urd-claim 報告</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.srcs .byai{margin-right:8px}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="目錄">
+  <h2>目錄</h2>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>從 Morpho URD 領取舊獎勵</span><span class="byai">AI 研究</span></span></h1>
+  <span class="opid">morpho/urd-claim</span>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫 Bundler3 的 <code>multicall</code>，每種獎勵代幣一步，向 Morpho 的 Universal Rewards Distributor（URD）呼叫 <code>claim</code>，把 Safe 累積到的獎勵代幣領回 Safe。URD 用 Merkle 證明核對 Safe 能領的總額，扣掉已經領過的，差額只會轉給 <code>account</code>，也就是 Safe。Safe 不付出任何東西，也不留下授權。Morpho 在 2025 年 7 月把獎勵改由 Merkl 發放，URD 只剩以前沒領的獎勵。</span><span class="byai">AI 研究</span></span></p>
+  <ul class="checks">
+    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">5 / 7</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">2 個地址有結果要你看，見「待確認」。其餘 5 個都至少在 2 個地方確認。</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">7 / 7</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">7 / 7</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認這 7 個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
+    <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>參數保護 <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">程式把 2 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
+  </ul>
+  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>只對得上以前 Morpho app 經 Bundler3 的領法。URD 已停用，官方舊獎勵頁現在導向直接呼叫 <code>claim</code>，那種交易這個模板不收。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>流程 <span class="c">1 個呼叫</span></h2>
+  <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
+  <div class="diagram">
+  <svg viewBox="0 0 660 212" role="img" aria-labelledby="dt dd">
+    <title id="dt">交易流程</title>
+    <desc id="dd">呼叫 1：Safe 呼叫 bundler3 的 multicall。結果：你得到 morpho。</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="204"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="204"/>
+    <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">bundler3</text><text class="nodes" x="280" y="50" text-anchor="middle">路由合約</text>
+    <line class="life" x1="470" y1="58" x2="470" y2="204"/>
+    <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">morpho-urd</text><text class="nodes" x="470" y="50" text-anchor="middle">發放合約</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">multicall</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <g data-ai><rect class="tagbox" x="292" y="128" width="56" height="20" rx="6"/><text class="tagt" x="320" y="142" text-anchor="middle">AI 研究</text><rect class="codebox" x="394.6" y="128" width="47" height="19" rx="6"/><rect class="codebox" x="461.6" y="128" width="62.6" height="19" rx="6"/><text class="cap" y="142"><tspan x="356">呼叫 </tspan><tspan class="capc" x="398.6">claim</tspan><tspan x="444.6">，</tspan><tspan class="capc" x="465.6">account</tspan><tspan x="527.2"> 是 Safe</tspan></text></g>
+    <line class="inner" x1="280" y1="152" x2="467" y2="152" marker-end="url(#m-inside)"/>
+    <text class="capg" x="104" y="178">你得到 morpho</text>
+    <line class="gain" x1="280" y1="188" x2="93" y2="188" marker-end="url(#m-gets)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="key">
+    <span class="k0">誰決定</span>
+    <span><span class="who you">你填</span>每次簽名填</span>
+    <span><span class="who you">你選</span>每次簽名選</span>
+    <span><span class="who">固定</span>改了就 MISMATCH</span>
+    <span><span class="who app">app 填，不限</span>換成別的值，結果一樣</span>
+  </div>
+  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。標「例」的你填、你選和 app 填的值取自第一筆測試交易 <code>morpho-urd-claim-other-safe</code>。</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">bundler3.</span>multicall</span><span class="sel">0x374f435d</span></div>
+    <div class="arg" data-field="1.multicall.bundle">
+      <div class="nm"><span class="pn">bundle</span><span class="who">固定</span></div>
+      <div class="val"><div class="is">1 項</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Bundler3 依序執行的步驟清單，這裡固定只有一步：向 URD 領獎勵。卡片上有好幾種代幣時，每種代幣一步。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="is">5 個部分</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>唯一的一步：呼叫 URD 的 <code>claim</code>。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">to</div><div><div class="raw">0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb</div><div class="is"><a href="#a-morpho-urd">morpho-urd</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 Morpho 的 URD。</span></span></div></div></div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>claim</code> (<span class="addr">0xfabed412</span>)</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">account<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">0xd6DC7b9f6352a8bdBC4aaf30de4721c0531188A2<span class="ex">例</span></div><div class="is">你的 Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>領獎勵的帳戶，固定是 Safe。URD 只把代幣轉給這個地址，不管是誰送出交易。</span></span></div></div></div>
+        <div class="part"><div class="pn">reward<div class="pchips"><span class="who you">你選：token</span></div></div><div><div class="raw">0x58D97B57BB95320F9a05dC918Aef65434969c2B2<span class="ex">例</span></div><div class="is"><a href="#a-morpho">morpho</a> <span class="f3">你選的 token</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要領的獎勵代幣，等於你在卡片上選的代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">claimable<div class="pchips"><span class="who app">app 填，不限</span></div></div><div><div class="raw">630315551315418633619<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">換成別的值測過，結果不變或交易失敗</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Safe 到目前累積能領的總額，不是這次領的數量。URD 轉出總額減掉已經領過的部分；數字不對，Merkle 證明就對不上，交易失敗。測試交易改掉它都失敗。</span></span></div></div></div>
+        <div class="part"><div class="pn">proof<div class="pchips"><span class="who app">app 填，不限</span></div></div><div><div class="raw">[0x72e2065354918972304b3f4c587ffbc20feb02586a6c83f9d8e3d41eebe6dcb8, 0x9f35c1854edcae3c715089e276cf5dece32c3afb1d9869f8ff9c4947fb50e8ab, 0x93892bbdf3e38247fdfbc05bd7db9f77f4c5a7ba7626c0531f57375410e79176, 0x22fc74a2e146b8f726aed9e778e45a0d41eda769f29206d4436b5a92ba8ee3e6, 0x8aa00ce60e6fdc059e857e04ae0809fd8176d2457288d39f2a5037a05baece76, 0x287e0da5a319440eeae00bd2dc349a714c1adefe9b16d7d44a4f01517d87d4f7, 0x0ac6287c5250e4bc44d0b6f09bbf26a62ef764b6788d251e635607ab10c2a969, 0x02c25219f089f7cb4f17ac29fdf29624d36f0c153b8a5b41bc34eea850b66557, 0xc080452da2dd9e4dec01e99273c3b96827816f3981e0d3b7526ee3b003a51a69, 0xcbeeb39f302423959ae7f4234bc64918ca098f5fb52dee53b8c6646ab360e9e2, 0x79720c8d2379aa98ea5e310d0976e20dc299692614ed0b5b00ac86017f65ad8e, 0x982eef58ec059e4fb29b508f93f91186652856be51e900999743c5cc2834fff1, 0x6bf4243200c052cd15aac3e0d28fe9e44c0ac07a87eb76432296f0d4a308628e, 0xe21a9099f41af501b6307bbfbf267be25e563d284874a59dc5c2876400098091, 0x1ea88488b644e106f20fa178a52894ea0c983fdba6c585de158d69368fafc0de, 0x64cfb30918317d783e82489a0d0ccdf767a88ba31a916287b06706549c79e38b]<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">合約會驗證它，換成別的值交易就失敗</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Merkle 證明，證明 Safe、代幣和總額這一組在 URD 目前的根裡。改掉任何一個值，交易就失敗。</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">固定為 0</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>附帶的 ETH，固定為 0。</span></span></div></div></div>
+        <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">固定為 false</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步失敗時是否略過。固定為 false：失敗就整筆失敗。</span></span></div></div></div>
+        <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">固定值</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>只有需要回呼的步驟才用，固定為 0。</span></span></div></div></div>
+      </div></div>
+      </div>
+    </div>
+  </div>
+  <h3>交易後</h3>
+  <dl class="props">
+    <div><dt>Safe 的 morpho</dt><dd class="pos">多於 0</dd><dd class="src">要多於 0</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-morpho-blue">
+  <h2>morpho-blue</h2>
+  <p class="intro"><span class="aiw" data-ai><span>Morpho 是借貸協議。URD 是它發獎勵用的合約，Bundler3 是它把多個步驟包成一筆交易的合約，兩者都不能升級。</span><span class="byai">AI 研究</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$10.39 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.63 B</span></span></dd></div>
+    <div><dt>上線</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
+    <div><dt>proxy</dt><dd><span>2 個合約</span><span class="sub2">從 code pin 讀到</span>
+      <dl class="nest">
+        <div><dt><a href="#a-bundler3">bundler3</a></dt><dd>不是 proxy</dd></div>
+        <div><dt><a href="#a-morpho-urd">morpho-urd</a></dt><dd>不是 proxy</dd></div>
+      </dl></dd></div>
+    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>URD 的 GitHub 列了 3 份稽核：Cantina（2023-11-14）、OpenZeppelin 的 Morpho Blue 周邊合約稽核（2023-11-16）和 Cantina 競賽（2024-01-05）。Bundler3 的 GitHub 列了 Spearbit 兩份（2025-01-02、2025-02-17）和 OpenZeppelin 一份（2025-02-18）。 <a class="aisrc" href="https://github.com/morpho-org/universal-rewards-distributor/tree/3de504b130835a12482e00e1c83dcf369448c80b/audits">來源 1</a> <a class="aisrc" href="https://github.com/morpho-org/bundler3/tree/b4014349e3527f44ceaab697b26e29f2b11457f3/audits">來源 2</a></span><span class="byai">AI 研究</span></span></dd></div>
+    <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
+  </dl>
+  <p class="srcline">程式在 2026-11-13 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
+</section>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row" data-state="warn" data-result="fluid/address">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t">fluid：地址只在 1 個地方確認：CoinGecko</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或 vault 的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-fluid">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有 CoinGecko 確認。Fluid 技術文件的合約地址頁沒有列它；Instadapp GitHub 的 deployments.md 有 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb，但都在別的合約的參數裡，沒有一列是代幣本身。AI 用 Alchemy 查 URD 發出的轉帳，沒看到 FLUID。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>這個模板不要選 FLUID：URD 沒發過，選了只會失敗。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row" data-state="warn" data-result="morpho-urd/address">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t">morpho-urd：地址只在 1 個地方確認：官方頁</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或 vault 的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-urd">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>程式只在 Morpho 文件的地址頁確認。AI 下載 Morpho 官方舊獎勵頁 rewards-legacy.morpho.org，它的頁內腳本把 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb 列在 Ethereum 的發放合約清單裡。Etherscan 顯示它由 MORPHO 代幣的部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 建立。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。舊獎勵頁列了 12 個 Ethereum 發放合約；確認 Safe 那一列的 Claim 連結是這個地址，別的這個模板不收。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>URD 已停用。官方舊獎勵頁 rewards-legacy.morpho.org 的 Claim 連到 Etherscan 的 Write Contract，直接呼叫 URD 的 <code>claim</code>，不經過 Bundler3。 <a class="aisrc" href="https://docs.morpho.org/developers/rewards/get-started/">來源 1</a> <a class="aisrc" href="https://rewards-legacy.morpho.org/">來源 2</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>不必用 Safe 簽：任何錢包都能從舊獎勵頁的 Etherscan 連結替 Safe 呼叫 <code>claim</code>（<code>account</code> 填 Safe），代幣只轉給 Safe。要經 Safe 領，先請 AI 另建直接呼叫 <code>claim</code> 的模板。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>過去一年研究的 29 筆裡沒有 Safe 用這個形狀領；21 筆直接呼叫 URD 的 <code>claim</code>，經 Bundler3 的只有 3 筆 EOA。3 筆測試交易來自 3 個 Safe，在 2025 年 6 月和 12 月，用的是當時 Morpho app 的 Bundler3 領法。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>這個模板只適合重現這種舊領法；新的領取走判斷 1 的路。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>卡片列出登記裡的 5 種代幣。AI 查 Alchemy 的轉帳紀錄，URD 發過其中的 MORPHO、USDC 和 USDT，沒看到 FLUID 或 cbBTC。舊版 MORPHO（0x9994E35Db50125E0DF82e4c2dde62496CE330999）等其他獎勵代幣不在登記裡，這個模板領不了。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>選舊獎勵頁列給 Safe、而且由 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb 發的代幣。別的發放合約或沒證明的代幣，交易會失敗或 MISMATCH。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>URD 的 owner 是 Morpho 的獎勵 multisig（一個 Safe）0xF057afeEc22E220f47AD4220871364e9E828b2e9，能用 <code>setRoot</code> 立刻換掉 Merkle 根，跳過 5 天的 timelock。換根只改變誰能領多少；<code>claim</code> 只轉給 <code>account</code>。 <a class="aisrc" href="https://etherscan.io/address/0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb#readContract">來源 1</a> <a class="aisrc" href="https://docs.morpho.org/developers/contracts/rewards/">來源 2</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。verify 只要求 Safe 收到多於 0 的這種代幣，金額以舊獎勵頁為準。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
+  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。右邊是模板的規則，不是描述檔的文字。</p>
+  <dl class="props two">
+    <div><dt>1 bundler3.multicall</dt><dd>
+      <dl class="nest flat">
+        <div><dt>data</dt><dd>呼叫 <code>claim</code>，參數見流程</dd></div>
+      </dl></dd></div>
+  </dl>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>呼叫 1：錢包不顯示 <code>bundle.[0].to</code>、<code>bundle.[0].value</code>、<code>bundle.[0].skipRevert</code>、<code>bundle.[0].callbackHash</code>。</span></div>
+</section>
+
+<section id="addresses">
+  <h2>地址 <span class="c">7 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題。AI 補查不改變信心等級。</span></span></h2>
+  <div class="rows">
+    <div class="ad" id="a-fluid" data-state="warn">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><span class="nm">fluid</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣，但 URD 從沒發過 FLUID</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb</span>
+        <div class="srcs"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="na"><a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div>
+        <div class="confirmed">只在 1 個地方確認：CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-morpho-urd" data-state="warn">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><span class="nm">morpho-urd</span><span class="role"><span class="aiw" data-ai><span>Morpho 的獎勵發放合約，核對 Merkle 證明後把獎勵轉給 Safe</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 已確認</span></span></div>
+      <div class="body"><span class="addr">0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb</span>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 UniversalRewardsDistributor，由 Morpho 的部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 經 URD 工廠建立 <a class="aisrc" href="https://etherscan.io/address/0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb#code">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>Morpho 的舊獎勵頁在它的 Ethereum 發放合約清單裡列出這個地址 <a class="aisrc" href="https://rewards-legacy.morpho.org/">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">只在 1 個地方確認：官方頁</div></div>
+    </div>
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 5 個沒有要你看的結果</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣：Circle 發行的 USDC</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-usdt" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdt</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣：Tether 發行的 USDT</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
+        <div class="srcs"><span data-state="ok"><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/tether">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-bundler3" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">bundler3</span><span class="role"><span class="aiw" data-ai><span>替 Safe 依序執行 bundle 裡的步驟，這裡只有一步</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245</span>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 Bundler3，創建者 0x6B5e029687e8f995aeF05aFb23442c3c4E3D1839 <a class="aisrc" href="https://etherscan.io/address/0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245#code">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
+    </div>
+    <div class="ad" id="a-morpho" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">morpho</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣：Morpho 的治理代幣，URD 發得最多的就是它</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-cbbtc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>可選的獎勵代幣，但 URD 從沒發過 cbBTC</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
+        <div class="srcs"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="na"><a href="https://defillama.com/protocol/coinbase">DefiLlama</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>過去交易</h2>
+  <p class="lead">過去有 <span class="num">1</span> 筆交易跟模板一模一樣：Safe <span class="num">0</span> 筆、EOA <span class="num">1</span> 筆（1 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 usdc 轉帳時、morpho 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 1 筆：<a href="https://etherscan.io/tx/0xae48185d41825fac96a544bcb57ec054a50f62968fe4336dd72ba9ca7dadf032">0xae48185d…</a>。</p>
+  <p class="intro"><span class="aiw" data-ai><span>直接呼叫 <code>claim</code> 的 21 筆裡，17 筆是 0xf6c6459a9d991A8cA26E726685151a3ff721BC0F 替別人的帳戶領：誰都能替帳戶領，代幣只轉給帳戶。2 筆 EOA 的 bundle 多領舊版 MORPHO 再換成新版。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 usdc 的 轉帳，找到 7 筆，研究 7 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-urd-claim-usdc.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">7 = 7</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一樣。</span></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 7 筆是別的操作，不列入：<code>claim</code> 7 筆。</span></div>
+  <h3>搜尋 morpho 的 轉帳，找到 22 筆，研究 22 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-urd-claim.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">22 = 22</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一樣。</span></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 multicall</span><span><span class="num">3</span> 筆用了這個操作的呼叫（3 個地址），<span class="num">1</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div class="pcalls"><code>morpho-urd.claim → morpho-urd.claim → 別的合約.permit → general-adapter-1.0xd96ca0b9 → general-adapter-1.0xbff63170</code></div><div><code>bundle</code> 有 5 項，模板是 1 項<span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x8023d4105d99370e44c09631dc9d325db6bbf982b1042e5f21cb6dfa75883a9e">0x8023d410…</a>、<a href="https://etherscan.io/tx/0x0f60cf814405f73158543fc619665e9b7704585a18b83a8fb62883fb6b2ab9dd">0x0f60cf81…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 19 筆是別的操作，不列入：<code>claim</code> 14 筆、<code>0x82ad56cb</code> 2 筆、<code>0x252dba42</code> 2 筆、<code>0xc590a2b3</code> 1 筆。</span></div>
+  </details>
+</section>
+
+<section id="next">
+  <h2>下一步</h2>
+  <ol class="steps">
+    <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>bin/kiss-sign template approve morpho/urd-claim</code></pre>
+      <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
+    <li><div>做卡片<pre class="cmd"><code>bin/kiss-sign card new morpho/urd-claim</code></pre>
+      <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
+    <li><div><code>token</code>：它列出可選的 token，每個附完整地址。選你要的那個，名字和完整地址都要對。</div></li>
+    <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
+      <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
+    <li><div>在 Safe web app 提出交易（第一次用這個模板，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。</p>
+      <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
+    <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 <code>verify</code> 網頁上的逐列比對。</p></div></li>
+    <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 網頁上的逐字比對，一樣才簽。
+      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>程式每次簽名自動做的事</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>交易只有這 1 個呼叫，MultiSend 也一個個解開</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>每個參數符合上面的規則，重新編碼要一模一樣</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 收到 morpho</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>碰到的 7 個登記合約，程式碼還是 code pin 記錄的那份</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">由 <code>pnpm report morpho/urd-claim --record</code> 從 <code>templates/morpho/urd-claim/template.json</code>、<code>templates/morpho/urd-claim/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-urd-claim.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-urd-claim-usdc.json</code>、<code>testdata/research/morpho-urd-claim.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/urd-claim/notes.json</code> 寫出，資料在 2026-11-13 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>
