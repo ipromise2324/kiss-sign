@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import type { Registry } from '../registry.ts';
@@ -50,13 +50,16 @@ export function reportedVaults(template: string, paths: readonly string[]): Set<
   return new Set(paths.flatMap((path) => (path.startsWith(prefix) && path.endsWith(`/${GENERATED_FILE}`) && path.split('/').length === prefix.split('/').length + 1 ? [path.slice(prefix.length, -GENERATED_FILE.length - 1)] : [])));
 }
 
-/** The same set, read from a checkout's working tree. */
+/** The same set, read from a checkout's working tree. A symlinked folder is skipped, as git lists no files under it. */
 export function reportedVaultsIn(repoRoot: string, template: string): Set<string> {
   const dir = join(repoRoot, TEMPLATES_DIR, template, VAULTS_DIR);
-  if (!existsSync(dir)) return new Set();
+  if (!existsSync(dir) || !lstatSync(dir).isDirectory()) return new Set();
   return reportedVaults(
     template,
-    readdirSync(dir).map((vault) => `${TEMPLATES_DIR}/${template}/${VAULTS_DIR}/${vault}/${GENERATED_FILE}`).filter((path) => existsSync(join(repoRoot, path))),
+    readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => `${TEMPLATES_DIR}/${template}/${VAULTS_DIR}/${entry.name}/${GENERATED_FILE}`)
+      .filter((path) => existsSync(join(repoRoot, path))),
   );
 }
 

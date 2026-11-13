@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -361,6 +361,24 @@ test('card seal refuses a vault with no report for the template, before it asks 
   assert.equal(result.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for morpho/vault-deposit; build one first\n');
   assert.deepEqual(result.asked, []);
   assert.equal(existsSync(join(home, 'cards')), false);
+});
+
+test('card seal does not count a report reached through a symlinked folder, which git would not list', async () => {
+  const repoRoot = anyTokenClone();
+  const elsewhere = mkdtempSync(join(tmpdir(), 'kiss-sign-elsewhere-'));
+  reportVault(elsewhere, 'test/any-token', 'smokehouse-usdc-v1-f5bc');
+  mkdirSync(join(repoRoot, 'templates', 'test', 'any-token', 'vaults'));
+  symlinkSync(join(elsewhere, 'templates', 'test', 'any-token', 'vaults', 'smokehouse-usdc-v1-f5bc'), join(repoRoot, 'templates', 'test', 'any-token', 'vaults', 'smokehouse-usdc-v1-f5bc'));
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'test/any-token', values: { token: 'smokehouse-usdc-v1-f5bc', amount: '5', recipient: 'safe' } }] }));
+  const vaultLink = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(vaultLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
+  const linked = anyTokenClone();
+  symlinkSync(join(elsewhere, 'templates', 'test', 'any-token', 'vaults'), join(linked, 'templates', 'test', 'any-token', 'vaults'));
+  const vaultsLink = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot: linked });
+  assert.equal(vaultsLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
 });
 
 test('card seal accepts the same vault for a template that predates per-vault reports', async () => {
