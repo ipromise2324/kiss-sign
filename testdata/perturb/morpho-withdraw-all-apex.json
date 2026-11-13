@@ -5,7 +5,7 @@
       {
         "template": "morpho/vault-withdraw-all",
         "values": {
-          "vault": "hyperithm-usdc-apex-7777",
+          "vault": "hyperithm-usdc-apex-v1-7777",
           "min-assets": "1367287893326"
         }
       }

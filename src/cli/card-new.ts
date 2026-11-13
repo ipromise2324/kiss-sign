@@ -10,16 +10,18 @@ import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import { kissSignHome } from '../keys.ts';
 import { isAttribute, isMarketEntryPart, loadRegistry } from '../registry.ts';
-import type { Attribute, ContractKind, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import type { Attribute, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate } from '../template/template.ts';
+import { TEMPLATES_DIR, loadTemplate, scopeEntries } from '../template/template.ts';
 import type { CardField, Template, TokenRef } from '../template/template.ts';
+import { gatesVaults, isRegistryVault, reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
 import { UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
 import { requireConfig, seal } from './setup.ts';
 
-type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' };
+/** A name a field may hold; a registry entry carries the factory that created it, so two vaults of one display name stay apart. */
+type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe'; readonly factory?: RegistryEntry };
 
 type Sources = { readonly registry: Registry; readonly book: AddressBook; readonly safe: Address };
 
@@ -28,13 +30,16 @@ type ChosenField = Exclude<CardField, TypedField>;
 
 /** The names a field may hold, as resolveCard accepts them. */
 function choicesFor(field: Exclude<ChosenField, { kind: 'market' }>, { registry, book, safe }: Sources): readonly Choice[] {
-  const contracts = (kind?: ContractKind): Choice[] =>
-    [...registry.entries.values()].filter((e) => kind === undefined || e.kind === kind).map((e) => ({ name: e.name, address: e.address, from: 'registry' }));
+  const listed = (e: RegistryEntry): Choice => {
+    const factory = e.attributes.factory === undefined ? undefined : registry.entries.get(e.attributes.factory);
+    return { name: e.name, address: e.address, from: 'registry', ...(factory === undefined ? {} : { factory }) };
+  };
+  const contracts = (): Choice[] => [...registry.entries.values()].map(listed);
   const self: Choice = { name: 'safe', address: safe, from: 'safe' };
   const booked = [...book].map(([name, address]): Choice => ({ name, address, from: 'address-book' }));
   switch (field.kind) {
     case 'contract':
-      return contracts(field.registryKind);
+      return scopeEntries(field.scope, registry).map(listed);
     case 'address':
       return [self, ...contracts(), ...booked];
     case 'recipient':
@@ -47,7 +52,10 @@ type Option = { readonly name: string; readonly id: Hex | Address; readonly line
 
 function optionsFor(field: ChosenField, sources: Sources): readonly Option[] {
   if (field.kind === 'market') return [...sources.registry.markets.values()].map((market) => ({ name: market.name, id: market.id, lines: marketLines(market) }));
-  return choicesFor(field, sources).map((c) => ({ name: c.name, id: c.address, lines: [`${c.name} ${checksumAddress(c.address)} (${c.from})`] }));
+  return choicesFor(field, sources).map((c) => {
+    const factory = c.factory === undefined ? '' : `  (factory ${c.factory.name} ${checksumAddress(c.factory.address)})`;
+    return { name: c.name, id: c.address, lines: [`${c.name} ${checksumAddress(c.address)} (${c.from})${factory}`] };
+  });
 }
 
 /** The choices a typed answer names: by its listed number, its exact name, or its full address or market id in any case. */
@@ -142,7 +150,15 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   return value.toString();
 }
 
-type Context = { readonly sources: Sources; readonly io: Io; readonly ask: Terminal['ask']; readonly decimals: TokenDecimals; readonly amounts: string[] };
+type Context = {
+  readonly sources: Sources;
+  readonly io: Io;
+  readonly ask: Terminal['ask'];
+  readonly decimals: TokenDecimals;
+  readonly amounts: string[];
+  /** The vaults with a report for a template reported per vault. */
+  readonly reported: (template: string) => ReadonlySet<string>;
+};
 
 const isTyped = (entry: [string, CardField]): entry is [string, TypedField] => entry[1].kind === 'amount' || entry[1].kind === 'nonce';
 const isChosen = (entry: [string, CardField]): entry is [string, ChosenField] => !isTyped(entry);
@@ -151,8 +167,13 @@ const isChosen = (entry: [string, CardField]): entry is [string, ChosenField] =>
 async function fill(template: Template, ctx: Context): Promise<CardOperation> {
   const values: Record<string, string> = {};
   const fields = [...template.card];
+  const unit = reportUnit(template);
+  if (unit.kind === 'several-vaults') throw new CardError(severalVaults(template.id));
   for (const [name, field] of fields.filter(isChosen)) {
-    const choices = optionsFor(field, ctx.sources);
+    const listed = optionsFor(field, ctx.sources);
+    const gated = gatesVaults(template) && field.kind !== 'market';
+    const choices = gated ? listed.filter((choice) => !isRegistryVault(choice.name, ctx.sources.registry) || ctx.reported(template.id).has(choice.name)) : listed;
+    if (unit.kind === 'vault' && unit.field === name && choices.length === 0) throw new CardError(`${name}: no vault has a report for ${template.id}; build one first`);
     if (choices.length === 0) {
       throw new CardError(`${name}: ${field.kind === 'market' ? 'registry/markets.json holds no market' : `the registry and address book hold nothing ${template.id} accepts here`}`);
     }
@@ -185,7 +206,7 @@ export async function cardNew(args: readonly string[], io: Io): Promise<number> 
     return loadTemplate(io.repoRoot, id, sources.registry);
   });
   const reader = templates.some(countsRegistryToken) ? openMainnetReader(io.env, io.transport) : undefined;
-  const ctx: Context = { sources, io, ask, decimals: chainDecimals(reader, io), amounts: [] };
+  const ctx: Context = { sources, io, ask, decimals: chainDecimals(reader, io), amounts: [], reported: (id) => reportedVaultsIn(io.repoRoot, id) };
   const operations: CardOperation[] = [];
   for (const [i, template] of templates.entries()) {
     io.stdout(`operation ${i + 1}: ${template.id}\n`);

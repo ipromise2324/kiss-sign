@@ -54,5 +54,15 @@
         "change": { "supplyShares": "increases", "borrowShares": "same", "collateral": "same" }
       }
     ]
-  }
+  },
+  "facts": [
+    {
+      "to": { "contract": "morpho-blue" },
+      "function": "market(bytes32 id) returns (uint128 totalSupplyAssets, uint128, uint128 totalBorrowAssets, uint128, uint128, uint128)",
+      "args": { "id": { "card": "market.id" } },
+      "units": { "totalSupplyAssets": "card.market.loanToken", "totalBorrowAssets": "card.market.loanToken" },
+      "ratio": ["totalBorrowAssets", "totalSupplyAssets"],
+      "reason": "utilization: Morpho Blue's AdaptiveCurveIrm computes it in _borrowRate as totalBorrowAssets divided by totalSupplyAssets (wDivDown, 0 when nothing is supplied); market(id) returns the totals as of the market's lastUpdate, without the interest accrued since"
+    }
+  ]
 }

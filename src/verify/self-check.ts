@@ -219,3 +219,8 @@ export function fileAt(root: string, commit: string, path: string): string {
 export function optionalFileAt(root: string, commit: string, path: string): string | undefined {
   return git(root, 'ls-tree', '--name-only', commit, '--', path).trim() === path ? fileAt(root, commit, path) : undefined;
 }
+
+/** Every file path under `dir` at the commit. */
+export function pathsAt(root: string, commit: string, dir: string): string[] {
+  return git(root, 'ls-tree', '-r', '--name-only', commit, '--', dir).split('\n').filter((path) => path !== '');
+}

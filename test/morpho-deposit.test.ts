@@ -32,10 +32,10 @@ const deposit = (vault: string, amount: string, minShares: string): Card => ({
 });
 
 const CASES = [
-  { name: 'morpho-deposit-metamorpho-1-0', vault: 'smokehouse-usdc', amount: '1464958248813', minShares: '1390732183143696404747928' },
-  { name: 'morpho-deposit-metamorpho-1-0-other-safe', vault: 'smokehouse-usdc', amount: '200000000000', minShares: '189861410385534442527589' },
-  { name: 'morpho-deposit-approve-trailer', vault: 'hyperithm-usdc-apex-7777', amount: '20000000000', minShares: '18968731394945526506377' },
-  { name: 'morpho-deposit-approve-trailer-other-safe', vault: 'hyperithm-usdc-apex-7777', amount: '10001000000', minShares: '9482917730630123475126' },
+  { name: 'morpho-deposit-metamorpho-1-0', vault: 'smokehouse-usdc-v1-f5bc', amount: '1464958248813', minShares: '1390732183143696404747928' },
+  { name: 'morpho-deposit-metamorpho-1-0-other-safe', vault: 'smokehouse-usdc-v1-f5bc', amount: '200000000000', minShares: '189861410385534442527589' },
+  { name: 'morpho-deposit-approve-trailer', vault: 'hyperithm-usdc-apex-v1-7777', amount: '20000000000', minShares: '18968731394945526506377' },
+  { name: 'morpho-deposit-approve-trailer-other-safe', vault: 'hyperithm-usdc-apex-v1-7777', amount: '10001000000', minShares: '9482917730630123475126' },
 ] as const;
 
 const check = (tx: SafeTx, card: Card): FieldCheck => checkTemplateFields(tx, resolved(tx, card), templates, registry);

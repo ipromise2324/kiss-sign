@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-11",
+  "fetched": "2026-11-13",
   "defillama": [
     {
       "slug": "circle-usdc",
@@ -25,6 +25,12 @@
       "slug": "morpho-blue",
       "name": "Morpho Blue",
       "url": "https://app.morpho.org/",
+      "github": []
+    },
+    {
+      "slug": "steakhouse-financial",
+      "name": "Steakhouse Financial",
+      "url": "https://www.steakhouse.financial/",
       "github": []
     },
     {
@@ -115,6 +121,14 @@
       "name": "Coinbase Wrapped BTC",
       "platforms": {
         "ethereum": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf"
+      }
+    },
+    {
+      "id": "steakhouse-usdt-morpho-vault",
+      "symbol": "steakusdt",
+      "name": "Steakhouse USDT Morpho Vault",
+      "platforms": {
+        "ethereum": "0xbeef047a543e45807105e51a8bbefcc5950fcfba"
       }
     }
   ],
@@ -300,6 +314,20 @@
         }
       ]
     },
+    "https://raw.githubusercontent.com/morpho-org/sdks/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "bundler3: {"
+        },
+        {
+          "text": "bundler3: \"0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245\","
+        },
+        {
+          "text": "generalAdapter1: \"0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0\","
+        }
+      ]
+    },
     "https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant": {
       "kind": "served",
       "blocks": [
@@ -313,34 +341,40 @@
         }
       ]
     },
-    "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults": {
+    "https://raw.githubusercontent.com/morpho-org/sdks/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts": {
       "kind": "served",
       "blocks": [
         {
-          "text": "Steakhouse USDC Ethereum Stablecoin Prime Instant USDC Ethereum v1 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
-          "heading": "Legacy Vaults"
+          "text": "[ChainId.EthMainnet]: {"
         },
         {
-          "text": "Smokehouse USDC Ethereum Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
-          "heading": "Legacy Vaults"
+          "text": "blue: \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\","
         },
         {
-          "text": "Steakhouse USDT Stablecoin Prime Instant USDC Ethereum v1 0xbeef047a543e45807105e51a8bbefcc5950fcfba",
-          "heading": "Legacy Vaults"
+          "text": "vaultBundlesV1: \"0x02912516d49dE997db75B9D7858faAE59209650B\","
         },
         {
-          "text": "Smokehouse USDC Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
-          "heading": "Legacy Vaults"
+          "text": "blueBundlesV1: \"0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD\","
+        },
+        {
+          "text": "},"
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x1897A8997241C1cD4bD0698647e4EB7213535c24\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xA1D94F746dEfa1928926b84fB2596c06926C0405\","
+        },
+        {
+          "text": "[ChainId.BaseMainnet]: {"
+        },
+        {
+          "text": "blue: \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\","
         }
       ]
-    },
-    "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex": {
-      "kind": "served",
-      "blocks": []
-    },
-    "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex": {
-      "kind": "served",
-      "blocks": []
     },
     "https://app.morpho.org/ethereum/vault/0xd63070114470f685b75B74D60EEc7c1113d33a3D/usual-boosted-usdc": {
       "kind": "served",
@@ -487,7 +521,7 @@
           "heading": "DistributionCreator"
         },
         {
-          "text": "On the vast majority of EVM chains, the Distributor is deployed at `0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae` and the DistributionCreator is deployed at `0x8BB4C975Ff3c250e0ceEA271728547f3802B36Fd`.",
+          "text": "On the vast majority of EVM chains, the Distributor is deployed at 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae and the DistributionCreator is deployed at 0x8BB4C975Ff3c250e0ceEA271728547f3802B36Fd.",
           "heading": "DistributionCreator"
         }
       ]
@@ -538,10 +572,57 @@
           "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
         }
       ]
+    },
+    "https://www.steakhouse.financial/docs/products/vault-products/legacy-vaults": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Steakhouse USDC Ethereum Stablecoin Prime Instant USDC Ethereum v1 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Smokehouse USDC Ethereum Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Steakhouse USDC Stablecoin Prime Instant USDC Ethereum v1 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Steakhouse USDT Stablecoin Prime Instant USDC Ethereum v1 0xbeef047a543e45807105e51a8bbefcc5950fcfba",
+          "heading": "Legacy Vaults"
+        },
+        {
+          "text": "Smokehouse USDC Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
+          "heading": "Legacy Vaults"
+        }
+      ]
+    },
+    "https://app.morpho.org/ethereum/vault/0xA0804346780b4c2e3bE118ac957D1DB82F9d7484/smokehouse-usdt": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://app.morpho.org/ethereum/vault/0x777791C4d6DC2CE140D00D2828a7C93503c67777/hyperithm-usdc-apex": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex": {
+      "kind": "served",
+      "blocks": []
     }
   },
   "commits": {
     "safe-global/safe-deployments@ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62": {
+      "kind": "on-default",
+      "branch": "main",
+      "status": "identical"
+    },
+    "morpho-org/sdks@8d702da09b69baa272ad00b77e55cd197191321d": {
+      "kind": "on-default",
+      "branch": "main",
+      "status": "behind"
+    },
+    "morpho-org/sdks@56f1ed62827a7aab39d979c0143d1fbf970c37ca": {
       "kind": "on-default",
       "branch": "main",
       "status": "identical"

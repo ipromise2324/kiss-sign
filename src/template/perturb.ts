@@ -1,15 +1,26 @@
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
-import type { ResolvedCard } from '../card.ts';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+import { parseCard, resolveCard } from '../card.ts';
+import type { Card, ResolvedCard } from '../card.ts';
+import { replayReader } from '../chain/recording.ts';
+import type { Exchange } from '../chain/recording.ts';
+import type { Read } from '../chain/reader.ts';
 import type { EventLog } from '../chain/types.ts';
 import { uintWord } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
-import type { Hex, SafeTx } from '../safe/types.ts';
-import { judgeEffects } from '../simulate/effects.ts';
+import { parseServiceTx } from '../safe/parse.ts';
+import type { Address, Hex, SafeTx } from '../safe/types.ts';
+import { endsNeeded, expectedChanges, judgeEffects, viewCalls } from '../simulate/effects.ts';
 import type { Observed } from '../simulate/effects.ts';
 import { EXECUTION_SUCCESS } from '../simulate/events.ts';
+import { simulateSafeTx } from '../simulate/simulate.ts';
 import type { Observation } from '../simulate/simulate.ts';
 import { checkTemplateFields, inspectTemplateFields } from './check.ts';
+import { checkMutations } from './mutation.ts';
+import type { MutationResult } from './mutation.ts';
 import type { Leaf } from './check.ts';
+import { loadTemplate, parseTemplate } from './template.ts';
 import type { FreeClaim, Template } from './template.ts';
 
 /**
@@ -25,7 +36,7 @@ export type Run = { readonly leaf: Leaf; readonly value: string; readonly outcom
 export type PerturbationReport =
   | { readonly kind: 'pass'; readonly runs: readonly Run[] }
   | { readonly kind: 'fail'; readonly runs: readonly Run[]; readonly failed: readonly Run[] }
-  | { readonly kind: 'not-run'; readonly reason: string };
+  | { readonly kind: 'not-run'; readonly cause: 'fields' | 'unverifiable' | 'not-executed'; readonly reason: string };
 
 const ALLOWED: Readonly<Record<FreeClaim, readonly Outcome[]>> = {
   scalar: ['reverted', 'refused', 'same'],
@@ -109,10 +120,10 @@ export async function checkPerturbations(
   simulate: (tx: SafeTx) => Promise<Observation>,
 ): Promise<PerturbationReport> {
   const { check, leaves } = inspectTemplateFields(tx, card, templates, registry);
-  if (check.kind !== 'match') return { kind: 'not-run', reason: `the transaction's fields give ${check.kind}` };
+  if (check.kind !== 'match') return { kind: 'not-run', cause: 'fields', reason: `the transaction's fields give ${check.kind}` };
   const base = await simulate(tx);
-  if (base.kind === 'unverifiable') return { kind: 'not-run', reason: base.reasons.join('; ') };
-  if (base.observed.kind !== 'executed') return { kind: 'not-run', reason: `the transaction did not execute: ${base.observed.why}` };
+  if (base.kind === 'unverifiable') return { kind: 'not-run', cause: 'unverifiable', reason: base.reasons.join('; ') };
+  if (base.observed.kind !== 'executed') return { kind: 'not-run', cause: 'not-executed', reason: `the transaction did not execute: ${base.observed.why}` };
   const baseLogs = logText(base.logs, tx.safe);
   const baseEffects = effectsText(base.observed);
   const data = hexToBytes(tx.data.slice(2));
@@ -139,4 +150,109 @@ export async function checkPerturbations(
   }
   const failed = runs.filter((r) => r.outcome === 'unverifiable' || r.leaf.rule.kind !== 'free' || !ALLOWED[r.leaf.rule.claim].includes(r.outcome));
   return failed.length === 0 ? { kind: 'pass', runs } : { kind: 'fail', runs, failed };
+}
+
+export const PERTURB_DIR = join('testdata', 'perturb');
+
+/** A `pnpm perturb --record` file: the Safe transaction it changed, the card, any replacing template, and the chain's answers. */
+type PerturbRecording = {
+  readonly safeTx: string;
+  readonly card: unknown;
+  readonly template?: unknown;
+  readonly executed: { readonly number: string; readonly hash: Hex };
+  readonly parent: { readonly number: string; readonly hash: Hex };
+  readonly exchanges: readonly Exchange[];
+};
+
+const agreed = <T>(read: Read<T>, what: string): T => {
+  if (read.kind === 'unverifiable') throw new Error(`${what}: ${read.reason}`);
+  return read.value;
+};
+
+const readRecording = (repoRoot: string, name: string): PerturbRecording =>
+  JSON.parse(readFileSync(join(repoRoot, PERTURB_DIR, `${name}.json`), 'utf8')) as PerturbRecording;
+
+function recordedTx(repoRoot: string, recording: PerturbRecording): SafeTx {
+  const fixture = JSON.parse(readFileSync(join(repoRoot, 'testdata', 'safe-tx', `${recording.safeTx}.json`), 'utf8'));
+  return parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
+}
+
+async function replay(name: string, recording: PerturbRecording, tx: SafeTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Promise<PerturbationReport> {
+  const reader = replayReader(recording.exchanges);
+  const header = async (at: PerturbRecording['parent']) => agreed(await reader.header({ number: BigInt(at.number), hash: at.hash }), `${PERTURB_DIR}/${name}.json block ${at.number}`);
+  const [parent, executed] = [await header(recording.parent), await header(recording.executed)];
+  const expectations = expectedChanges(card, templates, registry);
+  const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset): asset is Address => asset !== 'eth') : [];
+  return checkPerturbations(tx, card, templates, registry, (copy) =>
+    simulateSafeTx(reader, { tx: copy, parent, time: executed.time, watch, ends: endsNeeded(expectations), views: viewCalls(card, templates, registry) }),
+  );
+}
+
+/**
+ * Runs `checkPerturbations` again on the recording `testdata/perturb/<name>.json`, offline: its card resolved against the
+ * repository's templates and registry, every copy simulated from the recorded chain answers on the recorded parent block.
+ */
+export async function replayPerturbRecording(repoRoot: string, name: string, registry: Registry): Promise<PerturbationReport> {
+  const recording = readRecording(repoRoot, name);
+  const tx = recordedTx(repoRoot, recording);
+  const card = parseCard(recording.card);
+  const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(repoRoot, op.template, registry)]));
+  if (recording.template !== undefined) {
+    const replacing = parseTemplate(recording.template, registry);
+    templates.set(replacing.id, replacing);
+  }
+  const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  if (resolution.kind === 'refused') throw new Error(`${PERTURB_DIR}/${name}.json: card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
+  return replay(name, recording, tx, resolution.card, templates, registry);
+}
+
+/** A recorded transaction of one template, judged again offline with the template as it is now. */
+export type FixtureJudgement = {
+  readonly name: string;
+  readonly outcome:
+    | { readonly kind: 'card-refused'; readonly why: string }
+    | { readonly kind: 'judged'; readonly mutations: MutationResult; readonly perturbation: PerturbationReport };
+};
+
+/** Each `testdata/perturb/` recording, by file name, whose card names only `template` and replaces no template. */
+function recordingsOf(repoRoot: string, template: Template): { readonly name: string; readonly recording: PerturbRecording; readonly card: Card }[] {
+  return readdirSync(join(repoRoot, PERTURB_DIR))
+    .filter((f) => f.endsWith('.json'))
+    .sort()
+    .flatMap((file) => {
+      const name = file.replace(/\.json$/, '');
+      const recording = readRecording(repoRoot, name);
+      const card = parseCard(recording.card);
+      return recording.template === undefined && card.operations.every((op) => op.template === template.id) ? [{ name, recording, card }] : [];
+    });
+}
+
+/**
+ * Every recording `recordingsOf` names, in file-name order: its card resolved, its bound fields mutated
+ * (`checkMutations`) and its free fields perturbed again from the recording. Each is named by its Safe transaction fixture.
+ */
+export async function judgeFixtures(repoRoot: string, template: Template, registry: Registry): Promise<FixtureJudgement[]> {
+  const templates = new Map([[template.id, template]]);
+  const judged: FixtureJudgement[] = [];
+  for (const { name, recording, card } of recordingsOf(repoRoot, template)) {
+    const tx = recordedTx(repoRoot, recording);
+    const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
+    if (resolution.kind === 'refused') {
+      judged.push({ name: recording.safeTx, outcome: { kind: 'card-refused', why: `${resolution.reason} at ${resolution.at}: ${resolution.detail}` } });
+      continue;
+    }
+    const mutations = checkMutations(tx, resolution.card, templates, registry);
+    const perturbation = await replay(name, recording, tx, resolution.card, templates, registry);
+    judged.push({ name: recording.safeTx, outcome: { kind: 'judged', mutations, perturbation } });
+  }
+  return judged;
+}
+
+/** The template's first recorded test transaction, the first of `recordingsOf`, with its card; undefined when its card is refused or there is none. */
+export function firstRecordedTx(repoRoot: string, template: Template, registry: Registry): { readonly name: string; readonly tx: SafeTx; readonly card: ResolvedCard } | undefined {
+  const [first] = recordingsOf(repoRoot, template);
+  if (first === undefined) return undefined;
+  const tx = recordedTx(repoRoot, first.recording);
+  const resolution = resolveCard(first.card, { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: tx.safe });
+  return resolution.kind === 'resolved' ? { name: first.recording.safeTx, tx, card: resolution.card } : undefined;
 }

@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>morpho/vault-deposit · steakhouse-prime-usdc-v2-0f51 報告</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.srcs .byai{margin-right:8px}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="目錄">
+  <h2>目錄</h2>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-steakhouse-prime-usdc-v2-0f51">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>存入 Morpho vault</span><span class="byai">AI 研究</span></span></h1>
+  <span class="opid">morpho/vault-deposit · steakhouse-prime-usdc-v2-0f51</span>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 先授權 GeneralAdapter1 剛好你填的金額，再呼叫 Bundler3 的 <code>multicall</code>：GeneralAdapter1 從 Safe 拉走這筆代幣，存進你選的 vault，股份直接給 Safe。每股價格不能高過你填的最少股份換算出的價格，否則整筆失敗。</span><span class="byai">AI 研究</span></span></p>
+  <ul class="checks">
+    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>地址來源 <span class="n num">5 / 5</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">5 個地址都至少在 2 個地方確認：官方頁、協議 API、CoinGecko 或 vault 的登記工廠列出同一個地址。</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">5 / 5</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">5 / 5</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認這 5 個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
+    <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>參數保護 <span class="n num">1 / 1</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">程式把 1 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
+  </ul>
+  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>可以用。Steakhouse 文件頁和 CoinGecko 都列出這個地址，第一次先送小額。</span><span class="byai">AI 研究：可以用</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-steakhouse-prime-usdc-v2-0f51">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>流程 <span class="c">2 個呼叫</span></h2>
+  <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
+  <div class="diagram">
+  <svg viewBox="0 0 750 300" role="img" aria-labelledby="dt dd">
+    <title id="dt">交易流程</title>
+    <desc id="dd">呼叫 1：Safe 呼叫 usdc 的 approve。呼叫 2：Safe 呼叫 bundler3 的 multicall。結果：你得到 steakhouse-prime-usdc-v2-0f51。</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="292"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="292"/>
+    <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">usdc</text><text class="nodes" x="280" y="50" text-anchor="middle">代幣</text>
+    <line class="life" x1="470" y1="58" x2="470" y2="292"/>
+    <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">bundler3</text><text class="nodes" x="470" y="50" text-anchor="middle">路由合約</text>
+    <line class="life" x1="660" y1="58" x2="660" y2="292"/>
+    <rect class="node" x="574.5" y="14" width="171" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">general-adapter-1</text><text class="nodes" x="660" y="50" text-anchor="middle">轉接合約</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">multicall</text>
+    <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#m-call)"/>
+    <g data-ai><rect class="tagbox" x="315.40000000000003" y="180" width="56" height="20" rx="6"/><text class="tagt" x="343.40000000000003" y="194" text-anchor="middle">AI 研究</text><rect class="codebox" x="446.00000000000006" y="180" width="140.6" height="19" rx="6"/><rect class="codebox" x="621.8000000000001" y="180" width="117.2" height="19" rx="6"/><text class="cap" y="194"><tspan x="379.40000000000003">依序呼叫 </tspan><tspan class="capc" x="450.00000000000006">erc20TransferFrom</tspan><tspan x="589.6"> 和 </tspan><tspan class="capc" x="625.8000000000001">erc4626Deposit</tspan><tspan x="742.0000000000001"></tspan></text></g>
+    <line class="inner" x1="470" y1="204" x2="657" y2="204" marker-end="url(#m-inside)"/>
+    <g data-ai><rect class="tagbox" x="260.40000000000003" y="216" width="56" height="20" rx="6"/><text class="tagt" x="288.40000000000003" y="230" text-anchor="middle">AI 研究</text><rect class="codebox" x="349.00000000000006" y="216" width="101.6" height="19" rx="6"/><text class="cap" y="230"><tspan x="324.40000000000003">用 </tspan><tspan class="capc" x="353.00000000000006">transferFrom</tspan><tspan x="453.6"> 從 Safe 拉走你填的金額的 vault 資產代幣</tspan></text></g>
+    <line class="inner" x1="660" y1="240" x2="283" y2="240" marker-end="url(#m-inside)"/>
+    <text class="capg" x="104" y="266">你得到 steakhouse-prime-usdc-v2-0f51</text>
+    <line class="gain" x1="470" y1="276" x2="93" y2="276" marker-end="url(#m-gets)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="key">
+    <span class="k0">誰決定</span>
+    <span><span class="who you">你填</span>每次簽名填</span>
+    <span><span class="who you">你選</span>每次簽名選</span>
+    <span><span class="who">固定</span>改了就 MISMATCH</span>
+    <span><span class="who app">app 填，不限</span>換成別的值，結果一樣</span>
+  </div>
+  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。沒有測試交易可以當例子，你填和 app 填的值只寫規則。</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div>
+    <div class="arg" data-field="1.approve.spender">
+      <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
+      <div class="val"><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 GeneralAdapter1，呼叫 2 裡它用 <code>transferFrom</code> 拉走這筆錢。</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.approve.value">
+      <div class="nm"><span class="pn">value</span><span class="who you">你填：金額</span></div>
+      <div class="val"><div class="is">你填的金額</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>授權的上限，等於存款金額。呼叫 2 會整筆拉走，交易後授權回到 0。</span></span></div></div>
+    </div>
+  </div>
+  <div class="cb">
+    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">bundler3.</span>multicall</span><span class="sel">0x374f435d</span></div>
+    <div class="arg" data-field="2.multicall.bundle">
+      <div class="nm"><span class="pn">bundle</span><span class="who">固定</span></div>
+      <div class="val"><div class="is">2 項</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Bundler3 依序執行的步驟清單，這裡固定兩步：先拉代幣，再存進 vault。任何一步失敗，整筆交易失敗。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="is">5 個部分</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>第一步：把代幣從 Safe 拉進 GeneralAdapter1。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc20TransferFrom</code> (<span class="addr">0xd96ca0b9</span>)</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">token<div class="pchips"><span class="who you">你選：vault</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的 vault 的 asset</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要拉的代幣，等於你選的 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>代幣先轉到 GeneralAdapter1 自己，下一步再由它存進 vault。</span></span></div></div></div>
+        <div class="part"><div class="pn">amount<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">你填的金額</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>從 Safe 拉的數量，等於存款金額。Bundler3 記錄發起人是 Safe，所以只能拉 Safe 的錢。</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">固定為 0</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>附帶的 ETH，固定為 0。</span></span></div></div></div>
+        <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">固定為 false</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步失敗時是否略過。固定為 false：失敗就整筆失敗。</span></span></div></div></div>
+        <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">固定值</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>只有需要回呼的步驟才用，固定為 0。</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">[1]</div><div><div class="is">5 個部分</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>第二步：GeneralAdapter1 把代幣存進 vault，股份給 Safe。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc4626Deposit</code> (<span class="addr">0x6ef5eeae</span>)</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">vault<div class="pchips"><span class="who you">你選：vault</span></div></div><div><div class="raw">0xbeef088055857739C12CD3765F20b7679Def0f51</div><div class="is"><a href="#a-steakhouse-prime-usdc-v2-0f51">steakhouse-prime-usdc-v2-0f51</a> <span class="f3">你選的 vault</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進哪一個 vault。這就是你在卡片上選的 vault。</span></span></div></div></div>
+        <div class="part"><div class="pn">assets<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">你填的金額</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進 vault 的代幣數量，等於存款金額。</span></span></div></div></div>
+        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">價格上限 <span class="f3">依你填的數量算出，交易裡的要一樣嚴或更嚴</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，依 vault 自己回報的股份數，你至少拿到最少股份。</span></span></div></div></div>
+        <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">固定</span></div></div><div><div class="is">你的 Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>收股份的地址，固定是 Safe。</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">固定為 0</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>附帶的 ETH，固定為 0。</span></span></div></div></div>
+        <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">固定為 false</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步失敗時是否略過。固定為 false：失敗就整筆失敗。</span></span></div></div></div>
+        <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">固定值</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>只有需要回呼的步驟才用，固定為 0。</span></span></div></div></div>
+      </div></div>
+      </div>
+    </div>
+  </div>
+  <h3>交易後</h3>
+  <dl class="props">
+    <div><dt>Safe 的 usdc</dt><dd class="">你填的金額</dd><dd class="src">剛好你填的金額</dd></div>
+    <div><dt>Safe 的 steakhouse-prime-usdc-v2-0f51</dt><dd class="pos">多於 0</dd><dd class="src">要多於 0</dd></div>
+    <div><dt>給 <a href="#a-general-adapter-1">general-adapter-1</a> 的 usdc 授權</dt><dd class=""><span class="num">0</span></dd><dd class="src">交易內用完，不能比交易前高</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-morpho-blue">
+  <h2>morpho-blue</h2>
+  <p class="intro"><span class="aiw" data-ai><span>Morpho 的 vault 把存款分配到多個 Morpho Blue market 放貸。vault 由策展人管理，Morpho 的工廠合約負責建立它們。</span><span class="byai">AI 研究</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$10.47 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.71 B</span></span></dd></div>
+    <div><dt>上線</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
+    <div><dt>proxy</dt><dd><span>2 個合約</span><span class="sub2">從 code pin 讀到</span>
+      <dl class="nest">
+        <div><dt><a href="#a-bundler3">bundler3</a></dt><dd>不是 proxy</dd></div>
+        <div><dt><a href="#a-general-adapter-1">general-adapter-1</a></dt><dd>不是 proxy</dd></div>
+      </dl></dd></div>
+    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Bundler3 的 GitHub 列了 3 份稽核（Spearbit 兩份、OpenZeppelin 一份）。Vault V2 的 GitHub 列了 10 份（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。MetaMorpho 的 GitHub 列了 Cantina 和 OpenZeppelin 的稽核。 <a class="aisrc" href="https://github.com/morpho-org/bundler3/tree/main/audits">來源 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">來源 2</a> <a class="aisrc" href="https://github.com/morpho-org/metamorpho/tree/main/audits">來源 3</a></span><span class="byai">AI 研究</span></span></dd></div>
+    <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
+  </dl>
+  <p class="srcline">程式在 2026-11-13 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>和鏈上。標 AI 研究的是 AI 查的。</p>
+</section>
+
+<section id="vault-steakhouse-prime-usdc-v2-0f51">
+  <h2>金庫</h2>
+  <p class="lead"><a href="#a-steakhouse-prime-usdc-v2-0f51">steakhouse-prime-usdc-v2-0f51</a>：程式記錄的 <code>pnpm vault-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
+  <dl class="props">
+    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26404811</dd></div>
+    <div><dt>現在的 totalAssets</dt><dd><span class="num">131,938,959.86 usdc</span></dd><dd class="src">2026-11-13，區塊 26404811</dd></div>
+    <div><dt>持有人</dt><dd><span class="num">782</span> 個地址持有，曾經收過的 <span class="num">1471</span> 個</dd><dd class="src"></dd></div>
+    <div><dt>最大持有人</dt><dd><span class="num">17.39%</span></dd><dd class="src">占全部股份</dd></div>
+    <div><dt>前 10 名</dt><dd><span class="num">54.06%</span></dd><dd class="src">占全部股份</dd></div>
+  </dl>
+  <h3>每月的 totalAssets</h3>
+  <div class="diagram">
+  <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
+    <title id="vt">每月的 totalAssets</title>
+    <desc id="vd">13 個月，2025-11-16 到 2026-11-13，最高 131,938,959.86 usdc</desc>
+    <text class="tick" x="16" y="18">最高 131,938,959.86 usdc</text>
+    <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
+    <rect class="bar" x="25.7" y="149" width="29.0" height="1"><title>2025-11-16：0.02 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="145" width="29.0" height="5"><title>2025-12-17：5,995,833.44 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
+    <rect class="bar" x="122.3" y="145" width="29.0" height="5"><title>2026-01-16：5,928,820.89 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="140" width="29.0" height="10"><title>2026-02-15：10,889,028.37 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="bar" x="218.9" y="141" width="29.0" height="9"><title>2026-03-17：10,605,147.91 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
+    <rect class="bar" x="267.2" y="143" width="29.0" height="7"><title>2026-04-16：8,329,991.28 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="315.5" y="94" width="29.0" height="56"><title>2026-05-16：63,166,471.82 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
+    <rect class="bar" x="363.8" y="93" width="29.0" height="57"><title>2026-06-15：65,107,746.41 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="412.1" y="94" width="29.0" height="56"><title>2026-07-15：63,666,414.82 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
+    <rect class="bar" x="460.4" y="60" width="29.0" height="90"><title>2026-08-15：102,336,710.55 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="508.7" y="56" width="29.0" height="94"><title>2026-09-14：106,836,411.6 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
+    <rect class="bar" x="557.0" y="55" width="29.0" height="95"><title>2026-10-14：107,927,189.41 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar last" x="605.4" y="34" width="29.0" height="116"><title>2026-11-13：131,938,959.86 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>
+  <details class="fold">
+    <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>13 個月的數字</summary>
+    <dl class="props">
+      <div><dt class="num">2025-11-16</dt><dd class="num">0.02 usdc</dd></div>
+      <div><dt class="num">2025-12-17</dt><dd class="num">5,995,833.44 usdc</dd></div>
+      <div><dt class="num">2026-01-16</dt><dd class="num">5,928,820.89 usdc</dd></div>
+      <div><dt class="num">2026-02-15</dt><dd class="num">10,889,028.37 usdc</dd></div>
+      <div><dt class="num">2026-03-17</dt><dd class="num">10,605,147.91 usdc</dd></div>
+      <div><dt class="num">2026-04-16</dt><dd class="num">8,329,991.28 usdc</dd></div>
+      <div><dt class="num">2026-05-16</dt><dd class="num">63,166,471.82 usdc</dd></div>
+      <div><dt class="num">2026-06-15</dt><dd class="num">65,107,746.41 usdc</dd></div>
+      <div><dt class="num">2026-07-15</dt><dd class="num">63,666,414.82 usdc</dd></div>
+      <div><dt class="num">2026-08-15</dt><dd class="num">102,336,710.55 usdc</dd></div>
+      <div><dt class="num">2026-09-14</dt><dd class="num">106,836,411.6 usdc</dd></div>
+      <div><dt class="num">2026-10-14</dt><dd class="num">107,927,189.41 usdc</dd></div>
+      <div><dt class="num">2026-11-13</dt><dd class="num">131,938,959.86 usdc</dd></div>
+    </dl>
+  </details>
+</section>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>遇到 MISMATCH 不要簽；回報後再決定是否新增模板。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，改列 VaultBundlesV1（0x02912516d49dE997db75B9D7858faAE59209650B）；docs.morpho.org 兩個都列。記錄裡 2026-09 底之後的存款多半經 VaultBundlesV1，Morpho app 現在可能不再走這個模板的路線。 <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">來源</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽之前看 Safe 交易呼叫的是 Bundler3 還是 VaultBundlesV1；經 VaultBundlesV1 的要用 morpho/vault-bundles-deposit 模板，用這個模板 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 一年內從幾乎是零升到約 1.32 億 USDC，2026-04 到 2026-05 一個月內從約 830 萬升到約 6,320 萬；前 10 名持有人占 54.06%。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>規模在一年內才長起來，先送小額。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>錢包顯示</h2>
+  <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，硬體錢包解不開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>
+</section>
+
+<section id="addresses">
+  <h2>地址 <span class="c">5 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題。AI 補查不改變信心等級。</span></span></h2>
+  <div class="rows">
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 5 個沒有要你看的結果</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>存進 USDC vault 的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-bundler3" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">bundler3</span><span class="role"><span class="aiw" data-ai><span>Morpho 的打包合約，依序執行 bundle 裡的每一步，並記住發起人是 Safe</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245</span>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
+    </div>
+    <div class="ad" id="a-steakhouse-prime-usdc-v2-0f51" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">steakhouse-prime-usdc-v2-0f51</span><span class="role"><span class="aiw" data-ai><span>Steakhouse 管理的 USDC vault（V2，Prime Instant）</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xbeef088055857739C12CD3765F20b7679Def0f51</span>
+        <div class="srcs"><span data-state="ok"><a href="https://www.steakhouse.financial/docs/products/vault-products/current/prime-instant">www.steakhouse.financial/docs/products/vault-products</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/steakhouse-usdc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok">工廠<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/steakhouse-financial">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 3 個地方確認：官方頁、CoinGecko、工廠</div></div>
+    </div>
+    <div class="ad" id="a-vault-v2-factory" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">vault-v2-factory</span><span class="role"><span class="aiw" data-ai><span>Morpho Vault V2 工廠，它回答 <code>isVaultV2</code> = true，這個 vault 是它建立的</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xA1D94F746dEfa1928926b84fB2596c06926C0405</span>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
+    </div>
+    <div class="ad" id="a-general-adapter-1" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">general-adapter-1</span><span class="role"><span class="aiw" data-ai><span>接收授權，替 Safe 拉代幣並存進 vault</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</span>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>過去交易</h2>
+  <p class="lead">過去有 <span class="num">4</span> 筆交易跟模板一模一樣：Safe <span class="num">2</span> 筆（1 個 Safe）、EOA <span class="num">2</span> 筆（2 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 steakhouse-prime-usdc-v2-0f51 鑄造（存款）時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 3 筆：<a href="https://etherscan.io/tx/0xe4c6c109b4bec1981abbd60c1c3ef5d79e5ff5387ca5848b018e27f83f2ea3e8">0xe4c6c109…</a>、<a href="https://etherscan.io/tx/0x88a65493c62cfc17be33cbc587fca29edf71d0984b6ba2295873dfb1a9a38c4c">0x88a65493…</a>、<a href="https://etherscan.io/tx/0x8cec01d9fd62e7fb22f7fe3341cef470403ef1263303dcbad7aed4eb737df8cb">0x8cec01d9…</a>。</p>
+  <p class="intro"><span class="aiw" data-ai><span>那個 Safe 另 1 筆存款走較新的 VaultBundlesV1。EOA 多半改用 permit 簽名存，Safe 不能用 permit。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 steakhouse-prime-usdc-v2-0f51 的 鑄造（存款），找到 222 筆，研究 18 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-vault-deposit-windows.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">222 = 222</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一樣。</span></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 multicall</span><span><span class="num">6</span> 筆用了這個操作的呼叫（6 個地址），<span class="num">0</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">3 筆</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> 有 3 項，模板是 2 項<span class="f3">，來自 3 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xd43657332f2ddfc79c07b482e3c4cda62fd95ab5306de32871625819cb527160">0xd4365733…</a>、<a href="https://etherscan.io/tx/0x4b55fa0ca1e00ba10d595be0232f0c5e82a116932652910351411df652a7fb76">0x4b55fa0c…</a>、<a href="https://etherscan.io/tx/0x65620751ec1e1678a0ac0aca4735da773e7de4775e67bde1547ea83eb046413b">0x65620751…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>general-adapter-1.erc4626Redeem → general-adapter-1.erc4626Deposit → general-adapter-1.nativeTransfer → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> 有 6 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xb2e1fa9d798a29a9b80f78b5efd8c0673b61805048bcbf576dc327308a36c492">0xb2e1fa9d…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>general-adapter-1.erc20TransferFrom → 別的合約.0x6dc916f5 → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> 有 3 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xc8149650e9d0acd4af24a9176665485f613e0cc02b85ab23798d69c4254398b1">0xc8149650…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.nativeTransfer → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> 有 5 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x226c6f637d787a5e0d04064b0ea51401e9fe4f4244a159dc1a7ea70c8e5cc01c">0x226c6f63…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 12 筆是別的操作，不列入：<code>deposit</code> 4 筆、<code>0xc0be882e</code> 2 筆、<code>0xde0171ed</code> 1 筆、<code>0x3da9b9d0</code> 1 筆，還有別的。</span></div>
+  <h3>搜尋 steakhouse-prime-usdc-v2-0f51 的 鑄造（存款），找到 65 筆，研究 65 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-vault-deposit.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">65 = 65</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">3</span> 筆用了這個操作的呼叫（1 個 Safe），<span class="num">2</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>usdc.approve → vault-bundles-v1.0x6bbba4e0</code></div><div>呼叫跟模板不同，模板是 <code>approve → multicall</code><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xbd242bf8e4ff0a45a27468a62553bae8770bd456c12420028de0f82e28e18a80">0xbd242bf8…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 multicall</span><span><span class="num">25</span> 筆用了這個操作的呼叫（24 個地址），<span class="num">2</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">13 筆</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> 有 3 項，模板是 2 項<span class="f3">，來自 12 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x8b418f72564aac961208cf6f6aea83a99d26d4a385f2f40b9087161ac205efd1">0x8b418f72…</a>、<a href="https://etherscan.io/tx/0xb24d1632b3f2ee85e8a74ca8e3bed35dbcc493cbc28c07c34d420675b8a52242">0xb24d1632…</a>、<a href="https://etherscan.io/tx/0x3bffebfb02c52def0e948fd439634f77895206486c760e8a4a66fcf5686fd661">0x3bffebfb…</a></div></div></div>
+    <div class="pg"><span class="pc num">10 筆</span><div><div class="pcalls"><code>general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.nativeTransfer → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> 有 5 項，模板是 2 項<span class="f3">，來自 10 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xaa2db7e2400a5e6762368a539395f35704c1b18f5fd81f59faaf43688b601ea8">0xaa2db7e2…</a>、<a href="https://etherscan.io/tx/0x182ec904c89efd8149cef49ba800111350d84fa8f7ab691c4ca574ae4b840ba9">0x182ec904…</a>、<a href="https://etherscan.io/tx/0x67c52780beccae4e05167a4a2b436ab65c6798b07997d73120a28da45a77c57e">0x67c52780…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 37 筆是別的操作，不列入：<code>0x22cfce7b</code> 16 筆、<code>deposit</code> 7 筆、<code>0xac108acc</code> 4 筆、<code>0x6bbba4e0</code> 3 筆，還有別的。</span></div>
+  </details>
+</section>
+
+<section id="sign">
+  <h2>簽名</h2>
+  <ol class="steps">
+    <li><div>用 <code>bin/kiss-sign card new morpho/vault-deposit</code> 做卡片：選 vault、填 amount、填 min-shares。第一次先填小額。</div></li>
+    <li><div>跑 <code>verify</code>，要印出 <code>MATCH</code>。</div></li>
+    <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 印的逐字比對，一樣才簽。
+      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>程式每次簽名自動做的事</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>交易只有這 2 個呼叫，MultiSend 也一個個解開</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>每個參數符合上面的規則，重新編碼要一模一樣</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 給出的 usdc 剛好是你填的金額</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 收到 steakhouse-prime-usdc-v2-0f51</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>碰到的 5 個登記合約，程式碼還是 code pin 記錄的那份</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">由 <code>pnpm report morpho/vault-deposit --vault-of steakhouse-prime-usdc-v2-0f51 --record</code> 從 <code>templates/morpho/vault-deposit/template.json</code>、<code>templates/morpho/vault-deposit/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-vault-deposit/steakhouse-prime-usdc-v2-0f51.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-vault-deposit-windows.json</code>、<code>testdata/research/morpho-vault-deposit.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-deposit/notes.json</code>、<code>templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json</code> 寫出，資料在 2026-11-13 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>

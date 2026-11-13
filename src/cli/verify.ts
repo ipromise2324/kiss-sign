@@ -17,9 +17,10 @@ import { checksumAddress, parseHex } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { describeCallScan } from '../simulate/simulate.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
-import { fileAt, optionalFileAt, selfCheck } from '../verify/self-check.ts';
+import { fileAt, optionalFileAt, pathsAt, selfCheck } from '../verify/self-check.ts';
+import { reportedVaults, unreportedVault } from '../template/vault-reports.ts';
 import { amountTokens, callTree, renderCallTree } from '../verify/expected.ts';
-import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile } from '../verify/verify.ts';
+import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile, prepare } from '../verify/verify.ts';
 import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
 import { FAILED, OK, UsageError } from './io.ts';
 import type { Io } from './io.ts';
@@ -106,6 +107,12 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
     ...(markets === undefined ? {} : { markets }),
     addressBook: Object.fromEntries([...book].filter(([name]) => named.has(name)).map(([name, address]) => [name, checksumAddress(address)])),
   };
+  const parsed = prepare(inputs);
+  const unreported = unreportedVault(parsed.card, parsed.templates, parsed.registry, (id) => reportedVaults(id, pathsAt(io.repoRoot, check.commit, `${TEMPLATES_DIR}/${id}`)));
+  if (unreported !== undefined) {
+    io.stderr(`kiss-sign: card refused: ${unreported}. Nothing was verified.\n`);
+    return FAILED;
+  }
   const endpoints = mainnetEndpoints(io.env);
   const recorder = recordingTransport(io.transport, endpoints);
   const { evaluation: result, tx, prepared } = await evaluateTx(inputs, createReader(endpoints, recorder.transport));

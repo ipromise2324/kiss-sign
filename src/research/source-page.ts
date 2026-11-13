@@ -56,7 +56,21 @@ export function pageUrlOf(source: string): string {
   return `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${path.join('/')}`;
 }
 
-export const sourceHoldsAddress = (source: string, address: Address): boolean => source.toLowerCase().includes(address.slice(2));
+const percentDecoded = (text: string): string => text.replace(/%([0-9a-fA-F]{2})/g, (_, byte: string) => String.fromCharCode(parseInt(byte, 16)));
+
+/** Whether the URL holds the address in any letter case, plain or percent-encoded, as a server that echoes it would decode it. */
+export const sourceHoldsAddress = (source: string, address: Address): boolean => percentDecoded(source).toLowerCase().includes(address.slice(2));
+
+/**
+ * The page a URL names, as one key for two spellings of it: the URL `pageUrlOf` reads, with no fragment and its path
+ * percent-decoded, and a GitHub owner and repository in lowercase, since GitHub ignores their case.
+ */
+export function samePageKey(source: string): string {
+  const url = new URL(pageUrlOf(source));
+  const path = percentDecoded(url.pathname);
+  const key = url.hostname === 'raw.githubusercontent.com' ? path.replace(/^\/[^/]*\/[^/]*/, (repo) => repo.toLowerCase()) : path;
+  return `${url.hostname}${key}${url.search}`;
+}
 
 const BLOCK_TAGS = new Set(
   'address article aside blockquote body br caption dd details dialog div dl dt fieldset figcaption figure footer form h1 h2 h3 h4 h5 h6 header hr html li main nav ol p pre section summary table tbody tfoot thead tr ul'.split(' '),

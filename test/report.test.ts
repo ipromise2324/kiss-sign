@@ -20,7 +20,8 @@ import {
   compareReports,
   entriesOf,
   erc7730Text,
-  loadSubject,
+  generatedPath,
+  loadReport,
   parseDocs,
   pastTxsRecordings,
   programChanges,
@@ -35,22 +36,26 @@ import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/re
 import type { AbiProof } from '../src/contracts/prove.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
+import { reportedVaultsIn } from '../src/template/vault-reports.ts';
+import { PREDATE_REPORT } from './predate-report.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
 const suffixes = loadPublicSuffixList();
 const ID = 'morpho/vault-deposit';
-const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath({ template: ID })), 'utf8')) as ReportRecording;
+const TARGET = { template: ID, cardVault: 'steakhouse-prime-usdc-v2-0f51' };
+const scoped = loadReport(ROOT, registry, TARGET);
+const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath(TARGET)), 'utf8')) as ReportRecording;
 
 /** The report with no ABI proofs, vault evidence or past transactions, which the replay test covers. */
 function quick(
   pages: Readonly<Record<string, Page>> = recording.pages,
   abi: ReportInputs['abi'] = new Map(),
-  subject: Subject = loadSubject(ROOT, registry, { template: ID }),
+  subject: Subject = scoped.subject,
   vaults: ReportInputs['vaults'] = new Map(),
   pastTxs: ReportInputs['pastTxs'] = [],
   spans: ReportInputs['spans'] = new Map(),
-  reg: Registry = registry,
+  reg: Registry = scoped.registry,
 ): string {
   const inputs: ReportInputs = {
     subject,
@@ -63,33 +68,45 @@ function quick(
     pastTxs,
     spans,
     erc7730: { text: 'not read', reports: [] },
+    facts: undefined,
   };
   return renderReport(inputs, { command: 'test', sources: [] });
 }
 
 test('morpho/vault-deposit: rules name registry entries with full addresses, and every function has its page checked', () => {
   const text = quick();
-  assert.match(text, /\| `approve\.spender` \| registry `general-adapter1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` \|/);
-  assert.match(text, /\| `to` \| the `asset` of the card's `vault`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7` \|/);
+  assert.match(text, /\| `approve\.spender` \| registry `general-adapter-1` `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` \|/);
+  assert.match(text, /\| `to` \| the `asset` of the card's `vault`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` \|/);
   assert.match(text, /\| `multicall\.bundle\[1\]\.data → erc4626Deposit\.receiver` \| the Safe \|/);
   assert.match(text, /\| `multicall\.bundle\[1\]\.data → erc4626Deposit\.maxSharePriceE27` \| at most assets × 1e27 \/ shares, with assets the card's `amount` and shares the card's `min-shares`/);
-  assert.match(text, /\| `multicall` \| calls `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)`, selector `0x374f435d`; at most 8 bytes after the arguments/);
-  assert.match(text, /\| `steakhouse-prime-usdc` \| `0xbeef088055857739C12CD3765F20b7679Def0f51` \| asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory`/);
-  assert.match(text, /\| `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \| `bundler3` \| <https:\/\/docs\.morpho\.org\/developers\/contracts\/bundles\/> \| PASS \| n\/a \| PASS \|/);
-  assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
+  assert.match(text, /\| `multicall` \| calls `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)`, selector `0x374f435d`; at most 12 bytes after the arguments/);
+  assert.match(text, /\| `steakhouse-prime-usdc-v2-0f51` \| `0xbeef088055857739C12CD3765F20b7679Def0f51` \| asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory`/);
+  assert.match(text, /\| `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \| `bundler3` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| PASS \|/);
+  assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter-1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
+});
+
+test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
+  const template = parseTemplate({ ...raw, card: { ...raw.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } }, registry);
+  const subject: Subject = { ...loadReport(ROOT, registry, { template: 'fluid/vault-deposit' }).subject, template } as Subject;
+  const vaults = entriesOf(subject, registry).filter((entry) => entry.kind === 'vault').map((entry) => entry.name);
+  assert.deepEqual(vaults, ['fluid-fusdc', 'fluid-fusdt']);
+  const text = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, registry);
+  assert.match(text, /\| `vault` \| a registry `vault` of the DefiLlama protocol `fluid-lending`, picked by number from the list below \|/);
+  assert.ok(!text.includes('steakhouse-prime-usdc-v2-0f51'), 'no Morpho vault is listed');
 });
 
 test('morpho/vault-deposit: the ERC-7730 section is computed again from the recorded descriptors and attestation reads', async () => {
   const snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
-  const entries = entriesOf(loadSubject(ROOT, registry, { template: ID }), registry);
-  const { text } = await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)));
+  const entries = entriesOf(scoped.subject, scoped.registry);
+  const { text } = await erc7730Text(entries, scoped.registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain)));
   assert.match(text, /^ERC-7730 registry github\.com\/ethereum\/clear-signing-erc7730-registry at commit [0-9a-f]{40}$/m);
-  assert.match(text, /general-adapter1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 \(adapter\)\n {2}descriptor {3}none/);
+  assert.match(text, /general-adapter-1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 \(adapter\)\n {2}descriptor {3}none/);
   assert.match(
     text,
-    /smokehouse-usdc 0xBEeFFF209270748ddd194831b3fa287a5386f5bC \(vault\)\n {2}descriptor {3}registry\/morpho\/calldata-steakhouse_financial-bbqUSDC\.json\n {2}applies {6}by exact address[^]*?signer {5}0x3846c3A30E62075Fa916216b35EF04B8F53931f6, listed in auditors\/\n {4}result {5}VALID/,
+    /steakhouse-prime-usdc-v2-0f51 0xbeef088055857739C12CD3765F20b7679Def0f51 \(vault\)\n {2}descriptor {3}registry\/morpho\/calldata-steakhouse_financial-steakUSDC-v2-1\.json\n {2}applies {6}by exact address/,
   );
-  const committed = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_FILE), 'utf8');
+  const committed = readFileSync(join(ROOT, generatedPath(TARGET)), 'utf8');
   assert.ok(committed.includes(text), 'report.generated.md holds the section as computed');
 });
 
@@ -100,7 +117,8 @@ test("each entry's code pin prints with its implementation, and a proof of other
   const reg = parseRegistry(raw);
   const usdc = reg.entries.get('usdc')!;
   const spans = await checkSpans(replayReader([]), [usdc]);
-  assert.match(quick(recording.pages, new Map(), loadSubject(ROOT, reg, { template: ID }), undefined, undefined, spans, reg), new RegExp(`^\\| \`usdc\` \\| 0 \\| \`${usdc.code!.current.pin.hash}\` \\| \`0x43506849D7C04F9138D1A2050bbF3A0c054402dd\` \`${usdc.code!.current.pin.implementation!.hash}\` \\| pinned before ranges, not read \\|$`, 'm'));
+  const unranged = loadReport(ROOT, reg, TARGET);
+  assert.match(quick(recording.pages, new Map(), unranged.subject, undefined, undefined, spans, unranged.registry), new RegExp(`^\\| \`usdc\` \\| 0 \\| \`${usdc.code!.current.pin.hash}\` \\| \`0x43506849D7C04F9138D1A2050bbF3A0c054402dd\` \`${usdc.code!.current.pin.implementation!.hash}\` \\| pinned before ranges, not read \\|$`, 'm'));
   const proof = (codeHash: Hex) =>
     ({ kind: 'proven', proxy: { kind: 'none' }, proven: bundler3.address, codeHash, contractName: 'Bundler3', compiler: '0.8.28', immutablesMasked: 0, librariesMasked: 0, metadataHashMasked: false, block: { number: 1n } }) as unknown as AbiProof;
   const row = (codeHash: Hex) => quick(recording.pages, new Map([[bundler3.address, proof(codeHash)]])).split('\n').find((l) => l.startsWith('| `bundler3` |') && l.includes('PROVEN'))!;
@@ -125,9 +143,9 @@ test('the report prints every code span, and --compare flags an earlier span who
   const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
   raw['bundler3'].code = { hash: keccakCode('0x6002' as Hex), from: 250, earlier: [{ from: 100, hash: forged }] };
   const reg = parseRegistry(raw);
-  const subject = loadSubject(ROOT, reg, { template: ID });
+  const { subject, registry: seen } = loadReport(ROOT, reg, TARGET);
   const bundler3 = [reg.entries.get('bundler3')!];
-  const report = async (early: Hex) => quick(recording.pages, new Map(), subject, undefined, undefined, await checkSpans(chainReader(early), bundler3), reg);
+  const report = async (early: Hex) => quick(recording.pages, new Map(), subject, undefined, undefined, await checkSpans(chainReader(early), bundler3), seen);
   const committed = await report('0x6066' as Hex);
   assert.match(committed, new RegExp(`^\\| \`bundler3\` \\| 100 \\| \`${forged}\` \\| none \\| PASS \\|\n\\| \`bundler3\` \\| 250 \\| \`${keccakCode('0x6002' as Hex)}\` \\| none \\| PASS \\|$`, 'm'));
   assert.deepEqual(compareReports(committed, await report('0x6001' as Hex)), [
@@ -137,13 +155,13 @@ test('the report prints every code span, and --compare flags an earlier span who
 });
 
 test('a page that does not name the function is a FINDING', () => {
-  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.includes('docs.morpho.org/developers/contracts/bundles') ? ({ kind: 'served', blocks: [] } as Page) : page]));
-  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/docs\.morpho\.org\/developers\/contracts\/bundles\/> \| PASS \| n\/a \| FINDING \|/);
+  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'served', blocks: [] } as Page) : page]));
+  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| FINDING \|/);
 });
 
 test('a page that got no answer is UNVERIFIABLE, never a FINDING', () => {
-  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.includes('docs.morpho.org/developers/contracts/bundles') ? ({ kind: 'unread', why: `${url} answered HTTP 503` } as Page) : page]));
-  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/docs\.morpho\.org\/developers\/contracts\/bundles\/> \| PASS \| n\/a \| UNVERIFIABLE \|/);
+  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'unread', why: `${url} answered HTTP 503` } as Page) : page]));
+  assert.match(quick(pages), /\| `multicall\(.*\| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| UNVERIFIABLE \|/);
 });
 
 test('the report prints no text from a page or a listing', () => {
@@ -189,13 +207,13 @@ test('text the AI wrote in the template prints escaped and labelled as written b
   raw.calls[0]!.trailer.why = 'harmless | PASS | `x` | *bold* _em_ [link](https://y) <b>';
   const template = parseTemplate(raw, registry);
   const docs = parseDocs(JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')), template, registry);
-  const text = quick(recording.pages, new Map(), { kind: 'template', template, docs });
+  const text = quick(recording.pages, new Map(), { kind: 'template', template, docs, vault: undefined });
   const row = text.split('\n').find((l) => l.startsWith('| `approve` |'))!;
   assert.equal(cellsOf(row).length, 2, row);
   assert.ok(row.includes('written by the AI in the template: harmless \\| PASS \\| \\`x\\` \\| \\*bold\\* \\_em\\_ \\[link\\](https://y) \\<b\\>'), row);
   raw.calls[0]!.trailer.why = 'pinged @maxey and $x^2$ and $$y$$';
   const mention = parseTemplate(raw, registry);
-  const pinged = quick(recording.pages, new Map(), { kind: 'template', template: mention, docs }).split('\n').find((l) => l.startsWith('| `approve` |'))!;
+  const pinged = quick(recording.pages, new Map(), { kind: 'template', template: mention, docs, vault: undefined }).split('\n').find((l) => l.startsWith('| `approve` |'))!;
   assert.ok(
     pinged.includes('pinged <span>@</span>maxey and <span>$</span>x^2<span>$</span> and <span>$</span><span>$</span>y<span>$</span><span>$</span>'),
     `GitHub links an @mention and renders $math$ even after a backslash, so each @ and $ sits alone in a span: ${pinged}`,
@@ -204,7 +222,7 @@ test('text the AI wrote in the template prints escaped and labelled as written b
 });
 
 test('stored vault evidence holding a backtick or a character pnpm vault-evidence never prints is refused, and its section says it is stored', () => {
-  const vault = 'steakhouse-prime-usdc';
+  const vault = 'steakhouse-prime-usdc-v2-0f51';
   const stored = recording.vaults[vault]!;
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n\`\`\`\n# Approved by the auditors`]])), ReportError);
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n<img src=x>`]])), ReportError);
@@ -214,23 +232,6 @@ test('stored vault evidence holding a backtick or a character pnpm vault-evidenc
 });
 
 const NOT_GENERATED = /^\s*- \*\*Report not generated yet:\*\*(.*)$/m;
-/** The templates that predate the generated report. design.md's list may only shrink: a new template needs its report. */
-const PREDATE_REPORT = new Set([
-  'cctp/receive',
-  'erc20/transfer',
-  'eth/transfer',
-  'fluid/rewards-claim',
-  'fluid/vault-deposit',
-  'fluid/vault-redeem',
-  'fluid/vault-withdraw',
-  'merkl/claim',
-  'morpho/urd-claim',
-  'morpho/vault-bundles-deposit',
-  'morpho/vault-migrate-all',
-  'morpho/vault-withdraw',
-  'morpho/vault-withdraw-all',
-  'safe/cancel',
-]);
 
 /** What is wrong with design.md's not-generated list, given the template folders and which hold a generated report. */
 function notGeneratedProblems(design: string, folders: readonly string[], hasReport: (id: string) => boolean): string[] {
@@ -249,7 +250,7 @@ function notGeneratedProblems(design: string, folders: readonly string[], hasRep
 test('every template folder holds report.generated.md, or design.md lists it among the templates that predate the report', () => {
   const design = readFileSync(join(ROOT, 'docs', 'design.md'), 'utf8');
   const folders = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
-  const hasReport = (id: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE));
+  const hasReport = (id: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE)) || reportedVaultsIn(ROOT, id).size > 0;
   assert.deepEqual(notGeneratedProblems(design, folders, hasReport), []);
   const added = design.replace(/(- \*\*Report not generated yet:\*\* )/, '$1`aave/supply`, ');
   assert.deepEqual(notGeneratedProblems(added, [...folders, 'aave/supply'], (id) => id !== 'aave/supply' && hasReport(id)), [
@@ -258,11 +259,11 @@ test('every template folder holds report.generated.md, or design.md lists it amo
 });
 
 test('--compare prints a verdict that changed, and ignores the date and the block an ABI proof was read at', () => {
-  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.includes('docs.morpho.org/developers/contracts/bundles') ? ({ kind: 'served', blocks: [] } as Page) : page]));
+  const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'served', blocks: [] } as Page) : page]));
   const differences = compareReports(quick(), quick(pages));
   assert.deepEqual(differences, ['Official documentation › `multicall((address,bytes,uint256,bool,bytes32)[])` › Function name appears on page: committed PASS, live FINDING']);
 
-  const committed = readFileSync(join(ROOT, TEMPLATES_DIR, ID, GENERATED_FILE), 'utf8');
+  const committed = readFileSync(join(ROOT, generatedPath(TARGET)), 'utf8');
   const drifted = committed
     .replace(/were read on \d{4}-\d{2}-\d{2}/, 'were read on 2027-01-01')
     .replace(/\| 2638\d{4} \|$/gm, '| 27000000 |');
@@ -272,13 +273,14 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
   const raised = point.replace(/[\d,.]+ usdc$/, '140,000,000.000000 usdc');
   const series = committed.replace(point, raised);
   assert.deepEqual(compareReports(committed, series), [
-    `\`steakhouse-prime-usdc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed: ${point}`,
-    `\`steakhouse-prime-usdc\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
+    `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only committed: ${point}`,
+    `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
   ]);
 
-  const revoked = committed.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
-  assert.equal(compareReports(committed, revoked).length, 2);
-  assert.match(compareReports(committed, revoked).join('\n'), /^ERC-7730 › [a-z0-9.-]+ 0x[0-9a-fA-F]{40} \(\w+\) › only live: .*REVOKED: ERC-8176/m);
+  const attested = readFileSync(join(ROOT, TEMPLATES_DIR, 'morpho/vault-withdraw', GENERATED_FILE), 'utf8');
+  const revoked = attested.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
+  assert.equal(compareReports(attested, revoked).length, 2);
+  assert.match(compareReports(attested, revoked).join('\n'), /^ERC-7730 › [a-z0-9.-]+ 0x[0-9a-fA-F]{40} \(\w+\) › only live: .*REVOKED: ERC-8176/m);
   const moved = committed.replace('| `bundler3` | `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | router |', '| `bundler3` | `0x0000000000000000000000000000000000000001` | router |');
   assert.deepEqual(compareReports(committed, moved), ['Registry entries › `bundler3` › Address: committed `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245`, live `0x0000000000000000000000000000000000000001`']);
 });
@@ -287,14 +289,14 @@ test("docs.json's contract must be the call's target when the template binds the
   const template = loadTemplate(ROOT, ID, registry);
   const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, { contract: string; url: string }>;
   const swap = (sig: string, contract: string) => ({ ...valid, [sig]: { ...valid[sig]!, contract } });
-  assert.throws(() => parseDocs(swap('erc4626Deposit(address,uint256,uint256,address)', 'bundler3'), template, registry), /erc4626Deposit\(address,uint256,uint256,address\)\.contract is bundler3, but the template calls it on general-adapter1/);
-  assert.throws(() => parseDocs(swap('multicall((address,bytes,uint256,bool,bytes32)[])', 'general-adapter1'), template, registry), /calls it on bundler3/);
+  assert.throws(() => parseDocs(swap('erc4626Deposit(address,uint256,uint256,address)', 'bundler3'), template, registry), /erc4626Deposit\(address,uint256,uint256,address\)\.contract is bundler3, but the template calls it on general-adapter-1/);
+  assert.throws(() => parseDocs(swap('multicall((address,bytes,uint256,bool,bytes32)[])', 'general-adapter-1'), template, registry), /calls it on bundler3/);
   assert.throws(() => parseDocs(swap('approve(address,uint256)', 'bundler3'), template, registry), /calls it on one of usdc, usdt/);
   assert.equal(parseDocs(swap('approve(address,uint256)', 'usdt'), template, registry).length, 4);
   assert.match(quick(), /\| Function \| Contract \| Page \| Site \| GitHub commit \| Function name appears on page \|/);
 });
 
-const VAULT = 'steakhouse-high-yield-usdc';
+const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
 const vaultRecording: { exchanges: Exchange[] } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'vault-evidence', `${VAULT}.json`), 'utf8'));
 
 test('--compare reads each vault again at the blocks its evidence names, so a changed month, holder count or top-10 share differs', async () => {
@@ -305,10 +307,10 @@ test('--compare reads each vault again at the blocks its evidence names, so a ch
     const evidence = await gatherVaultEvidence(reader, alchemy, vault, at);
     return 'kind' in evidence ? `UNVERIFIABLE ${evidence.reason}` : formatVaultEvidence(evidence, registry);
   };
-  const subject = loadSubject(ROOT, registry, { vault: VAULT });
+  const { subject } = loadReport(ROOT, registry, { vault: VAULT });
   const vault = registry.entries.get(VAULT)!;
-  const honest = quick(recording.pages, new Map(), subject, new Map([[VAULT, await read(vault, 26385872n)]]));
-  const compare = async (committed: string) => compareReports(committed, quick(recording.pages, new Map(), subject, await vaultsAt(committed, [vault], read)));
+  const honest = quick(recording.pages, new Map(), subject, new Map([[VAULT, await read(vault, 26385872n)]]), [], new Map(), registry);
+  const compare = async (committed: string) => compareReports(committed, quick(recording.pages, new Map(), subject, await vaultsAt(committed, [vault], read), [], new Map(), registry));
   assert.deepEqual(await compare(honest), []);
   for (const [was, now] of [
     ['  2026-11-10  block 26385872  43,152,031.442033 usdc', '  2026-11-10  block 26385872  943,152,031.442033 usdc'],
@@ -324,7 +326,7 @@ test('--compare reads each vault again at the blocks its evidence names, so a ch
 });
 
 test('--compare fetches each recorded past transaction again by hash, so one the chain does not know differs', async () => {
-  const subject = loadSubject(ROOT, registry, { template: ID });
+  const { subject } = scoped;
   const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock !== undefined)!;
   const committed = await summarizePastTxs(ROOT, registry, file, past);
   assert.equal((await summarizePastTxs(ROOT, registry, file, past, replayReader(past.exchanges))).text, committed.text);
@@ -380,7 +382,7 @@ test('a market field lists every market with its id, lltv and parts, binds each 
     },
     reg,
   );
-  const subject: Subject = { kind: 'template', template, docs: [] };
+  const subject: Subject = { kind: 'template', template, docs: [], vault: undefined };
   const text = quick(recording.pages, new Map(), subject, new Map(), [], new Map(), reg);
   const full = (name: keyof typeof added) => `\`${name}\` \`${added[name].address}\``;
   const usdc = '`usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`';
@@ -401,4 +403,25 @@ test('a market field lists every market with its id, lltv and parts, binds each 
     entriesOf(subject, reg).map((e) => e.name),
     ['usdc', 'morpho-blue', 'adaptive-curve-irm', 'morpho-oracle-cbbtc-usdc-86', 'cbbtc'],
   );
+});
+
+test('a template whose card names a vault is reported per vault: without the vault, with another template, or with a vault the field refuses, it is refused', () => {
+  const refused = (target: Parameters<typeof loadReport>[2], message: string) => assert.throws(() => loadReport(ROOT, registry, target), (e: unknown) => e instanceof ReportError && e.message === message);
+  refused({ template: ID }, 'morpho/vault-deposit is reported per vault; name the vault (reports exist for hyperithm-usdc-apex-v2-9e2f, steakhouse-prime-usdc-v2-0f51)');
+  refused({ template: 'morpho/market-supply', cardVault: 'steakhouse-prime-usdc-v2-0f51' }, 'morpho/market-supply has one report, not one per vault; leave out the vault');
+  refused({ template: ID, cardVault: 'fluid-fusdc' }, "fluid-fusdc is not a vault the card's vault of morpho/vault-deposit accepts");
+  refused({ template: ID, cardVault: 'bundler3' }, "bundler3 is not a vault the card's vault of morpho/vault-deposit accepts");
+});
+
+test("a per-vault report shows that vault alone: no other vault, no asset or factory only another vault names, and only past searches anchored on its token", () => {
+  const others = [...registry.entries.values()].filter((e) => e.kind === 'vault' && e.name !== TARGET.cardVault && e.defillama !== 'fluid-lending');
+  const text = readFileSync(join(ROOT, generatedPath(TARGET)), 'utf8');
+  for (const entry of [...others, registry.entries.get('usdt')!, registry.entries.get('metamorpho-factory-v1-0')!]) {
+    assert.ok(!text.includes(`\`${entry.name}\``) && !text.toLowerCase().includes(entry.address), `${entry.name} appears in the report`);
+  }
+  assert.match(text, /^\| `vault` \| a registry `vault` of the DefiLlama protocol `morpho-blue`, picked by number from the list below \|$/m);
+  assert.deepEqual(entriesOf(scoped.subject, scoped.registry).map((e) => e.name), ['usdc', 'bundler3', 'steakhouse-prime-usdc-v2-0f51', 'vault-v2-factory', 'general-adapter-1']);
+  const anchored = pastTxsRecordings(ROOT, scoped.subject).map((r) => r.file);
+  assert.deepEqual(anchored, ['testdata/research/morpho-vault-deposit-windows.json', 'testdata/research/morpho-vault-deposit.json']);
+  assert.match(text, /^Written by `pnpm report morpho\/vault-deposit --vault-of steakhouse-prime-usdc-v2-0f51 --record` /m);
 });

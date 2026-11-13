@@ -12,7 +12,7 @@ import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/re
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
-const recorded: { vault: string; exchanges: Exchange[] } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'vault-evidence', 'steakhouse-high-yield-usdc.json'), 'utf8'));
+const recorded: { vault: string; exchanges: Exchange[] } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'vault-evidence', 'steakhouse-high-yield-usdc-v2-a757.json'), 'utf8'));
 const TOTAL_ASSETS = '0x01e1d114';
 const TOTAL_SUPPLY = '0x18160ddd';
 
@@ -32,7 +32,7 @@ function edited(match: (e: Exchange) => boolean, nth: number, answers: Exchange[
 
 test('a recorded vault: 13 monthly totalAssets() points through both providers, its asset, and its holders checked against totalSupply()', async () => {
   const text = await evidenceFrom(recorded.exchanges);
-  assert.match(text, /^vault {8}steakhouse-high-yield-usdc 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757\n/);
+  assert.match(text, /^vault {8}steakhouse-high-yield-usdc-v2-a757 0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757\n/);
   assert.match(text, /asset\(\) {6}usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names/);
   assert.equal(text.match(/^ {2}\d{4}-\d{2}-\d{2} {2}block \d+ {2}[\d,]+\.\d{6} usdc$/gm)?.length, 13);
   assert.match(text, /2026-11-10 {2}block 26385872 {2}43,152,031\.442033 usdc/);

@@ -6,7 +6,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { LeafRule, Quantity, Template } from '../template/template.ts';
 import { ResearchError, SOURCES, TooManyTransfers, searchBoth } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
-import { constText, shapesOf, studyTx } from './study.ts';
+import { constText, functionNames, isOtherOperation, misfitText, shapesOf, studyTx } from './study.ts';
 import type { Sender, TxStudy } from './study.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
@@ -248,8 +248,12 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
   }
   if (misfits.length > 0) {
     lines.push('misfits, by reason:');
+    const names = functionNames(run.query.template);
     const groups = new Map<string, Misfit[]>();
-    for (const m of misfits) groups.set(m.reason, [...(groups.get(m.reason) ?? []), m]);
+    for (const m of misfits) {
+      const reason = misfitText(m.reason, registry, names);
+      groups.set(reason, [...(groups.get(reason) ?? []), m]);
+    }
     for (const [reason, members] of [...groups].sort((a, b) => b[1].length - a[1].length)) {
       lines.push(`  ${members.length} from ${plural(sendersOf(members), who, many)}: ${reason}`);
       lines.push(`    e.g. ${members.slice(0, 3).map((m) => mark(m.hash)).join(', ')}`);
@@ -324,7 +328,13 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   }
 
   lines.push('by proven Safes, the whole template in one transaction:');
-  renderGroup(lines, { fits: fits.filter(bySafe), misfits: misfits.filter(bySafe), rules: run.shapes.whole.loosened.rules, senderLabel: 'the Safe', senderNoun: 'Safe' }, run, registry, mark);
+  const otherOperation = misfits.filter((m) => isOtherOperation(m, template));
+  if (otherOperation.length > 0) {
+    lines.push(`another operation, making none of the template's calls: ${plural(otherOperation.length, 'transaction')} from ${plural(sendersOf(otherOperation), 'Safe')}; not counted below`);
+    const names = functionNames(template);
+    for (const m of otherOperation.slice(0, 3)) lines.push(`  e.g. ${mark(m.hash)}: ${misfitText(m.reason, registry, names)}`);
+  }
+  renderGroup(lines, { fits: fits.filter(bySafe), misfits: misfits.filter((m) => bySafe(m) && !isOtherOperation(m, template)), rules: run.shapes.whole.loosened.rules, senderLabel: 'the Safe', senderNoun: 'Safe' }, run, registry, mark);
   run.shapes.calls.forEach((shape, call) => {
     const ofCall = (s: { sender: Sender }) => s.sender.kind === 'eoa' && s.sender.call === call;
     const group = { fits: fits.filter(ofCall), misfits: misfits.filter(ofCall), rules: shape.loosened.rules, senderLabel: 'the sender', senderNoun: 'EOA' };

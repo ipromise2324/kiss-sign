@@ -285,6 +285,23 @@ export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry)
   return out.join('\n');
 }
 
+const ADMITTED = 'admitted     ';
+
+/**
+ * What stored `pnpm vault-evidence` output says the vault's registry factory answered, from its first line: `admitted`
+ * when that factory answered true, `not-created` when it answered false, `other-answer` when it answered neither.
+ * Anything else, such as a read with no answer, an answer from another factory, or no output, is unread.
+ */
+export function factoryAnswer(text: string | undefined, factory: string): 'admitted' | 'not-created' | 'other-answer' | 'unread' {
+  if (text === undefined) return 'unread';
+  if (text.startsWith(`${ADMITTED}${factory} answered `)) return 'admitted';
+  const refused = `REFUSED ${factory} answered `;
+  if (!text.startsWith(refused)) return 'unread';
+  const rest = text.slice(refused.length).split('\n')[0]!;
+  if (/^\S+ false for \S+: it did not create it;/.test(rest)) return 'not-created';
+  return /^\S+ with .*, not true or false;/.test(rest) ? 'other-answer' : 'unread';
+}
+
 /**
  * What `pnpm vault-evidence` prints: a vault that names a factory is read only after that factory answers that it
  * created the vault, since the numbers come from the vault's own code. Everything is read as of one block, `at`.
@@ -305,9 +322,64 @@ export async function vaultEvidenceText(
   } else {
     const admitted = await proveInstance(reader, registry, vault.name, block.value);
     if (admitted.kind === 'refused') return { read: false, text: `REFUSED ${admitted.why}; the vault's code is not read` };
-    lines.push(`admitted     ${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${block.value.number}`);
+    lines.push(`${ADMITTED}${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${block.value.number}`);
   }
   const evidence = await gatherVaultEvidence(reader, alchemy, vault, block.value.number);
   if ('kind' in evidence) return { read: false, text: [...lines, `UNVERIFIABLE ${evidence.reason}`].join('\n') };
   return { read: true, text: [...lines, formatVaultEvidence(evidence, registry)].join('\n') };
+}
+
+/** One monthly reading as stored: `amount` in base units, with `decimals` when `asset()` was read. */
+export type StoredPoint = {
+  readonly date: string | undefined;
+  readonly block: bigint;
+  readonly assets: { readonly kind: 'amount'; readonly amount: bigint } | { readonly kind: 'unread' } | { readonly kind: 'no-code' } | { readonly kind: 'reverted' };
+};
+
+/** Stored `pnpm vault-evidence` output read back into its facts; a fact its text does not hold is undefined. */
+export type StoredEvidence = {
+  readonly admitted: { readonly factory: string; readonly check: string; readonly block: bigint } | undefined;
+  /** `name` is undefined for an asset outside the registry. */
+  readonly asset: { readonly name: string | undefined; readonly decimals: number } | undefined;
+  /** Oldest first. */
+  readonly points: readonly StoredPoint[];
+  readonly holders: { readonly holders: number; readonly candidates: number; readonly largest: string | undefined; readonly top10: string } | undefined;
+};
+
+function storedAmount(text: string, decimals: number | undefined): bigint | undefined {
+  const units = /^(\d+) base units$/.exec(text);
+  if (units !== null) return BigInt(units[1] as string);
+  const whole = /^([\d,]+)(?:\.(\d+))?(?: \S+)?$/.exec(text);
+  if (whole === null || decimals === undefined) return undefined;
+  const [, integer = '', fraction = ''] = whole;
+  if (fraction.length !== decimals) return undefined;
+  return BigInt(integer.replace(/,/g, '')) * 10n ** BigInt(decimals) + (fraction === '' ? 0n : BigInt(fraction));
+}
+
+/** What `formatVaultEvidence`, behind `vaultEvidenceText`'s first line, printed. */
+export function readStoredEvidence(text: string): StoredEvidence {
+  const lines = text.split('\n');
+  const admitted = new RegExp(`^${ADMITTED}(\\S+) answered (\\S+) = true at block (\\d+)$`).exec(lines[0] ?? '');
+  const asset = /^asset\(\) {6}(.+?) 0x[0-9a-fA-F]{40}, (\d+) decimals/.exec(lines.find((l) => l.startsWith('asset()')) ?? '');
+  const decimals = asset === null ? undefined : Number(asset[2]);
+  const points = lines.flatMap((line): StoredPoint[] => {
+    const point = /^ {2}(\d{4}-\d{2}-\d{2}|date unknown) {2}block (\d+) {2}(.+)$/.exec(line);
+    if (point === null) return [];
+    const [, date, block, value = ''] = point;
+    const amount = storedAmount(value, decimals);
+    const assets: StoredPoint['assets'] =
+      amount !== undefined ? { kind: 'amount', amount } : value === 'no code at the vault yet' ? { kind: 'no-code' } : value === 'totalAssets() reverted' ? { kind: 'reverted' } : { kind: 'unread' };
+    return [{ date: date === 'date unknown' ? undefined : date, block: BigInt(block as string), assets }];
+  });
+  const holders = /^holders {6}(\d+) addresses hold shares at block \d+, of (\d+) that ever received them/.exec(lines.find((l) => l.startsWith('holders')) ?? '');
+  const top = /^top 10 {7}hold (\S+) of the shares; each: (.*)$/.exec(lines.find((l) => l.startsWith('top 10')) ?? '');
+  return {
+    admitted: admitted === null ? undefined : { factory: admitted[1] as string, check: admitted[2] as string, block: BigInt(admitted[3] as string) },
+    asset: asset === null ? undefined : { name: asset[1] === 'not in the registry' ? undefined : asset[1], decimals: decimals as number },
+    points: [...points].reverse(),
+    holders:
+      holders === null || top === null
+        ? undefined
+        : { holders: Number(holders[1]), candidates: Number(holders[2]), largest: (top[2] as string).split(', ')[0] || undefined, top10: top[1] as string },
+  };
 }

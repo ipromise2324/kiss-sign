@@ -1,228 +1,278 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { paramName } from '../decode/abi.ts';
+import type { AbiParam } from '../decode/abi.ts';
 import { parseHttpsUrl } from '../registry.ts';
-import type { HttpsUrl } from '../registry.ts';
-import { TEMPLATES_DIR } from '../template/template.ts';
+import type { HttpsUrl, RegistryEntry } from '../registry.ts';
+import { TEMPLATES_DIR, callTargetEntries } from '../template/template.ts';
+import { vaultReportDir } from '../template/vault-reports.ts';
+import type { CallNode, Rule, Template } from '../template/template.ts';
+import { needsSigner } from './ledger.ts';
+import { factsScope } from './protocol-facts.ts';
+import type { Ledger, ResultId } from './ledger.ts';
+import type { ReportInputs } from './report.ts';
 
 export const NOTES_FILE = 'notes.json';
-
-/** One thing the AI says, with the pages it read it on. */
-export type Note = { readonly title: string | undefined; readonly text: string; readonly sources: readonly HttpsUrl[] };
-
-/** Something the AI asks the signer to judge, and what it recommends. */
-export type Judgment = Note & { readonly recommendation: string };
-
-/**
- * The AI's check of one program result the signer must look at. `confirmed` only when the AI checked the exact thing the
- * result names and it agrees: for an address the program did not find on a source page, that page showed that address;
- * for a code span, the code at that block. Evidence about anything else, however strong, is `concern`, as is a check
- * the AI could not make. The program shows it under the result and never changes the result for it.
- */
-export type Review = { readonly status: 'confirmed' | 'concern'; readonly text: string; readonly recommendation: string };
-
-/** One line the AI adds to the transaction's flow, after the template's call `after` (1-based): a step inside that call. */
-export type FlowLine = { readonly after: number; readonly text: string };
-
-/** The AI's one-line conclusion: `safe` when it found nothing to worry about, `caution` otherwise. It never changes a program result. */
-export type Verdict = { readonly status: 'safe' | 'caution'; readonly text: string };
-
-/**
- * What the AI wrote for a template's HTML report, in the signer's language. The program shows every piece as written by
- * the AI and decides nothing from it.
- */
-export type Notes = {
-  /** The report's heading: the operation in a few words, at most 100 characters. */
-  readonly title: string;
-  readonly summary: string;
-  /** What happens inside the template's calls, which the program cannot see: a few short lines, each placed after its call. */
-  readonly flow: readonly FlowLine[];
-  /** What the past transactions and the tests showed, in one line. */
-  readonly pastTxsConclusion: Verdict | undefined;
-  /** The AI's overall view of the operation's risk, in one line, and what it recommends. */
-  readonly verdict: (Verdict & { readonly recommendation: string }) | undefined;
-  /** What the AI asks the signer to judge, beside the program's findings: a few, each a sentence or two. */
-  readonly judgments: readonly Judgment[];
-  /**
-   * By result id, `<registry name>/<check key>` or a fixture's `fixture.<name>`: the AI's review of that result. Every
-   * result the signer must look at needs one, and no other result may have one.
-   */
-  readonly reviews: ReadonlyMap<string, Review>;
-  /** The protocol at a glance, each line a short label and a sentence or two: upgrades and admin, audits, incidents, size. */
-  readonly overview: readonly Note[];
-  /**
-   * By registry name: the entry's role in this operation, what else the AI found about it, and by check key, such as
-   * `source.page`, one line the page shows under that program result. A line explains a result; it cannot hide one.
-   */
-  readonly entries: ReadonlyMap<string, EntryNotes>;
-  /** By field key, as the report's field table names it, such as `1.approve.spender`: what the field means. */
-  readonly fields: ReadonlyMap<string, string>;
-  /** What the test transactions showed beyond what the program states: a few short lines. */
-  readonly tests: readonly Note[];
-  /** Folded groups at the end, such as where each contract was deployed from. */
-  readonly details: readonly { readonly title: string; readonly notes: readonly Note[] }[];
-};
-
-export type EntryNotes = { readonly role: string | undefined; readonly notes: readonly Note[]; readonly checks: ReadonlyMap<string, string> };
 
 export class NotesError extends Error {
   override name = 'NotesError';
 }
 
-const MAX_TEXT = 2000;
-/** The page lists judgments and test lines above the fold, so each stays a sentence or two. */
-const MAX_SHORT = 200;
-const MAX_JUDGMENTS = 4;
-const MAX_TESTS = 2;
-const MAX_OVERVIEW = 6;
-const MAX_REVIEW = 300;
-/** Flow lines and verdicts sit at the top of the page, so each stays one short line. */
-const MAX_LINE = 100;
-const MAX_FLOW = 4;
-const CHECK_KEY = /^[A-Za-z0-9_.-]{1,120}$/;
-const RESULT_ID = /^[A-Za-z0-9_.-]{1,80}(?:\/[A-Za-z0-9_.-]{1,120})?$/;
-const CONTROL = /[\u0000-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
+/** The template's notes, or with `vault` the notes of that vault's report of it. */
+export const notesPath = (template: string, vault?: string): string => join(vault === undefined ? join(TEMPLATES_DIR, template) : vaultReportDir(template, vault), NOTES_FILE);
 
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+/** The changed files that hold text the AI wrote for a template's HTML report, a vault's included, which no program checks. */
+export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/(vaults\/[^/]+\/)?notes\.json$/.test(file));
 
-function keys(path: string, raw: unknown, required: readonly string[], optional: readonly string[]): Record<string, unknown> {
-  if (!isRecord(raw)) throw new NotesError(`${path}: not a JSON object`);
-  const extra = Object.keys(raw).find((k) => !required.includes(k) && !optional.includes(k));
-  if (extra !== undefined) throw new NotesError(`${path}: unknown key ${JSON.stringify(extra.slice(0, 80))}`);
-  const missing = required.find((k) => !(k in raw));
-  if (missing !== undefined) throw new NotesError(`${path}: ${missing} is missing`);
-  return raw;
-}
+const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
 
-function text(path: string, raw: unknown, max = MAX_TEXT): string {
-  if (typeof raw !== 'string' || raw.trim() === '') throw new NotesError(`${path}: not a non-empty string`);
-  if (raw.length > max) throw new NotesError(`${path}: longer than ${max} characters`);
-  if (CONTROL.test(raw)) throw new NotesError(`${path}: holds a control or bidirectional character`);
-  return raw;
-}
-
-function list<T>(path: string, raw: unknown, item: (path: string, raw: unknown) => T, max = Infinity): T[] {
-  if (raw === undefined) return [];
-  if (!Array.isArray(raw)) throw new NotesError(`${path}: not a list`);
-  if (raw.length > max) throw new NotesError(`${path}: more than ${max} items`);
-  return raw.map((r, i) => item(`${path}[${i}]`, r));
-}
-
-function note(path: string, raw: unknown, max = MAX_TEXT): Note {
-  const value = keys(path, raw, ['text'], ['title', 'sources']);
-  const sources = list(`${path}.sources`, value.sources, (at, url) => {
-    const parsed = parseHttpsUrl(url);
-    if (parsed === undefined) throw new NotesError(`${at}: not an https URL in RFC 3986 characters`);
-    return parsed;
-  });
-  return { title: value.title === undefined ? undefined : text(`${path}.title`, value.title, MAX_SHORT), text: text(`${path}.text`, value.text, max), sources };
-}
-
-function byName<T>(path: string, raw: unknown, known: ReadonlySet<string>, what: string, item: (path: string, raw: unknown) => T): Map<string, T> {
-  if (raw === undefined) return new Map();
-  if (!isRecord(raw)) throw new NotesError(`${path}: not a JSON object`);
-  return new Map(
-    Object.entries(raw).map(([name, value]) => {
-      if (!known.has(name)) throw new NotesError(`${path}: ${JSON.stringify(name.slice(0, 80))} is not ${what}`);
-      return [name, item(`${path}.${name}`, value)];
-    }),
-  );
-}
-
-const short = (path: string, raw: unknown): Note => note(path, raw, MAX_SHORT);
-
-function judgment(path: string, raw: unknown): Judgment {
-  const { recommendation, ...rest } = keys(path, raw, ['text', 'recommendation'], ['title', 'sources']);
-  return { ...note(path, rest, MAX_SHORT), recommendation: text(`${path}.recommendation`, recommendation, MAX_SHORT) };
-}
-
-function review(path: string, raw: unknown): Review {
-  const value = keys(path, raw, ['status', 'text', 'recommendation'], []);
-  if (value.status !== 'confirmed' && value.status !== 'concern') throw new NotesError(`${path}.status: not "confirmed" or "concern"`);
-  return { status: value.status, text: text(`${path}.text`, value.text, MAX_REVIEW), recommendation: text(`${path}.recommendation`, value.recommendation, MAX_SHORT) };
-}
-
-function flowLine(path: string, raw: unknown, calls: number): FlowLine {
-  const value = keys(path, raw, ['after', 'text'], []);
-  if (typeof value.after !== 'number' || !Number.isInteger(value.after) || value.after < 1 || value.after > calls) {
-    throw new NotesError(`${path}.after: not the number of one of the template's ${calls} calls`);
-  }
-  return { after: value.after, text: text(`${path}.text`, value.text, MAX_LINE) };
-}
-
-function verdictStatus(path: string, raw: unknown): Verdict['status'] {
-  if (raw !== 'safe' && raw !== 'caution') throw new NotesError(`${path}: not "safe" or "caution"`);
-  return raw;
-}
-
-function conclusion(path: string, raw: unknown): Verdict {
-  const value = keys(path, raw, ['status', 'text'], []);
-  return { status: verdictStatus(`${path}.status`, value.status), text: text(`${path}.text`, value.text, MAX_LINE) };
-}
-
-function verdict(path: string, raw: unknown): Verdict & { readonly recommendation: string } {
-  const value = keys(path, raw, ['status', 'text', 'recommendation'], []);
-  return { ...conclusion(path, { status: value.status, text: value.text }), recommendation: text(`${path}.recommendation`, value.recommendation, MAX_LINE) };
-}
-
-function overviewItem(path: string, raw: unknown): Note {
-  const item = note(path, raw, MAX_SHORT);
-  if (item.title === undefined) throw new NotesError(`${path}: title is missing`);
-  return item;
-}
+/** What a vault's notes may hold: the text about that vault alone. Everything else every vault's report shares. */
+const VAULT_KEYS: readonly string[] = ['verdict', 'judgments', 'reviews', 'entries', 'pastTxsConclusion'];
+const KEYED = ['reviews', 'entries'];
 
 /**
- * `notes.json`, refused unless every key is known: `entries` may name only the registry entries the report covers, and
- * `fields` only the keys of the report's field table, and `flow` only the template's `calls`.
+ * The template's notes and a vault's, as one: each key once, except that `judgments` join and `reviews` and `entries`
+ * join by name. A vault's notes may hold only `VAULT_KEYS`, may review and describe only the entries in `owned`, the
+ * vault and its factory, and a key or name both define is refused.
  */
-export function parseNotes(raw: unknown, known: { readonly entries: ReadonlySet<string>; readonly fields: ReadonlySet<string>; readonly calls: number }): Notes {
-  const value = keys(NOTES_FILE, raw, ['title', 'summary'], ['flow', 'pastTxsConclusion', 'verdict', 'judgments', 'reviews', 'overview', 'entries', 'fields', 'tests', 'details']);
-  const reviews = value.reviews === undefined ? {} : value.reviews;
-  if (!isRecord(reviews)) throw new NotesError(`${NOTES_FILE}.reviews: not a JSON object`);
-  return {
-    title: text(`${NOTES_FILE}.title`, value.title, MAX_LINE),
-    summary: text(`${NOTES_FILE}.summary`, value.summary),
-    flow: list(`${NOTES_FILE}.flow`, value.flow, (path, line) => flowLine(path, line, known.calls), MAX_FLOW),
-    pastTxsConclusion: value.pastTxsConclusion === undefined ? undefined : conclusion(`${NOTES_FILE}.pastTxsConclusion`, value.pastTxsConclusion),
-    verdict: value.verdict === undefined ? undefined : verdict(`${NOTES_FILE}.verdict`, value.verdict),
-    judgments: list(`${NOTES_FILE}.judgments`, value.judgments, judgment, MAX_JUDGMENTS),
-    reviews: new Map(
-      Object.entries(reviews).map(([id, item]) => {
-        if (!RESULT_ID.test(id)) throw new NotesError(`${NOTES_FILE}.reviews: ${JSON.stringify(id.slice(0, 80))} is not a result id`);
-        return [id, review(`${NOTES_FILE}.reviews.${id}`, item)];
-      }),
-    ),
-    overview: list(`${NOTES_FILE}.overview`, value.overview, overviewItem, MAX_OVERVIEW),
-    entries: byName(`${NOTES_FILE}.entries`, value.entries, known.entries, 'a registry entry this report covers', (path, entry) => {
-      const fields = keys(path, entry, [], ['role', 'notes', 'checks']);
-      const checks = fields.checks === undefined ? {} : fields.checks;
-      if (!isRecord(checks)) throw new NotesError(`${path}.checks: not a JSON object`);
+export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, owned: ReadonlySet<string>): unknown {
+  if (vault === undefined || !isRecord(shared)) return shared;
+  if (!isRecord(vault)) return refuse(vaultPath, 'not a JSON object');
+  const merged: Record<string, unknown> = { ...shared };
+  for (const key of Object.keys(vault)) {
+    const value = own(vault, key);
+    if (!VAULT_KEYS.includes(key)) refuse(vaultPath, `${shown(key)} belongs in the template's ${NOTES_FILE}, which every vault's report shares`);
+    if (KEYED.includes(key) && isRecord(value)) {
+      const other = Object.keys(value).find((name) => !owned.has(key === 'reviews' ? name.split('/')[0]! : name));
+      if (other !== undefined) refuse(`${vaultPath}.${key}`, `${shown(other)} is not about ${[...owned].join(' or ')}; a shared contract belongs in the template's ${NOTES_FILE}`);
+    }
+    const before = own(shared, key);
+    if (before === undefined) merged[key] = value;
+    else if (key === 'judgments' && Array.isArray(before) && Array.isArray(value)) merged[key] = [...before, ...value];
+    else if (KEYED.includes(key) && isRecord(before) && isRecord(value)) {
+      const twice = Object.keys(value).find((name) => own(before, name) !== undefined);
+      if (twice !== undefined) refuse(`${vaultPath}.${key}`, `${shown(twice)} is in the template's ${NOTES_FILE} too`);
+      merged[key] = { ...before, ...value };
+    } else refuse(vaultPath, `${key} is in the template's ${NOTES_FILE} too`);
+  }
+  return merged;
+}
+
+/** The notes a report reads, as JSON: the template's, merged with the vault's for a per-vault report; undefined without the template's. */
+export function readNotes(repoRoot: string, template: string, vault?: RegistryEntry): unknown {
+  const shared = readJson(join(repoRoot, notesPath(template)));
+  if (vault === undefined) return shared;
+  const path = notesPath(template, vault.name);
+  const { factory } = vault.attributes;
+  return mergeNotes(shared, readJson(join(repoRoot, path)), path, new Set(factory === undefined ? [vault.name] : [vault.name, factory]));
+}
+
+/** What notes.json may name and must name, derived from the template, the report's inputs and its ledger. */
+export type NotesScope = {
+  /** How many calls the template makes: a `flow` line's `after` is one of 1..calls. */
+  readonly calls: number;
+  /** The registry names a call or an effects' view targets: a `flow` line's `from` and `to`. */
+  readonly contracts: ReadonlySet<string>;
+  /** The registry entries the report covers; `entries` may name any of them. */
+  readonly entries: ReadonlySet<string>;
+  /** Each covered protocol by DefiLlama slug, every one required, with the hacks DefiLlama lists, or `unread`. */
+  readonly protocols: ReadonlyMap<string, number | 'unread'>;
+  /** Every argument and tuple part's field key, in page order, every one required. */
+  readonly fields: readonly string[];
+  /** The results the signer must look at, in ledger order, every one required. */
+  readonly reviews: readonly ResultId[];
+};
+
+/** One argument, tuple part, array item or nested call's argument of a template call, with its HTML report field key. */
+export type ArgNode = {
+  readonly key: string;
+  readonly name: string;
+  readonly param: AbiParam | undefined;
+  readonly rule: Rule;
+  /** Tuple parts, array items, or a nested call's arguments. */
+  readonly children: readonly ArgNode[];
+};
+
+/**
+ * Each function call of the template, by its 1-based call number, with its arguments as a tree in call order. A key is
+ * `<call>.<function>.<argument>`, a part after a dot (`2.blueBundlesV1Supply.marketParams.oracle`), an item in brackets,
+ * and a nested call's arguments after its function's name (`1.multicall.bundle[1].data.erc4626Deposit.assets`).
+ */
+export function argumentTree(template: Template): { readonly n: number; readonly node: CallNode; readonly args: readonly ArgNode[] }[] {
+  const call = (prefix: string, node: CallNode): ArgNode[] => node.fn.params.map((param, i) => arg(`${prefix}.${paramName(param, i)}`, paramName(param, i), node.args[i] as Rule, param));
+  const arg = (key: string, name: string, rule: Rule, param: AbiParam | undefined): ArgNode => {
+    if (rule.kind === 'call') return { key, name, param, rule, children: call(`${key}.${rule.call.fn.name}`, rule.call) };
+    if (rule.kind === 'items') {
+      const item = param?.type.kind === 'array' || param?.type.kind === 'fixed-array' ? { name: undefined, type: param.type.item } : undefined;
+      return { key, name, param, rule, children: rule.items.map((r, i) => arg(`${key}[${i}]`, `[${i}]`, r, item)) };
+    }
+    if (rule.kind === 'fields') {
+      const components = param?.type.kind === 'tuple' ? param.type.components : [];
       return {
-        role: fields.role === undefined ? undefined : text(`${path}.role`, fields.role, MAX_SHORT),
-        notes: list(`${path}.notes`, fields.notes, note),
-        checks: new Map(
-          Object.entries(checks).map(([key, line]) => {
-            if (!CHECK_KEY.test(key)) throw new NotesError(`${path}.checks: ${JSON.stringify(key.slice(0, 80))} is not a check key`);
-            return [key, text(`${path}.checks.${key}`, line, MAX_SHORT)];
-          }),
-        ),
+        key,
+        name,
+        param,
+        rule,
+        children: rule.fields.map((r, i) => {
+          const part = components[i] === undefined ? String(i) : paramName(components[i], i);
+          return arg(`${key}.${part}`, part, r, components[i]);
+        }),
       };
-    }),
-    fields: byName(`${NOTES_FILE}.fields`, value.fields, known.fields, "a key of the report's field table", text),
-    tests: list(`${NOTES_FILE}.tests`, value.tests, short, MAX_TESTS),
-    details: list(`${NOTES_FILE}.details`, value.details, (path, group) => {
-      const fields = keys(path, group, ['title', 'notes'], []);
-      return { title: text(`${path}.title`, fields.title), notes: list(`${path}.notes`, fields.notes, note) };
-    }),
+    }
+    return { key, name, param, rule, children: [] };
+  };
+  return template.calls.flatMap((c, i) => (c.data === 'empty' ? [] : [{ n: i + 1, node: c.data, args: call(`${i + 1}.${c.data.fn.name}`, c.data) }]));
+}
+
+/** Every key of `argumentTree`, depth first: every argument and tuple part notes.json's `fields` must explain. */
+export function fieldKeys(template: Template): string[] {
+  const keys = (nodes: readonly ArgNode[]): string[] => nodes.flatMap((node) => [node.key, ...keys(node.children)]);
+  return argumentTree(template).flatMap((call) => keys(call.args));
+}
+
+export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Template): NotesScope {
+  const { registry } = inputs;
+  const protocols: Map<string, number | 'unread'> =
+    inputs.facts === undefined
+      ? new Map(factsScope(template, registry, ledger.entries).protocols.map(({ slug }) => [slug, 'unread']))
+      : new Map(inputs.facts.protocols.map((sheet) => [sheet.slug, sheet.listing.kind === 'read' ? sheet.hacks.length : 'unread']));
+  return {
+    calls: template.calls.length,
+    contracts: new Set([...callTargetEntries(template, registry).map((entry) => entry.name), ...template.effects.views.map((view) => view.to)]),
+    entries: new Set(ledger.entries.map((entry) => entry.name)),
+    protocols,
+    fields: fieldKeys(template),
+    reviews: ledger.results.filter(needsSigner).map((result) => result.id),
   };
 }
 
-export const notesPath = (template: string): string => join(TEMPLATES_DIR, template, NOTES_FILE);
+type P<T> = (path: string, raw: unknown, scope: NotesScope) => T;
+type Opt<T> = { readonly optional: P<T>; readonly absent: T };
+type Shape = Readonly<Record<string, P<unknown> | Opt<unknown>>>;
+type Parsed<S extends Shape> = { readonly [K in keyof S]: S[K] extends Opt<infer T> ? T : S[K] extends P<infer T> ? T : never };
 
-/** The changed files that hold text the AI wrote for a template's HTML report, which no program checks. */
-export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/notes\.json$/.test(file));
+const CONTROL = /[\u0000-\u001f\u007f-\u009f\u061c\u200e\u200f\u2028\u2029\u202a-\u202e\u2066-\u2069]/;
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+const own = (record: Record<string, unknown>, key: string): unknown => (Object.hasOwn(record, key) ? record[key] : undefined);
+const refuse = (path: string, rule: string): never => {
+  throw new NotesError(`${path}: ${rule}`);
+};
+const shown = (key: string): string => JSON.stringify(key.slice(0, 80));
 
-/** The template's notes as JSON, or undefined when it has none. */
-export function readNotes(repoRoot: string, template: string): unknown {
-  const path = join(repoRoot, notesPath(template));
-  return existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined;
+/** What may stand between two backticks: one identifier, such as a function or argument name, with or without `()`. */
+const CODE_SPAN = /^[A-Za-z_][A-Za-z0-9_]*(\(\))?$/;
+
+/**
+ * AI text split at its backticks: plain text at even positions, code spans at odd ones. Undefined when a backtick is
+ * not closed or a span holds anything but one identifier.
+ */
+export function codeSpans(text: string): readonly string[] | undefined {
+  const parts = text.split('`');
+  return parts.length % 2 === 1 && parts.every((part, i) => i % 2 === 0 || CODE_SPAN.test(part)) ? parts : undefined;
 }
+
+const str =
+  (max: number): P<string> =>
+  (path, raw) => {
+    if (typeof raw !== 'string' || raw.trim() === '') return refuse(path, 'not a non-empty string');
+    if (CONTROL.test(raw)) return refuse(path, 'holds a control or bidirectional character');
+    const parts = codeSpans(raw);
+    if (parts === undefined) return refuse(path, 'holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`');
+    if (parts.join('').length > max) return refuse(path, `longer than ${max} characters`);
+    return raw;
+  };
+
+const oneOf =
+  <const T extends readonly string[]>(...values: T): P<T[number]> =>
+  (path, raw) =>
+    values.includes(raw as string) ? (raw as T[number]) : refuse(path, `not one of ${values.join(', ')}`);
+
+const url: P<HttpsUrl> = (path, raw) => parseHttpsUrl(raw) ?? refuse(path, 'not an https URL in RFC 3986 characters');
+
+const callNumber: P<number> = (path, raw, scope) =>
+  typeof raw === 'number' && Number.isSafeInteger(raw) && raw >= 1 && raw <= scope.calls ? raw : refuse(path, `not one of the template's ${scope.calls} calls`);
+
+const contract: P<string> = (path, raw, scope) => {
+  const name = str(80)(path, raw, scope);
+  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target`);
+};
+
+const list =
+  <T>(item: P<T>, max = Infinity): P<readonly T[]> =>
+  (path, raw, scope) => {
+    if (!Array.isArray(raw)) return refuse(path, 'not a list');
+    if (raw.length > max) return refuse(path, `more than ${max} items`);
+    return raw.map((r, i) => item(`${path}[${i}]`, r, scope));
+  };
+
+const opt = <T>(p: P<T>): Opt<T | undefined> => ({ optional: p, absent: undefined });
+const optList = <T>(item: P<T>, max?: number): Opt<readonly T[]> => ({ optional: list(item, max), absent: [] });
+
+const obj =
+  <S extends Shape>(shape: S): P<Parsed<S>> =>
+  (path, raw, scope) => {
+    if (!isRecord(raw)) return refuse(path, 'not a JSON object');
+    const extra = Object.keys(raw).find((key) => !Object.hasOwn(shape, key));
+    if (extra !== undefined) refuse(path, `unknown key ${shown(extra)}`);
+    const out: Record<string, unknown> = {};
+    for (const [key, field] of Object.entries(shape)) {
+      const value = own(raw, key);
+      if (typeof field !== 'function') out[key] = value === undefined ? field.absent : field.optional(`${path}.${key}`, value, scope);
+      else if (value === undefined) refuse(path, `${key} is missing`);
+      else out[key] = field(`${path}.${key}`, value, scope);
+    }
+    return out as Parsed<S>;
+  };
+
+/** A JSON object keyed by names the scope allows, checked and returned in the scope's order. */
+const keyed =
+  <T>(allowed: (scope: NotesScope) => readonly string[], what: string, required: boolean, item: (key: string) => P<T>): P<ReadonlyMap<string, T>> =>
+  (path, raw, scope) => {
+    if (!isRecord(raw)) return refuse(path, 'not a JSON object');
+    const names = allowed(scope);
+    const extra = Object.keys(raw).find((key) => !names.includes(key));
+    if (extra !== undefined) refuse(path, `${shown(extra)} is not ${what}`);
+    const missing = required ? names.find((name) => own(raw, name) === undefined) : undefined;
+    if (missing !== undefined) refuse(path, `${missing} is missing`);
+    return new Map(names.filter((name) => own(raw, name) !== undefined).map((name) => [name, item(name)(`${path}.${name}`, own(raw, name), scope)]));
+  };
+
+const where =
+  <T>(p: P<T>, check: (value: T, scope: NotesScope) => string | undefined): P<T> =>
+  (path, raw, scope) => {
+    const value = p(path, raw, scope);
+    const problem = check(value, scope);
+    return problem === undefined ? value : refuse(path, problem);
+  };
+
+const note = (max: number) => obj({ text: str(max), sources: optList(url) });
+
+const protocolNotes = (slug: string) =>
+  where(obj({ intro: str(200), audits: note(2000), incidents: list(note(2000)) }), (protocol, scope) => {
+    const hacks = scope.protocols.get(slug);
+    return hacks === 'unread' || protocol.incidents.length === hacks ? undefined : `incidents lists ${protocol.incidents.length}; DefiLlama lists ${hacks} hacks`;
+  });
+
+const NOTES_SCHEMA = obj({
+  title: str(100),
+  summary: str(2000),
+  verdict: obj({ status: oneOf('safe', 'caution'), text: str(100) }),
+  flow: optList(obj({ after: callNumber, from: contract, to: contract, text: str(100) }), 4),
+  protocols: keyed((scope) => [...scope.protocols.keys()], 'a protocol the protocol facts cover', true, protocolNotes),
+  judgments: optList(obj({ text: str(200), sources: optList(url), recommendation: str(200) }), 4),
+  reviews: keyed((scope) => scope.reviews, 'a result the signer must look at', true, () =>
+    obj({ status: oneOf('confirmed', 'concern'), text: str(300), recommendation: str(200) }),
+  ),
+  entries: opt(
+    keyed((scope) => [...scope.entries], 'a registry entry this report covers', false, () =>
+      obj({ role: opt(str(200)), sources: optList(obj({ text: str(200), url, result: oneOf('pass', 'attention', 'fail') })) }),
+    ),
+  ),
+  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => str(2000)),
+  pastTxsConclusion: opt(str(200)),
+});
+
+export type Notes = ReturnType<typeof NOTES_SCHEMA>;
+
+/** `notes.json` against its scope: every key in the schema, every name the scope requires present, and no other name. */
+export const parseNotes = (raw: unknown, scope: NotesScope): Notes => NOTES_SCHEMA(NOTES_FILE, raw, scope);

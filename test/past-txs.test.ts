@@ -63,7 +63,7 @@ test('a recorded search reports both sources, senders by type, and how each temp
   assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe$/m);
   assert.match(text, /erc4626Deposit\.receiver {2}\[the Safe\]\n {4}equalled the Safe in 2 of 2 \(1 Safe\); values: the Safe in 2$/m);
   assert.match(text, /erc4626Deposit\.assets {2}\[card amount\]\n {4}same as the other leaves bound to card amount in 2 of 2; /m);
-  assert.match(text, /approve\.spender {2}\[contract general-adapter1\]\n {4}equalled contract general-adapter1 in 2 of 2 /m);
+  assert.match(text, /approve\.spender {2}\[contract general-adapter-1\]\n {4}equalled contract general-adapter-1 in 2 of 2 /m);
   assert.match(text, new RegExp(`^ {2}1 from 1 Safe: calls usdc\\.approve, vault-bundles-v1\\.0x6bbba4e0\\n {4}e\\.g\\. ${MISFIT}$`, 'm'));
   assert.match(text, new RegExp(`^examples that fit: ${FIT}, `, 'm'));
 });
@@ -73,7 +73,7 @@ test('an EOA making one of the template\'s calls directly is counted as an EOA a
   assert.match(text, /^ {2}EOA calling a function of the template directly: 25, from 24 EOAs$/m);
   assert.match(text, /^by EOAs, call 2 of 2 \(multicall\) as its own transaction:\nfit the call's shape: 2 transactions from 2 EOAs; misfits: 23 from 22 EOAs$/m);
   assert.match(text, /^ {2}call\.multicall\.bundle\[1\]\.data\.erc4626Deposit\.receiver {2}\[the sender\]\n {4}equalled the sender in 2 of 2 \(2 EOAs\); /m);
-  assert.match(text, /^ {2}13 from 12 EOAs: call\.multicall\.bundle: expected 2 items, got 3 items$/m);
+  assert.match(text, /^ {2}13 from 12 EOAs: call\.multicall\.bundle: expected 2 items, got 3 items, calling usdc\.0xd505accf, general-adapter-1\.erc20TransferFrom, general-adapter-1\.erc4626Deposit$/m);
   assert.doesNotMatch(text, /^by EOAs, call 1 of 2/m);
 });
 
@@ -124,7 +124,7 @@ test('a window with more transfers than one page is halved, and the report names
 });
 
 test('--max-txs below one transaction per window is refused', () => {
-  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc', '--anchor', 'mint', '--max-txs', '11'], { encoding: 'utf8' });
+  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '11'], { encoding: 'utf8' });
   assert.equal(run.status, 64);
   assert.match(run.stderr, /--max-txs must be at least 12, one transaction per window/);
 });
@@ -260,7 +260,17 @@ test('the report names where the anchor transfers move', async () => {
 });
 
 test('--to goes with --anchor any only', () => {
-  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc', '--anchor', 'mint', '--to', 'bundler3'], { encoding: 'utf8' });
+  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--to', 'bundler3'], { encoding: 'utf8' });
   assert.equal(run.status, 64);
   assert.match(run.stderr, /--to goes with --anchor any/);
+});
+
+test("a Safe's transaction that makes none of the template's calls is another operation, counted on its own and not among the misfits", async () => {
+  const transfers: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'erc20-transfer.json'), 'utf8'));
+  const text = await report({ recorded: transfers });
+  assert.match(
+    text,
+    /^by proven Safes, the whole template in one transaction:\nanother operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below\n {2}e\.g\. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls another contract\.0x1d7d4ebc\nfit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes$/m,
+  );
+  assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls another contract\.0x1d7d4ebc$/m);
 });

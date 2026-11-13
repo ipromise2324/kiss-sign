@@ -18,7 +18,7 @@ import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SourcifyAnswer } from '../src/contracts/sourcify.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { GENERATED_FILE, GENERATED_SUFFIX, VAULT_REPORTS_DIR, replayReport } from '../src/research/report.ts';
+import { GENERATED_SUFFIX, VAULT_REPORTS_DIR, generatedPath, replayReport, templateTargets } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
@@ -72,7 +72,7 @@ const CASES = [
     uses: ['multicall((address to,bytes data,uint256 value,bool skipRevert,bytes32 callbackHash)[] bundle)'],
   },
   {
-    name: 'general-adapter1',
+    name: 'general-adapter-1',
     proxy: 'none',
     proven: GENERAL_ADAPTER1,
     contract: 'src/adapters/EthereumGeneralAdapter1.sol:EthereumGeneralAdapter1',
@@ -238,38 +238,46 @@ const CASES = [
     immutables: 0,
     uses: ['approve(address spender,uint256 value)', 'transfer(address to,uint256 value)'],
   },
+  {
+    name: 'usdt',
+    proxy: 'none',
+    proven: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    contract: 'TetherToken.sol:TetherToken',
+    compiler: '0.4.18+commit.9cf6e910',
+    functions: 32,
+    immutables: 0,
+    uses: ['approve(address _spender,uint256 _value)', 'transfer(address _to,uint256 _value)'],
+  },
 ] as const;
 
 /** Sourcify holds these as partial matches: the source compiles to the code on chain except the metadata hash. */
-const PARTIAL = ['morpho-urd', 'cctp-message-transmitter', 'usdc'];
+const PARTIAL = ['morpho-urd', 'cctp-message-transmitter', 'usdc', 'usdt'];
 
-const generated = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) =>
-  readdirSync(join(ROOT, TEMPLATES_DIR, protocol))
-    .map((operation) => `${protocol}/${operation}`)
-    .filter((id) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE))),
-);
+const generated = templateTargets(ROOT, registry).filter((target) => existsSync(join(ROOT, generatedPath(target))));
 
 const vaultReports = existsSync(join(ROOT, VAULT_REPORTS_DIR)) ? readdirSync(join(ROOT, VAULT_REPORTS_DIR)).filter((f) => f.endsWith(GENERATED_SUFFIX)) : [];
 const vaultsReported = vaultReports.map((file) => file.slice(0, -GENERATED_SUFFIX.length));
-const reportTargets: Target[] = [...generated.map((template) => ({ template })), ...vaultsReported.map((vault) => ({ vault }))];
+const reportTargets: Target[] = [...generated, ...vaultsReported.map((vault) => ({ vault }))];
 
 const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases(ROOT, registry, reportTargets)]);
 
 test('every committed generated report has its own test below', () => {
-  assert.ok(generated.includes('morpho/vault-deposit'), `morpho/vault-deposit has a generated report`);
+  assert.ok(generated.some((target) => target.template === 'morpho/vault-deposit'), `morpho/vault-deposit has a generated report`);
   assert.ok(vaultsReported.length > 0, `${VAULT_REPORTS_DIR} holds a vault report`);
-  const checked = [...generated.map((id) => join(TEMPLATES_DIR, id, GENERATED_FILE)), ...vaultReports.map((file) => join(VAULT_REPORTS_DIR, file))].sort();
+  const checked = [...generated.map(generatedPath), ...vaultReports.map((file) => join(VAULT_REPORTS_DIR, file))].sort();
   const committed = execFileSync('git', ['ls-files', `*${GENERATED_SUFFIX}`], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter((line) => line !== '').sort();
   assert.deepEqual(checked, committed, 'each committed *.generated.md needs a test, and each generated report must be committed: git add a report you just wrote');
 });
 
-for (const id of generated) {
-  test(`${TEMPLATES_DIR}/${id}/${GENERATED_FILE} is what the program writes from the repository and its recordings`, { timeout: 600_000 }, async () => {
+for (const target of generated) {
+  const path = generatedPath(target);
+  const args = target.cardVault === undefined ? target.template : `${target.template} --vault-of ${target.cardVault}`;
+  test(`${path} is what the program writes from the repository and its recordings`, { timeout: 600_000 }, async () => {
     assert.ok(!('unavailable' in suffixes), `the source checks need the pinned Public Suffix List: ${'unavailable' in suffixes ? suffixes.unavailable : ''}`);
-    const committed = readFileSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE), 'utf8');
-    const text = await replayReport(ROOT, registry, { template: id }, compilers, suffixes);
-    assert.ok(text === committed, `${TEMPLATES_DIR}/${id}/${GENERATED_FILE} differs from \`pnpm report ${id} --offline\`; run \`pnpm report ${id} --record\` and never edit it by hand`);
-    assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${id} lacks a read the proof now makes; delete it and run \`pnpm report ${id} --record\``);
+    const committed = readFileSync(join(ROOT, path), 'utf8');
+    const text = await replayReport(ROOT, registry, target, compilers, suffixes);
+    assert.ok(text === committed, `${path} differs from \`pnpm report ${args} --offline\`; run \`pnpm report ${args} --record\` and never edit it by hand`);
+    assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${args} lacks a read the proof now makes; delete it and run \`pnpm report ${args} --record\``);
   });
 }
 
@@ -317,7 +325,7 @@ test('a proxy names its implementation, and a Safe proxy names its factory', asy
 
 test("GeneralAdapter1's source is refused for Bundler3's code", async () => {
   const bundler3 = load('bundler3');
-  const adapter = load('general-adapter1').sourcify[GENERAL_ADAPTER1] as SourcifyAnswer;
+  const adapter = load('general-adapter-1').sourcify[GENERAL_ADAPTER1] as SourcifyAnswer;
   const lying = { [BUNDLER3]: { status: 200, body: { ...(adapter.body as object), address: BUNDLER3 } } };
   const refused = refusal(await proveAbi(abiCaseReader(bundler3), BUNDLER3, abiCaseBlock(bundler3), { sourcify: abiCaseSourcify(lying), compilers }));
   assert.equal(refused.why, 'bytecode-mismatch');
@@ -372,6 +380,20 @@ test('a partial match whose code on chain differs outside the metadata hash is r
   assert.equal(refused.why, 'bytecode-mismatch');
 });
 
+test('a partial match with a Swarm metadata hash is refused when the code on chain differs just before its trailer', async () => {
+  const fixture = load('usdt');
+  const reads = fixture.reads.map((read) => {
+    if (read.method !== 'getCode') return read;
+    const code = read.value as string;
+    const at = code.length - 2 * 45;
+    return { ...read, value: `${code.slice(0, at)}${code[at] === '0' ? '1' : '0'}${code.slice(at + 1)}` };
+  });
+  const refused = refusal(
+    await proveAbi(abiCaseReader({ ...fixture, reads }), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }),
+  );
+  assert.equal(refused.why, 'bytecode-mismatch');
+});
+
 test('a compiler file whose sha256 differs from the pin is refused', async () => {
   const fixture = load('bundler3');
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-solc-'));
@@ -401,6 +423,7 @@ test('a compiler version with no pin is refused', async () => {
   answer.body.compilation.compilerVersion = '0.8.29+commit.ab55807c';
   const refused = refusal(await proveAbi(abiCaseReader(fixture), BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({ [BUNDLER3]: answer }), compilers }));
   assert.deepEqual(refused, { why: 'compiler-not-pinned', version: '0.8.29+commit.ab55807c' });
+  assert.match(describeRefusal(refused), /run `pnpm pin-solc 0\.8\.29\+commit\.ab55807c`$/);
 });
 
 test('an unverifiable code read is refused, not proven', async () => {
