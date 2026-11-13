@@ -13,8 +13,8 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { refNames } from '../template/template.ts';
-import type { CardRef, ConstValue, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
+import { refNames, slippageBps } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
@@ -68,7 +68,9 @@ export type Body =
   | { readonly kind: 'wallet'; readonly view: WalletView }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
   | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly recordings: readonly PastRecording[] }
-  | { readonly kind: 'signing'; readonly steps: readonly Inline[]; readonly automatic: readonly Inline[] };
+  | { readonly kind: 'next'; readonly steps: readonly NextStep[]; readonly automatic: readonly Inline[] };
+
+export type NextStep = { readonly say: Inline; readonly command: string | undefined; readonly then: readonly Inline[]; readonly hashes: boolean };
 
 export type Header = {
   readonly title: AiText;
@@ -1181,13 +1183,100 @@ function sameShape(context: Context): Inline {
   ];
 }
 
-function signingSection(context: Context): Section {
+function onlyName(ref: CardRef, context: Context): RegistryEntry | undefined {
+  const names = refNames(ref, context.template, context.registry);
+  return names.length === 1 ? context.registry.entries.get(names[0] as string) : undefined;
+}
+
+const refWords = (ref: CardRef): string => `你選的 ${ref.field}${ref.attribute === undefined ? '' : ` 的 ${ref.attribute}`}`;
+
+function promptStep(name: string, field: CardField, context: Context): NextStep {
+  const step = (say: Inline, then: readonly Inline[] = []): NextStep => ({ say, command: undefined, then, hashes: false });
+  switch (field.kind) {
+    case 'contract': {
+      const only = onlyName({ field: name, attribute: undefined }, context);
+      if (only !== undefined) {
+        return step(
+          [{ code: name }, '：它列出可選的合約，每個附完整地址。選 ', link(only), '，地址是 ', { mono: checksumAddress(only.address) }],
+          [['列表的編號可能跟別人的不同，照名字選；也可以直接打名字 ', { code: only.name }, ' 。']],
+        );
+      }
+      return step([{ code: name }, `：它列出可選的 ${field.scope.registryKind}，每個附完整地址。選你要的那個，名字和完整地址都要對。`]);
+    }
+    case 'market':
+      return step([{ code: name }, '：它列出每個市場的 id、lltv 和每個組成的完整地址。選你要的市場，id 要對。']);
+    case 'address':
+    case 'recipient':
+      return step([{ code: name }, '：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。']);
+    case 'nonce':
+      return step([{ code: name }, '：打 Safe 交易的 nonce，純數字。']);
+    case 'amount': {
+      const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? refWords(field.of));
+      if (field.computed === undefined) {
+        return step(
+          [{ code: name }, `：打 ${token} 的數量，用整顆幣，例如 `, { code: '1250.5' }, ' ；可以有千位逗號，例如 ', { code: '1,000,611.448606' }, ' 。'],
+          [['它印出整顆和 base units 兩種寫法，核對數字是你要的。']],
+        );
+      }
+      const { computed } = field;
+      const margin = computed.margin === undefined ? '' : `，再加 ${percent(BigInt(computed.margin.bps), 10_000n)} 餘裕`;
+      return step(
+        [{ code: name }, '：不用填。協議的 app 自己會填這個值，不會問使用者，所以程式自己算。'],
+        [
+          ['它在鏈上讀 ', { code: computed.read.fn.name }, `，兩個節點答案一樣才用，印出預期的 ${token} 數量，再${computed.bound === 'floor' ? '少' : '多'} ${percent(BigInt(slippageBps(computed)), 10_000n)}（協議預設的 ${percent(BigInt(computed.default.bps), 10_000n)}${margin}），${computed.bound === 'floor' ? '無條件捨去' : '無條件進位'}。`],
+          ['預設值的來源：', { href: computed.default.source, label: shortUrl(computed.default.source) }, '。核對印出的預期數量跟最後的數字合理。'],
+        ],
+      );
+    }
+  }
+}
+
+function nextSection(context: Context): Section {
   const { template } = context;
-  const fields = [...template.card].map(([field, card]) => `${card.kind === 'amount' || card.kind === 'nonce' ? '填' : '選'} ${field}`);
-  const steps: Inline[] = [
-    ['用 ', { code: `bin/kiss-sign card new ${template.id}` }, ` 做卡片：${fields.join('、')}。第一次先填小額。`],
-    ['跑 ', { code: 'verify' }, '，要印出 ', { code: 'MATCH' }, '。'],
-    ['硬體錢包上的 domain hash 和 message hash，跟 ', { code: 'verify' }, ' 印的逐字比對，一樣才簽。'],
+  const fields = [...template.card];
+  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce';
+  const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
+  const prompts = [
+    ...fields.filter(([, f]) => !typed(f)),
+    ...fields.filter(([, f]) => typed(f) && !computed(f)),
+    ...fields.filter(([, f]) => computed(f)),
+  ].map(([name, field]) => promptStep(name, field, context));
+  const steps: NextStep[] = [
+    {
+      say: ['第一次用這個模板，或模板改過之後，先核准它'],
+      command: `bin/kiss-sign template approve ${template.id}`,
+      then: [['它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 ', { code: 'y' }, '。']],
+      hashes: false,
+    },
+    {
+      say: ['做卡片'],
+      command: `bin/kiss-sign card new ${template.id}`,
+      then: [['你這份 clone 的 ', { code: 'templates/' }, ' 或 ', { code: 'registry/' }, ' 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 ', { code: 'git pull' }, ' 。']],
+      hashes: false,
+    },
+    ...prompts,
+    {
+      say: ['它印出整張卡片，每個名字都附完整地址，最後問 ', { code: 'Is this what you mean to do? [y/N]' }, ' 。全部是你要的才打 ', { code: 'y' }, ' 。'],
+      command: undefined,
+      then: [['它印出 ', { code: 'Sealed card 0x…' }, ' ，這是卡片的 hash，下一步要用。']],
+      hashes: false,
+    },
+    {
+      say: [`在 Safe web app 提出交易（第一次用這個模板${context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined ? '或這個 vault' : ''}，先用小額），複製它的 safeTxHash，然後跑`],
+      command: 'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
+      then: [
+        [{ code: 'MATCH' }, '：它印出 domain hash、message hash 和 safeTxHash，往下走。'],
+        [{ code: 'MISMATCH' }, ' 或 ', { code: 'UNVERIFIABLE' }, '：不要簽。看它列出的檢查，再看本報告「', { href: anchor('review'), label: '待確認' }, '」裡 AI 的判斷，可能說明原因。'],
+      ],
+      hashes: false,
+    },
+    {
+      say: ['加強等級：在獨立電腦上跑'],
+      command: './check.sh <nonce>',
+      then: [['它算出的 hash 跟硬體錢包比對，解出的每個呼叫跟 ', { code: 'verify' }, ' 在 MATCH 後印出的逐項比對。']],
+      hashes: false,
+    },
+    { say: ['硬體錢包上的 domain hash 和 message hash，跟 ', { code: 'verify' }, ' 印的逐字比對，一樣才簽。'], command: undefined, then: [], hashes: true },
   ];
   const tokenName = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : `你選的 ${token.field}`);
   const automatic: Inline[] = [
@@ -1202,7 +1291,7 @@ function signingSection(context: Context): Section {
     ]),
     [`碰到的 ${new Set(context.ledger.entries.map((e) => e.name)).size} 個登記合約，程式碼還是 code pin 記錄的那份`],
   ];
-  return { anchor: anchor('sign'), label: '簽名', count: undefined, body: { kind: 'signing', steps, automatic } };
+  return { anchor: anchor('next'), label: '下一步', count: undefined, body: { kind: 'next', steps, automatic } };
 }
 
 function stripItems(ledger: Ledger): StripItem[] {
@@ -1244,7 +1333,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     card: example?.card.operations.find((op) => op.template === template.id)?.values,
     values: example === undefined ? new Map() : exampleValues(template, example.tx),
   };
-  const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), addressSection(context), pastSection(context), signingSection(context)];
+  const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), addressSection(context), pastSection(context), nextSection(context)];
   const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', notesPath(template.id), ...(subject.vault === undefined ? [] : [notesPath(template.id, subject.vault.name)])];
   return {
     id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,

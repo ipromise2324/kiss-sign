@@ -13,12 +13,12 @@ import { isAttribute, isMarketEntryPart, loadRegistry } from '../registry.ts';
 import type { Attribute, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate, scopeEntries } from '../template/template.ts';
-import type { CardField, Template, TokenRef } from '../template/template.ts';
+import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps } from '../template/template.ts';
+import type { CardField, CardRef, Computed, ComputedRead, Template, TokenRef } from '../template/template.ts';
 import { gatesVaults, isRegistryVault, reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
-import { UsageError, terminal } from './io.ts';
+import { FAILED, UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
-import { requireConfig, seal } from './setup.ts';
+import { stopUnlessDataIsMain, requireConfig, seal } from './setup.ts';
 
 /** A name a field may hold; a registry entry carries the factory that created it, so two vaults of one display name stay apart. */
 type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe'; readonly factory?: RegistryEntry };
@@ -89,39 +89,64 @@ function unitOf(of: TokenRef, values: Readonly<Record<string, string>>, registry
 
 const UINT256_LIMIT = 1n << 256n;
 
-type TokenDecimals = (entry: RegistryEntry) => Promise<number>;
+/** Every chain read of one card, through both providers at the one block they agree on. */
+type Chain = {
+  readonly decimals: (entry: RegistryEntry) => Promise<number>;
+  /** One uint256 a view answers. */
+  readonly call: (to: Address, data: Hex, what: string) => Promise<bigint>;
+};
 
-/** decimals() of each token, read once through both providers at one block they agree on. */
-function chainDecimals(reader: Reader | undefined, io: Io): TokenDecimals {
+function openChain(reader: Reader | undefined, io: Io): Chain {
   let at: BlockRef | undefined;
-  const known = new Map<Address, number>();
-  return async (entry) => {
-    const cached = known.get(entry.address);
-    if (cached !== undefined) return cached;
-    const token = `${entry.name} ${checksumAddress(entry.address)}`;
-    if (reader === undefined) throw new Error(`no chain reader for ${token}`);
-    const refuse = (why: string): never => {
-      throw new CardError(`cannot read the decimals of ${token}: ${why}`);
-    };
+  const agreedBlock = async (refuse: (why: string) => never): Promise<{ readonly reader: Reader; readonly at: BlockRef }> => {
+    if (reader === undefined) throw new Error('no chain reader');
     if (at === undefined) {
-      const block = await reader.block('latest');
-      at = block.kind === 'agreed' ? block.value : refuse(block.reason);
+      const latest = await reader.block('latest');
+      at = latest.kind === 'agreed' ? latest.value : refuse(latest.reason);
     }
-    const decimals = await readDecimals(reader, entry.address, at);
-    if (typeof decimals !== 'number') return refuse(decimals.problem);
-    known.set(entry.address, decimals);
-    io.stdout(`${token} has ${decimals} decimals: decimals() at block ${at.number}, where ${reader.providers.join(' and ')} agree\n`);
-    return decimals;
+    return { reader, at };
+  };
+  const known = new Map<Address, number>();
+  return {
+    decimals: async (entry) => {
+      const cached = known.get(entry.address);
+      if (cached !== undefined) return cached;
+      const token = `${entry.name} ${checksumAddress(entry.address)}`;
+      const refuse = (why: string): never => {
+        throw new CardError(`cannot read the decimals of ${token}: ${why}`);
+      };
+      const { reader: r, at: ref } = await agreedBlock(refuse);
+      const decimals = await readDecimals(r, entry.address, ref);
+      if (typeof decimals !== 'number') return refuse(decimals.problem);
+      known.set(entry.address, decimals);
+      io.stdout(`${token} has ${decimals} decimals: decimals() at block ${ref.number}, where ${r.providers.join(' and ')} agree\n`);
+      return decimals;
+    },
+    call: async (to, data, what) => {
+      const refuse = (why: string): never => {
+        throw new CardError(`cannot read ${what}: ${why}`);
+      };
+      const { reader: r, at: ref } = await agreedBlock(refuse);
+      const read = await r.call({ to, data }, ref);
+      if (read.kind === 'unverifiable') return refuse(read.reason);
+      if (read.value.kind === 'reverted') return refuse('it reverted');
+      if (read.value.data.length !== 66) return refuse(`it answered ${(read.value.data.length - 2) / 2} bytes, not one word`);
+      const value = BigInt(read.value.data);
+      io.stdout(`  ${what} = ${value}: at block ${ref.number}, where ${r.providers.join(' and ')} agree\n`);
+      return value;
+    },
   };
 }
 
-const AMOUNT = /^(0|[1-9][0-9]*)(?:\.([0-9]+))?$/;
+/** Whole tokens in plain digits, or with commas between groups of exactly three digits before the point. */
+const AMOUNT = /^(0|[1-9][0-9]*|[1-9][0-9]{0,2}(?:,[0-9]{3})+)(?:\.([0-9]+))?$/;
 
 function baseUnits(name: string, typed: string, decimals: number, token: string): bigint {
   const match = AMOUNT.exec(typed);
   const shown = JSON.stringify(typed.slice(0, 80));
-  if (match === null) throw new CardError(`${name}: ${shown} is not a plain decimal number such as 5 or 1.25`);
-  const [, whole = '', fraction = ''] = match;
+  if (match === null) throw new CardError(`${name}: ${shown} is not a plain decimal number such as 5, 1.25 or 1,000,000.5`);
+  const [, grouped = '', fraction = ''] = match;
+  const whole = grouped.replaceAll(',', '');
   if (fraction.length > decimals) throw new CardError(`${name}: ${shown} has more than ${decimals} digits after the point, and ${token} has ${decimals} decimals`);
   const value = whole.length > 78 ? UINT256_LIMIT : BigInt(whole + fraction.padEnd(decimals, '0'));
   if (value >= UINT256_LIMIT) throw new CardError(`${name}: ${shown} is 2^256 base units or more`);
@@ -141,20 +166,79 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
     return typed;
   }
   const token = unit.kind === 'eth' ? 'eth' : unit.entry.name;
-  const decimals = unit.kind === 'eth' ? 18 : await ctx.decimals(unit.entry);
+  const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
   const full = unit.kind === 'eth' ? 'eth' : `${token} ${checksumAddress(unit.entry.address)}`;
   const value = baseUnits(name, await answer(ctx.ask, `${name} (${full}, ${decimals} decimals): `), decimals, token);
+  return listed(name, value, decimals, token, ctx);
+}
+
+function listed(name: string, value: bigint, decimals: number, token: string, ctx: Context): string {
   const line = `${name}: ${wholeTokens(value, decimals)} ${token} = ${value} base units`;
   ctx.io.stdout(`  ${line}\n`);
   ctx.amounts.push(line);
   return value.toString();
 }
 
+const word = (value: bigint): string => value.toString(16).padStart(64, '0');
+
+function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources: Sources): RegistryEntry {
+  const chosen = values[ref.field] as string;
+  const entry = entryOf(chosen, ref.attribute, sources.registry);
+  if (entry === undefined) throw new CardError(`${ref.field}: ${chosen} has no ${ref.attribute ?? 'registry entry'} to read`);
+  return entry;
+}
+
+async function readValue(read: ComputedRead, values: Readonly<Record<string, string>>, ctx: Context): Promise<bigint> {
+  const words: string[] = [];
+  const shown: string[] = [];
+  for (const arg of read.args) {
+    if (arg.kind === 'safe') {
+      words.push(word(BigInt(ctx.sources.safe)));
+      shown.push('safe');
+    } else if (arg.kind === 'read') {
+      const inner = await readValue(arg.read, values, ctx);
+      words.push(word(inner));
+      shown.push(String(inner));
+    } else if (ctx.template.card.get(arg.ref.field)?.kind === 'amount') {
+      const amount = BigInt(values[arg.ref.field] as string);
+      words.push(word(amount));
+      shown.push(String(amount));
+    } else {
+      const entry = entryAt(arg.ref, values, ctx.sources);
+      words.push(word(BigInt(entry.address)));
+      shown.push(entry.name);
+    }
+  }
+  const to = entryAt(read.to, values, ctx.sources);
+  return ctx.chain.call(to.address, `${read.fn.selector}${words.join('')}` as Hex, `${read.fn.name}(${shown.join(', ')}) on ${to.name} ${checksumAddress(to.address)}`);
+}
+
+const percent = (bps: number): string => `${(bps / 100).toFixed(2)}%`;
+
+async function computedValue(name: string, field: TypedField & { readonly kind: 'amount' }, computed: Computed, values: Readonly<Record<string, string>>, ctx: Context): Promise<string> {
+  const unit = unitOf(field.of, values, ctx.sources.registry);
+  if (unit.kind === 'unregistered') throw new CardError(`${name}: counts ${unit.ref}, which is no registry contract, so it cannot be computed in whole tokens`);
+  const token = unit.kind === 'eth' ? 'eth' : unit.entry.name;
+  const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
+  ctx.io.stdout(`${name} is not asked: the protocol's app fills it in itself, so it is computed\n`);
+  const read = await readValue(computed.read, values, ctx);
+  const total = BigInt(slippageBps(computed));
+  const value = computed.bound === 'floor' ? (read * (10_000n - total)) / 10_000n : (read * (10_000n + total) + 9_999n) / 10_000n;
+  ctx.io.stdout(`  expected: ${wholeTokens(read, decimals)} ${token} = ${read} base units\n`);
+  const margin = computed.margin === undefined ? '' : ` plus a margin of ${percent(computed.margin.bps)}`;
+  ctx.io.stdout(`  slippage: ${percent(Number(total))}, ${computed.bound === 'floor' ? 'less' : 'more'} than expected: the protocol's default ${percent(computed.default.bps)} (${computed.default.source})${margin}\n`);
+  if (computed.margin !== undefined) ctx.io.stdout(`  margin, as the template says: ${computed.margin.why}\n`);
+  if (value === 0n) throw new CardError(`${name} comes to 0, which would bound nothing or nothing could meet`);
+  if (value >= UINT256_LIMIT) throw new CardError(`${name} comes to 2^256 base units or more`);
+  return listed(name, value, decimals, token, ctx);
+}
+
 type Context = {
+  readonly template: Template;
   readonly sources: Sources;
   readonly io: Io;
   readonly ask: Terminal['ask'];
-  readonly decimals: TokenDecimals;
+  readonly chain: Chain;
   readonly amounts: string[];
   /** The vaults with a report for a template reported per vault. */
   readonly reported: (template: string) => ReadonlySet<string>;
@@ -163,8 +247,12 @@ type Context = {
 const isTyped = (entry: [string, CardField]): entry is [string, TypedField] => entry[1].kind === 'amount' || entry[1].kind === 'nonce';
 const isChosen = (entry: [string, CardField]): entry is [string, ChosenField] => !isTyped(entry);
 
-/** Every choice comes before every typed number, so the token an amount counts is known when it is asked. */
-async function fill(template: Template, ctx: Context): Promise<CardOperation> {
+/**
+ * Every choice comes before every typed number, so the token an amount counts is known when it is asked, and every typed
+ * number before every computed one, in card order, so a computed field may read any value but a later computed one.
+ */
+async function fill(template: Template, shared: Omit<Context, 'template'>): Promise<CardOperation> {
+  const ctx: Context = { ...shared, template };
   const values: Record<string, string> = {};
   const fields = [...template.card];
   const unit = reportUnit(template);
@@ -190,23 +278,27 @@ async function fill(template: Template, ctx: Context): Promise<CardOperation> {
     if (others.length > 0) throw new CardError(`${name}: ${shown} matches more than one listed choice; type the number in front of the one you mean (${range})`);
     values[name] = choice.name;
   }
-  for (const [name, field] of fields.filter(isTyped)) values[name] = await typedValue(name, field, values, ctx);
-  return { template: template.id, values };
+  for (const [name, field] of fields.filter(isTyped)) if (!isComputed(field)) values[name] = await typedValue(name, field, values, ctx);
+  for (const [name, field] of fields.filter(isTyped)) if (isComputed(field)) values[name] = await computedValue(name, field, field.computed, values, ctx);
+  return { template: template.id, values: Object.fromEntries(fields.map(([name]) => [name, values[name] as string])) };
 }
 
-const countsRegistryToken = (template: Template): boolean => [...template.card.values()].some((f) => f.kind === 'amount' && f.of !== 'eth');
+const isComputed = (field: CardField): field is Extract<CardField, { kind: 'amount' }> & { readonly computed: Computed } => field.kind === 'amount' && field.computed !== undefined;
+
+const readsChain = (template: Template): boolean => [...template.card.values()].some((f) => f.kind === 'amount' && (f.of !== 'eth' || f.computed !== undefined));
 
 export async function cardNew(args: readonly string[], io: Io): Promise<number> {
   if (args.length === 0) throw new UsageError('card new takes one or more template ids, such as morpho/vault-deposit.');
   const { ask, confirm } = terminal(io, 'card new');
+  if (!stopUnlessDataIsMain(io)) return FAILED;
   const home = kissSignHome(io.env);
   const sources: Sources = { registry: loadRegistry(io.repoRoot), book: loadAddressBook(home), safe: requireConfig(home).safe };
   const templates = args.map((id) => {
     if (!existsSync(join(io.repoRoot, TEMPLATES_DIR, id, 'template.json'))) throw new CardError(`no template ${id} in ${TEMPLATES_DIR}/`);
     return loadTemplate(io.repoRoot, id, sources.registry);
   });
-  const reader = templates.some(countsRegistryToken) ? openMainnetReader(io.env, io.transport) : undefined;
-  const ctx: Context = { sources, io, ask, decimals: chainDecimals(reader, io), amounts: [], reported: (id) => reportedVaultsIn(io.repoRoot, id) };
+  const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport) : undefined;
+  const ctx = { sources, io, ask, chain: openChain(reader, io), amounts: [] as string[], reported: (id: string) => reportedVaultsIn(io.repoRoot, id) };
   const operations: CardOperation[] = [];
   for (const [i, template] of templates.entries()) {
     io.stdout(`operation ${i + 1}: ${template.id}\n`);

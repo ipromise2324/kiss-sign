@@ -16,9 +16,9 @@ import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts'
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
-import { TEMPLATES_DIR, callTargets, inScope, loadTemplate, refNames, scopeEntries } from '../template/template.ts';
+import { TEMPLATES_DIR, callTargets, inScope, loadTemplate, refNames, scopeEntries, slippageBps } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
-import type { CallNode, CardRef, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
+import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
 import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
@@ -356,6 +356,16 @@ const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(check
 const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
 const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : VERDICTS[line.kind]);
 
+function readText(read: ComputedRead): string {
+  const args = read.args.map((arg) => (arg.kind === 'safe' ? 'the Safe' : arg.kind === 'card' ? refText(arg.ref) : readText(arg.read)));
+  return `${code(read.fn.signature)} on ${refText(read.to)}${args.length === 0 ? '' : ` of ${args.join(', ')}`}`;
+}
+
+function computedText(computed: Computed): string {
+  const margin = computed.margin === undefined ? '' : `, plus a margin of ${computed.margin.bps} bps, ${byAi(computed.margin.why)}`;
+  return `${readText(computed.read)}, ${computed.bound === 'floor' ? 'less' : 'plus'} ${slippageBps(computed)} bps and rounded ${computed.bound === 'floor' ? 'down' : 'up'}: the protocol's default of ${computed.default.bps} bps, from ${computed.default.source}${margin}`;
+}
+
 function refText(ref: CardRef): string {
   return ref.attribute === undefined ? `the card's ${code(ref.field)}` : `the ${code(ref.attribute)} of the card's ${code(ref.field)}`;
 }
@@ -454,7 +464,9 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
       field.kind === 'contract'
         ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}, picked by number from the list below`
         : field.kind === 'amount'
-          ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}`
+          ? field.computed === undefined
+            ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}`
+            : `nothing: computed by ${code('card new')} in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}, ${computedText(field.computed)}`
           : field.kind === 'nonce'
             ? 'a Safe nonce'
             : field.kind === 'market'

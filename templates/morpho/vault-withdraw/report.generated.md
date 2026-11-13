@@ -8,7 +8,7 @@ Written by `pnpm report morpho/vault-withdraw --record` from `templates/morpho/v
 | --- | --- |
 | `vault` | a registry `vault`, picked by number from the list below |
 | `amount` | an integer in base units of the `asset` of the card's `vault` |
-| `max-shares` | an integer in base units of the card's `vault` |
+| `max-shares` | nothing: computed by `card new` in base units of the card's `vault`, `previewWithdraw(uint256)` on the card's `vault` of the card's `amount`, plus 10 bps and rounded up: the protocol's default of 3 bps, from https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24, plus a margin of 7 bps, written by the AI in the template: The Morpho app reads its own preview when it builds the transaction, accrued two hours ahead (computeVaultMaxSharePrice and computeVaultMaxShareAllowance in packages/morpho-sdk/src/helpers/slippage.ts at the same commit). The share price moves between this card and then, up with interest or down with a Vault V2 fee, and with the default alone a move against the card makes the app's own transaction MISMATCH. 0.07% more covers about three days of a vault earning 8% a year. |
 
 `vault` can name:
 

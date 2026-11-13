@@ -6,11 +6,11 @@ import type { Card, ResolvedValue } from '../card.ts';
 import { ConfigError, loadApproved, loadConfig, loadStoredConfig, saveApproved, saveConfig } from '../config.ts';
 import type { Config } from '../config.ts';
 import { KEYS, createKeyFile, keyFilePath, kissSignHome } from '../keys.ts';
-import { REGISTRY_PATH, isEntryName, loadRegistry, parseRegistry } from '../registry.ts';
+import { REGISTRY_DIR, REGISTRY_PATH, isEntryName, loadRegistry, parseRegistry } from '../registry.ts';
 import { checksumAddress, parseAddress } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template.ts';
 import { reportedVaultsIn, unreportedVault } from '../template/vault-reports.ts';
-import { commitSubject, fetchOriginMain, fileAt, originRepo } from '../verify/self-check.ts';
+import { commitSubject, dataDiffersFromOriginMain, fetchOriginMain, fileAt, originRepo } from '../verify/self-check.ts';
 import { keccakText } from '../verify/verify.ts';
 import { FAILED, OK, UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
@@ -119,10 +119,27 @@ function show(value: ResolvedValue): string {
   return `${value.name} ${checksumAddress(value.address)} (${value.from})`;
 }
 
+/**
+ * `card new` and `card seal` read the templates and the registry from the clone. Stops, printing why, unless they are
+ * main of the configured repository as GitHub has it now, since a merge on GitHub changes nothing here until a pull.
+ */
+export function stopUnlessDataIsMain(io: Io): boolean {
+  const { repo } = requireConfig(kissSignHome(io.env));
+  const data = dataDiffersFromOriginMain(io.repoRoot, repo, [TEMPLATES_DIR, REGISTRY_DIR]);
+  if (data.kind === 'current') return true;
+  const why =
+    data.kind === 'differs'
+      ? `${TEMPLATES_DIR}/ and ${REGISTRY_DIR}/ here are not main of ${repo} on GitHub; run git pull, then run this again.`
+      : `could not check that ${TEMPLATES_DIR}/ and ${REGISTRY_DIR}/ here are main of ${repo} on GitHub, so nothing was asked.`;
+  io.stderr(`kiss-sign: ${why}\n${data.problems.map((p) => `  ${p}\n`).join('')}`);
+  return false;
+}
+
 export async function cardSeal(args: readonly string[], io: Io): Promise<number> {
   const [path, ...extra] = args;
   if (path === undefined || extra.length > 0) throw new UsageError('card seal takes the path of one card JSON file.');
   const { confirm } = terminal(io, 'card seal');
+  if (!stopUnlessDataIsMain(io)) return FAILED;
   return seal(parseCard(JSON.parse(readFileSync(path, 'utf8'))), io, confirm);
 }
 
