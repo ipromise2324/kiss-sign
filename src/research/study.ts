@@ -89,7 +89,7 @@ export type TxStudy =
   | { readonly kind: 'unproven'; readonly hash: Hex; readonly contract: Address; readonly why: UnprovenReason }
   | { readonly kind: 'misfit'; readonly hash: Hex; readonly sender: Sender; readonly reason: MisfitReason }
   /** `values` pairs with the rules of the sender's `Shape`; `paths` names each leaf. */
-  | { readonly kind: 'fit'; readonly hash: Hex; readonly sender: Sender; readonly paths: readonly string[]; readonly types: readonly AbiType[]; readonly values: readonly string[] };
+  | { readonly kind: 'fit'; readonly hash: Hex; readonly block: bigint; readonly sender: Sender; readonly paths: readonly string[]; readonly types: readonly AbiType[]; readonly values: readonly string[] };
 
 /** A Safe's transaction that makes none of the template's top-level calls: another operation, not a variant of this one. */
 export function isOtherOperation(study: TxStudy, template: Template): boolean {
@@ -296,7 +296,7 @@ async function proveSafe(reader: Reader, address: Address, blockNumber: bigint):
   return official ? { kind: 'proven' } : { kind: 'unproven', why: 'its singleton is not an official Safe singleton' };
 }
 
-function judge(hash: Hex, tx: SafeTx, sender: Sender, shape: Shape, registry: Registry): TxStudy {
+function judge({ hash, block }: { readonly hash: Hex; readonly block: bigint }, tx: SafeTx, sender: Sender, shape: Shape, registry: Registry): TxStudy {
   const { template, loosened } = shape;
   const check = (t: Template) =>
     inspectTemplateFields(tx, { safe: sender.address, operations: [{ template: template.id, values: new Map() }] }, new Map([[template.id, t]]), registry);
@@ -307,6 +307,7 @@ function judge(hash: Hex, tx: SafeTx, sender: Sender, shape: Shape, registry: Re
   return {
     kind: 'fit',
     hash,
+    block,
     sender,
     paths: inspection.leaves.map((leaf) => `${leaf.callPath}.${leaf.arg}`),
     types: inspection.leaves.map((leaf) => leaf.type),
@@ -328,10 +329,10 @@ async function studySafeTx(reader: Reader, tx: Transaction & { readonly to: Addr
   if (receipt === null || !receipt.logs.some((log) => log.address === tx.to && log.topics[0] === EXECUTION_SUCCESS)) {
     return { kind: 'not-studied', hash, why: 'no ExecutionSuccess from the Safe', selector };
   }
-  return judge(hash, safeTx, { kind: 'safe', address: tx.to }, context.shapes.whole, context.registry);
+  return judge({ hash, block: tx.blockNumber }, safeTx, { kind: 'safe', address: tx.to }, context.shapes.whole, context.registry);
 }
 
-function studyDirectCall(tx: Transaction & { readonly to: Address }, context: StudyContext): TxStudy {
+function studyDirectCall(tx: Transaction & { readonly to: Address; readonly blockNumber: bigint }, context: StudyContext): TxStudy {
   const selector = tx.input.length >= 10 ? tx.input.slice(0, 10) : 'no data';
   const candidates = context.shapes.calls.flatMap((shape, call) => {
     const templateCall = shape.template.calls[0];
@@ -343,7 +344,7 @@ function studyDirectCall(tx: Transaction & { readonly to: Address }, context: St
   });
   if (candidates.length === 0) return { kind: 'not-studied', hash: tx.hash, why: 'calls no function the template calls', selector };
   const direct: SafeTx = { ...EMPTY_SAFE_TX, safe: tx.from, to: tx.to, value: tx.value, data: tx.input };
-  const studies = candidates.map(({ shape, call }) => judge(tx.hash, direct, { kind: 'eoa', address: tx.from, call }, shape, context.registry));
+  const studies = candidates.map(({ shape, call }) => judge({ hash: tx.hash, block: tx.blockNumber }, direct, { kind: 'eoa', address: tx.from, call }, shape, context.registry));
   return studies.find((study) => study.kind === 'fit') ?? (studies[0] as TxStudy);
 }
 
@@ -357,5 +358,5 @@ export async function studyTx(reader: Reader, hash: Hex, context: StudyContext):
   if (to === null) return { kind: 'not-studied', hash, why: 'calls no function the template calls', selector: 'contract creation' };
   if (blockNumber === null) return { kind: 'unreadable', hash, reason: 'the transaction is pending' };
   if (tx.input.startsWith(EXEC_TRANSACTION.selector)) return studySafeTx(reader, { ...tx, to, blockNumber }, context);
-  return studyDirectCall({ ...tx, to }, context);
+  return studyDirectCall({ ...tx, to, blockNumber }, context);
 }

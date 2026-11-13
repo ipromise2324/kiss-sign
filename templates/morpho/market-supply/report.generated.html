@@ -251,7 +251,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
 </nav>
 
 <div class="main">
@@ -274,7 +274,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。oracle 的地址程式只在協議 API 確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
   </details>
 </header>
 
@@ -410,7 +410,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c">3 項</span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
@@ -434,24 +434,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="wallet">
-  <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
-  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。右邊是模板的規則，不是描述檔的文字。</p>
-  <dl class="props two">
-    <div><dt>1 usdc.approve</dt><dd class="f3">沒有描述檔，只顯示原始資料</dd></div>
-    <div><dt>2 blue-bundles-v1.blueBundlesV1Supply</dt><dd>
-      <dl class="nest flat">
-        <div><dt>送出的 ETH</dt><dd><span class="addr">0</span></dd></div>
-        <div><dt>金額</dt><dd>你填的 amount</dd></div>
-        <div><dt>抵押代幣</dt><dd>你選的 market 的 collateralToken</dd></div>
-        <div><dt>LLTV</dt><dd>你選的 market 的 lltv</dd></div>
-        <div><dt>推薦費比例</dt><dd><span class="addr">0</span></dd></div>
-        <div><dt>推薦費收款地址</dt><dd>無（零地址）</dd></div>
-        <div><dt>期限</dt><dd>不限</dd></div>
-      </dl></dd></div>
-  </dl>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>呼叫 2：錢包不顯示 <code>marketParams.loanToken</code>、<code>marketParams.oracle</code>、<code>marketParams.irm</code>、<code>loanTokenPermit.kind</code>。</span></div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>呼叫 2：同樣兩種代幣的不同 market，只看錢包分不出來。</span></div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>現在的硬體錢包解不開 Safe 的 MultiSend，簽名時比對 hash。</span></div>
+  <h2>錢包顯示</h2>
+  <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，硬體錢包解不開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>
 </section>
 
 <section id="addresses">
@@ -507,6 +491,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
+  <p class="lead">過去有 <span class="num">8</span> 筆交易跟模板一模一樣：Safe <span class="num">0</span> 筆、EOA <span class="num">8</span> 筆（8 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 3 筆：<a href="https://etherscan.io/tx/0x6adc75b9a6e900fc741b705a9fe9ff5ea95929607f5ed169c07cf28d9b553932">0x6adc75b9…</a>、<a href="https://etherscan.io/tx/0x42dd33654c862fee8663cf40e57594eeef6ad1ed0916331a6bf18b036618ced7">0x42dd3365…</a>、<a href="https://etherscan.io/tx/0x368e54bdb221041b55ea5583c7bde64bca7489a57bd28a71e812d742d3894aaf">0x368e54bd…</a>。</p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 usdc 的 轉帳，找到 528 筆，研究 40 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/morpho-market-supply.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">528 = 528</span>）。</p>
@@ -517,6 +504,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="ph"><span class="pt">EOA 直接呼叫 blueBundlesV1Supply</span><span><span class="num">8</span> 筆用了這個操作的呼叫（8 個地址），<span class="num">8</span> 筆跟模板一樣。</span></div>
   </div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 32 筆是別的操作，不列入：<code>blueBundlesV1RepayAndWithdrawCollateral</code> 14 筆、<code>blueBundlesV1SupplyCollateralAndBorrow</code> 13 筆、<code>blueBundlesV1Withdraw</code> 4 筆、<code>0x1fad948c</code> 1 筆。</span></div>
+  </details>
 </section>
 
 <section id="sign">

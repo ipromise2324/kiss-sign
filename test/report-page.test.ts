@@ -9,7 +9,7 @@ import type { State } from '../src/research/ledger.ts';
 import { NotesError, notesScope, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
-import type { ArgRow, Body, HtmlInputs, Page } from '../src/research/report-page.ts';
+import type { ArgRow, Body, HtmlInputs, Inline, Page, WalletCall } from '../src/research/report-page.ts';
 import { replayInputs } from '../src/research/report.ts';
 import type { ReportTitle } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -45,7 +45,7 @@ before(async () => {
 
 /** Notes that hold exactly what the scope requires, each text naming its key, so a page row can be traced to its note. */
 function notesFor(of: HtmlInputs): Record<string, unknown> {
-  const scope = notesScope(of, judge(of, of.fixtures), template);
+  const scope = notesScope(of, judge(of, of.fixtures), of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report'));
   return {
     title: 'title',
     summary: 'summary',
@@ -59,6 +59,14 @@ function notesFor(of: HtmlInputs): Record<string, unknown> {
 }
 
 const pageOf = (of: HtmlInputs): Page => buildPage(of, notesFor(of), title);
+
+function oneCall(of: HtmlInputs, n: number): HtmlInputs {
+  const subject = of.subject.kind === 'template' ? of.subject : assert.fail('a template report');
+  const call = subject.template.calls[n - 1] ?? assert.fail(`no call ${n}`);
+  return { ...of, subject: { ...subject, template: { ...subject.template, calls: [call] } }, example: undefined, fixtures: [] };
+}
+
+const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), flow: [] }, title);
 const body = <K extends Body['kind']>(page: Page, kind: K): Extract<Body, { kind: K }> => page.sections.find((s) => s.body.kind === kind)?.body as Extract<Body, { kind: K }>;
 const args = (page: Page): ArgRow[] => body(page, 'flow').flow.calls.flatMap((call) => call.args);
 const arg = (page: Page, key: string): ArgRow => args(page).find((a) => a.key === key) ?? assert.fail(`no row ${key}`);
@@ -180,19 +188,29 @@ test('the diagram has a lifeline for the Safe, each call target and each view ta
   );
 });
 
+function walletCall(page: Page): { readonly call: WalletCall; readonly lines: readonly Inline[] } {
+  const { view } = body(page, 'wallet');
+  if (view.kind !== 'calls') return assert.fail('a one-call template lists its call');
+  return { call: view.calls[0] ?? assert.fail('one call'), lines: view.lines };
+}
+
+test('a template of two or more calls goes through MultiSend, so its wallet section only says to compare the safeTxHash', () => {
+  assert.deepEqual(body(pageOf(inputs), 'wallet').view, { kind: 'multisend', calls: 2 });
+  assert.deepEqual(body(depositPage, 'wallet').view, { kind: 'multisend', calls: 2 });
+});
+
 test('the wallet rows match a descriptor by each array item, by argument name without underscores, and show a token with no descriptor as raw data', () => {
-  const rowsOf = (page: Page, n: number) => {
-    const call = body(page, 'wallet').calls.find((c) => c.n === n) ?? assert.fail(`no call ${n}`);
+  const rowsOf = (of: HtmlInputs, n: number) => {
+    const { call } = walletCall(oneCallPage(oneCall(of, n)));
     return call.rows === 'no-descriptor' ? call.rows : call.rows.map((r) => [plain(r.label), plain(r.value)]);
   };
-  assert.equal(rowsOf(depositPage, 1), 'no-descriptor');
-  assert.deepEqual(rowsOf(depositPage, 2), [['bundle.[0].data', '呼叫 erc20TransferFrom，參數見流程'], ['bundle.[1].data', '呼叫 erc4626Deposit，參數見流程']]);
+  assert.equal(rowsOf(depositInputs, 1), 'no-descriptor');
+  assert.deepEqual(rowsOf(depositInputs, 2), [['bundle.[0].data', '呼叫 erc20TransferFrom，參數見流程'], ['bundle.[1].data', '呼叫 erc4626Deposit，參數見流程']]);
   const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
   const field = (path: string) => ({ kind: 'field', path, format: 'raw', visible: 'always' }) as const;
   const usdtLike = { functions: [{ selector: '0x095ea7b3', signature: 'approve(address,uint256)', fields: [field('_spender'), field('_value')], notShown: [] }] } as unknown as EntryReport['descriptors'][number];
   const reports = [...depositInputs.erc7730.reports, { entry: usdc, factory: undefined, index: undefined, descriptors: [usdtLike] }];
-  const page = buildPage({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, depositNotes, depositTitle);
-  assert.deepEqual(rowsOf(page, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的 amount']]);
+  assert.deepEqual(rowsOf({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的 amount']]);
 });
 
 test("a per-vault report shows its vault as the card's value, with or without a test transaction", () => {
@@ -335,9 +353,9 @@ test('the oracle only the protocol API confirms is the one row to review, open i
 });
 
 test('the wallet table shows the template rule, and names the bound arguments the wallet hides', () => {
-  const wallet = body(pageOf(inputs), 'wallet');
-  assert.equal(wallet.calls[0]?.rows, 'no-descriptor');
-  const rows = wallet.calls[1]?.rows;
+  assert.equal(walletCall(oneCallPage(oneCall(inputs, 1))).call.rows, 'no-descriptor');
+  const wallet = walletCall(oneCallPage(oneCall(inputs, 2)));
+  const rows = wallet.call.rows;
   assert.ok(Array.isArray(rows));
   assert.deepEqual(
     rows.map((r) => [plain(r.label), plain(r.value)]),
@@ -351,8 +369,10 @@ test('the wallet table shows the template rule, and names the bound arguments th
       ['期限', '不限'],
     ],
   );
-  assert.match(plain(wallet.lines[0]), /marketParams\.oracle/);
-  assert.match(plain(wallet.lines[1]), /分不出來/);
+  assert.deepEqual(
+    wallet.lines.map((line) => plain(line)),
+    ['呼叫 1：錢包不顯示 marketParams.loanToken、marketParams.oracle、marketParams.irm、loanTokenPermit.kind。', '呼叫 1：同樣兩種代幣的不同 market，只看錢包分不出來。'],
+  );
 });
 
 test('a wallet row is labelled by the argument it shows, never by a descriptor path that names no argument', () => {
@@ -361,7 +381,7 @@ test('a wallet row is labelled by the argument it shows, never by a descriptor p
     ...report,
     descriptors: report.descriptors.map((d) => ({ ...d, functions: d.functions.map((f) => ({ ...f, fields: [...f.fields, ...extra] })) })),
   }));
-  const rows = body(pageOf({ ...inputs, erc7730: { ...inputs.erc7730, reports } }), 'wallet').calls[1]?.rows;
+  const rows = walletCall(oneCallPage(oneCall({ ...inputs, erc7730: { ...inputs.erc7730, reports } }, 2))).call.rows;
   assert.ok(Array.isArray(rows));
   assert.deepEqual(
     rows.slice(-3).map((r) => [plain(r.label), plain(r.value)]),
@@ -415,6 +435,21 @@ test('a bundle with another number of items is grouped and named by the function
   assert.ok(!JSON.stringify(early).includes('符合'), 'no verdict word');
 });
 
+test('過去交易 leads with how many past transactions had exactly the template shape, each counted once, and the latest of them', () => {
+  assert.equal(
+    plain(body(depositPage, 'past').same),
+    '過去有 32 筆交易跟模板一模一樣：Safe 6 筆（2 個 Safe）、EOA 26 筆（17 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 3 筆：0x88258583…、0xa56ce3d8…、0x15133c00…。',
+  );
+  const noFits = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind !== 'fit') } }));
+  assert.equal(plain(body(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle), 'past').same), '過去的記錄裡，沒有一筆交易跟模板一模一樣。');
+  const twice = [...depositInputs.pastTxs, ...depositInputs.pastTxs];
+  assert.deepEqual(body(buildPage({ ...depositInputs, pastTxs: twice }, depositNotes, depositTitle), 'past').same, body(depositPage, 'past').same);
+});
+
+test('待確認 counts the program results apart from the AI judgments, in the rail and the heading', () => {
+  assert.deepEqual(depositPage.sections.find((s) => s.anchor === 'review')?.count, { kind: 'states', counts: [{ state: 'warn', n: 1 }, { state: 'ask', n: 3 }] });
+});
+
 test('notes.json that leaves out a review the page needs is refused', () => {
   const notes = notesFor(inputs);
   assert.throws(
@@ -459,7 +494,7 @@ for (const variant of VARIANTS) {
       else assert.equal(item.state, expected, item.name);
     }
     const rail = page.sections.find((s) => s.anchor === 'review')?.count;
-    assert.deepEqual(rail, { kind: 'state', state: ids.length > 0 ? worst(forSigner(ledger)) : 'ask', n: ids.length + review.judgments.length });
+    assert.deepEqual(rail, { kind: 'states', counts: [...(ids.length > 0 ? [{ state: worst(forSigner(ledger)), n: ids.length }] : []), { state: 'ask', n: review.judgments.length }] });
     const reviewed = new Set(review.rows.flatMap((r) => (r.entry === undefined ? [] : [r.entry])));
     assert.deepEqual(new Set(body(page, 'addresses').open.map((r) => r.anchor)), reviewed);
     assert.equal(page.header.verdict.state, worst(ledger.results));

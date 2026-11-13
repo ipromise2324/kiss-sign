@@ -251,7 +251,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
 </nav>
 
 <div class="main">
@@ -274,7 +274,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
   </details>
 </header>
 
@@ -464,7 +464,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c">5 項</span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row" data-state="warn" data-result="hyperithm-usdc-apex-v2-9e2f/address">
@@ -486,11 +486,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>同名的 vault 有兩個：Hyperithm USDC Apex 的 V1（0x777791C4d6DC2CE140D00D2828a7C93503c67777）和 V2（0x093272C07700d3cA5301C3Bf9B3A392624179E2F），代號都是 hyperUSDCa。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>在 card new 用名稱尾碼和工廠分辨，跟 Morpho app 網址上的地址逐字比對。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>這個 vault 一年內從約 3,300 升到約 750 萬 USDC，2026-07 曾到約 1,260 萬；最大持有人占 51.77%，前 10 名占 90.10%。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只存你能接受暫時提不出的金額，先送小額。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
@@ -498,18 +493,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="wallet">
-  <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
-  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。右邊是模板的規則，不是描述檔的文字。</p>
-  <dl class="props two">
-    <div><dt>1 usdc.approve</dt><dd class="f3">沒有描述檔，只顯示原始資料</dd></div>
-    <div><dt>2 bundler3.multicall</dt><dd>
-      <dl class="nest flat">
-        <div><dt><code>bundle.[0].data</code></dt><dd>呼叫 <code>erc20TransferFrom</code>，參數見流程</dd></div>
-        <div><dt><code>bundle.[1].data</code></dt><dd>呼叫 <code>erc4626Deposit</code>，參數見流程</dd></div>
-      </dl></dd></div>
-  </dl>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>呼叫 2：錢包不顯示 <code>bundle.[0].to</code>、<code>bundle.[0].value</code>、<code>bundle.[0].skipRevert</code>、<code>bundle.[0].callbackHash</code>、<code>bundle.[1].to</code>、<code>bundle.[1].value</code>、<code>bundle.[1].skipRevert</code>、<code>bundle.[1].callbackHash</code>。</span></div>
-  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>現在的硬體錢包解不開 Safe 的 MultiSend，簽名時比對 hash。</span></div>
+  <h2>錢包顯示</h2>
+  <p class="lead">這筆 Safe 交易用 MultiSend 打包 2 個呼叫，硬體錢包解不開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>
 </section>
 
 <section id="addresses">
@@ -558,7 +543,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="intro"><span class="aiw" data-ai><span>Safe 這樣存是常見做法：8 筆 Safe 存款有 6 筆跟模板一樣。EOA 多半改用 permit 簽名存，Safe 不能用 permit。</span><span class="byai">AI 研究</span></span></p>
+  <p class="lead">過去有 <span class="num">32</span> 筆交易跟模板一模一樣：Safe <span class="num">6</span> 筆（2 個 Safe）、EOA <span class="num">26</span> 筆（17 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 3 筆：<a href="https://etherscan.io/tx/0x882585830ebecfc6d4b6d090a6de93d3fcd5eb8e345cefa4e946ea094c5d6a1d">0x88258583…</a>、<a href="https://etherscan.io/tx/0xa56ce3d85a54c15261913f13b11c4d976088a618ffd901ef78f21d1f52f4d6f7">0xa56ce3d8…</a>、<a href="https://etherscan.io/tx/0x15133c00914537887bda6ce400281946f81609489ef15495fe755d6223cfe8e2">0x15133c00…</a>。</p>
+  <p class="intro"><span class="aiw" data-ai><span>其他 Safe 存款只呼叫 <code>multicall</code>，沒有先 approve。EOA 多半改用 permit 簽名存，Safe 不能用 permit。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 hyperithm-usdc-apex-v2-9e2f 的 鑄造（存款），找到 489 筆，研究 489 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/morpho-vault-deposit-v2-early.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">489 = 489</span>）。</p>
@@ -592,6 +580,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="pex">例：<a href="https://etherscan.io/tx/0xba939d349655bc3ca4038a711d909406e2f678a12837e3c1e7f8faf80fefc660">0xba939d34…</a></div></div></div>
   </div>
   <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 86 筆是別的操作，不列入：<code>multicall</code> 73 筆、<code>0xbaae8abf</code> 3 筆、<code>deposit</code> 2 筆、<code>withdraw</code> 2 筆，還有別的。</span></div>
+  </details>
 </section>
 
 <section id="sign">

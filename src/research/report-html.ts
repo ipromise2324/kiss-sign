@@ -68,8 +68,9 @@ const tip = (label: string, body: string): Html => {
   return h`<span class="tip" tabindex="0" aria-label="${label}" aria-describedby="t${tips}">${decor('info')}<span class="bub" id="t${tips}" role="tooltip">${body}</span></span>`;
 };
 
-const railCount = (count: RailCount | undefined): Html =>
-  count === undefined ? h`` : count.kind === 'text' ? h` <span class="cnt">${count.text}</span>` : h` <span class="cnt" data-state="${count.state}">${icon(count.state)}${count.n}</span>`;
+const stateCounts = (count: Extract<RailCount, { kind: 'states' }>): Html => h`${count.counts.map((c) => h` <span class="cnt" data-state="${c.state}">${icon(c.state)}${c.n}</span>`)}`;
+
+const railCount = (count: RailCount | undefined): Html => (count === undefined ? h`` : count.kind === 'text' ? h` <span class="cnt">${count.text}</span>` : stateCounts(count));
 
 const contents = (sections: readonly Section[]): Html => h`<ol>${sections.map((s) => h`<li><a href="#${s.anchor}">${s.label}${railCount(s.count)}</a></li>`)}</ol>`;
 
@@ -325,10 +326,14 @@ function reviewBody(body: Extract<Body, { kind: 'review' }>): Html {
   </div>`;
 }
 
-function walletBody(body: Extract<Body, { kind: 'wallet' }>): Html {
+function walletBody({ view }: Extract<Body, { kind: 'wallet' }>): Html {
+  if (view.kind === 'multisend') {
+    return h`
+  <p class="lead">這筆 Safe 交易用 MultiSend 打包 ${view.calls} 個呼叫，硬體錢包解不開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>`;
+  }
   return h`
   <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。右邊是模板的規則，不是描述檔的文字。</p>
-  <dl class="props two">${body.calls.map(
+  <dl class="props two">${view.calls.map(
     (call) => h`
     <div><dt>${text(call.title)}</dt>${
       call.rows === 'no-descriptor'
@@ -339,7 +344,7 @@ function walletBody(body: Extract<Body, { kind: 'wallet' }>): Html {
       </dl></dd>`
     }</div>`,
   )}
-  </dl>${body.lines.map((line) => h`
+  </dl>${view.lines.map((line) => h`
   <div class="warnline">${decor('info')}<span>${text(line)}</span></div>`)}`;
 }
 
@@ -379,8 +384,11 @@ function addressBody(body: Extract<Body, { kind: 'addresses' }>): Html {
 
 function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
   if (body.recordings.length === 0) return h`<p class="lead">沒有 <code>pnpm past-txs --record</code> 的記錄。</p>`;
-  return h`${body.conclusion === undefined ? '' : h`
+  return h`
+  <p class="lead">${text(body.same)}</p>${body.conclusion === undefined ? '' : h`
   <p class="intro">${ai(body.conclusion)}</p>`}
+  <details class="fold">
+  <summary>${decor('chev')}其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>${body.recordings.map(
     (r) => h`
   <h3>${r.count}</h3>
@@ -395,7 +403,8 @@ function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
   </div>`,
   )}${r.others.map((line) => h`
   <div class="warnline">${decor('info')}<span>${text(line)}</span></div>`)}`,
-  )}`;
+  )}
+  </details>`;
 }
 
 function signingBody(body: Extract<Body, { kind: 'signing' }>): Html {
@@ -418,7 +427,8 @@ const ADDRESS_RULE =
   '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題。AI 補查不改變信心等級。';
 
 function section(s: Section): Html {
-  const count = s.body.kind === 'wallet' ? 'ERC-7730 描述檔' : s.count === undefined ? undefined : s.count.kind === 'state' ? `${s.count.n} 項` : `${s.count.text}${s.body.kind === 'addresses' ? ' 個' : ''}`;
+  const count =
+    s.body.kind === 'wallet' ? (s.body.view.kind === 'calls' ? 'ERC-7730 描述檔' : undefined) : s.count === undefined ? undefined : s.count.kind === 'states' ? stateCounts(s.count) : `${s.count.text}${s.body.kind === 'addresses' ? ' 個' : ''}`;
   const body = (() => {
     switch (s.body.kind) {
       case 'flow':

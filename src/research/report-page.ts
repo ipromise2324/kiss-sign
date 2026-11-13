@@ -48,7 +48,7 @@ export type AiText = { readonly ai: string; readonly sources: readonly HttpsUrl[
 
 const research = (text: string, sources: readonly HttpsUrl[] = [], tag = 'AI 研究'): AiText => ({ ai: text, sources, tag });
 
-export type RailCount = { readonly kind: 'text'; readonly text: string } | { readonly kind: 'state'; readonly state: State | 'ask'; readonly n: number };
+export type RailCount = { readonly kind: 'text'; readonly text: string } | { readonly kind: 'states'; readonly counts: readonly { readonly state: State | 'ask'; readonly n: number }[] };
 
 export type Page = {
   /** The operation id, and for a per-vault report the vault it covers. */
@@ -65,9 +65,9 @@ export type Body =
   | { readonly kind: 'protocol'; readonly block: ProtocolBlock }
   | { readonly kind: 'vault'; readonly vault: VaultBlock }
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
-  | { readonly kind: 'wallet'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] }
+  | { readonly kind: 'wallet'; readonly view: WalletView }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
-  | { readonly kind: 'past'; readonly conclusion: AiText | undefined; readonly recordings: readonly PastRecording[] }
+  | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly recordings: readonly PastRecording[] }
   | { readonly kind: 'signing'; readonly steps: readonly Inline[]; readonly automatic: readonly Inline[] };
 
 export type Header = {
@@ -139,6 +139,9 @@ export type ReviewRow = {
 export type Judgment = { readonly text: AiText; readonly recommendation: AiText };
 
 export type WalletCall = { readonly n: number; readonly title: Inline; readonly rows: readonly { readonly label: Inline; readonly value: Inline }[] | 'no-descriptor' };
+
+/** A template of two or more calls goes through MultiSend, which no hardware wallet decodes, so it has no per-call view. */
+export type WalletView = { readonly kind: 'multisend'; readonly calls: number } | { readonly kind: 'calls'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] };
 
 export type SourceLine =
   | { readonly by: 'program'; readonly label: string; readonly href: HttpsUrl | undefined; readonly state: State; readonly phrase: string | undefined }
@@ -869,7 +872,8 @@ function reviewSection(context: Context): Section {
     };
   });
   const judgments = notes.judgments.map((j) => ({ text: research(j.text, j.sources), recommendation: research(j.recommendation) }));
-  const count: RailCount = rows.length > 0 ? { kind: 'state', state: worst(forSigner(ledger)), n: rows.length + judgments.length } : { kind: 'state', state: judgments.length > 0 ? 'ask' : 'ok', n: judgments.length };
+  const counts = [...(rows.length === 0 ? [] : [{ state: worst(forSigner(ledger)), n: rows.length }]), ...(judgments.length === 0 ? [] : [{ state: 'ask' as const, n: judgments.length }])];
+  const count: RailCount = { kind: 'states', counts: counts.length === 0 ? [{ state: 'ok', n: 0 }] : counts };
   return { anchor: anchor('review'), label: '待確認', count, body: { kind: 'review', rows, judgments } };
 }
 
@@ -920,6 +924,8 @@ function ruleWords(rule: Rule, context: Context): Inline {
 
 function walletSection(context: Context): Section {
   const { template, registry, inputs } = context;
+  const section = (view: WalletView): Section => ({ anchor: anchor('wallet'), label: '錢包顯示', count: undefined, body: { kind: 'wallet', view } });
+  if (template.calls.length > 1) return section({ kind: 'multisend', calls: template.calls.length });
   const reports = inputs.erc7730.reports;
   const lines: Inline[] = [];
   const calls = argumentTree(template).map(({ n, node, args }): WalletCall => {
@@ -975,8 +981,7 @@ function walletSection(context: Context): Section {
     if (blind) lines.push([`呼叫 ${n}：同樣兩種代幣的不同 market，只看錢包分不出來。`]);
     return { n, title, rows };
   });
-  lines.push(['現在的硬體錢包解不開 Safe 的 MultiSend，簽名時比對 hash。']);
-  return { anchor: anchor('wallet'), label: '錢包顯示', count: undefined, body: { kind: 'wallet', calls, lines } };
+  return section({ kind: 'calls', calls, lines });
 }
 
 function addressSection(context: Context): Section {
@@ -1040,7 +1045,7 @@ function knownFunctions(context: Context): Map<string, string> {
   return names;
 }
 
-const shortHash = (hash: Hex): string => `${hash.slice(0, 10)}…`;
+const txLink = (hash: Hex): Span => ({ href: parseHttpsUrl(`https://etherscan.io/tx/${hash}`) as HttpsUrl, label: `${hash.slice(0, 10)}…` });
 
 /** Why a group did not have the template's shape, in the signer's words; `template` names the template's calls in order. */
 function misfitWords(reason: MisfitReason, template: string): Inline {
@@ -1090,7 +1095,7 @@ function pastSection(context: Context): Section {
           senders: new Set(members.map((m) => m.sender.address)).size,
           calls: calls === undefined ? undefined : sequence(calls),
           reason: misfitWords(reason, templateCalls),
-          examples: members.slice(0, 3).map((m): Span => ({ href: parseHttpsUrl(`https://etherscan.io/tx/${m.hash}`) as HttpsUrl, label: shortHash(m.hash) })),
+          examples: members.slice(0, 3).map((m) => txLink(m.hash)),
         };
       });
   };
@@ -1148,7 +1153,32 @@ function pastSection(context: Context): Section {
     };
   });
   const conclusion = context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion);
-  return { anchor: anchor('past'), label: '過去交易', count: undefined, body: { kind: 'past', conclusion, recordings } };
+  return { anchor: anchor('past'), label: '過去交易', count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, recordings } };
+}
+
+function sameShape(context: Context): Inline {
+  const { registry } = context;
+  const fits = new Map<Hex, Extract<TxStudy, { kind: 'fit' }>>();
+  for (const { run } of context.inputs.pastTxs) for (const s of run.studies) if (s.kind === 'fit') fits.set(s.hash, s);
+  if (fits.size === 0) return ['過去的記錄裡，沒有一筆交易跟模板一模一樣。'];
+  const all = [...fits.values()];
+  const by = (kind: Sender['kind'], noun: string): Span[] => {
+    const of = all.filter((s) => s.sender.kind === kind);
+    return [{ num: `${of.length}` }, ` 筆${of.length === 0 ? '' : `（${new Set(of.map((s) => s.sender.address)).size} 個${noun}）`}`];
+  };
+  const searched = [...new Set(context.inputs.pastTxs.map(({ query }) => `${registry.byAddress.get(query.token.toLowerCase() as Address)?.name ?? query.token} ${ANCHOR_WORDS[query.anchor]}時`))];
+  const latest = all.sort((a, b) => (a.block === b.block ? 0 : a.block > b.block ? -1 : 1)).slice(0, 3);
+  return [
+    '過去有 ',
+    { num: `${fits.size}` },
+    ' 筆交易跟模板一模一樣：Safe ',
+    ...by('safe', ' Safe'),
+    '、EOA ',
+    ...by('eoa', '地址，各自送模板的一個呼叫'),
+    `。全部成功執行：它們是從 ${searched.join('、')}的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 ${latest.length} 筆：`,
+    ...latest.flatMap((s, i): Span[] => [...(i === 0 ? [] : ['、']), txLink(s.hash)]),
+    '。',
+  ];
 }
 
 function signingSection(context: Context): Section {
