@@ -3,7 +3,8 @@
   "card": {
     "vault": {
       "kind": "contract",
-      "registryKind": "vault"
+      "registryKind": "vault",
+      "defillama": "morpho-blue"
     },
     "amount": {
       "kind": "amount",

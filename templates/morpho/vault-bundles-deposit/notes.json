@@ -1,0 +1,75 @@
+{
+  "title": "經 VaultBundlesV1 存入 Morpho vault",
+  "summary": "Safe 先授權 VaultBundlesV1 剛好你填的金額，再呼叫它的 `vaultBundlesV1Deposit`：它從 Safe 拉走這筆代幣，存進你選的 vault，股份直接給 Safe。每股價格不能高過「金額 ÷ 卡片算出的最少股份」，否則整筆失敗。Morpho app 現在的存款走這條路線。",
+  "flow": [
+    {
+      "after": 2,
+      "from": "vault-bundles-v1",
+      "to": "usdc",
+      "text": "用 `transferFrom` 從 Safe 拉走存款金額，再存進你選的 vault"
+    }
+  ],
+  "protocols": {
+    "morpho-blue": {
+      "intro": "Morpho 的 vault 把存款分配到多個 Morpho Blue market 放貸。vault 由策展人管理，Morpho 的工廠合約負責建立它們。",
+      "audits": {
+        "text": "bundles repo 的稽核裡，範圍包含 VaultBundlesV1.sol 和 TokenLib.sol 的是 Blackthorn 2026-08-07 那份（blue-vaults-bundles）；它的 final commit 9994e6abe5b18d5f7e0d6bd666f85eb259e3312f 裡這兩個檔案跟鏈上驗證的原始碼逐字相同。2026-08-25 Blackthorn 和 TrustSec 的 blue-bundles-v1 只審 BlueBundlesV1。Vault V2 的 GitHub 列了 15 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽），其中幾份審的是 adapter、gate 和 public allocator。",
+        "sources": [
+          "https://github.com/morpho-org/bundles/blob/main/audits/2026-08-07-blue-vaults-bundles-blackthorn.pdf",
+          "https://github.com/morpho-org/bundles/tree/main/audits",
+          "https://github.com/morpho-org/vault-v2/tree/main/audits"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": "Morpho app 把 `deadline` 設在建立交易後 2 小時：2 個 Safe 的 4 筆存款，`deadline` 都比 app 附在 calldata 尾端的時間戳晚 7,192 到 7,199 秒。過了 `deadline` 才執行，交易會失敗，只損失 gas。",
+      "recommendation": "app 建好交易後 2 小時內收齊簽名並執行；過期就在 app 重建，再跑一次 verify。"
+    },
+    {
+      "text": "Safe 對 VaultBundlesV1 已有授權時，交易可能只呼叫 `vaultBundlesV1Deposit`、沒有先 approve：Safe 0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0 在 Steakhouse Prime 的一筆存款就是這樣。這個模板要求同一筆先 approve 剛好的金額，這種交易 verify 會判 MISMATCH。",
+      "recommendation": "遇到 MISMATCH 不要簽；回報後再決定是否新增模板。"
+    }
+  ],
+  "reviews": {},
+  "entries": {
+    "usdc": {
+      "role": "存進 USDC vault 的代幣"
+    },
+    "vault-bundles-v1": {
+      "role": "Morpho 的存款入口合約：從 Safe 拉代幣、存進 vault、檢查每股價格",
+      "sources": [
+        {
+          "text": "Etherscan：驗證名稱 VaultBundlesV1，建立者 EOA 0x3448f8c366047d76b6b58bb4ef225e4454b1b5ff，經 Era2Deployer10 0x19f57e4080fc40812f806054fa79052e6050b9b6 用 CREATE2 建立。AI 沒在官方文件找到部署者。",
+          "url": "https://etherscan.io/tx/0xf026c771c62ada6173df2a20cc46bcfa86b60a4b7a75dc9174dfed59c67188fd",
+          "result": "attention"
+        },
+        {
+          "text": "Etherscan：BlueBundlesV1 0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD 和 VaultExitBundlesV1 0xaf85aF286637A033BE7d59ED8cC566afa3309B02 的建立者也是同一個 EOA，Morpho SDK 也列出這兩個地址。",
+          "url": "https://etherscan.io/tx/0xa9f20a7d1bea97c3eb0370e9ca0953b7bb0b4a291db382875253372c8cd1e0c4",
+          "result": "pass"
+        },
+        {
+          "text": "Morpho 文件的 bundles 頁：`vaultBundlesV1Deposit` 是存款入口；推薦費 = assets × referralFeePct ÷ WAD，其餘存進 vault；過了 `deadline` 就 revert。頁上沒提 `maxSharePriceE27`，它的意思來自合約原始碼註解。",
+          "url": "https://docs.morpho.org/developers/contracts/bundles/",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "fields": {
+    "1.approve.spender": "被授權從 Safe 拉代幣的合約，固定是 VaultBundlesV1。呼叫 2 裡它用 `transferFrom` 拉走這筆錢。",
+    "1.approve.value": "授權的上限，等於存款金額。呼叫 2 會整筆拉走，交易後授權回到 0。",
+    "2.vaultBundlesV1Deposit.vault": "存進哪一個 vault，就是你在卡片上選的 vault。合約讀這個 vault 的 `asset` 決定拉哪個代幣，股份給呼叫者，也就是 Safe。",
+    "2.vaultBundlesV1Deposit.assets": "從 Safe 拉的代幣數量，等於存款金額。推薦費是 0，所以整筆存進 vault。ERC-7730 描述檔用 raw 格式顯示它，是整數，不換算成 USDC。",
+    "2.vaultBundlesV1Deposit.maxSharePriceE27": "每股最高價格（存入的資產 ÷ 拿到的股份，乘以 1e27）。實際價格高於它，整筆失敗。只要它不高於「金額 × 1e27 ÷ 最少股份」，依 vault 自己回報的股份數，你至少拿到最少股份。ERC-7730 描述檔把這個參數設成不顯示（visible: never）。",
+    "2.vaultBundlesV1Deposit.assetPermit": "怎麼從 Safe 拉代幣，下面兩項。",
+    "2.vaultBundlesV1Deposit.assetPermit.kind": "拉代幣的方式。固定為 0：不用簽名授權，用呼叫 1 的 approve 加 `transferFrom` 拉。1 和 2 是 ERC-2612 和 Permit2 的簽名授權。",
+    "2.vaultBundlesV1Deposit.assetPermit.data": "簽名授權的資料。kind 是 0 時合約不讀它；記錄裡的 Safe 存款都是空的（0x）。",
+    "2.vaultBundlesV1Deposit.referralFeePct": "推薦費比例，從存款裡扣。固定為 0：不扣費。",
+    "2.vaultBundlesV1Deposit.referralFeeRecipient": "推薦費的收款地址，固定是零地址。費用是 0，不會轉出任何錢。",
+    "2.vaultBundlesV1Deposit.deadline": "過了這個時間（Unix 秒）交易就失敗。記錄裡 4 筆 Safe 存款的 `deadline` 都比 app 附在 calldata 尾端的時間戳晚約 7,200 秒（2 小時）。它只限制何時能執行，不改變存了什麼。"
+  }
+}

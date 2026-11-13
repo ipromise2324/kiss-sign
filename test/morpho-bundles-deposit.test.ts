@@ -89,3 +89,9 @@ test('a card that asks for more shares than the price bound guarantees is a mism
   const result = check(safeTx('morpho-bundles-deposit'), deposit('31583325527', '30442521166571443751075'));
   assert.deepEqual(result.kind === 'mismatch' ? result.findings.map((f) => f.arg) : result, ['maxSharePriceE27']);
 });
+
+test('a card naming a vault of another protocol is refused before any check', () => {
+  const tx = safeTx('morpho-bundles-deposit');
+  const result = resolveCard({ operations: [{ template: ID, values: { vault: 'fluid-fusdc', amount: '31583325527', 'min-shares': '1' } }] }, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  assert.deepEqual(result.kind === 'refused' ? [result.reason, result.detail] : result.kind, ['wrong-protocol', 'fluid-fusdc is a vault of fluid-lending, not of morpho-blue']);
+});

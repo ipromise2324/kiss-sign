@@ -1,0 +1,21 @@
+{
+  "verdict": {
+    "status": "safe",
+    "text": "可以用。Steakhouse 文件頁和 CoinGecko 都列出這個地址，第一次先送小額。"
+  },
+  "pastTxsConclusion": "另有 3 筆 Safe 存款在 VaultBundlesV1 部署前走 Bundler3 的 `multicall`（形狀同 morpho/vault-deposit）；1 筆沒先 approve、只呼叫 `vaultBundlesV1Deposit`；1 筆直接呼叫 vault 的 `deposit`，夾在多次 Morpho Blue 呼叫裡。EOA 都用 ERC-2612 簽名授權（kind 1）。",
+  "judgments": [
+    {
+      "text": "這個 vault 一年內從幾乎是零升到約 1.40 億 USDC，2026-04 到 2026-05 一個月內從約 830 萬升到約 6,410 萬；前 10 名持有人占 56.82%。",
+      "recommendation": "規模在一年內才長起來，先送小額。"
+    }
+  ],
+  "entries": {
+    "steakhouse-prime-usdc-v2-0f51": {
+      "role": "Steakhouse 管理的 USDC vault（V2，Prime Instant）"
+    },
+    "vault-v2-factory": {
+      "role": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+    }
+  }
+}
