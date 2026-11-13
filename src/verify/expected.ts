@@ -8,11 +8,10 @@ import type { AbiValue, Region } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
 import { hashSafeTx } from '../safe/hash.ts';
-import { checksumAddress } from '../safe/types.ts';
-import type { Address, Hex, SafeTx } from '../safe/types.ts';
+import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { decodeTemplateCall, expectedCalls } from '../template/check.ts';
 import type { ExpectedCall, Values } from '../template/check.ts';
-import type { CallNode, Rule, Template } from '../template/template.ts';
+import type { CallNode, Rule, Template, TrailerAllowance } from '../template/template.ts';
 
 /** What kiss-sign knows an address as: the Safe, the zero address, a registry entry or an address-book entry. */
 export type Label =
@@ -31,8 +30,8 @@ export type Decoded = {
   readonly signature: string;
   readonly selector: Hex;
   readonly args: readonly ShownArg[];
-  /** Bytes after the arguments, which the template allows. */
-  readonly trailer: Hex | undefined;
+  /** Bytes after the arguments, and the template's allowance they fall within. */
+  readonly trailer: { readonly hex: Hex; readonly allowance: TrailerAllowance } | undefined;
   /** Every address among the arguments, outside bytes, once each, ordered by its lowercase hex. */
   readonly addresses: readonly Labeled[];
   readonly nested: Nested | undefined;
@@ -55,7 +54,7 @@ export type SafeCall = { readonly number: number; readonly to: Labeled; readonly
 
 export type BundleCall = { readonly to: Labeled; readonly value: bigint; readonly data: CallData };
 
-export type CallTree = { readonly nonce: bigint; readonly safeTxHash: Hex; readonly top: SafeCall; readonly count: number };
+export type CallTree = { readonly nonce: bigint; readonly hashes: SafeTxHashes; readonly top: SafeCall; readonly count: number };
 
 export type TreeContext = {
   readonly registry: Registry;
@@ -69,7 +68,6 @@ export type TreeContext = {
 
 const BUNDLER3_MULTICALL = 'multicall((address,bytes,uint256,bool,bytes32)[])';
 const ZERO = '0x0000000000000000000000000000000000000000' as Address;
-const WEI = 10n ** 18n;
 
 type Walk = TreeContext & { readonly names: ReadonlyMap<Address, Label>; readonly templateOf: ReadonlyMap<Values, Template>; readonly root: Uint8Array };
 
@@ -159,7 +157,7 @@ function callData(node: CallNode | 'empty' | undefined, region: Region, values: 
     signature: node.fn.signature,
     selector: node.fn.selector,
     args,
-    trailer: decoded.trailer === undefined ? undefined : hex(decoded.trailer.value),
+    trailer: decoded.trailer === undefined || node.trailer === undefined ? undefined : { hex: hex(decoded.trailer.value), allowance: node.trailer },
     addresses: found.map((address) => labeled(address, walk)),
     nested,
   };
@@ -187,8 +185,7 @@ export function callTree(tx: SafeTx, context: TreeContext): CallTree {
   const walk: Walk = { ...context, names, templateOf, root };
   const top = (data: CallData): SafeCall => ({ number: 1, to: labeled(tx.to, walk), value: tx.value, operation: tx.operation, data });
   const rawTop = (): CallData => (tx.data.length === 2 ? { kind: 'empty' } : { kind: 'raw', hex: tx.data });
-  const hashes = hashSafeTx(tx);
-  const tree = (call: SafeCall, count: number): CallTree => ({ nonce: tx.nonce, safeTxHash: hashes.safeTxHash, top: call, count });
+  const tree = (call: SafeCall, count: number): CallTree => ({ nonce: tx.nonce, hashes: hashSafeTx(tx), top: call, count });
   if (unwrapped.kind === 'direct') {
     const [inner] = unwrapped.calls;
     const planned = plan[0];
@@ -217,59 +214,4 @@ export function callTree(tx: SafeTx, context: TreeContext): CallTree {
     nested: { kind: 'multisend', calls },
   };
   return tree(top(multiSend), 1 + calls.length);
-}
-
-function labelText(label: Label): string {
-  if (label === undefined) return '';
-  switch (label.kind) {
-    case 'safe':
-      return '  本 Safe';
-    case 'zero':
-      return '  零地址';
-    case 'registry':
-      return `  ${label.name}`;
-    case 'address-book':
-      return `  ${label.name}（地址簿）`;
-  }
-}
-
-const addressText = ({ address, label }: Labeled): string => `${checksumAddress(address)}${labelText(label)}`;
-
-function dataLines(data: CallData, ind: string, number: number): string[] {
-  if (data.kind === 'empty') return [`${ind}data:      無（只轉 ETH）`];
-  if (data.kind === 'raw') return [`${ind}data:      ${data.hex}`, `${ind}  注意: 這段資料沒有範本可以解碼`];
-  const lines = [`${ind}函式:      ${data.signature}   （cast sig = ${data.selector}）`];
-  data.args.forEach((arg, i) => lines.push(`${ind}  引數 ${i + 1}:  ${arg.text}${arg.amount === undefined ? '' : `  （= ${arg.amount}）`}`));
-  if (data.trailer !== undefined) lines.push(`${ind}  注意: 呼叫 #${number} 的資料在引數之後多出 ${(data.trailer.length - 2) / 2} bytes: ${data.trailer}`);
-  for (const address of data.addresses) lines.push(`${ind}  地址: ${addressText(address)}`);
-  const nested = data.nested;
-  if (nested?.kind === 'multisend') {
-    lines.push(`${ind}MultiSend 拆開如下:`);
-    for (const call of nested.calls) lines.push(...safeCallLines(call, `${ind}  `, false));
-  } else if (nested?.kind === 'bundle') {
-    nested.calls.forEach((call, i) => {
-      lines.push(`${ind}  ── Bundler3 呼叫 ${i + 1}/${nested.calls.length}`, `${ind}     to:    ${addressText(call.to)}`, `${ind}     value: ${call.value} wei`);
-      lines.push(...dataLines(call.data, `${ind}     `, number));
-    });
-  } else if (nested?.kind === 'bytes') {
-    for (const call of nested.calls) lines.push(`${ind}  內含的呼叫資料（bytes 引數）:`, ...dataLines(call, `${ind}    `, number));
-  }
-  return lines;
-}
-
-function safeCallLines(call: SafeCall, ind: string, top: boolean): string[] {
-  const multiSend = top && call.data.kind === 'decoded' && call.data.nested?.kind === 'multisend';
-  const operation = call.operation === 0 ? '0 CALL' : `1 DELEGATECALL${multiSend ? '（官方 MultiSend）' : ''}`;
-  return [
-    `${ind}── 呼叫 #${call.number}`,
-    `${ind}   to:        ${addressText(call.to)}`,
-    `${ind}   value:     ${call.value} wei（${call.value / WEI}.${(call.value % WEI).toString().padStart(18, '0')} ETH）`,
-    `${ind}   operation: ${operation}`,
-    ...dataLines(call.data, `${ind}   `, call.number),
-  ];
-}
-
-/** The tree in check.sh's layout and labels, so the signer can read the two side by side. */
-export function renderCallTree(tree: CallTree): string[] {
-  return [`nonce:          ${tree.nonce}`, `safeTxHash:     ${tree.safeTxHash}`, '', ...safeCallLines(tree.top, '', true), '', `呼叫數: ${tree.count}`];
 }
