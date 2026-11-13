@@ -15,7 +15,7 @@ import { proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
 import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
-import { loadRegistry } from '../src/registry.ts';
+import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
 import { fetchListing, listingsFor } from '../src/research/listings.ts';
 import { factsRecording, factsScope, parseFactsRecording, protocolFacts } from '../src/research/protocol-facts.ts';
@@ -198,7 +198,7 @@ const listing = (target: { readonly hostname: string; readonly path: string }): 
 };
 const listings = await listingsFor(entries, suffixes, listing);
 const docs = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
-const pages = await gatherSourcePages([...entries.map((e) => e.source), ...docs], retryingGet(httpsGet, note), await gatherApiAnswers(entries, retryingSend(httpsApi, note)));
+const pages = await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs], retryingGet(httpsGet, note), await gatherApiAnswers(entries, retryingSend(httpsApi, note)));
 
 const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();

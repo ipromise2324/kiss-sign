@@ -202,6 +202,7 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .srcs .byai{margin-right:8px}
 .res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
 .res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
 details.fold{border-bottom:1px solid var(--line)}
 details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
 details.fold>summary::-webkit-details-marker{display:none}
@@ -252,7 +253,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="sub"><span class="aiw" data-ai><span>Safe 先授權 BlueBundlesV1 剛好你填的金額，再呼叫它的 <code>blueBundlesV1Supply</code>：它從 Safe 拉走這筆代幣，以 Safe 的名義存進你選的 Morpho Blue market。存款借給這個 market 的借款人賺利息，Safe 拿到的是存款份額。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">5 / 6</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 個地址有結果要你看，見「待確認」。其餘 5 個在來源頁讀到登記的地址。</span></span></li>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 個地址有結果要你看，見「待確認」。其餘 5 個都至少在 2 個地方確認。</span></span></li>
     <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">6 / 6</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。</span></span></li>
     <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">6 / 6</span>
@@ -262,7 +263,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
   </ul>
-  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。oracle 的地址程式讀不到官方頁，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。oracle 的地址程式只在協議 API 確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
     <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">6</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
   </details>
@@ -384,30 +385,30 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>morpho-blue</h2>
   <p class="intro"><span class="aiw" data-ai><span>Morpho Blue 是不可升級的借貸合約。每個 market 由 5 個參數固定，任何人都能建立新的 market。</span><span class="byai">AI 研究</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$10.81 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.83 B</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$10.47 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.71 B</span></span></dd></div>
     <div><dt>上線</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
     <div><dt>proxy</dt><dd><span>不是 proxy</span><span class="sub2"><a href="#a-blue-bundles-v1">blue-bundles-v1</a>，從 code pin 讀到</span></dd></div>
     <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Morpho Blue 的 GitHub 列了 10 份稽核報告，來自 OpenZeppelin、Cantina、Spearbit、ABDK、Blackthorn 和 Certora，涵蓋 Morpho Blue 本體和 AdaptiveCurveIrm。AI 沒有找到 BlueBundlesV1 的公開稽核清單。 <a class="aisrc" href="https://github.com/morpho-org/morpho-blue/tree/main/audits">來源</a></span><span class="byai">AI 研究</span></span></dd></div>
     <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
-    <div><dt>usdc-cbbtc-86</dt><dd><span>usdc / cbbtc，LLTV 86%</span><span class="sub2">morpho-blue.market，區塊 26398836</span>
+    <div><dt>usdc-cbbtc-86</dt><dd><span>usdc / cbbtc，LLTV 86%</span><span class="sub2">morpho-blue.market，區塊 26404789</span>
       <dl class="nest">
-        <div><dt><code>totalSupplyAssets</code></dt><dd><span class="num">348,946,131.99</span> usdc</dd></div>
-        <div><dt><code>totalBorrowAssets</code></dt><dd><span class="num">304,650,857.92</span> usdc</dd></div>
-        <div><dt><code>totalBorrowAssets / totalSupplyAssets</code></dt><dd><span class="num">87.30%</span></dd></div>
+        <div><dt><code>totalSupplyAssets</code></dt><dd><span class="num">353,557,246.53</span> usdc</dd></div>
+        <div><dt><code>totalBorrowAssets</code></dt><dd><span class="num">302,305,558.99</span> usdc</dd></div>
+        <div><dt><code>totalBorrowAssets / totalSupplyAssets</code></dt><dd><span class="num">85.50%</span></dd></div>
       </dl></dd></div>
   </dl>
-  <p class="srcline">程式在 2026-11-12 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>、鏈上和<a href="https://api.morpho.org/graphql">協議 API</a>。標 AI 研究的是 AI 查的。</p>
+  <p class="srcline">程式在 2026-11-13 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>、鏈上和<a href="https://api.morpho.org/graphql">協議 API</a>。標 AI 研究的是 AI 查的。</p>
 </section>
 
 <section id="review">
   <h2>待確認 <span class="c">3 項</span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
-    <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/source.page">
+    <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">morpho-oracle-cbbtc-usdc-86：程式讀不到官方頁上的地址</div>
-        <div class="meta">程式只讀不跑腳本的原始網頁，在登記的標籤旁邊找不到這個地址。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>AI 用 headless Chrome 跑完腳本打開這一頁：「Oracle contract」旁邊顯示 0xA6D6…182a，它連到的 Etherscan 頁正是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a。協議 API 回的也是同一個地址。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t">morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或 vault 的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>程式只有協議 API 確認這個地址，market 頁要跑腳本才顯示。AI 用 headless Chrome 打開這一頁：「Oracle contract」旁邊顯示 0xA6D6…182a，它連到的 Etherscan 頁正是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。想自己確認，用瀏覽器打開這頁，比對 Oracle contract 的連結。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row">
@@ -445,45 +446,51 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>地址 <span class="c">6 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">高信心：程式在來源頁讀到地址，code pin 也在鏈上確認過，沒有要你看的結果。中信心：沒有要你看的結果，但有一項沒資料可比，或少了來源頁或 code pin 的確認。低信心：有結果要你看。標「–」的是沒資料可比，不算問題。AI 補查不改變信心等級。</span></span></h2>
+  <h2>地址 <span class="c">6 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題。AI 補查不改變信心等級。</span></span></h2>
   <div class="rows">
     <div class="ad" id="a-morpho-oracle-cbbtc-usdc-86" data-state="warn">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><span class="nm">morpho-oracle-cbbtc-usdc-86</span><span class="role"><span class="aiw" data-ai><span>這個 market 給 cbBTC 報價的 oracle</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 已確認</span></span></div>
       <div class="body"><span class="addr">0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a</span>
-        <div class="srcs"><span data-state="warn"><a href="https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>讀不到</span></span><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>用瀏覽器打開 Morpho market 頁 <a class="aisrc" href="https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><span class="aiw" data-ai><span class="byai">AI</span><span>用瀏覽器打開 Morpho market 頁 <a class="aisrc" href="https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc">來源</a></span></span><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">只在 1 個地方確認：協議 API</div></div>
     </div>
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 5 個沒有要你看的結果</summary>
     <div class="ad" id="a-usdc" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>借出的代幣，存進 market 的就是它</span><span class="byai">AI 研究</span></span><span class="conf">中信心</span></span></div>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>借出的代幣，存進 market 的就是它</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
-        <div class="srcs"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
     </div>
     <div class="ad" id="a-morpho-blue" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">morpho-blue</span><span class="role"><span class="aiw" data-ai><span>Morpho Blue 本體，market 和存款份額都記在這裡</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb</span>
-        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
     </div>
     <div class="ad" id="a-blue-bundles-v1" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">blue-bundles-v1</span><span class="role"><span class="aiw" data-ai><span>接收授權，替 Safe 把代幣存進 market</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD</span>
-        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
     </div>
     <div class="ad" id="a-adaptive-curve-irm" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">adaptive-curve-irm</span><span class="role"><span class="aiw" data-ai><span>這個 market 的利率模型</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</span>
-        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
     </div>
     <div class="ad" id="a-cbbtc" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>這個 market 的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">中信心</span></span></div>
+      <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>這個 market 的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
-        <div class="srcs"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="na"><a href="https://defillama.com/protocol/coinbase">DefiLlama</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div></div>
+        <div class="srcs"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span data-state="na"><a href="https://defillama.com/protocol/coinbase">DefiLlama</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
     </div>
     </details>
   </div>
@@ -519,7 +526,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report morpho/market-supply --record</code> 從 <code>templates/morpho/market-supply/template.json</code>、<code>templates/morpho/market-supply/docs.json</code>、<code>registry/contracts.json</code>、<code>registry/markets.json</code>、<code>testdata/report/morpho-market-supply.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-market-supply.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/market-supply/notes.json</code> 寫出，資料在 2026-11-12 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report morpho/market-supply --record</code> 從 <code>templates/morpho/market-supply/template.json</code>、<code>templates/morpho/market-supply/docs.json</code>、<code>registry/contracts.json</code>、<code>registry/markets.json</code>、<code>testdata/report/morpho-market-supply.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-market-supply.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/market-supply/notes.json</code> 寫出，資料在 2026-11-13 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>

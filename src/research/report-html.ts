@@ -358,7 +358,8 @@ function addressRow(row: AddressRow): Html {
         row.reviewed === undefined ? '' : h`<span class="reviewed">${row.reviewed}</span>`
       }</span></div>
       <div class="body"><span class="addr">${row.address}</span>
-        <div class="srcs">${row.sources.map(sourceLine)}</div></div>
+        <div class="srcs">${row.sources.map(sourceLine)}</div>
+        <div class="confirmed">${row.confirmed}</div></div>
     </div>`;
 }
 
@@ -404,7 +405,7 @@ function signingBody(body: Extract<Body, { kind: 'signing' }>): Html {
 }
 
 const ADDRESS_RULE =
-  '高信心：程式在來源頁讀到地址，code pin 也在鏈上確認過，沒有要你看的結果。中信心：沒有要你看的結果，但有一項沒資料可比，或少了來源頁或 code pin 的確認。低信心：有結果要你看。標「–」的是沒資料可比，不算問題。AI 補查不改變信心等級。';
+  '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題。AI 補查不改變信心等級。';
 
 function section(s: Section): Html {
   const count = s.body.kind === 'wallet' ? 'ERC-7730 描述檔' : s.count === undefined ? undefined : s.count.kind === 'state' ? `${s.count.n} 項` : `${s.count.text}${s.body.kind === 'addresses' ? ' 個' : ''}`;
@@ -717,6 +718,7 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .srcs .byai{margin-right:8px}
 .res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
 .res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
 details.fold{border-bottom:1px solid var(--line)}
 details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
 details.fold>summary::-webkit-details-marker{display:none}

@@ -2,8 +2,8 @@ import { request } from 'node:https';
 import { fallbackLookup } from '../chain/dns.ts';
 import { requestText, retried, transientStatus } from '../chain/https.ts';
 import type { NoteUnread } from '../chain/https.ts';
-import { COINGECKO_KINDS } from '../registry.ts';
-import type { RegistryEntry } from '../registry.ts';
+import { COINGECKO_KINDS, pageUrlsOf } from '../registry.ts';
+import type { RegistryEntry, SourcePage } from '../registry.ts';
 import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { apiKey, pathText, pruneAnswers, walkPath } from './api-source.ts';
@@ -35,13 +35,16 @@ export type FindingCause = 'differs' | 'unexplained' | 'unlisted' | 'not-served'
 type CheckName = 'defillama' | 'coingecko' | 'url' | 'github' | 'page' | 'api' | 'api-site';
 /**
  * What `check-sources` saw for one entry. A `finding` is for the signer to judge; `agrees` is evidence for the report;
- * `unverifiable` means a read got no answer, which is no disagreement and is read again.
+ * `unverifiable` means a read got no answer, which is no disagreement and is read again. `more` numbers, from 1, the
+ * entry's `moreSources` page a `page`, `defillama` or `github` line is about; absent, the line is about `source`.
  */
-export type Line =
+export type Line = (
   | { readonly kind: 'agrees'; readonly check: CheckName; readonly text: string }
   | { readonly kind: 'unverifiable'; readonly check: CheckName; readonly text: string }
-  | { readonly kind: 'finding'; readonly check: CheckName; readonly text: string; readonly cause: FindingCause };
-export type EntryResult = { readonly entry: RegistryEntry; readonly site: string; readonly lines: readonly Line[] };
+  | { readonly kind: 'finding'; readonly check: CheckName; readonly text: string; readonly cause: FindingCause }
+) & { readonly more?: number };
+/** `sites` holds the site of each page that lists the address, the `source` first. */
+export type EntryResult = { readonly entry: RegistryEntry; readonly sites: readonly string[]; readonly lines: readonly Line[] };
 
 export class ListingError extends Error {
   override name = 'ListingError';
@@ -162,16 +165,16 @@ export function githubLine(source: URL, commits: SourcePages['commits']): Line {
   return { kind: 'agrees', check: 'github', text: `${at} is on the default branch ${check.branch} (GitHub compare: ${check.status})` };
 }
 
-function pageLine(entry: RegistryEntry, pages: SourcePages['pages']): Line {
+function pageLine(source: Omit<SourcePage, 'label'> & { readonly label: string | undefined }, address: Address, pages: SourcePages['pages']): Line {
   const finding = (text: string, cause: FindingCause = 'unexplained'): Line => ({ kind: 'finding', check: 'page', text, cause });
-  const url = pageUrlOf(entry.source);
+  const url = pageUrlOf(source.url);
   const page: Page = pages.get(url) ?? { kind: 'failed', why: `${url} was not fetched` };
   if (page.kind === 'unread') return { kind: 'unverifiable', check: 'page', text: page.why };
   if (page.kind === 'failed') return finding(page.why, 'not-fetched');
-  if (entry.sourceLabel === undefined) return finding('the entry names no sourceLabel, so where the address stands on the page is not checked');
-  const label = `"${entry.sourceLabel}"`;
-  const under = entry.sourceHeading === undefined ? '' : ` under a heading naming "${entry.sourceHeading}"`;
-  const match = findOnPage(page.blocks, entry.address, entry.sourceLabel, entry.sourceHeading);
+  if (source.label === undefined) return finding('the entry names no sourceLabel, so where the address stands on the page is not checked');
+  const label = `"${source.label}"`;
+  const under = source.heading === undefined ? '' : ` under a heading naming "${source.heading}"`;
+  const match = findOnPage(page.blocks, address, source.label, source.heading);
   switch (match.kind) {
     case 'absent':
       return finding(`the address is not found on the page as served (${url}); a page that shows it only by running JavaScript is not read`, 'not-served');
@@ -216,17 +219,25 @@ export function checkSources(entries: readonly RegistryEntry[], listings: Listin
     const echoes = sourceHoldsAddress(entry.source, entry.address);
     return {
       entry,
-      site: siteOf(source, listings.suffixes),
+      sites: [...new Set(pageUrlsOf(entry).map((url) => siteOf(new URL(url), listings.suffixes)))],
       lines: [
         sourceSiteLine(entry.source, entry.defillama, listings),
         ...(hasCoin(entry) ? [coingeckoLine(entry, listings.coinsByAddress)] : []),
         ...(isGitHubPage(source) ? [githubLine(source, pages.commits)] : []),
         echoes
           ? { kind: 'finding', check: 'url', text: 'the source URL holds the address, and a page echoes its own URL; the page is not read', cause: 'unexplained' }
-          : pageLine(entry, pages.pages),
+          : pageLine({ url: entry.source, label: entry.sourceLabel, ...(entry.sourceHeading === undefined ? {} : { heading: entry.sourceHeading }) }, entry.address, pages.pages),
         ...(entry.apiSource === undefined
           ? []
           : [apiLine(entry, entry.apiSource, pages.apis), { ...sourceSiteLine(entry.apiSource.url, entry.defillama, listings, 'API'), check: 'api-site' as const }]),
+        ...(entry.moreSources ?? []).flatMap((page, i): Line[] => {
+          const url = new URL(page.url);
+          return [
+            sourceSiteLine(page.url, entry.defillama, listings, `source ${i + 1}`),
+            ...(isGitHubPage(url) ? [githubLine(url, pages.commits)] : []),
+            pageLine(page, entry.address, pages.pages),
+          ].map((line) => ({ ...line, more: i + 1 }));
+        }),
       ],
     };
   });
@@ -240,12 +251,13 @@ export function formatResults(results: readonly EntryResult[]): string {
     out.push(`${entry.name} ${checksumAddress(entry.address)} (${entry.kind})`, `  source     ${entry.source}`);
     const api = entry.apiSource;
     if (api !== undefined) out.push(`  api        ${api.method} ${api.url}${api.method === 'POST' ? ` ${JSON.stringify(api.body)}` : ''}, address at ${pathText(api.path)}`);
-    for (const line of lines) out.push(`  ${line.check.padEnd(10)} ${LINE_WORDS[line.kind]}${line.text}`);
+    (entry.moreSources ?? []).forEach((page, i) => out.push(`  source ${i + 1}   ${page.url}`));
+    for (const line of lines) out.push(`  ${(line.more === undefined ? line.check : `${line.check} ${line.more}`).padEnd(10)} ${LINE_WORDS[line.kind]}${line.text}`);
   }
   const bySlug = new Map<string, Map<string, string[]>>();
-  for (const { entry, site } of results) {
+  for (const { entry, sites: entrySites } of results) {
     const sites = bySlug.get(entry.defillama ?? '(no defillama slug)') ?? new Map<string, string[]>();
-    sites.set(site, [...(sites.get(site) ?? []), entry.name]);
+    for (const site of entrySites) sites.set(site, [...(sites.get(site) ?? []), entry.name]);
     bySlug.set(entry.defillama ?? '(no defillama slug)', sites);
   }
   out.push('', 'sites per protocol, for the signer to check each is the protocol\'s own:');
@@ -327,7 +339,7 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
       .flatMap((address) => listings.coinsByAddress.get(address) ?? [])
       .map(({ id, symbol, name, ethereum }) => ({ id, symbol, name, platforms: { ethereum } })),
     pages: Object.fromEntries(
-      [...pages.pages].map(([url, page]) => [url, trimPage(page, entries.filter((e) => pageUrlOf(e.source) === url).map((e) => e.address))]),
+      [...pages.pages].map(([url, page]) => [url, trimPage(page, entries.filter((e) => pageUrlsOf(e).some((source) => pageUrlOf(source) === url)).map((e) => e.address))]),
     ),
     commits: Object.fromEntries(pages.commits),
     ...(pages.apis === undefined || pages.apis.size === 0 ? {} : { apis: pruneAnswers(entries, pages.apis) }),

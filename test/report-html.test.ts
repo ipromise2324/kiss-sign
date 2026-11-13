@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
-import { loadRegistry } from '../src/registry.ts';
+import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { NOTES_FILE, notesChanges, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, generatedHtml, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
@@ -119,7 +119,7 @@ test('every link is a URL the registry, docs.json or notes.json holds, one of th
     const allowed = new Set<string>([
       'https://defillama.com/hacks',
       ...[...registry.entries.values()].flatMap((e) => [
-        e.source,
+        ...pageUrlsOf(e),
         ...(e.apiSource === undefined ? [] : [e.apiSource.url]),
         ...(e.coingecko === undefined ? [] : [`https://www.coingecko.com/en/coins/${e.coingecko}`]),
         ...(e.defillama === undefined ? [] : [`https://defillama.com/protocol/${e.defillama}`]),

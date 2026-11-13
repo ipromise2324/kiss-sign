@@ -217,25 +217,52 @@ test("a per-vault report shows the vault's stored evidence after the protocol, w
     vault.rows.map((r) => [r.label, plain(r.value)]),
     [
       ['工廠', 'vault-v2-factory 回答 isVaultV2(address) = true'],
-      ['現在的 totalAssets', '7,499,999.38 usdc'],
-      ['持有人', '170 個地址持有，曾經收過的 353 個'],
+      ['現在的 totalAssets', '7,501,013.23 usdc'],
+      ['持有人', '170 個地址持有，曾經收過的 354 個'],
       ['最大持有人', '51.77%'],
       ['前 10 名', '90.10%'],
     ],
   );
   assert.equal(vault.bars.length, 13);
-  assert.deepEqual(vault.bars[0], { date: '2025-11-15', words: '3,328.47 usdc', share: 3328_477670 / 19682215_591996 });
-  assert.deepEqual(vault.bars.at(-1)?.date, '2026-11-12');
-  assert.equal(vault.most, '19,682,215.59 usdc');
+  assert.deepEqual(vault.bars[0], { date: '2025-11-16', words: '3,329.1 usdc', share: 3329_104017 / 12646299_801537 });
+  assert.deepEqual(vault.bars.at(-1)?.date, '2026-11-13');
+  assert.equal(vault.most, '12,646,299.8 usdc');
   assert.ok(!JSON.stringify(vault).includes('$'), 'no USD value');
 });
 
 test('a month the providers disagree on reads 讀不到 and draws no bar', () => {
   const name = 'hyperithm-usdc-apex-v2-9e2f';
-  const text = (depositInputs.vaults.get(name) ?? assert.fail('stored evidence')).replace(/(2026-10-13 {2}block \d+ {2}).*/, '$1UNVERIFIABLE eth_call: alchemy and drpc disagree');
+  const text = (depositInputs.vaults.get(name) ?? assert.fail('stored evidence')).replace(/(2026-07-15 {2}block \d+ {2}).*/, '$1UNVERIFIABLE eth_call: alchemy and drpc disagree');
   const { vault } = body(buildPage({ ...depositInputs, vaults: new Map([[name, text]]) }, depositNotes, depositTitle), 'vault');
-  assert.deepEqual(vault.bars.find((b) => b.date === '2026-10-13'), { date: '2026-10-13', words: '讀不到', share: undefined });
-  assert.equal(vault.most, '12,276,257.44 usdc');
+  assert.deepEqual(vault.bars.find((b) => b.date === '2026-07-15'), { date: '2026-07-15', words: '讀不到', share: undefined });
+  assert.equal(vault.most, '10,963,761.48 usdc');
+});
+
+test('the vault its factory alone confirms is the one 待確認; every address row names where its address was confirmed', () => {
+  assert.deepEqual(body(depositPage, 'review').rows.map((r) => [r.id, r.state, plain(r.title)]), [
+    ['hyperithm-usdc-apex-v2-9e2f/address', 'warn', 'hyperithm-usdc-apex-v2-9e2f：地址只在 1 個地方確認：工廠'],
+  ]);
+  const { open, folded } = body(depositPage, 'addresses');
+  assert.deepEqual(
+    [...open, ...folded].map((r) => [r.name, r.confidence, r.confirmed]),
+    [
+      ['hyperithm-usdc-apex-v2-9e2f', 'low', '只在 1 個地方確認：工廠'],
+      ['usdc', 'high', '在 2 個地方確認：官方頁、CoinGecko'],
+      ['bundler3', 'high', '在 2 個地方確認：官方頁、github.com/morpho-org/sdks'],
+      ['vault-v2-factory', 'high', '在 2 個地方確認：官方頁、github.com/morpho-org/sdks'],
+      ['general-adapter-1', 'high', '在 2 個地方確認：官方頁、github.com/morpho-org/sdks'],
+    ],
+  );
+  const vault = open[0] ?? assert.fail('the vault row');
+  assert.deepEqual(
+    vault.sources.flatMap((s) => (s.by === 'program' ? [[s.label, s.state, s.phrase]] : [])),
+    [
+      ['app.morpho.org/ethereum/vault', 'na', '讀不到'],
+      ['CoinGecko', 'na', '沒資料可比'],
+      ['工廠', 'ok', undefined],
+      ['DefiLlama', 'ok', undefined],
+    ],
+  );
 });
 
 test('each past-transactions recording names the entry its search anchored on', () => {
@@ -254,13 +281,13 @@ test('a contract a flow line names gets its own lifeline, so every inside arrow 
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {
   const { block } = body(pageOf(inputs), 'protocol');
   const row = (label: string) => block.rows.find((r) => r.label === label) ?? assert.fail(`no ${label} row`);
-  assert.equal(plain(row('TVL').value), '$10.81 B');
+  assert.equal(plain(row('TVL').value), '$10.47 B');
   assert.equal(plain(row('上線').value), '2024-01-14');
   assert.equal(plain(row('proxy').value), '不是 proxy');
   assert.equal(plain(row('事故').value), '0 起');
   assert.deepEqual(
     row('usdc-cbbtc-86').nested.map((n) => plain(n.value)),
-    ['348,946,131.99 usdc', '304,650,857.92 usdc', '87.30%'],
+    ['353,557,246.53 usdc', '302,305,558.99 usdc', '85.50%'],
   );
   assert.deepEqual(
     block.sources.map((s) => s.href),
@@ -282,16 +309,16 @@ test('without recorded protocol facts each protocol still shows its AI notes and
   );
 });
 
-test('the oracle the program cannot read on its page is the one row to review, open in 地址, and the verdict icon is amber', () => {
+test('the oracle only the protocol API confirms is the one row to review, open in 地址, and the verdict icon is amber', () => {
   const page = pageOf(inputs);
   assert.deepEqual(
     body(page, 'review').rows.map((r) => [r.id, r.state, r.entry]),
-    [['morpho-oracle-cbbtc-usdc-86/source.page', 'warn', 'a-morpho-oracle-cbbtc-usdc-86']],
+    [['morpho-oracle-cbbtc-usdc-86/address', 'warn', 'a-morpho-oracle-cbbtc-usdc-86']],
   );
   const addresses = body(page, 'addresses');
   assert.deepEqual(
-    addresses.open.map((r) => [r.name, r.confidence, r.reviewed]),
-    [['morpho-oracle-cbbtc-usdc-86', 'low', 'AI 有疑慮']],
+    addresses.open.map((r) => [r.name, r.confidence, r.reviewed, r.confirmed]),
+    [['morpho-oracle-cbbtc-usdc-86', 'low', 'AI 有疑慮', '只在 1 個地方確認：協議 API']],
   );
   assert.equal(addresses.folded.length, 5);
   assert.equal(page.header.verdict.state, 'warn');
@@ -370,7 +397,7 @@ test('notes.json that leaves out a review the page needs is refused', () => {
   const notes = notesFor(inputs);
   assert.throws(
     () => buildPage(inputs, { ...notes, reviews: {} }, title),
-    (e: unknown) => e instanceof NotesError && /morpho-oracle-cbbtc-usdc-86\/source\.page is missing/.test(e.message),
+    (e: unknown) => e instanceof NotesError && /morpho-oracle-cbbtc-usdc-86\/address is missing/.test(e.message),
   );
 });
 

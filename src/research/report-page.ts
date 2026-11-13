@@ -16,7 +16,7 @@ import type { FixtureJudgement } from '../template/perturb.ts';
 import { refNames } from '../template/template.ts';
 import type { CardRef, ConstValue, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
-import { addressRows, confidence, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
+import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
@@ -151,6 +151,8 @@ export type AddressRow = {
   readonly reviewed: 'AI 已確認' | 'AI 有疑慮' | undefined;
   readonly address: string;
   readonly sources: readonly SourceLine[];
+  /** The places that confirmed the address, in plain words. */
+  readonly confirmed: string;
 };
 
 export type PastRecording = { readonly file: string; readonly count: string; readonly rows: readonly { readonly label: string; readonly value: Inline; readonly note: Inline }[] };
@@ -183,7 +185,17 @@ const FREE_WORDS: Readonly<Record<Extract<Rule, { kind: 'free' }>['claim'], stri
   proof: '合約會驗證它，換成別的值交易就失敗',
   unread: '合約不讀它，換成別的值結果一樣',
 };
-const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page'>, string>> = { api: '協議 API', coingecko: 'CoinGecko', defillama: 'DefiLlama' };
+const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}`>, string>> = { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠', defillama: 'DefiLlama' };
+
+/** What a confirmation is called in the line that counts them: the `source` page is 官方頁, each of `moreSources` its short URL. */
+const confirmationWord = (entry: RegistryEntry, source: ProgramSource): string => {
+  if (source === 'page') return '官方頁';
+  const more = source.startsWith('more.') ? entry.moreSources?.[Number(source.slice(5)) - 1] : undefined;
+  return more === undefined ? SOURCE_LABELS[source as keyof typeof SOURCE_LABELS] : shortUrl(more.url);
+};
+
+const confirmedWords = (entry: RegistryEntry, by: readonly ProgramSource[]): string =>
+  by.length === 0 ? '沒有任何地方確認' : `${by.length >= MIN_CONFIRMATIONS ? '在' : '只在'} ${by.length} 個地方確認：${by.map((source) => confirmationWord(entry, source)).join('、')}`;
 const AI_RESULTS = { pass: 'ok', attention: 'warn', fail: 'bad' } as const satisfies Readonly<Record<string, State>>;
 
 /** What the program says about a result for the signer: a title naming what disagreed or could not be read, and why. */
@@ -198,11 +210,7 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   refused: { title: 'ABI 證明被拒絕', why: '重新編譯 Sourcify 的原始碼，得不到鏈上的程式碼。' },
   'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
   'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
-  'page-unread': { title: '程式讀不到官方頁上的地址', why: '程式只讀不跑腳本的原始網頁，在登記的標籤旁邊找不到這個地址。' },
-  'url-holds-address': { title: '來源網址本身含有地址', why: '網址裡帶著地址，頁面上的地址可能只是照網址印出來，不能證明什麼。' },
   'site-not-compared': { title: '沒辦法比對來源網站', why: 'DefiLlama 找不到這個協議，或網域無法判斷。' },
-  'no-second-source': { title: '沒有第二個來源', why: '沒有第二個來源能證明這個來源屬於這個協議。' },
-  'no-coin': { title: 'CoinGecko 沒有列這個地址', why: 'CoinGecko 在這個地址沒有列幣，或登記沒有給 CoinGecko id。' },
   'commit-unconfirmed': { title: 'GitHub commit 沒確認', why: 'GitHub 頁面沒有釘在預設分支上的 commit。' },
   'page-not-fetched': { title: '文件頁沒讀到', why: '程式沒有這個文件頁的內容。' },
   'name-not-on-page': { title: '文件頁上找不到函式名稱', why: '文件頁的原始網頁裡沒有這個函式的名稱。' },
@@ -826,6 +834,12 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
     const fn = context.inputs.subject.docs.find((d) => d.fn.selector === doc[1])?.fn.name ?? doc[1];
     return { title: [`${name}：文件頁 `, { code: fn as string }, `，${words.title}`], why: [words.why] };
   }
+  if (result.finding.kind === 'few-confirmations') {
+    return {
+      title: [`${name}：地址${confirmedWords(result.about.entry, result.finding.by)}`],
+      why: [`至少要 ${MIN_CONFIRMATIONS} 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或 vault 的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。`],
+    };
+  }
   const span = /\/code\.(\d+)$/.exec(result.id);
   const where = span === null ? '' : `（第 ${span[1]} 段）`;
   const refused = result.finding.kind === 'refused' ? ` 原因：${result.finding.why}。` : '';
@@ -968,7 +982,13 @@ function addressSection(context: Context): Section {
     });
     const note = notes.entries?.get(entry.name);
     const program = sourcesOf(ledger, entry).map(
-      (line): SourceLine => ({ by: 'program', label: line.source === 'page' ? shortUrl(entry.source) : SOURCE_LABELS[line.source], href: line.link, state: line.state, phrase: line.phrase }),
+      (line): SourceLine => ({
+        by: 'program',
+        label: line.source === 'page' || line.source.startsWith('more.') ? shortUrl(line.link as HttpsUrl) : SOURCE_LABELS[line.source as keyof typeof SOURCE_LABELS],
+        href: line.link,
+        state: line.state,
+        phrase: line.phrase,
+      }),
     );
     const ai = (note?.sources ?? []).map((s): SourceLine => ({ by: 'ai', text: research(s.text, [s.url], 'AI'), state: AI_RESULTS[s.result] }));
     return {
@@ -980,6 +1000,7 @@ function addressSection(context: Context): Section {
       reviewed: reviews.length === 0 ? undefined : reviews.some((r) => r.status === 'concern') ? 'AI 有疑慮' : 'AI 已確認',
       address: checksumAddress(entry.address),
       sources: [...program, ...ai],
+      confirmed: confirmedWords(entry, confirmations(ledger, entry)),
     };
   };
   const { open, folded } = addressRows(ledger);
@@ -1052,8 +1073,8 @@ function stripItems(ledger: Ledger): StripItem[] {
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
     sources: (p, c) =>
       p === c
-        ? `程式在 ${c} 個地址的來源頁讀到登記的地址；有協議 API 或 CoinGecko 的，也是同一個地址。`
-        : `${c - p} 個地址有結果要你看，見「待確認」。其餘 ${p} 個在來源頁讀到登記的地址。`,
+        ? `${c} 個地址都至少在 ${MIN_CONFIRMATIONS} 個地方確認：官方頁、協議 API、CoinGecko 或 vault 的登記工廠列出同一個地址。`
+        : `${c - p} 個地址有結果要你看，見「待確認」。其餘 ${p} 個都至少在 ${MIN_CONFIRMATIONS} 個地方確認。`,
     abi: () => 'Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。',
     code: () => `每次簽名都確認這 ${subjects} 個合約還是研究時那份程式碼。被升級或換掉就擋下。`,
     params: (_, c) => `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`,

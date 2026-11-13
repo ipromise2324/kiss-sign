@@ -1,7 +1,7 @@
 {
   "title": "存入 Morpho market",
   "summary": "Safe 先授權 BlueBundlesV1 剛好你填的金額，再呼叫它的 `blueBundlesV1Supply`：它從 Safe 拉走這筆代幣，以 Safe 的名義存進你選的 Morpho Blue market。存款借給這個 market 的借款人賺利息，Safe 拿到的是存款份額。",
-  "verdict": { "status": "caution", "text": "可以用。oracle 的地址程式讀不到官方頁，第一次先送小額。" },
+  "verdict": { "status": "caution", "text": "可以用。oracle 的地址程式只在協議 API 確認，第一次先送小額。" },
   "flow": [
     { "after": 2, "from": "blue-bundles-v1", "to": "usdc", "text": "用 `transferFrom` 從 Safe 拉走你填的金額" },
     { "after": 2, "from": "blue-bundles-v1", "to": "morpho-blue", "text": "`supply` 進 market，`onBehalf` 是 Safe" }
@@ -27,9 +27,9 @@
     }
   ],
   "reviews": {
-    "morpho-oracle-cbbtc-usdc-86/source.page": {
+    "morpho-oracle-cbbtc-usdc-86/address": {
       "status": "confirmed",
-      "text": "AI 用 headless Chrome 跑完腳本打開這一頁：「Oracle contract」旁邊顯示 0xA6D6…182a，它連到的 Etherscan 頁正是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a。協議 API 回的也是同一個地址。",
+      "text": "程式只有協議 API 確認這個地址，market 頁要跑腳本才顯示。AI 用 headless Chrome 打開這一頁：「Oracle contract」旁邊顯示 0xA6D6…182a，它連到的 Etherscan 頁正是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a。",
       "recommendation": "可以接受。想自己確認，用瀏覽器打開這頁，比對 Oracle contract 的連結。"
     }
   },

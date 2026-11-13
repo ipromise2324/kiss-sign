@@ -11,7 +11,7 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, parseHttpsUrl } from '../registry.ts';
+import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -272,7 +272,7 @@ export function trimReportRecording(
       url,
       trimPage(
         page,
-        entries.filter((e) => pageUrlOf(e.source) === url).map((e) => e.address),
+        entries.filter((e) => pageUrlsOf(e).some((source) => pageUrlOf(source) === url)).map((e) => e.address),
         docs.filter((d) => pageUrlOf(d.url) === url).map((d) => wordOf(d.fn)),
       ),
     ]),
@@ -728,9 +728,23 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     '| --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   for (const { entry, lines } of checked) {
-    const of = (check: Line['check']) => lines.find((l) => l.check === check);
+    const of = (check: Line['check']) => lines.find((l) => l.check === check && l.more === undefined);
     out.push(
       `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${verdict(of('defillama'))} | ${verdict(of('coingecko'))} | ${verdict(of('github'))} | ${verdict(of('page') ?? of('url'))} |`,
+    );
+  }
+  const more = checked.flatMap(({ entry, lines }) => (entry.moreSources ?? []).map((page, i) => ({ entry, page, lines: lines.filter((l) => l.more === i + 1) })));
+  if (more.length > 0) {
+    out.push(
+      '',
+      `Each entry's ${code('moreSources')}: more official pages that list its address, each checked as the source is.`,
+      '',
+      '| Entry | Page | DefiLlama site | GitHub commit | Address on page |',
+      '| --- | --- | --- | --- | --- |',
+      ...more.map(({ entry, page, lines }) => {
+        const of = (check: Line['check']) => lines.find((l) => l.check === check);
+        return `| ${code(entry.name)} | <${page.url}> | ${verdict(of('defillama'))} | ${verdict(of('github'))} | ${verdict(of('page'))} |`;
+      }),
     );
   }
   const findings = checked.flatMap((r) => r.lines.filter((l) => l.kind === 'finding'));

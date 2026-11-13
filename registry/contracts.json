@@ -125,6 +125,12 @@
     "kind": "router",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
     "sourceLabel": "Bundler3",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts",
+        "label": "bundler3"
+      }
+    ],
     "defillama": "morpho-blue",
     "code": {
       "hash": "0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa094c8454",
@@ -152,6 +158,12 @@
     "kind": "factory",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
     "sourceLabel": "VaultV2Factory",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "vaultV2Factory"
+      }
+    ],
     "defillama": "morpho-blue",
     "instanceCheck": "isVaultV2(address)",
     "code": {
@@ -356,6 +368,12 @@
     "kind": "lending",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
     "sourceLabel": "Morpho",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "blue"
+      }
+    ],
     "defillama": "morpho-blue",
     "code": {
       "hash": "0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c",
@@ -367,6 +385,12 @@
     "kind": "router",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
     "sourceLabel": "BlueBundlesV1",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "blueBundlesV1"
+      }
+    ],
     "defillama": "morpho-blue",
     "code": {
       "hash": "0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888",
@@ -378,6 +402,12 @@
     "kind": "irm",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
     "sourceLabel": "Adaptive Curve Irm",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "adaptiveCurveIrm"
+      }
+    ],
     "defillama": "morpho-blue",
     "code": {
       "hash": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd",
@@ -433,6 +463,12 @@
     "kind": "adapter",
     "source": "https://docs.morpho.org/developers/contracts/addresses/",
     "sourceLabel": "EthereumGeneralAdapter1",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts",
+        "label": "generalAdapter1"
+      }
+    ],
     "defillama": "morpho-blue",
     "code": {
       "hash": "0xf9cc71076c5b97dca248a8085a0faaad24a5768948474306a20e345a739dd74c",
