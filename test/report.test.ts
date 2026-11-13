@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { createReader } from '../src/chain/reader.ts';
@@ -23,6 +24,7 @@ import {
   generatedPath,
   loadReport,
   parseDocs,
+  readDocs,
   pastTxsRecordings,
   programChanges,
   renderReport,
@@ -94,6 +96,23 @@ test('a contract field that names its protocol puts only that protocol\'s entrie
   const text = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, registry);
   assert.match(text, /\| `vault` \| a registry `vault` of the DefiLlama protocol `fluid-lending`, picked by number from the list below \|/);
   assert.ok(!text.includes('steakhouse-prime-usdc-v2-0f51'), 'no Morpho vault is listed');
+});
+
+test('a per-vault report joins its vault\'s docs.json with the template\'s, and refuses a function both name', () => {
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-docs-'));
+  const folder = join(root, TEMPLATES_DIR, 'fluid/vault-deposit');
+  mkdirSync(join(folder, 'vaults', 'fluid-fusdt'), { recursive: true });
+  const page = { contract: 'fluid-fusdt', url: 'https://docs.fluid.io/' };
+  const approve = { contract: 'usdt', url: 'https://etherscan.io/' };
+  writeFileSync(join(folder, 'docs.json'), JSON.stringify({ 'deposit(uint256,address)': page }));
+  writeFileSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'approve(address,uint256)': approve }));
+  assert.deepEqual(readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), { 'deposit(uint256,address)': page, 'approve(address,uint256)': approve });
+  assert.deepEqual(readDocs(root, 'fluid/vault-deposit', 'fluid-fusdc'), { 'deposit(uint256,address)': page });
+  writeFileSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'deposit(uint256,address)': page }));
+  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /vaults\/fluid-fusdt\/docs\.json: "deposit\(uint256,address\)" is in the template's docs\.json too/);
+  rmSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'));
+  symlinkSync(join(folder, 'docs.json'), join(folder, 'vaults', 'fluid-fusdt', 'docs.json'));
+  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /vaults\/fluid-fusdt\/docs\.json: not a regular file/);
 });
 
 test('morpho/vault-deposit: the ERC-7730 section is computed again from the recorded descriptors and attestation reads', async () => {

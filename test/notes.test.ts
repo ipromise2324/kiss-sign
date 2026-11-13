@@ -1,14 +1,17 @@
 import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { loadRegistry } from '../src/registry.ts';
 import type { Ledger, Result } from '../src/research/ledger.ts';
-import { NotesError, fieldKeys, mergeNotes, notesChanges, notesScope, parseNotes } from '../src/research/notes.ts';
+import { NotesError, fieldKeys, mergeNotes, notesChanges, notesPath, notesScope, parseNotes, readNotes } from '../src/research/notes.ts';
 import type { NotesScope } from '../src/research/notes.ts';
 import type { ProtocolFacts } from '../src/research/protocol-facts.ts';
 import { entriesOf, loadReport } from '../src/research/report.ts';
 import type { ReportInputs } from '../src/research/report.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import { vaultReportDir } from '../src/template/vault-reports.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -195,7 +198,7 @@ test("a key or name both notes define is refused, and a vault's notes hold only 
   mergeRefused(['verdict'], `${VAULT_PATH}: not a JSON object`);
 });
 
-test("a vault's notes review and describe only the vault and its factory", () => {
+test("a vault's notes review and describe only the vault and the entries its attributes name", () => {
   const owned = new Set(['vault-a', 'vault-factory']);
   const review = VALID.reviews['morpho-oracle/source.page'];
   const vault = { verdict: VALID.verdict, reviews: { 'vault-a/source.url': review, 'vault-factory/abi': review }, entries: { 'vault-a': { role: '金庫' }, 'vault-factory': { role: '工廠' } } };
@@ -207,6 +210,18 @@ test("a vault's notes review and describe only the vault and its factory", () =>
   refusedFor({ entries: { 'bundler3': { role: '共用' } } }, `${VAULT_PATH}.entries: "bundler3" ${shared}`);
   refusedFor({ reviews: { 'bundler3/abi': review } }, `${VAULT_PATH}.reviews: "bundler3/abi" ${shared}`);
   refusedFor({ reviews: { 'fixture.deposit': review } }, `${VAULT_PATH}.reviews: "fixture.deposit" ${shared}`);
+});
+
+test("a vault's notes may also describe the entries its attributes name, such as its asset, and no other", () => {
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
+  mkdirSync(join(root, vaultReportDir('fluid/vault-deposit', 'fluid-fusdt')), { recursive: true });
+  writeFileSync(join(root, notesPath('fluid/vault-deposit')), JSON.stringify(SHARED));
+  const write = (entries: unknown) => writeFileSync(join(root, notesPath('fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify({ entries }));
+  const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
+  write({ 'fluid-fusdt': { role: '金庫' }, usdt: { role: '存進去的代幣' } });
+  assert.deepEqual(Object.keys((readNotes(root, 'fluid/vault-deposit', fusdt) as { entries: Record<string, unknown> }).entries).slice(-2), ['fluid-fusdt', 'usdt']);
+  write({ usdc: { role: '別的代幣' } });
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not about fluid-fusdt or usdt;/);
 });
 
 test('the judgments of both notes count toward the limit of four', () => {
