@@ -21,7 +21,7 @@ import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, 
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { factsScope } from './protocol-facts.ts';
-import { functionNames, misfitText } from './study.ts';
+import { functionNames, isOtherOperation, misfitText } from './study.ts';
 import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
 import { readStoredEvidence } from './vault-evidence.ts';
 import type { StoredPoint } from './vault-evidence.ts';
@@ -217,6 +217,8 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
   'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
   'site-not-compared': { title: '沒辦法比對來源網站', why: 'DefiLlama 找不到這個協議，或網域無法判斷。' },
+  'no-second-source': { title: '沒有第二個來源', why: 'DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。' },
+  'unexplained-coin': { title: 'CoinGecko 在這個地址列了幣，登記沒有給 id', why: '登記沒有寫 coingecko id，所以程式沒有比對 CoinGecko 在這個地址列的幣是不是這個合約。' },
   'commit-unconfirmed': { title: 'GitHub commit 沒確認', why: 'GitHub 頁面沒有釘在預設分支上的 commit。' },
   'page-not-fetched': { title: '文件頁沒讀到', why: '程式沒有這個文件頁的內容。' },
   'name-not-on-page': { title: '文件頁上找不到函式名稱', why: '文件頁的原始網頁裡沒有這個函式的名稱。' },
@@ -1070,9 +1072,7 @@ function pastSection(context: Context): Section {
     `${(to === undefined ? undefined : registry.byAddress.get(to)?.name) ?? '別的合約'}${selector === undefined ? '（沒有資料）' : `.${fnOf(selector)}`}`;
   const sequence = (calls: readonly CallName[]): Inline => [{ code: calls.map(callWords).join(' → ') }];
   const templateCalls = template.calls.map((call) => (call.data === 'empty' ? '（沒有資料）' : call.data.fn.name)).join(' → ');
-  const ownSelectors = new Set(template.calls.flatMap((call) => (call.data === 'empty' ? [] : [call.data.fn.selector as string])));
-  /** A Safe misfit that makes none of the template's top-level calls is another operation. */
-  const otherOperation = (s: Studied): boolean => s.kind === 'misfit' && s.sender.kind === 'safe' && s.reason.kind === 'calls' && !s.reason.calls.some((c) => c.selector !== undefined && ownSelectors.has(c.selector));
+  const otherOperation = (s: Studied): boolean => isOtherOperation(s, template);
   const groupsOf = (misfits: readonly Misfit[]): PastGroup[] => {
     const names = functionNames(template);
     const groups = new Map<string, Misfit[]>();

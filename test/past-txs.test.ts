@@ -264,3 +264,13 @@ test('--to goes with --anchor any only', () => {
   assert.equal(run.status, 64);
   assert.match(run.stderr, /--to goes with --anchor any/);
 });
+
+test("a Safe's transaction that makes none of the template's calls is another operation, counted on its own and not among the misfits", async () => {
+  const transfers: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'erc20-transfer.json'), 'utf8'));
+  const text = await report({ recorded: transfers });
+  assert.match(
+    text,
+    /^by proven Safes, the whole template in one transaction:\nanother operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below\n {2}e\.g\. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls another contract\.0x1d7d4ebc\nfit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes$/m,
+  );
+  assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls another contract\.0x1d7d4ebc$/m);
+});

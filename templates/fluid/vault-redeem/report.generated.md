@@ -477,7 +477,10 @@ senders, of 236 transactions studied:
   neither: 154
     154 calls no function the template calls (called 0xb460af94 in 115, 0xbaae8abf in 11, 0xac9650d8 in 4, 0x323bb807 in 4, …)
 by proven Safes, the whole template in one transaction:
-fit the template's shape: 1 transaction from 1 Safe; misfits: 2 from 2 Safes
+another operation, making none of the template's calls: 2 transactions from 2 Safes; not counted below
+  e.g. 0xc8dededc9956c99ea3e01d1d85a7dbd7c98f457f223a6f155f5816101b4d521b: calls fluid-fusdc.0xb460af94, fluid-rewards-distributor.0xbe5013dc
+  e.g. 0xae41387e0b21d44eb10954caa32cc74c2bd99889f0a4adca911bf402077a8273: calls another contract.0xb460af94
+fit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes
 fields, over the 1 fitting transaction:
   call.to  [card vault]
     same as the other leaves bound to card vault in 1 of 1; values: fluid-fusdc in 1
@@ -489,11 +492,6 @@ fields, over the 1 fitting transaction:
     equalled the Safe in 1 of 1 (1 Safe); values: the Safe in 1
   call.redeem.owner  [the Safe]
     equalled the Safe in 1 of 1 (1 Safe); values: the Safe in 1
-misfits, by reason:
-  1 from 1 Safe: calls fluid-fusdc.0xb460af94, fluid-rewards-distributor.0xbe5013dc
-    e.g. 0xc8dededc9956c99ea3e01d1d85a7dbd7c98f457f223a6f155f5816101b4d521b
-  1 from 1 Safe: calls another contract.0xb460af94
-    e.g. 0xae41387e0b21d44eb10954caa32cc74c2bd99889f0a4adca911bf402077a8273
 examples that fit: 0x776f13538e1df9e7495e87b6e23d28472375afa16ea62d1a6e8d4534b3d131bd
 by EOAs, call 1 of 1 (redeem) as its own transaction:
 fit the call's shape: 79 transactions from 77 EOAs; misfits: 0 from 0 EOAs

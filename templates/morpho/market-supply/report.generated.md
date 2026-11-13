@@ -188,12 +188,10 @@ senders, of 40 transactions studied:
   neither: 30
     30 calls no function the template calls (called 0x827d6bd8 in 13, 0xb1268765 in 13, 0xc0229fe8 in 3, 0x1fad948c in 1)
 by proven Safes, the whole template in one transaction:
-fit the template's shape: 0 transactions from 0 Safes; misfits: 2 from 2 Safes
-misfits, by reason:
-  1 from 1 Safe: calls blue-bundles-v1.0xc0229fe8
-    e.g. 0x2d876d7ca936f5ee43512ebf5b0b4bcfd6bd799fe0851ba605c29f0705b5f700
-  1 from 1 Safe: calls blue-bundles-v1.0x827d6bd8
-    e.g. 0x147a0f4fcff7bfa31515a84bc1657149aa9ba2c047b6754ea08f894fd7de6fd9
+another operation, making none of the template's calls: 2 transactions from 2 Safes; not counted below
+  e.g. 0x2d876d7ca936f5ee43512ebf5b0b4bcfd6bd799fe0851ba605c29f0705b5f700: calls blue-bundles-v1.0xc0229fe8
+  e.g. 0x147a0f4fcff7bfa31515a84bc1657149aa9ba2c047b6754ea08f894fd7de6fd9: calls blue-bundles-v1.0x827d6bd8
+fit the template's shape: 0 transactions from 0 Safes; misfits: 0 from 0 Safes
 by EOAs, call 2 of 2 (blueBundlesV1Supply) as its own transaction:
 fit the call's shape: 8 transactions from 8 EOAs; misfits: 0 from 0 EOAs
 fields, over the 8 fitting transactions:

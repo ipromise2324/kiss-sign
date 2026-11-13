@@ -195,7 +195,9 @@ senders, of 489 transactions studied:
   neither: 126
     126 calls no function the template calls (called 0x6e553f65 in 62, 0xbaae8abf in 33, 0x0af210a1 in 25, 0xfcf2849f in 3, …)
 by proven Safes, the whole template in one transaction:
-fit the template's shape: 6 transactions from 2 Safes; misfits: 3 from 3 Safes
+another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
+  e.g. 0x89c3015d7de6c4a94dce52604c5b8ebcd7ddadf8f3bda89f0f929979bf3faebe: calls another contract.0x0af210a1, another contract.0x0af210a1, another contract.0x0af210a1
+fit the template's shape: 6 transactions from 2 Safes; misfits: 2 from 2 Safes
 fields, over the 6 fitting transactions:
   multiSend[0].to  [card vault.asset]
     same as the other leaves bound to card vault.asset in 6 of 6; values: usdc in 6
@@ -242,8 +244,6 @@ fields, over the 6 fitting transactions:
 misfits, by reason:
   2 from 2 Safes: calls bundler3.multicall
     e.g. 0x54579efd411964b4bab3c16a18d15928e688e18647f0167e1fde4b8fc0956541, 0x18fb9bc20f2db2c0310a029301e01ad3e1564e4ec88c5b2469bf7e70c8388b5b
-  1 from 1 Safe: calls another contract.0x0af210a1, another contract.0x0af210a1, another contract.0x0af210a1
-    e.g. 0x89c3015d7de6c4a94dce52604c5b8ebcd7ddadf8f3bda89f0f929979bf3faebe
 examples that fit: 0x4f64d35c66e20f5956956db7a8d2eff3515c8ce177fb7fe5c302020ad7679a2f, 0x92c3e36dcaf900f1f5f836b5e9968296c173aea4200351b16f913deb79b40ad4, 0x7667a60ff42625518a709b06a447e9dac326f87e6731d065463c244585066521
 by EOAs, call 2 of 2 (multicall) as its own transaction:
 fit the call's shape: 25 transactions from 16 EOAs; misfits: 329 from 134 EOAs

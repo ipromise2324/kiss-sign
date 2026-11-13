@@ -509,10 +509,9 @@ senders, of 165 transactions studied:
   neither: 132
     132 calls no function the template calls (called 0xba087652 in 27, 0xb460af94 in 15, 0x09c5eabe in 15, 0x0053be41 in 10, …)
 by proven Safes, the whole template in one transaction:
-fit the template's shape: 0 transactions from 0 Safes; misfits: 1 from 1 Safe
-misfits, by reason:
-  1 from 1 Safe: calls steakhouse-high-yield-usdc-v2-a757.0xb460af94
-    e.g. 0x254503d4cab1b0f8fd8c6056480d219a6e98c755b446329ce33b007e9c172dfe
+another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
+  e.g. 0x254503d4cab1b0f8fd8c6056480d219a6e98c755b446329ce33b007e9c172dfe: calls steakhouse-high-yield-usdc-v2-a757.0xb460af94
+fit the template's shape: 0 transactions from 0 Safes; misfits: 0 from 0 Safes
 by EOAs, call 2 of 2 (multicall) as its own transaction:
 fit the call's shape: 0 transactions from 0 EOAs; misfits: 32 from 31 EOAs
 misfits, by reason:

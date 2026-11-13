@@ -178,7 +178,9 @@ const ROWS: readonly Row[] = [
   { what: 'no ABI case', change: { abi: undefined }, id: 'vault/abi', kind: 'no-abi-case', state: 'warn' },
   { what: 'an entry with no code pin', change: { entry: without('code'), abi: undefined }, id: 'vault/code', kind: 'not-pinned', state: 'warn' },
   { what: 'a proof of an entry with no pin', change: { entry: without('code') }, id: 'vault/abi', kind: 'not-pinned', state: 'warn' },
-  { what: 'no site listed', change: { protocol: { ...BASE.protocol!, url: undefined }, coins: [] }, id: 'vault/source.site', kind: 'unlisted', state: 'na' },
+  { what: 'no site listed, and CoinGecko vouches', change: { protocol: { ...BASE.protocol!, url: undefined } }, id: 'vault/source.site', kind: 'unlisted', state: 'na' },
+  { what: 'no site listed and no coin to vouch', change: { protocol: { ...BASE.protocol!, url: undefined }, coins: [] }, id: 'vault/source.site', kind: 'no-second-source', state: 'warn' },
+  { what: 'a coin at the address the entry names no id for', change: { entry: without('coingecko') }, id: 'vault/source.coingecko', kind: 'unexplained-coin', state: 'warn' },
   { what: 'a compiler not pinned', change: { abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }, id: 'vault/abi', kind: 'compiler-not-pinned', state: 'warn' },
   { what: 'a pin recorded before spans', change: { spans: [{ kind: 'not-read', text: '' }] }, id: 'vault/code.1', kind: 'pinned-before-spans', state: 'warn' },
 ];
@@ -233,6 +235,37 @@ test('an empty address source is grey; the address result alone puts the entry i
   );
   const alone = ledgerOf({ page: { kind: 'served', blocks: [{ text: 'Vault' }] } });
   assert.deepEqual(forSigner(alone).map((r) => [r.id, r.finding]), [['vault/address', { kind: 'few-confirmations', by: ['coingecko'] }]]);
+});
+
+test('a site DefiLlama lists nothing for is vouched by CoinGecko or by another official page, never by a documentation page or the API site', () => {
+  const github = { entry: { ...ENTRY, source: GITHUB, apiSource: API }, protocol: { ...BASE.protocol!, github: [] } } as const;
+  const unvouched = ledgerOf({ ...github, coins: [] });
+  assert.equal(resultOf(unvouched, 'vault/doc.0x095ea7b3.site').finding.kind, 'agrees');
+  assert.equal(resultOf(unvouched, 'vault/source.api.site').finding.kind, 'agrees');
+  assert.ok(forSigner(unvouched).some((r) => r.id === 'vault/source.site' && r.finding.kind === 'no-second-source'));
+  assert.ok(!forSigner(ledgerOf(github)).some((r) => r.id === 'vault/source.site'), 'CoinGecko lists the coin at the address');
+  const second = ledgerOf({ ...github, entry: { ...ENTRY, source: GITHUB, moreSources: [{ url: SOURCE, label: 'Vault' }] }, coins: [] });
+  assert.equal(resultOf(second, 'vault/source.more.1.site').finding.kind, 'agrees');
+  assert.ok(!forSigner(second).some((r) => r.id === 'vault/source.site'), "the second page's site is the protocol's website");
+});
+
+test('a lookalike vault the factory made, on one page of a site no one vouches for, has two confirmations and still stays for the signer', () => {
+  const ledger = ledgerOf({ entry: VAULT, vaults: new Map([['vault', ADMITTED]]), protocol: { ...BASE.protocol!, url: undefined }, coins: [] });
+  assert.equal(resultOf(ledger, 'vault/address').finding.kind, 'agrees');
+  assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding.kind]), [
+    ['vault/source.site', 'no-second-source'],
+    ['vault/doc.0x095ea7b3.site', 'no-second-source'],
+  ]);
+});
+
+test('a coin CoinGecko lists at an address the entry names no coin for stays for the signer and confirms nothing', () => {
+  const entry = without('coingecko');
+  const ledger = ledgerOf({ entry });
+  assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding.kind]), [
+    ['vault/address', 'few-confirmations'],
+    ['vault/source.coingecko', 'unexplained-coin'],
+  ]);
+  assert.deepEqual(confirmations(ledger, entry), ['page']);
 });
 
 test("a second page is its own row, and its site joins DefiLlama's", () => {

@@ -110,7 +110,9 @@ senders, of 80 transactions studied:
   neither: 52
     52 calls no function the template calls (called 0x42e3dcf3 in 21, 0x000000c3 in 13, 0xac9650d8 in 3, 0x00000002 in 3, …)
 by proven Safes, the whole template in one transaction:
-fit the template's shape: 1 transaction from 1 Safe; misfits: 1 from 1 Safe
+another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
+  e.g. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls another contract.0x1d7d4ebc
+fit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes
 fields, over the 1 fitting transaction:
   call.to  [card token]
     same as the other leaves bound to card token in 1 of 1; values: the anchor token in 1
@@ -120,9 +122,6 @@ fields, over the 1 fitting transaction:
     same as the other leaves bound to card recipient in 1 of 1; values: another address in 1
   call.transfer.value  [card amount]
     same as the other leaves bound to card amount in 1 of 1; values: 59999000000000000000000 in 1
-misfits, by reason:
-  1 from 1 Safe: calls another contract.0x1d7d4ebc
-    e.g. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb
 examples that fit: 0x32fa2c8158e8b5072bdf0ee5564f2b26a17f42389ea92ecf7ae72deced951b89
 by EOAs, call 1 of 1 (transfer) as its own transaction:
 fit the call's shape: 26 transactions from 14 EOAs; misfits: 0 from 0 EOAs

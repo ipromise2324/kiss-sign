@@ -165,7 +165,10 @@ senders, of 20 transactions studied:
   neither: 10
     10 calls no function the template calls (called 0xfabed412 in 10)
 by proven Safes, the whole template in one transaction:
-fit the template's shape: 1 transaction from 1 Safe; misfits: 2 from 2 Safes
+another operation, making none of the template's calls: 2 transactions from 2 Safes; not counted below
+  e.g. 0x1e1632c031bccf21c8a80651a564325a5ad16e23ebd3224566a4c4a7ebbcb244: calls morpho-urd.claim
+  e.g. 0x8ea7d460bd68baab08c828adcad451b9da614e8b649ece751d661ac7ef78397a: calls morpho-urd.claim
+fit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes
 fields, over the 1 fitting transaction:
   call.to  [contract bundler3]
     equalled contract bundler3 in 1 of 1 (1 Safe); values: bundler3 in 1
@@ -187,9 +190,6 @@ fields, over the 1 fitting transaction:
     equalled const false in 1 of 1 (1 Safe); values: false in 1
   call.multicall.bundle[0].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
     equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 1 of 1 (1 Safe); values: 0x0000000000000000…(32 bytes) in 1
-misfits, by reason:
-  2 from 2 Safes: calls morpho-urd.claim
-    e.g. 0x1e1632c031bccf21c8a80651a564325a5ad16e23ebd3224566a4c4a7ebbcb244, 0x8ea7d460bd68baab08c828adcad451b9da614e8b649ece751d661ac7ef78397a
 examples that fit: 0xabb885b9511f63fab459f12d0dcc077581963221384087a354704ab48b5cb4eb
 by EOAs, call 1 of 1 (multicall) as its own transaction:
 fit the call's shape: 5 transactions from 5 EOAs; misfits: 2 from 2 EOAs

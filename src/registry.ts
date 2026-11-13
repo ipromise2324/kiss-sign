@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { AbiSignatureError, parseFunctionSignature } from './decode/abi.ts';
 import { uintWord } from './decode/codec.ts';
 import type { AbiFunction } from './decode/abi.ts';
+import { samePageKey, sourceHoldsAddress } from './research/source-page.ts';
 import { SafeTxParseError, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 
@@ -286,19 +287,24 @@ function pageText(path: string, raw: unknown): string {
   return raw;
 }
 
-/** A page whose URL holds the address is refused: a page may echo its own URL. */
+/**
+ * A page whose URL holds the address, plainly or percent-encoded, is refused: a page may echo its own URL. So is a page
+ * the entry already names under another spelling, such as a github.com file and its raw.githubusercontent.com copy,
+ * since one page is one confirmation.
+ */
 function moreSourcesOf(path: string, raw: unknown, address: Address, source: HttpsUrl): SourcePage[] {
   if (!Array.isArray(raw) || raw.length === 0) throw new RegistryError(path, 'not a non-empty list of pages');
-  const urls = new Set<string>([source]);
+  const pages = new Set<string>([samePageKey(source)]);
   return raw.map((rawPage: unknown, i): SourcePage => {
     const at = `${path}[${i}]`;
     const page = record(at, rawPage);
     onlyKeys(at, page, ['url', 'label', 'heading']);
     const url = parseHttpsUrl(page.url);
     if (url === undefined) throw new RegistryError(`${at}.url`, 'not an https URL');
-    if (url.toLowerCase().includes(address.slice(2))) throw new RegistryError(`${at}.url`, "holds the entry's address, and a page may echo its own URL");
-    if (urls.has(url)) throw new RegistryError(`${at}.url`, 'names a page the entry already names');
-    urls.add(url);
+    if (sourceHoldsAddress(url, address)) throw new RegistryError(`${at}.url`, "holds the entry's address, and a page may echo its own URL");
+    const key = samePageKey(url);
+    if (pages.has(key)) throw new RegistryError(`${at}.url`, 'names a page the entry already names');
+    pages.add(key);
     return { url, label: pageText(`${at}.label`, page.label), ...(page.heading === undefined ? {} : { heading: pageText(`${at}.heading`, page.heading) }) };
   });
 }

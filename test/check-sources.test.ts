@@ -480,9 +480,29 @@ test('the registry refuses a moreSources page that is malformed, repeats a page,
   refused([{ url: `https://app.morpho.org/vault/${ADDR.toLowerCase()}`, label: 'x' }], /r\.moreSources\[0\]\.url: holds the entry's address, and a page may echo its own URL/);
   refused([{ url: `https://app.morpho.org/vault/${ADDR}`, label: 'x' }], /r\.moreSources\[0\]\.url: holds the entry's address/);
   refused([{ url: DOCS, label: 'x' }], /r\.moreSources\[0\]\.url: names a page the entry already names/);
+  refused([{ url: `https://app.morpho.org/vault/0x6566194141%65efa99${ADDR.slice(18)}`, label: 'x' }], /r\.moreSources\[0\]\.url: holds the entry's address/);
+  for (const again of ['https://DOCS.morpho.org/addresses#bundler3', 'https://docs.morpho.org/%61ddresses']) {
+    refused([{ url: again, label: 'x' }], /r\.moreSources\[0\]\.url: names a page the entry already names/);
+  }
+  refused([{ url: 'https://docs.morpho.org/sdk', label: 'x' }, { url: 'https://docs.morpho.org/sdk#top', label: 'y' }], /r\.moreSources\[1\]\.url: names a page the entry already names/);
   refused([{ url: 'https://docs.morpho.org/sdk', label: ' x' }], /r\.moreSources\[0\]\.label: not page text of 1 to 120 characters/);
   refused([{ url: 'https://docs.morpho.org/sdk' }], /r\.moreSources\[0\]\.label: not page text/);
   refused([{ url: 'https://docs.morpho.org/sdk', label: 'x', note: 'y' }], /r\.moreSources\[0\]\.note: unexpected field/);
+});
+
+test('the registry refuses a github.com file and its raw.githubusercontent.com copy as two pages of one entry', () => {
+  const entry = (source: string, url: string) => entriesOf({ r: { address: ADDR, kind: 'router', source, sourceLabel: 'canonical', moreSources: [{ url, label: 'canonical' }] } });
+  const same = (e: unknown) => e instanceof RegistryError && /r\.moreSources\[0\]\.url: names a page the entry already names/.test(e.message);
+  assert.throws(() => entry(PINNED, RAW), same);
+  assert.throws(() => entry(RAW, PINNED), same);
+  assert.throws(() => entry(PINNED, RAW.replace('safe-global/safe-deployments', 'Safe-Global/Safe-Deployments')), same);
+  assert.doesNotThrow(() => entry(PINNED, RAW.replace('v1.3.0', 'v1.4.1')));
+});
+
+test('a source URL that holds the address percent-encoded is a finding, and its page is not read', async () => {
+  const source = `https://app.morpho.org/ethereum/vault/0x6566194141%65efa99${ADDR.slice(18).toUpperCase()}/bundler`;
+  const text = await pageReport({ source, sourceLabel: 'Bundler3' }, {});
+  assert.match(text, /url {8}FINDING the source URL holds the address, and a page echoes its own URL; the page is not read/);
 });
 
 test('the registry refuses a sourceLabel that is empty, padded, or too long', () => {

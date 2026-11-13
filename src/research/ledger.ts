@@ -62,8 +62,10 @@ export type Finding =
   | { readonly kind: 'url-holds-address' }
   /** The site could not be compared: no slug, a slug DefiLlama lists none or several of, no Public Suffix List, no org. */
   | { readonly kind: 'site-not-compared' }
-  /** CoinGecko lists no coin at this address, or the entry names none. */
+  /** CoinGecko lists no coin at this address. */
   | { readonly kind: 'no-coin' }
+  /** The entry names no CoinGecko coin, yet CoinGecko lists one at its address. */
+  | { readonly kind: 'unexplained-coin' }
   /** Not pinned to a commit, the commit unknown, or not on the default branch. */
   | { readonly kind: 'commit-unconfirmed' }
   | { readonly kind: 'page-not-fetched' }
@@ -73,8 +75,10 @@ export type Finding =
   | { readonly kind: 'factory-unread' }
   /** No code pin: signing would answer UNVERIFIABLE. */
   | { readonly kind: 'not-pinned' }
-  /** DefiLlama lists no website or GitHub org to compare the site with. */
+  /** DefiLlama lists no website or GitHub org to compare the site with, and another result vouches for the site. */
   | { readonly kind: 'unlisted' }
+  /** DefiLlama lists no website or GitHub org to compare the site with, and no other result vouches for it. */
+  | { readonly kind: 'no-second-source' }
   | { readonly kind: 'compiler-not-pinned'; readonly version: string }
   | { readonly kind: 'pinned-before-spans' }
   | { readonly kind: 'no-abi-case' };
@@ -98,6 +102,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'url-holds-address': 'na',
   'site-not-compared': 'warn',
   'no-coin': 'na',
+  'unexplained-coin': 'warn',
   'commit-unconfirmed': 'warn',
   'page-not-fetched': 'warn',
   'name-not-on-page': 'warn',
@@ -105,6 +110,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'factory-unread': 'warn',
   'not-pinned': 'warn',
   unlisted: 'na',
+  'no-second-source': 'warn',
   'compiler-not-pinned': 'warn',
   'pinned-before-spans': 'warn',
   'no-abi-case': 'warn',
@@ -128,6 +134,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'url-holds-address': '讀不到',
   'site-not-compared': '沒資料可比',
   'no-coin': '沒資料可比',
+  'unexplained-coin': '沒資料可比',
   'commit-unconfirmed': '讀不到',
   'page-not-fetched': '讀不到',
   'name-not-on-page': '讀不到',
@@ -135,6 +142,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'factory-unread': '讀不到',
   'not-pinned': undefined,
   unlisted: '沒資料可比',
+  'no-second-source': '沒資料可比',
   'compiler-not-pinned': undefined,
   'pinned-before-spans': undefined,
   'no-abi-case': undefined,
@@ -214,7 +222,7 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
     case 'api':
       return { kind: 'other-answer' };
     case 'coingecko':
-      return line.cause === 'differs' ? { kind: 'other-coin' } : { kind: 'no-coin' };
+      return line.cause === 'differs' ? { kind: 'other-coin' } : line.cause === 'unexplained' ? { kind: 'unexplained-coin' } : { kind: 'no-coin' };
     case 'defillama':
     case 'api-site':
       return siteFinding(line);
@@ -308,6 +316,20 @@ function spanResults(entry: RegistryEntry, verdicts: readonly SpanCheck[] | unde
   });
 }
 
+/**
+ * A site DefiLlama lists nothing for stays for the signer unless something else ties the entry to the protocol:
+ * CoinGecko listing the entry's coin at its address, or another official page's site that DefiLlama lists. Without
+ * that, a lookalike vault the factory made and one page on a site no one vouches for would confirm the address. An
+ * API's or a documentation page's site vouches for nothing: such a site answers for whatever it indexes or hosts.
+ */
+function unvouchedUnlistedHasNoSecondSource(entry: RegistryEntry, results: readonly Result[]): Result[] {
+  const key = (r: Result) => r.id.slice(entry.name.length + 1);
+  const coin = results.some((r) => key(r) === LINE_KEYS.coingecko && r.finding.kind === 'agrees');
+  const pageSite = (r: Result) => /^source\.(more\.\d+\.)?site$/.test(key(r)) && r.finding.kind === 'agrees';
+  const vouched = (result: Result) => coin || results.some((r) => r !== result && pageSite(r));
+  return results.map((r) => (r.finding.kind === 'unlisted' && !vouched(r) ? { ...r, finding: { kind: 'no-second-source' } } : r));
+}
+
 /** The sources whose every result passed, each one place that showed the entry's address for its role; a site shows none. */
 function confirmingSources(results: readonly Result[]): ProgramSource[] {
   const sources = [...new Set(results.flatMap((r) => (r.source === undefined || r.source === 'defillama' ? [] : [r.source])))];
@@ -345,14 +367,14 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
   const docs = subject.kind === 'template' ? subject.docs : [];
   const checked = checkSources(entriesOf(subject, inputs.registry), inputs.listings, inputs.pages);
   const results = checked.flatMap(({ entry, lines }) =>
-    withAddressResult(entry, [
+    withAddressResult(entry, unvouchedUnlistedHasNoSecondSource(entry, [
       ...sourceResults(entry, lines),
       ...factoryResults(entry, inputs),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
       ...marketResults(entry, inputs),
       { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address)) },
       ...spanResults(entry, inputs.spans.get(entry.address)),
-    ]),
+    ])),
   );
   const judged = fixtures.map(
     (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),

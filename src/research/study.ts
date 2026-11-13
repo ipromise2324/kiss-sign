@@ -91,6 +91,13 @@ export type TxStudy =
   /** `values` pairs with the rules of the sender's `Shape`; `paths` names each leaf. */
   | { readonly kind: 'fit'; readonly hash: Hex; readonly sender: Sender; readonly paths: readonly string[]; readonly types: readonly AbiType[]; readonly values: readonly string[] };
 
+/** A Safe's transaction that makes none of the template's top-level calls: another operation, not a variant of this one. */
+export function isOtherOperation(study: TxStudy, template: Template): boolean {
+  if (study.kind !== 'misfit' || study.sender.kind !== 'safe' || study.reason.kind !== 'calls') return false;
+  const own = new Set(template.calls.flatMap((call) => (call.data === 'empty' ? [] : [call.data.fn.selector as string])));
+  return !study.reason.calls.some((c) => c.selector !== undefined && own.has(c.selector));
+}
+
 const EXEC_TRANSACTION = parseFunctionSignature(
   'execTransaction(address to, uint256 value, bytes data, uint8 operation, uint256 safeTxGas, uint256 baseGas, uint256 gasPrice, address gasToken, address refundReceiver, bytes signatures)',
 );
