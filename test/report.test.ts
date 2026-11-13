@@ -90,7 +90,7 @@ test('morpho/vault-deposit: rules name registry entries with full addresses, and
 test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
   const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
   const template = parseTemplate({ ...raw, card: { ...raw.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } }, registry);
-  const subject: Subject = { ...loadReport(ROOT, registry, { template: 'fluid/vault-deposit' }).subject, template } as Subject;
+  const subject: Subject = { kind: 'template', template, docs: [], vault: undefined };
   const vaults = entriesOf(subject, registry).filter((entry) => entry.kind === 'vault').map((entry) => entry.name);
   assert.deepEqual(vaults, ['fluid-fusdc', 'fluid-fusdt']);
   const text = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, registry);
@@ -99,6 +99,8 @@ test('a contract field that names its protocol puts only that protocol\'s entrie
 });
 
 test('a per-vault report joins its vault\'s docs.json with the template\'s, and refuses a function both name', () => {
+  const { subject } = loadReport(ROOT, registry, { template: 'fluid/vault-deposit', cardVault: 'fluid-fusdt' });
+  assert.deepEqual(subject.kind === 'template' ? subject.docs.map((d) => `${d.fn.signature} ${d.contract.name}`) : [], ['approve(address,uint256) usdt', 'deposit(uint256,address) fluid-fusdt']);
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-docs-'));
   const folder = join(root, TEMPLATES_DIR, 'fluid/vault-deposit');
   mkdirSync(join(folder, 'vaults', 'fluid-fusdt'), { recursive: true });
