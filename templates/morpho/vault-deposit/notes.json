@@ -33,6 +33,11 @@
     {
       "text": "Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。",
       "recommendation": "遇到 MISMATCH 不要簽；回報後再決定是否新增模板。"
+    },
+    {
+      "text": "Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，docs.morpho.org 還列著。記錄裡 Safe 經 Bundler3 存款的最後一筆在 2026-09-24，之後抽樣的區段沒有看到。",
+      "sources": ["https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d"],
+      "recommendation": "簽之前在 Morpho app 確認交易還經過 Bundler3；app 改走別的合約時 verify 會判 MISMATCH，不要簽。"
     }
   ],
   "reviews": {},

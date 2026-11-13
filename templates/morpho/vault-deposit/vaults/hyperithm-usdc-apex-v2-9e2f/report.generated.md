@@ -283,11 +283,11 @@ fields, over the 25 fitting transactions:
   call.multicall.bundle[1].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
     equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 25 of 25 (16 EOAs); values: 0x0000000000000000…(32 bytes) in 25
 misfits, by reason:
-  321 from 126 EOAs: call.multicall.bundle: expected 2 items, got 3 items
+  321 from 126 EOAs: call.multicall.bundle: expected 2 items, got 3 items, calling usdc.0xd505accf, general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit
     e.g. 0x94ba5b792613b7a04c2235f47062cf3f991524be9dffadd0fa595a16783a73ea, 0xb4942851aed13577635997ebfc8e9bf920f1c9e7b65f9097294f5711581a17b6, 0xfce513b160e6c89578c51d49f8e7773333ce91dd79be480133cce45b77bc7ef0
-  7 from 7 EOAs: call.multicall.bundle: expected 2 items, got 5 items
+  7 from 7 EOAs: call.multicall.bundle: expected 2 items, got 5 items, calling usdc.0xd505accf, general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
     e.g. 0xa3f3c87ad9e194f0ddb4568ab62eb3820287f00c42f8efc3391167920c94d881, 0xaccf41c632d29bfa0950e7d2b551195a2bab5b87554a149ec35f3802ff95c938, 0xe8256e38c735e24627ebab929771ac5ad1a8938facf6bd4fda9c5b32a92385d7
-  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 4 items
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 4 items, calling general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
     e.g. 0x0a20e92838cf8e0bab4cc2d6060d14c0434d4ae5828666b3aba2eb3a7b0eb318
 examples that fit: 0xd1b1b94f1be130f9e649ae93add1b91eae3b503f6d82033f9d4fb723fa1de89a, 0xb06a3f141596b4ddd7594d2a8ee0fbf2032aab6f2c9a92ed48d42277d0c4df9c, 0x65807ed0038eb2cf50ee3e8e5231e7b95322126e0bc8ff9305ed052d71c57a94
 ```
@@ -362,8 +362,10 @@ fields, over the 2 fitting transactions:
   call.multicall.bundle[1].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
     equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 2 of 2 (2 EOAs); values: 0x0000000000000000…(32 bytes) in 2
 misfits, by reason:
-  9 from 6 EOAs: call.multicall.bundle: expected 2 items, got 3 items
+  8 from 5 EOAs: call.multicall.bundle: expected 2 items, got 3 items, calling usdc.0xd505accf, general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit
     e.g. 0x270081b58860e246da307b0e360b0c2cf0a76ec7a136dc94c8e14433649c6414, 0x7a32d82d81722262b7fba5a060f16a878a8a9657061bd3e6b38d69e884fe034b, 0x7f308e0ed05c57cb848146699b9fd28410372d9bc0643b86799eb72e5a6b1cf9
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 3 items, calling general-adapter-1.erc20TransferFrom, general-adapter-1.0xa7f6e606, general-adapter-1.erc4626Deposit
+    e.g. 0xba939d349655bc3ca4038a711d909406e2f678a12837e3c1e7f8faf80fefc660
 examples that fit: 0xae810233dd6c38d5208270f44ee5fdab57b243f159a4f72466a233c07a9a0c8f, 0x882585830ebecfc6d4b6d090a6de93d3fcd5eb8e345cefa4e946ea094c5d6a1d
 ```
 

@@ -210,11 +210,13 @@ fit the template's shape: 0 transactions from 0 Safes; misfits: 0 from 0 Safes
 by EOAs, call 2 of 2 (multicall) as its own transaction:
 fit the call's shape: 0 transactions from 0 EOAs; misfits: 6 from 6 EOAs
 misfits, by reason:
-  4 from 4 EOAs: call.multicall.bundle: expected 2 items, got 3 items
-    e.g. 0xd43657332f2ddfc79c07b482e3c4cda62fd95ab5306de32871625819cb527160, 0xc8149650e9d0acd4af24a9176665485f613e0cc02b85ab23798d69c4254398b1, 0x4b55fa0ca1e00ba10d595be0232f0c5e82a116932652910351411df652a7fb76
-  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 6 items
+  3 from 3 EOAs: call.multicall.bundle: expected 2 items, got 3 items, calling usdc.0xd505accf, general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit
+    e.g. 0xd43657332f2ddfc79c07b482e3c4cda62fd95ab5306de32871625819cb527160, 0x4b55fa0ca1e00ba10d595be0232f0c5e82a116932652910351411df652a7fb76, 0x65620751ec1e1678a0ac0aca4735da773e7de4775e67bde1547ea83eb046413b
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 6 items, calling general-adapter-1.0xa7f6e606, general-adapter-1.erc4626Deposit, general-adapter-1.0xf2522bcd, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
     e.g. 0xb2e1fa9d798a29a9b80f78b5efd8c0673b61805048bcbf576dc327308a36c492
-  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 5 items
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 3 items, calling general-adapter-1.erc20TransferFrom, another contract.0x6dc916f5, general-adapter-1.erc4626Deposit
+    e.g. 0xc8149650e9d0acd4af24a9176665485f613e0cc02b85ab23798d69c4254398b1
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 5 items, calling general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit, general-adapter-1.0xf2522bcd, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
     e.g. 0x226c6f637d787a5e0d04064b0ea51401e9fe4f4244a159dc1a7ea70c8e5cc01c
 ```
 
@@ -321,9 +323,9 @@ fields, over the 2 fitting transactions:
   call.multicall.bundle[1].callbackHash  [const 0x0000000000000000000000000000000000000000000000000000000000000000]
     equalled const 0x0000000000000000000000000000000000000000000000000000000000000000 in 2 of 2 (2 EOAs); values: 0x0000000000000000…(32 bytes) in 2
 misfits, by reason:
-  13 from 12 EOAs: call.multicall.bundle: expected 2 items, got 3 items
+  13 from 12 EOAs: call.multicall.bundle: expected 2 items, got 3 items, calling usdc.0xd505accf, general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit
     e.g. 0x8b418f72564aac961208cf6f6aea83a99d26d4a385f2f40b9087161ac205efd1, 0xb24d1632b3f2ee85e8a74ca8e3bed35dbcc493cbc28c07c34d420675b8a52242, 0x3bffebfb02c52def0e948fd439634f77895206486c760e8a4a66fcf5686fd661
-  10 from 10 EOAs: call.multicall.bundle: expected 2 items, got 5 items
+  10 from 10 EOAs: call.multicall.bundle: expected 2 items, got 5 items, calling general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit, general-adapter-1.0xf2522bcd, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
     e.g. 0xaa2db7e2400a5e6762368a539395f35704c1b18f5fd81f59faaf43688b601ea8, 0x182ec904c89efd8149cef49ba800111350d84fa8f7ab691c4ca574ae4b840ba9, 0x67c52780beccae4e05167a4a2b436ab65c6798b07997d73120a28da45a77c57e
 examples that fit: 0x44ea4609aad8d06c8934e4ef174b2c5b9572169b6420abe09ccd955fbeab1840, 0x8cec01d9fd62e7fb22f7fe3341cef470403ef1263303dcbad7aed4eb737df8cb
 ```

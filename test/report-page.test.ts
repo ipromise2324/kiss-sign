@@ -381,16 +381,38 @@ test('a constant prints as cast decode-calldata prints it', () => {
   assert.equal(constCast({ kind: 'bool', value: false }), 'false');
 });
 
-test('past transactions count the fitting ones of EOAs and of proven Safes', () => {
+test('past transactions count, per kind of sender, those using the operation and those with the template shape', () => {
   const [recording] = body(pageOf(inputs), 'past').recordings;
   assert.deepEqual(
-    recording?.rows.map((r) => [r.label, plain(r.value), plain(r.note)]),
+    recording?.blocks.map((b) => [b.title, plain(b.lead)]),
     [
-      ['EOA 直接呼叫', '8 / 8 符合', '8 個地址'],
-      ['Safe', '0 / 2 符合', '2 個 Safe'],
-      ['搜尋來源', 'Alchemy 和 Etherscan 找到的完全一樣', '528 = 528'],
+      ['Safe', '0 筆用了這個操作的呼叫（0 個 Safe），0 筆跟模板一樣。'],
+      ['EOA 直接呼叫 blueBundlesV1Supply', '8 筆用了這個操作的呼叫（8 個地址），8 筆跟模板一樣。'],
     ],
   );
+  assert.equal(plain(recording?.search), 'Alchemy 和 Etherscan 找到的完全一樣（528 = 528）。');
+});
+
+test('a bundle with another number of items is grouped and named by the functions its items call, each example linked to Etherscan', () => {
+  const [early] = body(depositPage, 'past').recordings;
+  const [safe, eoa] = early?.blocks ?? assert.fail('two blocks');
+  assert.equal(plain(safe?.lead), '8 筆用了這個操作的呼叫（4 個 Safe），6 筆跟模板一樣。');
+  assert.deepEqual(
+    safe?.groups.map((g) => [g.count, plain(g.calls), plain(g.reason)]),
+    [[2, 'bundler3.multicall', '呼叫跟模板不同，模板是 approve → multicall']],
+  );
+  assert.equal(plain(eoa?.lead), '354 筆用了這個操作的呼叫（150 個地址），25 筆跟模板一樣。');
+  assert.deepEqual(
+    eoa?.groups.map((g) => [g.count, g.senders, plain(g.calls), plain(g.reason)]),
+    [
+      [321, 126, 'usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit', 'bundle 有 3 項，模板是 2 項'],
+      [7, 7, 'usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer', 'bundle 有 5 項，模板是 2 項'],
+      [1, 1, 'general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer', 'bundle 有 4 項，模板是 2 項'],
+    ],
+  );
+  assert.deepEqual(eoa?.groups[0]?.examples[0], { href: 'https://etherscan.io/tx/0x94ba5b792613b7a04c2235f47062cf3f991524be9dffadd0fa595a16783a73ea', label: '0x94ba5b79…' });
+  assert.match(plain(early?.others[0]), /^另外 127 筆是別的操作，不列入：deposit 62 筆、/);
+  assert.ok(!JSON.stringify(early).includes('符合'), 'no verdict word');
 });
 
 test('notes.json that leaves out a review the page needs is refused', () => {

@@ -379,12 +379,22 @@ function addressBody(body: Extract<Body, { kind: 'addresses' }>): Html {
 
 function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
   if (body.recordings.length === 0) return h`<p class="lead">沒有 <code>pnpm past-txs --record</code> 的記錄。</p>`;
-  return h`${body.recordings.map(
+  return h`${body.conclusion === undefined ? '' : h`
+  <p class="intro">${ai(body.conclusion)}</p>`}
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>${body.recordings.map(
     (r) => h`
-  <p class="lead">${r.count}，記錄在 <code>${r.file}</code>。符合指的是交易的形狀跟模板一樣。</p>
-  <dl class="props">${r.rows.map((row) => h`
-    <div><dt>${row.label}</dt><dd>${text(row.value)}</dd><dd class="src">${text(row.note)}</dd></div>`)}
-  </dl>`,
+  <h3>${r.count}</h3>
+  <p class="lead">記錄在 <code>${r.file}</code>。${text(r.search)}</p>${r.blocks.map(
+    (block) => h`
+  <div class="pblock">
+    <div class="ph"><span class="pt">${block.title}</span><span>${text(block.lead)}</span></div>${block.groups.map(
+      (g) => h`
+    <div class="pg"><span class="pc num">${g.count} 筆</span><div>${g.calls === undefined ? '' : h`<div class="pcalls">${text(g.calls)}</div>`}<div>${text(g.reason)}<span class="f3">，來自 ${g.senders} 個地址</span></div>
+      <div class="pex">例：${g.examples.map((e, i) => h`${i === 0 ? '' : '、'}${text([e])}`)}</div></div></div>`,
+    )}
+  </div>`,
+  )}${r.others.map((line) => h`
+  <div class="warnline">${decor('info')}<span>${text(line)}</span></div>`)}`,
   )}`;
 }
 
@@ -728,6 +738,15 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
 ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}

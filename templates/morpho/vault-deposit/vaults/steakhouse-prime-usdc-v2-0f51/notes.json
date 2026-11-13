@@ -3,6 +3,7 @@
     "status": "safe",
     "text": "可以用。Steakhouse 文件頁和 CoinGecko 都列出這個地址，第一次先送小額。"
   },
+  "pastTxsConclusion": "Safe 這樣存是常見做法：同 1 個 Safe 的 3 筆存款有 2 筆跟模板一樣，另 1 筆走舊的 vault-bundles-v1。EOA 多半改用 permit 簽名存，Safe 不能用 permit。",
   "judgments": [
     {
       "text": "這個 vault 一年內從幾乎是零升到約 1.32 億 USDC，2026-04 到 2026-05 一個月內從約 830 萬升到約 6,320 萬；前 10 名持有人占 54.06%。",

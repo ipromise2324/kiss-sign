@@ -516,10 +516,18 @@ misfits, by reason:
 by EOAs, call 2 of 2 (multicall) as its own transaction:
 fit the call's shape: 0 transactions from 0 EOAs; misfits: 32 from 31 EOAs
 misfits, by reason:
-  30 from 29 EOAs: call.multicall.bundle: expected 1 items, got 4 items
-    e.g. 0xe8b89b5144f448db94bd59bd0bd106483754cac8719e7eb3c1a82062920b8551, 0x492ce8348731641c541718b618c159a2cb70db77c474ba9bd9b411185c2ca00d, 0xef21cc152c72344d585b88f2abdbdc23d62c9adbf1413896f74ca178bd556699
-  2 from 2 EOAs: call.multicall.bundle: expected 1 items, got 3 items
+  15 from 15 EOAs: call.multicall.bundle: expected 1 items, got 4 items, calling smokehouse-usdc-v1-f5bc.0xd505accf, general-adapter-1.erc4626Redeem, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
+    e.g. 0xef21cc152c72344d585b88f2abdbdc23d62c9adbf1413896f74ca178bd556699, 0xcda7b3fd2246dca764a1c8689bbd48c6edad6256ff75e694e427a0722bdee710, 0x29d1c68f5095dcffd44f156eb6218ba8f376512589b1e7cce55dcd094ecaf4f8
+  11 from 11 EOAs: call.multicall.bundle: expected 1 items, got 4 items, calling smokehouse-usdc-v1-f5bc.0xd505accf, general-adapter-1.0xc9565706, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
+    e.g. 0xe8b89b5144f448db94bd59bd0bd106483754cac8719e7eb3c1a82062920b8551, 0x492ce8348731641c541718b618c159a2cb70db77c474ba9bd9b411185c2ca00d, 0x7edefb60ac0a90a8a4a6e117c8f6b09beab901daba0fcccd664af738a83f8e61
+  2 from 2 EOAs: call.multicall.bundle: expected 1 items, got 3 items, calling general-adapter-1.erc4626Redeem, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
     e.g. 0x190a1608b802ecb6082749d75477c1f480fdbb980071702440cb30b6a7cf7bef, 0x1e41c2acb4bdcc13c32280a5c9b9591f619073858794e4dab613c638245fb7be
+  2 from 2 EOAs: call.multicall.bundle: expected 1 items, got 4 items, calling smokehouse-usdc-v1-f5bc.0xd505accf, general-adapter-1.0xd96ca0b9, general-adapter-1.erc4626Redeem, general-adapter-1.0x6ef5eeae
+    e.g. 0xcf6b9eec3b56b5b87bdcb86b23bf05367783ac43c48cc99a3ec213e7dafbb4a4, 0x078869f083257a9e6ffd11bdcc8f6d5acaa0ab763298265fd5e79844d844fc99
+  1 from 1 EOA: call.multicall.bundle: expected 1 items, got 4 items, calling general-adapter-1.0xc9565706, general-adapter-1.0xf2522bcd, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
+    e.g. 0x2772c5f04ac180d0166d7c91eb87c2e8b64dfe142a354d83917f00790546f095
+  1 from 1 EOA: call.multicall.bundle: expected 1 items, got 4 items, calling general-adapter-1.erc4626Redeem, general-adapter-1.0xf2522bcd, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
+    e.g. 0x787a5309184e8903cac956dd7a6ed92b55b2a1630eed8afcb50d04c5ab0683b0
 ```
 
 ## ERC-7730

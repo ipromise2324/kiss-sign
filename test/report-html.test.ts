@@ -112,7 +112,7 @@ test('the HTML report holds no script and loads nothing', () => {
   }
 });
 
-test('every link is a URL the registry, docs.json or notes.json holds, one of the three the program builds, or an id on the page', () => {
+test('every link is a URL the registry, docs.json or notes.json holds, one of the four the program builds, or an id on the page', () => {
   for (const [id, { html }] of replayed) {
     const notes = notesOf(id);
     const docs = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, withNotes.get(id)?.template ?? '', DOCS_FILE), 'utf8')) as Record<string, { url: string }>;
@@ -131,7 +131,7 @@ test('every link is a URL the registry, docs.json or notes.json holds, one of th
     for (const [, raw] of html.matchAll(/\shref="([^"]*)"/g)) {
       const href = unescape(raw as string);
       if (href.startsWith('#')) assert.ok(ids.has(href.slice(1)), `${id}: ${href} names no id on the page`);
-      else assert.ok(allowed.has(href), `${id}: ${href} is not a URL the report may link`);
+      else assert.ok(allowed.has(href) || /^https:\/\/etherscan\.io\/tx\/0x[0-9a-f]{64}$/.test(href), `${id}: ${href} is not a URL the report may link`);
     }
   }
 });

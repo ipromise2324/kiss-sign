@@ -27,7 +27,7 @@ export const notesChanges = (changed: readonly string[]): string[] => changed.fi
 const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
 
 /** What a vault's notes may hold: the text about that vault alone. Everything else every vault's report shares. */
-const VAULT_KEYS: readonly string[] = ['verdict', 'judgments', 'reviews', 'entries'];
+const VAULT_KEYS: readonly string[] = ['verdict', 'judgments', 'reviews', 'entries', 'pastTxsConclusion'];
 const KEYED = ['reviews', 'entries'];
 
 /**
@@ -269,6 +269,7 @@ const NOTES_SCHEMA = obj({
     ),
   ),
   fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => str(2000)),
+  pastTxsConclusion: opt(str(200)),
 });
 
 export type Notes = ReturnType<typeof NOTES_SCHEMA>;

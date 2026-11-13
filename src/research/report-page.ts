@@ -4,7 +4,7 @@ import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { castValue } from '../decode/cast.ts';
 import type { AbiParam } from '../decode/abi.ts';
-import { paramName } from '../decode/abi.ts';
+import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import { MARKET_PARAMS, parseHttpsUrl } from '../registry.ts';
@@ -21,6 +21,8 @@ import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, 
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { factsScope } from './protocol-facts.ts';
+import { functionNames, misfitText } from './study.ts';
+import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
 import { readStoredEvidence } from './vault-evidence.ts';
 import type { StoredPoint } from './vault-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
@@ -65,7 +67,7 @@ export type Body =
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
   | { readonly kind: 'wallet'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
-  | { readonly kind: 'past'; readonly recordings: readonly PastRecording[] }
+  | { readonly kind: 'past'; readonly conclusion: AiText | undefined; readonly recordings: readonly PastRecording[] }
   | { readonly kind: 'signing'; readonly steps: readonly Inline[]; readonly automatic: readonly Inline[] };
 
 export type Header = {
@@ -155,7 +157,11 @@ export type AddressRow = {
   readonly confirmed: string;
 };
 
-export type PastRecording = { readonly file: string; readonly count: string; readonly rows: readonly { readonly label: string; readonly value: Inline; readonly note: Inline }[] };
+/** Transactions that did not have the template's shape for one reason; `calls` names their calls when the reason is about calls. */
+export type PastGroup = { readonly count: number; readonly senders: number; readonly calls: Inline | undefined; readonly reason: Inline; readonly examples: readonly Span[] };
+/** The transactions of one kind of sender that used the operation's calls: how many, how many had the template's shape, and why the rest did not. */
+export type PastBlock = { readonly title: string; readonly lead: Inline; readonly groups: readonly PastGroup[] };
+export type PastRecording = { readonly file: string; readonly count: string; readonly search: Inline; readonly blocks: readonly PastBlock[]; readonly others: readonly Inline[] };
 
 /** Everything the HTML report reads beyond the Markdown report's inputs. */
 export type HtmlInputs = ReportInputs & {
@@ -1014,34 +1020,135 @@ function addressSection(context: Context): Section {
 
 const ANCHOR_WORDS: Readonly<Record<string, string>> = { mint: '鑄造（存款）', burn: '銷毀（提款）', any: '轉帳' };
 
+type Misfit = Extract<TxStudy, { kind: 'misfit' }>;
+type Studied = Extract<TxStudy, { kind: 'fit' | 'misfit' }>;
+
+/** Each function name the report's ABI proofs and the template know, by selector. */
+function knownFunctions(context: Context): Map<string, string> {
+  const names = new Map<string, string>();
+  for (const proof of context.inputs.abi.values()) {
+    if (proof.kind !== 'proven') continue;
+    for (const entry of proof.abi) {
+      if (entry.type !== 'function') continue;
+      const fn = parseFunctionSignature(namedSignatureOfAbiEntry(entry));
+      names.set(fn.selector, fn.name);
+    }
+  }
+  for (const [selector, name] of functionNames(context.template)) names.set(selector, name);
+  return names;
+}
+
+const shortHash = (hash: Hex): string => `${hash.slice(0, 10)}…`;
+
+/** Why a group did not have the template's shape, in the signer's words; `template` names the template's calls in order. */
+function misfitWords(reason: MisfitReason, template: string): Inline {
+  const last = (at: string): string => at.split('.').at(-1) ?? at;
+  switch (reason.kind) {
+    case 'calls':
+      return ['呼叫跟模板不同，模板是 ', { code: template }];
+    case 'items':
+      return [{ code: last(reason.at) }, ` 有 ${reason.got} 項，模板是 ${reason.expected} 項`];
+    case 'field':
+      return [{ code: reason.at }, ' 的值跟模板不同：模板要 ', { mono: reason.expected }, '，交易是 ', { mono: reason.actual }];
+    case 'trailer':
+      return ['參數後面多了模板不允許的位元組，在 ', { code: reason.at }];
+    case 'foreign-delegatecall':
+      return ['delegatecall 到不是官方 MultiSend 的合約'];
+    case 'multisend-noncanonical':
+      return ['MultiSend 的編碼不標準'];
+    case 'other':
+      return ['形狀跟模板不同'];
+  }
+}
+
 function pastSection(context: Context): Section {
-  const nameOf = (address: string): string =>
-    [...context.registry.entries.values()].find((e) => e.address.toLowerCase() === address.toLowerCase())?.name ?? address;
+  const { registry, template } = context;
+  const nameOf = (address: string): string => registry.byAddress.get(address.toLowerCase() as Address)?.name ?? address;
+  const known = knownFunctions(context);
+  const fnOf = (selector: string): string => known.get(selector) ?? selector;
+  const callWords = ({ to, selector }: CallName): string =>
+    `${(to === undefined ? undefined : registry.byAddress.get(to)?.name) ?? '別的合約'}${selector === undefined ? '（沒有資料）' : `.${fnOf(selector)}`}`;
+  const sequence = (calls: readonly CallName[]): Inline => [{ code: calls.map(callWords).join(' → ') }];
+  const templateCalls = template.calls.map((call) => (call.data === 'empty' ? '（沒有資料）' : call.data.fn.name)).join(' → ');
+  const ownSelectors = new Set(template.calls.flatMap((call) => (call.data === 'empty' ? [] : [call.data.fn.selector as string])));
+  /** A Safe misfit that makes none of the template's top-level calls is another operation. */
+  const otherOperation = (s: Studied): boolean => s.kind === 'misfit' && s.sender.kind === 'safe' && s.reason.kind === 'calls' && !s.reason.calls.some((c) => c.selector !== undefined && ownSelectors.has(c.selector));
+  const groupsOf = (misfits: readonly Misfit[]): PastGroup[] => {
+    const names = functionNames(template);
+    const groups = new Map<string, Misfit[]>();
+    for (const m of misfits) {
+      const key = misfitText(m.reason, registry, names);
+      groups.set(key, [...(groups.get(key) ?? []), m]);
+    }
+    return [...groups.values()]
+      .sort((a, b) => b.length - a.length)
+      .map((members): PastGroup => {
+        const { reason } = members[0] as Misfit;
+        const calls = reason.kind === 'calls' ? reason.calls : reason.kind === 'items' ? reason.calls : undefined;
+        return {
+          count: members.length,
+          senders: new Set(members.map((m) => m.sender.address)).size,
+          calls: calls === undefined ? undefined : sequence(calls),
+          reason: misfitWords(reason, templateCalls),
+          examples: members.slice(0, 3).map((m): Span => ({ href: parseHttpsUrl(`https://etherscan.io/tx/${m.hash}`) as HttpsUrl, label: shortHash(m.hash) })),
+        };
+      });
+  };
   const recordings = context.inputs.pastTxs.map(({ file, query, run }): PastRecording => {
-    const studied = run.studies.filter((s) => s.kind === 'fit' || s.kind === 'misfit');
-    const of = (kind: 'safe' | 'eoa') => {
-      const group = studied.filter((s) => s.sender.kind === kind);
-      return { fit: group.filter((s) => s.kind === 'fit').length, all: group.length, senders: new Set(group.map((s) => s.sender.address)).size };
+    const studied = run.studies.filter((s): s is Studied => s.kind === 'fit' || s.kind === 'misfit');
+    const counted = studied.filter((s) => !otherOperation(s));
+    const block = (title: string, of: readonly Studied[], who: string): PastBlock => {
+      const fits = of.filter((s) => s.kind === 'fit').length;
+      const senders = new Set(of.map((s) => s.sender.address)).size;
+      return {
+        title,
+        lead: [{ num: `${of.length}` }, ` 筆用了這個操作的呼叫（${senders} 個${who}），`, { num: `${fits}` }, ' 筆跟模板一樣。'],
+        groups: groupsOf(of.filter((s): s is Misfit => s.kind === 'misfit')),
+      };
     };
-    const [eoa, safe] = [of('eoa'), of('safe')];
+    const bySender = (match: (sender: Sender) => boolean) => counted.filter((s) => match(s.sender));
+    const blocks = [
+      block('Safe', bySender((sender) => sender.kind === 'safe'), ' Safe'),
+      ...run.shapes.calls.flatMap((shape, call) => {
+        const of = bySender((sender) => sender.kind === 'eoa' && sender.call === call);
+        const data = shape.template.calls[0]?.data;
+        return of.length === 0 ? [] : [block(`EOA 直接呼叫 ${data === undefined || data === 'empty' ? '（沒有資料）' : data.fn.name}`, of, '地址')];
+      }),
+    ];
+    const elsewhere = [
+      ...run.studies.flatMap((s) => (s.kind === 'not-studied' && s.why === 'calls no function the template calls' ? [s.selector] : [])),
+      ...studied.filter(otherOperation).flatMap((s) => (s.kind === 'misfit' && s.reason.kind === 'calls' ? [s.reason.calls[0]?.selector ?? 'no data'] : [])),
+    ];
+    const tally = new Map<string, number>();
+    for (const selector of elsewhere) tally.set(selector, (tally.get(selector) ?? 0) + 1);
+    const top = [...tally].sort((a, b) => b[1] - a[1]).slice(0, 4);
+    const skipped = run.studies.length - studied.length - run.studies.filter((s) => s.kind === 'not-studied' && s.why === 'calls no function the template calls').length;
+    const others: Inline[] = [
+      ...(elsewhere.length === 0
+        ? []
+        : [
+            [
+              `另外 ${elsewhere.length} 筆是別的操作，不列入：`,
+              ...top.flatMap(([selector, n], i): Span[] => [...(i === 0 ? [] : ['、']), { code: /^0x[0-9a-f]{8}$/.test(selector) ? fnOf(selector) : selector }, ` ${n} 筆`]),
+              ...(tally.size > top.length ? ['，還有別的'] : []),
+              '。',
+            ] as Inline,
+          ]),
+      ...(skipped === 0 ? [] : [[`另外 ${skipped} 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。`] as Inline]),
+    ];
     const bySource = (source: string) => [...run.found.values()].filter((s) => s.includes(source as never)).length;
     const [alchemy, etherscan] = [bySource('alchemy'), bySource('etherscan')];
     const same = [...run.found.values()].every((s) => s.length === 2);
     return {
       file,
       count: `搜尋 ${nameOf(query.token)} 的 ${ANCHOR_WORDS[query.anchor]}，找到 ${run.found.size} 筆，研究 ${run.studies.length} 筆`,
-      rows: [
-        { label: 'EOA 直接呼叫', value: [{ num: `${eoa.fit} / ${eoa.all}` }, ' 符合'], note: [`${eoa.senders} 個地址`] },
-        { label: 'Safe', value: [{ num: `${safe.fit} / ${safe.all}` }, ' 符合'], note: [`${safe.senders} 個 Safe`] },
-        {
-          label: '搜尋來源',
-          value: [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣'],
-          note: [{ num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }],
-        },
-      ],
+      search: [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }, '）。'],
+      blocks,
+      others,
     };
   });
-  return { anchor: anchor('past'), label: '過去交易', count: undefined, body: { kind: 'past', recordings } };
+  const conclusion = context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion);
+  return { anchor: anchor('past'), label: '過去交易', count: undefined, body: { kind: 'past', conclusion, recordings } };
 }
 
 function signingSection(context: Context): Section {

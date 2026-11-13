@@ -73,7 +73,7 @@ test('an EOA making one of the template\'s calls directly is counted as an EOA a
   assert.match(text, /^ {2}EOA calling a function of the template directly: 25, from 24 EOAs$/m);
   assert.match(text, /^by EOAs, call 2 of 2 \(multicall\) as its own transaction:\nfit the call's shape: 2 transactions from 2 EOAs; misfits: 23 from 22 EOAs$/m);
   assert.match(text, /^ {2}call\.multicall\.bundle\[1\]\.data\.erc4626Deposit\.receiver {2}\[the sender\]\n {4}equalled the sender in 2 of 2 \(2 EOAs\); /m);
-  assert.match(text, /^ {2}13 from 12 EOAs: call\.multicall\.bundle: expected 2 items, got 3 items$/m);
+  assert.match(text, /^ {2}13 from 12 EOAs: call\.multicall\.bundle: expected 2 items, got 3 items, calling usdc\.0xd505accf, general-adapter-1\.erc20TransferFrom, general-adapter-1\.erc4626Deposit$/m);
   assert.doesNotMatch(text, /^by EOAs, call 1 of 2/m);
 });
 

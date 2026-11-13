@@ -212,6 +212,15 @@ details.fold[open]>summary .chev{transform:rotate(90deg)}
 details.fold .ad:last-child{border-bottom:0}
 
 .warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
 .warnline .i{margin-top:4px;color:var(--fg3)}
 
 ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
@@ -242,7 +251,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
 </nav>
 
 <div class="main">
@@ -265,7 +274,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>5</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
   </details>
 </header>
 
@@ -455,7 +464,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c">4 項</span></h2>
+  <h2>待確認 <span class="c">5 項</span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row" data-state="warn" data-result="hyperithm-usdc-apex-v2-9e2f/address">
@@ -469,6 +478,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>Morpho app 有時在 bundle 最後多加兩步，把 adapter 剩下的代幣和股份轉回給你。這個模板只接受兩步的版本，多兩步時 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>遇到 MISMATCH 不要簽；回報後再決定是否新增模板。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Morpho 的 SDK 在 2026-09-25 拿掉 Bundler3 的地址，docs.morpho.org 還列著。記錄裡 Safe 經 Bundler3 存款的最後一筆在 2026-09-24，之後抽樣的區段沒有看到。 <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">來源</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽之前在 Morpho app 確認交易還經過 Bundler3；app 改走別的合約時 verify 會判 MISMATCH，不要簽。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
@@ -544,18 +558,40 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">搜尋 hyperithm-usdc-apex-v2-9e2f 的 鑄造（存款），找到 489 筆，研究 489 筆，記錄在 <code>testdata/research/morpho-vault-deposit-v2-early.json</code>。符合指的是交易的形狀跟模板一樣。</p>
-  <dl class="props">
-    <div><dt>EOA 直接呼叫</dt><dd><span class="num">25 / 354</span> 符合</dd><dd class="src">150 個地址</dd></div>
-    <div><dt>Safe</dt><dd><span class="num">6 / 9</span> 符合</dd><dd class="src">5 個 Safe</dd></div>
-    <div><dt>搜尋來源</dt><dd>Alchemy 和 Etherscan 找到的完全一樣</dd><dd class="src"><span class="num">489 = 489</span></dd></div>
-  </dl>
-  <p class="lead">搜尋 hyperithm-usdc-apex-v2-9e2f 的 鑄造（存款），找到 170 筆，研究 98 筆，記錄在 <code>testdata/research/morpho-vault-deposit-v2.json</code>。符合指的是交易的形狀跟模板一樣。</p>
-  <dl class="props">
-    <div><dt>EOA 直接呼叫</dt><dd><span class="num">2 / 11</span> 符合</dd><dd class="src">8 個地址</dd></div>
-    <div><dt>Safe</dt><dd><span class="num">0 / 1</span> 符合</dd><dd class="src">1 個 Safe</dd></div>
-    <div><dt>搜尋來源</dt><dd>Alchemy 和 Etherscan 找到的完全一樣</dd><dd class="src"><span class="num">170 = 170</span></dd></div>
-  </dl>
+  <p class="intro"><span class="aiw" data-ai><span>Safe 這樣存是常見做法：8 筆 Safe 存款有 6 筆跟模板一樣。EOA 多半改用 permit 簽名存，Safe 不能用 permit。</span><span class="byai">AI 研究</span></span></p>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 hyperithm-usdc-apex-v2-9e2f 的 鑄造（存款），找到 489 筆，研究 489 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-vault-deposit-v2-early.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">489 = 489</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">8</span> 筆用了這個操作的呼叫（4 個 Safe），<span class="num">6</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div class="pcalls"><code>bundler3.multicall</code></div><div>呼叫跟模板不同，模板是 <code>approve → multicall</code><span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x54579efd411964b4bab3c16a18d15928e688e18647f0167e1fde4b8fc0956541">0x54579efd…</a>、<a href="https://etherscan.io/tx/0x18fb9bc20f2db2c0310a029301e01ad3e1564e4ec88c5b2469bf7e70c8388b5b">0x18fb9bc2…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 multicall</span><span><span class="num">354</span> 筆用了這個操作的呼叫（150 個地址），<span class="num">25</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">321 筆</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> 有 3 項，模板是 2 項<span class="f3">，來自 126 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x94ba5b792613b7a04c2235f47062cf3f991524be9dffadd0fa595a16783a73ea">0x94ba5b79…</a>、<a href="https://etherscan.io/tx/0xb4942851aed13577635997ebfc8e9bf920f1c9e7b65f9097294f5711581a17b6">0xb4942851…</a>、<a href="https://etherscan.io/tx/0xfce513b160e6c89578c51d49f8e7773333ce91dd79be480133cce45b77bc7ef0">0xfce513b1…</a></div></div></div>
+    <div class="pg"><span class="pc num">7 筆</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> 有 5 項，模板是 2 項<span class="f3">，來自 7 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xa3f3c87ad9e194f0ddb4568ab62eb3820287f00c42f8efc3391167920c94d881">0xa3f3c87a…</a>、<a href="https://etherscan.io/tx/0xaccf41c632d29bfa0950e7d2b551195a2bab5b87554a149ec35f3802ff95c938">0xaccf41c6…</a>、<a href="https://etherscan.io/tx/0xe8256e38c735e24627ebab929771ac5ad1a8938facf6bd4fda9c5b32a92385d7">0xe8256e38…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> 有 4 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x0a20e92838cf8e0bab4cc2d6060d14c0434d4ae5828666b3aba2eb3a7b0eb318">0x0a20e928…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 127 筆是別的操作，不列入：<code>deposit</code> 62 筆、<code>0xbaae8abf</code> 33 筆、<code>0x0af210a1</code> 26 筆、<code>0xfcf2849f</code> 3 筆，還有別的。</span></div>
+  <h3>搜尋 hyperithm-usdc-apex-v2-9e2f 的 鑄造（存款），找到 170 筆，研究 98 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-vault-deposit-v2.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">170 = 170</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">1</span> 筆用了這個操作的呼叫（1 個 Safe），<span class="num">0</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>bundler3.multicall</code></div><div>呼叫跟模板不同，模板是 <code>approve → multicall</code><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xac9058632b750b6804d85b5c8c0a7e14d15e0b25df30c2572808e09383d0dbf2">0xac905863…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 multicall</span><span><span class="num">11</span> 筆用了這個操作的呼叫（8 個地址），<span class="num">2</span> 筆跟模板一樣。</span></div>
+    <div class="pg"><span class="pc num">8 筆</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> 有 3 項，模板是 2 項<span class="f3">，來自 5 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x270081b58860e246da307b0e360b0c2cf0a76ec7a136dc94c8e14433649c6414">0x270081b5…</a>、<a href="https://etherscan.io/tx/0x7a32d82d81722262b7fba5a060f16a878a8a9657061bd3e6b38d69e884fe034b">0x7a32d82d…</a>、<a href="https://etherscan.io/tx/0x7f308e0ed05c57cb848146699b9fd28410372d9bc0643b86799eb72e5a6b1cf9">0x7f308e0e…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pcalls"><code>general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Redeem → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> 有 3 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xba939d349655bc3ca4038a711d909406e2f678a12837e3c1e7f8faf80fefc660">0xba939d34…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 86 筆是別的操作，不列入：<code>multicall</code> 73 筆、<code>0xbaae8abf</code> 3 筆、<code>deposit</code> 2 筆、<code>withdraw</code> 2 筆，還有別的。</span></div>
 </section>
 
 <section id="sign">

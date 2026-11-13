@@ -3,6 +3,7 @@
     "status": "caution",
     "text": "可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。"
   },
+  "pastTxsConclusion": "Safe 這樣存是常見做法：8 筆 Safe 存款有 6 筆跟模板一樣。EOA 多半改用 permit 簽名存，Safe 不能用 permit。",
   "judgments": [
     {
       "text": "同名的 vault 有兩個：Hyperithm USDC Apex 的 V1（0x777791C4d6DC2CE140D00D2828a7C93503c67777）和 V2（0x093272C07700d3cA5301C3Bf9B3A392624179E2F），代號都是 hyperUSDCa。",

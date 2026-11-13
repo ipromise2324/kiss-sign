@@ -6,7 +6,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { LeafRule, Quantity, Template } from '../template/template.ts';
 import { ResearchError, SOURCES, TooManyTransfers, searchBoth } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
-import { constText, shapesOf, studyTx } from './study.ts';
+import { constText, functionNames, misfitText, shapesOf, studyTx } from './study.ts';
 import type { Sender, TxStudy } from './study.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
@@ -248,8 +248,12 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
   }
   if (misfits.length > 0) {
     lines.push('misfits, by reason:');
+    const names = functionNames(run.query.template);
     const groups = new Map<string, Misfit[]>();
-    for (const m of misfits) groups.set(m.reason, [...(groups.get(m.reason) ?? []), m]);
+    for (const m of misfits) {
+      const reason = misfitText(m.reason, registry, names);
+      groups.set(reason, [...(groups.get(reason) ?? []), m]);
+    }
     for (const [reason, members] of [...groups].sort((a, b) => b[1].length - a[1].length)) {
       lines.push(`  ${members.length} from ${plural(sendersOf(members), who, many)}: ${reason}`);
       lines.push(`    e.g. ${members.slice(0, 3).map((m) => mark(m.hash)).join(', ')}`);

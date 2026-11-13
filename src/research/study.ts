@@ -5,12 +5,14 @@ import { safeProxyFactory } from '../contracts/proxy.ts';
 import { parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiType } from '../decode/abi.ts';
 import { decodeCall, wholeRegion } from '../decode/codec.ts';
+import type { AbiValue, Region, Span } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
+import type { InnerCall } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
 import { OFFICIAL_SAFE_SINGLETONS } from '../safe/deployments.ts';
 import { EXECUTION_SUCCESS } from '../simulate/events.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import { inspectTemplateFields } from '../template/check.ts';
+import { decodeTemplateCall, inspectTemplateFields } from '../template/check.ts';
 import type { Leaf } from '../template/check.ts';
 import type { CallNode, ConstValue, LeafRule, Rule, Template, TemplateCall } from '../template/template.ts';
 
@@ -59,6 +61,21 @@ export type NotStudiedReason = 'execTransaction calldata does not decode' | 'no 
 
 export type UnprovenReason = 'its code is not a known Safe proxy' | 'its singleton is not an official Safe singleton';
 
+/** A call as a misfit names it: the contract it goes to, when known, and its selector, undefined for a call with no data. */
+export type CallName = { readonly to: Address | undefined; readonly selector: Hex | undefined };
+
+/** Why a transaction does not fit the template's shape. */
+export type MisfitReason =
+  | { readonly kind: 'foreign-delegatecall' }
+  | { readonly kind: 'multisend-noncanonical' }
+  /** The Safe made other calls than the template's. */
+  | { readonly kind: 'calls'; readonly calls: readonly CallName[] }
+  | { readonly kind: 'trailer'; readonly at: string }
+  /** An array with another number of items; `calls` names each item when the template decodes the items as calls. */
+  | { readonly kind: 'items'; readonly at: string; readonly expected: number; readonly got: number; readonly calls: readonly CallName[] | undefined }
+  | { readonly kind: 'field'; readonly at: string; readonly expected: string; readonly actual: string }
+  | { readonly kind: 'other' };
+
 /**
  * Who made the template's calls: a proven Safe making all of them in one transaction, or an EOA making the template's
  * call number `call` as its own transaction.
@@ -70,7 +87,7 @@ export type TxStudy =
   | { readonly kind: 'unreadable'; readonly hash: Hex; readonly reason: string }
   | { readonly kind: 'not-studied'; readonly hash: Hex; readonly why: NotStudiedReason; readonly selector: string }
   | { readonly kind: 'unproven'; readonly hash: Hex; readonly contract: Address; readonly why: UnprovenReason }
-  | { readonly kind: 'misfit'; readonly hash: Hex; readonly sender: Sender; readonly reason: string }
+  | { readonly kind: 'misfit'; readonly hash: Hex; readonly sender: Sender; readonly reason: MisfitReason }
   /** `values` pairs with the rules of the sender's `Shape`; `paths` names each leaf. */
   | { readonly kind: 'fit'; readonly hash: Hex; readonly sender: Sender; readonly paths: readonly string[]; readonly types: readonly AbiType[]; readonly values: readonly string[] };
 
@@ -141,7 +158,8 @@ export function constText(value: ConstValue): string {
   return typeof value.value === 'bigint' || typeof value.value === 'boolean' ? String(value.value) : value.value;
 }
 
-function functionNames(template: Template): Map<string, string> {
+/** The name of each function the template calls, by selector. */
+export function functionNames(template: Template): Map<string, string> {
   const names = new Map<string, string>();
   const visitRule = (rule: Rule): void => {
     if (rule.kind === 'call') visitCall(rule.call);
@@ -156,19 +174,50 @@ function functionNames(template: Template): Map<string, string> {
   return names;
 }
 
-/** Why a transaction does not fit the template's shape, in words that group alike transactions. */
-function misfitReason(tx: SafeTx, loosened: Loosened, template: Template, registry: Registry, check: (t: Template) => ReturnType<typeof inspectTemplateFields>): string {
+const selectorOf = (bytes: Uint8Array): Hex | undefined => (bytes.length === 0 ? undefined : (`0x${bytesToHex(bytes.subarray(0, 4))}` as Hex));
+const firstOf = <T>(items: readonly (T | undefined)[]): T | undefined => items.find((item) => item !== undefined);
+
+/** The only address a tuple holds, such as the target beside a bundled call's data. */
+function onlyAddress(value: Extract<AbiValue, { kind: 'tuple' }>): Address | undefined {
+  const addresses = value.fields.filter((field) => field.kind === 'address');
+  return addresses.length === 1 && addresses[0]?.kind === 'address' ? addresses[0].value : undefined;
+}
+
+/**
+ * The items of the array at `span`, found by walking the template's rules over the calls it decodes, each named as a
+ * call when the template decodes the items as calls: an item that is a call goes to the contract the array's call goes
+ * to, and an item that is a tuple to the one address beside its call. Undefined when the items are no calls.
+ */
+function itemCalls(calls: readonly InnerCall[], template: Template, span: Span): CallName[] | undefined {
+  const name = (rule: Rule | undefined, item: AbiValue, target: Address | undefined): CallName | undefined => {
+    if (rule?.kind === 'call') return item.kind === 'bytes' ? { to: target, selector: selectorOf(item.value) } : undefined;
+    if (rule?.kind !== 'fields' || item.kind !== 'tuple') return undefined;
+    const data = item.fields[rule.fields.findIndex((field) => field.kind === 'call')];
+    return data?.kind === 'bytes' ? { to: onlyAddress(item), selector: selectorOf(data.value) } : undefined;
+  };
+  const visit = (rule: Rule, value: AbiValue | undefined, root: Uint8Array, target: Address | undefined): CallName[] | undefined => {
+    if (value === undefined) return undefined;
+    if (rule.kind === 'call') return value.kind === 'bytes' ? visitCall(rule.call, { root, start: value.span[0], end: value.span[1] }, target) : undefined;
+    if (rule.kind === 'fields') return value.kind === 'tuple' ? firstOf(rule.fields.map((field, i) => visit(field, value.fields[i], root, onlyAddress(value) ?? target))) : undefined;
+    if (rule.kind !== 'items' || value.kind !== 'array') return undefined;
+    if (value.span[0] !== span[0] || value.span[1] !== span[1]) return firstOf(rule.items.map((item, i) => visit(item, value.items[i], root, target)));
+    const named = value.items.map((item) => name(rule.items[0], item, target));
+    return named.every((call) => call !== undefined) ? (named as CallName[]) : undefined;
+  };
+  const visitCall = (node: CallNode, region: Region, target: Address | undefined): CallName[] | undefined => {
+    const decoded = decodeTemplateCall(node, region);
+    return decoded.kind === 'decoded' ? firstOf(node.args.map((arg, i) => visit(arg, decoded.args[i], region.root, target))) : undefined;
+  };
+  return firstOf(template.calls.map((call, i) => (call.data === 'empty' || calls[i] === undefined ? undefined : visitCall(call.data, calls[i].data, calls[i].to))));
+}
+
+const ITEMS = /^(\d+) items$/;
+
+/** Why a transaction does not fit the template's shape. */
+function misfitReason(tx: SafeTx, loosened: Loosened, template: Template, check: (t: Template) => ReturnType<typeof inspectTemplateFields>): MisfitReason {
   const unwrapped = unwrapSafeTx(tx);
-  if (unwrapped.kind === 'foreign-delegatecall') return 'a delegatecall to a contract that is not an official MultiSend';
-  if (unwrapped.kind !== 'direct' && unwrapped.kind !== 'multisend') return 'a MultiSend batch that does not decode canonically';
-  const names = functionNames(template);
-  const shapeOf = unwrapped.calls.map((call) => {
-    const target = registry.byAddress.get(call.to)?.name ?? 'another contract';
-    const data = call.data.root.subarray(call.data.start, call.data.end);
-    if (data.length === 0) return `${target} (no data)`;
-    const selector = `0x${bytesToHex(data.subarray(0, 4))}`;
-    return `${target}.${names.get(selector) ?? selector}`;
-  });
+  if (unwrapped.kind === 'foreign-delegatecall') return { kind: 'foreign-delegatecall' };
+  if (unwrapped.kind !== 'direct' && unwrapped.kind !== 'multisend') return { kind: 'multisend-noncanonical' };
   const sameCalls =
     unwrapped.calls.length === template.calls.length &&
     unwrapped.calls.every((call, i) => {
@@ -176,13 +225,40 @@ function misfitReason(tx: SafeTx, loosened: Loosened, template: Template, regist
       if (data === 'empty') return call.data.end === call.data.start;
       return data !== undefined && call.data.end - call.data.start >= 4 && bytesToHex(call.data.root.subarray(call.data.start, call.data.start + 4)) === data.fn.selector.slice(2);
     });
-  if (!sameCalls) return `calls ${shapeOf.join(', ')}`;
+  if (!sameCalls) return { kind: 'calls', calls: unwrapped.calls.map((call) => ({ to: call.to, selector: selectorOf(call.data.root.subarray(call.data.start, call.data.end)) })) };
   const wide = check(loosened.anyTrailer).check;
   const strict = check(loosened.shape).check;
   const first = strict.kind === 'mismatch' ? strict.findings[0] : undefined;
-  if (wide.kind === 'match') return `more bytes after the arguments than the template allows, at ${first?.callPath ?? 'a call'}`;
-  if (first === undefined) return 'does not fit';
-  return `${first.callPath}.${first.arg}: expected ${first.expected}, got ${first.actual}`;
+  if (wide.kind === 'match') return { kind: 'trailer', at: first?.callPath ?? 'a call' };
+  if (first === undefined) return { kind: 'other' };
+  const at = `${first.callPath}.${first.arg}`;
+  const [expected, got] = [ITEMS.exec(first.expected), ITEMS.exec(first.actual)];
+  if (expected === null || got === null || first.bytes === undefined) return { kind: 'field', at, expected: first.expected, actual: first.actual };
+  return { kind: 'items', at, expected: Number(expected[1]), got: Number(got[1]), calls: itemCalls(unwrapped.calls, template, first.bytes) };
+}
+
+/** A misfit in words that group alike transactions, each call named by its registry name and the template's function names. */
+export function misfitText(reason: MisfitReason, registry: Registry, names: ReadonlyMap<string, string>): string {
+  const call = ({ to, selector }: CallName): string => {
+    const target = (to === undefined ? undefined : registry.byAddress.get(to)?.name) ?? 'another contract';
+    return selector === undefined ? `${target} (no data)` : `${target}.${names.get(selector) ?? selector}`;
+  };
+  switch (reason.kind) {
+    case 'foreign-delegatecall':
+      return 'a delegatecall to a contract that is not an official MultiSend';
+    case 'multisend-noncanonical':
+      return 'a MultiSend batch that does not decode canonically';
+    case 'calls':
+      return `calls ${reason.calls.map(call).join(', ')}`;
+    case 'trailer':
+      return `more bytes after the arguments than the template allows, at ${reason.at}`;
+    case 'items':
+      return `${reason.at}: expected ${reason.expected} items, got ${reason.got} items${reason.calls === undefined ? '' : `, calling ${reason.calls.map(call).join(', ')}`}`;
+    case 'field':
+      return `${reason.at}: expected ${reason.expected}, got ${reason.actual}`;
+    case 'other':
+      return 'does not fit';
+  }
 }
 
 export type Shape = { readonly template: Template; readonly loosened: Loosened };
@@ -219,7 +295,7 @@ function judge(hash: Hex, tx: SafeTx, sender: Sender, shape: Shape, registry: Re
     inspectTemplateFields(tx, { safe: sender.address, operations: [{ template: template.id, values: new Map() }] }, new Map([[template.id, t]]), registry);
   const inspection = check(loosened.shape);
   if (inspection.check.kind !== 'match' || inspection.leaves.length !== loosened.rules.length) {
-    return { kind: 'misfit', hash, sender, reason: misfitReason(tx, loosened, template, registry, check) };
+    return { kind: 'misfit', hash, sender, reason: misfitReason(tx, loosened, template, check) };
   }
   return {
     kind: 'fit',
