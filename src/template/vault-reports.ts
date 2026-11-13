@@ -13,7 +13,6 @@ export const NOT_YET_REBUILT: ReadonlySet<string> = new Set([
   'fluid/rewards-claim',
   'fluid/vault-deposit',
   'fluid/vault-redeem',
-  'fluid/vault-withdraw',
   'merkl/claim',
   'morpho/urd-claim',
   'morpho/vault-bundles-deposit',

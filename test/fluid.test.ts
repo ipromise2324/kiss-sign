@@ -127,6 +127,12 @@ test('a withdrawal from shares the Safe does not own is a mismatch at the owner'
   assert.deepEqual(mismatchAt(check(withData(tx, bytes), impliedCard(c, tx))), ['call.withdraw.owner']);
 });
 
+test('a withdrawal card naming a Morpho vault is refused before any check', () => {
+  const tx = safeTx('fluid-withdraw-usdc');
+  const result = resolveCard({ operations: [{ template: 'fluid/vault-withdraw', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '1' } }] }, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  assert.deepEqual(result.kind === 'refused' ? [result.reason, result.detail] : result.kind, ['wrong-protocol', 'steakhouse-prime-usdc-v2-0f51 is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending']);
+});
+
 type SimFixture = { safeTx: string; transactionHash: Hex; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
 
 async function observations(name: string): Promise<{ tx: SafeTx; simulated: Observed; receipt: Observed }> {
