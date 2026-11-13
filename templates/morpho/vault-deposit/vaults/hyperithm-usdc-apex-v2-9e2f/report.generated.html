@@ -226,6 +226,9 @@ details.fold .ad:last-child{border-bottom:0}
 ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
 ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
 ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
 .hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
 .hash span:nth-child(odd){color:var(--fg3)}
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
@@ -251,7 +254,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -274,7 +277,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#sign">簽名</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">5</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -583,11 +586,27 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </details>
 </section>
 
-<section id="sign">
-  <h2>簽名</h2>
+<section id="next">
+  <h2>下一步</h2>
   <ol class="steps">
-    <li><div>用 <code>bin/kiss-sign card new morpho/vault-deposit</code> 做卡片：選 vault、填 amount、填 min-shares。第一次先填小額。</div></li>
-    <li><div>跑 <code>verify</code>，要印出 <code>MATCH</code>。</div></li>
+    <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>bin/kiss-sign template approve morpho/vault-deposit</code></pre>
+      <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
+    <li><div>做卡片<pre class="cmd"><code>bin/kiss-sign card new morpho/vault-deposit</code></pre>
+      <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
+    <li><div><code>vault</code>：它列出可選的合約，每個附完整地址。選 <a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a>，地址是 <span class="addr">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</span>
+      <p class="then">列表的編號可能跟別人的不同，照名字選；也可以直接打名字 <code>hyperithm-usdc-apex-v2-9e2f</code> 。</p></div></li>
+    <li><div><code>amount</code>：打 usdc 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
+      <p class="then">它印出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
+    <li><div><code>min-shares</code>：不用填。協議的 app 自己會填這個值，不會問使用者，所以程式自己算。
+      <p class="then">它在鏈上讀 <code>previewDeposit</code>，兩個節點答案一樣才用，印出預期的 hyperithm-usdc-apex-v2-9e2f 數量，再少 0.10%（協議預設的 0.03%，再加 0.07% 餘裕），無條件捨去。</p>
+      <p class="then">預設值的來源：<a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24">github.com/morpho-org/sdks</a>。核對印出的預期數量跟最後的數字合理。</p></div></li>
+    <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
+      <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
+    <li><div>在 Safe web app 提出交易（第一次用這個模板或這個 vault，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>：它印出 domain hash、message hash 和 safeTxHash，往下走。</p>
+      <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
+    <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">它算出的 hash 跟硬體錢包比對，解出的每個呼叫跟 <code>verify</code> 在 MATCH 後印出的逐項比對。</p></div></li>
     <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 印的逐字比對，一樣才簽。
       <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
   </ol>

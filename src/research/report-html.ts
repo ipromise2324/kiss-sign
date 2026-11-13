@@ -407,14 +407,17 @@ function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
   </details>`;
 }
 
-function signingBody(body: Extract<Body, { kind: 'signing' }>): Html {
-  const rest = body.steps.slice(0, -1);
-  const last = body.steps.at(-1);
+/** A command alone in its block, so a copy takes nothing of the sentence around it. */
+const command = (line: string): Html => h`<pre class="cmd"><code>${line}</code></pre>`;
+
+function nextBody(body: Extract<Body, { kind: 'next' }>): Html {
   return h`
-  <ol class="steps">${rest.map((step) => h`
-    <li><div>${text(step)}</div></li>`)}
-    <li><div>${text(last ?? [])}
-      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
+  <ol class="steps">${body.steps.map(
+    (step) => h`
+    <li><div>${text(step.say)}${step.command === undefined ? '' : command(step.command)}${step.then.map((line) => h`
+      <p class="then">${text(line)}</p>`)}${step.hashes ? h`
+      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div>` : ''}</div></li>`,
+  )}
   </ol>
   <div class="auto"><h3>程式每次簽名自動做的事</h3>
     <ul>${body.automatic.map((line) => h`
@@ -445,8 +448,8 @@ function section(s: Section): Html {
         return addressBody(s.body);
       case 'past':
         return pastBody(s.body);
-      case 'signing':
-        return signingBody(s.body);
+      case 'next':
+        return nextBody(s.body);
     }
   })();
   return h`
@@ -762,6 +765,9 @@ details.fold .ad:last-child{border-bottom:0}
 ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
 ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
 ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
 .hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
 .hash span:nth-child(odd){color:var(--fg3)}
 .auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}

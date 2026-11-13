@@ -112,10 +112,12 @@ test('the HTML report holds no script and loads nothing', () => {
   }
 });
 
-test('every link is a URL the registry, docs.json or notes.json holds, one of the four the program builds, or an id on the page', () => {
+test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, one of the four the program builds, or an id on the page', () => {
   for (const [id, { html }] of replayed) {
     const notes = notesOf(id);
-    const docs = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, withNotes.get(id)?.template ?? '', DOCS_FILE), 'utf8')) as Record<string, { url: string }>;
+    const folder = join(ROOT, TEMPLATES_DIR, withNotes.get(id)?.template ?? '');
+    const docs = JSON.parse(readFileSync(join(folder, DOCS_FILE), 'utf8')) as Record<string, { url: string }>;
+    const card = (JSON.parse(readFileSync(join(folder, 'template.json'), 'utf8')) as { card: Record<string, { computed?: { default: { source: string } } }> }).card;
     const allowed = new Set<string>([
       'https://defillama.com/hacks',
       ...[...registry.entries.values()].flatMap((e) => [
@@ -125,6 +127,7 @@ test('every link is a URL the registry, docs.json or notes.json holds, one of th
         ...(e.defillama === undefined ? [] : [`https://defillama.com/protocol/${e.defillama}`]),
       ]),
       ...Object.values(docs).map((d) => d.url),
+      ...Object.values(card).flatMap((field) => (field.computed === undefined ? [] : [field.computed.default.source])),
       ...JSON.stringify(notes).match(/https:\/\/[^"]+/g)!,
     ]);
     const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => unescape(m[1] as string)));
@@ -200,4 +203,41 @@ test('--compare prints the first line where the committed HTML report differs', 
 
 test('--compare names every notes.json a branch changes, as text the AI wrote', () => {
   assert.deepEqual(notesChanges(['src/x.ts', 'templates/morpho/market-supply/notes.json', 'templates/morpho/market-supply/report.generated.html', 'templates/notes.json']), ['templates/morpho/market-supply/notes.json']);
+});
+
+const nextSteps = (html: string): string => {
+  const start = html.indexOf('id="next"');
+  assert.ok(start !== -1, 'the page has a 下一步 section');
+  return html.slice(start, html.indexOf('class="auto"', start));
+};
+const commands = (section: string): string[] => [...section.matchAll(/<pre class="cmd"><code>([^<]*)<\/code><\/pre>/g)].map((m) => unescape(m[1] as string));
+
+test('下一步 ends every signer report, each command alone in its own block with no punctuation inside it', () => {
+  for (const [id, { html }] of replayed) {
+    const target = withNotes.get(id) ?? assert.fail(id);
+    const section = nextSteps(html);
+    assert.ok(html.lastIndexOf('<section') < html.indexOf('id="next"'), `${id}: 下一步 is the last section`);
+    assert.deepEqual(commands(section), [
+      `bin/kiss-sign template approve ${target.template}`,
+      `bin/kiss-sign card new ${target.template}`,
+      'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
+      './check.sh <nonce>',
+    ]);
+    for (const command of commands(section)) assert.doesNotMatch(command, /[^\x20-\x7e]/, `${id}: ${command}`);
+    assert.doesNotMatch(section, /[\u3000-\u303f\uff00-\uffef]<pre|<\/pre>[\u3000-\u303f\uff00-\uffef]/, `${id}: full-width punctuation touches a command block`);
+    assert.doesNotMatch(section, /git pull<\/code>[\u3000-\u303f\uff00-\uffef]/, id);
+  }
+});
+
+test('下一步 of a per-vault report names the vault in full, says to pick it by name, and shows the computed field it will not ask', () => {
+  const [id, { html }] = [...replayed].find(([path]) => withNotes.get(path)?.cardVault === 'hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the Hyperithm report');
+  const section = unescape(nextSteps(html).replace(/<[^>]+>/g, ''));
+  assert.ok(section.includes('選 hyperithm-usdc-apex-v2-9e2f，地址是 0x093272C07700d3cA5301C3Bf9B3A392624179E2F'), id);
+  assert.ok(section.includes('照名字選'), id);
+  assert.ok(section.includes('打 usdc 的數量，用整顆幣'), id);
+  assert.ok(section.includes('1,000,611.448606'), id);
+  assert.ok(section.includes('min-shares：不用填'), id);
+  assert.ok(section.includes('再少 0.10%（協議預設的 0.03%，再加 0.07% 餘裕）'), id);
+  assert.ok(section.indexOf('vault：') < section.indexOf('amount：') && section.indexOf('amount：') < section.indexOf('min-shares：'), `${id}: the prompts in the order card new asks them`);
+  assert.ok(section.includes('MISMATCH 或 UNVERIFIABLE：不要簽'), id);
 });

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -14,9 +14,55 @@ const RECIPIENT = '0x1111111111111111111111111111111111111111';
 /** A typed line, or one worked out from what the command has printed so far. */
 type Answer = string | ((stdout: string) => string);
 
-type Chain = { readonly transport: Transport; readonly env?: Record<string, string>; readonly repoRoot?: string };
+/** `repoRoot` is published as main before the command runs, unless it is a clone of its own or `unpublished` is set. */
+type Chain = { readonly transport: Transport; readonly env?: Record<string, string>; readonly repoRoot?: string; readonly unpublished?: boolean };
 
 const noChain: Chain = { transport: async () => assert.fail('setup commands read no chain'), env: {} };
+
+const git = (cwd: string, ...args: string[]) =>
+  execFileSync('git', ['-c', 'user.name=test', '-c', 'user.email=test@example.com', ...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+
+/**
+ * Commits `dir` as it is and pushes it to main of its own bare origin, making it a clone of github.com/signer/kiss-sign
+ * whose fetches are served offline from that origin through core.sshCommand, so card new and card seal find it current.
+ */
+function publish(dir: string): string {
+  if (!existsSync(join(dir, '.git'))) {
+    const origin = mkdtempSync(join(tmpdir(), 'kiss-sign-origin-'));
+    git(origin, 'init', '--quiet', '--bare', '--initial-branch=main');
+    git(dir, 'init', '--quiet', '--initial-branch=main');
+    const ssh = join(origin, 'ssh');
+    writeFileSync(ssh, `#!/bin/sh\nexec git-upload-pack '${origin}'\n`);
+    chmodSync(ssh, 0o755);
+    git(dir, 'remote', 'add', 'origin', 'git@github.com:signer/kiss-sign.git');
+    git(dir, 'config', 'core.sshCommand', ssh);
+    git(dir, 'config', 'kiss-sign-test.origin', origin);
+  }
+  git(dir, 'add', '-A');
+  git(dir, 'commit', '--quiet', '--allow-empty', '-m', 'data');
+  git(dir, 'push', '--quiet', git(dir, 'config', 'kiss-sign-test.origin').trim(), 'HEAD:refs/heads/main');
+  return dir;
+}
+
+function dataClone(): string {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
+  for (const sub of ['registry', 'templates']) cpSync(join(ROOT, sub), join(dir, sub), { recursive: true });
+  return dir;
+}
+
+/** A test's own copy, published as main as it now is; a clone made some other way stays as it is. */
+const published = (dir: string): string => (!existsSync(join(dir, '.git')) || isPublished(dir) ? publish(dir) : dir);
+
+function isPublished(dir: string): boolean {
+  try {
+    return git(dir, 'config', 'kiss-sign-test.origin').trim() !== '';
+  } catch {
+    return false;
+  }
+}
+
+let shared: string | undefined;
+const signerClone = (): string => (shared ??= publish(dataClone()));
 
 async function run(argv: string[], home: string, answers?: readonly Answer[], chain: Chain = noChain, platform: NodeJS.Platform = 'linux') {
   let stdout = '';
@@ -37,7 +83,7 @@ async function run(argv: string[], home: string, answers?: readonly Answer[], ch
             const next = queue.shift();
             return typeof next === 'function' ? next(stdout) : next;
           },
-    repoRoot: chain.repoRoot ?? ROOT,
+    repoRoot: chain.repoRoot === undefined ? signerClone() : chain.unpublished === true ? chain.repoRoot : published(chain.repoRoot),
     transport: chain.transport,
     fetchJson: async () => assert.fail('setup commands fetch nothing'),
   });
@@ -194,29 +240,51 @@ const VAULT_V2_FACTORY = '0xA1D94F746dEfa1928926b84fB2596c06926C0405';
 const HEAD = 21_000_000;
 const HEAD_HASH = `0x${'ab'.repeat(32)}`;
 
-/** Two providers that answer decimals() per token address; `drpc` overrides what drpc answers. */
-function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<string, number | 'revert'> = {}): Chain & { calls: string[] } {
+const PREVIEW_DEPOSIT = '0xef8b30f7';
+const PREVIEW_WITHDRAW = '0x0a28a477';
+const PREVIEW_REDEEM = '0x4cdad506';
+const BALANCE_OF = '0x70a08231';
+
+type Views = (provider: 'alchemy' | 'drpc', to: string, selector: string, arg: bigint) => bigint | 'revert' | undefined;
+
+/** Steakhouse answers each preview at 0.98 shares per usdc unit times 1e12, and a Safe balance of 2 shares. */
+const steakhouseViews: Views = (_provider, to, selector, arg) => {
+  if (to.toLowerCase() !== STEAKHOUSE.toLowerCase()) return undefined;
+  if (selector === PREVIEW_DEPOSIT || selector === PREVIEW_WITHDRAW) return arg * 980_000_000_000n;
+  if (selector === PREVIEW_REDEEM) return arg / 1_000_000_000_000n;
+  if (selector === BALANCE_OF && arg === BigInt(SAFE)) return 2_000_000_000_000_000_000n;
+  return undefined;
+};
+
+/** Two providers that answer decimals() per token address and the views `views` answers; `drpc` overrides what drpc answers for decimals(). */
+function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<string, number | 'revert'> = {}, views: Views = steakhouseViews): Chain & { calls: string[] } {
   const calls: string[] = [];
   const transport: Transport = async (url, body) => {
     const { method, params } = JSON.parse(body) as { method: string; params: unknown[] };
     const reply = (result: unknown) => ({ status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) });
+    const reverted = { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, error: { code: 3, message: 'execution reverted' } }) };
     if (method === 'eth_blockNumber') return reply(`0x${HEAD.toString(16)}`);
     if (method === 'eth_getBlockByNumber') return reply({ number: `0x${HEAD.toString(16)}`, hash: HEAD_HASH });
     assert.equal(method, 'eth_call');
     const [{ to, data }, at] = params as [{ to: string; data: string }, { blockHash: string }];
-    assert.equal(data, '0x313ce567');
     assert.equal(at.blockHash, HEAD_HASH);
+    const provider = url.includes('drpc') ? 'drpc' : 'alchemy';
+    if (data !== '0x313ce567') {
+      const answer = views(provider, to, data.slice(0, 10), BigInt(`0x${data.slice(10) || '0'}`));
+      assert.ok(answer !== undefined, `${data.slice(0, 10)} on ${to} is not stubbed`);
+      return answer === 'revert' ? reverted : reply(`0x${answer.toString(16).padStart(64, '0')}`);
+    }
     calls.push(to.toLowerCase());
     const key = Object.keys(alchemy).find((address) => address.toLowerCase() === to.toLowerCase());
     assert.ok(key !== undefined, `decimals() of ${to} is not stubbed`);
-    const answer = url.includes('drpc') ? (drpc[key] ?? alchemy[key]) : alchemy[key];
-    if (answer === 'revert') return { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, error: { code: 3, message: 'execution reverted' } }) };
+    const answer = provider === 'drpc' ? (drpc[key] ?? alchemy[key]) : alchemy[key];
+    if (answer === 'revert') return reverted;
     return reply(`0x${BigInt(answer ?? 0).toString(16).padStart(64, '0')}`);
   };
   return { transport, calls };
 }
 
-const mainnet = () => decimalsChain({ [USDC]: 6, [STEAKHOUSE]: 18 });
+const mainnet = (views?: Views) => decimalsChain({ [USDC]: 6, [STEAKHOUSE]: 18 }, {}, views);
 
 /** The number the prompt lists a name under. */
 const numberOf = (name: string) => (stdout: string) => {
@@ -234,22 +302,101 @@ async function sealedFile(values: Record<string, string>) {
   return /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
 }
 
-test('card new lists a vault with the factory that created it, takes amounts in whole tokens, reads decimals on chain, and seals base units as card seal would', async () => {
+test('card new lists a vault with the factory that created it, takes amounts in whole tokens, computes min-shares, and seals base units as card seal would', async () => {
   const home = freshHome();
   configure(home);
-  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', '4.8', 'y'], mainnet());
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
   assert.match(made.stdout, new RegExp(`  \\d+\\. steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} \\(registry\\)  \\(factory vault-v2-factory ${VAULT_V2_FACTORY}\\)\n`));
   assert.equal(made.asked[1], `amount (usdc ${USDC}, 6 decimals): `);
-  assert.equal(made.asked[2], `min-shares (steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE}, 18 decimals): `);
   assert.ok(made.stdout.includes(`usdc ${USDC} has 6 decimals: decimals() at block ${HEAD}, where alchemy and drpc agree\n`));
   assert.ok(made.stdout.includes('  amount: 5 usdc = 5000000 base units\n'));
-  assert.ok(made.stdout.includes('  min-shares: 4.8 steakhouse-prime-usdc-v2-0f51 = 4800000000000000000 base units\n'));
-  assert.ok(made.stdout.includes('amounts in whole tokens:\n  amount: 5 usdc = 5000000 base units\n  min-shares: 4.8 steakhouse-prime-usdc-v2-0f51 = 4800000000000000000 base units\n\n'));
+  assert.ok(made.stdout.includes("min-shares is not asked: the protocol's app fills it in itself, so it is computed\n"));
+  assert.ok(made.stdout.includes(`  previewDeposit(5000000) on steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} = 4900000000000000000: at block ${HEAD}, where alchemy and drpc agree\n`));
+  assert.ok(made.stdout.includes('  expected: 4.9 steakhouse-prime-usdc-v2-0f51 = 4900000000000000000 base units\n'));
+  assert.match(made.stdout, /  slippage: 0\.10%, less than expected: the protocol's default 0\.03% \(https:\/\/github\.com\/morpho-org\/sdks\/blob\/[0-9a-f]{40}\/packages\/blue-sdk\/src\/constants\.ts#L24\) plus a margin of 0\.07%\n/);
+  assert.ok(made.stdout.includes('amounts in whole tokens:\n  amount: 5 usdc = 5000000 base units\n  min-shares: 4.8951 steakhouse-prime-usdc-v2-0f51 = 4895100000000000000 base units\n\n'));
   assert.match(made.stdout, new RegExp(`vault: steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} \\(registry\\)\\n  amount: 5000000\\n`));
-  assert.equal(made.asked[3], 'Is this what you mean to do? [y/N] ');
+  assert.equal(made.asked.length, 3);
+  assert.equal(made.asked[2], 'Is this what you mean to do? [y/N] ');
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(made.stdout)?.[1];
-  assert.equal(hash, await sealedFile({ vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5000000', 'min-shares': '4800000000000000000' }));
+  assert.equal(hash, await sealedFile({ vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5000000', 'min-shares': '4895100000000000000' }));
+});
+
+test('card new reads a computed field\'s inner read first, here the Safe\'s share balance for a withdrawal of all', async () => {
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'morpho/vault-withdraw-all'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), 'y'], mainnet());
+  assert.equal(made.code, 0, made.stderr);
+  const balance = made.stdout.indexOf(`  balanceOf(safe) on steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} = 2000000000000000000:`);
+  const redeem = made.stdout.indexOf(`  previewRedeem(2000000000000000000) on steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} = 2000000:`);
+  assert.ok(balance !== -1 && redeem > balance, made.stdout);
+  assert.ok(made.stdout.includes('  min-assets: 1.998 usdc = 1998000 base units\n'));
+});
+
+test('card new rounds a ceiling up, as a withdrawal\'s max-shares', async () => {
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'morpho/vault-withdraw'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '0.000001', 'y'], mainnet((_p, to, selector, arg) => (selector === PREVIEW_WITHDRAW && to.toLowerCase() === STEAKHOUSE.toLowerCase() ? arg * 1999n : undefined)));
+  assert.equal(made.code, 0, made.stderr);
+  assert.ok(made.stdout.includes('  slippage: 0.10%, more than expected'));
+  assert.ok(made.stdout.includes('  max-shares: 0.000000000000002001 steakhouse-prime-usdc-v2-0f51 = 2001 base units\n'), made.stdout);
+});
+
+for (const [what, views, message] of [
+  ['the providers disagree on the preview', ((provider, _to, selector, arg) => (selector === PREVIEW_DEPOSIT ? arg * (provider === 'drpc' ? 2n : 1n) : undefined)) as Views, /cannot read previewDeposit\(5000000\) on steakhouse-prime-usdc-v2-0f51 0xbeef.*: eth_call: alchemy and drpc disagree/],
+  ['the preview reverts', ((_p, _to, selector) => (selector === PREVIEW_DEPOSIT ? 'revert' : undefined)) as Views, /cannot read previewDeposit\(5000000\) on .*: it reverted/],
+  ['the floor comes to 0', ((_p, _to, selector) => (selector === PREVIEW_DEPOSIT ? 1n : undefined)) as Views, /min-shares comes to 0, which would bound nothing/],
+] as const) {
+  test(`card new refuses when ${what}, and seals nothing`, async () => {
+    const home = freshHome();
+    configure(home);
+    const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], mainnet(views));
+    assert.equal(result.code, 1);
+    assert.match(result.stderr, message);
+    assert.ok(!result.asked.includes('Is this what you mean to do? [y/N] '));
+    assert.equal(existsSync(join(home, 'cards')), false);
+  });
+}
+
+test('card new takes commas between thousands, as the protocol\'s app shows an amount', async () => {
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '1,000,611.448606', 'y'], mainnet());
+  assert.equal(made.code, 0, made.stderr);
+  assert.ok(made.stdout.includes('  amount: 1000611.448606 usdc = 1000611448606 base units\n'));
+});
+
+test('card new and card seal stop before asking anything when templates or registry here are behind main on GitHub', async () => {
+  const repoRoot = publish(dataClone());
+  const before = git(repoRoot, 'rev-parse', 'HEAD').trim();
+  writeFileSync(join(repoRoot, 'registry', 'contracts.json'), JSON.stringify({ ...JSON.parse(readFileSync(join(repoRoot, 'registry', 'contracts.json'), 'utf8')) }, null, 1));
+  publish(repoRoot);
+  git(repoRoot, 'reset', '--quiet', '--hard', before);
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'eth/transfer', values: { amount: '1', recipient: 'safe' } }] }));
+  for (const argv of [['card', 'new', 'eth/transfer'], ['card', 'seal', card]]) {
+    const result = await run(argv, home, ['1', '1', 'y'], { ...noChain, repoRoot, unpublished: true });
+    assert.equal(result.code, 1);
+    assert.equal(result.stderr, 'kiss-sign: templates/ and registry/ here are not main of github.com/signer/kiss-sign on GitHub; run git pull, then run this again.\n  changed: registry/contracts.json\n');
+    assert.deepEqual(result.asked, []);
+    assert.equal(result.stdout, '');
+  }
+  git(repoRoot, 'merge', '--quiet', '--ff-only', 'origin/main');
+  writeFileSync(join(repoRoot, 'templates', 'extra.json'), '{}\n');
+  const untracked = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot, unpublished: true });
+  assert.equal(untracked.code, 1);
+  assert.match(untracked.stderr, /run git pull, then run this again\.\n  not on main: templates\/extra\.json\n$/);
+  rmSync(join(repoRoot, 'templates', 'extra.json'));
+  const sealed = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot, unpublished: true });
+  assert.equal(sealed.code, 0, sealed.stderr);
+  git(repoRoot, 'config', 'core.sshCommand', 'false');
+  const offline = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot, unpublished: true });
+  assert.equal(offline.code, 1);
+  assert.equal(offline.stderr, 'kiss-sign: could not check that templates/ and registry/ here are main of github.com/signer/kiss-sign on GitHub, so nothing was asked.\n  could not fetch github.com/signer/kiss-sign\n');
+  assert.deepEqual(offline.asked, []);
 });
 
 test('card new reads each token\'s decimals once across operations', async () => {
@@ -257,7 +404,7 @@ test('card new reads each token\'s decimals once across operations', async () =>
   configure(home);
   const chain = mainnet();
   const vault = numberOf('steakhouse-prime-usdc-v2-0f51');
-  const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', '1', vault, '0.000001', '1', 'y'], chain);
+  const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', vault, '0.000001', 'y'], chain);
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes('  amount: 1.25 usdc = 1250000 base units\n'));
   assert.ok(made.stdout.includes('  amount: 0.000001 usdc = 1 base units\n'));
@@ -270,7 +417,7 @@ test('card new asks for a choice by its number, and takes its exact listed name 
   for (const pick of [numberOf('steakhouse-prime-usdc-v2-0f51'), 'steakhouse-prime-usdc-v2-0f51', STEAKHOUSE.toLowerCase(), STEAKHOUSE.toUpperCase().replace('0X', '0x')]) {
     const home = freshHome();
     configure(home);
-    const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [pick, '5', '4.8', 'y'], mainnet());
+    const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [pick, '5', 'y'], mainnet());
     assert.equal(made.code, 0, made.stderr);
     assert.match(made.asked[0]!, /^vault: type its number \(1-\d+\): $/);
     assert.match(made.stdout, new RegExp(`  vault: steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE}`));
@@ -509,7 +656,7 @@ const OVER_USDC = (2n ** 256n).toString().replace(/(\d{6})$/, '.$1');
 test('card new takes the largest amount below 2^256 base units', async () => {
   const home = freshHome();
   configure(home);
-  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), MAX_USDC, '0', 'y'], mainnet());
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), MAX_USDC, 'y'], mainnet(() => 10n ** 30n));
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes(`  amount: ${MAX_USDC} usdc = ${2n ** 256n - 1n} base units\n`));
 });
@@ -527,7 +674,13 @@ for (const [what, answers, message] of [
   ['a hex amount', [numberOf('steakhouse-prime-usdc-v2-0f51'), '0x10', 'y'], /amount: "0x10" is not a plain decimal number/],
   ['an amount with an exponent', [numberOf('steakhouse-prime-usdc-v2-0f51'), '5e6', 'y'], /amount: "5e6" is not a plain decimal number/],
   ['an amount with a plus sign', [numberOf('steakhouse-prime-usdc-v2-0f51'), '+5', 'y'], /amount: "\+5" is not a plain decimal number/],
-  ['an amount with a comma', [numberOf('steakhouse-prime-usdc-v2-0f51'), '1,5', 'y'], /amount: "1,5" is not a plain decimal number/],
+  ['an amount with a comma that does not separate thousands', [numberOf('steakhouse-prime-usdc-v2-0f51'), '1,5', 'y'], /amount: "1,5" is not a plain decimal number/],
+  ['an amount with a group of two digits', [numberOf('steakhouse-prime-usdc-v2-0f51'), '1,00', 'y'], /amount: "1,00" is not a plain decimal number/],
+  ['an amount with a first group of four digits', [numberOf('steakhouse-prime-usdc-v2-0f51'), '1000,000', 'y'], /amount: "1000,000" is not a plain decimal number/],
+  ['an amount with a leading comma', [numberOf('steakhouse-prime-usdc-v2-0f51'), ',100', 'y'], /amount: ",100" is not a plain decimal number/],
+  ['an amount with a first group of 0', [numberOf('steakhouse-prime-usdc-v2-0f51'), '0,100', 'y'], /amount: "0,100" is not a plain decimal number/],
+  ['an amount with a comma after the point', [numberOf('steakhouse-prime-usdc-v2-0f51'), '1.000,5', 'y'], /amount: "1.000,5" is not a plain decimal number/],
+  ['an amount mixing grouped and ungrouped thousands', [numberOf('steakhouse-prime-usdc-v2-0f51'), '1,0000', 'y'], /amount: "1,0000" is not a plain decimal number/],
   ['an amount with no digit before the point', [numberOf('steakhouse-prime-usdc-v2-0f51'), '.5', 'y'], /amount: ".5" is not a plain decimal number/],
   ['an amount with no digit after the point', [numberOf('steakhouse-prime-usdc-v2-0f51'), '5.', 'y'], /amount: "5." is not a plain decimal number/],
   ['an amount of 2^256 base units', [numberOf('steakhouse-prime-usdc-v2-0f51'), OVER_USDC, 'y'], /amount: ".*" is 2\^256 base units or more/],
@@ -573,7 +726,7 @@ test('card new refuses a template that is not in the repository', async () => {
 test('card new seals nothing when the signer says no', async () => {
   const home = freshHome();
   configure(home);
-  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', '4', 'n'], mainnet());
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'n'], mainnet());
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Nothing sealed/);
   assert.equal(existsSync(join(home, 'cards')), false);

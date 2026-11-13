@@ -184,6 +184,35 @@ test('an address anywhere in the type tree is never free, and a constant address
   assert.doesNotThrow(() => parseTemplate(zero, registry));
 });
 
+test('a computed card field reads one uint256 view with arguments bound to the card or the Safe, and a slippage in basis points', () => {
+  const computed = (t: any) => t.card['min-shares'].computed;
+  const at = 'card.min-shares.computed';
+  const cases: [(t: any) => void, string, RegExp][] = [
+    [(t) => (computed(t).read.args.assets = 'card.min-shares'), `${at}.read.args.assets`, /computed after this one or is this one/],
+    [(t) => (computed(t).read.args.assets = 'card.vault'), `${at}.read.args.assets`, /is not an amount/],
+    [(t) => (computed(t).read.args.assets = 'safe'), `${at}.read.args.assets`, /the Safe is an address/],
+    [(t) => (computed(t).read.args.assets = '5'), `${at}.read.args.assets`, /must be "safe", card.<field> or a read/],
+    [(t) => (computed(t).read.function = 'previewDeposit(uint256 assets) returns (uint256 shares, uint256 more)'), `${at}.read.function`, /exactly one uint256/],
+    [(t) => (computed(t).read.function = 'convertToShares(bytes32 assets) returns (uint256 shares)'), `${at}.read.args.assets`, /neither address nor uint256/],
+    [(t) => (computed(t).read.to = 'card.amount'), `${at}.read.to`, /must name a contract or market field/],
+    [(t) => (computed(t).margin.why = 'ok\u001b[8m'), `${at}.margin.why`, /control or bidirectional character/],
+    [(t) => (computed(t).bound = 'down'), `${at}.bound`, /not one of floor, ceiling/],
+    [(t) => (computed(t).default.bps = 3.5), `${at}.default.bps`, /whole number of basis points/],
+    [(t) => (computed(t).default.bps = 1001), `${at}.default.bps`, /from 0 to 1000/],
+    [(t) => (computed(t).default.source = 'http://example.com'), `${at}.default.source`, /not an https URL/],
+    [(t) => (computed(t).margin.why = ''), `${at}.margin.why`, /not a non-empty string/],
+    [(t) => (computed(t).extra = 1), `${at}.extra`, /unexpected field/],
+  ];
+  for (const [edit, path, problem] of cases) {
+    const broken = structuredClone(rawTemplate);
+    edit(broken);
+    assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
+  }
+  const nested = structuredClone(rawTemplate);
+  computed(nested).read.args.assets = { to: 'card.vault', function: 'balanceOf(address account) returns (uint256 shares)', args: { account: 'safe' } };
+  assert.doesNotThrow(() => parseTemplate(nested, registry));
+});
+
 test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes are empty', () => {
   const urd = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'urd-claim', 'template.json'), 'utf8'));
   const claim = (t: any) => t.calls[0].args.bundle.items[0].fields.data.call.args;
@@ -233,11 +262,16 @@ test('a share price bound or equals names a card amount or an earlier uint argum
 });
 
 test('the template parses its card fields and effects', () => {
-  assert.deepEqual([...template.card], [
-    ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue' } }],
-    ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' } }],
-    ['min-shares', { kind: 'amount', of: { field: 'vault', attribute: undefined } }],
-  ]);
+  const [vault, amount, minShares] = [...template.card];
+  assert.deepEqual(vault, ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue' } }]);
+  assert.deepEqual(amount, ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' }, computed: undefined }]);
+  const [name, field] = minShares ?? assert.fail('min-shares');
+  assert.equal(name, 'min-shares');
+  assert.ok(field.kind === 'amount' && field.computed !== undefined);
+  assert.deepEqual(field.of, { field: 'vault', attribute: undefined });
+  assert.equal(field.computed.read.fn.signature, 'previewDeposit(uint256)');
+  assert.deepEqual(field.computed.read.args, [{ kind: 'card', ref: { field: 'amount', attribute: undefined } }]);
+  assert.equal(field.computed.bound, 'floor');
   assert.deepEqual(template.effects, {
     gives: [{ token: { field: 'vault', attribute: 'asset' }, amount: { kind: 'card', field: 'amount' }, to: undefined }],
     gets: [{ token: { field: 'vault', attribute: undefined }, amount: { kind: 'positive' }, to: undefined }],

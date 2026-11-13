@@ -11,7 +11,25 @@
     },
     "min-shares": {
       "kind": "amount",
-      "of": "vault"
+      "of": "vault",
+      "computed": {
+        "read": {
+          "to": "card.vault",
+          "function": "previewDeposit(uint256 assets) returns (uint256 shares)",
+          "args": {
+            "assets": "card.amount"
+          }
+        },
+        "bound": "floor",
+        "default": {
+          "bps": 3,
+          "source": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24"
+        },
+        "margin": {
+          "bps": 7,
+          "why": "The Morpho app reads its own preview when it builds the transaction, accrued two hours ahead (computeVaultMaxSharePrice and computeVaultMaxShareAllowance in packages/morpho-sdk/src/helpers/slippage.ts at the same commit). The share price moves between this card and then, up with interest or down with a Vault V2 fee, and with the default alone a move against the card makes the app's own transaction MISMATCH. 0.07% more covers about three days of a vault earning 8% a year."
+        }
+      }
     }
   },
   "calls": [

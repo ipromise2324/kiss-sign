@@ -103,6 +103,19 @@ export function selfCheck(root: string, repo: GithubRepo): SelfCheck {
   return problems.length === 0 ? { kind: 'clean', commit } : { kind: 'differs', problems };
 }
 
+/**
+ * Fetches origin/main as `fetchOriginMain` does and lists each file under `dirs` whose bytes or mode on disk differ from
+ * that commit's, or that the commit lacks and its .gitignore does not ignore. `card new` and `card seal` read the
+ * templates and the registry from disk, so a merge on GitHub counts only once it is pulled.
+ */
+export function dataDiffersFromOriginMain(root: string, repo: GithubRepo, dirs: readonly string[]): { readonly kind: 'current' } | { readonly kind: 'differs' | 'unchecked'; readonly problems: readonly string[] } {
+  const origin = fetchOriginMain(root, repo);
+  if (origin.kind === 'refused') return { kind: 'unchecked', problems: origin.problems };
+  if (origin.kind === 'unreachable') return { kind: 'unchecked', problems: [`could not fetch ${repo}`] };
+  const problems = [...changedFiles(root, origin.commit, dirs).map((path) => `changed: ${path}`), ...untrackedFiles(root, origin.commit, dirs).map((path) => `not on main: ${path}`)];
+  return problems.length === 0 ? { kind: 'current' } : { kind: 'differs', problems };
+}
+
 function originUrls(root: string): string[] {
   try {
     // get-url applies url.<base>.insteadOf, so it names the URL a fetch would really use.
@@ -114,8 +127,8 @@ function originUrls(root: string): string[] {
 
 type TreeEntry = { readonly mode: string; readonly type: string; readonly id: string; readonly path: string };
 
-function treeEntries(root: string, commit: string): TreeEntry[] {
-  return git(root, 'ls-tree', '-r', '-t', '-z', commit)
+function treeEntries(root: string, commit: string, paths: readonly string[] = []): TreeEntry[] {
+  return git(root, 'ls-tree', '-r', '-t', '-z', commit, '--', ...paths)
     .split('\0')
     .filter(Boolean)
     .map((line) => {
@@ -150,8 +163,8 @@ function corruptObjects(root: string, commit: string): string[] {
 }
 
 /** Each file of `commit` whose bytes or mode on disk differ from the commit's, or that is missing. */
-function changedFiles(root: string, commit: string): string[] {
-  return treeEntries(root, commit)
+function changedFiles(root: string, commit: string, paths: readonly string[] = []): string[] {
+  return treeEntries(root, commit, paths)
     .filter((entry) => entry.type === 'blob' && !onDiskAs(join(root, entry.path), entry))
     .map((entry) => entry.path);
 }
@@ -173,7 +186,7 @@ function onDiskAs(file: string, entry: TreeEntry): boolean {
  * fresh index of the commit and only that .gitignore, so the clone's index, .git/info/exclude, core.excludesFile and an
  * untracked .gitignore cannot hide a file.
  */
-function untrackedFiles(root: string, commit: string): string[] {
+function untrackedFiles(root: string, commit: string, paths: readonly string[] = []): string[] {
   const patterns = gitignoreAt(root, commit)
     .split('\n')
     .map((line) => line.trim())
@@ -185,7 +198,7 @@ function untrackedFiles(root: string, commit: string): string[] {
   try {
     const env = { GIT_INDEX_FILE: join(scratch, 'index') };
     gitRun(root, 'clone-only', ['read-tree', commit], { env });
-    const args = ['ls-files', '-z', '--others', ...patterns.map((pattern) => `--exclude=${pattern}`)];
+    const args = ['ls-files', '-z', '--others', ...patterns.map((pattern) => `--exclude=${pattern}`), '--', ...paths];
     return gitRun(root, 'clone-only', args, { env }).toString('utf8').split('\0').filter(Boolean);
   } finally {
     rmSync(scratch, { recursive: true, force: true });
