@@ -267,17 +267,6 @@
       "from": 21430780
     }
   },
-  "morpho-urd": {
-    "address": "0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb",
-    "kind": "distributor",
-    "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "Universal Rewards Distributor",
-    "defillama": "morpho-blue",
-    "code": {
-      "hash": "0xbef9dc65dccc9a019287d0bf6604654d23cbfbac0880842cfe9eac3f856ea252",
-      "from": 19405449
-    }
-  },
   "merkl-distributor": {
     "address": "0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae",
     "kind": "distributor",

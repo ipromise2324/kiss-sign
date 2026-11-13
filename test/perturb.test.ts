@@ -44,7 +44,7 @@ for (const name of recorded.filter((n) => n !== 'morpho-deposit-free-assets')) {
 }
 
 test('a Merkle proof or amount changed makes the claim revert', async () => {
-  const report = await replayed('morpho-urd-claim');
+  const report = await replayed('merkl-claim');
   assert.deepEqual(new Set(report.kind === 'pass' ? report.runs.map((r) => r.outcome) : []), new Set(['reverted']));
 });
 
@@ -87,8 +87,8 @@ test('a free field whose change adds an approveHash the effects do not see fails
 });
 
 test('a field claimed as a proof fails when a changed copy still executes', async () => {
-  const tx = safeTx('morpho-urd-claim');
-  const { templates, resolved } = setUp({ operations: [{ template: 'morpho/urd-claim', values: { token: 'morpho' } }] }, tx);
+  const tx = safeTx('merkl-claim');
+  const { templates, resolved } = setUp({ operations: [{ template: 'merkl/claim', values: { token: 'morpho' } }] }, tx);
   const unchecked = async (): Promise<Observation> => ({
     kind: 'observed',
     observed: {
@@ -103,5 +103,5 @@ test('a field claimed as a proof fails when a changed copy still executes', asyn
     logs: [],
   });
   const report = await checkPerturbations(tx, resolved, templates, registry, unchecked);
-  assert.deepEqual(new Set(report.kind === 'fail' ? report.failed.map((r) => `${r.leaf.arg} ${r.outcome}`) : []), new Set(['proof same']));
+  assert.deepEqual(new Set(report.kind === 'fail' ? report.failed.map((r) => `${r.leaf.arg} ${r.outcome}`) : []), new Set(['proofs[0] same']));
 });
