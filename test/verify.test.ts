@@ -35,7 +35,9 @@ function write(path: string, text: string): string {
  * A clone at its origin/main holding the fixture's template and registry, and a home set up as the signer set it up. Its
  * origin is the configured repository's URL, served offline from a local bare repository through core.sshCommand.
  */
-function setUp(approved: string | null = template.approved) {
+const VAULT = (JSON.parse(fixture.inputs.card.text) as { operations: { values: { vault: string } }[] }).operations[0]!.values.vault;
+
+function setUp(approved: string | null = template.approved, reported = true) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-verify-'));
   const origin = join(base, 'origin.git');
   const repo = join(base, 'repo');
@@ -43,6 +45,7 @@ function setUp(approved: string | null = template.approved) {
   git(base, 'clone', '--quiet', origin, repo);
   write(join(repo, 'templates', template.id, 'template.json'), template.text);
   write(join(repo, 'registry', 'contracts.json'), fixture.inputs.registry);
+  if (reported) write(join(repo, 'templates', template.id, 'vaults', VAULT, 'report.generated.md'), '# report\n');
   git(repo, 'add', '-A');
   git(repo, 'commit', '--quiet', '-m', 'templates');
   git(repo, 'push', '--quiet', 'origin', 'main');
@@ -76,8 +79,8 @@ async function run(argv: string[], repo: string, home: string) {
   return { code, stdout, stderr };
 }
 
-async function verifyTx(tx: unknown, approved?: string | null) {
-  const { base, repo, home } = setUp(approved);
+async function verifyTx(tx: unknown, approved?: string | null, reported?: boolean) {
+  const { base, repo, home } = setUp(approved, reported);
   const file = write(join(base, 'tx.json'), JSON.stringify(tx));
   const result = await run(['verify', '--card', fixture.inputs.card.hash, '--tx', file], repo, home);
   const verdicts = readdirSync(join(home, 'verdicts')).map((name) => join(home, 'verdicts', name));
@@ -220,4 +223,14 @@ test('replay says when only the call marks differ from the recorded ones', async
   const { code, stderr } = await run(['replay', path], dir, dir);
   assert.equal(code, 1);
   assert.match(stderr, /the recorded verdict was MATCH; this program now gives the same verdict but different call marks or hashes/);
+});
+
+test('verify refuses a card naming a vault with no report for the template at origin/main, and writes no verdict', async () => {
+  const { base, repo, home } = setUp(undefined, false);
+  const file = write(join(base, 'tx.json'), JSON.stringify(service));
+  const { code, stdout, stderr } = await run(['verify', '--card', fixture.inputs.card.hash, '--tx', file], repo, home);
+  assert.equal(code, 1);
+  assert.equal(stdout, '');
+  assert.equal(stderr, `kiss-sign: card refused: ${VAULT} has no report for ${template.id}; build one first. Nothing was verified.\n`);
+  assert.equal(readdirSync(home).includes('verdicts'), false);
 });

@@ -47,9 +47,9 @@ const rows: readonly { name: string; changes: Partial<AllChecks>; verdict: strin
   { name: 'a mismatched field', changes: { fields: fieldMismatch }, verdict: 'MISMATCH', causes: { fields: /erc4626Deposit receiver: expected 0xsafe, got 0xother/ } },
   {
     name: 'a vault whose asset() is not the registry asset',
-    changes: { assets: { kind: 'mismatch', findings: ['smokehouse-usdc 0x1 holds 0x2 by its asset() at block 1, the registry says usdt 0x3'] } },
+    changes: { assets: { kind: 'mismatch', findings: ['smokehouse-usdc-v1-f5bc 0x1 holds 0x2 by its asset() at block 1, the registry says usdt 0x3'] } },
     verdict: 'MISMATCH',
-    causes: { 'vault-asset': /smokehouse-usdc 0x1 holds 0x2 by its asset\(\) at block 1, the registry says usdt 0x3/ },
+    causes: { 'vault-asset': /smokehouse-usdc-v1-f5bc 0x1 holds 0x2 by its asset\(\) at block 1, the registry says usdt 0x3/ },
   },
   {
     name: 'a vault asset() the providers disagree on',
@@ -70,7 +70,7 @@ const rows: readonly { name: string; changes: Partial<AllChecks>; verdict: strin
         kind: 'weak-template',
         bound: 12,
         free: 1,
-        uncaught: [{ leaf: { callPath: 'multiSend[0].approve', arg: 'spender', bytes: [0, 32], rule: { kind: 'contract', name: 'general-adapter1' }, type: { kind: 'address' } }, mutated: 'match' }],
+        uncaught: [{ leaf: { callPath: 'multiSend[0].approve', arg: 'spender', bytes: [0, 32], rule: { kind: 'contract', name: 'general-adapter-1' }, type: { kind: 'address' } }, mutated: 'match' }],
       },
     },
     verdict: 'UNVERIFIABLE',

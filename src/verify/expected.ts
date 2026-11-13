@@ -3,6 +3,7 @@ import type { AddressBook } from '../address-book.ts';
 import { resolveRef } from '../card.ts';
 import type { ResolvedCard } from '../card.ts';
 import { wholeTokens } from '../chain/decimals.ts';
+import { castValue } from '../decode/cast.ts';
 import type { AbiValue, Region } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
@@ -105,27 +106,6 @@ function wholeTokenAmount(rule: Rule | undefined, value: AbiValue, values: Value
   return decimals === undefined ? undefined : `${wholeTokens(value.value, decimals)} ${token.name}`;
 }
 
-function castText(value: AbiValue): string {
-  switch (value.kind) {
-    case 'uint':
-    case 'int':
-    case 'bool':
-      return String(value.value);
-    case 'address':
-      return checksumAddress(value.value);
-    case 'fixed-bytes':
-      return value.value;
-    case 'bytes':
-      return hex(value.value);
-    case 'string':
-      return JSON.stringify(new TextDecoder().decode(value.value));
-    case 'array':
-      return `[${value.items.map(castText).join(', ')}]`;
-    case 'tuple':
-      return `(${value.fields.map(castText).join(', ')})`;
-  }
-}
-
 function addressesIn(value: AbiValue): Address[] {
   if (value.kind === 'address') return [value.value];
   if (value.kind === 'array') return value.items.flatMap(addressesIn);
@@ -165,7 +145,7 @@ function callData(node: CallNode | 'empty' | undefined, region: Region, values: 
   if (node === undefined || node === 'empty') return { kind: 'raw', hex: hex(bytes) };
   const decoded = decodeTemplateCall(node, region);
   if (decoded.kind !== 'decoded') return { kind: 'raw', hex: hex(bytes) };
-  const args = decoded.args.map((value, i) => ({ text: castText(value), amount: wholeTokenAmount(node.args[i], value, values, walk) }));
+  const args = decoded.args.map((value, i) => ({ text: castValue(value), amount: wholeTokenAmount(node.args[i], value, values, walk) }));
   const found = [...new Set(decoded.args.flatMap(addressesIn))].sort();
   let nested: Nested | undefined;
   if (node.fn.signature === BUNDLER3_MULTICALL) {
@@ -231,7 +211,7 @@ export function callTree(tx: SafeTx, context: TreeContext): CallTree {
     kind: 'decoded',
     signature: outer.fn.signature,
     selector: outer.fn.selector,
-    args: [{ text: packed === undefined ? '' : castText(packed), amount: undefined }],
+    args: [{ text: packed === undefined ? '' : castValue(packed), amount: undefined }],
     trailer: undefined,
     addresses: [],
     nested: { kind: 'multisend', calls },

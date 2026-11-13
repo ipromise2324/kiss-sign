@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -169,10 +169,10 @@ test('card seal prints every name with its full address and stores the card unde
   const home = freshHome();
   configure(home);
   const card = join(home, 'card.json');
-  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: '5', 'min-shares': '4' } }] }));
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5', 'min-shares': '4' } }] }));
   const sealed = await run(['card', 'seal', card], home, ['y']);
   assert.equal(sealed.code, 0, sealed.stderr);
-  assert.match(sealed.stdout, /vault: steakhouse-prime-usdc 0xbeef088055857739C12CD3765F20b7679Def0f51/);
+  assert.match(sealed.stdout, /vault: steakhouse-prime-usdc-v2-0f51 0xbeef088055857739C12CD3765F20b7679Def0f51/);
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
   assert.ok(hash !== undefined && existsSync(join(home, 'cards', `${hash}.json`)));
 });
@@ -190,6 +190,7 @@ test('card seal refuses a name in neither the registry nor the address book', as
 
 const STEAKHOUSE = '0xbeef088055857739C12CD3765F20b7679Def0f51';
 const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+const VAULT_V2_FACTORY = '0xA1D94F746dEfa1928926b84fB2596c06926C0405';
 const HEAD = 21_000_000;
 const HEAD_HASH = `0x${'ab'.repeat(32)}`;
 
@@ -233,29 +234,29 @@ async function sealedFile(values: Record<string, string>) {
   return /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
 }
 
-test('card new takes amounts in whole tokens, reads decimals on chain, and seals base units as card seal would', async () => {
+test('card new lists a vault with the factory that created it, takes amounts in whole tokens, reads decimals on chain, and seals base units as card seal would', async () => {
   const home = freshHome();
   configure(home);
-  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', '4.8', 'y'], mainnet());
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', '4.8', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
-  assert.match(made.stdout, new RegExp(`\\d+\\. steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)`));
+  assert.match(made.stdout, new RegExp(`  \\d+\\. steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} \\(registry\\)  \\(factory vault-v2-factory ${VAULT_V2_FACTORY}\\)\n`));
   assert.equal(made.asked[1], `amount (usdc ${USDC}, 6 decimals): `);
-  assert.equal(made.asked[2], `min-shares (steakhouse-prime-usdc ${STEAKHOUSE}, 18 decimals): `);
+  assert.equal(made.asked[2], `min-shares (steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE}, 18 decimals): `);
   assert.ok(made.stdout.includes(`usdc ${USDC} has 6 decimals: decimals() at block ${HEAD}, where alchemy and drpc agree\n`));
   assert.ok(made.stdout.includes('  amount: 5 usdc = 5000000 base units\n'));
-  assert.ok(made.stdout.includes('  min-shares: 4.8 steakhouse-prime-usdc = 4800000000000000000 base units\n'));
-  assert.ok(made.stdout.includes('amounts in whole tokens:\n  amount: 5 usdc = 5000000 base units\n  min-shares: 4.8 steakhouse-prime-usdc = 4800000000000000000 base units\n\n'));
-  assert.match(made.stdout, new RegExp(`vault: steakhouse-prime-usdc ${STEAKHOUSE} \\(registry\\)\\n  amount: 5000000\\n`));
+  assert.ok(made.stdout.includes('  min-shares: 4.8 steakhouse-prime-usdc-v2-0f51 = 4800000000000000000 base units\n'));
+  assert.ok(made.stdout.includes('amounts in whole tokens:\n  amount: 5 usdc = 5000000 base units\n  min-shares: 4.8 steakhouse-prime-usdc-v2-0f51 = 4800000000000000000 base units\n\n'));
+  assert.match(made.stdout, new RegExp(`vault: steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} \\(registry\\)\\n  amount: 5000000\\n`));
   assert.equal(made.asked[3], 'Is this what you mean to do? [y/N] ');
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(made.stdout)?.[1];
-  assert.equal(hash, await sealedFile({ vault: 'steakhouse-prime-usdc', amount: '5000000', 'min-shares': '4800000000000000000' }));
+  assert.equal(hash, await sealedFile({ vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5000000', 'min-shares': '4800000000000000000' }));
 });
 
 test('card new reads each token\'s decimals once across operations', async () => {
   const home = freshHome();
   configure(home);
   const chain = mainnet();
-  const vault = numberOf('steakhouse-prime-usdc');
+  const vault = numberOf('steakhouse-prime-usdc-v2-0f51');
   const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', '1', vault, '0.000001', '1', 'y'], chain);
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes('  amount: 1.25 usdc = 1250000 base units\n'));
@@ -266,13 +267,13 @@ test('card new reads each token\'s decimals once across operations', async () =>
 });
 
 test('card new asks for a choice by its number, and takes its exact listed name or full address too', async () => {
-  for (const pick of [numberOf('steakhouse-prime-usdc'), 'steakhouse-prime-usdc', STEAKHOUSE.toLowerCase(), STEAKHOUSE.toUpperCase().replace('0X', '0x')]) {
+  for (const pick of [numberOf('steakhouse-prime-usdc-v2-0f51'), 'steakhouse-prime-usdc-v2-0f51', STEAKHOUSE.toLowerCase(), STEAKHOUSE.toUpperCase().replace('0X', '0x')]) {
     const home = freshHome();
     configure(home);
     const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [pick, '5', '4.8', 'y'], mainnet());
     assert.equal(made.code, 0, made.stderr);
     assert.match(made.asked[0]!, /^vault: type its number \(1-\d+\): $/);
-    assert.match(made.stdout, new RegExp(`  vault: steakhouse-prime-usdc ${STEAKHOUSE}`));
+    assert.match(made.stdout, new RegExp(`  vault: steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE}`));
   }
 });
 
@@ -320,6 +321,127 @@ test('card new asks for base units when the token is no registry contract, so it
   assert.equal(made.code, 0, made.stderr);
   assert.equal(made.asked[2], 'amount (base units of card.token, which is no registry contract, so its decimals are not read): ');
   assert.match(made.stdout, /amount: 5\n/);
+});
+
+/** A report for `vault` under the template, as `pnpm report --vault-of` writes it; the gate reads only that the file is there. */
+function reportVault(repoRoot: string, template: string, vault: string): void {
+  mkdirSync(join(repoRoot, 'templates', template, 'vaults', vault), { recursive: true });
+  writeFileSync(join(repoRoot, 'templates', template, 'vaults', vault, 'report.generated.md'), '# report\n');
+}
+
+test('card new lists only the vaults with a report for a template reported per vault', async () => {
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, ['smokehouse-usdc-v1-f5bc'], mainnet());
+  assert.equal(made.code, 1);
+  const listed = [...made.stdout.matchAll(/^ {2}\d+\. ([a-z0-9.-]+) 0x/gm)].map((m) => m[1]);
+  assert.deepEqual(listed, ['steakhouse-prime-usdc-v2-0f51', 'hyperithm-usdc-apex-v2-9e2f']);
+  assert.match(made.stderr, /vault: "smokehouse-usdc-v1-f5bc" is none of the listed choices/);
+});
+
+test('card new refuses a template reported per vault when no vault has a report', async () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
+  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  cpSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), join(repoRoot, 'templates', 'morpho', 'vault-deposit', 'template.json'));
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, ['1'], { ...mainnet(), repoRoot });
+  assert.equal(made.code, 1);
+  assert.match(made.stderr, /vault: no vault has a report for morpho\/vault-deposit; build one first/);
+  assert.deepEqual(made.asked, []);
+});
+
+test('card seal refuses a vault with no report for the template, before it asks anything', async () => {
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'smokehouse-usdc-v1-f5bc', amount: '5', 'min-shares': '4' } }] }));
+  const result = await run(['card', 'seal', card], home, ['y']);
+  assert.equal(result.code, 1);
+  assert.equal(result.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for morpho/vault-deposit; build one first\n');
+  assert.deepEqual(result.asked, []);
+  assert.equal(existsSync(join(home, 'cards')), false);
+});
+
+test('card seal does not count a report reached through a symlinked folder, which git would not list', async () => {
+  const repoRoot = anyTokenClone();
+  const elsewhere = mkdtempSync(join(tmpdir(), 'kiss-sign-elsewhere-'));
+  reportVault(elsewhere, 'test/any-token', 'smokehouse-usdc-v1-f5bc');
+  mkdirSync(join(repoRoot, 'templates', 'test', 'any-token', 'vaults'));
+  symlinkSync(join(elsewhere, 'templates', 'test', 'any-token', 'vaults', 'smokehouse-usdc-v1-f5bc'), join(repoRoot, 'templates', 'test', 'any-token', 'vaults', 'smokehouse-usdc-v1-f5bc'));
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'test/any-token', values: { token: 'smokehouse-usdc-v1-f5bc', amount: '5', recipient: 'safe' } }] }));
+  const vaultLink = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(vaultLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
+  const linked = anyTokenClone();
+  symlinkSync(join(elsewhere, 'templates', 'test', 'any-token', 'vaults'), join(linked, 'templates', 'test', 'any-token', 'vaults'));
+  const vaultsLink = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot: linked });
+  assert.equal(vaultsLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
+});
+
+test('card seal accepts the same vault for a template that predates per-vault reports', async () => {
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-withdraw', values: { vault: 'smokehouse-usdc-v1-f5bc', amount: '5', 'max-shares': '4' } }] }));
+  const result = await run(['card', 'seal', card], home, ['y']);
+  assert.equal(result.code, 0, result.stderr);
+});
+
+/** A clone whose `test/any-token` template takes its token through an address field, which may name any registry entry. */
+function anyTokenClone(): string {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
+  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  const transfer = JSON.parse(readFileSync(join(ROOT, 'templates', 'erc20', 'transfer', 'template.json'), 'utf8'));
+  mkdirSync(join(repoRoot, 'templates', 'test', 'any-token'), { recursive: true });
+  writeFileSync(join(repoRoot, 'templates', 'test', 'any-token', 'template.json'), JSON.stringify({ ...transfer, id: 'test/any-token', card: { ...transfer.card, token: { kind: 'address' } } }));
+  return repoRoot;
+}
+
+test('card seal refuses a vault named through an address field unless the template has a report for it', async () => {
+  const repoRoot = anyTokenClone();
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'test/any-token', values: { token: 'smokehouse-usdc-v1-f5bc', amount: '5', recipient: 'safe' } }] }));
+  const refused = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(refused.code, 1);
+  assert.equal(refused.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
+  assert.deepEqual(refused.asked, []);
+  reportVault(repoRoot, 'test/any-token', 'smokehouse-usdc-v1-f5bc');
+  const sealed = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(sealed.code, 0, sealed.stderr);
+});
+
+test('card new does not offer a vault with no report for the template through an address field', async () => {
+  const repoRoot = anyTokenClone();
+  reportVault(repoRoot, 'test/any-token', 'steakhouse-prime-usdc-v2-0f51');
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'test/any-token'], home, ['smokehouse-usdc-v1-f5bc'], { ...decimalsChain({}), repoRoot });
+  assert.equal(made.code, 1);
+  const listed = [...made.stdout.matchAll(/^ {2}\d+\. ([a-z0-9.-]+) 0x/gm)].map((m) => m[1]);
+  assert.ok(listed.includes('steakhouse-prime-usdc-v2-0f51') && listed.includes('usdc'), listed.join());
+  assert.ok(!listed.includes('smokehouse-usdc-v1-f5bc'), 'a vault with no report is not listed');
+  assert.match(made.stderr, /token: "smokehouse-usdc-v1-f5bc" is none of the listed choices/);
+});
+
+test('card new lists only the entries of the protocol a contract field names, and refuses any other', async () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
+  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  const fluid = JSON.parse(readFileSync(join(ROOT, 'templates', 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
+  mkdirSync(join(repoRoot, 'templates', 'test', 'fluid-only'), { recursive: true });
+  const template = { ...fluid, id: 'test/fluid-only', card: { ...fluid.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } };
+  writeFileSync(join(repoRoot, 'templates', 'test', 'fluid-only', 'template.json'), JSON.stringify(template));
+  for (const vault of ['fluid-fusdc', 'fluid-fusdt', 'steakhouse-prime-usdc-v2-0f51']) reportVault(repoRoot, 'test/fluid-only', vault);
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'test/fluid-only'], home, ['steakhouse-prime-usdc-v2-0f51'], { ...mainnet(), repoRoot });
+  assert.equal(made.code, 1);
+  assert.match(made.stdout, /vault:\n  1\. fluid-fusdc 0x\w{40} \(registry\)\n  2\. fluid-fusdt 0x\w{40} \(registry\)\n/);
+  assert.match(made.stderr, /vault: "steakhouse-prime-usdc-v2-0f51" is none of the listed choices/);
 });
 
 test('card new lists each market with its id, its lltv and every part, takes the id as the answer, and counts its amount in the loan token', async () => {
@@ -387,7 +509,7 @@ const OVER_USDC = (2n ** 256n).toString().replace(/(\d{6})$/, '.$1');
 test('card new takes the largest amount below 2^256 base units', async () => {
   const home = freshHome();
   configure(home);
-  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), MAX_USDC, '0', 'y'], mainnet());
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), MAX_USDC, '0', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes(`  amount: ${MAX_USDC} usdc = ${2n ** 256n - 1n} base units\n`));
 });
@@ -399,18 +521,18 @@ for (const [what, answers, message] of [
   ['a name that is not listed', ['steakhouse', '5', 'y'], /vault: "steakhouse" is none of the listed choices/],
   ['a listed name in another case', ['Steakhouse-Prime-USDC', '5', 'y'], /vault: "Steakhouse-Prime-USDC" is none of the listed choices/],
   ['part of a listed address', [STEAKHOUSE.slice(0, 20), '5', 'y'], /is none of the listed choices/],
-  ['more fractional digits than usdc has decimals', [numberOf('steakhouse-prime-usdc'), '1.0000001', 'y'], /amount: "1.0000001" has more than 6 digits after the point, and usdc has 6 decimals/],
-  ['a negative amount', [numberOf('steakhouse-prime-usdc'), '-5', 'y'], /amount: "-5" is not a plain decimal number/],
-  ['an empty amount', [numberOf('steakhouse-prime-usdc'), '', 'y'], /amount: "" is not a plain decimal number/],
-  ['a hex amount', [numberOf('steakhouse-prime-usdc'), '0x10', 'y'], /amount: "0x10" is not a plain decimal number/],
-  ['an amount with an exponent', [numberOf('steakhouse-prime-usdc'), '5e6', 'y'], /amount: "5e6" is not a plain decimal number/],
-  ['an amount with a plus sign', [numberOf('steakhouse-prime-usdc'), '+5', 'y'], /amount: "\+5" is not a plain decimal number/],
-  ['an amount with a comma', [numberOf('steakhouse-prime-usdc'), '1,5', 'y'], /amount: "1,5" is not a plain decimal number/],
-  ['an amount with no digit before the point', [numberOf('steakhouse-prime-usdc'), '.5', 'y'], /amount: ".5" is not a plain decimal number/],
-  ['an amount with no digit after the point', [numberOf('steakhouse-prime-usdc'), '5.', 'y'], /amount: "5." is not a plain decimal number/],
-  ['an amount of 2^256 base units', [numberOf('steakhouse-prime-usdc'), OVER_USDC, 'y'], /amount: ".*" is 2\^256 base units or more/],
-  ['an amount with far too many digits', [numberOf('steakhouse-prime-usdc'), '9'.repeat(100), 'y'], /amount: ".*" is 2\^256 base units or more/],
-  ['an amount with a leading zero', [numberOf('steakhouse-prime-usdc'), '05', 'y'], /amount: "05" is not a plain decimal number/],
+  ['more fractional digits than usdc has decimals', [numberOf('steakhouse-prime-usdc-v2-0f51'), '1.0000001', 'y'], /amount: "1.0000001" has more than 6 digits after the point, and usdc has 6 decimals/],
+  ['a negative amount', [numberOf('steakhouse-prime-usdc-v2-0f51'), '-5', 'y'], /amount: "-5" is not a plain decimal number/],
+  ['an empty amount', [numberOf('steakhouse-prime-usdc-v2-0f51'), '', 'y'], /amount: "" is not a plain decimal number/],
+  ['a hex amount', [numberOf('steakhouse-prime-usdc-v2-0f51'), '0x10', 'y'], /amount: "0x10" is not a plain decimal number/],
+  ['an amount with an exponent', [numberOf('steakhouse-prime-usdc-v2-0f51'), '5e6', 'y'], /amount: "5e6" is not a plain decimal number/],
+  ['an amount with a plus sign', [numberOf('steakhouse-prime-usdc-v2-0f51'), '+5', 'y'], /amount: "\+5" is not a plain decimal number/],
+  ['an amount with a comma', [numberOf('steakhouse-prime-usdc-v2-0f51'), '1,5', 'y'], /amount: "1,5" is not a plain decimal number/],
+  ['an amount with no digit before the point', [numberOf('steakhouse-prime-usdc-v2-0f51'), '.5', 'y'], /amount: ".5" is not a plain decimal number/],
+  ['an amount with no digit after the point', [numberOf('steakhouse-prime-usdc-v2-0f51'), '5.', 'y'], /amount: "5." is not a plain decimal number/],
+  ['an amount of 2^256 base units', [numberOf('steakhouse-prime-usdc-v2-0f51'), OVER_USDC, 'y'], /amount: ".*" is 2\^256 base units or more/],
+  ['an amount with far too many digits', [numberOf('steakhouse-prime-usdc-v2-0f51'), '9'.repeat(100), 'y'], /amount: ".*" is 2\^256 base units or more/],
+  ['an amount with a leading zero', [numberOf('steakhouse-prime-usdc-v2-0f51'), '05', 'y'], /amount: "05" is not a plain decimal number/],
 ] as const) {
   test(`card new refuses ${what} and seals nothing`, async () => {
     const home = freshHome();
@@ -431,7 +553,7 @@ for (const [what, chain, message] of [
   test(`card new refuses when ${what}, before it asks for the amount`, async () => {
     const home = freshHome();
     configure(home);
-    const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', '4', 'y'], chain);
+    const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', '4', 'y'], chain);
     assert.equal(result.code, 1);
     assert.match(result.stderr, message);
     assert.equal(result.asked.length, 1);
@@ -451,7 +573,7 @@ test('card new refuses a template that is not in the repository', async () => {
 test('card new seals nothing when the signer says no', async () => {
   const home = freshHome();
   configure(home);
-  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc'), '5', '4', 'n'], mainnet());
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', '4', 'n'], mainnet());
   assert.equal(result.code, 1);
   assert.match(result.stderr, /Nothing sealed/);
   assert.equal(existsSync(join(home, 'cards')), false);

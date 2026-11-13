@@ -18,6 +18,7 @@
     "prove-abi": "node scripts/prove-abi.ts",
     "prove-instance": "node scripts/prove-instance.ts",
     "pin-code": "node scripts/pin-code.ts",
+    "pin-solc": "node scripts/pin-solc.ts",
     "check-sources": "node scripts/check-sources.ts",
     "vault-evidence": "node scripts/vault-evidence.ts",
     "erc7730": "node scripts/erc7730.ts",

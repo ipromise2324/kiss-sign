@@ -63,10 +63,10 @@ const permit2Of = (observed: Observed): readonly Permit2Change[] => {
 const depositTemplate = loadTemplate(ROOT, 'morpho/vault-deposit', registry);
 const templates = new Map([[depositTemplate.id, depositTemplate]]);
 const SAFE = '0x2222222222222222222222222222222222222222' as Address;
-const VAULT = registry.entries.get('steakhouse-prime-usdc')!.address;
+const VAULT = registry.entries.get('steakhouse-prime-usdc-v2-0f51')!.address;
 const AMOUNT = 1_000_000n;
 const resolution = resolveCard(
-  { operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount: `${AMOUNT}`, 'min-shares': '1' } }] },
+  { operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: `${AMOUNT}`, 'min-shares': '1' } }] },
   { templates, registry, addressBook: new Map(), safe: SAFE },
 );
 assert.equal(resolution.kind, 'resolved');

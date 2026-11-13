@@ -17,36 +17,64 @@ export type CompilerLoad =
 
 export type Compilers = (version: string) => CompilerLoad;
 
-type Emscripten = {
-  cwrap(
-    name: 'solidity_compile',
-    returns: 'string',
-    args: readonly ['string', 'number', 'number'],
-  ): (input: string, callback: 0, context: 0) => string;
-  cwrap(name: 'solidity_reset', returns: null, args: readonly []): () => void;
-};
-
 export const sha256Hex = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
+
+const ENTRY_POINT = `var kissSignCompile = (function () {
+  if (typeof Module !== 'object' || Module === null) return 'no-module';
+  var compile =
+    Module._solidity_compile !== undefined
+      ? Module.cwrap('solidity_compile', 'string', ['string', 'number', 'number'])
+      : Module._compileStandard !== undefined
+        ? Module.cwrap('compileStandard', 'string', ['string', 'number'])
+        : undefined;
+  if (compile === undefined) return 'no-entry-point';
+  var reset = Module._solidity_reset === undefined ? undefined : Module.cwrap('solidity_reset', null, []);
+  return function (input) {
+    try {
+      return compile(input, 0, 0);
+    } finally {
+      if (reset !== undefined) reset();
+    }
+  };
+})();
+typeof kissSignCompile === 'function' ? 'ready' : kissSignCompile;`;
+
+function runSandboxed(code: string, context: object, filename: string): unknown {
+  try {
+    return runInContext(code, context, { filename });
+  } catch (error) {
+    let message: unknown;
+    try {
+      message = (error as { message?: unknown } | null | undefined)?.message;
+    } catch {
+      message = undefined;
+    }
+    throw new Error(typeof message === 'string' ? `${filename} threw: ${message}` : `${filename} threw`);
+  }
+}
 
 /**
  * Runs the emscripten build in a context with no Node globals, a null-prototype global (so `this.constructor` cannot
- * reach the host realm's Function), and no `eval` or `new Function`.
+ * reach the host realm's Function), and no `eval` or `new Function`. Only primitive strings cross into the context:
+ * the arrays passed to `cwrap` and each call are built by code run inside it, and the input enters as a string literal.
+ * A compile's output is used only when it is a primitive string, and a thrown value only for a `message` that is one.
  */
-function instantiate(version: string, source: string): Solc {
+export function instantiate(version: string, source: string): Solc {
   const context = createContext(Object.create(null), { codeGeneration: { strings: false, wasm: true } });
-  runInContext(source, context, { filename: `soljson-${version}.js` });
-  const module = (context as { Module?: Emscripten }).Module;
-  if (module === undefined) throw new Error(`solc ${version} did not define Module`);
-  const compile = module.cwrap('solidity_compile', 'string', ['string', 'number', 'number']);
-  const reset = module.cwrap('solidity_reset', null, []);
+  const filename = `soljson-${version}.js`;
+  // Old builds such as 0.4.18 see no known environment here and call a global `print` unless Module has one. Defined
+  // inside the context, these functions reach only the context's Function.
+  runSandboxed('var Module = { print: function () {}, printErr: function () {} };', context, filename);
+  runSandboxed(source, context, filename);
+  const status = runSandboxed(ENTRY_POINT, context, filename);
+  if (status === 'no-module') throw new Error(`solc ${version} did not define Module`);
+  if (status !== 'ready') throw new Error(`solc ${version} exports no standard JSON entry point`);
   return {
     version,
     compile: (input) => {
-      try {
-        return compile(input, 0, 0);
-      } finally {
-        reset();
-      }
+      const output = runSandboxed(`kissSignCompile(${JSON.stringify(input)});`, context, filename);
+      if (typeof output !== 'string') throw new Error(`solc ${version} returned no text`);
+      return output;
     },
   };
 }

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { RegistryError, loadRegistry, parseRegistry } from '../src/registry.ts';
+import { RegistryError, loadRegistry, pageUrlsOf, parseRegistry } from '../src/registry.ts';
 import type { RegistryEntry } from '../src/registry.ts';
 import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording } from '../src/research/listings.ts';
 import type { Listings } from '../src/research/listings.ts';
@@ -33,8 +33,8 @@ test('the registry: Circle, Tether, Safe and Morpho sources agree with DefiLlama
   assert.match(text, /usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 \(token\)\n.*\n {2}defillama {2}agrees {2}source domain circle\.com equals circle-usdc/);
   assert.match(text, /coingecko {2}agrees {2}CoinGecko lists usd-coin \(USDC, "USDC"\) at this address, the coin the entry names/);
   assert.match(text, /multisend-call-only-1\.4\.1 .*\n.*\n {2}defillama {2}agrees {2}GitHub org safe-global is one safe \(Safe\) names: safe-global/);
-  assert.match(text, /bundler3 .*\n.*\n {2}defillama {2}agrees {2}source domain morpho\.org equals morpho-blue/);
-  assert.match(text, /steakhouse-prime-usdc .*\n.*\n.*\n {2}coingecko {2}agrees {2}CoinGecko lists steakhouse-usdc \(STEAKUSDC/);
+  assert.match(text, /bundler3 .*\n(?: {2}.*\n)*? {2}defillama {2}agrees {2}source domain morpho\.org equals morpho-blue/);
+  assert.match(text, /steakhouse-prime-usdc-v2-0f51 .*\n.*\n.*\n {2}coingecko {2}agrees {2}CoinGecko lists steakhouse-usdc \(STEAKUSDC/);
   for (const [name, entry] of registry.entries) {
     if (entry.kind === 'token') assert.match(text, new RegExp(`${name} .*\\n.*\\n.*\\n {2}coingecko {2}agrees`), name);
   }
@@ -149,7 +149,7 @@ const html = (body: string): Served => ({ status: 200, text: `<!doctype html><ht
 
 async function pageReport(fields: Record<string, unknown>, served: Record<string, Served>): Promise<string> {
   const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'morpho-blue', ...fields } });
-  return report(entries, listings, await gatherSourcePages(entries.map((e) => e.source), getFrom(served)));
+  return report(entries, listings, await gatherSourcePages(entries.flatMap(pageUrlsOf), getFrom(served)));
 }
 
 const DOCS = 'https://docs.morpho.org/addresses';
@@ -170,7 +170,7 @@ test('the registry: every labelled source page has its address next to its label
   assert.match(text, /bundler3 .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address 5 characters after "Bundler3"/);
   assert.match(text, /cctp-message-transmitter .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address \d+ characters after "Ethereum" under a heading naming "MessageTransmitter"/);
   assert.match(text, /multisend-1\.3\.0-eip155 .*\n(?: {2}.*\n)*? {2}github {5}agrees {2}commit ca9cb0d2d5f5 of safe-global\/safe-deployments is on the default branch main/);
-  assert.match(text, /hyperithm-usdc-apex-0932 .*\n(?: {2}.*\n)*? {2}url {8}FINDING the source URL holds the address/);
+  assert.match(text, /hyperithm-usdc-apex-v2-9e2f .*\n(?: {2}.*\n)*? {2}url {8}FINDING the source URL holds the address/);
 });
 
 test('an address in the label\'s own table row agrees; in another row, too far away, or past another address it is a finding', async () => {
@@ -444,7 +444,65 @@ test('the report lists the sites each protocol\'s sources use', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
   assert.match(text, /sites per protocol, for the signer to check each is the protocol's own:\n/);
   assert.match(text, /\n {2}safe\n {4}github\.com\/safe-global: multisend-1\.3\.0, multisend-1\.3\.0-eip155,/);
-  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}steakhouse\.financial: steakhouse-prime-usdc, smokehouse-usdc, steakhouse-high-yield-usdc\n/);
+  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}github\.com\/morpho-org: bundler3, vault-v2-factory, morpho-blue, blue-bundles-v1, adaptive-curve-irm, general-adapter-1\n {2}steakhouse-financial\n/);
+  assert.match(text, /\n {2}steakhouse-financial\n {4}steakhouse\.financial: steakhouse-prime-usdc-v2-0f51, steakhouse-high-yield-usdc-v2-a757, steakhouse-usdt-v1-cfba, smokehouse-usdc-v1-f5bc\n/);
+});
+
+test('each of moreSources is read and checked as the source is: its label, its site and its commit', async () => {
+  const SECOND = 'https://docs.morpho.org/sdk';
+  const text = await pageReport(
+    { source: DOCS, sourceLabel: 'Bundler3', moreSources: [{ url: SECOND, label: 'bundler3' }, { url: PINNED, label: 'canonical' }] },
+    {
+      [DOCS]: html(`<p>Bundler3 ${ADDR}</p>`),
+      [SECOND]: html(`<p>bundler3: ${OTHER}</p>`),
+      [REPO_API]: { status: 200, text: JSON.stringify({ default_branch: 'main' }) },
+      [compareUrl]: { status: 200, text: JSON.stringify({ status: 'diverged' }) },
+      [RAW]: deployments,
+    },
+  );
+  assert.match(text, /\n {2}source 1 {3}https:\/\/docs\.morpho\.org\/sdk\n {2}source 2 {3}https:\/\/github\.com\/safe-global/);
+  assert.match(text, /\n {2}defillama 1 agrees {2}source 1 domain morpho\.org equals morpho-blue/);
+  assert.match(text, /\n {2}page 1 {5}FINDING the address is not found on the page as served/);
+  assert.match(text, /\n {2}defillama 2 FINDING source 2 is GitHub org safe-global; DefiLlama names no GitHub org for morpho-blue/);
+  assert.match(text, /\n {2}github 2 {3}FINDING commit ca9cb0d2d5f5 of safe-global\/safe-deployments is not on the default branch main/);
+  assert.match(text, /\n {2}page 2 {5}agrees {2}the page has the address 9 characters after "canonical"/);
+});
+
+test('the registry refuses a moreSources page that is malformed, repeats a page, or whose URL holds the address', () => {
+  const refused = (moreSources: unknown, problem: RegExp) =>
+    assert.throws(
+      () => entriesOf({ r: { address: ADDR, kind: 'router', source: DOCS, sourceLabel: 'Bundler3', moreSources } }),
+      (e: unknown) => e instanceof RegistryError && problem.test(e.message),
+    );
+  refused([], /r\.moreSources: not a non-empty list of pages/);
+  refused({ url: DOCS, label: 'x' }, /r\.moreSources: not a non-empty list of pages/);
+  refused([{ url: 'http://docs.morpho.org/sdk', label: 'x' }], /r\.moreSources\[0\]\.url: not an https URL/);
+  refused([{ url: `https://app.morpho.org/vault/${ADDR.toLowerCase()}`, label: 'x' }], /r\.moreSources\[0\]\.url: holds the entry's address, and a page may echo its own URL/);
+  refused([{ url: `https://app.morpho.org/vault/${ADDR}`, label: 'x' }], /r\.moreSources\[0\]\.url: holds the entry's address/);
+  refused([{ url: DOCS, label: 'x' }], /r\.moreSources\[0\]\.url: names a page the entry already names/);
+  refused([{ url: `https://app.morpho.org/vault/0x6566194141%65efa99${ADDR.slice(18)}`, label: 'x' }], /r\.moreSources\[0\]\.url: holds the entry's address/);
+  for (const again of ['https://DOCS.morpho.org/addresses#bundler3', 'https://docs.morpho.org/%61ddresses']) {
+    refused([{ url: again, label: 'x' }], /r\.moreSources\[0\]\.url: names a page the entry already names/);
+  }
+  refused([{ url: 'https://docs.morpho.org/sdk', label: 'x' }, { url: 'https://docs.morpho.org/sdk#top', label: 'y' }], /r\.moreSources\[1\]\.url: names a page the entry already names/);
+  refused([{ url: 'https://docs.morpho.org/sdk', label: ' x' }], /r\.moreSources\[0\]\.label: not page text of 1 to 120 characters/);
+  refused([{ url: 'https://docs.morpho.org/sdk' }], /r\.moreSources\[0\]\.label: not page text/);
+  refused([{ url: 'https://docs.morpho.org/sdk', label: 'x', note: 'y' }], /r\.moreSources\[0\]\.note: unexpected field/);
+});
+
+test('the registry refuses a github.com file and its raw.githubusercontent.com copy as two pages of one entry', () => {
+  const entry = (source: string, url: string) => entriesOf({ r: { address: ADDR, kind: 'router', source, sourceLabel: 'canonical', moreSources: [{ url, label: 'canonical' }] } });
+  const same = (e: unknown) => e instanceof RegistryError && /r\.moreSources\[0\]\.url: names a page the entry already names/.test(e.message);
+  assert.throws(() => entry(PINNED, RAW), same);
+  assert.throws(() => entry(RAW, PINNED), same);
+  assert.throws(() => entry(PINNED, RAW.replace('safe-global/safe-deployments', 'Safe-Global/Safe-Deployments')), same);
+  assert.doesNotThrow(() => entry(PINNED, RAW.replace('v1.3.0', 'v1.4.1')));
+});
+
+test('a source URL that holds the address percent-encoded is a finding, and its page is not read', async () => {
+  const source = `https://app.morpho.org/ethereum/vault/0x6566194141%65efa99${ADDR.slice(18).toUpperCase()}/bundler`;
+  const text = await pageReport({ source, sourceLabel: 'Bundler3' }, {});
+  assert.match(text, /url {8}FINDING the source URL holds the address, and a page echoes its own URL; the page is not read/);
 });
 
 test('the registry refuses a sourceLabel that is empty, padded, or too long', () => {

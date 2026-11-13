@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { unreadRefusal } from '../src/chain/https.ts';
-import { loadRegistry } from '../src/registry.ts';
+import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
 import { checkSources, fetchListing, formatResults, listingsFor, trimForRecording } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
@@ -40,7 +40,7 @@ const note = (read: string) => void unread.push(read);
 const listings = await listingsFor(entries, loadPublicSuffixList(), (listing) => fetchListing(listing, note));
 const apis = await gatherApiAnswers(entries, retryingSend(httpsApi, note));
 const pages = await gatherSourcePages(
-  entries.map((e) => e.source),
+  entries.flatMap(pageUrlsOf),
   retryingGet(httpsGet, note),
   apis,
 );

@@ -1,8 +1,8 @@
 {
   "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
   "block": {
-    "number": "26386376",
-    "hash": "0xafb260cecff0211955b4967acf6ec23654485d2d4121cd3c83d56c83115249dd"
+    "number": "26399489",
+    "hash": "0x5c11eb0b71e965ce1a4f0bff7b5b3b1b6e69cfab4b111ebf775845a040d1d713"
   },
   "providers": [
     "alchemy",

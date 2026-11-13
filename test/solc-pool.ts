@@ -9,7 +9,7 @@ import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import { cachedCompilers, pinnedCompilers } from '../src/contracts/solc.ts';
 import type { Compilers } from '../src/contracts/solc.ts';
 import type { Registry } from '../src/registry.ts';
-import { entriesOf, loadSubject } from '../src/research/report.ts';
+import { entriesOf, loadReport } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
 
 /** Test-only: no command under src/, scripts/ or bin/ reads it, which test/solc-pool.test.ts checks. */
@@ -77,7 +77,12 @@ function compileInWorker(job: Job): Promise<string | undefined> {
 /** The recorded ABI cases a replay of these reports proves again, as `replayReport` picks them. */
 export function reportCases(root: string, registry: Registry, targets: readonly Target[]): AbiCase[] {
   const cases = loadAbiCases(root);
-  const entries = new Set(targets.flatMap((target) => entriesOf(loadSubject(root, registry, target), registry)));
+  const entries = new Set(
+    targets.flatMap((target) => {
+      const report = loadReport(root, registry, target);
+      return entriesOf(report.subject, report.registry);
+    }),
+  );
   return [...entries].flatMap((entry) => cases.get(entry.address) ?? []);
 }
 

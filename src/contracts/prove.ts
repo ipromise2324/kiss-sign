@@ -72,7 +72,7 @@ export function describeRefusal(refusal: Refusal): string {
     case 'unsupported-language':
       return `the source is ${refusal.language}; only Solidity is compiled`;
     case 'compiler-not-pinned':
-      return `solc ${refusal.version} is not pinned in src/contracts/solc-pins.ts`;
+      return `solc ${refusal.version} is not pinned in src/contracts/solc-pins.ts; run \`pnpm pin-solc ${refusal.version}\``;
     case 'compiler-missing':
       return `${refusal.path} is missing; run \`pnpm fetch-solc\``;
     case 'compiler-hash-mismatch':
@@ -178,14 +178,18 @@ function compile(source: VerifiedSource, compilers: Compilers, onChain: Hex): Co
   };
 }
 
-/** solc's CBOR trailer with an IPFS metadata hash: the map `{"ipfs": <34-byte multihash>, "solc": <version>}` and its length. */
-const IPFS_TRAILER = /a264697066735822[0-9a-f]{68}64736f6c6343[0-9a-f]{6}0033$/;
-const IPFS_HASH_FROM_END = 45;
-const IPFS_HASH_LENGTH = 34;
+/**
+ * solc's CBOR trailers that carry a metadata hash, and where that hash lies counted from the end of the code: the map
+ * `{"ipfs": <34-byte multihash>, "solc": <version>}` from 0.6.0, and `{"bzzr0": <32-byte Swarm hash>}` before 0.5.9.
+ */
+const HASH_TRAILERS = [
+  { trailer: /a264697066735822[0-9a-f]{68}64736f6c6343[0-9a-f]{6}0033$/, fromEnd: 45, length: 34 },
+  { trailer: /a165627a7a72305820[0-9a-f]{64}0029$/, fromEnd: 34, length: 32 },
+];
 
 /**
  * Immutables are written by the constructor and libraries are linked at deployment, so their bytes are not in the
- * source. The metadata hash in an IPFS trailer hashes the source text, comments and file names included, so a source
+ * source. The metadata hash in a trailer hashes the source text, comments and file names included, so a source
  * Sourcify holds as a partial match differs from the code only there. Every other byte must be equal. Returns whether
  * the metadata hash differed.
  */
@@ -199,10 +203,10 @@ function compare(compiled: Compiled, onChain: Hex, at: Address): boolean {
     if (start < 0 || length <= 0 || start + length > masked.length) mismatch('a masked span falls outside the code');
     masked.fill(1, start, start + length);
   }
-  const hashStart = masked.length - IPFS_HASH_FROM_END;
-  const hashOf = (code: string) => code.slice(2 * hashStart, 2 * (hashStart + IPFS_HASH_LENGTH));
-  const hashDiffers = IPFS_TRAILER.test(ours) && IPFS_TRAILER.test(chain) && hashOf(ours) !== hashOf(chain);
-  if (hashDiffers) masked.fill(1, hashStart, hashStart + IPFS_HASH_LENGTH);
+  const shape = HASH_TRAILERS.find(({ trailer }) => trailer.test(ours) && trailer.test(chain));
+  const hash = shape === undefined ? undefined : { start: masked.length - shape.fromEnd, end: masked.length - shape.fromEnd + shape.length };
+  const hashDiffers = hash !== undefined && ours.slice(2 * hash.start, 2 * hash.end) !== chain.slice(2 * hash.start, 2 * hash.end);
+  if (hashDiffers) masked.fill(1, hash.start, hash.end);
   for (let i = 0; i < masked.length; i++) {
     if (masked[i] === 0 && ours.slice(2 * i, 2 * i + 2) !== chain.slice(2 * i, 2 * i + 2)) mismatch(`first difference at byte ${i}`);
   }

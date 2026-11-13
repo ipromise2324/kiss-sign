@@ -81,14 +81,14 @@ test('an ETH transfer shows its value in wei and no data', () => {
 
 test('a Bundler3 deposit lists its bundle calls and the trailers the template allows', () => {
   const { tree, text } = shown('morpho-deposit-approve-trailer-other-safe', {
-    operations: [{ template: 'morpho/vault-deposit', values: { vault: 'hyperithm-usdc-apex-7777', amount: '10001000000', 'min-shares': '9482917730630123475126' } }],
+    operations: [{ template: 'morpho/vault-deposit', values: { vault: 'hyperithm-usdc-apex-v1-7777', amount: '10001000000', 'min-shares': '9482917730630123475126' } }],
   });
   assert.equal(tree.count, 3);
   assert.deepEqual(numbers(text), [1, 2, 3]);
   assert.deepEqual(selectors(text), ['0x8d80ff0a', '0x095ea7b3', '0x374f435d', '0xd96ca0b9', '0x6ef5eeae']);
   assert.match(text, /注意: 呼叫 #2 的資料在引數之後多出 8 bytes: 0x6915469b25afea44\n/);
   assert.match(text, /注意: 呼叫 #3 的資料在引數之後多出 8 bytes: 0x6915469b25afea44\n/);
-  assert.match(text, /── Bundler3 呼叫 1\/2\n {13}to: {4}0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 {2}general-adapter1\n {13}value: 0 wei\n/);
+  assert.match(text, /── Bundler3 呼叫 1\/2\n {13}to: {4}0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 {2}general-adapter-1\n {13}value: 0 wei\n/);
   assert.match(text, /── Bundler3 呼叫 2\/2\n/);
   assert.match(text, /引數 3: {2}1054633213541066\n/);
   assert.equal(text.match(/10001000000 {2}（= 10001 usdc）/g)?.length, 3);

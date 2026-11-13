@@ -2,14 +2,50 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
-import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName } from '../registry.ts';
-import type { Attribute, ContractKind, MarketPart, Registry } from '../registry.ts';
+import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName, isMarketEntryPart } from '../registry.ts';
+import type { Attribute, ContractKind, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
+/**
+ * The registry entries a contract card field accepts: those of `registryKind`, and when `protocol` is set, only those
+ * that belong to the DefiLlama protocol of that slug.
+ */
+export type EntryScope = { readonly registryKind: ContractKind; readonly protocol: string | undefined };
+
+/**
+ * The DefiLlama protocol an entry belongs to. An entry with a `factory` belongs to its factory's protocol, which the
+ * chain proves through the factory's `instanceCheck`; its own `defillama` names the site that lists it, such as a curator's.
+ */
+export function protocolOf(entry: RegistryEntry, registry: Registry): { readonly slug: string | undefined; readonly why: string } {
+  const factory = entry.attributes.factory;
+  if (factory === undefined) return { slug: entry.defillama, why: '' };
+  return { slug: registry.entries.get(factory)?.defillama, why: ` (its factory ${factory})` };
+}
+
+/** Why `entry` cannot fill a contract card field of `scope`, or undefined when it can. */
+export function contractRefusal(
+  scope: EntryScope,
+  entry: RegistryEntry,
+  registry: Registry,
+): { readonly reason: 'wrong-contract-kind' | 'wrong-protocol'; readonly detail: string } | undefined {
+  if (entry.kind !== scope.registryKind) return { reason: 'wrong-contract-kind', detail: `${entry.name} is a ${entry.kind}, not a ${scope.registryKind}` };
+  if (scope.protocol === undefined) return undefined;
+  const protocol = protocolOf(entry, registry);
+  if (protocol.slug !== scope.protocol) {
+    return { reason: 'wrong-protocol', detail: `${entry.name} is a ${entry.kind} of ${protocol.slug ?? 'no DefiLlama protocol'}${protocol.why}, not of ${scope.protocol}` };
+  }
+  return undefined;
+}
+
+export const inScope = (scope: EntryScope, entry: RegistryEntry, registry: Registry): boolean => contractRefusal(scope, entry, registry) === undefined;
+
+/** Every registry entry a contract card field of `scope` accepts, in registry order. */
+export const scopeEntries = (scope: EntryScope, registry: Registry): RegistryEntry[] => [...registry.entries.values()].filter((entry) => inScope(scope, entry, registry));
+
 /** What the signer fills in at each signing. */
 export type CardField =
-  | { readonly kind: 'contract'; readonly registryKind: ContractKind }
+  | { readonly kind: 'contract'; readonly scope: EntryScope }
   /** A base-unit integer of the token `of` names. */
   | { readonly kind: 'amount'; readonly of: TokenRef }
   /** A registry name, an address-book name, or `safe`. */
@@ -91,17 +127,35 @@ export type Effect = { readonly token: TokenRef; readonly amount: EffectAmount; 
 export const VIEW_CHANGES = ['increases', 'decreases', 'same'] as const;
 export type ViewChange = (typeof VIEW_CHANGES)[number];
 
-/**
- * A view function on a registry contract, called just before and just after the transaction with every argument
- * bound. Each return value `changes` names must change that way; the others are not judged.
- */
-export type ViewEffect = {
+/** A view call on a registry contract with every argument bound before any transaction runs. */
+export type BoundView = {
   readonly to: string;
   readonly fn: AbiFunction;
   readonly args: readonly Rule[];
   readonly returns: readonly AbiParam[];
+};
+
+/**
+ * A view function on a registry contract, called just before and just after the transaction with every argument
+ * bound. Each return value `changes` names must change that way; the others are not judged.
+ */
+export type ViewEffect = BoundView & {
   /** By the return value's position, which `returns` names. */
   readonly changes: readonly { readonly value: number; readonly change: ViewChange }[];
+};
+
+/**
+ * A view the report reads for every value of one card field, `field`, to show the size of what it names. `verify` never
+ * reads it. Every named return value is shown, counted in its unit's decimals; `ratio`, by return position, is printed
+ * as a percentage.
+ */
+export type Fact = BoundView & {
+  readonly field: string;
+  /** By the return value's position, which `returns` names. */
+  readonly units: readonly { readonly value: number; readonly unit: TokenRef }[];
+  readonly ratio: readonly [number, number] | undefined;
+  /** Where the protocol defines the ratio; present exactly when `ratio` is. */
+  readonly reason: string | undefined;
 };
 
 export type Template = {
@@ -113,6 +167,7 @@ export type Template = {
   readonly same: readonly CardRef[];
   readonly calls: readonly TemplateCall[];
   readonly effects: { readonly gives: readonly Effect[]; readonly gets: readonly Effect[]; readonly views: readonly ViewEffect[] };
+  readonly facts: readonly Fact[];
 };
 
 export const TEMPLATES_DIR = 'templates';
@@ -169,7 +224,7 @@ function cardRef(path: string, raw: string, card: CardFields): CardRef {
     return { field, attribute: part };
   }
   if (!isAttribute(attribute)) throw new TemplateError(path, `${JSON.stringify(attribute)} is not a registry attribute`);
-  if (target.kind !== 'contract' || !(ATTRIBUTES[attribute].of as readonly ContractKind[]).includes(target.registryKind)) {
+  if (target.kind !== 'contract' || !(ATTRIBUTES[attribute].of as readonly ContractKind[]).includes(target.scope.registryKind)) {
     throw new TemplateError(path, `card field ${field} has no ${attribute}`);
   }
   return { field, attribute };
@@ -421,14 +476,18 @@ function templateCall(path: string, raw: unknown, scope: Scope, last: boolean): 
 }
 
 /** A field's parser waits for the full field list, since `amount.of` may name a field declared after it. */
-function cardField(path: string, raw: unknown): (fields: CardFields) => CardField {
+function cardField(path: string, raw: unknown, registry: Registry): (fields: CardFields) => CardField {
   const value = object(path, raw);
   switch (value.kind) {
     case 'contract': {
-      exactKeys(path, value, ['kind', 'registryKind']);
+      exactKeys(path, value, ['kind', 'registryKind'], ['defillama']);
       const registryKind = CONTRACT_KINDS.find((k) => k === value.registryKind);
       if (registryKind === undefined) throw new TemplateError(`${path}.registryKind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
-      return () => ({ kind: 'contract', registryKind });
+      const scope = { registryKind, protocol: value.defillama === undefined ? undefined : text(`${path}.defillama`, value.defillama) };
+      if (scope.protocol !== undefined && scopeEntries(scope, registry).length === 0) {
+        throw new TemplateError(`${path}.defillama`, `no registry ${registryKind} belongs to the DefiLlama protocol ${JSON.stringify(scope.protocol.slice(0, 80))}`);
+      }
+      return () => ({ kind: 'contract', scope });
     }
     case 'amount': {
       exactKeys(path, value, ['kind', 'of']);
@@ -485,9 +544,8 @@ function boundArgument(path: string, rule: Rule): void {
   else if (!['card', 'safe', 'contract', 'const'].includes(rule.kind)) throw new TemplateError(path, `a view's argument is bound by card, safe, contract or const, not ${rule.kind}`);
 }
 
-function view(path: string, raw: unknown, scope: Scope): ViewEffect {
-  const value = object(path, raw);
-  exactKeys(path, value, ['to', 'function', 'args', 'change']);
+/** `to`, `function` and `args` of a view, as `effects.views` and `facts` write them. */
+function boundView(path: string, value: Json, scope: Scope): BoundView {
   const to = rule(`${path}.to`, value.to, { kind: 'address' }, scope);
   if (to.kind !== 'contract') throw new TemplateError(`${path}.to`, 'must name a registry contract');
   let parsed: ReturnType<typeof parseViewSignature>;
@@ -500,6 +558,13 @@ function view(path: string, raw: unknown, scope: Scope): ViewEffect {
   const { fn, returns } = parsed;
   const args = params(`${path}.args`, value.args, fn.params, scope);
   args.forEach((arg, i) => boundArgument(`${path}.args.${paramName(fn.params[i] as AbiParam, i)}`, arg));
+  return { to: to.name, fn, args, returns };
+}
+
+function view(path: string, raw: unknown, scope: Scope): ViewEffect {
+  const value = object(path, raw);
+  exactKeys(path, value, ['to', 'function', 'args', 'change']);
+  const { to, fn, args, returns } = boundView(path, value, scope);
   const changes = Object.entries(object(`${path}.change`, value.change)).map(([name, change]) => {
     const at = `${path}.change.${name}`;
     const index = returns.findIndex((param) => param.name === name);
@@ -511,17 +576,137 @@ function view(path: string, raw: unknown, scope: Scope): ViewEffect {
     return { value: index, change: known };
   });
   if (changes.length === 0) throw new TemplateError(`${path}.change`, 'names no return value');
-  return { to: to.name, fn, args, returns, changes };
+  return { to, fn, args, returns, changes };
+}
+
+function ruleLeaves(rule: Rule): Rule[] {
+  if (rule.kind === 'fields') return rule.fields.flatMap(ruleLeaves);
+  if (rule.kind === 'items') return rule.items.flatMap(ruleLeaves);
+  return [rule];
+}
+
+function fact(path: string, raw: unknown, scope: Scope, protocols: ReadonlyMap<string, readonly RegistryEntry[]>): Fact {
+  const value = object(path, raw);
+  exactKeys(path, value, ['to', 'function', 'args', 'units'], ['ratio', 'reason']);
+  const view = boundView(path, value, scope);
+  const slug = scope.registry.entries.get(view.to)?.defillama;
+  if (slug === undefined || !protocols.has(slug)) {
+    throw new TemplateError(`${path}.to`, `${view.to} is not a contract of a DefiLlama protocol a call targets (${[...protocols.keys()].join(', ') || 'none'}), so the report would show the fact under no protocol`);
+  }
+  const leaves = view.args.flatMap(ruleLeaves);
+  if (leaves.some((rule) => rule.kind === 'safe')) throw new TemplateError(`${path}.args`, "a fact never reads the Safe's state");
+  const fields = [...new Set(leaves.flatMap((rule) => (rule.kind === 'card' ? [rule.ref.field] : [])))];
+  const [field] = fields;
+  if (field === undefined || fields.length > 1) throw new TemplateError(`${path}.args`, `must name exactly one card field, not ${fields.length}`);
+  const kind = scope.card.get(field)?.kind;
+  if (kind !== 'contract' && kind !== 'market') throw new TemplateError(`${path}.args`, `card field ${field} is not a contract or a market field`);
+  const units = Object.entries(object(`${path}.units`, value.units)).map(([name, raw]) => {
+    const at = `${path}.units.${name}`;
+    const index = view.returns.findIndex((param) => param.name === name);
+    const type = view.returns[index]?.type;
+    if (type === undefined) throw new TemplateError(at, `not a named return value of ${view.fn.name}`);
+    if (type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(at, `${canonicalType(type)} is not a number; only a number is counted in a token`);
+    const token = text(at, raw);
+    if (token === 'eth') return { value: index, unit: 'eth' as const };
+    const ref = cardFieldName(token);
+    if (ref === undefined) throw new TemplateError(at, 'must be eth or card.<field>');
+    const unit = cardToken(at, ref, scope.card);
+    if (unit.field !== field) throw new TemplateError(at, `must be a token of card field ${field}, which the fact reads for`);
+    return { value: index, unit };
+  });
+  const unnamed = view.returns.find((param) => param.name !== undefined && !units.some((u) => view.returns[u.value] === param));
+  if (unnamed !== undefined) throw new TemplateError(`${path}.units`, `names no unit for ${unnamed.name}; leave a return value unnamed to leave it unshown`);
+  let ratio: Fact['ratio'];
+  if (value.ratio !== undefined) {
+    const pair = array(`${path}.ratio`, value.ratio);
+    const of = pair.map((name, i) => units.find((u) => view.returns[u.value]?.name === text(`${path}.ratio[${i}]`, name)));
+    const [a, b] = of;
+    if (pair.length !== 2 || a === undefined || b === undefined || a === b) throw new TemplateError(`${path}.ratio`, 'must name two different named return values');
+    if (JSON.stringify(a.unit) !== JSON.stringify(b.unit)) throw new TemplateError(`${path}.ratio`, 'names two values counted in different tokens');
+    ratio = [a.value, b.value];
+  }
+  const reason = value.reason === undefined ? undefined : text(`${path}.reason`, value.reason);
+  if ((ratio === undefined) !== (reason === undefined)) {
+    throw new TemplateError(`${path}.reason`, ratio === undefined ? 'explains a ratio the fact does not name' : 'missing: say where the protocol defines the ratio');
+  }
+  return { ...view, field, units, ratio, reason };
+}
+
+/** The registry names a card reference can resolve to, in registry order. */
+export function refNames(ref: CardRef, template: Template, registry: Registry): string[] {
+  const field = template.card.get(ref.field);
+  const { attribute } = ref;
+  if (field?.kind === 'market') {
+    return attribute !== undefined && isMarketEntryPart(attribute) ? [...new Set([...registry.markets.values()].map((m) => m[attribute].name))] : [];
+  }
+  if (field?.kind !== 'contract') return [];
+  const candidates = scopeEntries(field.scope, registry);
+  if (attribute === undefined) return candidates.map((e) => e.name);
+  return isAttribute(attribute) ? [...new Set(candidates.flatMap((e) => e.attributes[attribute] ?? []))] : [];
+}
+
+function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
+  if (rule.kind === 'contract') return [rule.name];
+  const names = rule.kind === 'card' ? refNames(rule.ref, template, registry) : [];
+  return names.length > 0 ? names : undefined;
+}
+
+/**
+ * For each function, by signature, the registry names the template calls it on: a call's `to`, or for a call nested in
+ * a tuple, such as a Bundler3 bundle item, the tuple's one address field. Absent when no call site binds its target.
+ */
+export function callTargets(template: Template, registry: Registry): Map<string, string[]> {
+  const targets = new Map<string, string[]>();
+  const visitCall = (node: CallNode, target: Rule | undefined): void => {
+    const names = target === undefined ? undefined : targetNames(target, template, registry);
+    if (names !== undefined) targets.set(node.fn.signature, [...new Set([...(targets.get(node.fn.signature) ?? []), ...names])]);
+    node.fn.params.forEach((param, i) => visitArg(node.args[i] as Rule, param));
+  };
+  const visitArg = (rule: Rule, param: AbiParam | undefined): void => {
+    if (rule.kind === 'call') visitCall(rule.call, undefined);
+    if (rule.kind === 'items') {
+      const item = param?.type.kind === 'array' || param?.type.kind === 'fixed-array' ? { name: undefined, type: param.type.item } : undefined;
+      rule.items.forEach((r) => visitArg(r, item));
+    }
+    if (rule.kind === 'fields') {
+      const components = param?.type.kind === 'tuple' ? param.type.components : [];
+      const addresses = components.flatMap((c, i) => (c.type.kind === 'address' ? [rule.fields[i] as Rule] : []));
+      const target = addresses.length === 1 ? addresses[0] : undefined;
+      rule.fields.forEach((r, i) => (r.kind === 'call' ? visitCall(r.call, target) : visitArg(r, components[i])));
+    }
+  };
+  for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data, call.to);
+  return targets;
+}
+
+/** The registry entries the template's calls go to, nested calls' targets included, in call order. */
+export function callTargetEntries(template: Template, registry: Registry): RegistryEntry[] {
+  const empty = template.calls.flatMap((call) => (call.data === 'empty' ? (targetNames(call.to, template, registry) ?? []) : []));
+  const names = new Set([...callTargets(template, registry).values()].flat().concat(empty));
+  return [...names].map((name) => registry.entries.get(name) as RegistryEntry);
+}
+
+/**
+ * The DefiLlama protocols the template's calls go to, each with its call targets, an entry with a `factory` under its
+ * factory's protocol; a token's issuer is not such a protocol.
+ */
+export function calledProtocols(template: Template, registry: Registry): ReadonlyMap<string, readonly RegistryEntry[]> {
+  const protocols = new Map<string, RegistryEntry[]>();
+  for (const entry of callTargetEntries(template, registry)) {
+    const { slug } = protocolOf(entry, registry);
+    if (entry.kind !== 'token' && slug !== undefined) protocols.set(slug, [...(protocols.get(slug) ?? []), entry]);
+  }
+  return protocols;
 }
 
 export function parseTemplate(raw: unknown, registry: Registry): Template {
   const value = object('template', raw);
-  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same']);
+  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same', 'facts']);
   const id = text('id', value.id);
   if (!ID.test(id)) throw new TemplateError('id', 'not <protocol>/<operation>');
   const pending = Object.entries(object('card', value.card)).map(([name, field]) => {
     if (!isEntryName(name) || name.includes('.')) throw new TemplateError(`card.${name}`, 'not a card field name');
-    return [name, cardField(`card.${name}`, field)] as const;
+    return [name, cardField(`card.${name}`, field, registry)] as const;
   });
   const fields = new Map<string, CardField>(pending.map(([name]) => [name, { kind: 'address' }]));
   for (const [name, build] of pending) fields.set(name, build(fields));
@@ -534,7 +719,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
   const effects = object('effects', value.effects);
   exactKeys('effects', effects, ['gives', 'gets'], ['views']);
-  return {
+  const template: Template = {
     id,
     card: fields,
     nonce,
@@ -545,7 +730,10 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
       gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets')),
       views: effects.views === undefined ? [] : array('effects.views', effects.views).map((v, i) => view(`effects.views[${i}]`, v, scope)),
     },
+    facts: [],
   };
+  const protocols = calledProtocols(template, registry);
+  return { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
 }
 
 /** Every card reference the template makes. */

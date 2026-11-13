@@ -15,9 +15,10 @@ import { proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
 import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
-import { loadRegistry } from '../src/registry.ts';
+import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
 import { fetchListing, listingsFor } from '../src/research/listings.ts';
+import { factsRecording, factsScope, parseFactsRecording, protocolFacts } from '../src/research/protocol-facts.ts';
 import { chainAt, loadSnapshot, trimForRecording as trimErc7730 } from '../src/research/erc7730.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import {
@@ -26,7 +27,9 @@ import {
   entriesOf,
   erc7730Text,
   generatedPath,
-  loadSubject,
+  loadReport,
+  ReportError,
+  reportArgs,
   pastTxsRecordings,
   programChanges,
   renderReport,
@@ -46,15 +49,20 @@ import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.t
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
-       node scripts/report.ts (<protocol>/<operation> | --vault <registry vault name>) (--offline | --render)
+const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
+       node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) (--offline | --render)
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
 docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
 the operation can touch, each span of its code pin checked on the chain, pnpm vault-evidence for every vault its card
-can name, the past-txs recordings of the template studied again with each recorded transaction fetched again by hash
-through both providers, and pnpm erc7730 for every such entry. --vault prints the same for one vault, for a pull
-request that adds it.
+can name, the protocol facts (DefiLlama's TVL, listing date and hacks for each protocol a call goes to, each facts view
+for every value its card field can name, and each token's decimals()), the past-txs recordings of the template studied
+again with each recorded transaction fetched again by hash through both providers, and pnpm erc7730 for every such
+entry. --vault prints the same for one vault, for a pull request that adds it.
+
+A template whose card names a vault is reported per vault: --vault-of names the vault, and the report reads the
+registry as if that vault were the only one the card can name. Its files sit in templates/<protocol>/<operation>/vaults/<vault>/
+and its recording in testdata/report/<protocol>-<operation>/<vault>.json.
 
 A read with no answer (no connection, a timeout, a server error or a rate limit) is asked again after each pause; one
 still without an answer prints as UNVERIFIABLE, never as FINDING, and --record then writes nothing.
@@ -64,8 +72,9 @@ writes the committed report from those recordings alone: templates/<protocol>/<o
 registry/reports/<vault>.generated.md, and for a template with notes.json, report.generated.html beside it. --offline
 prints the Markdown text from the recordings, reading nothing live; --render writes both files from them.
 --compare reads the listings, pages, official APIs, ABI proofs, code spans and ERC-7730 attestations live, reads each vault again at the blocks
-the committed report names, fetches each recorded past transaction again by hash, and prints each fact that differs
-from the committed report; it exits 1 on any. It does not search for past transactions again. For a template with
+the committed report names, reads the protocol facts and decimals again at the block the recording names, fetches each
+recorded past transaction again by hash, and prints each fact that differs from the committed report, setting aside
+DefiLlama's TVL; it exits 1 on any. It does not search for past transactions again. For a template with
 notes.json it also writes report.generated.html again from the recordings and notes with this code and requires the
 committed file to equal it byte for byte. It first prints every file the pull request changes outside templates/,
 registry/ and testdata/ against origin/main, and AI TEXT for each notes.json it changes.
@@ -77,6 +86,7 @@ runs the code checked out here. Run --compare from main with --data, so the pull
 const { values: flags, positionals } = parseArgs({
   options: {
     vault: { type: 'string' },
+    'vault-of': { type: 'string' },
     record: { type: 'boolean' },
     offline: { type: 'boolean' },
     render: { type: 'boolean' },
@@ -90,12 +100,13 @@ if (
   (id === undefined) === (flags.vault === undefined) ||
   positionals.length > 1 ||
   [flags.record, flags.offline, flags.render, flags.compare].filter(Boolean).length > 1 ||
-  (flags.data !== undefined && !flags.compare)
+  (flags.data !== undefined && !flags.compare) ||
+  (flags['vault-of'] !== undefined && id === undefined)
 ) {
   console.error(USAGE);
   process.exit(2);
 }
-const target: Target = id === undefined ? { vault: flags.vault! } : { template: id };
+const target: Target = id === undefined ? { vault: flags.vault! } : flags['vault-of'] === undefined ? { template: id } : { template: id, cardVault: flags['vault-of'] };
 
 const codeRoot = join(import.meta.dirname, '..');
 const git = (...args: string[]): Buffer => execFileSync('git', args, { cwd: codeRoot, maxBuffer: 1 << 30, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -126,27 +137,36 @@ if (flags.compare) {
 }
 
 const root = flags.data === undefined ? codeRoot : dataAt(flags.data);
-const registry = loadRegistry(root);
+const fullRegistry = loadRegistry(root);
+let loaded: ReturnType<typeof loadReport>;
+try {
+  loaded = loadReport(root, fullRegistry, target);
+} catch (e) {
+  if (!(e instanceof ReportError)) throw e;
+  console.error(`REFUSED  ${e.message}`);
+  process.exit(2);
+}
+const { subject, registry } = loaded;
 if (!(await ensureVendored(['solc', 'psl']))) process.exit(1);
 const suffixes = loadPublicSuffixList();
 const compilers = cachedCompilers();
 
 if (flags.offline) {
-  process.stdout.write(await replayReport(root, registry, target, compilers, suffixes));
+  process.stdout.write(await replayReport(root, fullRegistry, target, compilers, suffixes));
   process.exit(0);
 }
 
 /** Writes the committed reports from the repository and the recordings alone. */
 async function writeGenerated(): Promise<void> {
-  const { inputs, title } = await replayInputs(root, registry, target, compilers, suffixes);
+  const { inputs, title } = await replayInputs(root, fullRegistry, target, compilers, suffixes);
   const mdPath = join(root, generatedPath(target));
   mkdirSync(dirname(mdPath), { recursive: true });
   writeFileSync(mdPath, renderReport(inputs, title));
   const written = [generatedPath(target)];
-  const html = generatedHtml(root, inputs, title);
+  const html = await generatedHtml(root, inputs, title);
   if (html !== undefined && 'template' in target) {
-    writeFileSync(join(root, generatedHtmlPath(target.template)), html);
-    written.push(generatedHtmlPath(target.template));
+    writeFileSync(join(root, generatedHtmlPath(target)), html);
+    written.push(generatedHtmlPath(target));
   }
   console.error(`wrote ${written.join(' and ')}`);
 }
@@ -156,7 +176,6 @@ if (flags.render) {
   process.exit(0);
 }
 
-const subject = loadSubject(root, registry, target);
 const committedPath = join(root, generatedPath(target));
 if (flags.compare && !existsSync(committedPath)) {
   console.error(`${generatedPath(target)} does not exist; there is nothing to compare with`);
@@ -170,9 +189,16 @@ const reader = createReader(endpoints, httpsTransport(), { note });
 const latest = await reader.block('latest');
 if (latest.kind === 'unverifiable') throw new Error(latest.reason);
 
-const listings = await listingsFor(entries, suffixes, (listing) => fetchListing(listing, note));
+/** Each DefiLlama or CoinGecko answer, read once and kept by path: the listings and the protocol facts share the protocol list. */
+const answers = new Map<string, Promise<unknown>>();
+const listing = (target: { readonly hostname: string; readonly path: string }): Promise<unknown> => {
+  const answer = answers.get(target.path) ?? fetchListing(target, note);
+  answers.set(target.path, answer);
+  return answer;
+};
+const listings = await listingsFor(entries, suffixes, listing);
 const docs = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
-const pages = await gatherSourcePages([...entries.map((e) => e.source), ...docs], retryingGet(httpsGet, note), await gatherApiAnswers(entries, retryingSend(httpsApi, note)));
+const pages = await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs], retryingGet(httpsGet, note), await gatherApiAnswers(entries, retryingSend(httpsApi, note)));
 
 const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();
@@ -203,21 +229,27 @@ const spans = await checkSpans(createReader(endpoints, codeChain.transport, { no
 const erc7730Chain = recordingTransport(httpsTransport(), endpoints);
 const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport, { note })));
 
+const factsChain = recordingTransport(httpsTransport(), endpoints);
+const committedFacts = flags.compare && subject.kind === 'template' ? parseFactsRecording(JSON.parse(readFileSync(join(root, reportRecordingPath(target)), 'utf8')).facts) : undefined;
+const factsBlock = committedFacts === undefined ? latest.value : { number: BigInt(committedFacts.block.number), hash: committedFacts.block.hash };
+const scope = subject.kind === 'template' ? factsScope(subject.template, registry, entries) : undefined;
+const facts = scope === undefined ? undefined : await protocolFacts(scope, registry, { defillama: listing, reader: createReader(endpoints, factsChain.transport, { note }), block: factsBlock });
+
 const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
 const fetched = new Date();
-const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, erc7730 };
-const command = id === undefined ? `pnpm report --vault ${flags.vault}` : `pnpm report ${id}`;
+const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, erc7730, facts };
+const command = `pnpm report ${reportArgs(subject)}`;
 const text = renderReport(live, { command, sources: ['live reads at the time it ran', ...pastTxs.map((p) => p.file)] });
 
 /** The committed HTML report against what the code checked out here writes from the recordings and notes.json. */
 async function compareHtml(): Promise<boolean> {
   if (!('template' in target)) return true;
-  const path = generatedHtmlPath(target.template);
+  const path = generatedHtmlPath(target);
   const committed = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined;
   let difference: string | undefined;
   try {
-    const { inputs, title } = await replayInputs(root, registry, target, compilers, suffixes);
-    difference = htmlDifference(committed, generatedHtml(root, inputs, title));
+    const { inputs, title } = await replayInputs(root, fullRegistry, target, compilers, suffixes);
+    difference = htmlDifference(committed, await generatedHtml(root, inputs, title));
   } catch (e) {
     if (!(e instanceof NotesError)) throw e;
     difference = `the program refuses notes.json: ${e.message}`;
@@ -236,7 +268,7 @@ if (flags.compare) {
   for (const line of differences) console.log(`DIFFERS  ${line}`);
   console.log(
     differences.length === 0
-      ? `${generatedPath(target)}: every fact read live equals the committed report (not compared: the date the listings were read and the block each ABI proof was read at; past transactions were not searched again)`
+      ? `${generatedPath(target)}: every fact read live equals the committed report (not compared: the date the listings were read, DefiLlama's TVL and the block each ABI proof was read at; past transactions were not searched again)`
       : `${generatedPath(target)}: ${differences.length} fact(s) differ from what was read live`,
   );
   const htmlSame = await compareHtml();
@@ -251,7 +283,9 @@ if (flags.record) {
     process.exit(1);
   }
   const erc7730Section = { commit: snapshot.commit, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
-  const recording = JSON.stringify(trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges()), null, 2);
+  const raw = new Map(await Promise.all([...answers].map(async ([path, answer]) => [path, await answer] as const)));
+  const factsSection = scope === undefined ? {} : { facts: factsRecording(scope, factsBlock, raw, factsChain.exchanges()) };
+  const recording = JSON.stringify({ ...trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges()), ...factsSection }, null, 2);
   const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
   if (safe !== undefined && recording.toLowerCase().includes(safe.slice(2))) {
     console.error('the recording would name the configured Safe; nothing written');

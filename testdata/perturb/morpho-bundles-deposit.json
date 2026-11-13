@@ -5,7 +5,7 @@
       {
         "template": "morpho/vault-bundles-deposit",
         "values": {
-          "vault": "steakhouse-prime-usdc",
+          "vault": "steakhouse-prime-usdc-v2-0f51",
           "amount": "31583325527",
           "min-shares": "30442521166571443751074"
         }

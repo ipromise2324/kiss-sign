@@ -25,7 +25,7 @@
       "function": "approve(address spender, uint256 value)",
       "args": {
         "spender": {
-          "contract": "general-adapter1"
+          "contract": "general-adapter-1"
         },
         "value": {
           "free": "the most shares the withdrawal may burn, which the app sets from the amount and the price bound; the effects require the allowance to end no higher than it started"
@@ -50,7 +50,7 @@
             {
               "fields": {
                 "to": {
-                  "contract": "general-adapter1"
+                  "contract": "general-adapter-1"
                 },
                 "data": {
                   "call": {

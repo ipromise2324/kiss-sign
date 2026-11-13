@@ -9,6 +9,7 @@ import { KEYS, createKeyFile, keyFilePath, kissSignHome } from '../keys.ts';
 import { REGISTRY_PATH, isEntryName, loadRegistry, parseRegistry } from '../registry.ts';
 import { checksumAddress, parseAddress } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template.ts';
+import { reportedVaultsIn, unreportedVault } from '../template/vault-reports.ts';
 import { commitSubject, fetchOriginMain, fileAt, originRepo } from '../verify/self-check.ts';
 import { keccakText } from '../verify/verify.ts';
 import { FAILED, OK, UsageError, terminal } from './io.ts';
@@ -134,6 +135,11 @@ export async function seal(card: Card, io: Io, confirm: Terminal['confirm']): Pr
   const resolution = resolveCard(card, { templates, registry, addressBook: loadAddressBook(home), safe });
   if (resolution.kind === 'refused') {
     io.stderr(`kiss-sign: card refused at ${resolution.at}: ${resolution.detail}\n`);
+    return FAILED;
+  }
+  const unreported = unreportedVault(resolution.card, templates, registry, (id) => reportedVaultsIn(io.repoRoot, id));
+  if (unreported !== undefined) {
+    io.stderr(`kiss-sign: card refused: ${unreported}\n`);
     return FAILED;
   }
   io.stdout(`Safe ${checksumAddress(safe)}\n`);

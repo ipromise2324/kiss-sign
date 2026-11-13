@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { AbiSignatureError, parseFunctionSignature } from './decode/abi.ts';
 import { uintWord } from './decode/codec.ts';
 import type { AbiFunction } from './decode/abi.ts';
+import { samePageKey, sourceHoldsAddress } from './research/source-page.ts';
 import { SafeTxParseError, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 
@@ -56,6 +57,8 @@ export type RegistryEntry = {
   readonly sourceLabel?: string;
   /** Text the nearest heading above the address must hold, for a page whose rows name only a chain, such as `MessageTransmitter`. */
   readonly sourceHeading?: string;
+  /** More official pages that list the address, each checked as `source` is. */
+  readonly moreSources?: readonly SourcePage[];
   readonly attributes: { readonly [A in Attribute]?: string };
   /** A factory's view function that answers true only for a contract it created, such as `isMetaMorpho(address)`. */
   readonly instanceCheck?: AbiFunction;
@@ -66,6 +69,12 @@ export type RegistryEntry = {
   /** The code a call to this address ran at each block `pnpm pin-code` found; verify requires the code of the block it reads. */
   readonly code?: CodePins;
 };
+
+/** An official page that lists an address, the text next to it there, and the heading above it when the page needs one. */
+export type SourcePage = { readonly url: HttpsUrl; readonly label: string; readonly heading?: string };
+
+/** Every page that lists the entry's address: its `source`, then each of `moreSources`. */
+export const pageUrlsOf = (entry: RegistryEntry): readonly HttpsUrl[] => [entry.source, ...(entry.moreSources ?? []).map((page) => page.url)];
 
 /** keccak256 of the runtime code at the address, and behind a proxy, the implementation it delegates to and its code's. */
 export type CodePin = { readonly hash: Hex; readonly implementation?: { readonly address: Address; readonly hash: Hex } };
@@ -271,22 +280,46 @@ function apiSourceOf(path: string, raw: unknown, address: Address): ApiSource {
   return { url, method: 'POST', body: value.body as Json, path: walk };
 }
 
+const PAGE_TEXT = /^\S(?:[^\p{Cc}]{0,118}\S)?$/u;
+
+function pageText(path: string, raw: unknown): string {
+  if (typeof raw !== 'string' || !PAGE_TEXT.test(raw)) throw new RegistryError(path, 'not page text of 1 to 120 characters');
+  return raw;
+}
+
+/**
+ * A page whose URL holds the address, plainly or percent-encoded, is refused: a page may echo its own URL. So is a page
+ * the entry already names under another spelling, such as a github.com file and its raw.githubusercontent.com copy,
+ * since one page is one confirmation.
+ */
+function moreSourcesOf(path: string, raw: unknown, address: Address, source: HttpsUrl): SourcePage[] {
+  if (!Array.isArray(raw) || raw.length === 0) throw new RegistryError(path, 'not a non-empty list of pages');
+  const pages = new Set<string>([samePageKey(source)]);
+  return raw.map((rawPage: unknown, i): SourcePage => {
+    const at = `${path}[${i}]`;
+    const page = record(at, rawPage);
+    onlyKeys(at, page, ['url', 'label', 'heading']);
+    const url = parseHttpsUrl(page.url);
+    if (url === undefined) throw new RegistryError(`${at}.url`, 'not an https URL');
+    if (sourceHoldsAddress(url, address)) throw new RegistryError(`${at}.url`, "holds the entry's address, and a page may echo its own URL");
+    const key = samePageKey(url);
+    if (pages.has(key)) throw new RegistryError(`${at}.url`, 'names a page the entry already names');
+    pages.add(key);
+    return { url, label: pageText(`${at}.label`, page.label), ...(page.heading === undefined ? {} : { heading: pageText(`${at}.heading`, page.heading) }) };
+  });
+}
+
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
   if (kind === undefined) throw new RegistryError(`${path}.kind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
   const source = parseHttpsUrl(value.source);
   if (source === undefined) throw new RegistryError(`${path}.source`, 'not an https URL');
-  for (const key of ['sourceLabel', 'sourceHeading'] as const) {
-    const text = value[key];
-    if (text !== undefined && (typeof text !== 'string' || !/^\S(?:[^\p{Cc}]{0,118}\S)?$/u.test(text))) {
-      throw new RegistryError(`${path}.${key}`, 'not page text of 1 to 120 characters');
-    }
-  }
+  for (const key of ['sourceLabel', 'sourceHeading'] as const) if (value[key] !== undefined) pageText(`${path}.${key}`, value[key]);
   const attributes: { [A in Attribute]?: string } = {};
   if (value.attributes !== undefined) {
     const raws = record(`${path}.attributes`, value.attributes);
@@ -314,6 +347,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     ...(value.apiSource === undefined ? {} : { apiSource: apiSourceOf(`${path}.apiSource`, value.apiSource, address) }),
     ...(value.sourceLabel === undefined ? {} : { sourceLabel: value.sourceLabel as string }),
     ...(value.sourceHeading === undefined ? {} : { sourceHeading: value.sourceHeading as string }),
+    ...(value.moreSources === undefined ? {} : { moreSources: moreSourcesOf(`${path}.moreSources`, value.moreSources, address, source) }),
     attributes,
     ...(value.defillama === undefined ? {} : { defillama: value.defillama }),
     ...(value.coingecko === undefined ? {} : { coingecko: value.coingecko }),

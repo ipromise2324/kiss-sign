@@ -31,7 +31,7 @@ const OTHER = '0x1111111111111111111111111111111111111111';
 
 const context = (safe: Address = deposit.safe): CardContext => ({ templates, registry, addressBook: new Map(), safe });
 const depositCard = (amount = '1800000000180', count = 1): Card => ({
-  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc', amount, 'min-shares': '1741863305677219101283940' } })),
+  operations: Array.from({ length: count }, () => ({ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount, 'min-shares': '1741863305677219101283940' } })),
 });
 
 function resolved(card: Card): ResolvedCard {
@@ -234,7 +234,7 @@ test('a share price bound or equals names a card amount or an earlier uint argum
 
 test('the template parses its card fields and effects', () => {
   assert.deepEqual([...template.card], [
-    ['vault', { kind: 'contract', registryKind: 'vault' }],
+    ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue' } }],
     ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' } }],
     ['min-shares', { kind: 'amount', of: { field: 'vault', attribute: undefined } }],
   ]);
@@ -253,9 +253,23 @@ test('a card name the registry and address book do not know is refused', () => {
   };
   assert.deepEqual(refusal(card({ vault: 'no-such-vault', amount: '1' })), ['unknown-name', 'operations[0].values.vault']);
   assert.deepEqual(refusal(card({ vault: 'usdc', amount: '1' })), ['wrong-contract-kind', 'operations[0].values.vault']);
-  assert.deepEqual(refusal(card({ vault: 'steakhouse-prime-usdc', amount: '1.5' })), ['not-an-amount', 'operations[0].values.amount']);
-  assert.deepEqual(refusal(card({ vault: 'steakhouse-prime-usdc' })), ['missing-value', 'operations[0].values.amount']);
+  assert.deepEqual(refusal(card({ vault: 'steakhouse-prime-usdc-v2-0f51', amount: '1.5' })), ['not-an-amount', 'operations[0].values.amount']);
+  assert.deepEqual(refusal(card({ vault: 'steakhouse-prime-usdc-v2-0f51' })), ['missing-value', 'operations[0].values.amount']);
   assert.deepEqual(refusal({ operations: [{ template: 'morpho/vault-withdraw', values: {} }] }), ['unknown-template', 'operations[0]']);
+});
+
+test('a contract field that names its protocol takes only that protocol\'s entries of its kind', () => {
+  const scoped = (slug: string) => parseTemplate({ ...rawTemplate, card: { ...rawTemplate.card, vault: { kind: 'contract', registryKind: 'vault', defillama: slug } } }, registry);
+  const resolve = (slug: string, vault: string) => {
+    const t = scoped(slug);
+    const result = resolveCard({ operations: [{ template: t.id, values: { vault, amount: '1', 'min-shares': '1' } }] }, { ...context(), templates: new Map([[t.id, t]]) });
+    return result.kind === 'refused' ? { reason: result.reason, at: result.at, detail: result.detail } : result.kind;
+  };
+  assert.equal(resolve('morpho-blue', 'steakhouse-prime-usdc-v2-0f51'), 'resolved');
+  assert.deepEqual(resolve('morpho-blue', 'fluid-fusdc'), { reason: 'wrong-protocol', at: 'operations[0].values.vault', detail: 'fluid-fusdc is a vault of fluid-lending, not of morpho-blue' });
+  assert.deepEqual(resolve('fluid-lending', 'steakhouse-prime-usdc-v2-0f51'), { reason: 'wrong-protocol', at: 'operations[0].values.vault', detail: 'steakhouse-prime-usdc-v2-0f51 is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending' });
+  assert.deepEqual(resolve('fluid-lending', 'usdc'), { reason: 'wrong-contract-kind', at: 'operations[0].values.vault', detail: 'usdc is a token, not a vault' });
+  assert.throws(() => scoped('fluid'), (e: unknown) => e instanceof TemplateError && e.message === 'card.vault.defillama: no registry vault belongs to the DefiLlama protocol "fluid"');
 });
 
 test('a card resolves an address kind through the Safe, the registry and the address book', () => {
@@ -263,7 +277,7 @@ test('a card resolves an address kind through the Safe, the registry and the add
   const book = new Map([['alice', OTHER as Address]]);
   const resolveRecipient = (name: string, addressBook = book) => {
     const result = resolveCard(
-      { operations: [{ template: recipients.id, values: { vault: 'steakhouse-prime-usdc', amount: '1', 'min-shares': '1', recipient: name } }] },
+      { operations: [{ template: recipients.id, values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '1', 'min-shares': '1', recipient: name } }] },
       { templates: new Map([[recipients.id, recipients]]), registry, addressBook, safe: deposit.safe },
     );
     return result.kind === 'resolved' ? result.card.operations[0]?.values.get('recipient') : result.reason;
@@ -280,7 +294,7 @@ test('a sealed card loads back, and a modified sealed file is refused', () => {
   const card = depositCard();
   const hash = sealCard(home, card);
   const path = join(cardsDir(home), `${hash}.json`);
-  assert.equal(readFileSync(path, 'utf8'), '{"operations":[{"template":"morpho/vault-deposit","values":{"amount":"1800000000180","min-shares":"1741863305677219101283940","vault":"steakhouse-prime-usdc"}}]}');
+  assert.equal(readFileSync(path, 'utf8'), '{"operations":[{"template":"morpho/vault-deposit","values":{"amount":"1800000000180","min-shares":"1741863305677219101283940","vault":"steakhouse-prime-usdc-v2-0f51"}}]}');
   assert.equal(sealCard(home, parseCard(JSON.parse(readFileSync(path, 'utf8')))), hash, 'sealing is idempotent');
   assert.deepEqual(loadSealed(home, hash), card);
   writeFileSync(path, readFileSync(path, 'utf8').replace('1800000000180', '1800000000181'));
@@ -292,8 +306,8 @@ test('the registry lists exactly the official MultiSend deployments, and refuses
   const multisends = [...registry.entries.values()].filter((e) => e.kind === 'multisend').map((e) => e.address).sort();
   assert.deepEqual(multisends, OFFICIAL_MULTISEND.map((d) => d.address).sort());
   const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
-  raw['steakhouse-prime-usdc'].attributes.asset = 'bundler3';
-  assert.throws(() => parseRegistry(raw), (error: unknown) => error instanceof RegistryError && error.path === 'steakhouse-prime-usdc.attributes.asset');
+  raw['steakhouse-prime-usdc-v2-0f51'].attributes.asset = 'bundler3';
+  assert.throws(() => parseRegistry(raw), (error: unknown) => error instanceof RegistryError && error.path === 'steakhouse-prime-usdc-v2-0f51.attributes.asset');
 });
 
 test('the address book saves and loads, and refuses a bad checksum', () => {

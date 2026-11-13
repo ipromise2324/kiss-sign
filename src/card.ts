@@ -8,6 +8,7 @@ import { MARKET_ENTRY_PARTS, isAttribute, isMarketEntryPart } from './registry.t
 import type { Market, Registry, RegistryEntry } from './registry.ts';
 import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
+import { contractRefusal } from './template/template.ts';
 import type { CardRef, Template } from './template/template.ts';
 
 /** What the signer confirms at each signing: which templates, and each one's values. Addresses appear only as names. */
@@ -31,6 +32,7 @@ export type CardRefusal =
   | 'unknown-name'
   | 'ambiguous-name'
   | 'wrong-contract-kind'
+  | 'wrong-protocol'
   | 'not-an-amount'
   | 'not-a-nonce'
   | 'not-the-same';
@@ -123,7 +125,8 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
         case 'contract': {
           const entry = context.registry.entries.get(raw);
           if (entry === undefined) return refuse('unknown-name', name, `${JSON.stringify(raw)} is not in the contract registry`);
-          if (entry.kind !== field.registryKind) return refuse('wrong-contract-kind', name, `${raw} is a ${entry.kind}, not a ${field.registryKind}`);
+          const refused = contractRefusal(field.scope, entry, context.registry);
+          if (refused !== undefined) return refuse(refused.reason, name, refused.detail);
           values.set(name, { kind: 'contract', name: raw, entry });
           break;
         }

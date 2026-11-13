@@ -14,8 +14,8 @@ const IS_META_MORPHO = '0x29b5352c';
 const registry = (factory: Record<string, unknown> = {}) =>
   parseRegistry({
     usdc: { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', kind: 'token', source: 'https://example.org/usdc' },
-    'metamorpho-factory-1.1': { address: FACTORY, kind: 'factory', source: 'https://example.org/factory', instanceCheck: 'isMetaMorpho(address)', ...factory },
-    apex: { address: VAULT, kind: 'vault', source: 'https://example.org/apex', attributes: { asset: 'usdc', factory: 'metamorpho-factory-1.1' } },
+    'metamorpho-factory-v1-1': { address: FACTORY, kind: 'factory', source: 'https://example.org/factory', instanceCheck: 'isMetaMorpho(address)', ...factory },
+    apex: { address: VAULT, kind: 'vault', source: 'https://example.org/apex', attributes: { asset: 'usdc', factory: 'metamorpho-factory-v1-1' } },
     lone: { address: `0x${'11'.repeat(20)}`, kind: 'vault', source: 'https://example.org/lone', attributes: { asset: 'usdc' } },
   });
 
@@ -36,12 +36,12 @@ const agreed = (data: string): Read<CallResult> => ({ kind: 'agreed', value: { k
 test("a vault its registry factory answers true for is proven that factory's instance", async () => {
   const proof = await proveInstance(factoryAnswering(agreed(`0x${'00'.repeat(31)}01`)), registry(), 'apex', AT);
   assert.equal(proof.kind, 'created');
-  assert.equal(proof.kind === 'created' && proof.factory.name, 'metamorpho-factory-1.1');
+  assert.equal(proof.kind === 'created' && proof.factory.name, 'metamorpho-factory-v1-1');
 });
 
 test('a vault its factory answers false for is refused', async () => {
   const proof = await proveInstance(factoryAnswering(agreed(`0x${'00'.repeat(32)}`)), registry(), 'apex', AT);
-  assert.deepEqual(proof, { kind: 'refused', why: 'metamorpho-factory-1.1 answered isMetaMorpho(address) false for apex: it did not create it' });
+  assert.deepEqual(proof, { kind: 'refused', why: 'metamorpho-factory-v1-1 answered isMetaMorpho(address) false for apex: it did not create it' });
 });
 
 test('an answer that is neither true nor false, a revert, or providers that disagree are refused', async () => {
