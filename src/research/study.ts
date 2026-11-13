@@ -85,7 +85,8 @@ export type Sender = { readonly kind: 'safe'; readonly address: Address } | { re
 export type TxStudy =
   | { readonly kind: 'excluded' }
   | { readonly kind: 'unreadable'; readonly hash: Hex; readonly reason: string }
-  | { readonly kind: 'not-studied'; readonly hash: Hex; readonly why: NotStudiedReason; readonly selector: string }
+  /** `to` is the contract the transaction called, absent for a contract creation. */
+  | { readonly kind: 'not-studied'; readonly hash: Hex; readonly why: NotStudiedReason; readonly to: Address | undefined; readonly selector: string }
   | { readonly kind: 'unproven'; readonly hash: Hex; readonly contract: Address; readonly why: UnprovenReason }
   | { readonly kind: 'misfit'; readonly hash: Hex; readonly sender: Sender; readonly reason: MisfitReason }
   /** `values` pairs with the rules of the sender's `Shape`; `paths` names each leaf. */
@@ -322,12 +323,12 @@ async function studySafeTx(reader: Reader, tx: Transaction & { readonly to: Addr
   if (proof.kind === 'unproven') return { kind: 'unproven', hash, contract: tx.to, why: proof.why };
   const selector = tx.input.slice(0, 10);
   const safeTx = safeTxOf(tx.to, tx.input);
-  if (safeTx === undefined) return { kind: 'not-studied', hash, why: 'execTransaction calldata does not decode', selector };
+  if (safeTx === undefined) return { kind: 'not-studied', hash, why: 'execTransaction calldata does not decode', to: tx.to, selector };
   const receiptRead = await reader.getTransactionReceipt(hash);
   if (receiptRead.kind === 'unverifiable') return { kind: 'unreadable', hash, reason: receiptRead.reason };
   const receipt = receiptRead.value;
   if (receipt === null || !receipt.logs.some((log) => log.address === tx.to && log.topics[0] === EXECUTION_SUCCESS)) {
-    return { kind: 'not-studied', hash, why: 'no ExecutionSuccess from the Safe', selector };
+    return { kind: 'not-studied', hash, why: 'no ExecutionSuccess from the Safe', to: tx.to, selector };
   }
   return judge({ hash, block: tx.blockNumber }, safeTx, { kind: 'safe', address: tx.to }, context.shapes.whole, context.registry);
 }
@@ -342,7 +343,7 @@ function studyDirectCall(tx: Transaction & { readonly to: Address; readonly bloc
     const target = templateCall?.to.kind !== 'contract' || context.registry.entries.get(templateCall.to.name)?.address === tx.to;
     return same && target ? [{ shape, call }] : [];
   });
-  if (candidates.length === 0) return { kind: 'not-studied', hash: tx.hash, why: 'calls no function the template calls', selector };
+  if (candidates.length === 0) return { kind: 'not-studied', hash: tx.hash, why: 'calls no function the template calls', to: tx.to, selector };
   const direct: SafeTx = { ...EMPTY_SAFE_TX, safe: tx.from, to: tx.to, value: tx.value, data: tx.input };
   const studies = candidates.map(({ shape, call }) => judge({ hash: tx.hash, block: tx.blockNumber }, direct, { kind: 'eoa', address: tx.from, call }, shape, context.registry));
   return studies.find((study) => study.kind === 'fit') ?? (studies[0] as TxStudy);
@@ -355,7 +356,7 @@ export async function studyTx(reader: Reader, hash: Hex, context: StudyContext):
   if (tx === null) return { kind: 'unreadable', hash, reason: 'neither provider knows the transaction' };
   if (context.exclude !== undefined && (tx.to === context.exclude || tx.from === context.exclude)) return { kind: 'excluded' };
   const { to, blockNumber } = tx;
-  if (to === null) return { kind: 'not-studied', hash, why: 'calls no function the template calls', selector: 'contract creation' };
+  if (to === null) return { kind: 'not-studied', hash, why: 'calls no function the template calls', to: undefined, selector: 'contract creation' };
   if (blockNumber === null) return { kind: 'unreadable', hash, reason: 'the transaction is pending' };
   if (tx.input.startsWith(EXEC_TRANSACTION.selector)) return studySafeTx(reader, { ...tx, to, blockNumber }, context);
   return studyDirectCall({ ...tx, to, blockNumber }, context);
