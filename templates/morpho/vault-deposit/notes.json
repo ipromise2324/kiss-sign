@@ -54,7 +54,7 @@
     "2.multicall.bundle[0]": "第一步：把代幣從 Safe 拉進 GeneralAdapter1。",
     "2.multicall.bundle[0].to": "這一步呼叫的合約，固定是 GeneralAdapter1。",
     "2.multicall.bundle[0].data": "這一步要執行的函式和參數，下面逐項列出。",
-    "2.multicall.bundle[0].data.erc20TransferFrom.token": "要拉的代幣，等於 vault 的資產（USDC 或 USDT）。",
+    "2.multicall.bundle[0].data.erc20TransferFrom.token": "要拉的代幣，等於你選的 vault 的資產。",
     "2.multicall.bundle[0].data.erc20TransferFrom.receiver": "代幣先轉到 GeneralAdapter1 自己，下一步再由它存進 vault。",
     "2.multicall.bundle[0].data.erc20TransferFrom.amount": "從 Safe 拉的數量，等於存款金額。Bundler3 記錄發起人是 Safe，所以只能拉 Safe 的錢。",
     "2.multicall.bundle[0].value": "附帶的 ETH，固定為 0。",
