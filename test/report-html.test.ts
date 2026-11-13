@@ -128,7 +128,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
       ]),
       ...Object.values(docs).map((d) => d.url),
       ...Object.values(card).flatMap((field) => (field.computed === undefined ? [] : [field.computed.default.source])),
-      ...JSON.stringify(notes).match(/https:\/\/[^"]+/g)!,
+      ...(JSON.stringify(notes).match(/https:\/\/[^"]+/g) ?? []),
     ]);
     const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => unescape(m[1] as string)));
     for (const [, raw] of html.matchAll(/\shref="([^"]*)"/g)) {
@@ -168,7 +168,7 @@ test('AI text is HTML-escaped', async () => {
 });
 
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
-  const id = [...withNotes.keys()][0] as string;
+  const id = [...withNotes.keys()].find((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0) ?? assert.fail('a report with a flow line');
   const { inputs, title } = replayed.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as { flow: { text: string }[] } & Record<string, unknown>;
