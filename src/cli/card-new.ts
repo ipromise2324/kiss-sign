@@ -181,12 +181,11 @@ function listed(name: string, value: bigint, decimals: number, token: string, ct
 
 const word = (value: bigint): string => value.toString(16).padStart(64, '0');
 
-function addressOf(ref: CardRef, values: Readonly<Record<string, string>>, sources: Sources): Address {
+function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources: Sources): RegistryEntry {
   const chosen = values[ref.field] as string;
   const entry = entryOf(chosen, ref.attribute, sources.registry);
-  if (entry !== undefined) return entry.address;
-  if (chosen === 'safe') return sources.safe;
-  return sources.book.get(chosen) as Address;
+  if (entry === undefined) throw new CardError(`${ref.field}: ${chosen} has no ${ref.attribute ?? 'registry entry'} to read`);
+  return entry;
 }
 
 async function readValue(read: ComputedRead, values: Readonly<Record<string, string>>, ctx: Context): Promise<bigint> {
@@ -205,18 +204,14 @@ async function readValue(read: ComputedRead, values: Readonly<Record<string, str
       words.push(word(amount));
       shown.push(String(amount));
     } else {
-      const address = addressOf(arg.ref, values, ctx.sources);
-      words.push(word(BigInt(address)));
-      shown.push(checksumAddress(address));
+      const entry = entryAt(arg.ref, values, ctx.sources);
+      words.push(word(BigInt(entry.address)));
+      shown.push(entry.name);
     }
   }
-  const to = addressOf(read.to, values, ctx.sources);
-  const target = `${refName(read.to, values, ctx.sources)} ${checksumAddress(to)}`;
-  return ctx.chain.call(to, `${read.fn.selector}${words.join('')}` as Hex, `${read.fn.name}(${shown.join(', ')}) on ${target}`);
+  const to = entryAt(read.to, values, ctx.sources);
+  return ctx.chain.call(to.address, `${read.fn.selector}${words.join('')}` as Hex, `${read.fn.name}(${shown.join(', ')}) on ${to.name} ${checksumAddress(to.address)}`);
 }
-
-const refName = (ref: CardRef, values: Readonly<Record<string, string>>, sources: Sources): string =>
-  entryOf(values[ref.field] as string, ref.attribute, sources.registry)?.name ?? (values[ref.field] as string);
 
 const percent = (bps: number): string => `${(bps / 100).toFixed(2)}%`;
 
@@ -233,7 +228,7 @@ async function computedValue(name: string, field: TypedField & { readonly kind: 
   const margin = computed.margin === undefined ? '' : ` plus a margin of ${percent(computed.margin.bps)}`;
   ctx.io.stdout(`  slippage: ${percent(Number(total))}, ${computed.bound === 'floor' ? 'less' : 'more'} than expected: the protocol's default ${percent(computed.default.bps)} (${computed.default.source})${margin}\n`);
   if (computed.margin !== undefined) ctx.io.stdout(`  margin, as the template says: ${computed.margin.why}\n`);
-  if (value === 0n) throw new CardError(`${name} comes to 0, which would bound nothing`);
+  if (value === 0n) throw new CardError(`${name} comes to 0, which would bound nothing or nothing could meet`);
   if (value >= UINT256_LIMIT) throw new CardError(`${name} comes to 2^256 base units or more`);
   return listed(name, value, decimals, token, ctx);
 }

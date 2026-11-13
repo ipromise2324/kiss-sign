@@ -530,6 +530,12 @@ function cardField(path: string, raw: unknown, registry: Registry): (fields: Car
 
 const MAX_BPS = 1000;
 
+/** A registry contract a contract or market field names, which `card new` resolves exactly as `card seal` does. */
+const isContractRef = (ref: CardRef, card: CardFields): boolean => ['contract', 'market'].includes(card.get(ref.field)?.kind ?? '') && refType(ref, card) === 'address';
+
+/** Control and bidirectional characters, which could rewrite what the signer's terminal shows. */
+const UNPRINTABLE = /[\u0000-\u001f\u007f-\u009f\u200e\u200f\u202a-\u202e\u2066-\u2069]/;
+
 function bps(path: string, raw: unknown): number {
   if (typeof raw !== 'number' || !Number.isInteger(raw) || raw < 0 || raw > MAX_BPS) throw new TemplateError(path, `not a whole number of basis points from 0 to ${MAX_BPS}`);
   return raw;
@@ -553,8 +559,8 @@ function computedArg(path: string, raw: unknown, type: AbiType, scope: Scope, re
     if (name === undefined) throw new TemplateError(path, 'must be "safe", card.<field> or a read');
     const ref = cardRef(path, name, scope.card);
     if (!readable(ref.field)) throw new TemplateError(path, `card field ${ref.field} is computed after this one or is this one`);
-    const fits = type.kind === 'address' ? refType(ref, scope.card) === 'address' : scope.card.get(ref.field)?.kind === 'amount' && ref.attribute === undefined;
-    if (!fits) throw new TemplateError(path, `card.${name} is not an ${type.kind === 'address' ? 'address' : 'amount'}`);
+    const fits = type.kind === 'address' ? isContractRef(ref, scope.card) : scope.card.get(ref.field)?.kind === 'amount' && ref.attribute === undefined;
+    if (!fits) throw new TemplateError(path, `card.${name} is not ${type.kind === 'address' ? 'a contract or market field, or one of its parts' : 'an amount'}`);
     return { kind: 'card', ref };
   }
   if (!isUint256) throw new TemplateError(path, 'a read returns a uint256, not an address');
@@ -566,7 +572,8 @@ function computedRead(path: string, raw: unknown, scope: Scope, readable: Readab
   exactKeys(path, value, ['to', 'function', 'args']);
   const to = cardFieldName(text(`${path}.to`, value.to));
   if (to === undefined) throw new TemplateError(`${path}.to`, 'must be card.<field>');
-  const ref = cardToken(`${path}.to`, to, scope.card);
+  const ref = cardRef(`${path}.to`, to, scope.card);
+  if (!isContractRef(ref, scope.card)) throw new TemplateError(`${path}.to`, 'must name a contract or market field, or one of its parts');
   const { fn, returns } = viewSignature(`${path}.function`, value.function);
   const [only] = returns;
   if (returns.length !== 1 || only?.type.kind !== 'uint' || only.type.bits !== 256) throw new TemplateError(`${path}.function`, 'must return exactly one uint256');
@@ -594,7 +601,9 @@ function computed(path: string, raw: unknown, name: string, scope: Scope, order:
   if (value.margin !== undefined) {
     const m = object(`${path}.margin`, value.margin);
     exactKeys(`${path}.margin`, m, ['bps', 'why']);
-    margin = { bps: bps(`${path}.margin.bps`, m.bps), why: text(`${path}.margin.why`, m.why) };
+    const why = text(`${path}.margin.why`, m.why);
+    if (UNPRINTABLE.test(why)) throw new TemplateError(`${path}.margin.why`, 'holds a control or bidirectional character');
+    margin = { bps: bps(`${path}.margin.bps`, m.bps), why };
   }
   return { read, bound: value.bound, default: { bps: bps(`${path}.default.bps`, fallback.bps), source }, margin };
 }

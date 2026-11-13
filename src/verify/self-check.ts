@@ -108,10 +108,10 @@ export function selfCheck(root: string, repo: GithubRepo): SelfCheck {
  * that commit's, or that the commit lacks and its .gitignore does not ignore. `card new` and `card seal` read the
  * templates and the registry from disk, so a merge on GitHub counts only once it is pulled.
  */
-export function dataDiffersFromOriginMain(root: string, repo: GithubRepo, dirs: readonly string[]): { readonly kind: 'current' } | { readonly kind: 'differs'; readonly problems: readonly string[] } {
+export function dataDiffersFromOriginMain(root: string, repo: GithubRepo, dirs: readonly string[]): { readonly kind: 'current' } | { readonly kind: 'differs' | 'unchecked'; readonly problems: readonly string[] } {
   const origin = fetchOriginMain(root, repo);
-  if (origin.kind === 'refused') return { kind: 'differs', problems: origin.problems };
-  if (origin.kind === 'unreachable') return { kind: 'differs', problems: [`could not fetch ${repo}`] };
+  if (origin.kind === 'refused') return { kind: 'unchecked', problems: origin.problems };
+  if (origin.kind === 'unreachable') return { kind: 'unchecked', problems: [`could not fetch ${repo}`] };
   const problems = [...changedFiles(root, origin.commit, dirs).map((path) => `changed: ${path}`), ...untrackedFiles(root, origin.commit, dirs).map((path) => `not on main: ${path}`)];
   return problems.length === 0 ? { kind: 'current' } : { kind: 'differs', problems };
 }

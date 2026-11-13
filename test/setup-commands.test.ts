@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -385,8 +385,18 @@ test('card new and card seal stop before asking anything when templates or regis
     assert.equal(result.stdout, '');
   }
   git(repoRoot, 'merge', '--quiet', '--ff-only', 'origin/main');
+  writeFileSync(join(repoRoot, 'templates', 'extra.json'), '{}\n');
+  const untracked = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot, unpublished: true });
+  assert.equal(untracked.code, 1);
+  assert.match(untracked.stderr, /run git pull, then run this again\.\n  not on main: templates\/extra\.json\n$/);
+  rmSync(join(repoRoot, 'templates', 'extra.json'));
   const sealed = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot, unpublished: true });
   assert.equal(sealed.code, 0, sealed.stderr);
+  git(repoRoot, 'config', 'core.sshCommand', 'false');
+  const offline = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot, unpublished: true });
+  assert.equal(offline.code, 1);
+  assert.equal(offline.stderr, 'kiss-sign: could not check that templates/ and registry/ here are main of github.com/signer/kiss-sign on GitHub, so nothing was asked.\n  could not fetch github.com/signer/kiss-sign\n');
+  assert.deepEqual(offline.asked, []);
 });
 
 test('card new reads each token\'s decimals once across operations', async () => {

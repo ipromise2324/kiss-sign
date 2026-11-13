@@ -127,7 +127,11 @@ export function stopUnlessDataIsMain(io: Io): boolean {
   const { repo } = requireConfig(kissSignHome(io.env));
   const data = dataDiffersFromOriginMain(io.repoRoot, repo, [TEMPLATES_DIR, REGISTRY_DIR]);
   if (data.kind === 'current') return true;
-  io.stderr(`kiss-sign: ${TEMPLATES_DIR}/ and ${REGISTRY_DIR}/ here are not main of ${repo} on GitHub; run git pull, then run this again.\n${data.problems.map((p) => `  ${p}\n`).join('')}`);
+  const why =
+    data.kind === 'differs'
+      ? `${TEMPLATES_DIR}/ and ${REGISTRY_DIR}/ here are not main of ${repo} on GitHub; run git pull, then run this again.`
+      : `could not check that ${TEMPLATES_DIR}/ and ${REGISTRY_DIR}/ here are main of ${repo} on GitHub, so nothing was asked.`;
+  io.stderr(`kiss-sign: ${why}\n${data.problems.map((p) => `  ${p}\n`).join('')}`);
   return false;
 }
 
