@@ -18,22 +18,24 @@ export type VerdictPage = {
   readonly registry: Registry;
   readonly expected: Expectations;
   readonly calls: CallScan;
-  /** The calls of the transaction, decoded; only on MATCH. */
   readonly tree: CallTree | undefined;
   readonly verdictFile: string;
 };
 
-const CHECKS: readonly (readonly [CheckName, string])[] = [
-  ['template-approval', '模板已核准'],
-  ['static-floor', '交易本身的底線規則'],
-  ['fields', '每個欄位符合模板和卡片'],
-  ['vault-asset', 'vault 的資產'],
-  ['contract-code', '合約程式碼沒被換掉'],
-  ['mutation', '改動欄位會被抓到'],
-  ['simulation', '模擬'],
-  ['simulated-floor', '模擬後的底線規則'],
-  ['effects', 'Safe 的資產變化符合卡片'],
-];
+const CHECK_NAMES: Readonly<Record<CheckName, string>> = {
+  'template-approval': '模板已核准',
+  'static-floor': '交易本身的底線規則',
+  fields: '每個欄位符合模板和卡片',
+  'vault-asset': 'vault 的資產',
+  'contract-code': '合約程式碼沒被換掉',
+  mutation: '改動欄位會被抓到',
+  simulation: '模擬',
+  'simulated-floor': '模擬後的底線規則',
+  effects: 'Safe 的資產變化符合卡片',
+};
+const CHECKS = Object.entries(CHECK_NAMES) as [CheckName, string][];
+/** Checks that read the simulation, and so did not run when it is unverifiable, though they report no cause then. */
+const ON_SIMULATION: readonly CheckName[] = ['simulated-floor', 'effects'];
 
 const BANNER: Readonly<Record<Verdict['kind'], { readonly state: State; readonly text: string }>> = {
   MATCH: { state: 'ok', text: 'MATCH：交易符合你的卡片' },
@@ -49,7 +51,8 @@ function stateOf(verdict: Verdict, check: CheckName): State {
   if (verdict.kind === 'MATCH') return 'ok';
   const named = verdict.causes.some((cause) => cause.check === check);
   if (verdict.kind === 'MISMATCH') return named ? 'bad' : 'na';
-  return named ? 'warn' : 'ok';
+  if (named) return 'warn';
+  return ON_SIMULATION.includes(check) && verdict.causes.some((cause) => cause.check === 'simulation') ? 'na' : 'ok';
 }
 
 const mono = (text: string): Html => h`<span class="addr">${text}</span>`;
@@ -144,13 +147,12 @@ ${new Html(checklistHtml(checklist(page.tree)))}
 
 function causesSection(verdict: Verdict): Html {
   if (verdict.kind === 'MATCH') return h``;
-  const names = new Map(CHECKS);
   return h`
 <section>
   <h2>原因</h2>
   <div class="rows">${verdict.causes.map(
     (cause) => h`
-    <div class="row">${icon(verdict.kind === 'MISMATCH' ? 'bad' : 'warn')}<div><div class="t">${names.get(cause.check) ?? cause.check} <code>${cause.check}</code></div>${cause.details.map((detail) => h`<div class="meta">${detail}</div>`)}</div></div>`,
+    <div class="row">${icon(verdict.kind === 'MISMATCH' ? 'bad' : 'warn')}<div><div class="t">${CHECK_NAMES[cause.check]} <code>${cause.check}</code></div>${cause.details.map((detail) => h`<div class="meta">${detail}</div>`)}</div></div>`,
   )}
   </div>
 </section>`;

@@ -21,7 +21,7 @@ export function requireConfig(home: string): Config {
   return config;
 }
 
-function shellWord(text: string): string {
+export function shellWord(text: string): string {
   return /^[\w@%+=:,./-]+$/.test(text) ? text : `'${text.replaceAll("'", `'\\''`)}'`;
 }
 

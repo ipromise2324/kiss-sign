@@ -91,7 +91,6 @@ async function verifyTx(tx: unknown, approved?: string | null, reported?: boolea
 
 const hashLine = (stdout: string, label: string): string | undefined => new RegExp(`${label}\\s+(0x[0-9a-f]{64})`).exec(stdout)?.[1];
 
-/** The value of the 比對清單 row with this id on a verify page. */
 const rowValue = (page: string, id: string): string | undefined => new RegExp(`<span class="id">${id.replace(/\./g, '\\.')}</span><span class="k">[^<]*</span><span class="v">([^<]*)</span>`).exec(page)?.[1];
 
 test('the Morpho deposit verifies to MATCH, prints its safeTxHash, and writes a page with the hashes the hardware wallet shows', async () => {
@@ -145,9 +144,14 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   const data = String(webApp.data).toLowerCase();
   assert.equal(data.split(safe).length, 2, 'the Safe appears once in the deposit, as its receiver');
   webApp.data = data.replace(safe, '11'.repeat(20));
-  const { code, stdout, pages } = await verifyTx(webApp);
+  const { code, stdout, pages, verdicts } = await verifyTx(webApp);
   assert.equal(code, 1);
   assert.match(stdout, /^MISMATCH\n/);
+  const file = JSON.parse(readFileSync(verdicts[0]!, 'utf8')) as VerdictFile;
+  for (const hash of Object.values(file.result.hashes)) {
+    assert.doesNotMatch(stdout, new RegExp(hash.slice(2)));
+    assert.doesNotMatch(pages[0]!, new RegExp(hash.slice(2)));
+  }
   assert.match(stdout, /fields: multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}/);
   assert.doesNotMatch(stdout, /domain hash|message hash|safeTxHash/);
   assert.match(pages[0]!, /MISMATCH：交易和你的卡片不符，不要簽/);

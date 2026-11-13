@@ -41,7 +41,6 @@ function shown(fixture: string, card: Card, book: Record<string, Address> = {}):
   return { tree, text: rowsText(tree) };
 }
 
-/** The 比對清單 as one line per row, `id value | name`, and one per group, `[id] title`. */
 const rowsText = (tree: CallTree): string =>
   checklist(tree)
     .map((line) => (line.kind === 'group' ? `[${line.id}] ${line.title}` : `${line.id} ${line.value} | ${line.name}`))

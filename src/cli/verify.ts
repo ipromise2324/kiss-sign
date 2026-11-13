@@ -27,7 +27,7 @@ import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile, pr
 import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
 import { FAILED, OK, UsageError } from './io.ts';
 import type { Io } from './io.ts';
-import { requireConfig } from './setup.ts';
+import { requireConfig, shellWord } from './setup.ts';
 
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v1';
 
@@ -118,7 +118,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const file: VerdictFile = { format: VERDICT_FORMAT, inputs, exchanges: recorder.exchanges(), result };
   const dir = verdictsDir(home);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
-  const path = join(dir, `${result.hashes.safeTxHash}-${Date.now()}.json`);
+  const path = join(dir, `nonce-${tx.nonce}-${Date.now()}.json`);
   writeFileSync(`${path}.tmp`, `${JSON.stringify(file, null, 2)}\n`, { mode: 0o600 });
   renameSync(`${path}.tmp`, path);
   const { verdict, hashes } = result;
@@ -152,7 +152,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
       ? `Page with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\n`
       : `Page with every check: ${page}\n`,
   );
-  io.stdout(`Open it with: ${io.platform === 'darwin' ? 'open' : 'xdg-open'} ${page}\n`);
+  io.stdout(`Open it with: ${io.platform === 'darwin' ? 'open' : 'xdg-open'} ${shellWord(page)}\n`);
   return result.verdict.kind === 'MATCH' ? OK : FAILED;
 }
 

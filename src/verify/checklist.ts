@@ -3,24 +3,18 @@ import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
 import { checksumAddress } from '../safe/types.ts';
 import type { BundleCall, CallData, CallTree, Label, Labeled, SafeCall } from './expected.ts';
 
-/**
- * One line of the 比對清單, the block `check.sh` from kiss-sign-check writes too, line for line, for the same
- * transaction. docs/design.md (The comparison list) specifies it; `test/checklist.test.ts` pins it against check.sh's
- * own output. `name` is each program's own name for the value and is the one part the two may differ in.
- */
+/** One line of the 比對清單, which check.sh writes line for line the same for the same transaction, except `name`. */
 export type ChecklistLine =
   | { readonly kind: 'group'; readonly id: string; readonly title: string }
   | { readonly kind: 'row'; readonly id: string; readonly key: string; readonly value: string; readonly name: string };
 
-/** Characters that could hide or reorder text: C0 and C1 controls, DEL, bidi marks and overrides, zero widths, BOM. */
-const INVISIBLE = /[\u0000-\u001f\u007f-\u009f؜​-‏‪-‮⁠-⁩﻿]/gu;
+const INVISIBLE = /[\u0000-\u001f\u007f-\u009f\u00ad\u034f\u061c\u115f\u1160\u180e\u200b-\u200f\u2028-\u202e\u2060-\u206f\u3164\ufe00-\ufe0f\ufeff\uffa0\ufff9-\ufffb\u{e0000}-\u{e007f}\u{e0100}-\u{e01ef}]/gu;
 export const visible = (text: string): string => text.replace(INVISIBLE, '�');
 
 /** jq's `@html`, which check.sh uses, so the two pages' bytes agree. */
 const HTML: Readonly<Record<string, string>> = { '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' };
 const html = (text: string): string => text.replace(/[<>&'"]/g, (c) => HTML[c] as string);
 
-/** Longer bytes fold to their length and keccak256; longer other text to its length in characters and the keccak256 of its UTF-8. */
 const BYTES_SHOWN = 32;
 const TEXT_SHOWN = 120;
 
@@ -97,7 +91,6 @@ function safeCallLines(call: SafeCall): ChecklistLine[] {
   ];
 }
 
-/** The 比對清單 of a transaction: its hashes and nonce, every call it makes, and how many calls the Safe makes. */
 export function checklist(tree: CallTree): ChecklistLine[] {
   return [
     { kind: 'group', id: 'tx', title: '交易' },
@@ -111,7 +104,7 @@ export function checklist(tree: CallTree): ChecklistLine[] {
   ];
 }
 
-/** The checklist's and the verify page's styles on top of the report's; check.sh carries the same rules. */
+/** check.sh carries a copy of these rules. */
 export const CHECKLIST_CSS = `.main.solo{max-width:none}
 .banner{display:flex;gap:12px;align-items:center;margin-top:22px;padding:14px 16px;border:1px solid var(--line2);border-radius:var(--r);font-size:18px;font-weight:590}
 .banner .i{width:20px;height:20px}
@@ -124,7 +117,7 @@ export const CHECKLIST_CSS = `.main.solo{max-width:none}
 .cl .r:hover{background:var(--hover)}
 .cl .id{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);overflow-wrap:anywhere}
 .cl .k{color:var(--fg2)}
-.cl .v{font-family:var(--mono);font-size:var(--t-mono);overflow-wrap:anywhere;min-width:0}
+.cl .v{font-family:var(--mono);font-size:var(--t-mono);overflow-wrap:anywhere;min-width:0;unicode-bidi:bidi-override;direction:ltr}
 .cl .nm{color:var(--fg2);font-size:var(--t-small);overflow-wrap:anywhere}
 .cl details>summary,.log details>summary{cursor:pointer}
 .cl .full{display:block;margin-top:6px;color:var(--fg2);font-size:13px;line-height:1.5}
