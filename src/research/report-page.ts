@@ -1265,7 +1265,7 @@ function nextSection(context: Context): Section {
       say: [`在 Safe web app 提出交易（第一次用這個模板${context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined ? '或這個 vault' : ''}，先用小額），複製它的 safeTxHash，然後跑`],
       command: 'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
       then: [
-        [{ code: 'MATCH' }, '：它印出 domain hash、message hash 和 safeTxHash，往下走。'],
+        [{ code: 'MATCH' }, '：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。'],
         [{ code: 'MISMATCH' }, ' 或 ', { code: 'UNVERIFIABLE' }, '：不要簽。看它列出的檢查，再看本報告「', { href: anchor('review'), label: '待確認' }, '」裡 AI 的判斷，可能說明原因。'],
       ],
       hashes: false,
@@ -1273,10 +1273,10 @@ function nextSection(context: Context): Section {
     {
       say: ['加強等級：在獨立電腦上跑'],
       command: './check.sh <nonce>',
-      then: [['它算出的 hash 跟硬體錢包比對，解出的每個呼叫跟 ', { code: 'verify' }, ' 在 MATCH 後印出的逐項比對。']],
+      then: [['它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 ', { code: 'verify' }, ' 網頁上的逐列比對。']],
       hashes: false,
     },
-    { say: ['硬體錢包上的 domain hash 和 message hash，跟 ', { code: 'verify' }, ' 印的逐字比對，一樣才簽。'], command: undefined, then: [], hashes: true },
+    { say: ['硬體錢包上的 domain hash 和 message hash，跟 ', { code: 'verify' }, ' 網頁上的逐字比對，一樣才簽。'], command: undefined, then: [], hashes: true },
   ];
   const tokenName = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : `你選的 ${token.field}`);
   const automatic: Inline[] = [

@@ -603,11 +603,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
       <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
     <li><div>在 Safe web app 提出交易（第一次用這個模板或這個 vault，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
-      <p class="then"><code>MATCH</code>：它印出 domain hash、message hash 和 safeTxHash，往下走。</p>
+      <p class="then"><code>MATCH</code>：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。</p>
       <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
     <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
-      <p class="then">它算出的 hash 跟硬體錢包比對，解出的每個呼叫跟 <code>verify</code> 在 MATCH 後印出的逐項比對。</p></div></li>
-    <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 印的逐字比對，一樣才簽。
+      <p class="then">它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 <code>verify</code> 網頁上的逐列比對。</p></div></li>
+    <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 網頁上的逐字比對，一樣才簽。
       <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
   </ol>
   <div class="auto"><h3>程式每次簽名自動做的事</h3>

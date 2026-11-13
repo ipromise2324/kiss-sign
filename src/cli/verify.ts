@@ -19,28 +19,27 @@ import { describeCallScan } from '../simulate/simulate.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fileAt, optionalFileAt, pathsAt, selfCheck } from '../verify/self-check.ts';
 import { reportedVaults, unreportedVault } from '../template/vault-reports.ts';
-import { amountTokens, callTree, renderCallTree } from '../verify/expected.ts';
+import { amountTokens, callTree } from '../verify/expected.ts';
+import type { CallTree } from '../verify/expected.ts';
+import { verdictPage } from '../verify/page.ts';
+import { expectedChanges } from '../simulate/effects.ts';
 import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile, prepare } from '../verify/verify.ts';
 import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
 import { FAILED, OK, UsageError } from './io.ts';
 import type { Io } from './io.ts';
-import { requireConfig } from './setup.ts';
+import { requireConfig, shellWord } from './setup.ts';
 
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v1';
 
 export const verdictsDir = (home: string): string => join(home, 'verdicts');
 
-function print({ verdict, hashes, calls }: Evaluation, registry: Registry, io: Io, replaying = false): void {
+function printReplay({ verdict, hashes, calls }: Evaluation, registry: Registry, io: Io): void {
   io.stdout(`${verdict.kind}\n`);
   if (verdict.kind !== 'MATCH') for (const cause of verdict.causes) for (const detail of cause.details) io.stdout(`  ${cause.check}: ${detail}\n`);
   for (const line of describeCallScan(calls, registry)) io.stdout(`${line}\n`);
   if (verdict.kind === 'MATCH') {
     io.stdout(`  domain hash   ${hashes.domainHash}\n  message hash  ${hashes.messageHash}\n  safeTxHash    ${hashes.safeTxHash}\n`);
-    io.stdout(
-      replaying
-        ? 'This is a replay of a recorded verdict, not permission to sign. Run pnpm kiss-sign verify before signing.\n'
-        : 'Compare the domain hash and the message hash on the hardware wallet before you sign.\n',
-    );
+    io.stdout('This is a replay of a recorded verdict, not permission to sign. Run pnpm kiss-sign verify before signing.\n');
     return;
   }
   io.stdout('No hashes are shown. Do not sign this transaction.\n');
@@ -119,16 +118,41 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const file: VerdictFile = { format: VERDICT_FORMAT, inputs, exchanges: recorder.exchanges(), result };
   const dir = verdictsDir(home);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
-  const path = join(dir, `${result.hashes.safeTxHash}-${Date.now()}.json`);
+  const path = join(dir, `nonce-${tx.nonce}-${Date.now()}.json`);
   writeFileSync(`${path}.tmp`, `${JSON.stringify(file, null, 2)}\n`, { mode: 0o600 });
   renameSync(`${path}.tmp`, path);
-  print(result, parseRegistry(JSON.parse(inputs.registry)), io);
-  if (result.verdict.kind === 'MATCH') {
+  const { verdict, hashes } = result;
+  io.stdout(`${verdict.kind}\n`);
+  if (verdict.kind !== 'MATCH') for (const cause of verdict.causes) for (const detail of cause.details) io.stdout(`  ${cause.check}: ${detail}\n`);
+  let tree: CallTree | undefined;
+  if (verdict.kind === 'MATCH') {
     const decimals = await tokenDecimals(createReader(endpoints, io.transport), amountTokens(prepared.card, prepared.templates, prepared.registry));
-    io.stdout(`\n獨立檢查（加強等級）：在獨立電腦執行 ./check.sh ${tx.nonce}，逐項比對\n`);
-    for (const line of renderCallTree(callTree(tx, { ...prepared, decimals }))) io.stdout(`${line}\n`);
+    tree = callTree(tx, { ...prepared, decimals });
+    io.stdout(`  safeTxHash  ${hashes.safeTxHash}\n`);
+  } else {
+    io.stdout('No hashes are shown. Do not sign this transaction.\n');
   }
+  const page = path.replace(/\.json$/, '.html');
+  const html = verdictPage({
+    verdict,
+    nonce: tx.nonce,
+    card: prepared.card,
+    cardHash: values.card,
+    registry: prepared.registry,
+    expected: expectedChanges(prepared.card, prepared.templates, prepared.registry),
+    calls: result.calls,
+    tree,
+    verdictFile: path,
+  });
+  writeFileSync(`${page}.tmp`, html, { mode: 0o600 });
+  renameSync(`${page}.tmp`, page);
   io.stdout(`Verdict file: ${path}\n`);
+  io.stdout(
+    verdict.kind === 'MATCH'
+      ? `kiss-sign verify page, nonce ${tx.nonce}, MATCH, with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\n`
+      : `kiss-sign verify page, nonce ${tx.nonce}, ${verdict.kind}, with every check: ${page}\n`,
+  );
+  io.stdout(`Open it with: ${io.platform === 'darwin' ? 'open' : 'xdg-open'} ${shellWord(page)}\n`);
   return result.verdict.kind === 'MATCH' ? OK : FAILED;
 }
 
@@ -138,7 +162,7 @@ export async function replay(args: readonly string[], io: Io): Promise<number> {
   if (path === undefined || extra.length > 0) throw new UsageError('replay takes the path of one verdict file.');
   const file = parseVerdictFile(JSON.parse(readFileSync(path, 'utf8')));
   const result = await evaluate(file.inputs, replayReader(file.exchanges));
-  print(result, parseRegistry(JSON.parse(file.inputs.registry)), io, true);
+  printReplay(result, parseRegistry(JSON.parse(file.inputs.registry)), io);
   if (canonicalJson(result) !== canonicalJson(file.result)) {
     const what = canonicalJson(result.verdict) === canonicalJson(file.result.verdict) ? 'the same verdict but different call marks or hashes' : 'another result';
     io.stderr(`kiss-sign: the recorded verdict was ${file.result.verdict.kind}; this program now gives ${what}.\n`);
