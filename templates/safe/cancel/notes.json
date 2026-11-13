@@ -1,0 +1,40 @@
+{
+  "title": "取消 Safe 佇列中的交易（鏈上拒絕）",
+  "summary": "在要取消的那筆交易的 nonce 上，送一筆空交易：Safe 呼叫自己，0 ETH、沒有資料。它一執行，Safe 的 nonce 就往前走一格，佇列裡同一個 nonce 的其他交易再也不能執行。這就是 Safe web app 佇列裡按 Reject、選鏈上拒絕時產生的交易。app 不要你打任何值，只要你選要拒絕哪一筆；卡片問的 nonce 就是那一筆的 nonce，在 app 佇列裡每筆交易旁邊都看得到。",
+  "verdict": {
+    "status": "safe",
+    "text": "不動任何資產，只用掉一個 nonce；要核對的只有 nonce 是不是你要取消的那一筆。"
+  },
+  "flow": [],
+  "protocols": {},
+  "judgments": [
+    {
+      "text": "要取消哪一筆，是你在 app 佇列裡按哪一筆的 Reject 決定的；卡片的 nonce 只讓 verify 確認是同一筆，不一樣就 MISMATCH。真正要小心的是在 app 裡按錯筆：那時卡片照著抄，兩邊一致，會取消掉錯的那筆。",
+      "sources": [
+        "https://help.safe.global/articles/3608612277-reject-and-delete-transactions"
+      ],
+      "recommendation": "按 Reject 前，先確認那一筆的內容和 nonce 是你要取消的，卡片填同一個數字。"
+    },
+    {
+      "text": "取消要真的在鏈上執行才算數。原交易已收集的簽名在那之前一直有效：同一個 nonce 誰先執行誰算，原交易若先湊滿簽名被執行，這筆取消就失效。Safe 的說明也說，從佇列刪除不會讓已收集的簽名失效。",
+      "sources": [
+        "https://help.safe.global/articles/3608612277-reject-and-delete-transactions"
+      ],
+      "recommendation": "要取消就盡快湊滿簽名並執行，執行前不要再幫原交易簽。"
+    },
+    {
+      "text": "這筆交易只改變 Safe 的 nonce：Safe 執行任何交易時 nonce 都加一；Safe 呼叫自己、帶 0 ETH 又沒有資料，只會進到 `receive`，什麼都不變。程式也知道這點，所以 verify 不會把它列進「沒有移動資產的呼叫」。",
+      "sources": [
+        "https://github.com/safe-fndn/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/contracts/GnosisSafe.sol#L143",
+        "https://github.com/safe-fndn/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/contracts/common/EtherPaymentFallback.sol#L10"
+      ],
+      "recommendation": "可以接受：這正是取消該有的樣子。"
+    },
+    {
+      "text": "過去交易沒有研究：找過去交易的工具只認代幣轉帳，取消沒有轉帳，找不到。替代證據在 pnpm test 裡：兩個別的 Safe 已執行的取消，照交易本身的 nonce 做卡片檢查都通過；其中一筆另外試過改掉 nonce、呼叫對象、金額或資料，都變 MISMATCH。上面「參數保護：沒有測試」指的是換值測試的錄製，不包括這兩筆。",
+      "recommendation": "可以接受：模板只有一個你填的值，其他全部固定。"
+    }
+  ],
+  "reviews": {},
+  "fields": {}
+}

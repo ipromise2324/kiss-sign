@@ -20,7 +20,6 @@ export const NOT_YET_REBUILT: ReadonlySet<string> = new Set([
   'morpho/vault-migrate-all',
   'morpho/vault-withdraw',
   'morpho/vault-withdraw-all',
-  'safe/cancel',
 ]);
 
 /** Whether a template's reports gate the vaults its card names: every template but those not yet rebuilt. */

@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-11",
+  "fetched": "2026-11-13",
   "defillama": [],
   "coingecko": [],
   "pages": {},
@@ -13,5 +13,14 @@
     },
     "chain": []
   },
-  "code": []
+  "code": [],
+  "facts": {
+    "block": {
+      "number": "26407580",
+      "hash": "0x7cbb8d8c506d66ea92fe599ce00ba37d5cb5341ad58e82741a50acd55b05dbc3"
+    },
+    "defillama": [],
+    "hacks": [],
+    "chain": []
+  }
 }
