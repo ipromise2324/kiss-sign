@@ -9,7 +9,6 @@ import type { Template } from './template.ts';
 export const NOT_YET_REBUILT: ReadonlySet<string> = new Set([
   'cctp/receive',
   'erc20/transfer',
-  'eth/transfer',
   'fluid/rewards-claim',
   'fluid/vault-deposit',
   'fluid/vault-redeem',
