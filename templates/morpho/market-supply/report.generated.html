@@ -127,6 +127,8 @@ svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
 svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
 svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
 svg .tagt{fill:var(--fg2);font:12px var(--sans)}
@@ -243,7 +245,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>存入 Morpho market</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">morpho/market-supply</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 先授權 BlueBundlesV1 剛好你填的金額，再呼叫它的 blueBundlesV1Supply：它從 Safe 拉走這筆代幣，以 Safe 的名義存進你選的 Morpho Blue market。存款借給這個 market 的借款人賺利息，Safe 拿到的是存款份額。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 先授權 BlueBundlesV1 剛好你填的金額，再呼叫它的 <code>blueBundlesV1Supply</code>：它從 Safe 拉走這筆代幣，以 Safe 的名義存進你選的 Morpho Blue market。存款借給這個 market 的借款人賺利息，Safe 拿到的是存款份額。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">5 / 6</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 個地址有結果要你看，見「待確認」。其餘 5 個在來源頁讀到登記的地址。</span></span></li>
@@ -282,9 +284,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">blueBundlesV1Supply</text>
     <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#m-call)"/>
-    <g data-ai><rect class="tagbox" x="292" y="180" width="56" height="20" rx="6"/><text class="tagt" x="320" y="194" text-anchor="middle">AI 研究</text><text class="cap" x="356" y="194">用 transferFrom 從 Safe 拉走你填的金額</text></g>
+    <g data-ai><rect class="tagbox" x="292" y="180" width="56" height="20" rx="6"/><text class="tagt" x="320" y="194" text-anchor="middle">AI 研究</text><rect class="codebox" x="380.6" y="180" width="101.6" height="19" rx="6"/><text class="cap" y="194"><tspan x="356">用 </tspan><tspan class="capc" x="384.6">transferFrom</tspan><tspan x="485.20000000000005"> 從 Safe 拉走你填的金額</tspan></text></g>
     <line class="inner" x1="470" y1="204" x2="283" y2="204" marker-end="url(#m-inside)"/>
-    <g data-ai><rect class="tagbox" x="423.2000000000001" y="216" width="56" height="20" rx="6"/><text class="tagt" x="451.2000000000001" y="230" text-anchor="middle">AI 研究</text><text class="cap" x="487.2000000000001" y="230">supply 進 market，onBehalf 是 Safe</text></g>
+    <g data-ai><rect class="tagbox" x="392.4" y="216" width="56" height="20" rx="6"/><text class="tagt" x="420.4" y="230" text-anchor="middle">AI 研究</text><rect class="codebox" x="459.4" y="216" width="54.8" height="19" rx="6"/><rect class="codebox" x="608.9999999999999" y="216" width="70.4" height="19" rx="6"/><text class="cap" y="230"><tspan x="456.4"></tspan><tspan class="capc" x="463.4">supply</tspan><tspan x="517.1999999999999"> 進 market，</tspan><tspan class="capc" x="612.9999999999999">onBehalf</tspan><tspan x="682.3999999999999"> 是 Safe</tspan></text></g>
     <line class="inner" x1="470" y1="240" x2="657" y2="240" marker-end="url(#m-inside)"/>
     <text class="capg" x="104" y="266">你在 morpho-blue 的 supplyShares 增加</text>
     <line class="gain" x1="660" y1="276" x2="93" y2="276" marker-end="url(#m-gets)"/>
@@ -305,7 +307,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.approve.spender">
       <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
       <div class="val"><div class="raw">0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD</div><div class="is"><a href="#a-blue-bundles-v1">blue-bundles-v1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 BlueBundlesV1，呼叫 2 裡它用 transferFrom 拉走這筆錢。</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 BlueBundlesV1，呼叫 2 裡它用 <code>transferFrom</code> 拉走這筆錢。</span></span></div></div>
     </div>
     <div class="arg" data-field="1.approve.value">
       <div class="nm"><span class="pn">value</span><span class="who you">你填：金額</span></div>
@@ -340,12 +342,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="2.blueBundlesV1Supply.loanTokenPermit">
       <div class="nm"><span class="pn">loanTokenPermit</span><span class="who">kind 固定</span><span class="who app">data 不限</span></div>
       <div class="val"><div class="is">2 個部分</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>告訴合約怎麼從 Safe 拿到代幣。kind 0 用呼叫 1 的 approve；1 和 2 是簽名授權（ERC-2612、Permit2），Safe 用不到。</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>告訴合約怎麼從 Safe 拿到代幣。<code>kind</code> 0 用呼叫 1 的 <code>approve</code>；1 和 2 是簽名授權（ERC-2612、Permit2），Safe 用不到。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">kind</div><div><div class="raw">0</div><div class="is">固定為 0</div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>0 表示用 transferFrom 拉，靠的是呼叫 1 的 approve。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>0 表示用 <code>transferFrom</code> 拉，靠的是呼叫 1 的 <code>approve</code>。</span></span></div></div></div>
         <div class="part"><div class="pn">data</div><div><div class="raw">0x<span class="ex">例</span></div><div class="is">每筆不同 <span class="f3">合約不讀它，換成別的值結果一樣</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>只有 kind 1 或 2 才會讀。kind 是 0 時 TokenLib.pullOrWrapNative 不讀它，測試交易換成別的值，結果一樣。</span></span></div></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>只有 <code>kind</code> 1 或 2 才會讀。<code>kind</code> 是 0 時 TokenLib 的 <code>pullOrWrapNative</code> 不讀它，測試交易換成別的值，結果一樣。</span></span></div></div></div>
       </div>
     </div>
     <div class="arg" data-field="2.blueBundlesV1Supply.referralFeePct">
@@ -406,7 +408,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>沒有 Safe 這樣存過：過去一年找到的 2 筆 Safe 交易做的是提款和還款，不是存款。8 筆 EOA 直接呼叫 blueBundlesV1Supply，全部符合模板的形狀。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>沒有 Safe 這樣存過：過去一年找到的 2 筆 Safe 交易做的是提款和還款，不是存款。8 筆 EOA 直接呼叫 <code>blueBundlesV1Supply</code>，全部符合模板的形狀。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>第一次先送小額，確認 verify 印出 MATCH，交易後存款份額有增加。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row">

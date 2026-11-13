@@ -137,7 +137,8 @@ test('every text the AI wrote is inside an element with its dashed AI tag, and n
     const { rest, cut } = withoutAi(html);
     assert.ok(cut.length > 0, id);
     for (const element of cut) assert.match(element, /class="(byai|tagt)"/, `${id}: AI text without its tag: ${element.slice(0, 120)}`);
-    for (const text of noteTexts(readNotes(ROOT, id))) assert.ok(!unescape(rest).includes(text), `${id}: ${text} outside an AI element`);
+    const plain = noteTexts(readNotes(ROOT, id)).flatMap((text) => text.split('`').filter((part, i) => i % 2 === 0 && part.length >= 6));
+    for (const text of plain) assert.ok(!unescape(rest).includes(text), `${id}: ${text} outside an AI element`);
   }
 });
 
@@ -157,6 +158,26 @@ test('AI text is HTML-escaped', async () => {
   const { cut } = withoutAi(html);
   assert.ok(cut.some((element) => element.includes('&#60;b&#62;&#38;&#34;x&#60;/b&#62;')));
   assert.ok(cut.some((element) => element.includes('&#60;script&#62;alert(&#39;x&#39;)&#60;/script&#62;')));
+});
+
+test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
+  const id = withNotes[0] as string;
+  const { inputs, title } = replayed.get(id) ?? assert.fail(id);
+  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
+  const raw = readNotes(ROOT, id) as { flow: { text: string }[] } & Record<string, unknown>;
+  const flow = raw.flow.map((line, i) => (i === 0 ? { ...line, text: '依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`' } : line));
+  const html = renderPage(
+    buildPage(
+      { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) },
+      { ...raw, summary: '先呼叫 `multicall`，<b>不是</b> `approve()`', flow },
+      title,
+    ),
+  );
+  assert.ok(html.includes('先呼叫 <code>multicall</code>，&#60;b&#62;不是&#60;/b&#62; <code>approve()</code>'));
+  assert.ok(!html.includes('`'), 'no backtick reaches the page');
+  const caption = /<g data-ai>.*?<\/g>/s.exec(html.slice(html.indexOf('<svg viewBox')))?.[0] ?? assert.fail('a flow caption');
+  assert.equal([...caption.matchAll(/<rect class="codebox"/g)].length, 2);
+  assert.deepEqual([...caption.matchAll(/<tspan class="capc"[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
 });
 
 test('every state icon is an image with a Chinese name, and the rest are hidden from screen readers', () => {

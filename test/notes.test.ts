@@ -151,6 +151,17 @@ test('text over its limit is refused: 2,000, 300 for a review, 200 for a judgmen
   refused(edited(['verdict', 'text'], over(100)), 'notes.json.verdict.text: longer than 100 characters');
 });
 
+test('a backtick code span around one identifier is accepted, and its backticks do not count toward the limit', () => {
+  for (const text of ['依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`', '`supply()` 進 market', '`_spender` 是 adapter']) assert.equal(parseNotes(edited(['flow', 0, 'text'], text), SCOPE).flow[0]?.text, text);
+  const full = `\`${'x'.repeat(98)}\``;
+  assert.equal(parseNotes(edited(['flow', 0, 'text'], full), SCOPE).flow[0]?.text, full);
+});
+
+test('a backtick that is not closed or wraps anything but one identifier is refused', () => {
+  const message = 'notes.json.summary: holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`';
+  for (const text of ['呼叫 `multicall', '`a b`', '`<b>x</b>`', '``', '`1abc`', '`f(x)`', '`a.b`', '`https://x`']) refused(edited(['summary'], text), message);
+});
+
 test('a status, verdict or AI source result outside its words is refused', () => {
   refused(edited(['verdict', 'status'], 'ok'), 'notes.json.verdict.status: not one of safe, caution');
   refused(edited(['entries', 'usdc', 'sources', 0, 'result'], 'ok'), 'notes.json.entries.usdc.sources[0].result: not one of pass, attention, fail');

@@ -2,7 +2,7 @@ import { join } from 'node:path';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
-import { NOTES_FILE, readNotes } from './notes.ts';
+import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
 import type { AddressRow, AiText, ArgRow, Body, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SourceLine } from './report-page.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
@@ -49,11 +49,16 @@ function text(spans: Inline): Html {
   })}`;
 }
 
+/** AI text's parts: plain text, and each code span the parser let through as one identifier. */
+const aiParts = (text: string): { readonly text: string; readonly code: boolean }[] => (codeSpans(text) ?? [text]).map((part, i) => ({ text: part, code: i % 2 === 1 }));
+
+const aiProse = (text: string): Html => h`${aiParts(text).map((part) => (part.code ? h`<code>${part.text}</code>` : part.text))}`;
+
 /** The only way AI text reaches the page: escaped, with its sources linked and its dashed tag. */
 function ai(note: AiText): Html {
   const sources = note.sources.map((url, i) => h` <a class="aisrc" href="${url}">來源${note.sources.length > 1 ? ` ${i + 1}` : ''}</a>`);
   const tag = h`<span class="byai">${note.tag}</span>`;
-  return note.tag === 'AI' ? h`<span class="aiw" data-ai>${tag}<span>${note.ai}${sources}</span></span>` : h`<span class="aiw" data-ai><span>${note.ai}${sources}</span>${tag}</span>`;
+  return note.tag === 'AI' ? h`<span class="aiw" data-ai>${tag}<span>${aiProse(note.ai)}${sources}</span></span>` : h`<span class="aiw" data-ai><span>${aiProse(note.ai)}${sources}</span>${tag}</span>`;
 }
 
 let tips = 0;
@@ -95,6 +100,32 @@ const AI_TAG_WIDTH = 56;
 const CJK_FIRST = 0x2e80;
 /** About how wide 14px text draws: a CJK character a full em, anything else about half. */
 const textWidth = (text: string): number => [...text].reduce((w, c) => w + ((c.codePointAt(0) ?? 0) >= CJK_FIRST ? 14 : 7.6), 0);
+/** A code span in a caption: 13px monospace, 0.6em a character, inside a box with this much room on each side. */
+const CODE_CHAR = 7.8;
+const CODE_PAD = 4;
+const CODE_GAP = 3;
+
+/**
+ * An AI caption in the diagram, starting at `x` on baseline `y`: each code span in monospace on its own box, every part
+ * placed at its own x, so an estimate that is off moves only the text after it. Returns the markup and its width.
+ */
+function caption(text: string, x: number, y: number): { readonly boxes: Html; readonly text: Html; readonly width: number } {
+  let at = x;
+  const boxes: Html[] = [];
+  const spans = aiParts(text).map((part) => {
+    if (!part.code) {
+      const span = h`<tspan x="${at}">${part.text}</tspan>`;
+      at += textWidth(part.text);
+      return span;
+    }
+    const width = part.text.length * CODE_CHAR;
+    boxes.push(h`<rect class="codebox" x="${at + CODE_GAP}" y="${y - 14}" width="${width + 2 * CODE_PAD}" height="19" rx="6"/>`);
+    const span = h`<tspan class="capc" x="${at + CODE_GAP + CODE_PAD}">${part.text}</tspan>`;
+    at += width + 2 * (CODE_PAD + CODE_GAP);
+    return span;
+  });
+  return { boxes: h`${boxes}`, text: h`<text class="cap" y="${y}">${spans}</text>`, width: at - x };
+}
 
 function diagram(sequence: Sequence): Html {
   const x = (i: number) => FIRST_X + i * SPACING;
@@ -109,10 +140,11 @@ function diagram(sequence: Sequence): Html {
       y += 52;
     } else if (arrow.kind === 'inside') {
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
-      const caption = AI_TAG_WIDTH + 8 + textWidth(arrow.text.ai);
-      const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - caption));
+      const wide = AI_TAG_WIDTH + 8 + caption(arrow.text.ai, 0, y).width;
+      const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - wide));
+      const cap = caption(arrow.text.ai, left + AI_TAG_WIDTH + 8, y);
       rows.push(h`
-    <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${AI_TAG_WIDTH}" height="20" rx="6"/><text class="tagt" x="${left + AI_TAG_WIDTH / 2}" y="${y}" text-anchor="middle">${arrow.text.tag}</text><text class="cap" x="${left + AI_TAG_WIDTH + 8}" y="${y}">${arrow.text.ai}</text></g>
+    <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${AI_TAG_WIDTH}" height="20" rx="6"/><text class="tagt" x="${left + AI_TAG_WIDTH / 2}" y="${y}" text-anchor="middle">${arrow.text.tag}</text>${cap.boxes}${cap.text}</g>
     <line class="inner" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>`);
       y += 36;
     } else {
@@ -551,6 +583,8 @@ svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
 svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
 svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
 svg .tagt{fill:var(--fg2);font:12px var(--sans)}

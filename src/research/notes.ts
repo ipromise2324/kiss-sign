@@ -120,12 +120,26 @@ const refuse = (path: string, rule: string): never => {
 };
 const shown = (key: string): string => JSON.stringify(key.slice(0, 80));
 
+/** What may stand between two backticks: one identifier, such as a function or argument name, with or without `()`. */
+const CODE_SPAN = /^[A-Za-z_][A-Za-z0-9_]*(\(\))?$/;
+
+/**
+ * AI text split at its backticks: plain text at even positions, code spans at odd ones. Undefined when a backtick is
+ * not closed or a span holds anything but one identifier.
+ */
+export function codeSpans(text: string): readonly string[] | undefined {
+  const parts = text.split('`');
+  return parts.length % 2 === 1 && parts.every((part, i) => i % 2 === 0 || CODE_SPAN.test(part)) ? parts : undefined;
+}
+
 const str =
   (max: number): P<string> =>
   (path, raw) => {
     if (typeof raw !== 'string' || raw.trim() === '') return refuse(path, 'not a non-empty string');
-    if (raw.length > max) return refuse(path, `longer than ${max} characters`);
     if (CONTROL.test(raw)) return refuse(path, 'holds a control or bidirectional character');
+    const parts = codeSpans(raw);
+    if (parts === undefined) return refuse(path, 'holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`');
+    if (parts.join('').length > max) return refuse(path, `longer than ${max} characters`);
     return raw;
   };
 

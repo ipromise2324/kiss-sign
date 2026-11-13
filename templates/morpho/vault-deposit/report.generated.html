@@ -127,6 +127,8 @@ svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
 svg .no{fill:var(--fg3);font:400 14px var(--mono)}
 svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
 svg .capg{fill:var(--ok);font:590 14px var(--sans)}
 svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
 svg .tagt{fill:var(--fg2);font:12px var(--sans)}
@@ -243,7 +245,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>存入 Morpho vault</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">morpho/vault-deposit</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 先授權 GeneralAdapter1 剛好你填的金額，再呼叫 Bundler3 的 multicall：GeneralAdapter1 從 Safe 拉走這筆代幣，存進你選的 vault，股份直接給 Safe。每股價格不能高過你填的最少股份換算出的價格，否則整筆失敗。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 先授權 GeneralAdapter1 剛好你填的金額，再呼叫 Bundler3 的 <code>multicall</code>：GeneralAdapter1 從 Safe 拉走這筆代幣，存進你選的 vault，股份直接給 Safe。每股價格不能高過你填的最少股份換算出的價格，否則整筆失敗。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">10 / 15</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">5 個地址有結果要你看，見「待確認」。其餘 10 個在來源頁讀到登記的地址。</span></span></li>
@@ -282,9 +284,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">multicall</text>
     <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#m-call)"/>
-    <g data-ai><rect class="tagbox" x="349.5999999999999" y="180" width="56" height="20" rx="6"/><text class="tagt" x="377.5999999999999" y="194" text-anchor="middle">AI 研究</text><text class="cap" x="413.5999999999999" y="194">依序呼叫 erc20TransferFrom 和 erc4626Deposit</text></g>
+    <g data-ai><rect class="tagbox" x="315.40000000000003" y="180" width="56" height="20" rx="6"/><text class="tagt" x="343.40000000000003" y="194" text-anchor="middle">AI 研究</text><rect class="codebox" x="446.00000000000006" y="180" width="140.6" height="19" rx="6"/><rect class="codebox" x="621.8000000000001" y="180" width="117.2" height="19" rx="6"/><text class="cap" y="194"><tspan x="379.40000000000003">依序呼叫 </tspan><tspan class="capc" x="450.00000000000006">erc20TransferFrom</tspan><tspan x="589.6"> 和 </tspan><tspan class="capc" x="625.8000000000001">erc4626Deposit</tspan><tspan x="742.0000000000001"></tspan></text></g>
     <line class="inner" x1="470" y1="204" x2="657" y2="204" marker-end="url(#m-inside)"/>
-    <g data-ai><rect class="tagbox" x="276.7999999999999" y="216" width="56" height="20" rx="6"/><text class="tagt" x="304.7999999999999" y="230" text-anchor="middle">AI 研究</text><text class="cap" x="340.7999999999999" y="230">用 transferFrom 從 Safe 拉走你填的金額的 vault 資產代幣</text></g>
+    <g data-ai><rect class="tagbox" x="260.40000000000003" y="216" width="56" height="20" rx="6"/><text class="tagt" x="288.40000000000003" y="230" text-anchor="middle">AI 研究</text><rect class="codebox" x="349.00000000000006" y="216" width="101.6" height="19" rx="6"/><text class="cap" y="230"><tspan x="324.40000000000003">用 </tspan><tspan class="capc" x="353.00000000000006">transferFrom</tspan><tspan x="453.6"> 從 Safe 拉走你填的金額的 vault 資產代幣</tspan></text></g>
     <line class="inner" x1="660" y1="240" x2="283" y2="240" marker-end="url(#m-inside)"/>
     <text class="capg" x="104" y="266">你得到 hyperithm-usdc-apex-v2-9e2f</text>
     <line class="gain" x1="470" y1="276" x2="93" y2="276" marker-end="url(#m-gets)"/>
@@ -305,7 +307,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="arg" data-field="1.approve.spender">
       <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
       <div class="val"><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 GeneralAdapter1，呼叫 2 裡它用 transferFrom 拉走這筆錢。</span></span></div></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 GeneralAdapter1，呼叫 2 裡它用 <code>transferFrom</code> 拉走這筆錢。</span></span></div></div>
     </div>
     <div class="arg" data-field="1.approve.value">
       <div class="nm"><span class="pn">value</span><span class="who you">你填：金額</span></div>
@@ -402,21 +404,21 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">usual-boosted-usdc-v1-3a3d：來源網址本身含有地址</div>
         <div class="meta">網址裡帶著地址，頁面上的地址可能只是照網址印出來，不能證明什麼。<a href="#a-usual-boosted-usdc-v1-3a3d">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 MEV Capital 列出地址的頁面，它的網站連不上，DefiLlama 也沒列網站。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Usual Boosted USDC V1，curator 欄寫 MEV Capital，Etherscan 連結指向 0xd63070114470f685b75B74D60EEc7c1113d33a3D。網址本身含地址。MetaMorpho 舊版工廠回答 isMetaMorpho = true。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 MEV Capital 列出地址的頁面，它的網站連不上，DefiLlama 也沒列網站。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Usual Boosted USDC V1，curator 欄寫 MEV Capital，Etherscan 連結指向 0xd63070114470f685b75B74D60EEc7c1113d33a3D。網址本身含地址。MetaMorpho 舊版工廠回答 <code>isMetaMorpho</code> = true。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="smokehouse-usdc-v1-f5bc/source.coingecko">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">smokehouse-usdc-v1-f5bc：CoinGecko 沒有列這個地址</div>
         <div class="meta">CoinGecko 在這個地址沒有列幣，或登記沒有給 CoinGecko id。<a href="#a-smokehouse-usdc-v1-f5bc">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>CoinGecko 沒有列這個 vault 的股份代幣，很多 vault 都沒有。這個地址的主要證據是 Steakhouse 文件頁（程式讀到地址）和 MetaMorpho 舊版工廠回答 isMetaMorpho = true。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>CoinGecko 沒有列這個 vault 的股份代幣，很多 vault 都沒有。這個地址的主要證據是 Steakhouse 文件頁（程式讀到地址）和 MetaMorpho 舊版工廠回答 <code>isMetaMorpho</code> = true。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受，不影響存款。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="smokehouse-usdt-v1-7484/source.url">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">smokehouse-usdt-v1-7484：來源網址本身含有地址</div>
         <div class="meta">網址裡帶著地址，頁面上的地址可能只是照網址印出來，不能證明什麼。<a href="#a-smokehouse-usdt-v1-7484">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Steakhouse 列出這個地址的頁面。用瀏覽器打開 Morpho app 的 vault 頁，顯示 Steakhouse Financial 的說明，curator 是 3/9 多簽。網址本身含地址，所以這只證明 Morpho app 有這個 vault。MetaMorpho V1.1 工廠回答 isMetaMorpho = true。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Steakhouse 列出這個地址的頁面。用瀏覽器打開 Morpho app 的 vault 頁，顯示 Steakhouse Financial 的說明，curator 是 3/9 多簽。網址本身含地址，所以這只證明 Morpho app 有這個 vault。MetaMorpho V1.1 工廠回答 <code>isMetaMorpho</code> = true。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="smokehouse-usdt-v1-7484/source.coingecko">
@@ -430,7 +432,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">hyperithm-usdc-apex-v1-7777：來源網址本身含有地址</div>
         <div class="meta">網址裡帶著地址，頁面上的地址可能只是照網址印出來，不能證明什麼。<a href="#a-hyperithm-usdc-apex-v1-7777">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Hyperithm 列出地址的官方頁。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Hyperithm USDC Apex，curator 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V2 vault 是同一個 curator。MetaMorpho V1.1 工廠回答 isMetaMorpho = true。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Hyperithm 列出地址的官方頁。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Hyperithm USDC Apex，curator 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V2 vault 是同一個 curator。MetaMorpho V1.1 工廠回答 <code>isMetaMorpho</code> = true。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="hyperithm-usdc-apex-v1-7777/source.coingecko">
@@ -444,7 +446,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">hyperithm-usdc-apex-v2-9e2f：來源網址本身含有地址</div>
         <div class="meta">網址裡帶著地址，頁面上的地址可能只是照網址印出來，不能證明什麼。<a href="#a-hyperithm-usdc-apex-v2-9e2f">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Hyperithm 列出地址的官方頁。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。VaultV2Factory 回答 isVaultV2 = true。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Hyperithm 列出地址的官方頁。用瀏覽器打開 Morpho app 的 vault 頁，名稱 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。VaultV2Factory 回答 <code>isVaultV2</code> = true。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>要用這個 vault，先在 Morpho app 的 vault 列表點進去，比對網址上的地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="hyperithm-usdc-apex-v2-9e2f/source.coingecko">
