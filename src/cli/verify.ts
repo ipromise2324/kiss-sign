@@ -107,7 +107,8 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
     ...(markets === undefined ? {} : { markets }),
     addressBook: Object.fromEntries([...book].filter(([name]) => named.has(name)).map(([name, address]) => [name, checksumAddress(address)])),
   };
-  const unreported = unreportedVault(card, prepare(inputs).templates, (id) => reportedVaults(id, pathsAt(io.repoRoot, check.commit, `${TEMPLATES_DIR}/${id}`)));
+  const parsed = prepare(inputs);
+  const unreported = unreportedVault(parsed.card, parsed.templates, parsed.registry, (id) => reportedVaults(id, pathsAt(io.repoRoot, check.commit, `${TEMPLATES_DIR}/${id}`)));
   if (unreported !== undefined) {
     io.stderr(`kiss-sign: card refused: ${unreported}. Nothing was verified.\n`);
     return FAILED;

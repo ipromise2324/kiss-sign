@@ -137,7 +137,7 @@ export async function seal(card: Card, io: Io, confirm: Terminal['confirm']): Pr
     io.stderr(`kiss-sign: card refused at ${resolution.at}: ${resolution.detail}\n`);
     return FAILED;
   }
-  const unreported = unreportedVault(card, templates, (id) => reportedVaultsIn(io.repoRoot, id));
+  const unreported = unreportedVault(resolution.card, templates, registry, (id) => reportedVaultsIn(io.repoRoot, id));
   if (unreported !== undefined) {
     io.stderr(`kiss-sign: card refused: ${unreported}\n`);
     return FAILED;

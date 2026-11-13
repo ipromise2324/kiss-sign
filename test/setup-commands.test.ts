@@ -372,6 +372,44 @@ test('card seal accepts the same vault for a template that predates per-vault re
   assert.equal(result.code, 0, result.stderr);
 });
 
+/** A clone whose `test/any-token` template takes its token through an address field, which may name any registry entry. */
+function anyTokenClone(): string {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
+  cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
+  const transfer = JSON.parse(readFileSync(join(ROOT, 'templates', 'erc20', 'transfer', 'template.json'), 'utf8'));
+  mkdirSync(join(repoRoot, 'templates', 'test', 'any-token'), { recursive: true });
+  writeFileSync(join(repoRoot, 'templates', 'test', 'any-token', 'template.json'), JSON.stringify({ ...transfer, id: 'test/any-token', card: { ...transfer.card, token: { kind: 'address' } } }));
+  return repoRoot;
+}
+
+test('card seal refuses a vault named through an address field unless the template has a report for it', async () => {
+  const repoRoot = anyTokenClone();
+  const home = freshHome();
+  configure(home);
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'test/any-token', values: { token: 'smokehouse-usdc-v1-f5bc', amount: '5', recipient: 'safe' } }] }));
+  const refused = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(refused.code, 1);
+  assert.equal(refused.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
+  assert.deepEqual(refused.asked, []);
+  reportVault(repoRoot, 'test/any-token', 'smokehouse-usdc-v1-f5bc');
+  const sealed = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(sealed.code, 0, sealed.stderr);
+});
+
+test('card new does not offer a vault with no report for the template through an address field', async () => {
+  const repoRoot = anyTokenClone();
+  reportVault(repoRoot, 'test/any-token', 'steakhouse-prime-usdc-v2-0f51');
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'test/any-token'], home, ['smokehouse-usdc-v1-f5bc'], { ...decimalsChain({}), repoRoot });
+  assert.equal(made.code, 1);
+  const listed = [...made.stdout.matchAll(/^ {2}\d+\. ([a-z0-9.-]+) 0x/gm)].map((m) => m[1]);
+  assert.ok(listed.includes('steakhouse-prime-usdc-v2-0f51') && listed.includes('usdc'), listed.join());
+  assert.ok(!listed.includes('smokehouse-usdc-v1-f5bc'), 'a vault with no report is not listed');
+  assert.match(made.stderr, /token: "smokehouse-usdc-v1-f5bc" is none of the listed choices/);
+});
+
 test('card new lists only the entries of the protocol a contract field names, and refuses any other', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
   cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });

@@ -15,7 +15,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, scopeEntries } from '../template/template.ts';
 import type { CardField, Template, TokenRef } from '../template/template.ts';
-import { reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
+import { gatesVaults, isRegistryVault, reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
 import { UsageError, terminal } from './io.ts';
 import type { Io, Terminal } from './io.ts';
 import { requireConfig, seal } from './setup.ts';
@@ -171,9 +171,9 @@ async function fill(template: Template, ctx: Context): Promise<CardOperation> {
   if (unit.kind === 'several-vaults') throw new CardError(severalVaults(template.id));
   for (const [name, field] of fields.filter(isChosen)) {
     const listed = optionsFor(field, ctx.sources);
-    const reported = unit.kind === 'vault' && unit.field === name ? ctx.reported(template.id) : undefined;
-    const choices = reported === undefined ? listed : listed.filter((choice) => reported.has(choice.name));
-    if (reported !== undefined && choices.length === 0) throw new CardError(`${name}: no vault has a report for ${template.id}; build one first`);
+    const gated = gatesVaults(template) && field.kind !== 'market';
+    const choices = gated ? listed.filter((choice) => !isRegistryVault(choice.name, ctx.sources.registry) || ctx.reported(template.id).has(choice.name)) : listed;
+    if (unit.kind === 'vault' && unit.field === name && choices.length === 0) throw new CardError(`${name}: no vault has a report for ${template.id}; build one first`);
     if (choices.length === 0) {
       throw new CardError(`${name}: ${field.kind === 'market' ? 'registry/markets.json holds no market' : `the registry and address book hold nothing ${template.id} accepts here`}`);
     }
