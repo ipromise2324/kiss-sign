@@ -196,7 +196,7 @@ senders, of 489 transactions studied:
     126 calls no function the template calls (called 0x6e553f65 in 62, 0xbaae8abf in 33, 0x0af210a1 in 25, 0xfcf2849f in 3, …)
 by proven Safes, the whole template in one transaction:
 another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
-  e.g. 0x89c3015d7de6c4a94dce52604c5b8ebcd7ddadf8f3bda89f0f929979bf3faebe: calls another contract.0x0af210a1, another contract.0x0af210a1, another contract.0x0af210a1
+  e.g. 0x89c3015d7de6c4a94dce52604c5b8ebcd7ddadf8f3bda89f0f929979bf3faebe: calls 0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1, 0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1, 0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1
 fit the template's shape: 6 transactions from 2 Safes; misfits: 2 from 2 Safes
 fields, over the 6 fitting transactions:
   multiSend[0].to  [card vault.asset]

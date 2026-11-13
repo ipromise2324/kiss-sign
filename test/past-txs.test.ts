@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { replayReader } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
+import type { Registry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
 import type { Sampling } from '../src/research/past-txs.ts';
 import { scrubRecording } from '../src/research/recording.ts';
@@ -32,9 +33,10 @@ const samplingOf = (query: PastTxsRecording['query']): Sampling =>
   query.fromBlock === undefined || query.toBlock === undefined ? DEFAULT_SPREAD : { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
 
 async function report(
-  options: { exclude?: Address; sources?: readonly SourceExchange[]; template?: Template; exchanges?: PastTxsRecording['exchanges']; recorded?: PastTxsRecording } = {},
+  options: { exclude?: Address; sources?: readonly SourceExchange[]; template?: Template; exchanges?: PastTxsRecording['exchanges']; recorded?: PastTxsRecording; registry?: Registry } = {},
 ): Promise<string> {
   const recorded = options.recorded ?? recording;
+  const seen = options.registry ?? registry;
   const { query } = recorded;
   const run = await pastTxs(
     {
@@ -42,9 +44,9 @@ async function report(
       anchor: { token: query.token as Address, kind: query.anchor as AnchorKind, ...(query.from === undefined ? {} : { from: query.from as Address }) },
       sampling: samplingOf(query),
     },
-    { ask: replayAsk(options.sources ?? recorded.sources), reader: replayReader(options.exchanges ?? recorded.exchanges), registry, exclude: options.exclude, maxTxs: query.maxTxs },
+    { ask: replayAsk(options.sources ?? recorded.sources), reader: replayReader(options.exchanges ?? recorded.exchanges), registry: seen, exclude: options.exclude, maxTxs: query.maxTxs },
   );
-  return renderPastTxs(run, registry);
+  return renderPastTxs(run, seen);
 }
 
 function withAnswersReplaced(method: string, address: string, answer: unknown): PastTxsRecording['exchanges'] {
@@ -101,6 +103,26 @@ test('the same function called on a contract other than the one the template nam
   const text = await report({ exchanges });
   assert.match(text, /^ {2}EOA calling a function of the template directly: 24, from 24 EOAs$/m);
   assert.match(text, /^ {4}38 calls no function the template calls \(/m);
+});
+
+test('a deposit into the vault whose mint found it, when the registry does not hold that vault, has the template\'s shape outside the registry', async () => {
+  const vault = recording.query.token as Address;
+  const kept = [...registry.entries.values()].filter((entry) => entry.address !== vault);
+  const text = await report({ registry: { entries: new Map(kept.map((e) => [e.name, e])), byAddress: new Map(kept.map((e) => [e.address, e])), markets: registry.markets } });
+  assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe\n {2}exactly the template: 0 from 0 Safes; outside the registry: 2 from 1 Safe \(a vault outside the registry at \S+\.erc4626Deposit\.vault in 2\)$/m);
+});
+
+test('the template\'s function called on another contract than the vault whose mint found it, such as a wrapper, is a misfit named by that contract', async () => {
+  const vault = (recording.query.token as Address).slice(2);
+  const wrapper = 'de'.repeat(20);
+  const exchanges = recording.exchanges.map((e) =>
+    e.method === 'eth_getTransactionByHash' && JSON.stringify(e.params) === JSON.stringify([FIT])
+      ? { ...e, answers: Object.fromEntries(Object.entries(e.answers).map(([p, a]) => [p, { ...(a as object), input: (a as { input: string }).input.replaceAll(vault, wrapper) }])) }
+      : e,
+  );
+  const text = await report({ exchanges });
+  assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 2 from 1 Safe$/m);
+  assert.match(text, new RegExp(`^ {2}1 from 1 Safe: \\S+\\.erc4626Deposit\\.vault: expected [^,]+, got 0x(de){20}\\n {4}e\\.g\\. ${FIT}$`, 'im'));
 });
 
 test('a window with more transfers than one page is halved, and the report names the blocks left out', async () => {
@@ -270,7 +292,7 @@ test("a Safe's transaction that makes none of the template's calls is another op
   const text = await report({ recorded: transfers });
   assert.match(
     text,
-    /^by proven Safes, the whole template in one transaction:\nanother operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below\n {2}e\.g\. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls another contract\.0x1d7d4ebc\nfit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes$/m,
+    /^by proven Safes, the whole template in one transaction:\nanother operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below\n {2}e\.g\. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls 0xe5139Fc0FB8eae81e30d8a85C22E88c6757120f2\.0x1d7d4ebc\nfit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes\n {2}exactly the template: 0 from 0 Safes; outside the registry: 1 from 1 Safe \(a token outside the registry at call\.to in 1\)$/m,
   );
-  assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls another contract\.0x1d7d4ebc$/m);
+  assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls /m);
 });

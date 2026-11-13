@@ -251,8 +251,9 @@ test('下一步 of a per-vault report names the vault in full, says to pick it b
   assert.ok(section.includes('照名字選'), id);
   assert.ok(section.includes('打 usdc 的數量，用整顆幣'), id);
   assert.ok(section.includes('1,000,611.448606'), id);
-  assert.ok(section.includes('min-shares：不用填'), id);
+  assert.ok(section.includes('最少收到的數量（min-shares）：不用填'), id);
   assert.ok(section.includes('再少 0.10%（協議預設的 0.03%，再加 0.07% 餘裕）'), id);
-  assert.ok(section.indexOf('vault：') < section.indexOf('amount：') && section.indexOf('amount：') < section.indexOf('min-shares：'), `${id}: the prompts in the order card new asks them`);
+  const at = ['金庫（vault）：', '金額（amount）：', '（min-shares）：'].map((prompt) => section.indexOf(prompt));
+  assert.ok(at[0] !== -1 && at.every((i, n) => n === 0 || i > (at[n - 1] as number)), `${id}: the prompts in the order card new asks them`);
   assert.ok(section.includes('MISMATCH 或 UNVERIFIABLE：不要簽'), id);
 });

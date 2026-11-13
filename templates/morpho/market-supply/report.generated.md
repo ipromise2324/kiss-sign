@@ -194,6 +194,7 @@ another operation, making none of the template's calls: 2 transactions from 2 Sa
 fit the template's shape: 0 transactions from 0 Safes; misfits: 0 from 0 Safes
 by EOAs, call 2 of 2 (blueBundlesV1Supply) as its own transaction:
 fit the call's shape: 8 transactions from 8 EOAs; misfits: 0 from 0 EOAs
+  exactly the template: 0 from 0 EOAs; outside the registry: 8 from 8 EOAs (another market at call.blueBundlesV1Supply.marketParams in 8)
 fields, over the 8 fitting transactions:
   call.to  [contract blue-bundles-v1]
     equalled contract blue-bundles-v1 in 8 of 8 (8 EOAs); values: blue-bundles-v1 in 8

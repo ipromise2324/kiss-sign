@@ -512,25 +512,27 @@ fields, over the 2 fitting transactions:
 misfits, by reason:
   1 from 1 Safe: calls fluid-fusdc.deposit
     e.g. 0xa280ae0ac377ab9bc6975a5effd097bc6ef53b4ec1a49644eaf2b38d93f34670
-  1 from 1 Safe: calls another contract.0xba087652, another contract.0xba087652, usdc.approve, another contract.0x95991276, another contract.approve, another contract.deposit, usdc.approve, fluid-fusdc.deposit
+  1 from 1 Safe: calls 0x39c0aEc5738ED939876245224aFc7E09C8480a52.0xba087652, 0x0e297dE4005883C757c9F09fdF7cF1363C20e626.0xba087652, usdc.approve, 0xf6e72Db5454dd049d0788e411b06CfAF16853042.0x95991276, 0x6B175474E89094C44Da98b954EedeAC495271d0F.approve, 0xAeDF7d5F3112552E110e5f9D08c9997Adce0b78d.deposit, usdc.approve, fluid-fusdc.deposit
     e.g. 0xd027c3b68e7cf6cbc96be57b01a1e8fd369e3985d8ee55181db23238b3fdbf9c
-  1 from 1 Safe: calls another contract.0xb460af94, another contract.approve, another contract.0x8d7ef9bb, usdc.approve, another contract.deposit, usdc.approve, fluid-fusdc.deposit
+  1 from 1 Safe: calls 0xc9f01b5c6048B064E6d925d1c2d7206d4fEeF8a3.0xb460af94, 0xdC035D45d973E3EC169d2276DDab16f1e407384F.approve, 0xA188EEC8F81263234dA3622A406892F3D630f98c.0x8d7ef9bb, usdc.approve, 0x0e297dE4005883C757c9F09fdF7cF1363C20e626.deposit, usdc.approve, fluid-fusdc.deposit
     e.g. 0xdab72a961cde8a7f5366b1ddf23b70d718ce624cf0394d0ed30c622124060b14
 examples that fit: 0x07313e60b3fd7490a3076c54368eda46c3c6d237e687a6094184bb1b50d027cf, 0x51992c2c0de11ea1213dec791ae37710af1bfeb3cefc8f4bc3d0abd5b1c802de
 by EOAs, call 2 of 2 (deposit) as its own transaction:
-fit the call's shape: 144 transactions from 136 EOAs; misfits: 3 from 3 EOAs
-fields, over the 144 fitting transactions:
+fit the call's shape: 106 transactions from 99 EOAs; misfits: 41 from 40 EOAs
+fields, over the 106 fitting transactions:
   call.to  [card vault]
-    same as the other leaves bound to card vault in 144 of 144; values: fluid-fusdc in 106, another address in 38
+    same as the other leaves bound to card vault in 106 of 106; values: fluid-fusdc in 106
   call.value  [const 0]
-    equalled const 0 in 144 of 144 (136 EOAs); values: 0 in 144
+    equalled const 0 in 106 of 106 (99 EOAs); values: 0 in 106
   call.deposit.assets  [card amount]
-    same as the other leaves bound to card amount in 144 of 144; values: 132 distinct values
+    same as the other leaves bound to card amount in 106 of 106; values: 98 distinct values
   call.deposit.receiver  [the sender]
-    equalled the sender in 144 of 144 (136 EOAs); values: the sender in 144
+    equalled the sender in 106 of 106 (99 EOAs); values: the sender in 106
 misfits, by reason:
-  2 from 2 EOAs: more bytes after the arguments than the template allows, at call
-    e.g. 0x7895f7fad0e06a4b78f11371cbdd295bbb02bbfbd94bd4f02d692cb697787a7d, 0x0af775112b0e55de58649a88722b015be0cce8788c2747fb0057173e809ffb1c
+  39 from 38 EOAs: call.to: expected steakhouse-prime-usdc-v2-0f51 or usual-boosted-usdc-v1-3a3d or fluid-fusdc or fluid-fusdt or steakhouse-high-yield-usdc-v2-a757 or steakhouse-usdt-v1-cfba or smokehouse-usdc-v1-f5bc or smokehouse-usdt-v1-7484 or hyperithm-usdc-apex-v1-7777 or hyperithm-usdc-apex-v2-9e2f, got 0x273DA948ACa9261043fbdb2a857BC255ECC29012
+    e.g. 0x927e1bf87912f3c0e69b5e90a0e0b85c7c35cb455b8f716a6d4ece3012e515c1, 0x49c49697b00ff8bd7b7234ed9442131a5a36f0863a4d021f5497121bf08d220b, 0x36e437671475451dc65156d2008408958b9d2decccf26b86ad866de8c959e9ea
+  1 from 1 EOA: more bytes after the arguments than the template allows, at call
+    e.g. 0x0af775112b0e55de58649a88722b015be0cce8788c2747fb0057173e809ffb1c
   1 from 1 EOA: call.encoding: expected canonical deposit(uint256,address), got differs at byte 68
     e.g. 0xeaf2c0b7d3fa4c77c9d1e575eab571dd5539d91d28e49cc648be03ffc0dfe815
 examples that fit: 0x46c5e2df41ac50f872622dad13d6a0a31df1edabe72973f4ee19c6241fcf164c, 0x1c29cd5280adda183d4afce837d355f8d840c1b465252c17cfa68989a842f878, 0x929aa364d79dac6a105d76a7c0d964be9581371a5a60f0e46a57c07e7919f839
