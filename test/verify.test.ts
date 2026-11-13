@@ -83,42 +83,50 @@ async function verifyTx(tx: unknown, approved?: string | null, reported?: boolea
   const { base, repo, home } = setUp(approved, reported);
   const file = write(join(base, 'tx.json'), JSON.stringify(tx));
   const result = await run(['verify', '--card', fixture.inputs.card.hash, '--tx', file], repo, home);
-  const verdicts = readdirSync(join(home, 'verdicts')).map((name) => join(home, 'verdicts', name));
-  return { ...result, repo, home, verdicts };
+  const names = readdirSync(join(home, 'verdicts'));
+  const verdicts = names.filter((name) => name.endsWith('.json')).map((name) => join(home, 'verdicts', name));
+  const pages = names.filter((name) => name.endsWith('.html')).map((name) => readFileSync(join(home, 'verdicts', name), 'utf8'));
+  return { ...result, repo, home, verdicts, pages };
 }
 
 const hashLine = (stdout: string, label: string): string | undefined => new RegExp(`${label}\\s+(0x[0-9a-f]{64})`).exec(stdout)?.[1];
 
-test('the Morpho deposit verifies to MATCH and prints the hashes the hardware wallet shows', async () => {
-  const { code, stdout, verdicts } = await verifyTx(service);
+/** The value of the 比對清單 row with this id on a verify page. */
+const rowValue = (page: string, id: string): string | undefined => new RegExp(`<span class="id">${id.replace(/\./g, '\\.')}</span><span class="k">[^<]*</span><span class="v">([^<]*)</span>`).exec(page)?.[1];
+
+test('the Morpho deposit verifies to MATCH, prints its safeTxHash, and writes a page with the hashes the hardware wallet shows', async () => {
+  const { code, stdout, verdicts, pages } = await verifyTx(service);
   assert.equal(code, 0, stdout);
-  assert.match(stdout, /^MATCH\nEvery call moves an asset of the Safe\.\n  domain hash/);
-  const [domain, message, safeTxHash] = ['domain hash', 'message hash', 'safeTxHash'].map((label) => hashLine(stdout, label));
+  assert.equal(verdicts.length, 1);
+  assert.equal(pages.length, 1);
+  const page = verdicts[0]!.replace(/\.json$/, '.html');
+  assert.equal(stdout, `MATCH\n  safeTxHash  ${chain.transactionHash}\nVerdict file: ${verdicts[0]}\nPage with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\nOpen it with: xdg-open ${page}\n`);
+  const [domain, message, safeTxHash] = ['tx-domain', 'tx-message', 'tx-safeTxHash'].map((id) => rowValue(pages[0]!, id));
   assert.equal(domain, chain.domainSeparator);
   assert.equal(safeTxHash, chain.transactionHash);
   const eip712 = keccak_256(concatBytes(Uint8Array.of(0x19, 0x01), hexToBytes(domain!.slice(2)), hexToBytes(message!.slice(2))));
   assert.equal(`0x${bytesToHex(eip712)}`, safeTxHash);
-  assert.equal(verdicts.length, 1);
-  assert.match(stdout, new RegExp(`Verdict file: ${verdicts[0]}`));
 });
 
-test('after MATCH, verify prints the calls it expects for the signer to compare with check.sh', async () => {
-  const { stdout } = await verifyTx(service);
-  const block = stdout.slice(stdout.indexOf('獨立檢查'));
-  assert.match(block, new RegExp(`^獨立檢查（加強等級）：在獨立電腦執行 \\./check\\.sh ${service.nonce}，逐項比對\nnonce: +${service.nonce}\nsafeTxHash: +${chain.transactionHash}\n`));
-  assert.deepEqual([...block.matchAll(/── 呼叫 #(\d+)/g)].map((m) => m[1]), ['1', '2', '3']);
-  assert.match(block, /\n呼叫數: 3\nVerdict file: /);
+test('after MATCH, the page lists every call the transaction makes in the 比對清單 rows check.sh writes', async () => {
+  const { pages } = await verifyTx(service);
+  const page = pages[0]!;
+  assert.match(page, /<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">/);
+  assert.doesNotMatch(page, /<script|<link|<img|src=/i);
+  assert.equal(rowValue(page, 'tx-nonce'), String(service.nonce));
+  assert.deepEqual([...page.matchAll(/<div class="g"><span class="id">(C[0-9.]+)<\/span>/g)].map((m) => m[1]), ['C1', 'C2', 'C3', 'C3.1', 'C3.2']);
   assert.deepEqual(
-    [...block.matchAll(/cast sig = (0x[0-9a-f]{8})/g)].map((m) => m[1]),
-    ['0x8d80ff0a', '0x095ea7b3', '0x374f435d', '0xd96ca0b9', '0x6ef5eeae'],
-  );
-  assert.deepEqual(
-    [...block.matchAll(/to: +(0x[0-9a-fA-F]{40})/g)].map((m) => m[1]!.toLowerCase()),
+    ['C1-to', 'C2-to', 'C3-to', 'C3.1-to', 'C3.2-to'].map((id) => rowValue(page, id)?.toLowerCase()),
     [service.to, '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', '0x6566194141eefa99af43bb5aa71460ca2dc90245', ...Array(2).fill('0x4a6c312ec70e8747a587ee860a0353cd42be0ae0')].map((a) => String(a).toLowerCase()),
   );
-  assert.equal(block.match(/引數 \d+: +1800000000180\b/g)?.length, 3);
-  assert.match(block, /引數 3: +1033376152028289\n/);
-  assert.match(block, /注意: 呼叫 #3 的資料在引數之後多出 8 bytes: 0x[0-9a-f]{16}\n/);
+  assert.deepEqual(
+    ['C1-fn', 'C2-fn', 'C3-fn', 'C3.1-fn', 'C3.2-fn'].map((id) => rowValue(page, id)?.split(' ')[1]),
+    ['0x8d80ff0a', '0x095ea7b3', '0x374f435d', '0xd96ca0b9', '0x6ef5eeae'],
+  );
+  assert.equal(rowValue(page, 'C3.2-a2'), '1800000000180');
+  assert.equal(rowValue(page, 'C3.2-a3'), '1033376152028289');
+  assert.match(rowValue(page, 'C3-extra') ?? '', /^0x[0-9a-f]{16}$/);
+  assert.equal(rowValue(page, 'end-count'), '3');
 });
 
 test('the verdict file verify writes replays to the same verdict', async () => {
@@ -126,7 +134,7 @@ test('the verdict file verify writes replays to the same verdict', async () => {
   const replayed = await run(['replay', verdicts[0]!], repo, home);
   assert.equal(replayed.code, 0, replayed.stderr);
   assert.match(replayed.stdout, /^MATCH\n[\s\S]*Same verdict as recorded\.\n$/);
-  assert.doesNotMatch(replayed.stdout, /獨立檢查|呼叫/);
+  assert.doesNotMatch(replayed.stdout, /比對清單|呼叫/);
 });
 
 test('a copy with its receiver changed is MISMATCH, names the check and the field, and shows no hashes', async () => {
@@ -137,11 +145,14 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   const data = String(webApp.data).toLowerCase();
   assert.equal(data.split(safe).length, 2, 'the Safe appears once in the deposit, as its receiver');
   webApp.data = data.replace(safe, '11'.repeat(20));
-  const { code, stdout } = await verifyTx(webApp);
+  const { code, stdout, pages } = await verifyTx(webApp);
   assert.equal(code, 1);
   assert.match(stdout, /^MISMATCH\n/);
   assert.match(stdout, /fields: multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}/);
-  assert.doesNotMatch(stdout, /domain hash|message hash|safeTxHash|獨立檢查|呼叫/);
+  assert.doesNotMatch(stdout, /domain hash|message hash|safeTxHash/);
+  assert.match(pages[0]!, /MISMATCH：交易和你的卡片不符，不要簽/);
+  assert.match(pages[0]!, /不顯示任何 hash。不要簽這筆交易。/);
+  assert.doesNotMatch(pages[0]!, /比對清單 -->|domain hash|message hash/);
 });
 
 test('a template that differs from its approved hash is MISMATCH', async () => {

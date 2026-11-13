@@ -12,7 +12,7 @@ export const GENERATED_HTML_FILE = 'report.generated.html';
 export const generatedHtmlPath = (target: { readonly template: string; readonly cardVault?: string }): string => join(reportDir(target), GENERATED_HTML_FILE);
 
 /** Markup the renderer made. Every other value is escaped on its way into it. */
-class Html {
+export class Html {
   readonly text: string;
   constructor(text: string) {
     this.text = text;
@@ -25,7 +25,7 @@ const escape = (text: string): string => text.replace(/[&<>"']/g, (c) => `&#${c.
 const part = (value: Part): string => (value instanceof Html ? value.text : Array.isArray(value) ? value.map(part).join('') : value === undefined || value === false ? '' : escape(String(value)));
 
 /** The one way markup is built: every interpolated value is escaped unless the renderer made it. */
-function h(strings: TemplateStringsArray, ...parts: readonly Part[]): Html {
+export function h(strings: TemplateStringsArray, ...parts: readonly Part[]): Html {
   return new Html(strings.reduce((out, s, i) => out + s + (i < parts.length ? part(parts[i] as Part) : ''), ''));
 }
 
@@ -37,7 +37,7 @@ const ICONS: Readonly<Record<State | 'ask', { readonly symbol: string; readonly 
   ask: { symbol: 'ask', tone: 'mute', label: 'AI 判斷' },
 };
 
-const icon = (state: State | 'ask'): Html => h`<svg class="i ${ICONS[state].tone}" role="img" aria-label="${ICONS[state].label}"><use href="#${ICONS[state].symbol}"/></svg>`;
+export const icon = (state: State | 'ask'): Html => h`<svg class="i ${ICONS[state].tone}" role="img" aria-label="${ICONS[state].label}"><use href="#${ICONS[state].symbol}"/></svg>`;
 const decor = (symbol: 'info' | 'chev'): Html => h`<svg class="i${symbol === 'chev' ? ' chev' : ''}" aria-hidden="true"><use href="#${symbol}"/></svg>`;
 
 function text(spans: Inline): Html {
@@ -535,7 +535,7 @@ export function htmlDifference(committed: string | undefined, written: string | 
   return `line ${line + 1}: committed ${quoted(was[line], column)}, the program writes ${quoted(now[line], column)}`;
 }
 
-const SYMBOLS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+export const SYMBOLS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
   <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
@@ -546,7 +546,7 @@ const SYMBOLS = `<svg width="0" height="0" style="position:absolute" aria-hidden
 </svg>`;
 
 /** docs/report-design.md as one inline stylesheet: its tokens, dark only, system fonts, no @import and no url() but a fragment. */
-const CSS = `:root{
+export const CSS = `:root{
   --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
   --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
   --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;

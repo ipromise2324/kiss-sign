@@ -1,0 +1,133 @@
+import { keccak_256 } from '@noble/hashes/sha3.js';
+import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
+import { checksumAddress } from '../safe/types.ts';
+import type { BundleCall, CallData, CallTree, Label, Labeled, SafeCall } from './expected.ts';
+
+/**
+ * One line of the 比對清單, the block `check.sh` from kiss-sign-check writes too, line for line, for the same
+ * transaction. docs/design.md (The comparison list) specifies it; `test/checklist.test.ts` pins it against check.sh's
+ * own output. `name` is each program's own name for the value and is the one part the two may differ in.
+ */
+export type ChecklistLine =
+  | { readonly kind: 'group'; readonly id: string; readonly title: string }
+  | { readonly kind: 'row'; readonly id: string; readonly key: string; readonly value: string; readonly name: string };
+
+/** Characters that could hide or reorder text: C0 and C1 controls, DEL, bidi marks and overrides, zero widths, BOM. */
+const INVISIBLE = /[\u0000-\u001f\u007f-\u009f؜​-‏‪-‮⁠-⁩﻿]/gu;
+export const visible = (text: string): string => text.replace(INVISIBLE, '�');
+
+/** jq's `@html`, which check.sh uses, so the two pages' bytes agree. */
+const HTML: Readonly<Record<string, string>> = { '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' };
+const html = (text: string): string => text.replace(/[<>&'"]/g, (c) => HTML[c] as string);
+
+/** Longer bytes fold to their length and keccak256; longer other text to its length in characters and the keccak256 of its UTF-8. */
+const BYTES_SHOWN = 32;
+const TEXT_SHOWN = 120;
+
+function folded(value: string): string | undefined {
+  if (/^0x([0-9a-fA-F]{2})*$/.test(value) && value.length > 2 + 2 * BYTES_SHOWN) {
+    return `${(value.length - 2) / 2} bytes，keccak256 0x${bytesToHex(keccak_256(hexToBytes(value.slice(2))))}`;
+  }
+  const length = [...value].length;
+  return length > TEXT_SHOWN ? `${length} 字元，keccak256 0x${bytesToHex(keccak_256(utf8ToBytes(value)))}` : undefined;
+}
+
+/** One line of HTML per checklist line, in the exact bytes check.sh writes. */
+export function checklistLineHtml(line: ChecklistLine): string {
+  if (line.kind === 'group') return `<div class="g"><span class="id">${html(visible(line.id))}</span><span>${html(visible(line.title))}</span></div>`;
+  const value = visible(line.value);
+  const summary = folded(value);
+  const shown = summary === undefined ? html(value) : `<details><summary>${html(summary)}</summary><span class="full">${html(value)}</span></details>`;
+  return `<div class="r"><span class="id">${html(visible(line.id))}</span><span class="k">${html(line.key)}</span><span class="v">${shown}</span><span class="nm">${html(visible(line.name))}</span></div>`;
+}
+
+export const CHECKLIST_START = '<!-- 比對清單 -->';
+export const CHECKLIST_END = '<!-- /比對清單 -->';
+
+export const checklistHtml = (lines: readonly ChecklistLine[]): string =>
+  [CHECKLIST_START, '<div class="cl">', ...lines.map(checklistLineHtml), '</div>', CHECKLIST_END].join('\n');
+
+function labelName(label: Label): string {
+  if (label === undefined) return '未登記';
+  switch (label.kind) {
+    case 'safe':
+      return '本 Safe';
+    case 'zero':
+      return '零地址';
+    case 'registry':
+      return label.name;
+    case 'address-book':
+      return `${label.name}（地址簿）`;
+  }
+}
+
+const row = (id: string, key: string, value: string, name = ''): ChecklistLine => ({ kind: 'row', id, key, value, name });
+const toRow = (id: string, to: Labeled): ChecklistLine => row(`${id}-to`, 'to', checksumAddress(to.address), labelName(to.label));
+
+function dataLines(id: string, data: CallData): ChecklistLine[] {
+  if (data.kind === 'empty') return [row(`${id}-data`, 'data', '無')];
+  if (data.kind === 'raw') return [row(`${id}-data`, 'data', data.hex, '沒有範本可以解碼')];
+  const named = new Map(data.addresses.map((a) => [checksumAddress(a.address), labelName(a.label)]));
+  const lines = [
+    row(`${id}-fn`, '函式', `${data.signature} ${data.selector}`),
+    ...data.args.map((arg, i) => row(`${id}-a${i + 1}`, `引數 ${i + 1}`, arg.text, named.get(arg.text) ?? (arg.amount === undefined ? '' : `= ${arg.amount}`))),
+  ];
+  if (data.trailer !== undefined) lines.push(row(`${id}-extra`, '引數後多出的 bytes', data.trailer));
+  const nested = data.nested;
+  if (nested?.kind === 'multisend') lines.push(...nested.calls.flatMap(safeCallLines));
+  if (nested?.kind === 'bundle') lines.push(...nested.calls.flatMap((call, i) => bundleCallLines(`${id}.${i + 1}`, call, `Bundler3 呼叫 ${i + 1}/${nested.calls.length}`)));
+  if (nested?.kind === 'bytes') {
+    nested.calls.forEach((call, i) => lines.push({ kind: 'group', id: `${id}.${i + 1}`, title: '內含的呼叫' }, ...dataLines(`${id}.${i + 1}`, call)));
+  }
+  return lines;
+}
+
+function bundleCallLines(id: string, call: BundleCall, title: string): ChecklistLine[] {
+  return [{ kind: 'group', id, title }, toRow(id, call.to), row(`${id}-value`, 'value（wei）', `${call.value}`), ...dataLines(id, call.data)];
+}
+
+function safeCallLines(call: SafeCall): ChecklistLine[] {
+  const id = `C${call.number}`;
+  return [
+    { kind: 'group', id, title: `呼叫 #${call.number}` },
+    toRow(id, call.to),
+    row(`${id}-value`, 'value（wei）', `${call.value}`),
+    row(`${id}-op`, 'operation', call.operation === 0 ? '0 CALL' : '1 DELEGATECALL'),
+    ...dataLines(id, call.data),
+  ];
+}
+
+/** The 比對清單 of a transaction: its hashes and nonce, every call it makes, and how many calls the Safe makes. */
+export function checklist(tree: CallTree): ChecklistLine[] {
+  return [
+    { kind: 'group', id: 'tx', title: '交易' },
+    row('tx-safeTxHash', 'safeTxHash', tree.hashes.safeTxHash, '和硬體錢包比對'),
+    row('tx-domain', 'domain hash', tree.hashes.domainHash, '和硬體錢包比對'),
+    row('tx-message', 'message hash', tree.hashes.messageHash, '和硬體錢包比對'),
+    row('tx-nonce', 'nonce', `${tree.nonce}`),
+    ...safeCallLines(tree.top),
+    { kind: 'group', id: 'end', title: '總計' },
+    row('end-count', 'Safe 發出的呼叫數', `${tree.count}`),
+  ];
+}
+
+/** The checklist's and the verify page's styles on top of the report's; check.sh carries the same rules. */
+export const CHECKLIST_CSS = `.main.solo{max-width:none}
+.banner{display:flex;gap:12px;align-items:center;margin-top:22px;padding:14px 16px;border:1px solid var(--line2);border-radius:var(--r);font-size:18px;font-weight:590}
+.banner .i{width:20px;height:20px}
+.banner.ok{border-color:var(--ok)} .banner.warn{border-color:var(--warn)} .banner.bad{border-color:var(--bad)}
+.banner+.lead{margin-top:14px}
+.cl{border-top:1px solid var(--line);font-size:var(--t-row)}
+.cl .g{display:flex;gap:12px;align-items:baseline;padding:22px 0 8px;border-bottom:1px solid var(--line2);font-weight:590}
+.cl .g .id{font-weight:400}
+.cl .r{display:grid;grid-template-columns:150px 150px minmax(0,1fr) minmax(0,190px);gap:4px 16px;padding:9px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.cl .r:hover{background:var(--hover)}
+.cl .id{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);overflow-wrap:anywhere}
+.cl .k{color:var(--fg2)}
+.cl .v{font-family:var(--mono);font-size:var(--t-mono);overflow-wrap:anywhere;min-width:0}
+.cl .nm{color:var(--fg2);font-size:var(--t-small);overflow-wrap:anywhere}
+.cl details>summary,.log details>summary{cursor:pointer}
+.cl .full{display:block;margin-top:6px;color:var(--fg2);font-size:13px;line-height:1.5}
+.log{font-family:var(--mono);font-size:13px;line-height:1.6;color:var(--fg2);border-top:1px solid var(--line);padding-top:10px}
+.log>div{white-space:pre-wrap;overflow-wrap:anywhere}
+@media (max-width:720px){.cl .r{grid-template-columns:minmax(0,1fr)}}`;
