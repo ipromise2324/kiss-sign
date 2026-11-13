@@ -16,12 +16,13 @@ import type { FixtureJudgement } from '../template/perturb.ts';
 import { refNames, slippageBps } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
+import type { PastTxs } from './past-txs.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { factsScope } from './protocol-facts.ts';
-import { functionNames, isOtherOperation, misfitText } from './study.ts';
+import { functionNames, isOtherOperation, judgeRules, misfitText } from './study.ts';
 import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
 import { readStoredEvidence } from './vault-evidence.ts';
 import type { StoredPoint } from './vault-evidence.ts';
@@ -1059,6 +1060,10 @@ function misfitWords(reason: MisfitReason, template: string): Inline {
       return [{ code: last(reason.at) }, ` 有 ${reason.got} 項，模板是 ${reason.expected} 項`];
     case 'field':
       return [{ code: reason.at }, ' 的值跟模板不同：模板要 ', { mono: reason.expected }, '，交易是 ', { mono: reason.actual }];
+    case 'not-sender':
+      return [{ code: reason.at }, ' 不是送出交易的 Safe 或地址'];
+    case 'differs':
+      return [{ code: reason.at }, ' 跟 ', { code: reason.other }, ' 的值不同，模板要兩個一樣'];
     case 'trailer':
       return ['參數後面多了模板不允許的位元組，在 ', { code: reason.at }];
     case 'foreign-delegatecall':
@@ -1102,7 +1107,7 @@ function pastSection(context: Context): Section {
       });
   };
   const recordings = context.inputs.pastTxs.map(({ file, query, run }): PastRecording => {
-    const studied = run.studies.filter((s): s is Studied => s.kind === 'fit' || s.kind === 'misfit');
+    const studied = judgedStudies(run, registry).filter((s): s is Studied => s.kind === 'fit' || s.kind === 'misfit');
     const counted = studied.filter((s) => !otherOperation(s));
     const block = (title: string, of: readonly Studied[], who: string): PastBlock => {
       const fits = of.filter((s) => s.kind === 'fit').length;
@@ -1158,10 +1163,12 @@ function pastSection(context: Context): Section {
   return { anchor: anchor('past'), label: '過去交易', count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, recordings } };
 }
 
+const judgedStudies = (run: PastTxs, registry: Registry): TxStudy[] => run.studies.map((s) => judgeRules(s, run.shapes, registry));
+
 function sameShape(context: Context): Inline {
   const { registry } = context;
   const fits = new Map<Hex, Extract<TxStudy, { kind: 'fit' }>>();
-  for (const { run } of context.inputs.pastTxs) for (const s of run.studies) if (s.kind === 'fit') fits.set(s.hash, s);
+  for (const { run } of context.inputs.pastTxs) for (const s of judgedStudies(run, registry)) if (s.kind === 'fit') fits.set(s.hash, s);
   if (fits.size === 0) return ['過去的記錄裡，沒有一筆交易跟模板一模一樣。'];
   const all = [...fits.values()];
   const by = (kind: Sender['kind'], noun: string): Span[] => {

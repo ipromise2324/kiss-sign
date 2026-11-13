@@ -74,6 +74,10 @@ export type MisfitReason =
   /** An array with another number of items; `calls` names each item when the template decodes the items as calls. */
   | { readonly kind: 'items'; readonly at: string; readonly expected: number; readonly got: number; readonly calls: readonly CallName[] | undefined }
   | { readonly kind: 'field'; readonly at: string; readonly expected: string; readonly actual: string }
+  /** A leaf the template binds to the Safe holds another address than the sender's. */
+  | { readonly kind: 'not-sender'; readonly at: string }
+  /** A leaf the template binds to the same value as `other` holds another value. */
+  | { readonly kind: 'differs'; readonly at: string; readonly other: string }
   | { readonly kind: 'other' };
 
 /**
@@ -90,6 +94,47 @@ export type TxStudy =
   | { readonly kind: 'misfit'; readonly hash: Hex; readonly sender: Sender; readonly reason: MisfitReason }
   /** `values` pairs with the rules of the sender's `Shape`; `paths` names each leaf. */
   | { readonly kind: 'fit'; readonly hash: Hex; readonly block: bigint; readonly sender: Sender; readonly paths: readonly string[]; readonly types: readonly AbiType[]; readonly values: readonly string[] };
+
+type Fit = Extract<TxStudy, { kind: 'fit' }>;
+
+const cardKey = (rule: LeafRule): string | undefined => (rule.kind === 'card' ? `${rule.ref.field}.${rule.ref.attribute ?? ''}` : undefined);
+
+/**
+ * A card value is unknown, so a card rule breaks only where two leaves bound to it differ. A share-price bound needs
+ * the price `card new` reads, and an `equals` naming a leaf of a call an EOA did not make has nothing to compare.
+ */
+export function brokenRule(rule: LeafRule, fit: Fit, i: number, rules: readonly LeafRule[], registry: Registry): MisfitReason | undefined {
+  const at = fit.paths[i] as string;
+  const actual = fit.values[i] as string;
+  const unless = (expected: string): MisfitReason | undefined => (expected === actual ? undefined : { kind: 'field', at, expected, actual });
+  const differs = (j: number): MisfitReason | undefined => (j === -1 || fit.values[j] === actual ? undefined : { kind: 'differs', at, other: fit.paths[j] as string });
+  switch (rule.kind) {
+    case 'safe':
+      return actual === fit.sender.address ? undefined : { kind: 'not-sender', at };
+    case 'contract':
+      return unless(registry.entries.get(rule.name)?.address ?? `registry ${rule.name}`);
+    case 'const':
+      return unless(constText(rule.value));
+    case 'card':
+      return differs(rules.findIndex((other, k) => cardKey(other) === cardKey(rule) && fit.values[k] !== actual));
+    case 'equals':
+      return differs(rules.indexOf(rule.rule));
+    case 'free':
+    case 'share-price':
+      return undefined;
+  }
+}
+
+export function judgeRules(study: TxStudy, shapes: ReturnType<typeof shapesOf>, registry: Registry): TxStudy {
+  if (study.kind !== 'fit') return study;
+  const { sender } = study;
+  const rules = (sender.kind === 'safe' ? shapes.whole : shapes.calls[sender.call])?.loosened.rules ?? [];
+  for (const [i, rule] of rules.entries()) {
+    const reason = brokenRule(rule, study, i, rules, registry);
+    if (reason !== undefined) return { kind: 'misfit', hash: study.hash, sender, reason };
+  }
+  return study;
+}
 
 /** A Safe's transaction that makes none of the template's top-level calls: another operation, not a variant of this one. */
 export function isOtherOperation(study: TxStudy, template: Template): boolean {
@@ -263,6 +308,10 @@ export function misfitText(reason: MisfitReason, registry: Registry, names: Read
       return `${reason.at}: expected ${reason.expected} items, got ${reason.got} items${reason.calls === undefined ? '' : `, calling ${reason.calls.map(call).join(', ')}`}`;
     case 'field':
       return `${reason.at}: expected ${reason.expected}, got ${reason.actual}`;
+    case 'not-sender':
+      return `${reason.at}: not the sender`;
+    case 'differs':
+      return `${reason.at}: differs from ${reason.other}`;
     case 'other':
       return 'does not fit';
   }

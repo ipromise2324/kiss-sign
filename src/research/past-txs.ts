@@ -6,7 +6,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { LeafRule, Quantity, Template } from '../template/template.ts';
 import { ResearchError, SOURCES, TooManyTransfers, searchBoth } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
-import { constText, functionNames, isOtherOperation, misfitText, shapesOf, studyTx } from './study.ts';
+import { brokenRule, constText, functionNames, isOtherOperation, misfitText, shapesOf, studyTx } from './study.ts';
 import type { Sender, TxStudy } from './study.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
@@ -163,32 +163,8 @@ function describeRule(rule: LeafRule, sender: string): string {
   }
 }
 
-const cardKey = (rule: LeafRule): string | undefined =>
-  rule.kind === 'card' ? `${rule.ref.field}.${rule.ref.attribute ?? ''}` : undefined;
-
 type Fit = Extract<Kept, { kind: 'fit' }>;
 type Misfit = Extract<Kept, { kind: 'misfit' }>;
-
-/** Whether the rule held in this transaction; undefined for a free leaf. */
-function held(rule: LeafRule, fit: Fit, i: number, rules: readonly LeafRule[], registry: Registry): boolean | undefined {
-  const value = fit.values[i];
-  switch (rule.kind) {
-    case 'safe':
-      return value === fit.sender.address;
-    case 'contract':
-      return value === registry.entries.get(rule.name)?.address;
-    case 'const':
-      return value === constText(rule.value);
-    case 'card': {
-      const key = cardKey(rule);
-      return rules.every((other, j) => cardKey(other) !== key || fit.values[j] === value);
-    }
-    case 'free':
-    case 'equals':
-    case 'share-price':
-      return undefined;
-  }
-}
 
 function label(value: string, type: AbiType, fit: Fit, registry: Registry, anchorToken: Address, sender: string): string | undefined {
   if (type.kind !== 'address') return undefined;
@@ -234,8 +210,7 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
     lines.push(`fields, over the ${plural(fits.length, 'fitting transaction')}:`);
     const paths = fits[0]?.paths ?? [];
     rules.forEach((rule, i) => {
-      const verdicts = fits.map((fit) => held(rule, fit, i, rules, registry));
-      const holding = fits.filter((_, k) => verdicts[k] === true);
+      const holding = fits.filter((fit) => brokenRule(rule, fit, i, rules, registry) === undefined);
       lines.push(`  ${paths[i]}  [${describeRule(rule, sender)}]`);
       const heldText =
         rule.kind === 'free' || rule.kind === 'equals' || rule.kind === 'share-price'
