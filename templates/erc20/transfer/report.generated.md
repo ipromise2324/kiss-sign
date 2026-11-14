@@ -111,8 +111,9 @@ senders, of 80 transactions studied:
     52 calls no function the template calls (called 0x42e3dcf3 in 21, 0x000000c3 in 13, 0xac9650d8 in 3, 0x00000002 in 3, …)
 by proven Safes, the whole template in one transaction:
 another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
-  e.g. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls another contract.0x1d7d4ebc
+  e.g. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls 0xe5139Fc0FB8eae81e30d8a85C22E88c6757120f2.0x1d7d4ebc
 fit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes
+  exactly the template: 0 from 0 Safes; outside the registry: 1 from 1 Safe (a token outside the registry at call.to in 1)
 fields, over the 1 fitting transaction:
   call.to  [card token]
     same as the other leaves bound to card token in 1 of 1; values: the anchor token in 1
@@ -125,6 +126,7 @@ fields, over the 1 fitting transaction:
 examples that fit: 0x32fa2c8158e8b5072bdf0ee5564f2b26a17f42389ea92ecf7ae72deced951b89
 by EOAs, call 1 of 1 (transfer) as its own transaction:
 fit the call's shape: 26 transactions from 14 EOAs; misfits: 0 from 0 EOAs
+  exactly the template: 0 from 0 EOAs; outside the registry: 26 from 14 EOAs (a token outside the registry at call.to in 26)
 fields, over the 26 fitting transactions:
   call.to  [card token]
     same as the other leaves bound to card token in 26 of 26; values: the anchor token in 26

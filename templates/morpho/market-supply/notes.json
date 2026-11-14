@@ -18,7 +18,7 @@
   },
   "judgments": [
     {
-      "text": "沒有 Safe 這樣存過：過去一年找到的 2 筆 Safe 交易做的是提款和還款，不是存款。8 筆 EOA 直接呼叫 `blueBundlesV1Supply`，全部符合模板的形狀。",
+      "text": "沒有 Safe 這樣存過：過去一年找到的 2 筆 Safe 交易做的是提款和還款，不是存款。8 筆 EOA 直接呼叫 `blueBundlesV1Supply`，形狀跟模板一樣，但存進的都是 registry 外的市場，所以沒有一筆跟模板一模一樣。",
       "recommendation": "第一次先送小額，確認 verify 印出 MATCH，交易後存款份額有增加。"
     },
     {

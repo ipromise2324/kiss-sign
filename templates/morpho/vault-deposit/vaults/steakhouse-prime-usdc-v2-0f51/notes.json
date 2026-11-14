@@ -1,4 +1,12 @@
 {
+  "flow": [
+    {
+      "after": 2,
+      "from": "general-adapter-1",
+      "to": "usdc",
+      "text": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
+    }
+  ],
   "verdict": {
     "status": "safe",
     "text": "可以用。Steakhouse 文件頁和 CoinGecko 都列出這個地址，第一次先送小額。"
