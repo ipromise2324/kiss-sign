@@ -25,13 +25,6 @@
       "recommendation": "照模板先授權剛好的金額再存；只呼叫 `deposit` 的交易 verify 會判 MISMATCH。"
     }
   ],
-  "reviews": {
-    "usdt/doc.0x095ea7b3.site": {
-      "status": "concern",
-      "text": "AI 沒找到 Tether 公開 USDT 原始碼的官方頁，改用 Etherscan 上 USDT 0xdAC17F958D2ee523a2206206994597C13D831ec7 的已驗證原始碼頁；頁面有 `approve`，但網站是 etherscan.io，不是 Tether 的。USDT 的 `approve` 在現有授權不是 0 時會失敗。",
-      "recommendation": "可以接受；`approve` 是標準 ERC-20 函式。"
-    }
-  },
   "entries": {
     "fluid-fusdt": {
       "role": "Fluid 的 USDT 借貸池代幣（fUSDT），收 USDT、發股份",

@@ -261,7 +261,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdt">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdt">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -271,8 +271,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <span class="opid">fluid/vault-deposit · fluid-fusdt</span>
   <p class="sub"><span class="aiw" data-ai><span>Safe 先授權你選的 fToken 剛好你填的金額，再呼叫同一個 fToken 的 <code>deposit</code>：fToken 經 Fluid 的 Liquidity 合約把這筆代幣從 Safe 拉走，鑄出 fToken 股份給 Safe。Fluid app 存款時只問金額，不設最少股份，所以卡片只問金庫和金額。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
-    <li data-state="bad" data-line="sources"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>地址來源 <span class="n num">1 / 2</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 個地址有結果要你看，見「待確認」。另外那個地址至少在 2 個地方確認。</span></span></li>
+    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>地址來源 <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">2 個地址都至少在 2 個地方確認：官方頁、協議 API、CoinGecko 或金庫的登記工廠列出同一個地址。</span></span></li>
     <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">2 / 2</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。</span></span></li>
     <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">2 / 2</span>
@@ -282,9 +282,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
   </ul>
-  <div class="verdict" data-state="bad"><span class="lbl">建議</span><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg><span class="aiw" data-ai><span>可以用。代幣實際放在可升級、程式沒鎖定的 Liquidity 合約，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>可以用。代幣實際放在可升級、程式沒鎖定的 Liquidity 合約，第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdt">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdt">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -425,16 +425,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
-    <div class="row" data-state="bad" data-result="usdt/doc.0x095ea7b3.site">
-      <svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>
-      <div><div class="t">usdt：文件頁 <code>approve</code>，網站跟 DefiLlama 列的不同</div>
-        <div class="meta">這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。<a href="#a-usdt">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒找到 Tether 公開 USDT 原始碼的官方頁，改用 Etherscan 上 USDT 0xdAC17F958D2ee523a2206206994597C13D831ec7 的已驗證原始碼頁；頁面有 <code>approve</code>，但網站是 etherscan.io，不是 Tether 的。USDT 的 <code>approve</code> 在現有授權不是 0 時會失敗。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；<code>approve</code> 是標準 ERC-20 函式。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>存進去的代幣實際放在 Fluid 的 Liquidity 合約 0x52Aa899454998Be5b000Ad077a46Bbe360F4e497，不在 fToken。它是可升級的 InfiniteProxy，依函式轉給不同實作；程式不證明也不鎖定它的程式碼，它被升級時 verify 不會發現。 <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json">來源 1</a> <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源 2</a></span><span class="byai">AI 研究</span></span></div>
@@ -466,15 +459,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="addresses">
   <h2>地址 <span class="c">2 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或金庫的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
   <div class="rows">
-    <div class="ad" id="a-usdt" data-state="bad">
-      <svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>
-      <div><span class="nm">usdt</span><span class="role"><span class="aiw" data-ai><span>存進 fUSDT 的代幣</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 2 個地址都沒有要你看的結果</summary>
+    <div class="ad" id="a-usdt" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdt</span><span class="role"><span class="aiw" data-ai><span>存進 fUSDT 的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
         <div class="srcs"><div class="src"><span data-state="ok"><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 tether（<a href="https://defillama.com/protocol/tether">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
     </div>
-    <details class="fold">
-      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 1 個地址沒有要你看的結果</summary>
     <div class="ad" id="a-fluid-fusdt" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">fluid-fusdt</span><span class="role"><span class="aiw" data-ai><span>Fluid 的 USDT 借貸池代幣（fUSDT），收 USDT、發股份</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
