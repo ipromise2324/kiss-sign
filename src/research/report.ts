@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Reader } from '../chain/reader.ts';
 import { replayReader } from '../chain/recording.ts';
@@ -197,8 +197,29 @@ export function loadReport(repoRoot: string, registry: Registry, target: Target)
     if (vault === undefined || field?.kind !== 'contract' || !inScope(field.scope, vault, registry)) throw new ReportError(`${target.cardVault} is not a vault the card's ${unit.field} of ${template.id} accepts`);
     seen = onlyVault(registry, template, unit.field, vault);
   }
-  const docs = JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, target.template, DOCS_FILE), 'utf8')) as unknown;
-  return { subject: { kind: 'template', template, docs: parseDocs(docs, template, seen), vault }, registry: seen };
+  return { subject: { kind: 'template', template, docs: parseDocs(readDocs(repoRoot, template.id, vault?.name), template, seen), vault }, registry: seen };
+}
+
+/** The `docs.json` files a report reads: the template's, and its vault's when that vault's report has one, as a file of its own. */
+export function docsPaths(repoRoot: string, template: string, vault?: string): string[] {
+  const own = vault === undefined ? undefined : join(vaultReportDir(template, vault), DOCS_FILE);
+  const found = own === undefined ? undefined : lstatSync(join(repoRoot, own), { throwIfNoEntry: false });
+  if (found === undefined) return [join(TEMPLATES_DIR, template, DOCS_FILE)];
+  if (!found.isFile()) throw new ReportError(`${own}: not a regular file`);
+  return [join(TEMPLATES_DIR, template, DOCS_FILE), own as string];
+}
+
+/** The template's `docs.json` joined with its vault's, which may not name a function the template's names. */
+export function readDocs(repoRoot: string, template: string, vault?: string): unknown {
+  const [sharedPath, ownPath] = docsPaths(repoRoot, template, vault);
+  const read = (path: string): unknown => JSON.parse(readFileSync(join(repoRoot, path), 'utf8'));
+  const shared = read(sharedPath as string);
+  if (ownPath === undefined) return shared;
+  const own = read(ownPath);
+  if (!isRecord(shared) || !isRecord(own)) throw new ReportError(`${isRecord(shared) ? ownPath : DOCS_FILE}: not a JSON object`);
+  const twice = Object.keys(own).find((key) => Object.hasOwn(shared, key));
+  if (twice !== undefined) throw new ReportError(`${ownPath}: ${JSON.stringify(twice.slice(0, 80))} is in the template's ${DOCS_FILE} too`);
+  return { ...shared, ...own };
 }
 
 function namedInRules(template: Template): Set<string> {
@@ -897,7 +918,7 @@ export async function replayInputs(
     facts: subject.kind === 'template' ? await replayFacts(subject.template, registry, entries, recording.facts) : undefined,
   };
   const registryFiles = subject.kind === 'template' && hasMarket(subject.template) ? [REGISTRY_PATH, MARKETS_PATH] : [REGISTRY_PATH];
-  const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), ...registryFiles];
+  const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), ...docsPaths(repoRoot, target.template, target.cardVault), ...registryFiles];
   const sources = [...inputsFiles, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
   const command = `pnpm report ${reportArgs(subject)} --record`;
   return { inputs, title: { command, sources } };

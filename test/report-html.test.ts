@@ -7,7 +7,7 @@ import { NOTES_FILE, notesChanges, notesPath, readNotes } from '../src/research/
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, generatedHtml, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
-import { DOCS_FILE, loadReport, replayInputs, templateTargets } from '../src/research/report.ts';
+import { loadReport, readDocs, replayInputs, templateTargets } from '../src/research/report.ts';
 import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
@@ -115,8 +115,9 @@ test('the HTML report holds no script and loads nothing', () => {
 test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, one of the four the program builds, or an id on the page', () => {
   for (const [id, { html }] of replayed) {
     const notes = notesOf(id);
-    const folder = join(ROOT, TEMPLATES_DIR, withNotes.get(id)?.template ?? '');
-    const docs = JSON.parse(readFileSync(join(folder, DOCS_FILE), 'utf8')) as Record<string, { url: string }>;
+    const target = withNotes.get(id) ?? assert.fail(id);
+    const folder = join(ROOT, TEMPLATES_DIR, target.template);
+    const docs = readDocs(ROOT, target.template, target.cardVault) as Record<string, { url: string }>;
     const card = (JSON.parse(readFileSync(join(folder, 'template.json'), 'utf8')) as { card: Record<string, { computed?: { default: { source: string } } }> }).card;
     const allowed = new Set<string>([
       'https://defillama.com/hacks',
@@ -128,7 +129,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
       ]),
       ...Object.values(docs).map((d) => d.url),
       ...Object.values(card).flatMap((field) => (field.computed === undefined ? [] : [field.computed.default.source])),
-      ...(JSON.stringify(notes).match(/https:\/\/[^"]+/g) ?? []),
+      ...JSON.stringify(notes).match(/https:\/\/[^"]+/g)!,
     ]);
     const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => unescape(m[1] as string)));
     for (const [, raw] of html.matchAll(/\shref="([^"]*)"/g)) {
@@ -168,7 +169,7 @@ test('AI text is HTML-escaped', async () => {
 });
 
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
-  const id = [...withNotes.keys()].find((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0) ?? assert.fail('a report with a flow line');
+  const id = [...withNotes.keys()].find((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0) ?? assert.fail('a report whose notes draw a flow line');
   const { inputs, title } = replayed.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as { flow: { text: string }[] } & Record<string, unknown>;
@@ -250,8 +251,9 @@ test('下一步 of a per-vault report names the vault in full, says to pick it b
   assert.ok(section.includes('照名字選'), id);
   assert.ok(section.includes('打 usdc 的數量，用整顆幣'), id);
   assert.ok(section.includes('1,000,611.448606'), id);
-  assert.ok(section.includes('min-shares：不用填'), id);
+  assert.ok(section.includes('最少收到的數量（min-shares）：不用填'), id);
   assert.ok(section.includes('再少 0.10%（協議預設的 0.03%，再加 0.07% 餘裕）'), id);
-  assert.ok(section.indexOf('vault：') < section.indexOf('amount：') && section.indexOf('amount：') < section.indexOf('min-shares：'), `${id}: the prompts in the order card new asks them`);
+  const at = ['金庫（vault）：', '金額（amount）：', '（min-shares）：'].map((prompt) => section.indexOf(prompt));
+  assert.ok(at[0] !== -1 && at.every((i, n) => n === 0 || i > (at[n - 1] as number)), `${id}: the prompts in the order card new asks them`);
   assert.ok(section.includes('MISMATCH 或 UNVERIFIABLE：不要簽'), id);
 });

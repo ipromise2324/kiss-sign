@@ -203,6 +203,16 @@
     "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
     "sourceLabel": "mainnet",
     "sourceHeading": "fToken_fUSDC",
+    "moreSources": [
+      {
+        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDC.json",
+        "label": "address"
+      },
+      {
+        "url": "https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html",
+        "label": "address"
+      }
+    ],
     "defillama": "fluid-lending",
     "attributes": {
       "asset": "usdc"
@@ -218,6 +228,16 @@
     "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
     "sourceLabel": "mainnet",
     "sourceHeading": "fToken_fUSDT",
+    "moreSources": [
+      {
+        "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDT.json",
+        "label": "address"
+      },
+      {
+        "url": "https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html",
+        "label": "address"
+      }
+    ],
     "defillama": "fluid-lending",
     "attributes": {
       "asset": "usdt"
