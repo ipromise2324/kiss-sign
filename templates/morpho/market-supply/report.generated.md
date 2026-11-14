@@ -60,9 +60,9 @@ The program calls each of these views just before and just after the transaction
 
 ## Official documentation
 
-Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.
+Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by `(`, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.
 
-| Function | Contract | Page | Site | GitHub commit | Function name appears on page |
+| Function | Contract | Page | Site | GitHub commit | Function on page |
 | --- | --- | --- | --- | --- | --- |
 | `approve(address,uint256)` | `usdc` | <https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol> | FINDING | PASS | PASS |
 | `blueBundlesV1Supply((address,address,address,address,uint256),uint256,(uint8,bytes),uint256,address,uint256)` | `blue-bundles-v1` | <https://docs.morpho.org/developers/contracts/bundles/> | PASS | n/a | PASS |
