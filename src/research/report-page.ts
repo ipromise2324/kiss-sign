@@ -303,7 +303,7 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   'unexplained-coin': { title: 'CoinGecko 在這個地址列了幣，登記沒有給 id', why: '登記沒有寫 coingecko id，所以程式沒有比對 CoinGecko 在這個地址列的幣是不是這個合約。' },
   'commit-unconfirmed': { title: 'GitHub commit 沒確認', why: 'GitHub 頁面沒有釘在預設分支上的 commit。' },
   'page-not-fetched': { title: '文件頁沒讀到', why: '程式沒有這個文件頁的內容。' },
-  'name-not-on-page': { title: '文件頁上找不到函式名稱', why: '文件頁的原始網頁裡沒有這個函式的名稱。' },
+  'name-not-on-page': { title: '文件頁上找不到這個函式', why: '文件頁的原始網頁裡沒有寫成程式的函式名稱：緊接著括號、放在反引號裡，或自成一行（例如標題、清單項目或表格欄）。只在一般文字裡出現不算。' },
   'no-chain-result': { title: '程式碼區段沒有鏈上結果', why: '這段 code pin 沒有從鏈上讀到判定。' },
   'factory-unread': { title: '沒有讀到工廠的回答', why: '沒有記錄登記的工廠是否建立了這個金庫。' },
   'not-pinned': { title: '沒有 code pin', why: '這個合約沒有登記程式碼，簽名時會是 UNVERIFIABLE。' },
@@ -1025,8 +1025,10 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
   const name = result.about.entry.name;
   const doc = /\/doc\.(0x[0-9a-f]{8})\.(\w+)$/.exec(result.id);
   if (doc !== null && context.inputs.subject.kind === 'template') {
-    const fn = context.inputs.subject.docs.find((d) => d.fn.selector === doc[1])?.fn.name ?? doc[1];
-    return { title: [`${name}：文件頁 `, { code: fn as string }, `，${words.title}`], why: [words.why] };
+    const found = context.inputs.subject.docs.find((d) => d.fn.selector === doc[1]);
+    const page = found?.standard === undefined ? '文件頁' : `${found.standard.name} 標準頁`;
+    const why = found?.standard !== undefined && result.finding.kind === 'name-not-on-page' ? `標準頁上沒有這個函式在 ${found.standard.name} 裡的宣告。` : words.why;
+    return { title: [`${name}：${page} `, { code: found?.fn.name ?? (doc[1] as string) }, `，${words.title}`], why: [why] };
   }
   if (result.finding.kind === 'few-confirmations') {
     return {
@@ -1532,6 +1534,16 @@ function nextSection(context: Context): Section {
       then: [['它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 ', { code: 'y' }, '。']],
       hashes: false,
     },
+    ...(fields.some(([, f]) => f.kind === 'recipient')
+      ? [
+          {
+            say: ['收款人不是你的 Safe 時，先把它加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得'],
+            command: 'bin/kiss-sign book add <name> <address>',
+            then: [['它印出名字和完整地址，問 ', { code: 'Add this entry? [y/N]' }, ' 。每個字元都跟聊天以外的來源核對過才打 ', { code: 'y' }, ' 。同一個收款人只要加一次。']],
+            hashes: false,
+          } satisfies NextStep,
+        ]
+      : []),
     {
       say: ['做卡片'],
       command: `bin/kiss-sign card new ${template.id}`,
