@@ -595,6 +595,8 @@ test('an ETH transfer: no address section or address strip lines, its to/value/d
   assert.deepEqual(body(page, 'wallet').view, { kind: 'no-data' });
   const next = body(page, 'next');
   assert.ok(next.steps.some((s) => plain(s.say).includes('先用小額')), 'a typed amount keeps the small first trial');
+  const book = next.steps.findIndex((s) => s.command === 'bin/kiss-sign book add <name> <address>');
+  assert.ok(book !== -1 && book < next.steps.findIndex((s) => s.command === 'bin/kiss-sign card new eth/transfer'), 'a recipient is added to the address book before the card');
   assert.ok(!next.automatic.some((line) => plain(line).includes('code pin')), 'no code pin line without a registry entry');
 });
 
@@ -609,6 +611,7 @@ test('a cancellation: a self-call of 0 ETH is no transfer, its nonce rule has it
   assert.deepEqual(flow.after, []);
   const next = body(page, 'next');
   assert.ok(!next.steps.some((s) => plain(s.say).includes('先用小額')), 'no amount, so no small first trial');
+  assert.ok(!next.steps.some((s) => s.command?.startsWith('bin/kiss-sign book add')), 'no recipient, so no address-book step');
   assert.ok(next.automatic.some((line) => plain(line) === 'Safe 交易的 nonce 是你填的 nonce'));
   assert.ok(next.automatic.some((line) => plain(line) === '模擬後 Safe 的餘額一點都不能變'));
   assert.ok(!JSON.stringify(page).includes('card.'), 'no internal name');

@@ -1532,6 +1532,16 @@ function nextSection(context: Context): Section {
       then: [['它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 ', { code: 'y' }, '。']],
       hashes: false,
     },
+    ...(fields.some(([, f]) => f.kind === 'recipient')
+      ? [
+          {
+            say: ['收款人不是你的 Safe 時，先把它加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得'],
+            command: 'bin/kiss-sign book add <name> <address>',
+            then: [['它印出名字和完整地址，問 ', { code: 'Add this entry? [y/N]' }, ' 。每個字元都跟聊天以外的來源核對過才打 ', { code: 'y' }, ' 。同一個收款人只要加一次。']],
+            hashes: false,
+          } satisfies NextStep,
+        ]
+      : []),
     {
       say: ['做卡片'],
       command: `bin/kiss-sign card new ${template.id}`,
