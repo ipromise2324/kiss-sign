@@ -29,10 +29,6 @@
         "https://github.com/safe-fndn/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/contracts/common/EtherPaymentFallback.sol#L10"
       ],
       "recommendation": "可以接受：這正是取消該有的樣子。"
-    },
-    {
-      "text": "過去交易沒有研究：找過去交易的工具只認代幣轉帳，取消沒有轉帳，找不到。替代證據在 pnpm test 裡：兩個別的 Safe 已執行的取消，照交易本身的 nonce 做卡片檢查都通過；其中一筆另外試過改掉 nonce、呼叫對象、金額或資料，都變 MISMATCH。上面「參數保護：沒有測試」指的是換值測試的錄製，不包括這兩筆。",
-      "recommendation": "可以接受：模板只有一個你填的值，其他全部固定。"
     }
   ],
   "reviews": {},
