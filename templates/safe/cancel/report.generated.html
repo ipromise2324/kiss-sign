@@ -261,7 +261,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -278,7 +278,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="na"><span class="lbl">建議</span><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span class="aiw" data-ai><span>不動任何資產，只用掉一個 nonce；要核對的只有 nonce 是不是你要取消的那一筆。</span><span class="byai">AI 研究：可以用</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -331,7 +331,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row">
@@ -348,11 +348,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>這筆交易只改變 Safe 的 nonce：Safe 執行任何交易時 nonce 都加一；Safe 呼叫自己、帶 0 ETH 又沒有資料，只會進到 <code>receive</code>，什麼都不變。程式也知道這點，所以 verify 不會把它列進「沒有移動資產的呼叫」。 <a class="aisrc" href="https://github.com/safe-fndn/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/contracts/GnosisSafe.sol#L143">來源 1</a> <a class="aisrc" href="https://github.com/safe-fndn/safe-smart-account/blob/186a21a74b327f17fc41217a927dea7064f74604/contracts/common/EtherPaymentFallback.sol#L10">來源 2</a></span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受：這正是取消該有的樣子。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>過去交易沒有研究：找過去交易的工具只認代幣轉帳，取消沒有轉帳，找不到。替代證據在 pnpm test 裡：兩個別的 Safe 已執行的取消，照交易本身的 nonce 做卡片檢查都通過；其中一筆另外試過改掉 nonce、呼叫對象、金額或資料，都變 MISMATCH。上面「參數保護：沒有測試」指的是換值測試的錄製，不包括這兩筆。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受：模板只有一個你填的值，其他全部固定。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
   </div>
 </section>
