@@ -430,7 +430,7 @@ function addressBody(body: Extract<Body, { kind: 'addresses' }>): Html {
 }
 
 function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
-  if (body.recordings.length === 0) return h`<p class="lead">沒有 <code>pnpm past-txs --record</code> 的記錄。</p>`;
+  if (body.recordings.length === 0) return h`<p class="lead">這個操作沒有研究過去交易。</p>`;
   return h`
   <p class="lead">${text(body.same)}</p>${body.conclusion === undefined ? '' : h`
   <p class="intro">${ai(body.conclusion)}</p>`}
