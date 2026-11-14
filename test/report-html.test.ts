@@ -129,7 +129,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
       ]),
       ...Object.values(docs).map((d) => d.url),
       ...Object.values(card).flatMap((field) => (field.computed === undefined ? [] : [field.computed.default.source])),
-      ...JSON.stringify(notes).match(/https:\/\/[^"]+/g)!,
+      ...(JSON.stringify(notes).match(/https:\/\/[^"]+/g) ?? []),
     ]);
     const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => unescape(m[1] as string)));
     for (const [, raw] of html.matchAll(/\shref="([^"]*)"/g)) {
@@ -228,12 +228,15 @@ const nextSteps = (html: string): string => {
 const commands = (section: string): string[] => [...section.matchAll(/<pre class="cmd"><code>([^<]*)<\/code><\/pre>/g)].map((m) => unescape(m[1] as string));
 
 test('下一步 ends every signer report, each command alone in its own block with no punctuation inside it', () => {
-  for (const [id, { html }] of replayed) {
+  for (const [id, { html, inputs }] of replayed) {
     const target = withNotes.get(id) ?? assert.fail(id);
+    const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
+    const recipient = [...template.card.values()].some((field) => field.kind === 'recipient');
     const section = nextSteps(html);
     assert.ok(html.lastIndexOf('<section') < html.indexOf('id="next"'), `${id}: 下一步 is the last section`);
     assert.deepEqual(commands(section), [
       `bin/kiss-sign template approve ${target.template}`,
+      ...(recipient ? ['bin/kiss-sign book add <name> <address>'] : []),
       `bin/kiss-sign card new ${target.template}`,
       'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
       './check.sh <nonce>',
