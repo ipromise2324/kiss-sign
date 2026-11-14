@@ -261,7 +261,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -269,7 +269,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>從 Safe 轉出 ETH</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">eth/transfer</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 把你填的 ETH 數量直接送到你選的收款人：一筆轉帳就是一個呼叫，交易資料是空的，不呼叫任何協議合約。同一張卡片列好幾筆轉帳時，交易會用 MultiSend 包起來，程式逐筆解開比對。這和 Safe web app 送 ETH 的交易一樣：app 只要你填收款地址、選資產、填金額。卡片只問收款人和金額，資產固定是 ETH。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 把你填的 ETH 數量直接送到你選的收款人，不呼叫任何合約。卡片只問收款人和金額，跟 Safe web app 送 ETH 時要填的一樣。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>參數保護 <span class="n num">沒有測試</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。</span></span></li>
@@ -278,7 +278,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="na"><span class="lbl">建議</span><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span class="aiw" data-ai><span>最單純的操作，不呼叫任何協議合約；風險只在收款地址，加進地址簿時要從聊天以外的來源核對。</span><span class="byai">AI 研究：可以用</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -329,23 +329,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>1</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>過去交易沒有研究：程式找過去交易的方法只能找代幣轉帳，直接轉 ETH 找不到。替代證據在 pnpm test 裡：兩個別的 Safe 已執行的 ETH 轉帳，用從交易反推的卡片比對都通過，改掉收款人或金額都變 MISMATCH。上面「參數保護：沒有測試」指的是換值測試的錄製，不包括這兩筆。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受：這個模板只有兩個值，都是你自己填的。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>收款人如果是合約（例如另一個 Safe），收到 ETH 時會執行它自己的程式。verify 檢查你的 Safe 的每一項餘額和授權變化，多動一點點（哪怕 1 wei）就 MISMATCH；但對方合約內部記了什麼、之後怎麼處理這筆 ETH，它看不到。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>收款人是合約時，先確認它能收 ETH；第一次轉給新地址先送小額。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>卡片的收款人只能是你的 Safe 或地址簿裡的名字。地址簿用 kiss-sign book add 加入，加入時你要親眼核對完整地址；這是整個操作最要緊的一關。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>地址從聊天以外的來源取得（例如對方當面或另一個管道給的），逐字比對再加入。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
   </div>
 </section>
@@ -364,10 +354,12 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <ol class="steps">
     <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>bin/kiss-sign template approve eth/transfer</code></pre>
       <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
+    <li><div>收款人不是你的 Safe 時，先把它加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得<pre class="cmd"><code>bin/kiss-sign book add &#60;name&#62; &#60;address&#62;</code></pre>
+      <p class="then">它印出名字和完整地址，問 <code>Add this entry? [y/N]</code> 。每個字元都跟聊天以外的來源核對過才打 <code>y</code> 。同一個收款人只要加一次。</p></div></li>
     <li><div>做卡片<pre class="cmd"><code>bin/kiss-sign card new eth/transfer</code></pre>
       <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
-    <li><div><code>recipient</code>：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。</div></li>
-    <li><div><code>amount</code>：打 ETH 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
+    <li><div>收款人（<code>recipient</code>）：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。</div></li>
+    <li><div>金額（<code>amount</code>）：打 ETH 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
       <p class="then">它印出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
     <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
       <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
