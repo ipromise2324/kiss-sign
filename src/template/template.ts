@@ -744,7 +744,8 @@ export function refNames(ref: CardRef, template: Template, registry: Registry): 
   return isAttribute(attribute) ? [...new Set(candidates.flatMap((e) => e.attributes[attribute] ?? []))] : [];
 }
 
-function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
+/** The registry names a rule binds an address to: a named contract, or the entries a card field can name; undefined for any other rule. */
+export function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
   if (rule.kind === 'contract') return [rule.name];
   const names = rule.kind === 'card' ? refNames(rule.ref, template, registry) : [];
   return names.length > 0 ? names : undefined;

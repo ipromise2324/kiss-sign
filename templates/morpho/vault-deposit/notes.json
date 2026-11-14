@@ -7,12 +7,6 @@
       "from": "bundler3",
       "to": "general-adapter-1",
       "text": "依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`"
-    },
-    {
-      "after": 2,
-      "from": "general-adapter-1",
-      "to": "usdc",
-      "text": "用 `transferFrom` 從 Safe 拉走你填的金額的 vault 資產代幣"
     }
   ],
   "protocols": {
