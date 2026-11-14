@@ -34,6 +34,7 @@ import {
 } from '../src/research/report.ts';
 import type { ReportInputs, ReportRecording, Subject } from '../src/research/report.ts';
 import type { Page } from '../src/research/source-page.ts';
+import { STANDARDS } from '../src/research/standards.ts';
 import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/vault-evidence.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -58,12 +59,13 @@ function quick(
   pastTxs: ReportInputs['pastTxs'] = [],
   spans: ReportInputs['spans'] = new Map(),
   reg: Registry = scoped.registry,
+  commits: ReportRecording['commits'] = recording.commits,
 ): string {
   const inputs: ReportInputs = {
     subject,
     registry: reg,
     listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes },
-    pages: sourcePagesOf({ pages, commits: recording.commits }),
+    pages: sourcePagesOf({ pages, commits }),
     fetched: recording.fetched,
     abi,
     vaults,
@@ -280,7 +282,7 @@ test('every template folder holds report.generated.md, or design.md lists it amo
 test('--compare prints a verdict that changed, and ignores the date and the block an ABI proof was read at', () => {
   const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'served', blocks: [] } as Page) : page]));
   const differences = compareReports(quick(), quick(pages));
-  assert.deepEqual(differences, ['Official documentation › `multicall((address,bytes,uint256,bool,bytes32)[])` › Function name appears on page: committed PASS, live FINDING']);
+  assert.deepEqual(differences, ['Official documentation › `multicall((address,bytes,uint256,bool,bytes32)[])` › Function on page: committed PASS, live FINDING']);
 
   const committed = readFileSync(join(ROOT, generatedPath(TARGET)), 'utf8');
   const drifted = committed
@@ -312,7 +314,47 @@ test("docs.json's contract must be the call's target when the template binds the
   assert.throws(() => parseDocs(swap('multicall((address,bytes,uint256,bool,bytes32)[])', 'general-adapter-1'), template, registry), /calls it on bundler3/);
   assert.throws(() => parseDocs(swap('approve(address,uint256)', 'bundler3'), template, registry), /calls it on one of usdc, usdt/);
   assert.equal(parseDocs(swap('approve(address,uint256)', 'usdt'), template, registry).length, 4);
-  assert.match(quick(), /\| Function \| Contract \| Page \| Site \| GitHub commit \| Function name appears on page \|/);
+  assert.match(quick(), /\| Function \| Contract \| Page \| Site \| GitHub commit \| Function on page \|/);
+});
+
+test('docs.json may name the ERC-20 standard for a function it defines on a token, and the report names the standard page', () => {
+  const template = loadTemplate(ROOT, ID, registry);
+  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')) as Record<string, unknown>;
+  const standard = (sig: string, value: object) => parseDocs({ ...valid, [sig]: value }, template, registry);
+  const docs = standard('approve(address,uint256)', { contract: 'usdt', standard: 'erc-20' });
+  const approve = docs.find((d) => d.fn.signature === 'approve(address,uint256)')!;
+  assert.equal(approve.url, 'https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md');
+  assert.throws(() => standard('approve(address,uint256)', { contract: 'usdt', standard: 'erc-20', url: 'https://tether.to/' }), /must hold exactly contract and url, or contract and standard/);
+  for (const name of ['erc-777', '__proto__', 'toString', 42, ['erc-20']]) {
+    assert.throws(() => standard('approve(address,uint256)', { contract: 'usdt', standard: name }), /approve\(address,uint256\)\.standard is not one of erc-20/, String(name));
+  }
+  assert.throws(() => standard('approve(address,uint256)', { contract: 'bundler3', standard: 'erc-20' }), /contract bundler3 is a router; ERC-20 applies to token and vault entries/);
+  assert.throws(() => standard('erc20TransferFrom(address,address,uint256)', { contract: 'general-adapter-1', standard: 'erc-20' }), /contract general-adapter-1 is a adapter; ERC-20 applies to token and vault entries/);
+  assert.throws(() => standard('approve(address,uint256)', { contract: 'steakhouse-prime-usdc-v2-0f51', standard: 'erc-20' }), /calls it on one of usdc, usdt/);
+
+  const page = { kind: 'served', blocks: [{ text: 'function approve(address _spender, uint256 _value) public returns (bool success)' }] } as Page;
+  const pages = { ...recording.pages, 'https://raw.githubusercontent.com/ethereum/ERCs/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md': page };
+  const commits = { ...recording.commits, 'ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2': { kind: 'on-default', branch: 'master', status: 'identical' } } as const;
+  const text = quick(pages, new Map(), { kind: 'template', template, docs, vault: undefined }, new Map(), [], new Map(), scoped.registry, commits);
+  const row = text.split('\n').find((l) => l.startsWith('| `approve(address,uint256)` |'))!;
+  assert.deepEqual(cellsOf(row).map((c) => c.trim()), [
+    '`approve(address,uint256)`',
+    '`usdt`',
+    'ERC-20 standard page <https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md>',
+    'PASS',
+    'PASS',
+    'PASS',
+  ]);
+  assert.match(text, /^`approve\(address,uint256\)` on `usdt`: the ERC-20 standard defines this function, as `function approve\(address _spender, uint256 _value\)`; this does not show that the contract follows the standard\.$/m);
+});
+
+test("each ERC-20 declaration the program holds names the function's canonical signature", () => {
+  for (const standard of STANDARDS.values()) {
+    for (const [signature, declaration] of standard.declarations) {
+      const [, name, params] = /^function (\w+)\((.*)\)$/.exec(declaration)!;
+      assert.equal(`${name}(${params!.split(', ').map((p) => p.split(' ')[0]).join(',')})`, signature);
+    }
+  }
 });
 
 const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
