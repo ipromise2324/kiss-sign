@@ -126,6 +126,16 @@ test('each argument says who decides it and prints what cast decode-calldata pri
       ['oracle', '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a', 0],
       ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
       ['lltv', '860000000000000000', 0],
+      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 0],
+      ['collateralToken', '0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6', 0],
+      ['oracle', '0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d', 0],
+      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
+      ['lltv', '860000000000000000', 0],
+      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 0],
+      ['collateralToken', '0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6', 0],
+      ['oracle', '0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d', 0],
+      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
+      ['lltv', '915000000000000000', 0],
     ],
   );
 
@@ -369,13 +379,13 @@ test('a contract a flow line names gets its own lifeline, so every inside arrow 
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {
   const { block } = body(pageOf(inputs), 'protocol');
   const row = (label: string) => block.rows.find((r) => r.label === label) ?? assert.fail(`no ${label} row`);
-  assert.equal(plain(row('TVL').value), '$10.00 B');
+  assert.equal(plain(row('TVL').value), '$10.04 B');
   assert.equal(plain(row('上線').value), '2024-01-14');
   assert.equal(plain(row('proxy').value), '不是 proxy');
   assert.equal(plain(row('事故').value), '0 起');
   assert.deepEqual(
     row('usdc-cbbtc-86').nested.map((n) => plain(n.value)),
-    ['333,591,085.13 usdc', '294,510,908.73 usdc', '88.28%'],
+    ['333,499,365.02 usdc', '294,466,764.6 usdc', '88.29%'],
   );
   assert.deepEqual(
     block.sources.map((s) => s.href),
