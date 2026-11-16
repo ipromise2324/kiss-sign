@@ -12,9 +12,9 @@ import type { Template } from '../src/template/template.ts';
 import { checklist, checklistHtml, checklistLineHtml } from '../src/verify/checklist.ts';
 import { callTree } from '../src/verify/expected.ts';
 import { verdictPage } from '../src/verify/page.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const FIXTURE = 'morpho-deposit-approve-trailer-other-safe';
 const CARD: Card = {

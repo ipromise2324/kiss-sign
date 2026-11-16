@@ -21,9 +21,9 @@ import type { FixtureJudgement, PerturbationReport, Run } from '../src/template/
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const suffixes = loadPublicSuffixList();
 const ADDRESS = `0x${'ab'.repeat(20)}` as Address;
 const OTHER = `0x${'cd'.repeat(20)}` as Address;

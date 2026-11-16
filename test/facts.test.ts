@@ -4,9 +4,9 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { loadRegistry } from '../src/registry.ts';
 import { TemplateError, parseTemplate } from '../src/template/template.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'market-supply', 'template.json'), 'utf8'));
 const MARKET = 'market(bytes32 id) returns (uint128 totalSupplyAssets, uint128, uint128 totalBorrowAssets, uint128, uint128, uint128)';

@@ -23,9 +23,9 @@ import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
 const registry = loadRegistry(ROOT);
 const templates = new Map<string, Template>(

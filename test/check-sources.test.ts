@@ -10,9 +10,9 @@ import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
 import type { HttpGet, SourcePages } from '../src/research/source-page.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'sources', 'registry.json'), 'utf8'));
 const suffixes = parsePublicSuffixList(readFileSync(join(ROOT, 'testdata', 'sources', 'public-suffix-list.dat'), 'utf8'));
 const listingsOf = (defillama: unknown, coingecko: unknown): Listings => ({

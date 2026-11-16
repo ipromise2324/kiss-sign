@@ -16,11 +16,7 @@ function merged(path: string): Record<string, unknown> {
   return { ...own, ...added };
 }
 
-/**
- * This repository with the test-only templates and registry entries of test/fixtures/ added, in a temporary folder.
- * They keep operations the repository does not ship under test, where they cover a check no shipped template reaches.
- */
-export function fixtureRoot(): string {
+export function repoWithTestFixtures(): string {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-fixtures-'));
   process.on('exit', () => rmSync(root, { recursive: true, force: true }));
   cpSync(join(ROOT, TEMPLATES_DIR), join(root, TEMPLATES_DIR), { recursive: true });

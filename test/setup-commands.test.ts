@@ -472,7 +472,6 @@ test('card new asks for base units when the token is no registry contract, so it
   assert.match(made.stdout, /amount: 5\n/);
 });
 
-/** The signer's clone with the test-only withdrawal templates, each with a report for steakhouse-prime-usdc-v2-0f51. */
 function withdrawClone(): string {
   const dir = dataClone();
   for (const template of ['morpho/vault-withdraw', 'morpho/vault-withdraw-all']) {
