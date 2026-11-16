@@ -5,7 +5,7 @@ import type { State } from '../research/ledger.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
-import type { Expectations, Expected } from '../simulate/effects.ts';
+import type { Expectations, Expected, KeptSeen } from '../simulate/effects.ts';
 import type { CallScan } from '../simulate/simulate.ts';
 import type { Template } from '../template/template.ts';
 import { CHECKLIST_CSS, checklist, checklistHtml, visible } from './checklist.ts';
@@ -23,6 +23,8 @@ export type VerdictPage = {
   readonly decimals: ReadonlyMap<Address, number>;
   readonly expected: Expectations;
   readonly calls: CallScan;
+  /** The allowances the transaction leaves open that the card's templates keep. */
+  readonly kept: readonly KeptSeen[];
   readonly tree: CallTree | undefined;
   readonly verdictFile: string;
 };
@@ -138,6 +140,28 @@ function effectsSection(page: VerdictPage): Html {
 </section>`;
 }
 
+/** ERC-20 allowances at or above 2^255, and Permit2's 2^160-1, which it never lowers when spent. */
+const isUnlimited = ({ via, amount }: KeptSeen): boolean => amount >= (via === 'permit2' ? (1n << 160n) - 1n : 1n << 255n);
+
+const utc = (seconds: bigint): string => new Date(Number(seconds) * 1000).toISOString().replace('T', ' ').slice(0, 16);
+
+function keptSection(page: VerdictPage): Html {
+  if (![...page.templates.values()].some((t) => t.effects.approves.length > 0)) return h``;
+  const { registry } = page;
+  const rows = page.kept.map((kept) => {
+    const token: AmountToken = { address: kept.token, name: nameOf(kept.token, registry) };
+    const amount = isUnlimited(kept) ? h`無上限的 ${tokenName(token)}` : tokenAmount(kept.amount, token, page);
+    const expires = kept.expiration === undefined ? '' : h`，到 ${utc(kept.expiration)} UTC 為止（Permit2 的到期時間）`;
+    return prop(kept.via === 'permit2' ? '透過 Permit2' : 'ERC-20 授權', h`給 ${nameOf(kept.spender, registry)} ${mono(checksumAddress(kept.spender))}：${amount}${expires}`);
+  });
+  return h`
+<section>
+  <h2>交易後保留的授權</h2>
+  <p class="lead">模板允許這些授權在交易後留著；登記資料寫了為什麼可以留。其他授權都不能比交易前高。</p>
+  <dl class="props two">${rows.length === 0 ? prop('無', '這筆交易沒有留下新的授權') : rows}</dl>
+</section>`;
+}
+
 function callsSection(page: VerdictPage): Html {
   const { calls, registry } = page;
   const body =
@@ -207,6 +231,7 @@ ${causesSection(page.verdict)}
 ${checklistSection(page)}
 ${cardSection(page)}
 ${effectsSection(page)}
+${keptSection(page)}
 ${callsSection(page)}
 <footer class="foot">這頁由 <code>kiss-sign verify</code> 寫出。標 AI 的是模板裡 AI 寫的理由，程式不檢查它；其他都不是 AI 文字。判決檔：<code>${page.verdictFile}</code>，可以用 <code>bin/kiss-sign replay</code> 重算。</footer>`;
   const text = `<!doctype html>

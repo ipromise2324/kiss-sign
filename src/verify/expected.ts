@@ -119,7 +119,8 @@ function addressesIn(value: AbiValue): Address[] {
 const regionOf = (value: AbiValue, root: Uint8Array): Region => ({ root, start: value.span[0], end: value.span[1] });
 
 function callsIn(rule: Rule | undefined, value: AbiValue, values: Values, walk: Walk, itemValues?: readonly Values[]): CallData[] {
-  if (rule?.kind === 'call' && value.kind === 'bytes') return [callData(rule.call, regionOf(value, walk.root), values, walk)];
+  // check.sh decodes only a call with a selector it knows, never parameters a router reads without one, so neither does this.
+  if (rule?.kind === 'call' && value.kind === 'bytes') return rule.call.encoding === 'call' ? [callData(rule.call, regionOf(value, walk.root), values, walk)] : [];
   if (rule?.kind === 'items' && value.kind === 'array') return value.items.flatMap((item, i) => callsIn(rule.items[i], item, itemValues?.[i] ?? values, walk));
   if (rule?.kind === 'fields' && value.kind === 'tuple') return value.fields.flatMap((field, i) => callsIn(rule.fields[i], field, values, walk));
   return [];

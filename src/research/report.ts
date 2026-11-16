@@ -125,7 +125,7 @@ export function templateFunctions(template: Template): AbiFunction[] {
     if (rule.kind === 'fields') rule.fields.forEach(visitRule);
   };
   const visitCall = (node: CallNode): void => {
-    if (!found.has(node.fn.signature)) found.set(node.fn.signature, node.fn);
+    if (node.encoding === 'call' && !found.has(node.fn.signature)) found.set(node.fn.signature, node.fn);
     node.args.forEach(visitRule);
   };
   for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data);
@@ -448,6 +448,8 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
       return `the same number as ${code(rule.path)}, which is ${ruleText(rule.rule, template, registry)}`;
     case 'share-price':
       return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e27 / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
+    case 'at-least':
+      return `at least the card's ${code(rule.field)}`;
     case 'call':
     case 'items':
     case 'fields':
@@ -478,6 +480,12 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
 
 function callRows(node: CallNode, prefix: string, template: Template, registry: Registry): string[] {
   const trailer = node.trailer === undefined ? 'no bytes after the arguments' : `at most ${node.trailer.maxBytes} bytes after the arguments; ${byAi(node.trailer.why)}`;
+  if (node.encoding === 'params') {
+    return [
+      `| ${code(`${prefix}${node.fn.name}`)} | holds the parameters ${code(node.fn.signature)}, ABI-encoded with no selector; no bytes after them |`,
+      ...argRows(node.fn.params, node.args, `${prefix}${node.fn.name}.`, template, registry),
+    ];
+  }
   return [
     `| ${code(`${prefix}${node.fn.name}`)} | calls ${code(node.fn.signature)}, selector ${code(node.fn.selector)}; ${trailer} |`,
     ...argRows(node.fn.params, node.args, `${prefix}${node.fn.name}.`, template, registry),
@@ -489,7 +497,14 @@ function tokenText(token: TokenRef, template: Template, registry: Registry): str
 }
 
 function effectRow(side: string, effect: Effect, template: Template, registry: Registry): string {
-  const amount = effect.amount.kind === 'card' ? `the card's ${code(effect.amount.field)}` : effect.amount.kind === 'positive' ? 'more than nothing' : 'its whole balance';
+  const amount =
+    effect.amount.kind === 'card'
+      ? `the card's ${code(effect.amount.field)}`
+      : effect.amount.kind === 'at-least'
+        ? `at least the card's ${code(effect.amount.field)}`
+        : effect.amount.kind === 'positive'
+          ? 'more than nothing'
+          : 'its whole balance';
   const to = effect.to === undefined ? '' : `, to ${refText(effect.to)}`;
   return `| ${side} | ${tokenText(effect.token, template, registry)} | ${amount}${to} |`;
 }
@@ -562,6 +577,15 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     out.push('| Side | Token | Amount |', '| --- | --- | --- |');
     for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
     for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  }
+  if (template.effects.approves.length > 0) {
+    out.push('', 'These allowances from the Safe may stay open after the transaction; every other allowance may not end higher than it started:', '');
+    out.push('| Token | Spender | Through | Amount |', '| --- | --- | --- | --- |');
+    for (const kept of template.effects.approves) {
+      const spender = registry.entries.get(kept.spender) as RegistryEntry;
+      const amount = kept.amount.kind === 'card' ? `at most the card's ${code(kept.amount.field)}` : `unlimited, as the registry entry declares: ${byAi(spender.standingAllowance?.why ?? '')}`;
+      out.push(`| ${tokenText(kept.token, template, registry)} | registry ${full(spender)} | ${kept.via === 'permit2' ? 'a Permit2 allowance' : 'an ERC-20 approve'} | ${amount} |`);
+    }
   }
   if (template.effects.views.length > 0) {
     out.push('', 'The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:', '');

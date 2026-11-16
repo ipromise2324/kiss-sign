@@ -9,7 +9,7 @@ import type { Exchange } from '../chain/recording.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockHeader, BlockRef } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
-import { checkFloor } from '../floor/floor.ts';
+import { checkFloor, standingSpenders } from '../floor/floor.ts';
 import { checkObservation } from '../floor/summary.ts';
 import { parseRegistry } from '../registry.ts';
 import type { Registry } from '../registry.ts';
@@ -17,7 +17,8 @@ import { hashSafeTx } from '../safe/hash.ts';
 import { parseSafeWebAppTx, parseServiceTx } from '../safe/parse.ts';
 import { parseAddress, parseHex, parseSafeVersion } from '../safe/types.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
-import { endsNeeded, expectedChanges, viewCalls } from '../simulate/effects.ts';
+import { endsNeeded, expectedChanges, keptSeen, viewCalls } from '../simulate/effects.ts';
+import type { KeptSeen } from '../simulate/effects.ts';
 import { observeExecuted, withSimulatedViews } from '../simulate/executed.ts';
 import { scanCalls, simulateSafeTx } from '../simulate/simulate.ts';
 import type { CallScan, Observation } from '../simulate/simulate.ts';
@@ -134,7 +135,7 @@ export function prepare(inputs: VerifyInputs): Prepared {
 export function judge(prepared: Prepared, tx: SafeTx, observation: Observation, read: { readonly assets: ChainCheck; readonly code: ChainCheck }): Verdict {
   const { registry, safe, card, templates, approvals } = prepared;
   const checks = {
-    staticFloor: checkFloor(tx),
+    staticFloor: checkFloor(tx, standingSpenders(registry)),
     fields: checkTemplateFields(tx, card, templates, registry),
     ...read,
     mutation: checkMutations(tx, card, templates, registry),
@@ -179,7 +180,7 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
 export async function evaluateTx(
   inputs: VerifyInputs,
   reader: Reader,
-): Promise<{ readonly evaluation: Evaluation; readonly tx: SafeTx; readonly prepared: Prepared; readonly latest: BlockRef }> {
+): Promise<{ readonly evaluation: Evaluation; readonly tx: SafeTx; readonly prepared: Prepared; readonly latest: BlockRef; readonly kept: readonly KeptSeen[] }> {
   const prepared = prepare(inputs);
   const { safe } = prepared;
   const latest = await reader.block('latest');
@@ -210,7 +211,8 @@ export async function evaluateTx(
     assets: await readAt(claims, (block) => checkAssets(reader, claims, block)),
     code: await readAt(pinned, (block) => checkCode(reader, pinned, block, executed === undefined ? 'pending' : 'executed')),
   };
-  return { evaluation: { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls }, tx, prepared, latest: latest.value };
+  const kept = observation.kind === 'observed' ? keptSeen(observation.observed, prepared.card, prepared.templates, prepared.registry) : [];
+  return { evaluation: { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls }, tx, prepared, latest: latest.value, kept };
 }
 
 /**

@@ -110,7 +110,7 @@ const failedRuns = (...outcomes: Run['outcome'][]): PerturbationReport => {
 function ledgerOf(change: Partial<Setup>): Ledger {
   const s = { ...BASE, ...change };
   const registry: Registry = { entries: new Map([[s.entry.name, s.entry]]), byAddress: new Map([[s.entry.address, s.entry]]), markets: new Map() };
-  const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [] }, facts: [] } as Template;
+  const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [], approves: [] }, facts: [] } as Template;
   const inputs = {
     subject: s.documented ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }] } : { kind: 'vault', vault: s.entry },
     registry,

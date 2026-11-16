@@ -5,7 +5,7 @@ import { canonicalType } from '../decode/abi.ts';
 import type { AbiParam, AbiType } from '../decode/abi.ts';
 import { decodeValues, encodeCall } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
-import type { Registry } from '../registry.ts';
+import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import type { BoundView, CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect } from '../template/template.ts';
 import type { Execution } from './events.ts';
@@ -131,6 +131,17 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         continue;
       }
       const base = known ?? { kind: 'exactly', change: 0n };
+      if (effect.amount.kind === 'at-least') {
+        const least = op.values.get(effect.amount.field);
+        if (least?.kind !== 'amount') reasons.push(`the card has no amount ${effect.amount.field}`);
+        else if (base.kind !== 'exactly' || stated.has(token)) reasons.push(mixed(token));
+        else {
+          stated.add(token);
+          // More than one less than the amount is at least the amount.
+          changes.set(token, { kind: open, change: base.change + least.value - 1n });
+        }
+        continue;
+      }
       if (effect.amount.kind === 'positive') {
         if (base.kind !== 'exactly' && base.kind !== open) reasons.push(`the card leaves the change of ${token} open both ways`);
         else if (stated.has(token)) reasons.push(mixed(token));
@@ -152,6 +163,47 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
     }
   }
   return reasons.length > 0 ? { kind: 'unverifiable', reasons } : { kind: 'expected', changes };
+}
+
+/** An allowance the card's templates let the transaction leave open, resolved: at most `limit`, or any amount. */
+export type KeptAllowance = { readonly via: AllowanceRoute; readonly token: Address; readonly spender: Address; readonly limit: bigint | 'unlimited' };
+
+/** The allowances the card's templates keep (`effects.approves`), and why any could not be resolved. */
+export function keptAllowances(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): { readonly kept: readonly KeptAllowance[]; readonly reasons: readonly string[] } {
+  const kept: KeptAllowance[] = [];
+  const reasons: string[] = [];
+  for (const op of card.operations) {
+    for (const approval of templates.get(op.template)?.effects.approves ?? []) {
+      const token = addressOf(approval.token, op.values, registry);
+      const spender = registry.entries.get(approval.spender);
+      const amount = approval.amount.kind === 'card' ? op.values.get(approval.amount.field) : undefined;
+      if ('problem' in token) reasons.push(token.problem);
+      else if (spender === undefined) reasons.push(`the registry has no ${approval.spender}`);
+      else if (approval.amount.kind === 'card' && amount?.kind !== 'amount') reasons.push(`the card has no amount ${approval.amount.field}`);
+      else kept.push({ via: approval.via, token: token.address, spender: spender.address, limit: amount?.kind === 'amount' ? amount.value : 'unlimited' });
+    }
+  }
+  return { kept, reasons };
+}
+
+const keeps = (kept: readonly KeptAllowance[], via: AllowanceRoute, token: Address, spender: Address, after: bigint): boolean =>
+  kept.some((k) => k.via === via && k.token === token && k.spender === spender && (k.limit === 'unlimited' || after <= k.limit));
+
+/** An allowance the transaction left higher than it started, which a template on the card keeps; `expiration` only through Permit2. */
+export type KeptSeen = { readonly via: AllowanceRoute; readonly token: Address; readonly spender: Address; readonly amount: bigint; readonly expiration: bigint | undefined };
+
+/** The allowances `observed` left raised that the card's templates keep, for the signer to see what stays open. */
+export function keptSeen(observed: Observed, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): KeptSeen[] {
+  if (observed.kind !== 'executed') return [];
+  const { kept } = keptAllowances(card, templates, registry);
+  return [
+    ...observed.allowances
+      .filter((a) => a.after > a.before && keeps(kept, 'erc20', a.token, a.spender, a.after))
+      .map((a): KeptSeen => ({ via: 'erc20', token: a.token, spender: a.spender, amount: a.after, expiration: undefined })),
+    ...observed.permit2
+      .filter((p) => permit2Raised(p) && keeps(kept, 'permit2', p.token, p.spender, p.after.amount))
+      .map((p): KeptSeen => ({ via: 'permit2', token: p.token, spender: p.spender, amount: p.after.amount, expiration: p.after.expiration })),
+  ];
 }
 
 /** A view a template on the card reads, its arguments bound to this card, and the call as it reads in a finding. */
@@ -270,7 +322,8 @@ const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): bo
 
 /**
  * Every change to the Safe's balances must be one the card's effects explain, and no allowance, ERC-20 or Permit2, may
- * end higher than it started: an approval is spent in the transaction that gives it.
+ * end higher than it started: an approval is spent in the transaction that gives it, unless a template on the card keeps
+ * it open (`effects.approves`).
  */
 export function judgeEffects(
   observed: Observed,
@@ -296,11 +349,15 @@ export function judgeEffects(
     const actual = asset === 'eth' ? observed.eth : (observed.tokens.get(asset) ?? 0n);
     if (!meets(expected, actual)) findings.push({ kind: 'balance', asset, expected, actual });
   }
+  const { kept, reasons } = keptAllowances(card, templates, registry);
+  unread.push(...reasons);
   for (const allowance of observed.allowances) {
     // A lower allowance lets no one take more from the Safe than before, so only a rise must be explained.
-    if (allowance.after > allowance.before) findings.push({ kind: 'open-allowance', ...allowance });
+    if (allowance.after > allowance.before && !keeps(kept, 'erc20', allowance.token, allowance.spender, allowance.after)) findings.push({ kind: 'open-allowance', ...allowance });
   }
-  for (const allowance of observed.permit2) if (permit2Raised(allowance)) findings.push({ kind: 'open-permit2-allowance', ...allowance });
+  for (const allowance of observed.permit2) {
+    if (permit2Raised(allowance) && !keeps(kept, 'permit2', allowance.token, allowance.spender, allowance.after.amount)) findings.push({ kind: 'open-permit2-allowance', ...allowance });
+  }
   const expectedReads = expectedViews(card, templates, registry);
   unread.push(...expectedReads.reasons);
   for (const { view, call, text } of expectedReads.views) {

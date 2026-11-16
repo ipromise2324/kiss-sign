@@ -10,7 +10,7 @@ import { samePageKey, sourceHoldsAddress } from './research/source-page.ts';
 import { SafeTxParseError, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 
-export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm'] as const;
+export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm', 'allowance'] as const;
 export type ContractKind = (typeof CONTRACT_KINDS)[number];
 
 /** What a registry entry may say about itself, each naming another registry entry, and which kinds may say it. */
@@ -68,7 +68,17 @@ export type RegistryEntry = {
   readonly coingecko?: string;
   /** The code a call to this address ran at each block `pnpm pin-code` found; verify requires the code of the block it reads. */
   readonly code?: CodePins;
+  /** An allowance from the Safe that this contract may keep after the transaction, and why its code makes that safe. */
+  readonly standingAllowance?: StandingAllowance;
 };
+
+/**
+ * What a standing allowance goes through: an ERC-20 `approve` of a token to this contract, or a Permit2 allowance to it.
+ * A template may keep such an allowance open (`effects.approves`) only to a registry entry that declares it.
+ */
+export const ALLOWANCE_ROUTES = ['erc20', 'permit2'] as const;
+export type AllowanceRoute = (typeof ALLOWANCE_ROUTES)[number];
+export type StandingAllowance = { readonly via: AllowanceRoute; readonly why: string };
 
 /** An official page that lists an address, the text next to it there, and the heading above it when the page needs one. */
 export type SourcePage = { readonly url: HttpsUrl; readonly label: string; readonly heading?: string };
@@ -310,10 +320,19 @@ function moreSourcesOf(path: string, raw: unknown, address: Address, source: Htt
   });
 }
 
+function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['via', 'why']);
+  const via = ALLOWANCE_ROUTES.find((route) => route === value.via);
+  if (via === undefined) throw new RegistryError(`${path}.via`, `not one of ${ALLOWANCE_ROUTES.join(', ')}`);
+  if (typeof value.why !== 'string' || value.why.trim() === '') throw new RegistryError(`${path}.why`, 'not a non-empty string');
+  return { via, why: value.why };
+}
+
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck', 'standingAllowance']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
@@ -353,6 +372,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     ...(value.defillama === undefined ? {} : { defillama: value.defillama }),
     ...(value.coingecko === undefined ? {} : { coingecko: value.coingecko }),
     ...(code === undefined ? {} : { code }),
+    ...(value.standingAllowance === undefined ? {} : { standingAllowance: standingAllowanceOf(`${path}.standingAllowance`, value.standingAllowance) }),
   };
   if (kind !== 'factory') {
     if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);

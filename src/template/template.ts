@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
 import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
-import type { Attribute, ContractKind, HttpsUrl, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import type { AllowanceRoute, Attribute, ContractKind, HttpsUrl, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
@@ -110,6 +110,8 @@ export type Rule =
    * `min` at least, `assets` × 1e27 / `shares`, so the transaction's bound is at least as strict as the card's amounts.
    */
   | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity }
+  /** A number at least the card amount `field`, such as the fewest tokens a swap may give. */
+  | { readonly kind: 'at-least'; readonly field: string }
   | { readonly kind: 'call'; readonly call: CallNode }
   /** An array of exactly this many items. */
   | { readonly kind: 'items'; readonly items: readonly Rule[] }
@@ -123,7 +125,14 @@ export type LeafRule = Exclude<Rule, { readonly kind: 'call' | 'items' | 'fields
 /** Bytes a contract ignores after a call's arguments, which the template lets through up to `maxBytes`. */
 export type TrailerAllowance = { readonly maxBytes: number; readonly why: string };
 
+/**
+ * `call`: a selector, then the arguments. `params`: the arguments alone, ABI-encoded with no selector, as a command
+ * router takes each command's input; `fn`'s name is then only the protocol's name for them, such as `V4_SWAP`.
+ */
+export type Encoding = 'call' | 'params';
+
 export type CallNode = {
+  readonly encoding: Encoding;
   readonly fn: AbiFunction;
   /** One rule per parameter, by position. */
   readonly args: readonly Rule[];
@@ -136,10 +145,29 @@ export type CallNode = {
  */
 export type TemplateCall = { readonly to: Rule; readonly value: Rule; readonly data: CallNode | 'empty'; readonly merge: string | undefined };
 
-/** `all`, only on what the Safe gives, means its whole balance: the Safe holds none of the token afterwards. */
-export type EffectAmount = { readonly kind: 'card'; readonly field: string } | { readonly kind: 'positive' } | { readonly kind: 'all' };
+/**
+ * `all`, only on what the Safe gives, means its whole balance: the Safe holds none of the token afterwards. `at-least`,
+ * only on what the Safe gets, means at least the card amount `field`.
+ */
+export type EffectAmount =
+  | { readonly kind: 'card'; readonly field: string }
+  | { readonly kind: 'positive' }
+  | { readonly kind: 'all' }
+  | { readonly kind: 'at-least'; readonly field: string };
 /** `to`, on what the Safe gives, names the receiver; the Safe giving to itself changes nothing. */
 export type Effect = { readonly token: TokenRef; readonly amount: EffectAmount; readonly to: CardRef | undefined };
+
+/**
+ * An allowance from the Safe the transaction may leave open: of `token` to the registry contract `spender`, through an
+ * ERC-20 `approve` or through Permit2. `unlimited` needs the spender's registry entry to declare a standing allowance
+ * of that route; a card amount lets it end at no more than that amount.
+ */
+export type KeptApproval = {
+  readonly token: CardRef;
+  readonly spender: string;
+  readonly via: AllowanceRoute;
+  readonly amount: { readonly kind: 'card'; readonly field: string } | { readonly kind: 'unlimited' };
+};
 
 export const VIEW_CHANGES = ['increases', 'decreases', 'same'] as const;
 export type ViewChange = (typeof VIEW_CHANGES)[number];
@@ -183,13 +211,19 @@ export type Template = {
   /** Card references that must all name the same address, such as two vaults' assets; a card where they differ is refused. */
   readonly same: readonly CardRef[];
   readonly calls: readonly TemplateCall[];
-  readonly effects: { readonly gives: readonly Effect[]; readonly gets: readonly Effect[]; readonly views: readonly ViewEffect[] };
+  readonly effects: {
+    readonly gives: readonly Effect[];
+    readonly gets: readonly Effect[];
+    readonly views: readonly ViewEffect[];
+    readonly approves: readonly KeptApproval[];
+  };
   readonly facts: readonly Fact[];
 };
 
 export const TEMPLATES_DIR = 'templates';
 const ID = /^[a-z0-9]+(-[a-z0-9]+)*\/[a-z0-9]+(-[a-z0-9]+)*$/;
 const ADDRESS_BYTES = 20;
+/** No trailer or constant `bytes` is long enough to hold a whole address. */
 const MAX_TRAILER = ADDRESS_BYTES - 1;
 
 export class TemplateError extends Error {
@@ -350,7 +384,7 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
   const value = object(path, raw);
   const keys = Object.keys(value);
   const key = keys[0];
-  if (keys.length !== 1 || key === undefined) throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, const, free, equals, maxSharePrice, minSharePrice, call, items, fields');
+  if (keys.length !== 1 || key === undefined) throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, const, free, equals, atLeast, maxSharePrice, minSharePrice, call, encoded, items, fields');
   const body = value[key];
   const at = `${path}.${key}`;
   const cannotBind = () => new TemplateError(path, `a ${key} rule cannot bind a ${canonicalType(type)}`);
@@ -383,11 +417,18 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       if (constant.kind === 'address' && BigInt(constant.value) !== 0n) {
         throw new TemplateError(at, 'a constant address must be the zero address; bind any other with contract, from the registry');
       }
-      if ((constant.kind === 'bytes' || constant.kind === 'string') && constant.value.length > 2) throw new TemplateError(at, `a constant ${constant.kind} must be empty`);
+      if (constant.kind === 'string' && constant.value.length > 2) throw new TemplateError(at, 'a constant string must be empty');
+      if (constant.kind === 'bytes' && (constant.value.length - 2) / 2 > MAX_TRAILER) throw new TemplateError(at, `a constant bytes holds at most ${MAX_TRAILER} bytes, so no whole address fits`);
       return { kind: 'const', value: constant };
     }
     case 'free':
       return free(at, body, type);
+    case 'atLeast': {
+      needs(['uint']);
+      const field = cardFieldName(text(at, body));
+      if (field === undefined || scope.card.get(field)?.kind !== 'amount') throw new TemplateError(at, `${JSON.stringify(body)} is not card.<amount field>`);
+      return { kind: 'at-least', field };
+    }
     case 'equals': {
       const quantityAt = quantity(at, body, scope);
       if (quantityAt.kind !== 'path' || type.kind !== 'uint') throw new TemplateError(at, 'must name the path of an earlier uint argument, on a uint');
@@ -400,6 +441,9 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
     case 'call':
       needs(['bytes']);
       return { kind: 'call', call: callNode(at, body, scope) };
+    case 'encoded':
+      needs(['bytes']);
+      return { kind: 'call', call: encodedNode(at, body, scope) };
     case 'items': {
       if (type.kind !== 'array' && type.kind !== 'fixed-array') throw cannotBind();
       const items = array(at, body);
@@ -450,7 +494,15 @@ function callNode(path: string, raw: unknown, scope: Scope): CallNode {
   const value = object(path, raw);
   exactKeys(path, value, ['function', 'args'], ['trailer']);
   const fn = signature(`${path}.function`, value.function);
-  return { fn, args: params(`${path}.args`, value.args, fn.params, scope), trailer: trailer(`${path}.trailer`, value.trailer) };
+  return { encoding: 'call', fn, args: params(`${path}.args`, value.args, fn.params, scope), trailer: trailer(`${path}.trailer`, value.trailer) };
+}
+
+/** `as` names the parameters the bytes hold, such as `V4_SWAP(bytes actions, bytes[] params)`; no trailer is allowed. */
+function encodedNode(path: string, raw: unknown, scope: Scope): CallNode {
+  const value = object(path, raw);
+  exactKeys(path, value, ['as', 'args']);
+  const fn = signature(`${path}.as`, value.as);
+  return { encoding: 'params', fn, args: params(`${path}.args`, value.args, fn.params, scope), trailer: undefined };
 }
 
 /**
@@ -624,14 +676,42 @@ function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'
     if (!['address', 'recipient'].includes(scope.card.get(name)?.kind ?? '')) throw new TemplateError(`${path}.to`, 'must be card.<address field>');
     to = { field: name, attribute: undefined };
   }
+  if (side === 'gets' && typeof value.amount === 'object' && value.amount !== null) {
+    const bound = object(`${path}.amount`, value.amount);
+    exactKeys(`${path}.amount`, bound, ['atLeast']);
+    const field = cardFieldName(text(`${path}.amount.atLeast`, bound.atLeast)) ?? '';
+    if (scope.card.get(field)?.kind !== 'amount') throw new TemplateError(`${path}.amount.atLeast`, 'must be card.<amount field>');
+    return { token: ref, amount: { kind: 'at-least', field }, to };
+  }
   const amount = text(`${path}.amount`, value.amount);
   if (amount === 'positive') return { token: ref, amount: { kind: 'positive' }, to };
   if (amount === 'all' && side === 'gives') return { token: ref, amount: { kind: 'all' }, to };
   const amountField = cardFieldName(amount) ?? '';
   if (scope.card.get(amountField)?.kind !== 'amount') {
-    throw new TemplateError(`${path}.amount`, side === 'gives' ? 'must be "positive", "all" or card.<amount field>' : 'must be "positive" or card.<amount field>');
+    throw new TemplateError(`${path}.amount`, side === 'gives' ? 'must be "positive", "all" or card.<amount field>' : 'must be "positive", card.<amount field> or {"atLeast": card.<amount field>}');
   }
   return { token: ref, amount: { kind: 'card', field: amountField }, to };
+}
+
+function keptApproval(path: string, raw: unknown, scope: Scope): KeptApproval {
+  const value = object(path, raw);
+  exactKeys(path, value, ['token', 'spender', 'amount'], ['via']);
+  const field = cardFieldName(text(`${path}.token`, value.token));
+  if (field === undefined) throw new TemplateError(`${path}.token`, 'must be card.<field>');
+  const token = cardToken(`${path}.token`, field, scope.card);
+  const spender = text(`${path}.spender`, value.spender);
+  const entry = scope.registry.entries.get(spender);
+  if (entry === undefined) throw new TemplateError(`${path}.spender`, `${JSON.stringify(spender)} is not in the contract registry`);
+  const via = value.via === undefined ? 'erc20' : (['erc20', 'permit2'] as const).find((route) => route === value.via);
+  if (via === undefined) throw new TemplateError(`${path}.via`, 'not one of erc20, permit2');
+  const amount = text(`${path}.amount`, value.amount);
+  if (amount === 'unlimited') {
+    if (entry.standingAllowance?.via !== via) throw new TemplateError(`${path}.amount`, `${spender} declares no standing allowance through ${via} in the registry, so none may stay unlimited`);
+    return { token, spender, via, amount: { kind: 'unlimited' } };
+  }
+  const limit = cardFieldName(amount) ?? '';
+  if (scope.card.get(limit)?.kind !== 'amount') throw new TemplateError(`${path}.amount`, 'must be "unlimited" or card.<amount field>');
+  return { token, spender, via, amount: { kind: 'card', field: limit } };
 }
 
 /** A view's arguments are known before the transaction runs: bound by card, safe, contract or const, never free. */
@@ -824,7 +904,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   const calls = rawCalls.map((call, i) => templateCall(`calls[${i}]`, call, scope, i === rawCalls.length - 1));
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
   const effects = object('effects', value.effects);
-  exactKeys('effects', effects, ['gives', 'gets'], ['views']);
+  exactKeys('effects', effects, ['gives', 'gets'], ['views', 'approves']);
   const template: Template = {
     id,
     card: fields,
@@ -835,6 +915,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
       gives: array('effects.gives', effects.gives).map((e, i) => effect(`effects.gives[${i}]`, e, scope, 'gives')),
       gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets')),
       views: effects.views === undefined ? [] : array('effects.views', effects.views).map((v, i) => view(`effects.views[${i}]`, v, scope)),
+      approves: effects.approves === undefined ? [] : array('effects.approves', effects.approves).map((a, i) => keptApproval(`effects.approves[${i}]`, a, scope)),
     },
     facts: [],
   };
@@ -850,6 +931,7 @@ export function cardRefs(template: Template): CardRef[] {
     else if (rule?.kind === 'share-price') {
       for (const q of [rule.assets, rule.shares]) if (q.kind === 'card') refs.push({ field: q.field, attribute: undefined });
     }
+    else if (rule?.kind === 'at-least') refs.push({ field: rule.field, attribute: undefined });
     else if (rule?.kind === 'call') rule.call.args.forEach(visit);
     else if (rule?.kind === 'items') rule.items.forEach(visit);
     else if (rule?.kind === 'fields') rule.fields.forEach(visit);
@@ -866,6 +948,7 @@ export function cardRefs(template: Template): CardRef[] {
     if (token !== 'eth') refs.push(token);
     if (to !== undefined) refs.push(to);
   }
+  for (const { token } of template.effects.approves) refs.push(token);
   return refs;
 }
 

@@ -4,6 +4,7 @@ import type { Span } from '../decode/codec.ts';
 import { regionBytes } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
+import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 
 export type FloorRuleId = 'fee-fields' | 'delegatecall' | 'self-call' | 'unlimited-approval' | 'safe-state';
@@ -22,7 +23,16 @@ type View = { readonly tx: SafeTx; readonly calls: readonly InnerCall[]; readonl
 /** A finding before the table stamps it with the rule that made it. */
 type Found = Omit<FloorFinding, 'rule'>;
 
-type StaticRule = { readonly id: FloorRuleId; readonly check: (view: View) => readonly Found[] };
+type StaticRule = { readonly id: FloorRuleId; readonly check: (view: View, standing: readonly StandingSpender[]) => readonly Found[] };
+
+/** A registry contract that may keep an unlimited allowance from the Safe through `via`, as its entry declares. */
+export type StandingSpender = { readonly via: AllowanceRoute; readonly spender: Address };
+
+export const standingSpenders = (registry: Registry): StandingSpender[] =>
+  [...registry.entries.values()].flatMap((entry) => (entry.standingAllowance === undefined ? [] : [{ via: entry.standingAllowance.via, spender: entry.address }]));
+
+export const isStanding = (standing: readonly StandingSpender[], via: AllowanceRoute, spender: Address): boolean =>
+  standing.some((s) => s.via === via && s.spender.toLowerCase() === spender.toLowerCase());
 
 const ZERO = '0x0000000000000000000000000000000000000000' as Address;
 
@@ -31,23 +41,33 @@ export const UNLIMITED_ERC20 = 1n << 255n;
 /** Permit2 never lowers an allowance of 2^160-1 when it is spent. */
 export const PERMIT2_MAX = (1n << 160n) - 1n;
 
-type Approval = { readonly signature: string; readonly selector: Hex; readonly token: 'target' | number; readonly spender: number; readonly amount: number; readonly unlimited: bigint };
+/** `via` is the route a registry entry's standing allowance must name to keep this approval unlimited; none for an NFT approve-all. */
+type Approval = {
+  readonly signature: string;
+  readonly selector: Hex;
+  readonly token: 'target' | number;
+  readonly spender: number;
+  readonly amount: number;
+  readonly unlimited: bigint;
+  readonly via: AllowanceRoute | undefined;
+};
 
-const approval = (signature: string, token: 'target' | number, spender: number, amount: number, unlimited: bigint): Approval => ({
+const approval = (signature: string, token: 'target' | number, spender: number, amount: number, unlimited: bigint, via: AllowanceRoute | undefined): Approval => ({
   signature,
   selector: selectorOf(signature),
   token,
   spender,
   amount,
   unlimited,
+  via,
 });
 
 /** Argument positions by word. An NFT approve-all is unlimited whenever its flag is set. Permit2's `approve` names the token as its first argument and is called on Permit2. */
 const APPROVALS: readonly Approval[] = [
-  approval('approve(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20),
-  approval('increaseAllowance(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20),
-  approval('approve(address,address,uint160,uint48)', 0, 1, 2, PERMIT2_MAX),
-  approval('setApprovalForAll(address,bool)', 'target', 0, 1, 1n),
+  approval('approve(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20, 'erc20'),
+  approval('increaseAllowance(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20, 'erc20'),
+  approval('approve(address,address,uint160,uint48)', 0, 1, 2, PERMIT2_MAX, 'permit2'),
+  approval('setApprovalForAll(address,bool)', 'target', 0, 1, 1n, undefined),
 ];
 
 const addressIn = (word: bigint): Address => `0x${word.toString(16).padStart(64, '0').slice(24)}` as Address;
@@ -86,7 +106,7 @@ function selfCall({ tx, calls }: View): Found[] {
     });
 }
 
-function unlimitedApproval({ calls }: View): Found[] {
+function unlimitedApproval({ calls }: View, standing: readonly StandingSpender[]): Found[] {
   const findings: Found[] = [];
   for (const call of calls) {
     const data = regionBytes(call.data);
@@ -101,6 +121,7 @@ function unlimitedApproval({ calls }: View): Found[] {
     };
     const amount = word(kind.amount);
     if (amount < kind.unlimited) continue;
+    if (kind.via !== undefined && isStanding(standing, kind.via, addressIn(word(kind.spender)))) continue;
     const token = kind.token === 'target' ? call.to : addressIn(word(kind.token));
     const at = call.data.start + 4 + kind.amount * 32;
     findings.push({
@@ -136,8 +157,11 @@ function viewOf(tx: SafeTx): View {
   }
 }
 
-/** Protocol-free rules every Safe transaction must meet, whatever its template says. */
-export function checkFloor(tx: SafeTx): FloorResult {
+/**
+ * Protocol-free rules every Safe transaction must meet, whatever its template says. An unlimited approval passes only
+ * to a registry contract whose entry declares a standing allowance of that route (`standing`).
+ */
+export function checkFloor(tx: SafeTx, standing: readonly StandingSpender[] = []): FloorResult {
   const view = viewOf(tx);
-  return floorResult(STATIC_RULES.flatMap((rule) => rule.check(view).map((found) => ({ rule: rule.id, ...found }))));
+  return floorResult(STATIC_RULES.flatMap((rule) => rule.check(view, standing).map((found) => ({ rule: rule.id, ...found }))));
 }

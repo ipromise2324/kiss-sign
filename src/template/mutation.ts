@@ -55,6 +55,13 @@ function mutateBytes(type: AbiType, current: Uint8Array): Uint8Array | undefined
 const MAX_UINT = (1n << 256n) - 1n;
 
 function mutate(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
+  if (leaf.rule.kind === 'at-least' && leaf.bytes !== undefined) {
+    const data = hexToBytes(tx.data.slice(2));
+    const [start, end] = leaf.bytes;
+    if (BigInt(`0x${bytesToHex(data.subarray(start, end))}`) === 0n) return undefined;
+    data.fill(0, start, end);
+    return { ...tx, data: `0x${bytesToHex(data)}` as Hex };
+  }
   if (leaf.rule.kind === 'share-price' && leaf.bytes !== undefined) {
     const data = hexToBytes(tx.data.slice(2));
     const loosest = leaf.rule.bound === 'max' ? MAX_UINT : 0n;
