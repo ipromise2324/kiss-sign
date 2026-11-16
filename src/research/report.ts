@@ -1,7 +1,7 @@
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Reader } from '../chain/reader.ts';
-import { replayReader } from '../chain/recording.ts';
+import { replayReader, trimBlockAnswers } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { ABI_CASES_DIR, loadAbiCases, replayAbiCase } from '../contracts/abi-case.ts';
@@ -361,7 +361,7 @@ export function trimReportRecording(
       ),
     ]),
   );
-  return { ...base, pages: trimmed, vaults: Object.fromEntries(vaults), erc7730, code, ...(today === undefined ? {} : { today: { number: today.number.toString(), hash: today.hash } }) };
+  return { ...base, pages: trimmed, vaults: Object.fromEntries(vaults), erc7730, code: code.map(trimBlockAnswers), ...(today === undefined ? {} : { today: { number: today.number.toString(), hash: today.hash } }) };
 }
 
 export async function erc7730Text(entries: readonly RegistryEntry[], registry: Registry, snapshot: Snapshot, chain: () => Promise<ChainAccess>): Promise<{ text: string; reports: EntryReport[] }> {
