@@ -48,9 +48,9 @@ Several operations on one card share this call; written by the AI in the templat
 
 ## Official documentation
 
-Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.
+Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by `(`, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.
 
-| Function | Contract | Page | Site | GitHub commit | Function name appears on page |
+| Function | Contract | Page | Site | GitHub commit | Function on page |
 | --- | --- | --- | --- | --- | --- |
 | `multicall((address,bytes,uint256,bool,bytes32)[])` | `bundler3` | <https://docs.morpho.org/developers/contracts/bundles/> | PASS | n/a | PASS |
 | `claim(address,address,uint256,bytes32[])` | `morpho-urd` | <https://github.com/morpho-org/universal-rewards-distributor/blob/3de504b130835a12482e00e1c83dcf369448c80b/src/UniversalRewardsDistributor.sol> | FINDING | PASS | PASS |

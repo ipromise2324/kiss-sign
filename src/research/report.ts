@@ -27,12 +27,14 @@ import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { pathText } from './api-source.ts';
-import { isGitHubPage, pageUrlOf } from './source-page.ts';
+import { githubRef, isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
 import type { ChainAccess, EntryReport, Snapshot } from './erc7730.ts';
 import { constText } from './study.ts';
 import { ANCHOR_KINDS, replayAsk } from './sources.ts';
+import { STANDARDS } from './standards.ts';
+import type { Standard } from './standards.ts';
 import type { AnchorKind } from './sources.ts';
 
 /** A template, with the one vault its report covers when it is reported per vault; or one registry vault alone. */
@@ -40,8 +42,8 @@ export type Subject =
   | { readonly kind: 'template'; readonly template: Template; readonly docs: readonly DocLink[]; readonly vault: RegistryEntry | undefined }
   | { readonly kind: 'vault'; readonly vault: RegistryEntry };
 
-/** The official page the AI names for one function. The program checks the page; the AI writes no text about it. */
-export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: HttpsUrl };
+/** The official page for one function. The program checks the page; the AI writes no text about it. */
+export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: HttpsUrl; readonly standard: Standard | undefined };
 
 /** What a report is of: a template by id, with `cardVault` for one reported per vault; or one registry vault by name. */
 export type Target = { readonly template: string; readonly cardVault?: string } | { readonly vault: string };
@@ -133,8 +135,9 @@ export function templateFunctions(template: Template): AbiFunction[] {
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /**
- * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`. Nothing else. The
- * contract must be one the template calls the function on, when the template binds that target.
+ * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`, or `{ contract,
+ * standard }` for a function a standard in `STANDARDS` defines for that contract's kind. Nothing else. The contract
+ * must be one the template calls the function on, when the template binds that target.
  */
 export function parseDocs(raw: unknown, template: Template, registry: Registry): DocLink[] {
   if (!isRecord(raw)) throw new ReportError(`${DOCS_FILE}: not a JSON object`);
@@ -145,16 +148,24 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
   return fns.map((fn) => {
     const value = raw[fn.signature];
     if (value === undefined) throw new ReportError(`${DOCS_FILE}: no page for ${fn.signature}`);
-    if (!isRecord(value) || Object.keys(value).sort().join() !== 'contract,url') throw new ReportError(`${DOCS_FILE}: ${fn.signature} must hold exactly contract and url`);
+    const keys = isRecord(value) ? Object.keys(value).sort().join() : '';
+    if (!isRecord(value) || (keys !== 'contract,url' && keys !== 'contract,standard')) throw new ReportError(`${DOCS_FILE}: ${fn.signature} must hold exactly contract and url, or contract and standard`);
     const contract = typeof value.contract === 'string' ? registry.entries.get(value.contract) : undefined;
     if (contract === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is not a registry name`);
+    const standard = typeof value.standard === 'string' ? STANDARDS.get(value.standard) : undefined;
+    if (keys === 'contract,standard') {
+      if (standard === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.standard is not one of ${[...STANDARDS.keys()].join(', ')}`);
+      if (!standard.kinds.includes(contract.kind)) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract ${contract.name} is a ${contract.kind}; ${standard.name} applies to ${standard.kinds.join(' and ')} entries`);
+      if (!standard.declarations.has(fn.signature)) throw new ReportError(`${DOCS_FILE}: ${standard.name} does not define ${fn.signature}`);
+    }
     const names = targets.get(fn.signature);
     if (names !== undefined && !names.includes(contract.name)) {
       throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is ${contract.name}, but the template calls it on ${names.length === 1 ? names[0] : `one of ${names.join(', ')}`}`);
     }
+    if (standard !== undefined) return { fn, contract, url: standard.page, standard };
     const url = parseHttpsUrl(value.url);
     if (url === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.url is not an https URL`);
-    return { fn, contract, url };
+    return { fn, contract, url, standard: undefined };
   });
 }
 
@@ -273,7 +284,26 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
   return [...registry.entries.values()].filter((entry) => names.has(entry.name));
 }
 
-export const wordOf = (fn: AbiFunction): RegExp => new RegExp(`(?<![A-Za-z0-9_$])${fn.name.replace(/\$/g, '\\$')}(?![A-Za-z0-9_$])`);
+const escaped = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export const declarationOf = (standard: Standard, fn: AbiFunction): string => standard.declarations.get(fn.signature) as string;
+
+export function functionOnPage(doc: DocLink): RegExp {
+  if (doc.standard !== undefined) return new RegExp(escaped(declarationOf(doc.standard, doc.fn)));
+  const name = escaped(doc.fn.name);
+  const called = `(?<![A-Za-z0-9_$])${name}\\(`;
+  const inBackticks = `\`${name}\``;
+  const aloneOrMarkdownHeading = `^(?:#{1,6} )?${name}$`;
+  return new RegExp([called, inBackticks, aloneOrMarkdownHeading].join('|'));
+}
+
+export function docSiteLine(doc: DocLink, listings: Listings): Line {
+  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.contract.defillama, listings);
+  const ref = githubRef(new URL(doc.url));
+  const org = ref.kind === 'pinned' ? ref.owner.toLowerCase() : undefined;
+  if (org === doc.standard.org) return { kind: 'agrees', check: 'defillama', text: `GitHub org ${org} publishes ${doc.standard.name}` };
+  return { kind: 'finding', check: 'defillama', text: `source is GitHub org ${org ?? 'none'}; ${doc.standard.name} is published by ${doc.standard.org}`, cause: 'differs' };
+}
 
 /** Keeps of each page only what the report's checks read: the entries' addresses and the documented function names. */
 export function trimReportRecording(
@@ -294,7 +324,7 @@ export function trimReportRecording(
       trimPage(
         page,
         entries.filter((e) => pageUrlsOf(e).some((source) => pageUrlOf(source) === url)).map((e) => e.address),
-        docs.filter((d) => pageUrlOf(d.url) === url).map((d) => wordOf(d.fn)),
+        docs.filter((d) => pageUrlOf(d.url) === url).map(functionOnPage),
       ),
     ]),
   );
@@ -541,17 +571,21 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   out.push('', '## Official documentation', '');
   if (docs.length === 0) return [...out, `The template calls no function, so ${code(DOCS_FILE)} names no page.`, ''];
   out.push(
-    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.`,
+    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by ${code('(')}, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.`,
     '',
-    '| Function | Contract | Page | Site | GitHub commit | Function name appears on page |',
+    '| Function | Contract | Page | Site | GitHub commit | Function on page |',
     '| --- | --- | --- | --- | --- | --- |',
   );
   for (const doc of docs) {
     const url = new URL(doc.url);
     const page = inputs.pages.pages.get(pageUrlOf(doc.url));
-    const named = page?.kind === 'unread' ? 'UNVERIFIABLE' : page?.kind === 'served' && page.blocks.some((block) => wordOf(doc.fn).test(block.text)) ? 'PASS' : 'FINDING';
+    const named = page?.kind === 'unread' ? 'UNVERIFIABLE' : page?.kind === 'served' && page.blocks.some((block) => functionOnPage(doc).test(block.text)) ? 'PASS' : 'FINDING';
     const github = isGitHubPage(url) ? verdict(githubLine(url, inputs.pages.commits)) : 'n/a';
-    out.push(`| ${code(doc.fn.signature)} | ${code(doc.contract.name)} | <${doc.url}> | ${verdict(sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings))} | ${github} | ${named} |`);
+    const link = doc.standard === undefined ? `<${doc.url}>` : `${doc.standard.name} standard page <${doc.url}>`;
+    out.push(`| ${code(doc.fn.signature)} | ${code(doc.contract.name)} | ${link} | ${verdict(docSiteLine(doc, inputs.listings))} | ${github} | ${named} |`);
+  }
+  for (const doc of docs) {
+    if (doc.standard !== undefined) out.push('', `${code(doc.fn.signature)} on ${code(doc.contract.name)}: the ${doc.standard.name} standard defines this function, as ${code(declarationOf(doc.standard, doc.fn))}; this does not show that the contract follows the standard.`);
   }
   out.push('');
   return out;
