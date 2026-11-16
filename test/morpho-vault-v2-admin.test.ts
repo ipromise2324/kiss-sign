@@ -113,15 +113,15 @@ const refusal = (template: unknown): string => {
   return 'parsed';
 };
 
-test('template load refuses a keccak outside a view, a long constant string, and an abi rule on a number', () => {
+test('template load refuses a keccak outside a view, a long constant string, and encoded parameters on a number', () => {
   const submit = raw('morpho/vault-v2-cap-submit');
   const text = JSON.stringify(submit);
-  const keccakInCall = JSON.parse(text.replace('"idData":{"abi"', '"idData":{"keccak":{"abi"').replace('"marketParams":{"card":"market"}}}},"newAbsoluteCap"', '"marketParams":{"card":"market"}}}}},"newAbsoluteCap"'));
+  const keccakInCall = JSON.parse(text.replace('"idData":{"encoded"', '"idData":{"keccak":{"encoded"').replace('"marketParams":{"card":"market"}}}},"newAbsoluteCap"', '"marketParams":{"card":"market"}}}}},"newAbsoluteCap"'));
   assert.match(refusal(keccakInCall), /binds only a view's argument/);
   const longTag = JSON.parse(text.replaceAll('"this/marketParams"', `"${'a'.repeat(33)}"`));
-  assert.match(refusal(longTag), /a constant string is a tag of at most 32 printable ASCII characters/);
-  const abiOnNumber = JSON.parse(text.replace('"newAbsoluteCap":{"card":"absolute-cap"}', '"newAbsoluteCap":{"abi":{"params":"uint256 x","args":{"x":{"card":"absolute-cap"}}}}'));
-  assert.match(refusal(abiOnNumber), /a abi rule cannot bind a uint256/);
+  assert.match(refusal(longTag), /a constant string outside a signed message is a tag of at most 32 printable ASCII characters/);
+  const encodedOnNumber = JSON.parse(text.replace('"newAbsoluteCap":{"card":"absolute-cap"}', '"newAbsoluteCap":{"encoded":{"as":"cap(uint256 x)","args":{"x":{"card":"absolute-cap"}}}}'));
+  assert.match(refusal(encodedOnNumber), /an? encoded rule cannot bind a uint256/);
 });
 
 type Fixture = { transactionHash: Hex; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };

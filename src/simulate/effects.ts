@@ -4,7 +4,7 @@ import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { canonicalType } from '../decode/abi.ts';
 import type { AbiParam, AbiType } from '../decode/abi.ts';
-import { decodeValues, encodeCall } from '../decode/codec.ts';
+import { decodeValues, encodeCall, encodeParams } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
@@ -275,7 +275,8 @@ function argument(rule: Rule, type: AbiType, bound: Bound): AbiValue | string {
 function encoded(node: CallNode, bound: Bound): Uint8Array | string {
   const args = node.fn.params.map((param, i) => argument(node.args[i] as Rule, param.type, bound));
   const problem = args.find((arg) => typeof arg === 'string');
-  return problem ?? encodeCall({ fn: node.fn, args: args as AbiValue[], trailer: undefined });
+  if (problem !== undefined) return problem;
+  return node.encoding === 'params' ? encodeParams(node.fn, args as AbiValue[]) : encodeCall({ fn: node.fn, args: args as AbiValue[], trailer: undefined });
 }
 
 function valueText(value: AbiValue): string {
