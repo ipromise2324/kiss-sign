@@ -357,9 +357,10 @@ function judge({ hash, block }: { readonly hash: Hex; readonly block: bigint }, 
   }
   const paths = inspection.leaves.map((leaf) => `${leaf.callPath}.${leaf.arg}`);
   const values = inspection.leaves.map((leaf) => leafValue(leaf, tx));
-  const broken = loosened.rules.map((rule, i) => brokenRule(rule, i, loosened.rules, paths, values, sender)).find((reason) => reason !== undefined);
-  if (broken !== undefined) return { kind: 'misfit', hash, sender, reason: broken };
   const bound = boundEntries(paths, values, loosened.rules, template, context);
+  const wrongTarget = bound.kind === 'misfit' && bound.reason.kind === 'entry' && bound.reason.at.endsWith('.to');
+  const broken = wrongTarget ? undefined : loosened.rules.map((rule, i) => brokenRule(rule, i, loosened.rules, paths, values, sender)).find((reason) => reason !== undefined);
+  if (broken !== undefined) return { kind: 'misfit', hash, sender, reason: broken };
   if (bound.kind === 'misfit') return { kind: 'misfit', hash, sender, reason: bound.reason };
   return { kind: 'fit', hash, block, sender, paths, types: inspection.leaves.map((leaf) => leaf.type), values, outside: bound.outside };
 }
