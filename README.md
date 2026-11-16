@@ -22,7 +22,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 - **Checking by hand is slow and needs expertise.** Tools such as [safe-tx-hashes](https://github.com/pcaversaccio/safe-tx-hashes-util) compute the hashes your wallet should show, but the decoded method and parameters they print come from the Safe Transaction Service, and the tool itself warns: *"Always independently decode the transaction Data yourself before you sign!"* Decoding one ordinary Morpho vault deposit yourself looks like this:
 
   <details>
-  <summary>Decoding a real Morpho vault deposit by hand</summary>
+  <summary>Decoding a real Morpho vault deposit by hand (another Safe's, not the one pictured below)</summary>
 
   ```sh
   # 1. The Safe calls MultiSend. Its one argument is packed bytes, not ABI.
@@ -86,7 +86,7 @@ In Claude Code, from the clone, say it in one sentence: "deposit 1,000,611.44860
 
 ### 2. Review the report and merge
 
-The report shows what the transaction will do and where every fact came from. Text the AI wrote is marked `AI`; everything else the program checked.
+The report shows what the transaction will do and where every fact came from. Text the AI wrote is marked `AI`; everything else the program read or checked.
 
 **The call flow.** Which contract the Safe calls, in which order, and what comes back.
 
@@ -115,7 +115,7 @@ This happens once per operation, or once per vault.
 
 ### 3. Fill a card
 
-In your own terminal, pick the vault from a list with full addresses and type the amount. Values the protocol's app fills in by itself, such as the minimum shares, are read on chain. The card is sealed under its hash before you see any transaction.
+In your own terminal, pick the vault from a list with full addresses and type the amount. Values the protocol's app fills in by itself, such as the minimum shares, are computed from an on-chain read and the app's default slippage. The card is sealed under its hash before you see any transaction.
 
 ![pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by name, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
 
@@ -127,7 +127,7 @@ Propose the transaction in the Safe web app as usual. Then, on your computer:
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. Both write a page with the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do.
+On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. On `MATCH`, both pages show the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. A Uniswap swap's router inputs, which hold the recipient and the minimum out, are one such undecoded value: those rest on `verify` alone.
 
 ![The verify page (MATCH, every check passed) and the check.sh page side by side, with the same hashes and the same calls row by row](docs/readme/side-by-side.png)
 
@@ -161,9 +161,11 @@ kiss-sign does not try to stop a prompt-injected AI. Instead, no single part is 
 | **The second computer** | It only decodes. `verify` still checks the transaction against your card. | You lose the independent view and are back to the basic tier. |
 | **An ERC-7730 descriptor** | kiss-sign never uses one for the verdict. The report lists it as evidence only. | The verdict does not depend on it. |
 
+An owner or threshold change moves no asset, so no small amount can test it, and once signed it can hand over the Safe. It rests on the template's review, the owner addresses you confirm on the card, and the second computer's decode.
+
 The Safe web app can also simulate the transaction, but it runs in the same browser, so a tampered app can fake that too.
 
-Two things stay with you. Whether an address is the protocol's real contract rests on the report, your review and your own address list. And your fork is public: the vaults and protocols you add to it are visible, even though your Safe's address is not.
+Two things stay with you. Whether an address is the protocol's real contract rests on the report, your review and your own address list. And a GitHub fork of this public repository is public too: the vaults and protocols you add to it are visible, even though your Safe's address is not.
 
 Some changes move no balance kiss-sign measures, such as an NFT `setApprovalForAll` or an Aave credit delegation. These and every other limit are in [Known limits](docs/design.md#known-limits).
 
@@ -181,7 +183,7 @@ At every signing:
 - **The program checks itself first.** Your clone must equal your fork's `main` byte for byte.
 - **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
 - **Decode, then re-encode byte for byte.** No hidden bytes beyond what the template allows and explains.
-- **Floor rules for every template.** No unlimited approval, except where a reviewed registry entry declares a standing allowance, as Uniswap's Permit2 does. No `delegatecall` except to the official MultiSend. No change to the Safe's owners, modules, guard, threshold, fallback handler or implementation, and no gas refund.
+- **Floor rules for every template.** No unlimited approval, except where a reviewed registry entry declares a standing allowance, as Uniswap's Permit2 does. No `delegatecall` except to the official MultiSend. No change to the Safe's modules, guard, fallback handler or implementation. An owner or threshold change passes only exactly as the card declares it, one per transaction. No gas refund.
 - **Simulation on two providers.** Every change to the Safe's balances and allowances must be one the template and your card explain.
 - **Code pins.** Every registry contract the transaction touches must run the code pinned for it.
 
@@ -195,7 +197,7 @@ Safe multisig transactions on Ethereum mainnet. Not EOAs, off-chain signatures o
 
 ## Contributing
 
-Open an issue or a pull request. Tests run offline with `pnpm test`. For a program change, change `docs/design.md` first.
+Open an issue or a pull request. `pnpm test` downloads the pinned compilers and lists it needs once, then runs offline. For a program change, change `docs/design.md` first.
 
 Report security problems as an issue too.
 
@@ -217,4 +219,4 @@ Copy the address from this page on GitHub, and compare it in full before you sen
 
 ## License
 
-[MIT](LICENSE). Anyone may use, copy, change, publish and sell kiss-sign, provided the license notice stays with it.
+[MIT](LICENSE). Anyone may use, copy, change, publish and sell kiss-sign, provided the license notice stays with it. The diagram font in `docs/diagrams/fonts/` is Virgil, under the SIL Open Font License, and the logos in `docs/diagrams/logos/` belong to their owners.
