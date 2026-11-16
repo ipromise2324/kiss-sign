@@ -81,7 +81,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | Function | Contract | Page | Site | GitHub commit | Function on page |
 | --- | --- | --- | --- | --- | --- |
 | `approve(address,uint256)` | `usdc` | ERC-20 standard page <https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md> | PASS | PASS | PASS |
-| `setPreSignature(bytes,bool)` | `gpv2-settlement` | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol> | FINDING | PASS | PASS |
+| `setPreSignature(bytes,bool)` | `gpv2-settlement` | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol> | PASS | PASS | PASS |
 
 `approve(address,uint256)` on `usdc`: the ERC-20 standard defines this function, as `function approve(address _spender, uint256 _value)`; this does not show that the contract follows the standard.
 
@@ -95,25 +95,30 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | token | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | PASS | n/a | PASS |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS |
-| `gpv2-settlement` | `0x9008D19f58AAbD9eD0D60971565AA8510560ab41` | router | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json> | FINDING | n/a | PASS | PASS |
-| `gpv2-vault-relayer` | `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` | adapter | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json> | FINDING | n/a | PASS | PASS |
+| `gpv2-settlement` | `0x9008D19f58AAbD9eD0D60971565AA8510560ab41` | router | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json> | PASS | n/a | PASS | PASS |
+| `gpv2-vault-relayer` | `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` | adapter | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json> | PASS | n/a | PASS | PASS |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
 | Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `gpv2-settlement` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | FINDING | PASS | PASS |
-| `gpv2-vault-relayer` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | FINDING | PASS | PASS |
+| `gpv2-settlement` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | PASS | PASS | PASS |
+| `gpv2-vault-relayer` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | PASS | PASS | PASS |
 
 More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
 
 | Entry | Bounty scope | SDK file | SDK publisher | Deployer |
 | --- | --- | --- | --- | --- |
-| `gpv2-settlement` | FINDING | FINDING | n/a | n/a |
-| `gpv2-vault-relayer` | FINDING | FINDING | n/a | n/a |
+| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
+| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
+| `cbbtc` | n/a | n/a | n/a | FINDING |
+| `gpv2-settlement` | PASS | PASS | PASS | PASS `0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa`, also `gpv2-vault-relayer` |
+| `gpv2-vault-relayer` | PASS | PASS | PASS | PASS `0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa`, also `gpv2-settlement` |
+| `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
 
-7 entries, 9 findings.
+7 entries, 6 findings.
 
 ## Code pins
 
@@ -138,7 +143,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `gpv2-vault-relayer` | PASS | 26429285 |
+| `gpv2-vault-relayer` | PASS | 26430185 |
 
 ## ABI proofs
 
@@ -156,7 +161,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429285 `0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26430185 `0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
