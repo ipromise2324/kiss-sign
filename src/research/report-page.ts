@@ -14,7 +14,7 @@ import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { refNames, slippageBps } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, FreeClaim, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
@@ -83,6 +83,7 @@ export type Header = {
 export type StripItem = { readonly line: StripLine | 'providers'; readonly name: string; readonly state: State; readonly count: string | undefined; readonly explain: string };
 
 export type Who = 'you-type' | 'you-pick' | 'fixed' | 'free';
+export type KeyItem = { readonly who: Who; readonly label: string; readonly means: string };
 export type Chip = { readonly who: Who; readonly label: string };
 
 export type ArgRow = {
@@ -94,11 +95,13 @@ export type ArgRow = {
   readonly words: Inline;
   readonly qualifier: Inline | undefined;
   readonly id: Inline | undefined;
-  readonly ai: AiText;
+  /** What the argument does, from notes.json; none on a row the program adds, such as a call's `to`. */
+  readonly ai: AiText | undefined;
   readonly parts: readonly { readonly label: Inline | undefined; readonly rows: readonly ArgRow[] }[];
 };
 
-export type CallBlock = { readonly n: number; readonly contract: string; readonly fn: string; readonly selector: Hex; readonly sends: Inline | undefined; readonly args: readonly ArgRow[] };
+export type CallHead = { readonly kind: 'fn'; readonly contract: string; readonly fn: string; readonly selector: Hex } | { readonly kind: 'no-data'; readonly text: string };
+export type CallBlock = { readonly n: number; readonly head: CallHead; readonly sends: Inline | undefined; readonly args: readonly ArgRow[] };
 
 export type AfterRow = { readonly label: Inline; readonly value: Inline; readonly note: Inline; readonly gains: boolean };
 
@@ -109,7 +112,18 @@ export type Arrow =
   | { readonly kind: 'gets'; readonly from: number; readonly text: string };
 export type Sequence = { readonly lifelines: readonly Lifeline[]; readonly arrows: readonly Arrow[]; readonly narration: string };
 
-export type Flow = { readonly diagram: Sequence; readonly example: Inline | undefined; readonly calls: readonly CallBlock[]; readonly after: readonly AfterRow[] };
+export type Flow = {
+  readonly diagram: Sequence;
+  /** The who-decides key: each word some row uses, in key order, with what it means; a free field once per claim it makes. */
+  readonly key: readonly KeyItem[];
+  /** Whether a call has data, so its rows print what `cast decode-calldata` prints. */
+  readonly decoded: boolean;
+  readonly example: Inline | undefined;
+  /** The Safe transaction's own rules, such as a cancellation's nonce. */
+  readonly safeTx: readonly ArgRow[];
+  readonly calls: readonly CallBlock[];
+  readonly after: readonly AfterRow[];
+};
 
 export type ProtocolRow = {
   readonly label: string;
@@ -143,7 +157,10 @@ export type Judgment = { readonly text: AiText; readonly recommendation: AiText 
 export type WalletCall = { readonly n: number; readonly title: Inline; readonly rows: readonly { readonly label: Inline; readonly value: Inline }[] | 'no-descriptor' };
 
 /** A template of two or more calls goes through MultiSend, which no hardware wallet decodes, so it has no per-call view. */
-export type WalletView = { readonly kind: 'multisend'; readonly calls: number } | { readonly kind: 'calls'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] };
+export type WalletView =
+  | { readonly kind: 'multisend'; readonly calls: number }
+  | { readonly kind: 'no-data' }
+  | { readonly kind: 'calls'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] };
 
 /** A result on an address row: its state, and the words a result that did not pass adds to its icon. */
 export type RowResult = { readonly state: State; readonly phrase: string | undefined };
@@ -196,8 +213,40 @@ const KIND_WORDS: Readonly<Record<RegistryEntry['kind'], string>> = {
   oracle: '價格來源',
   irm: '利率模型',
 };
-const FIELD_WORDS: Readonly<Record<string, string>> = { amount: '金額', nonce: 'nonce' };
-const FREE_WORDS: Readonly<Record<Extract<Rule, { kind: 'free' }>['claim'], string>> = {
+const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
+
+function kindWord(field: CardField): string {
+  switch (field.kind) {
+    case 'contract':
+      return KIND_WORDS[field.scope.registryKind];
+    case 'amount':
+      return field.computed === undefined ? '金額' : field.computed.bound === 'floor' ? '最少收到的數量' : '最多付出的數量';
+    case 'address':
+      return '地址';
+    case 'recipient':
+      return '收款人';
+    case 'nonce':
+      return 'nonce';
+    case 'market':
+      return '市場';
+  }
+}
+
+/** A card field in the signer's words, from its kind; with its name in brackets when another field of the template has the same word. */
+function fieldWord(template: Template, name: string): string {
+  const field = template.card.get(name);
+  if (field === undefined) return name;
+  const word = kindWord(field);
+  return [...template.card.values()].filter((f) => kindWord(f) === word).length > 1 ? `${word}（${name}）` : word;
+}
+
+/** A card reference in the signer's words: the field, and the attribute or market part it names. */
+const refWord = (template: Template, ref: CardRef): string =>
+  ref.attribute === undefined ? fieldWord(template, ref.field) : before(`${fieldWord(template, ref.field)}的`, PART_WORDS[ref.attribute] ?? ref.attribute);
+
+/** Chinese text before a word, with a space only when the word starts in Latin script or a digit. */
+const before = (prefix: string, word: string): string => (/^[A-Za-z0-9]/.test(word) ? `${prefix} ${word}` : `${prefix}${word}`);
+const FREE_WORDS: Readonly<Record<FreeClaim, string>> = {
   scalar: '換成別的值測過，結果不變或交易失敗',
   proof: '合約會驗證它，換成別的值交易就失敗',
   unread: '合約不讀它，換成別的值結果一樣',
@@ -351,15 +400,27 @@ function amountWords(amount: bigint, ref: TokenRef, context: Context): { readonl
   return { words: [{ num: tokens(amount, decimals) }, ` ${token.name}`], qualifier: [`${decimals} 位小數`] };
 }
 
-/** The registry names a call's `to` can be, and the name the page shows for it. */
-function targetOf(rule: Rule, context: Context): { readonly label: string; readonly names: readonly string[] } {
-  if (rule.kind === 'contract') return { label: rule.name, names: [rule.name] };
-  if (rule.kind !== 'card') return { label: '?', names: [] };
-  const names = refNames(rule.ref, context.template, context.registry);
-  if (names.length === 1) return { label: names[0] as string, names };
-  const picked = context.card === undefined ? undefined : resolveRef(rule.ref, context.card, context.registry);
-  const name = picked === undefined || 'problem' in picked || picked.kind !== 'address' ? undefined : context.registry.byAddress.get(picked.address)?.name;
-  return { label: name ?? `card.${rule.ref.field}${rule.ref.attribute === undefined ? '' : `.${rule.ref.attribute}`}`, names };
+const SAFE = '你的 Safe';
+
+/** The registry names a call's `to` can be, the name the page shows for it, and its role on the diagram's lifeline. */
+function targetOf(rule: Rule, context: Context): { readonly label: string; readonly names: readonly string[]; readonly role: string } {
+  const { registry } = context;
+  const role = (name: string, otherwise: string): string => {
+    const entry = registry.entries.get(name);
+    return entry === undefined ? otherwise : KIND_WORDS[entry.kind];
+  };
+  if (rule.kind === 'safe') return { label: SAFE, names: ['safe'], role: '發起' };
+  if (rule.kind === 'contract') return { label: rule.name, names: [rule.name], role: role(rule.name, '合約') };
+  if (rule.kind === 'const' && rule.value.kind === 'address') {
+    const entry = registry.byAddress.get(rule.value.value);
+    return { label: entry?.name ?? checksumAddress(rule.value.value), names: entry === undefined ? [] : [entry.name], role: entry === undefined ? '固定的地址' : KIND_WORDS[entry.kind] };
+  }
+  if (rule.kind !== 'card') return { label: '?', names: [], role: '' };
+  const names = refNames(rule.ref, context.template, registry);
+  if (names.length === 1) return { label: names[0] as string, names, role: role(names[0] as string, '你選') };
+  const picked = context.card === undefined ? undefined : resolveRef(rule.ref, context.card, registry);
+  const name = picked === undefined || 'problem' in picked || picked.kind !== 'address' ? undefined : registry.byAddress.get(picked.address)?.name;
+  return name === undefined ? { label: refWord(context.template, rule.ref), names, role: '你選' } : { label: name, names, role: role(name, '你選') };
 }
 
 const SHORT: Readonly<Record<Who, string>> = { 'you-type': '你填', 'you-pick': '你選', fixed: '固定', free: '不限' };
@@ -387,8 +448,8 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
   }
 }
 
-const chipLabel = (who: Who, field: string | undefined): string =>
-  who === 'free' ? 'app 填，不限' : field === undefined || who === 'fixed' ? SHORT[who] : `${SHORT[who]}：${FIELD_WORDS[field] ?? field}`;
+const chipLabel = (template: Template, who: Who, field: string | undefined): string =>
+  who === 'free' ? 'app 填，不限' : field === undefined || who === 'fixed' ? SHORT[who] : `${SHORT[who]}：${fieldWord(template, field)}`;
 
 function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; readonly who: Who; readonly field: string | undefined }[] {
   if (node.rule.kind === 'call') return [];
@@ -401,7 +462,7 @@ function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; re
 function chipsOf(node: ArgNode, template: Template): Chip[] {
   const found = leaves(node, template);
   const distinct = [...new Map(found.map((leaf) => [`${leaf.who}/${leaf.field ?? ''}`, leaf])).values()];
-  if (distinct.length <= 1) return distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(leaf.who, leaf.field) }));
+  if (distinct.length <= 1) return distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(template, leaf.who, leaf.field) }));
   const byWho = new Map<Who, string[]>();
   for (const leaf of found) byWho.set(leaf.who, [...(byWho.get(leaf.who) ?? []), leaf.node.name]);
   return [...byWho].map(([who, names]) => ({ who, label: `${names.join('、')} ${SHORT[who]}` }));
@@ -425,17 +486,18 @@ function onlyEntry(ref: CardRef, context: Context): RegistryEntry | undefined {
 function cardWords(ref: CardRef, key: string, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
   const field = context.template.card.get(ref.field);
   const only = onlyEntry(ref, context);
-  if (only !== undefined) return { words: [link(only)], qualifier: [`你選的 ${ref.field}${ref.attribute === undefined ? '' : ` 的 ${ref.attribute}`}`] };
+  const picks = before('你選的', refWord(context.template, ref));
+  if (only !== undefined) return { words: [link(only)], qualifier: [picks] };
   const example = context.values.get(key);
   if (field?.kind === 'amount') {
-    if (example?.kind !== 'uint') return { words: ['你填的金額'], qualifier: undefined };
+    if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
     return amountWords(example.value, field.of, context);
   }
-  if (field?.kind === 'nonce') return { words: ['你填的 nonce'], qualifier: undefined };
+  if (field?.kind === 'nonce') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
   const picked = example?.kind === 'address' ? context.registry.byAddress.get(example.value) : undefined;
-  if (picked !== undefined) return { words: [link(picked)], qualifier: [`你選的 ${ref.field}`] };
-  if (field?.kind === 'market' && ref.attribute === 'lltv' && example?.kind === 'uint') return { words: [lltvWords(example.value)], qualifier: [`你選的 ${ref.field}`] };
-  return { words: [`你選的 ${ref.field}${ref.attribute === undefined ? '' : ` 的 ${ref.attribute}`}`], qualifier: undefined };
+  if (picked !== undefined) return { words: [link(picked)], qualifier: [picks] };
+  if (field?.kind === 'market' && ref.attribute === 'lltv' && example?.kind === 'uint') return { words: [lltvWords(example.value)], qualifier: [picks] };
+  return { words: [picks], qualifier: undefined };
 }
 
 function leafWords(node: ArgNode, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
@@ -510,7 +572,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
       name: node.name,
       chips,
       value: undefined,
-      words: shown === undefined ? [`你選的 ${market}`] : [marketWords(shown)],
+      words: shown === undefined ? [before('你選的', fieldWord(context.template, market))] : [marketWords(shown)],
       qualifier: [`${MARKET_PARAMS.length} 個值，任何一個不同就 MISMATCH`],
       id: shown === undefined ? undefined : ['market id ', { mono: shown.id }],
       ai: fieldsNote(context, node.key),
@@ -557,28 +619,38 @@ function exampleValues(template: Template, tx: SafeTx): Map<string, AbiValue> {
     const decoded = decodeTemplateCall(node, inner.data);
     return decoded.kind === 'decoded' && walk(args, decoded.args, inner.data.root);
   });
-  return ok ? values : new Map();
+  if (!ok) return new Map();
+  const none = [0, 0] as const;
+  unwrapped.calls.forEach((call, i) => {
+    values.set(`${i + 1}.to`, { kind: 'address', value: call.to, span: none });
+    values.set(`${i + 1}.value`, { kind: 'uint', value: call.value, span: none });
+  });
+  values.set('nonce', { kind: 'uint', value: tx.nonce, span: none });
+  return values;
 }
 
 function lifelines(context: Context): { readonly lines: Lifeline[]; readonly names: (readonly string[])[]; readonly callTo: number[] } {
   const { template, registry } = context;
-  const lines: Lifeline[] = [{ name: '你的 Safe', role: '發起' }];
+  const lines: Lifeline[] = [{ name: SAFE, role: '發起' }];
   const names: (readonly string[])[] = [['safe']];
-  const add = (label: string, of: readonly string[]): number => {
+  const add = (label: string, of: readonly string[], role: string): number => {
     const at = lines.findIndex((l) => l.name === label);
     if (at !== -1) return at;
-    const entry = registry.entries.get(label);
-    lines.push({ name: label, role: entry === undefined ? '你選的合約' : KIND_WORDS[entry.kind] });
+    lines.push({ name: label, role });
     names.push(of);
     return lines.length - 1;
   };
+  const kindOf = (name: string): string => {
+    const entry = registry.entries.get(name);
+    return entry === undefined ? '合約' : KIND_WORDS[entry.kind];
+  };
   const callTo = template.calls.map((call) => {
     const target = targetOf(call.to, context);
-    return add(target.label, target.names);
+    return add(target.label, target.names, target.role);
   });
-  for (const view of template.effects.views) add(view.to, [view.to]);
+  for (const view of template.effects.views) add(view.to, [view.to], kindOf(view.to));
   for (const name of context.notes.flow.flatMap((line) => [line.from, line.to])) {
-    if (!names.some((of) => of.includes(name))) add(name, [name]);
+    if (!names.some((of) => of.includes(name))) add(name, [name], kindOf(name));
   }
   return { lines, names, callTo };
 }
@@ -590,9 +662,14 @@ function sequence(context: Context): Sequence {
   const arrows: Arrow[] = [];
   const narration: string[] = [];
   template.calls.forEach((call, i) => {
-    const fn = call.data === 'empty' ? '轉 ETH' : call.data.fn.name;
-    arrows.push({ kind: 'call', n: i + 1, to: callTo[i] as number, fn });
-    narration.push(`呼叫 ${i + 1}：Safe 呼叫 ${lines[callTo[i] as number]?.name} 的 ${fn}。`);
+    const to = callTo[i] as number;
+    const target = to === 0 ? '自己' : (lines[to]?.name as string);
+    const sendsEth = !zeroValue(call);
+    const fn = call.data !== 'empty' ? call.data.fn.name : sendsEth ? '轉 ETH' : '0 ETH、沒有資料';
+    arrows.push({ kind: 'call', n: i + 1, to, fn });
+    narration.push(
+      call.data !== 'empty' ? `呼叫 ${i + 1}：Safe 呼叫 ${target} 的 ${fn}。` : `呼叫 ${i + 1}：Safe ${sendsEth ? before('轉 ETH 給', target) : before('呼叫', target)}，${sendsEth ? '沒有資料' : '0 ETH、沒有資料'}。`,
+    );
     for (const line of notes.flow.filter((f) => f.after === i + 1)) arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text) });
   });
   const last = callTo.at(-1) ?? 0;
@@ -612,8 +689,10 @@ function sequence(context: Context): Sequence {
   return { lifelines: lines, arrows, narration: narration.join('') };
 }
 
+const zeroValue = (call: TemplateCall): boolean => call.value.kind === 'const' && call.value.value.kind === 'uint' && call.value.value.value === 0n;
+
 function sends(call: TemplateCall, context: Context, n: number): Inline | undefined {
-  if (call.value.kind === 'const' && call.value.value.kind === 'uint' && call.value.value.value === 0n) return undefined;
+  if (zeroValue(call)) return undefined;
   const example = context.inputs.example === undefined ? undefined : unwrapSafeTx(context.inputs.example.tx);
   const inner = example !== undefined && 'calls' in example ? example.calls[n - 1] : undefined;
   const { words } = leafWords({ key: `${n}.value`, name: 'value', param: undefined, rule: call.value, children: [] }, context);
@@ -632,9 +711,9 @@ function afterRows(context: Context): AfterRow[] {
   };
   const note = (effect: Template['effects']['gives'][number]): Inline => {
     const amount = effect.amount.kind === 'card' ? '剛好你填的金額' : effect.amount.kind === 'all' ? '全部餘額，交易後一個都不剩' : '要多於 0';
-    return effect.to === undefined ? [amount] : [amount, `，給你選的 ${effect.to.field}`];
+    return effect.to === undefined ? [amount] : [amount, before('，給', refWord(template, effect.to))];
   };
-  const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : `你選的 ${token.field}`);
+  const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : before('你選的', refWord(template, token)));
   const rows: AfterRow[] = [
     ...template.effects.gives.map((e) => ({ label: [`Safe 的 ${name(e.token)}`], value: amountOf(e, '−'), note: note(e), gains: false })),
     ...template.effects.gets.map((e) => ({ label: [`Safe 的 ${name(e.token)}`], value: amountOf(e, '+'), note: note(e), gains: true })),
@@ -657,28 +736,88 @@ function afterRows(context: Context): AfterRow[] {
   return rows;
 }
 
+/** A row for a rule of the Safe transaction or of a call with no data, which no ABI names and notes.json does not explain. */
+function ruleRow(key: string, name: string, rule: Rule, context: Context): ArgRow {
+  const node: ArgNode = { key, name, param: undefined, rule, children: [] };
+  const who = whoOf(rule, context.template);
+  const { words, qualifier } = leafWords(node, context);
+  return {
+    key,
+    name,
+    chips: who === undefined ? [] : [{ who: who.who, label: chipLabel(context.template, who.who, who.field) }],
+    value: valueOf(node, context),
+    words,
+    qualifier,
+    id: undefined,
+    ai: undefined,
+    parts: [],
+  };
+}
+
+const NO_DATA_ROW: ArgRow = { key: 'data', name: 'data', chips: [{ who: 'fixed', label: SHORT.fixed }], value: { cast: '0x', example: false }, words: ['沒有資料'], qualifier: undefined, id: undefined, ai: undefined, parts: [] };
+
+function callBlocks(context: Context): CallBlock[] {
+  const { template } = context;
+  const decoded = new Map(argumentTree(template).map((tree) => [tree.n, tree]));
+  return template.calls.map((call, i): CallBlock => {
+    const n = i + 1;
+    const target = targetOf(call.to, context);
+    const tree = decoded.get(n);
+    if (tree !== undefined) {
+      return { n, head: { kind: 'fn', contract: target.label, fn: tree.node.fn.name, selector: tree.node.fn.selector }, sends: sends(call, context, n), args: tree.args.map((arg) => argRow(arg, context, true)) };
+    }
+    const text = zeroValue(call) ? `${before('呼叫', target.label)}，0 ETH、沒有資料` : before('轉 ETH 給', target.label);
+    return { n, head: { kind: 'no-data', text }, sends: undefined, args: [ruleRow(`${n}.to`, 'to', call.to, context), ruleRow(`${n}.value`, 'value', call.value, context), { ...NO_DATA_ROW, key: `${n}.data` }] };
+  });
+}
+
+const FREE_KEY: Readonly<Record<FreeClaim, string>> = { scalar: '換成別的值，結果一樣或交易失敗', proof: '換成別的值，交易就失敗', unread: '合約不讀它，換成別的值結果一樣' };
+
+/** The who-decides key for the words the rows use: a free field's line by each claim the template makes. */
+function keyItems(used: ReadonlySet<Who>, template: Template): KeyItem[] {
+  return [
+    ...(used.has('you-type') ? [{ who: 'you-type' as const, label: SHORT['you-type'], means: '每次簽名填' }] : []),
+    ...(used.has('you-pick') ? [{ who: 'you-pick' as const, label: SHORT['you-pick'], means: '每次簽名選' }] : []),
+    ...(used.has('fixed') ? [{ who: 'fixed' as const, label: SHORT.fixed, means: '改了就 MISMATCH' }] : []),
+    ...(used.has('free') ? [...freeClaims(template)].map((claim) => ({ who: 'free' as const, label: 'app 填，不限', means: FREE_KEY[claim] })) : []),
+  ];
+}
+
 function flowSection(context: Context): Section {
   const { template } = context;
-  const calls = argumentTree(template).map(({ n, node, args }): CallBlock => {
-    const call = template.calls[n - 1] as TemplateCall;
-    return { n, contract: targetOf(call.to, context).label, fn: node.fn.name, selector: node.fn.selector, sends: sends(call, context, n), args: args.map((arg) => argRow(arg, context, true)) };
+  const calls = callBlocks(context);
+  const safeTx = template.nonce === undefined ? [] : [ruleRow('nonce', 'nonce', template.nonce, context)];
+  const rows = (list: readonly ArgRow[]): ArgRow[] => list.flatMap((row) => [row, ...rows(row.parts.flatMap((part) => part.rows))]);
+  const sent = template.calls.flatMap((call) => {
+    const who = call.data === 'empty' || zeroValue(call) ? undefined : whoOf(call.value, template)?.who;
+    return who === undefined ? [] : [who];
   });
+  const used = new Set([...rows([...safeTx, ...calls.flatMap((call) => call.args)]).flatMap((row) => row.chips.map((c) => c.who)), ...sent]);
   const { example } = context.inputs;
   let lead: Inline | undefined;
-  if (example !== undefined && context.values.size > 0) {
+  if (example !== undefined && context.values.size > 0 && chosenWords(used) !== '') {
     const amounts = [...template.card].flatMap(([field, card]) => {
       const value = context.card?.get(field);
       return card.kind === 'amount' && value?.kind === 'amount' ? [amountWords(value.value, card.of, context).words] : [];
     });
-    lead = ['你填、你選和 app 填的值取自第一筆測試交易 ', { code: example.name }, ...(amounts.length === 0 ? [] : ['，金額 ', ...amounts.flatMap((a, i) => [...(i === 0 ? [] : ['、']), ...a])]), '。'];
+    lead = [`${chosenWords(used)}的值取自第一筆測試交易 `, { code: example.name }, ...(amounts.length === 0 ? [] : ['，金額 ', ...amounts.flatMap((a, i) => [...(i === 0 ? [] : ['、']), ...a])]), '。'];
   }
   return {
     anchor: anchor('flow'),
     label: '流程',
     count: { kind: 'text', text: `${template.calls.length} 個呼叫` },
-    body: { kind: 'flow', flow: { diagram: sequence(context), example: lead, calls, after: afterRows(context) } },
+    body: {
+      kind: 'flow',
+      flow: { diagram: sequence(context), key: keyItems(used, template), decoded: calls.some((call) => call.head.kind === 'fn'), example: lead, safeTx, calls, after: afterRows(context) },
+    },
   };
 }
+
+/** The values the signer and the app give, in words, such as 你填、你選和 app 填. */
+const chosenWords = (used: ReadonlySet<Who>): string => {
+  const words = [...(used.has('you-type') ? ['你填'] : []), ...(used.has('you-pick') ? ['你選'] : []), ...(used.has('free') ? ['app 填'] : [])];
+  return words.length <= 1 ? words.join('') : before(`${words.slice(0, -1).join('、')}和`, words.at(-1) as string);
+};
 
 type ProtocolNote = NonNullable<ReturnType<Notes['protocols']['get']>>;
 
@@ -913,8 +1052,7 @@ function ruleWords(rule: Rule, context: Context): Inline {
       return rule.value.kind === 'address' && rule.value.value === ZERO_ADDRESS ? ['無（零地址）'] : [{ mono: constCast(rule.value) }];
     case 'card': {
       const kind = context.template.card.get(rule.ref.field)?.kind;
-      const verb = kind === 'amount' || kind === 'nonce' ? '你填的' : '你選的';
-      return [`${verb} ${rule.ref.field}${rule.ref.attribute === undefined ? '' : ` 的 ${rule.ref.attribute}`}`];
+      return [before(kind === 'amount' || kind === 'nonce' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
     }
     case 'free':
       return ['不限'];
@@ -934,6 +1072,7 @@ function walletSection(context: Context): Section {
   const { template, registry, inputs } = context;
   const section = (view: WalletView): Section => ({ anchor: anchor('wallet'), label: '錢包顯示', count: undefined, body: { kind: 'wallet', view } });
   if (template.calls.length > 1) return section({ kind: 'multisend', calls: template.calls.length });
+  if (template.calls.every((call) => call.data === 'empty')) return section({ kind: 'no-data' });
   const reports = inputs.erc7730.reports;
   const lines: Inline[] = [];
   const calls = argumentTree(template).map(({ n, node, args }): WalletCall => {
@@ -992,8 +1131,9 @@ function walletSection(context: Context): Section {
   return section({ kind: 'calls', calls, lines });
 }
 
-function addressSection(context: Context): Section {
+function addressSection(context: Context): Section[] {
   const { ledger, notes } = context;
+  if (ledger.entries.length === 0) return [];
   const row = (entry: RegistryEntry): AddressRow => {
     const results = ledger.results.filter((r) => r.about.kind === 'entry' && r.about.entry.name === entry.name);
     const level = confidence(ledger, entry);
@@ -1025,15 +1165,25 @@ function addressSection(context: Context): Section {
     };
   };
   const { open, folded } = addressRows(ledger);
-  return {
-    anchor: anchor('addresses'),
-    label: '地址',
-    count: { kind: 'text', text: `${ledger.entries.length}` },
-    body: { kind: 'addresses', open: open.map(row), folded: folded.map(row) },
-  };
+  return [
+    {
+      anchor: anchor('addresses'),
+      label: '地址',
+      count: { kind: 'text', text: `${ledger.entries.length}` },
+      body: { kind: 'addresses', open: open.map(row), folded: folded.map(row) },
+    },
+  ];
 }
 
-const ANCHOR_WORDS: Readonly<Record<string, string>> = { mint: '鑄造（存款）', burn: '銷毀（提款）', any: '轉帳' };
+const NO_SELECTOR_WORDS: Readonly<Record<string, string>> = { 'no data': '（沒有資料）', 'contract creation': '（建立合約）' };
+
+/** A search anchor in words: a mint or burn of a vault's shares is a deposit or a withdrawal, of any other token only a mint or burn. */
+function anchorWords(anchor: string, token: RegistryEntry | undefined): string {
+  const vault = token?.kind === 'vault';
+  if (anchor === 'mint') return vault ? '鑄造（存款）' : '鑄造';
+  if (anchor === 'burn') return vault ? '銷毀（提款）' : '銷毀';
+  return '轉帳';
+}
 
 type Misfit = Extract<TxStudy, { kind: 'misfit' }>;
 type Studied = Extract<TxStudy, { kind: 'fit' | 'misfit' }>;
@@ -1081,6 +1231,11 @@ function pastSection(context: Context): Section {
   const nameOf = (address: string): string => registry.byAddress.get(address.toLowerCase() as Address)?.name ?? address;
   const known = knownFunctions(context);
   const fnOf = (selector: string): string => known.get(selector) ?? selector;
+  /** Another operation's call: its contract by registry name or full address, then its function. */
+  const otherWords = (to: Address | undefined, selector: string | undefined): string => {
+    const fn = selector === undefined ? '（沒有資料）' : /^0x[0-9a-f]{8}$/.test(selector) ? fnOf(selector) : (NO_SELECTOR_WORDS[selector] ?? selector);
+    return to === undefined ? fn : `${registry.byAddress.get(to.toLowerCase() as Address)?.name ?? checksumAddress(to)}${fn.startsWith('（') ? '' : '.'}${fn}`;
+  };
   const callWords = ({ to, selector }: CallName): string =>
     `${(to === undefined ? undefined : registry.byAddress.get(to)?.name) ?? '別的合約'}${selector === undefined ? '（沒有資料）' : `.${fnOf(selector)}`}`;
   const sequence = (calls: readonly CallName[]): Inline => [{ code: calls.map(callWords).join(' → ') }];
@@ -1129,11 +1284,11 @@ function pastSection(context: Context): Section {
       }),
     ];
     const elsewhere = [
-      ...run.studies.flatMap((s) => (s.kind === 'not-studied' && s.why === 'calls no function the template calls' ? [s.selector] : [])),
-      ...studied.filter(otherOperation).flatMap((s) => (s.kind === 'misfit' && s.reason.kind === 'calls' ? [s.reason.calls[0]?.selector ?? 'no data'] : [])),
+      ...run.studies.flatMap((s) => (s.kind === 'not-studied' && s.why === 'calls no function the template calls' ? [otherWords(s.to, s.selector)] : [])),
+      ...studied.filter(otherOperation).flatMap((s) => (s.kind === 'misfit' && s.reason.kind === 'calls' ? [otherWords(s.reason.calls[0]?.to, s.reason.calls[0]?.selector)] : [])),
     ];
     const tally = new Map<string, number>();
-    for (const selector of elsewhere) tally.set(selector, (tally.get(selector) ?? 0) + 1);
+    for (const name of elsewhere) tally.set(name, (tally.get(name) ?? 0) + 1);
     const top = [...tally].sort((a, b) => b[1] - a[1]).slice(0, 4);
     const skipped = run.studies.length - studied.length - run.studies.filter((s) => s.kind === 'not-studied' && s.why === 'calls no function the template calls').length;
     const others: Inline[] = [
@@ -1142,7 +1297,7 @@ function pastSection(context: Context): Section {
         : [
             [
               `另外 ${elsewhere.length} 筆是別的操作，不列入：`,
-              ...top.flatMap(([selector, n], i): Span[] => [...(i === 0 ? [] : ['、']), { code: /^0x[0-9a-f]{8}$/.test(selector) ? fnOf(selector) : selector }, ` ${n} 筆`]),
+              ...top.flatMap(([name, n], i): Span[] => [...(i === 0 ? [] : ['、']), { code: name }, ` ${n} 筆`]),
               ...(tally.size > top.length ? ['，還有別的'] : []),
               '。',
             ] as Inline,
@@ -1154,7 +1309,7 @@ function pastSection(context: Context): Section {
     const same = [...run.found.values()].every((s) => s.length === 2);
     return {
       file,
-      count: `搜尋 ${nameOf(query.token)} 的 ${ANCHOR_WORDS[query.anchor]}，找到 ${run.found.size} 筆，研究 ${run.studies.length} 筆`,
+      count: `搜尋 ${nameOf(query.token)} 的${anchorWords(query.anchor, registry.byAddress.get(query.token.toLowerCase() as Address))}，找到 ${run.found.size} 筆，研究 ${run.studies.length} 筆`,
       search: [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }, '）。'],
       blocks,
       others,
@@ -1174,7 +1329,14 @@ function sameShape(context: Context): Inline {
     const of = all.filter((s) => s.sender.kind === kind);
     return [{ num: `${of.length}` }, ` 筆${of.length === 0 ? '' : `（${new Set(of.map((s) => s.sender.address)).size} 個${noun}）`}`];
   };
-  const searched = [...new Set(context.inputs.pastTxs.map(({ query }) => `${registry.byAddress.get(query.token.toLowerCase() as Address)?.name ?? query.token} ${ANCHOR_WORDS[query.anchor]}時`))];
+  const searched = [
+    ...new Set(
+      context.inputs.pastTxs.map(({ query }) => {
+        const token = registry.byAddress.get(query.token.toLowerCase() as Address);
+        return `${token?.name ?? query.token} ${anchorWords(query.anchor, token)}時`;
+      }),
+    ),
+  ];
   const latest = all.sort((a, b) => (a.block === b.block ? 0 : a.block > b.block ? -1 : 1)).slice(0, 3);
   return [
     '過去有 ',
@@ -1183,7 +1345,9 @@ function sameShape(context: Context): Inline {
     ...by('safe', ' Safe'),
     '、EOA ',
     ...by('eoa', '地址，各自送模板的一個呼叫'),
-    `。全部成功執行：它們是從 ${searched.join('、')}的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 ${latest.length} 筆：`,
+    fits.size === 1
+      ? `。它成功執行：它是從 ${searched.join('、')}的 Transfer 紀錄找到的，失敗的交易不會留下紀錄：`
+      : `。全部成功執行：它們是從 ${searched.join('、')}的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 ${latest.length} 筆：`,
     ...latest.flatMap((s, i): Span[] => [...(i === 0 ? [] : ['、']), txLink(s.hash)]),
     '。',
   ];
@@ -1194,7 +1358,6 @@ function onlyName(ref: CardRef, context: Context): RegistryEntry | undefined {
   return names.length === 1 ? context.registry.entries.get(names[0] as string) : undefined;
 }
 
-const refWords = (ref: CardRef): string => `你選的 ${ref.field}${ref.attribute === undefined ? '' : ` 的 ${ref.attribute}`}`;
 
 function promptStep(name: string, field: CardField, context: Context): NextStep {
   const step = (say: Inline, then: readonly Inline[] = []): NextStep => ({ say, command: undefined, then, hashes: false });
@@ -1207,7 +1370,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
           [['列表的編號可能跟別人的不同，照名字選；也可以直接打名字 ', { code: only.name }, ' 。']],
         );
       }
-      return step([{ code: name }, `：它列出可選的 ${field.scope.registryKind}，每個附完整地址。選你要的那個，名字和完整地址都要對。`]);
+      return step([{ code: name }, `：它列出可選的${KIND_WORDS[field.scope.registryKind]}，每個附完整地址。選你要的那個，名字和完整地址都要對。`]);
     }
     case 'market':
       return step([{ code: name }, '：它列出每個市場的 id、lltv 和每個組成的完整地址。選你要的市場，id 要對。']);
@@ -1217,7 +1380,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
     case 'nonce':
       return step([{ code: name }, '：打 Safe 交易的 nonce，純數字。']);
     case 'amount': {
-      const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? refWords(field.of));
+      const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? before('你選的', refWord(context.template, field.of)));
       if (field.computed === undefined) {
         return step(
           [{ code: name }, `：打 ${token} 的數量，用整顆幣，例如 `, { code: '1250.5' }, ' ；可以有千位逗號，例如 ', { code: '1,000,611.448606' }, ' 。'],
@@ -1242,6 +1405,8 @@ function nextSection(context: Context): Section {
   const fields = [...template.card];
   const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce';
   const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
+  const vault = context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined;
+  const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? `（第一次用這個模板${vault ? '或這個 vault' : ''}，先用小額）` : '';
   const prompts = [
     ...fields.filter(([, f]) => !typed(f)),
     ...fields.filter(([, f]) => typed(f) && !computed(f)),
@@ -1268,7 +1433,7 @@ function nextSection(context: Context): Section {
       hashes: false,
     },
     {
-      say: [`在 Safe web app 提出交易（第一次用這個模板${context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined ? '或這個 vault' : ''}，先用小額），複製它的 safeTxHash，然後跑`],
+      say: [`在 Safe web app 提出交易${trial}，複製它的 safeTxHash，然後跑`],
       command: 'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
       then: [
         [{ code: 'MATCH' }, '：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。'],
@@ -1284,35 +1449,64 @@ function nextSection(context: Context): Section {
     },
     { say: ['硬體錢包上的 domain hash 和 message hash，跟 ', { code: 'verify' }, ' 網頁上的逐字比對，一樣才簽。'], command: undefined, then: [], hashes: true },
   ];
-  const tokenName = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : `你選的 ${token.field}`);
+  const tokenName = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : before('你選的', refWord(template, token)));
   const automatic: Inline[] = [
     [`交易只有這 ${template.calls.length} 個呼叫，MultiSend 也一個個解開`],
     ['每個參數符合上面的規則，重新編碼要一模一樣'],
     ...template.effects.gives.map((e): Inline => [`模擬後 Safe 給出的 ${tokenName(e.token)} ${e.amount.kind === 'card' ? '剛好是你填的金額' : e.amount.kind === 'all' ? '是全部餘額' : '多於 0'}`]),
     ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`]),
+    ...(template.effects.gives.length + template.effects.gets.length === 0 ? [['模擬後 Safe 的餘額一點都不能變'] as Inline] : []),
+    ...(template.nonce === undefined ? [] : [['Safe 交易的 nonce 是', ...ruleWords(template.nonce, context)] as Inline]),
     ['沒有任何授權在交易後變高'],
     ...template.effects.views.map((v): Inline => [
       { code: `${v.to}.${v.fn.name}` },
       `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${{ increases: '增加', decreases: '減少', same: '不變' }[c.change]}`).join('、')}`,
     ]),
-    [`碰到的 ${new Set(context.ledger.entries.map((e) => e.name)).size} 個登記合約，程式碼還是 code pin 記錄的那份`],
+    ...(context.ledger.entries.length === 0 ? [] : [[`碰到的 ${new Set(context.ledger.entries.map((e) => e.name)).size} 個登記合約，程式碼還是 code pin 記錄的那份`] as Inline]),
   ];
   return { anchor: anchor('next'), label: '下一步', count: undefined, body: { kind: 'next', steps, automatic } };
 }
 
-function stripItems(ledger: Ledger): StripItem[] {
+/** The claims of the template's free arguments, in claim order; empty when every argument is bound. */
+function freeClaims(template: Template): Set<FreeClaim> {
+  const found = new Set<FreeClaim>();
+  const visit = (rule: Rule): void => {
+    if (rule.kind === 'free') found.add(rule.claim);
+    if (rule.kind === 'equals') visit(rule.rule);
+    if (rule.kind === 'call') rule.call.args.forEach(visit);
+    if (rule.kind === 'items') rule.items.forEach(visit);
+    if (rule.kind === 'fields') rule.fields.forEach(visit);
+  };
+  for (const call of template.calls) {
+    visit(call.to);
+    visit(call.value);
+    if (call.data !== 'empty') call.data.args.forEach(visit);
+  }
+  return new Set((['scalar', 'proof', 'unread'] as const).filter((claim) => found.has(claim)));
+}
+
+/** 參數保護 when no test transaction is recorded, from the template. */
+const unrecordedParams = (template: Template): string =>
+  freeClaims(template).size > 0
+    ? '模板有不限的參數，但沒有換值測試的記錄，程式沒有測過它們。'
+    : '模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。';
+
+function stripItems(ledger: Ledger, template: Template): StripItem[] {
   const subjects = new Set(ledger.entries.map((e) => e.name)).size;
+  const recorded = ledger.results.some((r) => r.line === 'params');
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
     sources: (p, c) =>
       p === c
-        ? `${c} 個地址都至少在 ${MIN_CONFIRMATIONS} 個地方確認：官方頁、協議 API、CoinGecko 或 vault 的登記工廠列出同一個地址。`
-        : `${c - p} 個地址有結果要你看，見「待確認」。其餘 ${p} 個都至少在 ${MIN_CONFIRMATIONS} 個地方確認。`,
+        ? `${c === 1 ? '這個地址' : `${c} 個地址都`}至少在 ${MIN_CONFIRMATIONS} 個地方確認：官方頁、協議 API、CoinGecko 或 vault 的登記工廠列出同一個地址。`
+        : `${c - p} 個地址有結果要你看，見「待確認」。${p === 0 ? '' : p === 1 ? `另外那個地址至少在 ${MIN_CONFIRMATIONS} 個地方確認。` : `其餘 ${p} 個都至少在 ${MIN_CONFIRMATIONS} 個地方確認。`}`,
     abi: () => 'Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。',
-    code: () => `每次簽名都確認這 ${subjects} 個合約還是研究時那份程式碼。被升級或換掉就擋下。`,
-    params: (_, c) => `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`,
+    code: () => `每次簽名都確認${subjects === 1 ? '這個合約' : `這 ${subjects} 個合約`}還是研究時那份程式碼。被升級或換掉就擋下。`,
+    params: (_, c) => (!recorded ? unrecordedParams(template) : `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`),
   };
-  const items = strip(ledger).map(
-    (s): StripItem => ({ line: s.line, name: STRIP_NAMES[s.line], state: s.state, count: s.counted === 0 ? undefined : `${s.passed} / ${s.counted}`, explain: explain[s.line](s.passed, s.counted) }),
+  const items = strip(ledger)
+    .filter((s) => s.line === 'params' || ledger.results.some((r) => r.line === s.line))
+    .map(
+    (s): StripItem => ({ line: s.line, name: STRIP_NAMES[s.line], state: s.state, count: s.line === 'params' && !recorded ? '沒有測試' : s.counted === 0 ? undefined : `${s.passed} / ${s.counted}`, explain: explain[s.line](s.passed, s.counted) }),
   );
   return [...items, { line: 'providers', name: STRIP_NAMES.providers, state: 'ok', count: undefined, explain: '所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。' }];
 }
@@ -1339,14 +1533,14 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     card: example?.card.operations.find((op) => op.template === template.id)?.values,
     values: example === undefined ? new Map() : exampleValues(template, example.tx),
   };
-  const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), addressSection(context), pastSection(context), nextSection(context)];
+  const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
   const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', notesPath(template.id), ...(subject.vault === undefined ? [] : [notesPath(template.id, subject.vault.name)])];
   return {
     id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,
     header: {
       title: research(notes.title),
       summary: research(notes.summary),
-      strip: stripItems(ledger),
+      strip: stripItems(ledger, template),
       verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'AI 研究：可以用' : 'AI 研究：要小心') },
     },
     sections,
