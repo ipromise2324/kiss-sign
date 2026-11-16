@@ -97,7 +97,7 @@ export type ConstValue =
  * attesters' signatures. `unread`: the contract never reads the value. Only `proof` and `unread` may free bytes, a string
  * or an array, and nothing may free an address or a tuple.
  */
-export type FreeClaim = 'scalar' | 'proof' | 'unread';
+export type FreeClaim = 'scalar' | 'proof' | 'unread' | 'route';
 
 export type Rule =
   | { readonly kind: 'card'; readonly ref: CardRef }
@@ -367,14 +367,16 @@ function free(path: string, raw: unknown, type: AbiType): Rule {
   if (contains(type, 'address')) throw new TemplateError(path, 'an address is never free; bind it to the Safe, a card value or a registry contract');
   if (contains(type, 'tuple')) throw new TemplateError(path, 'a tuple is never free as a whole; bind its fields');
   if (typeof raw === 'string') {
-    if (!['uint', 'int', 'bool', 'fixed-bytes'].includes(type.kind)) {
+    const numbers = (type.kind === 'array' || type.kind === 'fixed-array') && (type.item.kind === 'uint' || type.item.kind === 'int');
+    if (!numbers && !['uint', 'int', 'bool', 'fixed-bytes'].includes(type.kind)) {
       throw new TemplateError(path, `a free ${canonicalType(type)} needs {"proof": why} or {"unread": why}`);
     }
     return { kind: 'free', reason: text(path, raw), claim: 'scalar' };
   }
   const value = object(path, raw);
   const [claim, ...extra] = Object.keys(value);
-  if ((claim !== 'proof' && claim !== 'unread') || extra.length > 0) throw new TemplateError(path, 'must be a reason, or exactly one of proof, unread');
+  if ((claim !== 'proof' && claim !== 'unread' && claim !== 'route') || extra.length > 0) throw new TemplateError(path, 'must be a reason, or exactly one of proof, unread, route');
+  if (claim === 'route' && type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(path, 'a route is a number that picks a pool');
   return { kind: 'free', reason: text(`${path}.${claim}`, value[claim]), claim };
 }
 
@@ -586,22 +588,27 @@ function signature(path: string, raw: unknown): AbiFunction {
   }
 }
 
-function trailer(path: string, raw: unknown): TrailerAllowance | undefined {
+/** The longest trailer a call may allow to a registry contract whose entry declares it never reads past its arguments. */
+const MAX_IGNORED_TRAILER = 64;
+
+/** `upTo` is how long a trailer this call may allow: 19 bytes, or more for a target that declares it reads none. */
+function trailer(path: string, raw: unknown, upTo: number = MAX_TRAILER): TrailerAllowance | undefined {
   if (raw === undefined) return undefined;
   const value = object(path, raw);
   exactKeys(path, value, ['maxBytes', 'why']);
   const maxBytes = value.maxBytes;
-  if (typeof maxBytes !== 'number' || !Number.isInteger(maxBytes) || maxBytes < 1 || maxBytes > MAX_TRAILER) {
-    throw new TemplateError(`${path}.maxBytes`, `an integer from 1 to ${MAX_TRAILER}`);
+  if (typeof maxBytes !== 'number' || !Number.isInteger(maxBytes) || maxBytes < 1 || maxBytes > upTo) {
+    const longer = upTo === MAX_TRAILER ? `; more only on a call to a registry contract that declares ignoresTrailer, up to ${MAX_IGNORED_TRAILER}` : '';
+    throw new TemplateError(`${path}.maxBytes`, `an integer from 1 to ${upTo}${longer}`);
   }
   return { maxBytes, why: text(`${path}.why`, value.why) };
 }
 
-function callNode(path: string, raw: unknown, scope: Scope): CallNode {
+function callNode(path: string, raw: unknown, scope: Scope, trailerUpTo?: number): CallNode {
   const value = object(path, raw);
   exactKeys(path, value, ['function', 'args'], ['trailer']);
   const fn = signature(`${path}.function`, value.function);
-  return { encoding: 'call', fn, args: params(`${path}.args`, value.args, fn.params, scope), trailer: trailer(`${path}.trailer`, value.trailer) };
+  return { encoding: 'call', fn, args: params(`${path}.args`, value.args, fn.params, scope), trailer: trailer(`${path}.trailer`, value.trailer, trailerUpTo) };
 }
 
 /** `as` names the parameters the bytes hold, such as `V4_SWAP(bytes actions, bytes[] params)`; no trailer is allowed. */
@@ -641,7 +648,9 @@ function templateCall(path: string, raw: unknown, scope: Scope, last: boolean): 
     data = 'empty';
   } else {
     exactKeys(path, value, ['to', 'value', 'function', 'args'], ['trailer']);
-    data = callNode(path, call, scope);
+    // A contract that reads its caller from calldata's last 20 bytes (ERC-2771) would read a longer trailer as an address.
+    const target = typeof to === 'object' && to !== null && 'contract' in to ? scope.registry.entries.get(String((to as Json).contract)) : undefined;
+    data = callNode(path, call, scope, target?.ignoresTrailer === undefined ? MAX_TRAILER : MAX_IGNORED_TRAILER);
   }
   const parsed = {
     to: rule(`${path}.to`, to, { kind: 'address' }, scope),
@@ -1026,8 +1035,21 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     },
     facts: [],
   };
+  const unbounded = template.effects.gets.find((effect) => effect.amount.kind === 'positive');
+  if (unbounded !== undefined && routes(template)) throw new TemplateError('effects.gets', 'a template with a route claim must bound each token the Safe gets by a card amount or atLeast, since a route may change the price');
   const protocols = calledProtocols(template, registry);
   return { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
+}
+
+/** Whether any argument is free with a `route` claim, which lets a changed value pick another pool. */
+function routes(template: Template): boolean {
+  const visit = (rule: Rule): boolean =>
+    (rule.kind === 'free' && rule.claim === 'route') ||
+    (rule.kind === 'call' && rule.call.args.some(visit)) ||
+    (rule.kind === 'items' && rule.items.some(visit)) ||
+    (rule.kind === 'fields' && rule.fields.some(visit)) ||
+    (rule.kind === 'packed' && rule.parts.some((part) => visit(part.rule)));
+  return template.calls.some((call) => call.data !== 'empty' && call.data.args.some(visit));
 }
 
 /** Every card reference the template makes. */

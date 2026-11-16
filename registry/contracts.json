@@ -46,7 +46,7 @@
     "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     "kind": "token",
     "source": "https://tether.to/en/supported-protocols/",
-    "sourceLabel": "USD₮ contract address",
+    "sourceLabel": "USD\u20ae contract address",
     "defillama": "tether",
     "coingecko": "tether",
     "code": {
@@ -484,6 +484,7 @@
       "via": "permit2",
       "why": "The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2_TRANSFER_FROM, and PERMIT2_TRANSFER_FROM_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes."
     },
+    "ignoresTrailer": "UniversalRouter.execute(bytes,bytes[],uint256) reads only its ABI-decoded arguments: its verified source (contracts/UniversalRouter.sol, Dispatcher.sol and the modules) never reads msg.data or calldatasize, and it takes its caller from msg.sender through Lock.sol, never from calldata as an ERC-2771 contract does.",
     "code": {
       "hash": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac",
       "from": 25999984

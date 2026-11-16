@@ -13,6 +13,7 @@ import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
+import { standingSpenders } from '../src/floor/floor.ts';
 import { describeFinding, endsNeeded, expectedChanges, judgeEffects, viewCalls } from '../src/simulate/effects.ts';
 import type { EffectVerdict, Observed, Permit2Allowance, ViewAnswer, ViewCall } from '../src/simulate/effects.ts';
 import { observeExecuted, withSimulatedViews } from '../src/simulate/executed.ts';
@@ -126,7 +127,7 @@ function print(label: string, observation: Observation): void {
       }
     } else console.log(`  safe settings from ${evidence.logs.length} receipt logs`);
   }
-  const floor = checkSimulatedFloor(observed, safe);
+  const floor = checkSimulatedFloor(observed, safe, standingSpenders(registry));
   if (floor.kind === 'pass') console.log('  simulated floor PASS');
   else console.log(`  simulated floor REFUSED\n${floor.findings.map((f) => `    ${f.rule}: ${f.detail}`).join('\n')}`);
   if (card === undefined) return;

@@ -433,7 +433,12 @@ function refAddresses(ref: CardRef, template: Template, registry: Registry): str
   return `: one of ${names.map((n) => full(registry.entries.get(n) as RegistryEntry)).join(', ')}`;
 }
 
-const FREE_CLAIMS = { scalar: 'free', proof: 'free, claimed `proof`: every changed value must revert or be refused', unread: 'free, claimed `unread`: no changed value may change anything' } as const;
+const FREE_CLAIMS = {
+  scalar: 'free',
+  proof: 'free, claimed `proof`: every changed value must revert or be refused',
+  unread: 'free, claimed `unread`: no changed value may change anything',
+  route: "free, claimed `route`: a changed value may pick another pool, and must still meet every effect, which bounds each token the Safe gets",
+} as const;
 
 const quantityText = (q: Quantity): string => (q.kind === 'card' ? `the card's ${code(q.field)}` : `the number at ${code(q.path)}`);
 

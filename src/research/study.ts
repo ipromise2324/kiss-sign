@@ -27,7 +27,7 @@ import type { Anchor } from './sources.ts';
  */
 export type Loosened = { readonly shape: Template; readonly anyTrailer: Template; readonly rules: readonly LeafRule[] };
 
-const MAX_TRAILER = 32;
+const MAX_TRAILER = 64;
 const ZERO = `0x${'00'.repeat(20)}` as Address;
 
 export function loosen(template: Template): Loosened {

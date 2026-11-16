@@ -70,6 +70,8 @@ export type RegistryEntry = {
   readonly code?: CodePins;
   /** An allowance from the Safe that this contract may keep after the transaction, and why its code makes that safe. */
   readonly standingAllowance?: StandingAllowance;
+  /** Why this contract's code never reads calldata past a call's arguments, so a template may allow a trailer of more than 19 bytes. */
+  readonly ignoresTrailer?: string;
 };
 
 /**
@@ -320,19 +322,23 @@ function moreSourcesOf(path: string, raw: unknown, address: Address, source: Htt
   });
 }
 
+function nonEmpty(path: string, raw: unknown): string {
+  if (typeof raw !== 'string' || raw.trim() === '') throw new RegistryError(path, 'not a non-empty string');
+  return raw;
+}
+
 function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
   const value = record(path, raw);
   onlyKeys(path, value, ['via', 'why']);
   const via = ALLOWANCE_ROUTES.find((route) => route === value.via);
   if (via === undefined) throw new RegistryError(`${path}.via`, `not one of ${ALLOWANCE_ROUTES.join(', ')}`);
-  if (typeof value.why !== 'string' || value.why.trim() === '') throw new RegistryError(`${path}.why`, 'not a non-empty string');
-  return { via, why: value.why };
+  return { via, why: nonEmpty(`${path}.why`, value.why) };
 }
 
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck', 'standingAllowance']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck', 'standingAllowance', 'ignoresTrailer']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
@@ -373,6 +379,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     ...(value.coingecko === undefined ? {} : { coingecko: value.coingecko }),
     ...(code === undefined ? {} : { code }),
     ...(value.standingAllowance === undefined ? {} : { standingAllowance: standingAllowanceOf(`${path}.standingAllowance`, value.standingAllowance) }),
+    ...(value.ignoresTrailer === undefined ? {} : { ignoresTrailer: nonEmpty(`${path}.ignoresTrailer`, value.ignoresTrailer) }),
   };
   if (kind !== 'factory') {
     if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
