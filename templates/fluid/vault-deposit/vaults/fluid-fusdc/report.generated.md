@@ -208,6 +208,7 @@ What DefiLlama and the chain say about the protocols this template's calls go to
 | Contract | Address | Protocol | Proxy, from its code pin |
 | --- | --- | --- | --- |
 | `fluid-fusdc` | `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | `fluid-lending` | not a proxy |
+| `fluid-liquidity` | `0x52Aa899454998Be5b000Ad077a46Bbe360F4e497` | `fluid-lending` | proxy |
 
 ### Token decimals
 

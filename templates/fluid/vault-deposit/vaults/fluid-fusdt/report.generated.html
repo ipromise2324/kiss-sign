@@ -264,7 +264,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdt">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdt">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -287,7 +287,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。代幣實際放在 Fluid 的 Liquidity 合約，程式每次簽名都確認它的程式碼沒變；第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdt">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdt">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -368,7 +368,11 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <dl class="props two">
     <div><dt>TVL</dt><dd><span><span class="num">$593.52 M</span></span><span class="sub2">Ethereum 上 <span class="num">$428.44 M</span></span></dd></div>
     <div><dt>上線</dt><dd><span><span class="num">2024-02-25</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
-    <div><dt>proxy</dt><dd><span>不是 proxy</span><span class="sub2"><a href="#a-fluid-fusdt">fluid-fusdt</a>，從 code pin 讀到</span></dd></div>
+    <div><dt>proxy</dt><dd><span>2 個合約</span><span class="sub2">從 code pin 讀到</span>
+      <dl class="nest">
+        <div><dt><a href="#a-fluid-fusdt">fluid-fusdt</a></dt><dd>不是 proxy</dd></div>
+        <div><dt><a href="#a-fluid-liquidity">fluid-liquidity</a></dt><dd>是 proxy，可以換實作</dd></div>
+      </dl></dd></div>
     <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Fluid 文件的稽核頁列出 Liquidity 合約的 MixBytes 稽核和 StateMind 的更新稽核，另有 StateMind 與 PeckShield 的 Fluid 稽核。AI 沒有找到只針對 EVM fToken 合約、標明版本的獨立稽核報告。另外，2026-03 的 Resolv（USR）事件讓 Fluid 借款 vault 產生約 2,100 萬美元壞帳；Fluid 的事後報告說由 Resolv、治理金庫和團隊補上，使用者存款沒有損失。這件事不在 DefiLlama 的駭客列表。 <a class="aisrc" href="https://docs.fluid.io/audits-and-security.html">來源 1</a> <a class="aisrc" href="https://docs.fluid.io/MixBytes_Fluid_Liquidity_Audit.pdf">來源 2</a> <a class="aisrc" href="https://docs.fluid.io/Statemind_Fluid_Liquidity_Updates_Audit.pdf">來源 3</a> <a class="aisrc" href="https://docs.fluid.io/Statemind_Fluid_Audit.pdf">來源 4</a> <a class="aisrc" href="https://docs.fluid.io/Peckshield_Fluid_Audit.pdf">來源 5</a> <a class="aisrc" href="https://gov.fluid.io/t/post-mortem-treasury-actions-and-forward-strategy-following-resolv-incident/1774">來源 6</a></span><span class="byai">AI 研究</span></span></dd></div>
     <div><dt>事故</dt><dd><span>1 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span>
       <dl class="nest">
@@ -432,7 +436,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
     <div class="row" data-state="warn" data-result="fluid-lending-factory/source.site">
@@ -477,11 +481,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>fUSDT 一年前約 2.05 億 USDT，2025-12 到約 2.22 億，現在約 1.24 億，2026-06 曾降到約 1.13 億。1,435 個地址持有，前 10 名占 34.83%，最大持有人 5.22%。 <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源</a></span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>這是存在超過一年的池子；大額提領可能受 Fluid 的提款上限延後，存入前想好何時要提。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row">
-      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>過去一年 fUSDT 存款：5 個 Safe 共 6 筆，2 筆跟模板一樣、1 筆只呼叫 <code>deposit</code>、3 筆是別的操作；128 個 EOA 直接呼叫 fUSDT 的 <code>deposit</code> 148 筆。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>照模板先授權剛好的金額再存；只呼叫 <code>deposit</code> 的交易 verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
   </div>
 </section>
