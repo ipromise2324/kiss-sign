@@ -1,17 +1,20 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import type { AbiRefusal } from '../src/contracts/prove.ts';
-import { loadRegistry } from '../src/registry.ts';
-import { forSigner, judge, stateOf, worst } from '../src/research/ledger.ts';
+import { MARKETS_PATH, REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
+import { forSigner, judge, stateOf, strip, worst } from '../src/research/ledger.ts';
 import type { EntryReport, FieldFact } from '../src/research/erc7730.ts';
 import type { State } from '../src/research/ledger.ts';
 import { NotesError, notesScope, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
+import { renderPage } from '../src/research/report-html.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
 import type { ArgRow, Body, HtmlInputs, Inline, Page, WalletCall } from '../src/research/report-page.ts';
-import { replayInputs } from '../src/research/report.ts';
-import type { ReportTitle } from '../src/research/report.ts';
+import { entriesOf, renderReport, replayInputs } from '../src/research/report.ts';
+import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
+import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { loadTemplate } from '../src/template/template.ts';
@@ -56,6 +59,7 @@ function notesFor(of: HtmlInputs): Record<string, unknown> {
     protocols: Object.fromEntries([...scope.protocols].map(([slug]) => [slug, { intro: `intro ${slug}`, audits: { text: 'audits' }, incidents: [] }])),
     judgments: [{ text: 'judgment', recommendation: 'small first' }],
     reviews: Object.fromEntries(scope.reviews.map((id) => [id, { status: 'concern', text: `review ${id}`, recommendation: 'look' }])),
+    entries: Object.fromEntries([...scope.routed].map((name) => [name, { role: `role ${name}`, sources: [{ text: 'implementation history', url: 'https://etherscan.io/', result: 'pass' }] }])),
     fields: Object.fromEntries(scope.fields.map((key) => [key, `field ${key}`])),
   };
 }
@@ -635,4 +639,90 @@ test('no strip explanation counts one thing as many', async () => {
   for (const page of [depositPage, pageOf(inputs)]) {
     for (const item of page.header.strip) assert.doesNotMatch(item.explain, /(^|[^\d])1 個(地址)?都|其餘 1 個|這 1 個/, item.explain);
   }
+});
+
+const LAYER = `0x${'52'.repeat(20)}` as Address;
+const ROUTED_TO = `0x${'0a'.repeat(20)}` as Address;
+const ROUTE_HASH = `0x${'0a'.repeat(32)}` as Hex;
+const TODAY_BLOCK = { number: 24_000_000n, hash: `0x${'24'.repeat(32)}` as Hex };
+
+function withLiquidityLayer(today: TodayCheck | undefined, { pinned = true }: { readonly pinned?: boolean } = {}): HtmlInputs {
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  raw['liquidity-layer'] = {
+    address: LAYER,
+    kind: 'lending',
+    source: 'https://docs.example.org/liquidity',
+    defillama: 'morpho-blue',
+    routes: { implementationOf: 'getSigsImplementation(bytes4)', selectorsOf: 'getImplementationSigs(address)', seeds: ['0x00000001'] },
+    ...(pinned ? { code: { hash: `0x${'52'.repeat(32)}`, routes: [{ address: ROUTED_TO, hash: ROUTE_HASH, selectors: ['0x00000002', '0x00000001'] }], from: 100 } } : {}),
+  };
+  raw['blue-bundles-v1'] = { ...raw['blue-bundles-v1'], dependsOn: ['liquidity-layer'] };
+  const withLayer = parseRegistry(raw, JSON.parse(readFileSync(join(ROOT, MARKETS_PATH), 'utf8')));
+  return {
+    ...inputs,
+    registry: withLayer,
+    spans: new Map([...inputs.spans, [LAYER, [{ kind: 'pass', text: 'PASS' }]]]),
+    today: today === undefined ? undefined : { block: TODAY_BLOCK, checks: new Map([[LAYER, today]]) },
+  };
+}
+
+test('an entry reached only through dependsOn shows its routes, seeds and code at the latest block, and its missing ABI proof is grey, not amber', () => {
+  const of = withLiquidityLayer({ kind: 'pass', text: 'PASS' });
+  assert.ok(entriesOf(of.subject, of.registry).some((entry) => entry.name === 'liquidity-layer'));
+
+  const markdown = renderReport(of, title);
+  const layerHash = `0x${'52'.repeat(32)}`;
+  const routedTo = checksumAddress(ROUTED_TO);
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | 100 | \`${layerHash}\` | none; routes \`${routedTo}\` \`${ROUTE_HASH}\` (2 selectors) | PASS |`), 'the code pin lists the route');
+  assert.ok(markdown.includes("### Today's code\n"), 'the report reads its code at the latest block');
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | PASS | 24000000 |`), 'its code at the latest block is its current pin');
+  assert.ok(markdown.includes('`liquidity-layer` seeds: `0x00000001`.'), 'the seeds print');
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | 100 | \`${routedTo}\` | \`0x00000002\`, \`0x00000001\` |`), 'each route prints every selector it serves');
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | \`${checksumAddress(LAYER)}\` | not proved: the operation reaches it only through \`dependsOn\`, so no call targets it and none is decoded with its ABI; its code pin is above |`), 'the ABI row says why it is not proved');
+
+  const ledger = judge(of, of.fixtures);
+  assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/abi') ?? assert.fail('no ABI result')), 'na');
+  assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no result at the latest block')), 'ok');
+  const abiItem = (ledgerOf: typeof ledger) => strip(ledgerOf).find((item) => item.line === 'abi');
+  assert.deepEqual(abiItem(ledger), abiItem(judge(inputs, inputs.fixtures)), '原始碼驗證 counts and colours the same without the dependency');
+
+  const page = pageOf(of);
+  const explain = (line: string) => page.header.strip.find((item) => item.line === line)?.explain ?? '';
+  assert.match(explain('abi'), /liquidity-layer 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。/);
+  assert.match(explain('code'), /liquidity-layer 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼/);
+  assert.match(explain('code'), /seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。/);
+  const addresses = body(page, 'addresses');
+  const row = [...addresses.open, ...addresses.folded].find((r) => r.name === 'liquidity-layer') ?? assert.fail('no address row');
+  assert.equal(page.header.strip.find((item) => item.line === 'code')?.state, pageOf(inputs).header.strip.find((item) => item.line === 'code')?.state);
+  assert.deepEqual(row.codeLines.map(plain), [
+    '沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名碰到 blue-bundles-v1 時，程式也確認它的程式碼還是 code pin 記錄的那份。',
+    '它依函式選擇器把呼叫分給各自的實作。code pin 的 seeds 接到 1 個實作：',
+    `${routedTo}，程式碼 hash ${ROUTE_HASH}，2 個函式`,
+    '沒有 seed 接到的實作，code pin 沒有記錄，程式也不檢查。',
+  ]);
+  const html = renderPage(page);
+  assert.ok(html.includes(`<div class="confirmed"><span class="addr">${routedTo}</span>，程式碼 hash <span class="addr">${ROUTE_HASH}</span>，2 個函式</div>`), 'the HTML row prints the route in full');
+});
+
+test('a dependency that runs other code at the latest block is red in 合約沒被換掉 and in 待確認; one with no read there is amber', () => {
+  const finding = withLiquidityLayer({ kind: 'finding', text: 'FINDING: runs something else' });
+  const page = pageOf(finding);
+  assert.equal(page.header.strip.find((item) => item.line === 'code')?.state, 'bad');
+  const review = body(page, 'review').rows.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no review row');
+  assert.equal(review.state, 'bad');
+  assert.equal(plain(review.title), 'liquidity-layer：鏈上跑的不是登記的程式碼（最新區塊）');
+  assert.ok(renderReport(finding, title).includes('| `liquidity-layer` | FINDING: runs something else | 24000000 |'));
+
+  const unread = withLiquidityLayer(undefined);
+  assert.equal(stateOf(judge(unread, unread.fixtures).results.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no result')), 'warn');
+  assert.ok(renderReport(unread, title).includes('| `liquidity-layer` | not read |  |'));
+});
+
+test("a dependency with no code pin says only that it has no ABI proof, not that each signing checks its code", () => {
+  const of = withLiquidityLayer(undefined, { pinned: false });
+  const addresses = body(pageOf(of), 'addresses');
+  const row = [...addresses.open, ...addresses.folded].find((r) => r.name === 'liquidity-layer') ?? assert.fail('no address row');
+  assert.deepEqual(row.codeLines.map(plain), ['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。']);
+  assert.ok(!judge(of, of.fixtures).results.some((r) => r.id === 'liquidity-layer/code.today'), 'an unpinned entry has only its not-pinned result');
+  assert.ok(renderReport(of, title).includes('| `liquidity-layer` | not pinned |  |'));
 });

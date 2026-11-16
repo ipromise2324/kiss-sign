@@ -3,7 +3,7 @@ import { bytesToHex, concatBytes } from '@noble/hashes/utils.js';
 import { existsSync, readFileSync } from 'node:fs';
 import { isIP } from 'node:net';
 import { join } from 'node:path';
-import { AbiSignatureError, parseFunctionSignature } from './decode/abi.ts';
+import { AbiSignatureError, canonicalType, parseFunctionSignature } from './decode/abi.ts';
 import { uintWord } from './decode/codec.ts';
 import type { AbiFunction } from './decode/abi.ts';
 import { samePageKey, sourceHoldsAddress } from './research/source-page.ts';
@@ -66,9 +66,22 @@ export type RegistryEntry = {
   readonly defillama?: string;
   /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
   readonly coingecko?: string;
+  /** How a proxy that sends each selector to its own implementation answers its routes; its code pin then holds them. */
+  readonly routes?: SelectorRouting;
+  /** Entries a call to this one reaches though no call targets them, touched whenever this one is. */
+  readonly dependsOn?: readonly string[];
   /** The code a call to this address ran at each block `pnpm pin-code` found; verify requires the code of the block it reads. */
   readonly code?: CodePins;
 };
+
+/**
+ * A proxy's two views, `implementationOf(bytes4)`, answering one address word, and `selectorsOf(address)`, answering a
+ * `bytes4[]`, and the seeds research chose so every implementation is reached: no view lists the implementations.
+ */
+export type SelectorRouting = { readonly implementationOf: AbiFunction; readonly selectorsOf: AbiFunction; readonly seeds: readonly Hex[] };
+
+/** An implementation the seeds reach, its code hash, and the selectors it serves in the order `selectorsOf` answered. */
+export type Route = { readonly address: Address; readonly hash: Hex; readonly selectors: readonly Hex[] };
 
 /** An official page that lists an address, the text next to it there, and the heading above it when the page needs one. */
 export type SourcePage = { readonly url: HttpsUrl; readonly label: string; readonly heading?: string };
@@ -76,8 +89,11 @@ export type SourcePage = { readonly url: HttpsUrl; readonly label: string; reado
 /** Every page that lists the entry's address: its `source`, then each of `moreSources`. */
 export const pageUrlsOf = (entry: RegistryEntry): readonly HttpsUrl[] => [entry.source, ...(entry.moreSources ?? []).map((page) => page.url)];
 
-/** keccak256 of the runtime code at the address, and behind a proxy, the implementation it delegates to and its code's. */
-export type CodePin = { readonly hash: Hex; readonly implementation?: { readonly address: Address; readonly hash: Hex } };
+/**
+ * keccak256 of the runtime code at the address, behind a proxy the implementation it delegates to and its code's, and
+ * for an entry with `routes`, its routes sorted by address.
+ */
+export type CodePin = { readonly hash: Hex; readonly implementation?: { readonly address: Address; readonly hash: Hex }; readonly routes?: readonly Route[] };
 
 /** A pin and the first block whose state held its code. It holds until the block before the next span's `from`. */
 export type CodeSpan = { readonly from: bigint; readonly pin: CodePin };
@@ -159,7 +175,7 @@ function onlyKeys(path: string, value: Record<string, unknown>, allowed: readonl
   if (extra !== undefined) throw new RegistryError(`${path}.${extra}`, 'unexpected field');
 }
 
-function instanceCheckOf(path: string, raw: unknown): AbiFunction {
+function oneParamFunction(path: string, raw: unknown, type: 'address' | 'bytes4'): AbiFunction {
   if (typeof raw !== 'string') throw new RegistryError(path, 'not a function signature');
   let fn: AbiFunction;
   try {
@@ -168,9 +184,39 @@ function instanceCheckOf(path: string, raw: unknown): AbiFunction {
     if (error instanceof AbiSignatureError) throw new RegistryError(path, error.message);
     throw error;
   }
-  if (fn.params.length !== 1 || fn.params[0]?.type.kind !== 'address') throw new RegistryError(path, 'must take exactly one address');
+  const [param, ...more] = fn.params;
+  if (param === undefined || more.length > 0 || canonicalType(param.type) !== type) throw new RegistryError(path, `must take exactly one ${type}`);
   return fn;
 }
+
+const SELECTOR = /^0x[0-9a-f]{8}$/;
+
+function selectorList(path: string, raw: unknown, max?: number): Hex[] {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > (max ?? Infinity)) throw new RegistryError(path, max === undefined ? 'not a non-empty list of selectors' : `not a list of 1 to ${max} selectors`);
+  const seen = new Set<string>();
+  return raw.map((selector: unknown, i) => {
+    if (typeof selector !== 'string' || !SELECTOR.test(selector)) throw new RegistryError(`${path}[${i}]`, 'not a lowercase 4-byte selector');
+    if (seen.has(selector)) throw new RegistryError(`${path}[${i}]`, `${selector} is listed twice`);
+    seen.add(selector);
+    return selector as Hex;
+  });
+}
+
+const MAX_SEEDS = 16;
+
+function routingOf(path: string, raw: unknown): SelectorRouting {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['implementationOf', 'selectorsOf', 'seeds']);
+  return {
+    implementationOf: oneParamFunction(`${path}.implementationOf`, value.implementationOf, 'bytes4'),
+    selectorsOf: oneParamFunction(`${path}.selectorsOf`, value.selectorsOf, 'address'),
+    seeds: selectorList(`${path}.seeds`, value.seeds, MAX_SEEDS),
+  };
+}
+
+export const unreachedSeeds = (routing: SelectorRouting, routes: readonly Route[]): Hex[] => routing.seeds.filter((seed) => !routes.some((route) => route.selectors.includes(seed)));
+
+const MAX_DEPENDS_ON = 8;
 
 function parsed<T>(run: () => T): T {
   try {
@@ -192,9 +238,35 @@ function blockOf(path: string, raw: unknown): bigint {
   return BigInt(raw);
 }
 
-function codePinOf(path: string, value: Record<string, unknown>): CodePin {
+function routesOf(path: string, raw: unknown): Route[] {
+  if (!Array.isArray(raw)) throw new RegistryError(path, 'not a list of routes');
+  const selectors = new Set<string>();
+  const routes = raw.map((rawRoute: unknown, i): Route => {
+    const at = `${path}[${i}]`;
+    const route = record(at, rawRoute);
+    onlyKeys(at, route, ['address', 'hash', 'selectors']);
+    const served = selectorList(`${at}.selectors`, route.selectors);
+    served.forEach((selector, j) => {
+      if (selectors.has(selector)) throw new RegistryError(`${at}.selectors[${j}]`, `${selector} is in another route too`);
+      selectors.add(selector);
+    });
+    const address = parsed(() => parseAddress(`${at}.address`, route.address));
+    if (BigInt(address) === 0n) throw new RegistryError(`${at}.address`, 'the zero address, which a selector that routes nowhere answers, is no implementation');
+    return { address, hash: hash32(`${at}.hash`, route.hash), selectors: served };
+  });
+  routes.forEach((route, i) => {
+    const before = routes[i - 1];
+    if (before !== undefined && before.address >= route.address) throw new RegistryError(`${path}[${i}].address`, `not after ${before.address}: routes are sorted by address, each implementation once`);
+  });
+  return routes;
+}
+
+function codePinOf(path: string, value: Record<string, unknown>, routed: boolean): CodePin {
   const hash = hash32(`${path}.hash`, value.hash);
-  if (value.implementation === undefined) return { hash };
+  if (routed && value.routes === undefined) throw new RegistryError(`${path}.routes`, 'missing, though the entry declares routes; remove the code pin and run pnpm pin-code');
+  if (!routed && value.routes !== undefined) throw new RegistryError(`${path}.routes`, 'the entry declares no routes');
+  const routes = value.routes === undefined ? {} : { routes: routesOf(`${path}.routes`, value.routes) };
+  if (value.implementation === undefined) return { hash, ...routes };
   const implementation = record(`${path}.implementation`, value.implementation);
   onlyKeys(`${path}.implementation`, implementation, ['address', 'hash']);
   return {
@@ -203,21 +275,26 @@ function codePinOf(path: string, value: Record<string, unknown>): CodePin {
       address: parsed(() => parseAddress(`${path}.implementation.address`, implementation.address)),
       hash: hash32(`${path}.implementation.hash`, implementation.hash),
     },
+    ...routes,
   };
 }
 
 /** `from` may be absent only on a pin with no earlier ones, as `pnpm pin-code` wrote before it read ranges: it holds from block 0. */
-function codePinsOf(path: string, raw: unknown): CodePins {
+function codePinsOf(path: string, raw: unknown, routing: SelectorRouting | undefined): CodePins {
   const value = record(path, raw);
-  onlyKeys(path, value, ['hash', 'implementation', 'from', 'earlier']);
-  const current = { from: value.from === undefined ? 0n : blockOf(`${path}.from`, value.from), pin: codePinOf(path, value) };
+  onlyKeys(path, value, ['hash', 'implementation', 'routes', 'from', 'earlier']);
+  const current = { from: value.from === undefined ? 0n : blockOf(`${path}.from`, value.from), pin: codePinOf(path, value, routing !== undefined) };
+  const unreached = routing === undefined ? [] : unreachedSeeds(routing, current.pin.routes ?? []);
+  if (unreached.length > 0) throw new RegistryError(`${path}.routes`, `no route lists the seed ${unreached.join(', ')}, which then routes nowhere`);
+  const seedless = routing === undefined ? -1 : (current.pin.routes ?? []).findIndex((route) => !route.selectors.some((selector) => routing.seeds.includes(selector)));
+  if (seedless !== -1) throw new RegistryError(`${path}.routes[${seedless}]`, 'lists no seed, and pnpm pin-code reaches an implementation only through a seed');
   if (value.earlier === undefined) return { earlier: [], current };
   if (!Array.isArray(value.earlier) || value.earlier.length === 0) throw new RegistryError(`${path}.earlier`, 'not a non-empty list of pins');
   const earlier = value.earlier.map((rawSpan: unknown, i): CodeSpan => {
     const at = `${path}.earlier[${i}]`;
     const span = record(at, rawSpan);
-    onlyKeys(at, span, ['from', 'hash', 'implementation']);
-    return { from: blockOf(`${at}.from`, span.from), pin: codePinOf(at, span) };
+    onlyKeys(at, span, ['from', 'hash', 'implementation', 'routes']);
+    return { from: blockOf(`${at}.from`, span.from), pin: codePinOf(at, span, routing !== undefined) };
   });
   const spans = [...earlier, current];
   spans.forEach((span, i) => {
@@ -313,9 +390,11 @@ function moreSourcesOf(path: string, raw: unknown, address: Address, source: Htt
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'code', 'instanceCheck']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'routes', 'dependsOn', 'code', 'instanceCheck']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
-  const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code);
+  const routes = value.routes === undefined ? undefined : routingOf(`${path}.routes`, value.routes);
+  const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code, routes);
+  const dependsOn = value.dependsOn === undefined ? undefined : dependsOnOf(`${path}.dependsOn`, value.dependsOn, name);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
   if (kind === undefined) throw new RegistryError(`${path}.kind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
   const source = parseHttpsUrl(value.source);
@@ -352,13 +431,25 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     attributes,
     ...(value.defillama === undefined ? {} : { defillama: value.defillama }),
     ...(value.coingecko === undefined ? {} : { coingecko: value.coingecko }),
+    ...(routes === undefined ? {} : { routes }),
+    ...(dependsOn === undefined ? {} : { dependsOn }),
     ...(code === undefined ? {} : { code }),
   };
   if (kind !== 'factory') {
     if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
     return entry;
   }
-  return { ...entry, instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck) };
+  return { ...entry, instanceCheck: oneParamFunction(`${path}.instanceCheck`, value.instanceCheck, 'address') };
+}
+
+function dependsOnOf(path: string, raw: unknown, own: string): string[] {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_DEPENDS_ON) throw new RegistryError(path, `not a list of 1 to ${MAX_DEPENDS_ON} registry names`);
+  return raw.map((name: unknown, i) => {
+    if (typeof name !== 'string' || !isEntryName(name)) throw new RegistryError(`${path}[${i}]`, 'not a registry name');
+    if (name === own) throw new RegistryError(`${path}[${i}]`, 'names the entry itself');
+    if (raw.indexOf(name) !== i) throw new RegistryError(`${path}[${i}]`, `${name} is listed twice`);
+    return name;
+  });
 }
 
 /** Morpho's `MarketParamsLib.id`: keccak256 of the ABI-encoded `MarketParams`. */
@@ -420,6 +511,11 @@ export function parseRegistry(raw: unknown, rawMarkets: unknown = {}): Registry 
         throw new RegistryError(`${entry.name}.attributes.${key}`, `${JSON.stringify(target)} is not a ${ATTRIBUTES[key].names} in the registry`);
       }
     }
+    entry.dependsOn?.forEach((target, i) => {
+      const named = entries.get(target);
+      if (named === undefined) throw new RegistryError(`${entry.name}.dependsOn[${i}]`, `${JSON.stringify(target)} is not in the registry`);
+      if (named.dependsOn !== undefined) throw new RegistryError(`${entry.name}.dependsOn[${i}]`, `${target} depends on other entries itself; a dependency is one step deep`);
+    });
   }
   return { entries, byAddress, markets: marketsOf(rawMarkets, entries) };
 }
