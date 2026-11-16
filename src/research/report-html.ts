@@ -6,7 +6,7 @@ import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Body, CallBlock, Chip, DocLine, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
 import { reportDir } from './report.ts';
@@ -148,7 +148,11 @@ function caption(text: string, x: number, y: number): { readonly boxes: Html; re
 
 function diagram(sequence: Sequence, r: R): Html {
   const x = (i: number) => FIRST_X + i * SPACING;
-  const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X);
+  // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
+  const tagWidth = (tag: string) => Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(tag)));
+  const captionWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => tagWidth(r.w.tag[arrow.text.tag]) + 8 + caption(arrow.text.ai, 0, 0).width;
+  const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + captionWidth(arrow) + 8 : 0)));
+  const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X, Math.ceil(widest));
   const rows: Html[] = [];
   let y = NODE_TOP + NODE_HEIGHT + 32;
   for (const arrow of sequence.arrows) {
@@ -164,14 +168,12 @@ function diagram(sequence: Sequence, r: R): Html {
       y += 52;
     } else if (arrow.kind === 'inside') {
       const tag = r.w.tag[arrow.text.tag];
-      // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
-      const tagWidth = Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(tag)));
+      const tagged = tagWidth(tag);
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
-      const wide = tagWidth + 8 + caption(arrow.text.ai, 0, y).width;
-      const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - wide));
-      const cap = caption(arrow.text.ai, left + tagWidth + 8, y);
+      const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - captionWidth(arrow)));
+      const cap = caption(arrow.text.ai, left + tagged + 8, y);
       rows.push(h`
-    <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${tagWidth}" height="20" rx="6"/><text class="tagt" x="${left + tagWidth / 2}" y="${y}" text-anchor="middle">${tag}</text>${cap.boxes}${cap.text}</g>
+    <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${tagged}" height="20" rx="6"/><text class="tagt" x="${left + tagged / 2}" y="${y}" text-anchor="middle">${tag}</text>${cap.boxes}${cap.text}</g>
     <line class="inner" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>`);
       y += 36;
     } else {
@@ -241,7 +243,7 @@ function callHead(call: CallBlock): Html {
 }
 
 function flowBody(flow: Flow, r: R): Html {
-  const lead = [flow.decoded ? around(r.w.decodedLead, 'cast decode-calldata') : '', flow.example === undefined ? '' : text(flow.example)];
+  const lead = [flow.decoded ? around(r.w.decodedLead, 'cast decode-calldata') : undefined, flow.example === undefined ? undefined : text(flow.example)].filter((part) => part !== undefined);
   return h`
   <p class="lead">${r.w.flowLead}</p>
   ${diagram(flow.diagram, r)}${
@@ -252,8 +254,8 @@ function flowBody(flow: Flow, r: R): Html {
     <span class="k0">${r.w.whoDecides}</span>${flow.key.map((item) => h`
     <span>${chip(item)}${item.means}</span>`)}
   </div>`
-  }${lead.every((part) => part === '') ? '' : h`
-  <p class="lead keylead">${lead}</p>`}${
+  }${lead.length === 0 ? '' : h`
+  <p class="lead keylead">${lead.flatMap((part, i) => (i === 0 ? [part] : [r.w.sentenceGap, part]))}</p>`}${
     flow.safeTx.length === 0
       ? ''
       : h`

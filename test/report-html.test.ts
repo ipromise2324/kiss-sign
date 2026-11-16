@@ -225,11 +225,11 @@ test('a code span in AI text prints as <code> in prose and as a boxed monospace 
   const { inputs, title } = pages.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as { flow: { text: unknown }[] } & Record<string, unknown>;
-  const flow = raw.flow.map((line, i) => (i === 0 ? { ...line, text: both('依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`') } : line));
+  const flow = raw.flow.map((line, i) => (i === 0 ? { ...line, text: { en: 'Calls `erc20TransferFrom`, then `erc4626Deposit`', 'zh-TW': '依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`' } } : line));
   const html = renderPage(
     buildPage(
       { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) },
-      { ...raw, summary: both('先呼叫 `multicall`，<b>不是</b> `approve()`'), flow },
+      { ...raw, summary: { en: 'Calls `multicall` first, <b>not</b> `approve()`', 'zh-TW': '先呼叫 `multicall`，<b>不是</b> `approve()`' }, flow },
       title,
       'zh-TW',
     ),

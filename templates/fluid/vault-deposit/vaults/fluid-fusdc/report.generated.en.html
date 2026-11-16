@@ -296,7 +296,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>Flow <span class="c">2 calls</span></h2>
   <p class="lead">Solid lines are the Safe&#39;s calls, dashed lines what a contract does inside, green lines what you get.</p>
   <div class="diagram">
-  <svg viewBox="0 0 750 300" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 857 300" role="img" aria-labelledby="dt dd">
     <title id="dt">Transaction flow</title>
     <desc id="dd">Call 1: the Safe calls approve on usdc. Call 2: the Safe calls deposit on fluid-fusdc. Result: you get fluid-fusdc.</desc>
     <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
@@ -312,9 +312,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">deposit</text>
     <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#m-call)"/>
-    <g data-ai><rect class="tagbox" x="353.6" y="180" width="84" height="20" rx="6"/><text class="tagt" x="395.6" y="194" text-anchor="middle">AI research</text><text class="cap" y="194"><tspan x="445.6">The deposited USDC is held in Liquidity</tspan></text></g>
+    <g data-ai><rect class="tagbox" x="460.6" y="180" width="84" height="20" rx="6"/><text class="tagt" x="502.6" y="194" text-anchor="middle">AI research</text><text class="cap" y="194"><tspan x="552.6">The deposited USDC is held in Liquidity</tspan></text></g>
     <line class="inner" x1="470" y1="204" x2="657" y2="204" marker-end="url(#m-inside)"/>
-    <g data-ai><rect class="tagbox" x="102" y="216" width="84" height="20" rx="6"/><text class="tagt" x="144" y="230" text-anchor="middle">AI research</text><rect class="codebox" x="508.6" y="216" width="101.6" height="19" rx="6"/><text class="cap" y="230"><tspan x="194">The fToken pulls USDC from the Safe with </tspan><tspan class="capc" x="512.6">transferFrom</tspan><tspan x="613.2"> through the Liquidity contract</tspan></text></g>
+    <g data-ai><rect class="tagbox" x="102.20000000000005" y="216" width="84" height="20" rx="6"/><text class="tagt" x="144.20000000000005" y="230" text-anchor="middle">AI research</text><rect class="codebox" x="508.80000000000007" y="216" width="101.6" height="19" rx="6"/><text class="cap" y="230"><tspan x="194.20000000000005">The fToken pulls USDC from the Safe with </tspan><tspan class="capc" x="512.8000000000001">transferFrom</tspan><tspan x="613.4000000000001"> through the Liquidity contract</tspan></text></g>
     <line class="inner" x1="470" y1="240" x2="283" y2="240" marker-end="url(#m-inside)"/>
     <text class="capg" x="104" y="266">you get fluid-fusdc</text>
     <line class="gain" x1="470" y1="276" x2="93" y2="276" marker-end="url(#m-gets)"/>
@@ -327,7 +327,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who you">you pick</span>picked at each signing</span>
     <span><span class="who">fixed</span>any change is a MISMATCH</span>
   </div>
-  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below.Values that you type and you pick, marked &#34;example&#34;, come from <code>fluid-deposit-usdc</code>, the first test transaction of fluid-fusdc: amount <span class="num">244.093807</span> usdc.</p>
+  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below. Values that you type and you pick, marked &#34;example&#34;, come from <code>fluid-deposit-usdc</code>, the first test transaction of fluid-fusdc: amount <span class="num">244.093807</span> usdc.</p>
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol">github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>

@@ -5,7 +5,7 @@ description: Drive the kiss-sign CLI the way a signer does and capture proof - a
 
 # Verify kiss-sign
 
-kiss-sign is a CLI (`bin/kiss-sign <command>`, the same as `pnpm kiss-sign <command>`) plus research scripts (`pnpm report`, `pnpm history`, ...). The signer touches three surfaces: terminal prompts (`card new`, `card seal`, `template approve`, `book add`, each refusing anything but a TTY), terminal output (`verify`, `replay`, `init`), and HTML pages it writes (`verify`'s page beside the verdict file, and each template's `report.generated.html`). This skill drives all three from an agent and keeps the evidence.
+kiss-sign is a CLI (`bin/kiss-sign <command>`, the same as `pnpm kiss-sign <command>`) plus research scripts (`pnpm report`, `pnpm history`, ...). The signer touches three surfaces: terminal prompts (`card new`, `card seal`, `template approve`, `book add`, each refusing anything but a TTY), terminal output (`verify`, `replay`, `init`), and HTML pages it writes (`verify`'s page beside the verdict file, and each template's `report.generated.en.html` and `report.generated.zh-TW.html`). This skill drives all three from an agent and keeps the evidence.
 
 The helpers are in `.claude/skills/verify-kiss-sign/bin/`. Call them by path from the repository root (below, `$V` is that folder):
 
