@@ -1,0 +1,41 @@
+{
+  "murmurr-usdc-frontier-v2-5f99": {
+    "address": "0x29CA54dd3Ae9E43aBb10880f5E08da439Bf25F99",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x29CA54dd3Ae9E43aBb10880f5E08da439Bf25F99/murmurr-usdc-frontier",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "murmurr-usdc-frontier-v2-5f99-market-adapter"
+    }
+  },
+  "murmurr-usdc-frontier-v2-5f99-market-adapter": {
+    "address": "0xfB73ff19b6Fb8f4d7a151c892552f2F05f023B46",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0x29CA54dd3Ae9E43aBb10880f5E08da439Bf25F99/murmurr-usdc-frontier",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
+        "variables": {
+          "vault": "0x29CA54dd3Ae9E43aBb10880f5E08da439Bf25F99",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "vaultV2ByAddress",
+        "adapters",
+        "items",
+        0,
+        "address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    }
+  }
+}

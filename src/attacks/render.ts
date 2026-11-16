@@ -1,5 +1,5 @@
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
-import { marketLines } from '../card.ts';
+import { marketLines, percentText } from '../card.ts';
 import type { ResolvedValue } from '../card.ts';
 import { paramName } from '../decode/abi.ts';
 import { checkFloor } from '../floor/floor.ts';
@@ -36,6 +36,8 @@ function cardValue(value: ResolvedValue, template: string): string {
     case 'nonce':
     case 'threshold':
       return String(value.value);
+    case 'percent':
+      return `${percentText(value.value)} (${value.value} base units)`;
     case 'contract':
       return `${value.name} ${checksumAddress(value.entry.address)} (registry)`;
     case 'address': {

@@ -170,8 +170,8 @@ const onDocs = (body: string, fields: Record<string, unknown> = {}) =>
 
 test('the registry: every labelled source page has its address next to its label, and every GitHub source is pinned to a default-branch commit', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
-  // No page served without scripts lists this oracle; Morpho's API, asked for its market, answers its address.
-  const SHOWN_ONLY_BY_SCRIPT = new Set(['morpho-oracle-cbbtc-usdc-86']);
+  // No page served without scripts lists these oracles; Morpho's API, asked for each market, answers its address.
+  const SHOWN_ONLY_BY_SCRIPT = new Set(['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc']);
   for (const entry of loadRegistry(ROOT).entries.values()) {
     if (SHOWN_ONLY_BY_SCRIPT.has(entry.name)) {
       assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}page {7}FINDING the address is not found on the page as served`), entry.name);
@@ -456,7 +456,7 @@ test('the report lists the sites each protocol\'s sources use', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
   assert.match(text, /sites per protocol, for the signer to check each is the protocol's own:\n/);
   assert.match(text, /\n {2}safe\n {4}github\.com\/safe-global: multisend-1\.3\.0, multisend-1\.3\.0-eip155,/);
-  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}github\.com\/morpho-org: bundler3, vault-v2-factory, general-adapter-1, morpho-blue, blue-bundles-v1, adaptive-curve-irm\n {2}steakhouse-financial\n/);
+  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}github\.com\/morpho-org: bundler3, vault-v2-factory, general-adapter-1, morpho-blue, adaptive-curve-irm, morpho-market-v1-adapter-v2-factory, blue-bundles-v1\n {2}steakhouse-financial\n/);
   assert.match(text, /\n {2}steakhouse-financial\n {4}steakhouse\.financial: steakhouse-prime-usdc-v2-0f51, steakhouse-high-yield-usdc-v2-a757, steakhouse-usdt-v1-cfba, smokehouse-usdc-v1-f5bc\n/);
 });
 
