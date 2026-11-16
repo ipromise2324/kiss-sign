@@ -16,7 +16,7 @@ import type { FixtureJudgement } from '../template/perturb.ts';
 import { refNames, slippageBps } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, FreeClaim, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
-import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
+import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
@@ -98,9 +98,11 @@ export type ArgRow = {
   /** What the argument does, from notes.json; none on a row the program adds, such as a call's `to`. */
   readonly ai: AiText | undefined;
   readonly parts: readonly { readonly label: Inline | undefined; readonly rows: readonly ArgRow[] }[];
+  /** The nested call's documentation page, on a `bytes` argument the template binds to a call. */
+  readonly doc: DocLine | undefined;
 };
 
-export type CallHead = { readonly kind: 'fn'; readonly contract: string; readonly fn: string; readonly selector: Hex } | { readonly kind: 'no-data'; readonly text: string };
+export type CallHead = { readonly kind: 'fn'; readonly contract: string; readonly fn: string; readonly selector: Hex; readonly doc: DocLine } | { readonly kind: 'no-data'; readonly text: string };
 export type CallBlock = { readonly n: number; readonly head: CallHead; readonly sends: Inline | undefined; readonly args: readonly ArgRow[] };
 
 export type AfterRow = { readonly label: Inline; readonly value: Inline; readonly note: Inline; readonly gains: boolean };
@@ -168,6 +170,8 @@ export type RowResult = { readonly state: State; readonly phrase: string | undef
 export type SiteResult = RowResult & { readonly slug: string | undefined; readonly href: HttpsUrl | undefined };
 /** A program source: whether it showed the address, and for a page or the API its site, a second result. */
 export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined };
+/** A function's documentation page from docs.json, linked, with the worst of its results; a standard's page carries its caveat. */
+export type DocLine = RowResult & { readonly label: string; readonly href: HttpsUrl; readonly note: string | undefined };
 /** A source the AI checked by hand: its text and link, and its result in words, which is no program result. */
 export type AiSource = { readonly text: AiText; readonly result: 'AI 判斷：沒問題' | 'AI 判斷：要注意' | 'AI 判斷：有問題' };
 
@@ -267,16 +271,28 @@ const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${num
  */
 function pageLabels(entry: RegistryEntry): Map<ProgramSource, string> {
   const pages: [ProgramSource, HttpsUrl][] = [['page', entry.source], ...(entry.moreSources ?? []).map((more, i): [ProgramSource, HttpsUrl] => [`more.${i + 1}`, more.url])];
-  const short = pages.map(([, url]) => shortUrl(url));
-  const shared = (label: string): boolean => short.indexOf(label) !== short.lastIndexOf(label);
-  return new Map(pages.map(([source, url], i) => [source, shared(short[i] as string) ? withFileName(url) : (short[i] as string)]));
+  return new Map(pages.map(([source, url]) => [source, pageLabel(url, pages.map(([, other]) => other))]));
 }
+
+/** A page by its short URL, with its file name added when another of `among` would share that short URL. */
+const pageLabel = (url: HttpsUrl, among: readonly HttpsUrl[]): string =>
+  among.some((other) => other !== url && shortUrl(other) === shortUrl(url)) ? withFileName(url) : shortUrl(url);
 
 const withFileName = (url: HttpsUrl): string => {
   const short = shortUrl(url);
   const file = new URL(url).pathname.split('/').filter((p) => p !== '').at(-1) ?? '';
   return file === '' || short.endsWith(`/${file}`) ? short : `${short}/…/${file}`;
 };
+
+function docLine(signature: string, context: Context): DocLine {
+  const docs = context.inputs.subject.kind === 'template' ? context.inputs.subject.docs : [];
+  const doc = docs.find((d) => d.fn.signature === signature);
+  if (doc === undefined) throw new Error(`docs.json names no page for ${signature}`);
+  const { state, phrase } = docOf(context.ledger, doc);
+  const result = { state, phrase, href: doc.url };
+  if (doc.standard !== undefined) return { ...result, label: `${doc.standard.name} 標準頁`, note: '標準定義這個函式，不代表合約照標準做' };
+  return { ...result, label: pageLabel(doc.url, docs.filter((d) => d.standard === undefined).map((d) => d.url)), note: undefined };
+}
 
 const sourceWord = (entry: RegistryEntry, source: ProgramSource): string => pageLabels(entry).get(source) ?? SOURCE_LABELS[source as keyof typeof SOURCE_LABELS];
 
@@ -586,6 +602,7 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
       id: undefined,
       ai: fieldsNote(context, child.key),
       parts: [],
+      doc: undefined,
     };
   });
 }
@@ -607,6 +624,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
       id: shown === undefined ? undefined : ['market id ', { mono: shown.id }],
       ai: fieldsNote(context, node.key),
       parts: markets.map((m) => ({ label: markets.length === 1 ? undefined : [marketWords(m), '，market id ', { mono: m.id }], rows: marketPartRows(node, m, context) })),
+      doc: undefined,
     };
   }
   const nestedCall = node.rule.kind === 'call';
@@ -621,6 +639,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
     id: undefined,
     ai: fieldsNote(context, node.key),
     parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall)) }],
+    doc: node.rule.kind === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
   };
 }
 
@@ -782,10 +801,11 @@ function ruleRow(key: string, name: string, rule: Rule, context: Context): ArgRo
     id: undefined,
     ai: undefined,
     parts: [],
+    doc: undefined,
   };
 }
 
-const NO_DATA_ROW: ArgRow = { key: 'data', name: 'data', chips: [{ who: 'fixed', label: SHORT.fixed }], value: { cast: '0x', example: undefined }, words: ['沒有資料'], qualifier: undefined, id: undefined, ai: undefined, parts: [] };
+const NO_DATA_ROW: ArgRow = { key: 'data', name: 'data', chips: [{ who: 'fixed', label: SHORT.fixed }], value: { cast: '0x', example: undefined }, words: ['沒有資料'], qualifier: undefined, id: undefined, ai: undefined, parts: [], doc: undefined };
 
 function callBlocks(context: Context): CallBlock[] {
   const { template } = context;
@@ -795,7 +815,8 @@ function callBlocks(context: Context): CallBlock[] {
     const target = targetOf(call.to, context);
     const tree = decoded.get(n);
     if (tree !== undefined) {
-      return { n, head: { kind: 'fn', contract: target.label, fn: tree.node.fn.name, selector: tree.node.fn.selector }, sends: sends(call, context, n), args: tree.args.map((arg) => argRow(arg, context, true)) };
+      const { fn } = tree.node;
+      return { n, head: { kind: 'fn', contract: target.label, fn: fn.name, selector: fn.selector, doc: docLine(fn.signature, context) }, sends: sends(call, context, n), args: tree.args.map((arg) => argRow(arg, context, true)) };
     }
     const text = zeroValue(call) ? `${before('呼叫', target.label)}，0 ETH、沒有資料` : before('轉 ETH 給', target.label);
     return { n, head: { kind: 'no-data', text }, sends: undefined, args: [ruleRow(`${n}.to`, 'to', call.to, context), ruleRow(`${n}.value`, 'value', call.value, context), { ...NO_DATA_ROW, key: `${n}.data` }] };
