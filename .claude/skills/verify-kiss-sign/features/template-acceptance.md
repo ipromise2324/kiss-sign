@@ -1,6 +1,6 @@
 # Template acceptance
 
-A shipped template works end to end when a signer, in a fresh home set up for a Safe that did this operation, can approve the template, fill a card with the template's real prompts, get `MATCH` with a verify page for that Safe's executed transaction, and get `MISMATCH` naming the changed value when the same card meets the transaction with one value changed. The shipped templates are `eth/transfer`, `erc20/transfer`, `morpho/vault-deposit` and `fluid/vault-deposit`; each has its journey below. A template passes only when every step of its journey passes as written.
+A shipped template works end to end when a signer, in a fresh home set up for a Safe that did this operation, can approve the template, fill a card with the template's real prompts, get `MATCH` with a verify page for that Safe's executed transaction, and get `MISMATCH` naming the changed value when the same card meets the transaction with one value changed. The shipped templates are `eth/transfer`, `erc20/transfer`, `morpho/vault-deposit`, `fluid/vault-deposit` and `morpho/vault-v2-cap-submit`; each has its journey below. A template passes only when every step of its journey passes as written.
 
 ## Sub-features
 
@@ -8,6 +8,7 @@ A shipped template works end to end when a signer, in a fresh home set up for a 
 - `accept-erc20-transfer` runs the journey for `erc20/transfer`.
 - `accept-morpho-vault-deposit` runs the journey for `morpho/vault-deposit`.
 - `accept-fluid-vault-deposit` runs the journey for `fluid/vault-deposit`.
+- `accept-morpho-vault-v2-cap-submit` runs the journey for `morpho/vault-v2-cap-submit`.
 
 ## How to get to it (user POV)
 
@@ -38,12 +39,14 @@ The journey, the same for every template; the table after it gives each template
 | `erc20/transfer` | `erc20-transfer-usdc-other-safe` | `0x9467dcFD4519287e3878C018c02f5670465a9003`, 60 | `usdc-payee 0x519b70055af55a007110b4ff99b0ea33071c720a` | `token: type its number (1-N):` → `usdc`; `recipient: ...` → `usdc-payee`; `amount (usdc 0xA0b8..., 6 decimals):` → `841,909.711357` | `usdc.transfer(usdc-payee, 841909711357)` | `--address 0x519b70055af55a007110b4ff99b0ea33071c720a 0x000000000000000000000000000000000000dEaD` | `call.transfer to: expected 0x519b...720a, got 0x...dead` |
 | `morpho/vault-deposit` | `morpho-vault-deposit-v2` | `0xdb6e9e7390e9ACC34619E56eFa48ade01cFF6F12`, 1566 | none | `vault: type its number (1-N):` → `hyperithm-usdc-apex-v2-9e2f`; `amount (usdc 0xA0b8..., 6 decimals):` → `1,000,611.448606`; `min-shares` is computed, not asked | MultiSend: `usdc.approve(general-adapter-1, 1000611448606)`, `bundler3.multicall` with `erc20TransferFrom` and `erc4626Deposit` | `--uint 1000611448606 1000611448607` | `multiSend[0].approve value: expected 1000611448606, got 1000611448607` (and the two bundle amounts) |
 | `fluid/vault-deposit` | `fluid-deposit-usdt-other-safe` | `0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb`, 13 | none | `vault: type its number (1-N):` → `fluid-fusdt` (the list holds only `fluid-fusdc` and `fluid-fusdt`, each with its factory `fluid-lending-factory`); `amount (usdt 0xdAC1..., 6 decimals):` → `150,003.88885` | MultiSend: `usdt.approve(fluid-fusdt, 150003888850)`, `fluid-fusdt.deposit(150003888850, Safe)` | `--uint 150003888850 150003888851` | `multiSend[0].approve value: expected 150003888850, got 150003888851` and `multiSend[1].deposit assets: ...` |
+| `morpho/vault-v2-cap-submit` | `vault-v2-cap-submit-flowmark` | `0xe5F7d857C129a6349f2A150665DCFF4FeF979744`, 21 | none | `vault: type its number (1-N):` → `flowmark-fgenesis-v2-6439`; `market: type its number (1-N):` → `usdc-cbbtc-86`; `absolute-cap (usdc 0xA0b8..., 6 decimals, or max):` → `50,000`; `relative-cap (a percent, 100 at most, ...):` → `5` | one CALL to `flowmark-fgenesis-v2-6439.multicall` holding `submit(increaseAbsoluteCap(...))` and `submit(increaseRelativeCap(...))`, each `idData` shown as bytes | `--uint 50000000000 50000000001` | a `fields:` line ending `increaseAbsoluteCap newAbsoluteCap: expected 50000000000, got 50000000001` |
 
 Second fixtures, for a rerun on another Safe: `eth-transfer-first-nonce` (Safe `0xc6835323372A4393B90bCc227c58e82D45CE4b7d`, nonce 0, 0.001 ETH), `morpho-vault-deposit-v2-other-safe` (Safe `0xBaDA5558640eAF3CE1836aFF8085f99615D45aFE`, 200,060.208382 usdc into `hyperithm-usdc-apex-v2-9e2f`), `fluid-deposit-usdc` (Safe `0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980`, 244.093807 usdc into `fluid-fusdc`). The `erc20-transfer-usdc` and `erc20-transfer-usdt` fixtures are another Safe's too.
 
 What `main` lacks today (2026-11-16, at 1836f6a), each a gap to fill, not a step to skip:
 
 - `morpho/vault-deposit` into `steakhouse-prime-usdc-v2-0f51`: that vault has a report but no executed fixture. To cover it, record one with `pnpm record-safe-tx <name> <safe> <safeTxHash | nonce>` from another Safe that deposited into it (find one with `pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc-v2-0f51 --anchor mint`).
+- `morpho/vault-v2-cap-submit`: not yet run end to end. `template approve` and `card new` need the template on `main`, so its journey runs after the merge; until then the branch is proven by `test/morpho-vault-v2-admin.test.ts` (MATCH, every bound field mutated, the vault's `executableAt` read before and after in the recorded simulation and receipt) and `test/setup-commands.test.ts` (`card new` with `max` and a percent). Its other fixtures, `vault-v2-cap-submit-murmurr` and `vault-v2-cap-submit-gauntlet`, name vaults with no report, and Gauntlet's Safe ran nine Safe transactions in one Ethereum transaction, which `verify` judges `UNVERIFIABLE`.
 
 ## Gotchas
 
