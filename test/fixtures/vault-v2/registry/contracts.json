@@ -128,52 +128,5 @@
     "attributes": {
       "factory": "morpho-market-v1-adapter-v2-factory"
     }
-  },
-  "gauntlet-usdc-prime-v2-a3d0": {
-    "address": "0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0",
-    "kind": "vault",
-    "source": "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime",
-    "defillama": "morpho-blue",
-    "attributes": {
-      "asset": "usdc",
-      "factory": "vault-v2-factory",
-      "adapter": "gauntlet-usdc-prime-v2-a3d0-market-adapter"
-    },
-    "code": {
-      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
-      "from": 23479188
-    }
-  },
-  "gauntlet-usdc-prime-v2-a3d0-market-adapter": {
-    "address": "0xDF62f57Ea333a842Db200d4892c90F98204fa22F",
-    "kind": "adapter",
-    "source": "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime",
-    "apiSource": {
-      "url": "https://api.morpho.org/graphql",
-      "method": "POST",
-      "body": {
-        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
-        "variables": {
-          "vault": "0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0",
-          "chainId": 1
-        }
-      },
-      "path": [
-        "data",
-        "vaultV2ByAddress",
-        "adapters",
-        "items",
-        0,
-        "address"
-      ]
-    },
-    "defillama": "morpho-blue",
-    "attributes": {
-      "factory": "morpho-market-v1-adapter-v2-factory"
-    },
-    "code": {
-      "hash": "0x4fb6881dcd9eeb017fa714f179ea3f691c98f1511fd0d41045c142b2a49c087a",
-      "from": 24879846
-    }
   }
 }
