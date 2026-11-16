@@ -16,6 +16,7 @@ import type { FixtureJudgement } from '../template/perturb.ts';
 import { refNames, slippageBps } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
+import type { DeployerShare, SitePlace } from './listings.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
@@ -166,8 +167,11 @@ export type WalletView =
 
 /** A result on an address row: its state, and the words a result that did not pass adds to its icon. */
 export type RowResult = { readonly state: State; readonly phrase: string | undefined };
-/** A page's or the API's site, compared with what DefiLlama lists for the entry's protocol `slug`. */
-export type SiteResult = RowResult & { readonly slug: string | undefined; readonly href: HttpsUrl | undefined };
+/** A place a site is compared with, by its word and its page. */
+export type PlaceLink = { readonly word: string; readonly href: HttpsUrl | undefined };
+
+/** A page's or the API's site, compared with the sites the places that list the entry's protocol `slug` name. */
+export type SiteResult = RowResult & { readonly slug: string | undefined; readonly places: readonly PlaceLink[] };
 /** A program source: whether it showed the address, and for a page or the API its site, a second result. */
 export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined };
 /** A function's documentation page from docs.json, linked, with the worst of its results; a standard's page carries its caveat. */
@@ -270,7 +274,13 @@ const FREE_WORDS: Readonly<Record<FreeClaim, string>> = {
   unread: '合約不讀它，換成別的值結果一樣',
   route: '換成別的值測過，會走別的池子，收到的仍不少於卡片',
 };
-const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}`>, string>> = { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠' };
+const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}` | 'sdk'>, string>> = {
+  api: '協議 API',
+  coingecko: 'CoinGecko',
+  factory: '工廠',
+  bounty: 'Immunefi 漏洞賞金範圍',
+  deployer: '部署者',
+};
 
 /**
  * Each official page of an entry by its short URL: the `source` as `page`, each of `moreSources` as `more.<n>`. Two
@@ -301,7 +311,28 @@ function docLine(signature: string, context: Context): DocLine {
   return { ...result, label: pageLabel(doc.url, docs.filter((d) => d.standard === undefined).map((d) => d.url)), note: undefined };
 }
 
-const sourceWord = (entry: RegistryEntry, source: ProgramSource): string => pageLabels(entry).get(source) ?? SOURCE_LABELS[source as keyof typeof SOURCE_LABELS];
+const PLACE_PAGES: Readonly<Record<SitePlace['kind'], { readonly word: string; readonly page: (id: string) => string }>> = {
+  defillama: { word: 'DefiLlama', page: (id) => `https://defillama.com/protocol/${id}` },
+  coingecko: { word: 'CoinGecko', page: (id) => `https://www.coingecko.com/en/coins/${id}` },
+  immunefi: { word: 'Immunefi', page: (id) => `https://immunefi.com/bug-bounty/${id}/` },
+  github: { word: 'GitHub 驗證網域', page: (id) => `https://github.com/${id}` },
+};
+
+/** Each place a site was compared with, linked; with none, DefiLlama, the one place every entry names. */
+const placeLinks = (entry: RegistryEntry, places: readonly SitePlace[]): PlaceLink[] =>
+  places.length === 0
+    ? [{ word: 'DefiLlama', href: entry.defillama === undefined ? undefined : parseHttpsUrl(PLACE_PAGES.defillama.page(entry.defillama)) }]
+    : places.map((place) => ({ word: PLACE_PAGES[place.kind].word, href: parseHttpsUrl(PLACE_PAGES[place.kind].page(place.id)) }));
+
+const sourceWord = (entry: RegistryEntry, source: ProgramSource): string =>
+  source === 'sdk' && entry.sdk !== undefined ? `npm ${entry.sdk.package}@${entry.sdk.version}` : (pageLabels(entry).get(source) ?? SOURCE_LABELS[source as keyof typeof SOURCE_LABELS]);
+
+/** An address row's line for a source: the deployer names its address and the confirmed entries it also deployed. */
+function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerShare | undefined): string {
+  if (source !== 'deployer' || shared === undefined) return sourceWord(entry, source);
+  const also = shared.siblings.length === 0 ? '' : `，也部署了 ${shared.siblings.join('、')}`;
+  return `部署者 ${checksumAddress(shared.deployer)}${also}`;
+}
 
 /** What a confirmation is called in the line that counts them: the `source` page is 官方頁, any other as `sourceWord` names it. */
 const confirmationWord = (entry: RegistryEntry, source: ProgramSource): string => (source === 'page' ? '官方頁' : sourceWord(entry, source));
@@ -323,7 +354,11 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
   'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
   'site-not-compared': { title: '沒辦法比對來源網站', why: 'DefiLlama 找不到這個協議，或網域無法判斷。' },
-  'no-second-source': { title: '沒有第二個來源', why: 'DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。' },
+  'no-second-source': {
+    title: '沒有第二個來源',
+    why: 'DefiLlama、CoinGecko 的幣資料、Immunefi 和 GitHub 的驗證網域都沒有列出這個網站，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。',
+  },
+  'package-differs': { title: 'SDK 套件不是釘選的那一份', why: '下載的 npm 套件 sha256 跟登記釘選的不同，或跟 npm 給的 integrity 不符。' },
   'unexplained-coin': { title: 'CoinGecko 在這個地址列了幣，登記沒有給 id', why: '登記沒有寫 coingecko id，所以程式沒有比對 CoinGecko 在這個地址列的幣是不是這個合約。' },
   'commit-unconfirmed': { title: 'GitHub commit 沒確認', why: 'GitHub 頁面沒有釘在預設分支上的 commit。' },
   'page-not-fetched': { title: '文件頁沒讀到', why: '程式沒有這個文件頁的內容。' },
@@ -1139,7 +1174,7 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
   if (result.finding.kind === 'few-confirmations') {
     return {
       title: [`${name}：地址${confirmedWords(result.about.entry, result.finding.by)}`],
-      why: [`至少要 ${MIN_CONFIRMATIONS} 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或金庫的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。`],
+      why: [`至少要 ${MIN_CONFIRMATIONS} 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。`],
     };
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
@@ -1314,11 +1349,11 @@ function addressSection(context: Context): Section[] {
     const note = notes.entries?.get(entry.name);
     const sources = sourcesOf(ledger, entry).map(
       (line): SourceLine => ({
-        label: sourceWord(entry, line.source),
+        label: rowWord(entry, line.source, line.shared),
         href: line.link,
         state: line.state,
         phrase: line.phrase,
-        site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, href: line.site.link },
+        site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, places: placeLinks(entry, line.site.places) },
       }),
     );
     return {
@@ -1790,7 +1825,7 @@ function stripItems(ledger: Ledger, template: Template): StripItem[] {
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
     sources: (p, c) =>
       p === c
-        ? `${c === 1 ? '這個地址' : `${c} 個地址都`}至少在 ${MIN_CONFIRMATIONS} 個地方確認：官方頁、協議 API、CoinGecko 或金庫的登記工廠列出同一個地址。`
+        ? `${c === 1 ? '這個地址' : `${c} 個地址都`}至少在 ${MIN_CONFIRMATIONS} 個地方確認：官方頁、協議 API、CoinGecko、金庫的登記工廠、漏洞賞金範圍、SDK 套件或共用的部署者列出同一個地址。`
         : `${c - p} 個地址有結果要你看，見「待確認」。${p === 0 ? '' : p === 1 ? `另外那個地址至少在 ${MIN_CONFIRMATIONS} 個地方確認。` : `其餘 ${p} 個都至少在 ${MIN_CONFIRMATIONS} 個地方確認。`}`,
     abi: () =>
       `Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。${

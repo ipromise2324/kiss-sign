@@ -12,12 +12,15 @@ import { checkSources, formatResults, parseCoinGeckoCoins, parseDefiLlamaProtoco
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
 import { httpsGet } from '../src/research/source-page.ts';
 
+import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
+
 const ROOT = join(import.meta.dirname, '..');
 const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'sources', 'registry.json'), 'utf8'));
 const listings = {
   protocols: parseDefiLlamaProtocols(recording.defillama),
   coinsByAddress: parseCoinGeckoCoins(recording.coingecko),
   suffixes: parsePublicSuffixList(readFileSync(join(ROOT, 'testdata', 'sources', 'public-suffix-list.dat'), 'utf8')),
+  sites: NO_SITE_LISTINGS,
 };
 
 const ORACLE = '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a';

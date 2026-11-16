@@ -3,7 +3,8 @@ import type { RequestOptions } from 'node:https';
 
 export type RequestFn = (options: RequestOptions, onResponse: (response: IncomingMessage) => void) => ClientRequest;
 
-export type HttpAnswer = { readonly status: number; readonly text: string; readonly headers?: IncomingHttpHeaders };
+/** `bytes` holds the body as received, for an answer that is not text, such as a tarball. */
+export type HttpAnswer = { readonly status: number; readonly text: string; readonly headers?: IncomingHttpHeaders; readonly bytes?: Uint8Array };
 
 export function requestText(request: RequestFn, options: RequestOptions, body: string | undefined, maxBytes: number): Promise<HttpAnswer> {
   return new Promise((resolve, reject) => {
@@ -15,7 +16,10 @@ export function requestText(request: RequestFn, options: RequestOptions, body: s
         if (size > maxBytes) req.destroy(new Error('answer too large'));
         else chunks.push(chunk);
       });
-      response.on('end', () => resolve({ status: response.statusCode ?? 0, text: Buffer.concat(chunks).toString('utf8'), headers: response.headers }));
+      response.on('end', () => {
+        const bytes = Buffer.concat(chunks);
+        resolve({ status: response.statusCode ?? 0, text: bytes.toString('utf8'), headers: response.headers, bytes });
+      });
       response.on('error', reject);
     });
     req.on('error', reject);
