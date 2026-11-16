@@ -111,15 +111,41 @@ test('init records the Safe on chain 1 and the repository origin names, and prin
   const home = freshHome();
   const result = await run(['init', '--safe', SAFE], home, undefined, cloneWithOrigin('git@github.com:Signer/Kiss-Sign.git'));
   assert.equal(result.code, 0, result.stderr);
-  assert.deepEqual(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')), { chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign' });
+  assert.deepEqual(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')), { chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign', language: 'en' });
   assert.ok(
     result.stdout.startsWith(
       `kiss-sign checks transactions of the Safe ${SAFE} on Ethereum mainnet (chain 1).\n` +
         "It runs only what is on main of github.com/signer/kiss-sign, the repository this clone's origin names.\n" +
-        'Merging a pull request into that main is your confirmation.\n',
+        'Merging a pull request into that main is your confirmation.\n' +
+        'Reports and the verify page are in English (en); init --language en|zh-TW changes it.\n',
     ),
     result.stdout,
   );
+});
+
+test('init records the report language, keeps it when run again without --language, changes it with one, and refuses any other', async () => {
+  const home = freshHome();
+  const language = () => JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')).language;
+  const chinese = await run(['init', '--safe', SAFE, '--language', 'zh-TW'], home, undefined, fork);
+  assert.equal(chinese.code, 0, chinese.stderr);
+  assert.match(chinese.stdout, /Reports and the verify page are in Traditional Chinese \(zh-TW\)/);
+  assert.equal(language(), 'zh-TW');
+  assert.equal((await run(['init', '--safe', SAFE], home, undefined, fork)).code, 0);
+  assert.equal(language(), 'zh-TW');
+  assert.equal((await run(['init', '--safe', SAFE, '--language', 'en'], home, undefined, fork)).code, 0);
+  assert.equal(language(), 'en');
+  const other = await run(['init', '--safe', SAFE, '--language', 'fr'], home, undefined, fork);
+  assert.equal(other.code, 64);
+  assert.match(other.stderr, /--language takes en or zh-TW\./);
+  assert.equal(language(), 'en');
+});
+
+test('a config whose language is neither en nor zh-TW is refused', async () => {
+  const home = freshHome();
+  writeFileSync(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign', language: 'zh' }));
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, []);
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /config\.json: language must be en or zh-TW/);
 });
 
 test('init refuses to switch a home to another Safe or another repository', async () => {
@@ -141,7 +167,7 @@ test('init run again with the same Safe adds the repository to a config written 
   assert.equal(sealed.code, 1);
   assert.match(sealed.stderr, /names no repository to trust\. In your clone of your own fork, run pnpm kiss-sign init --safe <your Safe> again\./);
   assert.equal((await run(['init', '--safe', SAFE], home, undefined, fork)).code, 0);
-  assert.deepEqual(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')), { chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign' });
+  assert.deepEqual(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')), { chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign', language: 'en' });
 });
 
 test('init refuses a clone whose origin is not one GitHub repository, and writes nothing', async () => {
