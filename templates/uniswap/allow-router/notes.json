@@ -1,16 +1,31 @@
 {
-  "title": "在 Permit2 授權 Uniswap Universal Router 使用一個代幣",
-  "summary": "Safe 呼叫 Permit2 的 `approve`，讓 Universal Router 2.1.2 能透過 Permit2 從 Safe 拉你選的代幣，數量 2^160-1（Permit2 的無上限），到期時間由 app 設，通常 30 天。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的兌換能用。",
+  "title": {
+    "en": "Give Uniswap's Universal Router a Permit2 allowance for one token",
+    "zh-TW": "在 Permit2 授權 Uniswap Universal Router 使用一個代幣"
+  },
+  "summary": {
+    "en": "The Safe calls `approve` on Permit2 so that Universal Router 2.1.2 can pull the token you pick from the Safe through Permit2. The amount is 2^160-1 (Permit2's unlimited), and the app sets the expiry, usually 30 days. The router pulls tokens only from the address that calls it, so only the Safe's own later swaps can use it.",
+    "zh-TW": "Safe 呼叫 Permit2 的 `approve`，讓 Universal Router 2.1.2 能透過 Permit2 從 Safe 拉你選的代幣，數量 2^160-1（Permit2 的無上限），到期時間由 app 設，通常 30 天。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的兌換能用。"
+  },
   "verdict": {
     "status": "safe",
-    "text": "授權只給 router；router 只從呼叫它的 Safe 拉代幣，留著也只有 Safe 能用。"
+    "text": {
+      "en": "The allowance goes only to the router. The router pulls tokens only from the Safe that calls it, so while the allowance stays, only the Safe can use it.",
+      "zh-TW": "授權只給 router；router 只從呼叫它的 Safe 拉代幣，留著也只有 Safe 能用。"
+    }
   },
   "flow": [],
   "protocols": {
     "uniswap-v4": {
-      "intro": "Uniswap：以太坊上最大的去中心化交易所；v4 的池子都在同一個 PoolManager 合約裡。",
+      "intro": {
+        "en": "Uniswap: the largest decentralized exchange on Ethereum. All v4 pools live in one PoolManager contract.",
+        "zh-TW": "Uniswap：以太坊上最大的去中心化交易所；v4 的池子都在同一個 PoolManager 合約裡。"
+      },
       "audits": {
-        "text": "v4 核心與周邊合約、Universal Router 都有公開的審計報告（OpenZeppelin、Spearbit、Certora 等），放在各 repo 的 audits 資料夾。",
+        "text": {
+          "en": "The v4 core and periphery contracts and the Universal Router all have public audit reports (OpenZeppelin, Spearbit, Certora and others), in each repo's audits folder.",
+          "zh-TW": "v4 核心與周邊合約、Universal Router 都有公開的審計報告（OpenZeppelin、Spearbit、Certora 等），放在各 repo 的 audits 資料夾。"
+        },
         "sources": [
           "https://github.com/Uniswap/v4-core/tree/main/docs/security/audits",
           "https://github.com/Uniswap/universal-router/tree/main/audits"
@@ -21,82 +36,133 @@
   },
   "judgments": [
     {
-      "text": "交易後留著的授權：Safe 給 Permit2 的無上限授權，和 Permit2 裡給 Universal Router 的 2^160-1、30 天授權。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的交易能用它。",
-      "recommendation": "可以接受；想收回時，對代幣呼叫 approve(Permit2, 0)，或在 Permit2 呼叫 lockdown。"
+      "text": {
+        "en": "Allowances that stay after the transaction: the Safe's unlimited allowance to Permit2, and the 2^160-1, 30-day allowance to the Universal Router inside Permit2. The router pulls tokens only from the address that calls it, so only the Safe's own later transactions can use it.",
+        "zh-TW": "交易後留著的授權：Safe 給 Permit2 的無上限授權，和 Permit2 裡給 Universal Router 的 2^160-1、30 天授權。router 只從呼叫它的地址拉代幣，所以只有 Safe 自己之後的交易能用它。"
+      },
+      "recommendation": {
+        "en": "Acceptable. To revoke, call approve(Permit2, 0) on the token, or call lockdown on Permit2.",
+        "zh-TW": "可以接受；想收回時，對代幣呼叫 approve(Permit2, 0)，或在 Permit2 呼叫 lockdown。"
+      }
     }
   ],
   "reviews": {},
   "entries": {
     "usdc": {
-      "role": "可選的代幣：Circle 發行的 USDC",
+      "role": {
+        "en": "A token you can pick: USDC, issued by Circle",
+        "zh-TW": "可選的代幣：Circle 發行的 USDC"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911"
+          },
           "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
           "result": "pass"
         }
       ]
     },
     "usdt": {
-      "role": "可選的代幣：Tether 發行的 USDT",
+      "role": {
+        "en": "A token you can pick: USDT, issued by Tether",
+        "zh-TW": "可選的代幣：Tether 發行的 USDT"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
+          "text": {
+            "en": "Etherscan: contract name TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
+            "zh-TW": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57"
+          },
           "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
           "result": "pass"
         }
       ]
     },
     "morpho": {
-      "role": "可選的代幣：Morpho 的治理代幣",
+      "role": {
+        "en": "A token you can pick: Morpho's governance token",
+        "zh-TW": "可選的代幣：Morpho 的治理代幣"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
+          "text": {
+            "en": "Etherscan: contract name ERC1967Proxy, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
+            "zh-TW": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5"
+          },
           "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
           "result": "pass"
         }
       ]
     },
     "cbbtc": {
-      "role": "可選的代幣：Coinbase 發行的 cbBTC",
+      "role": {
+        "en": "A token you can pick: cbBTC, issued by Coinbase",
+        "zh-TW": "可選的代幣：Coinbase 發行的 cbBTC"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
+          "text": {
+            "en": "Etherscan: contract name FiatTokenProxy, creator 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
+            "zh-TW": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05"
+          },
           "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
           "result": "pass"
         }
       ]
     },
     "permit2": {
-      "role": "Uniswap 的 Permit2：替使用者保管代幣授權，只依使用者在 Permit2 上的授權轉代幣",
+      "role": {
+        "en": "Uniswap's Permit2: it keeps token allowances for users, and moves tokens only as a user's allowances in Permit2 permit",
+        "zh-TW": "Uniswap 的 Permit2：替使用者保管代幣授權，只依使用者在 Permit2 上的授權轉代幣"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 Permit2（已驗證，solc 0.8.17），創建者 0xd32ff78579352ca78f416120a9f68b65c410871b",
+          "text": {
+            "en": "Etherscan: contract name Permit2 (verified, solc 0.8.17), creator 0xd32ff78579352ca78f416120a9f68b65c410871b",
+            "zh-TW": "Etherscan：合約名 Permit2（已驗證，solc 0.8.17），創建者 0xd32ff78579352ca78f416120a9f68b65c410871b"
+          },
           "url": "https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3#code",
           "result": "pass"
         },
         {
-          "text": "Permit2 原始碼：沒有 owner、沒有 proxy；AllowanceTransfer 只在 owner 授權過的 spender 呼叫時轉帳",
+          "text": {
+            "en": "Permit2 source code: no owner, no proxy; AllowanceTransfer transfers only when a spender the owner has approved calls it",
+            "zh-TW": "Permit2 原始碼：沒有 owner、沒有 proxy；AllowanceTransfer 只在 owner 授權過的 spender 呼叫時轉帳"
+          },
           "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol",
           "result": "pass"
         }
       ]
     },
     "universal-router-2.1.2": {
-      "role": "Uniswap 的 Universal Router 2.1.2：照指令清單執行兌換，只從呼叫它的地址透過 Permit2 拉代幣",
+      "role": {
+        "en": "Uniswap's Universal Router 2.1.2: it runs swaps from a list of commands, and pulls tokens through Permit2 only from the address that calls it",
+        "zh-TW": "Uniswap 的 Universal Router 2.1.2：照指令清單執行兌換，只從呼叫它的地址透過 Permit2 拉代幣"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 UniversalRouter（已驗證，solc 0.8.26），創建者 0x2179a60856e37dfeaaca0ab043b931fe224b27b6",
+          "text": {
+            "en": "Etherscan: contract name UniversalRouter (verified, solc 0.8.26), creator 0x2179a60856e37dfeaaca0ab043b931fe224b27b6",
+            "zh-TW": "Etherscan：合約名 UniversalRouter（已驗證，solc 0.8.26），創建者 0x2179a60856e37dfeaaca0ab043b931fe224b27b6"
+          },
           "url": "https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85#code",
           "result": "pass"
         },
         {
-          "text": "Uniswap 交易 API 的規格寫明：沒指定版本時預設用 2.1.2，也就是 app 今天送交易的 router",
+          "text": {
+            "en": "The Uniswap trading API's spec states that it uses 2.1.2 by default when no version is given, which is the router the app sends transactions to today",
+            "zh-TW": "Uniswap 交易 API 的規格寫明：沒指定版本時預設用 2.1.2，也就是 app 今天送交易的 router"
+          },
           "url": "https://trade-api.gateway.uniswap.org/v1/api.json",
           "result": "pass"
         },
         {
-          "text": "已驗證原始碼：所有 Permit2 轉帳都用 msgSender()（呼叫 execute 的地址）當付款人，沒有 owner 和 proxy",
+          "text": {
+            "en": "Verified source code: every Permit2 transfer uses msgSender() (the address that calls execute) as the payer; no owner and no proxy",
+            "zh-TW": "已驗證原始碼：所有 Permit2 轉帳都用 msgSender()（呼叫 execute 的地址）當付款人，沒有 owner 和 proxy"
+          },
           "url": "https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
           "result": "pass"
         }
@@ -104,9 +170,21 @@
     }
   },
   "fields": {
-    "1.approve.token": "授權的代幣。",
-    "1.approve.spender": "被授權的合約：Universal Router 2.1.2。",
-    "1.approve.amount": "授權數量 2^160-1，Permit2 的無上限，用了也不會減少。",
-    "1.approve.expiration": "授權到期時間，app 設 30 天後；verify 的網頁會顯示。"
+    "1.approve.token": {
+      "en": "The token the allowance is for.",
+      "zh-TW": "授權的代幣。"
+    },
+    "1.approve.spender": {
+      "en": "The spender contract: Universal Router 2.1.2.",
+      "zh-TW": "被授權的合約：Universal Router 2.1.2。"
+    },
+    "1.approve.amount": {
+      "en": "The allowance amount, 2^160-1, Permit2's unlimited. Using it does not reduce it.",
+      "zh-TW": "授權數量 2^160-1，Permit2 的無上限，用了也不會減少。"
+    },
+    "1.approve.expiration": {
+      "en": "When the allowance expires. The app sets it 30 days ahead; the verify page shows it.",
+      "zh-TW": "授權到期時間，app 設 30 天後；verify 的網頁會顯示。"
+    }
   }
 }

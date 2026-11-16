@@ -1,29 +1,50 @@
 {
-  "title": "存入 Morpho market",
-  "summary": "Safe 先授權 BlueBundlesV1 剛好你填的金額，再呼叫它的 `blueBundlesV1Supply`：它從 Safe 拉走這筆代幣，以 Safe 的名義存進你選的 Morpho Blue market。存款借給這個 market 的借款人賺利息，Safe 拿到的是存款份額。",
+  "title": {
+    "en": "Deposit into a Morpho market",
+    "zh-TW": "存入 Morpho market"
+  },
+  "summary": {
+    "en": "The Safe first gives BlueBundlesV1 an allowance of exactly the amount you type, then calls its `blueBundlesV1Supply`. It pulls these tokens from the Safe and deposits them, on behalf of the Safe, into the Morpho Blue market you pick. The deposit is lent to this market's borrowers to earn interest, and the Safe receives deposit shares.",
+    "zh-TW": "Safe 先授權 BlueBundlesV1 剛好你填的金額，再呼叫它的 `blueBundlesV1Supply`：它從 Safe 拉走這筆代幣，以 Safe 的名義存進你選的 Morpho Blue market。存款借給這個 market 的借款人賺利息，Safe 拿到的是存款份額。"
+  },
   "verdict": {
     "status": "caution",
-    "text": "可以用。oracle 的地址程式只在協議 API 確認，第一次先送小額。"
+    "text": {
+      "en": "Usable. The program confirms the oracle's address only through the protocol API. Send a small amount the first time.",
+      "zh-TW": "可以用。oracle 的地址程式只在協議 API 確認，第一次先送小額。"
+    }
   },
   "flow": [
     {
       "after": 2,
       "from": "blue-bundles-v1",
       "to": "usdc",
-      "text": "用 `transferFrom` 從 Safe 拉走你填的金額"
+      "text": {
+        "en": "Pulls the amount you type from the Safe with `transferFrom`",
+        "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額"
+      }
     },
     {
       "after": 2,
       "from": "blue-bundles-v1",
       "to": "morpho-blue",
-      "text": "`supply` 進 market，`onBehalf` 是 Safe"
+      "text": {
+        "en": "`supply` into the market, with `onBehalf` the Safe",
+        "zh-TW": "`supply` 進 market，`onBehalf` 是 Safe"
+      }
     }
   ],
   "protocols": {
     "morpho-blue": {
-      "intro": "Morpho Blue 是不可升級的借貸合約。每個 market 由 5 個參數固定，任何人都能建立新的 market。",
+      "intro": {
+        "en": "Morpho Blue is a non-upgradeable lending contract. Each market is fixed by 5 parameters, and anyone can create a new market.",
+        "zh-TW": "Morpho Blue 是不可升級的借貸合約。每個 market 由 5 個參數固定，任何人都能建立新的 market。"
+      },
       "audits": {
-        "text": "Morpho Blue 的 GitHub 列了 10 份稽核報告，來自 OpenZeppelin、Cantina、Spearbit、ABDK、Blackthorn 和 Certora，涵蓋 Morpho Blue 本體和 AdaptiveCurveIrm。AI 沒有找到 BlueBundlesV1 的公開稽核清單。",
+        "text": {
+          "en": "Morpho Blue's GitHub lists 10 audit reports, from OpenZeppelin, Cantina, Spearbit, ABDK, Blackthorn and Certora, covering Morpho Blue itself and AdaptiveCurveIrm. The AI found no public list of audits for BlueBundlesV1.",
+          "zh-TW": "Morpho Blue 的 GitHub 列了 10 份稽核報告，來自 OpenZeppelin、Cantina、Spearbit、ABDK、Blackthorn 和 Certora，涵蓋 Morpho Blue 本體和 AdaptiveCurveIrm。AI 沒有找到 BlueBundlesV1 的公開稽核清單。"
+        },
         "sources": [
           "https://github.com/morpho-org/morpho-blue/tree/main/audits"
         ]
@@ -33,74 +54,170 @@
   },
   "judgments": [
     {
-      "text": "沒有 Safe 這樣存過：過去一年找到的 2 筆 Safe 交易做的是提款和還款，不是存款。8 筆 EOA 直接呼叫 `blueBundlesV1Supply`，形狀跟模板一樣，但存進的都是 registry 外的市場，所以沒有一筆跟模板一模一樣。",
-      "recommendation": "第一次先送小額，確認 verify 印出 MATCH，交易後存款份額有增加。"
+      "text": {
+        "en": "No Safe has deposited this way: the 2 Safe transactions found over the past year were a withdrawal and a repayment, not deposits. 8 EOA transactions called `blueBundlesV1Supply` directly, in the same shape as the template, but all of them deposited into markets outside the registry, so none matches the template exactly.",
+        "zh-TW": "沒有 Safe 這樣存過：過去一年找到的 2 筆 Safe 交易做的是提款和還款，不是存款。8 筆 EOA 直接呼叫 `blueBundlesV1Supply`，形狀跟模板一樣，但存進的都是 registry 外的市場，所以沒有一筆跟模板一模一樣。"
+      },
+      "recommendation": {
+        "en": "Send a small amount the first time, and check that verify prints MATCH and that the deposit shares grow after the transaction.",
+        "zh-TW": "第一次先送小額，確認 verify 印出 MATCH，交易後存款份額有增加。"
+      }
     },
     {
-      "text": "存款會借給押 cbBTC 的借款人。讀到的使用率約 87%，只有剩下約 13% 的錢能馬上提出。",
-      "recommendation": "只存短期內不一定要提出的金額。"
+      "text": {
+        "en": "The deposit is lent to borrowers who post cbBTC as collateral. The utilization read was about 87%, so only the remaining 13% or so of the funds can be withdrawn right away.",
+        "zh-TW": "存款會借給押 cbBTC 的借款人。讀到的使用率約 87%，只有剩下約 13% 的錢能馬上提出。"
+      },
+      "recommendation": {
+        "en": "Deposit only an amount you will not necessarily need to withdraw in the short term.",
+        "zh-TW": "只存短期內不一定要提出的金額。"
+      }
     }
   ],
   "reviews": {
     "morpho-oracle-cbbtc-usdc-86/address": {
       "status": "confirmed",
-      "text": "程式只有協議 API 確認這個地址，market 頁要跑腳本才顯示。AI 用 headless Chrome 打開這一頁：「Oracle contract」旁邊顯示 0xA6D6…182a，它連到的 Etherscan 頁正是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a。",
-      "recommendation": "可以接受。想自己確認，用瀏覽器打開這頁，比對 Oracle contract 的連結。"
+      "text": {
+        "en": "Only the protocol API confirms this address for the program, and the market page shows it only when its scripts run. The AI opened that page in headless Chrome: next to \"Oracle contract\" it shows 0xA6D6…182a, and the Etherscan page it links to is exactly 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a.",
+        "zh-TW": "程式只有協議 API 確認這個地址，market 頁要跑腳本才顯示。AI 用 headless Chrome 打開這一頁：「Oracle contract」旁邊顯示 0xA6D6…182a，它連到的 Etherscan 頁正是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a。"
+      },
+      "recommendation": {
+        "en": "Acceptable. To check it yourself, open this page in a browser and compare the Oracle contract link.",
+        "zh-TW": "可以接受。想自己確認，用瀏覽器打開這頁，比對 Oracle contract 的連結。"
+      }
     },
     "morpho-oracle-usp-usdc/address": {
       "status": "concern",
-      "text": "AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
-      "recommendation": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
+      "text": {
+        "en": "The AI read Morpho Blue's `idToMarketParams` on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it returns is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d. A market id is the hash of the five parameters, so a different oracle makes a different market.",
+        "zh-TW": "AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。"
+      },
+      "recommendation": {
+        "en": "Acceptable. To check again, open these two markets' pages in the Morpho app and compare the oracle address.",
+        "zh-TW": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
+      }
     }
   },
   "entries": {
     "usdc": {
-      "role": "借出的代幣，存進 market 的就是它"
+      "role": {
+        "en": "The loan token, the one deposited into the market",
+        "zh-TW": "借出的代幣，存進 market 的就是它"
+      }
     },
     "morpho-blue": {
-      "role": "Morpho Blue 本體，market 和存款份額都記在這裡"
+      "role": {
+        "en": "Morpho Blue itself, where markets and deposit shares are recorded",
+        "zh-TW": "Morpho Blue 本體，market 和存款份額都記在這裡"
+      }
     },
     "blue-bundles-v1": {
-      "role": "接收授權，替 Safe 把代幣存進 market"
+      "role": {
+        "en": "Receives the allowance and deposits the tokens into the market for the Safe",
+        "zh-TW": "接收授權，替 Safe 把代幣存進 market"
+      }
     },
     "adaptive-curve-irm": {
-      "role": "這個 market 的利率模型"
+      "role": {
+        "en": "This market's interest rate model",
+        "zh-TW": "這個 market 的利率模型"
+      }
     },
     "morpho-oracle-cbbtc-usdc-86": {
-      "role": "這個 market 給 cbBTC 報價的 oracle",
+      "role": {
+        "en": "The oracle that prices cbBTC for this market",
+        "zh-TW": "這個 market 給 cbBTC 報價的 oracle"
+      },
       "sources": [
         {
-          "text": "用瀏覽器打開 Morpho market 頁",
+          "text": {
+            "en": "Open the Morpho market page in a browser",
+            "zh-TW": "用瀏覽器打開 Morpho market 頁"
+          },
           "url": "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc",
           "result": "pass"
         }
       ]
     },
     "cbbtc": {
-      "role": "這個 market 的抵押代幣"
+      "role": {
+        "en": "This market's collateral token",
+        "zh-TW": "這個 market 的抵押代幣"
+      }
     },
     "usp": {
-      "role": "USP 市場的抵押代幣"
+      "role": {
+        "en": "Collateral token of the USP markets",
+        "zh-TW": "USP 市場的抵押代幣"
+      }
     },
     "morpho-oracle-usp-usdc": {
-      "role": "USP 市場用來給 USP 定價的 oracle"
+      "role": {
+        "en": "The oracle the USP markets use to price USP",
+        "zh-TW": "USP 市場用來給 USP 定價的 oracle"
+      }
     }
   },
   "fields": {
-    "1.approve.spender": "被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 BlueBundlesV1，呼叫 2 裡它用 `transferFrom` 拉走這筆錢。",
-    "1.approve.value": "授權的上限，等於存款金額。呼叫 2 會整筆拉走，交易後授權回到 0。",
-    "2.blueBundlesV1Supply.marketParams": "指定存進哪一個 market。Morpho Blue 用這 5 個值的雜湊當 market id；同樣兩種代幣可以有好幾個 market，所以 5 個都要對。",
-    "2.blueBundlesV1Supply.marketParams.loanToken": "借出的代幣，也就是你存進去、別人借走的代幣。",
-    "2.blueBundlesV1Supply.marketParams.collateralToken": "借款人押在這個 market 的抵押品。",
-    "2.blueBundlesV1Supply.marketParams.oracle": "給抵押品報價的合約，決定借款人什麼時候被清算。",
-    "2.blueBundlesV1Supply.marketParams.irm": "利率模型，依資金使用率決定借款利率。",
-    "2.blueBundlesV1Supply.marketParams.lltv": "清算門檻：借款超過抵押品價值的這個比例就會被清算。以 1e18 為 100%。",
-    "2.blueBundlesV1Supply.assets": "要存進 market 的代幣數量，合約從 Safe 拉這麼多。推薦費是 0，所以整筆存進去。",
-    "2.blueBundlesV1Supply.loanTokenPermit": "告訴合約怎麼從 Safe 拿到代幣。`kind` 0 用呼叫 1 的 `approve`；1 和 2 是簽名授權（ERC-2612、Permit2），Safe 用不到。",
-    "2.blueBundlesV1Supply.loanTokenPermit.kind": "0 表示用 `transferFrom` 拉，靠的是呼叫 1 的 `approve`。",
-    "2.blueBundlesV1Supply.loanTokenPermit.data": "只有 `kind` 1 或 2 才會讀。`kind` 是 0 時 TokenLib 的 `pullOrWrapNative` 不讀它，測試交易換成別的值，結果一樣。",
-    "2.blueBundlesV1Supply.referralFeePct": "從存款抽給推薦人的比例，以 1e18 為 100%。固定為 0，整筆存進 market。",
-    "2.blueBundlesV1Supply.referralFeeRecipient": "收推薦費的地址。比例是 0 就不會轉錢給它，這裡固定為零地址。",
-    "2.blueBundlesV1Supply.deadline": "交易最晚能執行的時間（Unix 秒）。過了就整筆失敗，錢不會動。過去 8 筆 EOA 交易每筆都不同。"
+    "1.approve.spender": {
+      "en": "The contract allowed to pull tokens from the Safe. Here it is Morpho's BlueBundlesV1, which pulls this money with `transferFrom` in call 2.",
+      "zh-TW": "被授權從 Safe 拉代幣的合約。這裡是 Morpho 的 BlueBundlesV1，呼叫 2 裡它用 `transferFrom` 拉走這筆錢。"
+    },
+    "1.approve.value": {
+      "en": "The allowance's cap, equal to the deposit amount. Call 2 pulls all of it, and the allowance is back to 0 after the transaction.",
+      "zh-TW": "授權的上限，等於存款金額。呼叫 2 會整筆拉走，交易後授權回到 0。"
+    },
+    "2.blueBundlesV1Supply.marketParams": {
+      "en": "Names the market to deposit into. Morpho Blue uses the hash of these 5 values as the market id. The same two tokens can have several markets, so all 5 must be right.",
+      "zh-TW": "指定存進哪一個 market。Morpho Blue 用這 5 個值的雜湊當 market id；同樣兩種代幣可以有好幾個 market，所以 5 個都要對。"
+    },
+    "2.blueBundlesV1Supply.marketParams.loanToken": {
+      "en": "The loan token: the token you deposit and others borrow.",
+      "zh-TW": "借出的代幣，也就是你存進去、別人借走的代幣。"
+    },
+    "2.blueBundlesV1Supply.marketParams.collateralToken": {
+      "en": "The collateral borrowers post in this market.",
+      "zh-TW": "借款人押在這個 market 的抵押品。"
+    },
+    "2.blueBundlesV1Supply.marketParams.oracle": {
+      "en": "The contract that prices the collateral. It decides when a borrower is liquidated.",
+      "zh-TW": "給抵押品報價的合約，決定借款人什麼時候被清算。"
+    },
+    "2.blueBundlesV1Supply.marketParams.irm": {
+      "en": "The interest rate model. It sets the borrow rate from the utilization of the funds.",
+      "zh-TW": "利率模型，依資金使用率決定借款利率。"
+    },
+    "2.blueBundlesV1Supply.marketParams.lltv": {
+      "en": "The liquidation threshold: a borrower whose debt exceeds this share of the collateral's value is liquidated. 1e18 is 100%.",
+      "zh-TW": "清算門檻：借款超過抵押品價值的這個比例就會被清算。以 1e18 為 100%。"
+    },
+    "2.blueBundlesV1Supply.assets": {
+      "en": "The number of tokens to deposit into the market. The contract pulls this many from the Safe. The referral fee is 0, so all of it is deposited.",
+      "zh-TW": "要存進 market 的代幣數量，合約從 Safe 拉這麼多。推薦費是 0，所以整筆存進去。"
+    },
+    "2.blueBundlesV1Supply.loanTokenPermit": {
+      "en": "Tells the contract how to get the tokens from the Safe. `kind` 0 uses the `approve` of call 1. 1 and 2 are signed allowances (ERC-2612, Permit2), which a Safe has no use for.",
+      "zh-TW": "告訴合約怎麼從 Safe 拿到代幣。`kind` 0 用呼叫 1 的 `approve`；1 和 2 是簽名授權（ERC-2612、Permit2），Safe 用不到。"
+    },
+    "2.blueBundlesV1Supply.loanTokenPermit.kind": {
+      "en": "0 means the tokens are pulled with `transferFrom`, relying on the `approve` of call 1.",
+      "zh-TW": "0 表示用 `transferFrom` 拉，靠的是呼叫 1 的 `approve`。"
+    },
+    "2.blueBundlesV1Supply.loanTokenPermit.data": {
+      "en": "Read only when `kind` is 1 or 2. When `kind` is 0, TokenLib's `pullOrWrapNative` does not read it. Test transactions that changed it to other values gave the same result.",
+      "zh-TW": "只有 `kind` 1 或 2 才會讀。`kind` 是 0 時 TokenLib 的 `pullOrWrapNative` 不讀它，測試交易換成別的值，結果一樣。"
+    },
+    "2.blueBundlesV1Supply.referralFeePct": {
+      "en": "The share of the deposit taken for the referrer, with 1e18 as 100%. Fixed at 0, so all of it goes into the market.",
+      "zh-TW": "從存款抽給推薦人的比例，以 1e18 為 100%。固定為 0，整筆存進 market。"
+    },
+    "2.blueBundlesV1Supply.referralFeeRecipient": {
+      "en": "The address that receives the referral fee. With a share of 0 no money is sent to it. Here it is fixed to the zero address.",
+      "zh-TW": "收推薦費的地址。比例是 0 就不會轉錢給它，這裡固定為零地址。"
+    },
+    "2.blueBundlesV1Supply.deadline": {
+      "en": "The latest time the transaction can run (Unix seconds). After it the whole transaction fails and no money moves. Each of the past 8 EOA transactions had a different one.",
+      "zh-TW": "交易最晚能執行的時間（Unix 秒）。過了就整筆失敗，錢不會動。過去 8 筆 EOA 交易每筆都不同。"
+    }
   }
 }

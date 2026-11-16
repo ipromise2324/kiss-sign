@@ -44,7 +44,7 @@ function shown(fixture: string, card: Card, book: Record<string, Address> = {}):
 }
 
 const rowsText = (tree: CallTree): string =>
-  checklist(tree)
+  checklist(tree, 'zh-TW')
     .map((line) => (line.kind === 'group' ? `[${line.id}] ${line.title}` : `${line.id} ${line.value} | ${line.name}`))
     .join('\n');
 

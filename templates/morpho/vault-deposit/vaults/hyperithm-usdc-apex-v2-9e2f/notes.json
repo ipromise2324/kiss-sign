@@ -4,40 +4,70 @@
       "after": 2,
       "from": "general-adapter-1",
       "to": "usdc",
-      "text": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
+      "text": {
+        "en": "Pulls the amount you type of the asset token from the Safe with `transferFrom`",
+        "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
+      }
     }
   ],
   "verdict": {
     "status": "caution",
-    "text": "可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。"
+    "text": {
+      "en": "OK to use. No official Hyperithm page lists this vault's address. Read To review first, and send a small amount the first time.",
+      "zh-TW": "可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。"
+    }
   },
-  "pastTxsConclusion": "其他 Safe 存款只呼叫 `multicall`，沒有先 approve。EOA 多半改用 permit 簽名存，Safe 不能用 permit。",
+  "pastTxsConclusion": {
+    "en": "Other Safes' deposits call only `multicall`, with no approve first. EOAs mostly deposit with a permit signature instead; a Safe cannot use permit.",
+    "zh-TW": "其他 Safe 存款只呼叫 `multicall`，沒有先 approve。EOA 多半改用 permit 簽名存，Safe 不能用 permit。"
+  },
   "judgments": [
     {
-      "text": "這個 vault 一年內從約 3,300 升到約 750 萬 USDC，2026-07 曾到約 1,260 萬；最大持有人占 51.77%，前 10 名占 90.10%。",
-      "recommendation": "只存你能接受暫時提不出的金額，先送小額。"
+      "text": {
+        "en": "Within a year this vault grew from about 3,300 to about 7.5 million USDC, and reached about 12.6 million in 2026-07. The largest holder has 51.77% and the top 10 hold 90.10%.",
+        "zh-TW": "這個 vault 一年內從約 3,300 升到約 750 萬 USDC，2026-07 曾到約 1,260 萬；最大持有人占 51.77%，前 10 名占 90.10%。"
+      },
+      "recommendation": {
+        "en": "Deposit only an amount you can accept being unable to withdraw for a while, and send a small amount first.",
+        "zh-TW": "只存你能接受暫時提不出的金額，先送小額。"
+      }
     }
   ],
   "reviews": {
     "hyperithm-usdc-apex-v2-9e2f/address": {
       "status": "concern",
-      "text": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 用瀏覽器打開 Morpho app 的 vault 頁，名稱是 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。AI 沒找到 Hyperithm 或 Morpho 不靠網址帶地址就列出這個地址的頁面。",
-      "recommendation": "先在 Morpho app 的 vault 列表點進去比對地址，第一次送小額。"
+      "text": {
+        "en": "The program's only check is the factory: VaultV2Factory answers `isVaultV2` = true. AI opened the vault's page on the Morpho app in a browser: the name is Hyperithm USDC Apex and the curator is 0x75178137D3B4B9A0F771E0e149b00fB8167BA325, the same as the V1 vault's. AI found no Hyperithm or Morpho page that lists this address without the address being in the URL.",
+        "zh-TW": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 用瀏覽器打開 Morpho app 的 vault 頁，名稱是 Hyperithm USDC Apex，curator 是 0x75178137D3B4B9A0F771E0e149b00fB8167BA325，跟 V1 vault 相同。AI 沒找到 Hyperithm 或 Morpho 不靠網址帶地址就列出這個地址的頁面。"
+      },
+      "recommendation": {
+        "en": "First click into the vault from the Morpho app's vault list and compare the address. Send a small amount the first time.",
+        "zh-TW": "先在 Morpho app 的 vault 列表點進去比對地址，第一次送小額。"
+      }
     }
   },
   "entries": {
     "hyperithm-usdc-apex-v2-9e2f": {
-      "role": "Hyperithm 管理的 USDC vault（V2）",
+      "role": {
+        "en": "USDC vault (V2) managed by Hyperithm",
+        "zh-TW": "Hyperithm 管理的 USDC vault（V2）"
+      },
       "sources": [
         {
-          "text": "用瀏覽器打開 Morpho app 的 vault 頁",
+          "text": {
+            "en": "The vault's page on the Morpho app, opened in a browser",
+            "zh-TW": "用瀏覽器打開 Morpho app 的 vault 頁"
+          },
           "url": "https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex",
           "result": "attention"
         }
       ]
     },
     "vault-v2-factory": {
-      "role": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+      "role": {
+        "en": "The Morpho Vault V2 factory. It answers `isVaultV2` = true: it created this vault",
+        "zh-TW": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+      }
     }
   }
 }

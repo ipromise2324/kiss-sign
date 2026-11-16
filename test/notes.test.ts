@@ -26,19 +26,23 @@ const SCOPE: NotesScope = {
   protocols: new Map([['morpho-blue', 1]]),
   fields: ['1.approve.spender', '2.blueBundlesV1Supply.marketParams', '2.blueBundlesV1Supply.marketParams.oracle'],
   reviews: ['morpho-oracle/source.page'],
+  language: 'zh-TW',
 };
 
-const NOTE = { text: '說明', sources: ['https://docs.morpho.org/'] };
+/** One AI text in both languages; the English is the Chinese with a marker, so a test can tell which one came back. */
+const t = (zh: string) => ({ en: `en:${zh}`, 'zh-TW': zh });
+
+const NOTE = { text: t('說明'), sources: ['https://docs.morpho.org/'] };
 const VALID = {
-  title: '供應 USDC 到 Morpho 市場',
-  summary: '摘要',
-  verdict: { status: 'caution', text: '要小心' },
-  flow: [{ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text: 'Bundler 呼叫 supply' }],
-  protocols: { 'morpho-blue': { intro: '借貸協議', audits: NOTE, incidents: [NOTE] } },
-  judgments: [{ text: '判斷', recommendation: '建議' }],
-  reviews: { 'morpho-oracle/source.page': { status: 'concern', text: '頁面要跑 JavaScript', recommendation: '在瀏覽器打開' } },
-  entries: { usdc: { role: '借出的代幣', sources: [{ text: 'Etherscan', url: 'https://etherscan.io/', result: 'pass' }] }, cbbtc: {} },
-  fields: { '1.approve.spender': '誰可以拿走代幣', '2.blueBundlesV1Supply.marketParams': '市場', '2.blueBundlesV1Supply.marketParams.oracle': '價格來源' },
+  title: t('供應 USDC 到 Morpho 市場'),
+  summary: t('摘要'),
+  verdict: { status: 'caution', text: t('要小心') },
+  flow: [{ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text: t('Bundler 呼叫 supply') }],
+  protocols: { 'morpho-blue': { intro: t('借貸協議'), audits: NOTE, incidents: [NOTE] } },
+  judgments: [{ text: t('判斷'), recommendation: t('建議') }],
+  reviews: { 'morpho-oracle/source.page': { status: 'concern', text: t('頁面要跑 JavaScript'), recommendation: t('在瀏覽器打開') } },
+  entries: { usdc: { role: t('借出的代幣'), sources: [{ text: t('Etherscan'), url: 'https://etherscan.io/', result: 'pass' }] }, cbbtc: {} },
+  fields: { '1.approve.spender': t('誰可以拿走代幣'), '2.blueBundlesV1Supply.marketParams': t('市場'), '2.blueBundlesV1Supply.marketParams.oracle': t('價格來源') },
 };
 
 type Json = Record<string, unknown>;
@@ -70,6 +74,25 @@ test('valid notes parse, in the scope order, with fields as plain strings', () =
   assert.equal(notes.reviews.get('morpho-oracle/source.page')?.status, 'concern');
 });
 
+test("each language's page gets that language's text", () => {
+  const en = parseNotes(VALID, { ...SCOPE, language: 'en' });
+  assert.equal(en.title, 'en:供應 USDC 到 Morpho 市場');
+  assert.equal(en.fields.get('2.blueBundlesV1Supply.marketParams.oracle'), 'en:價格來源');
+  assert.equal(en.protocols.get('morpho-blue')?.audits.text, 'en:說明');
+  assert.equal(parseNotes(VALID, SCOPE).title, '供應 USDC 到 Morpho 市場');
+});
+
+test('a text missing a language, holding another key, or written as a plain string is refused, whichever language the page is in', () => {
+  for (const language of ['en', 'zh-TW'] as const) {
+    const scope = { ...SCOPE, language };
+    const refusedIn = (raw: unknown, message: string) => assert.throws(() => parseNotes(raw, scope), (e: unknown) => e instanceof NotesError && e.message === message);
+    refusedIn(edited(['title'], { en: 'Supply USDC' }), 'notes.json.title: zh-TW is missing');
+    refusedIn(edited(['verdict', 'text'], { 'zh-TW': '要小心' }), 'notes.json.verdict.text: en is missing');
+    refusedIn(edited(['fields', '1.approve.spender'], { ...t('誰'), fr: 'qui' }), 'notes.json.fields.1.approve.spender: "fr" is not a language; use en and zh-TW');
+    refusedIn(edited(['summary'], '摘要'), 'notes.json.summary: not a JSON object with en and zh-TW');
+  }
+});
+
 test('flow, judgments and entries may be left out', () => {
   const notes = parseNotes(edited(['entries'], undefined), SCOPE);
   assert.equal(notes.entries, undefined);
@@ -80,8 +103,8 @@ test('flow, judgments and entries may be left out', () => {
 test('an entry with routes needs a role and a source, since its pin covers only the implementations its seeds reach', () => {
   const routed: NotesScope = { ...SCOPE, routed: new Set(['morpho-blue']) };
   const message = 'notes.json: entries.morpho-blue needs a role and at least one source: its routes reach only the implementations its seeds name, so list the history that shows a seed reaches every implementation still set';
-  const history = { role: '流動性層', sources: [{ text: 'LogSetImplementation 紀錄', url: 'https://etherscan.io/', result: 'pass' }] };
-  for (const entry of [undefined, {}, { role: '流動性層' }, { sources: history.sources }]) {
+  const history = { role: t('流動性層'), sources: [{ text: t('LogSetImplementation 紀錄'), url: 'https://etherscan.io/', result: 'pass' }] };
+  for (const entry of [undefined, {}, { role: t('流動性層') }, { sources: history.sources }]) {
     assert.throws(() => parseNotes(edited(['entries', 'morpho-blue'], entry), routed), (error: unknown) => error instanceof NotesError && error.message === message);
   }
   assert.throws(() => parseNotes(edited(['entries'], undefined), routed), (error: unknown) => error instanceof NotesError && error.message === message);
@@ -149,33 +172,36 @@ test('a source that is not an https URL is refused', () => {
 });
 
 test('a control or bidirectional character is refused', () => {
-  for (const mark of ['\u202e', '\u200e', '\u200f', '\u061c']) refused(edited(['summary'], `a${mark}b`), 'notes.json.summary: holds a control or bidirectional character');
+  for (const mark of ['\u202e', '\u200e', '\u200f', '\u061c']) refused(edited(['summary'], { en: 'ab', 'zh-TW': `a${mark}b` }), 'notes.json.summary.zh-TW: holds a control or bidirectional character');
+  refused(edited(['summary'], { en: 'a\u202eb', 'zh-TW': 'ab' }), 'notes.json.summary.en: holds a control or bidirectional character');
 });
 
-test('text over its limit is refused: 2,000, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict', () => {
-  const over = (n: number) => 'x'.repeat(n + 1);
-  refused(edited(['summary'], over(2000)), 'notes.json.summary: longer than 2000 characters');
-  refused(edited(['fields', '1.approve.spender'], over(2000)), 'notes.json.fields.1.approve.spender: longer than 2000 characters');
-  refused(edited(['reviews', 'morpho-oracle/source.page', 'text'], over(300)), 'notes.json.reviews.morpho-oracle/source.page.text: longer than 300 characters');
-  refused(edited(['judgments', 0, 'text'], over(200)), 'notes.json.judgments[0].text: longer than 200 characters');
-  refused(edited(['entries', 'usdc', 'role'], over(200)), 'notes.json.entries.usdc.role: longer than 200 characters');
-  refused(edited(['reviews', 'morpho-oracle/source.page', 'recommendation'], over(200)), 'notes.json.reviews.morpho-oracle/source.page.recommendation: longer than 200 characters');
-  refused(edited(['protocols', 'morpho-blue', 'intro'], over(200)), 'notes.json.protocols.morpho-blue.intro: longer than 200 characters');
-  refused(edited(['entries', 'usdc', 'sources', 0, 'text'], over(200)), 'notes.json.entries.usdc.sources[0].text: longer than 200 characters');
-  refused(edited(['title'], over(100)), 'notes.json.title: longer than 100 characters');
-  refused(edited(['flow', 0, 'text'], over(100)), 'notes.json.flow[0].text: longer than 100 characters');
-  refused(edited(['verdict', 'text'], over(100)), 'notes.json.verdict.text: longer than 100 characters');
+test('text over its limit is refused: 2,000, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict; English may be three times as long', () => {
+  const over = (n: number) => t('x'.repeat(n + 1));
+  refused(edited(['summary'], over(2000)), 'notes.json.summary.zh-TW: longer than 2000 characters');
+  refused(edited(['fields', '1.approve.spender'], over(2000)), 'notes.json.fields.1.approve.spender.zh-TW: longer than 2000 characters');
+  refused(edited(['reviews', 'morpho-oracle/source.page', 'text'], over(300)), 'notes.json.reviews.morpho-oracle/source.page.text.zh-TW: longer than 300 characters');
+  refused(edited(['judgments', 0, 'text'], over(200)), 'notes.json.judgments[0].text.zh-TW: longer than 200 characters');
+  refused(edited(['entries', 'usdc', 'role'], over(200)), 'notes.json.entries.usdc.role.zh-TW: longer than 200 characters');
+  refused(edited(['reviews', 'morpho-oracle/source.page', 'recommendation'], over(200)), 'notes.json.reviews.morpho-oracle/source.page.recommendation.zh-TW: longer than 200 characters');
+  refused(edited(['protocols', 'morpho-blue', 'intro'], over(200)), 'notes.json.protocols.morpho-blue.intro.zh-TW: longer than 200 characters');
+  refused(edited(['entries', 'usdc', 'sources', 0, 'text'], over(200)), 'notes.json.entries.usdc.sources[0].text.zh-TW: longer than 200 characters');
+  refused(edited(['title'], over(100)), 'notes.json.title.zh-TW: longer than 100 characters');
+  refused(edited(['flow', 0, 'text'], over(100)), 'notes.json.flow[0].text.zh-TW: longer than 100 characters');
+  refused(edited(['verdict', 'text'], over(100)), 'notes.json.verdict.text.zh-TW: longer than 100 characters');
+  assert.doesNotThrow(() => parseNotes(edited(['title'], { en: 'x'.repeat(300), 'zh-TW': 'x' }), SCOPE));
+  refused(edited(['title'], { en: 'x'.repeat(301), 'zh-TW': 'x' }), 'notes.json.title.en: longer than 300 characters');
 });
 
 test('a backtick code span around one identifier is accepted, and its backticks do not count toward the limit', () => {
-  for (const text of ['依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`', '`supply()` 進 market', '`_spender` 是 adapter']) assert.equal(parseNotes(edited(['flow', 0, 'text'], text), SCOPE).flow[0]?.text, text);
+  for (const text of ['依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`', '`supply()` 進 market', '`_spender` 是 adapter']) assert.equal(parseNotes(edited(['flow', 0, 'text'], t(text)), SCOPE).flow[0]?.text, text);
   const full = `\`${'x'.repeat(98)}\``;
-  assert.equal(parseNotes(edited(['flow', 0, 'text'], full), SCOPE).flow[0]?.text, full);
+  assert.equal(parseNotes(edited(['flow', 0, 'text'], t(full)), SCOPE).flow[0]?.text, full);
 });
 
 test('a backtick that is not closed or wraps anything but one identifier is refused', () => {
-  const message = 'notes.json.summary: holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`';
-  for (const text of ['呼叫 `multicall', '`a b`', '`<b>x</b>`', '``', '`1abc`', '`f(x)`', '`a.b`', '`https://x`']) refused(edited(['summary'], text), message);
+  const message = 'notes.json.summary.zh-TW: holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`';
+  for (const text of ['呼叫 `multicall', '`a b`', '`<b>x</b>`', '``', '`1abc`', '`f(x)`', '`a.b`', '`https://x`']) refused(edited(['summary'], { en: 'x', 'zh-TW': text }), message);
 });
 
 test('a status, verdict or AI source result outside its words is refused', () => {
@@ -194,8 +220,8 @@ const mergeRefused = (vault: unknown, message: string) =>
   );
 
 test("a vault's notes join the template's: its verdict, judgments after the shared ones, and reviews and entries by name", () => {
-  const shared = { ...SHARED, reviews: {}, entries: { usdc: { role: '借出的代幣' } } };
-  const vault = { verdict: VALID.verdict, judgments: [{ text: '這個 vault', recommendation: '先送小額' }], reviews: VALID.reviews, entries: { cbbtc: { role: '抵押品' } } };
+  const shared = { ...SHARED, reviews: {}, entries: { usdc: { role: t('借出的代幣') } } };
+  const vault = { verdict: VALID.verdict, judgments: [{ text: t('這個 vault'), recommendation: t('先送小額') }], reviews: VALID.reviews, entries: { cbbtc: { role: t('抵押品') } } };
   const notes = parseNotes(mergeNotes(shared, vault, VAULT_PATH, OWNED), SCOPE);
   assert.equal(notes.verdict.text, '要小心');
   assert.deepEqual(notes.judgments.map((j) => j.text), ['判斷', '這個 vault']);
@@ -238,13 +264,13 @@ test("a vault's notes may also describe the entries its attributes name, such as
 });
 
 test('the judgments of both notes count toward the limit of four', () => {
-  const judgment = { text: '判斷', recommendation: '建議' };
+  const judgment = { text: t('判斷'), recommendation: t('建議') };
   const merged = mergeNotes({ ...SHARED, judgments: [judgment, judgment, judgment] }, { verdict: VALID.verdict, judgments: [judgment, judgment] }, VAULT_PATH, OWNED);
   assert.throws(() => parseNotes(merged, SCOPE), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.judgments: more than 4 items');
 });
 
 test("a vault's flow lines join the template's after them, and both count toward the limit of four", () => {
-  const line = (text: string) => ({ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text });
+  const line = (text: string) => ({ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text: t(text) });
   const merged = mergeNotes({ ...SHARED, flow: [line('共用')] }, { verdict: VALID.verdict, flow: [line('這個金庫')] }, VAULT_PATH, OWNED);
   assert.deepEqual(parseNotes(merged, SCOPE).flow.map((f) => f.text), ['共用', '這個金庫']);
   const tooMany = mergeNotes({ ...SHARED, flow: [line('a'), line('b'), line('c')] }, { verdict: VALID.verdict, flow: [line('d'), line('e')] }, VAULT_PATH, OWNED);
@@ -252,7 +278,7 @@ test("a vault's flow lines join the template's after them, and both count toward
 });
 
 test("a template's flow line that names the vault or its asset is refused, since another vault's report could not name it", () => {
-  const shared = { ...SHARED, flow: [{ after: 2, from: 'blue-bundles-v1', to: 'usdc', text: '拉走資產' }] };
+  const shared = { ...SHARED, flow: [{ after: 2, from: 'blue-bundles-v1', to: 'usdc', text: t('拉走資產') }] };
   assert.throws(() => mergeNotes(shared, undefined, VAULT_PATH, OWNED), (e: unknown) => e instanceof NotesError && e.message === `notes.json.flow: "usdc" differs per vault; its flow line belongs in ${VAULT_PATH}`);
 });
 
@@ -275,7 +301,7 @@ test('the scope of morpho/market-supply: its calls, their targets and views, its
   const entries = entriesOf(subject, registry);
   const result = (id: string, kind: 'agrees' | 'no-answer'): Result => ({ id, line: 'sources', about: { kind: 'entry', entry: entries[0]! }, source: { of: 'page', part: 'address' }, link: undefined, finding: { kind } });
   const ledger: Ledger = { entries, results: [result('usdc/source.page', 'agrees'), result('usdc/source.api', 'no-answer')] };
-  const scope = notesScope({ registry, facts: undefined } as unknown as ReportInputs, ledger, template);
+  const scope = notesScope({ registry, facts: undefined } as unknown as ReportInputs, ledger, template, 'zh-TW');
   assert.equal(scope.calls, 2);
   assert.deepEqual([...scope.contracts].sort(), ['blue-bundles-v1', 'morpho-blue', 'usdc']);
   assert.deepEqual(scope.entries, new Set(entries.map((e) => e.name)));
@@ -283,5 +309,5 @@ test('the scope of morpho/market-supply: its calls, their targets and views, its
   assert.deepEqual(scope.fields, fieldKeys(template));
   assert.deepEqual(scope.reviews, ['usdc/source.api']);
   const facts = { protocols: [{ slug: 'morpho-blue', listing: { kind: 'read', value: {} }, hacks: [{ date: '2024-10-01', amount: 230000 }], contracts: [] }] } as unknown as ProtocolFacts;
-  assert.deepEqual(notesScope({ registry, facts } as unknown as ReportInputs, ledger, template).protocols, new Map([['morpho-blue', 1]]));
+  assert.deepEqual(notesScope({ registry, facts } as unknown as ReportInputs, ledger, template, 'zh-TW').protocols, new Map([['morpho-blue', 1]]));
 });

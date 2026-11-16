@@ -1,46 +1,85 @@
 {
   "verdict": {
     "status": "caution",
-    "text": "可以用。Flowmark 的網站打不開，vault 很新、持有人集中，先看待確認。"
+    "text": {
+      "en": "OK to use. Flowmark's website does not open, and the vault is new with concentrated holders. Read To review first.",
+      "zh-TW": "可以用。Flowmark 的網站打不開，vault 很新、持有人集中，先看待確認。"
+    }
   },
   "judgments": [
     {
-      "text": "這個 vault 2026-05 才建立，一年內從 10 USDC 長到約 40 萬 USDC；28 個地址持有股份，最大一個占 54.04%，前 10 名占 99.83%。",
-      "recommendation": "上限是決定存款能放多少進一個市場；新 vault 先給小的絕對上限。"
+      "text": {
+        "en": "This vault was created only in 2026-05, and within a year grew from 10 USDC to about 400,000 USDC. 28 addresses hold shares; the largest has 54.04% and the top 10 hold 99.83%.",
+        "zh-TW": "這個 vault 2026-05 才建立，一年內從 10 USDC 長到約 40 萬 USDC；28 個地址持有股份，最大一個占 54.04%，前 10 名占 99.83%。"
+      },
+      "recommendation": {
+        "en": "A cap decides how much of the deposits can go into one market. Give a new vault a small absolute cap first.",
+        "zh-TW": "上限是決定存款能放多少進一個市場；新 vault 先給小的絕對上限。"
+      }
     },
     {
-      "text": "這個 vault 的 `increaseAbsoluteCap` 和 `increaseRelativeCap` 的 timelock 都是 3 天（鏈上讀 `timelock`，259200 秒）：送出後 3 天內存款人看得到這個變更，sentinel 或 curator 可以用 `revoke` 取消。",
-      "recommendation": "送出後 3 天內發現填錯，用 `revoke` 取消，不要等它被執行。"
+      "text": {
+        "en": "This vault's timelock for both `increaseAbsoluteCap` and `increaseRelativeCap` is 3 days (`timelock` read on chain, 259200 seconds). For 3 days after it is sent, depositors can see this change, and the sentinel or curator can cancel it with `revoke`.",
+        "zh-TW": "這個 vault 的 `increaseAbsoluteCap` 和 `increaseRelativeCap` 的 timelock 都是 3 天（鏈上讀 `timelock`，259200 秒）：送出後 3 天內存款人看得到這個變更，sentinel 或 curator 可以用 `revoke` 取消。"
+      },
+      "recommendation": {
+        "en": "If you find a mistake within 3 days of sending, cancel it with `revoke`; do not wait for it to be executed.",
+        "zh-TW": "送出後 3 天內發現填錯，用 `revoke` 取消，不要等它被執行。"
+      }
     }
   ],
   "reviews": {
     "flowmark-fgenesis-v2-6439/address": {
       "status": "concern",
-      "text": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 問 Morpho API 這個地址，名稱是 Flowmark fGenesis，curator 是 0xe5F7d857C129a6349f2A150665DCFF4FeF979744，列出的網站 flowmark.xyz 在 AI 這邊連不上。AI 沒找到 Flowmark 不靠網址帶地址就列出這個地址的頁面。",
-      "recommendation": "先在 Morpho app 的 vault 列表點進去比對地址。"
+      "text": {
+        "en": "The program's only check is the factory: VaultV2Factory answers `isVaultV2` = true. AI asked the Morpho API about this address: the name is Flowmark fGenesis, the curator is 0xe5F7d857C129a6349f2A150665DCFF4FeF979744, and the website it lists, flowmark.xyz, did not load for AI. AI found no Flowmark page that lists this address without the address being in the URL.",
+        "zh-TW": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 問 Morpho API 這個地址，名稱是 Flowmark fGenesis，curator 是 0xe5F7d857C129a6349f2A150665DCFF4FeF979744，列出的網站 flowmark.xyz 在 AI 這邊連不上。AI 沒找到 Flowmark 不靠網址帶地址就列出這個地址的頁面。"
+      },
+      "recommendation": {
+        "en": "First click into the vault from the Morpho app's vault list and compare the address.",
+        "zh-TW": "先在 Morpho app 的 vault 列表點進去比對地址。"
+      }
     },
     "flowmark-fgenesis-v2-6439-market-adapter/address": {
       "status": "concern",
-      "text": "程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x79DA02d9C638cC9ae925188AD9DC245337981518。AI 另外跑了 pnpm prove-instance：MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 回答 `isMorphoMarketV1AdapterV2` = true，兩個節點一致。",
-      "recommendation": "可以接受；上限的 id 用的就是這個地址，填錯只會設到一個沒人用的 id。"
+      "text": {
+        "en": "The program's only check is the Morpho API: asked for this vault's adapters, it answers 0x79DA02d9C638cC9ae925188AD9DC245337981518. AI also ran pnpm prove-instance: MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 answers `isMorphoMarketV1AdapterV2` = true, and both providers agree.",
+        "zh-TW": "程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x79DA02d9C638cC9ae925188AD9DC245337981518。AI 另外跑了 pnpm prove-instance：MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 回答 `isMorphoMarketV1AdapterV2` = true，兩個節點一致。"
+      },
+      "recommendation": {
+        "en": "Acceptable. The cap id uses this very address; a wrong one would only set a cap on an id no one uses.",
+        "zh-TW": "可以接受；上限的 id 用的就是這個地址，填錯只會設到一個沒人用的 id。"
+      }
     }
   },
   "entries": {
     "flowmark-fgenesis-v2-6439": {
-      "role": "Flowmark 管理的 USDC vault（V2），你是它的 curator",
+      "role": {
+        "en": "USDC vault (V2) managed by Flowmark; you are its curator",
+        "zh-TW": "Flowmark 管理的 USDC vault（V2），你是它的 curator"
+      },
       "sources": [
         {
-          "text": "Morpho API 的 vaultV2ByAddress：名稱 Flowmark fGenesis、curator 0xe5F7d857C129a6349f2A150665DCFF4FeF979744",
+          "text": {
+            "en": "Morpho API's vaultV2ByAddress: name Flowmark fGenesis, curator 0xe5F7d857C129a6349f2A150665DCFF4FeF979744",
+            "zh-TW": "Morpho API 的 vaultV2ByAddress：名稱 Flowmark fGenesis、curator 0xe5F7d857C129a6349f2A150665DCFF4FeF979744"
+          },
           "url": "https://api.morpho.org/graphql",
           "result": "attention"
         }
       ]
     },
     "flowmark-fgenesis-v2-6439-market-adapter": {
-      "role": "vault 的 Morpho Blue 市場轉接合約，上限的 id 用它的地址"
+      "role": {
+        "en": "The vault's Morpho Blue market adapter; the cap id uses its address",
+        "zh-TW": "vault 的 Morpho Blue 市場轉接合約，上限的 id 用它的地址"
+      }
     },
     "vault-v2-factory": {
-      "role": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+      "role": {
+        "en": "The Morpho Vault V2 factory. It answers `isVaultV2` = true: it created this vault",
+        "zh-TW": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+      }
     }
   }
 }

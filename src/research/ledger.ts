@@ -33,8 +33,19 @@ const sourceRank = (source: ProgramSource): number => {
   return more !== null ? Number(more[1]) : { page: 0, api: 1e6, coingecko: 1e6 + 1, factory: 1e6 + 2, bounty: 1e6 + 3, sdk: 1e6 + 4, deployer: 1e6 + 5 }[source as Exclude<ProgramSource, `more.${number}`>];
 };
 
-/** The words an address row's source line, or a call's documentation line, shows beside a result that did not pass. */
-export type Phrase = '讀不到' | '是另一個地址' | '是另一個網站' | '沒資料可比' | '工廠說不是它建的' | '頁上沒有這個函式' | '沒列出這個地址' | '是另一份檔案' | '沒有建置證明' | '證明不了是誰部署' | '沒有已確認的合約同一個部署者';
+/** What an address row's source line, or a call's documentation line, says beside a result that did not pass; the page words it. */
+export type Phrase =
+  | 'unread'
+  | 'other-address'
+  | 'other-site'
+  | 'nothing-to-compare'
+  | 'not-created'
+  | 'not-on-page'
+  | 'not-listed'
+  | 'other-file'
+  | 'no-provenance'
+  | 'creation-unproven'
+  | 'deployer-alone';
 
 /** Why a result has its state. The kind alone fixes the state (`STATE_OF`), so evidence missing can never read as red. */
 export type Finding =
@@ -143,36 +154,36 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
 
 const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   agrees: undefined,
-  'site-differs': '是另一個網站',
-  'other-coin': '是另一個地址',
-  'other-answer': '是另一個地址',
+  'site-differs': 'other-site',
+  'other-coin': 'other-address',
+  'other-answer': 'other-address',
   'pin-not-run': undefined,
   'proof-not-pin': undefined,
-  'not-created': '工廠說不是它建的',
-  'factory-other-answer': '讀不到',
+  'not-created': 'not-created',
+  'factory-other-answer': 'unread',
   refused: undefined,
   'judged-otherwise': undefined,
   'few-confirmations': undefined,
-  'not-listed': '沒列出這個地址',
-  'package-differs': '是另一份檔案',
-  'no-provenance': '沒有建置證明',
-  'creation-unproven': '證明不了是誰部署',
-  'deployer-alone': '沒有已確認的合約同一個部署者',
-  'source-no-answer': '讀不到',
-  'no-answer': '讀不到',
-  'page-unread': '讀不到',
-  'url-holds-address': '讀不到',
-  'site-not-compared': '沒資料可比',
-  'no-coin': '沒資料可比',
-  'unexplained-coin': '沒資料可比',
-  'commit-unconfirmed': '讀不到',
-  'page-not-fetched': '讀不到',
-  'name-not-on-page': '頁上沒有這個函式',
+  'not-listed': 'not-listed',
+  'package-differs': 'other-file',
+  'no-provenance': 'no-provenance',
+  'creation-unproven': 'creation-unproven',
+  'deployer-alone': 'deployer-alone',
+  'source-no-answer': 'unread',
+  'no-answer': 'unread',
+  'page-unread': 'unread',
+  'url-holds-address': 'unread',
+  'site-not-compared': 'nothing-to-compare',
+  'no-coin': 'nothing-to-compare',
+  'unexplained-coin': 'nothing-to-compare',
+  'commit-unconfirmed': 'unread',
+  'page-not-fetched': 'unread',
+  'name-not-on-page': 'not-on-page',
   'no-chain-result': undefined,
-  'factory-unread': '讀不到',
+  'factory-unread': 'unread',
   'not-pinned': undefined,
-  unlisted: '沒資料可比',
-  'no-second-source': '沒資料可比',
+  unlisted: 'nothing-to-compare',
+  'no-second-source': 'nothing-to-compare',
   'compiler-not-pinned': undefined,
   'pinned-before-spans': undefined,
   'no-abi-case': undefined,

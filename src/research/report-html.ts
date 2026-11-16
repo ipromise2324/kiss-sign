@@ -1,15 +1,22 @@
 import { join } from 'node:path';
+import { HTML_LANG, LANGUAGES } from '../language.ts';
+import type { Language } from '../language.ts';
 import { loadRegistry } from '../registry.ts';
 import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
 import type { AddressRow, AiText, ArgRow, Body, CallBlock, Chip, DocLine, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
+import { WORDS } from './report-words.ts';
+import type { Words } from './report-words.ts';
 import { reportDir } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
-export const GENERATED_HTML_FILE = 'report.generated.html';
-export const generatedHtmlPath = (target: { readonly template: string; readonly cardVault?: string }): string => join(reportDir(target), GENERATED_HTML_FILE);
+/** Each language's HTML report beside report.generated.md; the name says the language, so no file changes language under an old name. */
+export const generatedHtmlFile = (language: Language): string => `report.generated.${language}.html`;
+export const generatedHtmlPath = (target: { readonly template: string; readonly cardVault?: string }, language: Language): string => join(reportDir(target), generatedHtmlFile(language));
+/** The one-language report the program wrote before it wrote one per language; none may remain. */
+export const OLD_HTML_FILE = 'report.generated.html';
 
 /** Markup the renderer made. Every other value is escaped on its way into it. */
 export class Html {
@@ -29,15 +36,17 @@ export function h(strings: TemplateStringsArray, ...parts: readonly Part[]): Htm
   return new Html(strings.reduce((out, s, i) => out + s + (i < parts.length ? part(parts[i] as Part) : ''), ''));
 }
 
-const ICONS: Readonly<Record<State | 'ask', { readonly symbol: string; readonly tone: string; readonly label: string }>> = {
-  ok: { symbol: 'ok', tone: 'ok', label: '通過' },
-  warn: { symbol: 'warn', tone: 'warn', label: '注意' },
-  bad: { symbol: 'bad', tone: 'bad', label: '不通過' },
-  na: { symbol: 'na', tone: 'mute', label: '沒資料可比' },
-  ask: { symbol: 'ask', tone: 'mute', label: 'AI 判斷' },
+const ICONS: Readonly<Record<State | 'ask', { readonly symbol: string; readonly tone: string }>> = {
+  ok: { symbol: 'ok', tone: 'ok' },
+  warn: { symbol: 'warn', tone: 'warn' },
+  bad: { symbol: 'bad', tone: 'bad' },
+  na: { symbol: 'na', tone: 'mute' },
+  ask: { symbol: 'ask', tone: 'mute' },
 };
 
-export const icon = (state: State | 'ask'): Html => h`<svg class="i ${ICONS[state].tone}" role="img" aria-label="${ICONS[state].label}"><use href="#${ICONS[state].symbol}"/></svg>`;
+/** A state's icon, named in `language` for a screen reader. */
+export const icon = (state: State | 'ask', language: Language): Html =>
+  h`<svg class="i ${ICONS[state].tone}" role="img" aria-label="${WORDS[language].state[state]}"><use href="#${ICONS[state].symbol}"/></svg>`;
 const decor = (symbol: 'info' | 'chev'): Html => h`<svg class="i${symbol === 'chev' ? ' chev' : ''}" aria-hidden="true"><use href="#${symbol}"/></svg>`;
 
 function text(spans: Inline): Html {
@@ -50,16 +59,22 @@ function text(spans: Inline): Html {
   })}`;
 }
 
+/** Words around one code span: `[before, after]` with the code between them. */
+const around = ([before, after]: readonly [string, string], code: string): Html => h`${before}<code>${code}</code>${after}`;
+
 /** AI text's parts: plain text, and each code span the parser let through as one identifier. */
 const aiParts = (text: string): { readonly text: string; readonly code: boolean }[] => (codeSpans(text) ?? [text]).map((part, i) => ({ text: part, code: i % 2 === 1 }));
 
 const aiProse = (text: string): Html => h`${aiParts(text).map((part) => (part.code ? h`<code>${part.text}</code>` : part.text))}`;
 
+/** The renderer's state for one page: its words and its language. */
+type R = { readonly w: Words; readonly language: Language };
+
 /** The only way AI text reaches the page: escaped, with its sources linked and its dashed tag. */
-function ai(note: AiText): Html {
-  const sources = note.sources.map((url, i) => h` <a class="aisrc" href="${url}">來源${note.sources.length > 1 ? ` ${i + 1}` : ''}</a>`);
-  const tag = h`<span class="byai">${note.tag}</span>`;
-  return note.tag === 'AI' ? h`<span class="aiw" data-ai>${tag}<span>${aiProse(note.ai)}${sources}</span></span>` : h`<span class="aiw" data-ai><span>${aiProse(note.ai)}${sources}</span>${tag}</span>`;
+function ai(note: AiText, r: R): Html {
+  const sources = note.sources.map((url, i) => h` <a class="aisrc" href="${url}">${r.w.sourceLink(note.sources.length > 1 ? i + 1 : undefined)}</a>`);
+  const tag = h`<span class="byai">${r.w.tag[note.tag]}</span>`;
+  return note.tag === 'ai' ? h`<span class="aiw" data-ai>${tag}<span>${aiProse(note.ai)}${sources}</span></span>` : h`<span class="aiw" data-ai><span>${aiProse(note.ai)}${sources}</span>${tag}</span>`;
 }
 
 let tips = 0;
@@ -68,27 +83,27 @@ const tip = (label: string, body: string): Html => {
   return h`<span class="tip" tabindex="0" aria-label="${label}" aria-describedby="t${tips}">${decor('info')}<span class="bub" id="t${tips}" role="tooltip">${body}</span></span>`;
 };
 
-const stateCounts = (count: Extract<RailCount, { kind: 'states' }>): Html => h`${count.counts.map((c) => h` <span class="cnt" data-state="${c.state}">${icon(c.state)}${c.n}</span>`)}`;
+const stateCounts = (count: Extract<RailCount, { kind: 'states' }>, r: R): Html => h`${count.counts.map((c) => h` <span class="cnt" data-state="${c.state}">${icon(c.state, r.language)}${c.n}</span>`)}`;
 
-const railCount = (count: RailCount | undefined): Html => (count === undefined ? h`` : count.kind === 'text' ? h` <span class="cnt">${count.text}</span>` : stateCounts(count));
+const railCount = (count: RailCount | undefined, r: R): Html => (count === undefined ? h`` : count.kind === 'text' ? h` <span class="cnt">${count.text}</span>` : stateCounts(count, r));
 
-const contents = (sections: readonly Section[]): Html => h`<ol>${sections.map((s) => h`<li><a href="#${s.anchor}">${s.label}${railCount(s.count)}</a></li>`)}</ol>`;
+const contents = (sections: readonly Section[], r: R): Html => h`<ol>${sections.map((s) => h`<li><a href="#${s.anchor}">${s.label}${railCount(s.count, r)}</a></li>`)}</ol>`;
 
-function header(page: Page): Html {
+function header(page: Page, r: R): Html {
   const { header: head, sections } = page;
   return h`<header>
-  <h1>${ai(head.title)}</h1>
+  <h1>${ai(head.title, r)}</h1>
   <span class="opid">${page.id}</span>
-  <p class="sub">${ai(head.summary)}</p>
+  <p class="sub">${ai(head.summary, r)}</p>
   <ul class="checks">${head.strip.map(
     (item) => h`
-    <li data-state="${item.state}" data-line="${item.line}">${icon(item.state)}${item.name}${item.count === undefined ? '' : h` <span class="n num">${item.count}</span>`}
-      ${tip('說明', item.explain)}</li>`,
+    <li data-state="${item.state}" data-line="${item.line}">${icon(item.state, r.language)}${item.name}${item.count === undefined ? '' : h` <span class="n num">${item.count}</span>`}
+      ${tip(r.w.explain, item.explain)}</li>`,
   )}
   </ul>
-  <div class="verdict" data-state="${head.verdict.state}"><span class="lbl">建議</span>${icon(head.verdict.state)}${ai(head.verdict.text)}</div>
-  <details class="tocfold"><summary>${decor('chev')}目錄</summary>
-    ${contents(sections)}
+  <div class="verdict" data-state="${head.verdict.state}"><span class="lbl">${r.w.advice}</span>${icon(head.verdict.state, r.language)}${ai(head.verdict.text, r)}</div>
+  <details class="tocfold"><summary>${decor('chev')}${r.w.contents}</summary>
+    ${contents(sections, r)}
   </details>
 </header>`;
 }
@@ -131,7 +146,7 @@ function caption(text: string, x: number, y: number): { readonly boxes: Html; re
   return { boxes: h`${boxes}`, text: h`<text class="cap" y="${y}">${spans}</text>`, width: at - x };
 }
 
-function diagram(sequence: Sequence): Html {
+function diagram(sequence: Sequence, r: R): Html {
   const x = (i: number) => FIRST_X + i * SPACING;
   const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X);
   const rows: Html[] = [];
@@ -148,12 +163,15 @@ function diagram(sequence: Sequence): Html {
     <line class="call" x1="${x(0)}" y1="${y + 14}" x2="${x(arrow.to) - 3}" y2="${y + 14}" marker-end="url(#m-call)"/>`);
       y += 52;
     } else if (arrow.kind === 'inside') {
+      const tag = r.w.tag[arrow.text.tag];
+      // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
+      const tagWidth = Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(tag)));
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
-      const wide = AI_TAG_WIDTH + 8 + caption(arrow.text.ai, 0, y).width;
+      const wide = tagWidth + 8 + caption(arrow.text.ai, 0, y).width;
       const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - wide));
-      const cap = caption(arrow.text.ai, left + AI_TAG_WIDTH + 8, y);
+      const cap = caption(arrow.text.ai, left + tagWidth + 8, y);
       rows.push(h`
-    <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${AI_TAG_WIDTH}" height="20" rx="6"/><text class="tagt" x="${left + AI_TAG_WIDTH / 2}" y="${y}" text-anchor="middle">${arrow.text.tag}</text>${cap.boxes}${cap.text}</g>
+    <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${tagWidth}" height="20" rx="6"/><text class="tagt" x="${left + tagWidth / 2}" y="${y}" text-anchor="middle">${tag}</text>${cap.boxes}${cap.text}</g>
     <line class="inner" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>`);
       y += 36;
     } else {
@@ -173,45 +191,45 @@ function diagram(sequence: Sequence): Html {
   const marker = (id: string, cls: string) => h`<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="${cls}" d="M0 0L10 5L0 10z"/></marker>`;
   return h`<div class="diagram">
   <svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="dt dd">
-    <title id="dt">交易流程</title>
+    <title id="dt">${r.w.diagramTitle}</title>
     <desc id="dd">${sequence.narration}</desc>
     <defs>${marker('m-call', 'ah')}${marker('m-inside', 'ahi')}${marker('m-gets', 'ahg')}</defs>${nodes}${rows}
   </svg>
   </div>
-  <div class="scrollhint">圖可以左右滑動</div>`;
+  <div class="scrollhint">${r.w.scrollHint}</div>`;
 }
 
 const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', fixed: 'who', free: 'who app' };
 const chip = (c: Chip): Html => h`<span class="${CHIP_CLASS[c.who]}">${c.label}</span>`;
 
-const docLine = (doc: DocLine): Html =>
-  h`<div class="doc" data-state="${doc.state}"><span class="f3">文件：</span><a href="${doc.href}">${doc.label}</a><span class="res">${icon(doc.state)}${doc.phrase ?? ''}</span>${
+const docLine = (doc: DocLine, r: R): Html =>
+  h`<div class="doc" data-state="${doc.state}"><span class="f3">${r.w.docs}</span><a href="${doc.href}">${doc.label}</a><span class="res">${icon(doc.state, r.language)}${doc.phrase === undefined ? '' : r.w.phrase[doc.phrase]}</span>${
     doc.note === undefined ? '' : h` <span class="f3">${doc.note}</span>`
   }</div>`;
 
-function valueLines(row: ArgRow): Html {
-  return h`${row.value === undefined ? '' : h`<div class="raw">${row.value.cast}${row.value.example === undefined ? '' : h`<span class="ex">${row.value.example}</span>`}</div>`}<div class="is">${text(row.words)}${
+function valueLines(row: ArgRow, r: R): Html {
+  return h`${row.value === undefined ? '' : h`<div class="raw">${row.value.cast}${row.value.example === undefined ? '' : h`<span class="ex">${r.w.example[row.value.example]}</span>`}</div>`}<div class="is">${text(row.words)}${
     row.qualifier === undefined ? '' : h` <span class="f3">${text(row.qualifier)}</span>`
-  }</div>${row.doc === undefined ? '' : docLine(row.doc)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
-        <div class="ai">${ai(row.ai)}</div>`}`;
+  }</div>${row.doc === undefined ? '' : docLine(row.doc, r)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
+        <div class="ai">${ai(row.ai, r)}</div>`}`;
 }
 
-function partsOf(row: ArgRow): Html {
+function partsOf(row: ArgRow, r: R): Html {
   return h`${row.parts.map(
     (group) => h`
       <div class="parts">${group.label === undefined ? '' : h`<div class="plabel">${text(group.label)}</div>`}${group.rows.map(
         (p) => h`
-        <div class="part"><div class="pn">${p.name}${p.chips.length === 0 ? '' : h`<div class="pchips">${p.chips.map(chip)}</div>`}</div><div>${valueLines(p)}</div>${partsOf(p)}</div>`,
+        <div class="part"><div class="pn">${p.name}${p.chips.length === 0 ? '' : h`<div class="pchips">${p.chips.map(chip)}</div>`}</div><div>${valueLines(p, r)}</div>${partsOf(p, r)}</div>`,
       )}
       </div>`,
   )}`;
 }
 
-function argRow(row: ArgRow): Html {
+function argRow(row: ArgRow, r: R): Html {
   return h`
     <div class="arg" data-field="${row.key}">
       <div class="nm"><span class="pn">${row.name}</span>${row.chips.map(chip)}</div>
-      <div class="val">${valueLines(row)}</div>${partsOf(row)}
+      <div class="val">${valueLines(row, r)}</div>${partsOf(row, r)}
     </div>`;
 }
 
@@ -222,19 +240,16 @@ function callHead(call: CallBlock): Html {
     : h`<span class="what">${head.text}</span>`;
 }
 
-function flowBody(flow: Flow): Html {
-  const lead = [
-    flow.decoded ? h`每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。` : '',
-    flow.example === undefined ? '' : text(flow.example),
-  ];
+function flowBody(flow: Flow, r: R): Html {
+  const lead = [flow.decoded ? around(r.w.decodedLead, 'cast decode-calldata') : '', flow.example === undefined ? '' : text(flow.example)];
   return h`
-  <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
-  ${diagram(flow.diagram)}${
+  <p class="lead">${r.w.flowLead}</p>
+  ${diagram(flow.diagram, r)}${
     flow.key.length === 0
       ? ''
       : h`
   <div class="key">
-    <span class="k0">誰決定</span>${flow.key.map((item) => h`
+    <span class="k0">${r.w.whoDecides}</span>${flow.key.map((item) => h`
     <span>${chip(item)}${item.means}</span>`)}
   </div>`
   }${lead.every((part) => part === '') ? '' : h`
@@ -243,21 +258,21 @@ function flowBody(flow: Flow): Html {
       ? ''
       : h`
   <div class="cb">
-    <div class="callh"><span class="what">Safe 交易</span></div>${flow.safeTx.map(argRow)}
+    <div class="callh"><span class="what">${r.w.safeTx}</span></div>${flow.safeTx.map((row) => argRow(row, r))}
   </div>`
   }
   ${flow.calls.map(
     (call) => h`
   <div class="cb">
-    <div class="callh"><span class="no">${call.n}</span>${callHead(call)}</div>${call.head.kind === 'fn' ? h`<div class="cdoc">${docLine(call.head.doc)}</div>` : ''}${
+    <div class="callh"><span class="no">${call.n}</span>${callHead(call)}</div>${call.head.kind === 'fn' ? h`<div class="cdoc">${docLine(call.head.doc, r)}</div>` : ''}${
       call.sends === undefined ? '' : h`<div class="sends">${text(call.sends)}</div>`
-    }${call.args.map(argRow)}
+    }${call.args.map((row) => argRow(row, r))}
   </div>`,
   )}
-  <h3>交易後</h3>${
+  <h3>${r.w.afterTx}</h3>${
     flow.after.length === 0
       ? h`
-  <p class="lead">Safe 不給出、也不收到任何資產：模擬後 Safe 的餘額有任何變化，都是 MISMATCH。</p>`
+  <p class="lead">${r.w.noAssets}</p>`
       : h`
   <dl class="props">${flow.after.map((row) => h`
     <div><dt>${text(row.label)}</dt><dd class="${row.gains ? 'pos' : ''}">${text(row.value)}</dd><dd class="src">${text(row.note)}</dd></div>`)}
@@ -265,22 +280,22 @@ function flowBody(flow: Flow): Html {
   }`;
 }
 
-function protocolBody(block: ProtocolBlock): Html {
+function protocolBody(block: ProtocolBlock, r: R): Html {
   return h`
-  <p class="intro">${ai(block.intro)}</p>
+  <p class="intro">${ai(block.intro, r)}</p>
   <dl class="props two">${block.rows.map(
     (row) => h`
-    <div><dt>${row.label}</dt><dd>${row.value.length === 0 ? '' : h`<span>${text(row.value)}</span>`}${row.ai === undefined ? '' : ai(row.ai)}${row.sub === undefined ? '' : h`<span class="sub2">${text(row.sub)}</span>`}${
+    <div><dt>${row.label}</dt><dd>${row.value.length === 0 ? '' : h`<span>${text(row.value)}</span>`}${row.ai === undefined ? '' : ai(row.ai, r)}${row.sub === undefined ? '' : h`<span class="sub2">${text(row.sub)}</span>`}${
       row.nested.length === 0
         ? ''
         : h`
       <dl class="nest">${row.nested.map((n) => h`
-        <div><dt>${text(n.label)}</dt><dd>${text(n.value)}${n.ai === undefined ? '' : h`<span class="sub2">${ai(n.ai)}</span>`}</dd></div>`)}
+        <div><dt>${text(n.label)}</dt><dd>${text(n.value)}${n.ai === undefined ? '' : h`<span class="sub2">${ai(n.ai, r)}</span>`}</dd></div>`)}
       </dl>`
     }</dd></div>`,
   )}
   </dl>
-  <p class="srcline">程式在 ${block.read} 讀 ${block.sources.map((s, i) => h`${i === 0 ? '' : i === block.sources.length - 1 ? '和' : '、'}${s.href === undefined ? s.label : h`<a href="${s.href}">${s.label}</a>`}`)}。標 AI 研究的是 AI 查的。</p>`;
+  <p class="srcline">${r.w.readSources(block.read)}${block.sources.map((s, i) => h`${r.w.sourcesJoin(i, block.sources.length)}${s.href === undefined ? s.label : h`<a href="${s.href}">${s.label}</a>`}`)}${r.w.sourcesEnd}</p>`;
 }
 
 const CHART_WIDTH = 660;
@@ -289,36 +304,38 @@ const CHART_BASE = 150;
 const CHART_SIDE = 16;
 
 /** The monthly `totalAssets()` readings as bars, oldest first: each titled with its date and amount, a month with no amount a dashed stub. */
-function chart(block: VaultBlock): Html {
+function chart(block: VaultBlock, r: R): Html {
   const step = (CHART_WIDTH - 2 * CHART_SIDE) / Math.max(1, block.bars.length);
   const bars = block.bars.map((bar, i) => {
     const x = CHART_SIDE + i * step + step * 0.2;
     const w = step * 0.6;
     const height = bar.share === undefined ? 0 : Math.max(1, Math.round(bar.share * (CHART_BASE - CHART_TOP)));
+    const title = r.w.barTitle(bar.date, bar.words);
     const mark =
       bar.share === undefined
-        ? h`<rect class="barna" x="${x.toFixed(1)}" y="${CHART_BASE - 12}" width="${w.toFixed(1)}" height="12"><title>${bar.date}：${bar.words}</title></rect>`
-        : h`<rect class="bar${i === block.bars.length - 1 ? ' last' : ''}" x="${x.toFixed(1)}" y="${CHART_BASE - height}" width="${w.toFixed(1)}" height="${height}"><title>${bar.date}：${bar.words}</title></rect>`;
+        ? h`<rect class="barna" x="${x.toFixed(1)}" y="${CHART_BASE - 12}" width="${w.toFixed(1)}" height="12"><title>${title}</title></rect>`
+        : h`<rect class="bar${i === block.bars.length - 1 ? ' last' : ''}" x="${x.toFixed(1)}" y="${CHART_BASE - height}" width="${w.toFixed(1)}" height="${height}"><title>${title}</title></rect>`;
     const [year, month] = bar.date.split('-');
     const first = i === 0 || month === '01';
     return h`
-    ${mark}<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 18}" text-anchor="middle">${month === undefined ? '?' : `${Number(month)}月`}</text>${
+    ${mark}<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 18}" text-anchor="middle">${month === undefined ? '?' : r.w.month(Number(month))}</text>${
       first && year !== undefined && month !== undefined ? h`<text class="tick" x="${(x + w / 2).toFixed(1)}" y="${CHART_BASE + 34}" text-anchor="middle">${year}</text>` : ''
     }`;
   });
-  const span = block.bars.length === 0 ? '' : `${block.bars[0]?.date} 到 ${block.bars.at(-1)?.date}`;
+  const span = block.bars.length === 0 ? '' : r.w.chartSpan(`${block.bars[0]?.date}`, `${block.bars.at(-1)?.date}`);
+  const most = block.most ?? r.w.notRead;
   return h`<div class="diagram">
   <svg viewBox="0 0 ${CHART_WIDTH} ${CHART_BASE + 44}" role="img" aria-labelledby="vt vd">
-    <title id="vt">每月的 totalAssets</title>
-    <desc id="vd">${block.bars.length} 個月，${span}，最高 ${block.most ?? '讀不到'}</desc>
-    <text class="tick" x="${CHART_SIDE}" y="18">最高 ${block.most ?? '讀不到'}</text>
+    <title id="vt">${r.w.monthly}</title>
+    <desc id="vd">${r.w.chartDesc(block.bars.length, span, most)}</desc>
+    <text class="tick" x="${CHART_SIDE}" y="18">${r.w.highest(most)}</text>
     <line class="axis" x1="${CHART_SIDE}" y1="${CHART_BASE}" x2="${CHART_WIDTH - CHART_SIDE}" y2="${CHART_BASE}"/>${bars}
   </svg>
   </div>
-  <div class="scrollhint">圖可以左右滑動</div>`;
+  <div class="scrollhint">${r.w.scrollHint}</div>`;
 }
 
-function vaultBody(block: VaultBlock): Html {
+function vaultBody(block: VaultBlock, r: R): Html {
   return h`
   <p class="lead">${text(block.lead)}</p>${
     block.rows.length === 0
@@ -327,10 +344,10 @@ function vaultBody(block: VaultBlock): Html {
   <dl class="props">${block.rows.map((row) => h`
     <div><dt>${row.label}</dt><dd>${text(row.value)}</dd><dd class="src">${text(row.note)}</dd></div>`)}
   </dl>
-  <h3>每月的 totalAssets</h3>
-  ${chart(block)}
+  <h3>${r.w.monthly}</h3>
+  ${chart(block, r)}
   <details class="fold">
-    <summary>${decor('chev')}${block.bars.length} 個月的數字</summary>
+    <summary>${decor('chev')}${r.w.monthsFigures(block.bars.length)}</summary>
     <dl class="props">${block.bars.map((bar) => h`
       <div><dt class="num">${bar.date}</dt><dd class="num">${bar.words}</dd></div>`)}
     </dl>
@@ -338,50 +355,50 @@ function vaultBody(block: VaultBlock): Html {
   }`;
 }
 
-function reviewBody(body: Extract<Body, { kind: 'review' }>): Html {
+function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
   const empty = body.rows.length === 0 && body.judgments.length === 0;
   return h`
-  <p class="lead">${empty ? '沒有要你看的結果。' : '每一項 AI 都先查過，附上建議。'}</p>
+  <p class="lead">${empty ? r.w.nothingToReview : r.w.reviewLead}</p>
   <div class="rows">${body.rows.map(
     (row) => h`
     <div class="row" data-state="${row.state}" data-result="${row.id}">
-      ${icon(row.state)}
+      ${icon(row.state, r.language)}
       <div><div class="t">${text(row.title)}</div>
-        <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">看來源</a>`}</div>
-        <div class="rec"><span class="lbl">${row.review.status === 'confirmed' ? 'AI 已確認' : 'AI 有疑慮'}</span>${ai(row.review.text)}</div>
-        <div class="rec"><span class="lbl">建議</span>${ai(row.review.recommendation)}</div></div>
+        <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">${r.w.seeSource}</a>`}</div>
+        <div class="rec"><span class="lbl">${r.w.reviewed[row.review.status]}</span>${ai(row.review.text, r)}</div>
+        <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(row.review.recommendation, r)}</div></div>
     </div>`,
   )}${body.judgments.map(
     (j) => h`
     <div class="row">
-      ${icon('ask')}
-      <div><div class="t">${ai(j.text)}</div>
-        <div class="rec"><span class="lbl">建議</span>${ai(j.recommendation)}</div></div>
+      ${icon('ask', r.language)}
+      <div><div class="t">${ai(j.text, r)}</div>
+        <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(j.recommendation, r)}</div></div>
     </div>`,
   )}
   </div>`;
 }
 
-function walletBody({ view }: Extract<Body, { kind: 'wallet' }>): Html {
+function walletBody({ view }: Extract<Body, { kind: 'wallet' }>, r: R): Html {
   if (view.kind === 'multisend') {
     return h`
-  <p class="lead">這筆 Safe 交易用 MultiSend 打包 ${view.calls} 個呼叫，硬體錢包解不開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>`;
+  <p class="lead">${around(r.w.multisendLead(view.calls), 'verify')}</p>`;
   }
   if (view.kind === 'no-data') {
     return h`
-  <p class="lead">這筆交易的呼叫沒有資料，沒有函式可以用 ERC-7730 描述檔解讀。</p>`;
+  <p class="lead">${r.w.noDataLead}</p>`;
   }
   const described = view.calls.some((call) => call.rows !== 'no-descriptor');
   return h`
-  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。${described ? '右邊是模板的規則，不是描述檔的文字。' : ''}</p>
+  <p class="lead">${r.w.walletLead}${described ? r.w.walletRules : ''}</p>
   <dl class="props two">${view.calls.map(
     (call) => h`
     <div><dt>${text(call.title)}</dt>${
       call.rows === 'no-descriptor'
-        ? h`<dd class="f3">沒有描述檔，只顯示原始資料</dd>`
+        ? h`<dd class="f3">${r.w.noDescriptor}</dd>`
         : h`<dd>
-      <dl class="nest flat">${call.rows.map((r) => h`
-        <div><dt>${text(r.label)}</dt><dd>${text(r.value)}</dd></div>`)}
+      <dl class="nest flat">${call.rows.map((row) => h`
+        <div><dt>${text(row.label)}</dt><dd>${text(row.value)}</dd></div>`)}
       </dl></dd>`
     }</div>`,
   )}
@@ -389,72 +406,73 @@ function walletBody({ view }: Extract<Body, { kind: 'wallet' }>): Html {
   <div class="warnline">${decor('info')}<span>${text(line)}</span></div>`)}`;
 }
 
-function siteLine(site: SiteResult): Html {
-  const places = site.places.map((place, i) => h`${i === 0 ? '' : '、'}${place.href === undefined ? place.word : h`<a href="${place.href}">${place.word}</a>`}`);
-  return h`<span class="site" data-state="${site.state}">${icon(site.state)}<span>${site.state === 'ok' ? h`網站屬於 ${site.slug}` : h`網站：${site.phrase}`}（${places} 對照）</span></span>`;
+function siteLine(site: SiteResult, r: R): Html {
+  const places = site.places.map((place, i) => h`${i === 0 ? '' : r.w.sep}${place.href === undefined ? place.word : h`<a href="${place.href}">${place.word}</a>`}`);
+  const [open, close] = r.w.compared;
+  return h`<span class="site" data-state="${site.state}">${icon(site.state, r.language)}<span>${
+    site.state === 'ok' ? r.w.siteOk(site.slug) : r.w.siteNot(site.phrase === undefined ? '' : r.w.phrase[site.phrase])
+  }${open}${places}${close}</span></span>`;
 }
 
-function sourceLine(line: SourceLine): Html {
-  return h`<div class="src"><span data-state="${line.state}">${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}<span class="res">${icon(line.state)}${line.phrase ?? ''}</span></span>${
-    line.site === undefined ? '' : siteLine(line.site)
-  }</div>`;
+function sourceLine(line: SourceLine, r: R): Html {
+  return h`<div class="src"><span data-state="${line.state}">${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}<span class="res">${icon(line.state, r.language)}${
+    line.phrase === undefined ? '' : r.w.phrase[line.phrase]
+  }</span></span>${line.site === undefined ? '' : siteLine(line.site, r)}</div>`;
 }
 
-const CONFIDENCE: Readonly<Record<AddressRow['confidence'], string>> = { high: '高信心', medium: '中信心', low: '低信心' };
-
-function addressRow(row: AddressRow): Html {
+function addressRow(row: AddressRow, r: R): Html {
   return h`
     <div class="ad" id="${row.anchor}" data-state="${row.state}">
-      ${icon(row.state)}
-      <div><span class="nm">${row.name}</span><span class="role">${row.role === undefined ? '' : ai(row.role)}<span class="conf">${CONFIDENCE[row.confidence]}</span>${
-        row.reviewed === undefined ? '' : h`<span class="reviewed">${row.reviewed}</span>`
+      ${icon(row.state, r.language)}
+      <div><span class="nm">${row.name}</span><span class="role">${row.role === undefined ? '' : ai(row.role, r)}<span class="conf">${r.w.confidence[row.confidence]}</span>${
+        row.reviewed === undefined ? '' : h`<span class="reviewed">${r.w.reviewed[row.reviewed]}</span>`
       }</span></div>
       <div class="body"><span class="addr">${row.address}</span>
-        <div class="srcs">${row.sources.map(sourceLine)}</div>
+        <div class="srcs">${row.sources.map((line) => sourceLine(line, r))}</div>
         <div class="confirmed">${row.confirmed}</div>${row.codeLines.map((line) => h`
         <div class="confirmed">${text(line)}</div>`)}${
           row.aiSources.length === 0
             ? ''
             : h`
-        <div class="aisrcs"><span class="lbl">AI 補查</span>${row.aiSources.map((s) => h`<span>${ai(s.text)}<span class="aires">${s.result}</span></span>`)}</div>`
+        <div class="aisrcs"><span class="lbl">${r.w.aiChecked}</span>${row.aiSources.map((s) => h`<span>${ai(s.text, r)}<span class="aires">${r.w.aiResult[s.result]}</span></span>`)}</div>`
         }</div>
     </div>`;
 }
 
-function addressBody(body: Extract<Body, { kind: 'addresses' }>): Html {
-  const worst = body.folded.some((r) => r.state === 'ok') ? 'ok' : 'na';
+function addressBody(body: Extract<Body, { kind: 'addresses' }>, r: R): Html {
+  const worst = body.folded.some((row) => row.state === 'ok') ? 'ok' : 'na';
   return h`
-  <div class="rows">${body.open.map(addressRow)}${
+  <div class="rows">${body.open.map((row) => addressRow(row, r))}${
     body.folded.length === 0
       ? ''
       : h`
     <details class="fold">
-      <summary>${decor('chev')}${icon(worst)}${body.folded.length === 1 ? '另外 1 個地址沒有要你看的結果' : `另外 ${body.folded.length} 個地址都沒有要你看的結果`}</summary>${body.folded.map(addressRow)}
+      <summary>${decor('chev')}${icon(worst, r.language)}${r.w.foldedAddresses(body.folded.length)}</summary>${body.folded.map((row) => addressRow(row, r))}
     </details>`
   }
   </div>`;
 }
 
-function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
-  if (body.recordings.length === 0) return h`<p class="lead">這個操作沒有研究過去交易。</p>`;
+function pastBody(body: Extract<Body, { kind: 'past' }>, r: R): Html {
+  if (body.recordings.length === 0) return h`<p class="lead">${r.w.noPast}</p>`;
   return h`
   <p class="lead">${text(body.same)}</p>${body.conclusion === undefined ? '' : h`
-  <p class="intro">${ai(body.conclusion)}</p>`}
+  <p class="intro">${ai(body.conclusion, r)}</p>`}
   <details class="fold">
-  <summary>${decor('chev')}其他做法</summary>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>${body.recordings.map(
-    (r) => h`
-  <h3>${r.count}</h3>
-  <p class="lead">記錄在 <code>${r.file}</code>。${text(r.search)}</p>${r.blocks.map(
+  <summary>${decor('chev')}${r.w.otherWays}</summary>
+  <p class="lead">${r.w.otherWaysLead}</p>${body.recordings.map(
+    (rec) => h`
+  <h3>${rec.count}</h3>
+  <p class="lead">${around(r.w.recordedIn, rec.file)}${text(rec.search)}</p>${rec.blocks.map(
     (block) => h`
   <div class="pblock">
     <div class="ph"><span class="pt">${block.title}</span><span>${text(block.lead)}</span></div>${block.groups.map(
       (g) => h`
-    <div class="pg"><span class="pc num">${g.count} 筆</span><div>${g.calls === undefined ? '' : h`<div class="pcalls">${text(g.calls)}</div>`}<div>${text(g.reason)}<span class="f3">，來自 ${g.senders} 個地址</span></div>
-      <div class="pex">例：${g.examples.map((e, i) => h`${i === 0 ? '' : '、'}${text([e])}`)}</div></div></div>`,
+    <div class="pg"><span class="pc num">${r.w.txCount(g.count)}</span><div>${g.calls === undefined ? '' : h`<div class="pcalls">${text(g.calls)}</div>`}<div>${text(g.reason)}<span class="f3">${r.w.fromSenders(g.senders)}</span></div>
+      <div class="pex">${r.w.examples}${g.examples.map((e, i) => h`${i === 0 ? '' : r.w.sep}${text([e])}`)}</div></div></div>`,
     )}
   </div>`,
-  )}${r.others.map((line) => h`
+  )}${rec.others.map((line) => h`
   <div class="warnline">${decor('info')}<span>${text(line)}</span></div>`)}`,
   )}
   </details>`;
@@ -463,66 +481,74 @@ function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
 /** A command alone in its block, so a copy takes nothing of the sentence around it. */
 const command = (line: string): Html => h`<pre class="cmd"><code>${line}</code></pre>`;
 
-function nextBody(body: Extract<Body, { kind: 'next' }>): Html {
+function nextBody(body: Extract<Body, { kind: 'next' }>, r: R): Html {
   return h`
   <ol class="steps">${body.steps.map(
     (step) => h`
     <li><div>${text(step.say)}${step.command === undefined ? '' : command(step.command)}${step.then.map((line) => h`
       <p class="then">${text(line)}</p>`)}${step.hashes ? h`
-      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div>` : ''}</div></li>`,
+      <div class="hash"><span>${r.w.compare}</span><span class="f2">${r.w.compareHashesWhat}</span></div>` : ''}</div></li>`,
   )}
   </ol>
-  <div class="auto"><h3>程式每次簽名自動做的事</h3>
+  <div class="auto"><h3>${r.w.automatic}</h3>
     <ul>${body.automatic.map((line) => h`
       <li>${decor('info')}<span>${text(line)}</span></li>`)}
     </ul>
   </div>`;
 }
 
-const ADDRESS_RULE =
-  '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或金庫的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。';
-
-function section(s: Section): Html {
+function section(s: Section, r: R): Html {
   const count =
-    s.body.kind === 'wallet' ? (s.body.view.kind === 'calls' ? 'ERC-7730 描述檔' : undefined) : s.count === undefined ? undefined : s.count.kind === 'states' ? stateCounts(s.count) : `${s.count.text}${s.body.kind === 'addresses' ? ' 個' : ''}`;
+    s.body.kind === 'wallet'
+      ? s.body.view.kind === 'calls'
+        ? r.w.descriptors
+        : undefined
+      : s.count === undefined
+        ? undefined
+        : s.count.kind === 'states'
+          ? stateCounts(s.count, r)
+          : s.body.kind === 'addresses'
+            ? r.w.addressCount(s.count.text)
+            : s.count.text;
   const body = (() => {
     switch (s.body.kind) {
       case 'flow':
-        return flowBody(s.body.flow);
+        return flowBody(s.body.flow, r);
       case 'protocol':
-        return protocolBody(s.body.block);
+        return protocolBody(s.body.block, r);
       case 'vault':
-        return vaultBody(s.body.vault);
+        return vaultBody(s.body.vault, r);
       case 'review':
-        return reviewBody(s.body);
+        return reviewBody(s.body, r);
       case 'wallet':
-        return walletBody(s.body);
+        return walletBody(s.body, r);
       case 'addresses':
-        return addressBody(s.body);
+        return addressBody(s.body, r);
       case 'past':
-        return pastBody(s.body);
+        return pastBody(s.body, r);
       case 'next':
-        return nextBody(s.body);
+        return nextBody(s.body, r);
     }
   })();
   return h`
 <section id="${s.anchor}">
-  <h2>${s.label}${count === undefined ? '' : h` <span class="c">${count}</span>`}${s.body.kind === 'addresses' ? tip('信心等級說明', ADDRESS_RULE) : ''}</h2>${body}
+  <h2>${s.label}${count === undefined ? '' : h` <span class="c">${count}</span>`}${s.body.kind === 'addresses' ? tip(r.w.addressRuleLabel, r.w.addressRule) : ''}</h2>${body}
 </section>
 `;
 }
 
-/** The whole document. Deterministic: the same Page always gives the same bytes. */
+/** The whole document, in the page's language. Deterministic: the same Page always gives the same bytes. */
 export function renderPage(page: Page): string {
   tips = 0;
+  const r: R = { w: WORDS[page.language], language: page.language };
   return `<!doctype html>
-<html lang="zh-Hant">
+<html lang="${HTML_LANG[page.language]}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
-<title>${escape(page.id)} 報告</title>
+<title>${escape(r.w.pageTitle(page.id))}</title>
 <style>
 ${CSS}
 </style>
@@ -532,15 +558,15 @@ ${SYMBOLS}
 <div class="wrap">
 <div class="page">
 
-<nav class="rail" aria-label="目錄">
-  <h2>目錄</h2>
-  ${contents(page.sections).text}
+<nav class="rail" aria-label="${escape(r.w.contents)}">
+  <h2>${escape(r.w.contents)}</h2>
+  ${contents(page.sections, r).text}
 </nav>
 
 <div class="main">
 
-${header(page).text}
-${page.sections.map((s) => section(s).text).join('')}
+${header(page, r).text}
+${page.sections.map((s) => section(s, r).text).join('')}
 <footer class="foot">${text(page.footer).text}</footer>
 
 </div>
@@ -552,11 +578,11 @@ ${page.sections.map((s) => section(s).text).join('')}
 }
 
 /**
- * The template's HTML report from the recordings and `notes.json`, or undefined when it has none. It judges every
- * recorded test transaction of the template again and takes the first as the example. Throws NotesError for notes the
- * program refuses.
+ * The template's HTML report in every language from the recordings and `notes.json`, or undefined when it has none. It
+ * judges every recorded test transaction of the template again and takes the first as the example. Throws NotesError
+ * for notes the program refuses.
  */
-export async function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): Promise<string | undefined> {
+export async function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): Promise<ReadonlyMap<Language, string> | undefined> {
   const { subject, registry } = inputs;
   if (subject.kind !== 'template') return undefined;
   const raw = readNotes(repoRoot, subject.template.id, subject.vault);
@@ -564,7 +590,7 @@ export async function generatedHtml(repoRoot: string, inputs: ReportInputs, titl
   const { template } = subject;
   // The test transactions check the template, whichever vault they name; the example must name the report's own vault.
   const html = { ...inputs, fixtures: await judgeFixtures(repoRoot, template, loadRegistry(repoRoot)), example: firstRecordedTx(repoRoot, template, registry) };
-  return renderPage(buildPage(html, raw, title));
+  return new Map(LANGUAGES.map((language) => [language, renderPage(buildPage(html, raw, title, language))]));
 }
 
 /** Up to 160 characters of a line from where it first differs, quoted so no control character reaches the terminal. */
@@ -574,18 +600,18 @@ const quoted = (line: string | undefined, at: number): string => {
   return JSON.stringify(`${start > 0 ? '…' : ''}${line.slice(start, start + 160)}${start + 160 < line.length ? '…' : ''}`);
 };
 
-/** Where the committed HTML report differs from what the program writes, byte for byte, or undefined when it does not. */
-export function htmlDifference(committed: string | undefined, written: string | undefined): string | undefined {
+/** Where the committed `file` differs from what the program writes, byte for byte, or undefined when it does not. */
+export function htmlDifference(file: string, committed: string | undefined, written: string | undefined): string | undefined {
   if (committed === written) return undefined;
-  if (committed === undefined) return `there is ${NOTES_FILE} but no committed ${GENERATED_HTML_FILE}`;
-  if (written === undefined) return `${GENERATED_HTML_FILE} is committed but there is no ${NOTES_FILE} to write it from`;
+  if (committed === undefined) return `there is ${NOTES_FILE} but no committed ${file}`;
+  if (written === undefined) return `${file} is committed but there is no ${NOTES_FILE} to write it from`;
   const [was, now] = [committed.split('\n'), written.split('\n')];
   const at = was.findIndex((line, i) => line !== now[i]);
   const line = at === -1 ? was.length : at;
   const [a, b] = [was[line] ?? '', now[line] ?? ''];
   let column = 0;
   while (column < a.length && a[column] === b[column]) column++;
-  return `line ${line + 1}: committed ${quoted(was[line], column)}, the program writes ${quoted(now[line], column)}`;
+  return `${file} line ${line + 1}: committed ${quoted(was[line], column)}, the program writes ${quoted(now[line], column)}`;
 }
 
 export const SYMBOLS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true">
