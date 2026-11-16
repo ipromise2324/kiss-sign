@@ -39,11 +39,11 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 - **You are responsible for the exact bytes you sign.** Today the transaction is built first and checked last. That last check is like the terms on an insurance form: everyone means to read it, and most people click sign. At Bybit in 2025, the signers saw a normal transfer in a tampered Safe web app and signed a change to the Safe itself.
 - **Checking by hand is slow and needs expertise.** Tools such as [safe-tx-hashes](https://github.com/pcaversaccio/safe-tx-hashes-util) compute the hashes your wallet should show, but the decoded method and parameters they print come from the Safe Transaction Service, and the tool itself warns: *"Always independently decode the transaction "Data" yourself before you sign!"* Decoding one real Morpho vault deposit yourself (another Safe's, not the one pictured below) looks like this:
 
-  ![Decoding a Morpho vault deposit by hand with cast and jq: the Safe calls MultiSend with packed bytes; splitting them by hand gives an approve of 76 bytes and a Bundler3 multicall of 812 bytes; the approve lets GeneralAdapter1 spend 10,001 USDC; the multicall holds an erc20TransferFrom and an erc4626Deposit into 0x7777…7777 with a minimum of 1.054e15 shares for the Safe](docs/readme/decode.png)
+  ![Decoding a Morpho vault deposit by hand with cast and jq: the Safe calls MultiSend with packed bytes; splitting them by hand gives an approve of 76 bytes and a Bundler3 multicall of 812 bytes; the approve lets GeneralAdapter1 spend 10,001 USDC; the multicall holds an erc20TransferFrom and an erc4626Deposit into 0x7777…7777 with a maximum share price of 1.054e15 (scaled by 1e27), for the Safe](docs/readme/decode.png)
 
-  Then the real questions start. Is `0x4A6c…0aE0` Morpho's GeneralAdapter1 or a look-alike? Is `0x7777…7777` the vault you meant? Is `1.054e15` a sane minimum of shares for 10,001 USDC? What are the 8 extra bytes after the approve? And you do all of this again for the next transaction.
+  Then the real questions start. Is `0x4A6c…0aE0` Morpho's GeneralAdapter1 or a look-alike? Is `0x7777…7777` the vault you meant? Is `1.054e15` a sane maximum share price, scaled by 1e27, for 10,001 USDC? What are the 8 extra bytes after the approve? And you do all of this again for the next transaction.
 
-- **[Clear signing (ERC-7730)](https://eips.ethereum.org/EIPS/eip-7730) does not decode batched calls well yet.** It turns a call into readable fields, but only for contracts with a descriptor. For the deposit above, at [registry](https://github.com/ethereum/clear-signing-erc7730-registry) commit [`3bebbd0`](https://github.com/ethereum/clear-signing-erc7730-registry/tree/3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4), only Bundler3 has one. It names the call "Bundler3 Multicall" and passes each inner action to the descriptor of its target. MultiSend, USDC, GeneralAdapter1 and the vault have none. The screen can look reasonable while the parts that move your money are not shown.
+- **[Clear signing (ERC-7730)](https://eips.ethereum.org/EIPS/eip-7730) does not decode batched calls well yet.** It turns a call into readable fields, but only for contracts with a descriptor. For the deposit above, at [registry](https://github.com/ethereum/clear-signing-erc7730-registry) commit [`3bebbd0`](https://github.com/ethereum/clear-signing-erc7730-registry/tree/3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4), only Bundler3 has one. It names the call "Bundler3 Multicall" and passes each inner action to the descriptor of its target. MultiSend, USDC, GeneralAdapter1 and the vault have no calldata descriptor. The screen can look reasonable while the parts that move your money are not shown.
 
 ## How it works
 
@@ -62,7 +62,7 @@ pnpm kiss-sign key add alchemy
 pnpm kiss-sign key add etherscan   # only to build templates
 ```
 
-You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check).
+You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check).
 
 kiss-sign has two tiers. The basic tier is kiss-sign alone, on your computer. The hardened tier adds `check.sh` on a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. See [Two tiers](docs/design.md#two-tiers).
 
@@ -115,13 +115,13 @@ Propose the transaction in the Safe web app as usual. Then, on your computer:
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. On `MATCH`, both pages show the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. `check.sh` does not yet know Uniswap's `execute` or CoW's `setPreSignature`: for those it shows the call's raw data with a warning, so its call rows differ from `verify`'s. Compare the hashes and the contract called; what the call does, such as a swap's recipient and minimum out, rests on `verify` alone.
+On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` and `jq`, nothing else. On `MATCH`, both pages show the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list, and the one exception below. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. `check.sh` does not yet know Uniswap's `execute` or CoW's `setPreSignature`: for those it shows the call's raw data with a warning, so that call's rows differ from `verify`'s. For that call only, compare the hashes and the contract called; what the call does, such as a swap's recipient and minimum out, rests on `verify` alone.
 
 ![The verify page (MATCH, every check passed) and the check.sh page side by side, with the same hashes and the same calls row by row](docs/readme/side-by-side.png)
 
 ### 5. Sign
 
-Compare the domain hash and message hash with your hardware wallet's screen, character by character, then sign.
+Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or a vault, send a small amount first.
 
 The report and both pages are in Traditional Chinese. The terminal, the code and the docs are in English.
 
@@ -165,13 +165,13 @@ When a template is built:
 - **Each address is checked against the protocol's own site.** `check-sources` reads each source page without scripts and looks for the address next to its label. It compares the page's domain, found with the Public Suffix List, with the protocol's website on DefiLlama, or a GitHub source's organization with the protocol's GitHub organizations, and checks that a GitHub source is pinned to a commit on the default branch. For tokens and vaults, it checks that CoinGecko lists the coin at that address. A vault's factory is asked on chain whether it created the vault. Each check prints PASS or FINDING in the report for you to judge; none blocks a merge.
 - **ABIs are proven by compiling.** The verified source from Sourcify is compiled locally with a pinned `solc` and must match the code on chain. A contract reached only through another, or one that routes calls by selector, is not proved this way; the report says so and checks its code pin instead.
 - **The protocol's facts are read.** DefiLlama's TVL, listing date and past hacks, and for a vault its size over a year and its share holders, read through both providers.
-- **Code is pinned.** Each registry contract's code, and behind a proxy its implementation, is read through both providers at one block and recorded, with every past change of that code.
+- **Code is pinned.** Each registry contract's code, and behind a proxy its implementation, is read through both providers at one block and recorded, with each earlier version of that code the search finds.
 - **Rules are measured against history.** The AI writes a rule such as "`receiver` equals the Safe", and `past-txs` counts how many past deposits, by Safes and other senders, held it.
 - **Free fields are perturbed.** Fields the template leaves free are changed to a few other values each and simulated on a past transaction. Each change must revert, be refused, or change nothing the template does not allow. Empty bytes and arrays, and the members of a signed order, are not perturbed.
 
 At every signing:
 
-- **The program checks itself first.** Every tracked file in your clone must equal your fork's `main`. Ignored folders, such as `node_modules/` and `vendor/`, are not compared.
+- **The program checks itself first.** Your clone must be exactly your fork's `main`: that commit, every file of it unchanged, and no other file except ignored ones such as `node_modules/` and `vendor/`.
 - **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
 - **Decode, then re-encode byte for byte.** No hidden bytes beyond what the template allows and explains.
 - **Floor rules for every template.** No unlimited (max-value) approval, except where a reviewed registry entry declares a standing allowance, as Uniswap's Permit2 does. No `delegatecall` except to the official MultiSend. No change to the Safe's modules, guard, fallback handler or implementation. An owner or threshold change passes only exactly as the card declares it, one per transaction. No gas refund.
