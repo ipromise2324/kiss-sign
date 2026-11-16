@@ -63,9 +63,9 @@ Written by `pnpm report morpho/vault-deposit --vault-of hyperithm-usdc-apex-v2-9
 
 ## Official documentation
 
-Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.
+Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by `(`, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.
 
-| Function | Contract | Page | Site | GitHub commit | Function name appears on page |
+| Function | Contract | Page | Site | GitHub commit | Function on page |
 | --- | --- | --- | --- | --- | --- |
 | `approve(address,uint256)` | `usdc` | <https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol> | FINDING | PASS | PASS |
 | `multicall((address,bytes,uint256,bool,bytes32)[])` | `bundler3` | <https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/Bundler3.sol> | FINDING | PASS | PASS |
@@ -196,7 +196,7 @@ senders, of 489 transactions studied:
     126 calls no function the template calls (called 0x6e553f65 in 62, 0xbaae8abf in 33, 0x0af210a1 in 25, 0xfcf2849f in 3, …)
 by proven Safes, the whole template in one transaction:
 another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
-  e.g. 0x89c3015d7de6c4a94dce52604c5b8ebcd7ddadf8f3bda89f0f929979bf3faebe: calls another contract.0x0af210a1, another contract.0x0af210a1, another contract.0x0af210a1
+  e.g. 0x89c3015d7de6c4a94dce52604c5b8ebcd7ddadf8f3bda89f0f929979bf3faebe: calls 0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1, 0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1, 0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1
 fit the template's shape: 6 transactions from 2 Safes; misfits: 2 from 2 Safes
 fields, over the 6 fitting transactions:
   multiSend[0].to  [card vault.asset]
@@ -375,7 +375,7 @@ examples that fit: 0xae810233dd6c38d5208270f44ee5fdab57b243f159a4f72466a233c07a9
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
-1 descriptor(s) scoped by factory: registry/railnet/calldata-Conduit.json; one applies below only when its factory is the entry's registry factory
+no descriptor is scoped by the registry factory of an entry below
 
 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1

@@ -1,4 +1,12 @@
 {
+  "flow": [
+    {
+      "after": 2,
+      "from": "general-adapter-1",
+      "to": "usdc",
+      "text": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
+    }
+  ],
   "verdict": {
     "status": "caution",
     "text": "可以用。Hyperithm 沒有官方頁列出這個 vault 的地址，先看待確認，第一次先送小額。"

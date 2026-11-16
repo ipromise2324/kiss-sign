@@ -14,10 +14,12 @@ import { replayInputs } from '../src/research/report.ts';
 import type { ReportTitle } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
+import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const target = { template: 'morpho/market-supply' };
 let inputs: HtmlInputs;
@@ -67,6 +69,11 @@ function oneCall(of: HtmlInputs, n: number): HtmlInputs {
 }
 
 const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), flow: [] }, title);
+
+function templatePage(id: string): Page {
+  const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
+  return oneCallPage({ ...inputs, subject: { ...subject, template: loadTemplate(ROOT, id, registry) }, example: undefined, fixtures: [] });
+}
 const body = <K extends Body['kind']>(page: Page, kind: K): Extract<Body, { kind: K }> => page.sections.find((s) => s.body.kind === kind)?.body as Extract<Body, { kind: K }>;
 const args = (page: Page): ArgRow[] => body(page, 'flow').flow.calls.flatMap((call) => call.args);
 const arg = (page: Page, key: string): ArgRow => args(page).find((a) => a.key === key) ?? assert.fail(`no row ${key}`);
@@ -86,17 +93,17 @@ test('each argument says who decides it and prints what cast decode-calldata pri
   const page = pageOf(inputs);
   const spender = arg(page, '1.approve.spender');
   assert.deepEqual(spender.chips, [{ who: 'fixed', label: '固定' }]);
-  assert.deepEqual(spender.value, { cast: '0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD', example: false });
+  assert.deepEqual(spender.value, { cast: '0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD', example: undefined });
   assert.equal(plain(spender.words), 'blue-bundles-v1');
 
   const value = arg(page, '1.approve.value');
   assert.deepEqual(value.chips, [{ who: 'you-type', label: '你填：金額' }]);
-  assert.deepEqual(value.value, { cast: '72159646110', example: true });
+  assert.deepEqual(value.value, { cast: '72159646110', example: '例' });
   assert.equal(plain(value.words), '72,159.64611 usdc');
   assert.equal(plain(value.qualifier), '6 位小數');
 
   const market = arg(page, '2.blueBundlesV1Supply.marketParams');
-  assert.deepEqual(market.chips, [{ who: 'you-pick', label: '你選：market' }]);
+  assert.deepEqual(market.chips, [{ who: 'you-pick', label: '你選：市場' }]);
   assert.equal(market.value, undefined);
   assert.equal(plain(market.words), 'usdc / cbbtc，LLTV 86%');
   assert.match(plain(market.id), /0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/);
@@ -128,7 +135,7 @@ test('each argument says who decides it and prints what cast decode-calldata pri
   );
   assert.deepEqual(arg(page, '2.blueBundlesV1Supply.deadline').chips, [{ who: 'free', label: 'app 填，不限' }]);
   assert.equal(plain(arg(page, '2.blueBundlesV1Supply.referralFeeRecipient').words), '無（零地址）');
-  assert.equal(arg(page, '2.blueBundlesV1Supply.deadline').ai.ai, 'field 2.blueBundlesV1Supply.deadline');
+  assert.equal(arg(page, '2.blueBundlesV1Supply.deadline').ai?.ai, 'field 2.blueBundlesV1Supply.deadline');
 });
 
 test('a container prints its summary in place of the hex and nests its parts; a leaf prints what cast prints', () => {
@@ -150,7 +157,7 @@ test('a container prints its summary in place of the hex and nests its parts; a 
   assert.equal(leaf(first, 'skipRevert'), 'false');
   assert.equal(leaf(first, 'callbackHash'), `0x${'0'.repeat(64)}`);
   const amount = arg(depositPage, '1.approve.value').value;
-  assert.equal(amount?.example, true);
+  assert.equal(amount?.example, '例');
   assert.deepEqual(leaf(data(first), 'amount'), amount?.cast);
   assert.deepEqual(leaf(data(second), 'assets'), amount?.cast);
   assert.equal(leaf(data(first), 'receiver')?.toLowerCase(), adapter);
@@ -167,8 +174,54 @@ test('without a recorded test transaction a card or free value prints its rule o
   assert.equal(arg(page, '1.approve.value').value, undefined);
   assert.equal(plain(arg(page, '1.approve.value').words), '你填的金額');
   assert.equal(arg(page, '2.blueBundlesV1Supply.deadline').value, undefined);
-  assert.deepEqual(arg(page, '1.approve.spender').value, { cast: '0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD', example: false });
-  assert.equal(body(page, 'flow').flow.example, undefined);
+  assert.deepEqual(arg(page, '1.approve.spender').value, { cast: '0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD', example: undefined });
+  assert.equal(plain(body(page, 'flow').flow.example), '沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。');
+});
+
+test('a per-vault report takes its example from a test transaction of its own vault, or says that vault has none', () => {
+  assert.match(plain(body(depositPage, 'flow').flow.example), /^標「例」的.*取自 hyperithm-usdc-apex-v2-9e2f 的第一筆測試交易 /);
+  const none = buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle);
+  assert.equal(plain(body(none, 'flow').flow.example), 'hyperithm-usdc-apex-v2-9e2f 沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。');
+});
+
+test("an example value that is the test transaction's Safe says it is another Safe, and a long amount shows six places with its base units", () => {
+  const all = (rows: readonly ArgRow[]): ArgRow[] => rows.flatMap((r) => [r, ...all(r.parts.flatMap((p) => p.rows))]);
+  const fromSafe = all(args(depositPage)).filter((r) => r.value?.example === '例：別的 Safe');
+  assert.ok(fromSafe.length > 0 && fromSafe.every((r) => plain(r.words) === '你的 Safe'), fromSafe.map((r) => r.key).join(' / '));
+  assert.match(plain(body(depositPage, 'flow').flow.example), /約 973,551\.731159 hyperithm-usdc-apex-v2-9e2f（973551731159989631767877 最小單位）。$/);
+});
+
+test('交易後 says which way a token the Safe gives or gets more than nothing of moves', () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const { effects } = subject.template;
+  const gives = effects.gives.map((e) => ({ ...e, amount: { kind: 'positive' as const } }));
+  const gets = effects.gives.map((e) => ({ ...e, to: undefined, amount: { kind: 'positive' as const } }));
+  const template = { ...subject.template, effects: { ...effects, gives, gets } };
+  const page = buildPage({ ...depositInputs, subject: { ...subject, template } }, depositNotes, depositTitle);
+  const values = body(page, 'flow').flow.after.map((row) => plain(row.value));
+  assert.ok(values.includes('給出多於 0') && values.includes('收到多於 0'), values.join(' / '));
+});
+
+test('下一步 asks for each card field by its Chinese word with the key card new prints, and a typed amount of vault shares is 股份數', () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const card = new Map([...subject.template.card].map(([name, field]) => [name, field.kind === 'amount' ? { ...field, computed: undefined } : field]));
+  const typed = buildPage({ ...depositInputs, subject: { ...subject, template: { ...subject.template, card } } }, depositNotes, depositTitle);
+  const asked = body(typed, 'next').steps.map((s) => plain(s.say).split('：')[0]);
+  assert.ok(asked.includes('金庫（vault）'), asked.join(' / '));
+  assert.ok(asked.includes('金額（amount）'), asked.join(' / '));
+  assert.ok(asked.includes('股份數（min-shares）'), asked.join(' / '));
+});
+
+test('two official pages of one entry that share a short URL are each named with their file name', () => {
+  const bundler3 = depositInputs.registry.entries.get('bundler3') ?? assert.fail('bundler3');
+  const more = bundler3.moreSources?.[0] ?? assert.fail('a second page');
+  const moved = { ...bundler3, source: more.url.replace(/addresses\.ts$/, 'README.md') as typeof bundler3.source };
+  const entries = new Map([...depositInputs.registry.entries].map(([name, entry]) => [name, name === 'bundler3' ? moved : entry]));
+  const moved3 = { ...depositInputs, registry: { ...depositInputs.registry, entries, byAddress: new Map([...entries.values()].map((e) => [e.address, e])) } };
+  const page = buildPage(moved3, { ...notesFor(moved3), flow: [] }, depositTitle);
+  const { open, folded } = body(page, 'addresses');
+  const row = [...open, ...folded].find((r) => r.name === 'bundler3') ?? assert.fail('the bundler3 row');
+  assert.deepEqual(row.sources.slice(0, 2).map((s) => s.label), ['github.com/morpho-org/sdks/…/README.md', 'github.com/morpho-org/sdks/…/addresses.ts']);
 });
 
 test('the diagram has a lifeline for the Safe, each call target and each view target, and a green arrow from the view', () => {
@@ -210,7 +263,7 @@ test('the wallet rows match a descriptor by each array item, by argument name wi
   const field = (path: string) => ({ kind: 'field', path, format: 'raw', visible: 'always' }) as const;
   const usdtLike = { functions: [{ selector: '0x095ea7b3', signature: 'approve(address,uint256)', fields: [field('_spender'), field('_value')], notShown: [] }] } as unknown as EntryReport['descriptors'][number];
   const reports = [...depositInputs.erc7730.reports, { entry: usdc, factory: undefined, index: undefined, descriptors: [usdtLike] }];
-  assert.deepEqual(rowsOf({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的 amount']]);
+  assert.deepEqual(rowsOf({ ...depositInputs, erc7730: { ...depositInputs.erc7730, reports } }, 1), [['被授權者', 'general-adapter-1'], ['金額', '你填的金額']]);
 });
 
 test("a per-vault report shows its vault as the card's value, with or without a test transaction", () => {
@@ -219,7 +272,7 @@ test("a per-vault report shows its vault as the card's value, with or without a 
   for (const page of [depositPage, buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle)]) {
     const row = vault(page) ?? assert.fail('the vault row');
     assert.equal(row.value?.cast.toLowerCase(), hyperithm.address);
-    assert.equal(row.value?.example, false);
+    assert.equal(row.value?.example, undefined);
     assert.equal(plain(row.words), 'hyperithm-usdc-apex-v2-9e2f');
   }
   assert.equal(depositPage.id, 'morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f');
@@ -273,20 +326,27 @@ test('the vault its factory alone confirms is the one 待確認; every address r
   );
   const vault = open[0] ?? assert.fail('the vault row');
   assert.deepEqual(
-    vault.sources.flatMap((s) => (s.by === 'program' ? [[s.label, s.state, s.phrase]] : [])),
+    vault.sources.map((s) => [s.label, s.state, s.phrase, s.site === undefined ? undefined : [s.site.state, s.site.slug, s.site.href]]),
     [
-      ['app.morpho.org/ethereum/vault', 'na', '讀不到'],
-      ['CoinGecko', 'na', '沒資料可比'],
-      ['工廠', 'ok', undefined],
-      ['DefiLlama', 'ok', undefined],
+      ['app.morpho.org/ethereum/vault', 'na', '讀不到', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
+      ['CoinGecko', 'na', '沒資料可比', undefined],
+      ['工廠', 'ok', undefined, undefined],
     ],
   );
+  assert.deepEqual(vault.aiSources.map((s) => [s.text.tag, s.result]), [['AI', 'AI 判斷：要注意']]);
 });
 
 test('each past-transactions recording names the entry its search anchored on', () => {
   const { recordings } = body(depositPage, 'past');
   assert.ok(recordings.length > 0);
-  for (const r of recordings) assert.match(r.count, /^搜尋 [a-z0-9-]+ 的 鑄造（存款），找到 \d+ 筆，研究 \d+ 筆$/);
+  for (const r of recordings) assert.match(r.count, /^搜尋 [a-z0-9-]+ 的鑄造（存款），找到 \d+ 筆，研究 \d+ 筆$/);
+});
+
+test('a mint of a token that is not a vault is a mint, not a deposit', () => {
+  const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
+  const pastTxs = depositInputs.pastTxs.map((r) => ({ ...r, query: { ...r.query, token: usdc.address } }));
+  const page = buildPage({ ...depositInputs, pastTxs }, depositNotes, depositTitle);
+  for (const r of body(page, 'past').recordings) assert.match(r.count, /^搜尋 usdc 的鑄造，/);
 });
 
 test('a contract a flow line names gets its own lifeline, so every inside arrow ends on one', () => {
@@ -361,9 +421,9 @@ test('the wallet table shows the template rule, and names the bound arguments th
     rows.map((r) => [plain(r.label), plain(r.value)]),
     [
       ['送出的 ETH', '0'],
-      ['金額', '你填的 amount'],
-      ['抵押代幣', '你選的 market 的 collateralToken'],
-      ['LLTV', '你選的 market 的 lltv'],
+      ['金額', '你填的金額'],
+      ['抵押代幣', '你選的市場的抵押代幣'],
+      ['LLTV', '你選的市場的 LLTV'],
       ['推薦費比例', '0'],
       ['推薦費收款地址', '無（零地址）'],
       ['期限', '不限'],
@@ -401,61 +461,36 @@ test('a constant prints as cast decode-calldata prints it', () => {
   assert.equal(constCast({ kind: 'bool', value: false }), 'false');
 });
 
-test('past transactions count, per kind of sender, those using the operation and those with the template shape and rules', () => {
+test('past transactions count, per kind of sender, those using the operation and those with the template shape', () => {
   const [recording] = body(pageOf(inputs), 'past').recordings;
   assert.deepEqual(
     recording?.blocks.map((b) => [b.title, plain(b.lead)]),
     [
-      ['Safe', '0 筆用了這個操作的呼叫（0 個 Safe），0 筆跟模板一樣。'],
-      ['EOA 直接呼叫 blueBundlesV1Supply', '8 筆用了這個操作的呼叫（8 個地址），1 筆跟模板一樣。'],
+      ['Safe', '0 筆用了這個操作的呼叫（0 個 Safe），0 筆跟模板一模一樣。'],
+      ['EOA 直接呼叫 blueBundlesV1Supply', '8 筆用了這個操作的呼叫（8 個地址），0 筆跟模板一模一樣，1 筆形狀一樣、但用的是 registry 外的市場。'],
     ],
   );
-  assert.equal(plain(recording?.search), 'Alchemy 和 Etherscan 找到的完全一樣（528 = 528）。');
-});
-
-test('a past transaction with the template shape but a value its rule forbids, such as a signed permit, is not exactly the template', () => {
-  const past = body(pageOf(inputs), 'past');
-  assert.equal(
-    plain(past.same),
-    '過去有 1 筆交易跟模板一模一樣：Safe 0 筆、EOA 1 筆（1 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 1 筆：0x2f82601d…。',
-  );
   assert.deepEqual(
-    past.recordings[0]?.blocks[1]?.groups.map((g) => [g.count, g.senders, plain(g.reason)]),
+    recording?.blocks[1]?.groups.map((g) => [g.count, g.senders, plain(g.reason)]),
     [
+      [1, 1, '形狀一樣，但 marketParams 用的是 registry 外的市場'],
       [4, 4, 'call.blueBundlesV1Supply.loanTokenPermit.kind 的值跟模板不同：模板要 0，交易是 1'],
       [3, 3, 'call.blueBundlesV1Supply.loanTokenPermit.kind 的值跟模板不同：模板要 0，交易是 2'],
     ],
+    'a supply to a market outside the registry has the template shape; one with a signed permit, which the template fixes to kind 0, has another shape',
   );
-});
-
-test('a Safe transaction whose receiver is not the Safe that sent it is not exactly the template', () => {
-  const stranger = (hash: Hex): Address => `0x${hash.slice(2, 42)}` as Address;
-  const moved = depositInputs.pastTxs.map((p) => ({
-    ...p,
-    run: { ...p.run, studies: p.run.studies.map((s) => (s.kind === 'fit' && s.sender.kind === 'safe' ? { ...s, sender: { ...s.sender, address: stranger(s.hash) } } : s)) },
-  }));
-  const past = body(buildPage({ ...depositInputs, pastTxs: moved }, depositNotes, depositTitle), 'past');
-  assert.match(plain(past.same), /^過去有 26 筆交易跟模板一模一樣：Safe 0 筆、EOA 26 筆/);
-  const safe = past.recordings[0]?.blocks[0];
-  assert.equal(plain(safe?.lead), '8 筆用了這個操作的呼叫（8 個 Safe），0 筆跟模板一樣。');
-  assert.deepEqual(
-    safe?.groups.map((g) => [g.count, plain(g.reason)]),
-    [
-      [6, 'multiSend[1].multicall.bundle[1].data.erc4626Deposit.receiver 不是送出交易的 Safe 或地址'],
-      [2, '呼叫跟模板不同，模板是 approve → multicall'],
-    ],
-  );
+  assert.equal(plain(recording?.search), 'Alchemy 和 Etherscan 找到的完全一樣（528 = 528）。');
 });
 
 test('a bundle with another number of items is grouped and named by the functions its items call, each example linked to Etherscan', () => {
   const [early] = body(depositPage, 'past').recordings;
   const [safe, eoa] = early?.blocks ?? assert.fail('two blocks');
-  assert.equal(plain(safe?.lead), '8 筆用了這個操作的呼叫（4 個 Safe），6 筆跟模板一樣。');
+  assert.equal(plain(safe?.lead), '8 筆用了這個操作的呼叫（4 個 Safe），6 筆跟模板一模一樣。');
   assert.deepEqual(
     safe?.groups.map((g) => [g.count, plain(g.calls), plain(g.reason)]),
     [[2, 'bundler3.multicall', '呼叫跟模板不同，模板是 approve → multicall']],
   );
-  assert.equal(plain(eoa?.lead), '354 筆用了這個操作的呼叫（150 個地址），25 筆跟模板一樣。');
+  assert.equal(plain(eoa?.lead), '354 筆用了這個操作的呼叫（150 個地址），25 筆跟模板一模一樣。');
   assert.deepEqual(
     eoa?.groups.map((g) => [g.count, g.senders, plain(g.calls), plain(g.reason)]),
     [
@@ -465,17 +500,24 @@ test('a bundle with another number of items is grouped and named by the function
     ],
   );
   assert.deepEqual(eoa?.groups[0]?.examples[0], { href: 'https://etherscan.io/tx/0x94ba5b792613b7a04c2235f47062cf3f991524be9dffadd0fa595a16783a73ea', label: '0x94ba5b79…' });
-  assert.match(plain(early?.others[0]), /^另外 127 筆是別的操作，不列入：deposit 62 筆、/);
+  assert.match(plain(early?.others[0]), /^另外 127 筆是別的操作，不列入：hyperithm-usdc-apex-v2-9e2f\.deposit 62 筆、0x3151cEE0cdb517C0E7Db2B55FF5085e7D1809d90\.0xbaae8abf 32 筆、/);
   assert.ok(!JSON.stringify(early).includes('符合'), 'no verdict word');
 });
 
-test('過去交易 leads with how many past transactions were exactly the template, each counted once, and the latest of them', () => {
+test('過去交易 leads with how many past transactions were exactly the template, had its shape outside the registry, or another shape, each counted once, and the latest of them', () => {
   assert.equal(
     plain(body(depositPage, 'past').same),
-    '過去有 32 筆交易跟模板一模一樣：Safe 6 筆（2 個 Safe）、EOA 26 筆（17 個地址，各自送模板的一個呼叫）。全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。最近 3 筆：0x88258583…、0xa56ce3d8…、0x15133c00…。',
+    '過去的記錄裡，跟模板一模一樣的有 32 筆：Safe 6 筆（2 個 Safe）、EOA 26 筆（17 個地址，各自送模板的一個呼叫）；形狀一樣、但有地址不在 registry 裡的有 0 筆；形狀不同的有 336 筆，列在其他做法。這些交易全部成功執行：它們是從 hyperithm-usdc-apex-v2-9e2f 鑄造（存款）時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。一模一樣的最近 3 筆：0x88258583…、0xa56ce3d8…、0x15133c00…。',
   );
   const noFits = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind !== 'fit') } }));
-  assert.equal(plain(body(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle), 'past').same), '過去的記錄裡，沒有一筆交易跟模板一模一樣。');
+  assert.equal(
+    plain(body(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle), 'past').same),
+    '過去的記錄裡，跟模板一模一樣的有 0 筆；形狀一樣、但有地址不在 registry 裡的有 0 筆；形狀不同的有 336 筆，列在其他做法。',
+  );
+  assert.equal(
+    plain(body(pageOf(inputs), 'past').same),
+    '過去的記錄裡，跟模板一模一樣的有 0 筆；形狀一樣、但用的是 registry 外的市場的有 1 筆：Safe 0 筆、EOA 1 筆（1 個地址，各自送模板的一個呼叫）；形狀不同的有 7 筆，列在其他做法。它成功執行：它是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。形狀一樣的最近 1 筆：0x2f82601d…。',
+  );
   const twice = [...depositInputs.pastTxs, ...depositInputs.pastTxs];
   assert.deepEqual(body(buildPage({ ...depositInputs, pastTxs: twice }, depositNotes, depositTitle), 'past').same, body(depositPage, 'past').same);
 });
@@ -535,3 +577,66 @@ for (const variant of VARIANTS) {
     assert.ok(review.rows.every((r) => stateOf(ledger.results.find((x) => x.id === r.id) ?? assert.fail(r.id)) === r.state));
   });
 }
+
+/** A template with no contract call: its page, from the template's report recording and notes that hold only what the scope requires. */
+async function bareCase(id: string): Promise<Page> {
+  const of = { template: id };
+  const replayed = await replayInputs(ROOT, registry, of, await warmCompilers(reportCases(ROOT, registry, [of])), loadPublicSuffixList());
+  const subject = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject : assert.fail('a template report');
+  const html = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, subject.template, registry), example: firstRecordedTx(ROOT, subject.template, registry) };
+  return buildPage(html, { ...notesFor(html), flow: [] }, replayed.title);
+}
+
+test('an ETH transfer: no address section or address strip lines, its to/value/data rules in words, and a wallet line for a call with no data', async () => {
+  const page = await bareCase('eth/transfer');
+  assert.deepEqual(page.sections.map((s) => s.anchor), ['flow', 'review', 'wallet', 'past', 'next']);
+  assert.deepEqual(page.header.strip.map((s) => [s.line, s.state, s.count]), [['params', 'na', '沒有測試'], ['providers', 'ok', undefined]]);
+  assert.match(page.header.strip[0]?.explain ?? '', /^模板沒有不限的參數/);
+  const { flow } = body(page, 'flow');
+  assert.deepEqual(flow.calls.map((c) => c.head), [{ kind: 'no-data', text: '轉 ETH 給收款人' }]);
+  assert.deepEqual(flow.calls[0]?.args.map((a) => [a.name, a.chips.map((c) => c.label), plain(a.words), a.ai]), [
+    ['to', ['你選：收款人'], '你選的收款人', undefined],
+    ['value', ['你填：金額'], '你填的金額', undefined],
+    ['data', ['固定'], '沒有資料', undefined],
+  ]);
+  assert.deepEqual(flow.key.map((k) => k.label), ['你填', '你選', '固定']);
+  assert.equal(flow.decoded, false);
+  assert.deepEqual(flow.diagram.lifelines.map((l) => l.name), ['你的 Safe', '收款人']);
+  assert.deepEqual(flow.after.map((r) => plain(r.note)), ['剛好你填的金額，給收款人']);
+  assert.deepEqual(body(page, 'wallet').view, { kind: 'no-data' });
+  const next = body(page, 'next');
+  assert.ok(next.steps.some((s) => plain(s.say).includes('先用小額')), 'a typed amount keeps the small first trial');
+  const book = next.steps.findIndex((s) => s.command === 'bin/kiss-sign book add <name> <address>');
+  assert.ok(book !== -1 && book < next.steps.findIndex((s) => s.command === 'bin/kiss-sign card new eth/transfer'), 'a recipient is added to the address book before the card');
+  assert.ok(!next.automatic.some((line) => plain(line).includes('code pin')), 'no code pin line without a registry entry');
+});
+
+test('a cancellation: a self-call of 0 ETH is no transfer, its nonce rule has its own row, and no effect says the Safe gives and gets nothing', async () => {
+  const page = await bareCase('safe/cancel');
+  const { flow } = body(page, 'flow');
+  assert.deepEqual(flow.diagram.lifelines.map((l) => l.name), ['你的 Safe']);
+  assert.deepEqual(flow.diagram.arrows, [{ kind: 'call', n: 1, to: 0, fn: '0 ETH、沒有資料' }]);
+  assert.match(flow.diagram.narration, /Safe 呼叫自己，0 ETH、沒有資料/);
+  assert.deepEqual(flow.calls.map((c) => c.head), [{ kind: 'no-data', text: '呼叫你的 Safe，0 ETH、沒有資料' }]);
+  assert.deepEqual(flow.safeTx.map((r) => [r.name, r.chips.map((c) => c.label), plain(r.words)]), [['nonce', ['你填：nonce'], '你填的 nonce']]);
+  assert.deepEqual(flow.after, []);
+  const next = body(page, 'next');
+  assert.ok(!next.steps.some((s) => plain(s.say).includes('先用小額')), 'no amount, so no small first trial');
+  assert.ok(!next.steps.some((s) => s.command?.startsWith('bin/kiss-sign book add')), 'no recipient, so no address-book step');
+  assert.ok(next.automatic.some((line) => plain(line) === 'Safe 交易的 nonce 是你填的 nonce'));
+  assert.ok(next.automatic.some((line) => plain(line) === '模擬後 Safe 的餘額一點都不能變'));
+  assert.ok(!JSON.stringify(page).includes('card.'), 'no internal name');
+});
+
+test('the who-decides key gives a free field the meaning of the claim the template makes for it', async () => {
+  const proof = body(templatePage('cctp/receive'), 'flow').flow.key.filter((k) => k.who === 'free');
+  assert.deepEqual(proof.map((k) => k.means), ['換成別的值，交易就失敗']);
+  const supply = body(pageOf(inputs), 'flow').flow.key.filter((k) => k.who === 'free');
+  assert.ok(supply.some((k) => k.means === '換成別的值，結果一樣或交易失敗'), JSON.stringify(supply));
+});
+
+test('no strip explanation counts one thing as many', async () => {
+  for (const page of [depositPage, pageOf(inputs)]) {
+    for (const item of page.header.strip) assert.doesNotMatch(item.explain, /(^|[^\d])1 個(地址)?都|其餘 1 個|這 1 個/, item.explain);
+  }
+});
