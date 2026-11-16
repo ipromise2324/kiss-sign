@@ -158,5 +158,16 @@
       "hash": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11",
       "from": 20678797
     }
+  },
+  "fluid": {
+    "address": "0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb",
+    "kind": "token",
+    "source": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md",
+    "defillama": "fluid-lending",
+    "coingecko": "instadapp",
+    "code": {
+      "hash": "0x8cf49f6749c84d0c4fad1cac5dcd25451e3714b0d0e2bda19610e97809ae017e",
+      "from": 12183236
+    }
   }
 }

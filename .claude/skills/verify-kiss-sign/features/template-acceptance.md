@@ -45,7 +45,6 @@ What `main` lacks today (2026-11-16, at 1836f6a), each a gap to fill, not a step
 
 - `morpho/vault-deposit` into `steakhouse-prime-usdc-v2-0f51`: that vault has a report but no executed fixture. To cover it, record one with `pnpm record-safe-tx <name> <safe> <safeTxHash | nonce>` from another Safe that deposited into it (find one with `pnpm past-txs morpho/vault-deposit --token steakhouse-prime-usdc-v2-0f51 --anchor mint`).
 - `fluid/vault-deposit`: no `report.generated.html` and no vault report folders; it is in `NOT_YET_REBUILT`, so `card new` lists every registry vault, Morpho vaults included, not only Fluid's. The journey passes, but the template is not yet at the shipped standard of the rebuilt `morpho/vault-deposit`.
-- `eth/transfer` and `erc20/transfer`: no `report.generated.html` either (`NOT_YET_REBUILT`); the journey itself has everything it needs.
 
 ## Gotchas
 
