@@ -23,9 +23,10 @@ import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
-const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
+const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
 const registry = loadRegistry(ROOT);
 const templates = new Map<string, Template>(
   ['erc20/transfer', 'eth/transfer', 'safe/cancel'].map((id) => [id, loadTemplate(ROOT, id, registry)]),

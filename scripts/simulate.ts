@@ -19,6 +19,7 @@ import { observeExecuted, withSimulatedViews } from '../src/simulate/executed.ts
 import { describeCallScan, scanCalls, simulateSafeTx } from '../src/simulate/simulate.ts';
 import type { Observation } from '../src/simulate/simulate.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
+import { recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/simulate.ts (<safe-tx fixture name> | <safe> <nonce>) [--card '<card json>']
   [--template <template.json>] [--registry <contracts.json>] [--book '<address book json>'] [--record <name>]
@@ -155,6 +156,6 @@ if (flags.record !== undefined) {
     exchanges: recorder.exchanges().filter((e) => reader.providers.every((p) => p in e.answers)),
   };
   mkdirSync(join(out, '..'), { recursive: true });
-  writeFileSync(out, `${JSON.stringify(fixture, null, 2)}\n`);
+  writeFileSync(out, recordingText(fixture, 2));
   console.log(`\nwrote ${out}: ${fixture.exchanges.length} requests, each answered by ${reader.providers.join(' and ')}`);
 }

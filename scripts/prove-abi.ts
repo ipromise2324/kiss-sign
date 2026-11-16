@@ -1,13 +1,21 @@
+import { join } from 'node:path';
 import { openMainnetReader } from '../src/chain/reader.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import { pinnedCompilers } from '../src/contracts/solc.ts';
 import { sourcifyHttps } from '../src/contracts/sourcify.ts';
+import { loadRegistry } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 
 const [addressArg] = process.argv.slice(2);
 if (addressArg === undefined) throw new Error('usage: ALCHEMY_API_KEY=... node scripts/prove-abi.ts <address>');
 const address = parseAddress('address', addressArg);
+
+const routed = loadRegistry(join(import.meta.dirname, '..')).byAddress.get(address);
+if (routed?.routes !== undefined) {
+  console.log(`NOT PROVABLE ${checksumAddress(address)}: ${routed.name} is a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned, see pnpm pin-code ${routed.name}`);
+  process.exit(1);
+}
 
 if (!(await ensureVendored(['solc']))) process.exit(1);
 const reader = openMainnetReader(process.env);

@@ -4,8 +4,8 @@ import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { checkSources, githubLine } from './listings.ts';
 import type { Line } from './listings.ts';
-import { docSiteLine, entriesOf, functionOnPage, hasMarket, pinVerdict } from './report.ts';
-import type { DocLink, ReportInputs, SpanCheck } from './report.ts';
+import { docSiteLine, entriesOf, functionOnPage, hasMarket, onlyDependedOn, pinVerdict, todayEntries } from './report.ts';
+import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './vault-evidence.ts';
 
@@ -33,8 +33,8 @@ const sourceRank = (source: ProgramSource): number => {
   return more !== null ? Number(more[1]) : { page: 0, api: 1e6, coingecko: 1e6 + 1, factory: 1e6 + 2 }[source as Exclude<ProgramSource, `more.${number}`>];
 };
 
-/** The words an address row's source line shows beside a result that did not pass. */
-export type Phrase = '讀不到' | '是另一個地址' | '是另一個網站' | '沒資料可比' | '工廠說不是它建的';
+/** The words an address row's source line, or a call's documentation line, shows beside a result that did not pass. */
+export type Phrase = '讀不到' | '是另一個地址' | '是另一個網站' | '沒資料可比' | '工廠說不是它建的' | '頁上沒有這個函式';
 
 /** Why a result has its state. The kind alone fixes the state (`STATE_OF`), so evidence missing can never read as red. */
 export type Finding =
@@ -45,7 +45,7 @@ export type Finding =
   | { readonly kind: 'other-coin' }
   /** The protocol API answered another address, nothing or no address at the path, or anything but its JSON. */
   | { readonly kind: 'other-answer' }
-  /** A code pin span the chain did not run from its block. */
+  /** A code pin span the chain did not run from its block, or a current pin it does not run at the report's latest block. */
   | { readonly kind: 'pin-not-run' }
   /** The ABI proof proved code other than the current pin. */
   | { readonly kind: 'proof-not-pin' }
@@ -86,7 +86,10 @@ export type Finding =
   | { readonly kind: 'no-second-source' }
   | { readonly kind: 'compiler-not-pinned'; readonly version: string }
   | { readonly kind: 'pinned-before-spans' }
-  | { readonly kind: 'no-abi-case' };
+  | { readonly kind: 'no-abi-case' }
+  | { readonly kind: 'not-called' }
+  /** A selector-routed proxy: its calls run in the implementations its routes reach, so no proof of one contract covers it. */
+  | { readonly kind: 'routed-proxy' };
 export type FindingKind = Finding['kind'];
 
 export const STATE_OF: { readonly [K in FindingKind]: State } = {
@@ -119,6 +122,8 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'compiler-not-pinned': 'warn',
   'pinned-before-spans': 'warn',
   'no-abi-case': 'warn',
+  'not-called': 'na',
+  'routed-proxy': 'na',
 };
 
 const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
@@ -142,7 +147,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'unexplained-coin': '沒資料可比',
   'commit-unconfirmed': '讀不到',
   'page-not-fetched': '讀不到',
-  'name-not-on-page': '讀不到',
+  'name-not-on-page': '頁上沒有這個函式',
   'no-chain-result': undefined,
   'factory-unread': '讀不到',
   'not-pinned': undefined,
@@ -151,6 +156,8 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'compiler-not-pinned': undefined,
   'pinned-before-spans': undefined,
   'no-abi-case': undefined,
+  'not-called': undefined,
+  'routed-proxy': undefined,
 };
 
 /** `<registry name>/<check key>`, such as `cbbtc/source.coingecko` or `morpho-blue/doc.0x095ea7b3.page`, or `fixture.<safe-tx fixture>`. */
@@ -290,11 +297,13 @@ const FACTORY_FINDINGS: Readonly<Record<ReturnType<typeof factoryAnswer>, Findin
 
 function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
   if (entry.kind !== 'vault' || entry.attributes.factory === undefined) return [];
-  const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry.attributes.factory)];
+  const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry, inputs.registry)];
   return [{ id: `${entry.name}/factory.admitted`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link: undefined, finding }];
 }
 
-function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined): Finding {
+function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, depended: boolean): Finding {
+  if (depended) return { kind: 'not-called' };
+  if (entry.routes !== undefined) return { kind: 'routed-proxy' };
   if (proof === undefined) return { kind: 'no-abi-case' };
   if (proof.kind === 'refused') {
     const { refusal } = proof;
@@ -319,6 +328,14 @@ function spanResults(entry: RegistryEntry, verdicts: readonly SpanCheck[] | unde
     const verdict = verdicts?.[i];
     return { id: `${entry.name}/code.${i + 1}`, line: 'code', about, source: undefined, link: undefined, finding: verdict === undefined ? { kind: 'no-chain-result' } : SPAN_FINDINGS[verdict.kind] };
   });
+}
+
+const TODAY_FINDINGS: Readonly<Record<TodayCheck['kind'], Finding>> = { pass: { kind: 'agrees' }, finding: { kind: 'pin-not-run' }, unverifiable: { kind: 'no-answer' } };
+
+function todayResults(entry: RegistryEntry, inputs: ReportInputs, readToday: ReadonlySet<string>): Result[] {
+  if (!readToday.has(entry.name) || entry.code === undefined) return [];
+  const check = inputs.today?.checks.get(entry.address);
+  return [{ id: `${entry.name}/code.today`, line: 'code', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: check === undefined ? { kind: 'no-chain-result' } : TODAY_FINDINGS[check.kind] }];
 }
 
 /**
@@ -366,20 +383,24 @@ function fixtureFinding(judgement: FixtureJudgement): Finding {
 
 /**
  * Every result of the report: for each entry `entriesOf` names, in registry order, its source results, a vault's
- * factory answer, documentation pages, market parts, ABI proof and code pin spans, with the vouching rule applied; then each recorded transaction.
+ * factory answer, documentation pages, market parts, ABI proof, code pin spans and, for one no ABI proof compares with
+ * the chain, its code at the latest block, with the vouching rule applied; then each recorded transaction.
  */
 export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[]): Ledger {
   const { subject } = inputs;
   const docs = subject.kind === 'template' ? subject.docs : [];
   const checked = checkSources(entriesOf(subject, inputs.registry), inputs.listings, inputs.pages);
+  const depended = onlyDependedOn(subject, inputs.registry);
+  const today = new Set(todayEntries(subject, inputs.registry).map((entry) => entry.name));
   const results = checked.flatMap(({ entry, lines }) =>
     withAddressResult(entry, unvouchedUnlistedHasNoSecondSource(entry, [
       ...sourceResults(entry, lines),
       ...factoryResults(entry, inputs),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
       ...marketResults(entry, inputs),
-      { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address)) },
+      { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address), depended.has(entry.name)) },
       ...spanResults(entry, inputs.spans.get(entry.address)),
+      ...todayResults(entry, inputs, today),
     ])),
   );
   const judged = fixtures.map(
@@ -467,3 +488,6 @@ export function sourcesOf(ledger: Ledger, entry: RegistryEntry): SourceLine[] {
     return { ...judged(of('address')), source, site: site.length === 0 ? undefined : judged(site) };
   });
 }
+
+/** A documentation page's results, the function on the page, its site and a GitHub page's commit, judged as one. */
+export const docOf = (ledger: Ledger, doc: DocLink): Judged => judged(ledger.results.filter((r) => r.id.startsWith(`${doc.contract.name}/doc.${doc.fn.selector}.`)));

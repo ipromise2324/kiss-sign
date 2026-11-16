@@ -19,6 +19,7 @@ import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
@@ -75,7 +76,7 @@ test('a card naming no registry market is refused', () => {
 });
 
 type Fixture = { transactionHash: Hex; template?: unknown; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
-const fixture = (name: string): Fixture => JSON.parse(readFileSync(join(ROOT, 'testdata', 'simulate', `${name}.json`), 'utf8'));
+const fixture = (name: string): Fixture => readRecording(join(ROOT, 'testdata', 'simulate', `${name}.json`));
 
 /** The recorded supply, simulated on its parent block and observed from its receipt, judged against the card. */
 async function recordedVerdicts(name: string, card: Card): Promise<{ simulated: EffectVerdict; executed: EffectVerdict }> {
