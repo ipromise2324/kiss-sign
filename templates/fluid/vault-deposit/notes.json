@@ -43,11 +43,47 @@
       "recommendation": "可以接受；在乎的話，verify 之後看 Safe 實際收到的股份數。"
     }
   ],
-  "reviews": {},
+  "reviews": {
+    "fluid-lending-factory/source.site": {
+      "status": "confirmed",
+      "text": "github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。",
+      "recommendation": "可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。"
+    },
+    "fluid-lending-factory/source.more.1.site": {
+      "status": "confirmed",
+      "text": "github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。",
+      "recommendation": "可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。"
+    },
+    "fluid-liquidity/source.site": {
+      "status": "confirmed",
+      "text": "github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。",
+      "recommendation": "可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。"
+    },
+    "fluid-liquidity/source.more.1.site": {
+      "status": "confirmed",
+      "text": "github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。",
+      "recommendation": "可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。"
+    }
+  },
   "fields": {
     "1.approve.spender": "被授權從 Safe 拉代幣的合約，固定是你選的 fToken。呼叫 2 裡 fToken 透過 Liquidity 的回呼用 `transferFrom` 拉走這筆錢。",
     "1.approve.value": "授權的上限，等於存款金額。呼叫 2 會整筆用掉，交易後授權回到 0。",
     "2.deposit.assets": "存進 fToken 的代幣數量，等於存款金額。fToken 依當下換算價格算出要鑄的股份。",
     "2.deposit.receiver": "收 fToken 股份的地址，固定是 Safe。"
+  },
+  "entries": {
+    "fluid-lending-factory": {
+      "role": "Fluid 的借貸池工廠，用 `computeToken` 算出每個資產的官方 fToken 地址"
+    },
+    "fluid-liquidity": {
+      "role": "Fluid 的 Liquidity 合約：fToken 收到的代幣實際放在這裡，沒有呼叫直接打到它",
+      "sources": [
+        {
+          "text": "Etherscan 上這個合約的 LogSetImplementation、LogRemoveImplementation 事件：目前仍設定的實作有 4 個，最後一次變更在區塊 25,007,782；四個 seed 各接到其中一個，程式讀到的也是這 4 個",
+          "url": "https://etherscan.io/address/0x52Aa899454998Be5b000Ad077a46Bbe360F4e497#events",
+          "result": "pass"
+        }
+      ]
+    }
   }
 }

@@ -295,24 +295,28 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>流程 <span class="c">2 個呼叫</span></h2>
   <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
   <div class="diagram">
-  <svg viewBox="0 0 660 264" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 750 300" role="img" aria-labelledby="dt dd">
     <title id="dt">交易流程</title>
     <desc id="dd">呼叫 1：Safe 呼叫 usdt 的 approve。呼叫 2：Safe 呼叫 fluid-fusdt 的 deposit。結果：你得到 fluid-fusdt。</desc>
     <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
-    <line class="life" x1="90" y1="58" x2="90" y2="256"/>
+    <line class="life" x1="90" y1="58" x2="90" y2="292"/>
     <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
-    <line class="life" x1="280" y1="58" x2="280" y2="256"/>
+    <line class="life" x1="280" y1="58" x2="280" y2="292"/>
     <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">usdt</text><text class="nodes" x="280" y="50" text-anchor="middle">代幣</text>
-    <line class="life" x1="470" y1="58" x2="470" y2="256"/>
+    <line class="life" x1="470" y1="58" x2="470" y2="292"/>
     <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">fluid-fusdt</text><text class="nodes" x="470" y="50" text-anchor="middle">金庫</text>
+    <line class="life" x1="660" y1="58" x2="660" y2="292"/>
+    <rect class="node" x="583" y="14" width="154" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">fluid-liquidity</text><text class="nodes" x="660" y="50" text-anchor="middle">借貸合約</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">deposit</text>
     <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#m-call)"/>
-    <g data-ai><rect class="tagbox" x="146.80000000000007" y="180" width="56" height="20" rx="6"/><text class="tagt" x="174.80000000000007" y="194" text-anchor="middle">AI 研究</text><rect class="codebox" x="414.20000000000005" y="180" width="101.6" height="19" rx="6"/><text class="cap" y="194"><tspan x="210.80000000000007">fToken 經 Liquidity 合約用 </tspan><tspan class="capc" x="418.20000000000005">transferFrom</tspan><tspan x="518.8000000000001"> 從 Safe 拉走 USDT</tspan></text></g>
-    <line class="inner" x1="470" y1="204" x2="283" y2="204" marker-end="url(#m-inside)"/>
-    <text class="capg" x="104" y="230">你得到 fluid-fusdt</text>
-    <line class="gain" x1="470" y1="240" x2="93" y2="240" marker-end="url(#m-gets)"/>
+    <g data-ai><rect class="tagbox" x="482" y="180" width="56" height="20" rx="6"/><text class="tagt" x="510" y="194" text-anchor="middle">AI 研究</text><text class="cap" y="194"><tspan x="546">存入的 USDT 放在 Liquidity</tspan></text></g>
+    <line class="inner" x1="470" y1="204" x2="657" y2="204" marker-end="url(#m-inside)"/>
+    <g data-ai><rect class="tagbox" x="236.80000000000007" y="216" width="56" height="20" rx="6"/><text class="tagt" x="264.80000000000007" y="230" text-anchor="middle">AI 研究</text><rect class="codebox" x="504.20000000000005" y="216" width="101.6" height="19" rx="6"/><text class="cap" y="230"><tspan x="300.80000000000007">fToken 經 Liquidity 合約用 </tspan><tspan class="capc" x="508.20000000000005">transferFrom</tspan><tspan x="608.8000000000001"> 從 Safe 拉走 USDT</tspan></text></g>
+    <line class="inner" x1="470" y1="240" x2="283" y2="240" marker-end="url(#m-inside)"/>
+    <text class="capg" x="104" y="266">你得到 fluid-fusdt</text>
+    <line class="gain" x1="470" y1="276" x2="93" y2="276" marker-end="url(#m-gets)"/>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
@@ -433,28 +437,28 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row" data-state="warn" data-result="fluid-lending-factory/source.site">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">fluid-lending-factory：沒有第二個來源</div>
+      <div><div class="t">fluid-lending-factory：github.com/Instadapp/fluid-contracts-public/…/deployments.md，沒有第二個來源</div>
         <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-fluid-lending-factory">看來源</a></div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="fluid-lending-factory/source.more.1.site">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">fluid-lending-factory：沒有第二個來源</div>
+      <div><div class="t">fluid-lending-factory：github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json，沒有第二個來源</div>
         <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-fluid-lending-factory">看來源</a></div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="fluid-liquidity/source.site">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">fluid-liquidity：沒有第二個來源</div>
+      <div><div class="t">fluid-liquidity：github.com/Instadapp/fluid-contracts-public/…/deployments.md，沒有第二個來源</div>
         <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-fluid-liquidity">看來源</a></div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="fluid-liquidity/source.more.1.site">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">fluid-liquidity：沒有第二個來源</div>
+      <div><div class="t">fluid-liquidity：github.com/Instadapp/fluid-contracts-public/…/Liquidity.json，沒有第二個來源</div>
         <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-fluid-liquidity">看來源</a></div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。</span><span class="byai">AI 研究</span></span></div></div>
@@ -539,7 +543,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="intro"><span class="aiw" data-ai><span>唯一不合的 Safe 交易只呼叫 <code>deposit</code>，同一筆沒有 <code>approve</code>，授權是更早給的；這種做法用這個模板會 MISMATCH。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫和參數位置相同，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
   <h3>搜尋 fluid-fusdt 的鑄造（存款），找到 244 筆，研究 195 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/fluid-vault-deposit-fusdt.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">244 = 244</span>）。</p>
   <div class="pblock">
