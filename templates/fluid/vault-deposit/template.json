@@ -1,7 +1,7 @@
 {
   "id": "fluid/vault-deposit",
   "card": {
-    "vault": { "kind": "contract", "registryKind": "vault" },
+    "vault": { "kind": "contract", "registryKind": "vault", "defillama": "fluid-lending" },
     "amount": { "kind": "amount", "of": "vault.asset" }
   },
   "calls": [

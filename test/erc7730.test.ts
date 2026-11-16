@@ -8,9 +8,10 @@ import type { Exchange } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { ERC7730_ARCHIVE, chainAt, formatReports, loadSnapshot, studyEntries } from '../src/research/erc7730.ts';
 import type { ChainAccess, Erc7730Recording, Snapshot } from '../src/research/erc7730.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
-const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'erc7730', 'smokehouse-usdc-and-usdc.json'), 'utf8')) as Erc7730Recording;
+const recording = readRecording(join(ROOT, 'testdata', 'erc7730', 'smokehouse-usdc-and-usdc.json')) as Erc7730Recording;
 const registry = loadRegistry(ROOT);
 const DESCRIPTOR = 'registry/morpho/calldata-steakhouse_financial-bbqUSDC.json';
 const INCLUDED = 'ercs/calldata-erc4626-vaults.json';

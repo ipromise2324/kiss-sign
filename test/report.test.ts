@@ -4,9 +4,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { createReader } from '../src/chain/reader.ts';
-import { REPLAY_ENDPOINTS, replayReader, replayTransport } from '../src/chain/recording.ts';
+import { REPLAY_ENDPOINTS, recordingTransport, replayReader, replayTransport } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 import type { Reader } from '../src/chain/reader.ts';
+import type { Transport } from '../src/chain/rpc.ts';
 import type { BlockRef, BlockTag } from '../src/chain/types.ts';
 import { keccakCode } from '../src/contracts/code.ts';
 import { REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
@@ -27,6 +28,7 @@ import {
   readDocs,
   pastTxsRecordings,
   programChanges,
+  readToday,
   renderReport,
   reportRecordingPath,
   summarizePastTxs,
@@ -41,6 +43,7 @@ import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { reportedVaultsIn } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -48,7 +51,7 @@ const suffixes = loadPublicSuffixList();
 const ID = 'morpho/vault-deposit';
 const TARGET = { template: ID, cardVault: 'steakhouse-prime-usdc-v2-0f51' };
 const scoped = loadReport(ROOT, registry, TARGET);
-const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath(TARGET)), 'utf8')) as ReportRecording;
+const recording = readRecording(join(ROOT, reportRecordingPath(TARGET))) as ReportRecording;
 
 /** The report with no ABI proofs, vault evidence or past transactions, which the replay test covers. */
 function quick(
@@ -60,6 +63,7 @@ function quick(
   spans: ReportInputs['spans'] = new Map(),
   reg: Registry = scoped.registry,
   commits: ReportRecording['commits'] = recording.commits,
+  today: ReportInputs['today'] = undefined,
 ): string {
   const inputs: ReportInputs = {
     subject,
@@ -71,6 +75,7 @@ function quick(
     vaults,
     pastTxs,
     spans,
+    today,
     erc7730: { text: 'not read', reports: [] },
     facts: undefined,
   };
@@ -92,7 +97,7 @@ test('morpho/vault-deposit: rules name registry entries with full addresses, and
 test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
   const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
   const template = parseTemplate({ ...raw, card: { ...raw.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } }, registry);
-  const subject: Subject = { ...loadReport(ROOT, registry, { template: 'fluid/vault-deposit' }).subject, template } as Subject;
+  const subject: Subject = { kind: 'template', template, docs: [], vault: undefined };
   const vaults = entriesOf(subject, registry).filter((entry) => entry.kind === 'vault').map((entry) => entry.name);
   assert.deepEqual(vaults, ['fluid-fusdc', 'fluid-fusdt']);
   const text = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, registry);
@@ -101,6 +106,8 @@ test('a contract field that names its protocol puts only that protocol\'s entrie
 });
 
 test('a per-vault report joins its vault\'s docs.json with the template\'s, and refuses a function both name', () => {
+  const { subject } = loadReport(ROOT, registry, { template: 'fluid/vault-deposit', cardVault: 'fluid-fusdt' });
+  assert.deepEqual(subject.kind === 'template' ? subject.docs.map((d) => `${d.fn.signature} ${d.contract.name}`) : [], ['approve(address,uint256) usdt', 'deposit(uint256,address) fluid-fusdt']);
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-docs-'));
   const folder = join(root, TEMPLATES_DIR, 'fluid/vault-deposit');
   mkdirSync(join(folder, 'vaults', 'fluid-fusdt'), { recursive: true });
@@ -173,6 +180,52 @@ test('the report prints every code span, and --compare flags an earlier span who
     `Code pins › \`bundler3\` › Chain: committed PASS, live FINDING: block 100 runs \`${keccakCode('0x6001' as Hex)}\``,
     `Code pins › \`bundler3\` (2) › Chain: committed PASS, live FINDING: block 249 runs \`${keccakCode('0x6001' as Hex)}\``,
   ]);
+});
+
+function withDependency(): Registry {
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  raw['liquidity'] = { address: `0x${'52'.repeat(20)}`, kind: 'lending', source: 'https://docs.example.org/liquidity', code: { hash: keccakCode('0x6002' as Hex), from: 250 } };
+  raw['bundler3'] = { ...raw['bundler3'], dependsOn: ['liquidity'] };
+  return parseRegistry(raw);
+}
+
+const serving =
+  (code: Hex): Transport =>
+  async (_url, body) => {
+    const { method } = JSON.parse(body) as { method: string };
+    const result = method === 'eth_getCode' ? code : method === 'eth_getStorageAt' ? `0x${'00'.repeat(32)}` : undefined;
+    return { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) };
+  };
+
+test("the report reads at its latest block the code of an entry no ABI proof covers, from its recording too, and --compare flags code the chain no longer runs", async () => {
+  const { subject, registry: seen } = loadReport(ROOT, withDependency(), TARGET);
+  const block: BlockRef = { number: 300n, hash: `0x${'30'.repeat(32)}` as Hex };
+  const recorded = recordingTransport(serving('0x6002' as Hex), REPLAY_ENDPOINTS);
+  const live = await readToday(createReader(REPLAY_ENDPOINTS, recorded.transport, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] }), subject, seen, block);
+  assert.deepEqual(await readToday(replayReader(recorded.exchanges()), subject, seen, block), live, 'the recorded reads give the same result');
+  const committed = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, live);
+  assert.match(committed, /^\| `liquidity` \| PASS \| 300 \|$/m);
+  assert.match(committed, /^\| `liquidity` \| `0x5252525252525252525252525252525252525252` \| not proved: the operation reaches it only through `dependsOn`/m);
+  const other = await readToday(createReader(REPLAY_ENDPOINTS, serving('0x6003' as Hex), { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] }), subject, seen, { ...block, number: 400n });
+  assert.deepEqual(compareReports(committed, quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, other)), [
+    `Today's code › \`liquidity\` › Today: committed PASS, live FINDING: runs \`${keccakCode('0x6003' as Hex)}\``,
+  ]);
+  assert.equal(await readToday(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
+});
+
+test('a selector-routed proxy a call targets is not provable, and the report reads its code and routes at the latest block', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  const implementation = `0x${'0a'.repeat(20)}`;
+  raw['bundler3'] = {
+    ...raw['bundler3'],
+    routes: { implementationOf: 'getSigsImplementation(bytes4)', selectorsOf: 'getImplementationSigs(address)', seeds: ['0x00000001'] },
+    code: { hash: raw['bundler3'].code.hash, routes: [{ address: implementation, hash: `0x${'0a'.repeat(32)}`, selectors: ['0x00000001'] }], from: 100 },
+  };
+  const { subject, registry: seen } = loadReport(ROOT, parseRegistry(raw), TARGET);
+  const text = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen);
+  assert.match(text, /^\| `bundler3` \| `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` \| not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above \|/m);
+  assert.match(text, /^\| `bundler3` \| not read \| {2}\|$/m);
+  assert.match(text, /^`bundler3` seeds: `0x00000001`\.$/m);
 });
 
 test('a page that does not name the function is a FINDING', () => {
@@ -298,7 +351,17 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
     `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
   ]);
 
-  const attested = readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', GENERATED_FILE), 'utf8');
+  const signer = '0x3846c3A30E62075Fa916216b35EF04B8F53931f6';
+  const attested = committed.replace(
+    '  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash\n',
+    [
+      `  attestation  registry/morpho/sigs/calldata-MorphoBundlerV3.eip155-1-${signer}.json`,
+      `    signer     ${signer}, listed in auditors/`,
+      `    result     VALID: ERC-8176 schema and domain, data equals this descriptorHash, uid matches its fields, signature recovers ${signer} (both providers), never expires, not revoked as of block 26407564 (getRevokeOffchain, both providers)`,
+      '',
+    ].join('\n'),
+  );
+  assert.notEqual(attested, committed);
   const revoked = attested.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
   assert.equal(compareReports(attested, revoked).length, 2);
   assert.match(compareReports(attested, revoked).join('\n'), /^ERC-7730 › [a-z0-9.-]+ 0x[0-9a-fA-F]{40} \(\w+\) › only live: .*REVOKED: ERC-8176/m);
@@ -358,7 +421,7 @@ test("each ERC-20 declaration the program holds names the function's canonical s
 });
 
 const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
-const vaultRecording: { exchanges: Exchange[] } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'vault-evidence', `${VAULT}.json`), 'utf8'));
+const vaultRecording: { exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'vault-evidence', `${VAULT}.json`));
 
 test('--compare reads each vault again at the blocks its evidence names, so a changed month, holder count or top-10 share differs', async () => {
   const transport = replayTransport(vaultRecording.exchanges, REPLAY_ENDPOINTS);
@@ -472,6 +535,15 @@ test('a template whose card names a vault is reported per vault: without the vau
   refused({ template: 'eth/transfer', cardVault: 'steakhouse-prime-usdc-v2-0f51' }, 'eth/transfer has one report, not one per vault; leave out the vault');
   refused({ template: ID, cardVault: 'fluid-fusdc' }, "fluid-fusdc is not a vault the card's vault of morpho/vault-deposit accepts");
   refused({ template: ID, cardVault: 'bundler3' }, "bundler3 is not a vault the card's vault of morpho/vault-deposit accepts");
+});
+
+test('a per-vault report refuses a registry whose kept entry depends on another vault the field accepts', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  raw['bundler3'] = { ...raw['bundler3'], dependsOn: ['hyperithm-usdc-apex-v2-9e2f'] };
+  assert.throws(
+    () => loadReport(ROOT, parseRegistry(raw), TARGET),
+    (e: unknown) => e instanceof ReportError && e.message === 'hyperithm-usdc-apex-v2-9e2f is another vault the field accepts, but a registry entry the report keeps names it',
+  );
 });
 
 test("a per-vault report shows that vault alone: no other vault, no asset or factory only another vault names, and only past searches anchored on its token", () => {

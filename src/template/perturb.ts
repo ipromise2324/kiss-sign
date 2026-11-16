@@ -23,6 +23,7 @@ import type { MutationResult } from './mutation.ts';
 import type { Leaf } from './check.ts';
 import { loadTemplate, parseTemplate } from './template.ts';
 import type { FreeClaim, Template } from './template.ts';
+import { readRecording } from '../chain/bytecode.ts';
 
 /**
  * What a copy of the transaction with one free field changed did. `reverted`: it did not execute. `refused`: the
@@ -200,8 +201,8 @@ const agreed = <T>(read: Read<T>, what: string): T => {
   return read.value;
 };
 
-const readRecording = (repoRoot: string, name: string): PerturbRecording =>
-  JSON.parse(readFileSync(join(repoRoot, PERTURB_DIR, `${name}.json`), 'utf8')) as PerturbRecording;
+const readPerturbRecording = (repoRoot: string, name: string): PerturbRecording =>
+  readRecording(join(repoRoot, PERTURB_DIR, `${name}.json`)) as PerturbRecording;
 
 function recordedTx(repoRoot: string, recording: PerturbRecording): SafeTx {
   const fixture = JSON.parse(readFileSync(join(repoRoot, 'testdata', 'safe-tx', `${recording.safeTx}.json`), 'utf8'));
@@ -224,7 +225,7 @@ async function replay(name: string, recording: PerturbRecording, tx: SafeTx, car
  * repository's templates and registry, every copy simulated from the recorded chain answers on the recorded parent block.
  */
 export async function replayPerturbRecording(repoRoot: string, name: string, registry: Registry): Promise<PerturbationReport> {
-  const recording = readRecording(repoRoot, name);
+  const recording = readPerturbRecording(repoRoot, name);
   const tx = recordedTx(repoRoot, recording);
   const card = parseCard(recording.card);
   const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(repoRoot, op.template, registry)]));
@@ -252,7 +253,7 @@ function recordingsOf(repoRoot: string, template: Template): { readonly name: st
     .sort()
     .flatMap((file) => {
       const name = file.replace(/\.json$/, '');
-      const recording = readRecording(repoRoot, name);
+      const recording = readPerturbRecording(repoRoot, name);
       const card = parseCard(recording.card);
       return recording.template === undefined && card.operations.every((op) => op.template === template.id) ? [{ name, recording, card }] : [];
     });

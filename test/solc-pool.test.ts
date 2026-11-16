@@ -7,9 +7,10 @@ import { test } from 'node:test';
 import { replayAbiCase } from '../src/contracts/abi-case.ts';
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { SOLC_TEST_CACHE_DIR, warmCompilers } from './solc-pool.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
-const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'abi', 'bundler3.json'), 'utf8')) as AbiCase;
+const fixture = readRecording(join(ROOT, 'testdata', 'abi', 'bundler3.json')) as AbiCase;
 const sha256 = (text: string): string => createHash('sha256').update(text).digest('hex');
 
 type Entry = { outputSha256: string; output: string };

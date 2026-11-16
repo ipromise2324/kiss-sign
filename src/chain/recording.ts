@@ -17,6 +17,16 @@ export type Exchange = {
   readonly statuses?: ByProvider<number>;
 };
 
+const BLOCK_FIELDS = ['number', 'hash', 'timestamp', 'gasLimit', 'mixHash'];
+const isObject = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/** The exchange with each block it answers cut to the fields a block header is read from, leaving the transaction hashes and the rest out. */
+export function trimBlockAnswers(exchange: Exchange): Exchange {
+  if (exchange.method !== 'eth_getBlockByNumber' && exchange.method !== 'eth_getBlockByHash') return exchange;
+  const pick = (block: unknown) => (isObject(block) ? Object.fromEntries(BLOCK_FIELDS.map((f) => [f, block[f]])) : block);
+  return { ...exchange, answers: Object.fromEntries(Object.entries(exchange.answers).map(([provider, block]) => [provider, pick(block)])) };
+}
+
 type Recorded = { answers: ByProvider<unknown>; errors: ByProvider<unknown>; statuses: ByProvider<number> };
 
 const sameRequest = (exchange: { method: string; params: unknown }, method: string, params: unknown): boolean =>
