@@ -1,183 +1,172 @@
 <!doctype html>
-<!-- Source of docs/readme/overview.png and overview-dark.png. Values come from a real run: another Safe's nonce 1566. Re-render with docs/diagrams/render.sh. -->
+<!-- Source of docs/readme/overview.png and overview-dark.png. Values come from a real run: another Safe's nonce 1566.
+     Logos are each project's own (GitHub organization avatars, Etherscan's brand asset, simple-icons). Font: Virgil, OFL-1.1 (fonts/Virgil-OFL.txt).
+     Re-render with docs/diagrams/render.sh. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="render-width" content="1240">
+<meta name="render-width" content="1280">
 <title>kiss-sign at a glance</title>
 <style>
+  @font-face { font-family: Virgil; src: url(fonts/Virgil.woff2) format("woff2"); }
   :root {
-    --bg: #ffffff; --ink: #1b1f27; --muted: #57606a; --faint: #6e7781; --line: #d0d7de; --panel: #f6f8fa; --chip: #eef1f4;
-    --you: #2463d1; --you-bg: #e8f0fd;
-    --ai: #9a6100; --ai-bg: #fdf3e1;
-    --prog: #136b42; --prog-bg: #e3f4ea;
-    --ind: #6639ba; --ind-bg: #f1ebfc;
-    --dev: #1b1f27; --dev-screen: #0f141a; --dev-ink: #e6edf3;
+    --bg: #ffffff; --ink: #1e1e1e; --muted: #5c5f66; --line: #1e1e1e;
+    --you: #1971c2; --ai: #c2410c; --prog: #2b8a3e; --ind: #7048e8; --chip: #f1f3f5;
+    --dev: #343a40; --screen: #10151b;
   }
   :root.dark {
-    --bg: #0d1117; --ink: #e6edf3; --muted: #9198a1; --faint: #8b949e; --line: #30363d; --panel: #151b23; --chip: #212830;
-    --you: #6ea8ff; --you-bg: #132544;
-    --ai: #e3b341; --ai-bg: #2e2410;
-    --prog: #4ac286; --prog-bg: #10291c;
-    --ind: #b392f0; --ind-bg: #241a3a;
-    --dev: #2d333b; --dev-screen: #05080c; --dev-ink: #e6edf3;
+    --bg: #121212; --ink: #e9ecef; --muted: #a6adb5; --line: #ced4da;
+    --you: #74b0f2; --ai: #ff9f6e; --prog: #69db7c; --ind: #b197fc; --chip: #23272c;
+    --dev: #495057; --screen: #05080c;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { width: 1240px; background: var(--bg); color: var(--ink); font: 15px/1.35 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; padding: 30px 34px 26px; }
-  .mono, code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  body { width: 1280px; background: var(--bg); color: var(--ink); font: 19px/1.35 Virgil, "Comic Sans MS", cursive; padding: 28px 40px 40px; position: relative; }
+  .mono { font: 14px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  svg.sketch { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
 
-  .intent { display: flex; align-items: baseline; gap: 16px; margin-bottom: 22px; }
-  .intent q { font-size: 28px; font-weight: 700; letter-spacing: -0.3px; color: var(--you); quotes: "“" "”"; }
-  .intent span { color: var(--muted); }
+  h1 { font-size: 34px; font-weight: 400; color: var(--you); }
+  h1 + p { color: var(--muted); margin: 2px 0 22px; }
+  h2 { font-size: 23px; font-weight: 400; margin: 0 0 14px; }
+  h2 b { font-weight: 400; color: var(--muted); font-size: 18px; margin-left: 10px; }
 
-  .lane { display: grid; grid-template-columns: 112px 1fr; gap: 0 16px; align-items: center; }
-  .lane + .lane { margin-top: 16px; }
-  .when { font-size: 14px; font-weight: 650; color: var(--muted); }
-  .when small { display: block; font-weight: 400; font-size: 13px; color: var(--faint); }
-  .track { display: flex; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
+  .row { display: flex; align-items: center; justify-content: space-between; }
+  .sk { position: relative; padding: 14px 16px; }
+  .who { font-size: 18px; color: var(--c); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .who img { width: 22px; height: 22px; border-radius: 5px; }
+  .you { --c: var(--you); } .ai { --c: var(--ai); } .prog { --c: var(--prog); } .ind { --c: var(--ind); }
 
-  .box { background: var(--bg); border: 1.5px solid var(--c); border-radius: 9px; padding: 10px 12px; }
-  .who { display: inline-block; white-space: nowrap; font-size: 12px; font-weight: 650; color: var(--c); background: var(--cb); border-radius: 5px; padding: 0 7px; }
-  .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .head b { font-size: 15px; white-space: nowrap; }
-  .you { --c: var(--you); --cb: var(--you-bg); }
-  .ai { --c: var(--ai); --cb: var(--ai-bg); }
-  .prog { --c: var(--prog); --cb: var(--prog-bg); }
-  .ind { --c: var(--ind); --cb: var(--ind-bg); }
+  .lg { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-size: 16px; background: var(--chip); border-radius: 8px; padding: 1px 8px 1px 4px; }
+  .lg img { width: 20px; height: 20px; border-radius: 4px; background: #fff; object-fit: contain; }
+  .lg.plain { padding-left: 8px; }
+  :root.dark .lg img.mono-logo { filter: invert(1); background: transparent; }
 
-  .arrow { flex: none; width: 26px; height: 2px; background: var(--line); position: relative; margin: 0 6px; }
-  .arrow::after { content: ""; position: absolute; right: -1px; top: -5px; border: 6px solid transparent; border-left: 8px solid var(--line); border-right: 0; }
+  .research { width: 660px; }
+  .research table { border-collapse: collapse; }
+  .research td { padding: 5px 0; vertical-align: middle; }
+  .research td:first-child { white-space: nowrap; padding-right: 16px; }
+  .research td:last-child { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  .note { color: var(--muted); font-size: 15px; }
 
-  .svc { display: inline-block; white-space: nowrap; font-size: 12px; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; line-height: 20px; }
+  .report { width: 290px; }
+  .report ul { list-style: none; display: grid; gap: 5px; font-size: 17px; }
+  .report li::before { content: "✓ "; color: var(--prog); }
+  .report li.q::before { content: "? "; color: var(--ai); }
 
-  .once .track { align-items: stretch; }
-  .once .arrow { align-self: center; }
-  .research { flex: 1.6; }
-  .steps { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; }
-  .steps .k { font-weight: 600; font-size: 14px; white-space: nowrap; }
-  .steps .v { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-  .steps .v i { font-style: normal; color: var(--faint); font-size: 12px; }
+  .merge { width: 180px; font-size: 17px; }
 
-  .report { flex: 1; }
-  .report ul { list-style: none; display: grid; gap: 6px; }
-  .report li { display: flex; align-items: center; gap: 7px; font-size: 14px; }
-  .ok { width: 14px; height: 14px; border-radius: 50%; background: var(--prog); flex: none; position: relative; }
-  .ok::after { content: ""; position: absolute; left: 4.5px; top: 2px; width: 3px; height: 7px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
-  .warn { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ai); flex: none; }
+  .card { width: 330px; }
+  .card .mono { font-size: 13px; }
+  .ticket { display: grid; gap: 2px; white-space: pre; }
+  .ticket .k { color: var(--muted); }
+  .ticket .seal { color: var(--muted); margin-top: 4px; }
 
-  .merge { flex: 0.62; }
-  .merge .big { font-size: 15px; font-weight: 650; }
-  .merge .small { color: var(--muted); font-size: 13px; margin-top: 3px; }
+  .computers { display: grid; gap: 22px; }
+  .pc { display: grid; justify-items: center; }
+  .pc .scr { width: 430px; padding: 12px 14px 14px; }
+  .pc .base { width: 480px; height: 14px; padding: 0; }
+  .pc .line { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 4px; }
+  .verdict { margin-left: auto; font: 700 15px ui-monospace, Menlo, monospace; color: var(--c); white-space: nowrap; }
 
-  .card { width: 318px; flex: none; }
-  .ticket .r span { white-space: nowrap; }
-  .ticket { border: 1px dashed var(--line); border-radius: 7px; padding: 8px 10px; display: grid; gap: 3px; font-size: 12.5px; }
-  .ticket .r { display: grid; grid-template-columns: 52px 1fr; gap: 6px; }
-  .ticket .r span:first-child { color: var(--muted); }
-  .ticket .r span:last-child { font-weight: 600; }
-  .ticket .r .addr { font-weight: 400 !important; color: var(--muted); }
-  .ticket .seal { color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 4px; margin-top: 2px; }
+  .wallet { width: 196px; display: grid; justify-items: center; }
+  .dev { width: 184px; background: var(--dev); border-radius: 16px; padding: 10px; }
+  .dev .s { background: var(--screen); color: #e9ecef; border-radius: 6px; padding: 8px 9px; font: 13px/1.45 ui-monospace, Menlo, monospace; }
+  .dev .s i { font-style: normal; color: #8b949e; font-size: 11.5px; display: block; }
+  .dev .b { display: flex; justify-content: space-between; padding: 8px 22px 0; }
+  .dev .b span { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #868e96; }
+  .wallet p { margin-top: 8px; color: var(--you); font-size: 17px; text-align: center; }
 
-  .split { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0; }
-  .split .box { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 12px; }
-  .split .row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-  .split .row .t { font-size: 13px; color: var(--muted); margin-right: 2px; }
-  .tag { grid-row: 1 / 3; grid-column: 2; white-space: nowrap; font: 650 13px ui-monospace, "SF Mono", Menlo, monospace; color: var(--c); border: 1.5px solid var(--c); border-radius: 6px; padding: 4px 9px; }
-
-  .fork, .join { flex: none; width: 34px; align-self: stretch; }
-  .fork svg, .join svg { width: 100%; height: 100%; display: block; }
-  .fork path, .join path { fill: none; stroke: var(--line); stroke-width: 2; }
-  .join path.head { fill: var(--line); stroke: none; }
-
-  .device { flex: none; width: 206px; }
-  .shell { background: var(--dev); border-radius: 14px; padding: 10px; }
-  .screen { background: var(--dev-screen); color: var(--dev-ink); border-radius: 6px; padding: 8px 10px; font: 12.5px/1.45 ui-monospace, "SF Mono", Menlo, monospace; }
-  .screen .l { color: #8b949e; font-size: 11px; }
-  .btns { display: flex; justify-content: space-between; margin-top: 8px; padding: 0 22px; }
-  .btns i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #6e7681; display: block; }
-  .device .cap { text-align: center; margin-top: 7px; font-size: 13px; color: var(--muted); }
-  .device .cap b { color: var(--you); }
-
-  .foot { margin-top: 16px; display: flex; gap: 20px; color: var(--muted); font-size: 13px; align-items: center; }
-  .foot span { display: inline-flex; align-items: center; gap: 6px; }
-  .foot .sw { width: 12px; height: 12px; border-radius: 3px; border: 2px solid var(--c); background: var(--cb); display: block; }
+  .gap { height: 34px; }
 </style>
 <script>if (location.search.includes('dark')) document.documentElement.classList.add('dark');</script>
 </head>
 <body>
-  <div class="intent"><q>Deposit 1,000,611.448606 USDC into the Hyperithm vault</q><span>You say what you want first.</span></div>
+  <h1>“Deposit 1,000,611.448606 USDC into the Hyperithm vault”</h1>
+  <p>You say what you want first. Everything else is checked against it.</p>
 
-  <div class="lane once">
-    <div class="when">Once<small>per operation or vault</small></div>
-    <div class="track">
-      <div class="box ai research">
-        <div class="head"><span class="who">Your AI</span><b>Research</b></div>
-        <div class="steps">
-          <span class="k">Addresses</span><span class="v"><span class="svc">protocol docs</span><i>vs</i><span class="svc">DefiLlama</span><span class="svc">CoinGecko</span><span class="svc">factory on chain</span></span>
-          <span class="k">ABI</span><span class="v"><span class="svc">Sourcify</span><i>→</i><span class="svc">pinned solc</span><i>=</i><span class="svc">bytecode on chain</span></span>
-          <span class="k">Rules</span><span class="v"><span class="svc">past transactions</span><span class="svc">Alchemy</span><span class="svc">Etherscan</span></span>
-          <span class="k">Code pin</span><span class="v"><span class="svc">code hash</span><span class="svc">Alchemy</span><span class="svc">drpc</span></span>
-        </div>
-      </div>
-      <div class="arrow"></div>
-      <div class="box ai report">
-        <div class="head"><span class="who">Report</span><b>in the pull request</b></div>
-        <ul>
-          <li><span class="ok"></span>Call flow</li>
-          <li><span class="ok"></span>Each field: fixed or yours</li>
-          <li><span class="ok"></span>Where each address came from</li>
-          <li><span class="warn"></span>What still needs your eye</li>
-        </ul>
-      </div>
-      <div class="arrow"></div>
-      <div class="box you merge">
-        <div class="head"><span class="who">You</span></div>
-        <div class="big">Review and merge</div>
-        <div class="small">Then approve it locally</div>
-      </div>
+  <h2>The first time: your AI builds a template <b>once per operation, and once per vault</b></h2>
+  <div class="row">
+    <div class="sk ai research" id="research">
+      <div class="who"><img src="logos/anthropic.png" alt="">Your AI researches</div>
+      <table>
+        <tr><td>Each address, in<br>several places</td><td><span class="lg plain">the protocol's own docs</span><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg plain">the vault's factory, on chain</span></td></tr>
+        <tr><td>Each contract's ABI</td><td><span class="lg"><img src="logos/sourcify.jpg" alt="">Sourcify source</span><span class="note">compiled with</span><span class="lg"><img class="mono-logo" src="logos/solidity.svg" alt="">pinned solc</span><span class="note">= the code on chain</span></td></tr>
+        <tr><td>How others did it</td><td><span class="note">what each field held in past deposits, from</span><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span></td></tr>
+        <tr><td>The protocol now</td><td><span class="lg"><img src="logos/defillama.jpg" alt="">TVL and past hacks</span><span class="lg plain">recent upgrades</span><span class="lg plain">vault size and holders</span></td></tr>
+        <tr><td>The code it runs</td><td><span class="note">code hash, read on</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></td></tr>
+      </table>
+    </div>
+    <div class="sk ai report" id="report">
+      <div class="who">A report in the pull request</div>
+      <ul><li>the call flow</li><li>each field: fixed, or yours</li><li>where each address came from</li><li class="q">what still needs your eye</li></ul>
+    </div>
+    <div class="sk you merge" id="merge">
+      <div class="who">You</div>
+      read it, merge it, then approve it on your computer
     </div>
   </div>
 
-  <div class="lane">
-    <div class="when">Every signing</div>
-    <div class="track">
-      <div class="box you card">
-        <div class="head"><span class="who">You</span><b>Fill a card</b></div>
-        <div class="ticket mono">
-          <div class="r"><span>vault</span><span>hyperithm-usdc-apex-v2-9e2f</span></div>
-          <div class="r"><span></span><span class="addr">0x0932…9E2F</span></div>
-          <div class="r"><span>amount</span><span>1,000,611.448606 USDC</span></div>
-          <div class="seal">sealed 0xfaad…a988</div>
-        </div>
+  <div class="gap"></div>
+  <h2>Every signing</h2>
+  <div class="row">
+    <div class="sk you card" id="card">
+      <div class="who">You fill a card first</div>
+      <div class="ticket mono"><div><span class="k">vault  </span><b>hyperithm-usdc-apex-v2-9e2f</b></div><div><span class="k">       </span>0x0932…9E2F</div><div><span class="k">amount </span><b>1,000,611.448606 USDC</b></div><div class="seal">sealed 0xfaad…a988</div></div>
+    </div>
+    <div class="computers">
+      <div class="pc prog" id="pc1">
+        <div class="sk scr"><div class="who">Your computer: kiss-sign verify<span class="verdict">MATCH</span></div>
+          <div class="line"><span class="note">checks the transaction against your card, simulated on</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div>
+        <div class="sk base"></div>
       </div>
-      <div class="fork"><svg viewBox="0 0 34 100" preserveAspectRatio="none"><path d="M0 50 H11 Q17 50 17 44 V31 Q17 25 23 25 H34 M11 50 Q17 50 17 56 V69 Q17 75 23 75 H34" vector-effect="non-scaling-stroke"/></svg></div>
-      <div class="split">
-        <div class="box prog">
-          <div class="head" style="margin:0"><span class="who">kiss-sign verify</span><b>your computer</b></div>
-          <div class="row"><span class="t">hashes, decode, simulate on</span><span class="svc">Alchemy</span><span class="svc">drpc</span></div>
-          <span class="tag">MATCH</span>
-        </div>
-        <div class="box ind">
-          <div class="head" style="margin:0"><span class="who">check.sh</span><b>second computer, no AI</b></div>
-          <div class="row"><span class="t">fetch and decode with</span><span class="svc">Safe Tx Service</span><span class="svc">cast</span></div>
-          <span class="tag">same rows</span>
-        </div>
+      <div class="pc ind" id="pc2">
+        <div class="sk scr"><div class="who">A second computer, no AI: check.sh<span class="verdict">same rows</span></div>
+          <div class="line"><span class="note">decodes the same transaction on its own, from</span><span class="lg"><img src="logos/safe.jpg" alt="">Safe</span><span class="note">with</span><span class="lg"><img src="logos/foundry.png" alt="">cast</span></div></div>
+        <div class="sk base"></div>
       </div>
-      <div class="join"><svg viewBox="0 0 34 100" preserveAspectRatio="none"><path d="M0 25 H11 Q17 25 17 31 V44 Q17 50 23 50 H27 M0 75 H11 Q17 75 17 69 V56 Q17 50 23 50" vector-effect="non-scaling-stroke"/><path class="head" d="M26 46 L34 50 L26 54 Z"/></svg></div>
-      <div class="device">
-        <div class="shell">
-          <div class="screen"><div class="l">Domain hash</div>0xad49…7a5b<div class="l">Message hash</div>0x691e…8c15</div>
-          <div class="btns"><i></i><i></i></div>
-        </div>
-        <div class="cap"><b>You</b> compare, then sign</div>
-      </div>
+    </div>
+    <div class="wallet" id="wallet">
+      <div class="dev"><div class="s"><i>Domain hash</i>0xad49…7a5b<i>Message hash</i>0x691e…8c15</div><div class="b"><span></span><span></span></div></div>
+      <p>You compare the hashes, then sign</p>
     </div>
   </div>
 
-  <div class="foot">
-    <span class="ai"><i class="sw"></i>AI</span><span class="you"><i class="sw"></i>You</span><span class="prog"><i class="sw"></i>kiss-sign</span><span class="ind"><i class="sw"></i>Independent check</span>
-    <span style="margin-left:auto">What kiss-sign cannot prove is <code>UNVERIFIABLE</code>. Hashes print only on <code>MATCH</code>.</span>
-  </div>
-  <script>document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height);</script>
+<script>
+Promise.all([document.fonts.ready, new Promise((ok) => (document.readyState === 'complete' ? ok() : addEventListener('load', ok)))]).then(() => {
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5);
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.classList.add('sketch');
+  svg.setAttribute('width', document.body.scrollWidth);
+  svg.setAttribute('height', document.body.scrollHeight);
+  document.body.appendChild(svg);
+  const root = getComputedStyle(document.documentElement);
+  const colorOf = (el) => getComputedStyle(el).getPropertyValue('--c').trim() || root.getPropertyValue('--line').trim();
+  const draw = (d, stroke, w) => {
+    const p = document.createElementNS(ns, 'path');
+    Object.entries({ d, fill: 'none', stroke, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).forEach(([k, v]) => p.setAttribute(k, v));
+    svg.appendChild(p);
+  };
+  const stroke = (x1, y1, x2, y2, j = 1.6) =>
+    `M${x1 + rnd() * j} ${y1 + rnd() * j} Q${(x1 + x2) / 2 + rnd() * j * 2} ${(y1 + y2) / 2 + rnd() * j * 2} ${x2 + rnd() * j} ${y2 + rnd() * j}`;
+  document.querySelectorAll('.sk').forEach((el) => {
+    const r = el.getBoundingClientRect(), c = colorOf(el);
+    const [x, y, w, h] = [r.left + scrollX, r.top + scrollY, r.width, r.height];
+    for (const width of [1.9, 1.1])
+      draw([stroke(x, y, x + w, y), stroke(x + w, y, x + w, y + h), stroke(x + w, y + h, x, y + h), stroke(x, y + h, x, y)].join(' '), c, width);
+  });
+  const ink = root.getPropertyValue('--muted').trim();
+  const arrow = (a, b) => {
+    const ra = document.getElementById(a).getBoundingClientRect(), rb = document.getElementById(b).getBoundingClientRect();
+    const [x1, y1, x2, y2] = [ra.right + 8, ra.top + ra.height / 2 + scrollY, rb.left - 8, rb.top + rb.height / 2 + scrollY];
+    const cx = (x1 + x2) / 2;
+    draw(`M${x1} ${y1} C${cx + rnd() * 6} ${y1 + rnd() * 3}, ${cx + rnd() * 6} ${y2 + rnd() * 3}, ${x2} ${y2}`, ink, 1.9);
+    const dy = (y2 - y1) * 0.08, s = 11;
+    draw(`M${x2 - s} ${y2 - s * 0.6 - dy + rnd()} L${x2} ${y2} L${x2 - s} ${y2 + s * 0.6 - dy + rnd()}`, ink, 1.9);
+  };
+  [['research', 'report'], ['report', 'merge'], ['card', 'pc1'], ['card', 'pc2'], ['pc1', 'wallet'], ['pc2', 'wallet']].forEach(([a, b]) => arrow(a, b));
+  document.body.dataset.height = Math.ceil(document.body.scrollHeight);
+});
+</script>
 </body>
 </html>
