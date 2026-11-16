@@ -1,7 +1,7 @@
 import { readFileSync, statSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { loadAddressBook, saveAddressBook } from '../address-book.ts';
-import { marketLines, parseCard, resolveCard, sealCard } from '../card.ts';
+import { marketLines, parseCard, percentText, resolveCard, sealCard } from '../card.ts';
 import type { Card, ResolvedValue } from '../card.ts';
 import { ConfigError, loadApproved, loadConfig, loadStoredConfig, saveApproved, saveConfig } from '../config.ts';
 import type { Config } from '../config.ts';
@@ -111,6 +111,7 @@ export function bookList(args: readonly string[], io: Io): number {
 
 function show(value: ResolvedValue): string {
   if (value.kind === 'amount' || value.kind === 'nonce') return `${value.value}`;
+  if (value.kind === 'percent') return `${percentText(value.value)} = ${value.value}`;
   if (value.kind === 'contract') return `${value.name} ${checksumAddress(value.entry.address)} (registry)`;
   if (value.kind === 'market') {
     const [first, ...parts] = marketLines(value.market);

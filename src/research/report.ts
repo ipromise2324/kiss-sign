@@ -480,7 +480,7 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'contract':
       return `registry ${full(registry.entries.get(rule.name) as RegistryEntry)}`;
     case 'const':
-      return `constant ${code(constText(rule.value))}`;
+      return rule.value.kind === 'string' ? `constant string ${code(JSON.stringify(Buffer.from(rule.value.value.slice(2), 'hex').toString('utf8')))}` : `constant ${code(constText(rule.value))}`;
     case 'free':
       return `${FREE_CLAIMS[rule.claim]}; ${byAi(rule.reason)}`;
     case 'equals':
@@ -519,7 +519,9 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
 function callRows(node: CallNode, prefix: string, template: Template, registry: Registry): string[] {
   const trailer = node.trailer === undefined ? 'no bytes after the arguments' : `at most ${node.trailer.maxBytes} bytes after the arguments; ${byAi(node.trailer.why)}`;
   return [
-    `| ${code(`${prefix}${node.fn.name}`)} | calls ${code(node.fn.signature)}, selector ${code(node.fn.selector)}; ${trailer} |`,
+    isEncoding(node)
+      ? `| ${code(`${prefix}${node.fn.name}`)} | values ABI-encoded as ${code(node.fn.signature)}, with no selector; no bytes after them |`
+      : `| ${code(`${prefix}${node.fn.name}`)} | calls ${code(node.fn.signature)}, selector ${code(node.fn.selector)}; ${trailer} |`,
     ...argRows(node.fn.params, node.args, `${prefix}${node.fn.name}.`, template, registry),
   ];
 }

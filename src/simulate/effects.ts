@@ -261,7 +261,7 @@ export function expectedViews(card: ResolvedCard, templates: ReadonlyMap<string,
   for (const op of card.operations) {
     for (const view of templates.get(op.template)?.effects.views ?? []) {
       const bound = bindView(view, { safe: card.safe, values: op.values, registry });
-      if ('problem' in bound) reasons.push(`${view.fn.signature} on ${view.to.kind === 'contract' ? view.to.name : `card.${view.to.ref.field}`}: ${bound.problem}`);
+      if ('problem' in bound) reasons.push(`${view.fn.signature} on ${view.to.kind === 'contract' ? view.to.name : `card.${view.to.ref.field}${view.to.ref.attribute === undefined ? '' : `.${view.to.ref.attribute}`}`}: ${bound.problem}`);
       else views.push({ view, ...bound, values: op.values });
     }
   }
@@ -334,7 +334,7 @@ export function judgeEffects(
   for (const { view, call, text, values } of expectedReads.views) {
     const cardNumber = (field: string): bigint | undefined => {
       const value = values.get(field);
-      return value?.kind === 'amount' ? value.value : undefined;
+      return value?.kind === 'amount' || value?.kind === 'percent' ? value.value : undefined;
     };
     const where = `${nameOf(call.to, registry)} ${text}`;
     const readings = observed.views?.filter((r) => r.to === call.to && r.data === call.data) ?? [];

@@ -19,6 +19,8 @@ export type ResolvedValue =
   | { readonly kind: 'contract'; readonly name: string; readonly entry: RegistryEntry }
   | { readonly kind: 'amount'; readonly value: bigint }
   | { readonly kind: 'nonce'; readonly value: bigint }
+  /** In WAD base units: 100% is 10^18. */
+  | { readonly kind: 'percent'; readonly value: bigint }
   | { readonly kind: 'address'; readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' }
   | { readonly kind: 'market'; readonly market: Market };
 
@@ -126,7 +128,7 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
         case 'percent': {
           const value = parseUint256(raw);
           if (value === undefined || value > WAD) return refuse('not-a-percent', name, `not a percent in WAD base units, ${WAD} at most`);
-          values.set(name, { kind: 'amount', value });
+          values.set(name, { kind: 'percent', value });
           break;
         }
         case 'contract': {
@@ -189,6 +191,7 @@ export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedVal
   switch (value.kind) {
     case 'amount':
     case 'nonce':
+    case 'percent':
       return { kind: 'uint', value: value.value };
     case 'address':
       return { kind: 'address', name: value.name, address: value.address };
@@ -210,6 +213,9 @@ export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedVal
 }
 
 /** A market as the signer checks it: its name, id and lltv, then each part's registry name and full address. */
+/** A percent in WAD base units as the signer typed it, such as `35.5%`. */
+export const percentText = (value: bigint): string => `${value / 10n ** 16n}${value % 10n ** 16n === 0n ? '' : `.${(value % 10n ** 16n).toString().padStart(16, '0').replace(/0+$/, '')}`}%`;
+
 export function marketLines(market: Market): string[] {
   const lltv = `${market.lltv / 10n ** 18n}.${(market.lltv % 10n ** 18n).toString().padStart(18, '0')}`.replace(/\.?0+$/, '');
   return [
