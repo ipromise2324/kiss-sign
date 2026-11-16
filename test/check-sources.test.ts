@@ -4,12 +4,13 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { RegistryError, loadRegistry, pageUrlsOf, parseRegistry } from '../src/registry.ts';
 import type { RegistryEntry } from '../src/registry.ts';
-import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording } from '../src/research/listings.ts';
+import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording, trimPage } from '../src/research/listings.ts';
 import type { Listings } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
-import { gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
-import type { HttpGet, SourcePages } from '../src/research/source-page.ts';
+import { findOnPage, gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
+import type { HttpGet, Page, SourcePages } from '../src/research/source-page.ts';
+import type { Address } from '../src/safe/types.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -119,6 +120,16 @@ test('a recording, read back, gives the same report as the listings it was trimm
   const trimmed = JSON.parse(JSON.stringify(trimForRecording(entries, full, recordedPages, new Date('2026-11-11'))));
   assert.equal(trimmed.fetched, '2026-11-11');
   assert.equal(report(entries, listingsOf(trimmed.defillama, trimmed.coingecko), sourcePagesOf(trimmed)), report(entries, full));
+});
+
+test('a recorded page keeps only the blocks its checks read, however often it names the address', () => {
+  const address = `0x${'52'.repeat(20)}` as Address;
+  const blocks = Array.from({ length: 40 }, (_, i) => [{ text: `Deployment ${i}`, heading: 'Vault' }, { text: `uses ${address} as Liquidity`, heading: 'Vault' }]).flat();
+  const page: Page = { kind: 'served', blocks: [...blocks, { text: 'mainnet', heading: 'Liquidity' }, { text: address, heading: 'Liquidity' }, ...blocks] };
+  const read = { address, label: 'mainnet', heading: 'Liquidity' };
+  const trimmed = trimPage(page, [read]);
+  assert.deepEqual(trimmed, { kind: 'served', blocks: [{ text: 'mainnet', heading: 'Liquidity' }, { text: address, heading: 'Liquidity' }] });
+  assert.deepEqual(findOnPage(trimmed.kind === 'served' ? trimmed.blocks : [], address, read.label, read.heading), findOnPage(page.blocks, address, read.label, read.heading));
 });
 
 test('the registry refuses a defillama or coingecko value that is not a slug, and a coingecko id on a contract that is no ERC-20', () => {

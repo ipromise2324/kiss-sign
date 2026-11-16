@@ -120,24 +120,12 @@
       "blocks": [
         {
           "text": "function approve(address spender, uint256 value)"
-        },
-        {
-          "text": "require(owner != address(0), \"ERC20: approve from the zero address\");"
-        },
-        {
-          "text": "require(spender != address(0), \"ERC20: approve to the zero address\");"
         }
       ]
     },
     "https://raw.githubusercontent.com/morpho-org/bundler3/b4014349e3527f44ceaab697b26e29f2b11457f3/src/Bundler3.sol": {
       "kind": "served",
       "blocks": [
-        {
-          "text": "/// @notice Transiently stores the initiator of the multicall."
-        },
-        {
-          "text": "/// @notice The initiator of the multicall transaction."
-        },
         {
           "text": "function multicall(Call[] calldata bundle) external payable {"
         }

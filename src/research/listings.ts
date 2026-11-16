@@ -319,13 +319,47 @@ export function sourcePagesOf(recording: Pick<ListingsRecording, 'pages' | 'comm
   return { pages: new Map(Object.entries(recording.pages)), commits: new Map(Object.entries(recording.commits)), apis: new Map(Object.entries(recording.apis ?? {})) };
 }
 
-/** Keeps the blocks holding one of `addresses`, the block before each, and the blocks holding one of `words`. */
-export function trimPage(page: Page, addresses: readonly Address[], words: readonly RegExp[] = []): Page {
-  if (page.kind !== 'served') return page;
-  const holds = (block: PageBlock | undefined) => block !== undefined && addresses.some((a) => block.text.toLowerCase().includes(a.slice(2)));
-  const says = (block: PageBlock) => words.some((word) => word.test(block.text));
-  return { kind: 'served', blocks: page.blocks.filter((block, i) => holds(block) || holds(page.blocks[i + 1]) || says(block)) };
+/** What a check reads on a page: where `address` stands next to `label`, under `heading` when it names one. */
+export type PageRead = { readonly address: Address; readonly label: string; readonly heading?: string };
+
+/** Each page an entry's checks read, by the URL fetched: its `source` and each of `moreSources`, unless the source URL echoes the address. */
+export function pageReadsOf(entry: RegistryEntry): [string, PageRead][] {
+  const read = (page: { readonly label: string | undefined; readonly heading?: string | undefined }): PageRead[] =>
+    page.label === undefined ? [] : [{ address: entry.address, label: page.label, ...(page.heading === undefined ? {} : { heading: page.heading }) }];
+  const source = sourceHoldsAddress(entry.source, entry.address) ? [] : read({ label: entry.sourceLabel, heading: entry.sourceHeading });
+  return [
+    ...source.map((r): [string, PageRead] => [pageUrlOf(entry.source), r]),
+    ...(entry.moreSources ?? []).flatMap((page) => read(page).map((r): [string, PageRead] => [pageUrlOf(page.url), r])),
+  ];
 }
+
+/**
+ * Keeps only the blocks the checks read: for each of `reads`, the first block, with the one before it, that gives the
+ * same answer as the whole page; for each of `words`, the first block it matches. It returns the page whole unless
+ * every read gives the same answer on what it keeps.
+ */
+export function trimPage(page: Page, reads: readonly PageRead[], words: readonly RegExp[] = []): Page {
+  if (page.kind !== 'served') return page;
+  const { blocks } = page;
+  const answer = (on: readonly PageBlock[], read: PageRead) => JSON.stringify(findOnPage(on, read.address, read.label, read.heading));
+  const kept = new Set<number>();
+  for (const read of reads) {
+    const whole = answer(blocks, read);
+    const at = blocks.findIndex((block, i) => block.text.toLowerCase().includes(read.address.slice(2)) && answer(blocks.slice(Math.max(0, i - 1), i + 1), read) === whole);
+    if (at > 0) kept.add(at - 1);
+    if (at >= 0) kept.add(at);
+  }
+  for (const word of words) {
+    const at = blocks.findIndex((block) => word.test(block.text));
+    if (at >= 0) kept.add(at);
+  }
+  const trimmed: Page = { kind: 'served', blocks: blocks.filter((_, i) => kept.has(i)) };
+  return reads.every((read) => answer(trimmed.blocks, read) === answer(blocks, read)) ? trimmed : page;
+}
+
+/** What the checks of `entries` read on the page fetched from `url`. */
+export const readsOn = (entries: readonly RegistryEntry[], url: string): PageRead[] =>
+  entries.flatMap((entry) => pageReadsOf(entry).filter(([at]) => at === url).map(([, read]) => read));
 
 export function trimForRecording(entries: readonly RegistryEntry[], listings: Listings, pages: SourcePages, fetched: Date): ListingsRecording {
   const slugs = new Set(entries.flatMap((e) => (e.defillama === undefined ? [] : [e.defillama])));
@@ -339,7 +373,7 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
       .flatMap((address) => listings.coinsByAddress.get(address) ?? [])
       .map(({ id, symbol, name, ethereum }) => ({ id, symbol, name, platforms: { ethereum } })),
     pages: Object.fromEntries(
-      [...pages.pages].map(([url, page]) => [url, trimPage(page, entries.filter((e) => pageUrlsOf(e).some((source) => pageUrlOf(source) === url)).map((e) => e.address))]),
+      [...pages.pages].map(([url, page]) => [url, trimPage(page, readsOn(entries, url))]),
     ),
     commits: Object.fromEntries(pages.commits),
     ...(pages.apis === undefined || pages.apis.size === 0 ? {} : { apis: pruneAnswers(entries, pages.apis) }),

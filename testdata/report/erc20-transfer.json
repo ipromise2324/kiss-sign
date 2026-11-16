@@ -103,112 +103,7 @@
     },
     "https://raw.githubusercontent.com/Instadapp/fluid-contracts-public/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md": {
       "kind": "served",
-      "blocks": [
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "VaultT2_DEX-INST-ETH_ETH"
-        },
-        {
-          "text": "| mainnet | 0x7FE0B032cB5982Af72498F96be3DD6566F7B7de8 | [Link](https://etherscan.io/address/0x7FE0B032cB5982Af72498F96be3DD6566F7B7de8#code) | {\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x324c5Dc1fC42c7a4D43d92df1eBA58a54d13Bf2d\",\"operateImplementation\":\"0xB8BfFC6F90d61752A93A6F3b02887377FCffC64A\",\"adminImplementation\":\"0x148807CFE7C285003A923411C6037eb3Fe0E7f1C\",\"secondaryImplementation\":\"0xf38478d055020bbC173734Dc62d88b749Eb99b59\",\"deployer\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"supply\":\"0xc800b0e15c40a1Ff0539218100c86F4c1BAC8D9C\",\"borrow\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"supplyToken\":{\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\"},\"borrowToken\":{\"token0\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"token1\":\"0x0000000000000000000000000000000000000000\"},\"vaultId\":75,\"vaultType\":\"20000\",\"supplyExchangePriceSlot\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"borrowExchangePriceSlot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\",\"userSupplySlot\":\"0x19599101b1050fefec1acbaf740191fe0a6c9b7ddc1a1faf1fa0b27353132059\",\"userBorrowSlot\":\"0x9b9ff58764bad50c0c8f5a3f64ac3aa2dbc14792b2acbb1150024845fc40e79d\"} | 0x0003 |",
-          "heading": "VaultT2_DEX-INST-ETH_ETH"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "VaultT2_DEX-INST-ETH_ETH_Operate"
-        },
-        {
-          "text": "| mainnet | 0xB8BfFC6F90d61752A93A6F3b02887377FCffC64A | [Link](https://etherscan.io/address/0xB8BfFC6F90d61752A93A6F3b02887377FCffC64A#code) | [{\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x324c5Dc1fC42c7a4D43d92df1eBA58a54d13Bf2d\",\"operateImplementation\":\"0x0000000000000000000000000000000000000000\",\"adminImplementation\":\"0x148807CFE7C285003A923411C6037eb3Fe0E7f1C\",\"secondaryImplementation\":\"0xf38478d055020bbC173734Dc62d88b749Eb99b59\",\"deployer\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"supply\":\"0xc800b0e15c40a1Ff0539218100c86F4c1BAC8D9C\",\"borrow\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"supplyToken\":{\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\"},\"borrowToken\":{\"token0\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"token1\":\"0x0000000000000000000000000000000000000000\"},\"vaultId\":75,\"vaultType\":\"20000\",\"supplyExchangePriceSlot\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"borrowExchangePriceSlot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\",\"userSupplySlot\":\"0x19599101b1050fefec1acbaf740191fe0a6c9b7ddc1a1faf1fa0b27353132059\",\"userBorrowSlot\":\"0x9b9ff58764bad50c0c8f5a3f64ac3aa2dbc14792b2acbb1150024845fc40e79d\"}] | 0x0003 |",
-          "heading": "VaultT2_DEX-INST-ETH_ETH_Operate"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "Dex_FLUID_ETH"
-        },
-        {
-          "text": "| mainnet | 0xc800b0e15c40a1Ff0539218100c86F4c1BAC8D9C | [Link](https://etherscan.io/address/0xc800b0e15c40a1Ff0539218100c86F4c1BAC8D9C#code) | {\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x91716C4EDA1Fb55e84Bf8b4c7085f84285c19085\",\"deployerContract\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"implementations\":{\"shift\":\"0x4ECb836267b8b6473B34E244c82A6AA0749FFB9b\",\"admin\":\"0x780D3C70d583DD8bd894abB53952B868916f69D8\",\"colOperations\":\"0x7eb692a3Fa34EB8e724c4809CDc4293b0A455E8c\",\"debtOperations\":\"0xbfa9093d4Ee238adB15EA40bFA90A088C1D629D3\",\"perfectOperationsAndSwapOut\":\"0x5BE9C322A0B38458b8d36F9a91Eb7ACa5dF25543\"},\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"oracleMapping\":1024,\"dexId\":11,\"supplyToken0Slot\":\"0x76eefde27cef0839f6721813b8a946733d2dc6c96617e06f48ce36e5ebf61a72\",\"borrowToken0Slot\":\"0x7fc1b849f2080d40c18fc3be2117724aa74d4d24fd5a693f8ad10a8bb0d39853\",\"supplyToken1Slot\":\"0xc6aa0a1ebc72fe4114f79538b07fe13247dd00fa4cd45b15bdf0806962814311\",\"borrowToken1Slot\":\"0xec31c709fa552a64d5bf7b00e0effa57c1f425f5596528967d700b0acd6ed68b\",\"exchangePriceToken0Slot\":\"0x7e6352010c06d4d4e841dfdca419ce23a0173412563e7ab6bebf6cce56e1202a\",\"exchangePriceToken1Slot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\"} | 0x0003 |",
-          "heading": "Dex_FLUID_ETH"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "Dex_FLUID_ETH_ColOperations"
-        },
-        {
-          "text": "| mainnet | 0x7eb692a3Fa34EB8e724c4809CDc4293b0A455E8c | [Link](https://etherscan.io/address/0x7eb692a3Fa34EB8e724c4809CDc4293b0A455E8c#code) | [{\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x91716C4EDA1Fb55e84Bf8b4c7085f84285c19085\",\"deployerContract\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"implementations\":{\"shift\":\"0x4ECb836267b8b6473B34E244c82A6AA0749FFB9b\",\"admin\":\"0x0000000000000000000000000000000000000000\",\"colOperations\":\"0x0000000000000000000000000000000000000000\",\"debtOperations\":\"0x0000000000000000000000000000000000000000\",\"perfectOperationsAndSwapOut\":\"0x0000000000000000000000000000000000000000\"},\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"oracleMapping\":1024,\"dexId\":11,\"supplyToken0Slot\":\"0x76eefde27cef0839f6721813b8a946733d2dc6c96617e06f48ce36e5ebf61a72\",\"borrowToken0Slot\":\"0x7fc1b849f2080d40c18fc3be2117724aa74d4d24fd5a693f8ad10a8bb0d39853\",\"supplyToken1Slot\":\"0xc6aa0a1ebc72fe4114f79538b07fe13247dd00fa4cd45b15bdf0806962814311\",\"borrowToken1Slot\":\"0xec31c709fa552a64d5bf7b00e0effa57c1f425f5596528967d700b0acd6ed68b\",\"exchangePriceToken0Slot\":\"0x7e6352010c06d4d4e841dfdca419ce23a0173412563e7ab6bebf6cce56e1202a\",\"exchangePriceToken1Slot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\"}] | 0x0003 |",
-          "heading": "Dex_FLUID_ETH_ColOperations"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "Dex_FLUID_ETH_DebtOperations"
-        },
-        {
-          "text": "| mainnet | 0xbfa9093d4Ee238adB15EA40bFA90A088C1D629D3 | [Link](https://etherscan.io/address/0xbfa9093d4Ee238adB15EA40bFA90A088C1D629D3#code) | [{\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x91716C4EDA1Fb55e84Bf8b4c7085f84285c19085\",\"deployerContract\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"implementations\":{\"shift\":\"0x4ECb836267b8b6473B34E244c82A6AA0749FFB9b\",\"admin\":\"0x0000000000000000000000000000000000000000\",\"colOperations\":\"0x0000000000000000000000000000000000000000\",\"debtOperations\":\"0x0000000000000000000000000000000000000000\",\"perfectOperationsAndSwapOut\":\"0x0000000000000000000000000000000000000000\"},\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"oracleMapping\":1024,\"dexId\":11,\"supplyToken0Slot\":\"0x76eefde27cef0839f6721813b8a946733d2dc6c96617e06f48ce36e5ebf61a72\",\"borrowToken0Slot\":\"0x7fc1b849f2080d40c18fc3be2117724aa74d4d24fd5a693f8ad10a8bb0d39853\",\"supplyToken1Slot\":\"0xc6aa0a1ebc72fe4114f79538b07fe13247dd00fa4cd45b15bdf0806962814311\",\"borrowToken1Slot\":\"0xec31c709fa552a64d5bf7b00e0effa57c1f425f5596528967d700b0acd6ed68b\",\"exchangePriceToken0Slot\":\"0x7e6352010c06d4d4e841dfdca419ce23a0173412563e7ab6bebf6cce56e1202a\",\"exchangePriceToken1Slot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\"}] | 0x0003 |",
-          "heading": "Dex_FLUID_ETH_DebtOperations"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "Dex_FLUID_ETH_PerfectOperationsAndSwapOut"
-        },
-        {
-          "text": "| mainnet | 0x5BE9C322A0B38458b8d36F9a91Eb7ACa5dF25543 | [Link](https://etherscan.io/address/0x5BE9C322A0B38458b8d36F9a91Eb7ACa5dF25543#code) | [{\"liquidity\":\"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\",\"factory\":\"0x91716C4EDA1Fb55e84Bf8b4c7085f84285c19085\",\"deployerContract\":\"0x4EC7b668BAF70d4A4b0FC7941a7708A07b6d45Be\",\"implementations\":{\"shift\":\"0x4ECb836267b8b6473B34E244c82A6AA0749FFB9b\",\"admin\":\"0x0000000000000000000000000000000000000000\",\"colOperations\":\"0x0000000000000000000000000000000000000000\",\"debtOperations\":\"0x0000000000000000000000000000000000000000\",\"perfectOperationsAndSwapOut\":\"0x0000000000000000000000000000000000000000\"},\"token0\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"token1\":\"0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE\",\"oracleMapping\":1024,\"dexId\":11,\"supplyToken0Slot\":\"0x76eefde27cef0839f6721813b8a946733d2dc6c96617e06f48ce36e5ebf61a72\",\"borrowToken0Slot\":\"0x7fc1b849f2080d40c18fc3be2117724aa74d4d24fd5a693f8ad10a8bb0d39853\",\"supplyToken1Slot\":\"0xc6aa0a1ebc72fe4114f79538b07fe13247dd00fa4cd45b15bdf0806962814311\",\"borrowToken1Slot\":\"0xec31c709fa552a64d5bf7b00e0effa57c1f425f5596528967d700b0acd6ed68b\",\"exchangePriceToken0Slot\":\"0x7e6352010c06d4d4e841dfdca419ce23a0173412563e7ab6bebf6cce56e1202a\",\"exchangePriceToken1Slot\":\"0xa1829a9003092132f585b6ccdd167c19fe9774dbdea4260287e8a8e8ca8185d7\"}] | 0x0003 |",
-          "heading": "Dex_FLUID_ETH_PerfectOperationsAndSwapOut"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "MerkleDistributor"
-        },
-        {
-          "text": "| mainnet | 0xD833484b198D3d05707832cc1C2D62b520D95B8A | [Link](https://etherscan.io/address/0xD833484b198D3d05707832cc1C2D62b520D95B8A#code) | \"GHO Vaults $FLUID rewards - Apr 2025\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\", 1, 1, 0, false | 0x0003 |",
-          "heading": "MerkleDistributor"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "MerkleDistributor for delegateCall claimOnBehalfOf FLUID token"
-        },
-        {
-          "text": "| mainnet | 0x9d694b7f2AB2C1f328Ca3E334AB74aFC2814240E | [Link](https://etherscan.io/address/0x9d694b7f2AB2C1f328Ca3E334AB74aFC2814240E#code) | {\"name\":\"NONE - Used for delegateCall onBehalfOf\",\"owner\":\"0x4F6F977aCDD1177DCD81aB83074855EcB9C2D49e\",\"proposer\":\"0x4F6F977aCDD1177DCD81aB83074855EcB9C2D49e\",\"approver\":\"0x4F6F977aCDD1177DCD81aB83074855EcB9C2D49e\",\"rewardToken\":\"0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb\",\"distributionInHours\":1,\"cycleInHours\":1,\"startBlock\":0,\"pullFromDistributor\":false,\"vestingTime\":0,\"vestingStartTime\":0} | 0x0003 |",
-          "heading": "MerkleDistributor for delegateCall claimOnBehalfOf FLUID token"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "$FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
-        },
-        {
-          "text": "| mainnet | 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0 | [Link](https://etherscan.io/address/0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0#code) | \"Fluid Rewards - Dec 2024\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\" | 0x0003 |",
-          "heading": "$FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "cbBTC-wBTC $FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
-        },
-        {
-          "text": "| mainnet | 0xbAbB3f87424d900aBd83C807C1E01a22a54E726F | [Link](https://etherscan.io/address/0xbAbB3f87424d900aBd83C807C1E01a22a54E726F#code) | \"cbBTC-wBTC FLUID Rewards - Dec 2024\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\" | 0x0003 |",
-          "heading": "cbBTC-wBTC $FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "deUSD-USDC Smart Lending FLUID Rewards - 31 Jan 2025 - 2 March 2025"
-        },
-        {
-          "text": "| mainnet | 0xB48BbE313eDB7fAAa28C03684D48F58dD7dEA239 | [Link](https://etherscan.io/address/0xB48BbE313eDB7fAAa28C03684D48F58dD7dEA239#code) | \"deUSD-USDC Smart Lending FLUID Rewards - Jan 2025\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\" | 0x0003 |",
-          "heading": "deUSD-USDC Smart Lending FLUID Rewards - 31 Jan 2025 - 2 March 2025"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "Mainnet: GHO Vaults $FLUID Rewards - April 2025 MerkleDistributor"
-        },
-        {
-          "text": "| mainnet | 0xD833484b198D3d05707832cc1C2D62b520D95B8A | [Link](https://etherscan.io/address/0xD833484b198D3d05707832cc1C2D62b520D95B8A#code) | \"GHO Vaults $FLUID rewards - Apr 2025\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\", 1, 1, 0, false | 0x0003 |",
-          "heading": "Mainnet: GHO Vaults $FLUID Rewards - April 2025 MerkleDistributor"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "ETH-USDC LP $FLUID rewards - Jul 2025"
-        },
-        {
-          "text": "| mainnet | 0x252452ccf245a59A6d1Afab11cF16750029b4620 | [Link](https://etherscan.io/address/0x252452ccf245a59A6d1Afab11cF16750029b4620#code) | {\"name\":\"ETH-USDC LP $FLUID rewards - Jul 2025\",\"owner\":\"0x9800020b610194dBa52CF606E8Aa142F9F256166\",\"proposer\":\"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\",\"approver\":\"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\",\"rewardToken\":\"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\",\"distributionInHours\":1,\"cycleInHours\":1,\"startBlock\":0,\"pullFromDistributor\":false,\"vestingTime\":31536000,\"vestingStartTime\":1751673600} | 0x0003 |",
-          "heading": "ETH-USDC LP $FLUID rewards - Jul 2025"
-        }
-      ]
+      "blocks": []
     },
     "https://docs.morpho.org/developers/contracts/addresses/": {
       "kind": "served",
@@ -228,12 +123,6 @@
       "blocks": [
         {
           "text": "EURC: \"0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42\","
-        },
-        {
-          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
-        },
-        {
-          "text": "EURC: \"0x1abaea1f7c830bd89acc67ec4af516284b1bc33c\","
         },
         {
           "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","

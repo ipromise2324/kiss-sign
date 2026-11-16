@@ -144,14 +144,6 @@
         {
           "text": "| MetaMorpho Factory \\[OLD] | [ 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101 ](https://etherscan.io/address/0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101#code) <AddressCopyButton address=\"0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101\" /> | [metamorpho](https://github.com/morpho-org/metamorpho/tree/c5e758da97d210ede921bf228d37d31e744bd5bf) |",
           "heading": "Morpho Vault V1 [#morpho-vault-v1]"
-        },
-        {
-          "text": "| MetaMorpho Factory V1.1 | [ 0xFf62A7c278C62eD665133147129245053Bbf5918 ](https://basescan.org/address/0xFf62A7c278C62eD665133147129245053Bbf5918#code) <AddressCopyButton address=\"0xFf62A7c278C62eD665133147129245053Bbf5918\" /> | [metamorpho-v1.1](https://github.com/morpho-org/metamorpho-v1.1/tree/5a0717b2c863060ff452ca324716083fe6d09374/src) |",
-          "heading": "Morpho Vault V1 [#morpho-vault-v1]"
-        },
-        {
-          "text": "| MetaMorpho Factory \\[OLD] | [ 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101 ](https://basescan.org/address/0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101#code) <AddressCopyButton address=\"0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101\" /> | [metamorpho](https://github.com/morpho-org/metamorpho/tree/c5e758da97d210ede921bf228d37d31e744bd5bf) |",
-          "heading": "Morpho Vault V1 [#morpho-vault-v1]"
         }
       ]
     },
@@ -188,14 +180,6 @@
         {
           "text": "| mainnet | 0x5C20B550819128074FD538Edf79791733ccEdd18 | [Link](https://etherscan.io/address/0x5C20B550819128074FD538Edf79791733ccEdd18#code) | \"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\", \"0x54B91A0D94cb471F37f949c60F7Fa7935b551D03\", \"0xdac17f958d2ee523a2206206994597c13d831ec7\" | 0x0003 |",
           "heading": "fToken_fUSDT"
-        },
-        {
-          "text": "|---|---|---|---|---|",
-          "heading": "fUSDC_fUSDT_Rewards"
-        },
-        {
-          "text": "| mainnet | 0x724d0c9497Fa89B2C6A4585e08380c91a92ab9b6 | [Link](https://etherscan.io/address/0x724d0c9497Fa89B2C6A4585e08380c91a92ab9b6#code) | \"0x4F6F977aCDD1177DCD81aB83074855EcB9C2D49e\", \"0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33\", \"0x5C20B550819128074FD538Edf79791733ccEdd18\", \"0x0000000000000000000000000000000000000000\", {\"type\":\"BigNumber\",\"hex\":\"0x3b9aca00\"}, {\"type\":\"BigNumber\",\"hex\":\"0xae9f7bcc00\"}, 7776000, 1740260247 | 0x0003 |",
-          "heading": "fUSDC_fUSDT_Rewards"
         }
       ]
     },
@@ -267,10 +251,6 @@
         {
           "text": "Steakhouse USDT Stablecoin Prime Instant USDC Ethereum v1 0xbeef047a543e45807105e51a8bbefcc5950fcfba",
           "heading": "Legacy Vaults"
-        },
-        {
-          "text": "Smokehouse USDC Stablecoin High Yield Instant USDC Ethereum v1 0xBEeFFF209270748ddd194831b3fa287a5386f5bC",
-          "heading": "Legacy Vaults"
         }
       ]
     },
@@ -291,12 +271,6 @@
       "blocks": [
         {
           "text": "function approve(address spender, uint256 value)"
-        },
-        {
-          "text": "require(owner != address(0), \"ERC20: approve from the zero address\");"
-        },
-        {
-          "text": "require(spender != address(0), \"ERC20: approve to the zero address\");"
         }
       ]
     },
@@ -306,30 +280,6 @@
         {
           "text": "deposit",
           "heading": "Integrate Lite USD Vault"
-        },
-        {
-          "text": "fToken public executable actions: deposit, mint, withdraw and redeem. All actions are optionally also available with an additional param to limit the maximum slippage, e.g. maximum assets used for minting x amount of shares.",
-          "heading": "fTokenActions ​"
-        },
-        {
-          "text": "deposit ​",
-          "heading": "Functions ​"
-        },
-        {
-          "text": "function deposit(uint256 assets_, address receiver_) public virtual nonReentrant returns (uint256 shares_);",
-          "heading": "deposit ​"
-        },
-        {
-          "text": "deposit ​",
-          "heading": "deposit ​"
-        },
-        {
-          "text": "same as fToken-deposit but with an additional setting for minimum output amount. reverts with fToken__MinAmountOut() if minAmountOut_ of shares is not reached",
-          "heading": "deposit ​"
-        },
-        {
-          "text": "function deposit(uint256 assets_, address receiver_, uint256 minAmountOut_) external returns (uint256 shares_);",
-          "heading": "deposit ​"
         }
       ]
     }
