@@ -1,3 +1,4 @@
+import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -6,6 +7,8 @@ import { resolveCard } from '../src/card.ts';
 import type { Card, ResolvedCard } from '../src/card.ts';
 import { replayReader } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
+import { encodeCall } from '../src/decode/codec.ts';
+import { MULTISEND, unwrapSafeTx } from '../src/decode/multisend.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
@@ -18,12 +21,14 @@ import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const WITHDRAW = 'morpho/vault-withdraw';
 const ALL = 'morpho/vault-withdraw-all';
-const templates = new Map([WITHDRAW, ALL].map((id) => [id, loadTemplate(ROOT, id, registry)]));
+const CLAIM = 'merkl/claim';
+const templates = new Map([WITHDRAW, ALL, CLAIM].map((id) => [id, loadTemplate(ROOT, id, registry)]));
 const VAULT = 'hyperithm-usdc-apex-v1-7777';
 
 function safeTx(name: string): SafeTx {
@@ -197,6 +202,26 @@ test('the operations of a merged multicall must be on the card, in its order', (
     'multiSend[2].multicall.bundle[1].data.erc4626Redeem.vault',
   ]);
   assert.deepEqual(findings(check(tx, card(withdrawAll('smokehouse-usdc-v1-f5bc')))), ['multiSend[1].to', 'multiSend[1].selector', 'multiSend[2].call']);
+});
+
+test('two merged calls of different templates come in the card order of their first operations', () => {
+  const tx = safeTx('morpho-withdraw-two-vaults-all');
+  const claim = safeTx('merkl-claim');
+  const claimData = claim.data.slice(2).toLowerCase().replaceAll(claim.safe.slice(2).toLowerCase(), tx.safe.slice(2).toLowerCase());
+  const claimEntry = hexToBytes(`00${claim.to.slice(2)}${'0'.repeat(64)}${(claimData.length / 2).toString(16).padStart(64, '0')}${claimData}`);
+  const unwrapped = unwrapSafeTx(tx);
+  assert.equal(unwrapped.kind, 'multisend');
+  const entries = (unwrapped as Extract<typeof unwrapped, { kind: 'multisend' }>).calls.map((call) => hexToBytes(tx.data.slice(2)).slice(...call.span));
+  const transactions = concatBytes(...entries, claimEntry);
+  const both: SafeTx = { ...tx, data: `0x${bytesToHex(encodeCall({ fn: MULTISEND, args: [{ kind: 'bytes', value: transactions, span: [0, 0] }], trailer: undefined }))}` as Hex };
+  const claimMorpho = { template: CLAIM, values: { token: 'morpho' } };
+  assert.deepEqual(check(both, card(...BOTH_ALL.operations, claimMorpho)), { kind: 'match' });
+  assert.deepEqual(findings(check(both, card(claimMorpho, ...BOTH_ALL.operations))), [
+    'multiSend[2].to',
+    'multiSend[2].selector',
+    'multiSend[3].to',
+    'multiSend[3].selector',
+  ]);
 });
 
 test('two redeems of all, from two vaults, match their effects simulated and from their receipt', async () => {

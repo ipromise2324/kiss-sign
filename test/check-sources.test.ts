@@ -10,8 +10,9 @@ import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
 import type { HttpGet, SourcePages } from '../src/research/source-page.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'sources', 'registry.json'), 'utf8'));
 const suffixes = parsePublicSuffixList(readFileSync(join(ROOT, 'testdata', 'sources', 'public-suffix-list.dat'), 'utf8'));
 const listingsOf = (defillama: unknown, coingecko: unknown): Listings => ({
@@ -444,7 +445,7 @@ test('the report lists the sites each protocol\'s sources use', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
   assert.match(text, /sites per protocol, for the signer to check each is the protocol's own:\n/);
   assert.match(text, /\n {2}safe\n {4}github\.com\/safe-global: multisend-1\.3\.0, multisend-1\.3\.0-eip155,/);
-  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}github\.com\/morpho-org: bundler3, vault-v2-factory, morpho-blue, blue-bundles-v1, adaptive-curve-irm, general-adapter-1\n {2}steakhouse-financial\n/);
+  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}github\.com\/morpho-org: bundler3, vault-v2-factory, general-adapter-1, morpho-blue, blue-bundles-v1, adaptive-curve-irm\n {2}steakhouse-financial\n/);
   assert.match(text, /\n {2}steakhouse-financial\n {4}steakhouse\.financial: steakhouse-prime-usdc-v2-0f51, steakhouse-high-yield-usdc-v2-a757, steakhouse-usdt-v1-cfba, smokehouse-usdc-v1-f5bc\n/);
 });
 

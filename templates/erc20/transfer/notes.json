@@ -3,43 +3,31 @@
   "summary": "Safe 直接呼叫你選的代幣合約的 `transfer`，把你填的金額轉給你選的收款人。只有一個呼叫，不經過任何路由或其他合約，也不留下授權。",
   "verdict": {
     "status": "caution",
-    "text": "USDC、cbBTC、MORPHO 可以轉；USDT 要信任 Tether 不改設定；FLUID 的實作能被換掉而程式看不到，先別轉。"
+    "text": "USDC、USDT、cbBTC、MORPHO 可以轉；FLUID 的實作能被換掉而程式看不到，先別轉。"
   },
   "flow": [],
   "protocols": {},
   "judgments": [
     {
-      "text": "FLUID 代幣（InstaToken）是委派合約：函式都轉給 `implementation` 指向的實作，Instadapp 的 master 用 `_setImplementation` 就能換掉。程式的 code pin 和 ABI 證明只看到外殼，外殼的 ABI 甚至沒有 `transfer`。",
+      "text": "FLUID 代幣（InstaToken）把每個函式轉給 `implementation` 指向的實作，Instadapp 能換掉它；程式的 code pin 和 ABI 證明只看到外殼。",
       "sources": [
         "https://etherscan.io/address/0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb#code"
       ],
-      "recommendation": "先不要用這個模板轉 FLUID，等程式能看到這種實作再說。"
+      "recommendation": "先不要用這個模板轉 FLUID。"
     },
     {
-      "text": "USDT 的 owner 能暫停、凍結並銷毀黑名單餘額、開手續費（最多 0.19%、49 USDT），或用 `deprecate` 把轉帳改交新合約。改交後錢去哪由新合約決定；verify 只看 Safe 少了多少，code pin 也看不到這個設定。",
+      "text": "USDT 的 owner 能凍結地址、開手續費，或用 `deprecate` 把轉帳改交給新合約。",
       "sources": [
         "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code"
       ],
-      "recommendation": "轉 USDT 等於信任 Tether 的 owner。AI 讀到 `deprecated` 是 false、手續費是 0（只問了一家節點）。"
-    },
-    {
-      "text": "USDC、cbBTC 和 MORPHO 都是可升級的代理合約；USDC 和 cbBTC 的發行者還能暫停轉帳、把地址列入黑名單。升級會讓 code pin 對不上，verify 就不給 MATCH；暫停或黑名單只會讓交易失敗，錢不會轉錯。",
-      "sources": [
-        "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
-        "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code"
-      ],
-      "recommendation": "可以接受。"
-    },
-    {
-      "text": "USDC、USDT 各研究 240 筆，0 筆來自 Safe：轉帳太多，每個時段被切到只剩 3 到 14 個區塊。EOA 直接轉的 109/116、161/163 筆跟模板一樣；Alchemy 和 Etherscan 找到的完全相同。SAFE 代幣那份紀錄有 1 筆 Safe 轉帳，跟模板一樣。",
-      "recommendation": "收款人用 book add 加入時，地址從聊天以外的來源取得並逐字比對；第一次轉給新地址先送小額。"
+      "recommendation": "轉 USDT 等於信任 Tether。"
     }
   ],
   "reviews": {
     "fluid/address": {
       "status": "concern",
-      "text": "程式只有 CoinGecko 確認。Fluid 技術文件的合約地址頁沒有列它。Instadapp GitHub 的 deployments.md 有 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb，但都在別的合約的建構參數裡：幾個 \"$FLUID rewards\" MerkleDistributor 和 vault 的代幣欄，沒有一列是代幣本身。",
-      "recommendation": "只能算一個來源確認，加上實作可被換掉，先不要轉 FLUID。"
+      "text": "Fluid 技術文件的合約地址頁沒有列它；Instadapp GitHub 的 deployments.md 只在別的合約的參數裡出現 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb，沒有一列是代幣本身。",
+      "recommendation": "只有 CoinGecko 一個來源，先不要轉 FLUID。"
     }
   },
   "entries": {
@@ -99,9 +87,8 @@
       ]
     }
   },
-  "pastTxsConclusion": "其他形狀都來自 EOA：8 筆呼叫的不是代幣而是別的合約，帶著 `transfer` 的選擇器和長得多的資料；1 筆在參數後多帶 32 bytes。錢包正常的轉帳不會這樣，模板不收是對的。",
   "fields": {
-    "1.transfer.to": "收款地址。代幣從 Safe 的餘額扣掉，記到這個地址名下。USDT 若開了手續費，它收到的會比金額少一點。",
-    "1.transfer.value": "轉出的數量，以代幣的最小單位計。card new 讓你用整顆代幣填（可以有小數），再用鏈上讀到的 `decimals` 換算，例如 USDC 的 1.5 是 1500000。"
+    "1.transfer.to": "收款地址。",
+    "1.transfer.value": "轉出的數量，以代幣的最小單位計；card new 讓你填整顆代幣，再用鏈上的 `decimals` 換算。"
   }
 }
