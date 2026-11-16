@@ -13,16 +13,31 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
-  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. Once per operation, your AI researches the addresses, ABIs, past transactions and code, writes a report, and you review and merge it. At every signing, you fill a card, kiss-sign verify checks the transaction against it on your computer, check.sh decodes the same transaction on a second computer, and you compare the hashes on your hardware wallet before signing.">
+  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI checks the addresses, ABIs, past transactions, the protocol's state and the code it runs, one step at a time, writes a report, and you review and merge it. At every signing, you fill a card, kiss-sign verify checks the transaction against it on your computer, check.sh decodes the same transaction on a second computer, and you compare the hashes on your hardware wallet before signing.">
 </picture>
+
+## Contents
+
+- [Why](#why)
+- [How it works](#how-it-works)
+  - [1. Tell your AI what you want](#1-tell-your-ai-what-you-want)
+  - [2. Review the report and merge](#2-review-the-report-and-merge)
+  - [3. Fill a card](#3-fill-a-card)
+  - [4. Verify on your computer, and check on a second one](#4-verify-on-your-computer-and-check-on-a-second-one)
+  - [5. Sign](#5-sign)
+  - [Add your own operation](#add-your-own-operation)
+- [If something is compromised](#if-something-is-compromised)
+- [What kiss-sign checks](#what-kiss-sign-checks)
+- [Scope](#scope)
+- [Contributing](#contributing)
+- [Disclaimer](#disclaimer)
+- [Donate](#donate)
+- [License](#license)
 
 ## Why
 
 - **You are responsible for the exact bytes you sign.** Today the transaction is built first and checked last. That last check is like the terms on an insurance form: everyone means to read it, and most people click sign. At Bybit in 2025, the signers saw a normal transfer in a tampered Safe web app and signed a change to the Safe itself.
-- **Checking by hand is slow and needs expertise.** Tools such as [safe-tx-hashes](https://github.com/pcaversaccio/safe-tx-hashes-util) compute the hashes your wallet should show, but the decoded method and parameters they print come from the Safe Transaction Service, and the tool itself warns: *"Always independently decode the transaction Data yourself before you sign!"* Decoding one ordinary Morpho vault deposit yourself looks like this:
-
-  <details>
-  <summary>Decoding a real Morpho vault deposit by hand (another Safe's, not the one pictured below)</summary>
+- **Checking by hand is slow and needs expertise.** Tools such as [safe-tx-hashes](https://github.com/pcaversaccio/safe-tx-hashes-util) compute the hashes your wallet should show, but the decoded method and parameters they print come from the Safe Transaction Service, and the tool itself warns: *"Always independently decode the transaction Data yourself before you sign!"* Decoding one real Morpho vault deposit yourself (another Safe's, not the one pictured below) looks like this:
 
   ```sh
   # 1. The Safe calls MultiSend. Its one argument is packed bytes, not ABI.
@@ -55,9 +70,8 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
   ```
 
   Then the real questions start. Is `0x4A6c…0aE0` Morpho's GeneralAdapter1 or a look-alike? Is `0x7777…7777` the vault you meant? Is `1.054e15` a sane minimum of shares for 10,001 USDC? What are the 8 extra bytes after the approve? And you do all of this again for the next transaction.
-  </details>
 
-- **Clear signing (ERC-7730) does not decode batched calls well yet.** It turns a call into readable fields, but only for contracts with a descriptor. For the deposit above, at registry commit `3bebbd0`, only Bundler3 has one. It names the call "Bundler3 Multicall" and passes each inner action to the descriptor of its target. MultiSend, GeneralAdapter1 and the vault have none. The screen can look reasonable while the parts that move your money are not shown.
+- **[Clear signing (ERC-7730)](https://eips.ethereum.org/EIPS/eip-7730) does not decode batched calls well yet.** It turns a call into readable fields, but only for contracts with a descriptor. For the deposit above, at [registry](https://github.com/ethereum/clear-signing-erc7730-registry) commit [`3bebbd0`](https://github.com/ethereum/clear-signing-erc7730-registry/tree/3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4), only Bundler3 has one. It names the call "Bundler3 Multicall" and passes each inner action to the descriptor of its target. MultiSend, GeneralAdapter1 and the vault have none. The screen can look reasonable while the parts that move your money are not shown.
 
 ## How it works
 
@@ -219,4 +233,4 @@ Copy the address from this page on GitHub, and compare it in full before you sen
 
 ## License
 
-[MIT](LICENSE). Anyone may use, copy, change, publish and sell kiss-sign, provided the license notice stays with it. The diagram font in `docs/diagrams/fonts/` is Virgil, under the SIL Open Font License, and the logos in `docs/diagrams/logos/` belong to their owners.
+[MIT](LICENSE). Anyone may use, copy, change, publish and sell kiss-sign, provided the license notice stays with it. The diagram font in `docs/diagrams/fonts/` is Excalifont, under the SIL Open Font License, and the logos in `docs/diagrams/logos/` belong to their owners.

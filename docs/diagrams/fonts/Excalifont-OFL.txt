@@ -1,4 +1,7 @@
-Copyright (c) 2021 - Present, Ellinor Rapp, with Reserved Font Name Virgil.
+Excalifont, Copyright (c) 2024 by Excalidraw. Excalifont is a trademark of Excalidraw.
+Designed by Ján Filípek / DizajnDesign from Virgil, Copyright (c) 2021 - Present, Ellinor Rapp, with Reserved Font Name Virgil.
+
+Excalifont-Latin.woff2 is the unmodified Latin subset Excalidraw ships (packages/excalidraw/fonts/Excalifont/Excalifont-Regular-a88b72a24fb54c9f94e3b5fdaa7481c9.woff2 at commit c0a0ca348faa273c768de839a22df113f997c095).
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1. This license is copied below, and is also available with a FAQ at: [scripts.sil.org/OFL](https://scripts.sil.org/OFL).
 
