@@ -22,6 +22,7 @@ import { checkToday } from '../src/research/report.ts';
 import { checkCode } from '../src/verify/code.ts';
 import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const REGISTRY = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8')) as Record<string, Record<string, unknown>>;
@@ -272,7 +273,7 @@ test('an executed transaction is judged by the routes of the span that holds its
 });
 
 test("verify checks the code of every entry a touched entry depends on, though no call targets it", async () => {
-  const recorded: VerdictFile = JSON.parse(readFileSync(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'), 'utf8'));
+  const recorded: VerdictFile = readRecording(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'));
   const entries = JSON.parse(recorded.inputs.registry) as Record<string, Record<string, unknown>>;
   const liquidity = { address: PROXY, kind: 'lending', source: 'https://docs.example.org/liquidity', code: { hash: hash('0x6000') } };
   const registry = JSON.stringify({ ...entries, bundler3: { ...entries.bundler3, dependsOn: ['liquidity'] }, liquidity });

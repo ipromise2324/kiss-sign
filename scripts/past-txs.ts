@@ -14,6 +14,7 @@ import type { AnchorKind } from '../src/research/sources.ts';
 import { scrubRecording } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import { recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/past-txs.ts <protocol>/<operation>
   --token <registry name | address> --anchor mint|burn|any [--from <registry name | address>] [--to <registry name | address>]
@@ -118,6 +119,6 @@ if (flags.record !== undefined) {
   );
   const out = join(ROOT, 'testdata', 'research', `${flags.record}.json`);
   mkdirSync(join(out, '..'), { recursive: true });
-  writeFileSync(out, `${JSON.stringify(fixture, null, 1)}\n`);
+  writeFileSync(out, recordingText(fixture, 1));
   console.log(`wrote ${out}: ${fixture.sources.length} source answers, ${fixture.exchanges.length} chain requests`);
 }

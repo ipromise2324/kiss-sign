@@ -8,6 +8,7 @@ import { unreadRefusal } from '../src/chain/https.ts';
 import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { parseAddress, parseUint256 } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
+import { recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = 'usage: ALCHEMY_API_KEY=... node scripts/record-abi-case.ts <name> <address> [block]';
 
@@ -30,6 +31,6 @@ if (refusal !== undefined) {
 }
 const out = join(import.meta.dirname, '..', 'testdata', 'abi', `${name}.json`);
 mkdirSync(join(out, '..'), { recursive: true });
-writeFileSync(out, `${JSON.stringify(fixture, null, 2)}\n`);
+writeFileSync(out, recordingText(fixture, 2));
 const verdict = proof.kind === 'proven' ? `proven ${proof.contractName} at ${proof.proven}` : `refused: ${describeRefusal(proof.refusal)}`;
 console.log(`wrote ${out}: block ${fixture.block.number}, agreed by ${fixture.providers.join(' and ')}, ${verdict}`);

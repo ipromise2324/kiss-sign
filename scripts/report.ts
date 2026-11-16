@@ -50,6 +50,7 @@ import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
+import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
        node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) (--offline | --render)
@@ -234,7 +235,7 @@ const erc7730Chain = recordingTransport(httpsTransport(), endpoints);
 const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport, { note })));
 
 const factsChain = recordingTransport(httpsTransport(), endpoints);
-const committedFacts = flags.compare && subject.kind === 'template' ? parseFactsRecording(JSON.parse(readFileSync(join(root, reportRecordingPath(target)), 'utf8')).facts) : undefined;
+const committedFacts = flags.compare && subject.kind === 'template' ? parseFactsRecording((readRecording(join(root, reportRecordingPath(target))) as { facts?: unknown }).facts) : undefined;
 const factsBlock = committedFacts === undefined ? latest.value : { number: BigInt(committedFacts.block.number), hash: committedFacts.block.hash };
 const scope = subject.kind === 'template' ? factsScope(subject.template, registry, entries) : undefined;
 const facts = scope === undefined ? undefined : await protocolFacts(scope, registry, { defillama: listing, reader: createReader(endpoints, factsChain.transport, { note }), block: factsBlock });
@@ -289,15 +290,15 @@ if (flags.record) {
   const erc7730Section = { commit: snapshot.commit, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
   const raw = new Map(await Promise.all([...answers].map(async ([path, answer]) => [path, await answer] as const)));
   const factsSection = scope === undefined ? {} : { facts: factsRecording(scope, factsBlock, raw, factsChain.exchanges()) };
-  const recording = JSON.stringify({ ...trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges(), today?.block), ...factsSection }, null, 2);
+  const recording = recordingText({ ...trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges(), today?.block), ...factsSection }, 2);
   const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
   if (safe !== undefined && recording.toLowerCase().includes(safe.slice(2))) {
     console.error('the recording would name the configured Safe; nothing written');
     process.exit(1);
   }
-  for (const [path, fixture] of abiCases) writeFileSync(path, `${JSON.stringify(fixture, null, 2)}\n`);
+  for (const [path, fixture] of abiCases) writeFileSync(path, recordingText(fixture, 2));
   mkdirSync(dirname(join(root, reportRecordingPath(target))), { recursive: true });
-  writeFileSync(join(root, reportRecordingPath(target)), `${recording}\n`);
+  writeFileSync(join(root, reportRecordingPath(target)), recording);
   console.error(`recorded ${reportRecordingPath(target)}`);
   await writeGenerated();
 }

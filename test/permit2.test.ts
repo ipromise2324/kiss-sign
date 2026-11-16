@@ -17,9 +17,10 @@ import { observeExecuted } from '../src/simulate/executed.ts';
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
 import type { Observation } from '../src/simulate/simulate.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
-const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
+const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
 
 type Fixture = { transactionHash: Hex; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
 
