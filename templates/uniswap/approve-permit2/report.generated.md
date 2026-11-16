@@ -61,15 +61,19 @@ Each entry's `moreSources`: more official pages that list its address, each chec
 
 | Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | FINDING | PASS | PASS |
+| `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | PASS | PASS | PASS |
 
 More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
 
 | Entry | Bounty scope | SDK file | SDK publisher | Deployer |
 | --- | --- | --- | --- | --- |
-| `permit2` | n/a | FINDING | n/a | n/a |
+| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
+| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
+| `cbbtc` | n/a | n/a | n/a | FINDING |
+| `permit2` | n/a | PASS | PASS | FINDING `0xD32Ff78579352cA78f416120A9f68b65c410871b` |
 
-5 entries, 3 findings.
+5 entries, 6 findings.
 
 ## Code pins
 
@@ -100,7 +104,7 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26427909 `0x56f1a37b89431ec31c4525a548ded56fdc854d958a2fe95f84bf78cb01878b3c`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429919 `0x34192300ce85207f86176de7771c1e2ff3ead3e20ad12438f94dc1f1b23d2858`; a read they do not agree on prints as not read.
 
 No call of this template goes to a contract other than a token.
 
