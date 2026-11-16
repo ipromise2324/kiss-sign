@@ -29,7 +29,7 @@ There is no server. Launch means an isolated home, and, for `verify`, a plain cl
 eval "$("$V/new-run.sh" <run> <safe of a fixture> --clone)"
 ```
 
-It creates `${KSV_ROOT:-$TMPDIR/kiss-sign-verify}/<run>/` with `home/` (initialised by `bin/kiss-sign init --safe <safe>`, holding only `ALCHEMY_API_KEY` and `ETHERSCAN_API_KEY`), `evidence/` (or `$KSV_EVIDENCE` if set), and with `--clone` a fresh `git clone` of this checkout's `origin` URL plus `pnpm install` in `clone/`. It exports `KSV_RUN`, `KSV_DIR`, `KSV_EVIDENCE`, `KSV_CHECKOUT` (the clone, or this checkout without `--clone`) and `KISS_SIGN_HOME`. It refuses a run name whose `home/` already exists.
+It creates `${KSV_ROOT:-$TMPDIR/kiss-sign-verify}/<run>/` with `home/` (initialised by `bin/kiss-sign init --safe <safe> --language ${KSV_LANGUAGE:-en}`, so set `KSV_LANGUAGE=zh-TW` for a Traditional Chinese home, holding only `ALCHEMY_API_KEY` and `ETHERSCAN_API_KEY`), `evidence/` (or `$KSV_EVIDENCE` if set), and with `--clone` a fresh `git clone` of this checkout's `origin` URL plus `pnpm install` in `clone/`. It exports `KSV_RUN`, `KSV_DIR`, `KSV_EVIDENCE`, `KSV_CHECKOUT` (the clone, or this checkout without `--clone`) and `KISS_SIGN_HOME`. It refuses a run name whose `home/` already exists.
 
 Ready means `key list` prints `set (file)` for alchemy (it prints both to stderr during `new-run.sh`).
 
