@@ -16,10 +16,11 @@ import type { Address } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
 const SCRIPTS = join(import.meta.dirname, '..', 'scripts');
-const recording: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit.json'), 'utf8'));
+const recording: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit.json'));
 const registry = loadRegistry(ROOT);
 
 const FIT = '0x88a65493c62cfc17be33cbc587fca29edf71d0984b6ba2295873dfb1a9a38c4c';
@@ -128,7 +129,7 @@ test('the template\'s function called on another contract than the vault whose m
 });
 
 test('a window with more transfers than one page is halved, and the report names the blocks left out', async () => {
-  const windowed: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'), 'utf8'));
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
   const [full, half] = [26373601n, 26377201n];
   const replay = replayAsk(windowed.sources);
   const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
@@ -149,7 +150,7 @@ test('a window with more transfers than one page is halved, and the report names
 
 test('a recording keeps only what the search reads, so a busy token\'s halved windows, overflowing in either source alone, replay the same report at a size bounded by the answers and transfers found', async () => {
   for (const overflowing of ['alchemy', 'etherscan'] as const) {
-    const windowed: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'), 'utf8'));
+    const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
     const [full, half] = [26373601n, 26377201n];
     const replay = replayAsk(windowed.sources);
     const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
@@ -188,7 +189,7 @@ test('--max-txs below one transaction per window is refused', () => {
 });
 
 test('by default the windows are spread over the last year from the head block, and each window is sampled to its share', async () => {
-  const windowed: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'), 'utf8'));
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
   const text = await report({ recorded: windowed });
   assert.match(text, /^windows: 12 of up to 7200 blocks, one every 219000 blocks over the last year; at most 2 studied per window$/m);
   const windows = [...text.matchAll(/^ {2}blocks (\d+) to (\d+): (\d+) found, (\d+) studied$/gm)].map((m) => m.slice(1).map(Number));
@@ -286,7 +287,7 @@ test('an EOA making one call is not judged by an equals rule naming a leaf of a 
 });
 
 test('an anchor with a sender asks both sources only for transfers out of it, and the report names it', async () => {
-  const claims: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'merkl-claim.json'), 'utf8'));
+  const claims: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'merkl-claim.json'));
   const text = await report({ recorded: claims });
   assert.match(text, /^anchor: Transfer of morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 moved out of merkl-distributor$/m);
   assert.match(text, /^ {2}blocks 24020000 to 24030000: 120 found, 120 studied$/m);
@@ -360,7 +361,7 @@ test('--to goes with --anchor any only', () => {
 });
 
 test("a Safe's transaction that makes none of the template's calls is another operation, counted on its own and not among the misfits", async () => {
-  const transfers: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'erc20-transfer.json'), 'utf8'));
+  const transfers: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'erc20-transfer.json'));
   const text = await report({ recorded: transfers });
   assert.match(
     text,

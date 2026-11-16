@@ -22,6 +22,7 @@ import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
@@ -104,7 +105,7 @@ test('a withdrawal from another vault is a mismatch', () => {
 });
 
 type Fixture = { safeTx: string; transactionHash: Hex; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
-const recording = (name: string): Fixture => JSON.parse(readFileSync(join(ROOT, 'testdata', 'simulate', `${name}.json`), 'utf8'));
+const recording = (name: string): Fixture => readRecording(join(ROOT, 'testdata', 'simulate', `${name}.json`));
 
 async function observe(name: string, c: Card): Promise<{ simulated: EffectVerdict; receipt: EffectVerdict }> {
   const fixture = recording(name);

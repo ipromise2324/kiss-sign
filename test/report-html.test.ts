@@ -3,6 +3,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
+import { STANDARDS } from '../src/research/standards.ts';
 import { NOTES_FILE, notesChanges, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, generatedHtml, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
@@ -120,7 +121,7 @@ test('the HTML report holds no script and loads nothing', () => {
   }
 });
 
-test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, one of the four the program builds, or an id on the page', () => {
+test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, a standard\'s page, one of the four the program builds, or an id on the page', () => {
   for (const [id, { html }] of replayed) {
     const notes = notesOf(id);
     const { target, root, registry } = reportOf(id);
@@ -136,6 +137,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
         ...(e.defillama === undefined ? [] : [`https://defillama.com/protocol/${e.defillama}`]),
       ]),
       ...Object.values(docs).map((d) => d.url),
+      ...[...STANDARDS.values()].map((standard) => standard.page),
       ...Object.values(card).flatMap((field) => (field.computed === undefined ? [] : [field.computed.default.source])),
       ...(JSON.stringify(notes).match(/https:\/\/[^"]+/g) ?? []),
     ]);

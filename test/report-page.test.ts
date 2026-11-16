@@ -1,17 +1,25 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import type { AbiRefusal } from '../src/contracts/prove.ts';
-import { loadRegistry } from '../src/registry.ts';
-import { forSigner, judge, stateOf, worst } from '../src/research/ledger.ts';
+import { parseFunctionSignature } from '../src/decode/abi.ts';
+import { MARKETS_PATH, REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
+import { forSigner, judge, stateOf, strip, worst } from '../src/research/ledger.ts';
 import type { EntryReport, FieldFact } from '../src/research/erc7730.ts';
 import type { State } from '../src/research/ledger.ts';
 import { NotesError, notesScope, readNotes } from '../src/research/notes.ts';
+import { factsScope } from '../src/research/protocol-facts.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
+import { renderPage } from '../src/research/report-html.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
-import type { ArgRow, Body, HtmlInputs, Inline, Page, WalletCall } from '../src/research/report-page.ts';
-import { replayInputs } from '../src/research/report.ts';
-import type { ReportTitle } from '../src/research/report.ts';
+import type { ArgRow, Body, DocLine, HtmlInputs, Inline, Page, WalletCall } from '../src/research/report-page.ts';
+import { pageUrlOf } from '../src/research/source-page.ts';
+import { STANDARDS } from '../src/research/standards.ts';
+import type { HttpsUrl, RegistryEntry } from '../src/registry.ts';
+import { entriesOf, parseDocs, readDocs, renderReport, replayInputs } from '../src/research/report.ts';
+import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
+import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { loadTemplate } from '../src/template/template.ts';
@@ -56,6 +64,7 @@ function notesFor(of: HtmlInputs): Record<string, unknown> {
     protocols: Object.fromEntries([...scope.protocols].map(([slug]) => [slug, { intro: `intro ${slug}`, audits: { text: 'audits' }, incidents: [] }])),
     judgments: [{ text: 'judgment', recommendation: 'small first' }],
     reviews: Object.fromEntries(scope.reviews.map((id) => [id, { status: 'concern', text: `review ${id}`, recommendation: 'look' }])),
+    entries: Object.fromEntries([...scope.routed].map((name) => [name, { role: `role ${name}`, sources: [{ text: 'implementation history', url: 'https://etherscan.io/', result: 'pass' }] }])),
     fields: Object.fromEntries(scope.fields.map((key) => [key, `field ${key}`])),
   };
 }
@@ -72,7 +81,8 @@ const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), f
 
 function templatePage(id: string): Page {
   const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
-  return oneCallPage({ ...inputs, subject: { ...subject, template: loadTemplate(ROOT, id, registry) }, example: undefined, fixtures: [] });
+  const other = loadTemplate(ROOT, id, registry);
+  return oneCallPage({ ...inputs, subject: { ...subject, template: other, docs: parseDocs(readDocs(ROOT, id), other, registry) }, example: undefined, fixtures: [] });
 }
 const body = <K extends Body['kind']>(page: Page, kind: K): Extract<Body, { kind: K }> => page.sections.find((s) => s.body.kind === kind)?.body as Extract<Body, { kind: K }>;
 const args = (page: Page): ArgRow[] => body(page, 'flow').flow.calls.flatMap((call) => call.args);
@@ -639,4 +649,198 @@ test('no strip explanation counts one thing as many', async () => {
   for (const page of [depositPage, pageOf(inputs)]) {
     for (const item of page.header.strip) assert.doesNotMatch(item.explain, /(^|[^\d])1 個(地址)?都|其餘 1 個|這 1 個/, item.explain);
   }
+});
+
+const LAYER = `0x${'52'.repeat(20)}` as Address;
+const ROUTED_TO = `0x${'0a'.repeat(20)}` as Address;
+const ROUTE_HASH = `0x${'0a'.repeat(32)}` as Hex;
+const TODAY_BLOCK = { number: 24_000_000n, hash: `0x${'24'.repeat(32)}` as Hex };
+
+function withLiquidityLayer(today: TodayCheck | undefined, { pinned = true }: { readonly pinned?: boolean } = {}): HtmlInputs {
+  const raw = JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8'));
+  raw['liquidity-layer'] = {
+    address: LAYER,
+    kind: 'lending',
+    source: 'https://docs.example.org/liquidity',
+    defillama: 'morpho-blue',
+    routes: { implementationOf: 'getSigsImplementation(bytes4)', selectorsOf: 'getImplementationSigs(address)', seeds: ['0x00000001'] },
+    ...(pinned ? { code: { hash: `0x${'52'.repeat(32)}`, routes: [{ address: ROUTED_TO, hash: ROUTE_HASH, selectors: ['0x00000002', '0x00000001'] }], from: 100 } } : {}),
+  };
+  raw['blue-bundles-v1'] = { ...raw['blue-bundles-v1'], dependsOn: ['liquidity-layer'] };
+  const withLayer = parseRegistry(raw, JSON.parse(readFileSync(join(ROOT, MARKETS_PATH), 'utf8')));
+  return {
+    ...inputs,
+    registry: withLayer,
+    spans: new Map([...inputs.spans, [LAYER, [{ kind: 'pass', text: 'PASS' }]]]),
+    today: today === undefined ? undefined : { block: TODAY_BLOCK, checks: new Map([[LAYER, today]]) },
+  };
+}
+
+test('an entry reached only through dependsOn shows its routes, seeds and code at the latest block, and its missing ABI proof is grey, not amber', () => {
+  const of = withLiquidityLayer({ kind: 'pass', text: 'PASS' });
+  assert.ok(entriesOf(of.subject, of.registry).some((entry) => entry.name === 'liquidity-layer'));
+
+  const markdown = renderReport(of, title);
+  const layerHash = `0x${'52'.repeat(32)}`;
+  const routedTo = checksumAddress(ROUTED_TO);
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | 100 | \`${layerHash}\` | none; routes \`${routedTo}\` \`${ROUTE_HASH}\` (2 selectors) | PASS |`), 'the code pin lists the route');
+  assert.ok(markdown.includes("### Today's code\n"), 'the report reads its code at the latest block');
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | PASS | 24000000 |`), 'its code at the latest block is its current pin');
+  assert.ok(markdown.includes('`liquidity-layer` seeds: `0x00000001`.'), 'the seeds print');
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | 100 | \`${routedTo}\` | \`0x00000002\`, \`0x00000001\` |`), 'each route prints every selector it serves');
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | \`${checksumAddress(LAYER)}\` | not proved: the operation reaches it only through \`dependsOn\`, so no call targets it and none is decoded with its ABI; its code pin is above |`), 'the ABI row says why it is not proved');
+
+  const ledger = judge(of, of.fixtures);
+  assert.ok(notesScope(of, ledger, of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report')).contracts.has('liquidity-layer'), 'a flow line may name what a called contract depends on');
+  const factContracts = factsScope(of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report'), of.registry, []).protocols.flatMap((p) => p.contracts.map((e) => e.name));
+  assert.deepEqual(factContracts.slice(factContracts.indexOf('blue-bundles-v1'), factContracts.indexOf('blue-bundles-v1') + 2), ['blue-bundles-v1', 'liquidity-layer'], 'the protocol facts say whether what a called contract depends on is a proxy');
+  const siteRow = body(pageOf(of), 'review').rows.find((r) => r.id === 'liquidity-layer/source.site') ?? assert.fail('no site review row');
+  assert.equal(plain(siteRow.title), 'liquidity-layer：docs.example.org/liquidity，網站跟 DefiLlama 列的不同', 'a source result names its page as the address row does');
+  assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/abi') ?? assert.fail('no ABI result')), 'na');
+  assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no result at the latest block')), 'ok');
+  const abiItem = (ledgerOf: typeof ledger) => strip(ledgerOf).find((item) => item.line === 'abi');
+  assert.deepEqual(abiItem(ledger), abiItem(judge(inputs, inputs.fixtures)), '原始碼驗證 counts and colours the same without the dependency');
+
+  const page = pageOf(of);
+  const explain = (line: string) => page.header.strip.find((item) => item.line === line)?.explain ?? '';
+  assert.match(explain('abi'), /liquidity-layer 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。/);
+  assert.match(explain('code'), /liquidity-layer 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼/);
+  assert.match(explain('code'), /seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。/);
+  const addresses = body(page, 'addresses');
+  const row = [...addresses.open, ...addresses.folded].find((r) => r.name === 'liquidity-layer') ?? assert.fail('no address row');
+  assert.equal(page.header.strip.find((item) => item.line === 'code')?.state, pageOf(inputs).header.strip.find((item) => item.line === 'code')?.state);
+  assert.deepEqual(row.codeLines.map(plain), [
+    '沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名碰到 blue-bundles-v1 時，程式也確認它的程式碼還是 code pin 記錄的那份。',
+    '它依函式選擇器把呼叫分給各自的實作。code pin 的 seeds 接到 1 個實作：',
+    `${routedTo}，程式碼 hash ${ROUTE_HASH}，2 個函式`,
+    '沒有 seed 接到的實作，code pin 沒有記錄，程式也不檢查。',
+  ]);
+  const html = renderPage(page);
+  assert.ok(html.includes(`<div class="confirmed"><span class="addr">${routedTo}</span>，程式碼 hash <span class="addr">${ROUTE_HASH}</span>，2 個函式</div>`), 'the HTML row prints the route in full');
+});
+
+test('a dependency that runs other code at the latest block is red in 合約沒被換掉 and in 待確認; one with no read there is amber', () => {
+  const finding = withLiquidityLayer({ kind: 'finding', text: 'FINDING: runs something else' });
+  const page = pageOf(finding);
+  assert.equal(page.header.strip.find((item) => item.line === 'code')?.state, 'bad');
+  const review = body(page, 'review').rows.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no review row');
+  assert.equal(review.state, 'bad');
+  assert.equal(plain(review.title), 'liquidity-layer：鏈上跑的不是登記的程式碼（最新區塊）');
+  assert.ok(renderReport(finding, title).includes('| `liquidity-layer` | FINDING: runs something else | 24000000 |'));
+
+  const unread = withLiquidityLayer(undefined);
+  assert.equal(stateOf(judge(unread, unread.fixtures).results.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no result')), 'warn');
+  assert.ok(renderReport(unread, title).includes('| `liquidity-layer` | not read |  |'));
+});
+
+test("a dependency with no code pin says only that it has no ABI proof, not that each signing checks its code", () => {
+  const of = withLiquidityLayer(undefined, { pinned: false });
+  const addresses = body(pageOf(of), 'addresses');
+  const row = [...addresses.open, ...addresses.folded].find((r) => r.name === 'liquidity-layer') ?? assert.fail('no address row');
+  assert.deepEqual(row.codeLines.map(plain), ['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。']);
+  assert.ok(!judge(of, of.fixtures).results.some((r) => r.id === 'liquidity-layer/code.today'), 'an unpinned entry has only its not-pinned result');
+  assert.ok(renderReport(of, title).includes('| `liquidity-layer` | not pinned |  |'));
+});
+
+const callDoc = (page: Page, n: number): DocLine => {
+  const head = body(page, 'flow').flow.calls[n - 1]?.head;
+  return head?.kind === 'fn' ? head.doc : assert.fail(`call ${n} has no function`);
+};
+const nestedDocs = (page: Page): [string, string | undefined][] => {
+  const all = (rows: readonly ArgRow[]): ArgRow[] => rows.flatMap((row) => [row, ...all(row.parts.flatMap((g) => g.rows))]);
+  return all(args(page)).flatMap((row) => (row.doc === undefined ? [] : [[plain(row.words), row.doc.label] as [string, string | undefined]]));
+};
+const APPROVE_PAGE = 'https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol';
+
+test("each call shows its function's documentation page under its heading, and a nested call in its data row", () => {
+  assert.deepEqual(callDoc(depositPage, 1), { state: 'ok', phrase: undefined, href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
+  assert.equal(callDoc(depositPage, 2).label, 'github.com/morpho-org/bundler3/…/Bundler3.sol');
+  assert.deepEqual(nestedDocs(depositPage), [
+    ['erc20TransferFrom (0xd96ca0b9)', 'github.com/morpho-org/bundler3/…/GeneralAdapter1.sol'],
+    ['erc4626Deposit (0x6ef5eeae)', 'github.com/morpho-org/bundler3/…/GeneralAdapter1.sol'],
+  ]);
+  const html = renderPage(depositPage);
+  assert.ok(html.includes(`<div class="doc" data-state="ok"><span class="f3">文件：</span><a href="${APPROVE_PAGE}">github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i ok" role="img" aria-label="通過">`));
+});
+
+test("a function named by its standard shows the standard's page, with the caveat that the contract may not follow it", () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const erc20 = STANDARDS.get('erc-20') ?? assert.fail('erc-20');
+  const docs = subject.docs.map((d) => (d.fn.signature === 'approve(address,uint256)' ? { ...d, url: erc20.page, standard: erc20 } : d));
+  const pages = new Map([...depositInputs.pages.pages, [pageUrlOf(erc20.page), { kind: 'served', blocks: [{ text: 'function approve(address _spender, uint256 _value) public returns (bool success)' }] }]]);
+  const commits = new Map([...depositInputs.pages.commits, ['ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2', { kind: 'on-default', branch: 'master', status: 'behind' }]]);
+  const page = buildPage({ ...depositInputs, subject: { ...subject, docs }, pages: { ...depositInputs.pages, pages, commits } as HtmlInputs['pages'] }, depositNotes, depositTitle);
+  assert.deepEqual(callDoc(page, 1), { state: 'ok', phrase: undefined, href: erc20.page, label: 'ERC-20 標準頁', note: '標準定義這個函式，不代表合約照標準做' });
+  assert.ok(renderPage(page).includes(`<a href="${erc20.page}">ERC-20 標準頁</a>`));
+});
+
+test('a documentation page read that does not name the function shows its amber icon and 頁上沒有這個函式 under the call', () => {
+  const pages = new Map([...depositInputs.pages.pages].map(([url, page]) => [url, url === pageUrlOf(APPROVE_PAGE as HttpsUrl) ? { kind: 'served', blocks: [{ text: 'a page about something else' }] } : page] as const));
+  const lacking = { ...depositInputs, pages: { ...depositInputs.pages, pages } } as HtmlInputs;
+  const notes = depositNotes as { readonly reviews: Record<string, unknown> };
+  const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: 'review', recommendation: 'look' } };
+  const page = buildPage(lacking, { ...notes, reviews }, depositTitle);
+  assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: '頁上沒有這個函式', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
+  assert.ok(renderPage(page).includes(`github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i warn" role="img" aria-label="`));
+  assert.ok(renderPage(page).includes('頁上沒有這個函式</span>'));
+});
+
+test('a documentation page the program has no copy of shows its amber icon and 讀不到 under the call', () => {
+  const pages = new Map([...depositInputs.pages.pages].filter(([url]) => url !== pageUrlOf(APPROVE_PAGE as HttpsUrl)));
+  const unread = { ...depositInputs, pages: { ...depositInputs.pages, pages } };
+  const notes = depositNotes as { readonly reviews: Record<string, unknown> };
+  const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: 'review', recommendation: 'look' } };
+  const page = buildPage(unread, { ...notes, reviews }, depositTitle);
+  assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: '讀不到', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
+  assert.ok(renderPage(page).includes(`github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i warn" role="img" aria-label="`));
+});
+
+function withComputingFactory(first: string): { readonly of: HtmlInputs; readonly notes: unknown; readonly vault: RegistryEntry } {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const vault = subject.vault ?? assert.fail('a per-vault report');
+  const name = vault.attributes.factory ?? assert.fail('a vault with a factory');
+  const factory = depositInputs.registry.entries.get(name) as RegistryEntry;
+  const computing: RegistryEntry = {
+    ...factory,
+    instanceCheck: { kind: 'computes-address', fn: parseFunctionSignature('computeToken(address,string)'), args: [{ kind: 'attribute', attribute: 'asset' }, { kind: 'string', value: 'fToken' }] },
+  };
+  const swap = (entry: RegistryEntry) => (entry.name === name ? computing : entry);
+  const registry = {
+    ...depositInputs.registry,
+    entries: new Map([...depositInputs.registry.entries].map(([key, entry]) => [key, swap(entry)])),
+    byAddress: new Map([...depositInputs.registry.byAddress].map(([key, entry]) => [key, swap(entry)])),
+  };
+  const stored = depositInputs.vaults.get(vault.name) ?? assert.fail('stored vault evidence');
+  const of: HtmlInputs = { ...depositInputs, registry, vaults: new Map([[vault.name, [first, ...stored.split('\n').slice(1)].join('\n')]]) };
+  const given = (depositNotes as { readonly reviews: Record<string, unknown> }).reviews;
+  const reviews = notesScope(of, judge(of, of.fixtures), subject.template).reviews.map((id) => [id, given[id] ?? { status: 'concern', text: `review ${id}`, recommendation: 'look' }]);
+  return { of, notes: { ...(depositNotes as object), reviews: Object.fromEntries(reviews) }, vault };
+}
+
+test('a vault its factory admits by computing its address renders in both reports, its 工廠 line confirming it', () => {
+  const vault = (depositInputs.subject.kind === 'template' ? depositInputs.subject.vault : undefined) ?? assert.fail('a per-vault report');
+  const first = `admitted     vault-v2-factory answered computeToken(${vault.attributes.asset},"fToken") = ${checksumAddress(vault.address)} at block 26404800`;
+  const { of, notes } = withComputingFactory(first);
+  assert.ok(renderReport(of, depositTitle).includes(`\`\`\`text\n${first}\n`), 'the Markdown report prints the stored line');
+  const page = buildPage(of, notes, depositTitle);
+  const factoryRow = body(page, 'vault').vault.rows.find((row) => row.label === '工廠') ?? assert.fail('no 工廠 row');
+  assert.equal(plain(factoryRow.value), `vault-v2-factory 回答 computeToken(usdc,"fToken") = ${checksumAddress(vault.address)}`);
+  const addresses = body(page, 'addresses');
+  const row = [...addresses.open, ...addresses.folded].find((r) => r.name === vault.name) ?? assert.fail('no address row');
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, site: undefined });
+  assert.ok(renderPage(page).includes('computeToken(usdc,&#34;fToken&#34;)'), 'the HTML report escapes the quoted constant');
+});
+
+test("a vault its factory computed another address for renders in both reports, its 工廠 line red", () => {
+  const vault = (depositInputs.subject.kind === 'template' ? depositInputs.subject.vault : undefined) ?? assert.fail('a per-vault report');
+  const first = `REFUSED vault-v2-factory answered computeToken(usdc,"fToken") = 0x5C20B550819128074FD538Edf79791733ccEdd18, not ${vault.name}: its official contract is another; the vault's code is not read`;
+  const { of, notes } = withComputingFactory(first);
+  assert.ok(renderReport(of, depositTitle).includes(`\`\`\`text\n${first}\n`), 'the Markdown report prints the stored line');
+  const page = buildPage(of, notes, depositTitle);
+  const addresses = body(page, 'addresses');
+  const row = addresses.open.find((r) => r.name === vault.name) ?? assert.fail('the vault row is not open');
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: '工廠說不是它建的', site: undefined });
+  const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
+  assert.equal(review.state, 'bad');
+  assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個金庫`);
 });

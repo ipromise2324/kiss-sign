@@ -22,6 +22,7 @@ const SCOPE: NotesScope = {
   calls: 2,
   contracts: new Set(['usdc', 'blue-bundles-v1', 'morpho-blue']),
   entries: new Set(['usdc', 'morpho-blue', 'cbbtc']),
+  routed: new Set(),
   protocols: new Map([['morpho-blue', 1]]),
   fields: ['1.approve.spender', '2.blueBundlesV1Supply.marketParams', '2.blueBundlesV1Supply.marketParams.oracle'],
   reviews: ['morpho-oracle/source.page'],
@@ -76,6 +77,17 @@ test('flow, judgments and entries may be left out', () => {
   assert.deepEqual(parseNotes(edited(['judgments'], undefined), SCOPE).judgments, []);
 });
 
+test('an entry with routes needs a role and a source, since its pin covers only the implementations its seeds reach', () => {
+  const routed: NotesScope = { ...SCOPE, routed: new Set(['morpho-blue']) };
+  const message = 'notes.json: entries.morpho-blue needs a role and at least one source: its routes reach only the implementations its seeds name, so list the history that shows a seed reaches every implementation still set';
+  const history = { role: '流動性層', sources: [{ text: 'LogSetImplementation 紀錄', url: 'https://etherscan.io/', result: 'pass' }] };
+  for (const entry of [undefined, {}, { role: '流動性層' }, { sources: history.sources }]) {
+    assert.throws(() => parseNotes(edited(['entries', 'morpho-blue'], entry), routed), (error: unknown) => error instanceof NotesError && error.message === message);
+  }
+  assert.throws(() => parseNotes(edited(['entries'], undefined), routed), (error: unknown) => error instanceof NotesError && error.message === message);
+  assert.equal(parseNotes(edited(['entries', 'morpho-blue'], history), routed).entries?.get('morpho-blue')?.role, '流動性層');
+});
+
 test('an unknown key is refused, at any level', () => {
   refused(edited(['overview'], []), 'notes.json: unknown key "overview"');
   refused(edited(['entries', 'usdc', 'notes'], []), 'notes.json.entries.usdc: unknown key "notes"');
@@ -100,7 +112,7 @@ test('a flow line after a call the template does not make is refused', () => {
 });
 
 test('a flow line naming a contract no call or view targets is refused', () => {
-  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target, nor a token the effects move');
+  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target, an entry one of those depends on, nor a token the effects move');
 });
 
 test('more than four flow lines or judgments are refused', () => {
@@ -207,7 +219,7 @@ test("a vault's notes review and describe only the vault and the entries its att
   assert.deepEqual(Object.keys(merged.entries).slice(-2), ['vault-a', 'vault-factory']);
   const refusedFor = (notes: unknown, message: string) =>
     assert.throws(() => mergeNotes(SHARED, notes, VAULT_PATH, owned), (e: unknown) => e instanceof NotesError && e.message === message);
-  const shared = "is not about vault-a or vault-factory; a shared contract belongs in the template's notes.json";
+  const shared = "is not the vault or an entry it names (vault-a, vault-factory); a shared contract belongs in the template's notes.json";
   refusedFor({ entries: { 'bundler3': { role: '共用' } } }, `${VAULT_PATH}.entries: "bundler3" ${shared}`);
   refusedFor({ reviews: { 'bundler3/abi': review } }, `${VAULT_PATH}.reviews: "bundler3/abi" ${shared}`);
   refusedFor({ reviews: { 'fixture.deposit': review } }, `${VAULT_PATH}.reviews: "fixture.deposit" ${shared}`);
@@ -222,7 +234,7 @@ test("a vault's notes may also describe the entries its attributes name, such as
   write({ 'fluid-fusdt': { role: '金庫' }, usdt: { role: '存進去的代幣' } });
   assert.deepEqual(Object.keys((readNotes(root, 'fluid/vault-deposit', fusdt) as { entries: Record<string, unknown> }).entries).slice(-2), ['fluid-fusdt', 'usdt']);
   write({ usdc: { role: '別的代幣' } });
-  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not about fluid-fusdt or usdt;/);
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not the vault or an entry it names \(fluid-fusdt, usdt\);/);
 });
 
 test('the judgments of both notes count toward the limit of four', () => {

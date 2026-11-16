@@ -9,6 +9,7 @@ import { loadRegistry } from '../src/registry.ts';
 import { chainAt, formatReports, loadSnapshot, studyEntries, trimForRecording } from '../src/research/erc7730.ts';
 import type { ChainAccess, Erc7730Recording } from '../src/research/erc7730.ts';
 import { ensureVendored } from '../src/vendor.ts';
+import { recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = `usage: [ALCHEMY_API_KEY=...] node scripts/erc7730.ts <registry name>... [--record <name>]
 
@@ -62,6 +63,6 @@ if (flags.record !== undefined) {
     files: Object.fromEntries(trimForRecording(snapshot, reports)),
     chain: exchanges(),
   };
-  writeFileSync(path, `${JSON.stringify(recording, null, 2)}\n`);
+  writeFileSync(path, recordingText(recording, 2));
   console.log(`recorded ${path}`);
 }

@@ -14,6 +14,7 @@ import { TemplateError, loadTemplate, parseTemplate } from '../src/template/temp
 import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile, VerifyInputs } from '../src/verify/verify.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
@@ -96,7 +97,7 @@ test('a migration card asks for at least the assets the redeem bound guarantees,
   assert.deepEqual(at(migrate(assets, `${BigInt(shares) + 1n}`)), ['multiSend[1].multicall.bundle[2].data.erc4626Deposit.maxSharePriceE27']);
 });
 
-const recorded: VerdictFile = JSON.parse(readFileSync(join(ROOT, 'testdata', 'verify', 'morpho-migrate-all.json'), 'utf8'));
+const recorded: VerdictFile = readRecording(join(ROOT, 'testdata', 'verify', 'morpho-migrate-all.json'));
 const ASSET_CALL = '0x38d52e0f';
 
 function withRegistry(edit: (entries: Record<string, { attributes?: Record<string, string> }>) => void): VerifyInputs {
