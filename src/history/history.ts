@@ -68,22 +68,24 @@ type Context = {
   readonly registry: string;
   readonly markets: string | undefined;
   readonly refresh: boolean;
-  readonly templateText: (id: string) => string;
+  readonly templateText: (id: string) => string | undefined;
 };
 
 /** Chain answers come from the nonce's cache unless `--refresh`; a live run records them there for the next run. */
 async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): Promise<Facts['outcome']> {
-  const named = new Set(card.card.operations.flatMap((op) => Object.values(op.values)));
   const ids = [...new Set(card.card.operations.map((op) => op.template))];
+  const templates = ids.flatMap((id) => {
+    const text = ctx.templateText(id);
+    return text === undefined ? [] : [{ id, text, approved: keccakText(text) }];
+  });
+  if (templates.length < ids.length) return { kind: 'no-template', ids: ids.filter((id) => !templates.some((t) => t.id === id)) };
+  const named = new Set(card.card.operations.flatMap((op) => Object.values(op.values)));
   const inputs: VerifyInputs = {
     commit: ctx.commit,
     safe: checksumAddress(ctx.safe),
     tx: { format: 'service', json: entry.service },
     card: { hash: card.hash, text: card.text },
-    templates: ids.map((id) => {
-      const text = ctx.templateText(id);
-      return { id, text, approved: keccakText(text) };
-    }),
+    templates,
     registry: ctx.registry,
     ...(ctx.markets === undefined ? {} : { markets: ctx.markets }),
     addressBook: Object.fromEntries(
@@ -118,14 +120,14 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
 
 async function rowFor(ctx: Context, entry: HistoryTx): Promise<Row> {
   const card = ctx.history.cards.get(entry.nonce);
-  const outcome = card === undefined ? undefined : await evaluateCard(ctx, entry, card);
+  const outcome: Facts['outcome'] = card === undefined ? { kind: 'no-card' } : await evaluateCard(ctx, entry, card);
   const intent = ctx.history.intents.get(entry.nonce);
-  const reason = reasonFor({ tx: entry.tx, floor: checkFloor(entry.tx), hasCard: card !== undefined, outcome });
+  const reason = reasonFor({ tx: entry.tx, floor: checkFloor(entry.tx), outcome });
   return {
     nonce: entry.nonce,
     date: intent?.date ?? entry.executionDate.slice(0, 10),
     intent: intent === undefined ? '' : intent.app === '' ? intent.intent : `[${intent.app}] ${intent.intent}`,
-    verdict: outcome?.kind === 'verdict' ? outcome.verdict.kind : outcome?.kind === 'error' ? 'ERROR' : 'not run',
+    verdict: outcome.kind === 'verdict' ? outcome.verdict.kind : outcome.kind === 'error' ? 'ERROR' : 'not run',
     reason,
     note: ctx.history.notes.get(entry.nonce)?.text,
     card: card === undefined ? undefined : cardMarks(card, ctx.history),
@@ -152,15 +154,11 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
   const history = loadHistory(home, safe);
   const commit = originMain(io.repoRoot, repo);
   const texts = new Map<string, string>();
-  const templateText = (id: string): string => {
+  const templateText = (id: string): string | undefined => {
     let text = texts.get(id);
     if (text === undefined) {
-      try {
-        text = fileAt(io.repoRoot, commit, `${TEMPLATES_DIR}/${id}/template.json`);
-      } catch {
-        throw new HistoryError(`no template ${id} at origin/main ${commit}`);
-      }
-      texts.set(id, text);
+      text = optionalFileAt(io.repoRoot, commit, `${TEMPLATES_DIR}/${id}/template.json`);
+      if (text !== undefined) texts.set(id, text);
     }
     return text;
   };
