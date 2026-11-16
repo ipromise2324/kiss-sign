@@ -1334,7 +1334,7 @@
   "morpho-oracle-usp-usdc": {
     "address": "0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d",
     "kind": "oracle",
-    "source": "https://app.morpho.org/ethereum/market/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp",
+    "source": "https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp",
     "apiSource": {
       "url": "https://api.morpho.org/graphql",
       "method": "POST",
