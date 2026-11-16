@@ -119,6 +119,7 @@ function changeWords(change: Expected): { readonly does: string; readonly bound:
   const { change: c } = change;
   const by = c < 0n ? -c : c;
   if (change.kind === 'exactly') return { does: c === 0n ? '不變' : c < 0n ? '給出' : '收到', bound: '剛好 ', amount: by };
+  if (change.kind === 'at-least') return c >= 0n ? { does: '收到', bound: '至少 ', amount: c } : { does: '淨變化', bound: '至少 ', amount: c };
   if (change.kind === 'more-than') return c >= 0n ? { does: '收到', bound: '多於 ', amount: c } : { does: '淨變化', bound: '多於 ', amount: c };
   return c <= 0n ? { does: '給出', bound: '多於 ', amount: by } : { does: '淨變化', bound: '少於 ', amount: c };
 }
