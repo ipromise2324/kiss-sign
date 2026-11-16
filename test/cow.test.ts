@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { resolveCard } from '../src/card.ts';
+import { replayReader } from '../src/chain/recording.ts';
 import type { Card, ResolvedCard } from '../src/card.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
@@ -12,10 +13,12 @@ import { judgeEffects } from '../src/simulate/effects.ts';
 import type { Observed } from '../src/simulate/effects.ts';
 import { checkTemplateFields, inspectTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck, Messages } from '../src/template/check.ts';
-import { domainSeparator, readMessage, typedDataDigest } from '../src/template/eip712.ts';
+import { domainSeparator, parseMessage, typedDataDigest } from '../src/template/eip712.ts';
 import { checkMutations } from '../src/template/mutation.ts';
-import { loadTemplate } from '../src/template/template.ts';
+import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { SignedMessage, Template } from '../src/template/template.ts';
+import { evaluate, evaluateTx, parseVerdictFile } from '../src/verify/verify.ts';
+import type { VerdictFile } from '../src/verify/verify.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const load = (dir: string, name: string) => readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8');
@@ -68,7 +71,7 @@ const message = (id: string): SignedMessage => {
 function withOrder(tx: SafeTx, o: Order, change: Partial<Order>, id: string): { tx: SafeTx; text: string } {
   const changed = { ...o, ...change };
   const text = JSON.stringify(changed);
-  const read = readMessage(message(id).struct, text);
+  const read = parseMessage(message(id).struct, text);
   assert.ok(typeof read !== 'string', String(read));
   const digest = typedDataDigest(message(id).separator, message(id).struct, read.values);
   const data = tx.data.slice(2);
@@ -195,11 +198,75 @@ test('the approval to the vault relayer may stay open up to the card sell amount
 test('the uid is the packed digest, owner and validTo of its order', () => {
   for (const c of CASES) {
     const o = order(c.name);
-    const read = readMessage(message(c.template).struct, load('messages', c.name));
+    const read = parseMessage(message(c.template).struct, load('messages', c.name));
     assert.ok(typeof read !== 'string');
     const digest = typedDataDigest(message(c.template).separator, message(c.template).struct, read.values);
     const validTo = Number(o.validTo).toString(16).padStart(8, '0');
     assert.equal(o.uid, `${digest}${safeTx(c.name).safe.slice(2)}${validTo}`);
     assert.equal(bytesToHex(hexToBytes(o.uid.slice(2))).length, 112);
   }
+});
+
+const VERDICT: VerdictFile = parseVerdictFile(JSON.parse(load('verify', 'cow-swap-approve')));
+
+test("verify's recorded MATCH for another Safe's order replays from its file, the order it read included", async () => {
+  const { verdict, hashes } = await evaluate(VERDICT.inputs, replayReader(VERDICT.exchanges));
+  assert.equal(verdict.kind, 'MATCH');
+  assert.equal(hashes.safeTxHash, '0xbe06ff68f8506330eeaea78ec95c41d32d44374b611046effbdcb4064357438b');
+});
+
+test('the same verdict file without the order it read is UNVERIFIABLE at the fields, naming the order API', async () => {
+  const { verdict } = await evaluate({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges));
+  assert.equal(verdict.kind, 'UNVERIFIABLE');
+  const fields = verdict.causes.find((c) => c.check === 'fields');
+  assert.match(fields?.details[0] ?? '', /no Order read from https:\/\/api\.cow\.fi\/mainnet\/api\/v1\/orders\/0x[0-9a-f]{112} hashes to/);
+});
+
+test('a uid of another length than its packed parts is MISMATCH at the uid', () => {
+  const c = CASES[3]!;
+  const tx = safeTx(c.name);
+  const o = order(c.name);
+  const data = tx.data.slice(2);
+  const at = data.indexOf(o.uid.slice(2));
+  const length = (data.length - at) / 2;
+  const shorter = `0x${data.slice(0, at - 64)}${(56 - 1).toString(16).padStart(64, '0')}${data.slice(at, at + 110)}${'00'.repeat(length - 55)}` as Hex;
+  assert.deepEqual(findings(check({ ...tx, data: shorter }, impliedCard(c, o), [load('messages', c.name)])), [
+    'call.setPreSignature orderUid: expected 56 bytes: digest bytes32, owner address, validTo uint32, got 55 bytes',
+  ]);
+});
+
+const rawTemplate = (id: string) => JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8'));
+const digestRule = (t: { calls: { args: { orderUid: { packed: { rule: { eip712: Record<string, unknown> } }[] } } }[] }) => t.calls.at(-1)!.args.orderUid.packed[0]!.rule.eip712;
+
+test('template load refuses a signed message whose type is not written as EIP-712 writes it, a free address member, and a lookup without one {arg}', () => {
+  const refuses = (change: (t: ReturnType<typeof rawTemplate>) => void, problem: RegExp) => {
+    const t = rawTemplate('cow/swap');
+    change(t);
+    assert.throws(() => parseTemplate(t, registry), problem);
+  };
+  refuses((t) => (digestRule(t).type = (digestRule(t).type as string).replace(',address buyToken', ', address buyToken')), /not written as EIP-712 encodes it/);
+  refuses((t) => ((digestRule(t).fields as Record<string, unknown>).receiver = { free: 'any' }), /an address is never free/);
+  refuses((t) => (digestRule(t).lookup = 'https://api.cow.fi/mainnet/api/v1/orders/'), /an https URL holding \{arg\} once/);
+  refuses((t) => (digestRule(t).lookup = 'https://api.cow.fi/{arg}/{arg}'), /an https URL holding \{arg\} once/);
+});
+
+test('template load refuses an open approval whose amount counts another token', () => {
+  const t = rawTemplate('cow/swap-approve');
+  t.effects.approves[0].amount = 'card.min-buy';
+  assert.throws(() => parseTemplate(t, registry), /counts another token than card\.sell-token/);
+});
+
+test('verify reads the order from the template lookup and keeps only what hashes, cut to the order members', async () => {
+  const asked: string[] = [];
+  const full = JSON.parse(VERDICT.inputs.messages![0]!);
+  const served = JSON.stringify({ ...full, owner: '0x0000000000000000000000000000000000000001', fullAppData: 'served text' });
+  const forged = JSON.stringify({ ...full, buyAmount: '1' });
+  const { evaluation, inputs } = await evaluateTx({ ...VERDICT.inputs, messages: [forged] }, replayReader(VERDICT.exchanges), async (url) => {
+    asked.push(url);
+    return { text: served };
+  });
+  assert.equal(evaluation.verdict.kind, 'MATCH');
+  assert.deepEqual(asked, [`https://api.cow.fi/mainnet/api/v1/orders/${order('cow-swap-approve-usdt').uid}`]);
+  assert.deepEqual(Object.keys(JSON.parse(inputs.messages![0]!)), message('cow/swap-approve').struct.members.map((m) => m.name));
+  assert.equal(inputs.messages!.length, 1);
 });

@@ -160,7 +160,7 @@ export async function checkPerturbations(
   const data = hexToBytes(tx.data.slice(2));
   const runs: Run[] = [];
   for (const leaf of leaves) {
-    if (leaf.rule.kind !== 'free' || leaf.message !== undefined) continue;
+    if (leaf.rule.kind !== 'free') continue;
     for (const change of changes(leaf, data)) {
       const copy = applied(tx, change);
       const run = (outcome: Run['outcome'], detail = ''): void => {

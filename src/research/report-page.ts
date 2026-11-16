@@ -822,7 +822,7 @@ function afterRows(context: Context): AfterRow[] {
     if (call.data === 'empty' || call.data.fn.signature !== 'approve(address,uint256)') continue;
     const spender = call.data.args[0] as Rule;
     const label: Inline = ['給 ', ...ruleWords(spender, context), ` 的 ${targetOf(call.to, context).label} 授權`];
-    const open = template.effects.approves.find((a) => a.via === 'erc20' && spender.kind === 'contract' && a.spender === spender.name);
+    const open = template.effects.approves.find((a) => a.via === 'erc20' && spender.kind === 'contract' && a.spender === spender.name && call.to.kind === 'card' && JSON.stringify(call.to.ref) === JSON.stringify(a.token));
     if (open !== undefined) shown.add(open);
     if (open === undefined) rows.push({ label, value: [{ num: '0' }], note: ['交易內用完，不能比交易前高'], gains: false });
     else if (open.amount.kind === 'card') rows.push({ label, value: [before('最多你填的', fieldWord(template, open.amount.field))], note: ['留給之後成交的訂單用，不能超過這個數'], gains: false });
@@ -1702,7 +1702,6 @@ function nextSection(context: Context): Section {
   return { anchor: anchor('next'), label: '下一步', count: undefined, body: { kind: 'next', steps, automatic } };
 }
 
-/** The claims of the template's free arguments, in claim order; empty when every argument is bound. */
 /** The free rules of the transaction's own fields, and whether a signed message has a free member, which no perturbation tries. */
 function freeRules(template: Template): { readonly claims: Set<FreeClaim>; readonly member: boolean } {
   const found = new Set<FreeClaim>();
