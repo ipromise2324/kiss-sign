@@ -1,3 +1,5 @@
+import { DEFAULT_LANGUAGE, LANGUAGES, isLanguage } from './language.ts';
+import type { Language } from './language.ts';
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { SafeTxParseError, checksumAddress, parseAddress, parseHex } from './safe/types.ts';
@@ -5,11 +7,14 @@ import type { Address, Hex } from './safe/types.ts';
 import { githubRepo } from './verify/self-check.ts';
 import type { GithubRepo } from './verify/self-check.ts';
 
-/** Written by `init`. Ethereum mainnet only. `repo` is the signer's own repository, whose main `verify` runs. */
-export type Config = { readonly chainId: 1n; readonly safe: Address; readonly repo: GithubRepo };
+/**
+ * Written by `init`. Ethereum mainnet only. `repo` is the signer's own repository, whose main `verify` runs; `language`
+ * is the one the signer reads the HTML report and the verify page in.
+ */
+export type Config = { readonly chainId: 1n; readonly safe: Address; readonly repo: GithubRepo; readonly language: Language };
 
-/** config.json as stored. One written before `repo` existed has none until `init` runs again. */
-export type StoredConfig = { readonly safe: Address; readonly repo: GithubRepo | undefined };
+/** config.json as stored. One written before `repo` existed has none until `init` runs again; one with no `language` reads English. */
+export type StoredConfig = { readonly safe: Address; readonly repo: GithubRepo | undefined; readonly language: Language };
 
 /** Template id to the keccak256 of its template.json, as the signer approved it. */
 export type ApprovedTemplates = ReadonlyMap<string, Hex>;
@@ -57,10 +62,12 @@ export function loadStoredConfig(home: string): StoredConfig | undefined {
     if (error instanceof SafeTxParseError) throw new ConfigError(`${path}: ${error.message}`);
     throw error;
   }
-  if (raw.repo === undefined) return { safe, repo: undefined };
+  if (raw.language !== undefined && !isLanguage(raw.language)) throw new ConfigError(`${path}: language must be ${LANGUAGES.join(' or ')}`);
+  const language = raw.language ?? DEFAULT_LANGUAGE;
+  if (raw.repo === undefined) return { safe, repo: undefined, language };
   const repo = typeof raw.repo === 'string' ? githubRepo(`https://${raw.repo}`) : undefined;
   if (repo === undefined || repo !== raw.repo) throw new ConfigError(`${path}: repo must be github.com/<owner>/<name> in lowercase`);
-  return { safe, repo };
+  return { safe, repo, language };
 }
 
 /** Undefined before `init`. */
@@ -70,11 +77,11 @@ export function loadConfig(home: string): Config | undefined {
   if (stored.repo === undefined) {
     throw new ConfigError(`${configPath(home)} names no repository to trust. In your clone of your own fork, run pnpm kiss-sign init --safe <your Safe> again.`);
   }
-  return { chainId: 1n, safe: stored.safe, repo: stored.repo };
+  return { chainId: 1n, safe: stored.safe, repo: stored.repo, language: stored.language };
 }
 
 export function saveConfig(home: string, config: Config): void {
-  writeJson(home, configPath(home), { chainId: 1, safe: checksumAddress(config.safe), repo: config.repo });
+  writeJson(home, configPath(home), { chainId: 1, safe: checksumAddress(config.safe), repo: config.repo, language: config.language });
 }
 
 export function loadApproved(home: string): ApprovedTemplates {

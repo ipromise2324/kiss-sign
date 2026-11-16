@@ -1,39 +1,72 @@
 {
-  "title": "更換 Safe 的簽署人",
-  "summary": "Safe 呼叫自己的 `swapOwner`，把舊簽署人換成新簽署人，門檻不變。`prevOwner` 由程式在鏈上讀 `getOwners` 算出，不用你填。",
+  "title": {
+    "en": "Replace a Safe signer",
+    "zh-TW": "更換 Safe 的簽署人"
+  },
+  "summary": {
+    "en": "The Safe calls its own `swapOwner`, replacing the old signer with the new signer. The threshold does not change. The program computes `prevOwner` by reading `getOwners` on chain, so you do not type it.",
+    "zh-TW": "Safe 呼叫自己的 `swapOwner`，把舊簽署人換成新簽署人，門檻不變。`prevOwner` 由程式在鏈上讀 `getOwners` 算出，不用你填。"
+  },
   "verdict": {
     "status": "caution",
-    "text": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。"
+    "text": {
+      "en": "Moves no asset, but changes who controls this Safe: check the new signer's address against a source outside the chat.",
+      "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。"
+    }
   },
   "flow": [],
   "protocols": {},
   "judgments": [
     {
-      "text": "換掉一把遺失或外洩的鑰匙時，舊鑰匙在交易執行前仍然有效。新地址一旦換上，就和其他簽署人一樣能簽。",
-      "recommendation": "新地址先跟本人確認；鑰匙外洩時盡快執行。"
+      "text": {
+        "en": "When you replace a lost or leaked key, the old key stays valid until the transaction runs. Once the new address is in, it can sign like any other signer.",
+        "zh-TW": "換掉一把遺失或外洩的鑰匙時，舊鑰匙在交易執行前仍然有效。新地址一旦換上，就和其他簽署人一樣能簽。"
+      },
+      "recommendation": {
+        "en": "Confirm the new address with the person first. If a key has leaked, run the transaction as soon as possible.",
+        "zh-TW": "新地址先跟本人確認；鑰匙外洩時盡快執行。"
+      }
     },
     {
-      "text": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。",
-      "recommendation": "每次只改一項，一項一筆交易。"
+      "text": {
+        "en": "When the Safe web app's \"Manage signers\" changes several things at once, it wraps several calls in a MultiSend. A kiss-sign card accepts only one signer or threshold change, so such a batch transaction gives MISMATCH.",
+        "zh-TW": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。"
+      },
+      "recommendation": {
+        "en": "Change one thing at a time, one transaction per change.",
+        "zh-TW": "每次只改一項，一項一筆交易。"
+      }
     }
   ],
   "reviews": {},
   "entries": {
     "safe-1.3.0": {
-      "role": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼",
+      "role": {
+        "en": "The Safe 1.3.0 contract itself (singleton): Safes of version 1.3.0 run this code through a proxy",
+        "zh-TW": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "text": {
+            "en": "Etherscan: contract name GnosisSafe, deployed by Arachnid's deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+            "zh-TW": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+          },
           "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
           "result": "pass"
         }
       ]
     },
     "safe-1.4.1": {
-      "role": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼",
+      "role": {
+        "en": "The Safe 1.4.1 contract itself (singleton): Safes of version 1.4.1 run this code through a proxy",
+        "zh-TW": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "text": {
+            "en": "Etherscan: contract name Safe, deployed by the Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+            "zh-TW": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+          },
           "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
           "result": "pass"
         }
@@ -41,8 +74,17 @@
     }
   },
   "fields": {
-    "1.swapOwner.prevOwner": "Safe 簽署人鏈上排在舊簽署人前面的人；第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。",
-    "1.swapOwner.oldOwner": "被換掉的簽署人。",
-    "1.swapOwner.newOwner": "換上的簽署人。不能已經是簽署人，也不能是零地址、0x…01 或 Safe 自己。"
+    "1.swapOwner.prevOwner": {
+      "en": "The signer just before the old signer in the Safe's linked list of signers; the one before the first signer is 0x0000000000000000000000000000000000000001. If it is wrong, the transaction fails (GS205).",
+      "zh-TW": "Safe 簽署人鏈上排在舊簽署人前面的人；第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。"
+    },
+    "1.swapOwner.oldOwner": {
+      "en": "The signer being replaced.",
+      "zh-TW": "被換掉的簽署人。"
+    },
+    "1.swapOwner.newOwner": {
+      "en": "The signer put in. It cannot already be a signer, and cannot be the zero address, 0x…01 or the Safe itself.",
+      "zh-TW": "換上的簽署人。不能已經是簽署人，也不能是零地址、0x…01 或 Safe 自己。"
+    }
   }
 }

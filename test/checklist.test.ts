@@ -45,7 +45,7 @@ const PINNED: readonly { readonly fixture: string; readonly card: Card; readonly
 for (const { fixture, card, book } of PINNED) {
   test(`the 比對清單 of ${fixture} is, byte for byte, the block check.sh writes for it, names aside`, () => {
     const { tree } = treeOf(card, fixture, book);
-    const ours = `${checklistHtml(checklist(tree)).replace(/<span class="nm">.*<\/span><\/div>$/gm, '</div>')}\n`;
+    const ours = `${checklistHtml(checklist(tree, 'zh-TW')).replace(/<span class="nm">.*<\/span><\/div>$/gm, '</div>')}\n`;
     const theirs = readFileSync(join(ROOT, 'testdata', 'checklist', `${fixture}.checklist.html`), 'utf8');
     assert.equal(ours, theirs);
   });
@@ -66,6 +66,7 @@ test('the -extra row names the template\'s allowance as a program fact and its r
     tree,
     kept: [],
     verdictFile: '/verdicts/x.json',
+    language: 'zh-TW',
   });
   const extra = page.split('\n').find((line) => line.includes('<span class="id">C3-extra</span>'));
   assert.match(
@@ -108,6 +109,7 @@ test('the verify page holds no script, loads nothing, and shows text from a caus
     tree: undefined,
     kept: [],
     verdictFile: '/verdicts/x.json',
+    language: 'zh-TW',
   });
   assert.match(page, /<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">/);
   assert.doesNotMatch(page, /<script|<img|<link|\u202e/i);
@@ -130,6 +132,7 @@ test('when the simulation could not run, the page does not show the checks that 
     tree: undefined,
     kept: [],
     verdictFile: '/verdicts/x.json',
+    language: 'zh-TW',
   });
   const state = (name: string) => new RegExp(`aria-label="([^"]+)"><use href="#[a-z]+"/></svg>${name}</li>`).exec(page)?.[1];
   assert.equal(state('模擬'), '注意');
@@ -155,6 +158,7 @@ test('the card and the expected changes show each amount in whole tokens with it
     tree,
     kept: [],
     verdictFile: '/verdicts/x.json',
+    language: 'zh-TW',
   });
   const text = page.slice(page.indexOf('<h2>卡片</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
   assert.match(text, / amount 10,001 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 10001000000 最小單位，6 位小數 /);
@@ -178,6 +182,7 @@ test('an amount whose token decimals() was not read shows its base units and say
     tree,
     kept: [],
     verdictFile: '/verdicts/x.json',
+    language: 'zh-TW',
   });
   const text = page.slice(page.indexOf('<h2>卡片</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
   assert.match(text, / amount 10001000000 最小單位 的 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 decimals\(\) 沒讀到 /);

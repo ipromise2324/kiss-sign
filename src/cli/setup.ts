@@ -5,6 +5,7 @@ import { marketLines, parseCard, percentText, resolveCard, sealCard } from '../c
 import type { Card, ResolvedValue } from '../card.ts';
 import { ConfigError, loadApproved, loadConfig, loadStoredConfig, saveApproved, saveConfig } from '../config.ts';
 import type { Config } from '../config.ts';
+import { DEFAULT_LANGUAGE, LANGUAGES, LANGUAGE_NAMES, isLanguage } from '../language.ts';
 import { KEYS, createKeyFile, keyFilePath, kissSignHome } from '../keys.ts';
 import { REGISTRY_DIR, REGISTRY_PATH, isEntryName, loadRegistry, parseRegistry } from '../registry.ts';
 import { checksumAddress, parseAddress } from '../safe/types.ts';
@@ -30,17 +31,18 @@ function openCommand(platform: NodeJS.Platform, path: string): string {
 }
 
 export async function init(args: readonly string[], io: Io): Promise<number> {
-  const { values } = parseArgs({ args: [...args], options: { safe: { type: 'string' } }, strict: true });
-  if (values.safe === undefined) throw new UsageError('init needs --safe <address>.');
-  const safe = parseAddress('--safe', values.safe);
+  const { values } = parseArgs({ args: [...args], options: { safe: { type: 'string' }, language: { type: 'string' } }, strict: true });
+  if (values.language !== undefined && !isLanguage(values.language)) throw new UsageError(`--language takes ${LANGUAGES.join(' or ')}.`);
+  const home = kissSignHome(io.env);
+  const existing = loadStoredConfig(home);
+  const safe = values.safe !== undefined ? parseAddress('--safe', values.safe) : existing?.safe;
+  if (safe === undefined) throw new UsageError('init needs --safe <address>.');
   const origin = originRepo(io.repoRoot);
   if (origin.kind === 'refused') {
     io.stderr(`kiss-sign: run init in a clone of your own fork on GitHub; nothing was set up:\n${origin.problems.map((problem) => `  ${problem}\n`).join('')}`);
     return FAILED;
   }
   const { repo } = origin;
-  const home = kissSignHome(io.env);
-  const existing = loadStoredConfig(home);
   if (existing !== undefined && existing.safe !== safe) {
     io.stderr(`kiss-sign: ${home} is already set up for another Safe. Remove its config.json to change it.\n`);
     return FAILED;
@@ -49,7 +51,8 @@ export async function init(args: readonly string[], io: Io): Promise<number> {
     io.stderr(`kiss-sign: ${home} is already set up for another repository, ${existing.repo}. Remove its config.json to change it.\n`);
     return FAILED;
   }
-  saveConfig(home, { chainId: 1n, safe, repo });
+  const language = values.language ?? existing?.language ?? DEFAULT_LANGUAGE;
+  saveConfig(home, { chainId: 1n, safe, repo, language });
   const keyFile = keyFilePath(home);
   const created = createKeyFile(home);
   const mode = statSync(keyFile).mode & 0o777;
@@ -58,6 +61,7 @@ export async function init(args: readonly string[], io: Io): Promise<number> {
     `kiss-sign checks transactions of the Safe ${checksumAddress(safe)} on Ethereum mainnet (chain 1).`,
     `It runs only what is on main of ${repo}, the repository this clone's origin names.`,
     'Merging a pull request into that main is your confirmation.',
+    `Reports and the verify page are in ${LANGUAGE_NAMES[language]} (${language}); pnpm kiss-sign init --language ${LANGUAGES.join('|')} changes it.`,
     '',
     created ? `Created the key file ${keyFile}, readable by you only.` : `The key file ${keyFile} is already there and was left as it is.`,
     ...((mode & 0o077) === 0 ? [] : [`Warning: other users can read ${keyFile} (mode ${mode.toString(8)}). Run chmod 600 ${shellWord(keyFile)}.`]),

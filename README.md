@@ -45,6 +45,8 @@ pnpm install
 pnpm kiss-sign init --safe 0x…
 ```
 
+Reports and `verify`'s page are in English. For Traditional Chinese, add `--language zh-TW`; run `init` again with `--language` to change it later.
+
 Your fork's `main` is what `verify` trusts, and merging a pull request into it is your confirmation, whether it changes a template or the program. This repository is only a source of updates; pull them when you want them, then push them to your fork's `main` (through a pull request, if you protect `main`):
 
 ```sh
