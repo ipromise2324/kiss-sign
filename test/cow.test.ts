@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { resolveCard } from '../src/card.ts';
+import { replayReader } from '../src/chain/recording.ts';
 import type { Card, ResolvedCard } from '../src/card.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
@@ -16,6 +17,8 @@ import { domainSeparator, readMessage, typedDataDigest } from '../src/template/e
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import type { SignedMessage, Template } from '../src/template/template.ts';
+import { evaluate, parseVerdictFile } from '../src/verify/verify.ts';
+import type { VerdictFile } from '../src/verify/verify.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const load = (dir: string, name: string) => readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8');
@@ -202,4 +205,19 @@ test('the uid is the packed digest, owner and validTo of its order', () => {
     assert.equal(o.uid, `${digest}${safeTx(c.name).safe.slice(2)}${validTo}`);
     assert.equal(bytesToHex(hexToBytes(o.uid.slice(2))).length, 112);
   }
+});
+
+const VERDICT: VerdictFile = parseVerdictFile(JSON.parse(load('verify', 'cow-swap-approve')));
+
+test("verify's recorded MATCH for another Safe's order replays from its file, the order it read included", async () => {
+  const { verdict, hashes } = await evaluate(VERDICT.inputs, replayReader(VERDICT.exchanges));
+  assert.equal(verdict.kind, 'MATCH');
+  assert.equal(hashes.safeTxHash, '0xbe06ff68f8506330eeaea78ec95c41d32d44374b611046effbdcb4064357438b');
+});
+
+test('the same verdict file without the order it read is UNVERIFIABLE at the fields, naming the order API', async () => {
+  const { verdict } = await evaluate({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges));
+  assert.equal(verdict.kind, 'UNVERIFIABLE');
+  const fields = verdict.kind === 'MATCH' ? undefined : verdict.causes.find((c) => c.check === 'fields');
+  assert.match(fields?.details[0] ?? '', /no Order read from https:\/\/api\.cow\.fi\/mainnet\/api\/v1\/orders\/0x[0-9a-f]{112} hashes to/);
 });

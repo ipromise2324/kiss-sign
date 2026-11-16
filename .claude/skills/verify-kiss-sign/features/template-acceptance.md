@@ -1,6 +1,6 @@
 # Template acceptance
 
-A shipped template works end to end when a signer, in a fresh home set up for a Safe that did this operation, can approve the template, fill a card with the template's real prompts, get `MATCH` with a verify page for that Safe's executed transaction, and get `MISMATCH` naming the changed value when the same card meets the transaction with one value changed. The shipped templates are `eth/transfer`, `erc20/transfer`, `morpho/vault-deposit` and `fluid/vault-deposit`; each has its journey below. A template passes only when every step of its journey passes as written.
+A shipped template works end to end when a signer, in a fresh home set up for a Safe that did this operation, can approve the template, fill a card with the template's real prompts, get `MATCH` with a verify page for that Safe's executed transaction, and get `MISMATCH` naming the changed value when the same card meets the transaction with one value changed. The shipped templates are `eth/transfer`, `erc20/transfer`, `morpho/vault-deposit`, `fluid/vault-deposit`, `cow/swap` and `cow/swap-approve`; each has its journey below. A template passes only when every step of its journey passes as written.
 
 ## Sub-features
 
@@ -8,6 +8,7 @@ A shipped template works end to end when a signer, in a fresh home set up for a 
 - `accept-erc20-transfer` runs the journey for `erc20/transfer`.
 - `accept-morpho-vault-deposit` runs the journey for `morpho/vault-deposit`.
 - `accept-fluid-vault-deposit` runs the journey for `fluid/vault-deposit`.
+- `accept-cow-swap` runs the journey for `cow/swap` and `accept-cow-swap-approve` for `cow/swap-approve`.
 
 ## How to get to it (user POV)
 
@@ -38,6 +39,8 @@ The journey, the same for every template; the table after it gives each template
 | `erc20/transfer` | `erc20-transfer-usdc-other-safe` | `0x9467dcFD4519287e3878C018c02f5670465a9003`, 60 | `usdc-payee 0x519b70055af55a007110b4ff99b0ea33071c720a` | `token: type its number (1-N):` → `usdc`; `recipient: ...` → `usdc-payee`; `amount (usdc 0xA0b8..., 6 decimals):` → `841,909.711357` | `usdc.transfer(usdc-payee, 841909711357)` | `--address 0x519b70055af55a007110b4ff99b0ea33071c720a 0x000000000000000000000000000000000000dEaD` | `call.transfer to: expected 0x519b...720a, got 0x...dead` |
 | `morpho/vault-deposit` | `morpho-vault-deposit-v2` | `0xdb6e9e7390e9ACC34619E56eFa48ade01cFF6F12`, 1566 | none | `vault: type its number (1-N):` → `hyperithm-usdc-apex-v2-9e2f`; `amount (usdc 0xA0b8..., 6 decimals):` → `1,000,611.448606`; `min-shares` is computed, not asked | MultiSend: `usdc.approve(general-adapter-1, 1000611448606)`, `bundler3.multicall` with `erc20TransferFrom` and `erc4626Deposit` | `--uint 1000611448606 1000611448607` | `multiSend[0].approve value: expected 1000611448606, got 1000611448607` (and the two bundle amounts) |
 | `fluid/vault-deposit` | `fluid-deposit-usdt-other-safe` | `0x93BD8C5eb0eAB5BE7BfE156Ebfa0887AE7Dd0CEb`, 13 | none | `vault: type its number (1-N):` → `fluid-fusdt`; `amount (usdt 0xdAC1..., 6 decimals):` → `150,003.88885` | MultiSend: `usdt.approve(fluid-fusdt, 150003888850)`, `fluid-fusdt.deposit(150003888850, Safe)` | `--uint 150003888850 150003888851` | `multiSend[0].approve value: expected 150003888850, got 150003888851` and `multiSend[1].deposit assets: ...` |
+| `cow/swap` | `cow-swap-usdc` | `0xb18D844f3578EaD22791B5c67F7B6aF93266804E`, 264 | none | `sell-token: type its number (1-N):` → `usdc`; `buy-token: ...` → `usdt`; `sell-amount (usdc 0xA0b8..., 6 decimals):` → `100,000`; `min-buy (usdt 0xdAC1..., 6 decimals):` → `99,084.887371` | `gpv2-settlement.setPreSignature(<56-byte uid>, true)` | `--address 0xb18D844f3578EaD22791B5c67F7B6aF93266804E 0x000000000000000000000000000000000000dEaD` | `call.setPreSignature orderUid.owner: expected 0xb18d...804e, got 0x...dead` |
+| `cow/swap-approve` | `cow-swap-approve-usdt` | `0x751725ced1580d936fA12F6201a76fa02Fcba5fD`, 280 | none | `sell-token` → `usdt`; `buy-token` → `usdc`; `sell-amount (usdt ...)` → `78,693.579129`; `min-buy (usdc ...)` → `78,599.366616` | MultiSend: `usdt.approve(gpv2-vault-relayer, 78693579129)`, `gpv2-settlement.setPreSignature(<56-byte uid>, true)` | `--uint 78693579129 78693579130` (and `--address` of the Safe, as for `cow/swap`) | `multiSend[0].approve value: expected 78693579129, got 78693579130` (the owner change gives `multiSend[1].setPreSignature orderUid.owner: ...`) |
 
 Second fixtures, for a rerun on another Safe: `eth-transfer-first-nonce` (Safe `0xc6835323372A4393B90bCc227c58e82D45CE4b7d`, nonce 0, 0.001 ETH), `morpho-vault-deposit-v2-other-safe` (Safe `0xBaDA5558640eAF3CE1836aFF8085f99615D45aFE`, 200,060.208382 usdc into `hyperithm-usdc-apex-v2-9e2f`), `fluid-deposit-usdc` (Safe `0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980`, 244.093807 usdc into `fluid-fusdc`). The `erc20-transfer-usdc` and `erc20-transfer-usdt` fixtures are another Safe's too.
 
@@ -54,3 +57,6 @@ What `main` lacks today (2026-11-16, at 1836f6a), each a gap to fill, not a step
 - `--address` replaces the address wherever it appears; pick a change that touches only the argument under test (for `erc20/transfer`, the recipient appears once).
 - The `morpho/vault-deposit` card's `min-shares` comes from today's `previewDeposit`, below the old transaction's bound; MATCH still holds because the transaction asks for at least that many shares.
 - Proven on 2026-11-16 for all four templates with the values above.
+- `verify` on a CoW template reads the order from `api.cow.fi` by its uid, so the step needs the network beyond the providers; with no answer the verdict is `UNVERIFIABLE`, not `MATCH`. The changed transaction's uid is no order the API holds, so its digest is unread too; the `fields:` line still names the changed owner or amount, and `MISMATCH` wins.
+- The CoW change cannot alter an order member (receiver, buy amount) in this journey: that needs an order the API serves under the changed uid. `test/cow.test.ts` covers those with the order given directly.
+- Before the CoW templates were on `main` (2026-11-16), both journeys passed with the branch served as `main` from a local bare repository: the clone's `origin` was `git@github.com:ipromise2324/kiss-sign.git` with `core.sshCommand` running `git-upload-pack` on that repository, as `test/verify.test.ts` does, so the self-check, `template approve` and `card new` ran unchanged.
