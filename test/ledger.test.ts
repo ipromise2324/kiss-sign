@@ -10,6 +10,10 @@ import { STATE_OF, addressRows, confidence, confirmations, forSigner, judge, sou
 import type { FindingKind, Ledger, State } from '../src/research/ledger.ts';
 import type { CoinGeckoCoin, DefiLlamaProtocol } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
+import type { Creation, Creations } from '../src/research/deployer.ts';
+import type { PackageRead, PackageReads } from '../src/research/npm-package.ts';
+import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
+import type { SiteListings } from '../src/research/site-listings.ts';
 import { replayInputs } from '../src/research/report.ts';
 import type { ReportInputs, SpanCheck, TodayCheck } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
@@ -86,11 +90,16 @@ type Setup = {
   readonly vaults: ReadonlyMap<string, string>;
   readonly reachedThrough: RegistryEntry | undefined;
   readonly factory: RegistryEntry | undefined;
+  readonly sites: SiteListings;
+  readonly packages: PackageReads;
+  readonly creations: Creations | undefined;
+  /** Another entry of the protocol the entry depends on, confirmed by its own page and coin when `confirmed`. */
+  readonly sibling: { readonly confirmed: boolean } | undefined;
 };
 
 const BASE: Setup = {
   entry: ENTRY,
-  protocol: { slug: 'proto', name: 'Proto', url: new URL('https://example.org'), github: ['example'] },
+  protocol: { slug: 'proto', name: 'Proto', url: new URL('https://example.org'), github: ['example'], gecko: undefined, parent: undefined },
   coins: [{ id: 'vault-coin', symbol: 'v', name: 'Vault', ethereum: ADDRESS }],
   page: { kind: 'served', blocks: [{ text: `Vault ${ADDRESS}` }] },
   more: { kind: 'served', blocks: [{ text: `Vault ${ADDRESS}` }] },
@@ -106,9 +115,41 @@ const BASE: Setup = {
   vaults: new Map(),
   reachedThrough: undefined,
   factory: undefined,
+  sites: NO_SITE_LISTINGS,
+  packages: new Map(),
+  creations: undefined,
+  sibling: undefined,
 };
 
+const SIBLING: RegistryEntry = { ...ENTRY, name: 'sibling', address: OTHER, source: 'https://docs.example.org/sibling' as HttpsUrl, coingecko: 'sibling-coin' };
+const SDK = { package: '@example/sdk', version: '1.0.0', sha256: PIN, file: 'dist/addresses.js', label: 'VAULT' };
+const SDK_KEY = '@example/sdk@1.0.0';
+const BUILT = { kind: 'built', repository: 'https://github.com/example/sdk', sameTarball: true } as const;
+const packageRead = (change: Partial<Extract<PackageRead, { kind: 'read' }>> = {}): Partial<Setup> => ({
+  entry: { ...ENTRY, sdk: SDK },
+  packages: new Map([[SDK_KEY, { kind: 'read', sha256: PIN, integrity: true, provenance: BUILT, file: { kind: 'served', blocks: [{ text: `VAULT = "${ADDRESS}"` }] }, ...change }]]),
+});
+const program = (addresses: readonly Address[], github?: string, website = 'https://example.org'): SiteListings => ({
+  ...NO_SITE_LISTINGS,
+  programs: new Map([['proto', { slug: 'proto', website: new URL(website), github: github === undefined ? undefined : new URL(github), addresses: new Set(addresses) }]]),
+});
+const coinLinks = (homepages: readonly string[], github: readonly string[]): SiteListings => ({
+  ...NO_SITE_LISTINGS,
+  coins: new Map([['proto-coin', { kind: 'links', homepages: homepages.map((u) => new URL(u)), github: github.map((u) => new URL(u)) }]]),
+});
+const DEPLOYER = `0x${'de'.repeat(20)}` as Address;
+const made = (sender: Address = DEPLOYER): Creation => ({ kind: 'proven', tx: PIN, block: 100n, sender, via: { kind: 'transaction' } });
+const sharing = (confirmed: boolean): Partial<Setup> => ({
+  entry: { ...ENTRY, dependsOn: ['sibling'] },
+  sibling: { confirmed },
+  creations: new Map([
+    [ADDRESS, made()],
+    [OTHER, made()],
+  ]),
+});
+
 const DEPENDENT: RegistryEntry = { ...ENTRY, name: 'dependent', address: OTHER, kind: 'vault', dependsOn: ['vault'] };
+const ADAPTED: RegistryEntry = { ...ENTRY, name: 'adapted', address: OTHER, kind: 'vault', attributes: { adapter: 'vault' } };
 const ROUTED: RegistryEntry = {
   ...ENTRY,
   routes: { implementationOf: parseFunctionSignature('getSigsImplementation(bytes4)'), selectorsOf: parseFunctionSignature('getImplementationSigs(address)'), seeds: ['0x00000001' as Hex] },
@@ -135,7 +176,8 @@ const failedRuns = (...outcomes: Run['outcome'][]): PerturbationReport => {
  */
 function ledgerOf(change: Partial<Setup>): Ledger {
   const s = { ...BASE, ...change };
-  const all = [s.entry, ...(s.reachedThrough === undefined ? [] : [s.reachedThrough]), ...(s.factory === undefined ? [] : [s.factory])];
+  const all = [s.entry, ...(s.reachedThrough === undefined ? [] : [s.reachedThrough]), ...(s.factory === undefined ? [] : [s.factory]), ...(s.sibling === undefined ? [] : [SIBLING])];
+  const siblingConfirmed = s.sibling?.confirmed === true;
   const registry: Registry = { entries: new Map(all.map((e) => [e.name, e])), byAddress: new Map(all.map((e) => [e.address, e])), markets: new Map() };
   const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [], safe: undefined, approves: [] }, facts: [] } as Template;
   const inputs = {
@@ -146,15 +188,23 @@ function ledgerOf(change: Partial<Setup>): Ledger {
           ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }] }
           : { kind: 'vault', vault: s.entry },
     registry,
-    listings: { protocols: new Map(s.protocol === undefined ? [] : [['proto', [s.protocol]]]), coinsByAddress: new Map([[ADDRESS, s.coins]]), suffixes },
+    listings: {
+      protocols: new Map(s.protocol === undefined ? [] : [['proto', [s.protocol]]]),
+      coinsByAddress: new Map([[ADDRESS, s.coins], ...(siblingConfirmed ? [[OTHER, [{ id: 'sibling-coin', symbol: 's', name: 'Sibling', ethereum: OTHER }]] as const] : [])]),
+      suffixes,
+      sites: s.sites,
+    },
     pages: {
       pages: new Map([
         ...(s.page === undefined ? [] : [[pageUrlOf(s.entry.source), s.page] as const]),
         ...(s.more === undefined || s.entry.moreSources === undefined ? [] : [[pageUrlOf(s.entry.moreSources[0]!.url), s.more] as const]),
         ...(s.doc === undefined ? [] : [[pageUrlOf(s.approveStandard?.page ?? DOC), s.doc] as const]),
+        ...(siblingConfirmed ? [[pageUrlOf(SIBLING.source), { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }] }] as const] : []),
       ]),
       commits: new Map(s.commit === undefined ? [] : [[`example/repo@${'a'.repeat(40)}`, s.commit], ['ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2', s.commit]]),
       apis: new Map(s.api === undefined ? [] : [[`GET ${API.url}`, s.api]]),
+      packages: s.packages,
+      ...(s.creations === undefined ? {} : { creations: s.creations }),
     },
     abi: new Map(s.abi === undefined ? [] : [[ADDRESS, s.abi]]),
     spans: new Map(s.spans === undefined ? [] : [[ADDRESS, s.spans]]),
@@ -241,8 +291,28 @@ const ROWS: readonly Row[] = [
   { what: 'an entry reached only through dependsOn that runs other code at the latest block', change: { reachedThrough: DEPENDENT, ...today('finding') }, id: 'vault/code.today', kind: 'pin-not-run', state: 'bad' },
   { what: "an entry reached only through dependsOn whose code at the latest block got no answer", change: { reachedThrough: DEPENDENT, ...today('unverifiable') }, id: 'vault/code.today', kind: 'no-answer', state: 'warn' },
   { what: 'an entry reached only through dependsOn with no read at the latest block', change: { reachedThrough: DEPENDENT }, id: 'vault/code.today', kind: 'no-chain-result', state: 'warn' },
+  { what: "a vault's adapter, whose address only goes into an argument, with its proof refused", change: { reachedThrough: ADAPTED, abi: refused({ why: 'not-on-sourcify' }) }, id: 'vault/abi', kind: 'not-called', state: 'na' },
   { what: 'a selector-routed proxy a call targets', change: { entry: ROUTED }, id: 'vault/abi', kind: 'routed-proxy', state: 'na' },
   { what: 'a selector-routed proxy that runs its pin and routes at the latest block', change: { entry: ROUTED, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
+  { what: 'a bounty program with the address in scope', change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS]) }, id: 'vault/source.bounty', kind: 'agrees', state: 'ok' },
+  { what: 'a bounty program without the address in scope', change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([OTHER]) }, id: 'vault/source.bounty', kind: 'not-listed', state: 'na' },
+  { what: "a bounty program that lists none of the protocol's sites", change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS], 'https://github.com/other', 'https://other.org') }, id: 'vault/source.bounty', kind: 'site-differs', state: 'bad' },
+  { what: 'a bounty program Immunefi does not list', change: { entry: { ...ENTRY, immunefi: 'proto' } }, id: 'vault/source.bounty', kind: 'not-listed', state: 'na' },
+  { what: 'an SDK file with the address next to its label', change: packageRead(), id: 'vault/source.sdk', kind: 'agrees', state: 'ok' },
+  { what: "an SDK built from the protocol's GitHub org", change: packageRead(), id: 'vault/source.sdk.site', kind: 'agrees', state: 'ok' },
+  { what: 'an SDK file without the address by its label', change: packageRead({ file: { kind: 'served', blocks: [{ text: `OTHER = "${ADDRESS}"` }] } }), id: 'vault/source.sdk', kind: 'not-listed', state: 'na' },
+  { what: 'an SDK tarball that is not the pinned one', change: packageRead({ sha256: `0x${'22'.repeat(32)}` as Hex }), id: 'vault/source.sdk', kind: 'package-differs', state: 'bad' },
+  { what: 'an SDK version npm holds no provenance for', change: packageRead({ provenance: { kind: 'none' } }), id: 'vault/source.sdk.site', kind: 'no-provenance', state: 'na' },
+  { what: 'an SDK built from another GitHub org', change: packageRead({ provenance: { ...BUILT, repository: 'https://github.com/someone/sdk' } }), id: 'vault/source.sdk.site', kind: 'site-differs', state: 'bad' },
+  { what: 'a creation the program cannot prove', change: { creations: new Map([[ADDRESS, { kind: 'unproven', why: 'a CREATE2 from a factory' }]]) }, id: 'vault/source.deployer', kind: 'creation-unproven', state: 'na' },
+  { what: 'a creation read with no answer', change: { creations: new Map([[ADDRESS, { kind: 'unread', why: 'timeout' }]]) }, id: 'vault/source.deployer', kind: 'source-no-answer', state: 'na' },
+  { what: 'a deployer shared with an entry confirmed elsewhere', change: sharing(true), id: 'vault/source.deployer', kind: 'agrees', state: 'ok' },
+  { what: 'a deployer shared only with an entry confirmed nowhere else', change: sharing(false), id: 'vault/source.deployer', kind: 'deployer-alone', state: 'na' },
+  { what: 'a website only the protocol coin on CoinGecko lists', change: { protocol: { ...BASE.protocol!, url: undefined, gecko: 'proto-coin' }, sites: coinLinks(['https://example.org'], []) }, id: 'vault/source.site', kind: 'agrees', state: 'ok' },
+  { what: 'a GitHub org only the Immunefi program names', change: { entry: { ...ENTRY, source: GITHUB, immunefi: 'proto' }, protocol: { ...BASE.protocol!, github: [] }, sites: program([], 'https://github.com/example') }, id: 'vault/source.site', kind: 'agrees', state: 'ok' },
+  { what: "a GitHub org GitHub verified controls the protocol's website", change: { entry: { ...ENTRY, source: GITHUB }, protocol: { ...BASE.protocol!, github: [] }, sites: { ...NO_SITE_LISTINGS, orgs: new Map([['example', { kind: 'domains', domains: ['example.org'] }]]) } }, id: 'vault/source.site', kind: 'agrees', state: 'ok' },
+  { what: 'a GitHub org GitHub verified controls another website', change: { entry: { ...ENTRY, source: GITHUB }, protocol: { ...BASE.protocol!, github: [] }, sites: { ...NO_SITE_LISTINGS, orgs: new Map([['example', { kind: 'domains', domains: ['other.org'] }]]) } }, id: 'vault/source.site', kind: 'unlisted', state: 'na' },
+  { what: "a GitHub org other than the one the coin's repositories are on, with none DefiLlama names", change: { entry: { ...ENTRY, source: GITHUB }, protocol: { ...BASE.protocol!, github: [], gecko: 'proto-coin' }, sites: coinLinks([], ['https://github.com/someone/token']) }, id: 'vault/source.site', kind: 'unlisted', state: 'na' },
 ];
 
 for (const row of ROWS) {
@@ -252,6 +322,23 @@ for (const row of ROWS) {
     assert.equal(stateOf(result), row.state);
   });
 }
+
+test('two entries that share a deployer and are confirmed nowhere else never confirm each other through it', () => {
+  const ledger = ledgerOf({ ...sharing(false), coins: [] });
+  assert.equal(resultOf(ledger, 'vault/address').finding.kind, 'few-confirmations');
+  assert.equal(resultOf(ledger, 'sibling/address').finding.kind, 'few-confirmations');
+  const confirmed = ledgerOf({ ...sharing(true), coins: [] });
+  assert.deepEqual(confirmations(confirmed, ENTRY), ['page', 'deployer']);
+  assert.deepEqual(resultOf(confirmed, 'vault/source.deployer').shared, { deployer: DEPLOYER, siblings: ['sibling'] });
+});
+
+test('an SDK whose publisher nothing ties to the protocol confirms nothing, though its file shows the address', () => {
+  const ledger = ledgerOf({ ...packageRead({ provenance: { kind: 'none' } }), coins: [] });
+  assert.equal(resultOf(ledger, 'vault/source.sdk').finding.kind, 'agrees');
+  assert.deepEqual(confirmations(ledger, { ...ENTRY, sdk: SDK }), ['page']);
+  assert.equal(resultOf(ledger, 'vault/address').finding.kind, 'few-confirmations');
+  assert.deepEqual(confirmations(ledgerOf({ ...packageRead(), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
+});
 
 test('every finding kind has a row', () => {
   assert.deepEqual(new Set(ROWS.map((row) => row.kind)), new Set(Object.keys(STATE_OF)));
@@ -292,8 +379,8 @@ test('an empty address source is grey; the address result alone puts the entry i
   assert.deepEqual(
     sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link, s.site]),
     [
-      ['page', 'na', '讀不到', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto' }],
-      ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto' }],
+      ['page', 'na', '讀不到', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
+      ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
       ['coingecko', 'ok', undefined, 'https://www.coingecko.com/en/coins/vault-coin', undefined],
     ],
   );
@@ -383,36 +470,41 @@ test('待確認 lists red before amber, and an entry with no result for the sign
   assert.deepEqual(forSigner(ledgerOf({})), []);
 });
 
-test('morpho/market-supply from its recordings: one address confirmed in one place for the signer, the rest folded', { timeout: 600_000 }, async () => {
+test('morpho/market-supply from its recordings: the two oracles confirmed in one place each for the signer, the rest folded', { timeout: 600_000 }, async () => {
   const registry = loadRegistry(ROOT);
   const target = { template: 'morpho/market-supply' };
   const compilers = await warmCompilers(reportCases(ROOT, registry, [target]));
   const { inputs } = await replayInputs(ROOT, registry, target, compilers, suffixes);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail('a template report');
   const ledger = judge(inputs, await judgeFixtures(ROOT, template, registry));
-  assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding]), [['morpho-oracle-cbbtc-usdc-86/address', { kind: 'few-confirmations', by: ['api'] }]]);
+  assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding]), [
+    ['morpho-oracle-cbbtc-usdc-86/address', { kind: 'few-confirmations', by: ['api'] }],
+    ['morpho-oracle-usp-usdc/address', { kind: 'few-confirmations', by: ['api'] }],
+  ]);
   assert.equal(stateOf(resultOf(ledger, 'morpho-oracle-cbbtc-usdc-86/source.page')), 'na');
   assert.equal(stateOf(resultOf(ledger, 'morpho-oracle-cbbtc-usdc-86/source.api')), 'ok');
   assert.equal(stateOf(resultOf(ledger, 'fixture.morpho-market-supply')), 'ok');
   assert.equal(resultOf(ledger, 'cbbtc/source.site').finding.kind, 'unlisted');
   assert.deepEqual(strip(ledger).map((s) => [s.line, s.state, `${s.passed}/${s.counted}`]), [
-    ['sources', 'warn', '5/6'],
-    ['abi', 'ok', '6/6'],
-    ['code', 'ok', '6/6'],
+    ['sources', 'warn', '6/8'],
+    ['abi', 'ok', '5/5'],
+    ['code', 'ok', '8/8'],
     ['params', 'ok', '1/1'],
   ]);
   const rows = addressRows(ledger);
-  assert.deepEqual(rows.open.map((e) => e.name), ['morpho-oracle-cbbtc-usdc-86']);
-  assert.equal(rows.folded.length, 5);
+  assert.deepEqual(rows.open.map((e) => e.name), ['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc']);
+  assert.equal(rows.folded.length, 6);
   assert.deepEqual(
     ledger.entries.map((e) => [e.name, confidence(ledger, e)]),
     [
       ['usdc', 'high'],
       ['cbbtc', 'high'],
       ['morpho-blue', 'high'],
-      ['blue-bundles-v1', 'high'],
       ['adaptive-curve-irm', 'high'],
       ['morpho-oracle-cbbtc-usdc-86', 'low'],
+      ['usp', 'high'],
+      ['morpho-oracle-usp-usdc', 'low'],
+      ['blue-bundles-v1', 'high'],
     ],
   );
 });

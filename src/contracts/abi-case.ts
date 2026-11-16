@@ -51,6 +51,7 @@ export function abiCaseReader(fixture: AbiCase, extra: readonly RecordedRead[] =
     getTransactionReceipt: () => Promise.resolve(unverifiable(NOT_RECORDED)),
     getTransaction: () => Promise.resolve(unverifiable(NOT_RECORDED)),
     getBalance: () => Promise.resolve(unverifiable(NOT_RECORDED)),
+    getTransactionCount: () => Promise.resolve(unverifiable(NOT_RECORDED)),
     getCode: (address, at) => answer(at, 'getCode', [address]),
     getStorageAt: (address, slot, at) => answer(at, 'getStorageAt', [address, `0x${slot.toString(16)}`]),
     call: (request, at) => answer(at, 'call', [request.to, request.data]),

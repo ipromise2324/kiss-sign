@@ -1,0 +1,94 @@
+{
+  "title": "提交 Morpho Vault V2 市場上限的提高（curator）",
+  "summary": "Safe 以 curator 身分呼叫 vault 的 `multicall`，裡面兩個 `submit`：一個排隊把你選的市場的絕對上限提高到你填的數量，一個把相對上限提高到你填的百分比。這筆交易只排隊，不改上限；等 vault 的 timelock 過了，任何人都能執行它。不動 Safe 的任何資產。",
+  "protocols": {
+    "morpho-blue": {
+      "intro": "Morpho Vault V2 把存款分配到多個 Morpho Blue 市場。curator 設定每個市場能放多少（上限），allocator 在上限內搬錢。提高上限要先 `submit`，等 timelock 過了才能執行。",
+      "audits": {
+        "text": "Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。",
+        "sources": [
+          "https://github.com/morpho-org/vault-v2/tree/main/audits"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": "提高上限要排隊，執行不用簽：timelock 到期後任何人都能呼叫 `increaseAbsoluteCap` 和 `increaseRelativeCap` 讓它生效，合約只檢查 `executableAt`，不檢查是誰。真正要你判斷的是這筆 `submit`。",
+      "sources": [
+        "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol"
+      ],
+      "recommendation": "簽之前確認市場和兩個上限都是你要的；送出後在 timelock 內還能用 `revoke` 取消。"
+    },
+    {
+      "text": "這個模板只收一個市場、絕對和相對上限各一個 `submit`，這是過去一年最常見的寫法（338 筆、28 個 Safe）。一次排好幾個市場、或同一筆裡馬上執行（timelock 為 0 的 vault），verify 會判 MISMATCH。",
+      "recommendation": "一筆只排一個市場；判 MISMATCH 就不要簽。"
+    }
+  ],
+  "reviews": {
+    "morpho-oracle-cbbtc-usdc-86/address": {
+      "status": "concern",
+      "text": "AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
+      "recommendation": "可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。"
+    },
+    "morpho-oracle-usp-usdc/address": {
+      "status": "concern",
+      "text": "AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
+      "recommendation": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
+    }
+  },
+  "entries": {
+    "usdc": {
+      "role": "vault 的資產，也是市場借出的代幣"
+    },
+    "cbbtc": {
+      "role": "市場的抵押代幣"
+    },
+    "morpho-blue": {
+      "role": "Morpho Blue 本體，市場在它裡面"
+    },
+    "morpho-oracle-cbbtc-usdc-86": {
+      "role": "市場用來給 cbBTC 定價的 oracle"
+    },
+    "adaptive-curve-irm": {
+      "role": "市場的利率模型"
+    },
+    "morpho-market-v1-adapter-v2-factory": {
+      "role": "建立 Vault V2 市場轉接合約的工廠，它回答 `isMorphoMarketV1AdapterV2` = true，轉接合約是它建立的"
+    },
+    "usp": {
+      "role": "USP 市場的抵押代幣"
+    },
+    "morpho-oracle-usp-usdc": {
+      "role": "USP 市場用來給 USP 定價的 oracle"
+    }
+  },
+  "fields": {
+    "1.multicall.data": "vault 依序執行的兩個呼叫，固定兩項：先排絕對上限，再排相對上限。任一個失敗，整筆失敗。",
+    "1.multicall.data[0]": "第一項：排隊提高絕對上限。",
+    "1.multicall.data[0].submit.data": "要排隊的完整呼叫，下面逐項列出。vault 記下它的 `executableAt`，到期才能執行這一模一樣的呼叫。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData": "上限的編號資料。vault 用它的 keccak256 當上限的 id，這裡是「這個轉接合約裡的這個市場」。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.kind": "id 的種類，固定是 this/marketParams：單一市場的上限，不是整個轉接合約或某個抵押代幣的。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.adapter": "vault 的市場轉接合約，錢經由它放進 Morpho Blue 市場。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams": "市場的五個參數，合起來就是你選的市場。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.loanToken": "市場借出的代幣，等於 vault 的資產。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.collateralToken": "市場的抵押代幣。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.oracle": "市場的 oracle。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.irm": "市場的利率模型。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.idData.capId.marketParams.lltv": "市場的清算門檻。",
+    "1.multicall.data[0].submit.data.increaseAbsoluteCap.newAbsoluteCap": "新的絕對上限：vault 最多放多少資產進這個市場。打 `max` 等於不設絕對上限，只靠相對上限。",
+    "1.multicall.data[1]": "第二項：排隊提高相對上限。",
+    "1.multicall.data[1].submit.data": "要排隊的完整呼叫，下面逐項列出。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData": "跟第一項同一個上限 id。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.kind": "id 的種類，固定是 this/marketParams。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.adapter": "vault 的市場轉接合約。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.marketParams": "市場的五個參數，等於你選的市場。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.marketParams.loanToken": "市場借出的代幣，等於 vault 的資產。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.marketParams.collateralToken": "市場的抵押代幣。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.marketParams.oracle": "市場的 oracle。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.marketParams.irm": "市場的利率模型。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.idData.capId.marketParams.lltv": "市場的清算門檻。",
+    "1.multicall.data[1].submit.data.increaseRelativeCap.newRelativeCap": "新的相對上限：這個市場最多占 vault 總資產的比例，100% 等於 10^18。"
+  }
+}

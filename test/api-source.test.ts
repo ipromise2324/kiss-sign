@@ -10,6 +10,7 @@ import { gatherApiAnswers, pruneAnswer, retryingSend, walkPath } from '../src/re
 import type { ApiSend } from '../src/research/api-source.ts';
 import { checkSources, formatResults, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
+import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
 import { httpsGet } from '../src/research/source-page.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -18,6 +19,7 @@ const listings = {
   protocols: parseDefiLlamaProtocols(recording.defillama),
   coinsByAddress: parseCoinGeckoCoins(recording.coingecko),
   suffixes: parsePublicSuffixList(readFileSync(join(ROOT, 'testdata', 'sources', 'public-suffix-list.dat'), 'utf8')),
+  sites: NO_SITE_LISTINGS,
 };
 
 const ORACLE = '0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a';
@@ -84,7 +86,7 @@ async function checked(send: ApiSend, apiSource: unknown = API): Promise<{ text:
 test('an API that answers the entry\'s address at its path agrees, and its site is compared with the protocol\'s', async () => {
   const { text, recorded } = await checked(async () => answering(ORACLE.toLowerCase()));
   assert.match(text, /api {8}agrees {2}POST https:\/\/api\.morpho\.org\/graphql answers 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a at data\.marketById\.oracle\.address, the entry's address/);
-  assert.match(text, /api-site {3}agrees {2}API domain morpho\.org equals morpho-blue/);
+  assert.match(text, /api-site {3}agrees {2}API domain morpho\.org is listed by DefiLlama morpho-blue/);
   assert.match(text, /page {7}FINDING the address is not found on the page as served/, 'the API leaves the page result as it is');
   assert.match(text, /api {8}POST https:\/\/api\.morpho\.org\/graphql \{"query":.*"variables":\{"id":"0x64d6.*\}, address at data\.marketById\.oracle\.address/, 'the request body is printed for the signer');
   assert.doesNotMatch(JSON.stringify(recorded), /text the API wrote|more text/, 'the recording keeps only what the path walks');

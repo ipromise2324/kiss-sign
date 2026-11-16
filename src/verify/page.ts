@@ -1,3 +1,4 @@
+import { percentText } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { SHOWN_PLACES, groupedTokens } from '../chain/decimals.ts';
 import { CSS, Html, SYMBOLS, h, icon } from '../research/report-html.ts';
@@ -96,6 +97,8 @@ function cardValue(value: ResolvedValue, token: AmountToken | undefined, page: V
     case 'nonce':
     case 'threshold':
       return h`<span class="num">${`${value.value}`}</span>`;
+    case 'percent':
+      return h`<span class="num">${percentText(value.value)}</span><span class="sub2">${`${value.value}`} 最小單位</span>`;
     case 'market':
       return h`${value.market.name} ${mono(value.market.id)}`;
   }

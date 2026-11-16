@@ -19,6 +19,7 @@ Written by `pnpm report uniswap/swap-permit --record` from `templates/uniswap/sw
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |  |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` |  |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |  |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |  |
 
 `buy-token` can name:
 
@@ -28,6 +29,7 @@ Written by `pnpm report uniswap/swap-permit --record` from `templates/uniswap/sw
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |  |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` |  |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |  |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |  |
 
 ## Calls and field rules
 
@@ -41,7 +43,7 @@ Written by `pnpm report uniswap/swap-permit --record` from `templates/uniswap/sw
 | `execute.commands` | constant `0x0a10` |
 | `execute.inputs` | exactly 2 items |
 | `execute.inputs[0] → PERMIT2_PERMIT` | holds the parameters `PERMIT2_PERMIT(((address,uint160,uint48,uint48),address,uint256),bytes)`, ABI-encoded with no selector; no bytes after them |
-| `execute.inputs[0] → PERMIT2_PERMIT.permitSingle.details.token` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `execute.inputs[0] → PERMIT2_PERMIT.permitSingle.details.token` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
 | `execute.inputs[0] → PERMIT2_PERMIT.permitSingle.details.amount` | constant `1461501637330902918203684832716283019655932542975` |
 | `execute.inputs[0] → PERMIT2_PERMIT.permitSingle.details.expiration` | free; written by the AI in the template: When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The Safe's owners signed it with the rest of the permit, so another value fails the signature and the swap reverts; verify's page shows the expiration the transaction leaves. |
 | `execute.inputs[0] → PERMIT2_PERMIT.permitSingle.details.nonce` | free; written by the AI in the template: Permit2's nonce for this token and the router, which Permit2 requires to be the next one and which the owners signed; another value reverts. |
@@ -52,9 +54,9 @@ Written by `pnpm report uniswap/swap-permit --record` from `templates/uniswap/sw
 | `execute.inputs[1] → V4_SWAP.actions` | constant `0x070b0e` |
 | `execute.inputs[1] → V4_SWAP.params` | exactly 3 items |
 | `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN` | holds the parameters `SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))`, ABI-encoded with no selector; no bytes after them |
-| `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.currencyIn` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.currencyIn` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
 | `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.path` | exactly 1 item |
-| `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.path[0].intermediateCurrency` | the card's `buy-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.path[0].intermediateCurrency` | the card's `buy-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
 | `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.path[0].fee` | free, claimed `route`: a changed value may pick another pool, and must still meet every effect, which bounds each token the Safe gets; written by the AI in the template: The fee of the Uniswap v4 pool the app's router picks for the two tokens. A pool is the two tokens, this fee, the tick spacing and the hooks, here none; another fee names another pool of the same two tokens, or none, which reverts. Anyone can open a v4 pool, so the price is guarded by the card's minimum, not by the pool: the Safe gets at least min-buy or the swap reverts. |
 | `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.path[0].tickSpacing` | free, claimed `route`: a changed value may pick another pool, and must still meet every effect, which bounds each token the Safe gets; written by the AI in the template: The tick spacing of the same pool, which the app picks with the fee; another value names another pool or none, as for the fee. |
 | `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.path[0].hooks` | constant `0x0000000000000000000000000000000000000000` |
@@ -63,11 +65,11 @@ Written by `pnpm report uniswap/swap-permit --record` from `templates/uniswap/sw
 | `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.amountIn` | the card's `sell-amount` |
 | `execute.inputs[1] → V4_SWAP.params[0] → SWAP_EXACT_IN.params.amountOutMinimum` | at least the card's `min-buy` |
 | `execute.inputs[1] → V4_SWAP.params[1] → SETTLE` | holds the parameters `SETTLE(address,uint256,bool)`, ABI-encoded with no selector; no bytes after them |
-| `execute.inputs[1] → V4_SWAP.params[1] → SETTLE.currency` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `execute.inputs[1] → V4_SWAP.params[1] → SETTLE.currency` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
 | `execute.inputs[1] → V4_SWAP.params[1] → SETTLE.amount` | constant `0` |
 | `execute.inputs[1] → V4_SWAP.params[1] → SETTLE.payerIsUser` | constant `true` |
 | `execute.inputs[1] → V4_SWAP.params[2] → TAKE` | holds the parameters `TAKE(address,address,uint256)`, ABI-encoded with no selector; no bytes after them |
-| `execute.inputs[1] → V4_SWAP.params[2] → TAKE.currency` | the card's `buy-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `execute.inputs[1] → V4_SWAP.params[2] → TAKE.currency` | the card's `buy-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
 | `execute.inputs[1] → V4_SWAP.params[2] → TAKE.recipient` | the Safe |
 | `execute.inputs[1] → V4_SWAP.params[2] → TAKE.amount` | constant `0` |
 | `execute.deadline` | free; written by the AI in the template: The time after which the router refuses the swap, which the app sets when it builds the transaction. A later deadline only lets the transaction run later; the Safe still gives exactly the card's amount and gets at least the card's minimum. |
@@ -78,10 +80,10 @@ The registry entry of `universal-router-2.1.2` declares it never reads calldata 
 
 | Side | Token | Amount |
 | --- | --- | --- |
-| the Safe gives | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | the card's `sell-amount` |
-| the Safe gets | the card's `buy-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | at least the card's `min-buy` |
+| the Safe gives | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | the card's `sell-amount` |
+| the Safe gets | the card's `buy-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | at least the card's `min-buy` |
 
-The Safe's allowance of the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, inside Permit2, to registry `universal-router-2.1.2` `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` may end higher than it started, at any amount, unlimited included, as the registry entry declares a standing allowance: written by the AI in the template: The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2\_TRANSFER\_FROM, and PERMIT2\_TRANSFER\_FROM\_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes.; every other allowance may not rise.
+The Safe's allowance of the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, inside Permit2, to registry `universal-router-2.1.2` `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` may end higher than it started, at any amount, unlimited included, as the registry entry declares a standing allowance: written by the AI in the template: The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2\_TRANSFER\_FROM, and PERMIT2\_TRANSFER\_FROM\_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes.; every other allowance may not rise.
 
 ## Official documentation
 
@@ -93,23 +95,35 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc universal-router-2.1.2` prints what each check compared.
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc universal-router-2.1.2 usp` prints what each check compared.
 
-| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | token | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | PASS | n/a | PASS |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS |
 | `universal-router-2.1.2` | `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` | router | <https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments> | PASS | n/a | n/a | PASS |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | DefiLlama site | GitHub commit | Address on page |
+| Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `universal-router-2.1.2` | <https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json> | FINDING | PASS | PASS |
+| `universal-router-2.1.2` | <https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json> | PASS | PASS | PASS |
 
-5 entries, 2 findings.
+More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+
+| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
+| --- | --- | --- | --- | --- |
+| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
+| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
+| `cbbtc` | n/a | n/a | n/a | FINDING |
+| `universal-router-2.1.2` | n/a | PASS | PASS | FINDING `0x2179a60856E37dfeAacA0ab043B931fE224b27B6` |
+| `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
+
+6 entries, 7 findings.
 
 ## Code pins
 
@@ -125,6 +139,7 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `morpho` | 21157386 | `0x9d47be5e1fade278a449fcd67e4fc7b69ce5c451c36ad7c4f380280d127f5532` | `0x4364fd2371b6318159366abFA51f190df5C24852` `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS |
 | `cbbtc` | 20570548 | `0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71` | `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS |
 | `universal-router-2.1.2` | 25999984 | `0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac` | none | PASS |
+| `usp` | 23195672 | `0x4c64cb2303edec6193910f660f82375d5bff982c070f14e1944c7a568ed5bb2e` | `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS |
 
 ## ABI proofs
 
@@ -137,14 +152,15 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | PROVEN | eip1967, implementation `0x4364fd2371b6318159366abFA51f190df5C24852` | `MorphoTokenEthereum`, solc `0.8.27+commit.40a35a09` | `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS | 2 immutable, 0 library spans masked | 26383745 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
 | `universal-router-2.1.2` | `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` | PROVEN | none | `UniversalRouter`, solc `0.8.26+commit.8a97fa7a` | `0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac` | PASS | 40 immutable, 0 library spans masked | 26427903 |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | PROVEN | eip1967, implementation `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` | `ERC20IssuanceUpgradeable_Blacklist_v1`, solc `0.8.23+commit.f704f362` | `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS | 0 immutable, 0 library spans masked | 26429052 |
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26427921 `0x3bea7e792a16a4d99b06b49165d9b4a2824df8dc347bdeb4c0b9b81de5354208`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26430217 `0xfb14bbefc9326fecaca26bda81f111fbff7c436332cfa83535ea2151177f5260`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `uniswap-v4` | `5690` | `parent#uniswap` | 2025-01-29 | 1004750961 | 635829001 |
+| `uniswap-v4` | `5690` | `parent#uniswap` | 2025-01-29 | 1003469886 | 634116144 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |
@@ -162,6 +178,7 @@ What DefiLlama and the chain say about the protocols this template's calls go to
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | 18 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | 18 |
 
 ## Past transactions
 
@@ -169,7 +186,7 @@ No `pnpm past-txs --record` recording names this template.
 
 ## ERC-7730
 
-`pnpm erc7730 usdc usdt morpho cbbtc universal-router-2.1.2`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdc usdt morpho cbbtc universal-router-2.1.2 usp`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -202,6 +219,10 @@ cbbtc 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf (token)
   index        index.calldata.json has no entry for this address
 
 universal-router-2.1.2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85 (router)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+usp 0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 ```

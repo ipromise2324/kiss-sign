@@ -4,7 +4,7 @@ import { paramName } from '../decode/abi.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
-import { TEMPLATES_DIR, callTargetEntries, refNames } from '../template/template.ts';
+import { TEMPLATES_DIR, callTargetEntries, refNames, viewTargetNames } from '../template/template.ts';
 import { vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, Rule, Template } from '../template/template.ts';
 import { needsSigner } from './ledger.ts';
@@ -151,7 +151,7 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
     inputs.facts === undefined
       ? new Map(factsScope(template, registry, ledger.entries).protocols.map(({ slug }) => [slug, 'unread']))
       : new Map(inputs.facts.protocols.map((sheet) => [sheet.slug, sheet.listing.kind === 'read' ? sheet.hacks.length : 'unread']));
-  const targets = [...callTargetEntries(template, registry).map((entry) => entry.name), ...template.effects.views.map((view) => view.to)];
+  const targets = [...callTargetEntries(template, registry).map((entry) => entry.name), ...template.effects.views.flatMap((view) => viewTargetNames(view.to, template, registry))];
   return {
     calls: template.calls.length,
     contracts: new Set([

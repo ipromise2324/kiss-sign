@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>morpho/vault-v2-cap-submit · flowmark-fgenesis-v2-6439 報告</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.callh .what{font-size:16px;font-weight:590}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.src{display:flex;flex-direction:column;gap:4px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:16px;font-size:var(--t-small);color:var(--fg2)}
+.ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs .byai{margin-right:8px}
+.aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="目錄">
+  <h2>目錄</h2>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-flowmark-fgenesis-v2-6439">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">11</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>提交 Morpho Vault V2 市場上限的提高（curator）</span><span class="byai">AI 研究</span></span></h1>
+  <span class="opid">morpho/vault-v2-cap-submit · flowmark-fgenesis-v2-6439</span>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 以 curator 身分呼叫 vault 的 <code>multicall</code>，裡面兩個 <code>submit</code>：一個排隊把你選的市場的絕對上限提高到你填的數量，一個把相對上限提高到你填的百分比。這筆交易只排隊，不改上限；等 vault 的 timelock 過了，任何人都能執行它。不動 Safe 的任何資產。</span><span class="byai">AI 研究</span></span></p>
+  <ul class="checks">
+    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">7 / 11</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">4 個地址有結果要你看，見「待確認」。其餘 7 個都至少在 2 個地方確認。</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">5 / 5</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。morpho-blue、adaptive-curve-irm、morpho-market-v1-adapter-v2-factory、morpho-oracle-cbbtc-usdc-86、flowmark-fgenesis-v2-6439-market-adapter、morpho-oracle-usp-usdc 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">11 / 11</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認卡片用到的每個合約還是研究時那份程式碼。被升級或換掉就擋下。vault-v2-factory、morpho-market-v1-adapter-v2-factory 簽名時不碰，只有報告比對它的程式碼。morpho-blue、adaptive-curve-irm、morpho-market-v1-adapter-v2-factory、morpho-oracle-cbbtc-usdc-86、flowmark-fgenesis-v2-6439-market-adapter、morpho-oracle-usp-usdc 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。</span></span></li>
+    <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>參數保護 <span class="n num">沒有測試</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
+  </ul>
+  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。Flowmark 的網站打不開，vault 很新、持有人集中，先看待確認。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-flowmark-fgenesis-v2-6439">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">11</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>流程 <span class="c">1 個呼叫</span></h2>
+  <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
+  <div class="diagram">
+  <svg viewBox="0 0 660 136" role="img" aria-labelledby="dt dd">
+    <title id="dt">交易流程</title>
+    <desc id="dd">呼叫 1：Safe 呼叫 flowmark-fgenesis-v2-6439 的 multicall。</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="128"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="128"/>
+    <rect class="node" x="193" y="14" width="174" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">flowmark-fgenesis-v2-6439</text><text class="nodes" x="280" y="50" text-anchor="middle">金庫</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">multicall</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="key">
+    <span class="k0">誰決定</span>
+    <span><span class="who you">你填</span>每次簽名填</span>
+    <span><span class="who you">你選</span>每次簽名選</span>
+    <span><span class="who">固定</span>改了就 MISMATCH</span>
+  </div>
+  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。flowmark-fgenesis-v2-6439 沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">flowmark-fgenesis-v2-6439.</span>multicall</span><span class="sel">0xac9650d8</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
+    <div class="arg" data-field="1.multicall.data">
+      <div class="nm"><span class="pn">data</span></div>
+      <div class="val"><div class="is">2 項</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>vault 依序執行的兩個呼叫，固定兩項：先排絕對上限，再排相對上限。任一個失敗，整筆失敗。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="is"><code>submit</code> (<span class="addr">0xef7fa71b</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>第一項：排隊提高絕對上限。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>increaseAbsoluteCap</code> (<span class="addr">0xf6f98fd5</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要排隊的完整呼叫，下面逐項列出。vault 記下它的 <code>executableAt</code>，到期才能執行這一模一樣的呼叫。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">idData</div><div><div class="is"><code>capId</code> 的參數</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>上限的編號資料。vault 用它的 keccak256 當上限的 id，這裡是「這個轉接合約裡的這個市場」。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">kind<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">&#34;this/marketParams&#34;</div><div class="is">固定為 &#34;this/marketParams&#34;</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>id 的種類，固定是 this/marketParams：單一市場的上限，不是整個轉接合約或某個抵押代幣的。</span></span></div></div></div>
+        <div class="part"><div class="pn">adapter<div class="pchips"><span class="who you">你選：金庫</span></div></div><div><div class="raw">0x79DA02d9C638cC9ae925188AD9DC245337981518</div><div class="is"><a href="#a-flowmark-fgenesis-v2-6439-market-adapter">flowmark-fgenesis-v2-6439-market-adapter</a> <span class="f3">你選的金庫的轉接合約</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>vault 的市場轉接合約，錢經由它放進 Morpho Blue 市場。</span></span></div></div></div>
+        <div class="part"><div class="pn">marketParams<div class="pchips"><span class="who you">你選：市場</span></div></div><div><div class="is">你選的市場 <span class="f3">5 個值，任何一個不同就 MISMATCH</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的五個參數，合起來就是你選的市場。</span></span></div></div>
+      <div class="parts"><div class="plabel">usdc / cbbtc，LLTV 86%，market id <span class="addr">0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64</span></div>
+        <div class="part"><div class="pn">loanToken</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場借出的代幣，等於 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken</div><div><div class="raw">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</div><div class="is"><a href="#a-cbbtc">cbbtc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的抵押代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">oracle</div><div><div class="raw">0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a</div><div class="is"><a href="#a-morpho-oracle-cbbtc-usdc-86">morpho-oracle-cbbtc-usdc-86</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的 oracle。</span></span></div></div></div>
+        <div class="part"><div class="pn">irm</div><div><div class="raw">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</div><div class="is"><a href="#a-adaptive-curve-irm">adaptive-curve-irm</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
+        <div class="part"><div class="pn">lltv</div><div><div class="raw">860000000000000000</div><div class="is">86%</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
+      </div>
+      <div class="parts"><div class="plabel">usdc / usp，LLTV 86%，market id <span class="addr">0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461</span></div>
+        <div class="part"><div class="pn">loanToken</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場借出的代幣，等於 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken</div><div><div class="raw">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</div><div class="is"><a href="#a-usp">usp</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的抵押代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">oracle</div><div><div class="raw">0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d</div><div class="is"><a href="#a-morpho-oracle-usp-usdc">morpho-oracle-usp-usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的 oracle。</span></span></div></div></div>
+        <div class="part"><div class="pn">irm</div><div><div class="raw">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</div><div class="is"><a href="#a-adaptive-curve-irm">adaptive-curve-irm</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
+        <div class="part"><div class="pn">lltv</div><div><div class="raw">860000000000000000</div><div class="is">86%</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
+      </div>
+      <div class="parts"><div class="plabel">usdc / usp，LLTV 91.5%，market id <span class="addr">0x60977eff30f04afef416234f4c67160b339f7429fc334888c522896c1c5808f1</span></div>
+        <div class="part"><div class="pn">loanToken</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場借出的代幣，等於 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken</div><div><div class="raw">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</div><div class="is"><a href="#a-usp">usp</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的抵押代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">oracle</div><div><div class="raw">0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d</div><div class="is"><a href="#a-morpho-oracle-usp-usdc">morpho-oracle-usp-usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的 oracle。</span></span></div></div></div>
+        <div class="part"><div class="pn">irm</div><div><div class="raw">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</div><div class="is"><a href="#a-adaptive-curve-irm">adaptive-curve-irm</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
+        <div class="part"><div class="pn">lltv</div><div><div class="raw">915000000000000000</div><div class="is">91.5%</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
+      </div></div>
+      </div></div>
+        <div class="part"><div class="pn">newAbsoluteCap<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">你填的金額</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>新的絕對上限：vault 最多放多少資產進這個市場。打 <code>max</code> 等於不設絕對上限，只靠相對上限。</span></span></div></div></div>
+      </div></div>
+      </div></div>
+        <div class="part"><div class="pn">[1]</div><div><div class="is"><code>submit</code> (<span class="addr">0xef7fa71b</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>第二項：排隊提高相對上限。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>increaseRelativeCap</code> (<span class="addr">0x2438525b</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要排隊的完整呼叫，下面逐項列出。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">idData</div><div><div class="is"><code>capId</code> 的參數</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>跟第一項同一個上限 id。</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">kind<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">&#34;this/marketParams&#34;</div><div class="is">固定為 &#34;this/marketParams&#34;</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>id 的種類，固定是 this/marketParams。</span></span></div></div></div>
+        <div class="part"><div class="pn">adapter<div class="pchips"><span class="who you">你選：金庫</span></div></div><div><div class="raw">0x79DA02d9C638cC9ae925188AD9DC245337981518</div><div class="is"><a href="#a-flowmark-fgenesis-v2-6439-market-adapter">flowmark-fgenesis-v2-6439-market-adapter</a> <span class="f3">你選的金庫的轉接合約</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>vault 的市場轉接合約。</span></span></div></div></div>
+        <div class="part"><div class="pn">marketParams<div class="pchips"><span class="who you">你選：市場</span></div></div><div><div class="is">你選的市場 <span class="f3">5 個值，任何一個不同就 MISMATCH</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的五個參數，等於你選的市場。</span></span></div></div>
+      <div class="parts"><div class="plabel">usdc / cbbtc，LLTV 86%，market id <span class="addr">0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64</span></div>
+        <div class="part"><div class="pn">loanToken</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場借出的代幣，等於 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken</div><div><div class="raw">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</div><div class="is"><a href="#a-cbbtc">cbbtc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的抵押代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">oracle</div><div><div class="raw">0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a</div><div class="is"><a href="#a-morpho-oracle-cbbtc-usdc-86">morpho-oracle-cbbtc-usdc-86</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的 oracle。</span></span></div></div></div>
+        <div class="part"><div class="pn">irm</div><div><div class="raw">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</div><div class="is"><a href="#a-adaptive-curve-irm">adaptive-curve-irm</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
+        <div class="part"><div class="pn">lltv</div><div><div class="raw">860000000000000000</div><div class="is">86%</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
+      </div>
+      <div class="parts"><div class="plabel">usdc / usp，LLTV 86%，market id <span class="addr">0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461</span></div>
+        <div class="part"><div class="pn">loanToken</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場借出的代幣，等於 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken</div><div><div class="raw">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</div><div class="is"><a href="#a-usp">usp</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的抵押代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">oracle</div><div><div class="raw">0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d</div><div class="is"><a href="#a-morpho-oracle-usp-usdc">morpho-oracle-usp-usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的 oracle。</span></span></div></div></div>
+        <div class="part"><div class="pn">irm</div><div><div class="raw">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</div><div class="is"><a href="#a-adaptive-curve-irm">adaptive-curve-irm</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
+        <div class="part"><div class="pn">lltv</div><div><div class="raw">860000000000000000</div><div class="is">86%</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
+      </div>
+      <div class="parts"><div class="plabel">usdc / usp，LLTV 91.5%，market id <span class="addr">0x60977eff30f04afef416234f4c67160b339f7429fc334888c522896c1c5808f1</span></div>
+        <div class="part"><div class="pn">loanToken</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場借出的代幣，等於 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken</div><div><div class="raw">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</div><div class="is"><a href="#a-usp">usp</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的抵押代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">oracle</div><div><div class="raw">0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d</div><div class="is"><a href="#a-morpho-oracle-usp-usdc">morpho-oracle-usp-usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的 oracle。</span></span></div></div></div>
+        <div class="part"><div class="pn">irm</div><div><div class="raw">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</div><div class="is"><a href="#a-adaptive-curve-irm">adaptive-curve-irm</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
+        <div class="part"><div class="pn">lltv</div><div><div class="raw">915000000000000000</div><div class="is">91.5%</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
+      </div></div>
+      </div></div>
+        <div class="part"><div class="pn">newRelativeCap<div class="pchips"><span class="who you">你填：百分比</span></div></div><div><div class="is">你填的百分比</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>新的相對上限：這個市場最多占 vault 總資產的比例，100% 等於 10^18。</span></span></div></div></div>
+      </div></div>
+      </div></div>
+      </div>
+    </div>
+  </div>
+  <h3>交易後</h3>
+  <dl class="props">
+    <div><dt><code>executableAt</code></dt><dd class="">增加</dd><dd class="src">flowmark-fgenesis-v2-6439.executableAt（increaseAbsoluteCap），交易前後各讀一次</dd></div>
+    <div><dt><code>executableAt</code></dt><dd class="">增加</dd><dd class="src">flowmark-fgenesis-v2-6439.executableAt（increaseRelativeCap），交易前後各讀一次</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-morpho-blue">
+  <h2>morpho-blue</h2>
+  <p class="intro"><span class="aiw" data-ai><span>Morpho Vault V2 把存款分配到多個 Morpho Blue 市場。curator 設定每個市場能放多少（上限），allocator 在上限內搬錢。提高上限要先 <code>submit</code>，等 timelock 過了才能執行。</span><span class="byai">AI 研究</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$10.00 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.47 B</span></span></dd></div>
+    <div><dt>上線</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
+    <div><dt>proxy</dt><dd><span>不是 proxy</span><span class="sub2"><a href="#a-flowmark-fgenesis-v2-6439">flowmark-fgenesis-v2-6439</a>，從 code pin 讀到</span></dd></div>
+    <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。 <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">來源</a></span><span class="byai">AI 研究</span></span></dd></div>
+    <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
+  </dl>
+  <p class="srcline">程式在 2026-11-16 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>、鏈上和<a href="https://api.morpho.org/graphql">協議 API</a>。標 AI 研究的是 AI 查的。</p>
+</section>
+
+<section id="vault-flowmark-fgenesis-v2-6439">
+  <h2>金庫</h2>
+  <p class="lead"><a href="#a-flowmark-fgenesis-v2-6439">flowmark-fgenesis-v2-6439</a>：程式記錄的 <code>pnpm vault-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
+  <dl class="props">
+    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26429584</dd></div>
+    <div><dt>現在的 totalAssets</dt><dd><span class="num">403,379.79 usdc</span></dd><dd class="src">2026-11-16，區塊 26429584</dd></div>
+    <div><dt>持有人</dt><dd><span class="num">28</span> 個地址持有，曾經收過的 <span class="num">64</span> 個</dd><dd class="src"></dd></div>
+    <div><dt>最大持有人</dt><dd><span class="num">54.04%</span></dd><dd class="src">占全部股份</dd></div>
+    <div><dt>前 10 名</dt><dd><span class="num">99.83%</span></dd><dd class="src">占全部股份</dd></div>
+  </dl>
+  <h3>每月的 totalAssets</h3>
+  <div class="diagram">
+  <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
+    <title id="vt">每月的 totalAssets</title>
+    <desc id="vd">13 個月，2025-11-20 到 2026-11-16，最高 403,379.79 usdc</desc>
+    <text class="tick" x="16" y="18">最高 403,379.79 usdc</text>
+    <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
+    <rect class="barna" x="25.7" y="138" width="29.0" height="12"><title>2025-11-20：還沒有程式碼</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
+    <rect class="barna" x="74.0" y="138" width="29.0" height="12"><title>2025-12-20：還沒有程式碼</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
+    <rect class="barna" x="122.3" y="138" width="29.0" height="12"><title>2026-01-19：還沒有程式碼</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="barna" x="170.6" y="138" width="29.0" height="12"><title>2026-02-18：還沒有程式碼</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="barna" x="218.9" y="138" width="29.0" height="12"><title>2026-03-20：還沒有程式碼</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
+    <rect class="barna" x="267.2" y="138" width="29.0" height="12"><title>2026-04-20：還沒有程式碼</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="315.5" y="149" width="29.0" height="1"><title>2026-05-20：10 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
+    <rect class="bar" x="363.8" y="149" width="29.0" height="1"><title>2026-06-19：1,400.15 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="412.1" y="149" width="29.0" height="1"><title>2026-07-19：1,486.51 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
+    <rect class="bar" x="460.4" y="148" width="29.0" height="2"><title>2026-08-18：5,918.28 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="508.7" y="140" width="29.0" height="10"><title>2026-09-17：35,578.01 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
+    <rect class="bar" x="557.0" y="86" width="29.0" height="64"><title>2026-10-17：224,113.71 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar last" x="605.4" y="34" width="29.0" height="116"><title>2026-11-16：403,379.79 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>
+  <details class="fold">
+    <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>13 個月的數字</summary>
+    <dl class="props">
+      <div><dt class="num">2025-11-20</dt><dd class="num">還沒有程式碼</dd></div>
+      <div><dt class="num">2025-12-20</dt><dd class="num">還沒有程式碼</dd></div>
+      <div><dt class="num">2026-01-19</dt><dd class="num">還沒有程式碼</dd></div>
+      <div><dt class="num">2026-02-18</dt><dd class="num">還沒有程式碼</dd></div>
+      <div><dt class="num">2026-03-20</dt><dd class="num">還沒有程式碼</dd></div>
+      <div><dt class="num">2026-04-20</dt><dd class="num">還沒有程式碼</dd></div>
+      <div><dt class="num">2026-05-20</dt><dd class="num">10 usdc</dd></div>
+      <div><dt class="num">2026-06-19</dt><dd class="num">1,400.15 usdc</dd></div>
+      <div><dt class="num">2026-07-19</dt><dd class="num">1,486.51 usdc</dd></div>
+      <div><dt class="num">2026-08-18</dt><dd class="num">5,918.28 usdc</dd></div>
+      <div><dt class="num">2026-09-17</dt><dd class="num">35,578.01 usdc</dd></div>
+      <div><dt class="num">2026-10-17</dt><dd class="num">224,113.71 usdc</dd></div>
+      <div><dt class="num">2026-11-16</dt><dd class="num">403,379.79 usdc</dd></div>
+    </dl>
+  </details>
+</section>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t">morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row" data-state="warn" data-result="flowmark-fgenesis-v2-6439/address">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t">flowmark-fgenesis-v2-6439：地址只在 1 個地方確認：工廠</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-flowmark-fgenesis-v2-6439">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。AI 問 Morpho API 這個地址，名稱是 Flowmark fGenesis，curator 是 0xe5F7d857C129a6349f2A150665DCFF4FeF979744，列出的網站 flowmark.xyz 在 AI 這邊連不上。AI 沒找到 Flowmark 不靠網址帶地址就列出這個地址的頁面。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>先在 Morpho app 的 vault 列表點進去比對地址。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row" data-state="warn" data-result="flowmark-fgenesis-v2-6439-market-adapter/address">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t">flowmark-fgenesis-v2-6439-market-adapter：地址只在 1 個地方確認：協議 API</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-flowmark-fgenesis-v2-6439-market-adapter">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x79DA02d9C638cC9ae925188AD9DC245337981518。AI 另外跑了 pnpm prove-instance：MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 回答 <code>isMorphoMarketV1AdapterV2</code> = true，兩個節點一致。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；上限的 id 用的就是這個地址，填錯只會設到一個沒人用的 id。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row" data-state="warn" data-result="morpho-oracle-usp-usdc/address">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t">morpho-oracle-usp-usdc：地址只在 1 個地方確認：協議 API</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>提高上限要排隊，執行不用簽：timelock 到期後任何人都能呼叫 <code>increaseAbsoluteCap</code> 和 <code>increaseRelativeCap</code> 讓它生效，合約只檢查 <code>executableAt</code>，不檢查是誰。真正要你判斷的是這筆 <code>submit</code>。 <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">來源</a></span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>簽之前確認市場和兩個上限都是你要的；送出後在 timelock 內還能用 <code>revoke</code> 取消。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>這個模板只收一個市場、絕對和相對上限各一個 <code>submit</code>，這是過去一年最常見的寫法（338 筆、28 個 Safe）。一次排好幾個市場、或同一筆裡馬上執行（timelock 為 0 的 vault），verify 會判 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>一筆只排一個市場；判 MISMATCH 就不要簽。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 2026-05 才建立，一年內從 10 USDC 長到約 40 萬 USDC；28 個地址持有股份，最大一個占 54.04%，前 10 名占 99.83%。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>上限是決定存款能放多少進一個市場；新 vault 先給小的絕對上限。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>這個 vault 的 <code>increaseAbsoluteCap</code> 和 <code>increaseRelativeCap</code> 的 timelock 都是 3 天（鏈上讀 <code>timelock</code>，259200 秒）：送出後 3 天內存款人看得到這個變更，sentinel 或 curator 可以用 <code>revoke</code> 取消。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>送出後 3 天內發現填錯，用 <code>revoke</code> 取消，不要等它被執行。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
+  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。</p>
+  <dl class="props two">
+    <div><dt>1 flowmark-fgenesis-v2-6439.multicall</dt><dd class="f3">沒有描述檔，只顯示原始資料</dd></div>
+  </dl>
+</section>
+
+<section id="addresses">
+  <h2>地址 <span class="c">11 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或金庫的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
+  <div class="rows">
+    <div class="ad" id="a-morpho-oracle-cbbtc-usdc-86" data-state="warn">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><span class="nm">morpho-oracle-cbbtc-usdc-86</span><span class="role"><span class="aiw" data-ai><span>市場用來給 cbBTC 定價的 oracle</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a</span>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">只在 1 個地方確認：協議 API</div>
+        <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
+    </div>
+    <div class="ad" id="a-flowmark-fgenesis-v2-6439" data-state="warn">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><span class="nm">flowmark-fgenesis-v2-6439</span><span class="role"><span class="aiw" data-ai><span>Flowmark 管理的 USDC vault（V2），你是它的 curator</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439</span>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="na">CoinGecko<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div><div class="src"><span data-state="ok">工廠<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">只在 1 個地方確認：工廠</div>
+        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Morpho API 的 vaultV2ByAddress：名稱 Flowmark fGenesis、curator 0xe5F7d857C129a6349f2A150665DCFF4FeF979744 <a class="aisrc" href="https://api.morpho.org/graphql">來源</a></span></span><span class="aires">AI 判斷：要注意</span></span></div></div>
+    </div>
+    <div class="ad" id="a-flowmark-fgenesis-v2-6439-market-adapter" data-state="warn">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><span class="nm">flowmark-fgenesis-v2-6439-market-adapter</span><span class="role"><span class="aiw" data-ai><span>vault 的 Morpho Blue 市場轉接合約，上限的 id 用它的地址</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0x79DA02d9C638cC9ae925188AD9DC245337981518</span>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">只在 1 個地方確認：協議 API</div>
+        <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
+    </div>
+    <div class="ad" id="a-morpho-oracle-usp-usdc" data-state="warn">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><span class="nm">morpho-oracle-usp-usdc</span><span class="role"><span class="aiw" data-ai><span>USP 市場用來給 USP 定價的 oracle</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d</span>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">只在 1 個地方確認：協議 API</div>
+        <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
+    </div>
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 7 個地址都沒有要你看的結果</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>vault 的資產，也是市場借出的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-vault-v2-factory" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">vault-v2-factory</span><span class="role"><span class="aiw" data-ai><span>Morpho Vault V2 工廠，它回答 <code>isVaultV2</code> = true，這個 vault 是它建立的</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xA1D94F746dEfa1928926b84fB2596c06926C0405</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
+    </div>
+    <div class="ad" id="a-cbbtc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>市場的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/coinbase">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-morpho-blue" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">morpho-blue</span><span class="role"><span class="aiw" data-ai><span>Morpho Blue 本體，市場在它裡面</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div>
+        <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
+    </div>
+    <div class="ad" id="a-adaptive-curve-irm" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">adaptive-curve-irm</span><span class="role"><span class="aiw" data-ai><span>市場的利率模型</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div>
+        <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
+    </div>
+    <div class="ad" id="a-morpho-market-v1-adapter-v2-factory" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">morpho-market-v1-adapter-v2-factory</span><span class="role"><span class="aiw" data-ai><span>建立 Vault V2 市場轉接合約的工廠，它回答 <code>isMorphoMarketV1AdapterV2</code> = true，轉接合約是它建立的</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div>
+        <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。簽名時不碰；報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。</div></div>
+    </div>
+    <div class="ad" id="a-usp" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usp</span><span class="role"><span class="aiw" data-ai><span>USP 市場的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">docs.piku.co/piku/piku-platform</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 piku-finance（<a href="https://defillama.com/protocol/piku-finance">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>過去交易</h2><p class="lead">這個操作沒有研究過去交易。</p>
+</section>
+
+<section id="next">
+  <h2>下一步</h2>
+  <ol class="steps">
+    <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>bin/kiss-sign template approve morpho/vault-v2-cap-submit</code></pre>
+      <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
+    <li><div>做卡片<pre class="cmd"><code>bin/kiss-sign card new morpho/vault-v2-cap-submit</code></pre>
+      <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
+    <li><div>金庫（<code>vault</code>）：它列出可選的合約，每個附完整地址。選 <a href="#a-flowmark-fgenesis-v2-6439">flowmark-fgenesis-v2-6439</a>，地址是 <span class="addr">0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439</span>
+      <p class="then">列表的編號可能跟別人的不同，照名字選；也可以直接打名字 <code>flowmark-fgenesis-v2-6439</code> 。</p></div></li>
+    <li><div>市場（<code>market</code>）：它列出每個市場的 id、lltv 和每個組成的完整地址。選你要的市場，id 要對。</div></li>
+    <li><div>金額（<code>absolute-cap</code>）：打 usdc 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
+      <p class="then">它印出整顆和 base units 兩種寫法，核對數字是你要的。</p>
+      <p class="then">也可以打 <code>max</code>，等於 340282366920938463463374607431768211455 base units；card new 會印出模板寫的理由。</p></div></li>
+    <li><div>百分比（<code>relative-cap</code>）：打百分比，最多 100，例如 <code>100</code> 或 <code>35.5</code> 。
+      <p class="then">它印出百分比和 base units（100% 是 10^18），核對數字是你要的。</p></div></li>
+    <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
+      <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
+    <li><div>在 Safe web app 提出交易（第一次用這個模板或這個金庫，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。</p>
+      <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
+    <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 <code>verify</code> 網頁上的逐列比對。</p></div></li>
+    <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 網頁上的逐字比對，一樣才簽。
+      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>程式每次簽名自動做的事</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>交易只有這 1 個呼叫，MultiSend 也一個個解開</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>每個參數符合上面的規則，重新編碼要一模一樣</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 的餘額一點都不能變</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span><code>flowmark-fgenesis-v2-6439.executableAt</code>：executableAt 增加</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span><code>flowmark-fgenesis-v2-6439.executableAt</code>：executableAt 增加</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>卡片用到的每個登記合約，程式碼還是 code pin 記錄的那份</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">由 <code>pnpm report morpho/vault-v2-cap-submit --vault-of flowmark-fgenesis-v2-6439 --record</code> 從 <code>templates/morpho/vault-v2-cap-submit/template.json</code>、<code>templates/morpho/vault-v2-cap-submit/docs.json</code>、<code>templates/morpho/vault-v2-cap-submit/vaults/flowmark-fgenesis-v2-6439/docs.json</code>、<code>registry/contracts.json</code>、<code>registry/markets.json</code>、<code>testdata/report/morpho-vault-v2-cap-submit/flowmark-fgenesis-v2-6439.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-cap-submit/notes.json</code>、<code>templates/morpho/vault-v2-cap-submit/vaults/flowmark-fgenesis-v2-6439/notes.json</code> 寫出，資料在 2026-11-16 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>
