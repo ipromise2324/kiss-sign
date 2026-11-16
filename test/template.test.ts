@@ -16,6 +16,7 @@ import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck, Finding } from '../src/template/check.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
@@ -214,22 +215,25 @@ test('a computed card field reads one uint256 view with arguments bound to the c
 });
 
 test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes are empty', () => {
-  const urd = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'urd-claim', 'template.json'), 'utf8'));
-  const claim = (t: any) => t.calls[0].args.bundle.items[0].fields.data.call.args;
-  const at = 'calls[0].args.bundle.items[0].fields.data.call.args';
+  const fixtures = repoWithTestFixtures();
+  const registry = loadRegistry(fixtures);
+  const fluid = JSON.parse(readFileSync(join(fixtures, 'templates', 'fluid', 'rewards-claim', 'template.json'), 'utf8'));
+  const claim = (t: any) => t.calls[0].args;
+  const at = 'calls[0].args';
   const cases: [(t: any) => void, string, RegExp][] = [
-    [(t) => (claim(t).proof = { free: 'x' }), `${at}.proof.free`, /needs \{"proof": why\} or \{"unread": why\}/],
-    [(t) => (claim(t).proof = { free: { trust: 'x' } }), `${at}.proof.free`, /exactly one of proof, unread/],
-    [(t) => (t.calls[0].args.bundle.items[0].fields.data = { const: '0x00' }), 'calls[0].args.bundle.items[0].fields.data.const', /must be empty/],
+    [(t) => (claim(t).merkleProof_ = { free: 'x' }), `${at}.merkleProof_.free`, /needs \{"proof": why\} or \{"unread": why\}/],
+    [(t) => (claim(t).metadata_ = { free: 'x' }), `${at}.metadata_.free`, /needs \{"proof": why\} or \{"unread": why\}/],
+    [(t) => (claim(t).merkleProof_ = { free: { trust: 'x' } }), `${at}.merkleProof_.free`, /exactly one of proof, unread/],
+    [(t) => (claim(t).metadata_ = { const: '0x00' }), `${at}.metadata_.const`, /must be empty/],
   ];
   for (const [edit, path, problem] of cases) {
-    const broken = structuredClone(urd);
+    const broken = structuredClone(fluid);
     edit(broken);
     assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
   }
-  const scalar = structuredClone(urd);
-  claim(scalar).claimable = { free: { proof: 'the leaf amount' } };
-  assert.equal(parseTemplate(scalar, registry).id, 'morpho/urd-claim');
+  const scalar = structuredClone(fluid);
+  claim(scalar).cumulativeAmount_ = { free: { proof: 'the leaf amount' } };
+  assert.equal(parseTemplate(scalar, registry).id, 'fluid/rewards-claim');
 });
 
 test('a trailer allowance is at most 19 bytes, so a whole address never fits', () => {
