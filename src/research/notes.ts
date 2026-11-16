@@ -33,7 +33,7 @@ const KEYED = ['reviews', 'entries'];
 /**
  * The template's notes and a vault's, as one: each key once, except that `judgments` join and `reviews` and `entries`
  * join by name. A vault's notes may hold only `VAULT_KEYS`, may review and describe only the entries in `owned`, the
- * vault and its factory, and a key or name both define is refused.
+ * vault and the entries its attributes name, and a key or name both define is refused.
  */
 export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, owned: ReadonlySet<string>): unknown {
   if (vault === undefined || !isRecord(shared)) return shared;
@@ -63,8 +63,7 @@ export function readNotes(repoRoot: string, template: string, vault?: RegistryEn
   const shared = readJson(join(repoRoot, notesPath(template)));
   if (vault === undefined) return shared;
   const path = notesPath(template, vault.name);
-  const { factory } = vault.attributes;
-  return mergeNotes(shared, readJson(join(repoRoot, path)), path, new Set(factory === undefined ? [vault.name] : [vault.name, factory]));
+  return mergeNotes(shared, readJson(join(repoRoot, path)), path, new Set([vault.name, ...Object.values(vault.attributes)]));
 }
 
 /** What notes.json may name and must name, derived from the template, the report's inputs and its ledger. */
