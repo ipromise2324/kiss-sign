@@ -242,6 +242,11 @@ function namedInRules(template: Template): Set<string> {
     if (rule?.kind === 'call') rule.call.args.forEach(visit);
     if (rule?.kind === 'items') rule.items.forEach(visit);
     if (rule?.kind === 'fields') rule.fields.forEach(visit);
+    if (rule?.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
+    if (rule?.kind === 'eip712') {
+      names.add(rule.message.domain.verifyingContract);
+      rule.message.fields.forEach(visit);
+    }
   };
   visit(template.nonce);
   for (const call of template.calls) {
@@ -448,9 +453,13 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
       return `the same number as ${code(rule.path)}, which is ${ruleText(rule.rule, template, registry)}`;
     case 'share-price':
       return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e27 / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
+    case 'at-least':
+      return `at least the card's ${code(rule.field)}`;
     case 'call':
     case 'items':
     case 'fields':
+    case 'packed':
+    case 'eip712':
       return '';
   }
 }
@@ -470,6 +479,22 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
     case 'fields': {
       const components = param?.type.kind === 'tuple' ? param.type.components : [];
       return argRows(components, rule.fields, `${path}.`, template, registry);
+    }
+    case 'packed': {
+      const layout = rule.parts.map((part) => `${code(part.name)} ${code(canonicalType(part.type))}`).join(', ');
+      const size = rule.parts.reduce((sum, part) => sum + part.size, 0);
+      return [
+        `| ${code(path)} | exactly ${size} bytes, packed with no padding: ${layout} |`,
+        ...rule.parts.flatMap((part) => rowsOf(part.rule, `${path}.${part.name}`, { name: part.name, type: part.type }, template, registry)),
+      ];
+    }
+    case 'eip712': {
+      const { domain, struct, separator, lookup } = rule.message;
+      const contract = full(registry.entries.get(domain.verifyingContract) as RegistryEntry);
+      return [
+        `| ${code(path)} | the EIP-712 digest of a ${code(struct.encoded)} message, domain name ${code(domain.name)}, version ${code(domain.version)}, chain 1, verifying contract ${contract} (domain separator ${code(separator)}); the message is read from ${lookup.replace('{arg}', '<argument>')} and must hash to this digest |`,
+        ...argRows(struct.members, rule.message.fields, `${path}.`, template, registry),
+      ];
     }
     default:
       return [`| ${code(path)} | ${ruleText(rule, template, registry)} |`];
@@ -562,6 +587,12 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     out.push('| Side | Token | Amount |', '| --- | --- | --- |');
     for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
     for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  }
+  for (const open of template.effects.approves) {
+    out.push(
+      '',
+      `The Safe's allowance of ${tokenText(open.token, template, registry)} to registry ${full(registry.entries.get(open.spender) as RegistryEntry)} may end higher than it started, at no more than the card's ${code(open.amount)}; every other allowance may not rise.`,
+    );
   }
   if (template.effects.views.length > 0) {
     out.push('', 'The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:', '');

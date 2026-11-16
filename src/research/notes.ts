@@ -97,7 +97,7 @@ export type ArgNode = {
   readonly name: string;
   readonly param: AbiParam | undefined;
   readonly rule: Rule;
-  /** Tuple parts, array items, or a nested call's arguments. */
+  /** Tuple parts, array items, a nested call's arguments, packed parts, or a signed message's members. */
   readonly children: readonly ArgNode[];
 };
 
@@ -126,6 +126,11 @@ export function argumentTree(template: Template): { readonly n: number; readonly
           return arg(`${key}.${part}`, part, r, components[i]);
         }),
       };
+    }
+    if (rule.kind === 'packed') return { key, name, param, rule, children: rule.parts.map((part) => arg(`${key}.${part.name}`, part.name, part.rule, { name: part.name, type: part.type })) };
+    if (rule.kind === 'eip712') {
+      const { struct, fields } = rule.message;
+      return { key, name, param, rule, children: struct.members.map((member, i) => arg(`${key}.${member.name}`, member.name as string, fields[i] as Rule, member)) };
     }
     return { key, name, param, rule, children: [] };
   };

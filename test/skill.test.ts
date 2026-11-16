@@ -24,6 +24,7 @@ async function usage(): Promise<string> {
     repoRoot: ROOT,
     transport: async () => assert.fail('no chain reads'),
     fetchJson: async () => assert.fail('no fetches'),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return stderr;
 }
