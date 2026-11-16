@@ -1,13 +1,16 @@
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
+import { SHOWN_PLACES, groupedTokens } from '../chain/decimals.ts';
 import { CSS, Html, SYMBOLS, h, icon } from '../research/report-html.ts';
 import type { State } from '../research/ledger.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
-import type { Expectations } from '../simulate/effects.ts';
+import type { Expectations, Expected } from '../simulate/effects.ts';
 import type { CallScan } from '../simulate/simulate.ts';
+import type { Template } from '../template/template.ts';
 import { CHECKLIST_CSS, checklist, checklistHtml, visible } from './checklist.ts';
-import type { CallTree } from './expected.ts';
+import { amountToken } from './expected.ts';
+import type { AmountToken, CallTree } from './expected.ts';
 import type { CheckName, Verdict } from './verdict.ts';
 
 export type VerdictPage = {
@@ -16,6 +19,8 @@ export type VerdictPage = {
   readonly card: ResolvedCard;
   readonly cardHash: string;
   readonly registry: Registry;
+  readonly templates: ReadonlyMap<string, Template>;
+  readonly decimals: ReadonlyMap<Address, number>;
   readonly expected: Expectations;
   readonly calls: CallScan;
   readonly tree: CallTree | undefined;
@@ -62,14 +67,28 @@ function nameOf(address: Address, registry: Registry): string {
   return registry.byAddress.get(address)?.name ?? '未登記';
 }
 
-function cardValue(value: ResolvedValue): Html {
+const tokenName = (token: AmountToken): Html | string => (token.address === 'eth' ? token.name : h`${token.name} ${mono(checksumAddress(token.address))}`);
+
+function tokenAmount(value: bigint, token: AmountToken | undefined, page: VerdictPage): Html {
+  const base = `${value < 0n ? '−' : ''}${value < 0n ? -value : value} 最小單位`;
+  if (token === undefined) return h`<span class="num">${base}</span>`;
+  const named = tokenName(token);
+  if (value === 0n) return h`<span class="num">0</span> ${named}`;
+  const decimals = token.address === 'eth' ? 18 : page.decimals.get(token.address);
+  if (decimals === undefined) return h`<span class="num">${base}</span>的 ${named}<span class="sub2">decimals() 沒讀到</span>`;
+  const shown = groupedTokens(value, decimals, SHOWN_PLACES);
+  const cut = shown !== groupedTokens(value, decimals);
+  return h`${cut ? '約 ' : ''}<span class="num">${shown}</span> ${named}<span class="sub2">${base}，${`${decimals}`} 位小數</span>`;
+}
+
+function cardValue(value: ResolvedValue, token: AmountToken | undefined, page: VerdictPage): Html {
   switch (value.kind) {
     case 'contract':
       return h`${value.name} ${mono(checksumAddress(value.entry.address))}`;
     case 'address':
       return h`${value.name}${value.from === 'address-book' ? '（地址簿）' : ''} ${mono(checksumAddress(value.address))}`;
     case 'amount':
-      return h`<span class="num">${`${value.value}`}</span> <span class="f3">base units</span>`;
+      return tokenAmount(value.value, token, page);
     case 'nonce':
       return h`<span class="num">${`${value.value}`}</span>`;
     case 'market':
@@ -84,9 +103,21 @@ function cardSection(page: VerdictPage): Html {
   <p class="lead">卡片 hash ${mono(page.cardHash)}</p>
   ${page.card.operations.map(
     (op) => h`<h3><code>${op.template}</code></h3>
-  <dl class="props two">${[...op.values].map(([field, value]) => prop(field, cardValue(value)))}</dl>`,
+  <dl class="props two">${[...op.values].map(([field, value]) => {
+    const kind = page.templates.get(op.template)?.card.get(field);
+    return prop(field, cardValue(value, kind?.kind === 'amount' ? amountToken(kind.of, op.values, page.registry) : undefined, page));
+  })}</dl>`,
   )}
 </section>`;
+}
+
+function changeWords(change: Expected): { readonly does: string; readonly bound: string; readonly amount: bigint | undefined } {
+  if (change.kind === 'all') return { does: '給出', bound: '全部餘額', amount: undefined };
+  const { change: c } = change;
+  const by = c < 0n ? -c : c;
+  if (change.kind === 'exactly') return { does: c === 0n ? '不變' : c < 0n ? '給出' : '收到', bound: '剛好 ', amount: by };
+  if (change.kind === 'more-than') return c >= 0n ? { does: '收到', bound: '多於 ', amount: c } : { does: '淨變化', bound: '多於 ', amount: c };
+  return c <= 0n ? { does: '給出', bound: '多於 ', amount: by } : { does: '淨變化', bound: '少於 ', amount: c };
 }
 
 function effectsSection(page: VerdictPage): Html {
@@ -95,19 +126,14 @@ function effectsSection(page: VerdictPage): Html {
     expected.kind === 'unverifiable'
       ? expected.reasons.map((reason) => prop('無法算出', reason))
       : [...expected.changes].map(([asset, change]) => {
-          const name = asset === 'eth' ? 'ETH' : h`${nameOf(asset, registry)} ${mono(checksumAddress(asset))}`;
-          const amount =
-            change.kind === 'all'
-              ? '給出全部餘額'
-              : change.kind === 'exactly'
-                ? `剛好 ${change.change}`
-                : `${change.kind === 'more-than' ? '多於' : '少於'} ${change.change}`;
-          return h`<div><dt>${name}</dt><dd><span class="num">${amount}</span></dd></div>`;
+          const token: AmountToken = asset === 'eth' ? { address: 'eth', name: 'ETH' } : { address: asset, name: nameOf(asset, registry) };
+          const { does, bound, amount } = changeWords(change);
+          return prop(does, amount === undefined ? h`${bound}的 ${tokenName(token)}` : h`${bound}${tokenAmount(amount, token, page)}`);
         });
   return h`
 <section>
   <h2>預期效果</h2>
-  <p class="lead">卡片說 Safe 的資產該怎麼變（base units，正數是收到，負數是給出）。「Safe 的資產變化符合卡片」這項檢查拿它和模擬或收據比對。</p>
+  <p class="lead">卡片說 Safe 的每種資產該怎麼變，淨變化是收到減給出。「Safe 的資產變化符合卡片」這項檢查拿它和模擬或收據比對。</p>
   <dl class="props two">${rows.length === 0 ? prop('無', '卡片沒有說 Safe 的資產會變') : rows}</dl>
 </section>`;
 }
@@ -160,15 +186,15 @@ function causesSection(verdict: Verdict): Html {
 
 /** Sets this page apart from check.sh's, which uses another accent. */
 const PAGE_CSS = `:root{--accent:#6ea8fe}
-.who{border-left:4px solid var(--accent);padding-left:18px}
-.who .prog{color:var(--accent)}
+.program{border-left:4px solid var(--accent);padding-left:18px}
+.program .prog{color:var(--accent)}
 .cl .nm .byai{margin:0 6px 0 2px}`;
 
 /** The page `verify` writes beside its verdict file: no script, nothing loaded from outside, every value escaped. */
 export function verdictPage(page: VerdictPage): string {
   const banner = BANNER[page.verdict.kind];
   const body = h`<header>
-  <div class="who">
+  <div class="program">
     <h1><span class="prog">kiss-sign verify</span> · nonce ${`${page.nonce}`} · ${page.verdict.kind}</h1>
     <p class="sub">kiss-sign 在工作電腦上對照你的卡片檢查這筆交易。</p>
   </div>
@@ -177,8 +203,8 @@ export function verdictPage(page: VerdictPage): string {
     <li>${icon(stateOf(page.verdict, check))}${name}</li>`)}
   </ul>
 </header>
-${checklistSection(page)}
 ${causesSection(page.verdict)}
+${checklistSection(page)}
 ${cardSection(page)}
 ${effectsSection(page)}
 ${callsSection(page)}
