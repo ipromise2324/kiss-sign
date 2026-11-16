@@ -101,9 +101,10 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const endpoints = mainnetEndpoints(io.env);
   const recorder = recordingTransport(io.transport, endpoints);
   const reader = createReader(endpoints, recorder.transport);
-  const { evaluation: result, tx, prepared, latest } = await evaluateTx(inputs, reader);
+  const { evaluation: result, tx, inputs: used, prepared, latest, unread } = await evaluateTx(inputs, reader, io.readMessage);
+  for (const why of unread) io.stderr(`kiss-sign: a signed message could not be read: ${why}\n`);
   const decimals = await readTokenDecimals(reader, prepared, latest);
-  const file: VerdictFile = { format: VERDICT_FORMAT, inputs, exchanges: recorder.exchanges(), result };
+  const file: VerdictFile = { format: VERDICT_FORMAT, inputs: used, exchanges: recorder.exchanges(), result };
   const dir = verdictsDir(home);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   const path = join(dir, `nonce-${tx.nonce}-${Date.now()}.json`);

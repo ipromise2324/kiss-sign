@@ -59,6 +59,7 @@ test('pnpm attacks prints, per case, the card with full addresses, the decoded c
     repoRoot: ROOT,
     transport: async () => assert.fail('a replay reads no provider'),
     fetchJson: async () => assert.fail('a replay reads no Transaction Service'),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   assert.equal(code, 0);
   assert.match(stdout, /recipient  bybit-warm-wallet 0xf89d7b9c864f589bbF53a82105107622B35EaA40 \(the case's address book\)/);
