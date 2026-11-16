@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
@@ -71,9 +72,9 @@ test('the list of templates not yet rebuilt only shrinks: each one predates the 
 });
 
 test('a template without notes.json gets no HTML report', async () => {
-  const id = [...NOT_YET_REBUILT][0] ?? assert.fail('every template has notes');
-  const { subject } = loadReport(ROOT, registry, { template: id });
-  assert.equal(await generatedHtml(ROOT, { subject, registry } as ReportInputs, { command: '', sources: [] }), undefined);
+  const { subject } = loadReport(ROOT, registry, { template: 'eth/transfer' });
+  const withoutNotes = mkdtempSync(join(tmpdir(), 'kiss-sign-no-notes-'));
+  assert.equal(await generatedHtml(withoutNotes, { subject, registry } as ReportInputs, { command: '', sources: [] }), undefined);
 });
 
 test('the committed HTML report is what the program writes from the recordings and notes.json, byte for byte', () => {
