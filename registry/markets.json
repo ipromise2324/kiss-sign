@@ -1,20 +1,11 @@
 {
-  "usdc-usp-86": {
+  "usdc-cbbtc-86": {
     "lending": "morpho-blue",
     "loanToken": "usdc",
-    "collateralToken": "usp",
-    "oracle": "morpho-oracle-usp-usdc",
+    "collateralToken": "cbbtc",
+    "oracle": "morpho-oracle-cbbtc-usdc-86",
     "irm": "adaptive-curve-irm",
     "lltv": "860000000000000000",
-    "id": "0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461"
-  },
-  "usdc-usp-915": {
-    "lending": "morpho-blue",
-    "loanToken": "usdc",
-    "collateralToken": "usp",
-    "oracle": "morpho-oracle-usp-usdc",
-    "irm": "adaptive-curve-irm",
-    "lltv": "915000000000000000",
-    "id": "0x60977eff30f04afef416234f4c67160b339f7429fc334888c522896c1c5808f1"
+    "id": "0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64"
   }
 }
