@@ -17,7 +17,7 @@ import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fetchOriginMain, fileAt, localOriginMain, optionalFileAt } from '../verify/self-check.ts';
 import type { GithubRepo } from '../verify/self-check.ts';
-import { VerifyError, evaluate, keccakText } from '../verify/verify.ts';
+import { VerifyError, evaluateTx, keccakText } from '../verify/verify.ts';
 import type { VerifyInputs } from '../verify/verify.ts';
 import { HistoryError, cacheDir, historyDir, loadHistory, mergeRegistry, txsPath } from './load.ts';
 import type { History, HistoryCard, HistoryTx } from './load.ts';
@@ -29,7 +29,8 @@ import { RecordingError, parseRecording, recordingText } from '../chain/bytecode
 
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 
-type Cache = { readonly safeTxHash: string; readonly exchanges: readonly Exchange[] };
+/** `messages`: each signed message read from a template's `lookup`, absent in a cache from before messages. */
+type Cache = { readonly safeTxHash: string; readonly exchanges: readonly Exchange[]; readonly messages?: readonly string[] };
 
 function writePrivate(path: string, text: string): void {
   writeFileSync(`${path}.tmp`, text, { mode: 0o600 });
@@ -87,7 +88,7 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
   });
   if (templates.length < ids.length) return { kind: 'no-template', ids: ids.filter((id) => !templates.some((t) => t.id === id)) };
   const named = new Set(card.card.operations.flatMap((op) => Object.values(op.values)));
-  const inputs: VerifyInputs = {
+  let inputs: VerifyInputs = {
     commit: ctx.commit,
     safe: checksumAddress(ctx.safe),
     tx: { format: 'service', json: entry.service },
@@ -106,6 +107,7 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
   let recorded: (() => Exchange[]) | undefined;
   if (cached !== undefined) {
     reader = replayReader(cached.exchanges);
+    if (cached.messages !== undefined) inputs = { ...inputs, messages: cached.messages };
   } else {
     const endpoints = mainnetEndpoints(ctx.io.env);
     const recorder = recordingTransport(ctx.io.transport, endpoints);
@@ -113,10 +115,11 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
     recorded = recorder.exchanges;
   }
   try {
-    const { verdict } = await evaluate(inputs, reader);
+    const { evaluation, inputs: used } = await evaluateTx(inputs, reader, recorded === undefined ? undefined : ctx.io.readMessage);
+    const { verdict } = evaluation;
     if (recorded !== undefined) {
       mkdirSync(cacheDir(ctx.home), { recursive: true, mode: 0o700 });
-      writePrivate(path, recordingText({ safeTxHash, exchanges: recorded() }));
+      writePrivate(path, recordingText({ safeTxHash, exchanges: recorded(), messages: used.messages ?? [] }));
     }
     return { kind: 'verdict', verdict };
   } catch (error) {

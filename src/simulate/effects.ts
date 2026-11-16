@@ -269,8 +269,30 @@ const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): bo
   expected.kind === 'exactly' ? actual === expected.change : expected.kind === 'more-than' ? actual > expected.change : actual < expected.change;
 
 /**
+ * The most each `token|spender` allowance from the Safe may end at, summed over the card's operations whose template
+ * leaves that approval open (`effects.approves`).
+ */
+function openApprovals(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): { readonly limits: ReadonlyMap<string, bigint>; readonly reasons: readonly string[] } {
+  const limits = new Map<string, bigint>();
+  const reasons: string[] = [];
+  for (const op of card.operations) {
+    for (const open of templates.get(op.template)?.effects.approves ?? []) {
+      const token = addressOf(open.token, op.values, registry);
+      const spender = registry.entries.get(open.spender)?.address;
+      const amount = op.values.get(open.amount);
+      if ('problem' in token) reasons.push(token.problem);
+      else if (spender === undefined) reasons.push(`the registry has no ${open.spender}`);
+      else if (amount?.kind !== 'amount') reasons.push(`no card amount ${open.amount}`);
+      else limits.set(`${token.address}|${spender}`, (limits.get(`${token.address}|${spender}`) ?? 0n) + amount.value);
+    }
+  }
+  return { limits, reasons };
+}
+
+/**
  * Every change to the Safe's balances must be one the card's effects explain, and no allowance, ERC-20 or Permit2, may
- * end higher than it started: an approval is spent in the transaction that gives it.
+ * end higher than it started: an approval is spent in the transaction that gives it, unless the template leaves it open
+ * (`effects.approves`), and then it may end at no more than the card's amount.
  */
 export function judgeEffects(
   observed: Observed,
@@ -296,9 +318,12 @@ export function judgeEffects(
     const actual = asset === 'eth' ? observed.eth : (observed.tokens.get(asset) ?? 0n);
     if (!meets(expected, actual)) findings.push({ kind: 'balance', asset, expected, actual });
   }
+  const open = openApprovals(card, templates, registry);
+  unread.push(...open.reasons);
   for (const allowance of observed.allowances) {
     // A lower allowance lets no one take more from the Safe than before, so only a rise must be explained.
-    if (allowance.after > allowance.before) findings.push({ kind: 'open-allowance', ...allowance });
+    const limit = open.limits.get(`${allowance.token}|${allowance.spender}`);
+    if (allowance.after > allowance.before && (limit === undefined || allowance.after > limit)) findings.push({ kind: 'open-allowance', ...allowance });
   }
   for (const allowance of observed.permit2) if (permit2Raised(allowance)) findings.push({ kind: 'open-permit2-allowance', ...allowance });
   const expectedReads = expectedViews(card, templates, registry);

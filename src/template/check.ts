@@ -1,7 +1,7 @@
-import { bytesToHex } from '@noble/hashes/utils.js';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
-import { paramName } from '../decode/abi.ts';
+import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiType } from '../decode/abi.ts';
 import { decodeCall } from '../decode/codec.ts';
 import type { AbiValue, DecodeFailure, DecodedCall, Region, Span } from '../decode/codec.ts';
@@ -9,7 +9,18 @@ import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import type { CallNode, ConstValue, LeafRule, Quantity, Rule, Template, TemplateCall } from './template.ts';
+import { memberJson, parseMessage, typedDataDigest } from './eip712.ts';
+import type { MemberValue } from './eip712.ts';
+import type { CallNode, ConstValue, LeafRule, PackedPart, Quantity, Rule, SignedMessage, Template, TemplateCall } from './template.ts';
+
+/**
+ * The texts that may hold a signed message the transaction names by its digest, such as CoW orders read from the
+ * template's `lookup`. Each is data: only one that hashes to the digest counts.
+ */
+export type Messages = readonly string[];
+
+/** A member of the signed message whose digest sits at `digest` in `data`, as the message `body` holds it. */
+export type MessageLeaf = { readonly message: SignedMessage; readonly body: Readonly<Record<string, unknown>>; readonly values: readonly MemberValue[]; readonly member: number; readonly digest: Span };
 
 /**
  * Where a field differs. `callPath` names the call, such as `multiSend[1].multicall.bundle[1].data.erc4626Deposit`;
@@ -33,6 +44,8 @@ export type Leaf = {
   readonly bytes: Span | undefined;
   readonly rule: LeafRule;
   readonly type: AbiType;
+  /** Present for a member of a signed message, which sits in the message, not in `data`. */
+  readonly message?: MessageLeaf;
 };
 
 export type FieldCheck =
@@ -52,6 +65,11 @@ type Context = {
   readonly leaves: Leaf[];
   readonly root: Uint8Array;
   readonly seen: Map<Values, Map<LeafRule, bigint>>;
+  readonly messages: Messages;
+  /** Each `lookup` URL whose message the check needed and no given text held. */
+  readonly lookups: string[];
+  /** Each message that hashed to its digest, cut to the struct's members. */
+  readonly signed: string[];
 };
 
 const RAY = 10n ** 27n;
@@ -82,6 +100,7 @@ function checkSharePrice(rule: Extract<Rule, { kind: 'share-price' }>, price: bi
 }
 
 function render(value: ConstValue): string {
+  if (value.kind === 'string') return JSON.stringify(Buffer.from(value.value.slice(2), 'hex').toString('utf8'));
   return typeof value.value === 'bigint' || typeof value.value === 'boolean' ? String(value.value) : value.value;
 }
 
@@ -131,11 +150,17 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
   }
 }
 
-function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span | undefined, callPath: string, arg: string, context: Context): void {
-  if (rule.kind === 'call' || rule.kind === 'items' || rule.kind === 'fields') throw new Error(`a ${rule.kind} rule is not a leaf`);
-  context.leaves.push({ callPath, arg, bytes, rule, type });
+function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span | undefined, callPath: string, arg: string, context: Context, message?: MessageLeaf): void {
+  if (rule.kind === 'call' || rule.kind === 'items' || rule.kind === 'fields' || rule.kind === 'packed' || rule.kind === 'eip712') throw new Error(`a ${rule.kind} rule is not a leaf`);
+  context.leaves.push({ callPath, arg, bytes, rule, type, ...(message === undefined ? {} : { message }) });
   remember(rule, actual, context);
   if (rule.kind === 'free') return;
+  if (rule.kind === 'at-least') {
+    const card = context.values.get(rule.field);
+    if (card?.kind !== 'amount') context.unverifiable.push(`no card amount ${rule.field}`);
+    else if (actual.kind !== 'uint' || actual.value < card.value) context.findings.push({ callPath, arg, bytes, expected: `at least ${card.value}`, actual: render(actual) });
+    return;
+  }
   if (rule.kind === 'equals') {
     const expected = context.seen.get(context.values)?.get(rule.rule);
     if (expected === undefined) context.unverifiable.push(`no value at ${rule.path}`);
@@ -153,11 +178,82 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
   context.findings.push({ callPath, arg, bytes, expected: render(expected), actual: render(actual) });
 }
 
+function packedValue(type: AbiType, bytes: Uint8Array): ConstValue {
+  const word = BigInt(`0x${bytesToHex(bytes)}`);
+  switch (type.kind) {
+    case 'address':
+      return { kind: 'address', value: `0x${bytesToHex(bytes)}` as Address };
+    case 'uint':
+      return { kind: 'uint', value: word };
+    case 'int':
+      return { kind: 'int', value: BigInt.asIntN(type.bits, word) };
+    case 'bool':
+      return { kind: 'bool', value: word !== 0n };
+    case 'fixed-bytes':
+      return { kind: 'fixed-bytes', value: `0x${bytesToHex(bytes)}` as Hex };
+    default:
+      throw new Error(`a packed ${type.kind}`);
+  }
+}
+
+/**
+ * The message whose digest is `digest`, among the given texts. With none, the field check cannot tell what the Safe
+ * signs, and the lookup URL is noted for the caller to read.
+ */
+function checkMessage(message: SignedMessage, digest: Hex, span: Span, holder: Uint8Array, callPath: string, arg: string, context: Context): void {
+  for (const text of context.messages) {
+    const read = parseMessage(message.struct, text);
+    if (typeof read === 'string' || typedDataDigest(message.separator, message.struct, read.values) !== digest) continue;
+    context.signed.push(JSON.stringify(Object.fromEntries(message.struct.members.map((member, i) => [member.name, memberJson(read.values[i] as MemberValue)]))));
+    message.struct.members.forEach((member, i) => {
+      const value = read.values[i] as MemberValue;
+      const leaf: MessageLeaf = { message, body: read.body, values: read.values, member: i, digest: span };
+      compareLeaf(message.fields[i] as Rule, member.type, value, span, callPath, `${arg}.${member.name}`, context, leaf);
+    });
+    return;
+  }
+  const url = message.lookup.replace('{arg}', `0x${bytesToHex(holder)}`);
+  context.lookups.push(url);
+  context.unverifiable.push(`${callPath} ${arg}: no ${message.struct.name} read from ${url} hashes to ${digest}`);
+}
+
+function checkPacked(parts: readonly PackedPart[], actual: { readonly value: Uint8Array; readonly span: Span }, callPath: string, arg: string, context: Context): void {
+  const size = parts.reduce((sum, part) => sum + part.size, 0);
+  if (actual.value.length !== size) {
+    const layout = parts.map((part) => `${part.name} ${canonicalType(part.type)}`).join(', ');
+    context.findings.push({ callPath, arg, bytes: actual.span, expected: `${size} bytes: ${layout}`, actual: `${actual.value.length} bytes` });
+    return;
+  }
+  let offset = 0;
+  for (const part of parts) {
+    const bytes = actual.value.subarray(offset, offset + part.size);
+    const span: Span = [actual.span[0] + offset, actual.span[0] + offset + part.size];
+    offset += part.size;
+    if (part.type.kind === 'bool' && (bytes[0] ?? 0) > 1) {
+      context.findings.push({ callPath, arg: `${arg}.${part.name}`, bytes: span, expected: '0x00 or 0x01, as abi.encodePacked writes a bool', actual: `0x${bytesToHex(bytes)}` });
+      continue;
+    }
+    const value = packedValue(part.type, bytes);
+    if (part.rule.kind === 'eip712') checkMessage(part.rule.message, value.value as Hex, span, actual.value, callPath, `${arg}.${part.name}`, context);
+    else compareLeaf(part.rule, part.type, value, span, callPath, `${arg}.${part.name}`, context);
+  }
+}
+
 /** `itemContexts`, for a merged call's items, gives each item the card values of the operation that put it in. */
 function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: string, arg: string, context: Context, itemContexts?: readonly Context[]): void {
   if (rule.kind === 'free') {
     context.leaves.push({ callPath, arg, bytes: actual.span, rule, type });
     if (actual.kind === 'uint') remember(rule, actual, context);
+    return;
+  }
+  if (rule.kind === 'packed') {
+    if (actual.kind !== 'bytes') throw new Error('a packed rule on a value that is not bytes');
+    checkPacked(rule.parts, actual, callPath, arg, context);
+    return;
+  }
+  if (rule.kind === 'eip712') {
+    if (actual.kind !== 'fixed-bytes') throw new Error('an eip712 rule on a value that is not bytes32');
+    checkMessage(rule.message, actual.value, actual.span, hexToBytes(actual.value.slice(2)), callPath, arg, context);
     return;
   }
   if (rule.kind === 'call') {
@@ -227,7 +323,11 @@ function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context, it
   }
 }
 
-export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[] };
+/**
+ * `lookups`: each URL whose signed message the check needed and was not given. `signed`: each given message that hashed
+ * to its digest, cut to the struct's members, the only part a verdict file needs to keep.
+ */
+export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[]; readonly lookups: readonly string[]; readonly signed: readonly string[] };
 
 export type Values = ReadonlyMap<string, ResolvedValue>;
 
@@ -283,8 +383,9 @@ export function checkTemplateFields(
   card: ResolvedCard,
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
+  messages: Messages = [],
 ): FieldCheck {
-  return inspectTemplateFields(tx, card, templates, registry).check;
+  return inspectTemplateFields(tx, card, templates, registry, messages).check;
 }
 
 /** `checkTemplateFields`, plus every leaf it reached, for the mutation check. */
@@ -293,12 +394,13 @@ export function inspectTemplateFields(
   card: ResolvedCard,
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
+  messages: Messages = [],
 ): Inspection {
   const operations: { template: Template; values: Values }[] = [];
   const nonces: { rule: Rule; values: Values }[] = [];
   for (const op of card.operations) {
     const template = templates.get(op.template);
-    if (template === undefined) return { check: { kind: 'unverifiable', reasons: [`no template ${op.template}`] }, leaves: [] };
+    if (template === undefined) return { check: { kind: 'unverifiable', reasons: [`no template ${op.template}`] }, leaves: [], lookups: [], signed: [] };
     operations.push({ template, values: op.values });
     if (template.nonce !== undefined) nonces.push({ rule: template.nonce, values: op.values });
   }
@@ -306,7 +408,9 @@ export function inspectTemplateFields(
   const findings: Finding[] = [];
   const unverifiable: string[] = [];
   const leaves: Leaf[] = [];
-  const done = (check: FieldCheck): Inspection => ({ check, leaves });
+  const lookups: string[] = [];
+  const signed: string[] = [];
+  const done = (check: FieldCheck): Inspection => ({ check, leaves, lookups, signed });
   const seen = new Map<Values, Map<LeafRule, bigint>>();
   const contextFor = (values: Values, root: Uint8Array): Context => ({
     safe: card.safe,
@@ -317,6 +421,9 @@ export function inspectTemplateFields(
     leaves,
     root,
     seen,
+    messages,
+    lookups,
+    signed,
   });
   for (const { rule, values } of nonces) {
     compareLeaf(rule, { kind: 'uint', bits: 256 }, { kind: 'uint', value: tx.nonce }, undefined, 'safeTx', 'nonce', contextFor(values, new Uint8Array()));

@@ -1,5 +1,6 @@
 import type { Transport } from '../chain/rpc.ts';
 import type { Env } from '../keys.ts';
+import type { MessageReader } from '../verify/verify.ts';
 
 export type Io = {
   readonly env: Env;
@@ -17,6 +18,8 @@ export type Io = {
   readonly transport: Transport;
   /** GET a JSON document, for the Safe Transaction Service. */
   readonly fetchJson: (url: string) => Promise<unknown>;
+  /** A signed message's text read from a template's `lookup`, or why it could not be read. */
+  readonly readMessage: MessageReader;
 };
 
 export const OK = 0;

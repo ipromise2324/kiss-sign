@@ -1,0 +1,157 @@
+{
+  "title": "在 CoW Swap 下賣單，並授權剛好的數量",
+  "summary": "Safe 用 MultiSend 做兩件事：先把要賣的數量剛好授權給 CoW 的 vault relayer，再呼叫結算合約的 `setPreSignature` 預簽賣單。交易裡只有訂單的雜湊，verify 從 CoW 的 API 讀回訂單原文，算出同一個雜湊後逐項比對。授權留著給之後成交用，最多就是你填的賣出數量。",
+  "verdict": {
+    "status": "caution",
+    "text": "訂單內容由雜湊鎖住，授權剛好是賣出數量；verify 依賴 CoW API。"
+  },
+  "flow": [],
+  "protocols": {
+    "cowswap": {
+      "intro": "CoW Protocol（CoW Swap）：用批次拍賣撮合的交易協議，訂單由 solver 競標成交。",
+      "audits": {
+        "text": "GPv2 合約 2021 年由 G0 Group 與 Hacken 審計，報告在合約 repo 的 audits 資料夾。",
+        "sources": [
+          "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/audits/GnosisProtocolV2May2021.pdf"
+        ]
+      },
+      "incidents": [
+        {
+          "text": "Barter solver 的合約有任意呼叫漏洞，被拿走結算合約裡累積的手續費約 16.6 萬美元；使用者的錢沒有受影響。",
+          "sources": [
+            "https://cow.fi/learn/cow-swap-solver-exploit-post-mortem"
+          ]
+        }
+      ]
+    }
+  },
+  "judgments": [
+    {
+      "text": "verify 要從 CoW 的訂單 API（api.cow.fi）讀回訂單原文。API 讀不到時結果是 UNVERIFIABLE。API 回的內容只當資料，雜湊對不上就不算數。",
+      "recommendation": "UNVERIFIABLE 時不要簽，等 API 恢復再跑一次 verify。"
+    },
+    {
+      "text": "卡片的「最少收到的數量」要你自己填：CoW app 的滑價每次報價不同（smart slippage），鏈上也沒有 CoW 的報價可讀。",
+      "recommendation": "照 CoW app 顯示的最少收到數量填，不要填得更低。"
+    },
+    {
+      "text": "這兩項 app 會自己填，模板不限制：到期時間（app 設 30 分鐘）和 appData（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。",
+      "recommendation": "可以接受。訂單過期前不想要了，用 Safe 撤回。"
+    }
+  ],
+  "reviews": {
+    "gpv2-settlement/source.site": {
+      "status": "confirmed",
+      "text": "DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。",
+      "recommendation": "可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。"
+    },
+    "gpv2-settlement/source.more.1.site": {
+      "status": "confirmed",
+      "text": "DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。",
+      "recommendation": "可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。"
+    },
+    "gpv2-settlement/doc.0xec6cb13f.site": {
+      "status": "confirmed",
+      "text": "文件頁是 github.com/cowprotocol/contracts 的 GPv2Signing.sol，commit 在預設分支；DefiLlama 沒登記 GitHub 組織，所以沒得比。docs.cow.fi 連到同一個 repo。",
+      "recommendation": "可以接受。"
+    },
+    "gpv2-vault-relayer/source.site": {
+      "status": "confirmed",
+      "text": "DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。",
+      "recommendation": "可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。"
+    },
+    "gpv2-vault-relayer/source.more.1.site": {
+      "status": "confirmed",
+      "text": "DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。",
+      "recommendation": "可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。"
+    }
+  },
+  "entries": {
+    "usdc": {
+      "role": "可選的代幣：Circle 發行的 USDC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "usdt": {
+      "role": "可選的代幣：Tether 發行的 USDT",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
+          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "morpho": {
+      "role": "可選的代幣：Morpho 的治理代幣",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
+          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "cbbtc": {
+      "role": "可選的代幣：Coinbase 發行的 cbBTC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
+          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "gpv2-settlement": {
+      "role": "CoW 的結算合約：記下 Safe 預先簽好的訂單，solver 之後在這裡成交",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 GPv2Settlement，創建者 0x7eabac82dA8eA6AC980D619Cb562a9924D1e3bAa，創建交易就是 networks.json 記的部署交易",
+          "url": "https://etherscan.io/address/0x9008D19f58AAbD9eD0D60971565AA8510560ab41#code",
+          "result": "pass"
+        },
+        {
+          "text": "docs.cow.fi 的核心合約頁列出這個地址，標示不可升級（頁面的地址在 GitHub 連結旁，程式對不上名稱）",
+          "url": "https://docs.cow.fi/cow-protocol/reference/contracts/core",
+          "result": "pass"
+        }
+      ]
+    },
+    "gpv2-vault-relayer": {
+      "role": "CoW 的 vault relayer：成交時只有結算合約能叫它從 Safe 拿走賣出的代幣",
+      "sources": [
+        {
+          "text": "Etherscan：跟結算合約同一筆部署交易建立；結算合約的 vaultRelayer() 讀出來就是這個地址",
+          "url": "https://etherscan.io/address/0xC92E8bdf79f0507f65a392b0ab4667716BFE0110#code",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "fields": {
+    "2.setPreSignature.orderUid": "訂單 uid，56 bytes：訂單雜湊、擁有者、到期時間接在一起。合約只把它記成「已預簽」，不檢查內容。",
+    "2.setPreSignature.orderUid.digest": "訂單的 EIP-712 雜湊。verify 從 CoW 的訂單 API 讀回訂單原文，自己算雜湊，一樣才拿來比對下面每一項。",
+    "2.setPreSignature.orderUid.digest.sellToken": "要賣的代幣。",
+    "2.setPreSignature.orderUid.digest.buyToken": "要買的代幣。",
+    "2.setPreSignature.orderUid.digest.receiver": "買到的代幣給誰。CoW app 填 Safe 自己；填別的地址就會把錢送走。",
+    "2.setPreSignature.orderUid.digest.sellAmount": "要賣的數量，賣單整筆賣出。",
+    "2.setPreSignature.orderUid.digest.buyAmount": "最少要買到的數量（限價）。結算合約保證成交不少於這個數。",
+    "2.setPreSignature.orderUid.digest.validTo": "訂單到期時間（Unix 秒）。CoW app 設為報價後 30 分鐘。",
+    "2.setPreSignature.orderUid.digest.appData": "app 附在訂單上的 JSON 的雜湊（app 名稱、滑價、手續費、hooks）。結算合約不讀它。",
+    "2.setPreSignature.orderUid.digest.feeAmount": "訂單內扣的手續費，現在 CoW 的訂單都是 0。",
+    "2.setPreSignature.orderUid.digest.kind": "sell 表示賣單：賣出固定數量，買到至少限價。",
+    "2.setPreSignature.orderUid.digest.partiallyFillable": "false 表示一次全部成交，不分次。",
+    "2.setPreSignature.orderUid.digest.sellTokenBalance": "erc20 表示從 Safe 的一般代幣餘額扣，不用 Balancer vault。",
+    "2.setPreSignature.orderUid.digest.buyTokenBalance": "erc20 表示買到的代幣直接轉進 Safe 的一般餘額。",
+    "2.setPreSignature.orderUid.owner": "訂單擁有者，必須是送出這筆交易的 Safe；合約也會檢查。",
+    "2.setPreSignature.orderUid.validTo": "跟訂單裡的到期時間相同。",
+    "2.setPreSignature.signed": "true 表示預簽；false 是撤回。",
+    "1.approve.spender": "被授權者：CoW 的 vault relayer。CoW app 預設授權無上限，模板要你在 app 選剛好的數量。",
+    "1.approve.value": "授權的數量，必須剛好等於要賣的數量。"
+  }
+}

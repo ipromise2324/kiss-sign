@@ -56,6 +56,11 @@
       "name": "Circle CCTP",
       "url": "https://www.circle.com/cross-chain-transfer-protocol",
       "github": []
+    },
+    {
+      "slug": "cowswap",
+      "name": "CoWSwap",
+      "github": []
     }
   ],
   "coingecko": [
@@ -526,6 +531,40 @@
     "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc": {
       "kind": "served",
       "blocks": []
+    },
+    "https://raw.githubusercontent.com/cowprotocol/contracts/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "GPv2AllowListAuthentication 11155111 address 0x2c4c28DDBdAc9C5E7055b4C863b72eA0149D8aFE transactionHash 0x73c54c75b3f382304f3adf33e3876c8999fb10df786d4a902733369251033cd1"
+        },
+        {
+          "text": "GPv2Settlement 1 address 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 transactionHash 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3"
+        },
+        {
+          "text": "GPv2Settlement 11155111 address 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 transactionHash 0x6bba22a00ffcff6bca79aced546e18d2a5a4f4e484a4e4dbafab13daf42f718d"
+        },
+        {
+          "text": "GPv2VaultRelayer 1 address 0xC92E8bdf79f0507f65a392b0ab4667716BFE0110 transactionHash 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/cowprotocol/cow-sdk/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "export const COMPOSABLE_COW = '0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74'"
+        },
+        {
+          "text": "const VAULT_RELAYER = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110'"
+        },
+        {
+          "text": "const VAULT_RELAYER_STAGING = '0xC7242d167563352E2BCA4d71C043fbe542DB8FB2'"
+        },
+        {
+          "text": "const SETTLEMENT_CONTRACT = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'"
+        }
+      ]
     }
   },
   "commits": {
@@ -553,6 +592,16 @@
       "kind": "on-default",
       "branch": "main",
       "status": "identical"
+    },
+    "cowprotocol/contracts@ea0c36591b6da73b9ba4e2e2107897080c7f9b68": {
+      "kind": "on-default",
+      "branch": "main",
+      "status": "identical"
+    },
+    "cowprotocol/cow-sdk@229ab19e1af1b958a571e6f0bd9c8341624f80f4": {
+      "kind": "on-default",
+      "branch": "main",
+      "status": "behind"
     }
   },
   "apis": {

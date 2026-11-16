@@ -1,0 +1,15 @@
+{
+  "uid": "0xc56f992c42c73e9460d18fcd1d7303adc49a0d85ab05aa42e4b18819841f2c8d751725ced1580d936fa12f6201a76fa02fcba5fd6aeb569d",
+  "sellToken": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+  "buyToken": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "receiver": "0x751725ced1580d936fa12f6201a76fa02fcba5fd",
+  "sellAmount": "78693579129",
+  "buyAmount": "78599366616",
+  "validTo": 1793808029,
+  "appData": "0x844bf2d2161c6a3d53409ea80454a333c31452e39d871178ded3afc4eb65437b",
+  "feeAmount": "0",
+  "kind": "sell",
+  "partiallyFillable": false,
+  "sellTokenBalance": "erc20",
+  "buyTokenBalance": "erc20"
+}
