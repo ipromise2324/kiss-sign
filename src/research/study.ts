@@ -36,6 +36,8 @@ export function loosen(template: Template): Loosened {
     switch (rule.kind) {
       case 'call':
         return { kind: 'call', call: looseCall(rule.call, wideTrailer, record) };
+      case 'keccak':
+        throw new Error('a keccak rule binds only a view argument');
       case 'items':
         return { kind: 'items', items: rule.items.map((item) => looseRule(item, wideTrailer, record)) };
       case 'fields':

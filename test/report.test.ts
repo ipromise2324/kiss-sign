@@ -205,7 +205,7 @@ test("the report reads at its latest block the code of an entry no ABI proof cov
   assert.deepEqual(await readToday(replayReader(recorded.exchanges()), subject, seen, block), live, 'the recorded reads give the same result');
   const committed = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, live);
   assert.match(committed, /^\| `liquidity` \| PASS \| 300 \|$/m);
-  assert.match(committed, /^\| `liquidity` \| `0x5252525252525252525252525252525252525252` \| not proved: the operation reaches it only through `dependsOn`/m);
+  assert.match(committed, /^\| `liquidity` \| `0x5252525252525252525252525252525252525252` \| not proved: no call targets it and nothing the program reads is decoded with its ABI/m);
   const other = await readToday(createReader(REPLAY_ENDPOINTS, serving('0x6003' as Hex), { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] }), subject, seen, { ...block, number: 400n });
   assert.deepEqual(compareReports(committed, quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, other)), [
     `Today's code › \`liquidity\` › Today: committed PASS, live FINDING: runs \`${keccakCode('0x6003' as Hex)}\``,
@@ -525,7 +525,7 @@ test('a market field lists every market with its id, lltv and parts, binds each 
   );
   assert.deepEqual(
     entriesOf(subject, reg).map((e) => e.name),
-    ['usdc', 'cbbtc', 'morpho-blue', 'morpho-oracle-cbbtc-usdc-86', 'adaptive-curve-irm'],
+    ['usdc', 'cbbtc', 'morpho-blue', 'adaptive-curve-irm', 'morpho-oracle-cbbtc-usdc-86'],
   );
 });
 

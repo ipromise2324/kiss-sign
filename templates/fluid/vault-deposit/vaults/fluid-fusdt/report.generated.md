@@ -103,7 +103,7 @@ An entry with `routes` sends each function selector to an implementation of its 
 
 ### Today's code
 
-No ABI proof compares these entries' code with the chain: the operation reaches one only through `dependsOn`, or its calls run in the implementations its `routes` reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.
+No ABI proof compares these entries' code with the chain: no call or answer is decoded with one's ABI, or its calls run in the implementations its `routes` reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.
 
 | Entry | Today | Block |
 | --- | --- | --- |
@@ -159,7 +159,7 @@ Each implementation an entry's `routes` reach, in every span of its code pin, wi
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | PROVEN | none | `TetherToken`, solc `0.4.18+commit.9cf6e910` | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26399489 |
 | `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | PROVEN | none | `fToken`, solc `0.8.21+commit.d9974bed` | `0x662b760b02d5258965404cd8daca2c1ce5ef5567417cedec5a0acf895b775195` | PASS | 38 immutable, 0 library spans masked | 26384738 |
 | `fluid-lending-factory` | `0x54B91A0D94cb471F37f949c60F7Fa7935b551D03` | PROVEN | none | `FluidLendingFactory`, solc `0.8.21+commit.d9974bed` | `0x8489c155ce8c58e8fd4a6dc6799c1e5d23259b55f69ceaeb8d525db13da01e9a` | PASS | 3 immutable, 0 library spans masked | 26426609 |
-| `fluid-liquidity` | `0x52Aa899454998Be5b000Ad077a46Bbe360F4e497` | not proved: the operation reaches it only through `dependsOn`, so no call targets it and none is decoded with its ABI; its code pin is above | | | | | | |
+| `fluid-liquidity` | `0x52Aa899454998Be5b000Ad077a46Bbe360F4e497` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 
 ## Vaults
 

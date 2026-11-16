@@ -181,7 +181,7 @@ function ownerBefore(rule: Extract<Rule, { kind: 'owner-before' }>, context: Con
 }
 
 function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span | undefined, callPath: string, arg: string, context: Context, message?: MessageLeaf): void {
-  if (rule.kind === 'call' || rule.kind === 'items' || rule.kind === 'fields' || rule.kind === 'packed' || rule.kind === 'eip712') throw new Error(`a ${rule.kind} rule is not a leaf`);
+  if (rule.kind === 'call' || rule.kind === 'keccak' || rule.kind === 'items' || rule.kind === 'fields' || rule.kind === 'packed' || rule.kind === 'eip712') throw new Error(`a ${rule.kind} rule is not a leaf`);
   context.leaves.push({ callPath, arg, bytes, rule, type, ...(message === undefined ? {} : { message }) });
   remember(rule, actual, context);
   if (rule.kind === 'free') return;

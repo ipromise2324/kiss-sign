@@ -396,16 +396,16 @@ test('a balance the card does not explain is still a mismatch when the view is r
   assert.equal(judged(observed).kind, 'mismatch');
 });
 
-test('a view must name a registry contract, a function with its returns, bound arguments and numeric return values to judge', () => {
+test('a view must name a registry contract or a contract card field, a function with its returns, bound arguments and numeric return values to judge', () => {
   const view = (change: (v: (typeof SUPPLY)['effects']['views'][number]) => void) => (raw: typeof SUPPLY) => change(raw.effects.views[0]!);
-  assert.equal(refusal(view((v) => void (v.to = { card: 'market.lending' } as never))), 'effects.views[0].to: must name a registry contract');
+  assert.equal(refusal(view((v) => void (v.to = { card: 'market.lending' } as never))), 'effects.views[0].to: must name a registry contract, or a contract card field or one of its attributes');
   assert.match(refusal(view((v) => void (v.function = 'position(bytes32 id, address user)'))), /^effects\.views\[0\]\.function: .* expected "returns \("$/);
   assert.equal(
     refusal(view((v) => void (v.args = { id: { free: 'any market' }, user: { safe: true } } as never))),
     "effects.views[0].args.id: a view's argument is bound by card, safe, contract or const, not free",
   );
   assert.equal(refusal(view((v) => void (v.change = { shares: 'increases' } as never))), 'effects.views[0].change.shares: not a named return value of position');
-  assert.equal(refusal(view((v) => void (v.change = { supplyShares: 'grows' } as never))), 'effects.views[0].change.supplyShares: not one of increases, decreases, same');
+  assert.equal(refusal(view((v) => void (v.change = { supplyShares: 'grows' } as never))), 'effects.views[0].change.supplyShares: not one of increases, decreases, same, or card.<amount or percent field>');
   assert.equal(refusal(view((v) => void (v.change = {} as never))), 'effects.views[0].change: names no return value');
   assert.equal(
     refusal(

@@ -8,7 +8,7 @@ import { MARKET_ENTRY_PARTS, isAttribute, isMarketEntryPart } from './registry.t
 import type { Market, Registry, RegistryEntry } from './registry.ts';
 import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
-import { contractRefusal } from './template/template.ts';
+import { WAD, contractRefusal } from './template/template.ts';
 import type { CardRef, Template } from './template/template.ts';
 
 /** What the signer confirms at each signing: which templates, and each one's values. Addresses appear only as names. */
@@ -19,6 +19,8 @@ export type ResolvedValue =
   | { readonly kind: 'contract'; readonly name: string; readonly entry: RegistryEntry }
   | { readonly kind: 'amount'; readonly value: bigint }
   | { readonly kind: 'nonce'; readonly value: bigint }
+  /** In WAD base units: 100% is 10^18. */
+  | { readonly kind: 'percent'; readonly value: bigint }
   | { readonly kind: 'threshold'; readonly value: bigint }
   | { readonly kind: 'address'; readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' }
   | { readonly kind: 'market'; readonly market: Market };
@@ -36,6 +38,7 @@ export type CardRefusal =
   | 'wrong-protocol'
   | 'not-an-amount'
   | 'not-a-nonce'
+  | 'not-a-percent'
   | 'not-a-threshold'
   | 'not-the-same'
   | 'two-settings-changes';
@@ -130,6 +133,12 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
           values.set(name, { kind: field.kind, value });
           break;
         }
+        case 'percent': {
+          const value = parseUint256(raw);
+          if (value === undefined || value > WAD) return refuse('not-a-percent', name, `not a percent in WAD base units, ${WAD} at most`);
+          values.set(name, { kind: 'percent', value });
+          break;
+        }
         case 'contract': {
           const entry = context.registry.entries.get(raw);
           if (entry === undefined) return refuse('unknown-name', name, `${JSON.stringify(raw)} is not in the contract registry`);
@@ -202,6 +211,7 @@ export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedVal
   switch (value.kind) {
     case 'amount':
     case 'nonce':
+    case 'percent':
     case 'threshold':
       return { kind: 'uint', value: value.value };
     case 'address':
@@ -224,6 +234,9 @@ export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedVal
 }
 
 /** A market as the signer checks it: its name, id and lltv, then each part's registry name and full address. */
+/** A percent in WAD base units as the signer typed it, such as `35.5%`. */
+export const percentText = (value: bigint): string => `${value / 10n ** 16n}${value % 10n ** 16n === 0n ? '' : `.${(value % 10n ** 16n).toString().padStart(16, '0').replace(/0+$/, '')}`}%`;
+
 export function marketLines(market: Market): string[] {
   const lltv = `${market.lltv / 10n ** 18n}.${(market.lltv % 10n ** 18n).toString().padStart(18, '0')}`.replace(/\.?0+$/, '');
   return [
