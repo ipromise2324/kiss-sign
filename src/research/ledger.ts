@@ -2,9 +2,9 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import { MARKET_ENTRY_PARTS, parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { checkSources, githubLine, sourceSiteLine } from './listings.ts';
+import { checkSources, githubLine } from './listings.ts';
 import type { Line } from './listings.ts';
-import { entriesOf, hasMarket, pinVerdict, wordOf } from './report.ts';
+import { docSiteLine, entriesOf, functionOnPage, hasMarket, pinVerdict } from './report.ts';
 import type { DocLink, ReportInputs, SpanCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './vault-evidence.ts';
@@ -259,10 +259,10 @@ function docResults(doc: DocLink, inputs: ReportInputs): Result[] {
       ? { kind: 'no-answer' }
       : page?.kind !== 'served'
         ? { kind: 'page-not-fetched' }
-        : page.blocks.some((block) => wordOf(doc.fn).test(block.text))
+        : page.blocks.some((block) => functionOnPage(doc).test(block.text))
           ? { kind: 'agrees' }
           : { kind: 'name-not-on-page' };
-  const site = siteFinding(sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings));
+  const site = siteFinding(docSiteLine(doc, inputs.listings));
   const results = [result('page', pageFinding), result('site', site)];
   const url = new URL(doc.url);
   if (isGitHubPage(url)) {
