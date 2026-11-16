@@ -1,0 +1,206 @@
+{
+  "id": "uniswap/swap-permit",
+  "card": {
+    "sell-token": {
+      "kind": "contract",
+      "registryKind": "token"
+    },
+    "buy-token": {
+      "kind": "contract",
+      "registryKind": "token"
+    },
+    "sell-amount": {
+      "kind": "amount",
+      "of": "sell-token"
+    },
+    "min-buy": {
+      "kind": "amount",
+      "of": "buy-token"
+    }
+  },
+  "calls": [
+    {
+      "to": {
+        "contract": "universal-router-2.1.2"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "execute(bytes commands, bytes[] inputs, uint256 deadline)",
+      "args": {
+        "commands": {
+          "const": "0x0a10"
+        },
+        "inputs": {
+          "items": [
+            {
+              "encoded": {
+                "as": "PERMIT2_PERMIT(((address token, uint160 amount, uint48 expiration, uint48 nonce) details, address spender, uint256 sigDeadline) permitSingle, bytes signature)",
+                "args": {
+                  "permitSingle": {
+                    "fields": {
+                      "details": {
+                        "fields": {
+                          "token": {
+                            "card": "sell-token"
+                          },
+                          "amount": {
+                            "const": "1461501637330902918203684832716283019655932542975"
+                          },
+                          "expiration": {
+                            "free": "When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The Safe's owners signed it with the rest of the permit, so another value fails the signature and the swap reverts; verify's page shows the expiration the transaction leaves."
+                          },
+                          "nonce": {
+                            "free": "Permit2's nonce for this token and the router, which Permit2 requires to be the next one and which the owners signed; another value reverts."
+                          }
+                        }
+                      },
+                      "spender": {
+                        "contract": "universal-router-2.1.2"
+                      },
+                      "sigDeadline": {
+                        "free": "When the signed permit stops being usable, 30 minutes after the app asked for it. It is part of what the owners signed, so another value fails the signature and the swap reverts."
+                      }
+                    }
+                  },
+                  "signature": {
+                    "free": {
+                      "proof": "The Safe owners' signature of the permit, which Permit2 checks through the Safe's isValidSignature (EIP-1271) against the permit's own fields; other bytes fail it and the swap reverts."
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "encoded": {
+                "as": "V4_SWAP(bytes actions, bytes[] params)",
+                "args": {
+                  "actions": {
+                    "const": "0x070b0e"
+                  },
+                  "params": {
+                    "items": [
+                      {
+                        "encoded": {
+                          "as": "SWAP_EXACT_IN((address currencyIn, (address intermediateCurrency, uint24 fee, int24 tickSpacing, address hooks, bytes hookData)[] path, uint256[] minHopPriceX36, uint128 amountIn, uint128 amountOutMinimum) params)",
+                          "args": {
+                            "params": {
+                              "fields": {
+                                "currencyIn": {
+                                  "card": "sell-token"
+                                },
+                                "path": {
+                                  "items": [
+                                    {
+                                      "fields": {
+                                        "intermediateCurrency": {
+                                          "card": "buy-token"
+                                        },
+                                        "fee": {
+                                          "free": {
+                                            "route": "The fee of the Uniswap v4 pool the app's router picks for the two tokens. A pool is the two tokens, this fee, the tick spacing and the hooks, here none; another fee names another pool of the same two tokens, or none, which reverts. Anyone can open a v4 pool, so the price is guarded by the card's minimum, not by the pool: the Safe gets at least min-buy or the swap reverts."
+                                          }
+                                        },
+                                        "tickSpacing": {
+                                          "free": {
+                                            "route": "The tick spacing of the same pool, which the app picks with the fee; another value names another pool or none, as for the fee."
+                                          }
+                                        },
+                                        "hooks": {
+                                          "const": "0x0000000000000000000000000000000000000000"
+                                        },
+                                        "hookData": {
+                                          "const": "0x"
+                                        }
+                                      }
+                                    }
+                                  ]
+                                },
+                                "minHopPriceX36": {
+                                  "free": "Per-pool price floors the app may add, one per hop or none. The router only reverts when a hop's price falls below one, so any value can only stop the swap; the card's minimum is checked on amountOutMinimum whatever they say."
+                                },
+                                "amountIn": {
+                                  "card": "sell-amount"
+                                },
+                                "amountOutMinimum": {
+                                  "atLeast": "card.min-buy"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "encoded": {
+                          "as": "SETTLE(address currency, uint256 amount, bool payerIsUser)",
+                          "args": {
+                            "currency": {
+                              "card": "sell-token"
+                            },
+                            "amount": {
+                              "const": "0"
+                            },
+                            "payerIsUser": {
+                              "const": "true"
+                            }
+                          }
+                        }
+                      },
+                      {
+                        "encoded": {
+                          "as": "TAKE(address currency, address recipient, uint256 amount)",
+                          "args": {
+                            "currency": {
+                              "card": "buy-token"
+                            },
+                            "recipient": {
+                              "safe": true
+                            },
+                            "amount": {
+                              "const": "0"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "deadline": {
+          "free": "The time after which the router refuses the swap, which the app sets when it builds the transaction. A later deadline only lets the transaction run later; the Safe still gives exactly the card's amount and gets at least the card's minimum."
+        }
+      },
+      "trailer": {
+        "maxBytes": 46,
+        "why": "The Uniswap app appends a tag that starts with the ASCII bytes unix and holds a timestamp: 22 bytes on a call of its own and 46 inside a MultiSend in the Safe transactions studied. execute reads only its three arguments, as the router's registry entry says (ignoresTrailer)."
+      }
+    }
+  ],
+  "effects": {
+    "gives": [
+      {
+        "token": "card.sell-token",
+        "amount": "card.sell-amount"
+      }
+    ],
+    "gets": [
+      {
+        "token": "card.buy-token",
+        "amount": {
+          "atLeast": "card.min-buy"
+        }
+      }
+    ],
+    "approves": [
+      {
+        "token": "card.sell-token",
+        "spender": "universal-router-2.1.2",
+        "via": "permit2",
+        "amount": "unlimited"
+      }
+    ]
+  }
+}

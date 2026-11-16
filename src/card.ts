@@ -21,6 +21,7 @@ export type ResolvedValue =
   | { readonly kind: 'nonce'; readonly value: bigint }
   /** In WAD base units: 100% is 10^18. */
   | { readonly kind: 'percent'; readonly value: bigint }
+  | { readonly kind: 'threshold'; readonly value: bigint }
   | { readonly kind: 'address'; readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe' }
   | { readonly kind: 'market'; readonly market: Market };
 
@@ -38,7 +39,9 @@ export type CardRefusal =
   | 'not-an-amount'
   | 'not-a-nonce'
   | 'not-a-percent'
-  | 'not-the-same';
+  | 'not-a-threshold'
+  | 'not-the-same'
+  | 'two-settings-changes';
 
 export type Resolution =
   | { readonly kind: 'resolved'; readonly card: ResolvedCard }
@@ -100,6 +103,11 @@ function resolveAddress(name: string, context: CardContext): ResolvedValue | Car
 /** Turns each card value into what it names, using only the registry, the address book, and the Safe. */
 export function resolveCard(card: Card, context: CardContext): Resolution {
   const operations: ResolvedOperation[] = [];
+  const settings = card.operations.filter((op) => context.templates.get(op.template)?.effects.safe !== undefined);
+  if (settings.length > 1) {
+    const at = card.operations.indexOf(settings[1] as CardOperation);
+    return { kind: 'refused', reason: 'two-settings-changes', at: `operations[${at}]`, detail: "a card changes the Safe's owners or threshold in at most one operation; make each change its own transaction" };
+  }
   for (const [i, op] of card.operations.entries()) {
     const refuse = (reason: CardRefusal, field: string, detail: string): Resolution => ({
       kind: 'refused',
@@ -154,6 +162,18 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
           values.set(name, { kind: 'market', market });
           break;
         }
+        case 'threshold': {
+          const value = parseUint256(raw);
+          if (value === undefined || value === 0n) return refuse('not-a-threshold', name, 'not a whole number from 1');
+          values.set(name, { kind: 'threshold', value });
+          break;
+        }
+        case 'owner': {
+          const booked = context.addressBook.get(raw);
+          if (booked === undefined) return refuse('unknown-name', name, `${JSON.stringify(raw)} is not in the address book; add the owner with pnpm kiss-sign book add`);
+          values.set(name, { kind: 'address', name: raw, address: booked, from: 'address-book' });
+          break;
+        }
         case 'recipient': {
           const booked = context.addressBook.get(raw);
           if (raw === 'safe') values.set(name, { kind: 'address', name: raw, address: context.safe, from: 'safe' });
@@ -192,6 +212,7 @@ export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedVal
     case 'amount':
     case 'nonce':
     case 'percent':
+    case 'threshold':
       return { kind: 'uint', value: value.value };
     case 'address':
       return { kind: 'address', name: value.name, address: value.address };

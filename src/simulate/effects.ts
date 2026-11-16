@@ -6,7 +6,7 @@ import { canonicalType } from '../decode/abi.ts';
 import type { AbiParam, AbiType } from '../decode/abi.ts';
 import { decodeValues, encodeCall } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
-import type { Registry } from '../registry.ts';
+import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import type { BoundView, CallNode, CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect, ViewTarget } from '../template/template.ts';
 import type { Execution } from './events.ts';
@@ -57,7 +57,7 @@ export type Asset = 'eth' | Address;
  * A change of exactly `change`; of more than `change` when the Safe also gets a `positive` amount, or less when it gives
  * one; or, when the Safe gives `all` of a token, any change that leaves it holding none.
  */
-export type Expected = { readonly kind: 'exactly' | 'more-than' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
+export type Expected = { readonly kind: 'exactly' | 'more-than' | 'at-least' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
 
 export type EffectFinding =
   | { readonly kind: 'balance'; readonly asset: Asset; readonly expected: Exclude<Expected, { kind: 'all' }>; readonly actual: bigint }
@@ -132,6 +132,16 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         continue;
       }
       const base = known ?? { kind: 'exactly', change: 0n };
+      if (effect.amount.kind === 'at-least') {
+        const least = op.values.get(effect.amount.field);
+        if (least?.kind !== 'amount') reasons.push(`the card has no amount ${effect.amount.field}`);
+        else if (base.kind !== 'exactly' || stated.has(token)) reasons.push(mixed(token));
+        else {
+          stated.add(token);
+          changes.set(token, { kind: 'at-least', change: base.change + least.value });
+        }
+        continue;
+      }
       if (effect.amount.kind === 'positive') {
         if (base.kind !== 'exactly' && base.kind !== open) reasons.push(`the card leaves the change of ${token} open both ways`);
         else if (stated.has(token)) reasons.push(mixed(token));
@@ -153,6 +163,58 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
     }
   }
   return reasons.length > 0 ? { kind: 'unverifiable', reasons } : { kind: 'expected', changes };
+}
+
+/**
+ * The most each allowance from the Safe may end at, by route, token and spender, summed over the card's operations whose
+ * template leaves it open (`effects.approves`); `unlimited` when any of them keeps it so.
+ */
+export type KeptAllowances = ReadonlyMap<string, bigint | 'unlimited'>;
+
+export const keptKey = (via: AllowanceRoute, token: Address, spender: Address): string => `${via}|${token}|${spender}`;
+
+/** The allowances the card's templates keep (`effects.approves`), and why any could not be resolved. */
+export function keptAllowances(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): { readonly kept: KeptAllowances; readonly reasons: readonly string[] } {
+  const kept = new Map<string, bigint | 'unlimited'>();
+  const reasons: string[] = [];
+  for (const op of card.operations) {
+    for (const approval of templates.get(op.template)?.effects.approves ?? []) {
+      const token = addressOf(approval.token, op.values, registry);
+      const spender = registry.entries.get(approval.spender);
+      const amount = approval.amount.kind === 'card' ? op.values.get(approval.amount.field) : undefined;
+      if ('problem' in token) reasons.push(token.problem);
+      else if (spender === undefined) reasons.push(`the registry has no ${approval.spender}`);
+      else if (approval.amount.kind === 'card' && amount?.kind !== 'amount') reasons.push(`no card amount ${approval.amount.field}`);
+      else {
+        const key = keptKey(approval.via, token.address, spender.address);
+        const known = kept.get(key) ?? 0n;
+        kept.set(key, known === 'unlimited' || approval.amount.kind === 'unlimited' || amount?.kind !== 'amount' ? 'unlimited' : known + amount.value);
+      }
+    }
+  }
+  return { kept, reasons };
+}
+
+const keeps = (kept: KeptAllowances, via: AllowanceRoute, token: Address, spender: Address, after: bigint): boolean => {
+  const limit = kept.get(keptKey(via, token, spender));
+  return limit !== undefined && (limit === 'unlimited' || after <= limit);
+};
+
+/** An allowance the transaction left higher than it started, which a template on the card keeps; `expiration` only through Permit2. */
+export type KeptSeen = { readonly via: AllowanceRoute; readonly token: Address; readonly spender: Address; readonly amount: bigint; readonly expiration: bigint | undefined };
+
+/** The allowances `observed` left raised that the card's templates keep, for the signer to see what stays open. */
+export function keptSeen(observed: Observed, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): KeptSeen[] {
+  if (observed.kind !== 'executed') return [];
+  const { kept } = keptAllowances(card, templates, registry);
+  return [
+    ...observed.allowances
+      .filter((a) => a.after > a.before && keeps(kept, 'erc20', a.token, a.spender, a.after))
+      .map((a): KeptSeen => ({ via: 'erc20', token: a.token, spender: a.spender, amount: a.after, expiration: undefined })),
+    ...observed.permit2
+      .filter((p) => permit2Raised(p) && keeps(kept, 'permit2', p.token, p.spender, p.after.amount))
+      .map((p): KeptSeen => ({ via: 'permit2', token: p.token, spender: p.spender, amount: p.after.amount, expiration: p.after.expiration })),
+  ];
 }
 
 /** A view a template on the card reads, its arguments bound to this card, and the call as it reads in a finding. */
@@ -294,11 +356,19 @@ const CHANGED: Readonly<Record<ViewChange, (before: bigint, after: bigint) => bo
 };
 
 const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): boolean =>
-  expected.kind === 'exactly' ? actual === expected.change : expected.kind === 'more-than' ? actual > expected.change : actual < expected.change;
+  expected.kind === 'exactly'
+    ? actual === expected.change
+    : expected.kind === 'more-than'
+      ? actual > expected.change
+      : expected.kind === 'at-least'
+        ? actual >= expected.change
+        : actual < expected.change;
 
 /**
  * Every change to the Safe's balances must be one the card's effects explain, and no allowance, ERC-20 or Permit2, may
- * end higher than it started: an approval is spent in the transaction that gives it.
+ * end higher than it started: an approval is spent in the transaction that gives it, unless a template on the card leaves
+ * it open (`effects.approves`), and then it may end at no more than the card's amount, or at any amount for one kept
+ * `unlimited` to a spender that declares a standing allowance.
  */
 export function judgeEffects(
   observed: Observed,
@@ -324,11 +394,15 @@ export function judgeEffects(
     const actual = asset === 'eth' ? observed.eth : (observed.tokens.get(asset) ?? 0n);
     if (!meets(expected, actual)) findings.push({ kind: 'balance', asset, expected, actual });
   }
+  const { kept, reasons } = keptAllowances(card, templates, registry);
+  unread.push(...reasons);
   for (const allowance of observed.allowances) {
     // A lower allowance lets no one take more from the Safe than before, so only a rise must be explained.
-    if (allowance.after > allowance.before) findings.push({ kind: 'open-allowance', ...allowance });
+    if (allowance.after > allowance.before && !keeps(kept, 'erc20', allowance.token, allowance.spender, allowance.after)) findings.push({ kind: 'open-allowance', ...allowance });
   }
-  for (const allowance of observed.permit2) if (permit2Raised(allowance)) findings.push({ kind: 'open-permit2-allowance', ...allowance });
+  for (const allowance of observed.permit2) {
+    if (permit2Raised(allowance) && !keeps(kept, 'permit2', allowance.token, allowance.spender, allowance.after.amount)) findings.push({ kind: 'open-permit2-allowance', ...allowance });
+  }
   const expectedReads = expectedViews(card, templates, registry);
   unread.push(...expectedReads.reasons);
   for (const { view, call, text, values } of expectedReads.views) {
@@ -393,6 +467,11 @@ export function describeFinding(finding: EffectFinding, registry: Registry): str
     return `Permit2 allowance raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${show(finding.before)} before, ${show(finding.after)} after`;
   }
   const { expected } = finding;
-  const want = expected.kind === 'exactly' ? signed(expected.change) : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${signed(expected.change)}`;
+  const want =
+    expected.kind === 'exactly'
+      ? signed(expected.change)
+      : expected.kind === 'at-least'
+        ? `at least ${signed(expected.change)}`
+        : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${signed(expected.change)}`;
   return `${nameOf(finding.asset, registry)} changed by ${signed(finding.actual)}, the card explains ${want}`;
 }

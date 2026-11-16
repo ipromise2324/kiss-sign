@@ -46,8 +46,8 @@
                       "function": "increaseAbsoluteCap(bytes idData, uint256 newAbsoluteCap)",
                       "args": {
                         "idData": {
-                          "abi": {
-                            "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                          "encoded": {
+                            "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
                             "args": {
                               "kind": {
                                 "const": "this/marketParams"
@@ -79,8 +79,8 @@
                       "function": "increaseRelativeCap(bytes idData, uint256 newRelativeCap)",
                       "args": {
                         "idData": {
-                          "abi": {
-                            "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                          "encoded": {
+                            "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
                             "args": {
                               "kind": {
                                 "const": "this/marketParams"
@@ -123,8 +123,8 @@
               "function": "increaseAbsoluteCap(bytes idData, uint256 newAbsoluteCap)",
               "args": {
                 "idData": {
-                  "abi": {
-                    "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                  "encoded": {
+                    "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
                     "args": {
                       "kind": {
                         "const": "this/marketParams"
@@ -160,8 +160,8 @@
               "function": "increaseRelativeCap(bytes idData, uint256 newRelativeCap)",
               "args": {
                 "idData": {
-                  "abi": {
-                    "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                  "encoded": {
+                    "as": "capId(string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
                     "args": {
                       "kind": {
                         "const": "this/marketParams"

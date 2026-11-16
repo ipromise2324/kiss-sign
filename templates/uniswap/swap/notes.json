@@ -1,0 +1,128 @@
+{
+  "title": "用 Uniswap 兌換代幣（Permit2 授權已經有了）",
+  "summary": "Safe 呼叫 Uniswap Universal Router 的 `execute`，裡面只有一個 `V4_SWAP`：在一個沒有 hook 的 v4 池子，把你填的數量賣掉，買進的代幣全部給 Safe。router 透過 Permit2 從 Safe 拉代幣，所以 Safe 之前要已經授權過 Permit2 和 router（另外兩個模板 uniswap/approve-permit2、uniswap/allow-router 做這兩個授權，可以和這個放在同一筆 MultiSend）。",
+  "verdict": {
+    "status": "caution",
+    "text": "Safe 剛好給出你填的數量、收到不少於你填的最少數量；最少數量要你照 app 填。"
+  },
+  "flow": [],
+  "protocols": {
+    "uniswap-v4": {
+      "intro": "Uniswap：以太坊上最大的去中心化交易所；v4 的池子都在同一個 PoolManager 合約裡。",
+      "audits": {
+        "text": "v4 核心與周邊合約、Universal Router 都有公開的審計報告（OpenZeppelin、Spearbit、Certora 等），放在各 repo 的 audits 資料夾。",
+        "sources": [
+          "https://github.com/Uniswap/v4-core/tree/main/docs/security/audits",
+          "https://github.com/Uniswap/universal-router/tree/main/audits"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": "卡片的「最少收到的數量」要你自己填：Uniswap app 的滑價由它的交易 API 每次報價時算（自動滑價 0.5% 到 5.5%），價格來自 API 在很多池子間找的路由，鏈上沒有一個 view 讀得到。",
+      "recommendation": "照 app 確認畫面上的最少收到數量填，不要填得更低。"
+    },
+    {
+      "text": "池子（手續費和 tick 間距）由 app 選，模板不限，只要求沒有 hook。任何人都能開 v4 池子，所以價格只靠你填的最少數量保護：少於它，router 讓交易失敗，verify 也會 MISMATCH。",
+      "recommendation": "可以接受；最少收到的數量一定照 app 顯示的填。"
+    },
+    {
+      "text": "模板只接受 app 最常送的一種形狀：一個 v4 池子、先 swap 再 SETTLE 和 TAKE。app 走 v3、多跳、拆單或有 hook 的池子時，verify 會 MISMATCH，不是交易有問題。",
+      "recommendation": "MISMATCH 時看原因；是形狀不同就不要簽，請 AI 為那種形狀另做模板。"
+    }
+  ],
+  "reviews": {},
+  "entries": {
+    "usdc": {
+      "role": "可選的代幣：Circle 發行的 USDC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "usdt": {
+      "role": "可選的代幣：Tether 發行的 USDT",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
+          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "morpho": {
+      "role": "可選的代幣：Morpho 的治理代幣",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
+          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "cbbtc": {
+      "role": "可選的代幣：Coinbase 發行的 cbBTC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
+          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "universal-router-2.1.2": {
+      "role": "Uniswap 的 Universal Router 2.1.2：照指令清單執行兌換，只從呼叫它的地址透過 Permit2 拉代幣",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 UniversalRouter（已驗證，solc 0.8.26），創建者 0x2179a60856e37dfeaaca0ab043b931fe224b27b6",
+          "url": "https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85#code",
+          "result": "pass"
+        },
+        {
+          "text": "Uniswap 交易 API 的規格寫明：沒指定版本時預設用 2.1.2，也就是 app 今天送交易的 router",
+          "url": "https://trade-api.gateway.uniswap.org/v1/api.json",
+          "result": "pass"
+        },
+        {
+          "text": "已驗證原始碼：所有 Permit2 轉帳都用 msgSender()（呼叫 execute 的地址）當付款人，沒有 owner 和 proxy",
+          "url": "https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "fields": {
+    "1.execute.commands": "指令清單，每個 byte 一個指令。0x10 是 `V4_SWAP`，一次 v4 兌換。",
+    "1.execute.inputs": "每個指令一份參數，順序和指令清單一樣。",
+    "1.execute.inputs[0]": "`V4_SWAP` 的參數：v4 動作清單和每個動作的參數。",
+    "1.execute.inputs[0].V4_SWAP.actions": "v4 動作清單：0x07 `SWAP_EXACT_IN`（照輸入數量兌換）、0x0b `SETTLE`（付出賣的代幣）、0x0e `TAKE`（領走買到的代幣）。",
+    "1.execute.inputs[0].V4_SWAP.params": "三個動作各一份參數。",
+    "1.execute.inputs[0].V4_SWAP.params[0]": "`SWAP_EXACT_IN` 的參數。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params": "兌換的內容：賣什麼、經過哪個池子、賣多少、最少要拿到多少。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.currencyIn": "賣出的代幣。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path": "經過的池子，一個池子一項；模板只接受一個池子。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0]": "那個池子：另一邊的代幣、手續費、tick 間距、hook。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].intermediateCurrency": "這一跳換到的代幣，也就是買進的代幣。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].fee": "池子的手續費等級，app 選路由時決定；USDC 和 USDT 之間看過 7 和 8（百萬分之 7、8）。換成別的值就是別的池子或不存在的池子。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].tickSpacing": "池子的 tick 間距，和手續費一起決定是哪個池子；看過的都是 1。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].hooks": "池子的 hook 合約；零地址代表沒有 hook，兌換時不會跑任何額外的合約。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].hookData": "給 hook 的資料；沒有 hook，所以是空的。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.minHopPriceX36": "每一跳的最低價格，可有可無；只會讓價格太差時交易失敗。看過的交易都是空的。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.amountIn": "賣出的數量，以代幣的最小單位計。",
+    "1.execute.inputs[0].V4_SWAP.params[0].SWAP_EXACT_IN.params.amountOutMinimum": "最少要拿到的買進代幣數量；少於這個數，router 讓整筆交易失敗。",
+    "1.execute.inputs[0].V4_SWAP.params[1]": "`SETTLE` 的參數。",
+    "1.execute.inputs[0].V4_SWAP.params[1].SETTLE.currency": "要付給池子的代幣，也就是賣出的代幣。",
+    "1.execute.inputs[0].V4_SWAP.params[1].SETTLE.amount": "0 代表付清兌換欠下的全部數量，也就是 `amountIn`。",
+    "1.execute.inputs[0].V4_SWAP.params[1].SETTLE.payerIsUser": "true 代表由呼叫 router 的 Safe 付款，router 透過 Permit2 從 Safe 拉代幣。",
+    "1.execute.inputs[0].V4_SWAP.params[2]": "`TAKE` 的參數。",
+    "1.execute.inputs[0].V4_SWAP.params[2].TAKE.currency": "要領走的代幣，也就是買進的代幣。",
+    "1.execute.inputs[0].V4_SWAP.params[2].TAKE.recipient": "誰收到買進的代幣；必須是 Safe 自己。",
+    "1.execute.inputs[0].V4_SWAP.params[2].TAKE.amount": "0 代表領走兌換得到的全部數量。",
+    "1.execute.deadline": "過了這個時間 router 就拒絕這筆兌換；app 建交易時設定，看過的交易大約是 30 分鐘後。"
+  }
+}

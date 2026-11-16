@@ -1,4 +1,4 @@
-import { hexToBytes } from '@noble/hashes/utils.js';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { SHOWN_PLACES, groupedTokens, wholeTokens } from '../chain/decimals.ts';
@@ -13,8 +13,8 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { isEncoding, refNames, slippageBps, viewTargetNames } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, FreeClaim, Rule, Template, TemplateCall, TokenRef, ViewChange, ViewEffect, ViewExpectation } from '../template/template.ts';
+import { refNames, slippageBps, viewTargetNames } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef, ViewChange, ViewEffect, ViewExpectation } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
@@ -221,6 +221,8 @@ const KIND_WORDS: Readonly<Record<RegistryEntry['kind'], string>> = {
   lending: '借貸合約',
   oracle: '價格來源',
   irm: '利率模型',
+  allowance: '授權合約',
+  singleton: 'Safe 合約本體',
 };
 const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', adapter: '轉接合約', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
 
@@ -240,6 +242,10 @@ function kindWord(field: CardField, template: Template): string {
       return '收款人';
     case 'nonce':
       return 'nonce';
+    case 'owner':
+      return '簽署人';
+    case 'threshold':
+      return '門檻';
     case 'market':
       return '市場';
     case 'percent':
@@ -265,6 +271,7 @@ const FREE_WORDS: Readonly<Record<FreeClaim, string>> = {
   scalar: '換成別的值測過，結果不變或交易失敗',
   proof: '合約會驗證它，換成別的值交易就失敗',
   unread: '合約不讀它，換成別的值結果一樣',
+  route: '換成別的值測過，會走別的池子，收到的仍不少於卡片',
 };
 const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}`>, string>> = { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠' };
 
@@ -458,8 +465,10 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
   switch (rule.kind) {
     case 'card': {
       const kind = template.card.get(rule.ref.field)?.kind;
-      return { who: kind === 'amount' || kind === 'nonce' || kind === 'percent' ? 'you-type' : 'you-pick', field: rule.ref.field };
+      return { who: kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? 'you-type' : 'you-pick', field: rule.ref.field };
     }
+    case 'owner-before':
+      return { who: 'fixed', field: undefined };
     case 'safe':
     case 'contract':
     case 'const':
@@ -470,9 +479,13 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
       return whoOf(rule.rule, template);
     case 'share-price':
       return { who: 'you-type', field: rule.assets.kind === 'card' ? rule.assets.field : undefined };
+    case 'at-least':
+      return { who: 'you-type', field: rule.field };
     case 'call':
     case 'items':
     case 'fields':
+    case 'packed':
+    case 'eip712':
       return undefined;
   }
 }
@@ -549,7 +562,7 @@ function cardWords(ref: CardRef, key: string, context: Context): { readonly word
     if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
     return { words: [before('你填的', fieldWord(context.template, ref.field)), '，例如 ', { num: `${wholeTokens(example.value * 100n, 18)}%` }], qualifier: undefined };
   }
-  if (field?.kind === 'nonce') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
+  if (field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
   const picked = example?.kind === 'address' ? context.registry.byAddress.get(example.value) : undefined;
   if (picked !== undefined) return { words: [link(picked)], qualifier: [picks] };
   if (field?.kind === 'market' && ref.attribute === 'lltv' && example?.kind === 'uint') return { words: [lltvWords(example.value)], qualifier: [picks] };
@@ -577,12 +590,20 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
       return { words: ['每筆不同'], qualifier: [FREE_WORDS[rule.claim]] };
     case 'equals':
       return { words: ['跟 ', { code: rule.path }, ' 同一個數'], qualifier: undefined };
+    case 'owner-before':
+      return { words: [before('Safe 簽署人名單裡排在這個人前面的', refWord(context.template, rule.ref))], qualifier: ['程式在鏈上讀 getOwners() 算出，你不用填'] };
     case 'share-price':
       return { words: [rule.bound === 'max' ? '價格上限' : '價格下限'], qualifier: ['依你填的數量算出，交易裡的要一樣嚴或更嚴'] };
+    case 'at-least':
+      return { words: [before('至少你填的', fieldWord(context.template, rule.field))], qualifier: ['比這個少就 MISMATCH'] };
     case 'call':
-      return isEncoding(rule.call)
-        ? { words: [{ code: rule.call.fn.name }, ' 編碼的值'], qualifier: undefined }
+      return rule.call.encoding === 'params'
+        ? { words: [{ code: rule.call.fn.name }, ' 的參數'], qualifier: undefined }
         : { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
+    case 'packed':
+      return { words: [`${rule.parts.reduce((sum, part) => sum + part.size, 0)} bytes，${rule.parts.length} 段接在一起`], qualifier: undefined };
+    case 'eip712':
+      return { words: [{ code: rule.message.struct.name }, ' 的 EIP-712 雜湊'], qualifier: ['verify 從 lookup 讀回原文，算出的雜湊要一樣'] };
     case 'keccak':
       return { words: ['keccak256，', { code: rule.call.fn.name }], qualifier: undefined };
     case 'items':
@@ -593,7 +614,7 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
 }
 
 function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
-  if (node.rule.kind === 'call' || node.rule.kind === 'items' || node.rule.kind === 'fields') return undefined;
+  if (['call', 'items', 'fields', 'packed'].includes(node.rule.kind)) return undefined;
   if (node.rule.kind === 'const') return { cast: constCast(node.rule.value), example: undefined };
   if (node.rule.kind === 'contract') return { cast: checksumAddress((context.registry.entries.get(node.rule.name) as RegistryEntry).address), example: undefined };
   const only = node.rule.kind === 'card' ? onlyEntry(node.rule.ref, context) : undefined;
@@ -623,7 +644,10 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
   });
 }
 
-function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
+/** A free member of a signed message is no value of this transaction: the digest fixes it, and no perturbation tries another. */
+const FREE_MEMBER = '訂單裡的值，由雜湊鎖住；模板不限，也不換值測試';
+
+function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage = false): ArgRow {
   const chips = withChips ? chipsOf(node, context.template) : [];
   const market = wholeMarket(node.rule, context.template);
   if (market !== undefined) {
@@ -644,7 +668,9 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
     };
   }
   const nestedCall = node.rule.kind === 'call';
-  const { words, qualifier } = leafWords(node, context);
+  const leaf = leafWords(node, context);
+  const { words } = leaf;
+  const qualifier = inMessage && node.rule.kind === 'free' ? [FREE_MEMBER] : leaf.qualifier;
   return {
     key: node.key,
     name: node.name,
@@ -654,9 +680,33 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
     qualifier,
     id: undefined,
     ai: fieldsNote(context, node.key),
-    parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall)) }],
-    doc: node.rule.kind === 'call' && !isEncoding(node.rule.call) ? docLine(node.rule.call.fn.signature, context) : undefined,
+    parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall, inMessage || node.rule.kind === 'eip712')) }],
+    doc: node.rule.kind === 'call' && node.rule.call.encoding === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
   };
+}
+
+/** The packed parts of `value` as leaves, or undefined when its length is not theirs. */
+function packedParts(parts: readonly PackedPart[], value: { readonly value: Uint8Array; readonly span: readonly [number, number] }): AbiValue[] | undefined {
+  if (parts.reduce((sum, part) => sum + part.size, 0) !== value.value.length) return undefined;
+  let offset = 0;
+  return parts.map((part): AbiValue => {
+    const bytes = value.value.subarray(offset, offset + part.size);
+    const span = [value.span[0] + offset, value.span[0] + offset + part.size] as const;
+    offset += part.size;
+    const hex = `0x${bytesToHex(bytes)}`;
+    switch (part.type.kind) {
+      case 'address':
+        return { kind: 'address', value: hex as Address, span };
+      case 'bool':
+        return { kind: 'bool', value: BigInt(hex) !== 0n, span };
+      case 'fixed-bytes':
+        return { kind: 'fixed-bytes', value: hex as Hex, span };
+      case 'int':
+        return { kind: 'int', value: BigInt.asIntN(part.type.bits, BigInt(hex)), span };
+      default:
+        return { kind: 'uint', value: BigInt(hex), span };
+    }
+  });
 }
 
 /** Each argument's value in the example, keyed as `argumentTree` keys it; empty when any call does not decode. */
@@ -673,6 +723,12 @@ function exampleValues(template: Template, tx: SafeTx): Map<string, AbiValue> {
         if (value.kind !== 'bytes') return false;
         const inner = decodeTemplateCall(node.rule.call, { root, start: value.span[0], end: value.span[1] });
         return inner.kind === 'decoded' && walk(node.children, inner.args, root);
+      }
+      if (node.rule.kind === 'eip712') return true;
+      if (node.rule.kind === 'packed') {
+        if (value.kind !== 'bytes') return false;
+        const parts = packedParts(node.rule.parts, value);
+        return parts !== undefined && walk(node.children, parts, root);
       }
       if (node.children.length === 0) return true;
       const items = value.kind === 'tuple' ? value.fields : value.kind === 'array' ? value.items : undefined;
@@ -773,6 +829,7 @@ function afterRows(context: Context): AfterRow[] {
   const amountOf = (effect: Template['effects']['gives'][number], gives: boolean): Inline => {
     if (effect.amount.kind === 'all') return ['全部'];
     if (effect.amount.kind === 'positive') return [gives ? '給出多於 0' : '收到多於 0'];
+    if (effect.amount.kind === 'at-least') return [before('至少你填的', fieldWord(template, effect.amount.field))];
     const value = context.card?.get(effect.amount.field);
     if (value?.kind !== 'amount') return [before('你填的', fieldWord(template, effect.amount.field))];
     const { words } = amountWords(value.value, effect.token, context);
@@ -780,7 +837,14 @@ function afterRows(context: Context): AfterRow[] {
     return words[0] === '約 ' ? ['約 ', sign, ...words.slice(1)] : [sign, ...words];
   };
   const note = (effect: Template['effects']['gives'][number]): Inline => {
-    const amount = effect.amount.kind === 'card' ? before('剛好你填的', fieldWord(template, effect.amount.field)) : effect.amount.kind === 'all' ? '全部餘額，交易後一個都不剩' : '程式只查方向，不查數量';
+    const amount =
+      effect.amount.kind === 'card'
+        ? before('剛好你填的', fieldWord(template, effect.amount.field))
+        : effect.amount.kind === 'at-least'
+          ? before('收到的不能少於你填的', fieldWord(template, effect.amount.field))
+          : effect.amount.kind === 'all'
+            ? '全部餘額，交易後一個都不剩'
+            : '程式只查方向，不查數量';
     return effect.to === undefined ? [amount] : [amount, before('，給', refWord(template, effect.to))];
   };
   const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : before('你選的', refWord(template, token)));
@@ -788,6 +852,24 @@ function afterRows(context: Context): AfterRow[] {
     ...template.effects.gives.map((e) => ({ label: [`Safe 的 ${name(e.token)}`], value: amountOf(e, true), note: note(e), gains: false })),
     ...template.effects.gets.map((e) => ({ label: [`Safe 的 ${name(e.token)}`], value: amountOf(e, false), note: note(e), gains: true })),
   ];
+  const settings = template.effects.safe;
+  if (settings !== undefined) {
+    const owners: Inline =
+      settings.add !== undefined && settings.remove !== undefined
+        ? [before('換掉', refWord(template, settings.remove)), before('，換成', refWord(template, settings.add))]
+        : settings.add !== undefined
+          ? [before('多一個', refWord(template, settings.add))]
+          : settings.remove !== undefined
+            ? [before('少一個', refWord(template, settings.remove))]
+            : ['不變'];
+    rows.push({ label: ['Safe 的簽署人'], value: owners, note: ['交易前後各讀一次 getOwners()，其他人不能變'], gains: false });
+    rows.push({
+      label: ['Safe 的門檻'],
+      value: settings.threshold === undefined ? ['不變'] : [before('變成你填的', fieldWord(template, settings.threshold.field))],
+      note: ['交易前後各讀一次 getThreshold()'],
+      gains: false,
+    });
+  }
   for (const view of template.effects.views) {
     for (const { value, change } of view.changes) {
       rows.push({
@@ -798,10 +880,22 @@ function afterRows(context: Context): AfterRow[] {
       });
     }
   }
+  const shown = new Set<KeptApproval>();
   for (const call of template.calls) {
     if (call.data === 'empty' || call.data.fn.signature !== 'approve(address,uint256)') continue;
     const spender = call.data.args[0] as Rule;
-    rows.push({ label: ['給 ', ...ruleWords(spender, context), ` 的 ${targetOf(call.to, context).label} 授權`], value: [{ num: '0' }], note: ['交易內用完，不能比交易前高'], gains: false });
+    const label: Inline = ['給 ', ...ruleWords(spender, context), ` 的 ${targetOf(call.to, context).label} 授權`];
+    const open = template.effects.approves.find((a) => a.via === 'erc20' && spender.kind === 'contract' && a.spender === spender.name && call.to.kind === 'card' && JSON.stringify(call.to.ref) === JSON.stringify(a.token));
+    if (open !== undefined) shown.add(open);
+    if (open === undefined) rows.push({ label, value: [{ num: '0' }], note: ['交易內用完，不能比交易前高'], gains: false });
+    else if (open.amount.kind === 'card') rows.push({ label, value: [before('最多你填的', fieldWord(template, open.amount.field))], note: ['留給之後成交的訂單用，不能超過這個數'], gains: false });
+    else rows.push({ label, value: ['可以留著，不限數量'], note: ['登記資料說明為什麼這個合約可以留著授權'], gains: false });
+  }
+  for (const open of template.effects.approves.filter((a) => !shown.has(a))) {
+    const spender = context.registry.entries.get(open.spender) as RegistryEntry;
+    const value: Inline = open.amount.kind === 'unlimited' ? ['可以留著，不限數量'] : [before('最多你填的', fieldWord(template, open.amount.field))];
+    const note: Inline = open.via === 'permit2' ? ['到期時間記在 Permit2 裡，verify 的網頁會顯示'] : ['登記資料說明為什麼這個合約可以留著授權'];
+    rows.push({ label: [open.via === 'permit2' ? '透過 Permit2 給 ' : '給 ', link(spender), ` 的 ${name(open.token)} 授權`], value, note, gains: false });
   }
   return rows;
 }
@@ -843,7 +937,12 @@ function callBlocks(context: Context): CallBlock[] {
   });
 }
 
-const FREE_KEY: Readonly<Record<FreeClaim, string>> = { scalar: '換成別的值，結果一樣或交易失敗', proof: '換成別的值，交易就失敗', unread: '合約不讀它，換成別的值結果一樣' };
+const FREE_KEY: Readonly<Record<FreeClaim, string>> = {
+  scalar: '換成別的值，結果一樣或交易失敗',
+  proof: '換成別的值，交易就失敗',
+  unread: '合約不讀它，換成別的值結果一樣',
+  route: '換成別的值會走別的池子，但 Safe 給出和收到的數量仍要符合卡片，否則交易失敗或 MISMATCH',
+};
 
 /** The who-decides key for the words the rows use: a free field's line by each claim the template makes. */
 function keyItems(used: ReadonlySet<Who>, template: Template): KeyItem[] {
@@ -851,7 +950,8 @@ function keyItems(used: ReadonlySet<Who>, template: Template): KeyItem[] {
     ...(used.has('you-type') ? [{ who: 'you-type' as const, label: SHORT['you-type'], means: '每次簽名填' }] : []),
     ...(used.has('you-pick') ? [{ who: 'you-pick' as const, label: SHORT['you-pick'], means: '每次簽名選' }] : []),
     ...(used.has('fixed') ? [{ who: 'fixed' as const, label: SHORT.fixed, means: '改了就 MISMATCH' }] : []),
-    ...(used.has('free') ? [...freeClaims(template)].map((claim) => ({ who: 'free' as const, label: 'app 填，不限', means: FREE_KEY[claim] })) : []),
+    ...(used.has('free') ? [...freeRules(template).claims].map((claim) => ({ who: 'free' as const, label: 'app 填，不限', means: FREE_KEY[claim] })) : []),
+    ...(used.has('free') && freeRules(template).member ? [{ who: 'free' as const, label: 'app 填，不限', means: '訂單裡的值，由雜湊鎖住' }] : []),
   ];
 }
 
@@ -1135,20 +1235,26 @@ function ruleWords(rule: Rule, context: Context): Inline {
       const only = onlyEntry(rule.ref, context);
       if (only !== undefined) return [link(only)];
       const kind = context.template.card.get(rule.ref.field)?.kind;
-      return [before(kind === 'amount' || kind === 'nonce' || kind === 'percent' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
+      return [before(kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
     }
+    case 'owner-before':
+      return [before('簽署人名單裡排在前面的', refWord(context.template, rule.ref))];
     case 'free':
       return ['不限'];
     case 'equals':
       return ['跟 ', { code: rule.path }, ' 同一個數'];
     case 'share-price':
       return [rule.bound === 'max' ? '價格上限' : '價格下限'];
+    case 'at-least':
+      return [before('至少你填的', fieldWord(context.template, rule.field))];
     case 'call':
-      return isEncoding(rule.call) ? [{ code: rule.call.fn.name }, ' 編碼的值，參數見流程'] : ['呼叫 ', { code: rule.call.fn.name }, '，參數見流程'];
+      return ['呼叫 ', { code: rule.call.fn.name }, '，參數見流程'];
     case 'keccak':
       return ['keccak256，', { code: rule.call.fn.name }];
     case 'items':
     case 'fields':
+    case 'packed':
+    case 'eip712':
       return ['見流程'];
   }
 }
@@ -1569,6 +1675,10 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
       return step([...cardNewPrompt, '：打 Safe 交易的 nonce，純數字。']);
     case 'percent':
       return step([...cardNewPrompt, '：打百分比，最多 100，例如 ', { code: '100' }, ' 或 ', { code: '35.5' }, ' 。'], [['它印出百分比和 base units（100% 是 10^18），核對數字是你要的。']]);
+    case 'threshold':
+      return step([...cardNewPrompt, '：打新的門檻，也就是要幾個簽署人簽才能執行，純數字，至少 1。']);
+    case 'owner':
+      return step([...cardNewPrompt, '：它列出地址簿裡的名字，每個附完整地址。選你要的那個簽署人，完整地址要對。']);
     case 'amount': {
       const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? before('你選的', refWord(context.template, field.of)));
       if (field.computed === undefined) {
@@ -1596,7 +1706,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
 function nextSection(context: Context): Section {
   const { template } = context;
   const fields = [...template.card];
-  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'percent';
+  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold' || field.kind === 'percent';
   const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
   const vault = context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined;
   const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? `（第一次用這個模板${vault ? '或這個金庫' : ''}，先用小額）` : '';
@@ -1612,6 +1722,16 @@ function nextSection(context: Context): Section {
       then: [['它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 ', { code: 'y' }, '。']],
       hashes: false,
     },
+    ...(fields.some(([, f]) => f.kind === 'owner')
+      ? [
+          {
+            say: ['先把要加、要移除或要換的簽署人加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得'],
+            command: 'bin/kiss-sign book add <name> <address>',
+            then: [['它印出名字和完整地址，問 ', { code: 'Add this entry? [y/N]' }, ' 。每個字元都跟聊天以外的來源核對過才打 ', { code: 'y' }, ' 。同一個人只要加一次。']],
+            hashes: false,
+          } satisfies NextStep,
+        ]
+      : []),
     ...(fields.some(([, f]) => f.kind === 'recipient')
       ? [
           {
@@ -1657,10 +1777,17 @@ function nextSection(context: Context): Section {
     [`交易只有這 ${template.calls.length} 個呼叫，MultiSend 也一個個解開`],
     ['每個參數符合上面的規則，重新編碼要一模一樣'],
     ...template.effects.gives.map((e): Inline => [`模擬後 Safe 給出的 ${tokenName(e.token)} ${e.amount.kind === 'card' ? before('剛好是你填的', fieldWord(template, e.amount.field)) : e.amount.kind === 'all' ? '是全部餘額' : '多於 0'}`]),
-    ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`]),
+    ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`, ...(e.amount.kind === 'at-least' ? [before('，不少於你填的', fieldWord(template, e.amount.field))] : [])]),
     ...(template.effects.gives.length + template.effects.gets.length === 0 ? [['模擬後 Safe 的餘額一點都不能變'] as Inline] : []),
     ...(template.nonce === undefined ? [] : [['Safe 交易的 nonce 是', ...ruleWords(template.nonce, context)] as Inline]),
-    ['沒有任何授權在交易後變高'],
+    ...(template.effects.safe === undefined
+      ? []
+      : [['模擬前後讀 Safe 的簽署人和門檻：只變卡片上寫的那一項；模組、guard、fallback handler、singleton 都不能變'] as Inline]),
+    template.effects.approves.length === 0
+      ? ['沒有任何授權在交易後變高']
+      : template.effects.approves.every((a) => a.amount.kind === 'card')
+        ? [`除了留給 ${template.effects.approves.map((a) => a.spender).join('、')} 的授權最多是你填的數量，沒有任何授權在交易後變高`]
+        : ['除了上面「交易後」列出可以留著的授權，沒有任何授權在交易後變高'],
     ...template.effects.views.map((v): Inline => [
       { code: `${viewLabel(v, context)}.${v.fn.name}` },
       `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${typeof c.change === 'string' ? CHANGE_WORDS[c.change] : `等於你填的 ${fieldWord(template, c.change.equals)}`}`).join('、')}`,
@@ -1670,29 +1797,36 @@ function nextSection(context: Context): Section {
   return { anchor: anchor('next'), label: '下一步', count: undefined, body: { kind: 'next', steps, automatic } };
 }
 
-/** The claims of the template's free arguments, in claim order; empty when every argument is bound. */
-function freeClaims(template: Template): Set<FreeClaim> {
+/** The free rules of the transaction's own fields, and whether a signed message has a free member, which no perturbation tries. */
+function freeRules(template: Template): { readonly claims: Set<FreeClaim>; readonly member: boolean } {
   const found = new Set<FreeClaim>();
+  const members = new Set<Rule>();
+  const collect = (rule: Rule): void => {
+    if (rule.kind === 'eip712') rule.message.fields.forEach((field) => members.add(field));
+    if (rule.kind === 'packed') rule.parts.forEach((part) => collect(part.rule));
+    if (rule.kind === 'call') rule.call.args.forEach(collect);
+    if (rule.kind === 'items') rule.items.forEach(collect);
+    if (rule.kind === 'fields') rule.fields.forEach(collect);
+  };
   const visit = (rule: Rule): void => {
-    if (rule.kind === 'free') found.add(rule.claim);
+    if (rule.kind === 'free' && !members.has(rule)) found.add(rule.claim);
     if (rule.kind === 'equals') visit(rule.rule);
+    if (rule.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
     if (rule.kind === 'call') rule.call.args.forEach(visit);
     if (rule.kind === 'items') rule.items.forEach(visit);
     if (rule.kind === 'fields') rule.fields.forEach(visit);
   };
-  for (const call of template.calls) {
-    visit(call.to);
-    visit(call.value);
-    if (call.data !== 'empty') call.data.args.forEach(visit);
-  }
-  return new Set((['scalar', 'proof', 'unread'] as const).filter((claim) => found.has(claim)));
+  const calls = template.calls.flatMap((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)]);
+  calls.forEach(collect);
+  calls.forEach(visit);
+  return { claims: new Set((['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => found.has(claim))), member: [...members].some((rule) => rule.kind === 'free') };
 }
 
 /** 參數保護 when no test transaction is recorded, from the template. */
 const unrecordedParams = (template: Template): string =>
-  freeClaims(template).size > 0
+  freeRules(template).claims.size > 0
     ? '模板有不限的參數，但沒有換值測試的記錄，程式沒有測過它們。'
-    : '模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。';
+    : `${freeRules(template).member ? '交易裡不限的值只在簽的訂單裡，由雜湊鎖住，不換值測試。' : ''}模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。`;
 
 function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<string>): StripItem[] {
   const names = [...new Set(ledger.entries.map((e) => e.name))];

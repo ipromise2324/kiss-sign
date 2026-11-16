@@ -1,0 +1,23 @@
+{
+  "id": "safe/add-owner",
+  "card": {
+    "owner": { "kind": "owner" },
+    "threshold": { "kind": "threshold" }
+  },
+  "calls": [
+    {
+      "to": { "safe": true },
+      "value": { "const": "0" },
+      "function": "addOwnerWithThreshold(address owner, uint256 _threshold)",
+      "args": {
+        "owner": { "card": "owner" },
+        "_threshold": { "card": "threshold" }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "safe": { "owners": { "add": "card.owner" }, "threshold": "card.threshold" }
+  }
+}

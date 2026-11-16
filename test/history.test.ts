@@ -10,6 +10,10 @@ import type { Transport } from '../src/chain/rpc.ts';
 import { history } from '../src/history/history.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
+import { selectorOf } from '../src/decode/abi.ts';
+import { hashSafeTx } from '../src/safe/hash.ts';
+import type { Hex } from '../src/safe/types.ts';
+import { parseServiceTx } from '../src/safe/parse.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
@@ -39,7 +43,7 @@ function write(path: string, text: string): string {
  * A clone whose origin/main holds this repository's template and registry, and a home holding one Safe's history. Its
  * origin is the configured repository's URL, served offline from a local bare repository through core.sshCommand.
  */
-function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<string, unknown> = {}) {
+function setUp(name: string | Record<string, unknown>[], cards: Record<number, unknown> = {}, notes: Record<string, unknown> = {}) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-history-'));
   const origin = join(base, 'origin.git');
   const repo = join(base, 'repo');
@@ -55,7 +59,7 @@ function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<
   chmodSync(ssh, 0o755);
   git(repo, 'remote', 'set-url', 'origin', 'git@github.com:signer/kiss-sign.git');
   git(repo, 'config', 'core.sshCommand', ssh);
-  const txs = records(name);
+  const txs = typeof name === 'string' ? records(name) : name;
   const home = join(base, 'home');
   write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: txs[0]!.safe, repo: 'github.com/signer/kiss-sign' }));
   write(join(home, 'history', 'txs.jsonl'), txs.map((r) => `${JSON.stringify(r)}\n`).join(''));
@@ -83,6 +87,7 @@ async function run(at: { repo: string; home: string }, args: string[] = [], tran
     repoRoot: at.repo,
     transport: transport ?? replayTransport(deposit.exchanges, mainnetEndpoints(env)),
     fetchJson: async () => assert.fail('only history fetch reads the Transaction Service'),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return { code, stdout, stderr };
 }
@@ -106,26 +111,19 @@ test('a deposit with its card is MATCH, and the card column says which values ca
   assert.match(stdout, /Templates are approved at their origin\/main hash \([0-9a-f]{40}\) for this run only, since history is not a signing: morpho\/vault-deposit 0x[0-9a-f]{64}\./);
 });
 
-test('reason row cow-next-phase: a setPreSignature inside a MultiSend, even when the floor refuses its approval', async () => {
+test('a CoW pre-signature without a card has no template row of its own: its unlimited approval is refused by design', async () => {
   const { stdout } = await run(setUp('cow-safe'));
-  assert.match(
-    rowOf(stdout, 559),
-    /^  559  [\d-]{10}  not run       intent of nonce 559\n {33}cow-next-phase: GPv2Settlement setPreSignature at multiSend\[1\]; the floor also refuses unlimited-approval at multiSend\[0\]$/,
-  );
+  assert.match(rowOf(stdout, 559), /^  559  [\d-]{10}  not run       intent of nonce 559\n {33}refused-by-design: unlimited-approval at multiSend\[0\]$/);
+  assert.match(rowOf(stdout, 558), /^  558  [\d-]{10}  not run       intent of nonce 558\n {33}no-card-yet: no card file, so no template covers it yet$/);
 });
 
-test('reason row cow-next-phase: an order cancelled with GPv2Settlement invalidateOrder', async () => {
-  const { stdout } = await run(setUp('cow-safe'));
-  assert.match(rowOf(stdout, 558), /^  558  [\d-]{10}  not run       intent of nonce 558\n {33}cow-next-phase: GPv2Settlement invalidateOrder at call$/);
-});
-
-test('a note naming the nonce that spends an approval gives the approval that nonce\'s reason', async () => {
+test("a note naming the nonce that spends an approval gives the approval that nonce's reason", async () => {
   const { stdout } = await run(setUp('cow-safe', {}, { 10: { note: 'approval for the order', spentBy: 11 } }));
   assert.match(
     rowOf(stdout, 10),
-    /^   10  [\d-]{10}  not run       intent of nonce 10\n {33}cow-next-phase: its approval is spent by nonce 11: GPv2Settlement setPreSignature at call; note: approval for the order$/,
+    /^   10  [\d-]{10}  not run       intent of nonce 10\n {33}no-card-yet: its approval is spent by nonce 11: no card file, so no template covers it yet; note: approval for the order$/,
   );
-  assert.match(rowOf(stdout, 11), /\n {33}cow-next-phase: GPv2Settlement setPreSignature at call$/);
+  assert.match(rowOf(stdout, 11), /\n {33}no-card-yet: no card file, so no template covers it yet$/);
 });
 
 test('a note whose spending nonce is not later is refused', async () => {
@@ -150,6 +148,18 @@ test('a note whose spending nonce is itself an approval spent later is refused',
 test('reason row refused-by-design: the static floor refuses an unlimited approval, and names the rule', async () => {
   const { stdout } = await run(setUp('morpho-safe', withCard, { 338: 'approved for a migration' }));
   assert.match(rowOf(stdout, 338), /\n {33}refused-by-design: unlimited-approval at multiSend\[0\]; note: approved for a migration$/);
+});
+
+test("reason row: a past owner change is not refused by design, as a template declares one; enableModule still is", async () => {
+  const fixture = readJson(join(ROOT, 'testdata', 'safe-tx', 'safe-change-threshold-raise.json'));
+  const change = fixture.service as Record<string, unknown>;
+  const tx = parseServiceTx(change, { chainId: 1n, version: fixture.chain.version });
+  const data = `${selectorOf('enableModule(address)')}${'0'.repeat(24)}${'44'.repeat(20)}` as Hex;
+  const { safeTxHash } = hashSafeTx({ ...tx, nonce: tx.nonce + 1n, data });
+  const module = { ...change, nonce: Number(tx.nonce + 1n), data, dataDecoded: null, safeTxHash };
+  const { stdout } = await run(setUp([change, module]));
+  assert.match(rowOf(stdout, Number(change.nonce)), /\n {33}no-card-yet: no card file, so no template covers it yet$/);
+  assert.match(rowOf(stdout, Number(module.nonce)), /\n {33}refused-by-design: self-call at call$/);
 });
 
 test('reason row no-card-yet: a transaction without a card file is not run', async () => {
@@ -229,6 +239,7 @@ test('history fetch follows the service pages and writes every record', async ()
     repoRoot: at.repo,
     transport: OFFLINE,
     fetchJson: async (url) => pages[url] ?? assert.fail(`unexpected ${url}`),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   assert.equal(code, 0);
   assert.match(stdout, /^Wrote 3 transactions \(3 executed\) to /);

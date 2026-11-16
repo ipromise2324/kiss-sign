@@ -25,7 +25,7 @@ type Choice = { readonly name: string; readonly address: Address; readonly from:
 
 type Sources = { readonly registry: Registry; readonly book: AddressBook; readonly safe: Address };
 
-type TypedField = Extract<CardField, { kind: 'amount' | 'nonce' | 'percent' }>;
+type TypedField = Extract<CardField, { kind: 'amount' | 'nonce' | 'threshold' | 'percent' }>;
 type ChosenField = Exclude<CardField, TypedField>;
 
 /** The names a field may hold, as resolveCard accepts them. */
@@ -44,6 +44,8 @@ function choicesFor(field: Exclude<ChosenField, { kind: 'market' }>, { registry,
       return [self, ...contracts(), ...booked];
     case 'recipient':
       return [self, ...booked];
+    case 'owner':
+      return booked;
   }
 }
 
@@ -177,9 +179,10 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   if (field.kind === 'percent') return percentValue(name, await answer(ctx.ask, `${name} (a percent, 100 at most, such as 100 or 35.5): `), ctx);
   const unit = field.kind === 'amount' ? unitOf(field.of, values, ctx.sources.registry) : undefined;
   if (unit === undefined || unit.kind === 'unregistered') {
-    const label = unit === undefined ? 'a Safe nonce' : `base units of ${unit.ref}, which is no registry contract, so its decimals are not read`;
+    const label = field.kind === 'threshold' ? 'how many owners must sign, a whole number from 1' : unit === undefined ? 'a Safe nonce' : `base units of ${unit.ref}, which is no registry contract, so its decimals are not read`;
     const typed = await answer(ctx.ask, `${name} (${label}): `);
-    if (parseUint256(typed) === undefined) throw new CardError(`${name}: ${JSON.stringify(typed.slice(0, 80))} is not a whole number in plain digits`);
+    const parsed = parseUint256(typed);
+    if (parsed === undefined || (field.kind === 'threshold' && parsed === 0n)) throw new CardError(`${name}: ${JSON.stringify(typed.slice(0, 80))} is not a whole number in plain digits${field.kind === 'threshold' ? ' from 1' : ''}`);
     return typed;
   }
   const token = unit.kind === 'eth' ? 'eth' : unit.entry.name;
@@ -266,7 +269,7 @@ type Context = {
   readonly reported: (template: string) => ReadonlySet<string>;
 };
 
-const isTyped = (entry: [string, CardField]): entry is [string, TypedField] => ['amount', 'nonce', 'percent'].includes(entry[1].kind);
+const isTyped = (entry: [string, CardField]): entry is [string, TypedField] => ['amount', 'nonce', 'threshold', 'percent'].includes(entry[1].kind);
 const isChosen = (entry: [string, CardField]): entry is [string, ChosenField] => !isTyped(entry);
 
 /**
