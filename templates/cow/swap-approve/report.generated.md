@@ -89,7 +89,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 `pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc gpv2-settlement gpv2-vault-relayer usp` prints what each check compared.
 
-| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
@@ -101,12 +101,19 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | DefiLlama site | GitHub commit | Address on page |
+| Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
 | `gpv2-settlement` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | FINDING | PASS | PASS |
 | `gpv2-vault-relayer` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | FINDING | PASS | PASS |
 
-7 entries, 5 findings.
+More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+
+| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
+| --- | --- | --- | --- | --- |
+| `gpv2-settlement` | FINDING | FINDING | n/a | n/a |
+| `gpv2-vault-relayer` | FINDING | FINDING | n/a | n/a |
+
+7 entries, 9 findings.
 
 ## Code pins
 
