@@ -39,35 +39,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 - **You are responsible for the exact bytes you sign.** Today the transaction is built first and checked last. That last check is like the terms on an insurance form: everyone means to read it, and most people click sign. At Bybit in 2025, the signers saw a normal transfer in a tampered Safe web app and signed a change to the Safe itself.
 - **Checking by hand is slow and needs expertise.** Tools such as [safe-tx-hashes](https://github.com/pcaversaccio/safe-tx-hashes-util) compute the hashes your wallet should show, but the decoded method and parameters they print come from the Safe Transaction Service, and the tool itself warns: *"Always independently decode the transaction "Data" yourself before you sign!"* Decoding one real Morpho vault deposit yourself (another Safe's, not the one pictured below) looks like this:
 
-  ```sh
-  # 1. The Safe calls MultiSend. Its one argument is packed bytes, not ABI.
-  $ cast 4byte-calldata $DATA
-  1) "multiSend(bytes)"
-
-  # 2. Split the packed bytes yourself: 1 byte operation, 20 bytes to, 32 value, 32 length, data.
-  call 1  op=00  to=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48  76 bytes  selector 0x095ea7b3
-  call 2  op=00  to=0x6566194141eefa99af43bb5aa71460ca2dc90245  812 bytes selector 0x374f435d
-
-  # 3. Call 1: an approve. 76 bytes is 8 more than approve needs; cast does not say so.
-  $ cast decode-calldata "approve(address,uint256)" $CALL1
-  0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
-  10001000000 [1e10]
-
-  # 4. Call 2: a Bundler3 multicall, whose bundle holds more calls.
-  $ cast decode-calldata "multicall((address,bytes,uint256,bool,bytes32)[])" $CALL2
-  [(0x4A6c…0aE0, 0xd96ca0b9…, 0, false, 0x00…), (0x4A6c…0aE0, 0x6ef5eeae…, 0, false, 0x00…)]
-
-  # 5. Decode each inner call.
-  $ cast decode-calldata "erc20TransferFrom(address,address,uint256)" 0xd96ca0b9…
-  0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-  0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
-  10001000000 [1e10]
-  $ cast decode-calldata "erc4626Deposit(address,uint256,uint256,address)" 0x6ef5eeae…
-  0x777791C4d6DC2CE140D00D2828a7C93503c67777
-  10001000000 [1e10]
-  1054633213541066 [1.054e15]
-  0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B
-  ```
+  ![Decoding a Morpho vault deposit by hand with cast and jq: the Safe calls MultiSend with packed bytes; splitting them by hand gives an approve of 76 bytes and a Bundler3 multicall of 812 bytes; the approve lets GeneralAdapter1 spend 10,001 USDC; the multicall holds an erc20TransferFrom and an erc4626Deposit into 0x7777…7777 with a minimum of 1.054e15 shares for the Safe](docs/readme/decode.png)
 
   Then the real questions start. Is `0x4A6c…0aE0` Morpho's GeneralAdapter1 or a look-alike? Is `0x7777…7777` the vault you meant? Is `1.054e15` a sane minimum of shares for 10,001 USDC? What are the 8 extra bytes after the approve? And you do all of this again for the next transaction.
 
@@ -143,7 +115,7 @@ Propose the transaction in the Safe web app as usual. Then, on your computer:
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. On `MATCH`, both pages show the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. A Uniswap swap's router inputs, which hold the recipient and the minimum out, are one such undecoded value: those rest on `verify` alone.
+On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. On `MATCH`, both pages show the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. `check.sh` does not yet know Uniswap's `execute` or CoW's `setPreSignature`: for those it shows the call's raw data with a warning, so its call rows differ from `verify`'s. Compare the hashes and the contract called; what the call does, such as a swap's recipient and minimum out, rests on `verify` alone.
 
 ![The verify page (MATCH, every check passed) and the check.sh page side by side, with the same hashes and the same calls row by row](docs/readme/side-by-side.png)
 
