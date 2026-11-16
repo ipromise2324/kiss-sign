@@ -46,6 +46,18 @@
       "github": []
     },
     {
+      "slug": "merkl",
+      "name": "Merkl",
+      "url": "https://app.merkl.xyz/",
+      "github": []
+    },
+    {
+      "slug": "circle-cctp",
+      "name": "Circle CCTP",
+      "url": "https://www.circle.com/cross-chain-transfer-protocol",
+      "github": []
+    },
+    {
       "slug": "cowswap",
       "name": "CoWSwap",
       "github": []
@@ -82,6 +94,14 @@
       "name": "MEV Capital Usual Boosted USDC Morpho Vault",
       "platforms": {
         "ethereum": "0xd63070114470f685b75b74d60eec7c1113d33a3d"
+      }
+    },
+    {
+      "id": "instadapp",
+      "symbol": "fluid",
+      "name": "Fluid",
+      "platforms": {
+        "ethereum": "0x6f40d4a6237c257fff2db00fa0510deeecd303eb"
       }
     },
     {
@@ -198,6 +218,18 @@
       "kind": "served",
       "blocks": [
         {
+          "text": "| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :----------------------------------------------------------------------------------- |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
+          "text": "| Morpho | [ 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb ](https://etherscan.io/address/0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb#code) <AddressCopyButton address=\"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" /> | [morpho-blue](https://github.com/morpho-org/morpho-blue/tree/v1.0.0) |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
+          "text": "| Adaptive Curve Irm | [ 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC ](https://etherscan.io/address/0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC#code) <AddressCopyButton address=\"0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC\" /> | [morpho-blue-irm](https://github.com/morpho-org/morpho-blue-irm/tree/v1.0.0) |",
+          "heading": "Morpho Blue [#morpho-blue]"
+        },
+        {
           "text": "| :----------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------ |",
           "heading": "Morpho Vault V2 [#morpho-vault-v2]"
         },
@@ -223,6 +255,14 @@
         },
         {
           "text": "| VaultBundlesV1 | [ 0x02912516d49dE997db75B9D7858faAE59209650B ](https://etherscan.io/address/0x02912516d49dE997db75B9D7858faAE59209650B#code) <AddressCopyButton address=\"0x02912516d49dE997db75B9D7858faAE59209650B\" /> | [morpho-org/bundles](https://github.com/morpho-org/bundles/blob/main/src/vault/VaultBundlesV1.sol) |",
+          "heading": "Bundles [#bundles]"
+        },
+        {
+          "text": "| VaultExitBundlesV1 | [ 0xaf85aF286637A033BE7d59ED8cC566afa3309B02 ](https://etherscan.io/address/0xaf85aF286637A033BE7d59ED8cC566afa3309B02#code) <AddressCopyButton address=\"0xaf85aF286637A033BE7d59ED8cC566afa3309B02\" /> | [morpho-org/bundles](https://github.com/morpho-org/bundles/blob/main/src/vault-exit/VaultExitBundlesV1.sol) |",
+          "heading": "Bundles [#bundles]"
+        },
+        {
+          "text": "| BlueBundlesV1 | [ 0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD ](https://etherscan.io/address/0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD#code) <AddressCopyButton address=\"0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD\" /> | [morpho-org/bundles](https://github.com/morpho-org/bundles/blob/main/src/blue/BlueBundlesV1.sol) |",
           "heading": "Bundles [#bundles]"
         },
         {
@@ -278,6 +318,24 @@
       "kind": "served",
       "blocks": [
         {
+          "text": "[ChainId.EthMainnet]: {"
+        },
+        {
+          "text": "blue: \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\","
+        },
+        {
+          "text": "vaultBundlesV1: \"0x02912516d49dE997db75B9D7858faAE59209650B\","
+        },
+        {
+          "text": "blueBundlesV1: \"0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD\","
+        },
+        {
+          "text": "},"
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC\","
+        },
+        {
           "text": "metaMorphoFactory: \"0x1897A8997241C1cD4bD0698647e4EB7213535c24\","
         },
         {
@@ -323,6 +381,14 @@
         {
           "text": "| mainnet | 0x5C20B550819128074FD538Edf79791733ccEdd18 | [Link](https://etherscan.io/address/0x5C20B550819128074FD538Edf79791733ccEdd18#code) | \"0x52Aa899454998Be5b000Ad077a46Bbe360F4e497\", \"0x54B91A0D94cb471F37f949c60F7Fa7935b551D03\", \"0xdac17f958d2ee523a2206206994597c13d831ec7\" | 0x0003 |",
           "heading": "fToken_fUSDT"
+        },
+        {
+          "text": "|---|---|---|---|---|",
+          "heading": "$FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
+        },
+        {
+          "text": "| mainnet | 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0 | [Link](https://etherscan.io/address/0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0#code) | \"Fluid Rewards - Dec 2024\", \"0x9800020b610194dBa52CF606E8Aa142F9F256166\", \"0x4f104710f8d9F6EFB28c4b2f057554928Daa3a83\", \"0x85dC44E0c3AfdFedCa52678bD4C000917C6597B2\", \"0x6f40d4a6237c257fff2db00fa0510deeecd303eb\" | 0x0003 |",
+          "heading": "$FLUID MerkleDistributor (Fluid Rewards - Dec 2024)"
         }
       ]
     },
@@ -436,6 +502,36 @@
       "kind": "served",
       "blocks": []
     },
+    "https://developers.merkl.xyz/resources/chains-and-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Entry point for campaign creators. Operators deposit reward tokens and configure campaign parameters here.",
+          "heading": "DistributionCreator"
+        },
+        {
+          "text": "On the vast majority of EVM chains, the Distributor is deployed at 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae and the DistributionCreator is deployed at 0x8BB4C975Ff3c250e0ceEA271728547f3802B36Fd.",
+          "heading": "DistributionCreator"
+        }
+      ]
+    },
+    "https://developers.circle.com/cctp/v1/evm-smart-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Chain Domain Address",
+          "heading": "MessageTransmitter: Mainnet"
+        },
+        {
+          "text": "Ethereum 0 0x0a992d191DEeC32aFe36203Ad87D7d289a738F81",
+          "heading": "MessageTransmitter: Mainnet"
+        }
+      ]
+    },
+    "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc": {
+      "kind": "served",
+      "blocks": []
+    },
     "https://raw.githubusercontent.com/cowprotocol/contracts/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json": {
       "kind": "served",
       "blocks": [
@@ -485,7 +581,7 @@
     "morpho-org/sdks@56f1ed62827a7aab39d979c0143d1fbf970c37ca": {
       "kind": "on-default",
       "branch": "main",
-      "status": "behind"
+      "status": "identical"
     },
     "instadapp/fluid-contracts-public@404d73f91e6806f881f8dabeb30494f93f9e99b7": {
       "kind": "on-default",
@@ -505,7 +601,21 @@
     "cowprotocol/cow-sdk@229ab19e1af1b958a571e6f0bd9c8341624f80f4": {
       "kind": "on-default",
       "branch": "main",
-      "status": "identical"
+      "status": "behind"
+    }
+  },
+  "apis": {
+    "POST https://api.morpho.org/graphql {\"query\":\"query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }\",\"variables\":{\"id\":\"0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64\",\"chainId\":1}}": {
+      "kind": "answered",
+      "json": {
+        "data": {
+          "marketById": {
+            "oracle": {
+              "address": "0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a"
+            }
+          }
+        }
+      }
     }
   }
 }
