@@ -80,23 +80,6 @@
       "from": 16730025
     }
   },
-  "morpho-blue": {
-    "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
-    "kind": "lending",
-    "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "Morpho",
-    "moreSources": [
-      {
-        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
-        "label": "blue"
-      }
-    ],
-    "defillama": "morpho-blue",
-    "code": {
-      "hash": "0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c",
-      "from": 18883124
-    }
-  },
   "blue-bundles-v1": {
     "address": "0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD",
     "kind": "router",
@@ -112,23 +95,6 @@
     "code": {
       "hash": "0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888",
       "from": 25832676
-    }
-  },
-  "adaptive-curve-irm": {
-    "address": "0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC",
-    "kind": "irm",
-    "source": "https://docs.morpho.org/developers/contracts/addresses/",
-    "sourceLabel": "Adaptive Curve Irm",
-    "moreSources": [
-      {
-        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
-        "label": "adaptiveCurveIrm"
-      }
-    ],
-    "defillama": "morpho-blue",
-    "code": {
-      "hash": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd",
-      "from": 18883124
     }
   },
   "morpho-oracle-cbbtc-usdc-86": {

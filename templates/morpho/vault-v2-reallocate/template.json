@@ -1,0 +1,128 @@
+{
+  "id": "morpho/vault-v2-reallocate",
+  "card": {
+    "vault": {
+      "kind": "contract",
+      "registryKind": "vault",
+      "defillama": "morpho-blue"
+    },
+    "from": {
+      "kind": "market"
+    },
+    "to": {
+      "kind": "market"
+    },
+    "amount": {
+      "kind": "amount",
+      "of": "vault.asset"
+    }
+  },
+  "same": [
+    "vault.asset",
+    "from.loanToken",
+    "to.loanToken"
+  ],
+  "calls": [
+    {
+      "to": {
+        "card": "vault"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "multicall(bytes[] data)",
+      "args": {
+        "data": {
+          "items": [
+            {
+              "call": {
+                "function": "deallocate(address adapter, bytes data, uint256 assets)",
+                "args": {
+                  "adapter": {
+                    "card": "vault.adapter"
+                  },
+                  "data": {
+                    "abi": {
+                      "params": "(address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                      "args": {
+                        "marketParams": {
+                          "card": "from"
+                        }
+                      }
+                    }
+                  },
+                  "assets": {
+                    "card": "amount"
+                  }
+                }
+              }
+            },
+            {
+              "call": {
+                "function": "allocate(address adapter, bytes data, uint256 assets)",
+                "args": {
+                  "adapter": {
+                    "card": "vault.adapter"
+                  },
+                  "data": {
+                    "abi": {
+                      "params": "(address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                      "args": {
+                        "marketParams": {
+                          "card": "to"
+                        }
+                      }
+                    }
+                  },
+                  "assets": {
+                    "card": "amount"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "views": [
+      {
+        "to": {
+          "contract": "morpho-blue"
+        },
+        "function": "position(bytes32 id, address user) returns (uint256 supplyShares, uint128 borrowShares, uint128 collateral)",
+        "args": {
+          "id": {
+            "card": "from.id"
+          },
+          "user": {
+            "card": "vault.adapter"
+          }
+        },
+        "change": {
+          "supplyShares": "decreases"
+        }
+      },
+      {
+        "to": {
+          "contract": "morpho-blue"
+        },
+        "function": "position(bytes32 id, address user) returns (uint256 supplyShares, uint128 borrowShares, uint128 collateral)",
+        "args": {
+          "id": {
+            "card": "to.id"
+          },
+          "user": {
+            "card": "vault.adapter"
+          }
+        },
+        "change": {
+          "supplyShares": "increases"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,235 @@
+{
+  "id": "morpho/vault-v2-cap-accept",
+  "card": {
+    "vault": {
+      "kind": "contract",
+      "registryKind": "vault",
+      "defillama": "morpho-blue"
+    },
+    "market": {
+      "kind": "market"
+    },
+    "absolute-cap": {
+      "kind": "amount",
+      "of": "vault.asset",
+      "max": {
+        "value": "340282366920938463463374607431768211455",
+        "why": "Vault V2 stores an absolute cap in 128 bits (increaseAbsoluteCap, newAbsoluteCap.toUint128()), so 2^128-1 is the largest cap it holds; curators set it for a market they cap only by its relative cap, as most submissions of the last year did."
+      }
+    },
+    "relative-cap": {
+      "kind": "percent"
+    }
+  },
+  "same": [
+    "vault.asset",
+    "market.loanToken"
+  ],
+  "calls": [
+    {
+      "to": {
+        "card": "vault"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "multicall(bytes[] data)",
+      "args": {
+        "data": {
+          "items": [
+            {
+              "call": {
+                "function": "increaseAbsoluteCap(bytes idData, uint256 newAbsoluteCap)",
+                "args": {
+                  "idData": {
+                    "abi": {
+                      "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                      "args": {
+                        "kind": {
+                          "const": "this/marketParams"
+                        },
+                        "adapter": {
+                          "card": "vault.adapter"
+                        },
+                        "marketParams": {
+                          "card": "market"
+                        }
+                      }
+                    }
+                  },
+                  "newAbsoluteCap": {
+                    "card": "absolute-cap"
+                  }
+                }
+              }
+            },
+            {
+              "call": {
+                "function": "increaseRelativeCap(bytes idData, uint256 newRelativeCap)",
+                "args": {
+                  "idData": {
+                    "abi": {
+                      "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                      "args": {
+                        "kind": {
+                          "const": "this/marketParams"
+                        },
+                        "adapter": {
+                          "card": "vault.adapter"
+                        },
+                        "marketParams": {
+                          "card": "market"
+                        }
+                      }
+                    }
+                  },
+                  "newRelativeCap": {
+                    "card": "relative-cap"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "views": [
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "executableAt(bytes data) returns (uint256 executableAt)",
+        "args": {
+          "data": {
+            "call": {
+              "function": "increaseAbsoluteCap(bytes idData, uint256 newAbsoluteCap)",
+              "args": {
+                "idData": {
+                  "abi": {
+                    "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                    "args": {
+                      "kind": {
+                        "const": "this/marketParams"
+                      },
+                      "adapter": {
+                        "card": "vault.adapter"
+                      },
+                      "marketParams": {
+                        "card": "market"
+                      }
+                    }
+                  }
+                },
+                "newAbsoluteCap": {
+                  "card": "absolute-cap"
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "executableAt": "decreases"
+        }
+      },
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "executableAt(bytes data) returns (uint256 executableAt)",
+        "args": {
+          "data": {
+            "call": {
+              "function": "increaseRelativeCap(bytes idData, uint256 newRelativeCap)",
+              "args": {
+                "idData": {
+                  "abi": {
+                    "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                    "args": {
+                      "kind": {
+                        "const": "this/marketParams"
+                      },
+                      "adapter": {
+                        "card": "vault.adapter"
+                      },
+                      "marketParams": {
+                        "card": "market"
+                      }
+                    }
+                  }
+                },
+                "newRelativeCap": {
+                  "card": "relative-cap"
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "executableAt": "decreases"
+        }
+      },
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "absoluteCap(bytes32 id) returns (uint256 absoluteCap)",
+        "args": {
+          "id": {
+            "keccak": {
+              "abi": {
+                "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                "args": {
+                  "kind": {
+                    "const": "this/marketParams"
+                  },
+                  "adapter": {
+                    "card": "vault.adapter"
+                  },
+                  "marketParams": {
+                    "card": "market"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "absoluteCap": "card.absolute-cap"
+        }
+      },
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "relativeCap(bytes32 id) returns (uint256 relativeCap)",
+        "args": {
+          "id": {
+            "keccak": {
+              "abi": {
+                "params": "string kind, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                "args": {
+                  "kind": {
+                    "const": "this/marketParams"
+                  },
+                  "adapter": {
+                    "card": "vault.adapter"
+                  },
+                  "marketParams": {
+                    "card": "market"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "relativeCap": "card.relative-cap"
+        }
+      }
+    ]
+  }
+}
