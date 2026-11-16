@@ -25,6 +25,7 @@ async function run(argv: string[], env: Record<string, string>, typed?: string) 
     repoRoot: join(import.meta.dirname, '..'),
     transport: async () => assert.fail('key commands read no chain'),
     fetchJson: async () => assert.fail('key commands fetch nothing'),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   };
   const code = await main(argv, io);
   return { code, stdout, stderr, all: stdout + stderr };

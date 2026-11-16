@@ -32,7 +32,7 @@ function card(templates: ReadonlyMap<string, Template>, amount = '1800000000180'
 }
 
 const mutations = (t: Template = template, checker?: Checker, amount?: string): MutationResult =>
-  checkMutations(deposit, card(templatesOf(t), amount), templatesOf(t), registry, checker);
+  checkMutations(deposit, card(templatesOf(t), amount), templatesOf(t), registry, [], checker);
 
 /** The receiver word of the deposit, which holds the Safe: the one place the Safe appears in the data. */
 const RECEIVER = (() => {
