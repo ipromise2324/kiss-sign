@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Usage: screenshot.sh <page.html> <out.png> [width] [height]
 #
-# Renders a local kiss-sign HTML page (report.generated.html, verify's page) in headless Chrome and writes a PNG.
+# Renders a local kiss-sign HTML page (report.generated.<language>.html, verify's page) in headless Chrome and writes a PNG.
 # The pages load nothing from outside, so no network is needed. Height defaults to 4000 px; raise it for a long report.
 # Chrome runs with a throwaway profile under the output's folder and is removed afterwards.
 set -euo pipefail

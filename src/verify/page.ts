@@ -8,6 +8,8 @@ import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { PERMIT2_MAX, UNLIMITED_ERC20 } from '../floor/floor.ts';
+import { HTML_LANG } from '../language.ts';
+import type { Language } from '../language.ts';
 import type { Expectations, Expected, KeptSeen } from '../simulate/effects.ts';
 import type { CallScan } from '../simulate/simulate.ts';
 import type { Template } from '../template/template.ts';
@@ -30,28 +32,144 @@ export type VerdictPage = {
   readonly kept: readonly KeptSeen[];
   readonly tree: CallTree | undefined;
   readonly verdictFile: string;
+  readonly language: Language;
 };
 
-const CHECK_NAMES: Readonly<Record<CheckName, string>> = {
-  'template-approval': '模板已核准',
-  'static-floor': '交易本身的底線規則',
-  fields: '每個欄位符合模板和卡片',
-  'vault-asset': '金庫的資產',
-  'contract-code': '合約程式碼沒被換掉',
-  mutation: '改動欄位會被抓到',
-  simulation: '模擬',
-  'simulated-floor': '模擬後的底線規則',
-  effects: 'Safe 的資產變化符合卡片',
+type Does = 'gives' | 'gets' | 'unchanged' | 'net';
+type Bound = 'all' | 'exactly' | 'at-least' | 'more-than' | 'less-than';
+
+const ZH = {
+  checks: {
+    'template-approval': '模板已核准',
+    'static-floor': '交易本身的底線規則',
+    fields: '每個欄位符合模板和卡片',
+    'vault-asset': '金庫的資產',
+    'contract-code': '合約程式碼沒被換掉',
+    mutation: '改動欄位會被抓到',
+    simulation: '模擬',
+    'simulated-floor': '模擬後的底線規則',
+    effects: 'Safe 的資產變化符合卡片',
+  } satisfies Record<CheckName, string>,
+  banner: { MATCH: 'MATCH：交易符合你的卡片', MISMATCH: 'MISMATCH：交易和你的卡片不符，不要簽', UNVERIFIABLE: 'UNVERIFIABLE：有檢查無法完成，不要簽' } satisfies Record<Verdict['kind'], string>,
+  unregistered: '未登記',
+  baseUnits: (amount: string) => `${amount} 最小單位`,
+  baseUnitsOf: '的 ',
+  decimalsUnread: 'decimals() 沒讀到',
+  about: '約 ',
+  decimalsNote: (base: string, decimals: number) => `${base}，${decimals} 位小數`,
+  addressBook: '（地址簿）',
+  card: '卡片',
+  cardHash: '卡片 hash',
+  does: { gives: '給出', gets: '收到', unchanged: '不變', net: '淨變化' } satisfies Record<Does, string>,
+  bound: { all: '全部餘額', exactly: '剛好 ', 'at-least': '至少 ', 'more-than': '多於 ', 'less-than': '少於 ' } satisfies Record<Bound, string>,
+  allOf: '的 ',
+  cannotCompute: '無法算出',
+  removeSigner: '移除簽署人',
+  addSigner: '新增簽署人',
+  threshold: '門檻',
+  unchanged: '不變',
+  becomes: '變成 ',
+  effects: '預期效果',
+  effectsLead: '卡片說 Safe 的每種資產該怎麼變，淨變化是收到減給出。「Safe 的資產變化符合卡片」這項檢查拿它和模擬或收據比對。',
+  none: '無',
+  noEffects: '卡片沒有說 Safe 的資產會變',
+  unixSecond: (seconds: bigint) => `第 ${seconds} 秒（UNIX 時間）`,
+  unlimited: '無上限的 ',
+  until: (date: string) => `，到 ${date} 為止（Permit2 的到期時間）`,
+  viaPermit2: '透過 Permit2',
+  erc20Allowance: 'ERC-20 授權',
+  to: '給 ',
+  colon: '：',
+  kept: '交易後保留的授權',
+  keptLead: '模板允許這些授權在交易後留著；登記資料寫了為什麼可以留。其他授權都不能比交易前高。',
+  noKept: '這筆交易沒有留下新的授權',
+  callsUnread: (reasons: readonly string[]) => `讀不到哪些呼叫不移動資產：${reasons.join('；')}`,
+  everyCallMoves: '每個呼叫都會移動 Safe 的資產。',
+  movesNothingLead: '這些呼叫不移動 Safe 的任何資產，它們做的事是改設定或給權限：',
+  thisSafe: '本 Safe',
+  noData: '沒有資料',
+  calls: '不移動資產的呼叫',
+  checklist: '比對清單',
+  noHashes: '不顯示任何 hash。不要簽這筆交易。',
+  checklistLead: (command: Html) => h`每一列和獨立電腦上 ${command} 頁面的同一列比對：列號、欄位和值都要一模一樣。最右一欄是各自的名字，不用比。safeTxHash、domain hash 和 message hash 也要和硬體錢包逐字比對。`,
+  causes: '原因',
+  sub: 'kiss-sign 在工作電腦上對照你的卡片檢查這筆交易。',
+  footer: (file: Html) => h`這頁由 <code>kiss-sign verify</code> 寫出。標 AI 的是模板裡 AI 寫的理由，程式不檢查它；其他都不是 AI 文字。判決檔：${file}，可以用 <code>bin/kiss-sign replay</code> 重算。`,
 };
-const CHECKS = Object.entries(CHECK_NAMES) as [CheckName, string][];
+
+const EN: typeof ZH = {
+  checks: {
+    'template-approval': 'Template approved',
+    'static-floor': 'Floor rules on the transaction itself',
+    fields: 'Every field fits the template and the card',
+    'vault-asset': 'The vault\'s asset',
+    'contract-code': 'Contract code unchanged',
+    mutation: 'Changed fields are caught',
+    simulation: 'Simulation',
+    'simulated-floor': 'Floor rules after the simulation',
+    effects: 'The Safe\'s asset changes fit the card',
+  },
+  banner: {
+    MATCH: 'MATCH: the transaction fits your card',
+    MISMATCH: 'MISMATCH: the transaction does not fit your card. Do not sign',
+    UNVERIFIABLE: 'UNVERIFIABLE: a check could not finish. Do not sign',
+  },
+  unregistered: 'not registered',
+  baseUnits: (amount: string) => `${amount} base units`,
+  baseUnitsOf: ' of ',
+  decimalsUnread: 'decimals() not read',
+  about: 'about ',
+  decimalsNote: (base: string, decimals: number) => `${base}, ${decimals} decimals`,
+  addressBook: ' (address book)',
+  card: 'Card',
+  cardHash: 'Card hash',
+  does: { gives: 'Gives', gets: 'Gets', unchanged: 'Unchanged', net: 'Net change' },
+  bound: { all: 'the whole balance', exactly: 'exactly ', 'at-least': 'at least ', 'more-than': 'more than ', 'less-than': 'less than ' },
+  allOf: ' of ',
+  cannotCompute: 'Cannot compute',
+  removeSigner: 'Remove signer',
+  addSigner: 'Add signer',
+  threshold: 'Threshold',
+  unchanged: 'unchanged',
+  becomes: 'becomes ',
+  effects: 'Expected effects',
+  effectsLead: 'How the card says each asset of the Safe should change; the net change is what it gets minus what it gives. The check "The Safe\'s asset changes fit the card" compares this with the simulation or the receipt.',
+  none: 'None',
+  noEffects: 'The card says no asset of the Safe changes',
+  unixSecond: (seconds: bigint) => `second ${seconds} (UNIX time)`,
+  unlimited: 'unlimited ',
+  until: (date: string) => `, until ${date} (the Permit2 expiration)`,
+  viaPermit2: 'Through Permit2',
+  erc20Allowance: 'ERC-20 allowance',
+  to: 'to ',
+  colon: ': ',
+  kept: 'Allowances kept after the transaction',
+  keptLead: 'The template lets these allowances stay open after the transaction; the registry says why each may stay. No other allowance may end higher than before.',
+  noKept: 'This transaction leaves no new allowance',
+  callsUnread: (reasons: readonly string[]) => `Could not read which calls move no asset: ${reasons.join('; ')}`,
+  everyCallMoves: 'Every call moves an asset of the Safe.',
+  movesNothingLead: 'These calls move no asset of the Safe; they change settings or grant permissions:',
+  thisSafe: 'this Safe',
+  noData: 'no data',
+  calls: 'Calls that move no asset',
+  checklist: 'Checklist',
+  noHashes: 'No hash is shown. Do not sign this transaction.',
+  checklistLead: (command: Html) =>
+    h`Compare each row with the same row of the ${command} page on the independent computer: the row id, the field and the value must be exactly the same. The rows use check.sh's own words. The last column is each page's own names; do not compare it. Also compare the safeTxHash, domain hash and message hash character by character with the hardware wallet.`,
+  causes: 'Causes',
+  sub: 'kiss-sign checked this transaction against your card on your work computer.',
+  footer: (file: Html) =>
+    h`Written by <code>kiss-sign verify</code>. Text marked AI is the template's reason, written by AI; the program does not check it. Nothing else is AI text. Verdict file: ${file}; <code>bin/kiss-sign replay</code> computes it again.`,
+};
+
+const WORDS: Readonly<Record<Language, typeof ZH>> = { en: EN, 'zh-TW': ZH };
+type Words = typeof ZH;
+
+const CHECKS = Object.keys(ZH.checks) as CheckName[];
 /** Checks that read the simulation, and so did not run when it is unverifiable, though they report no cause then. */
 const ON_SIMULATION: readonly CheckName[] = ['simulated-floor', 'effects'];
 
-const BANNER: Readonly<Record<Verdict['kind'], { readonly state: State; readonly text: string }>> = {
-  MATCH: { state: 'ok', text: 'MATCH：交易符合你的卡片' },
-  MISMATCH: { state: 'bad', text: 'MISMATCH：交易和你的卡片不符，不要簽' },
-  UNVERIFIABLE: { state: 'warn', text: 'UNVERIFIABLE：有檢查無法完成，不要簽' },
-};
+const BANNER: Readonly<Record<Verdict['kind'], State>> = { MATCH: 'ok', MISMATCH: 'bad', UNVERIFIABLE: 'warn' };
 
 /**
  * A check's state as the verdict shows it. A MISMATCH names only the checks that failed, so the others are not
@@ -68,22 +186,23 @@ function stateOf(verdict: Verdict, check: CheckName): State {
 const mono = (text: string): Html => h`<span class="addr">${text}</span>`;
 const prop = (label: string, value: Html | string): Html => h`<div><dt>${label}</dt><dd>${value}</dd></div>`;
 
-function nameOf(address: Address, registry: Registry): string {
-  return registry.byAddress.get(address)?.name ?? '未登記';
+function nameOf(address: Address, page: VerdictPage): string {
+  return page.registry.byAddress.get(address)?.name ?? WORDS[page.language].unregistered;
 }
 
 const tokenName = (token: AmountToken): Html | string => (token.address === 'eth' ? token.name : h`${token.name} ${mono(checksumAddress(token.address))}`);
 
 function tokenAmount(value: bigint, token: AmountToken | undefined, page: VerdictPage): Html {
-  const base = `${value < 0n ? '−' : ''}${value < 0n ? -value : value} 最小單位`;
+  const w = WORDS[page.language];
+  const base = w.baseUnits(`${value < 0n ? '−' : ''}${value < 0n ? -value : value}`);
   if (token === undefined) return h`<span class="num">${base}</span>`;
   const named = tokenName(token);
   if (value === 0n) return h`<span class="num">0</span> ${named}`;
   const decimals = token.address === 'eth' ? 18 : page.decimals.get(token.address);
-  if (decimals === undefined) return h`<span class="num">${base}</span>的 ${named}<span class="sub2">decimals() 沒讀到</span>`;
+  if (decimals === undefined) return h`<span class="num">${base}</span>${w.baseUnitsOf}${named}<span class="sub2">${w.decimalsUnread}</span>`;
   const shown = groupedTokens(value, decimals, SHOWN_PLACES);
   const cut = shown !== groupedTokens(value, decimals);
-  return h`${cut ? '約 ' : ''}<span class="num">${shown}</span> ${named}<span class="sub2">${base}，${`${decimals}`} 位小數</span>`;
+  return h`${cut ? w.about : ''}<span class="num">${shown}</span> ${named}<span class="sub2">${w.decimalsNote(base, decimals)}</span>`;
 }
 
 function cardValue(value: ResolvedValue, token: AmountToken | undefined, page: VerdictPage): Html {
@@ -91,24 +210,25 @@ function cardValue(value: ResolvedValue, token: AmountToken | undefined, page: V
     case 'contract':
       return h`${value.name} ${mono(checksumAddress(value.entry.address))}`;
     case 'address':
-      return h`${value.name}${value.from === 'address-book' ? '（地址簿）' : ''} ${mono(checksumAddress(value.address))}`;
+      return h`${value.name}${value.from === 'address-book' ? WORDS[page.language].addressBook : ''} ${mono(checksumAddress(value.address))}`;
     case 'amount':
       return tokenAmount(value.value, token, page);
     case 'nonce':
     case 'threshold':
       return h`<span class="num">${`${value.value}`}</span>`;
     case 'percent':
-      return h`<span class="num">${percentText(value.value)}</span><span class="sub2">${`${value.value}`} 最小單位</span>`;
+      return h`<span class="num">${percentText(value.value)}</span><span class="sub2">${WORDS[page.language].baseUnits(`${value.value}`)}</span>`;
     case 'market':
       return h`${value.market.name} ${mono(value.market.id)}`;
   }
 }
 
 function cardSection(page: VerdictPage): Html {
+  const w = WORDS[page.language];
   return h`
 <section>
-  <h2>卡片</h2>
-  <p class="lead">卡片 hash ${mono(page.cardHash)}</p>
+  <h2>${w.card}</h2>
+  <p class="lead">${w.cardHash} ${mono(page.cardHash)}</p>
   ${page.card.operations.map(
     (op) => h`<h3><code>${op.template}</code></h3>
   <dl class="props two">${[...op.values].map(([field, value]) => {
@@ -119,37 +239,38 @@ function cardSection(page: VerdictPage): Html {
 </section>`;
 }
 
-function changeWords(change: Expected): { readonly does: string; readonly bound: string; readonly amount: bigint | undefined } {
-  if (change.kind === 'all') return { does: '給出', bound: '全部餘額', amount: undefined };
+function changeWords(change: Expected): { readonly does: Does; readonly bound: Bound; readonly amount: bigint | undefined } {
+  if (change.kind === 'all') return { does: 'gives', bound: 'all', amount: undefined };
   const { change: c } = change;
   const by = c < 0n ? -c : c;
-  if (change.kind === 'exactly') return { does: c === 0n ? '不變' : c < 0n ? '給出' : '收到', bound: '剛好 ', amount: by };
-  if (change.kind === 'at-least') return c >= 0n ? { does: '收到', bound: '至少 ', amount: c } : { does: '淨變化', bound: '至少 ', amount: c };
-  if (change.kind === 'more-than') return c >= 0n ? { does: '收到', bound: '多於 ', amount: c } : { does: '淨變化', bound: '多於 ', amount: c };
-  return c <= 0n ? { does: '給出', bound: '多於 ', amount: by } : { does: '淨變化', bound: '少於 ', amount: c };
+  if (change.kind === 'exactly') return { does: c === 0n ? 'unchanged' : c < 0n ? 'gives' : 'gets', bound: 'exactly', amount: by };
+  if (change.kind === 'at-least') return c >= 0n ? { does: 'gets', bound: 'at-least', amount: c } : { does: 'net', bound: 'at-least', amount: c };
+  if (change.kind === 'more-than') return c >= 0n ? { does: 'gets', bound: 'more-than', amount: c } : { does: 'net', bound: 'more-than', amount: c };
+  return c <= 0n ? { does: 'gives', bound: 'more-than', amount: by } : { does: 'net', bound: 'less-than', amount: c };
 }
 
 function effectsSection(page: VerdictPage): Html {
-  const { expected, registry } = page;
+  const { expected } = page;
+  const w = WORDS[page.language];
   const rows =
     expected.kind === 'unverifiable'
-      ? expected.reasons.map((reason) => prop('無法算出', reason))
+      ? expected.reasons.map((reason) => prop(w.cannotCompute, reason))
       : [...expected.changes].map(([asset, change]) => {
-          const token: AmountToken = asset === 'eth' ? { address: 'eth', name: 'ETH' } : { address: asset, name: nameOf(asset, registry) };
+          const token: AmountToken = asset === 'eth' ? { address: 'eth', name: 'ETH' } : { address: asset, name: nameOf(asset, page) };
           const { does, bound, amount } = changeWords(change);
-          return prop(does, amount === undefined ? h`${bound}的 ${tokenName(token)}` : h`${bound}${tokenAmount(amount, token, page)}`);
+          return prop(w.does[does], amount === undefined ? h`${w.bound[bound]}${w.allOf}${tokenName(token)}` : h`${w.bound[bound]}${tokenAmount(amount, token, page)}`);
         });
   const change = settingsChange(page.card, page.templates);
   if (change !== undefined) {
-    if (change.remove !== undefined) rows.push(prop('移除簽署人', mono(checksumAddress(change.remove))));
-    if (change.add !== undefined) rows.push(prop('新增簽署人', mono(checksumAddress(change.add))));
-    rows.push(prop('門檻', change.threshold === undefined ? '不變' : h`變成 <span class="num">${`${change.threshold}`}</span>`));
+    if (change.remove !== undefined) rows.push(prop(w.removeSigner, mono(checksumAddress(change.remove))));
+    if (change.add !== undefined) rows.push(prop(w.addSigner, mono(checksumAddress(change.add))));
+    rows.push(prop(w.threshold, change.threshold === undefined ? w.unchanged : h`${w.becomes}<span class="num">${`${change.threshold}`}</span>`));
   }
   return h`
 <section>
-  <h2>預期效果</h2>
-  <p class="lead">卡片說 Safe 的每種資產該怎麼變，淨變化是收到減給出。「Safe 的資產變化符合卡片」這項檢查拿它和模擬或收據比對。</p>
-  <dl class="props two">${rows.length === 0 ? prop('無', '卡片沒有說 Safe 的資產會變') : rows}</dl>
+  <h2>${w.effects}</h2>
+  <p class="lead">${w.effectsLead}</p>
+  <dl class="props two">${rows.length === 0 ? prop(w.none, w.noEffects) : rows}</dl>
 </section>`;
 }
 
@@ -157,66 +278,69 @@ const isUnlimited = ({ via, amount }: KeptSeen): boolean => amount >= (via === '
 
 /** The latest second a JavaScript date holds; a later expiration is shown in seconds. */
 const LAST_DATE = 8_640_000_000_000n;
-const utc = (seconds: bigint): string => (seconds > LAST_DATE ? `第 ${seconds} 秒（UNIX 時間）` : `${new Date(Number(seconds) * 1000).toISOString().replace('T', ' ').slice(0, 16)} UTC`);
+const utc = (seconds: bigint, w: Words): string => (seconds > LAST_DATE ? w.unixSecond(seconds) : `${new Date(Number(seconds) * 1000).toISOString().replace('T', ' ').slice(0, 16)} UTC`);
 
 function keptSection(page: VerdictPage): Html {
   if (![...page.templates.values()].some((t) => t.effects.approves.length > 0)) return h``;
-  const { registry } = page;
+  const w = WORDS[page.language];
   const rows = page.kept.map((kept) => {
-    const token: AmountToken = { address: kept.token, name: nameOf(kept.token, registry) };
-    const amount = isUnlimited(kept) ? h`無上限的 ${tokenName(token)}` : tokenAmount(kept.amount, token, page);
-    const expires = kept.expiration === undefined ? '' : h`，到 ${utc(kept.expiration)} 為止（Permit2 的到期時間）`;
-    return prop(kept.via === 'permit2' ? '透過 Permit2' : 'ERC-20 授權', h`給 ${nameOf(kept.spender, registry)} ${mono(checksumAddress(kept.spender))}：${amount}${expires}`);
+    const token: AmountToken = { address: kept.token, name: nameOf(kept.token, page) };
+    const amount = isUnlimited(kept) ? h`${w.unlimited}${tokenName(token)}` : tokenAmount(kept.amount, token, page);
+    const expires = kept.expiration === undefined ? '' : w.until(utc(kept.expiration, w));
+    return prop(kept.via === 'permit2' ? w.viaPermit2 : w.erc20Allowance, h`${w.to}${nameOf(kept.spender, page)} ${mono(checksumAddress(kept.spender))}${w.colon}${amount}${expires}`);
   });
   return h`
 <section>
-  <h2>交易後保留的授權</h2>
-  <p class="lead">模板允許這些授權在交易後留著；登記資料寫了為什麼可以留。其他授權都不能比交易前高。</p>
-  <dl class="props two">${rows.length === 0 ? prop('無', '這筆交易沒有留下新的授權') : rows}</dl>
+  <h2>${w.kept}</h2>
+  <p class="lead">${w.keptLead}</p>
+  <dl class="props two">${rows.length === 0 ? prop(w.none, w.noKept) : rows}</dl>
 </section>`;
 }
 
 function callsSection(page: VerdictPage): Html {
-  const { calls, registry } = page;
+  const { calls } = page;
+  const w = WORDS[page.language];
   const body =
     calls.kind === 'unverifiable'
-      ? h`<p class="intro">讀不到哪些呼叫不移動資產：${calls.reasons.join('；')}</p>`
+      ? h`<p class="intro">${w.callsUnread(calls.reasons)}</p>`
       : calls.movesNothing.length === 0
-        ? h`<p class="intro">每個呼叫都會移動 Safe 的資產。</p>`
-        : h`<p class="intro">這些呼叫不移動 Safe 的任何資產，它們做的事是改設定或給權限：</p>
+        ? h`<p class="intro">${w.everyCallMoves}</p>`
+        : h`<p class="intro">${w.movesNothingLead}</p>
   <dl class="props two">${calls.movesNothing.map(({ path, to, selector }) =>
-    prop(path, h`${to === page.card.safe ? '本 Safe' : nameOf(to, registry)} ${mono(checksumAddress(to))} ${selector === undefined ? '沒有資料' : h`selector ${mono(selector)}`}`),
+    prop(path, h`${to === page.card.safe ? w.thisSafe : nameOf(to, page)} ${mono(checksumAddress(to))} ${selector === undefined ? w.noData : h`selector ${mono(selector)}`}`),
   )}</dl>`;
   return h`
 <section>
-  <h2>不移動資產的呼叫</h2>${body}
+  <h2>${w.calls}</h2>${body}
 </section>`;
 }
 
 function checklistSection(page: VerdictPage): Html {
+  const w = WORDS[page.language];
   if (page.tree === undefined) {
     return h`
 <section>
-  <h2>比對清單</h2>
-  <p class="intro">不顯示任何 hash。不要簽這筆交易。</p>
+  <h2>${w.checklist}</h2>
+  <p class="intro">${w.noHashes}</p>
 </section>`;
   }
   return h`
 <section>
-  <h2>比對清單</h2>
-  <p class="lead">每一列和獨立電腦上 <code>./check.sh ${`${page.nonce}`}</code> 頁面的同一列比對：列號、欄位和值都要一模一樣。最右一欄是各自的名字，不用比。safeTxHash、domain hash 和 message hash 也要和硬體錢包逐字比對。</p>
-${new Html(checklistHtml(checklist(page.tree)))}
+  <h2>${w.checklist}</h2>
+  <p class="lead">${w.checklistLead(h`<code>./check.sh ${`${page.nonce}`}</code>`)}</p>
+${new Html(checklistHtml(checklist(page.tree, page.language)))}
 </section>`;
 }
 
-function causesSection(verdict: Verdict): Html {
+function causesSection(verdict: Verdict, language: Language): Html {
+  const w = WORDS[language];
   if (verdict.kind === 'MATCH') return h``;
   return h`
 <section>
-  <h2>原因</h2>
+  <h2>${w.causes}</h2>
   <div class="rows">${verdict.causes.map(
     (cause) => h`
-    <div class="row">${icon(verdict.kind === 'MISMATCH' ? 'bad' : 'warn')}<div><div class="t">${CHECK_NAMES[cause.check]} <code>${cause.check}</code></div>${cause.details.map((detail) => h`<div class="meta">${detail}</div>`)}</div></div>`,
+    <div class="row">${icon(verdict.kind === 'MISMATCH' ? 'bad' : 'warn', language)}<div><div class="t">${w.checks[cause.check]} <code>${cause.check}</code></div>${cause.details.map((detail) => h`<div class="meta">${detail}</div>`)}</div></div>`,
   )}
   </div>
 </section>`;
@@ -230,26 +354,27 @@ const PAGE_CSS = `:root{--accent:#6ea8fe}
 
 /** The page `verify` writes beside its verdict file: no script, nothing loaded from outside, every value escaped. */
 export function verdictPage(page: VerdictPage): string {
+  const w = WORDS[page.language];
   const banner = BANNER[page.verdict.kind];
   const body = h`<header>
   <div class="program">
     <h1><span class="prog">kiss-sign verify</span> · nonce ${`${page.nonce}`} · ${page.verdict.kind}</h1>
-    <p class="sub">kiss-sign 在工作電腦上對照你的卡片檢查這筆交易。</p>
+    <p class="sub">${w.sub}</p>
   </div>
-  <div class="banner ${banner.state}">${icon(banner.state)}${banner.text}</div>
-  <ul class="checks">${CHECKS.map(([check, name]) => h`
-    <li>${icon(stateOf(page.verdict, check))}${name}</li>`)}
+  <div class="banner ${banner}">${icon(banner, page.language)}${w.banner[page.verdict.kind]}</div>
+  <ul class="checks">${CHECKS.map((check) => h`
+    <li>${icon(stateOf(page.verdict, check), page.language)}${w.checks[check]}</li>`)}
   </ul>
 </header>
-${causesSection(page.verdict)}
+${causesSection(page.verdict, page.language)}
 ${checklistSection(page)}
 ${cardSection(page)}
 ${effectsSection(page)}
 ${keptSection(page)}
 ${callsSection(page)}
-<footer class="foot">這頁由 <code>kiss-sign verify</code> 寫出。標 AI 的是模板裡 AI 寫的理由，程式不檢查它；其他都不是 AI 文字。判決檔：<code>${page.verdictFile}</code>，可以用 <code>bin/kiss-sign replay</code> 重算。</footer>`;
+<footer class="foot">${w.footer(h`<code>${page.verdictFile}</code>`)}</footer>`;
   const text = `<!doctype html>
-<html lang="zh-Hant">
+<html lang="${HTML_LANG[page.language]}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

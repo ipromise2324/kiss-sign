@@ -1,35 +1,62 @@
 {
-  "title": "更改 Safe 的門檻",
-  "summary": "Safe 呼叫自己的 `changeThreshold`，把需要幾個簽署人簽才能執行改成你填的數字。簽署人名單不變。",
+  "title": {
+    "en": "Change the Safe's threshold",
+    "zh-TW": "更改 Safe 的門檻"
+  },
+  "summary": {
+    "en": "The Safe calls its own `changeThreshold`, setting how many signers must sign before a transaction can run to the number you type. The list of signers does not change.",
+    "zh-TW": "Safe 呼叫自己的 `changeThreshold`，把需要幾個簽署人簽才能執行改成你填的數字。簽署人名單不變。"
+  },
   "verdict": {
     "status": "caution",
-    "text": "不動任何資產，但門檻決定幾把鑰匙就能動這個 Safe。"
+    "text": {
+      "en": "Moves no asset, but the threshold decides how many keys can control this Safe.",
+      "zh-TW": "不動任何資產，但門檻決定幾把鑰匙就能動這個 Safe。"
+    }
   },
   "flow": [],
   "protocols": {},
   "judgments": [
     {
-      "text": "門檻 1 表示任何一個簽署人就能動全部資產；門檻等於人數時，少一把鑰匙就再也動不了。",
-      "recommendation": "門檻介於兩者之間，例如 3 人設 2。"
+      "text": {
+        "en": "A threshold of 1 means any one signer can move all the assets. With the threshold equal to the number of signers, losing one key leaves the Safe unable to act ever again.",
+        "zh-TW": "門檻 1 表示任何一個簽署人就能動全部資產；門檻等於人數時，少一把鑰匙就再也動不了。"
+      },
+      "recommendation": {
+        "en": "Set the threshold between the two, for example 2 of 3 signers.",
+        "zh-TW": "門檻介於兩者之間，例如 3 人設 2。"
+      }
     }
   ],
   "reviews": {},
   "entries": {
     "safe-1.3.0": {
-      "role": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼",
+      "role": {
+        "en": "The Safe 1.3.0 contract itself (singleton): Safes of version 1.3.0 run this code through a proxy",
+        "zh-TW": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "text": {
+            "en": "Etherscan: contract name GnosisSafe, deployed by Arachnid's deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+            "zh-TW": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+          },
           "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
           "result": "pass"
         }
       ]
     },
     "safe-1.4.1": {
-      "role": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼",
+      "role": {
+        "en": "The Safe 1.4.1 contract itself (singleton): Safes of version 1.4.1 run this code through a proxy",
+        "zh-TW": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "text": {
+            "en": "Etherscan: contract name Safe, deployed by the Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+            "zh-TW": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+          },
           "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
           "result": "pass"
         }
@@ -37,6 +64,9 @@
     }
   },
   "fields": {
-    "1.changeThreshold._threshold": "新的門檻，介於 1 和簽署人數之間。"
+    "1.changeThreshold._threshold": {
+      "en": "The new threshold, between 1 and the number of signers.",
+      "zh-TW": "新的門檻，介於 1 和簽署人數之間。"
+    }
   }
 }

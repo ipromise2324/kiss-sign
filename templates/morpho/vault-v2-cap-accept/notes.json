@@ -1,11 +1,23 @@
 {
-  "title": "執行 Morpho Vault V2 市場上限的提高（timelock 到期後）",
-  "summary": "Safe 呼叫 vault 的 `multicall`，執行之前 `submit` 排好、timelock 已到期的兩個呼叫：把你選的市場的絕對上限提高到你填的數量，相對上限提高到你填的百分比。不動 Safe 的任何資產。",
+  "title": {
+    "en": "Execute a Morpho Vault V2 market cap increase (after the timelock ends)",
+    "zh-TW": "執行 Morpho Vault V2 市場上限的提高（timelock 到期後）"
+  },
+  "summary": {
+    "en": "The Safe calls the vault's `multicall` to execute two calls queued earlier with `submit` whose timelock has ended: raise the absolute cap of the market you pick to the amount you type, and its relative cap to the percentage you type. It moves none of the Safe's assets.",
+    "zh-TW": "Safe 呼叫 vault 的 `multicall`，執行之前 `submit` 排好、timelock 已到期的兩個呼叫：把你選的市場的絕對上限提高到你填的數量，相對上限提高到你填的百分比。不動 Safe 的任何資產。"
+  },
   "protocols": {
     "morpho-blue": {
-      "intro": "Morpho Vault V2 把存款分配到多個 Morpho Blue 市場。curator 設定每個市場能放多少（上限），allocator 在上限內搬錢。提高上限要先 `submit`，等 timelock 過了才能執行。",
+      "intro": {
+        "en": "Morpho Vault V2 spreads deposits across several Morpho Blue markets. The curator sets how much each market can hold (its cap), and the allocator moves funds within the caps. Raising a cap takes a `submit` first, and it can run only after the timelock has passed.",
+        "zh-TW": "Morpho Vault V2 把存款分配到多個 Morpho Blue 市場。curator 設定每個市場能放多少（上限），allocator 在上限內搬錢。提高上限要先 `submit`，等 timelock 過了才能執行。"
+      },
       "audits": {
-        "text": "Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。",
+        "text": {
+          "en": "Vault V2's GitHub lists 10 audits (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest).",
+          "zh-TW": "Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。"
+        },
         "sources": [
           "https://github.com/morpho-org/vault-v2/tree/main/audits"
         ]
@@ -15,71 +27,182 @@
   },
   "judgments": [
     {
-      "text": "執行不限誰：timelock 到期後任何地址都能送出這兩個呼叫，合約只檢查 `executableAt`。你填的上限必須跟當初 `submit` 的一模一樣，不然 vault 會 revert。",
-      "recommendation": "照當初 submit 的數字填；verify 確認交易後兩個上限都等於你填的。"
+      "text": {
+        "en": "Anyone can execute: once the timelock ends, any address can send these two calls; the contract checks only `executableAt`. The caps you type must be exactly the ones in the original `submit`, or the vault reverts.",
+        "zh-TW": "執行不限誰：timelock 到期後任何地址都能送出這兩個呼叫，合約只檢查 `executableAt`。你填的上限必須跟當初 `submit` 的一模一樣，不然 vault 會 revert。"
+      },
+      "recommendation": {
+        "en": "Type the numbers from the original submit. verify confirms that after the transaction both caps equal what you typed.",
+        "zh-TW": "照當初 submit 的數字填；verify 確認交易後兩個上限都等於你填的。"
+      }
     }
   ],
   "reviews": {
     "morpho-oracle-cbbtc-usdc-86/address": {
       "status": "concern",
-      "text": "AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
-      "recommendation": "可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。"
+      "text": {
+        "en": "AI has no browser that runs JavaScript, so it did not open the market's page on the Morpho app. AI read Morpho Blue's `idToMarketParams` on chain (market id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64), and the oracle it answers is 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a. The market id is the hash of the five parameters, so a different oracle means a different market.",
+        "zh-TW": "AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。"
+      },
+      "recommendation": {
+        "en": "Acceptable. To check again, open this market's page on the Morpho app and compare the oracle address.",
+        "zh-TW": "可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。"
+      }
     },
     "morpho-oracle-usp-usdc/address": {
       "status": "concern",
-      "text": "AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
-      "recommendation": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
+      "text": {
+        "en": "AI read Morpho Blue's `idToMarketParams` on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d. The market id is the hash of the five parameters, so a different oracle means a different market.",
+        "zh-TW": "AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。"
+      },
+      "recommendation": {
+        "en": "Acceptable. To check again, open these two markets' pages on the Morpho app and compare the oracle address.",
+        "zh-TW": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
+      }
     }
   },
   "entries": {
     "usdc": {
-      "role": "vault 的資產，也是市場借出的代幣"
+      "role": {
+        "en": "The vault's asset, also the token the markets lend",
+        "zh-TW": "vault 的資產，也是市場借出的代幣"
+      }
     },
     "cbbtc": {
-      "role": "市場的抵押代幣"
+      "role": {
+        "en": "The market's collateral token",
+        "zh-TW": "市場的抵押代幣"
+      }
     },
     "morpho-blue": {
-      "role": "Morpho Blue 本體，市場在它裡面"
+      "role": {
+        "en": "Morpho Blue itself; the markets live inside it",
+        "zh-TW": "Morpho Blue 本體，市場在它裡面"
+      }
     },
     "morpho-oracle-cbbtc-usdc-86": {
-      "role": "市場用來給 cbBTC 定價的 oracle"
+      "role": {
+        "en": "The oracle the market uses to price cbBTC",
+        "zh-TW": "市場用來給 cbBTC 定價的 oracle"
+      }
     },
     "adaptive-curve-irm": {
-      "role": "市場的利率模型"
+      "role": {
+        "en": "The market's interest rate model",
+        "zh-TW": "市場的利率模型"
+      }
     },
     "morpho-market-v1-adapter-v2-factory": {
-      "role": "建立 Vault V2 市場轉接合約的工廠，它回答 `isMorphoMarketV1AdapterV2` = true，轉接合約是它建立的"
+      "role": {
+        "en": "The factory that creates Vault V2 market adapters. It answers `isMorphoMarketV1AdapterV2` = true: it created the adapter",
+        "zh-TW": "建立 Vault V2 市場轉接合約的工廠，它回答 `isMorphoMarketV1AdapterV2` = true，轉接合約是它建立的"
+      }
     },
     "usp": {
-      "role": "USP 市場的抵押代幣"
+      "role": {
+        "en": "The collateral token of the USP markets",
+        "zh-TW": "USP 市場的抵押代幣"
+      }
     },
     "morpho-oracle-usp-usdc": {
-      "role": "USP 市場用來給 USP 定價的 oracle"
+      "role": {
+        "en": "The oracle the USP markets use to price USP",
+        "zh-TW": "USP 市場用來給 USP 定價的 oracle"
+      }
     }
   },
   "fields": {
-    "1.multicall.data": "vault 依序執行的兩個呼叫，固定兩項：先絕對上限，再相對上限。任一個失敗，整筆失敗。",
-    "1.multicall.data[0]": "第一項：執行已排隊的絕對上限提高。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData": "上限的編號資料。vault 用它的 keccak256 當上限的 id，這裡是「這個轉接合約裡的這個市場」。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.kind": "id 的種類，固定是 this/marketParams：單一市場的上限，不是整個轉接合約或某個抵押代幣的。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter": "vault 的市場轉接合約，錢經由它放進 Morpho Blue 市場。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams": "市場的五個參數，合起來就是你選的市場。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken": "市場借出的代幣，等於 vault 的資產。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken": "市場的抵押代幣。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle": "市場的 oracle。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm": "市場的利率模型。",
-    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv": "市場的清算門檻。",
-    "1.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap": "新的絕對上限：vault 最多放多少資產進這個市場，必須等於當初排隊的數字。",
-    "1.multicall.data[1]": "第二項：執行已排隊的相對上限提高。",
-    "1.multicall.data[1].increaseRelativeCap.idData": "上限的編號資料。vault 用它的 keccak256 當上限的 id，這裡是「這個轉接合約裡的這個市場」。",
-    "1.multicall.data[1].increaseRelativeCap.idData.capId.kind": "id 的種類，固定是 this/marketParams：單一市場的上限，不是整個轉接合約或某個抵押代幣的。",
-    "1.multicall.data[1].increaseRelativeCap.idData.capId.adapter": "vault 的市場轉接合約，錢經由它放進 Morpho Blue 市場。",
-    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams": "市場的五個參數，合起來就是你選的市場。",
-    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.loanToken": "市場借出的代幣，等於 vault 的資產。",
-    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.collateralToken": "市場的抵押代幣。",
-    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.oracle": "市場的 oracle。",
-    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.irm": "市場的利率模型。",
-    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.lltv": "市場的清算門檻。",
-    "1.multicall.data[1].increaseRelativeCap.newRelativeCap": "新的相對上限：這個市場最多占 vault 總資產的比例，必須等於當初排隊的數字。"
+    "1.multicall.data": {
+      "en": "The two calls the vault runs in order, fixed at two items: the absolute cap first, then the relative cap. If either fails, the whole transaction fails.",
+      "zh-TW": "vault 依序執行的兩個呼叫，固定兩項：先絕對上限，再相對上限。任一個失敗，整筆失敗。"
+    },
+    "1.multicall.data[0]": {
+      "en": "Item 1: execute the queued absolute cap increase.",
+      "zh-TW": "第一項：執行已排隊的絕對上限提高。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData": {
+      "en": "The data that identifies the cap. The vault uses its keccak256 as the cap's id; here it means \"this market in this adapter\".",
+      "zh-TW": "上限的編號資料。vault 用它的 keccak256 當上限的 id，這裡是「這個轉接合約裡的這個市場」。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.kind": {
+      "en": "The kind of id, fixed to this/marketParams: a cap on one market, not on the whole adapter or on a collateral token.",
+      "zh-TW": "id 的種類，固定是 this/marketParams：單一市場的上限，不是整個轉接合約或某個抵押代幣的。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.adapter": {
+      "en": "The vault's market adapter, through which funds go into Morpho Blue markets.",
+      "zh-TW": "vault 的市場轉接合約，錢經由它放進 Morpho Blue 市場。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams": {
+      "en": "The market's five parameters, which together are the market you pick.",
+      "zh-TW": "市場的五個參數，合起來就是你選的市場。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.loanToken": {
+      "en": "The token the market lends, equal to the vault's asset.",
+      "zh-TW": "市場借出的代幣，等於 vault 的資產。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.collateralToken": {
+      "en": "The market's collateral token.",
+      "zh-TW": "市場的抵押代幣。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.oracle": {
+      "en": "The market's oracle.",
+      "zh-TW": "市場的 oracle。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.irm": {
+      "en": "The market's interest rate model.",
+      "zh-TW": "市場的利率模型。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.idData.capId.marketParams.lltv": {
+      "en": "The market's liquidation threshold.",
+      "zh-TW": "市場的清算門檻。"
+    },
+    "1.multicall.data[0].increaseAbsoluteCap.newAbsoluteCap": {
+      "en": "The new absolute cap: the most assets the vault can put into this market. It must equal the number queued earlier.",
+      "zh-TW": "新的絕對上限：vault 最多放多少資產進這個市場，必須等於當初排隊的數字。"
+    },
+    "1.multicall.data[1]": {
+      "en": "Item 2: execute the queued relative cap increase.",
+      "zh-TW": "第二項：執行已排隊的相對上限提高。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData": {
+      "en": "The data that identifies the cap. The vault uses its keccak256 as the cap's id; here it means \"this market in this adapter\".",
+      "zh-TW": "上限的編號資料。vault 用它的 keccak256 當上限的 id，這裡是「這個轉接合約裡的這個市場」。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData.capId.kind": {
+      "en": "The kind of id, fixed to this/marketParams: a cap on one market, not on the whole adapter or on a collateral token.",
+      "zh-TW": "id 的種類，固定是 this/marketParams：單一市場的上限，不是整個轉接合約或某個抵押代幣的。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData.capId.adapter": {
+      "en": "The vault's market adapter, through which funds go into Morpho Blue markets.",
+      "zh-TW": "vault 的市場轉接合約，錢經由它放進 Morpho Blue 市場。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams": {
+      "en": "The market's five parameters, which together are the market you pick.",
+      "zh-TW": "市場的五個參數，合起來就是你選的市場。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.loanToken": {
+      "en": "The token the market lends, equal to the vault's asset.",
+      "zh-TW": "市場借出的代幣，等於 vault 的資產。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.collateralToken": {
+      "en": "The market's collateral token.",
+      "zh-TW": "市場的抵押代幣。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.oracle": {
+      "en": "The market's oracle.",
+      "zh-TW": "市場的 oracle。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.irm": {
+      "en": "The market's interest rate model.",
+      "zh-TW": "市場的利率模型。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.idData.capId.marketParams.lltv": {
+      "en": "The market's liquidation threshold.",
+      "zh-TW": "市場的清算門檻。"
+    },
+    "1.multicall.data[1].increaseRelativeCap.newRelativeCap": {
+      "en": "The new relative cap: the largest share of the vault's total assets this market can hold. It must equal the number queued earlier.",
+      "zh-TW": "新的相對上限：這個市場最多占 vault 總資產的比例，必須等於當初排隊的數字。"
+    }
   }
 }

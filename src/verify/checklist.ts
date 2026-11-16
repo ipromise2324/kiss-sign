@@ -1,6 +1,7 @@
 import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
 import { checksumAddress } from '../safe/types.ts';
+import type { Language } from '../language.ts';
 import type { BundleCall, CallData, CallTree, Label, Labeled, SafeCall } from './expected.ts';
 
 /** One line of the 比對清單, which check.sh writes line for line the same for the same transaction, except `name`. */
@@ -42,68 +43,94 @@ export const CHECKLIST_END = '<!-- /比對清單 -->';
 export const checklistHtml = (lines: readonly ChecklistLine[]): string =>
   [CHECKLIST_START, '<div class="cl">', ...lines.map(checklistLineHtml), '</div>', CHECKLIST_END].join('\n');
 
-function labelName(label: Label): string {
-  if (label === undefined) return '未登記';
+/**
+ * The words of the last column, which check.sh does not share, in the signer's language. Every other column and each
+ * group title stay as check.sh writes them, in Traditional Chinese, so the rows still compare byte for byte.
+ */
+const ZH = {
+  unregistered: '未登記',
+  safe: '本 Safe',
+  zero: '零地址',
+  addressBook: (name: string) => `${name}（地址簿）`,
+  raw: '沒有範本可以解碼',
+  trailer: (max: number, bytes: number) => `模板允許這個呼叫最多 ${max} bytes，這裡 ${bytes} bytes，在範圍內`,
+  hardwareWallet: '和硬體錢包比對',
+};
+const EN: typeof ZH = {
+  unregistered: 'not registered',
+  safe: 'this Safe',
+  zero: 'zero address',
+  addressBook: (name: string) => `${name} (address book)`,
+  raw: 'no template to decode it',
+  trailer: (max: number, bytes: number) => `extra bytes after the arguments: the template allows at most ${max}; this call has ${bytes}, within range`,
+  hardwareWallet: 'compare with the hardware wallet',
+};
+const NAMES: Readonly<Record<Language, typeof ZH>> = { en: EN, 'zh-TW': ZH };
+type Names = typeof ZH;
+
+function labelName(label: Label, w: Names): string {
+  if (label === undefined) return w.unregistered;
   switch (label.kind) {
     case 'safe':
-      return '本 Safe';
+      return w.safe;
     case 'zero':
-      return '零地址';
+      return w.zero;
     case 'registry':
       return label.name;
     case 'address-book':
-      return `${label.name}（地址簿）`;
+      return w.addressBook(label.name);
   }
 }
 
 const row = (id: string, key: string, value: string, name = ''): ChecklistLine => ({ kind: 'row', id, key, value, name });
-const toRow = (id: string, to: Labeled): ChecklistLine => row(`${id}-to`, 'to', checksumAddress(to.address), labelName(to.label));
+const toRow = (id: string, to: Labeled, w: Names): ChecklistLine => row(`${id}-to`, 'to', checksumAddress(to.address), labelName(to.label, w));
 
-function dataLines(id: string, data: CallData): ChecklistLine[] {
+function dataLines(id: string, data: CallData, w: Names): ChecklistLine[] {
   if (data.kind === 'empty') return [row(`${id}-data`, 'data', '無')];
-  if (data.kind === 'raw') return [row(`${id}-data`, 'data', data.hex, '沒有範本可以解碼')];
-  const named = new Map(data.addresses.map((a) => [checksumAddress(a.address), labelName(a.label)]));
+  if (data.kind === 'raw') return [row(`${id}-data`, 'data', data.hex, w.raw)];
+  const named = new Map(data.addresses.map((a) => [checksumAddress(a.address), labelName(a.label, w)]));
   const lines = [
     row(`${id}-fn`, '函式', `${data.signature} ${data.selector}`),
     ...data.args.map((arg, i) => row(`${id}-a${i + 1}`, `引數 ${i + 1}`, arg.text, named.get(arg.text) ?? (arg.amount === undefined ? '' : `= ${arg.amount}`))),
   ];
   if (data.trailer !== undefined) {
     const { hex, allowance } = data.trailer;
-    const fact = `模板允許這個呼叫最多 ${allowance.maxBytes} bytes，這裡 ${(hex.length - 2) / 2} bytes，在範圍內`;
+    const fact = w.trailer(allowance.maxBytes, (hex.length - 2) / 2);
     lines.push({ kind: 'row', id: `${id}-extra`, key: '引數後多出的 bytes', value: hex, name: fact, ai: allowance.why });
   }
   const nested = data.nested;
-  if (nested?.kind === 'multisend') lines.push(...nested.calls.flatMap(safeCallLines));
-  if (nested?.kind === 'bundle') lines.push(...nested.calls.flatMap((call, i) => bundleCallLines(`${id}.${i + 1}`, call, `Bundler3 呼叫 ${i + 1}/${nested.calls.length}`)));
+  if (nested?.kind === 'multisend') lines.push(...nested.calls.flatMap((call) => safeCallLines(call, w)));
+  if (nested?.kind === 'bundle') lines.push(...nested.calls.flatMap((call, i) => bundleCallLines(`${id}.${i + 1}`, call, `Bundler3 呼叫 ${i + 1}/${nested.calls.length}`, w)));
   if (nested?.kind === 'bytes') {
-    nested.calls.forEach((call, i) => lines.push({ kind: 'group', id: `${id}.${i + 1}`, title: '內含的呼叫' }, ...dataLines(`${id}.${i + 1}`, call)));
+    nested.calls.forEach((call, i) => lines.push({ kind: 'group', id: `${id}.${i + 1}`, title: '內含的呼叫' }, ...dataLines(`${id}.${i + 1}`, call, w)));
   }
   return lines;
 }
 
-function bundleCallLines(id: string, call: BundleCall, title: string): ChecklistLine[] {
-  return [{ kind: 'group', id, title }, toRow(id, call.to), row(`${id}-value`, 'value（wei）', `${call.value}`), ...dataLines(id, call.data)];
+function bundleCallLines(id: string, call: BundleCall, title: string, w: Names): ChecklistLine[] {
+  return [{ kind: 'group', id, title }, toRow(id, call.to, w), row(`${id}-value`, 'value（wei）', `${call.value}`), ...dataLines(id, call.data, w)];
 }
 
-function safeCallLines(call: SafeCall): ChecklistLine[] {
+function safeCallLines(call: SafeCall, w: Names): ChecklistLine[] {
   const id = `C${call.number}`;
   return [
     { kind: 'group', id, title: `呼叫 #${call.number}` },
-    toRow(id, call.to),
+    toRow(id, call.to, w),
     row(`${id}-value`, 'value（wei）', `${call.value}`),
     row(`${id}-op`, 'operation', call.operation === 0 ? '0 CALL' : '1 DELEGATECALL'),
-    ...dataLines(id, call.data),
+    ...dataLines(id, call.data, w),
   ];
 }
 
-export function checklist(tree: CallTree): ChecklistLine[] {
+export function checklist(tree: CallTree, language: Language): ChecklistLine[] {
+  const w = NAMES[language];
   return [
     { kind: 'group', id: 'tx', title: '交易' },
-    row('tx-safeTxHash', 'safeTxHash', tree.hashes.safeTxHash, '和硬體錢包比對'),
-    row('tx-domain', 'domain hash', tree.hashes.domainHash, '和硬體錢包比對'),
-    row('tx-message', 'message hash', tree.hashes.messageHash, '和硬體錢包比對'),
+    row('tx-safeTxHash', 'safeTxHash', tree.hashes.safeTxHash, w.hardwareWallet),
+    row('tx-domain', 'domain hash', tree.hashes.domainHash, w.hardwareWallet),
+    row('tx-message', 'message hash', tree.hashes.messageHash, w.hardwareWallet),
     row('tx-nonce', 'nonce', `${tree.nonce}`),
-    ...safeCallLines(tree.top),
+    ...safeCallLines(tree.top, w),
     { kind: 'group', id: 'end', title: '總計' },
     row('end-count', 'Safe 發出的呼叫數', `${tree.count}`),
   ];

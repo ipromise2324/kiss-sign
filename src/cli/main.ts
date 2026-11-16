@@ -74,7 +74,7 @@ function keyRemove(args: readonly string[], io: Io): number {
 type Command = { readonly usage: string; readonly run: (args: readonly string[], io: Io) => number | Promise<number> };
 
 const COMMANDS: Readonly<Record<string, Command>> = {
-  init: { usage: 'init --safe <address>', run: init },
+  init: { usage: 'init --safe <address> [--language en|zh-TW]', run: init },
   'book add': { usage: 'book add <name> <address>', run: bookAdd },
   'book list': { usage: 'book list', run: bookList },
   'card new': { usage: 'card new <protocol>/<operation>...', run: cardNew },

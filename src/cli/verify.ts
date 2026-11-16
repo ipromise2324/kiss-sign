@@ -66,7 +66,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   });
   if (values.card === undefined) throw new UsageError('verify needs --card <sealed card hash>.');
   const home = kissSignHome(io.env);
-  const { safe, repo } = requireConfig(home);
+  const { safe, repo, language } = requireConfig(home);
   const check = selfCheck(io.repoRoot, repo);
   if (check.kind === 'differs') {
     io.stderr(`kiss-sign: this checkout is not exactly main of ${repo}, so nothing was verified.\n${check.problems.map((p) => `  ${p}\n`).join('')}`);
@@ -134,6 +134,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
     kept,
     tree,
     verdictFile: path,
+    language,
   });
   writeFileSync(`${page}.tmp`, html, { mode: 0o600 });
   renameSync(`${page}.tmp`, page);
