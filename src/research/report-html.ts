@@ -185,7 +185,7 @@ const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you
 const chip = (c: Chip): Html => h`<span class="${CHIP_CLASS[c.who]}">${c.label}</span>`;
 
 function valueLines(row: ArgRow): Html {
-  return h`${row.value === undefined ? '' : h`<div class="raw">${row.value.cast}${row.value.example ? h`<span class="ex">例</span>` : ''}</div>`}<div class="is">${text(row.words)}${
+  return h`${row.value === undefined ? '' : h`<div class="raw">${row.value.cast}${row.value.example === undefined ? '' : h`<span class="ex">${row.value.example}</span>`}</div>`}<div class="is">${text(row.words)}${
     row.qualifier === undefined ? '' : h` <span class="f3">${text(row.qualifier)}</span>`
   }</div>${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
         <div class="ai">${ai(row.ai)}</div>`}`;
@@ -218,10 +218,9 @@ function callHead(call: CallBlock): Html {
 }
 
 function flowBody(flow: Flow): Html {
-  const chosen = flow.key.some((item) => item.who !== 'fixed');
   const lead = [
     flow.decoded ? h`每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。` : '',
-    flow.example !== undefined ? h`標「例」的${text(flow.example)}` : chosen ? '沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。' : '',
+    flow.example === undefined ? '' : text(flow.example),
   ];
   return h`
   <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
@@ -431,13 +430,13 @@ function addressBody(body: Extract<Body, { kind: 'addresses' }>): Html {
 }
 
 function pastBody(body: Extract<Body, { kind: 'past' }>): Html {
-  if (body.recordings.length === 0) return h`<p class="lead">沒有 <code>pnpm past-txs --record</code> 的記錄。</p>`;
+  if (body.recordings.length === 0) return h`<p class="lead">這個操作沒有研究過去交易。</p>`;
   return h`
   <p class="lead">${text(body.same)}</p>${body.conclusion === undefined ? '' : h`
   <p class="intro">${ai(body.conclusion)}</p>`}
   <details class="fold">
   <summary>${decor('chev')}其他做法</summary>
-  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一樣，指交易的呼叫和參數位置跟模板相同；其他的依原因分組，各附最多 3 筆例子。</p>${body.recordings.map(
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫和參數位置相同，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>${body.recordings.map(
     (r) => h`
   <h3>${r.count}</h3>
   <p class="lead">記錄在 <code>${r.file}</code>。${text(r.search)}</p>${r.blocks.map(
@@ -475,7 +474,7 @@ function nextBody(body: Extract<Body, { kind: 'next' }>): Html {
 }
 
 const ADDRESS_RULE =
-  '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。';
+  '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或金庫的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。';
 
 function section(s: Section): Html {
   const count =

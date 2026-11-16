@@ -483,35 +483,30 @@ senders, of 236 transactions studied:
 by proven Safes, the whole template in one transaction:
 another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
   e.g. 0x776f13538e1df9e7495e87b6e23d28472375afa16ea62d1a6e8d4534b3d131bd: calls fluid-fusdc.0xba087652
-fit the template's shape: 1 transaction from 1 Safe; misfits: 1 from 1 Safe
-fields, over the 1 fitting transaction:
-  call.to  [card vault]
-    same as the other leaves bound to card vault in 1 of 1; values: another address in 1
-  call.value  [const 0]
-    equalled const 0 in 1 of 1 (1 Safe); values: 0 in 1
-  call.withdraw.assets  [card amount]
-    same as the other leaves bound to card amount in 1 of 1; values: 7000000000 in 1
-  call.withdraw.receiver  [the Safe]
-    equalled the Safe in 1 of 1 (1 Safe); values: the Safe in 1
-  call.withdraw.owner  [the Safe]
-    equalled the Safe in 1 of 1 (1 Safe); values: the Safe in 1
+fit the template's shape: 0 transactions from 0 Safes; misfits: 2 from 2 Safes
 misfits, by reason:
   1 from 1 Safe: calls fluid-fusdc.withdraw, fluid-rewards-distributor.0xbe5013dc
     e.g. 0xc8dededc9956c99ea3e01d1d85a7dbd7c98f457f223a6f155f5816101b4d521b
-examples that fit: 0xae41387e0b21d44eb10954caa32cc74c2bd99889f0a4adca911bf402077a8273
+  1 from 1 Safe: call.to: expected steakhouse-prime-usdc-v2-0f51 or usual-boosted-usdc-v1-3a3d or fluid-fusdc or fluid-fusdt or steakhouse-high-yield-usdc-v2-a757 or steakhouse-usdt-v1-cfba or smokehouse-usdc-v1-f5bc or smokehouse-usdt-v1-7484 or hyperithm-usdc-apex-v1-7777 or hyperithm-usdc-apex-v2-9e2f, got 0x273DA948ACa9261043fbdb2a857BC255ECC29012
+    e.g. 0xae41387e0b21d44eb10954caa32cc74c2bd99889f0a4adca911bf402077a8273
 by EOAs, call 1 of 1 (withdraw) as its own transaction:
-fit the call's shape: 115 transactions from 96 EOAs; misfits: 0 from 0 EOAs
-fields, over the 115 fitting transactions:
+fit the call's shape: 89 transactions from 74 EOAs; misfits: 26 from 23 EOAs
+fields, over the 89 fitting transactions:
   call.to  [card vault]
-    same as the other leaves bound to card vault in 115 of 115; values: fluid-fusdc in 89, another address in 26 (2 distinct other addresses)
+    same as the other leaves bound to card vault in 89 of 89; values: fluid-fusdc in 89
   call.value  [const 0]
-    equalled const 0 in 115 of 115 (96 EOAs); values: 0 in 115
+    equalled const 0 in 89 of 89 (74 EOAs); values: 0 in 89
   call.withdraw.assets  [card amount]
-    same as the other leaves bound to card amount in 115 of 115; values: 82 distinct values
+    same as the other leaves bound to card amount in 89 of 89; values: 68 distinct values
   call.withdraw.receiver  [the sender]
-    equalled the sender in 115 of 115 (96 EOAs); values: the sender in 115
+    equalled the sender in 89 of 89 (74 EOAs); values: the sender in 89
   call.withdraw.owner  [the sender]
-    equalled the sender in 115 of 115 (96 EOAs); values: the sender in 115
+    equalled the sender in 89 of 89 (74 EOAs); values: the sender in 89
+misfits, by reason:
+  25 from 22 EOAs: call.to: expected steakhouse-prime-usdc-v2-0f51 or usual-boosted-usdc-v1-3a3d or fluid-fusdc or fluid-fusdt or steakhouse-high-yield-usdc-v2-a757 or steakhouse-usdt-v1-cfba or smokehouse-usdc-v1-f5bc or smokehouse-usdt-v1-7484 or hyperithm-usdc-apex-v1-7777 or hyperithm-usdc-apex-v2-9e2f, got 0x273DA948ACa9261043fbdb2a857BC255ECC29012
+    e.g. 0x203eb7a91872cdef6c2e5d75dcdbc52c275d2425d0642c6b792cc02b3b10f502, 0x20a44eb69a8cbcdde9ba244b524922ab1ed6a8affdd4688f6ff226da3a4d2536, 0x723a13f7f54cf50e825b526ed3a8471303d01c7f3a4009751d2d0e0d80f1cb54
+  1 from 1 EOA: call.to: expected steakhouse-prime-usdc-v2-0f51 or usual-boosted-usdc-v1-3a3d or fluid-fusdc or fluid-fusdt or steakhouse-high-yield-usdc-v2-a757 or steakhouse-usdt-v1-cfba or smokehouse-usdc-v1-f5bc or smokehouse-usdt-v1-7484 or hyperithm-usdc-apex-v1-7777 or hyperithm-usdc-apex-v2-9e2f, got 0x43Ee0243eA8CF02f7087d8B16C8D2007CC9c7cA2
+    e.g. 0x8db9caf07d065b27e7dfa76cdf2fb0acf1ae28b23037289934060b66db1423a4
 examples that fit: 0xda6dde62f141497078f5c0603050c67415649c3d9528741afa1975d8f697c445, 0x7fb4068d40ca3e89d07968944041bb8b978fd9a70e7286996df6daed8528407c, 0x157f5381b76a977736ed5794d8313c62c9ee11f016698bf3dab968c7a9bfc60c
 ```
 

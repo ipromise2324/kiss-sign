@@ -4,7 +4,7 @@ import { paramName } from '../decode/abi.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
-import { TEMPLATES_DIR, callTargetEntries } from '../template/template.ts';
+import { TEMPLATES_DIR, callTargetEntries, refNames } from '../template/template.ts';
 import { vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, Rule, Template } from '../template/template.ts';
 import { needsSigner } from './ledger.ts';
@@ -26,16 +26,25 @@ export const notesChanges = (changed: readonly string[]): string[] => changed.fi
 
 const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
 
-/** What a vault's notes may hold: the text about that vault alone. Everything else every vault's report shares. */
-const VAULT_KEYS: readonly string[] = ['verdict', 'judgments', 'reviews', 'entries', 'pastTxsConclusion'];
+/**
+ * What a vault's notes may hold: the text about that vault alone, and `flow` lines, which name the vault or its asset
+ * and so differ per vault. Everything else every vault's report shares.
+ */
+const VAULT_KEYS: readonly string[] = ['verdict', 'flow', 'judgments', 'reviews', 'entries', 'pastTxsConclusion'];
+/** Lists both files may add to, joined: the limit on their length counts both. */
+const JOINED = ['flow', 'judgments'];
 const KEYED = ['reviews', 'entries'];
 
 /**
- * The template's notes and a vault's, as one: each key once, except that `judgments` join and `reviews` and `entries`
+ * The template's notes and a vault's, as one: each key once, except that `flow` and `judgments` join and `reviews` and `entries`
  * join by name. A vault's notes may hold only `VAULT_KEYS`, may review and describe only the entries in `owned`, the
- * vault and the entries its attributes name, and a key or name both define is refused.
+ * vault and the entries its attributes name, and a key or name both define is refused. A template's `flow` line that
+ * names an entry in `owned` is refused, since another vault's report could not name it.
  */
 export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, owned: ReadonlySet<string>): unknown {
+  const flow = isRecord(shared) ? own(shared, 'flow') : undefined;
+  const named = Array.isArray(flow) ? flow.flatMap((line) => (isRecord(line) ? [own(line, 'from'), own(line, 'to')] : [])).find((name) => owned.has(name as string)) : undefined;
+  if (named !== undefined) refuse(`${NOTES_FILE}.flow`, `${shown(String(named))} differs per vault; its flow line belongs in ${vaultPath}`);
   if (vault === undefined || !isRecord(shared)) return shared;
   if (!isRecord(vault)) return refuse(vaultPath, 'not a JSON object');
   const merged: Record<string, unknown> = { ...shared };
@@ -48,7 +57,7 @@ export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, o
     }
     const before = own(shared, key);
     if (before === undefined) merged[key] = value;
-    else if (key === 'judgments' && Array.isArray(before) && Array.isArray(value)) merged[key] = [...before, ...value];
+    else if (JOINED.includes(key) && Array.isArray(before) && Array.isArray(value)) merged[key] = [...before, ...value];
     else if (KEYED.includes(key) && isRecord(before) && isRecord(value)) {
       const twice = Object.keys(value).find((name) => own(before, name) !== undefined);
       if (twice !== undefined) refuse(`${vaultPath}.${key}`, `${shown(twice)} is in the template's ${NOTES_FILE} too`);
@@ -70,7 +79,7 @@ export function readNotes(repoRoot: string, template: string, vault?: RegistryEn
 export type NotesScope = {
   /** How many calls the template makes: a `flow` line's `after` is one of 1..calls. */
   readonly calls: number;
-  /** The registry names a call or an effects' view targets: a `flow` line's `from` and `to`. */
+  /** The registry names a call or an effects' view targets, and the tokens the effects move: a `flow` line's `from` and `to`. */
   readonly contracts: ReadonlySet<string>;
   /** The registry entries the report covers; `entries` may name any of them. */
   readonly entries: ReadonlySet<string>;
@@ -137,7 +146,11 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
       : new Map(inputs.facts.protocols.map((sheet) => [sheet.slug, sheet.listing.kind === 'read' ? sheet.hacks.length : 'unread']));
   return {
     calls: template.calls.length,
-    contracts: new Set([...callTargetEntries(template, registry).map((entry) => entry.name), ...template.effects.views.map((view) => view.to)]),
+    contracts: new Set([
+      ...callTargetEntries(template, registry).map((entry) => entry.name),
+      ...template.effects.views.map((view) => view.to),
+      ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => (effect.token === 'eth' ? [] : refNames(effect.token, template, registry))),
+    ]),
     entries: new Set(ledger.entries.map((entry) => entry.name)),
     protocols,
     fields: fieldKeys(template),
@@ -193,7 +206,7 @@ const callNumber: P<number> = (path, raw, scope) =>
 
 const contract: P<string> = (path, raw, scope) => {
   const name = str(80)(path, raw, scope);
-  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target`);
+  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, nor a token the effects move`);
 };
 
 const list =
