@@ -410,9 +410,9 @@ test('morpho/market-supply from its recordings: one address confirmed in one pla
       ['usdc', 'high'],
       ['cbbtc', 'high'],
       ['morpho-blue', 'high'],
-      ['blue-bundles-v1', 'high'],
       ['adaptive-curve-irm', 'high'],
       ['morpho-oracle-cbbtc-usdc-86', 'low'],
+      ['blue-bundles-v1', 'high'],
     ],
   );
 });

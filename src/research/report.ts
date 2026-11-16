@@ -277,18 +277,24 @@ export const vaultsOf = (subject: Subject, registry: Registry): RegistryEntry[] 
 function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   const names = new Set<string>();
   const roots = subject.kind === 'vault' ? [subject.vault] : [...[...namedInRules(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
-  for (const entry of roots) {
+  const named = (entry: RegistryEntry): void => {
+    if (names.has(entry.name)) return;
     names.add(entry.name);
-    for (const target of Object.values(entry.attributes)) names.add(target);
-  }
+    for (const target of Object.values(entry.attributes)) {
+      const attribute = registry.entries.get(target);
+      if (attribute === undefined) names.add(target);
+      else named(attribute);
+    }
+  };
+  roots.forEach(named);
   if (subject.kind === 'template') for (const doc of subject.docs) names.add(doc.contract.name);
   return names;
 }
 
 /**
  * Every registry entry the operation can touch, in registry order: those the template names, those a card field can
- * name, every entry those name as an attribute, such as a vault's asset and factory, and every entry any of these
- * depends on.
+ * name, every entry those name as an attribute, such as a vault's asset and factory, and its attributes in turn, such as
+ * the factory of a vault's adapter, and every entry any of these depends on.
  */
 export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[] {
   const names = directlyTouched(subject, registry);

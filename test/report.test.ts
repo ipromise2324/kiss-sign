@@ -525,7 +525,7 @@ test('a market field lists every market with its id, lltv and parts, binds each 
   );
   assert.deepEqual(
     entriesOf(subject, reg).map((e) => e.name),
-    ['usdc', 'cbbtc', 'morpho-blue', 'morpho-oracle-cbbtc-usdc-86', 'adaptive-curve-irm'],
+    ['usdc', 'cbbtc', 'morpho-blue', 'adaptive-curve-irm', 'morpho-oracle-cbbtc-usdc-86'],
   );
 });
 

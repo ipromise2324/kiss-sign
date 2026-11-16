@@ -518,6 +518,12 @@ function viewLabel(view: ViewEffect, context: Context): string {
   return onlyEntry(view.to.ref, context)?.name ?? `card.${view.to.ref.field}${view.to.ref.attribute === undefined ? '' : `.${view.to.ref.attribute}`}`;
 }
 
+/** The call a view's argument encodes, such as the `increaseAbsoluteCap` whose `executableAt` it reads, in brackets; empty for none. */
+function viewSubject(view: ViewEffect): string {
+  const inner = view.args.flatMap((arg) => (arg.kind === 'call' || arg.kind === 'keccak' ? [arg.call.fn.name] : []));
+  return inner.length === 0 ? '' : `（${inner.join('、')}）`;
+}
+
 function onlyEntry(ref: CardRef, context: Context): RegistryEntry | undefined {
   if (context.template.card.get(ref.field)?.kind !== 'contract') return undefined;
   const names = refNames(ref, context.template, context.registry);
@@ -644,7 +650,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
     id: undefined,
     ai: fieldsNote(context, node.key),
     parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall)) }],
-    doc: node.rule.kind === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
+    doc: node.rule.kind === 'call' && !isEncoding(node.rule.call) ? docLine(node.rule.call.fn.signature, context) : undefined,
   };
 }
 
@@ -736,7 +742,10 @@ function sequence(context: Context): Sequence {
     arrows.push({ kind: 'gets', from: last, text });
     narration.push(`結果：${text}。`);
   }
-  for (const view of template.effects.views) {
+  // Only a view that reads the Safe's own position shows something the Safe gets; a vault's setting does not.
+  const readsSafe = (rule: Rule): boolean =>
+    rule.kind === 'safe' || (rule.kind === 'fields' && rule.fields.some(readsSafe)) || (rule.kind === 'items' && rule.items.some(readsSafe));
+  for (const view of template.effects.views.filter((v) => v.args.some(readsSafe))) {
     for (const { value } of view.changes.filter((c) => c.change === 'increases')) {
       const label = viewLabel(view, context);
       const text = `${label} 的 ${paramName(view.returns[value] as AbiParam, value)} 增加`;
@@ -782,7 +791,7 @@ function afterRows(context: Context): AfterRow[] {
       rows.push({
         label: [{ code: paramName(view.returns[value] as AbiParam, value) }],
         value: changeWords(change, context),
-        note: [`${viewLabel(view, context)}.${view.fn.name}，交易前後各讀一次`],
+        note: [`${viewLabel(view, context)}.${view.fn.name}${viewSubject(view)}，交易前後各讀一次`],
         gains: change === 'increases',
       });
     }
@@ -1559,7 +1568,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
           [...cardNewPrompt, `：打 ${token} 的數量，用整顆幣，例如 `, { code: '1250.5' }, ' ；可以有千位逗號，例如 ', { code: '1,000,611.448606' }, ' 。'],
           [
             ['它印出整顆和 base units 兩種寫法，核對數字是你要的。'],
-            ...(field.max === undefined ? [] : [['也可以打 ', { code: 'max' }, `，等於 ${field.max.value} base units：`, research(field.max.why)] as Inline]),
+            ...(field.max === undefined ? [] : [['也可以打 ', { code: 'max' }, `，等於 ${field.max.value} base units；card new 會印出模板寫的理由。`] satisfies Inline]),
           ],
         );
       }
