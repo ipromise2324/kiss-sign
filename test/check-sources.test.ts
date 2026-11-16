@@ -28,10 +28,10 @@ const USDT = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 test('the registry: Circle, Tether, Safe and Morpho sources agree with DefiLlama, and every token is the coin CoinGecko lists', () => {
   const registry = loadRegistry(ROOT);
   const text = report([...registry.entries.values()]);
-  assert.match(text, /usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 \(token\)\n.*\n {2}defillama {2}agrees {2}source domain circle\.com equals circle-usdc/);
+  assert.match(text, /usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 \(token\)\n.*\n {2}defillama {2}agrees {2}source domain circle\.com is listed by DefiLlama circle-usdc/);
   assert.match(text, /coingecko {2}agrees {2}CoinGecko lists usd-coin \(USDC, "USDC"\) at this address, the coin the entry names/);
-  assert.match(text, /multisend-call-only-1\.4\.1 .*\n.*\n {2}defillama {2}agrees {2}GitHub org safe-global is one safe \(Safe\) names: safe-global/);
-  assert.match(text, /bundler3 .*\n(?: {2}.*\n)*? {2}defillama {2}agrees {2}source domain morpho\.org equals morpho-blue/);
+  assert.match(text, /multisend-call-only-1\.4\.1 .*\n.*\n {2}defillama {2}agrees {2}source GitHub org safe-global is listed by DefiLlama safe/);
+  assert.match(text, /bundler3 .*\n(?: {2}.*\n)*? {2}defillama {2}agrees {2}source domain morpho\.org is listed by DefiLlama morpho-blue/);
   assert.match(text, /steakhouse-prime-usdc-v2-0f51 .*\n.*\n.*\n {2}coingecko {2}agrees {2}CoinGecko lists steakhouse-usdc \(STEAKUSDC/);
   for (const [name, entry] of registry.entries) {
     if (entry.kind === 'token') assert.match(text, new RegExp(`${name} .*\\n.*\\n.*\\n {2}coingecko {2}agrees`), name);
@@ -50,21 +50,25 @@ test('a vault share CoinGecko does not list is a finding that says so plainly', 
   assert.match(text, /coingecko {2}FINDING no CoinGecko listing at this address on ethereum/);
 });
 
-test('a GitHub source whose DefiLlama protocol names no GitHub org is a finding, not a pass', () => {
+test('a GitHub source on an org no place lists, when DefiLlama names none, is a finding, not a pass', () => {
+  const text = report(entriesOf({ r: { address: FAKE, kind: 'router', source: `https://github.com/nobody/x/blob/${'a'.repeat(40)}/f.md`, defillama: 'fluid-lending' } }));
+  assert.match(text, /defillama {2}FINDING source is GitHub org nobody; DefiLlama lists no GitHub org for fluid-lending; the other places list only instadapp \(CoinGecko coin instadapp\), so it is not compared/);
+});
+
+test("Fluid's GitHub sources, on an org DefiLlama does not name, are the protocol's through its coin on CoinGecko and GitHub's verified domain", () => {
   const text = report([loadRegistry(ROOT).entries.get('fluid-rewards-distributor')!]);
-  assert.match(text, /defillama {2}FINDING source is GitHub org instadapp; DefiLlama names no GitHub org for fluid-lending \(Fluid Lending\), so it is not compared/);
-  assert.match(text, /1 entries, 1 findings \(fluid-rewards-distributor\)/);
+  assert.match(text, /defillama {2}agrees {2}source GitHub org instadapp is listed by CoinGecko coin instadapp, GitHub verified domain of instadapp/);
 });
 
 test('a source on another domain than the DefiLlama website is a finding that names both', () => {
   const text = report(entriesOf({ lookalike: { address: FAKE, kind: 'router', source: 'https://docs.morpho-labs.xyz/addresses', defillama: 'morpho-blue' } }));
-  assert.match(text, /FINDING source domain morpho-labs\.xyz differs from morpho-blue \(Morpho Blue\)'s website app\.morpho\.org \(morpho\.org\)/);
+  assert.match(text, /FINDING source domain morpho-labs\.xyz is not one the protocol's places list: morpho\.org \(DefiLlama morpho-blue/);
 });
 
 test('two sites on one shared host are different domains', () => {
   const site = (url: string) => [{ slug: 'p', name: 'P', url }];
   const entries = entriesOf({ r: { address: FAKE, kind: 'router', source: 'https://attacker.gitlab.io/addresses', defillama: 'p' } });
-  assert.match(report(entries, listingsOf(site('https://real.gitlab.io'), recording.coingecko)), /FINDING source domain attacker\.gitlab\.io differs from p \(P\)'s website real\.gitlab\.io \(real\.gitlab\.io\)/);
+  assert.match(report(entries, listingsOf(site('https://real.gitlab.io'), recording.coingecko)), /FINDING source domain attacker\.gitlab\.io is not one the protocol's places list: real\.gitlab\.io \(DefiLlama p\)/);
   const limo = entriesOf({ r: { address: FAKE, kind: 'router', source: 'https://attacker.eth.limo/', defillama: 'p' } });
   assert.match(report(limo, listingsOf(site('https://real.eth.limo'), recording.coingecko)), /FINDING source host attacker\.eth\.limo has no registrable domain/);
 });
@@ -72,21 +76,21 @@ test('two sites on one shared host are different domains', () => {
 test('without the Public Suffix List no domain is compared, and every website line says why', () => {
   const missing = { ...listings, suffixes: { unavailable: 'vendor/publicsuffix/public_suffix_list.dat missing; run pnpm fetch-psl' } };
   const text = report([loadRegistry(ROOT).entries.get('bundler3')!], missing);
-  assert.match(text, /defillama {2}FINDING Public Suffix List unavailable \(vendor\/publicsuffix\/public_suffix_list\.dat missing; run pnpm fetch-psl\); source domain not compared/);
+  assert.match(text, /defillama {2}FINDING Public Suffix List unavailable \(vendor\/publicsuffix\/public_suffix_list\.dat missing; run pnpm fetch-psl\); source site not compared/);
 });
 
 test('GitHub: www is github.com, /orgs/<org> names the org, and gist or another subdomain is no org', () => {
   const at = (source: string) => report(entriesOf({ m: { address: FAKE, kind: 'multisend', source, defillama: 'safe' } }));
-  assert.match(at('https://www.github.com/safe-global/safe-deployments'), /agrees {2}GitHub org safe-global is one safe/);
-  assert.match(at('https://github.com/orgs/safe-global/repositories'), /agrees {2}GitHub org safe-global is one safe/);
-  assert.match(at('https://github.com/orgs/safe-globa1/repositories'), /FINDING source is GitHub org safe-globa1; safe \(Safe\) names safe-global/);
+  assert.match(at('https://www.github.com/safe-global/safe-deployments'), /agrees {2}source GitHub org safe-global is listed by DefiLlama safe/);
+  assert.match(at('https://github.com/orgs/safe-global/repositories'), /agrees {2}source GitHub org safe-global is listed by DefiLlama safe/);
+  assert.match(at('https://github.com/orgs/safe-globa1/repositories'), /FINDING source GitHub org safe-globa1 is not one the protocol's places list: safe-global \(DefiLlama safe/);
   assert.match(at('https://gist.github.com/safe-global/abc'), /FINDING source host gist\.github\.com is not a GitHub repository page; not compared/);
   assert.match(at('https://github.com/'), /FINDING source https:\/\/github\.com\/ names no GitHub org; not compared/);
 });
 
 test('a GitHub org the DefiLlama protocol does not name is a finding', () => {
   const text = report(entriesOf({ fork: { address: FAKE, kind: 'multisend', source: 'https://github.com/safe-globa1/safe-deployments', defillama: 'safe' } }));
-  assert.match(text, /FINDING source is GitHub org safe-globa1; safe \(Safe\) names safe-global/);
+  assert.match(text, /FINDING source GitHub org safe-globa1 is not one the protocol's places list: safe-global \(DefiLlama safe/);
 });
 
 test('a slug DefiLlama lists twice is a finding naming both protocols', () => {
@@ -172,7 +176,7 @@ test('the registry: every labelled source page has its address next to its label
     if (SHOWN_ONLY_BY_SCRIPT.has(entry.name)) {
       assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}page {7}FINDING the address is not found on the page as served`), entry.name);
       assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}api {8}agrees {2}POST https://api\\.morpho\\.org/graphql answers 0x${entry.address.slice(2)} at data\\.marketById\\.oracle\\.address, the entry's address`, 'i'), entry.name);
-      assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}api-site {3}agrees {2}API domain morpho\\.org equals morpho-blue`), entry.name);
+      assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}api-site {3}agrees {2}API domain morpho\\.org is listed by DefiLlama morpho-blue`), entry.name);
     } else if (entry.sourceLabel !== undefined) assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}page {7}agrees {2}the page has the address \\d+ characters`), entry.name);
   }
   assert.match(text, /bundler3 .*\n(?: {2}.*\n)*? {2}page {7}agrees {2}the page has the address 5 characters after "Bundler3"/);
@@ -469,9 +473,9 @@ test('each of moreSources is read and checked as the source is: its label, its s
     },
   );
   assert.match(text, /\n {2}source 1 {3}https:\/\/docs\.morpho\.org\/sdk\n {2}source 2 {3}https:\/\/github\.com\/safe-global/);
-  assert.match(text, /\n {2}defillama 1 agrees {2}source 1 domain morpho\.org equals morpho-blue/);
+  assert.match(text, /\n {2}defillama 1 agrees {2}source 1 domain morpho\.org is listed by DefiLlama morpho-blue/);
   assert.match(text, /\n {2}page 1 {5}FINDING the address is not found on the page as served/);
-  assert.match(text, /\n {2}defillama 2 FINDING source 2 is GitHub org safe-global; DefiLlama names no GitHub org for morpho-blue/);
+  assert.match(text, /\n {2}defillama 2 FINDING source 2 GitHub org safe-global is not one the protocol's places list: morpho-org \(DefiLlama morpho-blue/);
   assert.match(text, /\n {2}github 2 {3}FINDING commit ca9cb0d2d5f5 of safe-global\/safe-deployments is not on the default branch main/);
   assert.match(text, /\n {2}page 2 {5}agrees {2}the page has the address 9 characters after "canonical"/);
 });
@@ -531,7 +535,7 @@ test('a report that names no registry entry reads no listing, so its recording m
   assert.deepEqual(recordedFor.coingecko, []);
   const replayed = await listingsFor([multisend], suffixes, recordedListingReads(recordedFor));
   assert.equal(replayed.coinsByAddress.size, 0);
-  assert.match(report([multisend], replayed), /defillama {2}agrees {2}GitHub org safe-global is one safe \(Safe\) names/);
+  assert.match(report([multisend], replayed), /defillama {2}agrees {2}source GitHub org safe-global is listed by DefiLlama safe/);
 });
 
 test('an empty listing an entry needs is refused, since it would hide every comparison', async () => {
