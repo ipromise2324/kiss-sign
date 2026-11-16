@@ -11,7 +11,7 @@ import { hashSafeTx } from '../safe/hash.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { decodeTemplateCall, expectedCalls } from '../template/check.ts';
 import type { ExpectedCall, Values } from '../template/check.ts';
-import type { CallNode, Rule, Template, TrailerAllowance } from '../template/template.ts';
+import type { CallNode, Rule, Template, TokenRef, TrailerAllowance } from '../template/template.ts';
 
 /** What kiss-sign knows an address as: the Safe, the zero address, a registry entry or an address-book entry. */
 export type Label =
@@ -79,14 +79,22 @@ function labeled(address: Address, walk: Walk): Labeled {
   return { address, label: walk.names.get(address) };
 }
 
+export type AmountToken = { readonly address: Address | 'eth'; readonly name: string };
+
+export function amountToken(of: TokenRef, values: Values, registry: Registry): AmountToken | undefined {
+  if (of === 'eth') return { address: 'eth', name: 'ETH' };
+  if (values.get(of.field)?.kind !== 'contract') return undefined;
+  const target = resolveRef(of, values, registry);
+  return 'kind' in target && target.kind === 'address' ? { address: target.address, name: target.name } : undefined;
+}
+
 /** The tokens whose amounts the card names, other than ETH. */
 export function amountTokens(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Address[] {
   const tokens = new Set<Address>();
   for (const op of card.operations) {
     for (const field of templates.get(op.template)?.card.values() ?? []) {
-      if (field.kind !== 'amount' || field.of === 'eth' || op.values.get(field.of.field)?.kind !== 'contract') continue;
-      const target = resolveRef(field.of, op.values, registry);
-      if ('kind' in target && target.kind === 'address') tokens.add(target.address);
+      const token = field.kind === 'amount' ? amountToken(field.of, op.values, registry) : undefined;
+      if (token !== undefined && token.address !== 'eth') tokens.add(token.address);
     }
   }
   return [...tokens];
@@ -95,12 +103,9 @@ export function amountTokens(card: ResolvedCard, templates: ReadonlyMap<string, 
 function wholeTokenAmount(rule: Rule | undefined, value: AbiValue, values: Values, walk: Walk): string | undefined {
   if (rule?.kind !== 'card' || rule.ref.attribute !== undefined || value.kind !== 'uint') return undefined;
   const field = walk.templateOf.get(values)?.card.get(rule.ref.field);
-  if (field?.kind !== 'amount') return undefined;
-  if (field.of === 'eth') return `${wholeTokens(value.value, 18)} ETH`;
-  if (values.get(field.of.field)?.kind !== 'contract') return undefined;
-  const token = resolveRef(field.of, values, walk.registry);
-  if (!('kind' in token) || token.kind !== 'address') return undefined;
-  const decimals = walk.decimals.get(token.address);
+  const token = field?.kind === 'amount' ? amountToken(field.of, values, walk.registry) : undefined;
+  if (token === undefined) return undefined;
+  const decimals = token.address === 'eth' ? 18 : walk.decimals.get(token.address);
   return decimals === undefined ? undefined : `${wholeTokens(value.value, decimals)} ${token.name}`;
 }
 
