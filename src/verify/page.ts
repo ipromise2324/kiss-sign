@@ -26,7 +26,7 @@ const CHECK_NAMES: Readonly<Record<CheckName, string>> = {
   'template-approval': '模板已核准',
   'static-floor': '交易本身的底線規則',
   fields: '每個欄位符合模板和卡片',
-  'vault-asset': 'vault 的資產',
+  'vault-asset': '金庫的資產',
   'contract-code': '合約程式碼沒被換掉',
   mutation: '改動欄位會被抓到',
   simulation: '模擬',

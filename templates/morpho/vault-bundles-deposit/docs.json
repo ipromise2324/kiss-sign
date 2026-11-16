@@ -1,4 +1,0 @@
-{
-  "approve(address,uint256)": { "contract": "usdc", "url": "https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol" },
-  "vaultBundlesV1Deposit(address,uint256,uint256,(uint8,bytes),uint256,address,uint256)": { "contract": "vault-bundles-v1", "url": "https://docs.morpho.org/developers/contracts/bundles/" }
-}

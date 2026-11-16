@@ -96,6 +96,7 @@ const rowOf = (stdout: string, nonce: number): string => {
 };
 
 const withCard = { 249: { ...DEPOSIT_CARD, origin: 'history', marks: MARKS } };
+const REMOVED_TEMPLATE_CARD = { operations: [{ template: 'aave/supply', values: {} }], origin: 'history', marks: [] };
 
 test('a deposit with its card is MATCH, and the card column says which values came from the transaction', async () => {
   const { code, stdout } = await run(setUp('morpho-safe', withCard));
@@ -153,6 +154,19 @@ test('reason row refused-by-design: the static floor refuses an unlimited approv
 test('reason row no-card-yet: a transaction without a card file is not run', async () => {
   const { stdout } = await run(setUp('morpho-safe', withCard));
   assert.match(rowOf(stdout, 248), /^  248  [\d-]{10}  not run       intent of nonce 248\n {33}no-card-yet: no card file, so no template covers it yet$/);
+});
+
+test('reason row no-template: a card naming a template origin/main does not hold is not run, and later rows still run', async () => {
+  const { code, stdout } = await run(setUp('morpho-safe', { 248: REMOVED_TEMPLATE_CARD, ...withCard }));
+  assert.equal(code, 0);
+  assert.match(rowOf(stdout, 248), /^  248  [\d-]{10}  not run       intent of nonce 248\n {33}no-template: the card names aave\/supply, which origin\/main does not hold\n {33}card: unmarked$/);
+  assert.match(rowOf(stdout, 249), /^  249  [\d-]{10}  MATCH  /);
+  assert.ok(stdout.endsWith('\n  no-template                     1  248\n  refused-by-design               1  338\n'), stdout);
+});
+
+test('a note naming a spending nonce whose card names a missing template gives the approval no-template', async () => {
+  const { stdout } = await run(setUp('morpho-safe', { 249: REMOVED_TEMPLATE_CARD }, { 248: { note: 'approval for the supply', spentBy: 249 } }));
+  assert.match(rowOf(stdout, 248), /\n {33}no-template: its approval is spent by nonce 249: the card names aave\/supply, which origin\/main does not hold; note: approval for the supply$/);
 });
 
 test("reason row verdict causes: a card whose amount differs is MISMATCH, with the check and its first detail", async () => {

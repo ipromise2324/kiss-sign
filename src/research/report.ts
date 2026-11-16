@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Reader } from '../chain/reader.ts';
 import { replayReader } from '../chain/recording.ts';
@@ -27,12 +27,14 @@ import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { pathText } from './api-source.ts';
-import { isGitHubPage, pageUrlOf } from './source-page.ts';
+import { githubRef, isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
 import type { ChainAccess, EntryReport, Snapshot } from './erc7730.ts';
 import { constText } from './study.ts';
 import { ANCHOR_KINDS, replayAsk } from './sources.ts';
+import { STANDARDS } from './standards.ts';
+import type { Standard } from './standards.ts';
 import type { AnchorKind } from './sources.ts';
 
 /** A template, with the one vault its report covers when it is reported per vault; or one registry vault alone. */
@@ -40,8 +42,8 @@ export type Subject =
   | { readonly kind: 'template'; readonly template: Template; readonly docs: readonly DocLink[]; readonly vault: RegistryEntry | undefined }
   | { readonly kind: 'vault'; readonly vault: RegistryEntry };
 
-/** The official page the AI names for one function. The program checks the page; the AI writes no text about it. */
-export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: HttpsUrl };
+/** The official page for one function. The program checks the page; the AI writes no text about it. */
+export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: HttpsUrl; readonly standard: Standard | undefined };
 
 /** What a report is of: a template by id, with `cardVault` for one reported per vault; or one registry vault by name. */
 export type Target = { readonly template: string; readonly cardVault?: string } | { readonly vault: string };
@@ -133,8 +135,9 @@ export function templateFunctions(template: Template): AbiFunction[] {
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /**
- * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`. Nothing else. The
- * contract must be one the template calls the function on, when the template binds that target.
+ * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`, or `{ contract,
+ * standard }` for a function a standard in `STANDARDS` defines for that contract's kind. Nothing else. The contract
+ * must be one the template calls the function on, when the template binds that target.
  */
 export function parseDocs(raw: unknown, template: Template, registry: Registry): DocLink[] {
   if (!isRecord(raw)) throw new ReportError(`${DOCS_FILE}: not a JSON object`);
@@ -145,16 +148,24 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
   return fns.map((fn) => {
     const value = raw[fn.signature];
     if (value === undefined) throw new ReportError(`${DOCS_FILE}: no page for ${fn.signature}`);
-    if (!isRecord(value) || Object.keys(value).sort().join() !== 'contract,url') throw new ReportError(`${DOCS_FILE}: ${fn.signature} must hold exactly contract and url`);
+    const keys = isRecord(value) ? Object.keys(value).sort().join() : '';
+    if (!isRecord(value) || (keys !== 'contract,url' && keys !== 'contract,standard')) throw new ReportError(`${DOCS_FILE}: ${fn.signature} must hold exactly contract and url, or contract and standard`);
     const contract = typeof value.contract === 'string' ? registry.entries.get(value.contract) : undefined;
     if (contract === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is not a registry name`);
+    const standard = typeof value.standard === 'string' ? STANDARDS.get(value.standard) : undefined;
+    if (keys === 'contract,standard') {
+      if (standard === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.standard is not one of ${[...STANDARDS.keys()].join(', ')}`);
+      if (!standard.kinds.includes(contract.kind)) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract ${contract.name} is a ${contract.kind}; ${standard.name} applies to ${standard.kinds.join(' and ')} entries`);
+      if (!standard.declarations.has(fn.signature)) throw new ReportError(`${DOCS_FILE}: ${standard.name} does not define ${fn.signature}`);
+    }
     const names = targets.get(fn.signature);
     if (names !== undefined && !names.includes(contract.name)) {
       throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is ${contract.name}, but the template calls it on ${names.length === 1 ? names[0] : `one of ${names.join(', ')}`}`);
     }
+    if (standard !== undefined) return { fn, contract, url: standard.page, standard };
     const url = parseHttpsUrl(value.url);
     if (url === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.url is not an https URL`);
-    return { fn, contract, url };
+    return { fn, contract, url, standard: undefined };
   });
 }
 
@@ -197,8 +208,29 @@ export function loadReport(repoRoot: string, registry: Registry, target: Target)
     if (vault === undefined || field?.kind !== 'contract' || !inScope(field.scope, vault, registry)) throw new ReportError(`${target.cardVault} is not a vault the card's ${unit.field} of ${template.id} accepts`);
     seen = onlyVault(registry, template, unit.field, vault);
   }
-  const docs = JSON.parse(readFileSync(join(repoRoot, TEMPLATES_DIR, target.template, DOCS_FILE), 'utf8')) as unknown;
-  return { subject: { kind: 'template', template, docs: parseDocs(docs, template, seen), vault }, registry: seen };
+  return { subject: { kind: 'template', template, docs: parseDocs(readDocs(repoRoot, template.id, vault?.name), template, seen), vault }, registry: seen };
+}
+
+/** The `docs.json` files a report reads: the template's, and its vault's when that vault's report has one, as a file of its own. */
+export function docsPaths(repoRoot: string, template: string, vault?: string): string[] {
+  const own = vault === undefined ? undefined : join(vaultReportDir(template, vault), DOCS_FILE);
+  const found = own === undefined ? undefined : lstatSync(join(repoRoot, own), { throwIfNoEntry: false });
+  if (found === undefined) return [join(TEMPLATES_DIR, template, DOCS_FILE)];
+  if (!found.isFile()) throw new ReportError(`${own}: not a regular file`);
+  return [join(TEMPLATES_DIR, template, DOCS_FILE), own as string];
+}
+
+/** The template's `docs.json` joined with its vault's, which may not name a function the template's names. */
+export function readDocs(repoRoot: string, template: string, vault?: string): unknown {
+  const [sharedPath, ownPath] = docsPaths(repoRoot, template, vault);
+  const read = (path: string): unknown => JSON.parse(readFileSync(join(repoRoot, path), 'utf8'));
+  const shared = read(sharedPath as string);
+  if (ownPath === undefined) return shared;
+  const own = read(ownPath);
+  if (!isRecord(shared) || !isRecord(own)) throw new ReportError(`${isRecord(shared) ? ownPath : DOCS_FILE}: not a JSON object`);
+  const twice = Object.keys(own).find((key) => Object.hasOwn(shared, key));
+  if (twice !== undefined) throw new ReportError(`${ownPath}: ${JSON.stringify(twice.slice(0, 80))} is in the template's ${DOCS_FILE} too`);
+  return { ...shared, ...own };
 }
 
 function namedInRules(template: Template): Set<string> {
@@ -252,7 +284,26 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
   return [...registry.entries.values()].filter((entry) => names.has(entry.name));
 }
 
-export const wordOf = (fn: AbiFunction): RegExp => new RegExp(`(?<![A-Za-z0-9_$])${fn.name.replace(/\$/g, '\\$')}(?![A-Za-z0-9_$])`);
+const escaped = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+export const declarationOf = (standard: Standard, fn: AbiFunction): string => standard.declarations.get(fn.signature) as string;
+
+export function functionOnPage(doc: DocLink): RegExp {
+  if (doc.standard !== undefined) return new RegExp(escaped(declarationOf(doc.standard, doc.fn)));
+  const name = escaped(doc.fn.name);
+  const called = `(?<![A-Za-z0-9_$])${name}\\(`;
+  const inBackticks = `\`${name}\``;
+  const aloneOrMarkdownHeading = `^(?:#{1,6} )?${name}$`;
+  return new RegExp([called, inBackticks, aloneOrMarkdownHeading].join('|'));
+}
+
+export function docSiteLine(doc: DocLink, listings: Listings): Line {
+  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.contract.defillama, listings);
+  const ref = githubRef(new URL(doc.url));
+  const org = ref.kind === 'pinned' ? ref.owner.toLowerCase() : undefined;
+  if (org === doc.standard.org) return { kind: 'agrees', check: 'defillama', text: `GitHub org ${org} publishes ${doc.standard.name}` };
+  return { kind: 'finding', check: 'defillama', text: `source is GitHub org ${org ?? 'none'}; ${doc.standard.name} is published by ${doc.standard.org}`, cause: 'differs' };
+}
 
 /** Keeps of each page only what the report's checks read: the entries' addresses and the documented function names. */
 export function trimReportRecording(
@@ -273,7 +324,7 @@ export function trimReportRecording(
       trimPage(
         page,
         entries.filter((e) => pageUrlsOf(e).some((source) => pageUrlOf(source) === url)).map((e) => e.address),
-        docs.filter((d) => pageUrlOf(d.url) === url).map((d) => wordOf(d.fn)),
+        docs.filter((d) => pageUrlOf(d.url) === url).map(functionOnPage),
       ),
     ]),
   );
@@ -505,29 +556,36 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     out.push('');
   });
 
-  out.push('## Effects', '', '| Side | Token | Amount |', '| --- | --- | --- |');
-  for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
-  for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  out.push('## Effects', '');
+  if (template.effects.gives.length + template.effects.gets.length === 0) out.push(`The Safe gives and gets nothing: any change to its balances is a ${code('MISMATCH')}.`);
+  else {
+    out.push('| Side | Token | Amount |', '| --- | --- | --- |');
+    for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
+    for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  }
   if (template.effects.views.length > 0) {
     out.push('', 'The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:', '');
     out.push('| Contract | Function | Arguments | Change |', '| --- | --- | --- | --- |', ...template.effects.views.map((view) => viewRow(view, template, registry)));
   }
 
+  out.push('', '## Official documentation', '');
+  if (docs.length === 0) return [...out, `The template calls no function, so ${code(DOCS_FILE)} names no page.`, ''];
   out.push(
+    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by ${code('(')}, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.`,
     '',
-    '## Official documentation',
-    '',
-    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.`,
-    '',
-    '| Function | Contract | Page | Site | GitHub commit | Function name appears on page |',
+    '| Function | Contract | Page | Site | GitHub commit | Function on page |',
     '| --- | --- | --- | --- | --- | --- |',
   );
   for (const doc of docs) {
     const url = new URL(doc.url);
     const page = inputs.pages.pages.get(pageUrlOf(doc.url));
-    const named = page?.kind === 'unread' ? 'UNVERIFIABLE' : page?.kind === 'served' && page.blocks.some((block) => wordOf(doc.fn).test(block.text)) ? 'PASS' : 'FINDING';
+    const named = page?.kind === 'unread' ? 'UNVERIFIABLE' : page?.kind === 'served' && page.blocks.some((block) => functionOnPage(doc).test(block.text)) ? 'PASS' : 'FINDING';
     const github = isGitHubPage(url) ? verdict(githubLine(url, inputs.pages.commits)) : 'n/a';
-    out.push(`| ${code(doc.fn.signature)} | ${code(doc.contract.name)} | <${doc.url}> | ${verdict(sourceSiteLine(doc.url, doc.contract.defillama, inputs.listings))} | ${github} | ${named} |`);
+    const link = doc.standard === undefined ? `<${doc.url}>` : `${doc.standard.name} standard page <${doc.url}>`;
+    out.push(`| ${code(doc.fn.signature)} | ${code(doc.contract.name)} | ${link} | ${verdict(docSiteLine(doc, inputs.listings))} | ${github} | ${named} |`);
+  }
+  for (const doc of docs) {
+    if (doc.standard !== undefined) out.push('', `${code(doc.fn.signature)} on ${code(doc.contract.name)}: the ${doc.standard.name} standard defines this function, as ${code(declarationOf(doc.standard, doc.fn))}; this does not show that the contract follows the standard.`);
   }
   out.push('');
   return out;
@@ -672,6 +730,9 @@ function readingRow(reading: FactReading, facts: ProtocolFacts, registry: Regist
 function factsSection(template: Template, facts: ProtocolFacts | undefined, registry: Registry): string[] {
   const out = ['## Protocol facts', ''];
   if (facts === undefined) return [...out, `Not read: this report's recording predates the protocol facts; ${code(`pnpm report ${template.id} --record`)} reads them.`, ''];
+  if (facts.protocols.length + facts.unlisted.length + template.facts.length + facts.decimals.size === 0) {
+    return [...out, 'Nothing to read: no call of this template goes to a registry contract other than a token, it declares no facts view, and no registry token or vault is in its scope.', ''];
+  }
   out.push(
     `What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and ${code('verify')} never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and ${code('decimals()')} is read through both providers at block ${facts.block.number} ${code(facts.block.hash)}; a read they do not agree on prints as not read.`,
     '',
@@ -718,18 +779,8 @@ function factsSection(template: Template, facts: ProtocolFacts | undefined, regi
   return out;
 }
 
-export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
-  const { subject, registry } = inputs;
-  const entries = entriesOf(subject, registry);
-  const name = subject.kind === 'template' ? subject.template.id : subject.vault.name;
-  const out: string[] = [
-    `# Generated evidence: ${name}`,
-    '',
-    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
-    '',
-  ];
-  if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));
-
+function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs): string[] {
+  const out: string[] = [];
   const checked = checkSources(entries, inputs.listings, inputs.pages);
   out.push(
     '## Registry entries',
@@ -800,6 +851,24 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address))),
     '',
   );
+  return out;
+}
+
+export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
+  const { subject, registry } = inputs;
+  const entries = entriesOf(subject, registry);
+  const name = subject.kind === 'template' ? subject.template.id : subject.vault.name;
+  const out: string[] = [
+    `# Generated evidence: ${name}`,
+    '',
+    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
+    '',
+  ];
+  if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));
+
+  if (entries.length === 0) {
+    for (const heading of ['Registry entries', 'Code pins', 'ABI proofs']) out.push(`## ${heading}`, '', 'The operation touches no registry entry.', '');
+  } else out.push(...entrySections(entries, inputs));
 
   const vaults = vaultsOf(subject, registry);
   if (vaults.length > 0) {
@@ -819,14 +888,16 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     out.push(`### ${code(summary.file)}`, '', `Recorded with ${code(pastTxsCommand(summary))}, and studied again here with the template as it is now.`, '', ...fenced(summary.text.trimEnd()), '');
   }
 
-  out.push(
-    '## ERC-7730',
-    '',
-    `${code(`pnpm erc7730 ${entries.map((e) => e.name).join(' ')}`)}: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.`,
-    '',
-    ...fenced(inputs.erc7730.text),
-    '',
-  );
+  out.push('## ERC-7730', '');
+  if (entries.length === 0) out.push('The operation touches no registry entry, so no descriptor can apply.', '');
+  else {
+    out.push(
+      `${code(`pnpm erc7730 ${entries.map((e) => e.name).join(' ')}`)}: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.`,
+      '',
+      ...fenced(inputs.erc7730.text),
+      '',
+    );
+  }
   return out.join('\n');
 }
 
@@ -881,7 +952,7 @@ export async function replayInputs(
     facts: subject.kind === 'template' ? await replayFacts(subject.template, registry, entries, recording.facts) : undefined,
   };
   const registryFiles = subject.kind === 'template' && hasMarket(subject.template) ? [REGISTRY_PATH, MARKETS_PATH] : [REGISTRY_PATH];
-  const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), join(TEMPLATES_DIR, target.template, DOCS_FILE), ...registryFiles];
+  const inputsFiles = 'vault' in target ? registryFiles : [join(TEMPLATES_DIR, target.template, 'template.json'), ...docsPaths(repoRoot, target.template, target.cardVault), ...registryFiles];
   const sources = [...inputsFiles, recordingPath, ABI_CASES_DIR, ...pastRecordings.map((p) => p.file)];
   const command = `pnpm report ${reportArgs(subject)} --record`;
   return { inputs, title: { command, sources } };
