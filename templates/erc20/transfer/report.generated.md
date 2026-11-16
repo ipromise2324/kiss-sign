@@ -16,7 +16,6 @@ Written by `pnpm report erc20/transfer --record` from `templates/erc20/transfer/
 | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |  |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |  |
-| `fluid` | `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` |  |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` |  |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |  |
 
@@ -26,7 +25,7 @@ Written by `pnpm report erc20/transfer --record` from `templates/erc20/transfer/
 
 | Field | Rule |
 | --- | --- |
-| `to` | the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `fluid` `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `to` | the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
 | `value` | constant `0` |
 | `transfer` | calls `transfer(address,uint256)`, selector `0xa9059cbb`; no bytes after the arguments |
 | `transfer.to` | the card's `recipient` |
@@ -36,7 +35,7 @@ Written by `pnpm report erc20/transfer --record` from `templates/erc20/transfer/
 
 | Side | Token | Amount |
 | --- | --- | --- |
-| the Safe gives | the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `fluid` `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | the card's `amount`, to the card's `recipient` |
+| the Safe gives | the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | the card's `amount`, to the card's `recipient` |
 
 ## Official documentation
 
@@ -50,17 +49,16 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt fluid morpho cbbtc` prints what each check compared.
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc` prints what each check compared.
 
 | Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
-| `fluid` | `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | token | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | FINDING | PASS | PASS | FINDING |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | token | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | PASS | n/a | PASS |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS |
 
-5 entries, 3 findings.
+4 entries, 1 findings.
 
 ## Code pins
 
@@ -73,7 +71,6 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `usdc` | 12317814 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF` `0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c` | PASS |
 | `usdc` | 18963716 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS |
 | `usdt` | 4634748 | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | none | PASS |
-| `fluid` | 12183236 | `0x8cf49f6749c84d0c4fad1cac5dcd25451e3714b0d0e2bda19610e97809ae017e` | none | FINDING: block 12183236 runs no code it can pin, `unknown-delegator` |
 | `morpho` | 21157386 | `0x9d47be5e1fade278a449fcd67e4fc7b69ce5c451c36ad7c4f380280d127f5532` | `0x4364fd2371b6318159366abFA51f190df5C24852` `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS |
 | `cbbtc` | 20570548 | `0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71` | `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS |
 
@@ -85,7 +82,6 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | PROVEN | none | `TetherToken`, solc `0.4.18+commit.9cf6e910` | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26399489 |
-| `fluid` | `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | REFUSED: `unknown-delegator` | | | | | | 26385844 |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | PROVEN | eip1967, implementation `0x4364fd2371b6318159366abFA51f190df5C24852` | `MorphoTokenEthereum`, solc `0.8.27+commit.40a35a09` | `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS | 2 immutable, 0 library spans masked | 26383745 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
 
@@ -101,7 +97,6 @@ No call of this template goes to a contract other than a token.
 | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 |
-| `fluid` | `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | 18 |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | 18 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 |
 
@@ -148,17 +143,17 @@ fields, over the 109 fitting transactions:
   call.transfer.value  [card amount]
     same as the other leaves bound to card amount in 109 of 109; values: 94 distinct values
 misfits, by reason:
-  2 from 2 EOAs: call.to: expected usdc or usdt or fluid or morpho or cbbtc, got 0x7eC8A30A34b86927dC77b302603d1D53E640bEF7
+  2 from 2 EOAs: call.to: expected usdc or usdt or morpho or cbbtc, got 0x7eC8A30A34b86927dC77b302603d1D53E640bEF7
     e.g. 0xe1820b4e192b3a41d8866ca2ce487e2de7da7ab042fdf76646c526855a658ec6, 0xdba92da9b2fd05486c9474859a409771e4a94befe1a97b0a553c430dfdd55587
-  1 from 1 EOA: call.to: expected usdc or usdt or fluid or morpho or cbbtc, got 0x297E5E83Dba6304030F291ABb1DDd9546e984549
+  1 from 1 EOA: call.to: expected usdc or usdt or morpho or cbbtc, got 0x297E5E83Dba6304030F291ABb1DDd9546e984549
     e.g. 0x81c8abe5f2615339fd652ffd61e54f0c34776807d14d6ab8b00baec76dac3502
-  1 from 1 EOA: call.to: expected usdc or usdt or fluid or morpho or cbbtc, got 0xF81a32548CbD14c12FA3F9e57b533bB1480FCcb9
+  1 from 1 EOA: call.to: expected usdc or usdt or morpho or cbbtc, got 0xF81a32548CbD14c12FA3F9e57b533bB1480FCcb9
     e.g. 0x5f529f420be5d71b576d89a88f6e00b2a3bce184da093871aa2995afc519731e
-  1 from 1 EOA: call.to: expected usdc or usdt or fluid or morpho or cbbtc, got 0xbBBBB048b1a85CA221058c45525095B6A68BBBbb
+  1 from 1 EOA: call.to: expected usdc or usdt or morpho or cbbtc, got 0xbBBBB048b1a85CA221058c45525095B6A68BBBbb
     e.g. 0x540a25927f14919a91f3814c2eb0677c5e5ceaafa8838f69cb07d9e030dca952
   1 from 1 EOA: more bytes after the arguments than the template allows, at call
     e.g. 0x2c3b0b789da054813fe9abb08c29873cb9b52d04fc284b4e70c0a6ac99afdea2
-  1 from 1 EOA: call.to: expected usdc or usdt or fluid or morpho or cbbtc, got 0xEbbaBfc2019A312E3615196e9aC517C6bEe2a5F6
+  1 from 1 EOA: call.to: expected usdc or usdt or morpho or cbbtc, got 0xEbbaBfc2019A312E3615196e9aC517C6bEe2a5F6
     e.g. 0x861a1a2692dd7eaf54ac70421d7666bb407b895b07ecdf6a79240c0e48b7f631
 examples that fit: 0xaba3e05ad9f9ee02ff87d019785515f98fa0767f72a9af58d0867159218d7f9d, 0x2429b1d879de1256cb52bb36fdfd105d2c1a43703909804dee0a2845c0719bd1, 0x82a7bbd0655dc856022332bd188c502b5743e9c238026ae753dee7a497001ceb
 ```
@@ -204,9 +199,9 @@ fields, over the 161 fitting transactions:
   call.transfer.value  [card amount]
     same as the other leaves bound to card amount in 161 of 161; values: 154 distinct values
 misfits, by reason:
-  1 from 1 EOA: call.to: expected usdc or usdt or fluid or morpho or cbbtc, got 0x7eC8A30A34b86927dC77b302603d1D53E640bEF7
+  1 from 1 EOA: call.to: expected usdc or usdt or morpho or cbbtc, got 0x7eC8A30A34b86927dC77b302603d1D53E640bEF7
     e.g. 0x0e7c627413457a438c88c7e53aad39d1c8760f0dd5683235871d5405a51c339d
-  1 from 1 EOA: call.to: expected usdc or usdt or fluid or morpho or cbbtc, got 0x19917386eeaE67b6fF7DDF07dE4019fca40aA4EC
+  1 from 1 EOA: call.to: expected usdc or usdt or morpho or cbbtc, got 0x19917386eeaE67b6fF7DDF07dE4019fca40aA4EC
     e.g. 0xc68bfa6adadd82ef7284846af4381e0df23133effa707526ac8fc7b299968457
 examples that fit: 0xe88184687dea48b7beb3ec49a9a6797adb18b0daf1d3d0acde09529b10b4b9c9, 0xcfd30b9bfb860a17681ade72de05ecdf8070a605a112387d7e393edcec30750f, 0x3c75009b24d4318bf3d53a74dfad511d3c98641983eaf10600c9b542fad4e201
 ```
@@ -259,7 +254,7 @@ examples that fit: 0xe44956639c0aa1c9fd8b4e54d58c691e6454e376120acf252cdb26bb4a5
 
 ## ERC-7730
 
-`pnpm erc7730 usdc usdt fluid morpho cbbtc`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdc usdt morpho cbbtc`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -282,10 +277,6 @@ usdt 0xdAC17F958D2ee523a2206206994597C13D831ec7 (token)
     field      #._spender addressName
     field      #._value tokenAmount
   attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
-
-fluid 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb (token)
-  descriptor   none: no calldata descriptor lists this address on chain 1
-  index        index.calldata.json has no entry for this address
 
 morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1
