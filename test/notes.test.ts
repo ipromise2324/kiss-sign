@@ -1,16 +1,20 @@
 import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { loadRegistry } from '../src/registry.ts';
 import type { Ledger, Result } from '../src/research/ledger.ts';
-import { NotesError, fieldKeys, mergeNotes, notesChanges, notesScope, parseNotes } from '../src/research/notes.ts';
+import { NotesError, fieldKeys, mergeNotes, notesChanges, notesPath, notesScope, parseNotes, readNotes } from '../src/research/notes.ts';
 import type { NotesScope } from '../src/research/notes.ts';
 import type { ProtocolFacts } from '../src/research/protocol-facts.ts';
 import { entriesOf, loadReport } from '../src/research/report.ts';
 import type { ReportInputs } from '../src/research/report.ts';
 import { loadTemplate } from '../src/template/template.ts';
+import { vaultReportDir } from '../src/template/vault-reports.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, 'morpho/market-supply', registry);
 
@@ -96,7 +100,7 @@ test('a flow line after a call the template does not make is refused', () => {
 });
 
 test('a flow line naming a contract no call or view targets is refused', () => {
-  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target');
+  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target, nor a token the effects move');
 });
 
 test('more than four flow lines or judgments are refused', () => {
@@ -195,7 +199,7 @@ test("a key or name both notes define is refused, and a vault's notes hold only 
   mergeRefused(['verdict'], `${VAULT_PATH}: not a JSON object`);
 });
 
-test("a vault's notes review and describe only the vault and its factory", () => {
+test("a vault's notes review and describe only the vault and the entries its attributes name", () => {
   const owned = new Set(['vault-a', 'vault-factory']);
   const review = VALID.reviews['morpho-oracle/source.page'];
   const vault = { verdict: VALID.verdict, reviews: { 'vault-a/source.url': review, 'vault-factory/abi': review }, entries: { 'vault-a': { role: '金庫' }, 'vault-factory': { role: '工廠' } } };
@@ -209,10 +213,35 @@ test("a vault's notes review and describe only the vault and its factory", () =>
   refusedFor({ reviews: { 'fixture.deposit': review } }, `${VAULT_PATH}.reviews: "fixture.deposit" ${shared}`);
 });
 
+test("a vault's notes may also describe the entries its attributes name, such as its asset, and no other", () => {
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
+  mkdirSync(join(root, vaultReportDir('fluid/vault-deposit', 'fluid-fusdt')), { recursive: true });
+  writeFileSync(join(root, notesPath('fluid/vault-deposit')), JSON.stringify(SHARED));
+  const write = (entries: unknown) => writeFileSync(join(root, notesPath('fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify({ entries }));
+  const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
+  write({ 'fluid-fusdt': { role: '金庫' }, usdt: { role: '存進去的代幣' } });
+  assert.deepEqual(Object.keys((readNotes(root, 'fluid/vault-deposit', fusdt) as { entries: Record<string, unknown> }).entries).slice(-2), ['fluid-fusdt', 'usdt']);
+  write({ usdc: { role: '別的代幣' } });
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not about fluid-fusdt or usdt;/);
+});
+
 test('the judgments of both notes count toward the limit of four', () => {
   const judgment = { text: '判斷', recommendation: '建議' };
   const merged = mergeNotes({ ...SHARED, judgments: [judgment, judgment, judgment] }, { verdict: VALID.verdict, judgments: [judgment, judgment] }, VAULT_PATH, OWNED);
   assert.throws(() => parseNotes(merged, SCOPE), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.judgments: more than 4 items');
+});
+
+test("a vault's flow lines join the template's after them, and both count toward the limit of four", () => {
+  const line = (text: string) => ({ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text });
+  const merged = mergeNotes({ ...SHARED, flow: [line('共用')] }, { verdict: VALID.verdict, flow: [line('這個金庫')] }, VAULT_PATH, OWNED);
+  assert.deepEqual(parseNotes(merged, SCOPE).flow.map((f) => f.text), ['共用', '這個金庫']);
+  const tooMany = mergeNotes({ ...SHARED, flow: [line('a'), line('b'), line('c')] }, { verdict: VALID.verdict, flow: [line('d'), line('e')] }, VAULT_PATH, OWNED);
+  assert.throws(() => parseNotes(tooMany, SCOPE), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.flow: more than 4 items');
+});
+
+test("a template's flow line that names the vault or its asset is refused, since another vault's report could not name it", () => {
+  const shared = { ...SHARED, flow: [{ after: 2, from: 'blue-bundles-v1', to: 'usdc', text: '拉走資產' }] };
+  assert.throws(() => mergeNotes(shared, undefined, VAULT_PATH, OWNED), (e: unknown) => e instanceof NotesError && e.message === `notes.json.flow: "usdc" differs per vault; its flow line belongs in ${VAULT_PATH}`);
 });
 
 test("--compare names a vault's notes.json too", () => {
@@ -232,7 +261,7 @@ test('field keys walk every argument, tuple part, array item and nested call of 
 test('the scope of morpho/market-supply: its calls, their targets and views, its protocols, every field, and the results for the signer', () => {
   const subject = loadReport(ROOT, registry, { template: 'morpho/market-supply' }).subject;
   const entries = entriesOf(subject, registry);
-  const result = (id: string, kind: 'agrees' | 'no-answer'): Result => ({ id, line: 'sources', about: { kind: 'entry', entry: entries[0]! }, source: 'page', link: undefined, finding: { kind } });
+  const result = (id: string, kind: 'agrees' | 'no-answer'): Result => ({ id, line: 'sources', about: { kind: 'entry', entry: entries[0]! }, source: { of: 'page', part: 'address' }, link: undefined, finding: { kind } });
   const ledger: Ledger = { entries, results: [result('usdc/source.page', 'agrees'), result('usdc/source.api', 'no-answer')] };
   const scope = notesScope({ registry, facts: undefined } as unknown as ReportInputs, ledger, template);
   assert.equal(scope.calls, 2);

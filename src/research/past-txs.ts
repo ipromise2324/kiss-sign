@@ -7,7 +7,7 @@ import type { LeafRule, Quantity, Template } from '../template/template.ts';
 import { ResearchError, SOURCES, TooManyTransfers, searchBoth } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, misfitText, shapesOf, studyTx } from './study.ts';
-import type { Sender, TxStudy } from './study.ts';
+import type { OutsideKind, Sender, TxStudy } from './study.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
 
@@ -126,7 +126,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     searched.push({ asked, range, found: [...window.found.keys()], sample: spacedSample([...window.found.keys()], perWindow) });
   }
   const shapes = shapesOf(query.template);
-  const context = { shapes, registry: deps.registry, exclude: deps.exclude };
+  const context = { shapes, registry: deps.registry, exclude: deps.exclude, anchor: { kind: query.anchor.kind, token: query.anchor.token.toLowerCase() as Address } };
   const all = await inPool(searched.flatMap((w) => w.sample), 4, (hash) => studyTx(deps.reader, hash, context).then((study) => ({ hash, study })));
   const studies: Kept[] = [];
   for (const { hash, study } of all) {
@@ -200,17 +200,27 @@ const distinct = <T>(items: readonly T[]): number => new Set(items).size;
 
 const examples = (hashes: readonly Hex[], n = 3): string => hashes.slice(0, n).join(', ');
 
+const OUTSIDE: Readonly<Record<OutsideKind, string>> = { market: 'another market', token: 'a token outside the registry', vault: 'a vault outside the registry', address: 'an address outside the registry' };
+
 type Group = { readonly fits: readonly Fit[]; readonly misfits: readonly Misfit[]; readonly rules: readonly LeafRule[]; readonly senderLabel: string; readonly senderNoun: string };
 
 function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Registry, mark: (hash: Hex) => string): void {
   const { fits, misfits, rules, senderLabel: sender, senderNoun: who } = group;
   const many = `${who}s`;
   lines.push(`fit the ${who === 'Safe' ? "template's" : "call's"} shape: ${plural(fits.length, 'transaction')} from ${plural(sendersOf(fits), who, many)}; misfits: ${misfits.length} from ${plural(sendersOf(misfits), who, many)}`);
+  const outside = fits.filter((fit) => fit.outside.length > 0);
+  if (outside.length > 0) {
+    const exact = fits.filter((fit) => fit.outside.length === 0);
+    const places = new Map<string, number>();
+    for (const place of outside.flatMap((fit) => fit.outside.map((o) => `${OUTSIDE[o.kind]} at ${o.at}`))) places.set(place, (places.get(place) ?? 0) + 1);
+    const where = [...places].sort((a, b) => b[1] - a[1]).map(([place, n]) => `${place} in ${n}`);
+    lines.push(`  exactly the template: ${exact.length} from ${plural(sendersOf(exact), who, many)}; outside the registry: ${outside.length} from ${plural(sendersOf(outside), who, many)} (${where.join(', ')})`);
+  }
   if (fits.length > 0) {
     lines.push(`fields, over the ${plural(fits.length, 'fitting transaction')}:`);
     const paths = fits[0]?.paths ?? [];
     rules.forEach((rule, i) => {
-      const holding = fits.filter((fit) => brokenRule(rule, fit, i, rules, registry) === undefined);
+      const holding = fits.filter((fit) => brokenRule(rule, i, rules, fit.paths, fit.values, fit.sender) === undefined);
       lines.push(`  ${paths[i]}  [${describeRule(rule, sender)}]`);
       const heldText =
         rule.kind === 'free' || rule.kind === 'equals' || rule.kind === 'share-price'
@@ -234,7 +244,8 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
       lines.push(`    e.g. ${members.slice(0, 3).map((m) => mark(m.hash)).join(', ')}`);
     }
   }
-  if (fits.length > 0) lines.push(`examples that fit: ${fits.slice(0, 3).map((f) => mark(f.hash)).join(', ')}`);
+  const exactFirst = [...fits.filter((fit) => fit.outside.length === 0), ...fits.filter((fit) => fit.outside.length > 0)];
+  if (fits.length > 0) lines.push(`examples that fit: ${exactFirst.slice(0, 3).map((f) => mark(f.hash)).join(', ')}`);
 }
 
 /** What a reader of the report sees. Never names the configured Safe, and names no other sender either. */

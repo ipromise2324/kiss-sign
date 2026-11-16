@@ -40,9 +40,9 @@ Written by `pnpm report erc20/transfer --record` from `templates/erc20/transfer/
 
 ## Official documentation
 
-Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.
+Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by `(`, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.
 
-| Function | Contract | Page | Site | GitHub commit | Function name appears on page |
+| Function | Contract | Page | Site | GitHub commit | Function on page |
 | --- | --- | --- | --- | --- | --- |
 | `transfer(address,uint256)` | `usdc` | <https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol> | FINDING | PASS | PASS |
 
@@ -111,8 +111,9 @@ senders, of 80 transactions studied:
     52 calls no function the template calls (called 0x42e3dcf3 in 21, 0x000000c3 in 13, 0xac9650d8 in 3, 0x00000002 in 3, …)
 by proven Safes, the whole template in one transaction:
 another operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below
-  e.g. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls another contract.0x1d7d4ebc
+  e.g. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls 0xe5139Fc0FB8eae81e30d8a85C22E88c6757120f2.0x1d7d4ebc
 fit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes
+  exactly the template: 0 from 0 Safes; outside the registry: 1 from 1 Safe (a token outside the registry at call.to in 1)
 fields, over the 1 fitting transaction:
   call.to  [card token]
     same as the other leaves bound to card token in 1 of 1; values: the anchor token in 1
@@ -125,6 +126,7 @@ fields, over the 1 fitting transaction:
 examples that fit: 0x32fa2c8158e8b5072bdf0ee5564f2b26a17f42389ea92ecf7ae72deced951b89
 by EOAs, call 1 of 1 (transfer) as its own transaction:
 fit the call's shape: 26 transactions from 14 EOAs; misfits: 0 from 0 EOAs
+  exactly the template: 0 from 0 EOAs; outside the registry: 26 from 14 EOAs (a token outside the registry at call.to in 26)
 fields, over the 26 fitting transactions:
   call.to  [card token]
     same as the other leaves bound to card token in 26 of 26; values: the anchor token in 26
@@ -143,7 +145,7 @@ examples that fit: 0xe44956639c0aa1c9fd8b4e54d58c691e6454e376120acf252cdb26bb4a5
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
-1 descriptor(s) scoped by factory: registry/railnet/calldata-Conduit.json; one applies below only when its factory is the entry's registry factory
+no descriptor is scoped by the registry factory of an entry below
 
 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1

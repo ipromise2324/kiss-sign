@@ -16,8 +16,9 @@ import { callTree } from '../src/verify/expected.ts';
 import type { CallTree } from '../src/verify/expected.ts';
 import { evaluateTx } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
 const registry = loadRegistry(ROOT);
 const USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address;

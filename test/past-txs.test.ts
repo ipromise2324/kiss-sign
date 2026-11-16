@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { replayReader } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
+import type { Registry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
 import type { Sampling } from '../src/research/past-txs.ts';
 import { scrubRecording } from '../src/research/recording.ts';
@@ -14,8 +15,10 @@ import type { Anchor, AnchorKind, SourceExchange, SourceRequest } from '../src/r
 import type { Address } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
+const SCRIPTS = join(import.meta.dirname, '..', 'scripts');
 const recording: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit.json'), 'utf8'));
 const registry = loadRegistry(ROOT);
 
@@ -32,9 +35,10 @@ const samplingOf = (query: PastTxsRecording['query']): Sampling =>
   query.fromBlock === undefined || query.toBlock === undefined ? DEFAULT_SPREAD : { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
 
 async function report(
-  options: { exclude?: Address; sources?: readonly SourceExchange[]; template?: Template; exchanges?: PastTxsRecording['exchanges']; recorded?: PastTxsRecording } = {},
+  options: { exclude?: Address; sources?: readonly SourceExchange[]; template?: Template; exchanges?: PastTxsRecording['exchanges']; recorded?: PastTxsRecording; registry?: Registry } = {},
 ): Promise<string> {
   const recorded = options.recorded ?? recording;
+  const seen = options.registry ?? registry;
   const { query } = recorded;
   const run = await pastTxs(
     {
@@ -42,9 +46,9 @@ async function report(
       anchor: { token: query.token as Address, kind: query.anchor as AnchorKind, ...(query.from === undefined ? {} : { from: query.from as Address }) },
       sampling: samplingOf(query),
     },
-    { ask: replayAsk(options.sources ?? recorded.sources), reader: replayReader(options.exchanges ?? recorded.exchanges), registry, exclude: options.exclude, maxTxs: query.maxTxs },
+    { ask: replayAsk(options.sources ?? recorded.sources), reader: replayReader(options.exchanges ?? recorded.exchanges), registry: seen, exclude: options.exclude, maxTxs: query.maxTxs },
   );
-  return renderPastTxs(run, registry);
+  return renderPastTxs(run, seen);
 }
 
 function withAnswersReplaced(method: string, address: string, answer: unknown): PastTxsRecording['exchanges'] {
@@ -103,6 +107,26 @@ test('the same function called on a contract other than the one the template nam
   assert.match(text, /^ {4}38 calls no function the template calls \(/m);
 });
 
+test('a deposit into the vault whose mint found it, when the registry does not hold that vault, has the template\'s shape outside the registry', async () => {
+  const vault = recording.query.token as Address;
+  const kept = [...registry.entries.values()].filter((entry) => entry.address !== vault);
+  const text = await report({ registry: { entries: new Map(kept.map((e) => [e.name, e])), byAddress: new Map(kept.map((e) => [e.address, e])), markets: registry.markets } });
+  assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe\n {2}exactly the template: 0 from 0 Safes; outside the registry: 2 from 1 Safe \(a vault outside the registry at \S+\.erc4626Deposit\.vault in 2\)$/m);
+});
+
+test('the template\'s function called on another contract than the vault whose mint found it, such as a wrapper, is a misfit named by that contract', async () => {
+  const vault = (recording.query.token as Address).slice(2);
+  const wrapper = 'de'.repeat(20);
+  const exchanges = recording.exchanges.map((e) =>
+    e.method === 'eth_getTransactionByHash' && JSON.stringify(e.params) === JSON.stringify([FIT])
+      ? { ...e, answers: Object.fromEntries(Object.entries(e.answers).map(([p, a]) => [p, { ...(a as object), input: (a as { input: string }).input.replaceAll(vault, wrapper) }])) }
+      : e,
+  );
+  const text = await report({ exchanges });
+  assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 2 from 1 Safe$/m);
+  assert.match(text, new RegExp(`^ {2}1 from 1 Safe: \\S+\\.erc4626Deposit\\.vault: expected [^,]+, got 0x(de){20}\\n {4}e\\.g\\. ${FIT}$`, 'im'));
+});
+
 test('a window with more transfers than one page is halved, and the report names the blocks left out', async () => {
   const windowed: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'), 'utf8'));
   const [full, half] = [26373601n, 26377201n];
@@ -124,7 +148,7 @@ test('a window with more transfers than one page is halved, and the report names
 });
 
 test('--max-txs below one transaction per window is refused', () => {
-  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '11'], { encoding: 'utf8' });
+  const run = spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '11'], { encoding: 'utf8' });
   assert.equal(run.status, 64);
   assert.match(run.stderr, /--max-txs must be at least 12, one transaction per window/);
 });
@@ -191,6 +215,14 @@ test('a template whose trailer allowance is shorter than real use lists those tr
   assert.match(text, /^ {2}2 from 1 Safe: more bytes after the arguments than the template allows, at multiSend\[1\]$/m);
 });
 
+test('a transaction whose leaf the template binds to the Safe holds another address is a misfit naming that leaf', async () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  raw.calls[0].args.spender = { safe: true };
+  const text = await report({ template: parseTemplate(raw, registry) });
+  assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
+  assert.match(text, /^ {2}2 from 1 Safe: multiSend\[0\]\.approve\.spender: not the sender$/m);
+});
+
 test('an anchor with a sender asks both sources only for transfers out of it, and the report names it', async () => {
   const claims: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'merkl-claim.json'), 'utf8'));
   const text = await report({ recorded: claims });
@@ -205,7 +237,7 @@ test('an anchor with a sender asks both sources only for transfers out of it, an
 
 const LOAN = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address;
 const LENDING = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' as Address;
-const DISTRIBUTOR = '0x330eefa8a787552dc5cad3c3ca644844b1e61ddb' as Address;
+const DISTRIBUTOR = '0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae' as Address;
 
 /** The requests a search sends for `anchor`, each answered as finding nothing. */
 async function requestsFor(anchor: Omit<Anchor, 'token' | 'kind' | 'fromBlock' | 'toBlock'>): Promise<SourceRequest[]> {
@@ -256,11 +288,11 @@ test('the report names where the anchor transfers move', async () => {
       { ask: async (r) => (r.source === 'alchemy' ? { transfers: [] } : { status: '0', message: 'No records found' }), reader: replayReader([]), registry, exclude: undefined, maxTxs: 12 },
     );
   assert.match(renderPastTxs(await run({ to: LENDING }), registry), /^anchor: Transfer of usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 moved into morpho-blue$/m);
-  assert.match(renderPastTxs(await run({ from: DISTRIBUTOR, to: LENDING }), registry), /moved out of morpho-urd into morpho-blue$/m);
+  assert.match(renderPastTxs(await run({ from: DISTRIBUTOR, to: LENDING }), registry), /moved out of merkl-distributor into morpho-blue$/m);
 });
 
 test('--to goes with --anchor any only', () => {
-  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--to', 'bundler3'], { encoding: 'utf8' });
+  const run = spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--to', 'bundler3'], { encoding: 'utf8' });
   assert.equal(run.status, 64);
   assert.match(run.stderr, /--to goes with --anchor any/);
 });
@@ -270,7 +302,7 @@ test("a Safe's transaction that makes none of the template's calls is another op
   const text = await report({ recorded: transfers });
   assert.match(
     text,
-    /^by proven Safes, the whole template in one transaction:\nanother operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below\n {2}e\.g\. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls another contract\.0x1d7d4ebc\nfit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes$/m,
+    /^by proven Safes, the whole template in one transaction:\nanother operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below\n {2}e\.g\. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls 0xe5139Fc0FB8eae81e30d8a85C22E88c6757120f2\.0x1d7d4ebc\nfit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes\n {2}exactly the template: 0 from 0 Safes; outside the registry: 1 from 1 Safe \(a token outside the registry at call\.to in 1\)$/m,
   );
-  assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls another contract\.0x1d7d4ebc$/m);
+  assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls /m);
 });

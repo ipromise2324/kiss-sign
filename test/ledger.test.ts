@@ -12,6 +12,8 @@ import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { replayInputs } from '../src/research/report.ts';
 import type { ReportInputs, SpanCheck } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
+import { STANDARDS } from '../src/research/standards.ts';
+import type { Standard } from '../src/research/standards.ts';
 import type { CommitCheck, Page } from '../src/research/source-page.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { judgeFixtures } from '../src/template/perturb.ts';
@@ -19,8 +21,9 @@ import type { FixtureJudgement, PerturbationReport, Run } from '../src/template/
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const suffixes = loadPublicSuffixList();
 const ADDRESS = `0x${'ab'.repeat(20)}` as Address;
 const OTHER = `0x${'cd'.repeat(20)}` as Address;
@@ -31,6 +34,8 @@ const API = { url: 'https://api.example.org/vault' as HttpsUrl, method: 'GET', p
 const APPROVE = (loadTemplate(ROOT, 'morpho/market-supply', loadRegistry(ROOT)).calls[0]?.data as Exclude<Template['calls'][number]['data'], 'empty'>).fn;
 const DOC = 'https://docs.example.org/approve' as HttpsUrl;
 const MORE = { url: GITHUB, label: 'Vault' };
+const ERC20 = STANDARDS.get('erc-20')!;
+const DECLARED = { kind: 'served', blocks: [{ text: 'function approve(address _spender, uint256 _value) public returns (bool success)' }] } as const;
 
 const ENTRY: RegistryEntry = {
   name: 'vault',
@@ -66,6 +71,7 @@ type Setup = {
   readonly abi: AbiProof | AbiRefusal | undefined;
   readonly spans: readonly SpanCheck[] | undefined;
   readonly documented: boolean;
+  readonly approveStandard: Standard | undefined;
   readonly fixtures: readonly FixtureJudgement[];
   readonly vaults: ReadonlyMap<string, string>;
 };
@@ -82,6 +88,7 @@ const BASE: Setup = {
   abi: { kind: 'proven', proxy: { kind: 'none' }, codeHash: PIN } as unknown as AbiProof,
   spans: [{ kind: 'pass', text: '' }],
   documented: true,
+  approveStandard: undefined,
   fixtures: [],
   vaults: new Map(),
 };
@@ -105,16 +112,16 @@ function ledgerOf(change: Partial<Setup>): Ledger {
   const registry: Registry = { entries: new Map([[s.entry.name, s.entry]]), byAddress: new Map([[s.entry.address, s.entry]]), markets: new Map() };
   const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [] }, facts: [] } as Template;
   const inputs = {
-    subject: s.documented ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, url: DOC }] } : { kind: 'vault', vault: s.entry },
+    subject: s.documented ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }] } : { kind: 'vault', vault: s.entry },
     registry,
     listings: { protocols: new Map(s.protocol === undefined ? [] : [['proto', [s.protocol]]]), coinsByAddress: new Map([[ADDRESS, s.coins]]), suffixes },
     pages: {
       pages: new Map([
         ...(s.page === undefined ? [] : [[pageUrlOf(s.entry.source), s.page] as const]),
         ...(s.more === undefined || s.entry.moreSources === undefined ? [] : [[pageUrlOf(s.entry.moreSources[0]!.url), s.more] as const]),
-        ...(s.doc === undefined ? [] : [[DOC, s.doc] as const]),
+        ...(s.doc === undefined ? [] : [[pageUrlOf(s.approveStandard?.page ?? DOC), s.doc] as const]),
       ]),
-      commits: new Map(s.commit === undefined ? [] : [[`example/repo@${'a'.repeat(40)}`, s.commit]]),
+      commits: new Map(s.commit === undefined ? [] : [[`example/repo@${'a'.repeat(40)}`, s.commit], ['ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2', s.commit]]),
       apis: new Map(s.api === undefined ? [] : [[`GET ${API.url}`, s.api]]),
     },
     abi: new Map(s.abi === undefined ? [] : [[ADDRESS, s.abi]]),
@@ -173,6 +180,15 @@ const ROWS: readonly Row[] = [
   { what: 'a documentation page not fetched', change: { doc: undefined }, id: 'vault/doc.0x095ea7b3.page', kind: 'page-not-fetched', state: 'warn' },
   { what: 'a documentation page without the name', change: { doc: { kind: 'served', blocks: [{ text: 'transfer' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'name-not-on-page', state: 'warn' },
   { what: 'a documentation page naming the function', change: {}, id: 'vault/doc.0x095ea7b3.page', kind: 'agrees', state: 'ok' },
+  { what: 'a documentation page with the name only in prose', change: { doc: { kind: 'served', blocks: [{ text: 'You approve these terms by using the Site' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'name-not-on-page', state: 'warn' },
+  { what: 'a documentation page with the name before a numbered clause', change: { doc: { kind: 'served', blocks: [{ text: 'You approve (i) these Terms' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'name-not-on-page', state: 'warn' },
+  { what: 'a documentation page with the name as a Markdown heading', change: { doc: { kind: 'served', blocks: [{ text: '### approve' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'agrees', state: 'ok' },
+  { what: 'a documentation page with the name in a code span', change: { doc: { kind: 'served', blocks: [{ text: 'Call `approve` first' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'agrees', state: 'ok' },
+  { what: 'a documentation page with the name as a heading', change: { doc: { kind: 'served', blocks: [{ text: 'approve' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'agrees', state: 'ok' },
+  { what: 'a standard page holding the declaration', change: { approveStandard: ERC20, doc: DECLARED }, id: 'vault/doc.0x095ea7b3.page', kind: 'agrees', state: 'ok' },
+  { what: 'a standard page calling the function without its declaration', change: { approveStandard: ERC20 }, id: 'vault/doc.0x095ea7b3.page', kind: 'name-not-on-page', state: 'warn' },
+  { what: "a standard page, whose site is the standard's org whatever DefiLlama lists", change: { approveStandard: ERC20, doc: DECLARED, protocol: { ...BASE.protocol!, github: ['tether'] } }, id: 'vault/doc.0x095ea7b3.site', kind: 'agrees', state: 'ok' },
+  { what: "a standard page's commit off the default branch", change: { approveStandard: ERC20, doc: DECLARED, commit: { kind: 'off-default', branch: 'master', status: 'diverged' } }, id: 'vault/doc.0x095ea7b3.commit', kind: 'commit-unconfirmed', state: 'warn' },
   { what: 'a span with no chain result', change: { spans: undefined }, id: 'vault/code.1', kind: 'no-chain-result', state: 'warn' },
   { what: 'a span with no answer', change: { spans: [{ kind: 'unverifiable', text: '' }] }, id: 'vault/code.1', kind: 'no-answer', state: 'warn' },
   { what: 'no ABI case', change: { abi: undefined }, id: 'vault/abi', kind: 'no-abi-case', state: 'warn' },
@@ -225,12 +241,11 @@ test('an empty address source is grey; the address result alone puts the entry i
   assert.deepEqual(forSigner(ledger), []);
   assert.equal(confidence(ledger, ENTRY), 'medium', 'no official page among the confirmations');
   assert.deepEqual(
-    sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link]),
+    sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link, s.site]),
     [
-      ['page', 'na', '讀不到', SOURCE],
-      ['api', 'ok', undefined, API.url],
-      ['coingecko', 'ok', undefined, 'https://www.coingecko.com/en/coins/vault-coin'],
-      ['defillama', 'ok', undefined, 'https://defillama.com/protocol/proto'],
+      ['page', 'na', '讀不到', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto' }],
+      ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto' }],
+      ['coingecko', 'ok', undefined, 'https://www.coingecko.com/en/coins/vault-coin', undefined],
     ],
   );
   const alone = ledgerOf({ page: { kind: 'served', blocks: [{ text: 'Vault' }] } });
@@ -268,24 +283,27 @@ test('a coin CoinGecko lists at an address the entry names no coin for stays for
   assert.deepEqual(confirmations(ledger, entry), ['page']);
 });
 
-test("a second page is its own row, and its site joins DefiLlama's", () => {
+test('a second page is its own row, each page with its own site under it, and no site is a source of its own', () => {
   const entry = { ...ENTRY, moreSources: [MORE] };
+  const other = { ...BASE.protocol!, url: new URL('https://other.org') };
   assert.deepEqual(
-    sourcesOf(ledgerOf({ entry }), entry).map((s) => [s.source, s.state, s.link]),
+    sourcesOf(ledgerOf({ entry, protocol: other }), entry).map((s) => [s.source, s.state, s.link, s.site?.state, s.site?.phrase]),
     [
-      ['page', 'ok', SOURCE],
-      ['more.1', 'ok', GITHUB],
-      ['coingecko', 'ok', 'https://www.coingecko.com/en/coins/vault-coin'],
-      ['defillama', 'ok', 'https://defillama.com/protocol/proto'],
+      ['page', 'ok', SOURCE, 'bad', '是另一個網站'],
+      ['more.1', 'ok', GITHUB, 'ok', undefined],
+      ['coingecko', 'ok', 'https://www.coingecko.com/en/coins/vault-coin', undefined, undefined],
     ],
   );
 });
 
-test('an address source line names a differing site, another address, or nothing to compare', () => {
-  const phrase = (change: Partial<Setup>, source: string) => sourcesOf(ledgerOf(change), change.entry ?? ENTRY).find((s) => s.source === source)?.phrase;
-  assert.equal(phrase({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'defillama'), '是另一個網站');
-  assert.equal(phrase({ entry: { ...ENTRY, apiSource: API }, api: { kind: 'answered', json: { address: OTHER } } }, 'api'), '是另一個地址');
-  assert.equal(phrase({ protocol: { ...BASE.protocol!, url: undefined } }, 'defillama'), '沒資料可比');
+test('an address source line names another address, and the site under it a differing site or nothing to compare', () => {
+  const line = (change: Partial<Setup>, source: string) => sourcesOf(ledgerOf(change), change.entry ?? ENTRY).find((s) => s.source === source);
+  assert.equal(line({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'page')?.site?.phrase, '是另一個網站');
+  assert.equal(line({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'page')?.phrase, undefined, 'the page still showed the address');
+  assert.equal(line({ entry: { ...ENTRY, apiSource: API }, api: { kind: 'answered', json: { address: OTHER } } }, 'api')?.phrase, '是另一個地址');
+  assert.equal(line({ protocol: { ...BASE.protocol!, url: undefined } }, 'page')?.site?.phrase, '沒資料可比');
+  const api = line({ entry: { ...ENTRY, apiSource: API }, protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'api');
+  assert.deepEqual([api?.state, api?.site?.state, api?.site?.phrase], ['ok', 'bad', '是另一個網站'], "the API still answered the address on a site that is not the protocol's");
 });
 
 test('confidence: high with an official page among two confirmations and a span, medium without the page, low for the signer', () => {
@@ -341,11 +359,11 @@ test('morpho/market-supply from its recordings: one address confirmed in one pla
     ledger.entries.map((e) => [e.name, confidence(ledger, e)]),
     [
       ['usdc', 'high'],
+      ['cbbtc', 'high'],
       ['morpho-blue', 'high'],
       ['blue-bundles-v1', 'high'],
       ['adaptive-curve-irm', 'high'],
       ['morpho-oracle-cbbtc-usdc-86', 'low'],
-      ['cbbtc', 'high'],
     ],
   );
 });
