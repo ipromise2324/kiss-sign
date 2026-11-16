@@ -16,7 +16,7 @@ import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, callTargets, inScope, isEncoding, loadTemplate, refNames, scopeEntries, slippageBps } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callTargets, inScope, isEncoding, loadTemplate, refNames, scopeEntries, slippageBps } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
@@ -558,8 +558,10 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
         ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}, picked by number from the list below`
         : field.kind === 'amount'
           ? field.computed === undefined
-            ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}`
+            ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}${field.max === undefined ? '' : `, or ${code('max')}, ${field.max.value}: ${byAi(field.max.why)}`}`
             : `nothing: computed by ${code('card new')} in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}, ${computedText(field.computed)}`
+          : field.kind === 'percent'
+            ? `a percent, at most 100, held in WAD base units (100% is ${WAD})`
           : field.kind === 'nonce'
             ? 'a Safe nonce'
             : field.kind === 'market'
