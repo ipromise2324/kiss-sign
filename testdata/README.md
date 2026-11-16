@@ -50,8 +50,6 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `merkl-claim-other-safe.json` | `0x86aa8cbd3752104Ed4Da624be502a3b192239Cd6`, Safe 1.3.0 | 470 | `0x53fec1eb454d8a84c38a56356f616a6f2226b3ad2f71baf3b7b1b6298137f882`, block 24,032,055 | The same direct `claim` of MORPHO, from another Safe. safeTxHash `0xbccbbfc0c11f9e7cc0daced69e996c2a979d6f26f9b96834c0540632c7950e5e` |
 | `merkl-claim-two-tokens.json` | `0x7A4c2448EeB7A0BC297eD47C332d1a528b5A29bC`, Safe 1.3.0 | 693 | `0xb307157df56d5e51b9ca25b28646190970254a2f3db050e3937657e73b9455f9`, block 24,020,632 | One Merkl `claim` of USDC and MORPHO, two items in each of its four arrays. safeTxHash `0x1b1774a52d845dce2ea6faac3ab5dd01747adda3af6838dde7f4f4107abdd59a` |
 | `merkl-claim-three-tokens.json` | `0x9260C9D6f93ABD3b288C86a58bd46088099097A3`, Safe 1.3.0 | 70 | `0x06cded3c3888831a929a95d766a429b71cb33efddb3cc21c90efa7815ff89380`, block 24,020,899 | One Merkl `claim` of MORPHO, aEthUSDe and FXN, three items in each array. safeTxHash `0xe5a8d1f6d4593e703e69a57f3b61ad669446d058699d83ce071473f269a5d8d3` |
-| `morpho-urd-claim.json` | `0xDf95bb71581B224BD42eB19ceaff5E92816e181E`, Safe 1.4.1 | 40 | `0xc40b144c77500ef495717be260db8fb877692e1baa439352ce9e67e0af6e297e`, block 22,819,152 | Bundler3 `multicall` with one item: the Morpho URD (`0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb`) `claim` of MORPHO for the Safe, with the Morpho app's 8-byte trailer. safeTxHash `0x5001bd84a4a5d9daa0d42fb7148b5da12c0343cdaa0ff046c449efec4b020104` |
-| `merkl-and-morpho-urd-claim.json` | `0x1c7766189b90da61BE1a7e6462E9f81eC795E40E`, Safe 1.4.1 | 7 | `0x657ac61e1f43c2b79dd504b49d0fe19dd6d6e2be32c3f2815addd5b0484547bc`, block 22,815,761 | A `delegatecall` to MultiSendCallOnly 1.4.1: a Merkl `claim` of aEthRLUSD, then a Bundler3 `multicall` claiming MORPHO from the Morpho URD. safeTxHash `0x2f85529efdd3b1fbbde890735c5cd4f81b3c4088795994b881a4ffcb872022f3` |
 | `cctp-receive-then-call.json` | `0x8a25A24EDE9482C4Fc0738F99611BE58F1c839AB`, Safe 1.4.1 | 48142 | `0xdd09c9b162d956d128a51a49cb3988789358d52560c0339021afdc05b00ff716`, block 24,800,869 | A `delegatecall` to MultiSend 1.4.1: CCTP V1 MessageTransmitter (`0x0a992d191DEeC32aFe36203Ad87D7d289a738F81`) `receiveMessage` of a message that mints USDC to another address, then a call to another contract. safeTxHash `0xaffef7919a235fa81f6ddfcd5b140eb0a56f618b47d17a124fc95fa9735f002c` |
 | `morpho-migrate-all-smokehouse.json` | `0x3D548a77137E46B25F240CE0091266bAa5803177`, Safe 1.4.1 | 11 | `0xd45381b2f9365376f4248c3fad7d35f6cf0239b96e54d8f9b842a83de78fdc21`, block 25,006,581 | MultiSendCallOnly: Smokehouse USDC `approve` of shares to GeneralAdapter1, then `Bundler3.multicall` moving them to GeneralAdapter1, redeeming all it holds, and depositing all its USDC into Steakhouse High Yield USDC (`0xbeeff2C5bF38f90e3482a8b19F12E5a6D2FCa757`), shares to the Safe. The Safe had a leftover share allowance to GeneralAdapter1 before. safeTxHash `0x8e7bcfd57f36d400d3bf3ad0fe16c6830c4f572ace092b7abc1ed2dac6f0cc29` |
 | `morpho-migrate-all-smokehouse-other-safe.json` | `0xCDe8da7C6A5408C2491Ea8510Bd2652A2468B9ba`, Safe 1.4.1 | 26 | `0x73df3d85fc65aca5a18be6af230d75b1aa92a07ab64e5e70075a255f6be99ab1`, block 25,931,300 | The same migration from another Safe, with no leftover allowance. safeTxHash `0xb1916e3a23bda7ac1b9a8a302e595abc7f42dc3e91897d08349de0fecc5fbeff` |
@@ -138,9 +136,8 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 | `fluid-rewards-distributor.json` | FluidMerkleDistributor "Fluid Rewards - Dec 2024" `0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0` | none | `FluidMerkleDistributor`, solc 0.8.21, 2 immutable spans masked |
 | `fluid-token.json` | FLUID token `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | none | `InstaToken`, solc 0.7.3 |
 | `merkl-distributor.json` | Merkl Distributor `0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae` | EIP-1967 | `Distributor` at `0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE`, solc 0.8.25, 5 immutable spans masked |
-| `morpho-urd.json` | Morpho Universal Rewards Distributor `0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb` | none | `UniversalRewardsDistributor`, solc 0.8.19. Sourcify holds a partial match: every byte equals except the IPFS metadata hash, which is masked |
-| `cctp-message-transmitter.json` | Circle CCTP V1 MessageTransmitter `0x0a992d191DEeC32aFe36203Ad87D7d289a738F81` | none | `MessageTransmitter`, solc 0.7.6, 7 immutable and 5 library spans masked. A partial match like `morpho-urd.json` |
-| `usdc.json` | USDC `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | ZeppelinOS | `FiatTokenV2_2` at `0x43506849D7C04F9138D1A2050bbF3A0c054402dd`, solc 0.6.12. A partial match like `morpho-urd.json` |
+| `cctp-message-transmitter.json` | Circle CCTP V1 MessageTransmitter `0x0a992d191DEeC32aFe36203Ad87D7d289a738F81` | none | `MessageTransmitter`, solc 0.7.6, 7 immutable and 5 library spans masked. Sourcify holds a partial match: the IPFS metadata hash differs and is masked too |
+| `usdc.json` | USDC `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | ZeppelinOS | `FiatTokenV2_2` at `0x43506849D7C04F9138D1A2050bbF3A0c054402dd`, solc 0.6.12. A partial match like `cctp-message-transmitter.json` |
 | `cbbtc.json` | cbBTC `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | ZeppelinOS | `FiatTokenV2_1` at `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72`, solc 0.6.12 |
 | `safe-proxy-1-3-0.json` | the Safe of `safe-tx/eth-transfer-null-data.json`, `0x9467dcFD4519287e3878C018c02f5670465a9003` | Safe proxy (1.3.0 factory) | `GnosisSafeL2` at `0x3E5c63644E683549055b9Be8653de26E0B4CD36E`, solc 0.7.6 |
 
@@ -162,7 +159,6 @@ pnpm record-abi-case fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18
 pnpm record-abi-case fluid-rewards-distributor 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0
 pnpm record-abi-case fluid-token 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb
 pnpm record-abi-case merkl-distributor 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae
-pnpm record-abi-case morpho-urd 0x330eefa8a787552DC5cAd3C3cA644844B1E61Ddb
 pnpm record-abi-case cctp-message-transmitter 0x0a992d191DEeC32aFe36203Ad87D7d289a738F81
 pnpm record-abi-case usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 pnpm record-abi-case cbbtc 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf
@@ -188,7 +184,6 @@ The tests serve each provider its own recorded answer through the real reader, s
 | `fluid-redeem-usdt.json` | 23,941,365 | −81,438.499490 fUSDT, +95,466.865113 USDT, no ETH; Safe settings unchanged |
 | `fluid-claim.json` | 22,609,102 | +58.037012247904058352 FLUID, no ETH; Safe settings unchanged |
 | `merkl-claim.json` | 24,029,025 | +100.951036832327882581 MORPHO, no ETH; Safe settings unchanged |
-| `morpho-urd-claim.json` | 22,819,151 | +3,824.546796543481634870 MORPHO, no ETH; Safe settings unchanged |
 
 | `morpho-withdraw-all.json`, of `safe-tx/morpho-withdraw-all-apex-other-safe.json` | 23,725,210 | −23,966.697414743719468099 Hyperithm USDC Apex shares, all the Safe held, +25,175.574782 USDC; the share allowance to GeneralAdapter1 is 0 before and after |
 | `morpho-withdraw-open-allowance.json`, of `safe-tx/morpho-withdraw-apex-other-safe.json` | 23,726,457 | −285,544.697740669157631830 Hyperithm USDC Apex shares, +300,000 USDC; the share allowance to GeneralAdapter1 goes from 4,850,840,670,525,793,065 to 40,963,643,267,656,996,464 |
@@ -220,7 +215,6 @@ pnpm simulate fluid-redeem-usdt --record fluid-redeem-usdt \
   --card '{"operations":[{"template":"fluid/vault-redeem","values":{"vault":"fluid-fusdt","shares":"81438499490"}}]}'
 pnpm simulate fluid-claim --record fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim","values":{"token":"fluid"}}]}'
 pnpm simulate merkl-claim --record merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}'
-pnpm simulate morpho-urd-claim --record morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}'
 pnpm simulate morpho-borrow-set-authorization --record morpho-borrow-set-authorization
 pnpm simulate morpho-set-authorization --record morpho-set-authorization
 pnpm simulate uniswap-v4-add-liquidity-permit2 --record uniswap-v4-add-liquidity-permit2
@@ -237,7 +231,6 @@ The last four have no template and no card, so they record no verdict; the tests
 export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
 pnpm perturb fluid-claim --card '{"operations":[{"template":"fluid/rewards-claim","values":{"token":"fluid"}}]}' --record fluid-claim
 pnpm perturb merkl-claim --card '{"operations":[{"template":"merkl/claim","values":{"token":"morpho"}}]}' --record merkl-claim
-pnpm perturb morpho-urd-claim --card '{"operations":[{"template":"morpho/urd-claim","values":{"token":"morpho"}}]}' --record morpho-urd-claim
 pnpm perturb morpho-bundles-deposit --card '{"operations":[{"template":"morpho/vault-bundles-deposit","values":{"vault":"steakhouse-prime-usdc-v2-0f51","amount":"31583325527","min-shares":"30442521166571443751074"}}]}' --record morpho-bundles-deposit
 pnpm perturb morpho-withdraw-apex --card '{"operations":[{"template":"morpho/vault-withdraw","values":{"vault":"hyperithm-usdc-apex-v1-7777","amount":"583913520554","max-shares":"555874861469460312138864"}}]}' --record morpho-withdraw-apex
 pnpm perturb morpho-withdraw-all-apex --card '{"operations":[{"template":"morpho/vault-withdraw-all","values":{"vault":"hyperithm-usdc-apex-v1-7777","min-assets":"1367287893326"}}]}' --record morpho-withdraw-all-apex
