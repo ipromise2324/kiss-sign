@@ -64,17 +64,22 @@ Each entry's `moreSources`: more official pages that list its address, each chec
 
 | Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | FINDING | PASS | PASS |
-| `universal-router-2.1.2` | <https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json> | FINDING | PASS | PASS |
+| `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | PASS | PASS | PASS |
+| `universal-router-2.1.2` | <https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json> | PASS | PASS | PASS |
 
 More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
 
 | Entry | Bounty scope | SDK file | SDK publisher | Deployer |
 | --- | --- | --- | --- | --- |
-| `permit2` | n/a | FINDING | n/a | n/a |
-| `universal-router-2.1.2` | n/a | FINDING | n/a | n/a |
+| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
+| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
+| `cbbtc` | n/a | n/a | n/a | FINDING |
+| `permit2` | n/a | PASS | PASS | FINDING `0xD32Ff78579352cA78f416120A9f68b65c410871b` |
+| `universal-router-2.1.2` | n/a | PASS | PASS | FINDING `0x2179a60856E37dfeAacA0ab043B931fE224b27B6` |
+| `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
 
-7 entries, 5 findings.
+7 entries, 8 findings.
 
 ## Code pins
 
@@ -99,7 +104,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `universal-router-2.1.2` | PASS | 26429306 |
+| `universal-router-2.1.2` | PASS | 26430203 |
 
 ## ABI proofs
 
@@ -117,11 +122,11 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429306 `0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26430203 `0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `uniswap-v4` | `5690` | `parent#uniswap` | 2025-01-29 | 1050001624 | 680459082 |
+| `uniswap-v4` | `5690` | `parent#uniswap` | 2025-01-29 | 1003469886 | 634116144 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |
