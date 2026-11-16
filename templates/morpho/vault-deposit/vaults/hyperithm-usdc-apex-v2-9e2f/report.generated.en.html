@@ -1,0 +1,642 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f report</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.callh .what{font-size:16px;font-weight:590}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.src{display:flex;flex-direction:column;gap:4px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:16px;font-size:var(--t-small);color:var(--fg2)}
+.ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs .byai{margin-right:8px}
+.aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">5</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>Deposit into a Morpho vault</span><span class="byai">AI research</span></span></h1>
+  <span class="opid">morpho/vault-deposit · hyperithm-usdc-apex-v2-9e2f</span>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe first gives GeneralAdapter1 an allowance of exactly the amount you type, then calls <code>multicall</code> on Bundler3: GeneralAdapter1 pulls these tokens from the Safe and deposits them into the vault you pick, with the shares going straight to the Safe. The price per share cannot be higher than the price implied by the minimum shares you type, or the whole transaction fails.</span><span class="byai">AI research</span></span></p>
+  <ul class="checks">
+    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>Address sources <span class="n num">4 / 5</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 address has results for you to review; see &#34;To review&#34;. The other 4 are all confirmed in at least 2 places.</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">5 / 5</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify&#39;s source, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts.</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">5 / 5</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped. Signing does not touch vault-v2-factory; only the report compares its code.</span></span></li>
+    <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Parameter checks <span class="n num">1 / 1</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The program changed every bound argument of 1 test transaction one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result.</span></span></li>
+  </ul>
+  <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>OK to use. No official Hyperithm page lists this vault&#39;s address. Read To review first, and send a small amount the first time.</span><span class="byai">AI research: be careful</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
+    <ol><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-hyperithm-usdc-apex-v2-9e2f">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">5</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>Flow <span class="c">2 calls</span></h2>
+  <p class="lead">Solid lines are the Safe&#39;s calls, dashed lines what a contract does inside, green lines what you get.</p>
+  <div class="diagram">
+  <svg viewBox="0 0 750 300" role="img" aria-labelledby="dt dd">
+    <title id="dt">Transaction flow</title>
+    <desc id="dd">Call 1: the Safe calls approve on usdc. Call 2: the Safe calls multicall on bundler3. Result: you get hyperithm-usdc-apex-v2-9e2f.</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="292"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">your Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">sender</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="292"/>
+    <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">usdc</text><text class="nodes" x="280" y="50" text-anchor="middle">token</text>
+    <line class="life" x1="470" y1="58" x2="470" y2="292"/>
+    <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">bundler3</text><text class="nodes" x="470" y="50" text-anchor="middle">router</text>
+    <line class="life" x1="660" y1="58" x2="660" y2="292"/>
+    <rect class="node" x="574.5" y="14" width="171" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">general-adapter-1</text><text class="nodes" x="660" y="50" text-anchor="middle">adapter</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">multicall</text>
+    <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#m-call)"/>
+    <g data-ai><rect class="tagbox" x="228.20000000000005" y="180" width="84" height="20" rx="6"/><text class="tagt" x="270.20000000000005" y="194" text-anchor="middle">AI research</text><rect class="codebox" x="368.80000000000007" y="180" width="140.6" height="19" rx="6"/><rect class="codebox" x="553.4000000000001" y="180" width="117.2" height="19" rx="6"/><text class="cap" y="194"><tspan x="320.20000000000005">Calls </tspan><tspan class="capc" x="372.80000000000007">erc20TransferFrom</tspan><tspan x="512.4000000000001"> and </tspan><tspan class="capc" x="557.4000000000001">erc4626Deposit</tspan><tspan x="673.6000000000001"> in order</tspan></text></g>
+    <line class="inner" x1="470" y1="204" x2="657" y2="204" marker-end="url(#m-inside)"/>
+    <g data-ai><rect class="tagbox" x="102" y="216" width="84" height="20" rx="6"/><text class="tagt" x="144" y="230" text-anchor="middle">AI research</text><rect class="codebox" x="683.4000000000005" y="216" width="101.6" height="19" rx="6"/><text class="cap" y="230"><tspan x="194">Pulls the amount you type of the asset token from the Safe with </tspan><tspan class="capc" x="687.4000000000005">transferFrom</tspan><tspan x="788.0000000000006"></tspan></text></g>
+    <line class="inner" x1="660" y1="240" x2="283" y2="240" marker-end="url(#m-inside)"/>
+    <text class="capg" x="104" y="266">you get hyperithm-usdc-apex-v2-9e2f</text>
+    <line class="gain" x1="470" y1="276" x2="93" y2="276" marker-end="url(#m-gets)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">Scroll the diagram sideways</div>
+  <div class="key">
+    <span class="k0">Who decides</span>
+    <span><span class="who you">you type</span>typed at each signing</span>
+    <span><span class="who you">you pick</span>picked at each signing</span>
+    <span><span class="who">fixed</span>any change is a MISMATCH</span>
+  </div>
+  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below.Values that you type and you pick, marked &#34;example&#34;, come from <code>morpho-vault-deposit-v2</code>, the first test transaction of hyperithm-usdc-apex-v2-9e2f: amount <span class="num">1,000,611.448606</span> usdc, minimum received about <span class="num">973,551.731159</span> hyperithm-usdc-apex-v2-9e2f (<span class="num">973551731159989631767877</span> base units).</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol">github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
+    <div class="arg" data-field="1.approve.spender">
+      <div class="nm"><span class="pn">spender</span><span class="who">fixed</span></div>
+      <div class="val"><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract allowed to pull tokens from the Safe. Here it is Morpho&#39;s GeneralAdapter1, which pulls these funds with <code>transferFrom</code> in call 2.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.approve.value">
+      <div class="nm"><span class="pn">value</span><span class="who you">you type: amount</span></div>
+      <div class="val"><div class="raw">1000611448606<span class="ex">example</span></div><div class="is"><span class="num">1,000,611.448606</span> usdc <span class="f3">6 decimals</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance limit, equal to the deposit amount. Call 2 pulls all of it, so the allowance is back to 0 after the transaction.</span></span></div></div>
+    </div>
+  </div>
+  <div class="cb">
+    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">bundler3.</span>multicall</span><span class="sel">0x374f435d</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/Bundler3.sol">github.com/morpho-org/bundler3/…/Bundler3.sol</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
+    <div class="arg" data-field="2.multicall.bundle">
+      <div class="nm"><span class="pn">bundle</span><span class="who">fixed</span></div>
+      <div class="val"><div class="is">2 items</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The list of steps Bundler3 runs in order, fixed at two here: first pull the tokens, then deposit them into the vault. If any step fails, the whole transaction fails.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="is">5 parts</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Step 1: pull the tokens from the Safe into GeneralAdapter1.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract this step calls, fixed to GeneralAdapter1.</span></span></div></div></div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc20TransferFrom</code> (<span class="addr">0xd96ca0b9</span>)</div><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol">github.com/morpho-org/bundler3/…/GeneralAdapter1.sol</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The function and arguments this step runs, listed item by item below.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">token<div class="pchips"><span class="who you">you pick: vault</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">the asset of the vault you pick</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token to pull, equal to the asset of the vault you pick.</span></span></div></div></div>
+        <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The tokens go to GeneralAdapter1 itself first; in the next step it deposits them into the vault.</span></span></div></div></div>
+        <div class="part"><div class="pn">amount<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="raw">1000611448606<span class="ex">example</span></div><div class="is"><span class="num">1,000,611.448606</span> usdc <span class="f3">6 decimals</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount pulled from the Safe, equal to the deposit amount. Bundler3 records the Safe as the one that started the bundle, so only the Safe&#39;s funds can be pulled.</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">fixed to 0</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>ETH sent along, fixed at 0.</span></span></div></div></div>
+        <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">fixed to false</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Whether to skip this step if it fails. Fixed at false: if it fails, the whole transaction fails.</span></span></div></div></div>
+        <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">a fixed value</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Used only by steps that need a callback; fixed at 0.</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">[1]</div><div><div class="is">5 parts</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Step 2: GeneralAdapter1 deposits the tokens into the vault, with the shares going to the Safe.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract this step calls, fixed to GeneralAdapter1.</span></span></div></div></div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc4626Deposit</code> (<span class="addr">0x6ef5eeae</span>)</div><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol">github.com/morpho-org/bundler3/…/GeneralAdapter1.sol</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The function and arguments this step runs, listed item by item below.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">vault<div class="pchips"><span class="who you">you pick: vault</span></div></div><div><div class="raw">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</div><div class="is"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a> <span class="f3">the vault you pick</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Which vault to deposit into. This is the vault you pick on the card.</span></span></div></div></div>
+        <div class="part"><div class="pn">assets<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="raw">1000611448606<span class="ex">example</span></div><div class="is"><span class="num">1,000,611.448606</span> usdc <span class="f3">6 decimals</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount of tokens deposited into the vault, equal to the deposit amount.</span></span></div></div></div>
+        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="raw">1027794842924031<span class="ex">example</span></div><div class="is">price ceiling <span class="f3">computed from the amount you type; the transaction&#39;s must be as strict or stricter</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than &#34;amount ÷ minimum shares&#34;, so by the share count the vault itself reports, you get at least the minimum shares.</span></span></div></div></div>
+        <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">0xdb6e9e7390e9ACC34619E56eFa48ade01cFF6F12<span class="ex">example: another Safe</span></div><div class="is">your Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The address that receives the shares, fixed to the Safe.</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">value</div><div><div class="raw">0</div><div class="is">fixed to 0</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>ETH sent along, fixed at 0.</span></span></div></div></div>
+        <div class="part"><div class="pn">skipRevert</div><div><div class="raw">false</div><div class="is">fixed to false</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Whether to skip this step if it fails. Fixed at false: if it fails, the whole transaction fails.</span></span></div></div></div>
+        <div class="part"><div class="pn">callbackHash</div><div><div class="raw">0x0000000000000000000000000000000000000000000000000000000000000000</div><div class="is">a fixed value</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Used only by steps that need a callback; fixed at 0.</span></span></div></div></div>
+      </div></div>
+      </div>
+    </div>
+  </div>
+  <h3>After the transaction</h3>
+  <dl class="props">
+    <div><dt>Safe&#39;s usdc</dt><dd class="">−<span class="num">1,000,611.448606</span> usdc</dd><dd class="src">exactly the amount you type</dd></div>
+    <div><dt>Safe&#39;s hyperithm-usdc-apex-v2-9e2f</dt><dd class="pos">receives more than 0</dd><dd class="src">the program checks only the direction, not the amount</dd></div>
+    <div><dt>usdc allowance for <a href="#a-general-adapter-1">general-adapter-1</a></dt><dd class=""><span class="num">0</span></dd><dd class="src">used up within the transaction; may not end higher than before</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-morpho-blue">
+  <h2>morpho-blue</h2>
+  <p class="intro"><span class="aiw" data-ai><span>A Morpho vault spreads deposits across several Morpho Blue markets to lend them out. Vaults are managed by curators, and Morpho&#39;s factory contracts create them.</span><span class="byai">AI research</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$10.47 B</span></span><span class="sub2">on Ethereum <span class="num">$4.71 B</span></span></dd></div>
+    <div><dt>Listed</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
+    <div><dt>proxy</dt><dd><span>2 contracts</span><span class="sub2">read from the code pin</span>
+      <dl class="nest">
+        <div><dt><a href="#a-bundler3">bundler3</a></dt><dd>not a proxy</dd></div>
+        <div><dt><a href="#a-general-adapter-1">general-adapter-1</a></dt><dd>not a proxy</dd></div>
+      </dl></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>Bundler3&#39;s GitHub lists 3 audits (two by Spearbit, one by OpenZeppelin). Vault V2&#39;s GitHub lists 10 (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest). MetaMorpho&#39;s GitHub lists audits by Cantina and OpenZeppelin. <a class="aisrc" href="https://github.com/morpho-org/bundler3/tree/main/audits">source 1</a> <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">source 2</a> <a class="aisrc" href="https://github.com/morpho-org/metamorpho/tree/main/audits">source 3</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
+  </dl>
+  <p class="srcline">On 2026-11-13 the program read <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+</section>
+
+<section id="vault-hyperithm-usdc-apex-v2-9e2f">
+  <h2>Vault</h2>
+  <p class="lead"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a>: the recorded output of <code>pnpm vault-evidence</code>. Every number was asked of two providers. No conversion to US dollars here.</p>
+  <dl class="props">
+    <div><dt>Factory</dt><dd>vault-v2-factory answers <code>isVaultV2(address)</code> = true</dd><dd class="src">block 26404800</dd></div>
+    <div><dt>totalAssets now</dt><dd><span class="num">7,501,013.23 usdc</span></dd><dd class="src">2026-11-13, block 26404800</dd></div>
+    <div><dt>Holders</dt><dd><span class="num">170</span> addresses hold shares, of <span class="num">354</span> that ever received them</dd><dd class="src"></dd></div>
+    <div><dt>Largest holder</dt><dd><span class="num">51.77%</span></dd><dd class="src">of all shares</dd></div>
+    <div><dt>Top 10</dt><dd><span class="num">90.10%</span></dd><dd class="src">of all shares</dd></div>
+  </dl>
+  <h3>Monthly totalAssets</h3>
+  <div class="diagram">
+  <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
+    <title id="vt">Monthly totalAssets</title>
+    <desc id="vd">13 months, 2025-11-16 to 2026-11-13, highest 12,646,299.8 usdc</desc>
+    <text class="tick" x="16" y="18">highest 12,646,299.8 usdc</text>
+    <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
+    <rect class="bar" x="25.7" y="149" width="29.0" height="1"><title>2025-11-16: 3,329.1 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="149" width="29.0" height="1"><title>2025-12-17: 159,379.93 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">Dec</text>
+    <rect class="bar" x="122.3" y="149" width="29.0" height="1"><title>2026-01-16: 160,207.09 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="49" width="29.0" height="101"><title>2026-02-15: 10,963,761.48 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">Feb</text>
+    <rect class="bar" x="218.9" y="100" width="29.0" height="50"><title>2026-03-17: 5,442,077.73 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
+    <rect class="bar" x="267.2" y="64" width="29.0" height="86"><title>2026-04-16: 9,382,148.65 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="315.5" y="109" width="29.0" height="41"><title>2026-05-16: 4,476,881.59 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
+    <rect class="bar" x="363.8" y="98" width="29.0" height="52"><title>2026-06-15: 5,663,986.86 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="412.1" y="34" width="29.0" height="116"><title>2026-07-15: 12,646,299.8 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
+    <rect class="bar" x="460.4" y="77" width="29.0" height="73"><title>2026-08-15: 7,988,169.68 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="508.7" y="91" width="29.0" height="59"><title>2026-09-14: 6,480,559.84 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
+    <rect class="bar" x="557.0" y="52" width="29.0" height="98"><title>2026-10-14: 10,684,161.31 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar last" x="605.4" y="81" width="29.0" height="69"><title>2026-11-13: 7,501,013.23 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
+  </svg>
+  </div>
+  <div class="scrollhint">Scroll the diagram sideways</div>
+  <details class="fold">
+    <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Figures for 13 months</summary>
+    <dl class="props">
+      <div><dt class="num">2025-11-16</dt><dd class="num">3,329.1 usdc</dd></div>
+      <div><dt class="num">2025-12-17</dt><dd class="num">159,379.93 usdc</dd></div>
+      <div><dt class="num">2026-01-16</dt><dd class="num">160,207.09 usdc</dd></div>
+      <div><dt class="num">2026-02-15</dt><dd class="num">10,963,761.48 usdc</dd></div>
+      <div><dt class="num">2026-03-17</dt><dd class="num">5,442,077.73 usdc</dd></div>
+      <div><dt class="num">2026-04-16</dt><dd class="num">9,382,148.65 usdc</dd></div>
+      <div><dt class="num">2026-05-16</dt><dd class="num">4,476,881.59 usdc</dd></div>
+      <div><dt class="num">2026-06-15</dt><dd class="num">5,663,986.86 usdc</dd></div>
+      <div><dt class="num">2026-07-15</dt><dd class="num">12,646,299.8 usdc</dd></div>
+      <div><dt class="num">2026-08-15</dt><dd class="num">7,988,169.68 usdc</dd></div>
+      <div><dt class="num">2026-09-14</dt><dd class="num">6,480,559.84 usdc</dd></div>
+      <div><dt class="num">2026-10-14</dt><dd class="num">10,684,161.31 usdc</dd></div>
+      <div><dt class="num">2026-11-13</dt><dd class="num">7,501,013.23 usdc</dd></div>
+    </dl>
+  </details>
+</section>
+
+<section id="review">
+  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">The AI checked each item first and gives its advice.</p>
+  <div class="rows">
+    <div class="row" data-state="warn" data-result="hyperithm-usdc-apex-v2-9e2f/address">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t">hyperithm-usdc-apex-v2-9e2f: address confirmed in only 1 place: factory</div>
+        <div class="meta">At least 2 places must list the same address: the official page, the protocol API, CoinGecko, the vault&#39;s registered factory, the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-hyperithm-usdc-apex-v2-9e2f">see source</a></div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The program&#39;s only check is the factory: VaultV2Factory answers <code>isVaultV2</code> = true. AI opened the vault&#39;s page on the Morpho app in a browser: the name is Hyperithm USDC Apex and the curator is 0x75178137D3B4B9A0F771E0e149b00fB8167BA325, the same as the V1 vault&#39;s. AI found no Hyperithm or Morpho page that lists this address without the address being in the URL.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>First click into the vault from the Morpho app&#39;s vault list and compare the address. Send a small amount the first time.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>The Morpho app sometimes adds two more steps at the end of the bundle that send the tokens and shares left in the adapter back to you. This template accepts only the two-step version; with the two extra steps, verify returns MISMATCH.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>On MISMATCH, do not sign. Report it, then decide whether to add a template.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>On 2026-09-25 Morpho&#39;s SDK removed the Bundler3 address and listed VaultBundlesV1 (0x02912516d49dE997db75B9D7858faAE59209650B) instead; docs.morpho.org lists both. In the recorded transactions, most deposits after the end of 2026-09 go through VaultBundlesV1, so the Morpho app may no longer take this template&#39;s route. <a class="aisrc" href="https://github.com/morpho-org/sdks/commit/9ac0ea55b93225a62ddeabb1c625064319be728d">source</a></span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Before signing, check whether the Safe transaction calls Bundler3 or VaultBundlesV1. One that goes through VaultBundlesV1 needs the morpho/vault-bundles-deposit template; with this template, verify returns MISMATCH.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Within a year this vault grew from about 3,300 to about 7.5 million USDC, and reached about 12.6 million in 2026-07. The largest holder has 51.77% and the top 10 hold 90.10%.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Deposit only an amount you can accept being unable to withdraw for a while, and send a small amount first.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>Wallet display</h2>
+  <p class="lead">This Safe transaction packs 2 calls with MultiSend, which a hardware wallet cannot decode, so compare the hash on the device with the safeTxHash <code>verify</code> prints.</p>
+</section>
+
+<section id="addresses">
+  <h2>Addresses <span class="c">5</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the vault&#39;s registered factory lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <div class="rows">
+    <div class="ad" id="a-hyperithm-usdc-apex-v2-9e2f" data-state="warn">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><span class="nm">hyperithm-usdc-apex-v2-9e2f</span><span class="role"><span class="aiw" data-ai><span>USDC vault (V2) managed by Hyperithm</span><span class="byai">AI research</span></span><span class="conf">low confidence</span><span class="reviewed">AI has concerns</span></span></div>
+      <div class="body"><span class="addr">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</span>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not read</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>)</span></span></div><div class="src"><span data-state="na">CoinGecko<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>nothing to compare</span></span></div><div class="src"><span data-state="ok">factory<span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">Confirmed in only 1 place: factory</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>The vault&#39;s page on the Morpho app, opened in a browser <a class="aisrc" href="https://app.morpho.org/ethereum/vault/0x093272C07700d3cA5301C3Bf9B3A392624179E2F/hyperithm-usdc-apex">source</a></span></span><span class="aires">AI judgment: needs attention</span></span></div></div>
+    </div>
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>4 more addresses have no result for you to review</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>The token deposited into a USDC vault</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to circle-usdc (compared with <a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-bundler3" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">bundler3</span><span class="role"><span class="aiw" data-ai><span>Morpho&#39;s bundling contract. It runs each step of the bundle in order and records that the Safe started it</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>)</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div></div>
+    </div>
+    <div class="ad" id="a-vault-v2-factory" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">vault-v2-factory</span><span class="role"><span class="aiw" data-ai><span>The Morpho Vault V2 factory. It answers <code>isVaultV2</code> = true: it created this vault</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xA1D94F746dEfa1928926b84fB2596c06926C0405</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>)</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div></div>
+    </div>
+    <div class="ad" id="a-general-adapter-1" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">general-adapter-1</span><span class="role"><span class="aiw" data-ai><span>Receives the allowance, pulls the tokens for the Safe and deposits them into the vault</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/8d702da09b69baa272ad00b77e55cd197191321d/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>)</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>Past transactions</h2>
+  <p class="lead">In past records, <span class="num">32</span> transactions match the template exactly: Safe <span class="num">6</span> (2 Safes), EOA <span class="num">26</span> (17 addresses, each sending one call of the template); <span class="num">0</span> have the same shape but with an address outside the registry; <span class="num">336</span> have another shape, listed under Other ways. All of them succeeded: they were found through the Transfer records of hyperithm-usdc-apex-v2-9e2f mint (deposit), and a failed transaction leaves no such record. The latest 3 exact matches: <a href="https://etherscan.io/tx/0x882585830ebecfc6d4b6d090a6de93d3fcd5eb8e345cefa4e946ea094c5d6a1d">0x88258583…</a>, <a href="https://etherscan.io/tx/0xa56ce3d85a54c15261913f13b11c4d976088a618ffd901ef78f21d1f52f4d6f7">0xa56ce3d8…</a>, <a href="https://etherscan.io/tx/0x15133c00914537887bda6ce400281946f81609489ef15495fe755d6223cfe8e2">0x15133c00…</a>.</p>
+  <p class="intro"><span class="aiw" data-ai><span>Other Safes&#39; deposits call only <code>multicall</code>, with no approve first. EOAs mostly deposit with a permit signature instead; a Safe cannot use permit.</span><span class="byai">AI research</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Other ways</summary>
+  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>Search of hyperithm-usdc-apex-v2-9e2f mint (deposit): 489 found, 489 studied</h3>
+  <p class="lead">Recorded in <code>testdata/research/morpho-vault-deposit-v2-early.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">489 = 489</span>).</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">8</span> transactions used this operation&#39;s calls (4 Safes); <span class="num">6</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">2</span><div><div class="pcalls"><code>bundler3.multicall</code></div><div>The calls differ from the template, which is <code>approve → multicall</code><span class="f3">, from 2 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x54579efd411964b4bab3c16a18d15928e688e18647f0167e1fde4b8fc0956541">0x54579efd…</a>, <a href="https://etherscan.io/tx/0x18fb9bc20f2db2c0310a029301e01ad3e1564e4ec88c5b2469bf7e70c8388b5b">0x18fb9bc2…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA calls multicall directly</span><span><span class="num">354</span> transactions used this operation&#39;s calls (150 addresses); <span class="num">25</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">321</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> has 3 items; the template has 2<span class="f3">, from 126 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x94ba5b792613b7a04c2235f47062cf3f991524be9dffadd0fa595a16783a73ea">0x94ba5b79…</a>, <a href="https://etherscan.io/tx/0xb4942851aed13577635997ebfc8e9bf920f1c9e7b65f9097294f5711581a17b6">0xb4942851…</a>, <a href="https://etherscan.io/tx/0xfce513b160e6c89578c51d49f8e7773333ce91dd79be480133cce45b77bc7ef0">0xfce513b1…</a></div></div></div>
+    <div class="pg"><span class="pc num">7</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> has 5 items; the template has 2<span class="f3">, from 7 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xa3f3c87ad9e194f0ddb4568ab62eb3820287f00c42f8efc3391167920c94d881">0xa3f3c87a…</a>, <a href="https://etherscan.io/tx/0xaccf41c632d29bfa0950e7d2b551195a2bab5b87554a149ec35f3802ff95c938">0xaccf41c6…</a>, <a href="https://etherscan.io/tx/0xe8256e38c735e24627ebab929771ac5ad1a8938facf6bd4fda9c5b32a92385d7">0xe8256e38…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit → general-adapter-1.erc20Transfer → general-adapter-1.erc20Transfer</code></div><div><code>bundle</code> has 4 items; the template has 2<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x0a20e92838cf8e0bab4cc2d6060d14c0434d4ae5828666b3aba2eb3a7b0eb318">0x0a20e928…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>127 more are other operations, not counted: <code>hyperithm-usdc-apex-v2-9e2f.deposit</code> 62, <code>0x3151cEE0cdb517C0E7Db2B55FF5085e7D1809d90.0xbaae8abf</code> 32, <code>0x7583D7f36635E5642713ACCBdEd717ca59fdad07.0x0af210a1</code> 26, <code>0xd77F9a9F2b0C160dB3e9dC2Cce370c1a740C76fc.0xfcf2849f</code> 3, and others.</span></div>
+  <h3>Search of hyperithm-usdc-apex-v2-9e2f mint (deposit): 170 found, 98 studied</h3>
+  <p class="lead">Recorded in <code>testdata/research/morpho-vault-deposit-v2.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">170 = 170</span>).</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">1</span> transaction used this operation&#39;s calls (1 Safe); <span class="num">0</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>bundler3.multicall</code></div><div>The calls differ from the template, which is <code>approve → multicall</code><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xac9058632b750b6804d85b5c8c0a7e14d15e0b25df30c2572808e09383d0dbf2">0xac905863…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA calls multicall directly</span><span><span class="num">11</span> transactions used this operation&#39;s calls (8 addresses); <span class="num">2</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">8</span><div><div class="pcalls"><code>usdc.permit → general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> has 3 items; the template has 2<span class="f3">, from 5 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x270081b58860e246da307b0e360b0c2cf0a76ec7a136dc94c8e14433649c6414">0x270081b5…</a>, <a href="https://etherscan.io/tx/0x7a32d82d81722262b7fba5a060f16a878a8a9657061bd3e6b38d69e884fe034b">0x7a32d82d…</a>, <a href="https://etherscan.io/tx/0x7f308e0ed05c57cb848146699b9fd28410372d9bc0643b86799eb72e5a6b1cf9">0x7f308e0e…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>general-adapter-1.erc20TransferFrom → general-adapter-1.erc4626Redeem → general-adapter-1.erc4626Deposit</code></div><div><code>bundle</code> has 3 items; the template has 2<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xba939d349655bc3ca4038a711d909406e2f678a12837e3c1e7f8faf80fefc660">0xba939d34…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>86 more are other operations, not counted: <code>hyperithm-usdc-apex-v2-9e2f.multicall</code> 73, <code>0x3151cEE0cdb517C0E7Db2B55FF5085e7D1809d90.0xbaae8abf</code> 3, <code>hyperithm-usdc-apex-v2-9e2f.deposit</code> 2, <code>hyperithm-usdc-apex-v2-9e2f.withdraw</code> 2, and others.</span></div>
+  </details>
+</section>
+
+<section id="next">
+  <h2>Next steps</h2>
+  <ol class="steps">
+    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>bin/kiss-sign template approve morpho/vault-deposit</code></pre>
+      <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
+    <li><div>Make the card<pre class="cmd"><code>bin/kiss-sign card new morpho/vault-deposit</code></pre>
+      <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
+    <li><div><code>vault</code>: it lists the contracts you can pick, each with its full address. Pick <a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a>, address <span class="addr">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</span>
+      <p class="then">The numbers in the list may differ from someone else&#39;s, so pick by name; you can also type the name <code>hyperithm-usdc-apex-v2-9e2f</code>.</p></div></li>
+    <li><div><code>amount</code>: type the amount of usdc in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
+      <p class="then">It prints it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
+    <li><div>minimum received (<code>min-shares</code>): you do not type it. The protocol&#39;s app fills this value without asking its user, so the program computes it.
+      <p class="then">It reads <code>previewDeposit</code> on chain, uses the answer only when both providers agree, prints the expected amount of hyperithm-usdc-apex-v2-9e2f, then takes 0.10% less (the protocol&#39;s default 0.03% plus a 0.07% margin), rounded down.</p>
+      <p class="then">Source of the default: <a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24">github.com/morpho-org/sdks</a>. Check that the expected amount and the final number it prints are reasonable.</p></div></li>
+    <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
+      <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
+    <li><div>Propose the transaction in the Safe web app (the first time you use this template or this vault, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>: it prints the safeTxHash and the path of a page with the domain hash, the message hash and the checklist. Go on.</p>
+      <p class="then"><code>MISMATCH</code> or <code>UNVERIFIABLE</code>: do not sign. Read the checks it lists, then the AI judgment under &#34;<a href="#review">To review</a>&#34; in this report, which may explain why.</p></div></li>
+    <li><div>Hardened tier: on an independent computer, run<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">Compare the hashes it computes with the hardware wallet, and its page&#39;s checklist row by row with the <code>verify</code> page.</p></div></li>
+    <li><div>Compare the domain hash and the message hash on the hardware wallet character by character with the <code>verify</code> page. Sign only if they are the same.
+      <div class="hash"><span>Compare</span><span class="f2">the domain hash and the message hash, each 0x followed by 64 characters</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>What the program does at each signing</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>The transaction has only these 2 calls, counting each call inside a MultiSend</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every argument follows the rules above, and encoding them again gives exactly the same bytes</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, the usdc the Safe gives is exactly the amount you type</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, the Safe receives hyperithm-usdc-apex-v2-9e2f</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>No allowance is higher after the transaction</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every registry contract the card uses still runs the code its code pin records</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">Written by <code>pnpm report morpho/vault-deposit --vault-of hyperithm-usdc-apex-v2-9e2f --record</code> from <code>templates/morpho/vault-deposit/template.json</code>, <code>templates/morpho/vault-deposit/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/morpho-vault-deposit/hyperithm-usdc-apex-v2-9e2f.json</code>, <code>testdata/abi</code>, <code>testdata/research/morpho-vault-deposit-v2-early.json</code>, <code>testdata/research/morpho-vault-deposit-v2.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/morpho/vault-deposit/notes.json</code>, <code>templates/morpho/vault-deposit/vaults/hyperithm-usdc-apex-v2-9e2f/notes.json</code>; the data was read on 2026-11-13. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>

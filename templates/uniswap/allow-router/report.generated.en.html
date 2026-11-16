@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>uniswap/allow-router report</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.callh .what{font-size:16px;font-weight:590}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.src{display:flex;flex-direction:column;gap:4px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:16px;font-size:var(--t-small);color:var(--fg2)}
+.ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs .byai{margin-right:8px}
+.aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>Give Uniswap&#39;s Universal Router a Permit2 allowance for one token</span><span class="byai">AI research</span></span></h1>
+  <span class="opid">uniswap/allow-router</span>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>approve</code> on Permit2 so that Universal Router 2.1.2 can pull the token you pick from the Safe through Permit2. The amount is 2^160-1 (Permit2&#39;s unlimited), and the app sets the expiry, usually 30 days. The router pulls tokens only from the address that calls it, so only the Safe&#39;s own later swaps can use it.</span><span class="byai">AI research</span></span></p>
+  <ul class="checks">
+    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">7 / 7</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 7 addresses are confirmed in at least 2 places: the official page, the protocol API, CoinGecko, the vault&#39;s registered factory, the bug bounty scope, the SDK package or a shared deployer lists the same address.</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">6 / 6</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify&#39;s source, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts. universal-router-2.1.2: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under &#34;Code unchanged&#34;.</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">7 / 7</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped. No ABI proof compares the code universal-router-2.1.2 runs today, so the report reads it at the latest block and compares it with the current code pin.</span></span></li>
+    <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>Parameter checks <span class="n num">no tests</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The template has arguments that take any value, but no perturbation test is recorded, so the program has not tested them.</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result.</span></span></li>
+  </ul>
+  <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>The allowance goes only to the router. The router pulls tokens only from the Safe that calls it, so while the allowance stays, only the Safe can use it.</span><span class="byai">AI research: OK to use</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
+    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>Flow <span class="c">1 call</span></h2>
+  <p class="lead">Solid lines are the Safe&#39;s calls, dashed lines what a contract does inside, green lines what you get.</p>
+  <div class="diagram">
+  <svg viewBox="0 0 660 136" role="img" aria-labelledby="dt dd">
+    <title id="dt">Transaction flow</title>
+    <desc id="dd">Call 1: the Safe calls approve on permit2.</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="128"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">your Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">sender</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="128"/>
+    <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">permit2</text><text class="nodes" x="280" y="50" text-anchor="middle">allowance contract</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">Scroll the diagram sideways</div>
+  <div class="key">
+    <span class="k0">Who decides</span>
+    <span><span class="who you">you pick</span>picked at each signing</span>
+    <span><span class="who">fixed</span>any change is a MISMATCH</span>
+    <span><span class="who app">app fills, any value</span>another value gives the same result or the transaction fails</span>
+  </div>
+  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below.No perturbation test is recorded to serve as an example, so values decided at each signing show only their rule.</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">permit2.</span>approve</span><span class="sel">0x87517c45</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/permit2/concepts/allowance-transfer">developers.uniswap.org/llms.mdx/docs/protocols/permit2</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
+    <div class="arg" data-field="1.approve.token">
+      <div class="nm"><span class="pn">token</span><span class="who you">you pick: token</span></div>
+      <div class="val"><div class="is">the token you pick</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The token the allowance is for.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.approve.spender">
+      <div class="nm"><span class="pn">spender</span><span class="who">fixed</span></div>
+      <div class="val"><div class="raw">0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85</div><div class="is"><a href="#a-universal-router-2.1.2">universal-router-2.1.2</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The spender contract: Universal Router 2.1.2.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.approve.amount">
+      <div class="nm"><span class="pn">amount</span><span class="who">fixed</span></div>
+      <div class="val"><div class="raw">1461501637330902918203684832716283019655932542975</div><div class="is">a fixed value</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance amount, 2^160-1, Permit2&#39;s unlimited. Using it does not reduce it.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.approve.expiration">
+      <div class="nm"><span class="pn">expiration</span><span class="who app">app fills, any value</span></div>
+      <div class="val"><div class="is">differs each time <span class="f3">tested with other values: the same result or the transaction fails</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When the allowance expires. The app sets it 30 days ahead; the verify page shows it.</span></span></div></div>
+    </div>
+  </div>
+  <h3>After the transaction</h3>
+  <dl class="props">
+    <div><dt>the token you pick allowance through Permit2 for <a href="#a-universal-router-2.1.2">universal-router-2.1.2</a></dt><dd class="">may remain, any amount</dd><dd class="src">its expiry is kept in Permit2; the verify page shows it</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-uniswap-v4">
+  <h2>uniswap-v4</h2>
+  <p class="intro"><span class="aiw" data-ai><span>Uniswap: the largest decentralized exchange on Ethereum. All v4 pools live in one PoolManager contract.</span><span class="byai">AI research</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$1.00 B</span></span><span class="sub2">on Ethereum <span class="num">$634.12 M</span></span></dd></div>
+    <div><dt>Listed</dt><dd><span><span class="num">2025-01-29</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
+    <div><dt>proxy</dt><dd><span>not a proxy</span><span class="sub2"><a href="#a-permit2">permit2</a>, read from the code pin</span></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>The v4 core and periphery contracts and the Universal Router all have public audit reports (OpenZeppelin, Spearbit, Certora and others), in each repo&#39;s audits folder. <a class="aisrc" href="https://github.com/Uniswap/v4-core/tree/main/docs/security/audits">source 1</a> <a class="aisrc" href="https://github.com/Uniswap/universal-router/tree/main/audits">source 2</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
+  </dl>
+  <p class="srcline">On 2026-11-16 the program read <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+</section>
+
+<section id="review">
+  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>1</span></span></h2>
+  <p class="lead">The AI checked each item first and gives its advice.</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Allowances that stay after the transaction: the Safe&#39;s unlimited allowance to Permit2, and the 2^160-1, 30-day allowance to the Universal Router inside Permit2. The router pulls tokens only from the address that calls it, so only the Safe&#39;s own later transactions can use it.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To revoke, call approve(Permit2, 0) on the token, or call lockdown on Permit2.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>Wallet display <span class="c">ERC-7730 descriptors</span></h2>
+  <p class="lead">A hardware wallet shows each call with an ERC-7730 descriptor.</p>
+  <dl class="props two">
+    <div><dt>1 permit2.approve</dt><dd class="f3">no descriptor; the wallet shows only raw data</dd></div>
+  </dl>
+</section>
+
+<section id="addresses">
+  <h2>Addresses <span class="c">7</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the vault&#39;s registered factory lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <div class="rows">
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>7 more addresses have no result for you to review</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>A token you can pick: USDC, issued by Circle</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to circle-usdc (compared with <a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">deployer 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name FiatTokenProxy, creator 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911 <a class="aisrc" href="https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    <div class="ad" id="a-usdt" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">usdt</span><span class="role"><span class="aiw" data-ai><span>A token you can pick: USDT, issued by Tether</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to tether (compared with <a href="https://defillama.com/protocol/tether">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x36928500bc1dcd7af6a2b4008875cc336b927d57">deployer 0x36928500Bc1dCd7af6a2B4008875CC336b927D57</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name TetherToken, creator 0x36928500Bc1dCd7af6a2B4008875CC336b927D57 <a class="aisrc" href="https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    <div class="ad" id="a-morpho" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">morpho</span><span class="role"><span class="aiw" data-ai><span>A token you can pick: Morpho&#39;s governance token</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x937ce2d6c488b361825d2db5e8a70e26d48afed5">deployer 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name ERC1967Proxy, creator 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5 <a class="aisrc" href="https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    <div class="ad" id="a-cbbtc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>A token you can pick: cbBTC, issued by Coinbase</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/coinbase">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name FiatTokenProxy, creator 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05 <a class="aisrc" href="https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    <div class="ad" id="a-permit2" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">permit2</span><span class="role"><span class="aiw" data-ai><span>Uniswap&#39;s Permit2: it keeps token allowances for users, and moves tokens only as a user&#39;s allowances in Permit2 permit</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x000000000022D473030F116dDEE9F6B43aC78BA3</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments">developers.uniswap.org/llms.mdx/docs/protocols/v4</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts">github.com/Uniswap/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>, <a href="https://github.com/uniswap">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.npmjs.com/package/@uniswap/permit2-sdk/v/1.4.1">npm @uniswap/permit2-sdk@1.4.1</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>, <a href="https://github.com/uniswap">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xd32ff78579352ca78f416120a9f68b65c410871b">deployer 0xD32Ff78579352cA78f416120A9f68b65c410871b</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 3 places: official page, github.com/Uniswap/sdks, npm @uniswap/permit2-sdk@1.4.1</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name Permit2 (verified, solc 0.8.17), creator 0xd32ff78579352ca78f416120a9f68b65c410871b <a class="aisrc" href="https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3#code">source</a></span></span><span class="aires">AI judgment: no problem</span></span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Permit2 source code: no owner, no proxy; AllowanceTransfer transfers only when a spender the owner has approved calls it <a class="aisrc" href="https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    <div class="ad" id="a-universal-router-2.1.2" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">universal-router-2.1.2</span><span class="role"><span class="aiw" data-ai><span>Uniswap&#39;s Universal Router 2.1.2: it runs swaps from a list of commands, and pulls tokens through Permit2 only from the address that calls it</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments">developers.uniswap.org/llms.mdx/docs/protocols/v4</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json">github.com/Uniswap/universal-router</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>, <a href="https://github.com/uniswap">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.npmjs.com/package/@uniswap/universal-router-sdk/v/5.17.0">npm @uniswap/universal-router-sdk@5.17.0</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to uniswap-v4 (compared with <a href="https://defillama.com/protocol/uniswap-v4">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/uniswap">CoinGecko</a>, <a href="https://github.com/uniswap">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x2179a60856e37dfeaaca0ab043b931fe224b27b6">deployer 0x2179a60856E37dfeAacA0ab043B931fE224b27B6</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 3 places: official page, github.com/Uniswap/universal-router, npm @uniswap/universal-router-sdk@5.17.0</div>
+        <div class="confirmed">No call goes to this contract directly, so it has no ABI proof. At each signing whose card uses it, the program checks that its code is still the code pin&#39;s.</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: contract name UniversalRouter (verified, solc 0.8.26), creator 0x2179a60856e37dfeaaca0ab043b931fe224b27b6 <a class="aisrc" href="https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85#code">source</a></span></span><span class="aires">AI judgment: no problem</span></span><span><span class="aiw" data-ai><span class="byai">AI</span><span>The Uniswap trading API&#39;s spec states that it uses 2.1.2 by default when no version is given, which is the router the app sends transactions to today <a class="aisrc" href="https://trade-api.gateway.uniswap.org/v1/api.json">source</a></span></span><span class="aires">AI judgment: no problem</span></span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Verified source code: every Permit2 transfer uses msgSender() (the address that calls execute) as the payer; no owner and no proxy <a class="aisrc" href="https://sourcify.dev/server/v2/contract/1/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    <div class="ad" id="a-usp" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">usp</span><span class="role"><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">docs.piku.co/piku/piku-platform</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to piku-finance (compared with <a href="https://defillama.com/protocol/piku-finance">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/piku-utility-token">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xb8eaa4f956c6324435f4088cae9cda974c358508">deployer 0xB8eaa4f956C6324435f4088cAe9cDa974C358508</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>Past transactions</h2><p class="lead">No past transactions were studied for this operation.</p>
+</section>
+
+<section id="next">
+  <h2>Next steps</h2>
+  <ol class="steps">
+    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>bin/kiss-sign template approve uniswap/allow-router</code></pre>
+      <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
+    <li><div>Make the card<pre class="cmd"><code>bin/kiss-sign card new uniswap/allow-router</code></pre>
+      <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
+    <li><div><code>token</code>: it lists each token you can pick, with its full address. Pick the one you want; both its name and its full address must be right.</div></li>
+    <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
+      <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
+    <li><div>Propose the transaction in the Safe web app, copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>: it prints the safeTxHash and the path of a page with the domain hash, the message hash and the checklist. Go on.</p>
+      <p class="then"><code>MISMATCH</code> or <code>UNVERIFIABLE</code>: do not sign. Read the checks it lists, then the AI judgment under &#34;<a href="#review">To review</a>&#34; in this report, which may explain why.</p></div></li>
+    <li><div>Hardened tier: on an independent computer, run<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">Compare the hashes it computes with the hardware wallet, and its page&#39;s checklist row by row with the <code>verify</code> page.</p></div></li>
+    <li><div>Compare the domain hash and the message hash on the hardware wallet character by character with the <code>verify</code> page. Sign only if they are the same.
+      <div class="hash"><span>Compare</span><span class="f2">the domain hash and the message hash, each 0x followed by 64 characters</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>What the program does at each signing</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>The transaction has only this call, counting each call inside a MultiSend</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every argument follows the rules above, and encoding them again gives exactly the same bytes</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, no balance of the Safe may change at all</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>No allowance is higher after the transaction, except those &#34;After the transaction&#34; above lists as allowed to remain</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every registry contract the card uses still runs the code its code pin records</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">Written by <code>pnpm report uniswap/allow-router --record</code> from <code>templates/uniswap/allow-router/template.json</code>, <code>templates/uniswap/allow-router/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/uniswap-allow-router.json</code>, <code>testdata/abi</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/uniswap/allow-router/notes.json</code>; the data was read on 2026-11-16. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>

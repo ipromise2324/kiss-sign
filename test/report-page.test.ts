@@ -46,30 +46,33 @@ before(async () => {
   depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(ROOT, depositTemplate, registry), example: firstRecordedTx(ROOT, depositTemplate, depositReplayed.inputs.registry) };
   depositNotes = readNotes(ROOT, deposit.template, registry.entries.get(deposit.cardVault));
   depositTitle = depositReplayed.title;
-  depositPage = buildPage(depositInputs, depositNotes, depositTitle);
+  depositPage = buildPage(depositInputs, depositNotes, depositTitle, 'zh-TW');
   const replayed = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
   title = replayed.title;
   template = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
   inputs = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) };
 });
 
+/** One AI text, the same in both languages. */
+const both = (text: string) => ({ en: text, 'zh-TW': text });
+
 /** Notes that hold exactly what the scope requires, each text naming its key, so a page row can be traced to its note. */
 function notesFor(of: HtmlInputs): Record<string, unknown> {
-  const scope = notesScope(of, judge(of, of.fixtures), of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report'));
+  const scope = notesScope(of, judge(of, of.fixtures), of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report'), 'zh-TW');
   return {
-    title: 'title',
-    summary: 'summary',
-    verdict: { status: 'caution', text: 'verdict' },
-    flow: [{ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text: 'supply' }],
-    protocols: Object.fromEntries([...scope.protocols].map(([slug]) => [slug, { intro: `intro ${slug}`, audits: { text: 'audits' }, incidents: [] }])),
-    judgments: [{ text: 'judgment', recommendation: 'small first' }],
-    reviews: Object.fromEntries(scope.reviews.map((id) => [id, { status: 'concern', text: `review ${id}`, recommendation: 'look' }])),
-    entries: Object.fromEntries([...scope.routed].map((name) => [name, { role: `role ${name}`, sources: [{ text: 'implementation history', url: 'https://etherscan.io/', result: 'pass' }] }])),
-    fields: Object.fromEntries(scope.fields.map((key) => [key, `field ${key}`])),
+    title: both('title'),
+    summary: both('summary'),
+    verdict: { status: 'caution', text: both('verdict') },
+    flow: [{ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text: both('supply') }],
+    protocols: Object.fromEntries([...scope.protocols].map(([slug]) => [slug, { intro: both(`intro ${slug}`), audits: { text: both('audits') }, incidents: [] }])),
+    judgments: [{ text: both('judgment'), recommendation: both('small first') }],
+    reviews: Object.fromEntries(scope.reviews.map((id) => [id, { status: 'concern', text: both(`review ${id}`), recommendation: both('look') }])),
+    entries: Object.fromEntries([...scope.routed].map((name) => [name, { role: both(`role ${name}`), sources: [{ text: both('implementation history'), url: 'https://etherscan.io/', result: 'pass' }] }])),
+    fields: Object.fromEntries(scope.fields.map((key) => [key, both(`field ${key}`)])),
   };
 }
 
-const pageOf = (of: HtmlInputs): Page => buildPage(of, notesFor(of), title);
+const pageOf = (of: HtmlInputs): Page => buildPage(of, notesFor(of), title, 'zh-TW');
 
 function oneCall(of: HtmlInputs, n: number): HtmlInputs {
   const subject = of.subject.kind === 'template' ? of.subject : assert.fail('a template report');
@@ -77,7 +80,7 @@ function oneCall(of: HtmlInputs, n: number): HtmlInputs {
   return { ...of, subject: { ...subject, template: { ...subject.template, calls: [call] } }, example: undefined, fixtures: [] };
 }
 
-const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), flow: [] }, title);
+const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), flow: [] }, title, 'zh-TW');
 
 function templatePage(id: string): Page {
   const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
@@ -108,7 +111,7 @@ test('each argument says who decides it and prints what cast decode-calldata pri
 
   const value = arg(page, '1.approve.value');
   assert.deepEqual(value.chips, [{ who: 'you-type', label: '你填：金額' }]);
-  assert.deepEqual(value.value, { cast: '72159646110', example: '例' });
+  assert.deepEqual(value.value, { cast: '72159646110', example: 'example' });
   assert.equal(plain(value.words), '72,159.64611 usdc');
   assert.equal(plain(value.qualifier), '6 位小數');
 
@@ -177,7 +180,7 @@ test('a container prints its summary in place of the hex and nests its parts; a 
   assert.equal(leaf(first, 'skipRevert'), 'false');
   assert.equal(leaf(first, 'callbackHash'), `0x${'0'.repeat(64)}`);
   const amount = arg(depositPage, '1.approve.value').value;
-  assert.equal(amount?.example, '例');
+  assert.equal(amount?.example, 'example');
   assert.deepEqual(leaf(data(first), 'amount'), amount?.cast);
   assert.deepEqual(leaf(data(second), 'assets'), amount?.cast);
   assert.equal(leaf(data(first), 'receiver')?.toLowerCase(), adapter);
@@ -200,13 +203,13 @@ test('without a recorded test transaction a card or free value prints its rule o
 
 test('a per-vault report takes its example from a test transaction of its own vault, or says that vault has none', () => {
   assert.match(plain(body(depositPage, 'flow').flow.example), /^標「例」的.*取自 hyperithm-usdc-apex-v2-9e2f 的第一筆測試交易 /);
-  const none = buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle);
+  const none = buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle, 'zh-TW');
   assert.equal(plain(body(none, 'flow').flow.example), 'hyperithm-usdc-apex-v2-9e2f 沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。');
 });
 
 test("an example value that is the test transaction's Safe says it is another Safe, and a long amount shows six places with its base units", () => {
   const all = (rows: readonly ArgRow[]): ArgRow[] => rows.flatMap((r) => [r, ...all(r.parts.flatMap((p) => p.rows))]);
-  const fromSafe = all(args(depositPage)).filter((r) => r.value?.example === '例：別的 Safe');
+  const fromSafe = all(args(depositPage)).filter((r) => r.value?.example === 'other-safe');
   assert.ok(fromSafe.length > 0 && fromSafe.every((r) => plain(r.words) === '你的 Safe'), fromSafe.map((r) => r.key).join(' / '));
   assert.match(plain(body(depositPage, 'flow').flow.example), /約 973,551\.731159 hyperithm-usdc-apex-v2-9e2f（973551731159989631767877 最小單位）。$/);
 });
@@ -217,7 +220,7 @@ test('交易後 says which way a token the Safe gives or gets more than nothing 
   const gives = effects.gives.map((e) => ({ ...e, amount: { kind: 'positive' as const } }));
   const gets = effects.gives.map((e) => ({ ...e, to: undefined, amount: { kind: 'positive' as const } }));
   const template = { ...subject.template, effects: { ...effects, gives, gets } };
-  const page = buildPage({ ...depositInputs, subject: { ...subject, template } }, depositNotes, depositTitle);
+  const page = buildPage({ ...depositInputs, subject: { ...subject, template } }, depositNotes, depositTitle, 'zh-TW');
   const values = body(page, 'flow').flow.after.map((row) => plain(row.value));
   assert.ok(values.includes('給出多於 0') && values.includes('收到多於 0'), values.join(' / '));
 });
@@ -225,7 +228,7 @@ test('交易後 says which way a token the Safe gives or gets more than nothing 
 test('下一步 asks for each card field by its Chinese word with the key card new prints, and a typed amount of vault shares is 股份數', () => {
   const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
   const card = new Map([...subject.template.card].map(([name, field]) => [name, field.kind === 'amount' ? { ...field, computed: undefined } : field]));
-  const typed = buildPage({ ...depositInputs, subject: { ...subject, template: { ...subject.template, card } } }, depositNotes, depositTitle);
+  const typed = buildPage({ ...depositInputs, subject: { ...subject, template: { ...subject.template, card } } }, depositNotes, depositTitle, 'zh-TW');
   const asked = body(typed, 'next').steps.map((s) => plain(s.say).split('：')[0]);
   assert.ok(asked.includes('金庫（vault）'), asked.join(' / '));
   assert.ok(asked.includes('金額（amount）'), asked.join(' / '));
@@ -238,7 +241,7 @@ test('two official pages of one entry that share a short URL are each named with
   const moved = { ...bundler3, source: more.url.replace(/addresses\.ts$/, 'README.md') as typeof bundler3.source };
   const entries = new Map([...depositInputs.registry.entries].map(([name, entry]) => [name, name === 'bundler3' ? moved : entry]));
   const moved3 = { ...depositInputs, registry: { ...depositInputs.registry, entries, byAddress: new Map([...entries.values()].map((e) => [e.address, e])) } };
-  const page = buildPage(moved3, { ...notesFor(moved3), flow: [] }, depositTitle);
+  const page = buildPage(moved3, { ...notesFor(moved3), flow: [] }, depositTitle, 'zh-TW');
   const { open, folded } = body(page, 'addresses');
   const row = [...open, ...folded].find((r) => r.name === 'bundler3') ?? assert.fail('the bundler3 row');
   assert.deepEqual(row.sources.slice(0, 2).map((s) => s.label), ['github.com/morpho-org/sdks/…/README.md', 'github.com/morpho-org/sdks/…/addresses.ts']);
@@ -289,7 +292,7 @@ test('the wallet rows match a descriptor by each array item, by argument name wi
 test("a per-vault report shows its vault as the card's value, with or without a test transaction", () => {
   const vault = (page: Page) => arg(page, '2.multicall.bundle').parts.flatMap((g) => g.rows)[1]?.parts.flatMap((g) => g.rows).find((r) => r.name === 'data')?.parts.flatMap((g) => g.rows).find((r) => r.name === 'vault');
   const hyperithm = registry.entries.get('hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the vault');
-  for (const page of [depositPage, buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle)]) {
+  for (const page of [depositPage, buildPage({ ...depositInputs, example: undefined }, depositNotes, depositTitle, 'zh-TW')]) {
     const row = vault(page) ?? assert.fail('the vault row');
     assert.equal(row.value?.cast.toLowerCase(), hyperithm.address);
     assert.equal(row.value?.example, undefined);
@@ -324,7 +327,7 @@ test("a per-vault report shows the vault's stored evidence after the protocol, w
 test('a month the providers disagree on reads 讀不到 and draws no bar', () => {
   const name = 'hyperithm-usdc-apex-v2-9e2f';
   const text = (depositInputs.vaults.get(name) ?? assert.fail('stored evidence')).replace(/(2026-07-15 {2}block \d+ {2}).*/, '$1UNVERIFIABLE eth_call: alchemy and drpc disagree');
-  const { vault } = body(buildPage({ ...depositInputs, vaults: new Map([[name, text]]) }, depositNotes, depositTitle), 'vault');
+  const { vault } = body(buildPage({ ...depositInputs, vaults: new Map([[name, text]]) }, depositNotes, depositTitle, 'zh-TW'), 'vault');
   assert.deepEqual(vault.bars.find((b) => b.date === '2026-07-15'), { date: '2026-07-15', words: '讀不到', share: undefined });
   assert.equal(vault.most, '10,963,761.48 usdc');
 });
@@ -348,12 +351,12 @@ test('the vault its factory alone confirms is the one 待確認; every address r
   assert.deepEqual(
     vault.sources.map((s) => [s.label, s.state, s.phrase, s.site === undefined ? undefined : [s.site.state, s.site.slug, s.site.places[0]?.href]]),
     [
-      ['app.morpho.org/ethereum/vault', 'na', '讀不到', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
-      ['CoinGecko', 'na', '沒資料可比', undefined],
+      ['app.morpho.org/ethereum/vault', 'na', 'unread', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
+      ['CoinGecko', 'na', 'nothing-to-compare', undefined],
       ['工廠', 'ok', undefined, undefined],
     ],
   );
-  assert.deepEqual(vault.aiSources.map((s) => [s.text.tag, s.result]), [['AI', 'AI 判斷：要注意']]);
+  assert.deepEqual(vault.aiSources.map((s) => [s.text.tag, s.result]), [['ai', 'attention']]);
 });
 
 test('each past-transactions recording names the entry its search anchored on', () => {
@@ -365,7 +368,7 @@ test('each past-transactions recording names the entry its search anchored on', 
 test('a mint of a token that is not a vault is a mint, not a deposit', () => {
   const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
   const pastTxs = depositInputs.pastTxs.map((r) => ({ ...r, query: { ...r.query, token: usdc.address } }));
-  const page = buildPage({ ...depositInputs, pastTxs }, depositNotes, depositTitle);
+  const page = buildPage({ ...depositInputs, pastTxs }, depositNotes, depositTitle, 'zh-TW');
   for (const r of body(page, 'past').recordings) assert.match(r.count, /^搜尋 usdc 的鑄造，/);
 });
 
@@ -420,8 +423,8 @@ test('the two oracles only the protocol API confirms are the rows to review, ope
   assert.deepEqual(
     addresses.open.map((r) => [r.name, r.confidence, r.reviewed, r.confirmed]),
     [
-      ['morpho-oracle-cbbtc-usdc-86', 'low', 'AI 有疑慮', '只在 1 個地方確認：協議 API'],
-      ['morpho-oracle-usp-usdc', 'low', 'AI 有疑慮', '只在 1 個地方確認：協議 API'],
+      ['morpho-oracle-cbbtc-usdc-86', 'low', 'concern', '只在 1 個地方確認：協議 API'],
+      ['morpho-oracle-usp-usdc', 'low', 'concern', '只在 1 個地方確認：協議 API'],
     ],
   );
   assert.equal(addresses.folded.length, 6);
@@ -537,7 +540,7 @@ test('過去交易 leads with how many past transactions were exactly the templa
   );
   const noFits = depositInputs.pastTxs.map((p) => ({ ...p, run: { ...p.run, studies: p.run.studies.filter((s) => s.kind !== 'fit') } }));
   assert.equal(
-    plain(body(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle), 'past').same),
+    plain(body(buildPage({ ...depositInputs, pastTxs: noFits }, depositNotes, depositTitle, 'zh-TW'), 'past').same),
     '過去的記錄裡，跟模板一模一樣的有 0 筆；形狀一樣、但有地址不在 registry 裡的有 0 筆；形狀不同的有 336 筆，列在其他做法。',
   );
   assert.equal(
@@ -545,7 +548,7 @@ test('過去交易 leads with how many past transactions were exactly the templa
     '過去的記錄裡，跟模板一模一樣的有 0 筆；形狀一樣、但用的是 registry 外的市場的有 1 筆：Safe 0 筆、EOA 1 筆（1 個地址，各自送模板的一個呼叫）；形狀不同的有 7 筆，列在其他做法。它成功執行：它是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。形狀一樣的最近 1 筆：0x2f82601d…。',
   );
   const twice = [...depositInputs.pastTxs, ...depositInputs.pastTxs];
-  assert.deepEqual(body(buildPage({ ...depositInputs, pastTxs: twice }, depositNotes, depositTitle), 'past').same, body(depositPage, 'past').same);
+  assert.deepEqual(body(buildPage({ ...depositInputs, pastTxs: twice }, depositNotes, depositTitle, 'zh-TW'), 'past').same, body(depositPage, 'past').same);
 });
 
 test('待確認 counts the program results apart from the AI judgments, in the rail and the heading', () => {
@@ -555,7 +558,7 @@ test('待確認 counts the program results apart from the AI judgments, in the r
 test('notes.json that leaves out a review the page needs is refused', () => {
   const notes = notesFor(inputs);
   assert.throws(
-    () => buildPage(inputs, { ...notes, reviews: {} }, title),
+    () => buildPage(inputs, { ...notes, reviews: {} }, title, 'zh-TW'),
     (e: unknown) => e instanceof NotesError && /morpho-oracle-cbbtc-usdc-86\/address is missing/.test(e.message),
   );
 });
@@ -610,7 +613,7 @@ async function bareCase(id: string): Promise<Page> {
   const replayed = await replayInputs(ROOT, registry, of, await warmCompilers(reportCases(ROOT, registry, [of])), loadPublicSuffixList());
   const subject = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject : assert.fail('a template report');
   const html = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, subject.template, registry), example: firstRecordedTx(ROOT, subject.template, registry) };
-  return buildPage(html, { ...notesFor(html), flow: [] }, replayed.title);
+  return buildPage(html, { ...notesFor(html), flow: [] }, replayed.title, 'zh-TW');
 }
 
 test('an ETH transfer: no address section or address strip lines, its to/value/data rules in words, and a wallet line for a call with no data', async () => {
@@ -707,7 +710,7 @@ test('an entry reached only through dependsOn shows its routes, seeds and code a
   assert.ok(markdown.includes(`| \`liquidity-layer\` | \`${checksumAddress(LAYER)}\` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above |`), 'the ABI row says why it is not proved');
 
   const ledger = judge(of, of.fixtures);
-  assert.ok(notesScope(of, ledger, of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report')).contracts.has('liquidity-layer'), 'a flow line may name what a called contract depends on');
+  assert.ok(notesScope(of, ledger, of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report'), 'zh-TW').contracts.has('liquidity-layer'), 'a flow line may name what a called contract depends on');
   const factContracts = factsScope(of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report'), of.registry, []).protocols.flatMap((p) => p.contracts.map((e) => e.name));
   assert.deepEqual(factContracts.slice(factContracts.indexOf('blue-bundles-v1'), factContracts.indexOf('blue-bundles-v1') + 2), ['blue-bundles-v1', 'liquidity-layer'], 'the protocol facts say whether what a called contract depends on is a proxy');
   const siteRow = body(pageOf(of), 'review').rows.find((r) => r.id === 'liquidity-layer/source.site') ?? assert.fail('no site review row');
@@ -785,7 +788,7 @@ test("a function named by its standard shows the standard's page, with the cavea
   const docs = subject.docs.map((d) => (d.fn.signature === 'approve(address,uint256)' ? { ...d, url: erc20.page, standard: erc20 } : d));
   const pages = new Map([...depositInputs.pages.pages, [pageUrlOf(erc20.page), { kind: 'served', blocks: [{ text: 'function approve(address _spender, uint256 _value) public returns (bool success)' }] }]]);
   const commits = new Map([...depositInputs.pages.commits, ['ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2', { kind: 'on-default', branch: 'master', status: 'behind' }]]);
-  const page = buildPage({ ...depositInputs, subject: { ...subject, docs }, pages: { ...depositInputs.pages, pages, commits } as HtmlInputs['pages'] }, depositNotes, depositTitle);
+  const page = buildPage({ ...depositInputs, subject: { ...subject, docs }, pages: { ...depositInputs.pages, pages, commits } as HtmlInputs['pages'] }, depositNotes, depositTitle, 'zh-TW');
   assert.deepEqual(callDoc(page, 1), { state: 'ok', phrase: undefined, href: erc20.page, label: 'ERC-20 標準頁', note: '標準定義這個函式，不代表合約照標準做' });
   assert.ok(renderPage(page).includes(`<a href="${erc20.page}">ERC-20 標準頁</a>`));
 });
@@ -794,9 +797,9 @@ test('a documentation page read that does not name the function shows its amber 
   const pages = new Map([...depositInputs.pages.pages].map(([url, page]) => [url, url === pageUrlOf(APPROVE_PAGE as HttpsUrl) ? { kind: 'served', blocks: [{ text: 'a page about something else' }] } : page] as const));
   const lacking = { ...depositInputs, pages: { ...depositInputs.pages, pages } } as HtmlInputs;
   const notes = depositNotes as { readonly reviews: Record<string, unknown> };
-  const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: 'review', recommendation: 'look' } };
-  const page = buildPage(lacking, { ...notes, reviews }, depositTitle);
-  assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: '頁上沒有這個函式', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
+  const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: both('review'), recommendation: both('look') } };
+  const page = buildPage(lacking, { ...notes, reviews }, depositTitle, 'zh-TW');
+  assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: 'not-on-page', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
   assert.ok(renderPage(page).includes(`github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i warn" role="img" aria-label="`));
   assert.ok(renderPage(page).includes('頁上沒有這個函式</span>'));
 });
@@ -805,9 +808,9 @@ test('a documentation page the program has no copy of shows its amber icon and �
   const pages = new Map([...depositInputs.pages.pages].filter(([url]) => url !== pageUrlOf(APPROVE_PAGE as HttpsUrl)));
   const unread = { ...depositInputs, pages: { ...depositInputs.pages, pages } };
   const notes = depositNotes as { readonly reviews: Record<string, unknown> };
-  const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: 'review', recommendation: 'look' } };
-  const page = buildPage(unread, { ...notes, reviews }, depositTitle);
-  assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: '讀不到', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
+  const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: both('review'), recommendation: both('look') } };
+  const page = buildPage(unread, { ...notes, reviews }, depositTitle, 'zh-TW');
+  assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: 'unread', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
   assert.ok(renderPage(page).includes(`github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i warn" role="img" aria-label="`));
 });
 
@@ -829,7 +832,7 @@ function withComputingFactory(first: string): { readonly of: HtmlInputs; readonl
   const stored = depositInputs.vaults.get(vault.name) ?? assert.fail('stored vault evidence');
   const of: HtmlInputs = { ...depositInputs, registry, vaults: new Map([[vault.name, [first, ...stored.split('\n').slice(1)].join('\n')]]) };
   const given = (depositNotes as { readonly reviews: Record<string, unknown> }).reviews;
-  const reviews = notesScope(of, judge(of, of.fixtures), subject.template).reviews.map((id) => [id, given[id] ?? { status: 'concern', text: `review ${id}`, recommendation: 'look' }]);
+  const reviews = notesScope(of, judge(of, of.fixtures), subject.template, 'zh-TW').reviews.map((id) => [id, given[id] ?? { status: 'concern', text: both(`review ${id}`), recommendation: both('look') }]);
   return { of, notes: { ...(depositNotes as object), reviews: Object.fromEntries(reviews) }, vault };
 }
 
@@ -838,7 +841,7 @@ test('a vault its factory admits by computing its address renders in both report
   const first = `admitted     vault-v2-factory answered computeToken(${vault.attributes.asset},"fToken") = ${checksumAddress(vault.address)} at block 26404800`;
   const { of, notes } = withComputingFactory(first);
   assert.ok(renderReport(of, depositTitle).includes(`\`\`\`text\n${first}\n`), 'the Markdown report prints the stored line');
-  const page = buildPage(of, notes, depositTitle);
+  const page = buildPage(of, notes, depositTitle, 'zh-TW');
   const factoryRow = body(page, 'vault').vault.rows.find((row) => row.label === '工廠') ?? assert.fail('no 工廠 row');
   assert.equal(plain(factoryRow.value), `vault-v2-factory 回答 computeToken(usdc,"fToken") = ${checksumAddress(vault.address)}`);
   const addresses = body(page, 'addresses');
@@ -852,10 +855,10 @@ test("a vault its factory computed another address for renders in both reports, 
   const first = `REFUSED vault-v2-factory answered computeToken(usdc,"fToken") = 0x5C20B550819128074FD538Edf79791733ccEdd18, not ${vault.name}: its official contract is another; the vault's code is not read`;
   const { of, notes } = withComputingFactory(first);
   assert.ok(renderReport(of, depositTitle).includes(`\`\`\`text\n${first}\n`), 'the Markdown report prints the stored line');
-  const page = buildPage(of, notes, depositTitle);
+  const page = buildPage(of, notes, depositTitle, 'zh-TW');
   const addresses = body(page, 'addresses');
   const row = addresses.open.find((r) => r.name === vault.name) ?? assert.fail('the vault row is not open');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: '工廠說不是它建的', site: undefined });
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: 'not-created', site: undefined });
   const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
   assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個金庫`);

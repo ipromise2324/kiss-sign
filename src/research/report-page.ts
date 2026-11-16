@@ -7,6 +7,7 @@ import type { AbiParam } from '../decode/abi.ts';
 import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
+import type { Language } from '../language.ts';
 import { MARKET_PARAMS, parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -14,21 +15,23 @@ import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { refNames, slippageBps, viewTargetNames } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef, ViewChange, ViewEffect, ViewExpectation } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
-import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
+import type { Confidence, Ledger, Phrase, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { factsScope } from './protocol-facts.ts';
 import { functionNames, isOtherOperation, misfitText } from './study.ts';
-import type { CallName, MisfitReason, OutsideKind, Sender, TxStudy } from './study.ts';
+import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
 import { readStoredEvidence } from './vault-evidence.ts';
 import type { StoredPoint } from './vault-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
 import { signedEntryNames } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
+import { WORDS } from './report-words.ts';
+import type { Words } from './report-words.ts';
 
 declare const anchorBrand: unique symbol;
 /** An id the page itself gives an element: a section, or an address row (`a-<registry name>`). A link names only these or an HttpsUrl. */
@@ -45,14 +48,18 @@ export type Span =
   | { readonly href: HttpsUrl | Anchor; readonly label: string };
 export type Inline = readonly Span[];
 
-/** AI text. Never an Inline, so the renderer prints it only through the one function that adds the dashed tag. */
-export type AiText = { readonly ai: string; readonly sources: readonly HttpsUrl[]; readonly tag: string };
+/** The dashed tag on AI text: research, a bare AI note, or the verdict's status. */
+export type AiTag = 'research' | 'ai' | 'safe' | 'caution';
 
-const research = (text: string, sources: readonly HttpsUrl[] = [], tag = 'AI 研究'): AiText => ({ ai: text, sources, tag });
+/** AI text. Never an Inline, so the renderer prints it only through the one function that adds the dashed tag. */
+export type AiText = { readonly ai: string; readonly sources: readonly HttpsUrl[]; readonly tag: AiTag };
+
+const research = (text: string, sources: readonly HttpsUrl[] = [], tag: AiTag = 'research'): AiText => ({ ai: text, sources, tag });
 
 export type RailCount = { readonly kind: 'text'; readonly text: string } | { readonly kind: 'states'; readonly counts: readonly { readonly state: State | 'ask'; readonly n: number }[] };
 
 export type Page = {
+  readonly language: Language;
   /** The operation id, and for a per-vault report the vault it covers. */
   readonly id: string;
   readonly header: Header;
@@ -88,12 +95,15 @@ export type Who = 'you-type' | 'you-pick' | 'fixed' | 'free';
 export type KeyItem = { readonly who: Who; readonly label: string; readonly means: string };
 export type Chip = { readonly who: Who; readonly label: string };
 
+/** A value from the example: of the first recorded test transaction, or naming its Safe as another Safe. */
+export type ExampleTag = 'example' | 'other-safe';
+
 export type ArgRow = {
   readonly key: string;
   readonly name: string;
   readonly chips: readonly Chip[];
   /** As `cast decode-calldata` prints it; `example` tags a value from the first recorded test transaction, naming its Safe as another Safe. */
-  readonly value: { readonly cast: string; readonly example: '例' | '例：別的 Safe' | undefined } | undefined;
+  readonly value: { readonly cast: string; readonly example: ExampleTag | undefined } | undefined;
   readonly words: Inline;
   readonly qualifier: Inline | undefined;
   readonly id: Inline | undefined;
@@ -167,7 +177,7 @@ export type WalletView =
   | { readonly kind: 'calls'; readonly calls: readonly WalletCall[]; readonly lines: readonly Inline[] };
 
 /** A result on an address row: its state, and the words a result that did not pass adds to its icon. */
-export type RowResult = { readonly state: State; readonly phrase: string | undefined };
+export type RowResult = { readonly state: State; readonly phrase: Phrase | undefined };
 /** A place a site is compared with, by its word and its page. */
 export type PlaceLink = { readonly word: string; readonly href: HttpsUrl | undefined };
 
@@ -177,8 +187,11 @@ export type SiteResult = RowResult & { readonly slug: string | undefined; readon
 export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined };
 /** A function's documentation page from docs.json, linked, with the worst of its results; a standard's page carries its caveat. */
 export type DocLine = RowResult & { readonly label: string; readonly href: HttpsUrl; readonly note: string | undefined };
-/** A source the AI checked by hand: its text and link, and its result in words, which is no program result. */
-export type AiSource = { readonly text: AiText; readonly result: 'AI 判斷：沒問題' | 'AI 判斷：要注意' | 'AI 判斷：有問題' };
+export type AiSourceResult = 'pass' | 'attention' | 'fail';
+/** A source the AI checked by hand: its text and link, and its result, which is no program result. */
+export type AiSource = { readonly text: AiText; readonly result: AiSourceResult };
+/** The AI's reviews of an entry's results: all confirmed, or one with a concern. */
+export type Reviewed = 'confirmed' | 'concern';
 
 export type AddressRow = {
   readonly anchor: Anchor;
@@ -186,7 +199,7 @@ export type AddressRow = {
   readonly state: State;
   readonly role: AiText | undefined;
   readonly confidence: Confidence;
-  readonly reviewed: 'AI 已確認' | 'AI 有疑慮' | undefined;
+  readonly reviewed: Reviewed | undefined;
   readonly address: string;
   readonly sources: readonly SourceLine[];
   /** The places that confirmed the address, in plain words. */
@@ -211,79 +224,38 @@ export type HtmlInputs = ReportInputs & {
   readonly example: { readonly name: string; readonly tx: SafeTx; readonly card: ResolvedCard } | undefined;
 };
 
-const STRIP_NAMES: Readonly<Record<StripLine | 'providers', string>> = { sources: '地址來源', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', providers: '雙節點比對' };
-const CONFIDENCE_WORDS: Readonly<Record<Confidence, string>> = { high: '高信心', medium: '中信心', low: '低信心' };
-const KIND_WORDS: Readonly<Record<RegistryEntry['kind'], string>> = {
-  token: '代幣',
-  vault: '金庫',
-  router: '路由合約',
-  multisend: 'MultiSend',
-  adapter: '轉接合約',
-  factory: '工廠合約',
-  distributor: '發放合約',
-  bridge: '跨鏈橋',
-  lending: '借貸合約',
-  oracle: '價格來源',
-  irm: '利率模型',
-  allowance: '授權合約',
-  singleton: 'Safe 合約本體',
-};
-const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', adapter: '轉接合約', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
-
-/** A card field's word from its kind; a typed amount by what it counts: 股份數 for a vault's own shares, 金額 for an asset or ETH. */
-function kindWord(field: CardField, template: Template): string {
+/** A card field's word from its kind; a typed amount by what it counts: shares for a vault's own shares, an amount for an asset or ETH. */
+function kindWord(field: CardField, template: Template, w: Words): string {
   switch (field.kind) {
     case 'contract':
-      return KIND_WORDS[field.scope.registryKind];
+      return w.kind[field.scope.registryKind];
     case 'amount': {
-      if (field.computed !== undefined) return field.computed.bound === 'floor' ? '最少收到的數量' : '最多付出的數量';
+      if (field.computed !== undefined) return field.computed.bound === 'floor' ? w.field.floor : w.field.ceiling;
       const of = field.of === 'eth' || field.of.attribute !== undefined ? undefined : template.card.get(field.of.field);
-      return of?.kind === 'contract' && of.scope.registryKind === 'vault' ? '股份數' : '金額';
+      return of?.kind === 'contract' && of.scope.registryKind === 'vault' ? w.field.shares : w.field.amount;
     }
     case 'address':
-      return '地址';
     case 'recipient':
-      return '收款人';
     case 'nonce':
-      return 'nonce';
     case 'owner':
-      return '簽署人';
     case 'threshold':
-      return '門檻';
     case 'market':
-      return '市場';
     case 'percent':
-      return '百分比';
+      return w.field[field.kind];
   }
 }
 
 /** A card field in the signer's words, from its kind; with its name in brackets when another field of the template has the same word. */
-function fieldWord(template: Template, name: string): string {
+function fieldWord(template: Template, name: string, w: Words): string {
   const field = template.card.get(name);
   if (field === undefined) return name;
-  const word = kindWord(field, template);
-  return [...template.card.values()].filter((f) => kindWord(f, template) === word).length > 1 ? `${word}（${name}）` : word;
+  const word = kindWord(field, template, w);
+  return [...template.card.values()].filter((f) => kindWord(f, template, w) === word).length > 1 ? w.named(word, name) : word;
 }
 
 /** A card reference in the signer's words: the field, and the attribute or market part it names. */
-const refWord = (template: Template, ref: CardRef): string =>
-  ref.attribute === undefined ? fieldWord(template, ref.field) : before(`${fieldWord(template, ref.field)}的`, PART_WORDS[ref.attribute] ?? ref.attribute);
-
-/** Chinese text before a word, with a space only when the word starts in Latin script or a digit. */
-const before = (prefix: string, word: string): string => (/^[A-Za-z0-9]/.test(word) ? `${prefix} ${word}` : `${prefix}${word}`);
-const FREE_WORDS: Readonly<Record<FreeClaim, string>> = {
-  scalar: '換成別的值測過，結果不變或交易失敗',
-  proof: '合約會驗證它，換成別的值交易就失敗',
-  unread: '合約不讀它，換成別的值結果一樣',
-  route: '換成別的值測過，會走別的池子，收到的仍不少於卡片',
-};
-const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}` | 'sdk'>, string>> = {
-  api: '協議 API',
-  coingecko: 'CoinGecko',
-  factory: '工廠',
-  bounty: 'Immunefi 漏洞賞金範圍',
-  deployer: '部署者',
-};
+const refWord = (template: Template, ref: CardRef, w: Words): string =>
+  ref.attribute === undefined ? fieldWord(template, ref.field, w) : w.partOf(fieldWord(template, ref.field, w), w.part[ref.attribute] ?? ref.attribute);
 
 /**
  * Each official page of an entry by its short URL: the `source` as `page`, each of `moreSources` as `more.<n>`. Two
@@ -310,69 +282,42 @@ function docLine(signature: string, context: Context): DocLine {
   if (doc === undefined) throw new Error(`docs.json names no page for ${signature}`);
   const { state, phrase } = docOf(context.ledger, doc);
   const result = { state, phrase, href: doc.url };
-  if (doc.standard !== undefined) return { ...result, label: `${doc.standard.name} 標準頁`, note: '標準定義這個函式，不代表合約照標準做' };
+  if (doc.standard !== undefined) return { ...result, label: context.w.standardPage(doc.standard.name), note: context.w.standardNote };
   return { ...result, label: pageLabel(doc.url, docs.filter((d) => d.standard === undefined).map((d) => d.url)), note: undefined };
 }
 
-const PLACE_PAGES: Readonly<Record<SitePlace['kind'], { readonly word: string; readonly page: (id: string) => string }>> = {
-  defillama: { word: 'DefiLlama', page: (id) => `https://defillama.com/protocol/${id}` },
-  coingecko: { word: 'CoinGecko', page: (id) => `https://www.coingecko.com/en/coins/${id}` },
-  immunefi: { word: 'Immunefi', page: (id) => `https://immunefi.com/bug-bounty/${id}/` },
-  github: { word: 'GitHub 驗證網域', page: (id) => `https://github.com/${id}` },
+const PLACE_PAGES: Readonly<Record<SitePlace['kind'], { readonly word: (w: Words) => string; readonly page: (id: string) => string }>> = {
+  defillama: { word: () => 'DefiLlama', page: (id) => `https://defillama.com/protocol/${id}` },
+  coingecko: { word: () => 'CoinGecko', page: (id) => `https://www.coingecko.com/en/coins/${id}` },
+  immunefi: { word: () => 'Immunefi', page: (id) => `https://immunefi.com/bug-bounty/${id}/` },
+  github: { word: (w) => w.githubDomains, page: (id) => `https://github.com/${id}` },
 };
 
 /** Each place a site was compared with, linked; with none, DefiLlama, the one place every entry names. */
-const placeLinks = (entry: RegistryEntry, places: readonly SitePlace[]): PlaceLink[] =>
+const placeLinks = (entry: RegistryEntry, places: readonly SitePlace[], w: Words): PlaceLink[] =>
   places.length === 0
     ? [{ word: 'DefiLlama', href: entry.defillama === undefined ? undefined : parseHttpsUrl(PLACE_PAGES.defillama.page(entry.defillama)) }]
-    : places.map((place) => ({ word: PLACE_PAGES[place.kind].word, href: parseHttpsUrl(PLACE_PAGES[place.kind].page(place.id)) }));
+    : places.map((place) => ({ word: PLACE_PAGES[place.kind].word(w), href: parseHttpsUrl(PLACE_PAGES[place.kind].page(place.id)) }));
 
-const sourceWord = (entry: RegistryEntry, source: ProgramSource): string =>
-  source === 'sdk' && entry.sdk !== undefined ? `npm ${entry.sdk.package}@${entry.sdk.version}` : (pageLabels(entry).get(source) ?? SOURCE_LABELS[source as keyof typeof SOURCE_LABELS]);
+const sourceWord = (entry: RegistryEntry, source: ProgramSource, w: Words): string =>
+  source === 'sdk' && entry.sdk !== undefined
+    ? `npm ${entry.sdk.package}@${entry.sdk.version}`
+    : (pageLabels(entry).get(source) ?? w.source[source as Exclude<ProgramSource, 'page' | `more.${number}` | 'sdk'>]);
 
 /** An address row's line for a source: the deployer names its address and the confirmed entries it also deployed. */
-function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerShare | undefined): string {
-  if (source !== 'deployer' || shared === undefined) return sourceWord(entry, source);
-  const also = shared.siblings.length === 0 ? '' : `，也部署了 ${shared.siblings.join('、')}`;
-  return `部署者 ${checksumAddress(shared.deployer)}${also}`;
+function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerShare | undefined, w: Words): string {
+  if (source !== 'deployer' || shared === undefined) return sourceWord(entry, source, w);
+  return w.deployer(checksumAddress(shared.deployer), shared.siblings);
 }
 
-/** What a confirmation is called in the line that counts them: the `source` page is 官方頁, any other as `sourceWord` names it. */
-const confirmationWord = (entry: RegistryEntry, source: ProgramSource): string => (source === 'page' ? '官方頁' : sourceWord(entry, source));
+/** What a confirmation is called in the line that counts them: the `source` page is the official page, any other as `sourceWord` names it. */
+const confirmationWord = (entry: RegistryEntry, source: ProgramSource, w: Words): string => (source === 'page' ? w.officialPage : sourceWord(entry, source, w));
 
-const confirmedWords = (entry: RegistryEntry, by: readonly ProgramSource[]): string =>
-  by.length === 0 ? '沒有任何地方確認' : `${by.length >= MIN_CONFIRMATIONS ? '在' : '只在'} ${by.length} 個地方確認：${by.map((source) => confirmationWord(entry, source)).join('、')}`;
-const AI_RESULTS = { pass: 'AI 判斷：沒問題', attention: 'AI 判斷：要注意', fail: 'AI 判斷：有問題' } as const;
-
-/** What the program says about a result for the signer: a title naming what disagreed or could not be read, and why. */
-const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; readonly why: string } } = {
-  'site-differs': { title: '網站跟 DefiLlama 列的不同', why: '這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。' },
-  'other-coin': { title: '地址跟 CoinGecko 不同', why: 'CoinGecko 在這個地址列的不是登記的那個幣，或列了不只一個。' },
-  'other-answer': { title: '協議 API 回的是別的地址', why: '協議 API 在登記的路徑回了另一個地址、沒有地址，或不是 JSON。' },
-  'pin-not-run': { title: '鏈上跑的不是登記的程式碼', why: '鏈上在這段區塊範圍跑的程式碼，跟 code pin 記錄的不一樣。' },
-  'proof-not-pin': { title: '證明的程式碼不是現在登記的', why: 'ABI 證明用的程式碼，不是 code pin 現在的那一份。' },
-  'not-created': { title: '工廠說這個金庫不是它建的', why: '登記的工廠合約回答，這個地址不是它建立的金庫，所以它不屬於工廠的協議。' },
-  'factory-other-answer': { title: '工廠的回答看不懂', why: '問登記的工廠是否建立了這個金庫，它沒有回答 true、false 或一個地址（例如 revert），所以不能說這個金庫屬於工廠的協議。' },
-  refused: { title: 'ABI 證明被拒絕', why: '重新編譯 Sourcify 的原始碼，得不到鏈上的程式碼。' },
-  'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
-  'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
-  'site-not-compared': { title: '沒辦法比對來源網站', why: 'DefiLlama 找不到這個協議，或網域無法判斷。' },
-  'no-second-source': {
-    title: '沒有第二個來源',
-    why: 'DefiLlama、CoinGecko 的幣資料、Immunefi 和 GitHub 的驗證網域都沒有列出這個網站，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。',
-  },
-  'package-differs': { title: 'SDK 套件不是釘選的那一份', why: '下載的 npm 套件 sha256 跟登記釘選的不同，或跟 npm 給的 integrity 不符。' },
-  'unexplained-coin': { title: 'CoinGecko 在這個地址列了幣，登記沒有給 id', why: '登記沒有寫 coingecko id，所以程式沒有比對 CoinGecko 在這個地址列的幣是不是這個合約。' },
-  'commit-unconfirmed': { title: 'GitHub commit 沒確認', why: 'GitHub 頁面沒有釘在預設分支上的 commit。' },
-  'page-not-fetched': { title: '文件頁沒讀到', why: '程式沒有這個文件頁的內容。' },
-  'name-not-on-page': { title: '文件頁上找不到這個函式', why: '文件頁的原始網頁裡沒有寫成程式的函式名稱：緊接著括號、放在反引號裡，或自成一行（例如標題、清單項目或表格欄）。只在一般文字裡出現不算。' },
-  'no-chain-result': { title: '程式碼區段沒有鏈上結果', why: '這段 code pin 沒有從鏈上讀到判定。' },
-  'factory-unread': { title: '沒有讀到工廠的回答', why: '沒有記錄登記的工廠是否建立了這個金庫。' },
-  'not-pinned': { title: '沒有 code pin', why: '這個合約沒有登記程式碼，簽名時會是 UNVERIFIABLE。' },
-  'no-abi-case': { title: '沒有 ABI 證明的紀錄', why: 'testdata/abi 沒有這個合約的 ABI 證明，程式沒有比對它的原始碼。' },
-  'compiler-not-pinned': { title: '編譯器沒有釘選', why: '這個合約用的 solc 版本沒有釘選，程式沒有重新編譯它的原始碼。' },
-  'pinned-before-spans': { title: 'code pin 沒有區段紀錄', why: '這個 code pin 寫在記錄區塊範圍之前，程式沒有讀鏈上從哪個區塊起跑這份程式碼。' },
-};
+const confirmedWords = (entry: RegistryEntry, by: readonly ProgramSource[], w: Words): string =>
+  w.confirmed(
+    by.map((source) => confirmationWord(entry, source, w)),
+    by.length >= MIN_CONFIRMATIONS,
+  );
 
 const ZERO_ADDRESS = `0x${'0'.repeat(40)}`;
 
@@ -386,15 +331,15 @@ const usd = (value: number): string => {
   return `$${(value / scale).toFixed(2)}${unit === '' ? '' : ` ${unit}`}`;
 };
 
-const percent = (a: bigint, b: bigint): string => {
-  if (b === 0n) return '無法計算，分母是 0';
+const percent = (a: bigint, b: bigint, w: Words): string => {
+  if (b === 0n) return w.noComputation;
   const basis = (a * 10_000n) / b;
   return `${basis / 100n}.${(basis % 100n).toString().padStart(2, '0')}%`;
 };
 
-const lltvWords = (lltv: bigint): string => `${percent(lltv, 10n ** 18n).replace(/\.?0+%$/, '%')}`;
+const lltvWords = (lltv: bigint, w: Words): string => `${percent(lltv, 10n ** 18n, w).replace(/\.?0+%$/, '%')}`;
 
-const marketWords = (market: Market): string => `${market.loanToken.name} / ${market.collateralToken.name}，LLTV ${lltvWords(market.lltv)}`;
+const marketWords = (market: Market, w: Words): string => w.market(market.loanToken.name, market.collateralToken.name, lltvWords(market.lltv, w));
 
 export const constCast = (value: ConstValue): string => {
   const span = [0, 0] as const;
@@ -429,6 +374,7 @@ const shortUrl = (url: HttpsUrl): string => {
 };
 
 type Context = {
+  readonly w: Words;
   readonly inputs: HtmlInputs;
   readonly template: Template;
   readonly registry: Registry;
@@ -441,7 +387,7 @@ type Context = {
   readonly values: ReadonlyMap<string, AbiValue>;
 };
 
-const fieldsNote = (context: Context, key: string): AiText => research(context.notes.fields.get(key) as string, [], 'AI');
+const fieldsNote = (context: Context, key: string): AiText => research(context.notes.fields.get(key) as string, [], 'ai');
 
 function decimalsOf(context: Context, token: Address): number | undefined {
   const read = context.facts?.decimals.get(token);
@@ -462,39 +408,36 @@ function tokenOf(ref: TokenRef, context: Context): { readonly address: Address |
 
 /** An amount of `token` in whole tokens, from the recorded decimals; base units when they were not read. */
 function amountWords(amount: bigint, ref: TokenRef, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
+  const { w } = context;
   const token = tokenOf(ref, context);
-  if (token === undefined) return { words: [{ num: amount.toString() }, ' 最小單位'], qualifier: undefined };
+  if (token === undefined) return { words: [{ num: amount.toString() }, w.baseUnits], qualifier: undefined };
   const decimals = token.address === 'eth' ? 18 : decimalsOf(context, token.address);
-  if (decimals === undefined) return { words: [{ num: amount.toString() }, ` 最小單位的 ${token.name}`], qualifier: ['decimals() 沒讀到'] };
+  if (decimals === undefined) return { words: [{ num: amount.toString() }, w.baseUnitsOf(token.name)], qualifier: [w.decimalsUnread] };
   const shown = groupedTokens(amount, decimals, SHOWN_PLACES);
-  if (shown === groupedTokens(amount, decimals)) return { words: [{ num: shown }, ` ${token.name}`], qualifier: [`${decimals} 位小數`] };
-  return { words: ['約 ', { num: shown }, ` ${token.name}（`, { num: amount.toString() }, ' 最小單位）'], qualifier: [`${decimals} 位小數`] };
+  if (shown === groupedTokens(amount, decimals)) return { words: [{ num: shown }, ` ${token.name}`], qualifier: [w.decimals(decimals)] };
+  return { words: w.approx({ num: shown }, token.name, { num: amount.toString() }), qualifier: [w.decimals(decimals)] };
 }
-
-const SAFE = '你的 Safe';
 
 /** The registry names a call's `to` can be, the name the page shows for it, and its role on the diagram's lifeline. */
 function targetOf(rule: Rule, context: Context): { readonly label: string; readonly names: readonly string[]; readonly role: string } {
-  const { registry } = context;
+  const { registry, w } = context;
   const role = (name: string, otherwise: string): string => {
     const entry = registry.entries.get(name);
-    return entry === undefined ? otherwise : KIND_WORDS[entry.kind];
+    return entry === undefined ? otherwise : w.kind[entry.kind];
   };
-  if (rule.kind === 'safe') return { label: SAFE, names: ['safe'], role: '發起' };
-  if (rule.kind === 'contract') return { label: rule.name, names: [rule.name], role: role(rule.name, '合約') };
+  if (rule.kind === 'safe') return { label: w.safe, names: ['safe'], role: w.role.sender };
+  if (rule.kind === 'contract') return { label: rule.name, names: [rule.name], role: role(rule.name, w.role.contract) };
   if (rule.kind === 'const' && rule.value.kind === 'address') {
     const entry = registry.byAddress.get(rule.value.value);
-    return { label: entry?.name ?? checksumAddress(rule.value.value), names: entry === undefined ? [] : [entry.name], role: entry === undefined ? '固定的地址' : KIND_WORDS[entry.kind] };
+    return { label: entry?.name ?? checksumAddress(rule.value.value), names: entry === undefined ? [] : [entry.name], role: entry === undefined ? w.role.fixed : w.kind[entry.kind] };
   }
   if (rule.kind !== 'card') return { label: '?', names: [], role: '' };
   const names = refNames(rule.ref, context.template, registry);
-  if (names.length === 1) return { label: names[0] as string, names, role: role(names[0] as string, '你選') };
+  if (names.length === 1) return { label: names[0] as string, names, role: role(names[0] as string, w.role.picked) };
   const picked = context.card === undefined ? undefined : resolveRef(rule.ref, context.card, registry);
   const name = picked === undefined || 'problem' in picked || picked.kind !== 'address' ? undefined : registry.byAddress.get(picked.address)?.name;
-  return name === undefined ? { label: refWord(context.template, rule.ref), names, role: '你選' } : { label: name, names, role: role(name, '你選') };
+  return name === undefined ? { label: refWord(context.template, rule.ref, w), names, role: w.role.picked } : { label: name, names, role: role(name, w.role.picked) };
 }
-
-const SHORT: Readonly<Record<Who, string>> = { 'you-type': '你填', 'you-pick': '你選', fixed: '固定', free: '不限' };
 
 function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly field: string | undefined } | undefined {
   switch (rule.kind) {
@@ -525,8 +468,8 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
   }
 }
 
-const chipLabel = (template: Template, who: Who, field: string | undefined): string =>
-  who === 'free' ? 'app 填，不限' : field === undefined || who === 'fixed' ? SHORT[who] : `${SHORT[who]}：${fieldWord(template, field)}`;
+const chipLabel = (template: Template, who: Who, field: string | undefined, w: Words): string =>
+  who === 'free' ? w.appFills : field === undefined || who === 'fixed' ? w.who[who] : w.chip(w.who[who], fieldWord(template, field, w));
 
 function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; readonly who: Who; readonly field: string | undefined }[] {
   if (node.rule.kind === 'call') return [];
@@ -535,14 +478,14 @@ function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; re
   return who === undefined ? [] : [{ node, ...who }];
 }
 
-/** One chip when every part agrees; else one per who, naming its parts (`kind 固定`, `data 不限`). A nested call carries none. */
-function chipsOf(node: ArgNode, template: Template): Chip[] {
+/** One chip when every part agrees; else one per who, naming its parts (`kind fixed`, `data any`). A nested call carries none. */
+function chipsOf(node: ArgNode, template: Template, w: Words): Chip[] {
   const found = leaves(node, template);
   const distinct = [...new Map(found.map((leaf) => [`${leaf.who}/${leaf.field ?? ''}`, leaf])).values()];
-  if (distinct.length <= 1) return distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(template, leaf.who, leaf.field) }));
+  if (distinct.length <= 1) return distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(template, leaf.who, leaf.field, w) }));
   const byWho = new Map<Who, string[]>();
   for (const leaf of found) byWho.set(leaf.who, [...(byWho.get(leaf.who) ?? []), leaf.node.name]);
-  return [...byWho].map(([who, names]) => ({ who, label: `${names.join('、')} ${SHORT[who]}` }));
+  return [...byWho].map(([who, names]) => ({ who, label: w.chipParts(names, w.who[who]) }));
 }
 
 /** The card market field a `fields` rule binds whole, part by part. */
@@ -558,11 +501,10 @@ function wholeMarket(rule: Rule, template: Template): string | undefined {
 const readsSafe = (rule: Rule): boolean =>
   rule.kind === 'safe' || (rule.kind === 'fields' && rule.fields.some(readsSafe)) || (rule.kind === 'items' && rule.items.some(readsSafe));
 
-const CHANGE_WORDS: Readonly<Record<ViewChange, string>> = { increases: '增加', decreases: '減少', same: '不變' };
-
 /** What a view effect requires, in the signer's words. */
 function changeWords(change: ViewExpectation, context: Context): Inline {
-  return typeof change === 'string' ? [CHANGE_WORDS[change]] : [before('等於你填的', fieldWord(context.template, change.equals))];
+  const { w } = context;
+  return typeof change === 'string' ? [w.change[change]] : [w.equalsTyped(fieldWord(context.template, change.equals, w))];
 }
 
 /** The contract a view effect reads, by name: its registry name, or the one entry its card field names in this report. */
@@ -572,9 +514,9 @@ function viewLabel(view: ViewEffect, context: Context): string {
 }
 
 /** The call a view's argument encodes, such as the `increaseAbsoluteCap` whose `executableAt` it reads, in brackets; empty for none. */
-function viewSubject(view: ViewEffect): string {
+function viewSubject(view: ViewEffect, w: Words): string {
   const inner = view.args.flatMap((arg) => (arg.kind === 'call' || arg.kind === 'keccak' ? [arg.call.fn.name] : []));
-  return inner.length === 0 ? '' : `（${inner.join('、')}）`;
+  return inner.length === 0 ? '' : w.inParens(inner);
 }
 
 function onlyEntry(ref: CardRef, context: Context): RegistryEntry | undefined {
@@ -584,67 +526,70 @@ function onlyEntry(ref: CardRef, context: Context): RegistryEntry | undefined {
 }
 
 function cardWords(ref: CardRef, key: string, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
+  const { w } = context;
   const field = context.template.card.get(ref.field);
   const only = onlyEntry(ref, context);
-  const picks = before('你選的', refWord(context.template, ref));
+  const picks = w.picked(refWord(context.template, ref, w));
   if (only !== undefined) return { words: [link(only)], qualifier: [picks] };
   const example = context.values.get(key);
+  const typed = w.typed(fieldWord(context.template, ref.field, w));
   if (field?.kind === 'amount') {
-    if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
+    if (example?.kind !== 'uint') return { words: [typed], qualifier: undefined };
     return amountWords(example.value, field.of, context);
   }
   if (field?.kind === 'percent') {
-    if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
-    return { words: [before('你填的', fieldWord(context.template, ref.field)), '，例如 ', { num: `${wholeTokens(example.value * 100n, 18)}%` }], qualifier: undefined };
+    if (example?.kind !== 'uint') return { words: [typed], qualifier: undefined };
+    return { words: [typed, w.forExample, { num: `${wholeTokens(example.value * 100n, 18)}%` }], qualifier: undefined };
   }
-  if (field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
+  if (field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [typed], qualifier: undefined };
   const picked = example?.kind === 'address' ? context.registry.byAddress.get(example.value) : undefined;
   if (picked !== undefined) return { words: [link(picked)], qualifier: [picks] };
-  if (field?.kind === 'market' && ref.attribute === 'lltv' && example?.kind === 'uint') return { words: [lltvWords(example.value)], qualifier: [picks] };
+  if (field?.kind === 'market' && ref.attribute === 'lltv' && example?.kind === 'uint') return { words: [lltvWords(example.value, w)], qualifier: [picks] };
   return { words: [picks], qualifier: undefined };
 }
 
 function leafWords(node: ArgNode, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
   const { rule } = node;
+  const { w } = context;
   switch (rule.kind) {
     case 'contract':
       return { words: [link(context.registry.entries.get(rule.name) as RegistryEntry)], qualifier: undefined };
     case 'safe':
-      return { words: ['你的 Safe'], qualifier: undefined };
+      return { words: [w.safe], qualifier: undefined };
     case 'const': {
       if (rule.value.kind === 'address') {
         const entry = context.registry.byAddress.get(rule.value.value);
-        return { words: rule.value.value === ZERO_ADDRESS ? ['無（零地址）'] : entry === undefined ? ['固定的地址'] : [link(entry)], qualifier: undefined };
+        return { words: rule.value.value === ZERO_ADDRESS ? [w.zeroAddress] : entry === undefined ? [w.fixedAddress] : [link(entry)], qualifier: undefined };
       }
       const text = constCast(rule.value);
-      return { words: [text.length <= 24 ? `固定為 ${text}` : '固定值'], qualifier: undefined };
+      return { words: [text.length <= 24 ? w.fixedTo(text) : w.fixedValue], qualifier: undefined };
     }
     case 'card':
       return cardWords(rule.ref, node.key, context);
     case 'free':
-      return { words: ['每筆不同'], qualifier: [FREE_WORDS[rule.claim]] };
+      return { words: [w.differs], qualifier: [w.free[rule.claim]] };
     case 'equals':
-      return { words: ['跟 ', { code: rule.path }, ' 同一個數'], qualifier: undefined };
+      return { words: w.sameAs({ code: rule.path }), qualifier: undefined };
     case 'owner-before':
-      return { words: [before('Safe 簽署人名單裡排在這個人前面的', refWord(context.template, rule.ref))], qualifier: ['程式在鏈上讀 getOwners() 算出，你不用填'] };
+      return { words: [w.ownerBefore(refWord(context.template, rule.ref, w))], qualifier: [w.ownerBeforeHow] };
     case 'share-price':
-      return { words: [rule.bound === 'max' ? '價格上限' : '價格下限'], qualifier: ['依你填的數量算出，交易裡的要一樣嚴或更嚴'] };
+      return { words: [rule.bound === 'max' ? w.priceMax : w.priceMin], qualifier: [w.priceHow] };
     case 'at-least':
-      return { words: [before('至少你填的', fieldWord(context.template, rule.field))], qualifier: ['比這個少就 MISMATCH'] };
+      return { words: [w.atLeastTyped(fieldWord(context.template, rule.field, w))], qualifier: [w.atLeastHow] };
     case 'call':
       return rule.call.encoding === 'params'
-        ? { words: [{ code: rule.call.fn.name }, ' 的參數'], qualifier: undefined }
+        ? { words: w.argsOf({ code: rule.call.fn.name }), qualifier: undefined }
         : { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
     case 'packed':
-      return { words: [`${rule.parts.reduce((sum, part) => sum + part.size, 0)} bytes，${rule.parts.length} 段接在一起`], qualifier: undefined };
+      return { words: [w.packed(rule.parts.reduce((sum, part) => sum + part.size, 0), rule.parts.length)], qualifier: undefined };
     case 'eip712':
-      return { words: [{ code: rule.message.struct.name }, ' 的 EIP-712 雜湊'], qualifier: ['verify 從 lookup 讀回原文，算出的雜湊要一樣'] };
+      return { words: w.eip712({ code: rule.message.struct.name }), qualifier: [w.eip712How] };
     case 'keccak':
-      return { words: ['keccak256，', { code: rule.call.fn.name }], qualifier: undefined };
+      return { words: w.keccak({ code: rule.call.fn.name }), qualifier: undefined };
     case 'items':
-      return { words: [`${rule.items.length} 項`], qualifier: undefined };
+      return { words: [w.items(rule.items.length)], qualifier: undefined };
     case 'fields':
-      return { words: [`${rule.fields.length} 個部分`], qualifier: undefined };
+      return { words: [w.parts(rule.fields.length)], qualifier: undefined };
   }
 }
 
@@ -657,7 +602,7 @@ function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
   const example = context.values.get(node.key);
   if (example === undefined) return undefined;
   const fromSafe = example.kind === 'address' && example.value === context.inputs.example?.tx.safe;
-  return { cast: castValue(example), example: fromSafe ? '例：別的 Safe' : '例' };
+  return { cast: castValue(example), example: fromSafe ? 'other-safe' : 'example' };
 }
 
 function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow[] {
@@ -669,7 +614,7 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
       name: child.name,
       chips: [],
       value: { cast: entry === undefined ? market.lltv.toString() : checksumAddress(entry.address), example: undefined },
-      words: entry === undefined ? [lltvWords(market.lltv)] : [link(entry)],
+      words: entry === undefined ? [lltvWords(market.lltv, context.w)] : [link(entry)],
       qualifier: undefined,
       id: undefined,
       ai: fieldsNote(context, child.key),
@@ -679,11 +624,9 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
   });
 }
 
-/** A free member of a signed message is no value of this transaction: the digest fixes it, and no perturbation tries another. */
-const FREE_MEMBER = '訂單裡的值，由雜湊鎖住；模板不限，也不換值測試';
-
 function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage = false): ArgRow {
-  const chips = withChips ? chipsOf(node, context.template) : [];
+  const { w } = context;
+  const chips = withChips ? chipsOf(node, context.template, w) : [];
   const market = wholeMarket(node.rule, context.template);
   if (market !== undefined) {
     const markets = [...context.registry.markets.values()];
@@ -694,18 +637,19 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
       name: node.name,
       chips,
       value: undefined,
-      words: shown === undefined ? [before('你選的', fieldWord(context.template, market))] : [marketWords(shown)],
-      qualifier: [`${MARKET_PARAMS.length} 個值，任何一個不同就 MISMATCH`],
+      words: shown === undefined ? [w.picked(fieldWord(context.template, market, w))] : [marketWords(shown, w)],
+      qualifier: [w.marketHow(MARKET_PARAMS.length)],
       id: shown === undefined ? undefined : ['market id ', { mono: shown.id }],
       ai: fieldsNote(context, node.key),
-      parts: markets.map((m) => ({ label: markets.length === 1 ? undefined : [marketWords(m), '，market id ', { mono: m.id }], rows: marketPartRows(node, m, context) })),
+      parts: markets.map((m) => ({ label: markets.length === 1 ? undefined : [marketWords(m, w), w.marketId, { mono: m.id }], rows: marketPartRows(node, m, context) })),
       doc: undefined,
     };
   }
   const nestedCall = node.rule.kind === 'call';
   const leaf = leafWords(node, context);
   const { words } = leaf;
-  const qualifier = inMessage && node.rule.kind === 'free' ? [FREE_MEMBER] : leaf.qualifier;
+  /** A free member of a signed message is no value of this transaction: the digest fixes it, and no perturbation tries another. */
+  const qualifier = inMessage && node.rule.kind === 'free' ? [w.freeMember] : leaf.qualifier;
   return {
     key: node.key,
     name: node.name,
@@ -786,8 +730,8 @@ function exampleValues(template: Template, tx: SafeTx): Map<string, AbiValue> {
 }
 
 function lifelines(context: Context): { readonly lines: Lifeline[]; readonly names: (readonly string[])[]; readonly callTo: number[] } {
-  const { template, registry } = context;
-  const lines: Lifeline[] = [{ name: SAFE, role: '發起' }];
+  const { template, registry, w } = context;
+  const lines: Lifeline[] = [{ name: w.safe, role: w.role.sender }];
   const names: (readonly string[])[] = [['safe']];
   const add = (label: string, of: readonly string[], role: string): number => {
     const at = lines.findIndex((l) => l.name === label);
@@ -798,7 +742,7 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
   };
   const kindOf = (name: string): string => {
     const entry = registry.entries.get(name);
-    return entry === undefined ? '合約' : KIND_WORDS[entry.kind];
+    return entry === undefined ? w.role.contract : w.kind[entry.kind];
   };
   const callTo = template.calls.map((call) => {
     const target = targetOf(call.to, context);
@@ -815,38 +759,36 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
 }
 
 function sequence(context: Context): Sequence {
-  const { template, notes } = context;
+  const { template, notes, w } = context;
   const { lines, names, callTo } = lifelines(context);
   const at = (name: string): number => names.findIndex((of) => of.includes(name));
   const arrows: Arrow[] = [];
   const narration: string[] = [];
   template.calls.forEach((call, i) => {
     const to = callTo[i] as number;
-    const target = to === 0 ? '自己' : (lines[to]?.name as string);
+    const target = to === 0 ? w.self : (lines[to]?.name as string);
     const sendsEth = !zeroValue(call);
-    const fn = call.data !== 'empty' ? call.data.fn.name : sendsEth ? '轉 ETH' : '0 ETH、沒有資料';
+    const fn = call.data !== 'empty' ? call.data.fn.name : sendsEth ? w.sendEth : w.noDataZero;
     arrows.push({ kind: 'call', n: i + 1, to, fn });
-    narration.push(
-      call.data !== 'empty' ? `呼叫 ${i + 1}：Safe 呼叫 ${target} 的 ${fn}。` : `呼叫 ${i + 1}：Safe ${sendsEth ? before('轉 ETH 給', target) : before('呼叫', target)}，${sendsEth ? '沒有資料' : '0 ETH、沒有資料'}。`,
-    );
+    narration.push(call.data !== 'empty' ? w.narrateCall(i + 1, target, fn) : w.narrateEmpty(i + 1, target, sendsEth));
     for (const line of notes.flow.filter((f) => f.after === i + 1)) arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text) });
   });
   const last = callTo.at(-1) ?? 0;
   for (const effect of template.effects.gets) {
     const token = tokenOf(effect.token, context);
-    const text = `你得到 ${token?.name ?? '代幣'}`;
+    const text = w.youGet(token?.name);
     arrows.push({ kind: 'gets', from: last, text });
-    narration.push(`結果：${text}。`);
+    narration.push(w.result(text));
   }
   for (const view of template.effects.views.filter((v) => v.args.some(readsSafe))) {
     for (const { value } of view.changes.filter((c) => c.change === 'increases')) {
       const label = viewLabel(view, context);
-      const text = `${label} 的 ${paramName(view.returns[value] as AbiParam, value)} 增加`;
+      const text = w.increases(label, paramName(view.returns[value] as AbiParam, value));
       arrows.push({ kind: 'gets', from: at(label), text });
-      narration.push(`結果：${text}。`);
+      narration.push(w.result(text));
     }
   }
-  return { lifelines: lines, arrows, narration: narration.join('') };
+  return { lifelines: lines, arrows, narration: w.sentences(narration) };
 }
 
 const zeroValue = (call: TemplateCall): boolean => call.value.kind === 'const' && call.value.value.kind === 'uint' && call.value.value.value === 0n;
@@ -856,52 +798,53 @@ function sends(call: TemplateCall, context: Context, n: number): Inline | undefi
   const example = context.inputs.example === undefined ? undefined : unwrapSafeTx(context.inputs.example.tx);
   const inner = example !== undefined && 'calls' in example ? example.calls[n - 1] : undefined;
   const { words } = leafWords({ key: `${n}.value`, name: 'value', param: undefined, rule: call.value, children: [] }, context);
-  return ['送出 ETH：', ...words, ...(inner === undefined ? [] : ['，例如 ', { num: wholeTokens(inner.value, 18) }, ' ETH'])];
+  return context.w.sends(words, inner === undefined ? undefined : { num: wholeTokens(inner.value, 18) });
 }
 
 function afterRows(context: Context): AfterRow[] {
-  const { template } = context;
+  const { template, w } = context;
+  const field = (name: string): string => fieldWord(template, name, w);
   const amountOf = (effect: Template['effects']['gives'][number], gives: boolean): Inline => {
-    if (effect.amount.kind === 'all') return ['全部'];
-    if (effect.amount.kind === 'positive') return [gives ? '給出多於 0' : '收到多於 0'];
-    if (effect.amount.kind === 'at-least') return [before('至少你填的', fieldWord(template, effect.amount.field))];
+    if (effect.amount.kind === 'all') return [w.all];
+    if (effect.amount.kind === 'positive') return [gives ? w.givesMore : w.getsMore];
+    if (effect.amount.kind === 'at-least') return [w.atLeastTyped(field(effect.amount.field))];
     const value = context.card?.get(effect.amount.field);
-    if (value?.kind !== 'amount') return [before('你填的', fieldWord(template, effect.amount.field))];
+    if (value?.kind !== 'amount') return [w.typed(field(effect.amount.field))];
     const { words } = amountWords(value.value, effect.token, context);
     const sign = gives ? '−' : '+';
-    return words[0] === '約 ' ? ['約 ', sign, ...words.slice(1)] : [sign, ...words];
+    return words[0] === w.about ? [w.about, sign, ...words.slice(1)] : [sign, ...words];
   };
   const note = (effect: Template['effects']['gives'][number]): Inline => {
     const amount =
       effect.amount.kind === 'card'
-        ? before('剛好你填的', fieldWord(template, effect.amount.field))
+        ? w.exactlyTyped(field(effect.amount.field))
         : effect.amount.kind === 'at-least'
-          ? before('收到的不能少於你填的', fieldWord(template, effect.amount.field))
+          ? w.getsAtLeast(field(effect.amount.field))
           : effect.amount.kind === 'all'
-            ? '全部餘額，交易後一個都不剩'
-            : '程式只查方向，不查數量';
-    return effect.to === undefined ? [amount] : [amount, before('，給', refWord(template, effect.to))];
+            ? w.wholeBalance
+            : w.directionOnly;
+    return effect.to === undefined ? [amount] : [amount, w.toWhom(refWord(template, effect.to, w))];
   };
-  const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : before('你選的', refWord(template, token)));
+  const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : w.picked(refWord(template, token, w)));
   const rows: AfterRow[] = [
-    ...template.effects.gives.map((e) => ({ label: [`Safe 的 ${name(e.token)}`], value: amountOf(e, true), note: note(e), gains: false })),
-    ...template.effects.gets.map((e) => ({ label: [`Safe 的 ${name(e.token)}`], value: amountOf(e, false), note: note(e), gains: true })),
+    ...template.effects.gives.map((e) => ({ label: [w.safeOf(name(e.token))], value: amountOf(e, true), note: note(e), gains: false })),
+    ...template.effects.gets.map((e) => ({ label: [w.safeOf(name(e.token))], value: amountOf(e, false), note: note(e), gains: true })),
   ];
   const settings = template.effects.safe;
   if (settings !== undefined) {
     const owners: Inline =
       settings.add !== undefined && settings.remove !== undefined
-        ? [before('換掉', refWord(template, settings.remove)), before('，換成', refWord(template, settings.add))]
+        ? [w.replaces(refWord(template, settings.remove, w), refWord(template, settings.add, w))]
         : settings.add !== undefined
-          ? [before('多一個', refWord(template, settings.add))]
+          ? [w.adds(refWord(template, settings.add, w))]
           : settings.remove !== undefined
-            ? [before('少一個', refWord(template, settings.remove))]
-            : ['不變'];
-    rows.push({ label: ['Safe 的簽署人'], value: owners, note: ['交易前後各讀一次 getOwners()，其他人不能變'], gains: false });
+            ? [w.removes(refWord(template, settings.remove, w))]
+            : [w.unchanged];
+    rows.push({ label: [w.safeOwners], value: owners, note: [w.ownersHow], gains: false });
     rows.push({
-      label: ['Safe 的門檻'],
-      value: settings.threshold === undefined ? ['不變'] : [before('變成你填的', fieldWord(template, settings.threshold.field))],
-      note: ['交易前後各讀一次 getThreshold()'],
+      label: [w.safeThreshold],
+      value: settings.threshold === undefined ? [w.unchanged] : [w.becomesTyped(field(settings.threshold.field))],
+      note: [w.thresholdHow],
       gains: false,
     });
   }
@@ -910,7 +853,7 @@ function afterRows(context: Context): AfterRow[] {
       rows.push({
         label: [{ code: paramName(view.returns[value] as AbiParam, value) }],
         value: changeWords(change, context),
-        note: [`${viewLabel(view, context)}.${view.fn.name}${viewSubject(view)}，交易前後各讀一次`],
+        note: [w.readAround(`${viewLabel(view, context)}.${view.fn.name}${viewSubject(view, w)}`)],
         gains: change === 'increases' && view.args.some(readsSafe),
       });
     }
@@ -919,18 +862,18 @@ function afterRows(context: Context): AfterRow[] {
   for (const call of template.calls) {
     if (call.data === 'empty' || call.data.fn.signature !== 'approve(address,uint256)') continue;
     const spender = call.data.args[0] as Rule;
-    const label: Inline = ['給 ', ...ruleWords(spender, context), ` 的 ${targetOf(call.to, context).label} 授權`];
+    const label = w.allowance(ruleWords(spender, context), targetOf(call.to, context).label, false);
     const open = template.effects.approves.find((a) => a.via === 'erc20' && spender.kind === 'contract' && a.spender === spender.name && call.to.kind === 'card' && JSON.stringify(call.to.ref) === JSON.stringify(a.token));
     if (open !== undefined) shown.add(open);
-    if (open === undefined) rows.push({ label, value: [{ num: '0' }], note: ['交易內用完，不能比交易前高'], gains: false });
-    else if (open.amount.kind === 'card') rows.push({ label, value: [before('最多你填的', fieldWord(template, open.amount.field))], note: ['留給之後成交的訂單用，不能超過這個數'], gains: false });
-    else rows.push({ label, value: ['可以留著，不限數量'], note: ['登記資料說明為什麼這個合約可以留著授權'], gains: false });
+    if (open === undefined) rows.push({ label, value: [{ num: '0' }], note: [w.usedUp], gains: false });
+    else if (open.amount.kind === 'card') rows.push({ label, value: [w.atMostTyped(field(open.amount.field))], note: [w.keptForOrder], gains: false });
+    else rows.push({ label, value: [w.mayRemain], note: [w.registryWhy], gains: false });
   }
   for (const open of template.effects.approves.filter((a) => !shown.has(a))) {
     const spender = context.registry.entries.get(open.spender) as RegistryEntry;
-    const value: Inline = open.amount.kind === 'unlimited' ? ['可以留著，不限數量'] : [before('最多你填的', fieldWord(template, open.amount.field))];
-    const note: Inline = open.via === 'permit2' ? ['到期時間記在 Permit2 裡，verify 的網頁會顯示'] : ['登記資料說明為什麼這個合約可以留著授權'];
-    rows.push({ label: [open.via === 'permit2' ? '透過 Permit2 給 ' : '給 ', link(spender), ` 的 ${name(open.token)} 授權`], value, note, gains: false });
+    const value: Inline = open.amount.kind === 'unlimited' ? [w.mayRemain] : [w.atMostTyped(field(open.amount.field))];
+    const note: Inline = open.via === 'permit2' ? [w.permit2Expiry] : [w.registryWhy];
+    rows.push({ label: w.allowance([link(spender)], name(open.token), open.via === 'permit2'), value, note, gains: false });
   }
   return rows;
 }
@@ -943,7 +886,7 @@ function ruleRow(key: string, name: string, rule: Rule, context: Context): ArgRo
   return {
     key,
     name,
-    chips: who === undefined ? [] : [{ who: who.who, label: chipLabel(context.template, who.who, who.field) }],
+    chips: who === undefined ? [] : [{ who: who.who, label: chipLabel(context.template, who.who, who.field, context.w) }],
     value: valueOf(node, context),
     words,
     qualifier,
@@ -954,7 +897,18 @@ function ruleRow(key: string, name: string, rule: Rule, context: Context): ArgRo
   };
 }
 
-const NO_DATA_ROW: ArgRow = { key: 'data', name: 'data', chips: [{ who: 'fixed', label: SHORT.fixed }], value: { cast: '0x', example: undefined }, words: ['沒有資料'], qualifier: undefined, id: undefined, ai: undefined, parts: [], doc: undefined };
+const noDataRow = (key: string, w: Words): ArgRow => ({
+  key,
+  name: 'data',
+  chips: [{ who: 'fixed', label: w.who.fixed }],
+  value: { cast: '0x', example: undefined },
+  words: [w.noData],
+  qualifier: undefined,
+  id: undefined,
+  ai: undefined,
+  parts: [],
+  doc: undefined,
+});
 
 function callBlocks(context: Context): CallBlock[] {
   const { template } = context;
@@ -967,31 +921,24 @@ function callBlocks(context: Context): CallBlock[] {
       const { fn } = tree.node;
       return { n, head: { kind: 'fn', contract: target.label, fn: fn.name, selector: fn.selector, doc: docLine(fn.signature, context) }, sends: sends(call, context, n), args: tree.args.map((arg) => argRow(arg, context, true)) };
     }
-    const text = zeroValue(call) ? `${before('呼叫', target.label)}，0 ETH、沒有資料` : before('轉 ETH 給', target.label);
-    return { n, head: { kind: 'no-data', text }, sends: undefined, args: [ruleRow(`${n}.to`, 'to', call.to, context), ruleRow(`${n}.value`, 'value', call.value, context), { ...NO_DATA_ROW, key: `${n}.data` }] };
+    const text = context.w.emptyHead(target.label, !zeroValue(call));
+    return { n, head: { kind: 'no-data', text }, sends: undefined, args: [ruleRow(`${n}.to`, 'to', call.to, context), ruleRow(`${n}.value`, 'value', call.value, context), noDataRow(`${n}.data`, context.w)] };
   });
 }
 
-const FREE_KEY: Readonly<Record<FreeClaim, string>> = {
-  scalar: '換成別的值，結果一樣或交易失敗',
-  proof: '換成別的值，交易就失敗',
-  unread: '合約不讀它，換成別的值結果一樣',
-  route: '換成別的值會走別的池子，但 Safe 給出和收到的數量仍要符合卡片，否則交易失敗或 MISMATCH',
-};
-
 /** The who-decides key for the words the rows use: a free field's line by each claim the template makes. */
-function keyItems(used: ReadonlySet<Who>, template: Template): KeyItem[] {
+function keyItems(used: ReadonlySet<Who>, template: Template, w: Words): KeyItem[] {
   return [
-    ...(used.has('you-type') ? [{ who: 'you-type' as const, label: SHORT['you-type'], means: '每次簽名填' }] : []),
-    ...(used.has('you-pick') ? [{ who: 'you-pick' as const, label: SHORT['you-pick'], means: '每次簽名選' }] : []),
-    ...(used.has('fixed') ? [{ who: 'fixed' as const, label: SHORT.fixed, means: '改了就 MISMATCH' }] : []),
-    ...(used.has('free') ? [...freeRules(template).claims].map((claim) => ({ who: 'free' as const, label: 'app 填，不限', means: FREE_KEY[claim] })) : []),
-    ...(used.has('free') && freeRules(template).member ? [{ who: 'free' as const, label: 'app 填，不限', means: '訂單裡的值，由雜湊鎖住' }] : []),
+    ...(used.has('you-type') ? [{ who: 'you-type' as const, label: w.who['you-type'], means: w.whoMeans['you-type'] }] : []),
+    ...(used.has('you-pick') ? [{ who: 'you-pick' as const, label: w.who['you-pick'], means: w.whoMeans['you-pick'] }] : []),
+    ...(used.has('fixed') ? [{ who: 'fixed' as const, label: w.who.fixed, means: w.whoMeans.fixed }] : []),
+    ...(used.has('free') ? [...freeRules(template).claims].map((claim) => ({ who: 'free' as const, label: w.appFills, means: w.freeKey[claim] })) : []),
+    ...(used.has('free') && freeRules(template).member ? [{ who: 'free' as const, label: w.appFills, means: w.whoMeans.member }] : []),
   ];
 }
 
 function flowSection(context: Context): Section {
-  const { template } = context;
+  const { template, w } = context;
   const calls = callBlocks(context);
   const safeTx = template.nonce === undefined ? [] : [ruleRow('nonce', 'nonce', template.nonce, context)];
   const rows = (list: readonly ArgRow[]): ArgRow[] => list.flatMap((row) => [row, ...rows(row.parts.flatMap((part) => part.rows))]);
@@ -1001,74 +948,70 @@ function flowSection(context: Context): Section {
   });
   const used = new Set([...rows([...safeTx, ...calls.flatMap((call) => call.args)]).flatMap((row) => row.chips.map((c) => c.who)), ...sent]);
   const { example } = context.inputs;
-  const chosen = chosenWords(used);
+  const chosen = chosenWords(used, w);
   const vault = context.inputs.subject.kind === 'template' ? context.inputs.subject.vault : undefined;
   let lead: Inline | undefined;
   if (chosen === '') lead = undefined;
   else if (example !== undefined && context.values.size > 0) {
     const amounts = [...template.card].flatMap(([field, card]): Inline[] => {
       const value = context.card?.get(field);
-      return card.kind === 'amount' && value?.kind === 'amount' ? [[`${fieldWord(template, field)} `, ...amountWords(value.value, card.of, context).words]] : [];
+      return card.kind === 'amount' && value?.kind === 'amount' ? [[`${fieldWord(template, field, w)} `, ...amountWords(value.value, card.of, context).words]] : [];
     });
-    const test = vault === undefined ? '第一筆測試交易 ' : `${vault.name} 的第一筆測試交易 `;
-    lead = [before(`標「例」的${chosen}的值取自`, test), { code: example.name }, ...amounts.flatMap((a) => ['，', ...a]), '。'];
+    lead = w.exampleLead(chosen, vault?.name, { code: example.name }, amounts);
   } else {
-    lead = [vault === undefined ? '沒有換值測試的記錄可以當例子' : `${vault.name} 沒有換值測試的記錄可以當例子`, '，每次簽名才決定的值只寫規則。'];
+    lead = w.noExample(vault?.name);
   }
   return {
     anchor: anchor('flow'),
-    label: '流程',
-    count: { kind: 'text', text: `${template.calls.length} 個呼叫` },
+    label: w.flow,
+    count: { kind: 'text', text: w.calls(template.calls.length) },
     body: {
       kind: 'flow',
-      flow: { diagram: sequence(context), key: keyItems(used, template), decoded: calls.some((call) => call.head.kind === 'fn'), example: lead, safeTx, calls, after: afterRows(context) },
+      flow: { diagram: sequence(context), key: keyItems(used, template, w), decoded: calls.some((call) => call.head.kind === 'fn'), example: lead, safeTx, calls, after: afterRows(context) },
     },
   };
 }
 
-/** The values the signer and the app give, in words, such as 你填、你選和 app 填. */
-const chosenWords = (used: ReadonlySet<Who>): string => {
-  const words = [...(used.has('you-type') ? ['你填'] : []), ...(used.has('you-pick') ? ['你選'] : []), ...(used.has('free') ? ['app 填'] : [])];
-  return words.length <= 1 ? words.join('') : before(`${words.slice(0, -1).join('、')}和`, words.at(-1) as string);
-};
+/** Who gives the values, in words, such as `you type, you pick and the app fills`. */
+const chosenWords = (used: ReadonlySet<Who>, w: Words): string =>
+  w.and((['you-type', 'you-pick', 'free'] as const).filter((who) => used.has(who)).map((who) => w.chosen[who]));
 
 type ProtocolNote = NonNullable<ReturnType<Notes['protocols']['get']>>;
 
 function sheetRows(context: Context, sheet: ProtocolSheet, facts: ProtocolFacts, note: ProtocolNote | undefined): ProtocolRow[] {
-  const { template, registry } = context;
+  const { template, registry, w } = context;
   const rows: ProtocolRow[] = [];
   const { listing } = sheet;
-  if (listing.kind === 'unread') rows.push({ label: 'TVL', value: ['讀不到'], sub: undefined, ai: undefined, nested: [] });
+  if (listing.kind === 'unread') rows.push({ label: 'TVL', value: [w.notRead], sub: undefined, ai: undefined, nested: [] });
   else {
     const { tvl, ethereumTvl, listedFrom } = listing.value;
-    rows.push({ label: 'TVL', value: tvl === undefined ? ['DefiLlama 沒給'] : [{ num: usd(tvl) }], sub: ethereumTvl === undefined ? undefined : ['Ethereum 上 ', { num: usd(ethereumTvl) }], ai: undefined, nested: [] });
-    rows.push({ label: '上線', value: [listedFrom === undefined ? 'DefiLlama 沒給' : { num: listedFrom }], sub: ['DefiLlama 開始列的日期'], ai: undefined, nested: [] });
+    rows.push({ label: 'TVL', value: tvl === undefined ? [w.noneFromDefillama] : [{ num: usd(tvl) }], sub: ethereumTvl === undefined ? undefined : [w.onEthereum, { num: usd(ethereumTvl) }], ai: undefined, nested: [] });
+    rows.push({ label: w.listed, value: [listedFrom === undefined ? w.noneFromDefillama : { num: listedFrom }], sub: [w.listedHow], ai: undefined, nested: [] });
   }
-  const proxyWords = { proxy: '是 proxy，可以換實作', 'not a proxy': '不是 proxy', 'not pinned': '沒有 code pin' } as const;
   const [only, ...more] = sheet.contracts;
   rows.push(
     only !== undefined && more.length === 0
-      ? { label: 'proxy', value: [proxyWords[only.proxy]], sub: [link(only.entry), '，從 code pin 讀到'], ai: undefined, nested: [] }
+      ? { label: 'proxy', value: [w.proxy[only.proxy]], sub: [link(only.entry), w.fromPin], ai: undefined, nested: [] }
       : {
           label: 'proxy',
-          value: [`${sheet.contracts.length} 個合約`],
-          sub: ['從 code pin 讀到'],
+          value: [w.contracts(sheet.contracts.length)],
+          sub: [w.fromPinAlone],
           ai: undefined,
-          nested: sheet.contracts.map(({ entry, proxy }) => ({ label: [link(entry)], value: [proxyWords[proxy]], ai: undefined })),
+          nested: sheet.contracts.map(({ entry, proxy }) => ({ label: [link(entry)], value: [w.proxy[proxy]], ai: undefined })),
         },
   );
-  if (note !== undefined) rows.push({ label: '稽核', value: [], sub: undefined, ai: research(note.audits.text, note.audits.sources), nested: [] });
+  if (note !== undefined) rows.push({ label: w.audits, value: [], sub: undefined, ai: research(note.audits.text, note.audits.sources), nested: [] });
   const incidents = note?.incidents ?? [];
   rows.push({
-    label: '事故',
-    value: listing.kind === 'unread' ? ['讀不到'] : [`${sheet.hacks.length} 起`],
-    sub: ['DefiLlama hacks 列在這個協議或它上層協議下的'],
+    label: w.incidents,
+    value: listing.kind === 'unread' ? [w.notRead] : [w.incidentCount(sheet.hacks.length)],
+    sub: [w.incidentsHow],
     ai: undefined,
     nested: sheet.hacks.map((hack, i) => {
       const incident = incidents[i];
       return {
         label: [{ num: hack.date }],
-        value: [hack.amount === undefined ? '金額沒給' : { num: usd(hack.amount) }],
+        value: [hack.amount === undefined ? w.noAmount : { num: usd(hack.amount) }],
         ai: incident === undefined ? undefined : research(incident.text, incident.sources),
       };
     }),
@@ -1077,7 +1020,7 @@ function sheetRows(context: Context, sheet: ProtocolSheet, facts: ProtocolFacts,
     for (const reading of facts.readings.filter((r) => r.fact === fact)) {
       const value = reading.value;
       const nested: ProtocolRow['nested'][number][] = [];
-      if (reading.read.kind === 'unread') nested.push({ label: [{ code: fact.fn.name }], value: ['讀不到'], ai: undefined });
+      if (reading.read.kind === 'unread') nested.push({ label: [{ code: fact.fn.name }], value: [w.notRead], ai: undefined });
       else {
         const amounts = reading.read.value;
         fact.units.forEach((unit, i) => {
@@ -1086,7 +1029,7 @@ function sheetRows(context: Context, sheet: ProtocolSheet, facts: ProtocolFacts,
           const name = amount.token === 'eth' ? 'ETH' : (registry.byAddress.get(amount.token)?.name ?? '');
           nested.push({
             label: [{ code: paramName(fact.returns[unit.value] as AbiParam, unit.value) }],
-            value: decimals === undefined ? [{ num: amount.amount.toString() }, ' 最小單位'] : [{ num: groupedTokens(amount.amount, decimals, 2) }, ` ${name}`],
+            value: decimals === undefined ? [{ num: amount.amount.toString() }, w.baseUnits] : [{ num: groupedTokens(amount.amount, decimals, 2) }, ` ${name}`],
             ai: undefined,
           });
         });
@@ -1094,13 +1037,13 @@ function sheetRows(context: Context, sheet: ProtocolSheet, facts: ProtocolFacts,
           const [a, b] = fact.ratio;
           const at = (position: number) => amounts[fact.units.findIndex((u) => u.value === position)]?.amount as bigint;
           const named = (position: number) => paramName(fact.returns[position] as AbiParam, position);
-          nested.push({ label: [{ code: `${named(a)} / ${named(b)}` }], value: [{ num: percent(at(a), at(b)) }], ai: undefined });
+          nested.push({ label: [{ code: `${named(a)} / ${named(b)}` }], value: [{ num: percent(at(a), at(b), w) }], ai: undefined });
         }
       }
       rows.push({
         label: value.kind === 'market' ? value.market.name : value.entry.name,
-        value: value.kind === 'market' ? [marketWords(value.market)] : [link(value.entry)],
-        sub: [`${fact.to}.${fact.fn.name}，區塊 ${facts.block.number}`],
+        value: value.kind === 'market' ? [marketWords(value.market, w)] : [link(value.entry)],
+        sub: [w.atBlock(`${fact.to}.${fact.fn.name}`, `${facts.block.number}`)],
         ai: undefined,
         nested,
       });
@@ -1109,31 +1052,31 @@ function sheetRows(context: Context, sheet: ProtocolSheet, facts: ProtocolFacts,
   return rows;
 }
 
-function unreadRows(note: ProtocolNote | undefined): ProtocolRow[] {
+function unreadRows(note: ProtocolNote | undefined, w: Words): ProtocolRow[] {
   return [
-    { label: '協議資料', value: ['沒讀到'], sub: ['這份報告的紀錄沒有協議資料：TVL、上線日期、proxy、事故和 facts 都沒有程式結果'], ai: undefined, nested: [] },
+    { label: w.protocolData, value: [w.notReadShort], sub: [w.noProtocolData], ai: undefined, nested: [] },
     ...(note === undefined
       ? []
       : [
-          { label: '稽核', value: [], sub: undefined, ai: research(note.audits.text, note.audits.sources), nested: [] },
-          { label: '事故', value: ['沒讀到'], sub: undefined, ai: undefined, nested: note.incidents.map((incident, i) => ({ label: [`${i + 1}`], value: [], ai: research(incident.text, incident.sources) })) },
+          { label: w.audits, value: [], sub: undefined, ai: research(note.audits.text, note.audits.sources), nested: [] },
+          { label: w.incidents, value: [w.notReadShort], sub: undefined, ai: undefined, nested: note.incidents.map((incident, i) => ({ label: [`${i + 1}`], value: [], ai: research(incident.text, incident.sources) })) },
         ]),
   ];
 }
 
 function protocolSections(context: Context): Section[] {
-  const { facts, notes, template, registry } = context;
+  const { facts, notes, template, registry, w } = context;
   const slugs = (facts?.protocols ?? factsScope(template, registry, context.ledger.entries).protocols).map((p) => p.slug);
   return slugs.map((slug): Section => {
     const note = notes.protocols.get(slug);
     const sheet = facts?.protocols.find((s) => s.slug === slug);
-    const rows = facts === undefined || sheet === undefined ? unreadRows(note) : sheetRows(context, sheet, facts, note);
+    const rows = facts === undefined || sheet === undefined ? unreadRows(note, w) : sheetRows(context, sheet, facts, note);
     const apis = context.ledger.entries.flatMap((e) => (e.defillama === slug && e.apiSource !== undefined ? [e.apiSource.url] : []));
     const sources = [
       { label: 'DefiLlama', href: parseHttpsUrl(`https://defillama.com/protocol/${slug}`) },
       { label: 'DefiLlama hacks', href: parseHttpsUrl('https://defillama.com/hacks') },
-      { label: '鏈上', href: undefined },
-      ...[...new Set(apis)].map((href) => ({ label: '協議 API', href })),
+      { label: w.onChain, href: undefined },
+      ...[...new Set(apis)].map((href) => ({ label: w.readApi, href })),
     ];
     return {
       anchor: anchor(`protocol-${slug}`),
@@ -1144,25 +1087,25 @@ function protocolSections(context: Context): Section[] {
   });
 }
 
-const POINT_WORDS: Readonly<Record<Exclude<StoredPoint['assets']['kind'], 'amount'>, string>> = { unread: '讀不到', 'no-code': '還沒有程式碼', reverted: 'totalAssets() revert' };
-
 /** The card's vault in a per-vault report, from its stored `pnpm vault-evidence` output alone. */
 function vaultSection(context: Context): Section[] {
   const { subject } = context.inputs;
   if (subject.kind !== 'template' || subject.vault === undefined) return [];
+  const { w } = context;
   const vault = subject.vault;
   const text = context.inputs.vaults.get(vault.name);
-  const section = (block: VaultBlock): Section[] => [{ anchor: anchor(`vault-${vault.name}`), label: '金庫', count: undefined, body: { kind: 'vault', vault: block } }];
-  const lead: Inline = [link(vault), '：程式記錄的 ', { code: 'pnpm vault-evidence' }, ' 輸出，每個數字都同時問兩家節點。這裡不換算成美元。'];
-  if (text === undefined) return section({ lead: [link(vault), '：沒有 ', { code: 'pnpm vault-evidence' }, ' 的記錄。'], rows: [], bars: [], most: undefined });
+  const section = (block: VaultBlock): Section[] => [{ anchor: anchor(`vault-${vault.name}`), label: w.vault, count: undefined, body: { kind: 'vault', vault: block } }];
+  const lead: Inline = w.vaultLead(link(vault), { code: 'pnpm vault-evidence' });
+  if (text === undefined) return section({ lead: w.vaultNone(link(vault), { code: 'pnpm vault-evidence' }), rows: [], bars: [], most: undefined });
   const evidence = readStoredEvidence(text, vault, context.registry);
   const unit = evidence.asset?.name === undefined ? '' : ` ${evidence.asset.name}`;
-  const amount = (value: bigint): string => (evidence.asset === undefined ? `${value} 最小單位` : `${groupedTokens(value, evidence.asset.decimals, 2)}${unit}`);
+  const amount = (value: bigint): string => (evidence.asset === undefined ? `${value}${w.baseUnits}` : `${groupedTokens(value, evidence.asset.decimals, 2)}${unit}`);
+  const point = (kind: Exclude<StoredPoint['assets']['kind'], 'amount'>): string => w.point[kind];
   const most = evidence.points.reduce<bigint | undefined>((top, p) => (p.assets.kind === 'amount' && (top === undefined || p.assets.amount > top) ? p.assets.amount : top), undefined);
   const bars = evidence.points.map(
     (p): VaultBar => ({
-      date: p.date ?? '日期不明',
-      words: p.assets.kind === 'amount' ? amount(p.assets.amount) : POINT_WORDS[p.assets.kind],
+      date: p.date ?? w.dateUnknown,
+      words: p.assets.kind === 'amount' ? amount(p.assets.amount) : point(p.assets.kind),
       share: p.assets.kind !== 'amount' || most === undefined || most === 0n ? undefined : Number(p.assets.amount) / Number(most),
     }),
   );
@@ -1170,54 +1113,52 @@ function vaultSection(context: Context): Section[] {
   const { factory } = vault.attributes;
   const rows: VaultBlock['rows'] = [
     {
-      label: '工廠',
+      label: w.factory,
       value:
         evidence.admitted !== undefined
-          ? [evidence.admitted.factory, ' 回答 ', { code: evidence.admitted.check }, ` = ${evidence.admitted.answer}`]
-          : [factory === undefined ? '沒有登記工廠，沒有工廠為它的程式碼背書' : `沒有記錄到 ${factory} 回答它建立了這個金庫`],
-      note: evidence.admitted === undefined ? [] : [`區塊 ${evidence.admitted.block}`],
+          ? w.answers(evidence.admitted.factory, { code: evidence.admitted.check }, `${evidence.admitted.answer}`)
+          : [factory === undefined ? w.noFactory : w.noFactoryAnswer(factory)],
+      note: evidence.admitted === undefined ? [] : [w.block(`${evidence.admitted.block}`)],
     },
     {
-      label: '現在的 totalAssets',
-      value: latest === undefined ? ['讀不到'] : [{ num: latest.assets.kind === 'amount' ? amount(latest.assets.amount) : POINT_WORDS[latest.assets.kind] }],
-      note: latest === undefined ? [] : [`${latest.date ?? '日期不明'}，區塊 ${latest.block}`],
+      label: w.totalAssetsNow,
+      value: latest === undefined ? [w.notRead] : [{ num: latest.assets.kind === 'amount' ? amount(latest.assets.amount) : point(latest.assets.kind) }],
+      note: latest === undefined ? [] : [w.atBlock(latest.date ?? w.dateUnknown, `${latest.block}`)],
     },
     ...(evidence.holders === undefined
-      ? [{ label: '持有人', value: ['讀不到'], note: [] }]
+      ? [{ label: w.holders, value: [w.notRead], note: [] }]
       : [
-          { label: '持有人', value: [{ num: `${evidence.holders.holders}` }, ' 個地址持有，曾經收過的 ', { num: `${evidence.holders.candidates}` }, ' 個'], note: [] },
-          { label: '最大持有人', value: [{ num: evidence.holders.largest ?? '讀不到' }], note: ['占全部股份'] },
-          { label: '前 10 名', value: [{ num: evidence.holders.top10 }], note: ['占全部股份'] },
+          { label: w.holders, value: w.holderCount({ num: `${evidence.holders.holders}` }, { num: `${evidence.holders.candidates}` }), note: [] },
+          { label: w.largest, value: [{ num: evidence.holders.largest ?? w.notRead }], note: [w.ofShares] },
+          { label: w.top10, value: [{ num: evidence.holders.top10 }], note: [w.ofShares] },
         ]),
   ];
   return section({ lead, rows, bars, most: most === undefined ? undefined : amount(most) });
 }
 
 function reviewTitle(result: Result, context: Context): { readonly title: Inline; readonly why: Inline } {
-  const words = FINDING_WORDS[result.finding.kind] ?? { title: '要你看', why: '' };
+  const { w } = context;
+  const words = w.finding[result.finding.kind] ?? { title: w.needsReview, why: '' };
   if (result.about.kind === 'fixture') {
     const detail = result.finding.kind === 'judged-otherwise' ? ` ${result.finding.detail}` : '';
-    return { title: ['測試交易 ', { code: result.about.name }, `：${words.title}`], why: [`${words.why}${detail}`] };
+    return { title: w.fixtureTitle({ code: result.about.name }, words.title), why: [`${words.why}${detail}`] };
   }
   const name = result.about.entry.name;
   const doc = /\/doc\.(0x[0-9a-f]{8})\.(\w+)$/.exec(result.id);
   if (doc !== null && context.inputs.subject.kind === 'template') {
     const found = context.inputs.subject.docs.find((d) => d.fn.selector === doc[1]);
-    const page = found?.standard === undefined ? '文件頁' : `${found.standard.name} 標準頁`;
-    const why = found?.standard !== undefined && result.finding.kind === 'name-not-on-page' ? `標準頁上沒有這個函式在 ${found.standard.name} 裡的宣告。` : words.why;
-    return { title: [`${name}：${page} `, { code: found?.fn.name ?? (doc[1] as string) }, `，${words.title}`], why: [why] };
+    const page = found?.standard === undefined ? w.docsPage : w.standardPage(found.standard.name);
+    const why = found?.standard !== undefined && result.finding.kind === 'name-not-on-page' ? w.notInStandard(found.standard.name) : words.why;
+    return { title: w.docTitle(name, page, { code: found?.fn.name ?? (doc[1] as string) }, words.title), why: [why] };
   }
   if (result.finding.kind === 'few-confirmations') {
-    return {
-      title: [`${name}：地址${confirmedWords(result.about.entry, result.finding.by)}`],
-      why: [`至少要 ${MIN_CONFIRMATIONS} 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。`],
-    };
+    return { title: [w.addressConfirmed(name, confirmedWords(result.about.entry, result.finding.by, w))], why: [w.fewConfirmationsWhy(MIN_CONFIRMATIONS)] };
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
-  const where = span !== null ? `（第 ${span[1]} 段）` : result.id.endsWith('/code.today') ? '（最新區塊）' : '';
-  const refused = result.finding.kind === 'refused' ? ` 原因：${result.finding.why}。` : '';
-  const source = result.source === undefined ? '' : `${sourceWord(result.about.entry, result.source.of)}，`;
-  return { title: [`${name}：${source}${words.title}${where}`], why: [`${words.why}${refused}`] };
+  const where = span !== null ? w.span(span[1] as string) : result.id.endsWith('/code.today') ? w.latestBlock : '';
+  const refused = result.finding.kind === 'refused' ? w.refusedWhy(result.finding.why) : '';
+  const source = result.source === undefined ? undefined : sourceWord(result.about.entry, result.source.of, w);
+  return { title: [w.resultTitle(name, source, words.title, where)], why: [`${words.why}${refused}`] };
 }
 
 function reviewSection(context: Context): Section {
@@ -1237,66 +1178,51 @@ function reviewSection(context: Context): Section {
   const judgments = notes.judgments.map((j) => ({ text: research(j.text, j.sources), recommendation: research(j.recommendation) }));
   const counts = [...(rows.length === 0 ? [] : [{ state: worst(forSigner(ledger)), n: rows.length }]), ...(judgments.length === 0 ? [] : [{ state: 'ask' as const, n: judgments.length }])];
   const count: RailCount = { kind: 'states', counts: counts.length === 0 ? [{ state: 'ok', n: 0 }] : counts };
-  return { anchor: anchor('review'), label: '待確認', count, body: { kind: 'review', rows, judgments } };
+  return { anchor: anchor('review'), label: context.w.review, count, body: { kind: 'review', rows, judgments } };
 }
-
-const WALLET_WORDS: Readonly<Record<string, string>> = {
-  assets: '金額',
-  amount: '金額',
-  value: '金額',
-  shares: '股份數',
-  deadline: '期限',
-  loanToken: '借出代幣',
-  collateralToken: '抵押代幣',
-  oracle: 'oracle',
-  irm: '利率模型',
-  lltv: 'LLTV',
-  receiver: '收款地址',
-  spender: '被授權者',
-  referralFeePct: '推薦費比例',
-  referralFeeRecipient: '推薦費收款地址',
-};
 
 /** The template's rule in the signer's words, for the wallet table: never the example's value. */
 function ruleWords(rule: Rule, context: Context): Inline {
+  const { w } = context;
   switch (rule.kind) {
     case 'contract':
       return [link(context.registry.entries.get(rule.name) as RegistryEntry)];
     case 'safe':
-      return ['你的 Safe'];
+      return [w.safe];
     case 'const':
-      return rule.value.kind === 'address' && rule.value.value === ZERO_ADDRESS ? ['無（零地址）'] : [{ mono: constCast(rule.value) }];
+      return rule.value.kind === 'address' && rule.value.value === ZERO_ADDRESS ? [w.zeroAddress] : [{ mono: constCast(rule.value) }];
     case 'card': {
       const only = onlyEntry(rule.ref, context);
       if (only !== undefined) return [link(only)];
       const kind = context.template.card.get(rule.ref.field)?.kind;
-      return [before(kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
+      const ref = refWord(context.template, rule.ref, w);
+      return [kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? w.typed(ref) : w.picked(ref)];
     }
     case 'owner-before':
-      return [before('簽署人名單裡排在前面的', refWord(context.template, rule.ref))];
+      return [w.ownerBeforeShort(refWord(context.template, rule.ref, w))];
     case 'free':
-      return ['不限'];
+      return [w.any];
     case 'equals':
-      return ['跟 ', { code: rule.path }, ' 同一個數'];
+      return w.sameAs({ code: rule.path });
     case 'share-price':
-      return [rule.bound === 'max' ? '價格上限' : '價格下限'];
+      return [rule.bound === 'max' ? w.priceMax : w.priceMin];
     case 'at-least':
-      return [before('至少你填的', fieldWord(context.template, rule.field))];
+      return [w.atLeastTyped(fieldWord(context.template, rule.field, w))];
     case 'call':
-      return ['呼叫 ', { code: rule.call.fn.name }, '，參數見流程'];
+      return w.callsThen({ code: rule.call.fn.name });
     case 'keccak':
-      return ['keccak256，', { code: rule.call.fn.name }];
+      return w.keccak({ code: rule.call.fn.name });
     case 'items':
     case 'fields':
     case 'packed':
     case 'eip712':
-      return ['見流程'];
+      return [w.seeFlow];
   }
 }
 
 function walletSection(context: Context): Section {
-  const { template, registry, inputs } = context;
-  const section = (view: WalletView): Section => ({ anchor: anchor('wallet'), label: '錢包顯示', count: undefined, body: { kind: 'wallet', view } });
+  const { template, registry, inputs, w } = context;
+  const section = (view: WalletView): Section => ({ anchor: anchor('wallet'), label: w.wallet, count: undefined, body: { kind: 'wallet', view } });
   if (template.calls.length > 1) return section({ kind: 'multisend', calls: template.calls.length });
   if (template.calls.every((call) => call.data === 'empty')) return section({ kind: 'no-data' });
   const reports = inputs.erc7730.reports;
@@ -1313,7 +1239,7 @@ function walletSection(context: Context): Section {
     const fn = first.fn;
     const describedNames = new Set(described.map((d) => d.entry));
     const without = target.names.filter((name) => !describedNames.has(name));
-    if (without.length > 0) lines.push([`呼叫 ${n}：列的是 ${[...describedNames].join('、')} 的描述檔；${without.join('、')} 沒有描述檔，錢包只顯示原始資料。`]);
+    if (without.length > 0) lines.push([w.descriptorsOf(n, [...describedNames], without)]);
     const flat = (facts: readonly FieldFact[], prefix = ''): { path: string; format: string; visible: string }[] =>
       facts.flatMap((f) => (f.kind === 'group' ? flat(f.fields, `${prefix}${f.path}.`) : [{ path: `${prefix}${f.path}`, format: f.format, visible: f.visible }]));
     const shown = flat(fn.fields).filter((f) => f.visible !== 'never' && f.format !== 'none');
@@ -1330,11 +1256,11 @@ function walletSection(context: Context): Section {
       return found;
     };
     const rows = shown.flatMap((field): { readonly label: Inline; readonly value: Inline }[] => {
-      if (field.path === '@.value') return [{ label: ['送出的 ETH'], value: ruleWords(call.value, context) }];
+      if (field.path === '@.value') return [{ label: [w.ethSent], value: ruleWords(call.value, context) }];
       const targets = find(field.path);
-      if (targets.length === 0) return [{ label: ['不是這個函式的參數'], value: ['—'] }];
+      if (targets.length === 0) return [{ label: [w.notAnArgument], value: [w.noValue] }];
       return targets.map(({ path, node }) => ({
-        label: targets.length > 1 ? [{ code: path }] : [Object.hasOwn(WALLET_WORDS, node.name) ? (WALLET_WORDS[node.name] as string) : node.name],
+        label: targets.length > 1 ? [{ code: path }] : [Object.hasOwn(w.walletArg, node.name) ? (w.walletArg[node.name] as string) : node.name],
         value: ruleWords(node.rule, context),
       }));
     });
@@ -1349,39 +1275,34 @@ function walletSection(context: Context): Section {
       }
     };
     visit(args, '');
-    if (hidden.length > 0) lines.push([`呼叫 ${n}：錢包不顯示 `, ...hidden.flatMap((h, i): Span[] => [...(i === 0 ? [] : ['、']), { code: h }]), '。']);
+    if (hidden.length > 0) lines.push(w.walletHides(n, hidden.map((h): Span => ({ code: h }))));
     const blind = args.some((a) => wholeMarket(a.rule, template) !== undefined && a.children.some((c) => hidden.includes(`${a.name}.${c.name}`)));
-    if (blind) lines.push([`呼叫 ${n}：同樣兩種代幣的不同 market，只看錢包分不出來。`]);
+    if (blind) lines.push([w.sameTokens(n)]);
     return { n, title, rows };
   });
   return section({ kind: 'calls', calls, lines });
 }
 
-function codeLines(ledger: Ledger, entry: RegistryEntry, signed: ReadonlySet<string>): Inline[] {
+function codeLines(ledger: Ledger, entry: RegistryEntry, signed: ReadonlySet<string>, w: Words): Inline[] {
   const lines: Inline[] = [];
   const notCalled = ledger.results.some((r) => r.finding.kind === 'not-called' && r.about.kind === 'entry' && r.about.entry.name === entry.name);
   if (notCalled) {
     const dependents = ledger.entries.filter((other) => other.dependsOn?.includes(entry.name));
-    const links = dependents.flatMap((other, i): Span[] => [...(i === 0 ? [] : ['、']), { href: entryAnchor(other.name), label: other.name }]);
-    const checked: Inline =
-      dependents.length > 0
-        ? ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。']
-        : signed.has(entry.name)
-          ? ['每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。']
-          : ['簽名時不碰；報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。'];
-    lines.push(['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。', ...(entry.code === undefined ? [] : checked)]);
+    const links = dependents.flatMap((other, i): Span[] => [...(i === 0 ? [] : [w.sep]), { href: entryAnchor(other.name), label: other.name }]);
+    const checked: Inline = dependents.length > 0 ? w.checkedWith(links) : signed.has(entry.name) ? [w.checkedWhenUsed] : [w.readAtLatest];
+    lines.push(w.noProof(entry.code === undefined ? [] : checked));
   }
   const routes = entry.code?.current.pin.routes;
   if (routes !== undefined) {
-    lines.push([`它依函式選擇器把呼叫分給各自的實作${notCalled ? '' : '，沒有一份程式碼能做 ABI 證明'}。code pin 的 seeds 接到 ${routes.length} 個實作：`]);
-    for (const route of routes) lines.push([{ mono: checksumAddress(route.address) }, '，程式碼 hash ', { mono: route.hash }, `，${route.selectors.length} 個函式`]);
-    lines.push(['沒有 seed 接到的實作，code pin 沒有記錄，程式也不檢查。']);
+    lines.push([w.routes(routes.length, notCalled)]);
+    for (const route of routes) lines.push(w.route({ mono: checksumAddress(route.address) }, { mono: route.hash }, route.selectors.length));
+    lines.push([w.unseeded]);
   }
   return lines;
 }
 
 function addressSection(context: Context): Section[] {
-  const { ledger, notes } = context;
+  const { ledger, notes, w } = context;
   if (ledger.entries.length === 0) return [];
   const row = (entry: RegistryEntry): AddressRow => {
     const results = ledger.results.filter((r) => r.about.kind === 'entry' && r.about.entry.name === entry.name);
@@ -1393,11 +1314,11 @@ function addressSection(context: Context): Section[] {
     const note = notes.entries?.get(entry.name);
     const sources = sourcesOf(ledger, entry).map(
       (line): SourceLine => ({
-        label: rowWord(entry, line.source, line.shared),
+        label: rowWord(entry, line.source, line.shared, w),
         href: line.link,
         state: line.state,
         phrase: line.phrase,
-        site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, places: placeLinks(entry, line.site.places) },
+        site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, places: placeLinks(entry, line.site.places, w) },
       }),
     );
     return {
@@ -1406,43 +1327,39 @@ function addressSection(context: Context): Section[] {
       state: worst(results),
       role: note?.role === undefined ? undefined : research(note.role),
       confidence: level,
-      reviewed: reviews.length === 0 ? undefined : reviews.some((r) => r.status === 'concern') ? 'AI 有疑慮' : 'AI 已確認',
+      reviewed: reviews.length === 0 ? undefined : reviews.some((r) => r.status === 'concern') ? 'concern' : 'confirmed',
       address: checksumAddress(entry.address),
       sources,
-      confirmed: confirmedWords(entry, confirmations(ledger, entry)),
-      codeLines: codeLines(ledger, entry, signedEntryNames(context.template, context.registry)),
-      aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'AI'), result: AI_RESULTS[s.result] })),
+      confirmed: confirmedWords(entry, confirmations(ledger, entry), w),
+      codeLines: codeLines(ledger, entry, signedEntryNames(context.template, context.registry), w),
+      aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'ai'), result: s.result })),
     };
   };
   const { open, folded } = addressRows(ledger);
   return [
     {
       anchor: anchor('addresses'),
-      label: '地址',
+      label: w.addresses,
       count: { kind: 'text', text: `${ledger.entries.length}` },
       body: { kind: 'addresses', open: open.map(row), folded: folded.map(row) },
     },
   ];
 }
 
-const NO_SELECTOR_WORDS: Readonly<Record<string, string>> = { 'no data': '（沒有資料）', 'contract creation': '（建立合約）' };
-
 /** A search anchor in words: a mint or burn of a vault's shares is a deposit or a withdrawal, of any other token only a mint or burn. */
-function anchorWords(anchor: string, token: RegistryEntry | undefined): string {
+function anchorWords(anchor: string, token: RegistryEntry | undefined, w: Words): string {
   const vault = token?.kind === 'vault';
-  if (anchor === 'mint') return vault ? '鑄造（存款）' : '鑄造';
-  if (anchor === 'burn') return vault ? '銷毀（提款）' : '銷毀';
-  return '轉帳';
+  if (anchor === 'mint') return vault ? w.anchor.mintVault : w.anchor.mint;
+  if (anchor === 'burn') return vault ? w.anchor.burnVault : w.anchor.burn;
+  return w.anchor.transfer;
 }
 
 type Misfit = Extract<TxStudy, { kind: 'misfit' }>;
 type Fit = Extract<TxStudy, { kind: 'fit' }>;
 type Studied = Fit | Misfit;
 
-const OUTSIDE_WORDS: Readonly<Record<OutsideKind, string>> = { market: '市場', token: '代幣', vault: '金庫', address: '地址' };
-
-/** What fits outside the registry used, such as `用的是 registry 外的市場或地址`. */
-const outsideWords = (fits: readonly Fit[]): string => `用的是 registry 外的${[...new Set(fits.flatMap((fit) => fit.outside.map((o) => OUTSIDE_WORDS[o.kind])))].join('或')}`;
+/** What fits outside the registry used, such as `use a market or address outside the registry`. */
+const outsideWords = (fits: readonly Fit[], w: Words): string => w.outside([...new Set(fits.flatMap((fit) => fit.outside.map((o) => w.outsideKind[o.kind])))]);
 
 /**
  * The group a transaction found by several recordings keeps, lowest first: exactly the template, which no anchor
@@ -1470,50 +1387,56 @@ function knownFunctions(context: Context): Map<string, string> {
 const txLink = (hash: Hex): Span => ({ href: parseHttpsUrl(`https://etherscan.io/tx/${hash}`) as HttpsUrl, label: `${hash.slice(0, 10)}…` });
 
 /** Why a group did not have the template's shape, in the signer's words; `template` names the template's calls in order. */
-function misfitWords(reason: MisfitReason, template: string, registry: Registry): Inline {
+function misfitWords(reason: MisfitReason, template: string, registry: Registry, w: Words): Inline {
   const last = (at: string): string => at.split('.').at(-1) ?? at;
   switch (reason.kind) {
     case 'entry': {
       const named = registry.byAddress.get(reason.actual)?.name;
       const actual: Span = named === undefined ? { mono: checksumAddress(reason.actual) } : named;
-      const allowed = reason.expected.length === 1 ? `模板的 ${reason.expected[0]}` : `模板允許的 ${reason.expected.slice(0, -1).join('、')} 或 ${reason.expected.at(-1)}`;
-      return last(reason.at) === 'to' ? ['呼叫的合約是 ', actual, `，不是${allowed}`] : [{ code: last(reason.at) }, ' 是 ', actual, `，不是${allowed}`];
+      const allowed = w.misfit.allowed(reason.expected);
+      return last(reason.at) === 'to' ? w.misfit.to(actual, allowed) : w.misfit.entry({ code: last(reason.at) }, actual, allowed);
     }
     case 'calls':
-      return ['呼叫跟模板不同，模板是 ', { code: template }];
+      return w.misfit.calls({ code: template });
     case 'items':
-      return [{ code: last(reason.at) }, ` 有 ${reason.got} 項，模板是 ${reason.expected} 項`];
+      return w.misfit.items({ code: last(reason.at) }, reason.got, reason.expected);
     case 'field':
-      return [{ code: reason.at }, ' 的值跟模板不同：模板要 ', { mono: reason.expected }, '，交易是 ', { mono: reason.actual }];
+      return w.misfit.field({ code: reason.at }, { mono: reason.expected }, { mono: reason.actual });
     case 'not-sender':
-      return [{ code: reason.at }, ' 不是送出交易的 Safe 或地址'];
+      return w.misfit.notSender({ code: reason.at });
     case 'differs':
-      return [{ code: reason.at }, ' 跟 ', { code: reason.other }, ' 的值不同，模板要兩個一樣'];
+      return w.misfit.differs({ code: reason.at }, { code: reason.other });
     case 'trailer':
-      return ['參數後面多了模板不允許的位元組，在 ', { code: reason.at }];
+      return w.misfit.trailer({ code: reason.at });
     case 'foreign-delegatecall':
-      return ['delegatecall 到不是官方 MultiSend 的合約'];
+      return [w.misfit.foreignDelegatecall];
     case 'multisend-noncanonical':
-      return ['MultiSend 的編碼不標準'];
+      return [w.misfit.noncanonical];
     case 'other':
-      return ['形狀跟模板不同'];
+      return [w.misfit.other];
   }
 }
 
 function pastSection(context: Context): Section {
-  const { registry, template } = context;
+  const { registry, template, w } = context;
   const nameOf = (address: string): string => registry.byAddress.get(address.toLowerCase() as Address)?.name ?? checksumAddress(address as Address);
   const known = knownFunctions(context);
   const fnOf = (selector: string): string => known.get(selector) ?? selector;
+  const noSelector: Readonly<Record<string, string>> = { 'no data': w.noDataParens, 'contract creation': w.creation };
   /** Another operation's call: its contract by registry name or full address, then its function. */
   const otherWords = (to: Address | undefined, selector: string | undefined): string => {
-    const fn = selector === undefined ? '（沒有資料）' : /^0x[0-9a-f]{8}$/.test(selector) ? fnOf(selector) : (NO_SELECTOR_WORDS[selector] ?? selector);
-    return to === undefined ? fn : `${registry.byAddress.get(to.toLowerCase() as Address)?.name ?? checksumAddress(to)}${fn.startsWith('（') ? '' : '.'}${fn}`;
+    const named = selector !== undefined && /^0x[0-9a-f]{8}$/.test(selector);
+    const fn = selector === undefined ? w.noDataParens : named ? fnOf(selector) : (noSelector[selector] ?? selector);
+    if (to === undefined) return fn;
+    const contract = registry.byAddress.get(to.toLowerCase() as Address)?.name ?? checksumAddress(to);
+    return named || (selector !== undefined && noSelector[selector] === undefined) ? `${contract}.${fn}` : w.bareCall(contract, fn);
   };
-  const callWords = ({ to, selector }: CallName): string =>
-    `${to === undefined ? '別的合約' : (registry.byAddress.get(to)?.name ?? checksumAddress(to))}${selector === undefined ? '（沒有資料）' : `.${fnOf(selector)}`}`;
+  const callWords = ({ to, selector }: CallName): string => {
+    const contract = to === undefined ? w.otherContract : (registry.byAddress.get(to)?.name ?? checksumAddress(to));
+    return selector === undefined ? w.bareCall(contract, w.noDataParens) : `${contract}.${fnOf(selector)}`;
+  };
   const sequence = (calls: readonly CallName[]): Inline => [{ code: calls.map(callWords).join(' → ') }];
-  const templateCalls = template.calls.map((call) => (call.data === 'empty' ? '（沒有資料）' : call.data.fn.name)).join(' → ');
+  const templateCalls = template.calls.map((call) => (call.data === 'empty' ? w.noDataParens : call.data.fn.name)).join(' → ');
   const otherOperation = (s: Studied): boolean => isOtherOperation(s, template);
   const groupsOf = (misfits: readonly Misfit[]): PastGroup[] => {
     const names = functionNames(template);
@@ -1531,7 +1454,7 @@ function pastSection(context: Context): Section {
           count: members.length,
           senders: new Set(members.map((m) => m.sender.address)).size,
           calls: calls === undefined ? undefined : sequence(calls),
-          reason: misfitWords(reason, templateCalls, registry),
+          reason: misfitWords(reason, templateCalls, registry, w),
           examples: members.slice(0, 3).map((m) => txLink(m.hash)),
         };
       });
@@ -1550,10 +1473,7 @@ function pastSection(context: Context): Section {
           count: members.length,
           senders: new Set(members.map((m) => m.sender.address)).size,
           calls: undefined,
-          reason: [
-            '形狀一樣，但 ',
-            ...outside.flatMap((o, i): Span[] => [...(i === 0 ? [] : ['、']), { code: o.at.endsWith('.to') ? o.at : (o.at.split('.').at(-1) ?? o.at) }, ` 用的是 registry 外的${OUTSIDE_WORDS[o.kind]}`]),
-          ],
+          reason: w.sameShapeBut(outside.map((o) => [{ code: o.at.endsWith('.to') ? o.at : (o.at.split('.').at(-1) ?? o.at) }, w.outsideKind[o.kind]] as const)),
           examples: members.slice(0, 3).map((m) => txLink(m.hash)),
         };
       });
@@ -1561,30 +1481,23 @@ function pastSection(context: Context): Section {
   const recordings = context.inputs.pastTxs.map(({ file, query, run }): PastRecording => {
     const studied = run.studies.filter((s): s is Studied => s.kind === 'fit' || s.kind === 'misfit');
     const counted = studied.filter((s) => !otherOperation(s));
-    const block = (title: string, of: readonly Studied[], who: string): PastBlock => {
+    const block = (title: string, of: readonly Studied[], who: 'safe' | 'address'): PastBlock => {
       const fits = of.filter((s): s is Fit => s.kind === 'fit');
       const outside = fits.filter((s) => s.outside.length > 0);
       const senders = new Set(of.map((s) => s.sender.address)).size;
       return {
         title,
-        lead: [
-          { num: `${of.length}` },
-          ` 筆用了這個操作的呼叫（${senders} 個${who}），`,
-          { num: `${fits.length - outside.length}` },
-          ' 筆跟模板一模一樣',
-          ...(outside.length === 0 ? [] : ['，', { num: `${outside.length}` }, ` 筆形狀一樣、但${outsideWords(outside)}`]),
-          '。',
-        ],
+        lead: w.blockLead(of.length, senders, who, fits.length - outside.length, outside.length, outside.length === 0 ? '' : outsideWords(outside, w)),
         groups: [...outsideGroups(outside), ...groupsOf(of.filter((s): s is Misfit => s.kind === 'misfit'))],
       };
     };
     const bySender = (match: (sender: Sender) => boolean) => counted.filter((s) => match(s.sender));
     const blocks = [
-      block('Safe', bySender((sender) => sender.kind === 'safe'), ' Safe'),
+      block('Safe', bySender((sender) => sender.kind === 'safe'), 'safe'),
       ...run.shapes.calls.flatMap((shape, call) => {
         const of = bySender((sender) => sender.kind === 'eoa' && sender.call === call);
         const data = shape.template.calls[0]?.data;
-        return of.length === 0 ? [] : [block(`EOA 直接呼叫 ${data === undefined || data === 'empty' ? '（沒有資料）' : data.fn.name}`, of, '地址')];
+        return of.length === 0 ? [] : [block(w.eoaCalls(data === undefined || data === 'empty' ? w.noDataParens : data.fn.name), of, 'address')];
       }),
     ];
     const elsewhere = [
@@ -1596,35 +1509,26 @@ function pastSection(context: Context): Section {
     const top = [...tally].sort((a, b) => b[1] - a[1]).slice(0, 4);
     const skipped = run.studies.length - studied.length - run.studies.filter((s) => s.kind === 'not-studied' && s.why === 'calls no function the template calls').length;
     const others: Inline[] = [
-      ...(elsewhere.length === 0
-        ? []
-        : [
-            [
-              `另外 ${elsewhere.length} 筆是別的操作，不列入：`,
-              ...top.flatMap(([name, n], i): Span[] => [...(i === 0 ? [] : ['、']), { code: name }, ` ${n} 筆`]),
-              ...(tally.size > top.length ? ['，還有別的'] : []),
-              '。',
-            ] as Inline,
-          ]),
-      ...(skipped === 0 ? [] : [[`另外 ${skipped} 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。`] as Inline]),
+      ...(elsewhere.length === 0 ? [] : [w.otherOperations(elsewhere.length, top.map(([name, n]) => [{ code: name }, n] as const), tally.size > top.length)]),
+      ...(skipped === 0 ? [] : [[w.skipped(skipped)]]),
     ];
     const bySource = (source: string) => [...run.found.values()].filter((s) => s.includes(source as never)).length;
     const [alchemy, etherscan] = [bySource('alchemy'), bySource('etherscan')];
     const same = [...run.found.values()].every((s) => s.length === 2);
     return {
       file,
-      count: `搜尋 ${nameOf(query.token)} 的${anchorWords(query.anchor, registry.byAddress.get(query.token.toLowerCase() as Address))}，找到 ${run.found.size} 筆，研究 ${run.studies.length} 筆`,
-      search: [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }, '）。'],
+      count: w.searchCount(nameOf(query.token), anchorWords(query.anchor, registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length),
+      search: w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
       blocks,
       others,
     };
   });
   const conclusion = context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion);
-  return { anchor: anchor('past'), label: '過去交易', count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, recordings } };
+  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, recordings } };
 }
 
 function sameShape(context: Context): Inline {
-  const { registry, template } = context;
+  const { registry, template, w } = context;
   const best = new Map<Hex, Studied>();
   for (const { run } of context.inputs.pastTxs) {
     for (const s of run.studies) {
@@ -1638,45 +1542,32 @@ function sameShape(context: Context): Inline {
   const outside = all.filter((s): s is Fit => shapeGroup(s) === 'outside');
   const misfits = all.length - exact.length - outside.length;
   const by = (of: readonly Fit[]): Span[] => {
-    const parts = (['safe', 'eoa'] as const).flatMap((kind): Span[][] => {
+    const parts = (['safe', 'eoa'] as const).map((kind): Span[] => {
       const mine = of.filter((s) => s.sender.kind === kind);
-      const senders = new Set(mine.map((s) => s.sender.address)).size;
-      return [[kind === 'safe' ? 'Safe ' : 'EOA ', { num: `${mine.length}` }, mine.length === 0 ? ' 筆' : ` 筆（${senders} 個${kind === 'safe' ? ' Safe' : '地址，各自送模板的一個呼叫'}）`]];
+      return w.bySender(kind, { num: `${mine.length}` }, mine.length, new Set(mine.map((s) => s.sender.address)).size);
     });
-    return of.length === 0 ? [] : ['：', ...parts.flatMap((p, i) => [...(i === 0 ? [] : ['、']), ...p])];
+    return of.length === 0 ? [] : w.bySenders(parts);
   };
   const latest = (of: readonly Fit[]): Span[] =>
     [...of]
       .sort((a, b) => (a.block === b.block ? 0 : a.block > b.block ? -1 : 1))
       .slice(0, 3)
-      .flatMap((s, i): Span[] => [...(i === 0 ? [] : ['、']), txLink(s.hash)]);
+      .flatMap((s, i): Span[] => [...(i === 0 ? [] : [w.sep]), txLink(s.hash)]);
   const searched = [
     ...new Set(
       context.inputs.pastTxs.map(({ query }) => {
         const token = registry.byAddress.get(query.token.toLowerCase() as Address);
-        return `${token?.name ?? checksumAddress(query.token as Address)} ${anchorWords(query.anchor, token)}時`;
+        return w.searched(token?.name ?? checksumAddress(query.token as Address), anchorWords(query.anchor, token, w));
       }),
     ),
   ];
-  const line: Span[] = [
-    '過去的記錄裡，跟模板一模一樣的有 ',
-    { num: `${exact.length}` },
-    ' 筆',
-    ...by(exact),
-    `；形狀一樣、但${outside.length === 0 ? '有地址不在 registry 裡' : outsideWords(outside)}的有 `,
-    { num: `${outside.length}` },
-    ' 筆',
-    ...by(outside),
-    '；形狀不同的有 ',
-    { num: `${misfits}` },
-    misfits === 0 ? ' 筆。' : ' 筆，列在其他做法。',
-  ];
+  const line = w.sameLine(exact.length, by(exact), outside.length === 0 ? w.anyOutside : outsideWords(outside, w), outside.length, by(outside), misfits);
   if (exact.length + outside.length === 0) return line;
   return [
     ...line,
-    `${exact.length + outside.length === 1 ? '它成功執行：它是' : '這些交易全部成功執行：它們是'}從 ${searched.join('、')}的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。`,
-    ...(exact.length === 0 ? [] : [`一模一樣的最近 ${Math.min(exact.length, 3)} 筆：`, ...latest(exact), '。']),
-    ...(outside.length === 0 ? [] : [`形狀一樣的最近 ${Math.min(outside.length, 3)} 筆：`, ...latest(outside), '。']),
+    w.succeeded(exact.length + outside.length === 1, searched),
+    ...(exact.length === 0 ? [] : [w.latestExact(Math.min(exact.length, 3)), ...latest(exact), w.end]),
+    ...(outside.length === 0 ? [] : [w.latestShape(Math.min(outside.length, 3)), ...latest(outside), w.end]),
   ];
 }
 
@@ -1685,53 +1576,46 @@ function onlyName(ref: CardRef, context: Context): RegistryEntry | undefined {
   return names.length === 1 ? context.registry.entries.get(names[0] as string) : undefined;
 }
 
-
 function promptStep(name: string, field: CardField, context: Context): NextStep {
+  const { w } = context;
   const step = (say: Inline, then: readonly Inline[] = []): NextStep => ({ say, command: undefined, then, hashes: false });
-  const word = kindWord(field, context.template);
-  const cardNewPrompt: Inline = word === name ? [{ code: name }] : [`${word}（`, { code: name }, '）'];
+  const word = kindWord(field, context.template, w);
+  const cardNewPrompt: Inline = word === name ? [{ code: name }] : w.prompt(word, { code: name });
   switch (field.kind) {
     case 'contract': {
       const only = onlyName({ field: name, attribute: undefined }, context);
-      if (only !== undefined) {
-        return step(
-          [...cardNewPrompt, '：它列出可選的合約，每個附完整地址。選 ', link(only), '，地址是 ', { mono: checksumAddress(only.address) }],
-          [['列表的編號可能跟別人的不同，照名字選；也可以直接打名字 ', { code: only.name }, ' 。']],
-        );
-      }
-      return step([...cardNewPrompt, `：它列出可選的${KIND_WORDS[field.scope.registryKind]}，每個附完整地址。選你要的那個，名字和完整地址都要對。`]);
+      if (only !== undefined) return step([...cardNewPrompt, ...w.pickOnly(link(only), { mono: checksumAddress(only.address) })], [w.byName({ code: only.name })]);
+      return step([...cardNewPrompt, w.pickKind(w.kind[field.scope.registryKind])]);
     }
     case 'market':
-      return step([...cardNewPrompt, '：它列出每個市場的 id、lltv 和每個組成的完整地址。選你要的市場，id 要對。']);
+      return step([...cardNewPrompt, w.pickMarket]);
     case 'address':
     case 'recipient':
-      return step([...cardNewPrompt, '：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。']);
+      return step([...cardNewPrompt, w.pickAddress]);
     case 'nonce':
-      return step([...cardNewPrompt, '：打 Safe 交易的 nonce，純數字。']);
+      return step([...cardNewPrompt, w.typeNonce]);
     case 'percent':
-      return step([...cardNewPrompt, '：打百分比，最多 100，例如 ', { code: '100' }, ' 或 ', { code: '35.5' }, ' 。'], [['它印出百分比和 base units（100% 是 10^18），核對數字是你要的。']]);
+      return step([...cardNewPrompt, ...w.typePercent({ code: '100' }, { code: '35.5' })], [[w.percentPrints]]);
     case 'threshold':
-      return step([...cardNewPrompt, '：打新的門檻，也就是要幾個簽署人簽才能執行，純數字，至少 1。']);
+      return step([...cardNewPrompt, w.typeThreshold]);
     case 'owner':
-      return step([...cardNewPrompt, '：它列出地址簿裡的名字，每個附完整地址。選你要的那個簽署人，完整地址要對。']);
+      return step([...cardNewPrompt, w.pickOwner]);
     case 'amount': {
-      const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? before('你選的', refWord(context.template, field.of)));
+      const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? w.picked(refWord(context.template, field.of, w)));
       if (field.computed === undefined) {
         return step(
-          [...cardNewPrompt, `：打 ${token} 的數量，用整顆幣，例如 `, { code: '1250.5' }, ' ；可以有千位逗號，例如 ', { code: '1,000,611.448606' }, ' 。'],
-          [
-            ['它印出整顆和 base units 兩種寫法，核對數字是你要的。'],
-            ...(field.max === undefined ? [] : [['也可以打 ', { code: 'max' }, `，等於 ${field.max.value} base units；card new 會印出模板寫的理由。`] satisfies Inline]),
-          ],
+          [...cardNewPrompt, ...w.typeAmount(token, { code: '1250.5' }, { code: '1,000,611.448606' })],
+          [[w.amountPrints], ...(field.max === undefined ? [] : [w.orMax({ code: 'max' }, `${field.max.value}`)])],
         );
       }
       const { computed } = field;
-      const margin = computed.margin === undefined ? '' : `，再加 ${percent(BigInt(computed.margin.bps), 10_000n)} 餘裕`;
+      const bps = (n: number | bigint): string => percent(BigInt(n), 10_000n, w);
+      const margin = computed.margin === undefined ? '' : w.margin(bps(computed.margin.bps));
       return step(
-        [...cardNewPrompt, '：不用填。協議的 app 自己會填這個值，不會問使用者，所以程式自己算。'],
+        [...cardNewPrompt, w.computedPrompt],
         [
-          ['它在鏈上讀 ', { code: computed.read.fn.name }, `，兩個節點答案一樣才用，印出預期的 ${token} 數量，再${computed.bound === 'floor' ? '少' : '多'} ${percent(BigInt(slippageBps(computed)), 10_000n)}（協議預設的 ${percent(BigInt(computed.default.bps), 10_000n)}${margin}），${computed.bound === 'floor' ? '無條件捨去' : '無條件進位'}。`],
-          ['預設值的來源：', { href: computed.default.source, label: shortUrl(computed.default.source) }, '。核對印出的預期數量跟最後的數字合理。'],
+          w.computedHow({ code: computed.read.fn.name }, token, computed.bound === 'floor', bps(slippageBps(computed)), bps(computed.default.bps), margin),
+          w.presetSource({ href: computed.default.source, label: shortUrl(computed.default.source) }),
         ],
       );
     }
@@ -1739,97 +1623,62 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
 }
 
 function nextSection(context: Context): Section {
-  const { template } = context;
+  const { template, w } = context;
   const fields = [...template.card];
   const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold' || field.kind === 'percent';
   const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
   const vault = context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined;
-  const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? `（第一次用這個模板${vault ? '或這個金庫' : ''}，先用小額）` : '';
+  const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? w.trial(vault) : '';
   const prompts = [
     ...fields.filter(([, f]) => !typed(f)),
     ...fields.filter(([, f]) => typed(f) && !computed(f)),
     ...fields.filter(([, f]) => computed(f)),
   ].map(([name, field]) => promptStep(name, field, context));
+  const y: Span = { code: 'y' };
+  const book = (say: string, recipient: boolean): NextStep => ({
+    say: [say],
+    command: 'bin/kiss-sign book add <name> <address>',
+    then: [w.bookThen({ code: 'Add this entry? [y/N]' }, y, recipient)],
+    hashes: false,
+  });
   const steps: NextStep[] = [
-    {
-      say: ['第一次用這個模板，或模板改過之後，先核准它'],
-      command: `bin/kiss-sign template approve ${template.id}`,
-      then: [['它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 ', { code: 'y' }, '。']],
-      hashes: false,
-    },
-    ...(fields.some(([, f]) => f.kind === 'owner')
-      ? [
-          {
-            say: ['先把要加、要移除或要換的簽署人加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得'],
-            command: 'bin/kiss-sign book add <name> <address>',
-            then: [['它印出名字和完整地址，問 ', { code: 'Add this entry? [y/N]' }, ' 。每個字元都跟聊天以外的來源核對過才打 ', { code: 'y' }, ' 。同一個人只要加一次。']],
-            hashes: false,
-          } satisfies NextStep,
-        ]
-      : []),
-    ...(fields.some(([, f]) => f.kind === 'recipient')
-      ? [
-          {
-            say: ['收款人不是你的 Safe 時，先把它加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得'],
-            command: 'bin/kiss-sign book add <name> <address>',
-            then: [['它印出名字和完整地址，問 ', { code: 'Add this entry? [y/N]' }, ' 。每個字元都跟聊天以外的來源核對過才打 ', { code: 'y' }, ' 。同一個收款人只要加一次。']],
-            hashes: false,
-          } satisfies NextStep,
-        ]
-      : []),
-    {
-      say: ['做卡片'],
-      command: `bin/kiss-sign card new ${template.id}`,
-      then: [['你這份 clone 的 ', { code: 'templates/' }, ' 或 ', { code: 'registry/' }, ' 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 ', { code: 'git pull' }, ' 。']],
-      hashes: false,
-    },
+    { say: [w.approveSay], command: `bin/kiss-sign template approve ${template.id}`, then: [w.approveThen(y)], hashes: false },
+    ...(fields.some(([, f]) => f.kind === 'owner') ? [book(w.ownerBook, false)] : []),
+    ...(fields.some(([, f]) => f.kind === 'recipient') ? [book(w.recipientBook, true)] : []),
+    { say: [w.makeCard], command: `bin/kiss-sign card new ${template.id}`, then: [w.cardNewStops({ code: 'templates/' }, { code: 'registry/' }, { code: 'git pull' })], hashes: false },
     ...prompts,
+    { say: w.sealSay({ code: 'Is this what you mean to do? [y/N]' }, y), command: undefined, then: [w.sealThen({ code: 'Sealed card 0x…' })], hashes: false },
     {
-      say: ['它印出整張卡片，每個名字都附完整地址，最後問 ', { code: 'Is this what you mean to do? [y/N]' }, ' 。全部是你要的才打 ', { code: 'y' }, ' 。'],
-      command: undefined,
-      then: [['它印出 ', { code: 'Sealed card 0x…' }, ' ，這是卡片的 hash，下一步要用。']],
-      hashes: false,
-    },
-    {
-      say: [`在 Safe web app 提出交易${trial}，複製它的 safeTxHash，然後跑`],
+      say: [w.propose(trial)],
       command: 'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
-      then: [
-        [{ code: 'MATCH' }, '：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。'],
-        [{ code: 'MISMATCH' }, ' 或 ', { code: 'UNVERIFIABLE' }, '：不要簽。看它列出的檢查，再看本報告「', { href: anchor('review'), label: '待確認' }, '」裡 AI 的判斷，可能說明原因。'],
-      ],
+      then: [w.onMatch({ code: 'MATCH' }), w.onMismatch({ code: 'MISMATCH' }, { code: 'UNVERIFIABLE' }, { href: anchor('review'), label: w.review })],
       hashes: false,
     },
-    {
-      say: ['加強等級：在獨立電腦上跑'],
-      command: './check.sh <nonce>',
-      then: [['它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 ', { code: 'verify' }, ' 網頁上的逐列比對。']],
-      hashes: false,
-    },
-    { say: ['硬體錢包上的 domain hash 和 message hash，跟 ', { code: 'verify' }, ' 網頁上的逐字比對，一樣才簽。'], command: undefined, then: [], hashes: true },
+    { say: [w.hardened], command: './check.sh <nonce>', then: [w.hardenedThen({ code: 'verify' })], hashes: false },
+    { say: w.compareHashes({ code: 'verify' }), command: undefined, then: [], hashes: true },
   ];
-  const tokenName = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : before('你選的', refWord(template, token)));
+  const tokenName = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : w.picked(refWord(template, token, w)));
+  const field = (name: string): string => fieldWord(template, name, w);
   const automatic: Inline[] = [
-    [`交易只有這 ${template.calls.length} 個呼叫，MultiSend 也一個個解開`],
-    ['每個參數符合上面的規則，重新編碼要一模一樣'],
-    ...template.effects.gives.map((e): Inline => [`模擬後 Safe 給出的 ${tokenName(e.token)} ${e.amount.kind === 'card' ? before('剛好是你填的', fieldWord(template, e.amount.field)) : e.amount.kind === 'all' ? '是全部餘額' : '多於 0'}`]),
-    ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`, ...(e.amount.kind === 'at-least' ? [before('，不少於你填的', fieldWord(template, e.amount.field))] : [])]),
-    ...(template.effects.gives.length + template.effects.gets.length === 0 ? [['模擬後 Safe 的餘額一點都不能變'] as Inline] : []),
-    ...(template.nonce === undefined ? [] : [['Safe 交易的 nonce 是', ...ruleWords(template.nonce, context)] as Inline]),
-    ...(template.effects.safe === undefined
-      ? []
-      : [['模擬前後讀 Safe 的簽署人和門檻：只變卡片上寫的那一項；模組、guard、fallback handler、singleton 都不能變'] as Inline]),
+    [w.onlyCalls(template.calls.length)],
+    [w.everyArgument],
+    ...template.effects.gives.map((e): Inline => [w.gives(tokenName(e.token), e.amount.kind === 'card' ? { kind: 'card', field: field(e.amount.field) } : { kind: e.amount.kind === 'all' ? 'all' : 'positive' })]),
+    ...template.effects.gets.map((e): Inline => w.gets(tokenName(e.token), e.amount.kind === 'at-least' ? field(e.amount.field) : undefined)),
+    ...(template.effects.gives.length + template.effects.gets.length === 0 ? [[w.noBalanceChange]] : []),
+    ...(template.nonce === undefined ? [] : [[w.nonceIs, ...ruleWords(template.nonce, context)]]),
+    ...(template.effects.safe === undefined ? [] : [[w.safeSettings]]),
     template.effects.approves.length === 0
-      ? ['沒有任何授權在交易後變高']
+      ? [w.noAllowance]
       : template.effects.approves.every((a) => a.amount.kind === 'card')
-        ? [`除了留給 ${template.effects.approves.map((a) => a.spender).join('、')} 的授權最多是你填的數量，沒有任何授權在交易後變高`]
-        : ['除了上面「交易後」列出可以留著的授權，沒有任何授權在交易後變高'],
+        ? [w.allowanceKeptFor(template.effects.approves.map((a) => a.spender))]
+        : [w.allowanceKept],
     ...template.effects.views.map((v): Inline => [
       { code: `${viewLabel(v, context)}.${v.fn.name}` },
-      `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${typeof c.change === 'string' ? CHANGE_WORDS[c.change] : `等於你填的 ${fieldWord(template, c.change.equals)}`}`).join('、')}`,
+      w.viewChanges(v.changes.map((c) => [paramName(v.returns[c.value] as AbiParam, c.value), typeof c.change === 'string' ? w.change[c.change] : w.equalsTypedList(field(c.change.equals))] as const)),
     ]),
-    ...(context.ledger.entries.length === 0 ? [] : [['卡片用到的每個登記合約，程式碼還是 code pin 記錄的那份'] as Inline]),
+    ...(context.ledger.entries.length === 0 ? [] : [[w.pinned]]),
   ];
-  return { anchor: anchor('next'), label: '下一步', count: undefined, body: { kind: 'next', steps, automatic } };
+  return { anchor: anchor('next'), label: w.next, count: undefined, body: { kind: 'next', steps, automatic } };
 }
 
 /** The free rules of the transaction's own fields, and whether a signed message has a free member, which no perturbation tries. */
@@ -1857,13 +1706,10 @@ function freeRules(template: Template): { readonly claims: Set<FreeClaim>; reado
   return { claims: new Set((['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => found.has(claim))), member: [...members].some((rule) => rule.kind === 'free') };
 }
 
-/** 參數保護 when no test transaction is recorded, from the template. */
-const unrecordedParams = (template: Template): string =>
-  freeRules(template).claims.size > 0
-    ? '模板有不限的參數，但沒有換值測試的記錄，程式沒有測過它們。'
-    : `${freeRules(template).member ? '交易裡不限的值只在簽的訂單裡，由雜湊鎖住，不換值測試。' : ''}模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。`;
+/** The parameter checks line when no test transaction is recorded, from the template. */
+const unrecordedParams = (template: Template, w: Words): string => (freeRules(template).claims.size > 0 ? w.unrecorded : w.allBound(freeRules(template).member));
 
-function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<string>): StripItem[] {
+function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<string>, w: Words): StripItem[] {
   const names = [...new Set(ledger.entries.map((e) => e.name))];
   const subjects = names.filter((name) => signed.has(name)).length;
   const reportOnly = names.filter((name) => !signed.has(name));
@@ -1874,43 +1720,34 @@ function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<stri
   const today = named((r) => r.id.endsWith('/code.today'));
   const routed = ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name);
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
-    sources: (p, c) =>
-      p === c
-        ? `${c === 1 ? '這個地址' : `${c} 個地址都`}至少在 ${MIN_CONFIRMATIONS} 個地方確認：官方頁、協議 API、CoinGecko、金庫的登記工廠、漏洞賞金範圍、SDK 套件或共用的部署者列出同一個地址。`
-        : `${c - p} 個地址有結果要你看，見「待確認」。${p === 0 ? '' : p === 1 ? `另外那個地址至少在 ${MIN_CONFIRMATIONS} 個地方確認。` : `其餘 ${p} 個都至少在 ${MIN_CONFIRMATIONS} 個地方確認。`}`,
-    abi: () =>
-      `Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。${
-        notCalled.length === 0 ? '' : `${notCalled.join('、')} 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。`
-      }${unprovable.length === 0 ? '' : `${unprovable.join('、')} 依函式選擇器把呼叫分給各自的實作，沒有一份程式碼能證明，不算在內；它的 routes 在「合約沒被換掉」比對。`}`,
-    code: () =>
-      `每次簽名都確認卡片用到的${subjects === 1 ? '這個合約' : '每個合約'}還是研究時那份程式碼。被升級或換掉就擋下。${
-        reportOnly.length === 0 ? '' : `${reportOnly.join('、')} 簽名時不碰，只有報告比對它的程式碼。`
-      }${
-        today.length === 0 ? '' : `${today.join('、')} 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。`
-      }${routed.length === 0 ? '' : `${routed.join('、')} 依函式選擇器把呼叫分給各自的實作：seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。`}`,
-    params: (_, c) => (!recorded ? unrecordedParams(template) : `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`),
+    sources: (p, c) => (p === c ? w.sourcesOk(c, MIN_CONFIRMATIONS) : w.sourcesSome(c - p, p, MIN_CONFIRMATIONS)),
+    abi: () => w.abiExplain(notCalled, unprovable),
+    code: () => w.codeExplain(subjects === 1, reportOnly, today, routed),
+    params: (_, c) => (!recorded ? unrecordedParams(template, w) : w.paramsExplain(c)),
   };
   const items = strip(ledger)
     .filter((s) => s.line === 'params' || ledger.results.some((r) => r.line === s.line))
     .map(
-    (s): StripItem => ({ line: s.line, name: STRIP_NAMES[s.line], state: s.state, count: s.line === 'params' && !recorded ? '沒有測試' : s.counted === 0 ? undefined : `${s.passed} / ${s.counted}`, explain: explain[s.line](s.passed, s.counted) }),
+    (s): StripItem => ({ line: s.line, name: w.strip[s.line], state: s.state, count: s.line === 'params' && !recorded ? w.noTests : s.counted === 0 ? undefined : `${s.passed} / ${s.counted}`, explain: explain[s.line](s.passed, s.counted) }),
   );
-  return [...items, { line: 'providers', name: STRIP_NAMES.providers, state: 'ok', count: undefined, explain: '所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。' }];
+  return [...items, { line: 'providers', name: w.strip.providers, state: 'ok', count: undefined, explain: w.providersExplain }];
 }
 
 /**
- * The signer's page, from the report's inputs and the raw notes.json. The ledger judges every result; notes.json is
- * parsed against the scope the template and the ledger derive, so it cannot name what the page does not show nor leave
- * out a review the page needs. Throws NotesError for notes the program refuses.
+ * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
+ * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
+ * show nor leave out a review the page needs. Throws NotesError for notes the program refuses.
  */
-export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle): Page {
+export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
   const { subject, registry } = inputs;
   if (subject.kind !== 'template') throw new Error('an HTML report is written for a template only');
   const { template } = subject;
   const ledger = judge(inputs, inputs.fixtures);
-  const notes = parseNotes(rawNotes, notesScope(inputs, ledger, template));
+  const notes = parseNotes(rawNotes, notesScope(inputs, ledger, template, language));
   const { example } = inputs;
+  const w = WORDS[language];
   const context: Context = {
+    w,
     inputs,
     template,
     registry,
@@ -1923,14 +1760,15 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
   const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
   const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', notesPath(template.id), ...(subject.vault === undefined ? [] : [notesPath(template.id, subject.vault.name)])];
   return {
+    language,
     id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,
     header: {
       title: research(notes.title),
       summary: research(notes.summary),
-      strip: stripItems(ledger, template, signedEntryNames(template, registry)),
-      verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'AI 研究：可以用' : 'AI 研究：要小心') },
+      strip: stripItems(ledger, template, signedEntryNames(template, registry), w),
+      verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'safe' : 'caution') },
     },
     sections,
-    footer: ['由 ', { code: title.command }, ' 從 ', ...sources.flatMap((s, i): Span[] => [...(i === 0 ? [] : ['、']), { code: s }]), ` 寫出，資料在 ${inputs.fetched} 讀取。不要手改；`, { code: 'pnpm test' }, ` 會重算並比對。${NOTES_FILE} 是 AI 寫的，標 AI 的文字沒有程式檢查。`],
+    footer: w.footer({ code: title.command }, sources.map((s): Span => ({ code: s })), inputs.fetched, { code: 'pnpm test' }, NOTES_FILE),
   };
 }

@@ -2,6 +2,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { paramName } from '../decode/abi.ts';
 import type { AbiParam } from '../decode/abi.ts';
+import { LANGUAGES } from '../language.ts';
+import type { Language } from '../language.ts';
 import { parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import { TEMPLATES_DIR, callTargetEntries, refNames, viewTargetNames } from '../template/template.ts';
@@ -91,6 +93,8 @@ export type NotesScope = {
   readonly fields: readonly string[];
   /** The results the signer must look at, in ledger order, every one required. */
   readonly reviews: readonly ResultId[];
+  /** The language the page is written in; every text must hold every language all the same. */
+  readonly language: Language;
 };
 
 /** One argument, tuple part, array item or nested call's argument of a template call, with its HTML report field key. */
@@ -145,7 +149,7 @@ export function fieldKeys(template: Template): string[] {
   return argumentTree(template).flatMap((call) => keys(call.args));
 }
 
-export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Template): NotesScope {
+export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Template, language: Language): NotesScope {
   const { registry } = inputs;
   const protocols: Map<string, number | 'unread'> =
     inputs.facts === undefined
@@ -164,6 +168,7 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
     protocols,
     fields: fieldKeys(template),
     reviews: ledger.results.filter(needsSigner).map((result) => result.id),
+    language,
   };
 }
 
@@ -201,6 +206,23 @@ const str =
     if (parts === undefined) return refuse(path, 'holds a backtick that does not open or close a code span around one identifier, such as `erc4626Deposit`');
     if (parts.join('').length > max) return refuse(path, `longer than ${max} characters`);
     return raw;
+  };
+
+/** How many characters a language may use for what Traditional Chinese says in `max`. */
+const LENGTH: Readonly<Record<Language, number>> = { 'zh-TW': 1, en: 3 };
+
+/** AI text, `{ "en": ..., "zh-TW": ... }`, each language under its limit; the page's language is returned. */
+const text =
+  (max: number): P<string> =>
+  (path, raw, scope) => {
+    if (!isRecord(raw)) return refuse(path, `not a JSON object with ${LANGUAGES.join(' and ')}`);
+    const extra = Object.keys(raw).find((key) => !(LANGUAGES as readonly string[]).includes(key));
+    if (extra !== undefined) refuse(path, `${shown(extra)} is not a language; use ${LANGUAGES.join(' and ')}`);
+    const each = Object.fromEntries(LANGUAGES.map((language) => {
+      const value = own(raw, language);
+      return [language, value === undefined ? refuse(path, `${language} is missing`) : str(max * LENGTH[language])(`${path}.${language}`, value, scope)];
+    })) as Record<Language, string>;
+    return each[scope.language];
   };
 
 const oneOf =
@@ -266,31 +288,31 @@ const where =
     return problem === undefined ? value : refuse(path, problem);
   };
 
-const note = (max: number) => obj({ text: str(max), sources: optList(url) });
+const note = (max: number) => obj({ text: text(max), sources: optList(url) });
 
 const protocolNotes = (slug: string) =>
-  where(obj({ intro: str(200), audits: note(2000), incidents: list(note(2000)) }), (protocol, scope) => {
+  where(obj({ intro: text(200), audits: note(2000), incidents: list(note(2000)) }), (protocol, scope) => {
     const hacks = scope.protocols.get(slug);
     return hacks === 'unread' || protocol.incidents.length === hacks ? undefined : `incidents lists ${protocol.incidents.length}; DefiLlama lists ${hacks} hacks`;
   });
 
 const NOTES_FIELDS = obj({
-  title: str(100),
-  summary: str(2000),
-  verdict: obj({ status: oneOf('safe', 'caution'), text: str(100) }),
-  flow: optList(obj({ after: callNumber, from: contract, to: contract, text: str(100) }), 4),
+  title: text(100),
+  summary: text(2000),
+  verdict: obj({ status: oneOf('safe', 'caution'), text: text(100) }),
+  flow: optList(obj({ after: callNumber, from: contract, to: contract, text: text(100) }), 4),
   protocols: keyed((scope) => [...scope.protocols.keys()], 'a protocol the protocol facts cover', true, protocolNotes),
-  judgments: optList(obj({ text: str(200), sources: optList(url), recommendation: str(200) }), 4),
+  judgments: optList(obj({ text: text(200), sources: optList(url), recommendation: text(200) }), 4),
   reviews: keyed((scope) => scope.reviews, 'a result the signer must look at', true, () =>
-    obj({ status: oneOf('confirmed', 'concern'), text: str(300), recommendation: str(200) }),
+    obj({ status: oneOf('confirmed', 'concern'), text: text(300), recommendation: text(200) }),
   ),
   entries: opt(
     keyed((scope) => [...scope.entries], 'a registry entry this report covers', false, () =>
-      obj({ role: opt(str(200)), sources: optList(obj({ text: str(200), url, result: oneOf('pass', 'attention', 'fail') })) }),
+      obj({ role: opt(text(200)), sources: optList(obj({ text: text(200), url, result: oneOf('pass', 'attention', 'fail') })) }),
     ),
   ),
-  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => str(2000)),
-  pastTxsConclusion: opt(str(200)),
+  fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => text(2000)),
+  pastTxsConclusion: opt(text(200)),
 });
 
 const NOTES_SCHEMA = where(NOTES_FIELDS, (notes, scope) => {

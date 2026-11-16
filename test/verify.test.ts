@@ -12,6 +12,7 @@ import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 import { replayTransport } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
+import type { Language } from '../src/language.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -38,7 +39,7 @@ function write(path: string, text: string): string {
  */
 const VAULT = (JSON.parse(fixture.inputs.card.text) as { operations: { values: { vault: string } }[] }).operations[0]!.values.vault;
 
-function setUp(approved: string | null = template.approved, reported = true) {
+function setUp(approved: string | null = template.approved, reported = true, language?: Language) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-verify-'));
   const origin = join(base, 'origin.git');
   const repo = join(base, 'repo');
@@ -55,7 +56,7 @@ function setUp(approved: string | null = template.approved, reported = true) {
   git(repo, 'remote', 'set-url', 'origin', 'git@github.com:signer/kiss-sign.git');
   git(repo, 'config', 'core.sshCommand', ssh);
   const home = join(base, 'home');
-  write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: fixture.inputs.safe, repo: 'github.com/signer/kiss-sign' }));
+  write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: fixture.inputs.safe, repo: 'github.com/signer/kiss-sign', language }));
   write(join(home, 'cards', `${fixture.inputs.card.hash}.json`), fixture.inputs.card.text);
   if (approved !== null) write(join(home, 'approved-templates.json'), JSON.stringify({ [template.id]: approved }));
   return { base, repo, home };
@@ -81,8 +82,8 @@ async function run(argv: string[], repo: string, home: string) {
   return { code, stdout, stderr };
 }
 
-async function verifyTx(tx: unknown, approved?: string | null, reported?: boolean) {
-  const { base, repo, home } = setUp(approved, reported);
+async function verifyTx(tx: unknown, approved?: string | null, reported?: boolean, language?: Language) {
+  const { base, repo, home } = setUp(approved, reported, language);
   const file = write(join(base, 'tx.json'), JSON.stringify(tx));
   const result = await run(['verify', '--card', fixture.inputs.card.hash, '--tx', file], repo, home);
   const names = readdirSync(join(home, 'verdicts'));
@@ -138,7 +139,8 @@ test('the verdict file verify writes replays to the same verdict', async () => {
   assert.doesNotMatch(replayed.stdout, /比對清單|呼叫/);
 });
 
-test('a copy with its receiver changed is MISMATCH, names the check and the field, and shows no hashes', async () => {
+/** The deposit as the Safe web app's JSON, with its receiver changed from the Safe to 0x1111…. */
+function receiverChanged(): Record<string, unknown> {
   const { safe: _safe, safeTxHash: _hash, ...rest } = service;
   const fields = ['to', 'value', 'data', 'operation', 'safeTxGas', 'baseGas', 'gasPrice', 'gasToken', 'refundReceiver', 'nonce'];
   const webApp = Object.fromEntries(Object.entries(rest).filter(([key]) => fields.includes(key)));
@@ -146,7 +148,11 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   const data = String(webApp.data).toLowerCase();
   assert.equal(data.split(safe).length, 2, 'the Safe appears once in the deposit, as its receiver');
   webApp.data = data.replace(safe, '11'.repeat(20));
-  const { code, stdout, pages, verdicts } = await verifyTx(webApp);
+  return webApp;
+}
+
+test('a copy with its receiver changed is MISMATCH, names the check and the field, and shows no hashes', async () => {
+  const { code, stdout, pages, verdicts } = await verifyTx(receiverChanged());
   assert.equal(code, 1);
   assert.match(stdout, /^MISMATCH\n/);
   const file = JSON.parse(readFileSync(verdicts[0]!, 'utf8')) as VerdictFile;
@@ -156,9 +162,17 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   }
   assert.match(stdout, /fields: multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}/);
   assert.doesNotMatch(stdout, /domain hash|message hash|safeTxHash/);
+  assert.match(pages[0]!, /<html lang="en">/);
+  assert.match(pages[0]!, /MISMATCH: the transaction does not fit your card\. Do not sign/);
+  assert.match(pages[0]!, /No hash is shown\. Do not sign this transaction\./);
+  assert.doesNotMatch(pages[0]!, /比對清單 -->|domain hash|message hash/);
+});
+
+test('a signer who chose zh-TW at init gets the verify page in Traditional Chinese', async () => {
+  const { pages } = await verifyTx(receiverChanged(), undefined, undefined, 'zh-TW');
+  assert.match(pages[0]!, /<html lang="zh-Hant">/);
   assert.match(pages[0]!, /MISMATCH：交易和你的卡片不符，不要簽/);
   assert.match(pages[0]!, /不顯示任何 hash。不要簽這筆交易。/);
-  assert.doesNotMatch(pages[0]!, /比對清單 -->|domain hash|message hash/);
 });
 
 test('replay of a recorded MISMATCH reproduces it, says so, and exits 0', async () => {

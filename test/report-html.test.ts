@@ -7,9 +7,11 @@ import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import { NOTES_FILE, notesChanges, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { GENERATED_HTML_FILE, generatedHtml, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
+import { LANGUAGES } from '../src/language.ts';
+import type { Language } from '../src/language.ts';
+import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
-import { loadReport, readDocs, replayInputs, templateTargets } from '../src/research/report.ts';
+import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
@@ -24,11 +26,12 @@ const templates = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => r
 const has = (id: string, file: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, file));
 const FIXTURES = repoWithTestFixtures();
 const MARKET: ReturnType<typeof templateTargets>[number] = { template: 'morpho/market-supply' };
+/** Each report with notes.json, by its folder: every template's in the repository, and the test fixtures' market-supply. */
 const withNotes = new Map([
   ...templateTargets(ROOT, registry)
     .filter((t) => has(t.template, NOTES_FILE))
-    .map((target) => [generatedHtmlPath(target), { target, root: ROOT, registry }] as const),
-  [generatedHtmlPath(MARKET), { target: MARKET, root: FIXTURES, registry: loadRegistry(FIXTURES) }] as const,
+    .map((target) => [reportDir(target), { target, root: ROOT, registry }] as const),
+  [reportDir(MARKET), { target: MARKET, root: FIXTURES, registry: loadRegistry(FIXTURES) }] as const,
 ]);
 const reportOf = (path: string) => withNotes.get(path) ?? assert.fail(path);
 const notesOf = (path: string): unknown => {
@@ -36,28 +39,39 @@ const notesOf = (path: string): unknown => {
   return readNotes(root, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
 };
 
-const replayed = new Map<string, { readonly inputs: ReportInputs; readonly title: ReportTitle; readonly html: string }>();
+/** Each report's page in each language, by its folder. */
+const pages = new Map<string, { readonly inputs: ReportInputs; readonly title: ReportTitle; readonly html: ReadonlyMap<Language, string> }>();
+/** Every page of every report, by the path it is committed at. */
+const replayed = new Map<string, { readonly dir: string; readonly language: Language; readonly html: string }>();
 
 before(async () => {
   const compilers = await warmCompilers([...withNotes.values()].flatMap(({ target, root, registry }) => reportCases(root, registry, [target])));
-  for (const [path, { target, root, registry }] of withNotes) {
+  for (const [dir, { target, root, registry }] of withNotes) {
     const { inputs, title } = await replayInputs(root, registry, target, compilers, loadPublicSuffixList());
-    replayed.set(path, { inputs, title, html: (await generatedHtml(root, inputs, title)) ?? assert.fail(`${path}: notes but no HTML`) });
+    const html = (await generatedHtml(root, inputs, title)) ?? assert.fail(`${dir}: notes but no HTML`);
+    pages.set(dir, { inputs, title, html });
+    for (const [language, page] of html) replayed.set(generatedHtmlPath(target, language), { dir, language, html: page });
   }
 });
 
-test('a report commits report.generated.html exactly when its template has notes.json, and none has report.md', () => {
+test('a report commits a page in each language exactly when its template has notes.json, no old one-language page, and none has report.md', () => {
   for (const target of templateTargets(ROOT, registry)) {
-    assert.equal(existsSync(join(ROOT, generatedHtmlPath(target))), has(target.template, NOTES_FILE), `${generatedHtmlPath(target)}: ${GENERATED_HTML_FILE} without ${NOTES_FILE}, or the reverse`);
+    for (const language of LANGUAGES) {
+      const path = generatedHtmlPath(target, language);
+      assert.equal(existsSync(join(ROOT, path)), has(target.template, NOTES_FILE), `${path}: ${generatedHtmlFile(language)} without ${NOTES_FILE}, or the reverse`);
+    }
   }
   for (const id of templates) assert.ok(!has(id, 'report.md'), `${id} has report.md, which notes.json replaced`);
+  const old = (dir: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? old(join(dir, entry.name)) : entry.name === OLD_HTML_FILE ? [join(dir, entry.name)] : []));
+  assert.deepEqual(old(join(ROOT, TEMPLATES_DIR)), [], `${OLD_HTML_FILE} remains beside the pages in each language that replace it`);
 });
 
 test('a template reported per vault keeps no report of its own, and each vault report has its notes.json', () => {
   const perVault = templates.filter((id) => templateTargets(ROOT, registry).some((t) => t.template === id && t.cardVault !== undefined));
   assert.ok(perVault.includes('morpho/vault-deposit'));
   for (const id of perVault) {
-    for (const file of [GENERATED_HTML_FILE, 'report.generated.md']) assert.ok(!has(id, file), `${id} is reported per vault but has ${file}`);
+    for (const file of [...LANGUAGES.map(generatedHtmlFile), 'report.generated.md']) assert.ok(!has(id, file), `${id} is reported per vault but has ${file}`);
     for (const target of templateTargets(ROOT, registry).filter((t) => t.template === id)) assert.ok(existsSync(join(ROOT, notesPath(id, target.cardVault))), `${target.cardVault} has no ${NOTES_FILE}`);
   }
 });
@@ -77,9 +91,22 @@ test('a template without notes.json gets no HTML report', async () => {
   assert.equal(await generatedHtml(withoutNotes, { subject, registry } as ReportInputs, { command: '', sources: [] }), undefined);
 });
 
-test('the committed HTML report is what the program writes from the recordings and notes.json, byte for byte', () => {
+test('each committed HTML report is what the program writes from the recordings and notes.json, byte for byte, in each language', () => {
   assert.ok([...withNotes.values()].some((report) => report.root === ROOT));
-  for (const [path, { html }] of replayed) if (reportOf(path).root === ROOT) assert.equal(htmlDifference(readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
+  for (const [path, { dir, language, html }] of replayed) {
+    if (reportOf(dir).root === ROOT) assert.equal(htmlDifference(generatedHtmlFile(language), readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
+  }
+});
+
+test("each page is in its language: its lang attribute, and the Chinese page's words never on the English page", () => {
+  for (const [path, { language, html }] of replayed) {
+    assert.ok(html.includes(`<html lang="${language === 'en' ? 'en' : 'zh-Hant'}">`), path);
+    if (language === 'en') {
+      const { rest } = withoutAi(html);
+      const han = /[\u4e00-\u9fff]/.exec(rest.replace(/<style>[\s\S]*?<\/style>/, ''));
+      assert.equal(han, null, `${path}: Chinese outside the AI text: ${han?.input.slice(Math.max(0, han.index - 60), han.index + 20)}`);
+    }
+  }
 });
 
 const unescape = (text: string): string => text.replace(/&#(\d+);/g, (_, n: string) => String.fromCharCode(Number(n)));
@@ -107,12 +134,13 @@ function withoutAi(html: string): { readonly rest: string; readonly cut: readonl
   return { rest, cut };
 }
 
-/** Every piece of text in notes.json the page prints: all strings but URLs and the enum values. */
-function noteTexts(raw: unknown): string[] {
-  if (typeof raw === 'string') return /^https:\/\//.test(raw) || ['safe', 'caution', 'confirmed', 'concern', 'pass', 'attention', 'fail'].includes(raw) ? [] : [raw];
-  if (Array.isArray(raw)) return raw.flatMap(noteTexts);
-  if (typeof raw === 'object' && raw !== null) return Object.entries(raw).flatMap(([key, value]) => (key === 'from' || key === 'to' ? [] : noteTexts(value)));
-  return [];
+/** Every piece of text in notes.json a page in `language` prints: its language's text, never a URL or an enum value. */
+function noteTexts(raw: unknown, language: Language): string[] {
+  if (Array.isArray(raw)) return raw.flatMap((item) => noteTexts(item, language));
+  if (typeof raw !== 'object' || raw === null) return [];
+  const text = (raw as Record<string, unknown>)[language];
+  if (typeof text === 'string' && LANGUAGES.every((l) => l in raw)) return [text];
+  return Object.entries(raw).flatMap(([key, value]) => (key === 'from' || key === 'to' ? [] : noteTexts(value, language)));
 }
 
 test('the HTML report holds no script and loads nothing', () => {
@@ -123,9 +151,9 @@ test('the HTML report holds no script and loads nothing', () => {
 });
 
 test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, a standard\'s page, one the program builds from an id a parser checked, or an id on the page', () => {
-  for (const [id, { html }] of replayed) {
-    const notes = notesOf(id);
-    const { target, root, registry } = reportOf(id);
+  for (const [id, { dir, html }] of replayed) {
+    const notes = notesOf(dir);
+    const { target, root, registry } = reportOf(dir);
     const folder = join(root, TEMPLATES_DIR, target.template);
     const docs = readDocs(root, target.template, target.cardVault) as Record<string, { url: string }>;
     const card = (JSON.parse(readFileSync(join(folder, 'template.json'), 'utf8')) as { card: Record<string, { computed?: { default: { source: string } } }> }).card;
@@ -156,26 +184,34 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
   }
 });
 
+/** How long a piece of AI text must be before the page printing it elsewhere counts as a leak, not a common phrase: English takes about three times the characters. */
+const SHORTEST_LEAK: Readonly<Record<Language, number>> = { 'zh-TW': 6, en: 18 };
+
 test('every text the AI wrote is inside an element with its dashed AI tag, and nowhere else', () => {
-  for (const [id, { html }] of replayed) {
+  for (const [id, { dir, language, html }] of replayed) {
     const { rest, cut } = withoutAi(html);
     assert.ok(cut.length > 0, id);
     for (const element of cut) assert.match(element, /class="(byai|tagt)"/, `${id}: AI text without its tag: ${element.slice(0, 120)}`);
-    const plain = noteTexts(notesOf(id)).flatMap((text) => text.split('`').filter((part, i) => i % 2 === 0 && part.length >= 6));
+    const plain = noteTexts(notesOf(dir), language).flatMap((text) => text.split('`').filter((part, i) => i % 2 === 0 && part.length >= SHORTEST_LEAK[language]));
+    assert.ok(plain.length > 0, `${id}: no text of notes.json in ${language}`);
     for (const text of plain) assert.ok(!unescape(rest).includes(text), `${id}: ${text} outside an AI element`);
   }
 });
 
+/** One AI text, the same in both languages. */
+const both = (text: string) => ({ en: text, 'zh-TW': text });
+
 test('AI text is HTML-escaped', async () => {
   const id = [...withNotes.keys()][0] as string;
-  const { inputs, title } = replayed.get(id) ?? assert.fail(id);
+  const { inputs, title } = pages.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as Record<string, unknown>;
   const html = renderPage(
     buildPage(
       { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) },
-      { ...raw, title: '<b>&"x</b>', summary: "<script>alert('x')</script>" },
+      { ...raw, title: both('<b>&"x</b>'), summary: both("<script>alert('x')</script>") },
       title,
+      'en',
     ),
   );
   assert.ok(!html.includes('<b>&"x</b>') && !html.includes('<script>'));
@@ -186,15 +222,16 @@ test('AI text is HTML-escaped', async () => {
 
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
   const id = [...withNotes.keys()].find((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0) ?? assert.fail('a report whose notes draw a flow line');
-  const { inputs, title } = replayed.get(id) ?? assert.fail(id);
+  const { inputs, title } = pages.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
-  const raw = notesOf(id) as { flow: { text: string }[] } & Record<string, unknown>;
-  const flow = raw.flow.map((line, i) => (i === 0 ? { ...line, text: '依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`' } : line));
+  const raw = notesOf(id) as { flow: { text: unknown }[] } & Record<string, unknown>;
+  const flow = raw.flow.map((line, i) => (i === 0 ? { ...line, text: both('依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`') } : line));
   const html = renderPage(
     buildPage(
       { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) },
-      { ...raw, summary: '先呼叫 `multicall`，<b>不是</b> `approve()`', flow },
+      { ...raw, summary: both('先呼叫 `multicall`，<b>不是</b> `approve()`'), flow },
       title,
+      'zh-TW',
     ),
   );
   assert.ok(html.includes('先呼叫 <code>multicall</code>，&#60;b&#62;不是&#60;/b&#62; <code>approve()</code>'));
@@ -204,32 +241,43 @@ test('a code span in AI text prints as <code> in prose and as a boxed monospace 
   assert.deepEqual([...caption.matchAll(/<tspan class="capc"[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
 });
 
-test('an AI source sits under AI 補查 with its result in words, never with a state icon among the program sources', () => {
+const AI_SOURCE: Readonly<Record<Language, { readonly label: string; readonly result: RegExp }>> = {
+  en: { label: 'AI also checked', result: /<span class="aires">AI judgment: (no problem|needs attention|problem)<\/span>/ },
+  'zh-TW': { label: 'AI 補查', result: /<span class="aires">AI 判斷：(沒問題|要注意|有問題)<\/span>/ },
+};
+
+test('an AI source sits under its label with its result in words, never with a state icon among the program sources', () => {
   let groups = 0;
-  for (const [id, { html }] of replayed) {
+  for (const [id, { language, html }] of replayed) {
     for (const [srcs] of html.matchAll(/<div class="srcs">.*?<\/div>\n/gs)) assert.ok(!srcs.includes('data-ai'), `${id}: AI text among the program sources`);
     for (const [group] of html.matchAll(/<div class="aisrcs">.*?<\/div>/gs)) {
       groups += 1;
-      assert.match(group, /^<div class="aisrcs"><span class="lbl">AI 補查<\/span>/, id);
+      assert.ok(group.startsWith(`<div class="aisrcs"><span class="lbl">${AI_SOURCE[language].label}</span>`), id);
       assert.ok(!group.includes('<svg') && !group.includes('data-state'), `${id}: an AI source with a state mark`);
-      assert.match(group, /<span class="aires">AI 判斷：(沒問題|要注意|有問題)<\/span>/, id);
+      assert.match(group, AI_SOURCE[language].result, id);
     }
   }
   assert.ok(groups > 0, 'a replayed report has AI sources');
 });
 
-test('every state icon is an image with a Chinese name, and the rest are hidden from screen readers', () => {
-  for (const [id, { html }] of replayed) {
-    for (const [svg] of html.matchAll(/<svg class="i[^"]*"[^>]*>/g)) assert.match(svg, /role="img" aria-label="[^"]*[\u4e00-\u9fff][^"]*"|aria-hidden="true"/, `${id}: ${svg}`);
+const STATE_NAMES: Readonly<Record<Language, readonly string[]>> = { en: ['pass', 'attention', 'fail', 'nothing to compare', 'AI judgment'], 'zh-TW': ['通過', '注意', '不通過', '沒資料可比', 'AI 判斷'] };
+
+test("every state icon is an image named in the page's language, and the rest are hidden from screen readers", () => {
+  for (const [id, { language, html }] of replayed) {
+    for (const [svg] of html.matchAll(/<svg class="i[^"]*"[^>]*>/g)) {
+      const label = /role="img" aria-label="([^"]*)"/.exec(svg)?.[1];
+      assert.ok(label === undefined ? svg.includes('aria-hidden="true"') : STATE_NAMES[language].includes(label), `${id}: ${svg}`);
+    }
     for (const [, state] of html.matchAll(/data-state="([^"]+)"/g)) assert.ok(['ok', 'warn', 'bad', 'na', 'ask'].includes(state as string), id);
   }
 });
 
-test('--compare prints the first line where the committed HTML report differs', () => {
-  assert.equal(htmlDifference('a\nb', 'a\nb'), undefined);
-  assert.equal(htmlDifference('a\nb ok', 'a\nb FINDING'), 'line 2: committed "b ok", the program writes "b FINDING"');
-  assert.match(htmlDifference(undefined, 'a') ?? '', /no committed report\.generated\.html/);
-  assert.match(htmlDifference('a', undefined) ?? '', /no notes\.json/);
+test('--compare prints the first line where a committed HTML report differs, naming the file', () => {
+  const file = generatedHtmlFile('en');
+  assert.equal(htmlDifference(file, 'a\nb', 'a\nb'), undefined);
+  assert.equal(htmlDifference(file, 'a\nb ok', 'a\nb FINDING'), 'report.generated.en.html line 2: committed "b ok", the program writes "b FINDING"');
+  assert.match(htmlDifference(file, undefined, 'a') ?? '', /no committed report\.generated\.en\.html/);
+  assert.match(htmlDifference(generatedHtmlFile('zh-TW'), 'a', undefined) ?? '', /^report\.generated\.zh-TW\.html is committed but there is no notes\.json/);
 });
 
 test('--compare names every notes.json a branch changes, as text the AI wrote', () => {
@@ -244,8 +292,9 @@ const nextSteps = (html: string): string => {
 const commands = (section: string): string[] => [...section.matchAll(/<pre class="cmd"><code>([^<]*)<\/code><\/pre>/g)].map((m) => unescape(m[1] as string));
 
 test('下一步 ends every signer report, each command alone in its own block with no punctuation inside it', () => {
-  for (const [id, { html, inputs }] of replayed) {
-    const { target } = reportOf(id);
+  for (const [id, { dir, html }] of replayed) {
+    const { target } = reportOf(dir);
+    const { inputs } = pages.get(dir) ?? assert.fail(dir);
     const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
     const recipient = [...template.card.values()].some((field) => field.kind === 'recipient' || field.kind === 'owner');
     const section = nextSteps(html);
@@ -264,7 +313,7 @@ test('下一步 ends every signer report, each command alone in its own block wi
 });
 
 test('下一步 of a per-vault report names the vault in full, says to pick it by name, and shows the computed field it will not ask', () => {
-  const [id, { html }] = [...replayed].find(([path]) => withNotes.get(path)?.target.cardVault === 'hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the Hyperithm report');
+  const [id, { html }] = [...replayed].find(([, page]) => page.language === 'zh-TW' && withNotes.get(page.dir)?.target.cardVault === 'hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the Hyperithm report');
   const section = unescape(nextSteps(html).replace(/<[^>]+>/g, ''));
   assert.ok(section.includes('選 hyperithm-usdc-apex-v2-9e2f，地址是 0x093272C07700d3cA5301C3Bf9B3A392624179E2F'), id);
   assert.ok(section.includes('照名字選'), id);

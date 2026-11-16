@@ -1,0 +1,574 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>fluid/vault-deposit · fluid-fusdc report</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.callh .what{font-size:16px;font-weight:590}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.src{display:flex;flex-direction:column;gap:4px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:16px;font-size:var(--t-small);color:var(--fg2)}
+.ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs .byai{margin-right:8px}
+.aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>Deposit into a Fluid lending pool (fToken)</span><span class="byai">AI research</span></span></h1>
+  <span class="opid">fluid/vault-deposit · fluid-fusdc</span>
+  <p class="sub"><span class="aiw" data-ai><span>The Safe first gives the fToken you pick an allowance of exactly the amount you type, then calls <code>deposit</code> on the same fToken. Through Fluid&#39;s Liquidity contract, the fToken pulls these tokens from the Safe and mints fToken shares to the Safe. When depositing, the Fluid app asks only for the amount and sets no minimum shares, so the card asks only for the vault and the amount.</span><span class="byai">AI research</span></span></p>
+  <ul class="checks">
+    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">4 / 4</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 4 addresses are confirmed in at least 2 places: the official page, the protocol API, CoinGecko, the vault&#39;s registered factory, the bug bounty scope, the SDK package or a shared deployer lists the same address.</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">3 / 3</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify&#39;s source, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts. fluid-liquidity: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under &#34;Code unchanged&#34;.</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">4 / 4</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped. Signing does not touch fluid-lending-factory; only the report compares its code. No ABI proof compares the code fluid-liquidity runs today, so the report reads it at the latest block and compares it with the current code pin. fluid-liquidity: it routes each call by function selector to its own implementation; each implementation the seeds reach, with its function list, is checked the same way, and one no seed reaches is not checked.</span></span></li>
+    <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Parameter checks <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The program changed every bound argument of 2 test transactions one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result.</span></span></li>
+  </ul>
+  <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>Usable. The tokens are actually held in Fluid&#39;s Liquidity contract, and at every signing the program checks that its code is unchanged. Send a small amount the first time.</span><span class="byai">AI research: be careful</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
+    <ol><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>Flow <span class="c">2 calls</span></h2>
+  <p class="lead">Solid lines are the Safe&#39;s calls, dashed lines what a contract does inside, green lines what you get.</p>
+  <div class="diagram">
+  <svg viewBox="0 0 750 300" role="img" aria-labelledby="dt dd">
+    <title id="dt">Transaction flow</title>
+    <desc id="dd">Call 1: the Safe calls approve on usdc. Call 2: the Safe calls deposit on fluid-fusdc. Result: you get fluid-fusdc.</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="292"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">your Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">sender</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="292"/>
+    <rect class="node" x="214" y="14" width="132" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">usdc</text><text class="nodes" x="280" y="50" text-anchor="middle">token</text>
+    <line class="life" x1="470" y1="58" x2="470" y2="292"/>
+    <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">fluid-fusdc</text><text class="nodes" x="470" y="50" text-anchor="middle">vault</text>
+    <line class="life" x1="660" y1="58" x2="660" y2="292"/>
+    <rect class="node" x="583" y="14" width="154" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">fluid-liquidity</text><text class="nodes" x="660" y="50" text-anchor="middle">lending contract</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">deposit</text>
+    <line class="call" x1="90" y1="156" x2="467" y2="156" marker-end="url(#m-call)"/>
+    <g data-ai><rect class="tagbox" x="353.6" y="180" width="84" height="20" rx="6"/><text class="tagt" x="395.6" y="194" text-anchor="middle">AI research</text><text class="cap" y="194"><tspan x="445.6">The deposited USDC is held in Liquidity</tspan></text></g>
+    <line class="inner" x1="470" y1="204" x2="657" y2="204" marker-end="url(#m-inside)"/>
+    <g data-ai><rect class="tagbox" x="102" y="216" width="84" height="20" rx="6"/><text class="tagt" x="144" y="230" text-anchor="middle">AI research</text><rect class="codebox" x="508.6" y="216" width="101.6" height="19" rx="6"/><text class="cap" y="230"><tspan x="194">The fToken pulls USDC from the Safe with </tspan><tspan class="capc" x="512.6">transferFrom</tspan><tspan x="613.2"> through the Liquidity contract</tspan></text></g>
+    <line class="inner" x1="470" y1="240" x2="283" y2="240" marker-end="url(#m-inside)"/>
+    <text class="capg" x="104" y="266">you get fluid-fusdc</text>
+    <line class="gain" x1="470" y1="276" x2="93" y2="276" marker-end="url(#m-gets)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">Scroll the diagram sideways</div>
+  <div class="key">
+    <span class="k0">Who decides</span>
+    <span><span class="who you">you type</span>typed at each signing</span>
+    <span><span class="who you">you pick</span>picked at each signing</span>
+    <span><span class="who">fixed</span>any change is a MISMATCH</span>
+  </div>
+  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below.Values that you type and you pick, marked &#34;example&#34;, come from <code>fluid-deposit-usdc</code>, the first test transaction of fluid-fusdc: amount <span class="num">244.093807</span> usdc.</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol">github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
+    <div class="arg" data-field="1.approve.spender">
+      <div class="nm"><span class="pn">spender</span><span class="who you">you pick: vault</span></div>
+      <div class="val"><div class="raw">0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</div><div class="is"><a href="#a-fluid-fusdc">fluid-fusdc</a> <span class="f3">the vault you pick</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The contract allowed to pull tokens from the Safe, fixed as the fToken you pick. In call 2 the fToken pulls this money with <code>transferFrom</code> through Liquidity&#39;s callback.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.approve.value">
+      <div class="nm"><span class="pn">value</span><span class="who you">you type: amount</span></div>
+      <div class="val"><div class="raw">244093807<span class="ex">example</span></div><div class="is"><span class="num">244.093807</span> usdc <span class="f3">6 decimals</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The allowance&#39;s cap, equal to the deposit amount. Call 2 uses all of it, and the allowance is back to 0 after the transaction.</span></span></div></div>
+    </div>
+  </div>
+  <div class="cb">
+    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">fluid-fusdc.</span>deposit</span><span class="sel">0x6e553f65</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">docs.fluid.io/autogenerated-docs/protocols/lending</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
+    <div class="arg" data-field="2.deposit.assets">
+      <div class="nm"><span class="pn">assets</span><span class="who you">you type: amount</span></div>
+      <div class="val"><div class="raw">244093807<span class="ex">example</span></div><div class="is"><span class="num">244.093807</span> usdc <span class="f3">6 decimals</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The number of tokens deposited into the fToken, equal to the deposit amount. The fToken computes the shares to mint from the exchange price at that moment.</span></span></div></div>
+    </div>
+    <div class="arg" data-field="2.deposit.receiver">
+      <div class="nm"><span class="pn">receiver</span><span class="who">fixed</span></div>
+      <div class="val"><div class="raw">0xF4AE94450BEaaDdb8fA4059D68BbB7DE7E2DF980<span class="ex">example: another Safe</span></div><div class="is">your Safe</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The address that receives the fToken shares, fixed as the Safe.</span></span></div></div>
+    </div>
+  </div>
+  <h3>After the transaction</h3>
+  <dl class="props">
+    <div><dt>Safe&#39;s usdc</dt><dd class="">−<span class="num">244.093807</span> usdc</dd><dd class="src">exactly the amount you type</dd></div>
+    <div><dt>Safe&#39;s fluid-fusdc</dt><dd class="pos">receives more than 0</dd><dd class="src">the program checks only the direction, not the amount</dd></div>
+    <div><dt>usdc allowance for <a href="#a-fluid-fusdc">fluid-fusdc</a></dt><dd class=""><span class="num">0</span></dd><dd class="src">used up within the transaction; may not end higher than before</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-fluid-lending">
+  <h2>fluid-lending</h2>
+  <p class="intro"><span class="aiw" data-ai><span>The lending pools of Fluid (by the Instadapp team): deposit USDC or USDT to get fTokens. The assets are held together in Fluid&#39;s Liquidity contract and lent to Fluid&#39;s borrowing vaults.</span><span class="byai">AI research</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$583.62 M</span></span><span class="sub2">on Ethereum <span class="num">$415.35 M</span></span></dd></div>
+    <div><dt>Listed</dt><dd><span><span class="num">2024-02-25</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
+    <div><dt>proxy</dt><dd><span>2 contracts</span><span class="sub2">read from the code pin</span>
+      <dl class="nest">
+        <div><dt><a href="#a-fluid-fusdc">fluid-fusdc</a></dt><dd>not a proxy</dd></div>
+        <div><dt><a href="#a-fluid-liquidity">fluid-liquidity</a></dt><dd>a proxy; its implementation can change</dd></div>
+      </dl></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>The audits page of Fluid&#39;s docs lists a MixBytes audit of the Liquidity contract and an update audit by StateMind, plus audits of Fluid by StateMind and PeckShield. The AI found no separate audit report that covers only the EVM fToken contract and names its version. Also, the Resolv (USR) incident of 2026-03 left Fluid&#39;s borrowing vaults with about 21 million US dollars of bad debt. Fluid&#39;s post-mortem says Resolv, the governance treasury and the team covered it, and user deposits lost nothing. This incident is not on DefiLlama&#39;s hack list. <a class="aisrc" href="https://docs.fluid.io/audits-and-security.html">source 1</a> <a class="aisrc" href="https://docs.fluid.io/MixBytes_Fluid_Liquidity_Audit.pdf">source 2</a> <a class="aisrc" href="https://docs.fluid.io/Statemind_Fluid_Liquidity_Updates_Audit.pdf">source 3</a> <a class="aisrc" href="https://docs.fluid.io/Statemind_Fluid_Audit.pdf">source 4</a> <a class="aisrc" href="https://docs.fluid.io/Peckshield_Fluid_Audit.pdf">source 5</a> <a class="aisrc" href="https://gov.fluid.io/t/post-mortem-treasury-actions-and-forward-strategy-following-resolv-incident/1774">source 6</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>Incidents</dt><dd><span>1</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span>
+      <dl class="nest">
+        <div><dt><span class="num">2026-05-31</span></dt><dd><span class="num">$215.00 K</span><span class="sub2"><span class="aiw" data-ai><span>On 2026-05-27 the proposer and approver private keys of Fluid&#39;s reward distribution system were stolen, and the attacker paid out rewards of about 125,000 FLUID and 52,000 GHO, about 215,000 US dollars. Fluid disclosed it only on 2026-05-31, saying the lending pools, the vaults and user deposits were not affected. The AI found no formal post-mortem. <a class="aisrc" href="https://x.com/0xfluid/status/2061124908277538827">source 1</a> <a class="aisrc" href="https://protos.com/rough-weekend-for-defi-four-hacks-three-outages-one-warning/">source 2</a></span><span class="byai">AI research</span></span></span></dd></div>
+      </dl></dd></div>
+  </dl>
+  <p class="srcline">On 2026-11-16 the program read <a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+</section>
+
+<section id="vault-fluid-fusdc">
+  <h2>Vault</h2>
+  <p class="lead"><a href="#a-fluid-fusdc">fluid-fusdc</a>: the recorded output of <code>pnpm vault-evidence</code>. Every number was asked of two providers. No conversion to US dollars here.</p>
+  <dl class="props">
+    <div><dt>Factory</dt><dd>fluid-lending-factory answers <code>computeToken(usdc,&#34;fToken&#34;)</code> = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</dd><dd class="src">block 26429890</dd></div>
+    <div><dt>totalAssets now</dt><dd><span class="num">136,195,745.74 usdc</span></dd><dd class="src">2026-11-16, block 26429890</dd></div>
+    <div><dt>Holders</dt><dd><span class="num">2155</span> addresses hold shares, of <span class="num">11000</span> that ever received them</dd><dd class="src"></dd></div>
+    <div><dt>Largest holder</dt><dd><span class="num">9.48%</span></dd><dd class="src">of all shares</dd></div>
+    <div><dt>Top 10</dt><dd><span class="num">38.82%</span></dd><dd class="src">of all shares</dd></div>
+  </dl>
+  <h3>Monthly totalAssets</h3>
+  <div class="diagram">
+  <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
+    <title id="vt">Monthly totalAssets</title>
+    <desc id="vd">13 months, 2025-11-20 to 2026-11-16, highest 319,865,700.76 usdc</desc>
+    <text class="tick" x="16" y="18">highest 319,865,700.76 usdc</text>
+    <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
+    <rect class="bar" x="25.7" y="47" width="29.0" height="103"><title>2025-11-20: 284,242,199.87 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="42" width="29.0" height="108"><title>2025-12-20: 297,151,381.85 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">Dec</text>
+    <rect class="bar" x="122.3" y="34" width="29.0" height="116"><title>2026-01-19: 319,865,700.76 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="63" width="29.0" height="87"><title>2026-02-18: 241,003,860.71 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">Feb</text>
+    <rect class="bar" x="218.9" y="62" width="29.0" height="88"><title>2026-03-20: 241,593,559.82 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
+    <rect class="bar" x="267.2" y="90" width="29.0" height="60"><title>2026-04-20: 164,963,058.75 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="315.5" y="77" width="29.0" height="73"><title>2026-05-20: 202,274,790.06 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
+    <rect class="bar" x="363.8" y="107" width="29.0" height="43"><title>2026-06-19: 118,790,878.15 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="412.1" y="100" width="29.0" height="50"><title>2026-07-19: 138,882,488.62 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
+    <rect class="bar" x="460.4" y="95" width="29.0" height="55"><title>2026-08-18: 150,998,254.58 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="508.7" y="92" width="29.0" height="58"><title>2026-09-17: 160,929,539.95 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
+    <rect class="bar" x="557.0" y="101" width="29.0" height="49"><title>2026-10-17: 135,972,375.44 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar last" x="605.4" y="101" width="29.0" height="49"><title>2026-11-16: 136,195,745.74 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
+  </svg>
+  </div>
+  <div class="scrollhint">Scroll the diagram sideways</div>
+  <details class="fold">
+    <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Figures for 13 months</summary>
+    <dl class="props">
+      <div><dt class="num">2025-11-20</dt><dd class="num">284,242,199.87 usdc</dd></div>
+      <div><dt class="num">2025-12-20</dt><dd class="num">297,151,381.85 usdc</dd></div>
+      <div><dt class="num">2026-01-19</dt><dd class="num">319,865,700.76 usdc</dd></div>
+      <div><dt class="num">2026-02-18</dt><dd class="num">241,003,860.71 usdc</dd></div>
+      <div><dt class="num">2026-03-20</dt><dd class="num">241,593,559.82 usdc</dd></div>
+      <div><dt class="num">2026-04-20</dt><dd class="num">164,963,058.75 usdc</dd></div>
+      <div><dt class="num">2026-05-20</dt><dd class="num">202,274,790.06 usdc</dd></div>
+      <div><dt class="num">2026-06-19</dt><dd class="num">118,790,878.15 usdc</dd></div>
+      <div><dt class="num">2026-07-19</dt><dd class="num">138,882,488.62 usdc</dd></div>
+      <div><dt class="num">2026-08-18</dt><dd class="num">150,998,254.58 usdc</dd></div>
+      <div><dt class="num">2026-09-17</dt><dd class="num">160,929,539.95 usdc</dd></div>
+      <div><dt class="num">2026-10-17</dt><dd class="num">135,972,375.44 usdc</dd></div>
+      <div><dt class="num">2026-11-16</dt><dd class="num">136,195,745.74 usdc</dd></div>
+    </dl>
+  </details>
+</section>
+
+<section id="review">
+  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
+  <p class="lead">The AI checked each item first and gives its advice.</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>The deposited tokens are held in Fluid&#39;s Liquidity contract, an upgradeable InfiniteProxy. At every signing the program checks that it and its 4 implementations are unchanged. After an upgrade, verify gives MISMATCH until a new code pin is merged. The program does not see an implementation that only adds brand-new functions; Fluid did that once, at block 24,649,359. <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json">source 1</a> <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">source 2</a></span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>If verify gives MISMATCH, do not sign. After Fluid upgrades, wait until the new code pin is merged before you deposit.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span><code>deposit</code> sets no minimum shares. Every EOA that deposited by calling an fToken directly over the past year used this two-argument version; none used the version with <code>minAmountOut_</code>. By the contract&#39;s design, the fToken&#39;s exchange price comes from Liquidity&#39;s interest accrual and only rises, never falls, so it is hard to push the price up at the moment you deposit. <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">source</a></span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. If it matters to you, after verify check the number of shares the Safe actually received.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>fUSDC held about 283 million USDC a year ago, about 314 million in 2026-01, and about 135 million now. From 2026-05 to 06 it lost about 83 million in one month, at the same time as the reward private key incident (Fluid says the lending pools were not affected). 2,128 addresses hold it, and the top 10 hold 39.24%. <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">source</a></span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>This pool has existed for more than a year. Fluid&#39;s withdrawal limits may delay a large withdrawal, so before you deposit, plan when you will withdraw.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>Wallet display</h2>
+  <p class="lead">This Safe transaction packs 2 calls with MultiSend, which a hardware wallet cannot decode, so compare the hash on the device with the safeTxHash <code>verify</code> prints.</p>
+</section>
+
+<section id="addresses">
+  <h2>Addresses <span class="c">4</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the vault&#39;s registered factory lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <div class="rows">
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>4 more addresses have no result for you to review</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>The token deposited into fUSDC</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to circle-usdc (compared with <a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">deployer 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-fluid-fusdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">fluid-fusdc</span><span class="role"><span class="aiw" data-ai><span>Fluid&#39;s USDC lending pool token (fUSDC): takes USDC and issues shares</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDC.json">github.com/Instadapp/fluid-contracts-public/…/fToken_fUSDC.json</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html">docs.fluid.io/fluid-integration/lending/read</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>)</span></span></div><div class="src"><span data-state="na">CoinGecko<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>nothing to compare</span></span></div><div class="src"><span data-state="ok">factory<span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
+        <div class="confirmed">Confirmed in 4 places: official page, github.com/Instadapp/fluid-contracts-public/…/fToken_fUSDC.json, docs.fluid.io/fluid-integration/lending/read, factory</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan: verified contract name fToken. Its creation transaction was sent by 0x8e7fb4d4fabc504a4ad73d44e09080cb68960098 and deployed it through CREATE3 <a class="aisrc" href="https://etherscan.io/tx/0x3771681407c5f5d10c779a2bc685470c559652d83eb69d86b3af68ae7c6e0494">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    <div class="ad" id="a-fluid-lending-factory" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">fluid-lending-factory</span><span class="role"><span class="aiw" data-ai><span>Fluid&#39;s lending pool factory, which computes each asset&#39;s official fToken address with <code>computeToken</code></span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x54B91A0D94cb471F37f949c60F7Fa7935b551D03</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json">github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://etherscan.io/address/0x0ed35b1609ec45c7079e80d11149a52717e4859a">deployer 0x0Ed35B1609Ec45c7079E80d11149a52717e4859A, which also deployed fluid-liquidity</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">Confirmed in 3 places: official page, github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json, deployer</div></div>
+    </div>
+    <div class="ad" id="a-fluid-liquidity" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">fluid-liquidity</span><span class="role"><span class="aiw" data-ai><span>Fluid&#39;s Liquidity contract: the tokens the fTokens receive are actually held here. No call goes to it directly</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x52Aa899454998Be5b000Ad077a46Bbe360F4e497</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json">github.com/Instadapp/fluid-contracts-public/…/Liquidity.json</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to fluid-lending (compared with <a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>, <a href="https://github.com/instadapp">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://etherscan.io/address/0x0ed35b1609ec45c7079e80d11149a52717e4859a">deployer 0x0Ed35B1609Ec45c7079E80d11149a52717e4859A, which also deployed fluid-lending-factory</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">Confirmed in 3 places: official page, github.com/Instadapp/fluid-contracts-public/…/Liquidity.json, deployer</div>
+        <div class="confirmed">No call goes to this contract directly, so it has no ABI proof. At each signing that touches <a href="#a-fluid-fusdc">fluid-fusdc</a>, the program also checks that its code is still the code pin&#39;s.</div>
+        <div class="confirmed">It routes each call by function selector to its own implementation. The code pin&#39;s seeds reach 4 implementations:</div>
+        <div class="confirmed"><span class="addr">0x463874c5A102ceEa919D63f748a433304D1bd1c0</span>, code hash <span class="addr">0xbc00fc015819200e56be193bbd03bfead8c29986bdfe03f395c8e319e8c22fc1</span>, 9 functions</div>
+        <div class="confirmed"><span class="addr">0x4bDC8816F2f56914B66EbF3786D78872D3a73Ab7</span>, code hash <span class="addr">0x6d4316677b0cf491853e301d8ad6147f49e81f86dfb42283d98ca076ec92c826</span>, 2 functions</div>
+        <div class="confirmed"><span class="addr">0x9191b9539DD588dB81076900deFDd79Cb1115f72</span>, code hash <span class="addr">0x01fdb34c5f4052607a015ca4eb8b743c495f27a58c1d2e56236db41d80316400</span>, 4 functions</div>
+        <div class="confirmed"><span class="addr">0xea78faBC13D603895FE9efe8BB4A4F2c56e5698E</span>, code hash <span class="addr">0xb79bc58959e4c0457f70d336ccee8a04e6a88fe0a49d0fbdf00e6b6d6108fda9</span>, 18 functions</div>
+        <div class="confirmed">An implementation no seed reaches is not in the code pin, and the program does not check it.</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>This contract&#39;s LogSetImplementation and LogRemoveImplementation events on Etherscan: 4 implementations are still set, last changed at block 25,007,782. Each of the four seeds reaches one of them, and these are the same 4 the program reads <a class="aisrc" href="https://etherscan.io/address/0x52Aa899454998Be5b000Ad077a46Bbe360F4e497#events">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>Past transactions</h2>
+  <p class="lead">In past records, <span class="num">97</span> transactions match the template exactly: Safe <span class="num">1</span> (1 Safe), EOA <span class="num">96</span> (87 addresses, each sending one call of the template); <span class="num">0</span> have the same shape but with an address outside the registry; <span class="num">43</span> have another shape, listed under Other ways. All of them succeeded: they were found through the Transfer records of fluid-fusdc mint (deposit), and a failed transaction leaves no such record. The latest 3 exact matches: <a href="https://etherscan.io/tx/0x65e8a75ca2a4d4f09052428a7b2de41d46c55ea3c04d43208dcb163a10366430">0x65e8a75c…</a>, <a href="https://etherscan.io/tx/0x5c8e02c495cf31e9d7cc4a46ed2eb4664544071e61520ca2dd0d3a600189958a">0x5c8e02c4…</a>, <a href="https://etherscan.io/tx/0x699557e62adab4d3465ec69cb6a275c1f124999515cf007b9bf7bcc92b6f8586">0x699557e6…</a>.</p>
+  <p class="intro"><span class="aiw" data-ai><span>The only Safe transaction that does not fit calls <code>deposit</code> on another contract, which then deposits into fUSDC. That is not the Fluid app&#39;s route.</span><span class="byai">AI research</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Other ways</summary>
+  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>Search of fluid-fusdc mint (deposit): 512 found, 237 studied</h3>
+  <p class="lead">Recorded in <code>testdata/research/fluid-vault-deposit-fusdc.json</code>. Alchemy and Etherscan found exactly the same (<span class="num">512 = 512</span>).</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> transactions used this operation&#39;s calls (2 Safes); <span class="num">1</span> matches the template exactly.</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pcalls"><code>0x273DA948ACa9261043fbdb2a857BC255ECC29012.deposit</code></div><div>The calls differ from the template, which is <code>approve → deposit</code><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x1128c3ee12632db7a14da947d8aa884874ba97d387d1d1624c5f6d9d442de475">0x1128c3ee…</a></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA calls deposit directly</span><span><span class="num">138</span> transactions used this operation&#39;s calls (127 addresses); <span class="num">96</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">42</span><div><div>The called contract is <span class="addr">0x273DA948ACa9261043fbdb2a857BC255ECC29012</span>, not the template&#39;s fluid-fusdc<span class="f3">, from 40 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xc414006cb6065dea598827193afd72f685a4571a81bcd0b31db5924218d5812d">0xc414006c…</a>, <a href="https://etherscan.io/tx/0xd1e82a6ce311fc25d147208029cd79b5617aa6cfe028c303495c4b17768350d5">0xd1e82a6c…</a>, <a href="https://etherscan.io/tx/0xd4f717913232cdc84898369963e6a76fb4783fff45f7f214caf8d664842703d8">0xd4f71791…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>97 more are other operations, not counted: <code>0x0000000071727De22E5E9d8BAf0edAc6f37da032.0x765e827f</code> 15, <code>0x18f1FAC179feB0ee44F339a616feFb979A6961BE.0x248b1701</code> 6, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.0x230ae89c</code> 5, <code>0x3f04b65Ddbd87f9CE0A2e7Eb24d80e7fb87625b5.mint</code> 5, and others.</span></div>
+  </details>
+</section>
+
+<section id="next">
+  <h2>Next steps</h2>
+  <ol class="steps">
+    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>bin/kiss-sign template approve fluid/vault-deposit</code></pre>
+      <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
+    <li><div>Make the card<pre class="cmd"><code>bin/kiss-sign card new fluid/vault-deposit</code></pre>
+      <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
+    <li><div><code>vault</code>: it lists the contracts you can pick, each with its full address. Pick <a href="#a-fluid-fusdc">fluid-fusdc</a>, address <span class="addr">0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</span>
+      <p class="then">The numbers in the list may differ from someone else&#39;s, so pick by name; you can also type the name <code>fluid-fusdc</code>.</p></div></li>
+    <li><div><code>amount</code>: type the amount of usdc in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
+      <p class="then">It prints it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
+    <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
+      <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
+    <li><div>Propose the transaction in the Safe web app (the first time you use this template or this vault, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>: it prints the safeTxHash and the path of a page with the domain hash, the message hash and the checklist. Go on.</p>
+      <p class="then"><code>MISMATCH</code> or <code>UNVERIFIABLE</code>: do not sign. Read the checks it lists, then the AI judgment under &#34;<a href="#review">To review</a>&#34; in this report, which may explain why.</p></div></li>
+    <li><div>Hardened tier: on an independent computer, run<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">Compare the hashes it computes with the hardware wallet, and its page&#39;s checklist row by row with the <code>verify</code> page.</p></div></li>
+    <li><div>Compare the domain hash and the message hash on the hardware wallet character by character with the <code>verify</code> page. Sign only if they are the same.
+      <div class="hash"><span>Compare</span><span class="f2">the domain hash and the message hash, each 0x followed by 64 characters</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>What the program does at each signing</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>The transaction has only these 2 calls, counting each call inside a MultiSend</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every argument follows the rules above, and encoding them again gives exactly the same bytes</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, the usdc the Safe gives is exactly the amount you type</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, the Safe receives fluid-fusdc</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>No allowance is higher after the transaction</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every registry contract the card uses still runs the code its code pin records</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">Written by <code>pnpm report fluid/vault-deposit --vault-of fluid-fusdc --record</code> from <code>templates/fluid/vault-deposit/template.json</code>, <code>templates/fluid/vault-deposit/docs.json</code>, <code>templates/fluid/vault-deposit/vaults/fluid-fusdc/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/fluid-vault-deposit/fluid-fusdc.json</code>, <code>testdata/abi</code>, <code>testdata/research/fluid-vault-deposit-fusdc.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/fluid/vault-deposit/notes.json</code>, <code>templates/fluid/vault-deposit/vaults/fluid-fusdc/notes.json</code>; the data was read on 2026-11-16. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>
