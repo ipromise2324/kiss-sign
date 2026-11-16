@@ -295,7 +295,7 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   'pin-not-run': { title: '鏈上跑的不是登記的程式碼', why: '鏈上在這段區塊範圍跑的程式碼，跟 code pin 記錄的不一樣。' },
   'proof-not-pin': { title: '證明的程式碼不是現在登記的', why: 'ABI 證明用的程式碼，不是 code pin 現在的那一份。' },
   'not-created': { title: '工廠說這個金庫不是它建的', why: '登記的工廠合約回答，這個地址不是它建立的金庫，所以它不屬於工廠的協議。' },
-  'factory-other-answer': { title: '工廠的回答不是 true 或 false', why: '問登記的工廠是否建立了這個金庫，它沒有回答 true 或 false（例如 revert），所以不能說這個金庫屬於工廠的協議。' },
+  'factory-other-answer': { title: '工廠的回答看不懂', why: '問登記的工廠是否建立了這個金庫，它沒有回答 true、false 或一個地址（例如 revert），所以不能說這個金庫屬於工廠的協議。' },
   refused: { title: 'ABI 證明被拒絕', why: '重新編譯 Sourcify 的原始碼，得不到鏈上的程式碼。' },
   'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
   'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
@@ -979,7 +979,7 @@ function vaultSection(context: Context): Section[] {
   const section = (block: VaultBlock): Section[] => [{ anchor: anchor(`vault-${vault.name}`), label: '金庫', count: undefined, body: { kind: 'vault', vault: block } }];
   const lead: Inline = [link(vault), '：程式記錄的 ', { code: 'pnpm vault-evidence' }, ' 輸出，每個數字都同時問兩家節點。這裡不換算成美元。'];
   if (text === undefined) return section({ lead: [link(vault), '：沒有 ', { code: 'pnpm vault-evidence' }, ' 的記錄。'], rows: [], bars: [], most: undefined });
-  const evidence = readStoredEvidence(text);
+  const evidence = readStoredEvidence(text, vault, context.registry);
   const unit = evidence.asset?.name === undefined ? '' : ` ${evidence.asset.name}`;
   const amount = (value: bigint): string => (evidence.asset === undefined ? `${value} 最小單位` : `${tokens(value, evidence.asset.decimals, 2)}${unit}`);
   const most = evidence.points.reduce<bigint | undefined>((top, p) => (p.assets.kind === 'amount' && (top === undefined || p.assets.amount > top) ? p.assets.amount : top), undefined);
@@ -997,7 +997,7 @@ function vaultSection(context: Context): Section[] {
       label: '工廠',
       value:
         evidence.admitted !== undefined
-          ? [evidence.admitted.factory, ' 回答 ', { code: evidence.admitted.check }, ' = true']
+          ? [evidence.admitted.factory, ' 回答 ', { code: evidence.admitted.check }, ` = ${evidence.admitted.answer}`]
           : [factory === undefined ? '沒有登記工廠，沒有工廠為它的程式碼背書' : `沒有記錄到 ${factory} 回答它建立了這個金庫`],
       note: evidence.admitted === undefined ? [] : [`區塊 ${evidence.admitted.block}`],
     },

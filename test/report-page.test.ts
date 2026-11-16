@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import type { AbiRefusal } from '../src/contracts/prove.ts';
+import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { MARKETS_PATH, REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
 import { forSigner, judge, stateOf, strip, worst } from '../src/research/ledger.ts';
 import type { EntryReport, FieldFact } from '../src/research/erc7730.ts';
@@ -13,6 +14,7 @@ import { renderPage } from '../src/research/report-html.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
 import type { ArgRow, Body, HtmlInputs, Inline, Page, WalletCall } from '../src/research/report-page.ts';
 import { entriesOf, renderReport, replayInputs } from '../src/research/report.ts';
+import type { RegistryEntry } from '../src/registry.ts';
 import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -725,4 +727,54 @@ test("a dependency with no code pin says only that it has no ABI proof, not that
   assert.deepEqual(row.codeLines.map(plain), ['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。']);
   assert.ok(!judge(of, of.fixtures).results.some((r) => r.id === 'liquidity-layer/code.today'), 'an unpinned entry has only its not-pinned result');
   assert.ok(renderReport(of, title).includes('| `liquidity-layer` | not pinned |  |'));
+});
+
+function withComputingFactory(first: string): { readonly of: HtmlInputs; readonly notes: unknown; readonly vault: RegistryEntry } {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const vault = subject.vault ?? assert.fail('a per-vault report');
+  const name = vault.attributes.factory ?? assert.fail('a vault with a factory');
+  const factory = depositInputs.registry.entries.get(name) as RegistryEntry;
+  const computing: RegistryEntry = {
+    ...factory,
+    instanceCheck: { kind: 'computes-address', fn: parseFunctionSignature('computeToken(address,string)'), args: [{ kind: 'attribute', attribute: 'asset' }, { kind: 'string', value: 'fToken' }] },
+  };
+  const swap = (entry: RegistryEntry) => (entry.name === name ? computing : entry);
+  const registry = {
+    ...depositInputs.registry,
+    entries: new Map([...depositInputs.registry.entries].map(([key, entry]) => [key, swap(entry)])),
+    byAddress: new Map([...depositInputs.registry.byAddress].map(([key, entry]) => [key, swap(entry)])),
+  };
+  const stored = depositInputs.vaults.get(vault.name) ?? assert.fail('stored vault evidence');
+  const of: HtmlInputs = { ...depositInputs, registry, vaults: new Map([[vault.name, [first, ...stored.split('\n').slice(1)].join('\n')]]) };
+  const given = (depositNotes as { readonly reviews: Record<string, unknown> }).reviews;
+  const reviews = notesScope(of, judge(of, of.fixtures), subject.template).reviews.map((id) => [id, given[id] ?? { status: 'concern', text: `review ${id}`, recommendation: 'look' }]);
+  return { of, notes: { ...(depositNotes as object), reviews: Object.fromEntries(reviews) }, vault };
+}
+
+test('a vault its factory admits by computing its address renders in both reports, its 工廠 line confirming it', () => {
+  const vault = (depositInputs.subject.kind === 'template' ? depositInputs.subject.vault : undefined) ?? assert.fail('a per-vault report');
+  const first = `admitted     vault-v2-factory answered computeToken(${vault.attributes.asset},"fToken") = ${checksumAddress(vault.address)} at block 26404800`;
+  const { of, notes } = withComputingFactory(first);
+  assert.ok(renderReport(of, depositTitle).includes(`\`\`\`text\n${first}\n`), 'the Markdown report prints the stored line');
+  const page = buildPage(of, notes, depositTitle);
+  const factoryRow = body(page, 'vault').vault.rows.find((row) => row.label === '工廠') ?? assert.fail('no 工廠 row');
+  assert.equal(plain(factoryRow.value), `vault-v2-factory 回答 computeToken(usdc,"fToken") = ${checksumAddress(vault.address)}`);
+  const addresses = body(page, 'addresses');
+  const row = [...addresses.open, ...addresses.folded].find((r) => r.name === vault.name) ?? assert.fail('no address row');
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, site: undefined });
+  assert.ok(renderPage(page).includes('computeToken(usdc,&#34;fToken&#34;)'), 'the HTML report escapes the quoted constant');
+});
+
+test("a vault its factory computed another address for renders in both reports, its 工廠 line red", () => {
+  const vault = (depositInputs.subject.kind === 'template' ? depositInputs.subject.vault : undefined) ?? assert.fail('a per-vault report');
+  const first = `REFUSED vault-v2-factory answered computeToken(usdc,"fToken") = 0x5C20B550819128074FD538Edf79791733ccEdd18, not ${vault.name}: its official contract is another; the vault's code is not read`;
+  const { of, notes } = withComputingFactory(first);
+  assert.ok(renderReport(of, depositTitle).includes(`\`\`\`text\n${first}\n`), 'the Markdown report prints the stored line');
+  const page = buildPage(of, notes, depositTitle);
+  const addresses = body(page, 'addresses');
+  const row = addresses.open.find((r) => r.name === vault.name) ?? assert.fail('the vault row is not open');
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: '工廠說不是它建的', site: undefined });
+  const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
+  assert.equal(review.state, 'bad');
+  assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個金庫`);
 });

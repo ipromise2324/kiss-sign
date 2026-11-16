@@ -16,6 +16,7 @@ import { pageUrlOf } from '../src/research/source-page.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import type { Standard } from '../src/research/standards.ts';
 import type { CommitCheck, Page } from '../src/research/source-page.ts';
+import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { judgeFixtures } from '../src/template/perturb.ts';
 import type { FixtureJudgement, PerturbationReport, Run } from '../src/template/perturb.ts';
@@ -52,6 +53,13 @@ const ENTRY: RegistryEntry = {
 
 const VAULT: RegistryEntry = { ...ENTRY, kind: 'vault', attributes: { factory: 'vault-factory' } };
 const evidence = (text: string) => ({ entry: VAULT, vaults: new Map([['vault', text]]) });
+const COMPUTING_FACTORY: RegistryEntry = {
+  ...ENTRY,
+  name: 'vault-factory',
+  address: `0x${'fa'.repeat(20)}` as Address,
+  kind: 'factory',
+  instanceCheck: { kind: 'computes-address', fn: parseFunctionSignature('computeToken(address,string)'), args: [{ kind: 'attribute', attribute: 'asset' }, { kind: 'string', value: 'fToken' }] },
+};
 const ADMITTED = 'admitted     vault-factory answered isVault(address) = true at block 100\nvault        vault 0x';
 
 const without = (key: 'sourceLabel' | 'code' | 'coingecko', entry: RegistryEntry = ENTRY): RegistryEntry => {
@@ -77,6 +85,7 @@ type Setup = {
   readonly fixtures: readonly FixtureJudgement[];
   readonly vaults: ReadonlyMap<string, string>;
   readonly reachedThrough: RegistryEntry | undefined;
+  readonly factory: RegistryEntry | undefined;
 };
 
 const BASE: Setup = {
@@ -96,6 +105,7 @@ const BASE: Setup = {
   fixtures: [],
   vaults: new Map(),
   reachedThrough: undefined,
+  factory: undefined,
 };
 
 const DEPENDENT: RegistryEntry = { ...ENTRY, name: 'dependent', address: OTHER, kind: 'vault', dependsOn: ['vault'] };
@@ -125,7 +135,7 @@ const failedRuns = (...outcomes: Run['outcome'][]): PerturbationReport => {
  */
 function ledgerOf(change: Partial<Setup>): Ledger {
   const s = { ...BASE, ...change };
-  const all = s.reachedThrough === undefined ? [s.entry] : [s.entry, s.reachedThrough];
+  const all = [s.entry, ...(s.reachedThrough === undefined ? [] : [s.reachedThrough]), ...(s.factory === undefined ? [] : [s.factory])];
   const registry: Registry = { entries: new Map(all.map((e) => [e.name, e])), byAddress: new Map(all.map((e) => [e.address, e])), markets: new Map() };
   const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [] }, facts: [] } as Template;
   const inputs = {
@@ -179,6 +189,10 @@ const ROWS: readonly Row[] = [
   { what: 'a vault its factory created', change: evidence(ADMITTED), id: 'vault/factory.admitted', kind: 'agrees', state: 'ok' },
   { what: 'a vault its factory answered it did not create', change: evidence("REFUSED vault-factory answered isVault(address) false for vault: it did not create it; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'not-created', state: 'bad' },
   { what: 'a vault whose factory answered neither true nor false', change: evidence("REFUSED vault-factory answered isVault(address) with a revert, not true or false; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'factory-other-answer', state: 'bad' },
+  { what: 'a vault whose address its factory computed', change: { ...evidence(`admitted     vault-factory answered computeToken(usdc,"fToken") = ${checksumAddress(ADDRESS)} at block 100\nvault        vault 0x`), factory: COMPUTING_FACTORY }, id: 'vault/factory.admitted', kind: 'agrees', state: 'ok' },
+  { what: 'a vault its factory computed another address for', change: evidence("REFUSED vault-factory answered computeToken(usdc,\"fToken\") = 0x5C20B550819128074FD538Edf79791733ccEdd18, not vault: its official contract is another; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'not-created', state: 'bad' },
+  { what: 'a vault whose factory computed no address', change: evidence("REFUSED vault-factory answered computeToken(usdc,\"fToken\") with a revert, not an address; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'factory-other-answer', state: 'bad' },
+  { what: "a vault lacking an attribute its factory's check binds", change: evidence("REFUSED vault has no asset attribute, which vault-factory's instanceCheck computeToken(address,string) binds; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: 'a vault another factory admitted', change: evidence(ADMITTED.replace('vault-factory', 'other-factory')), id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: "a vault whose factory's answer got no reply", change: evidence("REFUSED the providers disagree; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: 'a vault whose block was not read', change: evidence('UNVERIFIABLE no block'), id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },

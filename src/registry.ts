@@ -60,8 +60,7 @@ export type RegistryEntry = {
   /** More official pages that list the address, each checked as `source` is. */
   readonly moreSources?: readonly SourcePage[];
   readonly attributes: { readonly [A in Attribute]?: string };
-  /** A factory's view function that answers true only for a contract it created, such as `isMetaMorpho(address)`. */
-  readonly instanceCheck?: AbiFunction;
+  readonly instanceCheck?: InstanceCheck;
   /** The DefiLlama protocol slug this contract belongs to, such as `morpho-blue`; `pnpm check-sources` compares its listing with `source`. */
   readonly defillama?: string;
   /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
@@ -73,6 +72,18 @@ export type RegistryEntry = {
   /** The code a call to this address ran at each block `pnpm pin-code` found; verify requires the code of the block it reads. */
   readonly code?: CodePins;
 };
+
+/**
+ * A factory's view that vouches for a contract it created: one that answers true for that contract's address, such as
+ * `isMetaMorpho(address)`, or one that computes the address of the factory's official contract from `args`, such as
+ * `computeToken(address,string)`, and must answer the contract's own.
+ */
+export type InstanceCheck =
+  | { readonly kind: 'answers-true'; readonly fn: AbiFunction }
+  | { readonly kind: 'computes-address'; readonly fn: AbiFunction; readonly args: readonly InstanceArg[] };
+
+/** One argument of a `computes-address` check: the address of the entry the checked contract's attribute names, or a constant string. */
+export type InstanceArg = { readonly kind: 'attribute'; readonly attribute: Attribute } | { readonly kind: 'string'; readonly value: string };
 
 /**
  * A proxy's two views, `implementationOf(bytes4)`, answering one address word, and `selectorsOf(address)`, answering a
@@ -175,18 +186,50 @@ function onlyKeys(path: string, value: Record<string, unknown>, allowed: readonl
   if (extra !== undefined) throw new RegistryError(`${path}.${extra}`, 'unexpected field');
 }
 
-function oneParamFunction(path: string, raw: unknown, type: 'address' | 'bytes4'): AbiFunction {
+function signatureOf(path: string, raw: unknown): AbiFunction {
   if (typeof raw !== 'string') throw new RegistryError(path, 'not a function signature');
-  let fn: AbiFunction;
   try {
-    fn = parseFunctionSignature(raw);
+    return parseFunctionSignature(raw);
   } catch (error) {
     if (error instanceof AbiSignatureError) throw new RegistryError(path, error.message);
     throw error;
   }
+}
+
+function oneParamFunction(path: string, raw: unknown, type: 'address' | 'bytes4'): AbiFunction {
+  const fn = signatureOf(path, raw);
   const [param, ...more] = fn.params;
   if (param === undefined || more.length > 0 || canonicalType(param.type) !== type) throw new RegistryError(path, `must take exactly one ${type}`);
   return fn;
+}
+
+const INSTANCE_STRING = /^[A-Za-z0-9_.-]{1,32}$/;
+
+function instanceArg(path: string, raw: unknown, type: string): InstanceArg {
+  const value = record(path, raw);
+  const [key, ...more] = Object.keys(value);
+  if (key === undefined || more.length > 0 || (key !== 'attribute' && key !== 'string')) throw new RegistryError(path, 'not one of {"attribute": ...} or {"string": ...}');
+  const bound = value[key];
+  if (key === 'attribute') {
+    if (type !== 'address') throw new RegistryError(path, `an attribute binds only an address parameter, and this one is ${type}`);
+    if (typeof bound !== 'string' || !isAttribute(bound)) throw new RegistryError(`${path}.attribute`, `not one of ${Object.keys(ATTRIBUTES).join(', ')}`);
+    return { kind: 'attribute', attribute: bound };
+  }
+  if (type !== 'string') throw new RegistryError(path, `a string binds only a string parameter, and this one is ${type}`);
+  if (typeof bound !== 'string' || !INSTANCE_STRING.test(bound)) throw new RegistryError(`${path}.string`, 'not 1 to 32 letters, digits, _, . or -');
+  return { kind: 'string', value: bound };
+}
+
+function instanceCheckOf(path: string, raw: unknown): InstanceCheck {
+  if (typeof raw === 'string') return { kind: 'answers-true', fn: oneParamFunction(path, raw, 'address') };
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw new RegistryError(path, 'not a function signature or a {"function", "args"} object');
+  const value = raw as Record<string, unknown>;
+  onlyKeys(path, value, ['function', 'args']);
+  const fn = signatureOf(`${path}.function`, value.function);
+  if (!Array.isArray(value.args) || value.args.length !== fn.params.length) throw new RegistryError(`${path}.args`, `not a list of one argument for each of the ${fn.params.length} parameters`);
+  const args = fn.params.map((param, i) => instanceArg(`${path}.args[${i}]`, (value.args as unknown[])[i], canonicalType(param.type)));
+  if (!args.some((arg) => arg.kind === 'attribute')) throw new RegistryError(`${path}.args`, 'binds no attribute of the contract, so the address it computes is the same for every contract');
+  return { kind: 'computes-address', fn, args };
 }
 
 const SELECTOR = /^0x[0-9a-f]{8}$/;
@@ -439,7 +482,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
     return entry;
   }
-  return { ...entry, instanceCheck: oneParamFunction(`${path}.instanceCheck`, value.instanceCheck, 'address') };
+  return { ...entry, instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck) };
 }
 
 function dependsOnOf(path: string, raw: unknown, own: string): string[] {
