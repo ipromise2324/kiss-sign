@@ -10,9 +10,8 @@ import { gatherApiAnswers, pruneAnswer, retryingSend, walkPath } from '../src/re
 import type { ApiSend } from '../src/research/api-source.ts';
 import { checkSources, formatResults, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
-import { httpsGet } from '../src/research/source-page.ts';
-
 import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
+import { httpsGet } from '../src/research/source-page.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'sources', 'registry.json'), 'utf8'));

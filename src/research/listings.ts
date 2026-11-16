@@ -609,18 +609,7 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
             [...coins].map(([id, coin]) => [id, coin.kind === 'unread' ? { unread: coin.why } : { links: { homepage: coin.homepages.map((u) => u.href), repos_url: { github: coin.github.map((u) => u.href) } } }]),
           ),
         }),
-    ...(programNames.size === 0
-      ? {}
-      : 'kind' in programs
-        ? { immunefi: { unread: programs.why } }
-        : {
-          immunefi: [...programNames].flatMap((name) => {
-            const program = programs.get(name);
-            if (program === undefined) return [];
-            const links = [...program.addresses].map((address) => `https://etherscan.io/address/${address}`).join('\n');
-            return [{ slug: program.slug, websiteUrl: program.website?.href ?? null, githubUrl: program.github?.href ?? null, assetsBodyV2: links }];
-          }),
-          }),
+    ...(programNames.size === 0 ? {} : { immunefi: programsRecord(programs, programNames) }),
     ...(orgs.size === 0 ? {} : { orgs: Object.fromEntries(orgs) }),
     coingecko: [...addresses]
       .flatMap((address) => listings.coinsByAddress.get(address) ?? [])
@@ -635,6 +624,17 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
       ? {}
       : { creations: Object.fromEntries([...pages.creations].map(([address, c]) => [address, c.kind === 'proven' ? { ...c, block: c.block.toString() } : c])) }),
   };
+}
+
+/** The programs the entries name, as Immunefi's list holds them, cut to their sites and their scope's etherscan.io links. */
+function programsRecord(programs: SiteListings['programs'], names: ReadonlySet<string>): unknown {
+  if ('kind' in programs) return { unread: programs.why };
+  return [...names].flatMap((name) => {
+    const program = programs.get(name);
+    if (program === undefined) return [];
+    const links = [...program.addresses].map((address) => `https://etherscan.io/address/${address}`).join('\n');
+    return [{ slug: program.slug, websiteUrl: program.website?.href ?? null, githubUrl: program.github?.href ?? null, assetsBodyV2: links }];
+  });
 }
 
 /** A package read with its file cut to the blocks the entries naming that version read. */
