@@ -133,6 +133,8 @@ Everything is expressible as one inline stylesheet plus a block of inline SVG `<
 
 Two voices share the page and never blur: what the program read and checked (plain text, solid tags), and what the AI researched (marked by a dashed outline). The program's facts always come first.
 
+The page is written in English and in Traditional Chinese, the same layout in each; every word below is given in Traditional Chinese, and the English page uses the same word in English (你填 is "you type", 待確認 is "To review").
+
 **Key Characteristics:**
 - Near-black ground, three ink greys, three state colours, no brand accent.
 - Rows divided by 1px hairlines; no cards, no tiles, no lamps.
@@ -222,7 +224,7 @@ One radius, a gentle 6px, on everything that has a corner: tags, who-decides chi
 - **AI judgment:** dashed 1.5px ring with a centre dot, in Ink 3 (no hue: a judgment is not a result).
 - **Info:** thin 1.3px ring with an "i", Ink 3, the tooltip trigger.
 - **Chevron:** 1.5px stroke, Ink 3, rotates 90deg over 150ms when its fold opens.
-Every state icon carries `role="img"` and a Chinese `aria-label`; info and chevron are `aria-hidden`.
+Every state icon carries `role="img"` and an `aria-label` in the page's language; info and chevron are `aria-hidden`.
 
 ### Check Strip
 The first-viewport summary: one row of short named results between two hairlines, each an icon, a name, an optional Ink 2 count in tabular figures, and an info tooltip. The verdict line below pairs an Ink 3 "建議" label, a state icon, one sentence and the AI tag.
@@ -249,7 +251,7 @@ A heading row over a Strong Hairline: the call number in mono Ink 3, the functio
 Left: the parameter name in 14px mono Ink, and under it its who-decides chip (or two, for an argument whose parts differ, such as `kind 固定` and `data 不限`). Right, top to bottom: the value as `cast decode-calldata` prints it, in mono Ink; a 15px Ink line saying in words what it is (a registry name, 你填的金額, 不抽成, 無（零地址）), with an Ink 3 qualifier after it; and the AI line, a dashed `AI` tag followed by 14px Ink 2 text on what the argument does. A tuple shows its summary (such as the market's name and its id) in place of a value, and its parts nest under it: indented 16px behind a 1px Strong Hairline rule, each part a 132px mono Ink 2 name beside its value, plain-words line and AI line. The parts carry no chip of their own; the tuple's chip covers them.
 
 ### Who-Decides Chip
-A 13px label in a 1px 6px-radius outline. Four words, from the template's rule for the argument: 你填 (a card amount; Ink text, Ink 2 outline, 590), 你選 (a card choice such as a market or vault; same style), 固定 (a value the template fixes; Ink 3 on Strong Hairline), and app 填，不限 (an argument left free and tested by perturbation; Attention Amber text and outline). A chip may name the card field after a colon, by its Chinese word (你填：金額, 你選：市場).
+A 13px label in a 1px 6px-radius outline. Four words, from the template's rule for the argument: 你填 (a card amount; Ink text, Ink 2 outline, 590), 你選 (a card choice such as a market or vault; same style), 固定 (a value the template fixes; Ink 3 on Strong Hairline), and app 填，不限 (an argument left free and tested by perturbation; Attention Amber text and outline). A chip may name the card field after a colon, by its word (你填：金額, 你選：市場).
 
 ### Program / AI Tags
 12px label in a 1px 6px-radius outline. Program: solid Strong Hairline outline, Ink 3 text. AI: dashed Ink 3 outline, Ink 2 text, reading "AI 研究" plus the AI's own conclusion when given.
