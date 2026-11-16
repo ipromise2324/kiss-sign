@@ -92,10 +92,11 @@ export type ConstValue =
   | { readonly kind: 'fixed-bytes' | 'bytes' | 'string'; readonly value: Hex };
 
 /**
- * Why a free field is safe at any value. `scalar`: a number, bool or fixed-size bytes, which the reason explains.
- * `proof`: the contract reverts unless it verifies the value against what it already holds, such as a Merkle root or
- * attesters' signatures. `unread`: the contract never reads the value. Only `proof` and `unread` may free bytes, a string
- * or an array, and nothing may free an address or a tuple.
+ * Why a free field is safe at any value. `scalar`: a number, bool, fixed-size bytes or an array of numbers, which the
+ * reason explains. `proof`: the contract reverts unless it verifies the value against what it already holds, such as a
+ * Merkle root or attesters' signatures. `unread`: the contract never reads the value. `route`: a number that picks one of
+ * the protocol's pools, so another value may change the price but nothing the effects do not bound. Only `proof` and
+ * `unread` may free bytes, a string or another array, and nothing may free an address or a tuple.
  */
 export type FreeClaim = 'scalar' | 'proof' | 'unread' | 'route';
 
@@ -142,7 +143,6 @@ export type SignedMessage = {
   readonly fields: readonly Rule[];
   readonly lookup: string;
 };
-
 
 /** Bytes a contract ignores after a call's arguments, which the template lets through up to `maxBytes`. */
 export type TrailerAllowance = { readonly maxBytes: number; readonly why: string };
@@ -552,6 +552,7 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       return { kind: 'call', call: callNode(at, body, scope) };
     case 'encoded':
       needs(['bytes']);
+      if (scope.inMessage) throw cannotBind();
       return { kind: 'call', call: encodedNode(at, body, scope) };
     case 'items': {
       if (type.kind !== 'array' && type.kind !== 'fixed-array') throw cannotBind();
@@ -1035,8 +1036,8 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     },
     facts: [],
   };
-  const unbounded = template.effects.gets.find((effect) => effect.amount.kind === 'positive');
-  if (unbounded !== undefined && routes(template)) throw new TemplateError('effects.gets', 'a template with a route claim must bound each token the Safe gets by a card amount or atLeast, since a route may change the price');
+  const unbounded = [...template.effects.gives, ...template.effects.gets].some((effect) => effect.amount.kind === 'positive');
+  if (unbounded && routes(template)) throw new TemplateError('effects', 'a template with a route claim must bound each token the Safe gives or gets by a card amount, atLeast or all, since a route may change the price');
   const protocols = calledProtocols(template, registry);
   return { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
 }
@@ -1049,7 +1050,7 @@ function routes(template: Template): boolean {
     (rule.kind === 'items' && rule.items.some(visit)) ||
     (rule.kind === 'fields' && rule.fields.some(visit)) ||
     (rule.kind === 'packed' && rule.parts.some((part) => visit(part.rule)));
-  return template.calls.some((call) => call.data !== 'empty' && call.data.args.some(visit));
+  return template.calls.some((call) => visit(call.to) || visit(call.value) || (call.data !== 'empty' && call.data.args.some(visit)));
 }
 
 /** Every card reference the template makes. */

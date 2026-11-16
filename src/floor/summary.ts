@@ -7,7 +7,7 @@ import type { Observation } from '../simulate/simulate.ts';
 import type { FieldCheck } from '../template/check.ts';
 import type { MutationResult } from '../template/mutation.ts';
 import type { Template } from '../template/template.ts';
-import { standingSpenders } from './floor.ts';
+import { keptUnlimited } from './floor.ts';
 import type { FloorResult } from './floor.ts';
 import { checkSimulatedFloor } from './simulated.ts';
 
@@ -33,5 +33,5 @@ export function checkObservation(
 ): SimulatedChecks {
   if (observation.kind === 'unverifiable') return observation;
   const { observed } = observation;
-  return { kind: 'observed', effects: judgeEffects(observed, card, templates, registry), floor: checkSimulatedFloor(observed, safe, standingSpenders(registry)) };
+  return { kind: 'observed', effects: judgeEffects(observed, card, templates, registry), floor: checkSimulatedFloor(observed, safe, keptUnlimited(card, templates, registry)) };
 }

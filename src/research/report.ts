@@ -596,6 +596,8 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     if (call.data === 'empty') out.push(`| ${code('data')} | empty |`);
     else out.push(...callRows(call.data, '', template, registry));
     if (call.merge !== undefined) out.push('', `Several operations on one card share this call; ${byAi(call.merge)}`);
+    const reads = call.to.kind === 'contract' && call.data !== 'empty' && call.data.trailer !== undefined ? registry.entries.get(call.to.name)?.ignoresTrailer : undefined;
+    if (reads !== undefined) out.push('', `The registry entry of ${code(call.to.kind === 'contract' ? call.to.name : '')} declares it never reads calldata past a call's arguments, so this call's trailer may be longer than 19 bytes; ${byAi(reads)}`);
     out.push('');
   });
 

@@ -5,6 +5,7 @@ import type { State } from '../research/ledger.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
+import { PERMIT2_MAX, UNLIMITED_ERC20 } from '../floor/floor.ts';
 import type { Expectations, Expected, KeptSeen } from '../simulate/effects.ts';
 import type { CallScan } from '../simulate/simulate.ts';
 import type { Template } from '../template/template.ts';
@@ -140,10 +141,11 @@ function effectsSection(page: VerdictPage): Html {
 </section>`;
 }
 
-/** ERC-20 allowances at or above 2^255, and Permit2's 2^160-1, which it never lowers when spent. */
-const isUnlimited = ({ via, amount }: KeptSeen): boolean => amount >= (via === 'permit2' ? (1n << 160n) - 1n : 1n << 255n);
+const isUnlimited = ({ via, amount }: KeptSeen): boolean => amount >= (via === 'permit2' ? PERMIT2_MAX : UNLIMITED_ERC20);
 
-const utc = (seconds: bigint): string => new Date(Number(seconds) * 1000).toISOString().replace('T', ' ').slice(0, 16);
+/** The latest second a JavaScript date holds; a later expiration is shown in seconds. */
+const LAST_DATE = 8_640_000_000_000n;
+const utc = (seconds: bigint): string => (seconds > LAST_DATE ? `第 ${seconds} 秒（UNIX 時間）` : `${new Date(Number(seconds) * 1000).toISOString().replace('T', ' ').slice(0, 16)} UTC`);
 
 function keptSection(page: VerdictPage): Html {
   if (![...page.templates.values()].some((t) => t.effects.approves.length > 0)) return h``;
@@ -151,7 +153,7 @@ function keptSection(page: VerdictPage): Html {
   const rows = page.kept.map((kept) => {
     const token: AmountToken = { address: kept.token, name: nameOf(kept.token, registry) };
     const amount = isUnlimited(kept) ? h`無上限的 ${tokenName(token)}` : tokenAmount(kept.amount, token, page);
-    const expires = kept.expiration === undefined ? '' : h`，到 ${utc(kept.expiration)} UTC 為止（Permit2 的到期時間）`;
+    const expires = kept.expiration === undefined ? '' : h`，到 ${utc(kept.expiration)} 為止（Permit2 的到期時間）`;
     return prop(kept.via === 'permit2' ? '透過 Permit2' : 'ERC-20 授權', h`給 ${nameOf(kept.spender, registry)} ${mono(checksumAddress(kept.spender))}：${amount}${expires}`);
   });
   return h`

@@ -244,7 +244,7 @@ function itemCalls(calls: readonly InnerCall[], template: Template, span: Span):
   };
   const visit = (rule: Rule, value: AbiValue | undefined, root: Uint8Array, target: Address | undefined): CallName[] | undefined => {
     if (value === undefined) return undefined;
-    if (rule.kind === 'call') return value.kind === 'bytes' ? visitCall(rule.call, { root, start: value.span[0], end: value.span[1] }, target) : undefined;
+    if (rule.kind === 'call') return value.kind === 'bytes' && rule.call.encoding === 'call' ? visitCall(rule.call, { root, start: value.span[0], end: value.span[1] }, target) : undefined;
     if (rule.kind === 'fields') return value.kind === 'tuple' ? firstOf(rule.fields.map((field, i) => visit(field, value.fields[i], root, onlyAddress(value) ?? target))) : undefined;
     if (rule.kind !== 'items' || value.kind !== 'array') return undefined;
     if (value.span[0] !== span[0] || value.span[1] !== span[1]) return firstOf(rule.items.map((item, i) => visit(item, value.items[i], root, target)));

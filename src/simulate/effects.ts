@@ -171,7 +171,7 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
  */
 export type KeptAllowances = ReadonlyMap<string, bigint | 'unlimited'>;
 
-const keptKey = (via: AllowanceRoute, token: Address, spender: Address): string => `${via}|${token}|${spender}`;
+export const keptKey = (via: AllowanceRoute, token: Address, spender: Address): string => `${via}|${token}|${spender}`;
 
 /** The allowances the card's templates keep (`effects.approves`), and why any could not be resolved. */
 export function keptAllowances(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): { readonly kept: KeptAllowances; readonly reasons: readonly string[] } {
@@ -188,7 +188,7 @@ export function keptAllowances(card: ResolvedCard, templates: ReadonlyMap<string
       else {
         const key = keptKey(approval.via, token.address, spender.address);
         const known = kept.get(key) ?? 0n;
-        kept.set(key, known === 'unlimited' || amount?.kind !== 'amount' ? 'unlimited' : known + amount.value);
+        kept.set(key, known === 'unlimited' || approval.amount.kind === 'unlimited' || amount?.kind !== 'amount' ? 'unlimited' : known + amount.value);
       }
     }
   }

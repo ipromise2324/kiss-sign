@@ -136,7 +136,7 @@ function bundle(rule: Rule | undefined, value: AbiValue, values: Values, walk: W
     const shown =
       data.value.length === 0
         ? ({ kind: 'empty' } as const)
-        : dataRule?.kind === 'call'
+        : dataRule?.kind === 'call' && dataRule.call.encoding === 'call'
           ? callData(dataRule.call, regionOf(data, walk.root), itemValues?.[i] ?? values, walk)
           : ({ kind: 'raw', hex: hex(data.value) } as const);
     return { to: labeled(to.value, walk), value: amount.value, data: shown };

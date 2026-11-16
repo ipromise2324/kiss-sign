@@ -4,8 +4,12 @@ import type { Span } from '../decode/codec.ts';
 import { regionBytes } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
+import type { ResolvedCard } from '../card.ts';
 import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
+import { keptAllowances } from '../simulate/effects.ts';
+import { PERMIT2 } from '../simulate/events.ts';
+import type { Template } from '../template/template.ts';
 
 export type FloorRuleId = 'fee-fields' | 'delegatecall' | 'self-call' | 'unlimited-approval' | 'safe-state';
 
@@ -25,14 +29,25 @@ type Found = Omit<FloorFinding, 'rule'>;
 
 type StaticRule = { readonly id: FloorRuleId; readonly check: (view: View, standing: readonly StandingSpender[]) => readonly Found[] };
 
-/** A registry contract that may keep an unlimited allowance from the Safe through `via`, as its entry declares. */
-export type StandingSpender = { readonly via: AllowanceRoute; readonly spender: Address };
+/** An unlimited allowance from the Safe that may stay: of `token`, or of any token when undefined, to `spender` through `via`. */
+export type StandingSpender = { readonly via: AllowanceRoute; readonly spender: Address; readonly token: Address | undefined };
 
+/** The allowances the card's templates keep unlimited (`effects.approves`): the only ones `verify`'s floor lets through. */
+export const keptUnlimited = (card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): StandingSpender[] =>
+  [...keptAllowances(card, templates, registry).kept].flatMap(([key, limit]) => {
+    const [via, token, spender] = key.split('|') as [AllowanceRoute, Address, Address];
+    return limit === 'unlimited' ? [{ via, spender, token }] : [];
+  });
+
+/**
+ * Every registry contract whose entry declares a standing allowance, for any token: what some template could keep, so a
+ * past transaction's unlimited approval to one is not refused by design.
+ */
 export const standingSpenders = (registry: Registry): StandingSpender[] =>
-  [...registry.entries.values()].flatMap((entry) => (entry.standingAllowance === undefined ? [] : [{ via: entry.standingAllowance.via, spender: entry.address }]));
+  [...registry.entries.values()].flatMap((entry) => (entry.standingAllowance === undefined ? [] : [{ via: entry.standingAllowance.via, spender: entry.address, token: undefined }]));
 
-export const isStanding = (standing: readonly StandingSpender[], via: AllowanceRoute, spender: Address): boolean =>
-  standing.some((s) => s.via === via && s.spender.toLowerCase() === spender.toLowerCase());
+export const isStanding = (standing: readonly StandingSpender[], via: AllowanceRoute, spender: Address, token: Address): boolean =>
+  standing.some((s) => s.via === via && s.spender.toLowerCase() === spender.toLowerCase() && (s.token === undefined || s.token.toLowerCase() === token.toLowerCase()));
 
 const ZERO = '0x0000000000000000000000000000000000000000' as Address;
 
@@ -121,8 +136,10 @@ function unlimitedApproval({ calls }: View, standing: readonly StandingSpender[]
     };
     const amount = word(kind.amount);
     if (amount < kind.unlimited) continue;
-    if (kind.via !== undefined && isStanding(standing, kind.via, addressIn(word(kind.spender)))) continue;
     const token = kind.token === 'target' ? call.to : addressIn(word(kind.token));
+    // Permit2's approve counts only when it is Permit2 that is called.
+    const route = kind.via === 'permit2' && call.to.toLowerCase() !== PERMIT2 ? undefined : kind.via;
+    if (route !== undefined && isStanding(standing, route, addressIn(word(kind.spender)), token)) continue;
     const at = call.data.start + 4 + kind.amount * 32;
     findings.push({
       callPath: call.path,
@@ -159,7 +176,8 @@ function viewOf(tx: SafeTx): View {
 
 /**
  * Protocol-free rules every Safe transaction must meet, whatever its template says. An unlimited approval passes only
- * to a registry contract whose entry declares a standing allowance of that route (`standing`).
+ * when `standing` names it: for `verify`, an allowance the card's templates keep unlimited, which template load allows
+ * only to a registry contract that declares a standing allowance of that route.
  */
 export function checkFloor(tx: SafeTx, standing: readonly StandingSpender[] = []): FloorResult {
   const view = viewOf(tx);
