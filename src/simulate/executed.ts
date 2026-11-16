@@ -145,3 +145,17 @@ export function withSimulatedViews(executed: Observation, simulated: Observation
   }
   return { ...executed, observed: { ...executed.observed, views: [...(executed.observed.views ?? []), ...readings] } };
 }
+
+/**
+ * Adds to an executed transaction's receipt evidence the Safe's settings as a simulation of it alone on its parent block
+ * read them, for a card that declares an owner or threshold change. A simulation that did not run or did not execute
+ * leaves the change unjudged, so the observation cannot be judged.
+ */
+export function withSimulatedSafeState(executed: Observation, simulated: Observation): Observation {
+  if (executed.kind !== 'observed' || executed.observed.kind !== 'executed' || executed.observed.safeState.kind !== 'receipt') return executed;
+  if (simulated.kind === 'unverifiable') return { kind: 'unverifiable', reasons: [`the Safe's settings alone on the parent block: ${simulated.reasons.join('; ')}`] };
+  if (simulated.observed.kind !== 'executed') return { kind: 'unverifiable', reasons: [`alone on the parent block it did not execute: ${simulated.observed.why}`] };
+  const alone = simulated.observed.safeState;
+  if (alone.kind !== 'read') return { kind: 'unverifiable', reasons: ["the simulation on the parent block did not read the Safe's settings"] };
+  return { ...executed, observed: { ...executed.observed, safeState: { ...executed.observed.safeState, alone } } };
+}

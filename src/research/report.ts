@@ -163,6 +163,8 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
       if (!standard.kinds.includes(contract.kind)) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract ${contract.name} is a ${contract.kind}; ${standard.name} applies to ${standard.kinds.join(' and ')} entries`);
       if (!standard.declarations.has(fn.signature)) throw new ReportError(`${DOCS_FILE}: ${standard.name} does not define ${fn.signature}`);
     }
+    const onSafe = template.calls.some((call) => call.to.kind === 'safe' && call.data !== 'empty' && call.data.fn.signature === fn.signature);
+    if (onSafe && contract.kind !== 'singleton') throw new ReportError(`${DOCS_FILE}: ${fn.signature} is called on the Safe itself, so its contract must be a registry singleton, not ${contract.name}`);
     const names = targets.get(fn.signature);
     if (names !== undefined && !names.includes(contract.name)) {
       throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is ${contract.name}, but the template calls it on ${names.length === 1 ? names[0] : `one of ${names.join(', ')}`}`);
@@ -282,8 +284,14 @@ function directlyTouched(subject: Subject, registry: Registry): Set<string> {
     for (const target of Object.values(entry.attributes)) names.add(target);
   }
   if (subject.kind === 'template') for (const doc of subject.docs) names.add(doc.contract.name);
+  if (subject.kind === 'template' && callsSafeWithData(subject.template)) {
+    for (const entry of registry.entries.values()) if (entry.kind === 'singleton') names.add(entry.name);
+  }
   return names;
 }
+
+/** A call to the Safe itself with data runs the Safe's singleton, one of the registry's. */
+const callsSafeWithData = (template: Template): boolean => template.calls.some((call) => call.to.kind === 'safe' && call.data !== 'empty');
 
 /**
  * Every registry entry the operation can touch, in registry order: those the template names, those a card field can
@@ -479,6 +487,8 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
       return `${FREE_CLAIMS[rule.claim]}; ${byAi(rule.reason)}`;
     case 'equals':
       return `the same number as ${code(rule.path)}, which is ${ruleText(rule.rule, template, registry)}`;
+    case 'owner-before':
+      return `the owner listed just before ${refText(rule.ref)} in the Safe's ${code('getOwners()')}, read on chain, or the sentinel ${code('0x0000000000000000000000000000000000000001')} when it is first`;
     case 'share-price':
       return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e27 / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
     case 'call':
@@ -553,6 +563,10 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
             : `nothing: computed by ${code('card new')} in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}, ${computedText(field.computed)}`
           : field.kind === 'nonce'
             ? 'a Safe nonce'
+            : field.kind === 'threshold'
+              ? 'a whole number from 1: how many owners must sign'
+            : field.kind === 'owner'
+              ? 'an address-book name, confirmed by the signer'
             : field.kind === 'market'
               ? `a market from ${code(MARKETS_PATH)}, picked by number from the list below`
               : field.kind === 'address'
@@ -595,6 +609,17 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     out.push('| Side | Token | Amount |', '| --- | --- | --- |');
     for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
     for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  }
+  const settings = template.effects.safe;
+  if (settings !== undefined) {
+    const owners = [
+      ...(settings.remove === undefined ? [] : [`lose exactly ${refText(settings.remove)}, who must be an owner before`]),
+      ...(settings.add === undefined ? [] : [`gain exactly ${refText(settings.add)}, who must not be an owner before`]),
+    ];
+    out.push(
+      '',
+      `The Safe's own settings, read just before and just after the transaction: its owners ${owners.length === 0 ? 'stay the same' : owners.join(', and ')}, compared as a set; its threshold ${settings.threshold === undefined ? 'stays the same' : `ends at ${refText(settings.threshold)}`}; its singleton, modules, guard and fallback handler stay the same. Any other change is a ${code('MISMATCH')}.`,
+    );
   }
   if (template.effects.views.length > 0) {
     out.push('', 'The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:', '');

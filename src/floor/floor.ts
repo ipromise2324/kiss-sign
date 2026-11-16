@@ -17,7 +17,7 @@ export const floorResult = (findings: readonly FloorFinding[]): FloorResult =>
   findings.length === 0 ? { kind: 'pass' } : { kind: 'refused', findings };
 
 /** The Safe transaction with its calls unwrapped; `calls` is empty when a delegatecall cannot be unwrapped. */
-type View = { readonly tx: SafeTx; readonly calls: readonly InnerCall[]; readonly unwrapError: Found | undefined };
+type View = { readonly tx: SafeTx; readonly calls: readonly InnerCall[]; readonly unwrapError: Found | undefined; readonly ownerCalls: boolean };
 
 /** A finding before the table stamps it with the rule that made it. */
 type Found = Omit<FloorFinding, 'rule'>;
@@ -76,10 +76,22 @@ function delegatecall({ calls, unwrapError }: View): Found[] {
   return unwrapError === undefined ? nested : [unwrapError, ...nested];
 }
 
-/** Every owner, threshold, module, guard, fallback handler and singleton change is a call from the Safe to itself. */
-function selfCall({ tx, calls }: View): Found[] {
+/**
+ * The owner and threshold functions a template may call on the Safe itself; the simulated floor then requires the
+ * change its `effects.safe` declares, and no other.
+ */
+export const OWNER_FUNCTIONS: ReadonlySet<Hex> = new Set(
+  ['addOwnerWithThreshold(address,uint256)', 'removeOwner(address,address,uint256)', 'swapOwner(address,address,address)', 'changeThreshold(uint256)'].map(selectorOf),
+);
+
+/**
+ * Every owner, threshold, module, guard, fallback handler and singleton change is a call from the Safe to itself. Only
+ * the owner and threshold functions pass, and only for a card that declares such a change.
+ */
+function selfCall({ tx, calls, ownerCalls }: View): Found[] {
   return calls
     .filter((call) => call.to === tx.safe && call.data.end > call.data.start)
+    .filter((call) => !ownerCalls || !OWNER_FUNCTIONS.has(`0x${bytesToHex(regionBytes(call.data).subarray(0, 4))}` as Hex))
     .map((call) => {
       const selector = bytesToHex(regionBytes(call.data).subarray(0, 4));
       return { callPath: call.path, detail: `a call to the Safe itself with data (selector 0x${selector})`, bytes: [call.data.start, call.data.end] as const };
@@ -119,25 +131,29 @@ export const STATIC_RULES: readonly StaticRule[] = [
   { id: 'unlimited-approval', check: unlimitedApproval },
 ];
 
-function viewOf(tx: SafeTx): View {
+function viewOf(tx: SafeTx, ownerCalls: boolean): View {
   const unwrapped = unwrapSafeTx(tx);
   switch (unwrapped.kind) {
     case 'direct':
     case 'multisend':
-      return { tx, calls: unwrapped.calls, unwrapError: undefined };
+      return { tx, calls: unwrapped.calls, unwrapError: undefined, ownerCalls };
     case 'foreign-delegatecall':
-      return { tx, calls: [], unwrapError: { callPath: 'safeTx', detail: `a delegatecall to ${unwrapped.to}, which is not an official MultiSend`, bytes: undefined } };
+      return { tx, ownerCalls, calls: [], unwrapError: { callPath: 'safeTx', detail: `a delegatecall to ${unwrapped.to}, which is not an official MultiSend`, bytes: undefined } };
     default:
       return {
         tx,
+        ownerCalls,
         calls: [],
         unwrapError: { callPath: 'safeTx', detail: `the MultiSend data does not decode (${unwrapped.kind} at byte ${unwrapped.at})`, bytes: [unwrapped.at, unwrapped.at + 1] },
       };
   }
 }
 
-/** Protocol-free rules every Safe transaction must meet, whatever its template says. */
-export function checkFloor(tx: SafeTx): FloorResult {
-  const view = viewOf(tx);
+/**
+ * Protocol-free rules every Safe transaction must meet, whatever its template says. `ownerCalls` lets the Safe's owner
+ * and threshold functions through, for a card one of whose operations declares that change.
+ */
+export function checkFloor(tx: SafeTx, ownerCalls = false): FloorResult {
+  const view = viewOf(tx, ownerCalls);
   return floorResult(STATIC_RULES.flatMap((rule) => rule.check(view).map((found) => ({ rule: rule.id, ...found }))));
 }

@@ -137,7 +137,7 @@ function ledgerOf(change: Partial<Setup>): Ledger {
   const s = { ...BASE, ...change };
   const all = [s.entry, ...(s.reachedThrough === undefined ? [] : [s.reachedThrough]), ...(s.factory === undefined ? [] : [s.factory])];
   const registry: Registry = { entries: new Map(all.map((e) => [e.name, e])), byAddress: new Map(all.map((e) => [e.address, e])), markets: new Map() };
-  const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [] }, facts: [] } as Template;
+  const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [], safe: undefined }, facts: [] } as Template;
   const inputs = {
     subject:
       s.reachedThrough !== undefined

@@ -10,7 +10,7 @@ import type { Reader } from '../chain/reader.ts';
 import type { BlockHeader, BlockRef } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
 import { checkFloor } from '../floor/floor.ts';
-import { checkObservation } from '../floor/summary.ts';
+import { checkObservation, settingsChange } from '../floor/summary.ts';
 import { parseRegistry } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { hashSafeTx } from '../safe/hash.ts';
@@ -18,13 +18,15 @@ import { parseSafeWebAppTx, parseServiceTx } from '../safe/parse.ts';
 import { parseAddress, parseHex, parseSafeVersion } from '../safe/types.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { endsNeeded, expectedChanges, viewCalls } from '../simulate/effects.ts';
-import { observeExecuted, withSimulatedViews } from '../simulate/executed.ts';
+import { observeExecuted, withSimulatedSafeState, withSimulatedViews } from '../simulate/executed.ts';
+import { ownersOf } from '../simulate/safe-state.ts';
 import { scanCalls, simulateSafeTx } from '../simulate/simulate.ts';
 import type { CallScan, Observation } from '../simulate/simulate.ts';
 import { checkTemplateFields } from '../template/check.ts';
+import type { FieldChain, OwnersRead } from '../template/check.ts';
 import { checkMutations } from '../template/mutation.ts';
 import { parseTemplate } from '../template/template.ts';
-import type { Template } from '../template/template.ts';
+import type { Rule, Template } from '../template/template.ts';
 import { assetClaims, checkAssets } from './assets.ts';
 import { checkCode, codeClaims } from './code.ts';
 import { amountTokens } from './expected.ts';
@@ -132,13 +134,19 @@ export function prepare(inputs: VerifyInputs): Prepared {
 }
 
 /** Every check on the transaction, given what a simulation or its receipt showed it doing. */
-export function judge(prepared: Prepared, tx: SafeTx, observation: Observation, read: { readonly assets: ChainCheck; readonly code: ChainCheck }): Verdict {
+export function judge(
+  prepared: Prepared,
+  tx: SafeTx,
+  observation: Observation,
+  read: { readonly assets: ChainCheck; readonly code: ChainCheck },
+  chain: FieldChain = {},
+): Verdict {
   const { registry, safe, card, templates, approvals } = prepared;
   const checks = {
-    staticFloor: checkFloor(tx),
-    fields: checkTemplateFields(tx, card, templates, registry),
+    staticFloor: checkFloor(tx, settingsChange(card, templates) !== undefined),
+    fields: checkTemplateFields(tx, card, templates, registry, chain),
     ...read,
-    mutation: checkMutations(tx, card, templates, registry),
+    mutation: checkMutations(tx, card, templates, registry, checkTemplateFields, chain),
     simulation: checkObservation(observation, safe, card, templates, registry),
     approvals,
   };
@@ -166,6 +174,24 @@ async function simulatedOn(reader: Reader, executed: Hex | undefined, latest: Bl
   const block = await reader.block(parent.number + 1n);
   const own = await header(block.kind === 'unverifiable' ? block.reason : block.value);
   return typeof own === 'string' ? own : { parent, time: own.time };
+}
+
+/** Whether a template on the card binds a field to the owner before a card owner, which needs the Safe's owner list. */
+function usesOwnerBefore(card: ResolvedCard, templates: ReadonlyMap<string, Template>): boolean {
+  const visit = (rule: Rule): boolean =>
+    rule.kind === 'owner-before' ||
+    (rule.kind === 'call' && rule.call.args.some(visit)) ||
+    (rule.kind === 'items' && rule.items.some(visit)) ||
+    (rule.kind === 'fields' && rule.fields.some(visit));
+  return card.operations.some((op) => templates.get(op.template)?.calls.some((call) => call.data !== 'empty' && call.data.args.some(visit)) ?? false);
+}
+
+/** The Safe's `getOwners()` at `at`, as both providers answer it. */
+export async function readOwners(reader: Reader, safe: Address, at: BlockRef): Promise<OwnersRead> {
+  const answer = await reader.call({ to: safe, data: selectorOf('getOwners()') }, at);
+  if (answer.kind === 'unverifiable') return { kind: 'unread', why: answer.reason };
+  const owners = answer.value.kind === 'returned' ? ownersOf(answer.value.data) : undefined;
+  return owners === undefined ? { kind: 'unread', why: `getOwners() did not answer an address list at block ${at.number}` } : { kind: 'read', owners };
 }
 
 /**
@@ -198,11 +224,17 @@ export async function evaluateTx(
   const on = await simulatedOn(reader, executed, latest.value);
   const simulate = async (): Promise<Observation> => (typeof on === 'string' ? { kind: 'unverifiable', reasons: [on] } : simulateSafeTx(reader, { tx, ...on, watch, ends, views }));
   let observation = executed === undefined ? await simulate() : await observeExecuted(reader, executed, tx, ends, views);
-  if (executed !== undefined && views.length > 0) observation = withSimulatedViews(observation, await simulate(), views);
+  const changesSettings = settingsChange(prepared.card, prepared.templates) !== undefined;
+  if (executed !== undefined && (views.length > 0 || changesSettings)) {
+    const alone = await simulate();
+    if (views.length > 0) observation = withSimulatedViews(observation, alone, views);
+    if (changesSettings) observation = withSimulatedSafeState(observation, alone);
+  }
   const calls: CallScan = typeof on === 'string' ? { kind: 'unverifiable', reasons: [on] } : await scanCalls(reader, { tx, ...on, watch });
   const claims = assetClaims(prepared.card, prepared.templates, prepared.registry);
   const pinned = codeClaims(tx, prepared.card, prepared.templates, prepared.registry);
-  const at = claims.length > 0 || pinned.length > 0 ? await ranOn(reader, executed, latest.value) : latest.value;
+  const needsOwners = usesOwnerBefore(prepared.card, prepared.templates);
+  const at = claims.length > 0 || pinned.length > 0 || needsOwners ? await ranOn(reader, executed, latest.value) : latest.value;
   const readAt = async <T>(subjects: readonly T[], check: (at: BlockRef) => Promise<ChainCheck>): Promise<ChainCheck> => {
     if (subjects.length === 0) return { kind: 'pass' };
     return typeof at === 'string' ? { kind: 'unverifiable', reasons: [at] } : check(at);
@@ -211,7 +243,8 @@ export async function evaluateTx(
     assets: await readAt(claims, (block) => checkAssets(reader, claims, block)),
     code: await readAt(pinned, (block) => checkCode(reader, pinned, block, executed === undefined ? 'pending' : 'executed')),
   };
-  return { evaluation: { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls }, tx, prepared, latest: latest.value };
+  const chain: FieldChain = !needsOwners ? {} : { owners: typeof at === 'string' ? { kind: 'unread', why: at } : await readOwners(reader, safe, at) };
+  return { evaluation: { verdict: judge(prepared, tx, observation, read, chain), hashes: hashSafeTx(tx), calls }, tx, prepared, latest: latest.value };
 }
 
 /**
