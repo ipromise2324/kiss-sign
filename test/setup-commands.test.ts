@@ -8,6 +8,7 @@ import { main } from '../src/cli/main.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 
 const ROOT = join(import.meta.dirname, '..');
+const FIXTURE_TEMPLATES = join(import.meta.dirname, 'fixtures', 'templates');
 const SAFE = '0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0';
 const RECIPIENT = '0x1111111111111111111111111111111111111111';
 
@@ -326,7 +327,7 @@ test('card new lists a vault with the factory that created it, takes amounts in 
 test('card new reads a computed field\'s inner read first, here the Safe\'s share balance for a withdrawal of all', async () => {
   const home = freshHome();
   configure(home);
-  const made = await run(['card', 'new', 'morpho/vault-withdraw-all'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), 'y'], mainnet());
+  const made = await run(['card', 'new', 'morpho/vault-withdraw-all'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), 'y'], { ...mainnet(), repoRoot: withdrawClone() });
   assert.equal(made.code, 0, made.stderr);
   const balance = made.stdout.indexOf(`  balanceOf(safe) on steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} = 2000000000000000000:`);
   const redeem = made.stdout.indexOf(`  previewRedeem(2000000000000000000) on steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} = 2000000:`);
@@ -337,7 +338,8 @@ test('card new reads a computed field\'s inner read first, here the Safe\'s shar
 test('card new rounds a ceiling up, as a withdrawal\'s max-shares', async () => {
   const home = freshHome();
   configure(home);
-  const made = await run(['card', 'new', 'morpho/vault-withdraw'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '0.000001', 'y'], mainnet((_p, to, selector, arg) => (selector === PREVIEW_WITHDRAW && to.toLowerCase() === STEAKHOUSE.toLowerCase() ? arg * 1999n : undefined)));
+  const chain = mainnet((_p, to, selector, arg) => (selector === PREVIEW_WITHDRAW && to.toLowerCase() === STEAKHOUSE.toLowerCase() ? arg * 1999n : undefined));
+  const made = await run(['card', 'new', 'morpho/vault-withdraw'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '0.000001', 'y'], { ...chain, repoRoot: withdrawClone() });
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes('  slippage: 0.10%, more than expected'));
   assert.ok(made.stdout.includes('  max-shares: 0.000000000000002001 steakhouse-prime-usdc-v2-0f51 = 2001 base units\n'), made.stdout);
@@ -404,7 +406,7 @@ test('card new reads each token\'s decimals once across operations', async () =>
   configure(home);
   const chain = mainnet();
   const vault = numberOf('steakhouse-prime-usdc-v2-0f51');
-  const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', vault, '0.000001', 'y'], chain);
+  const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', vault, '0.000001', 'y'], { ...chain, repoRoot: withdrawClone() });
   assert.equal(made.code, 0, made.stderr);
   assert.ok(made.stdout.includes('  amount: 1.25 usdc = 1250000 base units\n'));
   assert.ok(made.stdout.includes('  amount: 0.000001 usdc = 1 base units\n'));
@@ -470,6 +472,16 @@ test('card new asks for base units when the token is no registry contract, so it
   assert.match(made.stdout, /amount: 5\n/);
 });
 
+/** The signer's clone with the test-only withdrawal templates, each with a report for steakhouse-prime-usdc-v2-0f51. */
+function withdrawClone(): string {
+  const dir = dataClone();
+  for (const template of ['morpho/vault-withdraw', 'morpho/vault-withdraw-all']) {
+    cpSync(join(FIXTURE_TEMPLATES, template), join(dir, 'templates', template), { recursive: true });
+    reportVault(dir, template, 'steakhouse-prime-usdc-v2-0f51');
+  }
+  return publish(dir);
+}
+
 /** A report for `vault` under the template, as `pnpm report --vault-of` writes it; the gate reads only that the file is there. */
 function reportVault(repoRoot: string, template: string, vault: string): void {
   mkdirSync(join(repoRoot, 'templates', template, 'vaults', vault), { recursive: true });
@@ -532,7 +544,7 @@ test('card seal accepts the same vault for a template that predates per-vault re
   const home = freshHome();
   configure(home);
   const card = join(home, 'card.json');
-  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-withdraw', values: { vault: 'smokehouse-usdc-v1-f5bc', amount: '5', 'max-shares': '4' } }] }));
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'fluid/vault-deposit', values: { vault: 'smokehouse-usdc-v1-f5bc', amount: '5' } }] }));
   const result = await run(['card', 'seal', card], home, ['y']);
   assert.equal(result.code, 0, result.stderr);
 });

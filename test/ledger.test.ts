@@ -21,8 +21,9 @@ import type { FixtureJudgement, PerturbationReport, Run } from '../src/template/
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
+import { fixtureRoot } from './fixture-root.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = fixtureRoot();
 const suffixes = loadPublicSuffixList();
 const ADDRESS = `0x${'ab'.repeat(20)}` as Address;
 const OTHER = `0x${'cd'.repeat(20)}` as Address;
@@ -358,11 +359,11 @@ test('morpho/market-supply from its recordings: one address confirmed in one pla
     ledger.entries.map((e) => [e.name, confidence(ledger, e)]),
     [
       ['usdc', 'high'],
+      ['cbbtc', 'high'],
       ['morpho-blue', 'high'],
       ['blue-bundles-v1', 'high'],
       ['adaptive-curve-irm', 'high'],
       ['morpho-oracle-cbbtc-usdc-86', 'low'],
-      ['cbbtc', 'high'],
     ],
   );
 });

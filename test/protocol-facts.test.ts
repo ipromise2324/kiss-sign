@@ -12,8 +12,9 @@ import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { compareReports, entriesOf, loadReport, renderReport, reportRecordingPath } from '../src/research/report.ts';
 import type { ReportRecording } from '../src/research/report.ts';
 import type { Hex } from '../src/safe/types.ts';
+import { fixtureRoot } from './fixture-root.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = fixtureRoot();
 const registry = loadRegistry(ROOT);
 const suffixes = loadPublicSuffixList();
 const ID = 'morpho/market-supply';

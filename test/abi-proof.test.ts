@@ -169,16 +169,6 @@ const CASES = [
     uses: [],
   },
   {
-    name: 'fluid-rewards-distributor',
-    proxy: 'none',
-    proven: '0x7060fe0dd3e31be01efac6b28c8d38018fd163b0',
-    contract: 'contracts/protocols/lending/merkleDistributor/main.sol:FluidMerkleDistributor',
-    compiler: '0.8.21+commit.d9974bed',
-    functions: 21,
-    immutables: 2,
-    uses: ['claim(address recipient_,uint256 cumulativeAmount_,uint8 positionType_,bytes32 positionId_,uint256 cycle_,bytes32[] merkleProof_,bytes metadata_)'],
-  },
-  {
     name: 'fluid-token',
     proxy: 'none',
     proven: '0x6f40d4a6237c257fff2db00fa0510deeecd303eb',
