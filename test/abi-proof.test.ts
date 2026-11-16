@@ -23,12 +23,13 @@ import type { Target } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
 const suffixes = loadPublicSuffixList();
 
-const load = (name: string): AbiCase => JSON.parse(readFileSync(join(ROOT, 'testdata', 'abi', `${name}.json`), 'utf8')) as AbiCase;
+const load = (name: string): AbiCase => readRecording(join(ROOT, 'testdata', 'abi', `${name}.json`)) as AbiCase;
 
 const unverifiable = <T>(reason: string): Read<T> => ({
   kind: 'unverifiable',

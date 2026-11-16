@@ -22,6 +22,7 @@ import type { TxInput, VerifyInputs } from '../verify/verify.ts';
 import { ATTACKS_DIR, AttackCaseError, CHAINS, caseIds, caseTx, loadCase, loadRecording } from './case.ts';
 import type { AttackCase, Recording } from './case.ts';
 import { renderCase } from './render.ts';
+import { recordingText } from '../chain/bytecode.ts';
 
 /** One run of the checks: a verdict, or the reason verify stopped before one. */
 export type Judgement = {
@@ -154,7 +155,7 @@ async function record(io: Io, id: string): Promise<CaseResult> {
   const recording: Recording = { service, exchanges: recorder.exchanges() };
   const dir = join(io.repoRoot, ATTACKS_DIR, id);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'recording.json'), `${JSON.stringify(recording, null, 2)}\n`);
+  writeFileSync(join(dir, 'recording.json'), recordingText(recording, 2));
   io.stderr(`Wrote ${join(ATTACKS_DIR, id, 'recording.json')}: ${recording.exchanges.length} chain requests\n`);
   return result;
 }

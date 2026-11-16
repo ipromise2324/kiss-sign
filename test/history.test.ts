@@ -9,10 +9,11 @@ import { replayTransport } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import { history } from '../src/history/history.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
-const deposit: VerdictFile = readJson(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'));
+const deposit: VerdictFile = readRecording(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'));
 const records = (name: string) =>
   readFileSync(join(ROOT, 'testdata', 'history', `${name}.jsonl`), 'utf8')
     .trim()
