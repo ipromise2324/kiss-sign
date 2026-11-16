@@ -93,7 +93,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
 | `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | oracle | <https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc> | PASS | n/a | n/a | FINDING |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
-| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/market/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
+| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
 | `acuto-usdc-v2-4a57` | `0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57` | vault | <https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto> | PASS | FINDING | n/a | FINDING |
 | `acuto-usdc-v2-4a57-market-adapter` | `0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5` | adapter | <https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto> | PASS | n/a | n/a | FINDING |
 
@@ -145,12 +145,12 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `morpho-blue` | PASS | 26429007 |
-| `adaptive-curve-irm` | PASS | 26429007 |
-| `morpho-market-v1-adapter-v2-factory` | PASS | 26429007 |
-| `morpho-oracle-cbbtc-usdc-86` | PASS | 26429007 |
-| `morpho-oracle-usp-usdc` | PASS | 26429007 |
-| `acuto-usdc-v2-4a57-market-adapter` | PASS | 26429007 |
+| `morpho-blue` | PASS | 26429597 |
+| `adaptive-curve-irm` | PASS | 26429597 |
+| `morpho-market-v1-adapter-v2-factory` | PASS | 26429597 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26429597 |
+| `morpho-oracle-usp-usdc` | PASS | 26429597 |
+| `acuto-usdc-v2-4a57-market-adapter` | PASS | 26429597 |
 
 ## ABI proofs
 
@@ -177,37 +177,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `acuto-usdc-v2-4a57`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26429010
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26429600
 vault        acuto-usdc-v2-4a57 0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57
-latest block 26429010 0x0d087d009519590b462a3fca4156806adb0100c3df6dc610bc7f370a1c82e08f
+latest block 26429600 0x61e4096e2e7e43e0ee03c3baf31dc81acdeff12e21b310377dc7390d84e09929
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-16  block 26429010  758,854.344939 usdc
-  2026-10-17  block 26213010  953,952.840170 usdc
-  2026-09-17  block 25997010  1,175,538.511693 usdc
-  2026-08-18  block 25781010  2,827,829.663426 usdc
-  2026-07-19  block 25565010  1,493,518.202045 usdc
-  2026-06-19  block 25349010  2,651,884.310597 usdc
-  2026-05-20  block 25133010  3,500,703.767599 usdc
-  2026-04-19  block 24917010  4,819,081.717497 usdc
-  2026-03-20  block 24701010  7,049,927.409550 usdc
-  2026-02-18  block 24485010  no code at the vault yet
-  2026-01-19  block 24269010  no code at the vault yet
-  2025-12-20  block 24053010  no code at the vault yet
-  2025-11-20  block 23837010  no code at the vault yet
+  2026-11-16  block 26429600  758,871.913986 usdc
+  2026-10-17  block 26213600  953,970.552851 usdc
+  2026-09-17  block 25997600  1,175,569.063699 usdc
+  2026-08-18  block 25781600  2,827,880.728042 usdc
+  2026-07-19  block 25565600  1,493,549.586696 usdc
+  2026-06-19  block 25349600  2,651,934.896639 usdc
+  2026-05-20  block 25133600  3,701,866.671379 usdc
+  2026-04-20  block 24917600  4,816,126.919643 usdc
+  2026-03-20  block 24701600  7,045,001.360743 usdc
+  2026-02-18  block 24485600  no code at the vault yet
+  2026-01-19  block 24269600  no code at the vault yet
+  2025-12-20  block 24053600  no code at the vault yet
+  2025-11-20  block 23837600  no code at the vault yet
 
-holders      68 addresses hold shares at block 26429010, of 558 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 356591030181867814915626
+holders      68 addresses hold shares at block 26429600, of 558 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 356591030181867814915626
 top 10       hold 96.50% of the shares; each: 30.36%, 28.00%, 14.04%, 7.00%, 5.50%, 5.45%, 2.26%, 1.46%, 1.37%, 1.05%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429007 `0x4d1b97057ed212dc96ab718d33fb3dec6736c727428f0661cc245157bfcb01f1`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429597 `0x39b2c10459526391228e4daf425a50d814ca93228cb195beb81526e11354c452`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9984979303 | 4463194962 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9996165144 | 4473410115 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

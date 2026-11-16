@@ -98,7 +98,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | `flowmark-fgenesis-v2-6439` | `0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439` | vault | <https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis> | PASS | FINDING | n/a | FINDING |
 | `flowmark-fgenesis-v2-6439-market-adapter` | `0x79DA02d9C638cC9ae925188AD9DC245337981518` | adapter | <https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis> | PASS | n/a | n/a | FINDING |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
-| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/market/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
+| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
@@ -148,12 +148,12 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `morpho-blue` | PASS | 26429033 |
-| `adaptive-curve-irm` | PASS | 26429033 |
-| `morpho-market-v1-adapter-v2-factory` | PASS | 26429033 |
-| `morpho-oracle-cbbtc-usdc-86` | PASS | 26429033 |
-| `flowmark-fgenesis-v2-6439-market-adapter` | PASS | 26429033 |
-| `morpho-oracle-usp-usdc` | PASS | 26429033 |
+| `morpho-blue` | PASS | 26429580 |
+| `adaptive-curve-irm` | PASS | 26429580 |
+| `morpho-market-v1-adapter-v2-factory` | PASS | 26429580 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26429580 |
+| `flowmark-fgenesis-v2-6439-market-adapter` | PASS | 26429580 |
+| `morpho-oracle-usp-usdc` | PASS | 26429580 |
 
 ## ABI proofs
 
@@ -180,37 +180,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `flowmark-fgenesis-v2-6439`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26429037
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26429584
 vault        flowmark-fgenesis-v2-6439 0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439
-latest block 26429037 0xf26b7e30a999b66dc4be03856cf9278a8b4036e1f6b5592fa9da100e538e74ca
+latest block 26429584 0xec1f93dea267cebce154a83c0f9d359ec32219e6aed8a2f2c9196d6fc77e7938
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-16  block 26429037  403,374.093668 usdc
-  2026-10-17  block 26213037  224,110.484258 usdc
-  2026-09-17  block 25997037  35,577.644016 usdc
-  2026-08-18  block 25781037  5,918.199896 usdc
-  2026-07-19  block 25565037  1,486.505187 usdc
-  2026-06-19  block 25349037  1,400.148520 usdc
-  2026-05-20  block 25133037  10.000000 usdc
-  2026-04-19  block 24917037  no code at the vault yet
-  2026-03-20  block 24701037  no code at the vault yet
-  2026-02-18  block 24485037  no code at the vault yet
-  2026-01-19  block 24269037  no code at the vault yet
-  2025-12-20  block 24053037  no code at the vault yet
-  2025-11-20  block 23837037  no code at the vault yet
+  2026-11-16  block 26429584  403,379.795340 usdc
+  2026-10-17  block 26213584  224,113.713273 usdc
+  2026-09-17  block 25997584  35,578.011824 usdc
+  2026-08-18  block 25781584  5,918.280675 usdc
+  2026-07-19  block 25565584  1,486.518377 usdc
+  2026-06-19  block 25349584  1,400.156921 usdc
+  2026-05-20  block 25133584  10.000000 usdc
+  2026-04-20  block 24917584  no code at the vault yet
+  2026-03-20  block 24701584  no code at the vault yet
+  2026-02-18  block 24485584  no code at the vault yet
+  2026-01-19  block 24269584  no code at the vault yet
+  2025-12-20  block 24053584  no code at the vault yet
+  2025-11-20  block 23837584  no code at the vault yet
 
-holders      28 addresses hold shares at block 26429037, of 64 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 392992396252690956395290
+holders      28 addresses hold shares at block 26429584, of 64 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 392992396252690956395290
 top 10       hold 99.83% of the shares; each: 54.04%, 15.91%, 9.76%, 7.51%, 7.04%, 2.59%, 2.51%, 0.25%, 0.12%, 0.10%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429033 `0x4c519518c6032a93f1e864eaedb5c3ac308d189345326c5b53223e3f13677b08`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429580 `0x07588c990ba22227bc882b82f03a9bea03611b57546a8e4f8ce193dba8cbeb07`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9984979303 | 4463194962 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9996165144 | 4473410115 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |
