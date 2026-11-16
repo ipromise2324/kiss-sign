@@ -11,19 +11,10 @@
 
 Signing tools today show you a transaction and ask whether it looks right. Your intent is checked last, by you, at the moment you are most likely to click through. kiss-sign turns that around: you say what you want first, and a program checks the transaction against it before you sign on a hardware wallet.
 
-```mermaid
-flowchart LR
-    subgraph once["Once per operation"]
-        I["You: 'deposit USDC into this Morpho vault'"] --> AI["Your AI researches it<br/>and writes a template + report"]
-        AI --> PR["You review the pull request<br/>and merge it"]
-    end
-    subgraph every["Every signing"]
-        C["You fill a card:<br/>which vault, how much"] --> V["kiss-sign checks the Safe transaction<br/>against your card"]
-        V --> K["A second computer decodes<br/>the same transaction on its own"]
-        K --> W["You compare the hashes<br/>on your hardware wallet and sign"]
-    end
-    PR --> C
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
+  <img src="docs/readme/overview.png" alt="kiss-sign at a glance: you state the intent; once per operation your AI researches and writes a template you merge; at every signing you fill a card, kiss-sign verify and an independent second computer both check the transaction, and you sign on the hardware wallet after the hashes match">
+</picture>
 
 ## Why
 
