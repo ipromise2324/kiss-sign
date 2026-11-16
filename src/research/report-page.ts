@@ -13,8 +13,8 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { refNames, slippageBps } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
+import { refNames, slippageBps, viewTargetNames } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef, ViewChange, ViewEffect, ViewExpectation } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
@@ -27,6 +27,7 @@ import type { CallName, MisfitReason, OutsideKind, Sender, TxStudy } from './stu
 import { readStoredEvidence } from './vault-evidence.ts';
 import type { StoredPoint } from './vault-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
+import { signedEntryNames } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
 declare const anchorBrand: unique symbol;
@@ -227,7 +228,7 @@ const KIND_WORDS: Readonly<Record<RegistryEntry['kind'], string>> = {
   allowance: '授權合約',
   singleton: 'Safe 合約本體',
 };
-const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
+const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', adapter: '轉接合約', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
 
 /** A card field's word from its kind; a typed amount by what it counts: 股份數 for a vault's own shares, 金額 for an asset or ETH. */
 function kindWord(field: CardField, template: Template): string {
@@ -251,6 +252,8 @@ function kindWord(field: CardField, template: Template): string {
       return '門檻';
     case 'market':
       return '市場';
+    case 'percent':
+      return '百分比';
   }
 }
 
@@ -497,7 +500,7 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
   switch (rule.kind) {
     case 'card': {
       const kind = template.card.get(rule.ref.field)?.kind;
-      return { who: kind === 'amount' || kind === 'nonce' || kind === 'threshold' ? 'you-type' : 'you-pick', field: rule.ref.field };
+      return { who: kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? 'you-type' : 'you-pick', field: rule.ref.field };
     }
     case 'owner-before':
       return { who: 'fixed', field: undefined };
@@ -551,6 +554,29 @@ function wholeMarket(rule: Rule, template: Template): string | undefined {
 }
 
 /** The one entry a contract card reference can name, as in a per-vault report, where the card can name only its vault. */
+/** Whether a view reads the Safe's own position, so a rise is something the Safe gets; a vault's setting is not. */
+const readsSafe = (rule: Rule): boolean =>
+  rule.kind === 'safe' || (rule.kind === 'fields' && rule.fields.some(readsSafe)) || (rule.kind === 'items' && rule.items.some(readsSafe));
+
+const CHANGE_WORDS: Readonly<Record<ViewChange, string>> = { increases: '增加', decreases: '減少', same: '不變' };
+
+/** What a view effect requires, in the signer's words. */
+function changeWords(change: ViewExpectation, context: Context): Inline {
+  return typeof change === 'string' ? [CHANGE_WORDS[change]] : [before('等於你填的', fieldWord(context.template, change.equals))];
+}
+
+/** The contract a view effect reads, by name: its registry name, or the one entry its card field names in this report. */
+function viewLabel(view: ViewEffect, context: Context): string {
+  if (view.to.kind === 'contract') return view.to.name;
+  return onlyEntry(view.to.ref, context)?.name ?? `card.${view.to.ref.field}${view.to.ref.attribute === undefined ? '' : `.${view.to.ref.attribute}`}`;
+}
+
+/** The call a view's argument encodes, such as the `increaseAbsoluteCap` whose `executableAt` it reads, in brackets; empty for none. */
+function viewSubject(view: ViewEffect): string {
+  const inner = view.args.flatMap((arg) => (arg.kind === 'call' || arg.kind === 'keccak' ? [arg.call.fn.name] : []));
+  return inner.length === 0 ? '' : `（${inner.join('、')}）`;
+}
+
 function onlyEntry(ref: CardRef, context: Context): RegistryEntry | undefined {
   if (context.template.card.get(ref.field)?.kind !== 'contract') return undefined;
   const names = refNames(ref, context.template, context.registry);
@@ -566,6 +592,10 @@ function cardWords(ref: CardRef, key: string, context: Context): { readonly word
   if (field?.kind === 'amount') {
     if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
     return amountWords(example.value, field.of, context);
+  }
+  if (field?.kind === 'percent') {
+    if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
+    return { words: [before('你填的', fieldWord(context.template, ref.field)), '，例如 ', { num: `${wholeTokens(example.value * 100n, 18)}%` }], qualifier: undefined };
   }
   if (field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
   const picked = example?.kind === 'address' ? context.registry.byAddress.get(example.value) : undefined;
@@ -609,6 +639,8 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
       return { words: [`${rule.parts.reduce((sum, part) => sum + part.size, 0)} bytes，${rule.parts.length} 段接在一起`], qualifier: undefined };
     case 'eip712':
       return { words: [{ code: rule.message.struct.name }, ' 的 EIP-712 雜湊'], qualifier: ['verify 從 lookup 讀回原文，算出的雜湊要一樣'] };
+    case 'keccak':
+      return { words: ['keccak256，', { code: rule.call.fn.name }], qualifier: undefined };
     case 'items':
       return { words: [`${rule.items.length} 項`], qualifier: undefined };
     case 'fields':
@@ -772,7 +804,10 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
     const target = targetOf(call.to, context);
     return add(target.label, target.names, target.role);
   });
-  for (const view of template.effects.views) add(view.to, [view.to], kindOf(view.to));
+  for (const view of template.effects.views) {
+    const label = viewLabel(view, context);
+    add(label, viewTargetNames(view.to, template, registry), kindOf(label));
+  }
   for (const name of context.notes.flow.flatMap((line) => [line.from, line.to])) {
     if (!names.some((of) => of.includes(name))) add(name, [name], kindOf(name));
   }
@@ -803,10 +838,11 @@ function sequence(context: Context): Sequence {
     arrows.push({ kind: 'gets', from: last, text });
     narration.push(`結果：${text}。`);
   }
-  for (const view of template.effects.views) {
+  for (const view of template.effects.views.filter((v) => v.args.some(readsSafe))) {
     for (const { value } of view.changes.filter((c) => c.change === 'increases')) {
-      const text = `你在 ${view.to} 的 ${paramName(view.returns[value] as AbiParam, value)} 增加`;
-      arrows.push({ kind: 'gets', from: at(view.to), text });
+      const label = viewLabel(view, context);
+      const text = `${label} 的 ${paramName(view.returns[value] as AbiParam, value)} 增加`;
+      arrows.push({ kind: 'gets', from: at(label), text });
       narration.push(`結果：${text}。`);
     }
   }
@@ -873,9 +909,9 @@ function afterRows(context: Context): AfterRow[] {
     for (const { value, change } of view.changes) {
       rows.push({
         label: [{ code: paramName(view.returns[value] as AbiParam, value) }],
-        value: [{ increases: '增加', decreases: '減少', same: '不變' }[change]],
-        note: [`${view.to}.${view.fn.name}，交易前後各讀一次`],
-        gains: change === 'increases',
+        value: changeWords(change, context),
+        note: [`${viewLabel(view, context)}.${view.fn.name}${viewSubject(view)}，交易前後各讀一次`],
+        gains: change === 'increases' && view.args.some(readsSafe),
       });
     }
   }
@@ -1234,7 +1270,7 @@ function ruleWords(rule: Rule, context: Context): Inline {
       const only = onlyEntry(rule.ref, context);
       if (only !== undefined) return [link(only)];
       const kind = context.template.card.get(rule.ref.field)?.kind;
-      return [before(kind === 'amount' || kind === 'nonce' || kind === 'threshold' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
+      return [before(kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
     }
     case 'owner-before':
       return [before('簽署人名單裡排在前面的', refWord(context.template, rule.ref))];
@@ -1248,6 +1284,8 @@ function ruleWords(rule: Rule, context: Context): Inline {
       return [before('至少你填的', fieldWord(context.template, rule.field))];
     case 'call':
       return ['呼叫 ', { code: rule.call.fn.name }, '，參數見流程'];
+    case 'keccak':
+      return ['keccak256，', { code: rule.call.fn.name }];
     case 'items':
     case 'fields':
     case 'packed':
@@ -1319,13 +1357,19 @@ function walletSection(context: Context): Section {
   return section({ kind: 'calls', calls, lines });
 }
 
-function codeLines(ledger: Ledger, entry: RegistryEntry): Inline[] {
+function codeLines(ledger: Ledger, entry: RegistryEntry, signed: ReadonlySet<string>): Inline[] {
   const lines: Inline[] = [];
   const notCalled = ledger.results.some((r) => r.finding.kind === 'not-called' && r.about.kind === 'entry' && r.about.entry.name === entry.name);
   if (notCalled) {
     const dependents = ledger.entries.filter((other) => other.dependsOn?.includes(entry.name));
     const links = dependents.flatMap((other, i): Span[] => [...(i === 0 ? [] : ['、']), { href: entryAnchor(other.name), label: other.name }]);
-    lines.push(['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。', ...(entry.code === undefined ? [] : ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。'])]);
+    const checked: Inline =
+      dependents.length > 0
+        ? ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。']
+        : signed.has(entry.name)
+          ? ['每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。']
+          : ['簽名時不碰；報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。'];
+    lines.push(['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。', ...(entry.code === undefined ? [] : checked)]);
   }
   const routes = entry.code?.current.pin.routes;
   if (routes !== undefined) {
@@ -1366,7 +1410,7 @@ function addressSection(context: Context): Section[] {
       address: checksumAddress(entry.address),
       sources,
       confirmed: confirmedWords(entry, confirmations(ledger, entry)),
-      codeLines: codeLines(ledger, entry),
+      codeLines: codeLines(ledger, entry, signedEntryNames(context.template, context.registry)),
       aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'AI'), result: AI_RESULTS[s.result] })),
     };
   };
@@ -1664,6 +1708,8 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
       return step([...cardNewPrompt, '：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。']);
     case 'nonce':
       return step([...cardNewPrompt, '：打 Safe 交易的 nonce，純數字。']);
+    case 'percent':
+      return step([...cardNewPrompt, '：打百分比，最多 100，例如 ', { code: '100' }, ' 或 ', { code: '35.5' }, ' 。'], [['它印出百分比和 base units（100% 是 10^18），核對數字是你要的。']]);
     case 'threshold':
       return step([...cardNewPrompt, '：打新的門檻，也就是要幾個簽署人簽才能執行，純數字，至少 1。']);
     case 'owner':
@@ -1673,7 +1719,10 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
       if (field.computed === undefined) {
         return step(
           [...cardNewPrompt, `：打 ${token} 的數量，用整顆幣，例如 `, { code: '1250.5' }, ' ；可以有千位逗號，例如 ', { code: '1,000,611.448606' }, ' 。'],
-          [['它印出整顆和 base units 兩種寫法，核對數字是你要的。']],
+          [
+            ['它印出整顆和 base units 兩種寫法，核對數字是你要的。'],
+            ...(field.max === undefined ? [] : [['也可以打 ', { code: 'max' }, `，等於 ${field.max.value} base units；card new 會印出模板寫的理由。`] satisfies Inline]),
+          ],
         );
       }
       const { computed } = field;
@@ -1692,7 +1741,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
 function nextSection(context: Context): Section {
   const { template } = context;
   const fields = [...template.card];
-  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold';
+  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold' || field.kind === 'percent';
   const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
   const vault = context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined;
   const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? `（第一次用這個模板${vault ? '或這個金庫' : ''}，先用小額）` : '';
@@ -1775,10 +1824,10 @@ function nextSection(context: Context): Section {
         ? [`除了留給 ${template.effects.approves.map((a) => a.spender).join('、')} 的授權最多是你填的數量，沒有任何授權在交易後變高`]
         : ['除了上面「交易後」列出可以留著的授權，沒有任何授權在交易後變高'],
     ...template.effects.views.map((v): Inline => [
-      { code: `${v.to}.${v.fn.name}` },
-      `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${{ increases: '增加', decreases: '減少', same: '不變' }[c.change]}`).join('、')}`,
+      { code: `${viewLabel(v, context)}.${v.fn.name}` },
+      `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${typeof c.change === 'string' ? CHANGE_WORDS[c.change] : `等於你填的 ${fieldWord(template, c.change.equals)}`}`).join('、')}`,
     ]),
-    ...(context.ledger.entries.length === 0 ? [] : [[`碰到的 ${new Set(context.ledger.entries.map((e) => e.name)).size} 個登記合約，程式碼還是 code pin 記錄的那份`] as Inline]),
+    ...(context.ledger.entries.length === 0 ? [] : [['卡片用到的每個登記合約，程式碼還是 code pin 記錄的那份'] as Inline]),
   ];
   return { anchor: anchor('next'), label: '下一步', count: undefined, body: { kind: 'next', steps, automatic } };
 }
@@ -1814,8 +1863,10 @@ const unrecordedParams = (template: Template): string =>
     ? '模板有不限的參數，但沒有換值測試的記錄，程式沒有測過它們。'
     : `${freeRules(template).member ? '交易裡不限的值只在簽的訂單裡，由雜湊鎖住，不換值測試。' : ''}模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。`;
 
-function stripItems(ledger: Ledger, template: Template): StripItem[] {
-  const subjects = new Set(ledger.entries.map((e) => e.name)).size;
+function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<string>): StripItem[] {
+  const names = [...new Set(ledger.entries.map((e) => e.name))];
+  const subjects = names.filter((name) => signed.has(name)).length;
+  const reportOnly = names.filter((name) => !signed.has(name));
   const recorded = ledger.results.some((r) => r.line === 'params');
   const named = (match: (result: Result) => boolean): string[] => [...new Set(ledger.results.flatMap((r) => (match(r) && r.about.kind === 'entry' ? [r.about.entry.name] : [])))];
   const notCalled = named((r) => r.finding.kind === 'not-called');
@@ -1832,7 +1883,9 @@ function stripItems(ledger: Ledger, template: Template): StripItem[] {
         notCalled.length === 0 ? '' : `${notCalled.join('、')} 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。`
       }${unprovable.length === 0 ? '' : `${unprovable.join('、')} 依函式選擇器把呼叫分給各自的實作，沒有一份程式碼能證明，不算在內；它的 routes 在「合約沒被換掉」比對。`}`,
     code: () =>
-      `每次簽名都確認${subjects === 1 ? '這個合約' : `這 ${subjects} 個合約`}還是研究時那份程式碼。被升級或換掉就擋下。${
+      `每次簽名都確認卡片用到的${subjects === 1 ? '這個合約' : '每個合約'}還是研究時那份程式碼。被升級或換掉就擋下。${
+        reportOnly.length === 0 ? '' : `${reportOnly.join('、')} 簽名時不碰，只有報告比對它的程式碼。`
+      }${
         today.length === 0 ? '' : `${today.join('、')} 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。`
       }${routed.length === 0 ? '' : `${routed.join('、')} 依函式選擇器把呼叫分給各自的實作：seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。`}`,
     params: (_, c) => (!recorded ? unrecordedParams(template) : `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`),
@@ -1874,7 +1927,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     header: {
       title: research(notes.title),
       summary: research(notes.summary),
-      strip: stripItems(ledger, template),
+      strip: stripItems(ledger, template, signedEntryNames(template, registry)),
       verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'AI 研究：可以用' : 'AI 研究：要小心') },
     },
     sections,

@@ -1,11 +1,1 @@
-{
-  "usdc-cbbtc-86": {
-    "lending": "morpho-blue",
-    "loanToken": "usdc",
-    "collateralToken": "cbbtc",
-    "oracle": "morpho-oracle-cbbtc-usdc-86",
-    "irm": "adaptive-curve-irm",
-    "lltv": "860000000000000000",
-    "id": "0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64"
-  }
-}
+{}
