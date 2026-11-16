@@ -5,7 +5,8 @@
       "slug": "circle-usdc",
       "name": "Circle USDC",
       "url": "https://www.circle.com/en/",
-      "github": []
+      "github": [],
+      "parentProtocol": "parent#circle"
     },
     {
       "slug": "tether",
@@ -17,7 +18,8 @@
       "slug": "morpho-blue",
       "name": "Morpho Blue",
       "url": "https://app.morpho.org/",
-      "github": []
+      "github": [],
+      "parentProtocol": "parent#morpho"
     },
     {
       "slug": "coinbase",
@@ -29,7 +31,8 @@
       "slug": "uniswap-v4",
       "name": "Uniswap V4",
       "url": "https://app.uniswap.org/",
-      "github": []
+      "github": [],
+      "parentProtocol": "parent#uniswap"
     },
     {
       "slug": "piku-finance",
@@ -37,9 +40,90 @@
       "url": "https://piku.co/",
       "github": [
         "piku-co"
-      ]
+      ],
+      "gecko_id": "piku-utility-token"
     }
   ],
+  "defillamaParents": {
+    "parentProtocols": [
+      {
+        "id": "parent#circle",
+        "name": "Circle",
+        "url": "https://www.circle.com/en/",
+        "github": []
+      },
+      {
+        "id": "parent#morpho",
+        "name": "Morpho",
+        "url": "https://morpho.org/",
+        "github": [
+          "morpho-org"
+        ],
+        "gecko_id": "morpho"
+      },
+      {
+        "id": "parent#uniswap",
+        "name": "Uniswap",
+        "url": "https://app.uniswap.org/",
+        "github": [
+          "Uniswap"
+        ],
+        "gecko_id": "uniswap"
+      }
+    ]
+  },
+  "coinLinks": {
+    "morpho": {
+      "links": {
+        "homepage": [
+          "https://morpho.org/",
+          "https://app.morpho.org/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/morpho-org"
+          ]
+        }
+      }
+    },
+    "uniswap": {
+      "links": {
+        "homepage": [
+          "https://uniswap.org/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/Uniswap/uniswap-v3-core"
+          ]
+        }
+      }
+    },
+    "piku-utility-token": {
+      "links": {
+        "homepage": [
+          "https://www.piku.co/",
+          "https://docs.piku.co/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/piku-dao"
+          ]
+        }
+      }
+    }
+  },
+  "orgs": {
+    "coinbase": {
+      "kind": "domains",
+      "domains": []
+    },
+    "uniswap": {
+      "kind": "domains",
+      "domains": [
+        "uniswap.org"
+      ]
+    }
+  },
   "coingecko": [
     {
       "id": "usd-coin",
@@ -201,12 +285,117 @@
     "uniswap/sdks@8ae0425c57e1699b0ae48ebb3077a2f526ae3818": {
       "kind": "on-default",
       "branch": "main",
-      "status": "identical"
+      "status": "behind"
     },
     "uniswap/universal-router@3be05ae044039af7610414da0ac36e4944eea566": {
       "kind": "on-default",
       "branch": "main",
       "status": "identical"
+    }
+  },
+  "packages": {
+    "@uniswap/permit2-sdk@1.4.1": {
+      "kind": "read",
+      "sha256": "0x9580855c93ca0cc3ff4d592d7ac2ec0d84183b790d812f98ece5282276b3efbf",
+      "integrity": true,
+      "provenance": {
+        "kind": "built",
+        "repository": "https://github.com/Uniswap/sdks",
+        "sameTarball": true
+      },
+      "file": {
+        "kind": "served",
+        "blocks": [
+          {
+            "text": "// @deprecated please use permit2Address(chainId: number)"
+          },
+          {
+            "text": "exports.PERMIT2_ADDRESS = '0x000000000022D473030F116dDEE9F6B43aC78BA3';"
+          }
+        ]
+      }
+    },
+    "@uniswap/universal-router-sdk@5.17.0": {
+      "kind": "read",
+      "sha256": "0xe7abea16799826573fc5c69dc451a0ccfc5e25bb24f4bc4f166e46a1d6e74dd7",
+      "integrity": true,
+      "provenance": {
+        "kind": "built",
+        "repository": "https://github.com/Uniswap/sdks",
+        "sameTarball": true
+      },
+      "file": {
+        "kind": "served",
+        "blocks": [
+          {
+            "text": "[UniversalRouterVersion.V2_1_2]: {"
+          },
+          {
+            "text": "address: '0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85',"
+          }
+        ]
+      }
+    }
+  },
+  "creations": {
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {
+      "kind": "proven",
+      "tx": "0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
+      "block": "6082465",
+      "sender": "0x95ba4cf87d6723ad9c0db21737d862be80e93911",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0xdac17f958d2ee523a2206206994597c13d831ec7": {
+      "kind": "proven",
+      "tx": "0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
+      "block": "4634748",
+      "sender": "0x36928500bc1dcd7af6a2b4008875cc336b927d57",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0x58d97b57bb95320f9a05dc918aef65434969c2b2": {
+      "kind": "proven",
+      "tx": "0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9",
+      "block": "21157386",
+      "sender": "0x937ce2d6c488b361825d2db5e8a70e26d48afed5",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf": {
+      "kind": "unproven",
+      "why": "0x00000000001c3dC9A681A014e2732bF1419aFAec made no contract at the address by CREATE in block 20570548; a CREATE2 from it is not proven"
+    },
+    "0x000000000022d473030f116ddee9f6b43ac78ba3": {
+      "kind": "proven",
+      "tx": "0xf2f1fe96c16ee674bb7fcee166be52465a418927d124f5f1d231b36eae65d377",
+      "block": "15986406",
+      "sender": "0xd32ff78579352ca78f416120a9f68b65c410871b",
+      "via": {
+        "kind": "create2",
+        "deployer": "0x4e59b44847b379578588920ca78fbf26c0b4956c"
+      }
+    },
+    "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85": {
+      "kind": "proven",
+      "tx": "0x350510f7398242ffc778c086ae6bbe9cc744c33a04468f1a7978e54164638257",
+      "block": "25999984",
+      "sender": "0x2179a60856e37dfeaaca0ab043b931fe224b27b6",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6": {
+      "kind": "proven",
+      "tx": "0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda",
+      "block": "23195672",
+      "sender": "0xb8eaa4f956c6324435f4088cae9cda974c358508",
+      "via": {
+        "kind": "transaction"
+      }
     }
   },
   "vaults": {},
@@ -402,7 +591,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x839eb93509922839c22e22219a33fda7d48380bfd372c218e8f203681543dd64"
         }
@@ -416,7 +605,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x839eb93509922839c22e22219a33fda7d48380bfd372c218e8f203681543dd64"
         }
@@ -1229,7 +1418,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
         }
@@ -1243,7 +1432,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
         }
@@ -1368,7 +1557,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xf40de6443793fb81d5bf04ca8f32fa45385e41a5ad07e71d769b2f3f717b217c"
         }
@@ -1382,7 +1571,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xf40de6443793fb81d5bf04ca8f32fa45385e41a5ad07e71d769b2f3f717b217c"
         }
@@ -1670,7 +1859,7 @@
       "params": [
         "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
         {
-          "blockHash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+          "blockHash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
         }
       ],
       "answers": {
@@ -1688,7 +1877,7 @@
         "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+          "blockHash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
         }
       ],
       "answers": {
@@ -1702,7 +1891,7 @@
         "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+          "blockHash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
         }
       ],
       "answers": {
@@ -1712,13 +1901,13 @@
     }
   ],
   "today": {
-    "number": "26429306",
-    "hash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+    "number": "26430203",
+    "hash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
   },
   "facts": {
     "block": {
-      "number": "26429306",
-      "hash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+      "number": "26430203",
+      "hash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
     },
     "defillama": [
       {
@@ -1726,9 +1915,9 @@
         "id": "5690",
         "parentProtocol": "parent#uniswap",
         "listedAt": 1738172667,
-        "tvl": 1050001623.7337382,
+        "tvl": 1003469886.149171,
         "chainTvls": {
-          "Ethereum": 680459081.78991
+          "Ethereum": 634116144.2233815
         }
       }
     ],
@@ -1742,7 +1931,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+            "blockHash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
           }
         ],
         "answers": {
@@ -1758,7 +1947,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+            "blockHash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
           }
         ],
         "answers": {
@@ -1774,7 +1963,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+            "blockHash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
           }
         ],
         "answers": {
@@ -1790,7 +1979,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+            "blockHash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
           }
         ],
         "answers": {
@@ -1806,7 +1995,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x548a69a71322110509f411f78a9941de071886088e2c3a7f8dcfb97bb09f49a9"
+            "blockHash": "0x2ad28690d0160b6c251ac890821580b8a5dfeea970f66c36747e82257dece60d"
           }
         ],
         "answers": {

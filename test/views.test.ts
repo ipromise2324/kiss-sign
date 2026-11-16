@@ -62,6 +62,7 @@ function simulatingReader(view: { before: SimulatedCall; after: SimulatedCall },
     header: unused,
     getCode: unused,
     getBalance: unused,
+    getTransactionCount: unused,
     getStorageAt: unused,
     getTransactionReceipt: unused,
     getTransaction: unused,
@@ -132,6 +133,7 @@ test('an executed transaction reads each view at the parent block and at the exe
       agreed({ transactionHash: hash, blockHash: BLOCK.hash, blockNumber: BLOCK.number, transactionIndex: 0n, status: 1, from: OWNER, to: SAFE, contractAddress: null, gasUsed: 1n, logs: [{ ...SUCCESS, logIndex: 0n }] }),
     block: async (tag) => agreed(tag === BLOCK.number ? BLOCK : { number: PARENT.number, hash: PARENT.hash }),
     getBalance: async () => agreed(0n),
+    getTransactionCount: unused,
     call: async (request, block) => {
       assert.deepEqual(request, VIEW);
       at.push(block.number);

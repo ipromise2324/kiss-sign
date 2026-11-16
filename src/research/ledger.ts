@@ -3,7 +3,7 @@ import { MARKET_ENTRY_PARTS, parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { checkSources, githubLine } from './listings.ts';
-import type { Line } from './listings.ts';
+import type { DeployerShare, Line, SitePlace } from './listings.ts';
 import { abiUnused, docSiteLine, entriesOf, functionOnPage, hasMarket, pinVerdict, todayEntries } from './report.ts';
 import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
@@ -20,7 +20,7 @@ export type StripLine = (typeof STRIP_LINES)[number];
  * The sources an address row lists for the program: the `source` page, each of `moreSources` by its number from 1, the
  * protocol API, CoinGecko and a vault's registry factory. Each can confirm the address.
  */
-export type ProgramSource = 'page' | `more.${number}` | 'api' | 'coingecko' | 'factory';
+export type ProgramSource = 'page' | `more.${number}` | 'api' | 'coingecko' | 'factory' | 'bounty' | 'sdk' | 'deployer';
 
 /**
  * Where an address row shows a result: under its source, either as whether the source showed the address, or as the
@@ -30,11 +30,11 @@ export type RowPart = { readonly of: ProgramSource; readonly part: 'address' | '
 
 const sourceRank = (source: ProgramSource): number => {
   const more = /^more\.(\d+)$/.exec(source);
-  return more !== null ? Number(more[1]) : { page: 0, api: 1e6, coingecko: 1e6 + 1, factory: 1e6 + 2 }[source as Exclude<ProgramSource, `more.${number}`>];
+  return more !== null ? Number(more[1]) : { page: 0, api: 1e6, coingecko: 1e6 + 1, factory: 1e6 + 2, bounty: 1e6 + 3, sdk: 1e6 + 4, deployer: 1e6 + 5 }[source as Exclude<ProgramSource, `more.${number}`>];
 };
 
 /** The words an address row's source line, or a call's documentation line, shows beside a result that did not pass. */
-export type Phrase = '讀不到' | '是另一個地址' | '是另一個網站' | '沒資料可比' | '工廠說不是它建的' | '頁上沒有這個函式';
+export type Phrase = '讀不到' | '是另一個地址' | '是另一個網站' | '沒資料可比' | '工廠說不是它建的' | '頁上沒有這個函式' | '沒列出這個地址' | '是另一份檔案' | '沒有建置證明' | '證明不了是誰部署' | '沒有已確認的合約同一個部署者';
 
 /** Why a result has its state. The kind alone fixes the state (`STATE_OF`), so evidence missing can never read as red. */
 export type Finding =
@@ -56,6 +56,16 @@ export type Finding =
   | { readonly kind: 'refused'; readonly why: string }
   /** The address is confirmed in fewer than two places; `by` names those that did. */
   | { readonly kind: 'few-confirmations'; readonly by: readonly ProgramSource[] }
+  /** A bounty program's scope, or an SDK file next to its label, does not hold the address: no confirmation. */
+  | { readonly kind: 'not-listed' }
+  /** The SDK tarball's hash is not the pinned one, or not the one npm gives. */
+  | { readonly kind: 'package-differs' }
+  /** npm holds no provenance for the SDK version, so nothing ties its publisher to the protocol. */
+  | { readonly kind: 'no-provenance' }
+  /** The program could not prove the entry's creation from its transaction. */
+  | { readonly kind: 'creation-unproven' }
+  /** The entry's deployer deployed no other entry of the protocol confirmed in two places without its own deployer. */
+  | { readonly kind: 'deployer-alone' }
   /** A source page or the protocol API got no answer: no confirmation, and nothing for the signer. */
   | { readonly kind: 'source-no-answer' }
   /** A recorded transaction of the template the program now judges otherwise. */
@@ -104,6 +114,11 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   refused: 'bad',
   'judged-otherwise': 'bad',
   'few-confirmations': 'warn',
+  'not-listed': 'na',
+  'package-differs': 'bad',
+  'no-provenance': 'na',
+  'creation-unproven': 'na',
+  'deployer-alone': 'na',
   'source-no-answer': 'na',
   'no-answer': 'warn',
   'page-unread': 'na',
@@ -138,6 +153,11 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   refused: undefined,
   'judged-otherwise': undefined,
   'few-confirmations': undefined,
+  'not-listed': '沒列出這個地址',
+  'package-differs': '是另一份檔案',
+  'no-provenance': '沒有建置證明',
+  'creation-unproven': '證明不了是誰部署',
+  'deployer-alone': '沒有已確認的合約同一個部署者',
   'source-no-answer': '讀不到',
   'no-answer': '讀不到',
   'page-unread': '讀不到',
@@ -172,6 +192,10 @@ export type Result = {
   /** What it links: the entry's page, its API, its CoinGecko coin, or for a site its DefiLlama protocol. */
   readonly link: HttpsUrl | undefined;
   readonly finding: Finding;
+  /** For a site, the places that list it, or that were compared when none does. */
+  readonly places?: readonly SitePlace[];
+  /** For the deployer, who it is and which other entries share it. */
+  readonly shared?: DeployerShare;
 };
 
 export type Ledger = { readonly entries: readonly RegistryEntry[]; readonly results: readonly Result[] };
@@ -189,8 +213,12 @@ const LINE_KEYS: Readonly<Record<Line['check'], string>> = {
   'api-site': 'source.api.site',
   api: 'source.api',
   coingecko: 'source.coingecko',
+  bounty: 'source.bounty',
+  sdk: 'source.sdk',
+  'sdk-site': 'source.sdk.site',
+  deployer: 'source.deployer',
 };
-const LINE_ORDER: readonly Line['check'][] = ['page', 'url', 'api', 'defillama', 'api-site', 'github', 'coingecko'];
+const LINE_ORDER: readonly Line['check'][] = ['page', 'url', 'api', 'defillama', 'api-site', 'github', 'coingecko', 'bounty', 'sdk', 'sdk-site', 'deployer'];
 const LINE_SOURCE: Readonly<Record<Line['check'], ProgramSource>> = {
   page: 'page',
   url: 'page',
@@ -199,17 +227,24 @@ const LINE_SOURCE: Readonly<Record<Line['check'], ProgramSource>> = {
   coingecko: 'coingecko',
   defillama: 'page',
   'api-site': 'api',
+  bounty: 'bounty',
+  sdk: 'sdk',
+  'sdk-site': 'sdk',
+  deployer: 'deployer',
 };
-const SITE_CHECKS: ReadonlySet<Line['check']> = new Set(['defillama', 'api-site']);
+const SITE_CHECKS: ReadonlySet<Line['check']> = new Set(['defillama', 'api-site', 'sdk-site']);
 
 const coingeckoUrl = (id: string | undefined) => (id === undefined ? undefined : parseHttpsUrl(`https://www.coingecko.com/en/coins/${id}`));
 const defillamaUrl = (slug: string | undefined) => (slug === undefined ? undefined : parseHttpsUrl(`https://defillama.com/protocol/${slug}`));
 
-function linkOf(entry: RegistryEntry, { of, part }: RowPart): HttpsUrl | undefined {
+function linkOf(entry: RegistryEntry, { of, part }: RowPart, shared: DeployerShare | undefined): HttpsUrl | undefined {
   if (part === 'site') return defillamaUrl(entry.defillama);
   if (of.startsWith('more.')) return entry.moreSources?.[Number(of.slice(5)) - 1]?.url;
   if (of === 'page') return entry.source;
   if (of === 'api') return entry.apiSource?.url;
+  if (of === 'bounty') return entry.immunefi === undefined ? undefined : parseHttpsUrl(`https://immunefi.com/bug-bounty/${entry.immunefi}/`);
+  if (of === 'sdk') return entry.sdk === undefined ? undefined : parseHttpsUrl(`https://www.npmjs.com/package/${entry.sdk.package}/v/${entry.sdk.version}`);
+  if (of === 'deployer') return shared === undefined ? undefined : parseHttpsUrl(`https://etherscan.io/address/${shared.deployer}`);
   return of === 'coingecko' ? coingeckoUrl(entry.coingecko) : undefined;
 }
 
@@ -218,12 +253,13 @@ function siteFinding(line: Line): Finding {
   if (line.kind === 'unverifiable') return { kind: 'no-answer' };
   if (line.cause === 'differs') return { kind: 'site-differs' };
   if (line.cause === 'unlisted') return { kind: 'unlisted' };
+  if (line.cause === 'unattested') return { kind: 'no-provenance' };
   return { kind: 'site-not-compared' };
 }
 
 function lineFinding(entry: RegistryEntry, line: Line): Finding {
   if (line.kind === 'agrees') return { kind: 'agrees' };
-  if (line.kind === 'unverifiable') return line.check === 'page' || line.check === 'api' ? { kind: 'source-no-answer' } : { kind: 'no-answer' };
+  if (line.kind === 'unverifiable') return ['page', 'api', 'bounty', 'sdk', 'deployer'].includes(line.check) ? { kind: 'source-no-answer' } : { kind: 'no-answer' };
   switch (line.check) {
     case 'page':
       if (line.cause === 'not-served' || line.cause === 'not-fetched') return { kind: 'page-unread', why: line.cause };
@@ -236,8 +272,15 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
       return { kind: 'other-answer' };
     case 'coingecko':
       return line.cause === 'differs' ? { kind: 'other-coin' } : line.cause === 'unexplained' ? { kind: 'unexplained-coin' } : { kind: 'no-coin' };
+    case 'bounty':
+      return line.cause === 'differs' ? { kind: 'site-differs' } : { kind: 'not-listed' };
+    case 'sdk':
+      return line.cause === 'differs' ? { kind: 'package-differs' } : line.cause === 'not-fetched' ? { kind: 'page-unread', why: 'not-fetched' } : { kind: 'not-listed' };
+    case 'deployer':
+      return line.cause === 'unlisted' ? { kind: 'deployer-alone' } : { kind: 'creation-unproven' };
     case 'defillama':
     case 'api-site':
+    case 'sdk-site':
       return siteFinding(line);
   }
 }
@@ -253,13 +296,30 @@ function sourceResults(entry: RegistryEntry, lines: readonly Line[]): Result[] {
       const more = line.more === undefined ? undefined : (`more.${line.more}` as const);
       const source: RowPart = { of: more ?? LINE_SOURCE[line.check], part: SITE_CHECKS.has(line.check) ? 'site' : 'address' };
       const id = more === undefined ? LINE_KEYS[line.check] : `source.${more}.${MORE_KEYS[line.check]}`;
-      return { id: `${entry.name}/${id}`, line: 'sources', about, source, link: linkOf(entry, source), finding: lineFinding(entry, line) };
+      return {
+        id: `${entry.name}/${id}`,
+        line: 'sources',
+        about,
+        source,
+        link: linkOf(entry, source, line.shared),
+        finding: lineFinding(entry, line),
+        ...(line.places === undefined ? {} : { places: line.places }),
+        ...(line.shared === undefined ? {} : { shared: line.shared }),
+      };
     });
 }
 
 function docResults(doc: DocLink, inputs: ReportInputs): Result[] {
   const about = { kind: 'entry', entry: doc.contract } as const;
-  const result = (check: string, finding: Finding): Result => ({ id: `${doc.contract.name}/doc.${doc.fn.selector}.${check}`, line: 'sources', about, source: undefined, link: undefined, finding });
+  const result = (check: string, finding: Finding, places?: readonly SitePlace[]): Result => ({
+    id: `${doc.contract.name}/doc.${doc.fn.selector}.${check}`,
+    line: 'sources',
+    about,
+    source: undefined,
+    link: undefined,
+    finding,
+    ...(places === undefined ? {} : { places }),
+  });
   const page = inputs.pages.pages.get(pageUrlOf(doc.url));
   const pageFinding: Finding =
     page?.kind === 'unread'
@@ -269,8 +329,8 @@ function docResults(doc: DocLink, inputs: ReportInputs): Result[] {
         : page.blocks.some((block) => functionOnPage(doc).test(block.text))
           ? { kind: 'agrees' }
           : { kind: 'name-not-on-page' };
-  const site = siteFinding(docSiteLine(doc, inputs.listings));
-  const results = [result('page', pageFinding), result('site', site)];
+  const siteLine = docSiteLine(doc, inputs.listings);
+  const results = [result('page', pageFinding), result('site', siteFinding(siteLine), siteLine.places)];
   const url = new URL(doc.url);
   if (isGitHubPage(url)) {
     const commit = githubLine(url, inputs.pages.commits);
@@ -352,9 +412,22 @@ function unvouchedUnlistedHasNoSecondSource(entry: RegistryEntry, results: reado
   return results.map((r) => (r.finding.kind === 'unlisted' && !vouched(r) ? { ...r, finding: { kind: 'no-second-source' } } : r));
 }
 
-/** The sources whose every result passed, each one place that showed the entry's address for its role; a site shows none. */
+/**
+ * A shared deployer confirms the address only through another entry confirmed in two places without its own deployer,
+ * so two entries never confirm each other by their deployer alone; it then names only those entries.
+ */
+function deployerCounts(result: Result, confirmedElsewhere: ReadonlySet<string>): Result {
+  if (result.source?.of !== 'deployer' || result.finding.kind !== 'agrees' || result.shared === undefined) return result;
+  const siblings = result.shared.siblings.filter((name) => confirmedElsewhere.has(name));
+  return { ...result, shared: { ...result.shared, siblings }, ...(siblings.length === 0 ? { finding: { kind: 'deployer-alone' } } : {}) };
+}
+
+/**
+ * The sources whose every result passed, each one place that showed the entry's address for its role; a site shows
+ * none. An SDK counts only with its publisher too, since anyone can publish a package that names an address.
+ */
 function confirmingSources(results: readonly Result[]): ProgramSource[] {
-  const showing = results.filter((r) => r.source?.part === 'address');
+  const showing = results.filter((r) => r.source?.part === 'address' || r.source?.of === 'sdk');
   const sources = [...new Set(showing.map((r) => (r.source as RowPart).of))];
   return sources.filter((source) => showing.every((r) => r.source?.of !== source || STATE_OF[r.finding.kind] === 'ok')).sort((a, b) => sourceRank(a) - sourceRank(b));
 }
@@ -392,8 +465,9 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
   const checked = checkSources(entriesOf(subject, inputs.registry), inputs.listings, inputs.pages);
   const unused = abiUnused(subject, inputs.registry);
   const today = new Set(todayEntries(subject, inputs.registry).map((entry) => entry.name));
-  const results = checked.flatMap(({ entry, lines }) =>
-    withAddressResult(entry, unvouchedUnlistedHasNoSecondSource(entry, [
+  const byEntry = checked.map(({ entry, lines }) => ({
+    entry,
+    results: unvouchedUnlistedHasNoSecondSource(entry, [
       ...sourceResults(entry, lines),
       ...factoryResults(entry, inputs),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
@@ -401,8 +475,10 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
       { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address), unused.has(entry.name)) },
       ...spanResults(entry, inputs.spans.get(entry.address)),
       ...todayResults(entry, inputs, today),
-    ])),
-  );
+    ]),
+  }));
+  const confirmedElsewhere = new Set(byEntry.filter(({ results }) => confirmingSources(results.filter((r) => r.source?.of !== 'deployer')).length >= MIN_CONFIRMATIONS).map(({ entry }) => entry.name));
+  const results = byEntry.flatMap(({ entry, results: own }) => withAddressResult(entry, own.map((r) => deployerCounts(r, confirmedElsewhere))));
   const judged = fixtures.map(
     (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),
   );
@@ -466,15 +542,16 @@ export type Judged = {
   readonly state: State;
   readonly phrase: Phrase | undefined;
   readonly link: HttpsUrl | undefined;
+  readonly places: readonly SitePlace[];
 };
 
 /** A program source: whether it showed the entry's address, and for a page or the API, whether its site is the protocol's. */
-export type SourceLine = Judged & { readonly source: ProgramSource; readonly site: Judged | undefined };
+export type SourceLine = Judged & { readonly source: ProgramSource; readonly site: Judged | undefined; readonly shared: DeployerShare | undefined };
 
 function judged(results: readonly Result[]): Judged {
   const state = worst(results);
   const shown = results.find((r) => stateOf(r) === state) as Result;
-  return { state, phrase: state === 'ok' ? undefined : PHRASE_OF[shown.finding.kind], link: shown.link };
+  return { state, phrase: state === 'ok' ? undefined : PHRASE_OF[shown.finding.kind], link: shown.link, places: shown.places ?? [] };
 }
 
 /** The entry's program sources in row order, each judged by its address results, with its site judged apart. */
@@ -485,7 +562,7 @@ export function sourcesOf(ledger: Ledger, entry: RegistryEntry): SourceLine[] {
     const of = (part: RowPart['part']) => results.filter((r) => r.source?.of === source && r.source.part === part);
     const site = of('site');
     if (of('address').length === 0) throw new Error(`${entry.name}: source ${source} has a site result but none for its address`);
-    return { ...judged(of('address')), source, site: site.length === 0 ? undefined : judged(site) };
+    return { ...judged(of('address')), source, site: site.length === 0 ? undefined : judged(site), shared: of('address').find((r) => r.shared !== undefined)?.shared };
   });
 }
 

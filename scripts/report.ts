@@ -4,8 +4,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { loadStoredConfig } from '../src/config.ts';
-import { kissSignHome } from '../src/keys.ts';
-import { mainnetEndpoints } from '../src/chain/providers.ts';
+import { keySpec, kissSignHome } from '../src/keys.ts';
+import { MissingKeyError, mainnetEndpoints } from '../src/chain/providers.ts';
+import type { KeySpec } from '../src/keys.ts';
+import { liveCreations } from '../src/research/deployer.ts';
+import { gatherPackages, provenanceRepositories } from '../src/research/npm-package.ts';
 import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
@@ -17,7 +20,7 @@ import { cachedCompilers } from '../src/contracts/solc.ts';
 import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
-import { fetchListing, listingsFor } from '../src/research/listings.ts';
+import { fetchListing, listingsFor, liveListingReads } from '../src/research/listings.ts';
 import { factsRecording, factsScope, parseFactsRecording, protocolFacts } from '../src/research/protocol-facts.ts';
 import { chainAt, loadSnapshot, trimForRecording as trimErc7730 } from '../src/research/erc7730.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
@@ -52,7 +55,7 @@ import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
+const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
        node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) (--offline | --render)
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
@@ -199,9 +202,16 @@ const listing = (target: { readonly hostname: string; readonly path: string }): 
   answers.set(target.path, answer);
   return answer;
 };
-const listings = await listingsFor(entries, suffixes, listing);
 const docs = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
-const pages = await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs], retryingGet(httpsGet, note), await gatherApiAnswers(entries, retryingSend(httpsApi, note)));
+const packages = await gatherPackages(entries, retryingGet(httpsGet, note));
+const listings = await listingsFor(entries, suffixes, liveListingReads(note, listing), [...entries.flatMap(pageUrlsOf), ...docs, ...provenanceRepositories(packages)]);
+const creations = await liveCreations(entries, process.env, note, () => reader);
+if ('missing' in creations) throw new MissingKeyError(keySpec('etherscan') as KeySpec);
+const pages = {
+  ...(await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs], retryingGet(httpsGet, note), await gatherApiAnswers(entries, retryingSend(httpsApi, note)))),
+  packages,
+  creations,
+};
 
 const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();

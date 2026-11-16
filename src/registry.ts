@@ -73,6 +73,10 @@ export type RegistryEntry = {
   readonly defillama?: string;
   /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
   readonly coingecko?: string;
+  /** The protocol's Immunefi bug bounty program, such as `cowprotocol`: its scope may hold the address, and it lists the protocol's sites. */
+  readonly immunefi?: string;
+  /** The protocol's npm package, pinned, whose `file` shows the address next to `label`. */
+  readonly sdk?: SdkPackage;
   /** How a proxy that sends each selector to its own implementation answers its routes; its code pin then holds them. */
   readonly routes?: SelectorRouting;
   /** Entries a call to this one reaches though no call targets them, touched whenever this one is. */
@@ -116,6 +120,9 @@ export type Route = { readonly address: Address; readonly hash: Hex; readonly se
 
 /** An official page that lists an address, the text next to it there, and the heading above it when the page needs one. */
 export type SourcePage = { readonly url: HttpsUrl; readonly label: string; readonly heading?: string };
+
+/** An npm package pinned to one version and the sha256 of its tarball, with a file in it and the text next to the address there. */
+export type SdkPackage = { readonly package: string; readonly version: string; readonly sha256: Hex; readonly file: string; readonly label: string };
 
 /** Every page that lists the entry's address: its `source`, then each of `moreSources`. */
 export const pageUrlsOf = (entry: RegistryEntry): readonly HttpsUrl[] => [entry.source, ...(entry.moreSources ?? []).map((page) => page.url)];
@@ -176,6 +183,10 @@ export const RESERVED_NAMES = ['safe', 'eth'] as const;
 
 const DEFILLAMA_SLUG = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
 const COINGECKO_ID = /^[a-z0-9]+([._-][a-z0-9]+)*$/;
+const IMMUNEFI_PROGRAM = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const NPM_PACKAGE = /^(@[a-z0-9][a-z0-9._-]*\/)?[a-z0-9][a-z0-9._-]*$/;
+const NPM_VERSION = /^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$/;
+const PACKAGE_FILE = /^[A-Za-z0-9._@-]+(\/[A-Za-z0-9._@-]+)*$/;
 export const COINGECKO_KINDS: readonly ContractKind[] = ['token', 'vault'];
 
 export class RegistryError extends Error {
@@ -455,6 +466,19 @@ function nonEmpty(path: string, raw: unknown): string {
   return raw;
 }
 
+function sdkOf(path: string, raw: unknown): SdkPackage {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['package', 'version', 'sha256', 'file', 'label']);
+  if (typeof value.package !== 'string' || value.package.length > 214 || !NPM_PACKAGE.test(value.package)) throw new RegistryError(`${path}.package`, 'not an npm package name');
+  if (typeof value.version !== 'string' || !NPM_VERSION.test(value.version)) throw new RegistryError(`${path}.version`, 'not an exact npm version');
+  const sha256 = parsed(() => parseHex(`${path}.sha256`, value.sha256));
+  if (sha256.length !== 66) throw new RegistryError(`${path}.sha256`, 'not 32 bytes');
+  if (typeof value.file !== 'string' || !PACKAGE_FILE.test(value.file) || value.file.split('/').some((part) => part === '.' || part === '..')) {
+    throw new RegistryError(`${path}.file`, 'not a plain path inside the package');
+  }
+  return { package: value.package, version: value.version, sha256, file: value.file, label: pageText(`${path}.label`, value.label) };
+}
+
 function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
   const value = record(path, raw);
   onlyKeys(path, value, ['via', 'why']);
@@ -466,7 +490,7 @@ function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'routes', 'dependsOn', 'code', 'instanceCheck', 'standingAllowance', 'ignoresTrailer']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'dependsOn', 'code', 'instanceCheck', 'standingAllowance', 'ignoresTrailer']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const routes = value.routes === undefined ? undefined : routingOf(`${path}.routes`, value.routes);
   const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code, routes);
@@ -495,6 +519,9 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     if (typeof value.coingecko !== 'string' || !COINGECKO_ID.test(value.coingecko)) throw new RegistryError(`${path}.coingecko`, 'not a CoinGecko coin id');
     if (!COINGECKO_KINDS.includes(kind)) throw new RegistryError(`${path}.coingecko`, `a ${kind} has no coingecko`);
   }
+  if (value.immunefi !== undefined && (typeof value.immunefi !== 'string' || !IMMUNEFI_PROGRAM.test(value.immunefi))) {
+    throw new RegistryError(`${path}.immunefi`, 'not an Immunefi program slug');
+  }
   const entry = {
     name,
     address,
@@ -507,6 +534,8 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     attributes,
     ...(value.defillama === undefined ? {} : { defillama: value.defillama }),
     ...(value.coingecko === undefined ? {} : { coingecko: value.coingecko }),
+    ...(value.immunefi === undefined ? {} : { immunefi: value.immunefi }),
+    ...(value.sdk === undefined ? {} : { sdk: sdkOf(`${path}.sdk`, value.sdk) }),
     ...(routes === undefined ? {} : { routes }),
     ...(dependsOn === undefined ? {} : { dependsOn }),
     ...(code === undefined ? {} : { code }),

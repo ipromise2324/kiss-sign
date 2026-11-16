@@ -4,10 +4,14 @@ import { parseArgs } from 'node:util';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
-import { checkSources, fetchListing, formatResults, listingsFor, trimForRecording } from '../src/research/listings.ts';
+import { checkSources, formatResults, listingsFor, liveListingReads, trimForRecording } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { ensureVendored } from '../src/vendor.ts';
+import { openMainnetReader } from '../src/chain/reader.ts';
+import { httpsTransport } from '../src/chain/rpc.ts';
+import { liveCreations } from '../src/research/deployer.ts';
+import { gatherPackages, provenanceRepositories } from '../src/research/npm-package.ts';
 
 const USAGE = `usage: node scripts/check-sources.ts [<registry name>...] [--record <name>]
 
@@ -37,13 +41,16 @@ const entries = names.length === 0 ? [...registry.entries.values()] : names.map(
 if (!(await ensureVendored(['psl']))) process.exit(1);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
-const listings = await listingsFor(entries, loadPublicSuffixList(), (listing) => fetchListing(listing, note));
+const packages = await gatherPackages(entries, retryingGet(httpsGet, note));
+const listings = await listingsFor(entries, loadPublicSuffixList(), liveListingReads(note), [...entries.flatMap(pageUrlsOf), ...provenanceRepositories(packages)]);
 const apis = await gatherApiAnswers(entries, retryingSend(httpsApi, note));
-const pages = await gatherSourcePages(
-  entries.flatMap(pageUrlsOf),
-  retryingGet(httpsGet, note),
-  apis,
-);
+const creations = await liveCreations(entries, process.env, note, () => openMainnetReader(process.env, httpsTransport(), { note }));
+if ('missing' in creations) console.error(`NOTE  who deployed each entry is not checked: ${creations.missing}`);
+const pages = {
+  ...(await gatherSourcePages(entries.flatMap(pageUrlsOf), retryingGet(httpsGet, note), apis)),
+  packages,
+  ...('missing' in creations ? {} : { creations }),
+};
 console.log(formatResults(checkSources(entries, listings, pages)));
 
 if (flags.record !== undefined) {

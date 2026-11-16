@@ -43,28 +43,7 @@
       "recommendation": "可以接受；在乎的話，verify 之後看 Safe 實際收到的股份數。"
     }
   ],
-  "reviews": {
-    "fluid-lending-factory/source.site": {
-      "status": "confirmed",
-      "text": "github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。",
-      "recommendation": "可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。"
-    },
-    "fluid-lending-factory/source.more.1.site": {
-      "status": "confirmed",
-      "text": "github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。",
-      "recommendation": "可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。"
-    },
-    "fluid-liquidity/source.site": {
-      "status": "confirmed",
-      "text": "github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。",
-      "recommendation": "可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。"
-    },
-    "fluid-liquidity/source.more.1.site": {
-      "status": "confirmed",
-      "text": "github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。",
-      "recommendation": "可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。"
-    }
-  },
+  "reviews": {},
   "fields": {
     "1.approve.spender": "被授權從 Safe 拉代幣的合約，固定是你選的 fToken。呼叫 2 裡 fToken 透過 Liquidity 的回呼用 `transferFrom` 拉走這筆錢。",
     "1.approve.value": "授權的上限，等於存款金額。呼叫 2 會整筆用掉，交易後授權回到 0。",

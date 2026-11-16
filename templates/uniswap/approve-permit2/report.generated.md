@@ -50,7 +50,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 `pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc permit2 usp` prints what each check compared.
 
-| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
@@ -61,11 +61,22 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | DefiLlama site | GitHub commit | Address on page |
+| Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | FINDING | PASS | PASS |
+| `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | PASS | PASS | PASS |
 
-6 entries, 2 findings.
+More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+
+| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
+| --- | --- | --- | --- | --- |
+| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
+| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
+| `cbbtc` | n/a | n/a | n/a | FINDING |
+| `permit2` | n/a | PASS | PASS | FINDING `0xD32Ff78579352cA78f416120A9f68b65c410871b` |
+| `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
+
+6 entries, 7 findings.
 
 ## Code pins
 
@@ -89,7 +100,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `permit2` | PASS | 26429301 |
+| `permit2` | PASS | 26430199 |
 
 ## ABI proofs
 
@@ -106,7 +117,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429301 `0x6b06291ed78e564427c4e00164f837b792416b9e36118d8eaed2a771ca0c354b`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26430199 `0x3499975c003ad28e2002745300a52a6f2eb3c53198acd604607e4d644455018b`; a read they do not agree on prints as not read.
 
 No call of this template goes to a contract other than a token.
 

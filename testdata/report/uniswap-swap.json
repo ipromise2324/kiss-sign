@@ -5,7 +5,8 @@
       "slug": "circle-usdc",
       "name": "Circle USDC",
       "url": "https://www.circle.com/en/",
-      "github": []
+      "github": [],
+      "parentProtocol": "parent#circle"
     },
     {
       "slug": "tether",
@@ -17,7 +18,8 @@
       "slug": "morpho-blue",
       "name": "Morpho Blue",
       "url": "https://app.morpho.org/",
-      "github": []
+      "github": [],
+      "parentProtocol": "parent#morpho"
     },
     {
       "slug": "coinbase",
@@ -29,7 +31,8 @@
       "slug": "uniswap-v4",
       "name": "Uniswap V4",
       "url": "https://app.uniswap.org/",
-      "github": []
+      "github": [],
+      "parentProtocol": "parent#uniswap"
     },
     {
       "slug": "piku-finance",
@@ -37,9 +40,90 @@
       "url": "https://piku.co/",
       "github": [
         "piku-co"
-      ]
+      ],
+      "gecko_id": "piku-utility-token"
     }
   ],
+  "defillamaParents": {
+    "parentProtocols": [
+      {
+        "id": "parent#circle",
+        "name": "Circle",
+        "url": "https://www.circle.com/en/",
+        "github": []
+      },
+      {
+        "id": "parent#morpho",
+        "name": "Morpho",
+        "url": "https://morpho.org/",
+        "github": [
+          "morpho-org"
+        ],
+        "gecko_id": "morpho"
+      },
+      {
+        "id": "parent#uniswap",
+        "name": "Uniswap",
+        "url": "https://app.uniswap.org/",
+        "github": [
+          "Uniswap"
+        ],
+        "gecko_id": "uniswap"
+      }
+    ]
+  },
+  "coinLinks": {
+    "morpho": {
+      "links": {
+        "homepage": [
+          "https://morpho.org/",
+          "https://app.morpho.org/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/morpho-org"
+          ]
+        }
+      }
+    },
+    "uniswap": {
+      "links": {
+        "homepage": [
+          "https://uniswap.org/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/Uniswap/uniswap-v3-core"
+          ]
+        }
+      }
+    },
+    "piku-utility-token": {
+      "links": {
+        "homepage": [
+          "https://www.piku.co/",
+          "https://docs.piku.co/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/piku-dao"
+          ]
+        }
+      }
+    }
+  },
+  "orgs": {
+    "coinbase": {
+      "kind": "domains",
+      "domains": []
+    },
+    "uniswap": {
+      "kind": "domains",
+      "domains": [
+        "uniswap.org"
+      ]
+    }
+  },
   "coingecko": [
     {
       "id": "usd-coin",
@@ -189,6 +273,80 @@
       "status": "identical"
     }
   },
+  "packages": {
+    "@uniswap/universal-router-sdk@5.17.0": {
+      "kind": "read",
+      "sha256": "0xe7abea16799826573fc5c69dc451a0ccfc5e25bb24f4bc4f166e46a1d6e74dd7",
+      "integrity": true,
+      "provenance": {
+        "kind": "built",
+        "repository": "https://github.com/Uniswap/sdks",
+        "sameTarball": true
+      },
+      "file": {
+        "kind": "served",
+        "blocks": [
+          {
+            "text": "[UniversalRouterVersion.V2_1_2]: {"
+          },
+          {
+            "text": "address: '0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85',"
+          }
+        ]
+      }
+    }
+  },
+  "creations": {
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {
+      "kind": "proven",
+      "tx": "0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
+      "block": "6082465",
+      "sender": "0x95ba4cf87d6723ad9c0db21737d862be80e93911",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0xdac17f958d2ee523a2206206994597c13d831ec7": {
+      "kind": "proven",
+      "tx": "0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
+      "block": "4634748",
+      "sender": "0x36928500bc1dcd7af6a2b4008875cc336b927d57",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0x58d97b57bb95320f9a05dc918aef65434969c2b2": {
+      "kind": "proven",
+      "tx": "0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9",
+      "block": "21157386",
+      "sender": "0x937ce2d6c488b361825d2db5e8a70e26d48afed5",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf": {
+      "kind": "unproven",
+      "why": "0x00000000001c3dC9A681A014e2732bF1419aFAec made no contract at the address by CREATE in block 20570548; a CREATE2 from it is not proven"
+    },
+    "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85": {
+      "kind": "proven",
+      "tx": "0x350510f7398242ffc778c086ae6bbe9cc744c33a04468f1a7978e54164638257",
+      "block": "25999984",
+      "sender": "0x2179a60856e37dfeaaca0ab043b931fe224b27b6",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6": {
+      "kind": "proven",
+      "tx": "0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda",
+      "block": "23195672",
+      "sender": "0xb8eaa4f956c6324435f4088cae9cda974c358508",
+      "via": {
+        "kind": "transaction"
+      }
+    }
+  },
   "vaults": {},
   "erc7730": {
     "commit": "3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4",
@@ -243,7 +401,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xb2f6986457f5a24ff088a0beb5567c8c1fe2da02687c78e743507ee7c982b977"
         }
@@ -257,7 +415,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xb2f6986457f5a24ff088a0beb5567c8c1fe2da02687c78e743507ee7c982b977"
         }
@@ -1209,7 +1367,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
         }
@@ -1223,7 +1381,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
         }
@@ -1348,7 +1506,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x4696930129929a1d47dfd8d104beeed783af945177c72780c5e6d1c942c410be"
         }
@@ -1362,7 +1520,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x4696930129929a1d47dfd8d104beeed783af945177c72780c5e6d1c942c410be"
         }
@@ -1540,8 +1698,8 @@
   ],
   "facts": {
     "block": {
-      "number": "26429289",
-      "hash": "0xc86c6653c9bc706feb861e81644669897c6990f28c364d04c9dde0cfb1093aaa"
+      "number": "26430210",
+      "hash": "0xf5636f2d8f866e696bd36af871e03c8757d4916c3c33254aa1f558c67b83be15"
     },
     "defillama": [
       {
@@ -1549,9 +1707,9 @@
         "id": "5690",
         "parentProtocol": "parent#uniswap",
         "listedAt": 1738172667,
-        "tvl": 1050001623.7337382,
+        "tvl": 1003469886.149171,
         "chainTvls": {
-          "Ethereum": 680459081.78991
+          "Ethereum": 634116144.2233815
         }
       }
     ],
@@ -1565,7 +1723,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xc86c6653c9bc706feb861e81644669897c6990f28c364d04c9dde0cfb1093aaa"
+            "blockHash": "0xf5636f2d8f866e696bd36af871e03c8757d4916c3c33254aa1f558c67b83be15"
           }
         ],
         "answers": {
@@ -1581,7 +1739,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xc86c6653c9bc706feb861e81644669897c6990f28c364d04c9dde0cfb1093aaa"
+            "blockHash": "0xf5636f2d8f866e696bd36af871e03c8757d4916c3c33254aa1f558c67b83be15"
           }
         ],
         "answers": {
@@ -1597,7 +1755,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xc86c6653c9bc706feb861e81644669897c6990f28c364d04c9dde0cfb1093aaa"
+            "blockHash": "0xf5636f2d8f866e696bd36af871e03c8757d4916c3c33254aa1f558c67b83be15"
           }
         ],
         "answers": {
@@ -1613,7 +1771,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xc86c6653c9bc706feb861e81644669897c6990f28c364d04c9dde0cfb1093aaa"
+            "blockHash": "0xf5636f2d8f866e696bd36af871e03c8757d4916c3c33254aa1f558c67b83be15"
           }
         ],
         "answers": {
@@ -1629,7 +1787,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xc86c6653c9bc706feb861e81644669897c6990f28c364d04c9dde0cfb1093aaa"
+            "blockHash": "0xf5636f2d8f866e696bd36af871e03c8757d4916c3c33254aa1f558c67b83be15"
           }
         ],
         "answers": {

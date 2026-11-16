@@ -5,7 +5,8 @@
       "slug": "circle-usdc",
       "name": "Circle USDC",
       "url": "https://www.circle.com/en/",
-      "github": []
+      "github": [],
+      "parentProtocol": "parent#circle"
     },
     {
       "slug": "tether",
@@ -17,7 +18,8 @@
       "slug": "morpho-blue",
       "name": "Morpho Blue",
       "url": "https://app.morpho.org/",
-      "github": []
+      "github": [],
+      "parentProtocol": "parent#morpho"
     },
     {
       "slug": "coinbase",
@@ -28,7 +30,8 @@
     {
       "slug": "cowswap",
       "name": "CoWSwap",
-      "github": []
+      "github": [],
+      "gecko_id": "cow-protocol"
     },
     {
       "slug": "piku-finance",
@@ -36,9 +39,93 @@
       "url": "https://piku.co/",
       "github": [
         "piku-co"
-      ]
+      ],
+      "gecko_id": "piku-utility-token"
     }
   ],
+  "defillamaParents": {
+    "parentProtocols": [
+      {
+        "id": "parent#circle",
+        "name": "Circle",
+        "url": "https://www.circle.com/en/",
+        "github": []
+      },
+      {
+        "id": "parent#morpho",
+        "name": "Morpho",
+        "url": "https://morpho.org/",
+        "github": [
+          "morpho-org"
+        ],
+        "gecko_id": "morpho"
+      }
+    ]
+  },
+  "coinLinks": {
+    "morpho": {
+      "links": {
+        "homepage": [
+          "https://morpho.org/",
+          "https://app.morpho.org/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/morpho-org"
+          ]
+        }
+      }
+    },
+    "cow-protocol": {
+      "links": {
+        "homepage": [
+          "https://cow.fi/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/gnosis/cow-token/"
+          ]
+        }
+      }
+    },
+    "piku-utility-token": {
+      "links": {
+        "homepage": [
+          "https://www.piku.co/",
+          "https://docs.piku.co/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/piku-dao"
+          ]
+        }
+      }
+    }
+  },
+  "immunefi": [
+    {
+      "slug": "cowprotocol",
+      "websiteUrl": "https://cow.fi/",
+      "githubUrl": "http://github.com/cowprotocol",
+      "assetsBodyV2": "https://etherscan.io/address/0x9008d19f58aabd9ed0d60971565aa8510560ab41\nhttps://etherscan.io/address/0x9e7ae8bdba9aa346739792d219a808884996db67\nhttps://etherscan.io/address/0xc92e8bdf79f0507f65a392b0ab4667716bfe0110\nhttps://etherscan.io/address/0x2c4c28ddbdac9c5e7055b4c863b72ea0149d8afe"
+    }
+  ],
+  "orgs": {
+    "coinbase": {
+      "kind": "domains",
+      "domains": []
+    },
+    "cowprotocol": {
+      "kind": "domains",
+      "domains": []
+    },
+    "ethereum": {
+      "kind": "domains",
+      "domains": [
+        "ethereum.org"
+      ]
+    }
+  },
   "coingecko": [
     {
       "id": "usd-coin",
@@ -217,6 +304,97 @@
       "kind": "on-default",
       "branch": "master",
       "status": "behind"
+    }
+  },
+  "packages": {
+    "@cowprotocol/sdk-config@2.11.2": {
+      "kind": "read",
+      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
+      "integrity": true,
+      "provenance": {
+        "kind": "built",
+        "repository": "https://github.com/cowprotocol/cow-sdk",
+        "sameTarball": true
+      },
+      "file": {
+        "kind": "served",
+        "blocks": [
+          {
+            "text": "var COMPOSABLE_COW = \"0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74\";"
+          },
+          {
+            "text": "var VAULT_RELAYER = \"0xC92E8bdf79f0507f65a392b0ab4667716BFE0110\";"
+          },
+          {
+            "text": "var VAULT_RELAYER_STAGING = \"0xC7242d167563352E2BCA4d71C043fbe542DB8FB2\";"
+          },
+          {
+            "text": "var SETTLEMENT_CONTRACT = \"0x9008D19f58AAbD9eD0D60971565AA8510560ab41\";"
+          }
+        ]
+      }
+    }
+  },
+  "creations": {
+    "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48": {
+      "kind": "proven",
+      "tx": "0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
+      "block": "6082465",
+      "sender": "0x95ba4cf87d6723ad9c0db21737d862be80e93911",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0xdac17f958d2ee523a2206206994597c13d831ec7": {
+      "kind": "proven",
+      "tx": "0x2f1c5c2b44f771e942a8506148e256f94f1a464babc938ae0690c6e34cd79190",
+      "block": "4634748",
+      "sender": "0x36928500bc1dcd7af6a2b4008875cc336b927d57",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0x58d97b57bb95320f9a05dc918aef65434969c2b2": {
+      "kind": "proven",
+      "tx": "0x1a8de6a5ba99b4dcd91ff35424e2e3adf76b1de440f97e4a48b22bfe9a8f96e9",
+      "block": "21157386",
+      "sender": "0x937ce2d6c488b361825d2db5e8a70e26d48afed5",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf": {
+      "kind": "unproven",
+      "why": "0x00000000001c3dC9A681A014e2732bF1419aFAec made no contract at the address by CREATE in block 20570548; a CREATE2 from it is not proven"
+    },
+    "0x9008d19f58aabd9ed0d60971565aa8510560ab41": {
+      "kind": "proven",
+      "tx": "0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3",
+      "block": "12593265",
+      "sender": "0x7eabac82da8ea6ac980d619cb562a9924d1e3baa",
+      "via": {
+        "kind": "create2",
+        "deployer": "0x4e59b44847b379578588920ca78fbf26c0b4956c"
+      }
+    },
+    "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110": {
+      "kind": "proven",
+      "tx": "0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3",
+      "block": "12593265",
+      "sender": "0x7eabac82da8ea6ac980d619cb562a9924d1e3baa",
+      "via": {
+        "kind": "create",
+        "factory": "0x9008d19f58aabd9ed0d60971565aa8510560ab41"
+      }
+    },
+    "0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6": {
+      "kind": "proven",
+      "tx": "0xe38f329a0426954fc83ec5bc5314f24dca2cfbcebefeb679cf43aebbbba70dda",
+      "block": "23195672",
+      "sender": "0xb8eaa4f956c6324435f4088cae9cda974c358508",
+      "via": {
+        "kind": "transaction"
+      }
     }
   },
   "vaults": {},
@@ -1648,7 +1826,7 @@
       "params": [
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         {
-          "blockHash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+          "blockHash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
         }
       ],
       "answers": {
@@ -1666,7 +1844,7 @@
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+          "blockHash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
         }
       ],
       "answers": {
@@ -1680,7 +1858,7 @@
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+          "blockHash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
         }
       ],
       "answers": {
@@ -1690,13 +1868,13 @@
     }
   ],
   "today": {
-    "number": "26429285",
-    "hash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+    "number": "26430185",
+    "hash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
   },
   "facts": {
     "block": {
-      "number": "26429285",
-      "hash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+      "number": "26430185",
+      "hash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
     },
     "defillama": [
       {
@@ -1722,7 +1900,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+            "blockHash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
           }
         ],
         "answers": {
@@ -1738,7 +1916,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+            "blockHash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
           }
         ],
         "answers": {
@@ -1754,7 +1932,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+            "blockHash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
           }
         ],
         "answers": {
@@ -1770,7 +1948,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+            "blockHash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
           }
         ],
         "answers": {
@@ -1786,7 +1964,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xcdbf1601cf1dc3d5744437af2a80e3ff6820ce113a4b0da3c7814d4fdb0faf57"
+            "blockHash": "0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13"
           }
         ],
         "answers": {
