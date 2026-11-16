@@ -39,23 +39,7 @@
       "recommendation": "可以接受。訂單過期前不想要了，用 Safe 撤回。"
     }
   ],
-  "reviews": {
-    "gpv2-settlement/source.site": {
-      "status": "confirmed",
-      "text": "DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。",
-      "recommendation": "可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。"
-    },
-    "gpv2-settlement/source.more.1.site": {
-      "status": "confirmed",
-      "text": "DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。",
-      "recommendation": "可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。"
-    },
-    "gpv2-settlement/doc.0xec6cb13f.site": {
-      "status": "confirmed",
-      "text": "文件頁是 github.com/cowprotocol/contracts 的 GPv2Signing.sol，commit 在預設分支；DefiLlama 沒登記 GitHub 組織，所以沒得比。docs.cow.fi 連到同一個 repo。",
-      "recommendation": "可以接受。"
-    }
-  },
+  "reviews": {},
   "entries": {
     "usdc": {
       "role": "可選的代幣：Circle 發行的 USDC",
