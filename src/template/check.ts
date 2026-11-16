@@ -98,6 +98,7 @@ function checkSharePrice(rule: Extract<Rule, { kind: 'share-price' }>, price: bi
 }
 
 function render(value: ConstValue): string {
+  if (value.kind === 'string') return JSON.stringify(Buffer.from(value.value.slice(2), 'hex').toString('utf8'));
   return typeof value.value === 'bigint' || typeof value.value === 'boolean' ? String(value.value) : value.value;
 }
 

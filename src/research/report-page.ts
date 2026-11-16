@@ -581,7 +581,10 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
   });
 }
 
-function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
+/** A free member of a signed message is no value of this transaction: the digest fixes it, and no perturbation tries another. */
+const FREE_MEMBER = '訂單裡的值，由雜湊鎖住；模板不限，也不換值測試';
+
+function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage = false): ArgRow {
   const chips = withChips ? chipsOf(node, context.template) : [];
   const market = wholeMarket(node.rule, context.template);
   if (market !== undefined) {
@@ -601,7 +604,9 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
     };
   }
   const nestedCall = node.rule.kind === 'call';
-  const { words, qualifier } = leafWords(node, context);
+  const leaf = leafWords(node, context);
+  const { words } = leaf;
+  const qualifier = inMessage && node.rule.kind === 'free' ? [FREE_MEMBER] : leaf.qualifier;
   return {
     key: node.key,
     name: node.name,
@@ -611,7 +616,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
     qualifier,
     id: undefined,
     ai: fieldsNote(context, node.key),
-    parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall)) }],
+    parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall, inMessage || node.rule.kind === 'eip712')) }],
   };
 }
 
@@ -834,7 +839,8 @@ function keyItems(used: ReadonlySet<Who>, template: Template): KeyItem[] {
     ...(used.has('you-type') ? [{ who: 'you-type' as const, label: SHORT['you-type'], means: '每次簽名填' }] : []),
     ...(used.has('you-pick') ? [{ who: 'you-pick' as const, label: SHORT['you-pick'], means: '每次簽名選' }] : []),
     ...(used.has('fixed') ? [{ who: 'fixed' as const, label: SHORT.fixed, means: '改了就 MISMATCH' }] : []),
-    ...(used.has('free') ? [...freeClaims(template)].map((claim) => ({ who: 'free' as const, label: 'app 填，不限', means: FREE_KEY[claim] })) : []),
+    ...(used.has('free') ? [...freeRules(template).claims].map((claim) => ({ who: 'free' as const, label: 'app 填，不限', means: FREE_KEY[claim] })) : []),
+    ...(used.has('free') && freeRules(template).member ? [{ who: 'free' as const, label: 'app 填，不限', means: '訂單裡的值，由雜湊鎖住' }] : []),
   ];
 }
 
@@ -1628,28 +1634,36 @@ function nextSection(context: Context): Section {
 }
 
 /** The claims of the template's free arguments, in claim order; empty when every argument is bound. */
-function freeClaims(template: Template): Set<FreeClaim> {
+/** The free rules of the transaction's own fields, and whether a signed message has a free member, which no perturbation tries. */
+function freeRules(template: Template): { readonly claims: Set<FreeClaim>; readonly member: boolean } {
   const found = new Set<FreeClaim>();
+  const members = new Set<Rule>();
+  const collect = (rule: Rule): void => {
+    if (rule.kind === 'eip712') rule.message.fields.forEach((field) => members.add(field));
+    if (rule.kind === 'packed') rule.parts.forEach((part) => collect(part.rule));
+    if (rule.kind === 'call') rule.call.args.forEach(collect);
+    if (rule.kind === 'items') rule.items.forEach(collect);
+    if (rule.kind === 'fields') rule.fields.forEach(collect);
+  };
   const visit = (rule: Rule): void => {
-    if (rule.kind === 'free') found.add(rule.claim);
+    if (rule.kind === 'free' && !members.has(rule)) found.add(rule.claim);
     if (rule.kind === 'equals') visit(rule.rule);
+    if (rule.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
     if (rule.kind === 'call') rule.call.args.forEach(visit);
     if (rule.kind === 'items') rule.items.forEach(visit);
     if (rule.kind === 'fields') rule.fields.forEach(visit);
   };
-  for (const call of template.calls) {
-    visit(call.to);
-    visit(call.value);
-    if (call.data !== 'empty') call.data.args.forEach(visit);
-  }
-  return new Set((['scalar', 'proof', 'unread'] as const).filter((claim) => found.has(claim)));
+  const calls = template.calls.flatMap((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)]);
+  calls.forEach(collect);
+  calls.forEach(visit);
+  return { claims: new Set((['scalar', 'proof', 'unread'] as const).filter((claim) => found.has(claim))), member: [...members].some((rule) => rule.kind === 'free') };
 }
 
 /** 參數保護 when no test transaction is recorded, from the template. */
 const unrecordedParams = (template: Template): string =>
-  freeClaims(template).size > 0
+  freeRules(template).claims.size > 0
     ? '模板有不限的參數，但沒有換值測試的記錄，程式沒有測過它們。'
-    : '模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。';
+    : `${freeRules(template).member ? '交易裡不限的值只在簽的訂單裡，由雜湊鎖住，不換值測試。' : ''}模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。`;
 
 function stripItems(ledger: Ledger, template: Template): StripItem[] {
   const subjects = new Set(ledger.entries.map((e) => e.name)).size;

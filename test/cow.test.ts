@@ -138,10 +138,10 @@ test('a buy order, a partly fillable order and an order with a fee are each MISM
   const c = CASES[3]!;
   const o = order(c.name);
   for (const [change, expected] of [
-    [{ kind: 'buy' }, 'kind: expected 0x73656c6c, got 0x627579'],
+    [{ kind: 'buy' }, 'kind: expected "sell", got "buy"'],
     [{ partiallyFillable: true }, 'partiallyFillable: expected false, got true'],
     [{ feeAmount: '1' }, 'feeAmount: expected 0, got 1'],
-    [{ sellTokenBalance: 'external' }, 'sellTokenBalance: expected 0x6572633230, got 0x65787465726e616c'],
+    [{ sellTokenBalance: 'external' }, 'sellTokenBalance: expected "erc20", got "external"'],
   ] as const) {
     const changed = withOrder(safeTx(c.name), o, change, c.template);
     assert.deepEqual(findings(check(changed.tx, impliedCard(c, o), [changed.text])), [`call.setPreSignature orderUid.digest.${expected}`]);
