@@ -18,8 +18,9 @@ import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const templates = new Map([['morpho/market-supply', loadTemplate(ROOT, 'morpho/market-supply', registry)]]);
 const USDC = registry.entries.get('usdc')!.address;

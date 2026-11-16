@@ -248,11 +248,12 @@ export async function judgeFixtures(repoRoot: string, template: Template, regist
   return judged;
 }
 
-/** The template's first recorded test transaction, the first of `recordingsOf`, with its card; undefined when its card is refused or there is none. */
+/** The template's first recorded test transaction, of `recordingsOf`, whose card resolves against `registry`, with its card. */
 export function firstRecordedTx(repoRoot: string, template: Template, registry: Registry): { readonly name: string; readonly tx: SafeTx; readonly card: ResolvedCard } | undefined {
-  const [first] = recordingsOf(repoRoot, template);
-  if (first === undefined) return undefined;
-  const tx = recordedTx(repoRoot, first.recording);
-  const resolution = resolveCard(first.card, { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: tx.safe });
-  return resolution.kind === 'resolved' ? { name: first.recording.safeTx, tx, card: resolution.card } : undefined;
+  for (const { recording, card } of recordingsOf(repoRoot, template)) {
+    const tx = recordedTx(repoRoot, recording);
+    const resolution = resolveCard(card, { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: tx.safe });
+    if (resolution.kind === 'resolved') return { name: recording.safeTx, tx, card: resolution.card };
+  }
+  return undefined;
 }

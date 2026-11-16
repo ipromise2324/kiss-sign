@@ -7,32 +7,40 @@ import { NOTES_FILE, notesChanges, notesPath, readNotes } from '../src/research/
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, generatedHtml, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
-import { DOCS_FILE, loadReport, replayInputs, templateTargets } from '../src/research/report.ts';
+import { loadReport, readDocs, replayInputs, templateTargets } from '../src/research/report.ts';
 import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
 const templates = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
 const has = (id: string, file: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, file));
-/** Each report of a template with notes.json, by its HTML path: one per template, or one per reported vault. */
-const withNotes = new Map(templateTargets(ROOT, registry).filter((t) => has(t.template, NOTES_FILE)).map((t) => [generatedHtmlPath(t), t]));
+const FIXTURES = repoWithTestFixtures();
+const MARKET: ReturnType<typeof templateTargets>[number] = { template: 'morpho/market-supply' };
+const withNotes = new Map([
+  ...templateTargets(ROOT, registry)
+    .filter((t) => has(t.template, NOTES_FILE))
+    .map((target) => [generatedHtmlPath(target), { target, root: ROOT, registry }] as const),
+  [generatedHtmlPath(MARKET), { target: MARKET, root: FIXTURES, registry: loadRegistry(FIXTURES) }] as const,
+]);
+const reportOf = (path: string) => withNotes.get(path) ?? assert.fail(path);
 const notesOf = (path: string): unknown => {
-  const target = withNotes.get(path) ?? assert.fail(path);
-  return readNotes(ROOT, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
+  const { target, root, registry } = reportOf(path);
+  return readNotes(root, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
 };
 
 const replayed = new Map<string, { readonly inputs: ReportInputs; readonly title: ReportTitle; readonly html: string }>();
 
 before(async () => {
-  const compilers = await warmCompilers(reportCases(ROOT, registry, [...withNotes.values()]));
-  for (const [path, target] of withNotes) {
-    const { inputs, title } = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
-    replayed.set(path, { inputs, title, html: (await generatedHtml(ROOT, inputs, title)) ?? assert.fail(`${path}: notes but no HTML`) });
+  const compilers = await warmCompilers([...withNotes.values()].flatMap(({ target, root, registry }) => reportCases(root, registry, [target])));
+  for (const [path, { target, root, registry }] of withNotes) {
+    const { inputs, title } = await replayInputs(root, registry, target, compilers, loadPublicSuffixList());
+    replayed.set(path, { inputs, title, html: (await generatedHtml(root, inputs, title)) ?? assert.fail(`${path}: notes but no HTML`) });
   }
 });
 
@@ -68,8 +76,8 @@ test('a template without notes.json gets no HTML report', async () => {
 });
 
 test('the committed HTML report is what the program writes from the recordings and notes.json, byte for byte', () => {
-  assert.ok(withNotes.size > 0);
-  for (const [path, { html }] of replayed) assert.equal(htmlDifference(readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
+  assert.ok([...withNotes.values()].some((report) => report.root === ROOT));
+  for (const [path, { html }] of replayed) if (reportOf(path).root === ROOT) assert.equal(htmlDifference(readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
 });
 
 const unescape = (text: string): string => text.replace(/&#(\d+);/g, (_, n: string) => String.fromCharCode(Number(n)));
@@ -115,8 +123,9 @@ test('the HTML report holds no script and loads nothing', () => {
 test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, one of the four the program builds, or an id on the page', () => {
   for (const [id, { html }] of replayed) {
     const notes = notesOf(id);
-    const folder = join(ROOT, TEMPLATES_DIR, withNotes.get(id)?.template ?? '');
-    const docs = JSON.parse(readFileSync(join(folder, DOCS_FILE), 'utf8')) as Record<string, { url: string }>;
+    const { target, root, registry } = reportOf(id);
+    const folder = join(root, TEMPLATES_DIR, target.template);
+    const docs = readDocs(root, target.template, target.cardVault) as Record<string, { url: string }>;
     const card = (JSON.parse(readFileSync(join(folder, 'template.json'), 'utf8')) as { card: Record<string, { computed?: { default: { source: string } } }> }).card;
     const allowed = new Set<string>([
       'https://defillama.com/hacks',
@@ -128,7 +137,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
       ]),
       ...Object.values(docs).map((d) => d.url),
       ...Object.values(card).flatMap((field) => (field.computed === undefined ? [] : [field.computed.default.source])),
-      ...JSON.stringify(notes).match(/https:\/\/[^"]+/g)!,
+      ...(JSON.stringify(notes).match(/https:\/\/[^"]+/g) ?? []),
     ]);
     const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => unescape(m[1] as string)));
     for (const [, raw] of html.matchAll(/\shref="([^"]*)"/g)) {
@@ -168,7 +177,7 @@ test('AI text is HTML-escaped', async () => {
 });
 
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
-  const id = [...withNotes.keys()][0] as string;
+  const id = [...withNotes.keys()].find((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0) ?? assert.fail('a report whose notes draw a flow line');
   const { inputs, title } = replayed.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as { flow: { text: string }[] } & Record<string, unknown>;
@@ -185,6 +194,20 @@ test('a code span in AI text prints as <code> in prose and as a boxed monospace 
   const caption = /<g data-ai>.*?<\/g>/s.exec(html.slice(html.indexOf('<svg viewBox')))?.[0] ?? assert.fail('a flow caption');
   assert.equal([...caption.matchAll(/<rect class="codebox"/g)].length, 2);
   assert.deepEqual([...caption.matchAll(/<tspan class="capc"[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
+});
+
+test('an AI source sits under AI 補查 with its result in words, never with a state icon among the program sources', () => {
+  let groups = 0;
+  for (const [id, { html }] of replayed) {
+    for (const [srcs] of html.matchAll(/<div class="srcs">.*?<\/div>\n/gs)) assert.ok(!srcs.includes('data-ai'), `${id}: AI text among the program sources`);
+    for (const [group] of html.matchAll(/<div class="aisrcs">.*?<\/div>/gs)) {
+      groups += 1;
+      assert.match(group, /^<div class="aisrcs"><span class="lbl">AI 補查<\/span>/, id);
+      assert.ok(!group.includes('<svg') && !group.includes('data-state'), `${id}: an AI source with a state mark`);
+      assert.match(group, /<span class="aires">AI 判斷：(沒問題|要注意|有問題)<\/span>/, id);
+    }
+  }
+  assert.ok(groups > 0, 'a replayed report has AI sources');
 });
 
 test('every state icon is an image with a Chinese name, and the rest are hidden from screen readers', () => {
@@ -213,12 +236,15 @@ const nextSteps = (html: string): string => {
 const commands = (section: string): string[] => [...section.matchAll(/<pre class="cmd"><code>([^<]*)<\/code><\/pre>/g)].map((m) => unescape(m[1] as string));
 
 test('下一步 ends every signer report, each command alone in its own block with no punctuation inside it', () => {
-  for (const [id, { html }] of replayed) {
-    const target = withNotes.get(id) ?? assert.fail(id);
+  for (const [id, { html, inputs }] of replayed) {
+    const { target } = reportOf(id);
+    const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
+    const recipient = [...template.card.values()].some((field) => field.kind === 'recipient');
     const section = nextSteps(html);
     assert.ok(html.lastIndexOf('<section') < html.indexOf('id="next"'), `${id}: 下一步 is the last section`);
     assert.deepEqual(commands(section), [
       `bin/kiss-sign template approve ${target.template}`,
+      ...(recipient ? ['bin/kiss-sign book add <name> <address>'] : []),
       `bin/kiss-sign card new ${target.template}`,
       'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
       './check.sh <nonce>',
@@ -230,14 +256,15 @@ test('下一步 ends every signer report, each command alone in its own block wi
 });
 
 test('下一步 of a per-vault report names the vault in full, says to pick it by name, and shows the computed field it will not ask', () => {
-  const [id, { html }] = [...replayed].find(([path]) => withNotes.get(path)?.cardVault === 'hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the Hyperithm report');
+  const [id, { html }] = [...replayed].find(([path]) => withNotes.get(path)?.target.cardVault === 'hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the Hyperithm report');
   const section = unescape(nextSteps(html).replace(/<[^>]+>/g, ''));
   assert.ok(section.includes('選 hyperithm-usdc-apex-v2-9e2f，地址是 0x093272C07700d3cA5301C3Bf9B3A392624179E2F'), id);
   assert.ok(section.includes('照名字選'), id);
   assert.ok(section.includes('打 usdc 的數量，用整顆幣'), id);
   assert.ok(section.includes('1,000,611.448606'), id);
-  assert.ok(section.includes('min-shares：不用填'), id);
+  assert.ok(section.includes('最少收到的數量（min-shares）：不用填'), id);
   assert.ok(section.includes('再少 0.10%（協議預設的 0.03%，再加 0.07% 餘裕）'), id);
-  assert.ok(section.indexOf('vault：') < section.indexOf('amount：') && section.indexOf('amount：') < section.indexOf('min-shares：'), `${id}: the prompts in the order card new asks them`);
+  const at = ['金庫（vault）：', '金額（amount）：', '（min-shares）：'].map((prompt) => section.indexOf(prompt));
+  assert.ok(at[0] !== -1 && at.every((i, n) => n === 0 || i > (at[n - 1] as number)), `${id}: the prompts in the order card new asks them`);
   assert.ok(section.includes('MISMATCH 或 UNVERIFIABLE：不要簽'), id);
 });

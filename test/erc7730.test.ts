@@ -129,7 +129,8 @@ test('a descriptor scoped by the vault\'s factory applies to it, and the output 
     /applies {6}BY FACTORY 0xA9c3D3a366466Fa809d1Ae982Fb2c46E5fC41101 \(the registry's factory metamorpho-factory-v1-0\): ERC-7730 applies it to ANY contract that factory deploys, including an attacker's/,
   );
   assert.doesNotMatch(text, /by exact address/);
-  assert.match(text, /2 descriptor\(s\) scoped by factory: registry\/morpho\/calldata-steakhouse_financial-bbqUSDC\.json, registry\/railnet\/calldata-Conduit\.json/);
+  assert.match(text, /1 descriptor\(s\) scoped by the registry factory of an entry below: registry\/morpho\/calldata-steakhouse_financial-bbqUSDC\.json;/);
+  assert.doesNotMatch(text, /calldata-Conduit/);
 });
 
 test('a parameter no field names is listed, and a field the descriptor hides shows its visibility', async () => {
