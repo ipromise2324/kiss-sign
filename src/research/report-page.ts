@@ -1275,6 +1275,10 @@ function misfitWords(reason: MisfitReason, template: string, registry: Registry)
       return [{ code: last(reason.at) }, ` 有 ${reason.got} 項，模板是 ${reason.expected} 項`];
     case 'field':
       return [{ code: reason.at }, ' 的值跟模板不同：模板要 ', { mono: reason.expected }, '，交易是 ', { mono: reason.actual }];
+    case 'not-sender':
+      return [{ code: reason.at }, ' 不是送出交易的 Safe 或地址'];
+    case 'differs':
+      return [{ code: reason.at }, ' 跟 ', { code: reason.other }, ' 的值不同，模板要兩個一樣'];
     case 'trailer':
       return ['參數後面多了模板不允許的位元組，在 ', { code: reason.at }];
     case 'foreign-delegatecall':
