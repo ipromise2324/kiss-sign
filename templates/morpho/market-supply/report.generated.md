@@ -230,7 +230,7 @@ examples that fit: 0x2f82601df5b6acc049147a1161897c18876ba8cc4b8e5aeb8c8e16fa234
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
-1 descriptor(s) scoped by factory: registry/railnet/calldata-Conduit.json; one applies below only when its factory is the entry's registry factory
+no descriptor is scoped by the registry factory of an entry below
 
 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1

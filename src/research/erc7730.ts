@@ -601,10 +601,13 @@ function descriptorLines(d: DescriptorFact, report: EntryReport): string[] {
 
 /** Only structured facts: paths, hashes, addresses, selectors, canonical types and format names. No descriptor text. */
 export function formatReports(snapshot: Snapshot, reports: readonly EntryReport[]): string {
-  const scoped = factoryScoped(snapshot);
+  const factories = new Set(reports.flatMap((r) => (r.factory === undefined ? [] : [r.factory.address])));
+  const scoped = factoryScoped(snapshot).filter((s) => s.factories.some((f) => factories.has(f)));
   const head = [
     `ERC-7730 registry ${ERC7730_REGISTRY_PIN.repository} at commit ${snapshot.commit}`,
-    `${scoped.length} descriptor(s) scoped by factory: ${scoped.map((s) => printablePath(s.path)).join(', ') || 'none'}; one applies below only when its factory is the entry's registry factory`,
+    scoped.length === 0
+      ? 'no descriptor is scoped by the registry factory of an entry below'
+      : `${scoped.length} descriptor(s) scoped by the registry factory of an entry below: ${scoped.map((s) => printablePath(s.path)).join(', ')}; ERC-7730 applies each to any contract that factory deploys`,
   ];
   const blocks = reports.map((report) => {
     const lines = [`${report.entry.name} ${checksumAddress(report.entry.address)} (${report.entry.kind})`];
@@ -627,17 +630,12 @@ export type Erc7730Recording = {
   readonly chain: readonly unknown[];
 };
 
-/** Keeps the files a replay of `reports` reads: found descriptors, their includes and attestations, every factory-scoped descriptor, and the auditors named. */
+/** Keeps the files a replay of `reports` reads: found descriptors, their includes and attestations, and the auditors named. */
 export function trimForRecording(snapshot: Snapshot, reports: readonly EntryReport[]): Map<string, string> {
   const keep = new Set<string>();
   const add = (path: string) => {
     if (snapshot.files.has(path)) keep.add(path);
   };
-  for (const s of factoryScoped(snapshot)) {
-    add(s.path);
-    const r = resolve(snapshot, s.path);
-    if (r.kind === 'resolved') r.includes.forEach(add);
-  }
   for (const report of reports) {
     for (const d of report.descriptors) {
       add(d.path);

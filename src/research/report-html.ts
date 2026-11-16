@@ -4,7 +4,7 @@ import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Body, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Body, CallBlock, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
 import { reportDir } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
@@ -98,6 +98,8 @@ const FIRST_X = 90;
 const NODE_TOP = 14;
 const NODE_HEIGHT = 44;
 const AI_TAG_WIDTH = 56;
+/** How far a call from the Safe to itself loops out to the right. */
+const SELF_LOOP = 64;
 
 const CJK_FIRST = 0x2e80;
 /** About how wide 14px text draws: a CJK character a full em, anything else about half. */
@@ -135,7 +137,12 @@ function diagram(sequence: Sequence): Html {
   const rows: Html[] = [];
   let y = NODE_TOP + NODE_HEIGHT + 32;
   for (const arrow of sequence.arrows) {
-    if (arrow.kind === 'call') {
+    if (arrow.kind === 'call' && arrow.to === 0) {
+      rows.push(h`
+    <text class="no" x="${x(0) + 12}" y="${y}">${arrow.n}</text><text class="fn" x="${x(0) + 30}" y="${y}">${arrow.fn}</text>
+    <path class="call" d="M${x(0)} ${y + 14}h${SELF_LOOP}v${SELF_LOOP / 4}h${3 - SELF_LOOP}" marker-end="url(#m-call)"/>`);
+      y += 52 + SELF_LOOP / 4;
+    } else if (arrow.kind === 'call') {
       rows.push(h`
     <text class="no" x="${x(0) + 12}" y="${y}">${arrow.n}</text><text class="fn" x="${x(0) + 30}" y="${y}">${arrow.fn}</text>
     <line class="call" x1="${x(0)}" y1="${y + 14}" x2="${x(arrow.to) - 3}" y2="${y + 14}" marker-end="url(#m-call)"/>`);
@@ -180,8 +187,8 @@ const chip = (c: Chip): Html => h`<span class="${CHIP_CLASS[c.who]}">${c.label}<
 function valueLines(row: ArgRow): Html {
   return h`${row.value === undefined ? '' : h`<div class="raw">${row.value.cast}${row.value.example ? h`<span class="ex">例</span>` : ''}</div>`}<div class="is">${text(row.words)}${
     row.qualifier === undefined ? '' : h` <span class="f3">${text(row.qualifier)}</span>`
-  }</div>${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}
-        <div class="ai">${ai(row.ai)}</div>`;
+  }</div>${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
+        <div class="ai">${ai(row.ai)}</div>`}`;
 }
 
 function partsOf(row: ArgRow): Html {
@@ -203,30 +210,55 @@ function argRow(row: ArgRow): Html {
     </div>`;
 }
 
+function callHead(call: CallBlock): Html {
+  const { head } = call;
+  return head.kind === 'fn'
+    ? h`<span class="fnn"><span class="ct">${head.contract}.</span>${head.fn}</span><span class="sel">${head.selector}</span>`
+    : h`<span class="what">${head.text}</span>`;
+}
+
 function flowBody(flow: Flow): Html {
+  const chosen = flow.key.some((item) => item.who !== 'fixed');
+  const lead = [
+    flow.decoded ? h`每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。` : '',
+    flow.example !== undefined ? h`標「例」的${text(flow.example)}` : chosen ? '沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。' : '',
+  ];
   return h`
   <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
-  ${diagram(flow.diagram)}
+  ${diagram(flow.diagram)}${
+    flow.key.length === 0
+      ? ''
+      : h`
   <div class="key">
-    <span class="k0">誰決定</span>
-    <span><span class="who you">你填</span>每次簽名填</span>
-    <span><span class="who you">你選</span>每次簽名選</span>
-    <span><span class="who">固定</span>改了就 MISMATCH</span>
-    <span><span class="who app">app 填，不限</span>換成別的值，結果一樣</span>
-  </div>
-  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。${flow.example === undefined ? '沒有測試交易可以當例子，你填和 app 填的值只寫規則。' : h`標「例」的${text(flow.example)}`}</p>
+    <span class="k0">誰決定</span>${flow.key.map((item) => h`
+    <span>${chip(item)}${item.means}</span>`)}
+  </div>`
+  }${lead.every((part) => part === '') ? '' : h`
+  <p class="lead keylead">${lead}</p>`}${
+    flow.safeTx.length === 0
+      ? ''
+      : h`
+  <div class="cb">
+    <div class="callh"><span class="what">Safe 交易</span></div>${flow.safeTx.map(argRow)}
+  </div>`
+  }
   ${flow.calls.map(
     (call) => h`
   <div class="cb">
-    <div class="callh"><span class="no">${call.n}</span><span class="fnn"><span class="ct">${call.contract}.</span>${call.fn}</span><span class="sel">${call.selector}</span></div>${
+    <div class="callh"><span class="no">${call.n}</span>${callHead(call)}</div>${
       call.sends === undefined ? '' : h`<div class="sends">${text(call.sends)}</div>`
     }${call.args.map(argRow)}
   </div>`,
   )}
-  <h3>交易後</h3>
+  <h3>交易後</h3>${
+    flow.after.length === 0
+      ? h`
+  <p class="lead">Safe 不給出、也不收到任何資產：模擬後 Safe 的餘額有任何變化，都是 MISMATCH。</p>`
+      : h`
   <dl class="props">${flow.after.map((row) => h`
     <div><dt>${text(row.label)}</dt><dd class="${row.gains ? 'pos' : ''}">${text(row.value)}</dd><dd class="src">${text(row.note)}</dd></div>`)}
-  </dl>`;
+  </dl>`
+  }`;
 }
 
 function protocolBody(block: ProtocolBlock): Html {
@@ -331,8 +363,13 @@ function walletBody({ view }: Extract<Body, { kind: 'wallet' }>): Html {
     return h`
   <p class="lead">這筆 Safe 交易用 MultiSend 打包 ${view.calls} 個呼叫，硬體錢包解不開 Safe 的 MultiSend，所以請比對裝置上的 hash 和 <code>verify</code> 印的 safeTxHash。</p>`;
   }
+  if (view.kind === 'no-data') {
+    return h`
+  <p class="lead">這筆交易的呼叫沒有資料，沒有函式可以用 ERC-7730 描述檔解讀。</p>`;
+  }
+  const described = view.calls.some((call) => call.rows !== 'no-descriptor');
   return h`
-  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。右邊是模板的規則，不是描述檔的文字。</p>
+  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。${described ? '右邊是模板的規則，不是描述檔的文字。' : ''}</p>
   <dl class="props two">${view.calls.map(
     (call) => h`
     <div><dt>${text(call.title)}</dt>${
@@ -387,7 +424,7 @@ function addressBody(body: Extract<Body, { kind: 'addresses' }>): Html {
       ? ''
       : h`
     <details class="fold">
-      <summary>${decor('chev')}${icon(worst)}另外 ${body.folded.length} 個沒有要你看的結果</summary>${body.folded.map(addressRow)}
+      <summary>${decor('chev')}${icon(worst)}${body.folded.length === 1 ? '另外 1 個地址沒有要你看的結果' : `另外 ${body.folded.length} 個地址都沒有要你看的結果`}</summary>${body.folded.map(addressRow)}
     </details>`
   }
   </div>`;
@@ -698,6 +735,7 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
 .callh .fnn .ct{color:var(--fg2);font-weight:400}
 .callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.callh .what{font-size:16px;font-weight:590}
 .sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
 .arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
 .arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
