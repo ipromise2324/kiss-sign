@@ -505,6 +505,10 @@ function wholeMarket(rule: Rule, template: Template): string | undefined {
 }
 
 /** The one entry a contract card reference can name, as in a per-vault report, where the card can name only its vault. */
+/** Whether a view reads the Safe's own position, so a rise is something the Safe gets; a vault's setting is not. */
+const readsSafe = (rule: Rule): boolean =>
+  rule.kind === 'safe' || (rule.kind === 'fields' && rule.fields.some(readsSafe)) || (rule.kind === 'items' && rule.items.some(readsSafe));
+
 const CHANGE_WORDS: Readonly<Record<ViewChange, string>> = { increases: '增加', decreases: '減少', same: '不變' };
 
 /** What a view effect requires, in the signer's words. */
@@ -742,9 +746,6 @@ function sequence(context: Context): Sequence {
     arrows.push({ kind: 'gets', from: last, text });
     narration.push(`結果：${text}。`);
   }
-  // Only a view that reads the Safe's own position shows something the Safe gets; a vault's setting does not.
-  const readsSafe = (rule: Rule): boolean =>
-    rule.kind === 'safe' || (rule.kind === 'fields' && rule.fields.some(readsSafe)) || (rule.kind === 'items' && rule.items.some(readsSafe));
   for (const view of template.effects.views.filter((v) => v.args.some(readsSafe))) {
     for (const { value } of view.changes.filter((c) => c.change === 'increases')) {
       const label = viewLabel(view, context);
@@ -792,7 +793,7 @@ function afterRows(context: Context): AfterRow[] {
         label: [{ code: paramName(view.returns[value] as AbiParam, value) }],
         value: changeWords(change, context),
         note: [`${viewLabel(view, context)}.${view.fn.name}${viewSubject(view)}，交易前後各讀一次`],
-        gains: change === 'increases',
+        gains: change === 'increases' && view.args.some(readsSafe),
       });
     }
   }
