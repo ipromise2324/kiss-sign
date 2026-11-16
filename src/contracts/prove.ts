@@ -61,6 +61,10 @@ export function describeRefusal(refusal: Refusal): string {
       return 'both the EIP-1967 implementation and beacon slots are set, so which code runs is unknown';
     case 'slot-without-delegatecall':
       return 'an EIP-1967 slot is set, but the code has no DELEGATECALL, so it does not run that implementation';
+    case 'unknown-delegator':
+      return `${refusal.at} hands a call it has no function for, at byte ${refusal.pc} of its code, to code the program neither proves nor pins`;
+    case 'fallback-unfollowable':
+      return `the program cannot follow what ${refusal.at} does with a call it has no function for (${refusal.cause} at byte ${refusal.pc}), so whether it delegates elsewhere is unknown`;
     case 'no-code':
       return `${refusal.at} has no code`;
     case 'chained-proxy':
