@@ -26,7 +26,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
   const visit = (rule: Rule | undefined): void => {
     if (rule?.kind === 'contract') add(registry.entries.get(rule.name));
     else if (rule?.kind === 'const' && rule.value.kind === 'address') add(registry.byAddress.get(rule.value.value));
-    else if (rule?.kind === 'call') rule.call.args.forEach(visit);
+    else if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
     else if (rule?.kind === 'items') rule.items.forEach(visit);
     else if (rule?.kind === 'fields') rule.fields.forEach(visit);
   };
@@ -54,7 +54,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
       if (call.data !== 'empty') call.data.args.forEach(visit);
     }
     for (const view of template.effects.views) {
-      add(registry.entries.get(view.to));
+      if (view.to.kind === 'contract') add(registry.entries.get(view.to.name));
       view.args.forEach(visit);
     }
   }

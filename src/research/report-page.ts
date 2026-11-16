@@ -13,8 +13,8 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { refNames, slippageBps } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, FreeClaim, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
+import { isEncoding, refNames, slippageBps, viewTargetNames } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, FreeClaim, Rule, Template, TemplateCall, TokenRef, ViewChange, ViewEffect, ViewExpectation } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
@@ -221,7 +221,7 @@ const KIND_WORDS: Readonly<Record<RegistryEntry['kind'], string>> = {
   oracle: '價格來源',
   irm: '利率模型',
 };
-const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
+const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', adapter: '轉接合約', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
 
 /** A card field's word from its kind; a typed amount by what it counts: 股份數 for a vault's own shares, 金額 for an asset or ETH. */
 function kindWord(field: CardField, template: Template): string {
@@ -241,6 +241,8 @@ function kindWord(field: CardField, template: Template): string {
       return 'nonce';
     case 'market':
       return '市場';
+    case 'percent':
+      return '百分比';
   }
 }
 
@@ -503,6 +505,19 @@ function wholeMarket(rule: Rule, template: Template): string | undefined {
 }
 
 /** The one entry a contract card reference can name, as in a per-vault report, where the card can name only its vault. */
+const CHANGE_WORDS: Readonly<Record<ViewChange, string>> = { increases: '增加', decreases: '減少', same: '不變' };
+
+/** What a view effect requires, in the signer's words. */
+function changeWords(change: ViewExpectation, context: Context): Inline {
+  return typeof change === 'string' ? [CHANGE_WORDS[change]] : [before('等於你填的', fieldWord(context.template, change.equals))];
+}
+
+/** The contract a view effect reads, by name: its registry name, or the one entry its card field names in this report. */
+function viewLabel(view: ViewEffect, context: Context): string {
+  if (view.to.kind === 'contract') return view.to.name;
+  return onlyEntry(view.to.ref, context)?.name ?? `card.${view.to.ref.field}${view.to.ref.attribute === undefined ? '' : `.${view.to.ref.attribute}`}`;
+}
+
 function onlyEntry(ref: CardRef, context: Context): RegistryEntry | undefined {
   if (context.template.card.get(ref.field)?.kind !== 'contract') return undefined;
   const names = refNames(ref, context.template, context.registry);
@@ -550,7 +565,11 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     case 'share-price':
       return { words: [rule.bound === 'max' ? '價格上限' : '價格下限'], qualifier: ['依你填的數量算出，交易裡的要一樣嚴或更嚴'] };
     case 'call':
-      return { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
+      return isEncoding(rule.call)
+        ? { words: [{ code: rule.call.fn.name }, ' 編碼的值'], qualifier: undefined }
+        : { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
+    case 'keccak':
+      return { words: ['keccak256，', { code: rule.call.fn.name }], qualifier: undefined };
     case 'items':
       return { words: [`${rule.items.length} 項`], qualifier: undefined };
     case 'fields':
@@ -679,7 +698,10 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
     const target = targetOf(call.to, context);
     return add(target.label, target.names, target.role);
   });
-  for (const view of template.effects.views) add(view.to, [view.to], kindOf(view.to));
+  for (const view of template.effects.views) {
+    const label = viewLabel(view, context);
+    add(label, viewTargetNames(view.to, template, registry), kindOf(label));
+  }
   for (const name of context.notes.flow.flatMap((line) => [line.from, line.to])) {
     if (!names.some((of) => of.includes(name))) add(name, [name], kindOf(name));
   }
@@ -712,8 +734,9 @@ function sequence(context: Context): Sequence {
   }
   for (const view of template.effects.views) {
     for (const { value } of view.changes.filter((c) => c.change === 'increases')) {
-      const text = `你在 ${view.to} 的 ${paramName(view.returns[value] as AbiParam, value)} 增加`;
-      arrows.push({ kind: 'gets', from: at(view.to), text });
+      const label = viewLabel(view, context);
+      const text = `${label} 的 ${paramName(view.returns[value] as AbiParam, value)} 增加`;
+      arrows.push({ kind: 'gets', from: at(label), text });
       narration.push(`結果：${text}。`);
     }
   }
@@ -754,8 +777,8 @@ function afterRows(context: Context): AfterRow[] {
     for (const { value, change } of view.changes) {
       rows.push({
         label: [{ code: paramName(view.returns[value] as AbiParam, value) }],
-        value: [{ increases: '增加', decreases: '減少', same: '不變' }[change]],
-        note: [`${view.to}.${view.fn.name}，交易前後各讀一次`],
+        value: changeWords(change, context),
+        note: [`${viewLabel(view, context)}.${view.fn.name}，交易前後各讀一次`],
         gains: change === 'increases',
       });
     }
@@ -1106,7 +1129,9 @@ function ruleWords(rule: Rule, context: Context): Inline {
     case 'share-price':
       return [rule.bound === 'max' ? '價格上限' : '價格下限'];
     case 'call':
-      return ['呼叫 ', { code: rule.call.fn.name }, '，參數見流程'];
+      return isEncoding(rule.call) ? [{ code: rule.call.fn.name }, ' 編碼的值，參數見流程'] : ['呼叫 ', { code: rule.call.fn.name }, '，參數見流程'];
+    case 'keccak':
+      return ['keccak256，', { code: rule.call.fn.name }];
     case 'items':
     case 'fields':
       return ['見流程'];
@@ -1521,12 +1546,17 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
       return step([...cardNewPrompt, '：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。']);
     case 'nonce':
       return step([...cardNewPrompt, '：打 Safe 交易的 nonce，純數字。']);
+    case 'percent':
+      return step([...cardNewPrompt, '：打百分比，最多 100，例如 ', { code: '100' }, ' 或 ', { code: '35.5' }, ' 。'], [['它印出百分比和 base units（100% 是 10^18），核對數字是你要的。']]);
     case 'amount': {
       const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? before('你選的', refWord(context.template, field.of)));
       if (field.computed === undefined) {
         return step(
           [...cardNewPrompt, `：打 ${token} 的數量，用整顆幣，例如 `, { code: '1250.5' }, ' ；可以有千位逗號，例如 ', { code: '1,000,611.448606' }, ' 。'],
-          [['它印出整顆和 base units 兩種寫法，核對數字是你要的。']],
+          [
+            ['它印出整顆和 base units 兩種寫法，核對數字是你要的。'],
+            ...(field.max === undefined ? [] : [['也可以打 ', { code: 'max' }, `，等於 ${field.max.value} base units：`, research(field.max.why)] as Inline]),
+          ],
         );
       }
       const { computed } = field;
@@ -1545,7 +1575,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
 function nextSection(context: Context): Section {
   const { template } = context;
   const fields = [...template.card];
-  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce';
+  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'percent';
   const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
   const vault = context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined;
   const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? `（第一次用這個模板${vault ? '或這個金庫' : ''}，先用小額）` : '';
@@ -1611,8 +1641,8 @@ function nextSection(context: Context): Section {
     ...(template.nonce === undefined ? [] : [['Safe 交易的 nonce 是', ...ruleWords(template.nonce, context)] as Inline]),
     ['沒有任何授權在交易後變高'],
     ...template.effects.views.map((v): Inline => [
-      { code: `${v.to}.${v.fn.name}` },
-      `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${{ increases: '增加', decreases: '減少', same: '不變' }[c.change]}`).join('、')}`,
+      { code: `${viewLabel(v, context)}.${v.fn.name}` },
+      `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${typeof c.change === 'string' ? CHANGE_WORDS[c.change] : `等於你填的 ${fieldWord(template, c.change.equals)}`}`).join('、')}`,
     ]),
     ...(context.ledger.entries.length === 0 ? [] : [[`碰到的 ${new Set(context.ledger.entries.map((e) => e.name)).size} 個登記合約，程式碼還是 code pin 記錄的那份`] as Inline]),
   ];

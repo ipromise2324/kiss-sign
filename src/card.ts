@@ -8,7 +8,7 @@ import { MARKET_ENTRY_PARTS, isAttribute, isMarketEntryPart } from './registry.t
 import type { Market, Registry, RegistryEntry } from './registry.ts';
 import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
-import { contractRefusal } from './template/template.ts';
+import { WAD, contractRefusal } from './template/template.ts';
 import type { CardRef, Template } from './template/template.ts';
 
 /** What the signer confirms at each signing: which templates, and each one's values. Addresses appear only as names. */
@@ -35,6 +35,7 @@ export type CardRefusal =
   | 'wrong-protocol'
   | 'not-an-amount'
   | 'not-a-nonce'
+  | 'not-a-percent'
   | 'not-the-same';
 
 export type Resolution =
@@ -120,6 +121,12 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
             return field.kind === 'amount' ? refuse('not-an-amount', name, 'not a base-unit integer') : refuse('not-a-nonce', name, 'not a nonce');
           }
           values.set(name, { kind: field.kind, value });
+          break;
+        }
+        case 'percent': {
+          const value = parseUint256(raw);
+          if (value === undefined || value > WAD) return refuse('not-a-percent', name, `not a percent in WAD base units, ${WAD} at most`);
+          values.set(name, { kind: 'amount', value });
           break;
         }
         case 'contract': {
