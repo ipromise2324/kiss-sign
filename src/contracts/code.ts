@@ -128,7 +128,7 @@ export async function readRunningCode(reader: Reader, address: Address, at: Bloc
   const refused = (refusal: CodeRefusal): CodeRead => ({ kind: 'refused', refusal });
   const own = await codeAt(reader, address, at);
   if (typeof own !== 'string') return refused(own);
-  const located = await locate(reader, address, own, at);
+  const located = await locate(reader, address, own, at, routing !== undefined);
   if (located.kind === 'refused') return refused(located.refusal);
   const { proxy } = located;
   let runs = own;

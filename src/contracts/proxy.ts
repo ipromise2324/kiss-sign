@@ -131,30 +131,31 @@ export function unknownDelegation(address: Address, code: Hex, allowed: readonly
   }
 }
 
-function delegatingOnlyAs(address: Address, code: Hex, proxy: Proxy, allowed: readonly bigint[] = []): Located {
-  const refusal = unknownDelegation(address, code, allowed);
+function delegatingOnlyAs(address: Address, code: Hex, proxy: Proxy, routed: boolean, allowed: readonly bigint[] = []): Located {
+  const refusal = routed ? undefined : unknownDelegation(address, code, allowed);
   return refusal === undefined ? { kind: 'located', proxy } : refused(refusal);
 }
 
 const NONE: Proxy = { kind: 'none' };
 
-async function zeppelinosWhenNoEip1967(reader: Reader, address: Address, code: Hex, at: BlockRef): Promise<Located> {
-  if (!hasDelegatecall(code)) return delegatingOnlyAs(address, code, NONE);
+async function zeppelinosWhenNoEip1967(reader: Reader, address: Address, code: Hex, at: BlockRef, routed: boolean): Promise<Located> {
+  if (!hasDelegatecall(code)) return delegatingOnlyAs(address, code, NONE, routed);
   const slot = await reader.getStorageAt(address, ZEPPELINOS_IMPLEMENTATION_SLOT, at);
   if (slot.kind === 'unverifiable') return unverifiable(slot);
   const implementation = addressWord(slot.value);
   if (implementation === undefined) return refused({ why: 'slot-not-an-address', slot: 'zeppelinos-implementation' });
   return implementation === null
-    ? delegatingOnlyAs(address, code, NONE)
-    : delegatingOnlyAs(address, code, { kind: 'zeppelinos', implementation }, [ZEPPELINOS_IMPLEMENTATION_SLOT]);
+    ? delegatingOnlyAs(address, code, NONE, routed)
+    : delegatingOnlyAs(address, code, { kind: 'zeppelinos', implementation }, routed, [ZEPPELINOS_IMPLEMENTATION_SLOT]);
 }
 
 /**
  * Which code a call to `address` runs. A minimal proxy and a Safe proxy are known by their whole code. An EIP-1967
  * or ZeppelinOS slot counts only when the code can DELEGATECALL, since a slot is storage that any code may have written.
- * Code that hands a call matching none of its functions to anything but itself, the call's data or that slot is refused.
+ * Code that hands a call matching none of its functions to anything but itself, the call's data or that slot is refused,
+ * unless it is `routed`: its registry entry declares `routes`, whose pin names where each selector goes.
  */
-export async function locate(reader: Reader, address: Address, code: Hex, at: BlockRef): Promise<Located> {
+export async function locate(reader: Reader, address: Address, code: Hex, at: BlockRef, routed = false): Promise<Located> {
   const clone = minimalProxyTarget(code);
   if (clone !== undefined) return { kind: 'located', proxy: { kind: 'eip1167', implementation: clone } };
   const factory = safeProxyFactory(code);
@@ -178,9 +179,9 @@ export async function locate(reader: Reader, address: Address, code: Hex, at: Bl
   if (implementation !== null) {
     if (beacon !== null) return refused({ why: 'both-eip1967-slots-set' });
     if (!hasDelegatecall(code)) return refused({ why: 'slot-without-delegatecall' });
-    return delegatingOnlyAs(address, code, { kind: 'eip1967', implementation }, [EIP1967_IMPLEMENTATION_SLOT]);
+    return delegatingOnlyAs(address, code, { kind: 'eip1967', implementation }, routed, [EIP1967_IMPLEMENTATION_SLOT]);
   }
-  if (beacon === null) return zeppelinosWhenNoEip1967(reader, address, code, at);
+  if (beacon === null) return zeppelinosWhenNoEip1967(reader, address, code, at, routed);
   if (!hasDelegatecall(code)) return refused({ why: 'slot-without-delegatecall' });
   const answer = await reader.call({ to: beacon, data: IMPLEMENTATION_CALL }, at);
   if (answer.kind === 'unverifiable') return unverifiable(answer);
