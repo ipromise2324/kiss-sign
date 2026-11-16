@@ -447,8 +447,8 @@ function structType(path: string, raw: unknown): StructType {
     if (error instanceof AbiSignatureError) throw new TemplateError(path, error.message);
     throw error;
   }
-  const bad = fn.params.find((param) => param.name === undefined || !isMemberType(param.type));
-  if (bad !== undefined || fn.params.length === 0) throw new TemplateError(path, 'every member is named, of an atomic type, string or bytes');
+  const bad = fn.params.find((param, i) => param.name === undefined || !isMemberType(param.type) || fn.params.findIndex((p) => p.name === param.name) !== i);
+  if (bad !== undefined || fn.params.length === 0) throw new TemplateError(path, 'every member is named once, of an atomic type, string or bytes');
   const encoded = `${fn.name}(${fn.params.map((param) => `${canonicalType(param.type)} ${param.name}`).join(',')})`;
   if (encoded !== written) throw new TemplateError(path, `not written as EIP-712 encodes it: ${encoded}`);
   return { name: fn.name, members: fn.params, encoded };
@@ -827,7 +827,9 @@ function keptApproval(path: string, raw: unknown, scope: Scope): KeptApproval {
     return { token, spender, via, amount: { kind: 'unlimited' } };
   }
   const limit = cardFieldName(amount) ?? '';
-  if (scope.card.get(limit)?.kind !== 'amount') throw new TemplateError(`${path}.amount`, 'must be "unlimited" or card.<amount field>');
+  const counted = scope.card.get(limit);
+  if (counted?.kind !== 'amount') throw new TemplateError(`${path}.amount`, 'must be "unlimited" or card.<amount field>');
+  if (JSON.stringify(counted.of) !== JSON.stringify(token)) throw new TemplateError(`${path}.amount`, `counts another token than card.${field}`);
   return { token, spender, via, amount: { kind: 'card', field: limit } };
 }
 

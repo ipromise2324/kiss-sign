@@ -187,37 +187,56 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
 
 /**
  * The inputs with each signed message the transaction names by its digest and the inputs lack, read through
- * `readMessage`. A message that cannot be read is left out, so the field check says it was not read.
+ * `readMessage`, keeping only the messages that hash to their digest, cut to their members. A message that cannot be
+ * read is left out, so the field check says it was not read, and `unread` says why, for the signer and not the verdict.
  */
-async function withMessages(inputs: VerifyInputs, prepared: Prepared, tx: SafeTx, readMessage: MessageReader | undefined): Promise<{ inputs: VerifyInputs; prepared: Prepared }> {
-  const { lookups } = inspectTemplateFields(tx, prepared.card, prepared.templates, prepared.registry, prepared.messages);
-  if (readMessage === undefined || lookups.length === 0) return { inputs, prepared };
+async function withMessages(
+  inputs: VerifyInputs,
+  prepared: Prepared,
+  tx: SafeTx,
+  readMessage: MessageReader | undefined,
+): Promise<{ inputs: VerifyInputs; prepared: Prepared; unread: readonly string[] }> {
+  const inspect = (messages: Messages) => inspectTemplateFields(tx, prepared.card, prepared.templates, prepared.registry, messages);
+  const { lookups } = inspect(prepared.messages);
+  if (readMessage === undefined || lookups.length === 0) return { inputs, prepared, unread: [] };
   const read: string[] = [];
+  const unread: string[] = [];
   for (const url of new Set(lookups)) {
     const answer = await readMessage(url);
     if ('text' in answer) read.push(answer.text);
+    else unread.push(`${url}: ${answer.why}`);
   }
-  const messages = [...prepared.messages, ...read];
-  return { inputs: { ...inputs, messages }, prepared: { ...prepared, messages } };
+  const messages = [...new Set(inspect([...prepared.messages, ...read]).signed)];
+  return { inputs: { ...inputs, messages }, prepared: { ...prepared, messages }, unread };
 }
 
 /**
  * `evaluate`, with the transaction it judged, the inputs it used, signed messages read through `readMessage` included,
- * the inputs it prepared and the latest block it read, for showing what that transaction does.
+ * the inputs it prepared and the latest block it read, for showing what that transaction does. `unread` says why each
+ * signed message could not be read; it is not part of the verdict.
  */
 export async function evaluateTx(
   given: VerifyInputs,
   reader: Reader,
   readMessage?: MessageReader,
-): Promise<{ readonly evaluation: Evaluation; readonly tx: SafeTx; readonly inputs: VerifyInputs; readonly prepared: Prepared; readonly latest: BlockRef; readonly kept: readonly KeptSeen[] }> {
-  const { safe } = prepare(given);
+): Promise<{
+  readonly evaluation: Evaluation;
+  readonly tx: SafeTx;
+  readonly inputs: VerifyInputs;
+  readonly prepared: Prepared;
+  readonly latest: BlockRef;
+  readonly unread: readonly string[];
+  readonly kept: readonly KeptSeen[];
+}> {
+  const parsed = prepare(given);
+  const { safe } = parsed;
   const latest = await reader.block('latest');
   if (latest.kind === 'unverifiable') throw new VerifyError(`no agreed latest block: ${latest.reason}`);
   const versionRead = await reader.call({ to: safe, data: selectorOf('VERSION()') }, latest.value);
   if (versionRead.kind === 'unverifiable') throw new VerifyError(`the Safe's version: ${versionRead.reason}`);
   const version = versionRead.value.kind === 'returned' ? abiString(versionRead.value.data) : undefined;
   const tx = parseTx(given.tx, safe, guard("the Safe's version", () => parseSafeVersion(version)));
-  const { inputs, prepared } = await withMessages(given, prepare(given), tx, readMessage);
+  const { inputs, prepared, unread } = await withMessages(given, parsed, tx, readMessage);
 
   const executed = guard('the Safe transaction', () => executedIn(inputs.tx));
   const expected = expectedChanges(prepared.card, prepared.templates, prepared.registry);
@@ -241,7 +260,7 @@ export async function evaluateTx(
     code: await readAt(pinned, (block) => checkCode(reader, pinned, block, executed === undefined ? 'pending' : 'executed')),
   };
   const kept = observation.kind === 'observed' ? keptSeen(observation.observed, prepared.card, prepared.templates, prepared.registry) : [];
-  return { evaluation: { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls }, tx, inputs, prepared, latest: latest.value, kept };
+  return { evaluation: { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls }, tx, inputs, prepared, latest: latest.value, unread, kept };
 }
 
 /**
