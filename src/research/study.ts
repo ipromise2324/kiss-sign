@@ -401,6 +401,7 @@ export function brokenRule(
     case 'contract':
     case 'free':
     case 'share-price':
+    case 'owner-before':
     case 'at-least':
       return undefined;
   }

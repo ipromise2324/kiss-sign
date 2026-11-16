@@ -1,0 +1,24 @@
+{
+  "id": "safe/swap-owner",
+  "card": {
+    "old-owner": { "kind": "owner" },
+    "new-owner": { "kind": "owner" }
+  },
+  "calls": [
+    {
+      "to": { "safe": true },
+      "value": { "const": "0" },
+      "function": "swapOwner(address prevOwner, address oldOwner, address newOwner)",
+      "args": {
+        "prevOwner": { "ownerBefore": "card.old-owner" },
+        "oldOwner": { "card": "old-owner" },
+        "newOwner": { "card": "new-owner" }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "safe": { "owners": { "remove": "card.old-owner", "add": "card.new-owner" } }
+  }
+}

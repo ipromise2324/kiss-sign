@@ -1,0 +1,24 @@
+{
+  "id": "safe/remove-owner",
+  "card": {
+    "owner": { "kind": "owner" },
+    "threshold": { "kind": "threshold" }
+  },
+  "calls": [
+    {
+      "to": { "safe": true },
+      "value": { "const": "0" },
+      "function": "removeOwner(address prevOwner, address owner, uint256 _threshold)",
+      "args": {
+        "prevOwner": { "ownerBefore": "card.owner" },
+        "owner": { "card": "owner" },
+        "_threshold": { "card": "threshold" }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "safe": { "owners": { "remove": "card.owner" }, "threshold": "card.threshold" }
+  }
+}

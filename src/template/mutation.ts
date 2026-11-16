@@ -5,7 +5,7 @@ import { uintWord } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { checkTemplateFields, inspectTemplateFields } from './check.ts';
-import type { FieldCheck, Leaf, MessageLeaf, Messages } from './check.ts';
+import type { FieldChain, FieldCheck, Leaf, MessageLeaf, Messages } from './check.ts';
 import { memberJson, typedDataDigest } from './eip712.ts';
 import type { MemberValue } from './eip712.ts';
 import type { Template } from './template.ts';
@@ -125,16 +125,16 @@ const isEmptyConst = ({ rule }: Leaf): boolean => rule.kind === 'const' && (rule
  * Changes each bound leaf of a matching transaction, one at a time, and requires the checker to give `mismatch` for
  * every copy. A copy that still matches means the template, or the checker, does not hold that field.
  */
-
 export function checkMutations(
   tx: SafeTx,
   card: ResolvedCard,
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
   messages: Messages = [],
+  chain: FieldChain = {},
   checker: Checker = checkTemplateFields,
 ): MutationResult {
-  const { check, leaves } = inspectTemplateFields(tx, card, templates, registry, messages);
+  const { check, leaves } = inspectTemplateFields(tx, card, templates, registry, messages, chain);
   if (check.kind !== 'match') return { kind: 'not-run', check };
   const bound = leaves.filter((leaf) => leaf.rule.kind !== 'free' && !isEmptyConst(leaf));
   const free = leaves.filter((leaf) => leaf.rule.kind === 'free').length;
@@ -145,7 +145,7 @@ export function checkMutations(
       uncaught.push({ leaf, mutated: 'not-mutable' });
       continue;
     }
-    const result = checker(mutated.tx, card, templates, registry, mutated.messages);
+    const result = checker(mutated.tx, card, templates, registry, mutated.messages, chain);
     if (result.kind !== 'mismatch') uncaught.push({ leaf, mutated: result.kind });
   }
   return uncaught.length === 0

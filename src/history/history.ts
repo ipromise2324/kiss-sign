@@ -10,6 +10,7 @@ import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
 import { requireConfig } from '../cli/setup.ts';
 import { checkFloor, standingSpenders } from '../floor/floor.ts';
+import type { SettingsChange } from '../floor/floor.ts';
 import type { StandingSpender } from '../floor/floor.ts';
 import { kissSignHome } from '../keys.ts';
 import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
@@ -131,11 +132,17 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
   }
 }
 
+/**
+ * Some template declares an owner or threshold change, so a past call to one of the Safe's four owner functions is not
+ * refused by design; its card's own change is what `verify` checks. Every other call to the Safe itself still is.
+ */
+const SOME_SETTINGS_CHANGE: SettingsChange = { add: undefined, remove: undefined, threshold: undefined };
+
 async function rowFor(ctx: Context, entry: HistoryTx): Promise<Row> {
   const card = ctx.history.cards.get(entry.nonce);
   const outcome: Facts['outcome'] = card === undefined ? { kind: 'no-card' } : await evaluateCard(ctx, entry, card);
   const intent = ctx.history.intents.get(entry.nonce);
-  const reason = reasonFor({ tx: entry.tx, floor: checkFloor(entry.tx, ctx.standing), outcome });
+  const reason = reasonFor({ tx: entry.tx, floor: checkFloor(entry.tx, { standing: ctx.standing, change: SOME_SETTINGS_CHANGE }), outcome });
   return {
     nonce: entry.nonce,
     date: intent?.date ?? entry.executionDate.slice(0, 10),

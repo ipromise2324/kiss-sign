@@ -53,6 +53,18 @@ export type FieldCheck =
   | { readonly kind: 'mismatch'; readonly findings: readonly Finding[] }
   | { readonly kind: 'unverifiable'; readonly reasons: readonly string[] };
 
+/**
+ * The Safe's owners, in `getOwners()` order, as both providers read them at the block the transaction runs on, for an
+ * `ownerBefore` rule; absent when no rule needs them.
+ */
+export type OwnersRead = { readonly kind: 'read'; readonly owners: readonly Address[] } | { readonly kind: 'unread'; readonly why: string };
+
+/** Chain readings a field rule depends on, read once before the field check. */
+export type FieldChain = { readonly owners?: OwnersRead };
+
+/** The first entry of the Safe's owner list points back to this sentinel. */
+const SENTINEL_OWNERS = '0x0000000000000000000000000000000000000001' as Address;
+
 /** The registry and templates describe Ethereum mainnet contracts only. */
 const REGISTRY_CHAIN_ID = 1n;
 
@@ -70,6 +82,7 @@ type Context = {
   readonly lookups: string[];
   /** Each message that hashed to its digest, cut to the struct's members. */
   readonly signed: string[];
+  readonly chain: FieldChain;
 };
 
 const RAY = 10n ** 27n;
@@ -150,6 +163,23 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
   }
 }
 
+/** The owner before the card's owner in the Safe's owner list, or the finding or reason why there is none. */
+function ownerBefore(rule: Extract<Rule, { kind: 'owner-before' }>, context: Context): ConstValue | { readonly expected: string } | undefined {
+  const owners = context.chain.owners;
+  if (owners === undefined || owners.kind === 'unread') {
+    context.unverifiable.push(`the Safe's owners: ${owners?.why ?? 'not read'}`);
+    return undefined;
+  }
+  const target = resolveRef(rule.ref, context.values, context.registry);
+  if ('problem' in target || target.kind !== 'address') {
+    context.unverifiable.push('problem' in target ? target.problem : `card ${rule.ref.field} is not an address`);
+    return undefined;
+  }
+  const at = owners.owners.indexOf(target.address);
+  if (at === -1) return { expected: `the owner before ${target.name} ${target.address}, who is not an owner of the Safe` };
+  return { kind: 'address', value: at === 0 ? SENTINEL_OWNERS : (owners.owners[at - 1] as Address) };
+}
+
 function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span | undefined, callPath: string, arg: string, context: Context, message?: MessageLeaf): void {
   if (rule.kind === 'call' || rule.kind === 'items' || rule.kind === 'fields' || rule.kind === 'packed' || rule.kind === 'eip712') throw new Error(`a ${rule.kind} rule is not a leaf`);
   context.leaves.push({ callPath, arg, bytes, rule, type, ...(message === undefined ? {} : { message }) });
@@ -159,6 +189,13 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
     const card = context.values.get(rule.field);
     if (card?.kind !== 'amount') context.unverifiable.push(`no card amount ${rule.field}`);
     else if (actual.kind !== 'uint' || actual.value < card.value) context.findings.push({ callPath, arg, bytes, expected: `at least ${card.value}`, actual: render(actual) });
+    return;
+  }
+  if (rule.kind === 'owner-before') {
+    const expected = ownerBefore(rule, context);
+    if (expected === undefined) return;
+    if ('expected' in expected) context.findings.push({ callPath, arg, bytes, expected: expected.expected, actual: render(actual) });
+    else if (expected.kind !== actual.kind || expected.value !== actual.value) context.findings.push({ callPath, arg, bytes, expected: render(expected), actual: render(actual) });
     return;
   }
   if (rule.kind === 'equals') {
@@ -384,8 +421,9 @@ export function checkTemplateFields(
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
   messages: Messages = [],
+  chain: FieldChain = {},
 ): FieldCheck {
-  return inspectTemplateFields(tx, card, templates, registry, messages).check;
+  return inspectTemplateFields(tx, card, templates, registry, messages, chain).check;
 }
 
 /** `checkTemplateFields`, plus every leaf it reached, for the mutation check. */
@@ -395,6 +433,7 @@ export function inspectTemplateFields(
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
   messages: Messages = [],
+  chain: FieldChain = {},
 ): Inspection {
   const operations: { template: Template; values: Values }[] = [];
   const nonces: { rule: Rule; values: Values }[] = [];
@@ -424,6 +463,7 @@ export function inspectTemplateFields(
     messages,
     lookups,
     signed,
+    chain,
   });
   for (const { rule, values } of nonces) {
     compareLeaf(rule, { kind: 'uint', bits: 256 }, { kind: 'uint', value: tx.nonce }, undefined, 'safeTx', 'nonce', contextFor(values, new Uint8Array()));

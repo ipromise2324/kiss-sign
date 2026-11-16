@@ -34,6 +34,7 @@ function cardValue(value: ResolvedValue, template: string): string {
     case 'amount':
       return template === 'eth/transfer' ? `${value.value} wei (${ether(value.value)})` : `${value.value} base units`;
     case 'nonce':
+    case 'threshold':
       return String(value.value);
     case 'contract':
       return `${value.name} ${checksumAddress(value.entry.address)} (registry)`;
