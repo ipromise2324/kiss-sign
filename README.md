@@ -61,7 +61,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 ## How it works
 
-Every picture below comes from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault.
+The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault. One address crop is from another vault's report, as marked.
 
 **Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts, so merging a pull request into it is your confirmation.
 
@@ -70,9 +70,12 @@ git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
 pnpm install
 pnpm kiss-sign init --safe 0x…
 pnpm kiss-sign key add alchemy
+pnpm kiss-sign key add etherscan   # only to build templates
 ```
 
-You need Node 22.21 or later, pnpm, a free [Alchemy](https://dashboard.alchemy.com/) key, and a hardware wallet that shows a Safe transaction's domain hash and message hash. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check).
+You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check).
+
+Turn on branch protection for your fork's `main`, so that a pull request needs your approval, and let your AI push from a GitHub account that cannot approve or merge. Until you do, nothing on GitHub stops an AI that can push from merging. On a private repository, GitHub offers branch protection only on a paid plan.
 
 ### 1. Tell your AI what you want
 
@@ -90,15 +93,22 @@ The report shows what the transaction will do and where every fact came from. Te
 
 ![The fields of usdc.approve in the report: spender is fixed to general-adapter-1 with its full address, and value is the amount you fill in](docs/readme/report-fields.png)
 
-**Every address.** Where it was found, whether that site belongs to the protocol, and whether CoinGecko and the factory agree.
+**Every address.** Where it was found, whether that site belongs to the protocol, and whether CoinGecko and the factory agree. This crop is from the Steakhouse vault's report.
 
 ![An address the report confirmed in three places: the official page, whose site DefiLlama lists for the protocol, CoinGecko, and the factory](docs/readme/report-address.png)
 
-Weak evidence is shown, not hidden. This vault was confirmed only by its factory, so the report flags it.
+Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under 待確認 (to confirm), with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
 
 ![An address confirmed in only one place, flagged with low confidence](docs/readme/report-address-flagged.png)
 
-You merge. The AI never merges. This happens once per operation, or once per vault.
+Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
+
+```sh
+git pull
+pnpm kiss-sign template approve morpho/vault-deposit
+```
+
+This happens once per operation, or once per vault.
 
 ### 3. Fill a card
 
@@ -116,7 +126,7 @@ pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 
 ### 5. Check on a second computer
 
-`check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. Its comparison list must equal `verify`'s row by row. Only the name column differs, since each side names addresses from its own list.
+`check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. Its comparison list must equal `verify`'s row by row, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do.
 
 ![The comparison lists of kiss-sign verify and check.sh side by side, with the same hashes and the same calls](docs/readme/side-by-side.png)
 
@@ -128,10 +138,10 @@ The report and both pages are in Traditional Chinese. The terminal, the code and
 
 ### Add your own operation
 
-The templates in [`templates/`](templates/) are examples, from ETH transfers to Morpho deposits and Uniswap swaps. kiss-sign is meant to grow with what you sign: tell your AI what you want, as in step 1, and review its pull request. Before merging, rerun every fact in the report yourself:
+The templates in [`templates/`](templates/) are examples, from ETH transfers to Morpho deposits and Uniswap swaps, and were written by an AI. Read each one's report before you approve it, as you would your own AI's. kiss-sign is meant to grow with what you sign: tell your AI what you want, as in step 1, and review its pull request. Before merging, read the report's facts again live:
 
 ```sh
-pnpm report <protocol>/<operation> --compare --data origin/<branch>
+pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/<branch>
 ```
 
 ## If something is compromised
@@ -140,38 +150,39 @@ kiss-sign does not try to stop a prompt-injected AI. Instead, no single part is 
 
 | If this is compromised | Where it is stopped | If that also fails |
 |---|---|---|
-| **The Safe web app or your browser**, as at Bybit | `verify` recomputes the hashes and checks the transaction against your card. `check.sh` decodes it on its own. | You still compare the hashes on the hardware wallet, which signs only that hash. |
-| **The Safe Transaction Service** | Both programs recompute every hash from the transaction's fields. | A different transaction gives a different hash than the one on your device. |
-| **One RPC provider** | Simulations and reads run on Alchemy and drpc, and they must agree, or the verdict is `UNVERIFIABLE`. | Two providers that collude could hide a side effect. `check.sh` still shows every call and argument. |
-| **The AI writing a template** (prompt injection) | `check-sources` checks every address's site against DefiLlama and CoinGecko, the factory and the ABI are proven on chain, the report marks AI text, and `--compare` reruns every fact before you merge. | If you merge a wrong template, `verify` can say `MATCH`. `check.sh` labels any address missing from your own list, and a small first amount limits the damage. |
-| **An AI or malware on your work computer** that rewrites kiss-sign, your cards or your config | `verify` refuses a clone that differs from your fork's `main`, but code that rewrites that check too passes. | The second computer runs no kiss-sign and still decodes what you actually sign. Without it, nothing stops this. |
-| **A program change merged into your fork** | Branch protection keeps merging to you, and `--compare` prints `PROGRAM CHANGE` for every file it changes outside templates and data. | The second computer, as above. |
-| **A contract upgraded after its review** | Code pins: every registry contract must run the code reviewed, or the verdict is `MISMATCH`. | A contract that turns hostile through its settings, without an upgrade, is not caught. The report shows the protocol's facts, and a small first amount limits the damage. |
-| **An ERC-7730 descriptor** | kiss-sign never uses one for the verdict. The report shows it as evidence only. | Nothing depends on it. |
+| **The Safe web app or your browser**, as at Bybit | `verify` recomputes the hashes and checks the transaction against your card. `check.sh` decodes it on its own. | You compare the hashes on the hardware wallet, which signs only that hash. |
+| **The Safe Transaction Service** | Both programs recompute every hash from the transaction's fields, though both fetch it there. | A different transaction gives a different hash than the one on your device. |
+| **One RPC provider** | Simulations and reads run on Alchemy and drpc, and they must agree, or the verdict is `UNVERIFIABLE`. | Two providers that collude or share a backend could hide a side effect; drpc's independence from Alchemy is not proven. `check.sh` reads no simulation and still shows the calls it can decode. |
+| **The AI writing a template** (prompt injection) | The report prints every address check as PASS or FINDING: the source site against DefiLlama, the coin against CoinGecko, the vault against its factory, the ABI against the code on chain. AI text is marked, and `--compare` reads the facts again before you merge. | A FINDING does not block a merge, and DefiLlama and CoinGecko take listing requests. If you merge a wrong template, `verify` can say `MATCH`. `check.sh` labels any address missing from your own list, and a small first amount limits the damage. |
+| **An AI or malware on your work computer** | `verify` refuses a clone that differs from your fork's `main`. That catches an edit by mistake, not code that rewrites the check too, your cards, your config or the repository it trusts. It can also read your API keys. | The second computer runs no kiss-sign and still decodes what you actually sign. Without it, nothing stops this. |
+| **Your GitHub account, or a merged program change** | Branch protection, if you turned it on and the AI cannot use your credentials. `--compare` prints `PROGRAM CHANGE` for every file a branch changes outside `templates/`, `registry/` and `testdata/`. | The second computer, as above. |
+| **A registry contract upgraded since it was pinned** | Code pins: each registry contract a transaction touches must run the code pinned for it, or the verdict is `MISMATCH`. | Contracts outside the registry, such as the Morpho Blue markets and oracles behind a vault, are not pinned. Nor are settings an admin changes without an upgrade. The report shows the protocol's facts, and a small first amount limits the damage. |
+| **The second computer** | It only decodes. `verify` still checks the transaction against your card. | You lose the independent view and are back to the basic tier. |
+| **An ERC-7730 descriptor** | kiss-sign never uses one for the verdict. The report lists it as evidence only. | The verdict does not depend on it. |
 
 The Safe web app can also simulate the transaction, but it runs in the same browser, so a tampered app can fake that too.
 
 Two things stay with you. Whether an address is the protocol's real contract rests on the report, your review and your own address list. And your fork is public: the vaults and protocols you add to it are visible, even though your Safe's address is not.
 
-The full list is in [Known limits](docs/design.md#known-limits).
+Some changes move no balance kiss-sign measures, such as an NFT `setApprovalForAll` or an Aave credit delegation. These and every other limit are in [Known limits](docs/design.md#known-limits).
 
 ## What kiss-sign checks
 
 When a template is built:
 
-- **Addresses come from the protocol's own site.** `check-sources` reads each source page without scripts and requires the address next to its label. It compares the page's domain, found with the Public Suffix List, with the protocol's website on DefiLlama, or a GitHub source's organization with the protocol's GitHub organizations; a GitHub source must be pinned to a commit on the default branch. CoinGecko must list the coin at each token's and vault's address, and a vault's factory is asked on chain whether it created the vault.
+- **Addresses come from the protocol's own site.** `check-sources` reads each source page without scripts and looks for the address next to its label. It compares the page's domain, found with the Public Suffix List, with the protocol's website on DefiLlama, or a GitHub source's organization with the protocol's GitHub organizations, and checks that a GitHub source is pinned to a commit on the default branch. For tokens and vaults, it checks that CoinGecko lists the coin at that address. A vault's factory is asked on chain whether it created the vault. Each check prints PASS or FINDING in the report for you to judge; none blocks a merge.
 - **ABIs are proven by compiling.** The verified source from Sourcify is compiled locally with a pinned `solc` and must match the code on chain.
-- **Rules come from history.** "`receiver` was the sender in every past deposit" becomes the rule "`receiver` equals the Safe".
-- **Every field the template leaves free is changed and simulated.** Each change must revert, be refused, or change nothing.
+- **Rules are measured against history.** The AI writes a rule such as "`receiver` equals the Safe", and `past-txs` counts how many past deposits, by Safes and other senders, held it.
+- **Free fields are perturbed.** Each field the template leaves free is changed to a few other values and simulated. Each change must revert, be refused, or change nothing the template does not allow.
 
 At every signing:
 
 - **The program checks itself first.** Your clone must equal your fork's `main` byte for byte.
 - **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
 - **Decode, then re-encode byte for byte.** No hidden bytes beyond what the template allows and explains.
-- **Floor rules for every template.** No unlimited approval, no `delegatecall` except the official MultiSend, no change to the Safe's owners, modules, guard, threshold, fallback handler or implementation, and no gas refund.
-- **Simulation on two providers.** Every change to the Safe's balances and allowances must be one your card explains.
-- **Code pins.** Every registry contract the transaction touches must run the code its review pinned.
+- **Floor rules for every template.** No unlimited approval, except where a reviewed registry entry declares a standing allowance, as Uniswap's Permit2 does. No `delegatecall` except to the official MultiSend. No change to the Safe's owners, modules, guard, threshold, fallback handler or implementation, and no gas refund.
+- **Simulation on two providers.** Every change to the Safe's balances and allowances must be one the template and your card explain.
+- **Code pins.** Every registry contract the transaction touches must run the code pinned for it.
 
 Your Safe's address stays in `~/.kiss-sign/` and never enters the repository. A pre-push hook refuses any push that contains it or an API key.
 
