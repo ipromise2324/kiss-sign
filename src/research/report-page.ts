@@ -16,7 +16,7 @@ import type { FixtureJudgement } from '../template/perturb.ts';
 import { refNames, slippageBps } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, FreeClaim, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
-import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
+import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
@@ -98,9 +98,11 @@ export type ArgRow = {
   /** What the argument does, from notes.json; none on a row the program adds, such as a call's `to`. */
   readonly ai: AiText | undefined;
   readonly parts: readonly { readonly label: Inline | undefined; readonly rows: readonly ArgRow[] }[];
+  /** The nested call's documentation page, on a `bytes` argument the template binds to a call. */
+  readonly doc: DocLine | undefined;
 };
 
-export type CallHead = { readonly kind: 'fn'; readonly contract: string; readonly fn: string; readonly selector: Hex } | { readonly kind: 'no-data'; readonly text: string };
+export type CallHead = { readonly kind: 'fn'; readonly contract: string; readonly fn: string; readonly selector: Hex; readonly doc: DocLine } | { readonly kind: 'no-data'; readonly text: string };
 export type CallBlock = { readonly n: number; readonly head: CallHead; readonly sends: Inline | undefined; readonly args: readonly ArgRow[] };
 
 export type AfterRow = { readonly label: Inline; readonly value: Inline; readonly note: Inline; readonly gains: boolean };
@@ -168,6 +170,8 @@ export type RowResult = { readonly state: State; readonly phrase: string | undef
 export type SiteResult = RowResult & { readonly slug: string | undefined; readonly href: HttpsUrl | undefined };
 /** A program source: whether it showed the address, and for a page or the API its site, a second result. */
 export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined };
+/** A function's documentation page from docs.json, linked, with the worst of its results; a standard's page carries its caveat. */
+export type DocLine = RowResult & { readonly label: string; readonly href: HttpsUrl; readonly note: string | undefined };
 /** A source the AI checked by hand: its text and link, and its result in words, which is no program result. */
 export type AiSource = { readonly text: AiText; readonly result: 'AI 判斷：沒問題' | 'AI 判斷：要注意' | 'AI 判斷：有問題' };
 
@@ -182,6 +186,7 @@ export type AddressRow = {
   readonly sources: readonly SourceLine[];
   /** The places that confirmed the address, in plain words. */
   readonly confirmed: string;
+  readonly codeLines: readonly Inline[];
   readonly aiSources: readonly AiSource[];
 };
 
@@ -266,16 +271,28 @@ const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${num
  */
 function pageLabels(entry: RegistryEntry): Map<ProgramSource, string> {
   const pages: [ProgramSource, HttpsUrl][] = [['page', entry.source], ...(entry.moreSources ?? []).map((more, i): [ProgramSource, HttpsUrl] => [`more.${i + 1}`, more.url])];
-  const short = pages.map(([, url]) => shortUrl(url));
-  const shared = (label: string): boolean => short.indexOf(label) !== short.lastIndexOf(label);
-  return new Map(pages.map(([source, url], i) => [source, shared(short[i] as string) ? withFileName(url) : (short[i] as string)]));
+  return new Map(pages.map(([source, url]) => [source, pageLabel(url, pages.map(([, other]) => other))]));
 }
+
+/** A page by its short URL, with its file name added when another of `among` would share that short URL. */
+const pageLabel = (url: HttpsUrl, among: readonly HttpsUrl[]): string =>
+  among.some((other) => other !== url && shortUrl(other) === shortUrl(url)) ? withFileName(url) : shortUrl(url);
 
 const withFileName = (url: HttpsUrl): string => {
   const short = shortUrl(url);
   const file = new URL(url).pathname.split('/').filter((p) => p !== '').at(-1) ?? '';
   return file === '' || short.endsWith(`/${file}`) ? short : `${short}/…/${file}`;
 };
+
+function docLine(signature: string, context: Context): DocLine {
+  const docs = context.inputs.subject.kind === 'template' ? context.inputs.subject.docs : [];
+  const doc = docs.find((d) => d.fn.signature === signature);
+  if (doc === undefined) throw new Error(`docs.json names no page for ${signature}`);
+  const { state, phrase } = docOf(context.ledger, doc);
+  const result = { state, phrase, href: doc.url };
+  if (doc.standard !== undefined) return { ...result, label: `${doc.standard.name} 標準頁`, note: '標準定義這個函式，不代表合約照標準做' };
+  return { ...result, label: pageLabel(doc.url, docs.filter((d) => d.standard === undefined).map((d) => d.url)), note: undefined };
+}
 
 const sourceWord = (entry: RegistryEntry, source: ProgramSource): string => pageLabels(entry).get(source) ?? SOURCE_LABELS[source as keyof typeof SOURCE_LABELS];
 
@@ -294,7 +311,7 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
   'pin-not-run': { title: '鏈上跑的不是登記的程式碼', why: '鏈上在這段區塊範圍跑的程式碼，跟 code pin 記錄的不一樣。' },
   'proof-not-pin': { title: '證明的程式碼不是現在登記的', why: 'ABI 證明用的程式碼，不是 code pin 現在的那一份。' },
   'not-created': { title: '工廠說這個金庫不是它建的', why: '登記的工廠合約回答，這個地址不是它建立的金庫，所以它不屬於工廠的協議。' },
-  'factory-other-answer': { title: '工廠的回答不是 true 或 false', why: '問登記的工廠是否建立了這個金庫，它沒有回答 true 或 false（例如 revert），所以不能說這個金庫屬於工廠的協議。' },
+  'factory-other-answer': { title: '工廠的回答看不懂', why: '問登記的工廠是否建立了這個金庫，它沒有回答 true、false 或一個地址（例如 revert），所以不能說這個金庫屬於工廠的協議。' },
   refused: { title: 'ABI 證明被拒絕', why: '重新編譯 Sourcify 的原始碼，得不到鏈上的程式碼。' },
   'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
   'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
@@ -585,6 +602,7 @@ function marketPartRows(node: ArgNode, market: Market, context: Context): ArgRow
       id: undefined,
       ai: fieldsNote(context, child.key),
       parts: [],
+      doc: undefined,
     };
   });
 }
@@ -606,6 +624,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
       id: shown === undefined ? undefined : ['market id ', { mono: shown.id }],
       ai: fieldsNote(context, node.key),
       parts: markets.map((m) => ({ label: markets.length === 1 ? undefined : [marketWords(m), '，market id ', { mono: m.id }], rows: marketPartRows(node, m, context) })),
+      doc: undefined,
     };
   }
   const nestedCall = node.rule.kind === 'call';
@@ -620,6 +639,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean): ArgRow {
     id: undefined,
     ai: fieldsNote(context, node.key),
     parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall)) }],
+    doc: node.rule.kind === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
   };
 }
 
@@ -781,10 +801,11 @@ function ruleRow(key: string, name: string, rule: Rule, context: Context): ArgRo
     id: undefined,
     ai: undefined,
     parts: [],
+    doc: undefined,
   };
 }
 
-const NO_DATA_ROW: ArgRow = { key: 'data', name: 'data', chips: [{ who: 'fixed', label: SHORT.fixed }], value: { cast: '0x', example: undefined }, words: ['沒有資料'], qualifier: undefined, id: undefined, ai: undefined, parts: [] };
+const NO_DATA_ROW: ArgRow = { key: 'data', name: 'data', chips: [{ who: 'fixed', label: SHORT.fixed }], value: { cast: '0x', example: undefined }, words: ['沒有資料'], qualifier: undefined, id: undefined, ai: undefined, parts: [], doc: undefined };
 
 function callBlocks(context: Context): CallBlock[] {
   const { template } = context;
@@ -794,7 +815,8 @@ function callBlocks(context: Context): CallBlock[] {
     const target = targetOf(call.to, context);
     const tree = decoded.get(n);
     if (tree !== undefined) {
-      return { n, head: { kind: 'fn', contract: target.label, fn: tree.node.fn.name, selector: tree.node.fn.selector }, sends: sends(call, context, n), args: tree.args.map((arg) => argRow(arg, context, true)) };
+      const { fn } = tree.node;
+      return { n, head: { kind: 'fn', contract: target.label, fn: fn.name, selector: fn.selector, doc: docLine(fn.signature, context) }, sends: sends(call, context, n), args: tree.args.map((arg) => argRow(arg, context, true)) };
     }
     const text = zeroValue(call) ? `${before('呼叫', target.label)}，0 ETH、沒有資料` : before('轉 ETH 給', target.label);
     return { n, head: { kind: 'no-data', text }, sends: undefined, args: [ruleRow(`${n}.to`, 'to', call.to, context), ruleRow(`${n}.value`, 'value', call.value, context), { ...NO_DATA_ROW, key: `${n}.data` }] };
@@ -978,7 +1000,7 @@ function vaultSection(context: Context): Section[] {
   const section = (block: VaultBlock): Section[] => [{ anchor: anchor(`vault-${vault.name}`), label: '金庫', count: undefined, body: { kind: 'vault', vault: block } }];
   const lead: Inline = [link(vault), '：程式記錄的 ', { code: 'pnpm vault-evidence' }, ' 輸出，每個數字都同時問兩家節點。這裡不換算成美元。'];
   if (text === undefined) return section({ lead: [link(vault), '：沒有 ', { code: 'pnpm vault-evidence' }, ' 的記錄。'], rows: [], bars: [], most: undefined });
-  const evidence = readStoredEvidence(text);
+  const evidence = readStoredEvidence(text, vault, context.registry);
   const unit = evidence.asset?.name === undefined ? '' : ` ${evidence.asset.name}`;
   const amount = (value: bigint): string => (evidence.asset === undefined ? `${value} 最小單位` : `${tokens(value, evidence.asset.decimals, 2)}${unit}`);
   const most = evidence.points.reduce<bigint | undefined>((top, p) => (p.assets.kind === 'amount' && (top === undefined || p.assets.amount > top) ? p.assets.amount : top), undefined);
@@ -996,7 +1018,7 @@ function vaultSection(context: Context): Section[] {
       label: '工廠',
       value:
         evidence.admitted !== undefined
-          ? [evidence.admitted.factory, ' 回答 ', { code: evidence.admitted.check }, ' = true']
+          ? [evidence.admitted.factory, ' 回答 ', { code: evidence.admitted.check }, ` = ${evidence.admitted.answer}`]
           : [factory === undefined ? '沒有登記工廠，沒有工廠為它的程式碼背書' : `沒有記錄到 ${factory} 回答它建立了這個金庫`],
       note: evidence.admitted === undefined ? [] : [`區塊 ${evidence.admitted.block}`],
     },
@@ -1037,7 +1059,7 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
     };
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
-  const where = span === null ? '' : `（第 ${span[1]} 段）`;
+  const where = span !== null ? `（第 ${span[1]} 段）` : result.id.endsWith('/code.today') ? '（最新區塊）' : '';
   const refused = result.finding.kind === 'refused' ? ` 原因：${result.finding.why}。` : '';
   return { title: [`${name}：${words.title}${where}`], why: [`${words.why}${refused}`] };
 }
@@ -1171,6 +1193,23 @@ function walletSection(context: Context): Section {
   return section({ kind: 'calls', calls, lines });
 }
 
+function codeLines(ledger: Ledger, entry: RegistryEntry): Inline[] {
+  const lines: Inline[] = [];
+  const notCalled = ledger.results.some((r) => r.finding.kind === 'not-called' && r.about.kind === 'entry' && r.about.entry.name === entry.name);
+  if (notCalled) {
+    const dependents = ledger.entries.filter((other) => other.dependsOn?.includes(entry.name));
+    const links = dependents.flatMap((other, i): Span[] => [...(i === 0 ? [] : ['、']), { href: entryAnchor(other.name), label: other.name }]);
+    lines.push(['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。', ...(entry.code === undefined ? [] : ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。'])]);
+  }
+  const routes = entry.code?.current.pin.routes;
+  if (routes !== undefined) {
+    lines.push([`它依函式選擇器把呼叫分給各自的實作${notCalled ? '' : '，沒有一份程式碼能做 ABI 證明'}。code pin 的 seeds 接到 ${routes.length} 個實作：`]);
+    for (const route of routes) lines.push([{ mono: checksumAddress(route.address) }, '，程式碼 hash ', { mono: route.hash }, `，${route.selectors.length} 個函式`]);
+    lines.push(['沒有 seed 接到的實作，code pin 沒有記錄，程式也不檢查。']);
+  }
+  return lines;
+}
+
 function addressSection(context: Context): Section[] {
   const { ledger, notes } = context;
   if (ledger.entries.length === 0) return [];
@@ -1201,6 +1240,7 @@ function addressSection(context: Context): Section[] {
       address: checksumAddress(entry.address),
       sources,
       confirmed: confirmedWords(entry, confirmations(ledger, entry)),
+      codeLines: codeLines(ledger, entry),
       aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'AI'), result: AI_RESULTS[s.result] })),
     };
   };
@@ -1619,13 +1659,24 @@ const unrecordedParams = (template: Template): string =>
 function stripItems(ledger: Ledger, template: Template): StripItem[] {
   const subjects = new Set(ledger.entries.map((e) => e.name)).size;
   const recorded = ledger.results.some((r) => r.line === 'params');
+  const named = (match: (result: Result) => boolean): string[] => [...new Set(ledger.results.flatMap((r) => (match(r) && r.about.kind === 'entry' ? [r.about.entry.name] : [])))];
+  const notCalled = named((r) => r.finding.kind === 'not-called');
+  const unprovable = named((r) => r.finding.kind === 'routed-proxy');
+  const today = named((r) => r.id.endsWith('/code.today'));
+  const routed = ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name);
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
     sources: (p, c) =>
       p === c
         ? `${c === 1 ? '這個地址' : `${c} 個地址都`}至少在 ${MIN_CONFIRMATIONS} 個地方確認：官方頁、協議 API、CoinGecko 或金庫的登記工廠列出同一個地址。`
         : `${c - p} 個地址有結果要你看，見「待確認」。${p === 0 ? '' : p === 1 ? `另外那個地址至少在 ${MIN_CONFIRMATIONS} 個地方確認。` : `其餘 ${p} 個都至少在 ${MIN_CONFIRMATIONS} 個地方確認。`}`,
-    abi: () => 'Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。',
-    code: () => `每次簽名都確認${subjects === 1 ? '這個合約' : `這 ${subjects} 個合約`}還是研究時那份程式碼。被升級或換掉就擋下。`,
+    abi: () =>
+      `Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。${
+        notCalled.length === 0 ? '' : `${notCalled.join('、')} 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。`
+      }${unprovable.length === 0 ? '' : `${unprovable.join('、')} 依函式選擇器把呼叫分給各自的實作，沒有一份程式碼能證明，不算在內；它的 routes 在「合約沒被換掉」比對。`}`,
+    code: () =>
+      `每次簽名都確認${subjects === 1 ? '這個合約' : `這 ${subjects} 個合約`}還是研究時那份程式碼。被升級或換掉就擋下。${
+        today.length === 0 ? '' : `${today.join('、')} 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。`
+      }${routed.length === 0 ? '' : `${routed.join('、')} 依函式選擇器把呼叫分給各自的實作：seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。`}`,
     params: (_, c) => (!recorded ? unrecordedParams(template) : `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`),
   };
   const items = strip(ledger)

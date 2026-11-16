@@ -3,19 +3,19 @@ import { join } from 'node:path';
 import type { Reader } from '../chain/reader.ts';
 import { replayReader } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
-import type { BlockTag } from '../chain/types.ts';
+import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { ABI_CASES_DIR, loadAbiCases, replayAbiCase } from '../contracts/abi-case.ts';
 import type { AbiCase } from '../contracts/abi-case.ts';
-import { pinOf, readRunningCodeAt, samePin } from '../contracts/code.ts';
+import { pinOf, readRunningCode, readRunningCodeAt, samePin } from '../contracts/code.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl } from '../registry.ts';
-import type { CodePin, HttpsUrl, Registry, RegistryEntry } from '../registry.ts';
+import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
-import type { Address } from '../safe/types.ts';
+import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, callTargets, inScope, loadTemplate, refNames, scopeEntries, slippageBps } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
@@ -55,8 +55,10 @@ export type Erc7730Section = { readonly commit: string; readonly files: Readonly
 export type ReportRecording = ListingsRecording & {
   readonly vaults: Readonly<Record<string, string>>;
   readonly erc7730: Erc7730Section;
-  /** The code reads that check each code span. */
+  /** The code reads that check each code span, and those `checkToday` made at `today`. */
   readonly code: readonly Exchange[];
+  /** The block `checkToday` read at; absent when no entry needed it, and in older recordings. */
+  readonly today?: { readonly number: string; readonly hash: Hex };
   /** A template's protocol facts, parsed by `parseFactsRecording`; absent in a vault's and in older recordings. */
   readonly facts?: unknown;
 };
@@ -76,6 +78,8 @@ export type ReportInputs = {
   readonly pastTxs: readonly PastTxsSummary[];
   /** Each pinned entry's spans as `checkSpans` judged them, oldest first. */
   readonly spans: ReadonlyMap<Address, readonly SpanCheck[]>;
+  /** What `checkToday` read for `todayEntries`; undefined when none needs it or the recording predates it. */
+  readonly today: { readonly block: BlockRef; readonly checks: ReadonlyMap<Address, TodayCheck> } | undefined;
   /** What `pnpm erc7730` prints for the entries, and the facts it prints them from. */
   readonly erc7730: { readonly text: string; readonly reports: readonly EntryReport[] };
   /** A template's protocol facts; undefined for a vault, or when the recording predates them. */
@@ -171,13 +175,13 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
 
 /**
  * The registry as a per-vault report reads it: `vault` is the only entry the field accepts. Every other entry of that
- * scope is left out, so neither it nor an asset or factory only it names reaches any section.
+ * scope is left out, so neither it nor an asset, factory or dependency only it names reaches any section.
  */
 function onlyVault(registry: Registry, template: Template, field: string, vault: RegistryEntry): Registry {
   const card = template.card.get(field);
   const others = new Set(card?.kind === 'contract' ? scopeEntries(card.scope, registry).filter((e) => e.name !== vault.name).map((e) => e.name) : []);
   const kept = [...registry.entries.values()].filter((entry) => !others.has(entry.name));
-  const dangling = kept.flatMap((entry) => Object.values(entry.attributes)).find((name) => others.has(name));
+  const dangling = kept.flatMap((entry) => [...Object.values(entry.attributes), ...(entry.dependsOn ?? [])]).find((name) => others.has(name));
   if (dangling !== undefined) throw new ReportError(`${dangling} is another vault the field accepts, but a registry entry the report keeps names it`);
   return { entries: new Map(kept.map((entry) => [entry.name, entry])), byAddress: new Map(kept.map((entry) => [entry.address, entry])), markets: registry.markets };
 }
@@ -269,11 +273,7 @@ function cardCandidates(template: Template, registry: Registry): RegistryEntry[]
 export const vaultsOf = (subject: Subject, registry: Registry): RegistryEntry[] =>
   subject.kind === 'vault' ? [subject.vault] : cardCandidates(subject.template, registry).filter((entry) => entry.kind === 'vault');
 
-/**
- * Every registry entry the operation can touch, in registry order: those the template names, those a card field can
- * name, and every entry those name as an attribute, such as a vault's asset and factory.
- */
-export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[] {
+function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   const names = new Set<string>();
   const roots = subject.kind === 'vault' ? [subject.vault] : [...[...namedInRules(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
   for (const entry of roots) {
@@ -281,7 +281,38 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
     for (const target of Object.values(entry.attributes)) names.add(target);
   }
   if (subject.kind === 'template') for (const doc of subject.docs) names.add(doc.contract.name);
+  return names;
+}
+
+/**
+ * Every registry entry the operation can touch, in registry order: those the template names, those a card field can
+ * name, every entry those name as an attribute, such as a vault's asset and factory, and every entry any of these
+ * depends on.
+ */
+export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[] {
+  const names = directlyTouched(subject, registry);
+  for (const name of [...names]) for (const target of registry.entries.get(name)?.dependsOn ?? []) names.add(target);
   return [...registry.entries.values()].filter((entry) => names.has(entry.name));
+}
+
+export function onlyDependedOn(subject: Subject, registry: Registry): Set<string> {
+  const touched = directlyTouched(subject, registry);
+  return new Set(entriesOf(subject, registry).flatMap((entry) => (touched.has(entry.name) ? [] : [entry.name])));
+}
+
+/**
+ * The entries `pnpm prove-abi` proves: not one the operation reaches only through `dependsOn`, which no call targets,
+ * nor one with `routes`, whose calls run in the implementations its routes reach, so no proof of one contract covers it.
+ */
+export function provedEntries(subject: Subject, registry: Registry): RegistryEntry[] {
+  const depended = onlyDependedOn(subject, registry);
+  return entriesOf(subject, registry).filter((entry) => !depended.has(entry.name) && entry.routes === undefined);
+}
+
+/** The entries no ABI proof compares with the chain, so the report reads their code at its latest block (`checkToday`). */
+export function todayEntries(subject: Subject, registry: Registry): RegistryEntry[] {
+  const proved = new Set(provedEntries(subject, registry).map((entry) => entry.name));
+  return entriesOf(subject, registry).filter((entry) => !proved.has(entry.name));
 }
 
 const escaped = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -315,6 +346,7 @@ export function trimReportRecording(
   vaults: ReadonlyMap<string, string>,
   erc7730: Erc7730Section,
   code: readonly Exchange[],
+  today: BlockRef | undefined,
 ): ReportRecording {
   const base = trimForRecording(entries, listings, pages, fetched);
   const docs = subject.kind === 'template' ? subject.docs : [];
@@ -328,7 +360,7 @@ export function trimReportRecording(
       ),
     ]),
   );
-  return { ...base, pages: trimmed, vaults: Object.fromEntries(vaults), erc7730, code };
+  return { ...base, pages: trimmed, vaults: Object.fromEntries(vaults), erc7730, code, ...(today === undefined ? {} : { today: { number: today.number.toString(), hash: today.hash } }) };
 }
 
 export async function erc7730Text(entries: readonly RegistryEntry[], registry: Registry, snapshot: Snapshot, chain: () => Promise<ChainAccess>): Promise<{ text: string; reports: EntryReport[] }> {
@@ -591,8 +623,15 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   return out;
 }
 
+const routesText = (routes: readonly Route[]): string =>
+  `routes ${routes.length === 0 ? 'none' : routes.map((route) => `${code(checksumAddress(route.address))} ${code(route.hash)} (${route.selectors.length} selectors)`).join(', ')}`;
+
 function pinText(pin: CodePin): string {
-  return pin.implementation === undefined ? code(pin.hash) : `${code(pin.hash)}; implementation ${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`;
+  return [
+    code(pin.hash),
+    ...(pin.implementation === undefined ? [] : [`implementation ${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`]),
+    ...(pin.routes === undefined ? [] : [routesText(pin.routes)]),
+  ].join('; ');
 }
 
 /**
@@ -620,7 +659,7 @@ export async function checkSpans(reader: Reader, entries: readonly RegistryEntry
     const finding = (text: string): number => verdicts.push({ kind: 'finding', text: `FINDING: ${text}` });
     const unverifiable = (block: bigint): number => verdicts.push({ kind: 'unverifiable', text: `UNVERIFIABLE at block ${block}` });
     for (const [i, { from, pin }] of spans.entries()) {
-      const at = await readRunningCodeAt(reader, entry.address, from);
+      const at = await readRunningCodeAt(reader, entry.address, from, entry.routes);
       if (at.kind === 'refused') {
         if (at.refusal.why === 'unverifiable') unverifiable(from);
         else finding(`block ${from} runs no code it can pin, ${code(at.refusal.why)}`);
@@ -635,7 +674,7 @@ export async function checkSpans(reader: Reader, entries: readonly RegistryEntry
         continue;
       }
       const previous = spans[i - 1]?.pin;
-      const before = await readRunningCodeAt(reader, entry.address, from - 1n);
+      const before = await readRunningCodeAt(reader, entry.address, from - 1n, entry.routes);
       if (before.kind === 'refused' && before.refusal.why === 'unverifiable') unverifiable(from - 1n);
       else if (before.kind === 'read' && (previous === undefined || !samePin(pinOf(before.code), previous))) finding(`block ${from - 1n} runs ${pinText(pinOf(before.code))}`);
       else if (before.kind === 'refused' && previous !== undefined) finding(`block ${from - 1n} runs no code it can pin, ${code(before.refusal.why)}`);
@@ -646,12 +685,35 @@ export async function checkSpans(reader: Reader, entries: readonly RegistryEntry
   return checked;
 }
 
+/** An entry's code at the report's latest block as `checkToday` judged it: `text` is what the Markdown report prints. */
+export type TodayCheck = { readonly kind: 'pass' | 'finding' | 'unverifiable'; readonly text: string };
+
+/**
+ * For each pinned entry, whether the code a call to it runs at `block`, its routes included, is its current pin, read
+ * through both providers. Prints no text a provider gave.
+ */
+export async function checkToday(reader: Reader, entries: readonly RegistryEntry[], block: BlockRef): Promise<Map<Address, TodayCheck>> {
+  const checked = new Map<Address, TodayCheck>();
+  for (const entry of entries) {
+    if (entry.code === undefined) continue;
+    const read = await readRunningCode(reader, entry.address, block, entry.routes);
+    if (read.kind === 'refused') {
+      checked.set(entry.address, read.refusal.why === 'unverifiable' ? { kind: 'unverifiable', text: 'UNVERIFIABLE' } : { kind: 'finding', text: `FINDING: runs no code it can pin, ${code(read.refusal.why)}` });
+    } else {
+      const now = pinOf(read.code);
+      checked.set(entry.address, samePin(now, entry.code.current.pin) ? { kind: 'pass', text: 'PASS' } : { kind: 'finding', text: `FINDING: runs ${pinText(now)}` });
+    }
+  }
+  return checked;
+}
+
 function spanRows(entry: RegistryEntry, verdicts: readonly SpanCheck[] | undefined): string[] {
   const name = `| ${code(entry.name)} |`;
   if (entry.code === undefined) return [`${name} | not pinned | | |`];
   return [...entry.code.earlier, entry.code.current].map(({ from, pin }, i) => {
     const implementation = pin.implementation === undefined ? 'none' : `${code(checksumAddress(pin.implementation.address))} ${code(pin.implementation.hash)}`;
-    return `${name} ${from} | ${code(pin.hash)} | ${implementation} | ${verdicts?.[i]?.text ?? 'not read'} |`;
+    const routes = pin.routes === undefined ? '' : `; ${routesText(pin.routes)}`;
+    return `${name} ${from} | ${code(pin.hash)} | ${implementation}${routes} | ${verdicts?.[i]?.text ?? 'not read'} |`;
   });
 }
 
@@ -667,8 +729,10 @@ export function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
   return matches ? 'PASS' : 'FINDING';
 }
 
-function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined): string {
+function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, depended: boolean): string {
   const name = `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} |`;
+  if (depended) return `${name} not proved: the operation reaches it only through ${code('dependsOn')}, so no call targets it and none is decoded with its ABI; its code pin is above | | | | | | |`;
+  if (entry.routes !== undefined) return `${name} not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above | | | | | | |`;
   if (proof === undefined) return `${name} not read | | | | | | |`;
   if (proof.kind === 'refused') return `${name} REFUSED: ${code(proof.refusal.why)}${proof.refusal.why === 'compiler-not-pinned' ? ` solc ${code(proof.refusal.version)}` : ''} | | | | | | ${proof.block.number} |`;
   const proxy = proof.proxy.kind === 'none' ? 'none' : `${proof.proxy.kind}, implementation ${code(checksumAddress(proof.proven))}`;
@@ -686,7 +750,7 @@ function pastTxsCommand({ query, file }: PastTxsSummary): string {
 }
 
 /** The characters `pnpm vault-evidence` prints. Its text is stored, not recomputed, so anything else is refused. */
-const VAULT_TEXT = /^[A-Za-z0-9 \n%(),.:;=_/'-]*$/;
+const VAULT_TEXT = /^[A-Za-z0-9 \n%(),.:;=_/'"-]*$/;
 
 /** A ```text block. Program output never holds three backticks, so text that does could close the block and is refused. */
 function fenced(text: string): string[] {
@@ -779,8 +843,45 @@ function factsSection(template: Template, facts: ProtocolFacts | undefined, regi
   return out;
 }
 
+function todaySection(inputs: ReportInputs): string[] {
+  const checked = todayEntries(inputs.subject, inputs.registry);
+  if (checked.length === 0) return [];
+  const result = (entry: RegistryEntry): string => (entry.code === undefined ? 'not pinned' : (inputs.today?.checks.get(entry.address)?.text ?? 'not read'));
+  return [
+    "### Today's code",
+    '',
+    `No ABI proof compares these entries' code with the chain: the operation reaches one only through ${code('dependsOn')}, or its calls run in the implementations its ${code('routes')} reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.`,
+    '',
+    '| Entry | Today | Block |',
+    '| --- | --- | --- |',
+    ...checked.map((entry) => `| ${code(entry.name)} | ${result(entry)} | ${inputs.today?.block.number ?? ''} |`),
+    '',
+  ];
+}
+
+function routesSection(entries: readonly RegistryEntry[]): string[] {
+  const routed = entries.filter((entry) => entry.routes !== undefined);
+  if (routed.length === 0) return [];
+  const rows = (entry: RegistryEntry): string[] =>
+    (entry.code === undefined ? [] : [...entry.code.earlier, entry.code.current]).flatMap(({ from, pin }) =>
+      (pin.routes ?? []).map((route) => `| ${code(entry.name)} | ${from} | ${code(checksumAddress(route.address))} | ${route.selectors.map(code).join(', ')} |`),
+    );
+  return [
+    '### Routes',
+    '',
+    `Each implementation an entry's ${code('routes')} reach, in every span of its code pin, with every selector it serves. ${code('pnpm pin-code')} reaches an implementation only through a seed: it asks the proxy which implementation each seed routes to, then which selectors that implementation serves. No view lists the implementations, so one no seed reaches is not in the pin, and neither the report nor a signing checks it.`,
+    '',
+    ...routed.flatMap((entry) => [`${code(entry.name)} seeds: ${(entry.routes as SelectorRouting).seeds.map(code).join(', ')}.`, '']),
+    '| Entry | From block | Implementation | Selectors |',
+    '| --- | --- | --- | --- |',
+    ...routed.flatMap(rows),
+    '',
+  ];
+}
+
 function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs): string[] {
   const out: string[] = [];
+  const depended = onlyDependedOn(inputs.subject, inputs.registry);
   const checked = checkSources(entries, inputs.listings, inputs.pages);
   out.push(
     '## Registry entries',
@@ -835,10 +936,18 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
     '',
     `Every span of each entry's registry code pin, oldest first: a span holds from its block to the block before the next span's. A transaction to sign must run the last span's code, and an executed one the code of the span that holds its block. ${code('pnpm pin-code')} writes the spans from the chain, not from a review of that code. Chain: whether, through both providers, the code at the span's first block is its pin, and the code at the block before is the previous span's pin, or for the first span, no code ${code('pnpm pin-code')} can pin. A lone pin from block 0 was written before ranges and is not read.`,
     '',
+    ...(entries.some((entry) => entry.routes !== undefined)
+      ? [
+          `An entry with ${code('routes')} sends each function selector to an implementation of its own: after its implementation, the span lists each implementation its seeds reach, with its code hash and how many selectors it serves.`,
+          '',
+        ]
+      : []),
     '| Entry | From block | Code hash | Implementation | Chain |',
     '| --- | --- | --- | --- | --- |',
     ...entries.flatMap((entry) => spanRows(entry, inputs.spans.get(entry.address))),
     '',
+    ...todaySection(inputs),
+    ...routesSection(entries),
   );
 
   out.push(
@@ -848,7 +957,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
     '',
     '| Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |',
     '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
-    ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address))),
+    ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address), depended.has(entry.name))),
     '',
   );
   return out;
@@ -901,6 +1010,12 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   return out.join('\n');
 }
 
+/** `checkToday` on `todayEntries` at `block`; undefined when no entry needs it. */
+export async function readToday(reader: Reader, subject: Subject, registry: Registry, block: BlockRef): Promise<ReportInputs['today']> {
+  const checked = todayEntries(subject, registry);
+  return checked.length === 0 ? undefined : { block, checks: await checkToday(reader, checked, block) };
+}
+
 /** ABI proofs from the recorded cases alone, compiled again with the pinned solc. */
 export async function replayAbiProofs(entries: readonly RegistryEntry[], cases: ReadonlyMap<Address, AbiCase>, compilers: Compilers): Promise<Map<Address, AbiProof | AbiRefusal>> {
   const proofs = new Map<Address, AbiProof | AbiRefusal>();
@@ -944,10 +1059,11 @@ export async function replayInputs(
     listings: await listingsFor(entries, suffixes, async (listing) => (listing === DEFILLAMA_PROTOCOLS ? recording.defillama : recording.coingecko)),
     pages: sourcePagesOf(recording),
     fetched: recording.fetched,
-    abi: await replayAbiProofs(entries, loadAbiCases(repoRoot), compilers),
+    abi: await replayAbiProofs(provedEntries(subject, registry), loadAbiCases(repoRoot), compilers),
     vaults: new Map(Object.entries(recording.vaults)),
     pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
     spans: await checkSpans(replayReader(recording.code), entries),
+    today: recording.today === undefined ? undefined : await readToday(replayReader(recording.code), subject, registry, { number: BigInt(recording.today.number), hash: recording.today.hash }),
     erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
     facts: subject.kind === 'template' ? await replayFacts(subject.template, registry, entries, recording.facts) : undefined,
   };

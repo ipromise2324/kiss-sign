@@ -7,19 +7,8 @@ import type { Template } from './template.ts';
 
 /** Templates that predate the HTML report: each keeps its one report until it is rebuilt. The list only shrinks. */
 export const NOT_YET_REBUILT: ReadonlySet<string> = new Set([
-  'cctp/receive',
   'erc20/transfer',
   'eth/transfer',
-  'fluid/rewards-claim',
-  'fluid/vault-redeem',
-  'fluid/vault-withdraw',
-  'merkl/claim',
-  'morpho/urd-claim',
-  'morpho/vault-bundles-deposit',
-  'morpho/vault-migrate-all',
-  'morpho/vault-withdraw',
-  'morpho/vault-withdraw-all',
-  'safe/cancel',
 ]);
 
 /** Whether a template's reports gate the vaults its card names: every template but those not yet rebuilt. */

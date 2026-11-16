@@ -12,8 +12,9 @@ import { entriesOf, loadReport } from '../src/research/report.ts';
 import type { ReportInputs } from '../src/research/report.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { vaultReportDir } from '../src/template/vault-reports.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, 'morpho/market-supply', registry);
 
@@ -21,6 +22,7 @@ const SCOPE: NotesScope = {
   calls: 2,
   contracts: new Set(['usdc', 'blue-bundles-v1', 'morpho-blue']),
   entries: new Set(['usdc', 'morpho-blue', 'cbbtc']),
+  routed: new Set(),
   protocols: new Map([['morpho-blue', 1]]),
   fields: ['1.approve.spender', '2.blueBundlesV1Supply.marketParams', '2.blueBundlesV1Supply.marketParams.oracle'],
   reviews: ['morpho-oracle/source.page'],
@@ -73,6 +75,17 @@ test('flow, judgments and entries may be left out', () => {
   assert.equal(notes.entries, undefined);
   assert.deepEqual(parseNotes(edited(['flow'], undefined), SCOPE).flow, []);
   assert.deepEqual(parseNotes(edited(['judgments'], undefined), SCOPE).judgments, []);
+});
+
+test('an entry with routes needs a role and a source, since its pin covers only the implementations its seeds reach', () => {
+  const routed: NotesScope = { ...SCOPE, routed: new Set(['morpho-blue']) };
+  const message = 'notes.json: entries.morpho-blue needs a role and at least one source: its routes reach only the implementations its seeds name, so list the history that shows a seed reaches every implementation still set';
+  const history = { role: '流動性層', sources: [{ text: 'LogSetImplementation 紀錄', url: 'https://etherscan.io/', result: 'pass' }] };
+  for (const entry of [undefined, {}, { role: '流動性層' }, { sources: history.sources }]) {
+    assert.throws(() => parseNotes(edited(['entries', 'morpho-blue'], entry), routed), (error: unknown) => error instanceof NotesError && error.message === message);
+  }
+  assert.throws(() => parseNotes(edited(['entries'], undefined), routed), (error: unknown) => error instanceof NotesError && error.message === message);
+  assert.equal(parseNotes(edited(['entries', 'morpho-blue'], history), routed).entries?.get('morpho-blue')?.role, '流動性層');
 });
 
 test('an unknown key is refused, at any level', () => {

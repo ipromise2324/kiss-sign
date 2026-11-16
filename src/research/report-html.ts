@@ -4,7 +4,7 @@ import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Body, CallBlock, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Body, CallBlock, Chip, DocLine, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
 import { reportDir } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
@@ -184,10 +184,15 @@ function diagram(sequence: Sequence): Html {
 const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', fixed: 'who', free: 'who app' };
 const chip = (c: Chip): Html => h`<span class="${CHIP_CLASS[c.who]}">${c.label}</span>`;
 
+const docLine = (doc: DocLine): Html =>
+  h`<div class="doc" data-state="${doc.state}"><span class="f3">文件：</span><a href="${doc.href}">${doc.label}</a><span class="res">${icon(doc.state)}${doc.phrase ?? ''}</span>${
+    doc.note === undefined ? '' : h` <span class="f3">${doc.note}</span>`
+  }</div>`;
+
 function valueLines(row: ArgRow): Html {
   return h`${row.value === undefined ? '' : h`<div class="raw">${row.value.cast}${row.value.example === undefined ? '' : h`<span class="ex">${row.value.example}</span>`}</div>`}<div class="is">${text(row.words)}${
     row.qualifier === undefined ? '' : h` <span class="f3">${text(row.qualifier)}</span>`
-  }</div>${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
+  }</div>${row.doc === undefined ? '' : docLine(row.doc)}${row.id === undefined ? '' : h`<div class="mid">${text(row.id)}</div>`}${row.ai === undefined ? '' : h`
         <div class="ai">${ai(row.ai)}</div>`}`;
 }
 
@@ -244,7 +249,7 @@ function flowBody(flow: Flow): Html {
   ${flow.calls.map(
     (call) => h`
   <div class="cb">
-    <div class="callh"><span class="no">${call.n}</span>${callHead(call)}</div>${
+    <div class="callh"><span class="no">${call.n}</span>${callHead(call)}</div>${call.head.kind === 'fn' ? h`<div class="cdoc">${docLine(call.head.doc)}</div>` : ''}${
       call.sends === undefined ? '' : h`<div class="sends">${text(call.sends)}</div>`
     }${call.args.map(argRow)}
   </div>`,
@@ -406,7 +411,8 @@ function addressRow(row: AddressRow): Html {
       }</span></div>
       <div class="body"><span class="addr">${row.address}</span>
         <div class="srcs">${row.sources.map(sourceLine)}</div>
-        <div class="confirmed">${row.confirmed}</div>${
+        <div class="confirmed">${row.confirmed}</div>${row.codeLines.map((line) => h`
+        <div class="confirmed">${text(line)}</div>`)}${
           row.aiSources.length === 0
             ? ''
             : h`
@@ -736,6 +742,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
 .callh .what{font-size:16px;font-weight:590}
 .sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
 .arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
 .arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
 .arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}

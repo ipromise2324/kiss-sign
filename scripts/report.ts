@@ -32,6 +32,8 @@ import {
   reportArgs,
   pastTxsRecordings,
   programChanges,
+  provedEntries,
+  readToday,
   renderReport,
   replayInputs,
   replayReport,
@@ -54,7 +56,7 @@ const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<op
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
 docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
-the operation can touch, each span of its code pin checked on the chain, pnpm vault-evidence for every vault its card
+the operation can touch (pnpm prove-abi but for one it reaches only through dependsOn or one with routes, whose code it reads at the latest block instead), each span of its code pin checked on the chain, pnpm vault-evidence for every vault its card
 can name, the protocol facts (DefiLlama's TVL, listing date and hacks for each protocol a call goes to, each facts view
 for every value its card field can name, and each token's decimals()), the past-txs recordings of the template studied
 again with each recorded transaction fetched again by hash through both providers, and pnpm erc7730 for every such
@@ -71,7 +73,7 @@ still without an answer prints as UNVERIFIABLE, never as FINDING, and --record t
 writes the committed report from those recordings alone: templates/<protocol>/<operation>/report.generated.md, or
 registry/reports/<vault>.generated.md, and for a template with notes.json, report.generated.html beside it. --offline
 prints the Markdown text from the recordings, reading nothing live; --render writes both files from them.
---compare reads the listings, pages, official APIs, ABI proofs, code spans and ERC-7730 attestations live, reads each vault again at the blocks
+--compare reads the listings, pages, official APIs, ABI proofs, code spans, the code it reads at the latest block and ERC-7730 attestations live, reads each vault again at the blocks
 the committed report names, reads the protocol facts and decimals again at the block the recording names, fetches each
 recorded past transaction again by hash, and prints each fact that differs from the committed report, setting aside
 DefiLlama's TVL; it exits 1 on any. It does not search for past transactions again. For a template with
@@ -203,7 +205,7 @@ const pages = await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs],
 const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();
 const abiCases = new Map<string, unknown>();
-for (const entry of entries) {
+for (const entry of provedEntries(subject, registry)) {
   const deps = { sourcify: retryingSourcify(sourcifyHttps, note), compilers };
   if (flags.record && !recorded.has(entry.address)) {
     const { proof, fixture } = await recordAbiCase(reader, entry.address, latest.value, latest.providers, deps);
@@ -225,7 +227,9 @@ if ('unavailable' in snapshot) {
   process.exit(1);
 }
 const codeChain = recordingTransport(httpsTransport(), endpoints);
-const spans = await checkSpans(createReader(endpoints, codeChain.transport, { note }), entries);
+const codeReader = createReader(endpoints, codeChain.transport, { note });
+const spans = await checkSpans(codeReader, entries);
+const today = await readToday(codeReader, subject, registry, latest.value);
 const erc7730Chain = recordingTransport(httpsTransport(), endpoints);
 const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport, { note })));
 
@@ -237,7 +241,7 @@ const facts = scope === undefined ? undefined : await protocolFacts(scope, regis
 
 const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
 const fetched = new Date();
-const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, erc7730, facts };
+const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, today, erc7730, facts };
 const command = `pnpm report ${reportArgs(subject)}`;
 const text = renderReport(live, { command, sources: ['live reads at the time it ran', ...pastTxs.map((p) => p.file)] });
 
@@ -285,7 +289,7 @@ if (flags.record) {
   const erc7730Section = { commit: snapshot.commit, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
   const raw = new Map(await Promise.all([...answers].map(async ([path, answer]) => [path, await answer] as const)));
   const factsSection = scope === undefined ? {} : { facts: factsRecording(scope, factsBlock, raw, factsChain.exchanges()) };
-  const recording = JSON.stringify({ ...trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges()), ...factsSection }, null, 2);
+  const recording = JSON.stringify({ ...trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges(), today?.block), ...factsSection }, null, 2);
   const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
   if (safe !== undefined && recording.toLowerCase().includes(safe.slice(2))) {
     console.error('the recording would name the configured Safe; nothing written');

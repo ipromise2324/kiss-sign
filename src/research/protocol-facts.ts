@@ -133,7 +133,10 @@ function hacksOf(raw: unknown, listing: Listing): Hack[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-const proxyOf = (entry: RegistryEntry): Proxy => (entry.code === undefined ? 'not pinned' : entry.code.current.pin.implementation === undefined ? 'not a proxy' : 'proxy');
+const proxyOf = (entry: RegistryEntry): Proxy => {
+  const pin = entry.code?.current.pin;
+  return pin === undefined ? 'not pinned' : pin.implementation === undefined && pin.routes === undefined ? 'not a proxy' : 'proxy';
+};
 
 function boundValue(value: FactValue): ResolvedValue {
   return value.kind === 'market' ? { kind: 'market', market: value.market } : { kind: 'contract', name: value.entry.name, entry: value.entry };
