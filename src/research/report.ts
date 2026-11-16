@@ -16,7 +16,7 @@ import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, callTargets, inScope, loadTemplate, refNames, scopeEntries, slippageBps } from '../template/template.ts';
+import { TEMPLATES_DIR, callTargets, inScope, isEncoding, loadTemplate, refNames, scopeEntries, slippageBps } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
@@ -130,7 +130,7 @@ export function templateFunctions(template: Template): AbiFunction[] {
     if (rule.kind === 'fields') rule.fields.forEach(visitRule);
   };
   const visitCall = (node: CallNode): void => {
-    if (!found.has(node.fn.signature)) found.set(node.fn.signature, node.fn);
+    if (!isEncoding(node) && !found.has(node.fn.signature)) found.set(node.fn.signature, node.fn);
     node.args.forEach(visitRule);
   };
   for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data);
@@ -244,7 +244,7 @@ function namedInRules(template: Template): Set<string> {
     if (rule?.kind === 'contract') names.add(rule.name);
     if (rule?.kind === 'equals') visit(rule.rule);
     if (rule?.kind === 'share-price') for (const q of [rule.assets, rule.shares]) if (q.kind === 'path') visit(q.rule);
-    if (rule?.kind === 'call') rule.call.args.forEach(visit);
+    if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
     if (rule?.kind === 'items') rule.items.forEach(visit);
     if (rule?.kind === 'fields') rule.fields.forEach(visit);
   };
@@ -255,7 +255,7 @@ function namedInRules(template: Template): Set<string> {
     if (call.data !== 'empty') call.data.args.forEach(visit);
   }
   for (const view of template.effects.views) {
-    names.add(view.to);
+    if (view.to.kind === 'contract') names.add(view.to.name);
     view.args.forEach(visit);
   }
   return names;
@@ -482,6 +482,7 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'share-price':
       return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e27 / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
     case 'call':
+    case 'keccak':
     case 'items':
     case 'fields':
       return '';
@@ -528,6 +529,11 @@ function effectRow(side: string, effect: Effect, template: Template, registry: R
 }
 
 function argumentText(rule: Rule, param: AbiParam, template: Template, registry: Registry): string {
+  if (rule.kind === 'call' || rule.kind === 'keccak') {
+    const { fn, args } = rule.call;
+    const inner = fn.params.map((p, i) => `${code(paramName(p, i))} ${argumentText(args[i] as Rule, p, template, registry)}`).join('; ');
+    return `${rule.kind === 'keccak' ? 'keccak256 of ' : ''}${code(fn.signature)} with (${inner})`;
+  }
   if (rule.kind !== 'fields' || param.type.kind !== 'tuple') return ruleText(rule, template, registry);
   const { components } = param.type;
   return `(${rule.fields.map((field, i) => `${code(paramName(components[i] as AbiParam, i))} ${argumentText(field, components[i] as AbiParam, template, registry)}`).join('; ')})`;
@@ -536,8 +542,11 @@ function argumentText(rule: Rule, param: AbiParam, template: Template, registry:
 function viewRow(view: ViewEffect, template: Template, registry: Registry): string {
   const returns = view.returns.map((r, i) => `${canonicalType(r.type)} ${paramName(r, i)}`).join(', ');
   const args = view.fn.params.map((param, i) => `${code(paramName(param, i))} ${argumentText(view.args[i] as Rule, param, template, registry)}`).join('; ');
-  const changes = view.changes.map(({ value, change }) => `${code(paramName(view.returns[value] as AbiParam, value))} ${change}`).join('; ');
-  return `| registry ${full(registry.entries.get(view.to) as RegistryEntry)} | ${code(view.fn.signature)}, selector ${code(view.fn.selector)}, returns ${code(`(${returns})`)} | ${args} | ${changes} |`;
+  const changes = view.changes
+    .map(({ value, change }) => `${code(paramName(view.returns[value] as AbiParam, value))} ${typeof change === 'string' ? change : `equals the card's ${code(change.equals)}`}`)
+    .join('; ');
+  const to = view.to.kind === 'contract' ? `registry ${full(registry.entries.get(view.to.name) as RegistryEntry)}` : `${refText(view.to.ref)}${refAddresses(view.to.ref, template, registry)}`;
+  return `| ${to} | ${code(view.fn.signature)}, selector ${code(view.fn.selector)}, returns ${code(`(${returns})`)} | ${args} | ${changes} |`;
 }
 
 function templateSections(template: Template, docs: readonly DocLink[], inputs: ReportInputs): string[] {

@@ -268,7 +268,7 @@ test('a share price bound or equals names a card amount or an earlier uint argum
 test('the template parses its card fields and effects', () => {
   const [vault, amount, minShares] = [...template.card];
   assert.deepEqual(vault, ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue' } }]);
-  assert.deepEqual(amount, ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' }, computed: undefined }]);
+  assert.deepEqual(amount, ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' }, computed: undefined, max: undefined }]);
   const [name, field] = minShares ?? assert.fail('min-shares');
   assert.equal(name, 'min-shares');
   assert.ok(field.kind === 'amount' && field.computed !== undefined);

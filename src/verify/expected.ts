@@ -11,6 +11,7 @@ import { hashSafeTx } from '../safe/hash.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { decodeTemplateCall, expectedCalls } from '../template/check.ts';
 import type { ExpectedCall, Values } from '../template/check.ts';
+import { isEncoding } from '../template/template.ts';
 import type { CallNode, Rule, Template, TokenRef, TrailerAllowance } from '../template/template.ts';
 
 /** What kiss-sign knows an address as: the Safe, the zero address, a registry entry or an address-book entry. */
@@ -119,7 +120,7 @@ function addressesIn(value: AbiValue): Address[] {
 const regionOf = (value: AbiValue, root: Uint8Array): Region => ({ root, start: value.span[0], end: value.span[1] });
 
 function callsIn(rule: Rule | undefined, value: AbiValue, values: Values, walk: Walk, itemValues?: readonly Values[]): CallData[] {
-  if (rule?.kind === 'call' && value.kind === 'bytes') return [callData(rule.call, regionOf(value, walk.root), values, walk)];
+  if (rule?.kind === 'call' && !isEncoding(rule.call) && value.kind === 'bytes') return [callData(rule.call, regionOf(value, walk.root), values, walk)];
   if (rule?.kind === 'items' && value.kind === 'array') return value.items.flatMap((item, i) => callsIn(rule.items[i], item, itemValues?.[i] ?? values, walk));
   if (rule?.kind === 'fields' && value.kind === 'tuple') return value.fields.flatMap((field, i) => callsIn(rule.fields[i], field, values, walk));
   return [];

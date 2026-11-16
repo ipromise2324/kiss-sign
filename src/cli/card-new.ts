@@ -13,7 +13,7 @@ import { isAttribute, isMarketEntryPart, loadRegistry } from '../registry.ts';
 import type { Attribute, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps } from '../template/template.ts';
+import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
 import type { CardField, CardRef, Computed, ComputedRead, Template, TokenRef } from '../template/template.ts';
 import { gatesVaults, isRegistryVault, reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
 import { FAILED, UsageError, terminal } from './io.ts';
@@ -25,7 +25,7 @@ type Choice = { readonly name: string; readonly address: Address; readonly from:
 
 type Sources = { readonly registry: Registry; readonly book: AddressBook; readonly safe: Address };
 
-type TypedField = Extract<CardField, { kind: 'amount' | 'nonce' }>;
+type TypedField = Extract<CardField, { kind: 'amount' | 'nonce' | 'percent' }>;
 type ChosenField = Exclude<CardField, TypedField>;
 
 /** The names a field may hold, as resolveCard accepts them. */
@@ -157,7 +157,24 @@ async function answer(ask: Terminal['ask'], question: string): Promise<string> {
   return (await ask(question))?.trim() ?? '';
 }
 
+/** A percent in plain digits, at most 100 with at most 16 decimals, in WAD base units: 100% is 10^18. */
+const PERCENT = /^(0|[1-9][0-9]{0,2})(?:\.([0-9]{1,16}))?$/;
+
+function percentValue(name: string, typed: string, ctx: Context): string {
+  const match = PERCENT.exec(typed);
+  const shown = JSON.stringify(typed.slice(0, 80));
+  if (match === null) throw new CardError(`${name}: ${shown} is not a percent such as 100 or 35.5, in plain digits with at most 16 decimals`);
+  const [, whole = '', fraction = ''] = match;
+  const value = BigInt(whole + fraction.padEnd(16, '0'));
+  if (value > WAD) throw new CardError(`${name}: ${shown} is more than 100 percent`);
+  const line = `${name}: ${whole}${fraction === '' ? '' : `.${fraction}`}% = ${value} base units, 100% being ${WAD}`;
+  ctx.io.stdout(`  ${line}\n`);
+  ctx.amounts.push(line);
+  return value.toString();
+}
+
 async function typedValue(name: string, field: TypedField, values: Readonly<Record<string, string>>, ctx: Context): Promise<string> {
+  if (field.kind === 'percent') return percentValue(name, await answer(ctx.ask, `${name} (a percent, 100 at most, such as 100 or 35.5): `), ctx);
   const unit = field.kind === 'amount' ? unitOf(field.of, values, ctx.sources.registry) : undefined;
   if (unit === undefined || unit.kind === 'unregistered') {
     const label = unit === undefined ? 'a Safe nonce' : `base units of ${unit.ref}, which is no registry contract, so its decimals are not read`;
@@ -168,8 +185,13 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   const token = unit.kind === 'eth' ? 'eth' : unit.entry.name;
   const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
   const full = unit.kind === 'eth' ? 'eth' : `${token} ${checksumAddress(unit.entry.address)}`;
-  const value = baseUnits(name, await answer(ctx.ask, `${name} (${full}, ${decimals} decimals): `), decimals, token);
-  return listed(name, value, decimals, token, ctx);
+  const max = field.kind === 'amount' ? field.max : undefined;
+  const typed = await answer(ctx.ask, `${name} (${full}, ${decimals} decimals${max === undefined ? '' : ', or max'}): `);
+  if (max !== undefined && typed === 'max') {
+    ctx.io.stdout(`  max, as the template says: ${max.why}\n`);
+    return listed(name, max.value, decimals, token, ctx);
+  }
+  return listed(name, baseUnits(name, typed, decimals, token), decimals, token, ctx);
 }
 
 function listed(name: string, value: bigint, decimals: number, token: string, ctx: Context): string {
@@ -244,7 +266,7 @@ type Context = {
   readonly reported: (template: string) => ReadonlySet<string>;
 };
 
-const isTyped = (entry: [string, CardField]): entry is [string, TypedField] => entry[1].kind === 'amount' || entry[1].kind === 'nonce';
+const isTyped = (entry: [string, CardField]): entry is [string, TypedField] => ['amount', 'nonce', 'percent'].includes(entry[1].kind);
 const isChosen = (entry: [string, CardField]): entry is [string, ChosenField] => !isTyped(entry);
 
 /**

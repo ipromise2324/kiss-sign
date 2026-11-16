@@ -13,8 +13,16 @@ import type { Address, Hex } from './safe/types.ts';
 export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm'] as const;
 export type ContractKind = (typeof CONTRACT_KINDS)[number];
 
-/** What a registry entry may say about itself, each naming another registry entry, and which kinds may say it. */
-export const ATTRIBUTES = { asset: { of: ['vault'], names: 'token' }, factory: { of: ['vault'], names: 'factory' } } as const satisfies Record<
+/**
+ * What a registry entry may say about itself, each naming another registry entry, and which kinds may say it. A vault's
+ * `adapter` is the one adapter it allocates to Morpho Blue markets through, such as a Vault V2's Morpho Market V1
+ * adapter, which keys the vault's market caps.
+ */
+export const ATTRIBUTES = {
+  asset: { of: ['vault'], names: 'token' },
+  factory: { of: ['vault', 'adapter'], names: 'factory' },
+  adapter: { of: ['vault'], names: 'adapter' },
+} as const satisfies Record<
   string,
   { of: readonly ContractKind[]; names: ContractKind }
 >;

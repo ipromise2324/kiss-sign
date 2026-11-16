@@ -153,15 +153,17 @@ function decodeValue(root: Uint8Array, type: AbiType, at: number, limit: number)
 
 /**
  * Decodes `fn`'s call from `region` and accepts it only when re-encoding gives the same bytes. Any bytes after the
- * arguments fail unless `trailerMaxBytes` allows that many.
+ * arguments fail unless `trailerMaxBytes` allows that many. A function whose selector is `0x` stands for values
+ * ABI-encoded without one, as `abi.encode` writes them.
  */
 export function decodeCall(fn: AbiFunction, region: Region, options: DecodeOptions = {}): DecodedCall | DecodeFailure {
   const { root, start, end } = region;
+  const size = (fn.selector.length - 2) / 2;
   try {
-    if (end - start < 4) malformed(start, 'shorter than a selector');
-    const actual = `0x${bytesToHex(root.subarray(start, start + 4))}` as Hex;
+    if (end - start < size) malformed(start, 'shorter than a selector');
+    const actual = `0x${bytesToHex(root.subarray(start, start + size))}` as Hex;
     if (actual !== fn.selector) return { kind: 'wrong-selector', at: start, expected: fn.selector, actual };
-    const read = decodeTuple(root, fn.params.map((p) => p.type), start + 4, end);
+    const read = decodeTuple(root, fn.params.map((p) => p.type), start + size, end);
     const trailing = end - read.end;
     const trailer: Trailer | undefined =
       trailing > 0 && trailing <= (options.trailerMaxBytes ?? 0)
