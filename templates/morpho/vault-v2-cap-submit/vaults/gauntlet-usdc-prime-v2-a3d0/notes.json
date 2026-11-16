@@ -1,47 +1,37 @@
 {
   "verdict": {
-    "status": "caution",
-    "text": "可以用。Flowmark 的網站打不開，vault 很新、持有人集中，先看待確認。"
+    "status": "safe",
+    "text": "可以用。CoinGecko 和工廠都確認這個 vault；轉接合約只有 Morpho API 列出，見待確認。"
   },
   "judgments": [
     {
-      "text": "這個 vault 2026-05 才建立，一年內從 10 USDC 長到約 40 萬 USDC；28 個地址持有股份，最大一個占 54.04%，前 10 名占 99.83%。",
-      "recommendation": "上限是決定存款能放多少進一個市場；新 vault 先給小的絕對上限。"
+      "text": "這個 vault 約 9,800 萬 USDC，739 個地址持有股份，最大一個占 11.51%，前 10 名占 46.65%。2026-02 前只有約 10 萬 USDC，之後一年都在 6,000 萬到 1.24 億之間。",
+      "recommendation": "規模大，提高上限會讓很多存款人的錢進這個市場；上限照你的風險框架給。"
     },
     {
-      "text": "這個 vault 的 `increaseAbsoluteCap` 和 `increaseRelativeCap` 的 timelock 都是 3 天（鏈上讀 `timelock`，259200 秒）：送出後 3 天內存款人看得到這個變更，sentinel 或 curator 可以用 `revoke` 取消。",
-      "recommendation": "送出後 3 天內發現填錯，用 `revoke` 取消，不要等它被執行。"
+      "text": "這個 vault 的 `increaseAbsoluteCap` 和 `increaseRelativeCap` 的 timelock 都是 7 天（鏈上讀 `timelock`，604800 秒）：送出後 7 天內存款人看得到這個變更，sentinel 或 curator 可以用 `revoke` 取消。",
+      "recommendation": "送出後 7 天內發現填錯，用 `revoke` 取消，不要等它被執行。"
     }
   ],
   "reviews": {
-    "flowmark-fgenesis-v2-6439/address": {
-      "status": "concern",
-      "text": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 問 Morpho API 這個地址，名稱是 Flowmark fGenesis，curator 是 0xe5F7d857C129a6349f2A150665DCFF4FeF979744，列出的網站 flowmark.xyz 在 AI 這邊連不上。AI 沒找到 Flowmark 不靠網址帶地址就列出這個地址的頁面。",
-      "recommendation": "先在 Morpho app 的 vault 列表點進去比對地址。"
-    },
-    "flowmark-fgenesis-v2-6439-market-adapter/address": {
-      "status": "concern",
-      "text": "程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x79DA02d9C638cC9ae925188AD9DC245337981518。AI 另外跑了 pnpm prove-instance：MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 回答 `isMorphoMarketV1AdapterV2` = true，兩個節點一致。",
-      "recommendation": "可以接受；上限的 id 用的就是這個地址，填錯只會設到一個沒人用的 id。"
-    },
-    "flowmark-fgenesis-v2-6439-market-adapter/abi": {
-      "status": "concern",
-      "text": "Sourcify 沒有這個轉接合約的原始碼，所以沒有 ABI 證明。這個模板不呼叫它，只把它的地址放進上限的 id；它的程式碼由工廠建立（`isMorphoMarketV1AdapterV2` = true），code pin 記下它的 hash。",
-      "recommendation": "可以接受；它的程式碼改變時 verify 會判 MISMATCH。"
+    "gauntlet-usdc-prime-v2-a3d0-market-adapter/address": {
+      "status": "confirmed",
+      "text": "程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0xDF62f57Ea333a842Db200d4892c90F98204fa22F，也只有這一個。AI 另外在鏈上確認兩件事：vault 的 `isAdapter` 對這個地址回答 true，`adaptersLength` 是 1；跑 pnpm prove-instance，MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 回答 `isMorphoMarketV1AdapterV2` = true，兩個節點一致。",
+      "recommendation": "可以接受；上限的 id 用的就是這個地址，填錯只會設到一個 vault 不用的 id。"
     }
   },
   "entries": {
-    "flowmark-fgenesis-v2-6439": {
-      "role": "Flowmark 管理的 USDC vault（V2），你是它的 curator",
+    "gauntlet-usdc-prime-v2-a3d0": {
+      "role": "Gauntlet 管理的 USDC vault（V2，USDC Prime），你是它的 curator",
       "sources": [
         {
-          "text": "Morpho API 的 vaultV2ByAddress：名稱 Flowmark fGenesis、curator 0xe5F7d857C129a6349f2A150665DCFF4FeF979744",
-          "url": "https://api.morpho.org/graphql",
-          "result": "attention"
+          "text": "Gauntlet 自己的 API 列出這個地址：Gauntlet USDC Prime v2，morpho_v2，curator 0x9E33faAE38ff641094fa68c65c2cE600b3410585，跟鏈上 `curator` 讀到的一樣",
+          "url": "https://api.gauntlet.xyz/v1/vaults",
+          "result": "pass"
         }
       ]
     },
-    "flowmark-fgenesis-v2-6439-market-adapter": {
+    "gauntlet-usdc-prime-v2-a3d0-market-adapter": {
       "role": "vault 的 Morpho Blue 市場轉接合約，上限的 id 用它的地址"
     },
     "vault-v2-factory": {

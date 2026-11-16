@@ -1,18 +1,18 @@
 {
   "multicall(bytes[])": {
-    "contract": "flowmark-fgenesis-v2-6439",
+    "contract": "gauntlet-usdc-prime-v2-a3d0",
     "url": "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol"
   },
   "submit(bytes)": {
-    "contract": "flowmark-fgenesis-v2-6439",
+    "contract": "gauntlet-usdc-prime-v2-a3d0",
     "url": "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol"
   },
   "increaseAbsoluteCap(bytes,uint256)": {
-    "contract": "flowmark-fgenesis-v2-6439",
+    "contract": "gauntlet-usdc-prime-v2-a3d0",
     "url": "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol"
   },
   "increaseRelativeCap(bytes,uint256)": {
-    "contract": "flowmark-fgenesis-v2-6439",
+    "contract": "gauntlet-usdc-prime-v2-a3d0",
     "url": "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol"
   }
 }
