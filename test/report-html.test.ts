@@ -129,7 +129,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
       ]),
       ...Object.values(docs).map((d) => d.url),
       ...Object.values(card).flatMap((field) => (field.computed === undefined ? [] : [field.computed.default.source])),
-      ...JSON.stringify(notes).match(/https:\/\/[^"]+/g)!,
+      ...(JSON.stringify(notes).match(/https:\/\/[^"]+/g) ?? []),
     ]);
     const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => unescape(m[1] as string)));
     for (const [, raw] of html.matchAll(/\shref="([^"]*)"/g)) {
@@ -228,12 +228,15 @@ const nextSteps = (html: string): string => {
 const commands = (section: string): string[] => [...section.matchAll(/<pre class="cmd"><code>([^<]*)<\/code><\/pre>/g)].map((m) => unescape(m[1] as string));
 
 test('下一步 ends every signer report, each command alone in its own block with no punctuation inside it', () => {
-  for (const [id, { html }] of replayed) {
+  for (const [id, { html, inputs }] of replayed) {
     const target = withNotes.get(id) ?? assert.fail(id);
+    const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
+    const recipient = [...template.card.values()].some((field) => field.kind === 'recipient');
     const section = nextSteps(html);
     assert.ok(html.lastIndexOf('<section') < html.indexOf('id="next"'), `${id}: 下一步 is the last section`);
     assert.deepEqual(commands(section), [
       `bin/kiss-sign template approve ${target.template}`,
+      ...(recipient ? ['bin/kiss-sign book add <name> <address>'] : []),
       `bin/kiss-sign card new ${target.template}`,
       'bin/kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>',
       './check.sh <nonce>',
@@ -251,8 +254,9 @@ test('下一步 of a per-vault report names the vault in full, says to pick it b
   assert.ok(section.includes('照名字選'), id);
   assert.ok(section.includes('打 usdc 的數量，用整顆幣'), id);
   assert.ok(section.includes('1,000,611.448606'), id);
-  assert.ok(section.includes('min-shares：不用填'), id);
+  assert.ok(section.includes('最少收到的數量（min-shares）：不用填'), id);
   assert.ok(section.includes('再少 0.10%（協議預設的 0.03%，再加 0.07% 餘裕）'), id);
-  assert.ok(section.indexOf('vault：') < section.indexOf('amount：') && section.indexOf('amount：') < section.indexOf('min-shares：'), `${id}: the prompts in the order card new asks them`);
+  const at = ['金庫（vault）：', '金額（amount）：', '（min-shares）：'].map((prompt) => section.indexOf(prompt));
+  assert.ok(at[0] !== -1 && at.every((i, n) => n === 0 || i > (at[n - 1] as number)), `${id}: the prompts in the order card new asks them`);
   assert.ok(section.includes('MISMATCH 或 UNVERIFIABLE：不要簽'), id);
 });

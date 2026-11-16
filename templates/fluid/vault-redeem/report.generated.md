@@ -483,7 +483,7 @@ senders, of 236 transactions studied:
 by proven Safes, the whole template in one transaction:
 another operation, making none of the template's calls: 2 transactions from 2 Safes; not counted below
   e.g. 0xc8dededc9956c99ea3e01d1d85a7dbd7c98f457f223a6f155f5816101b4d521b: calls fluid-fusdc.0xb460af94, fluid-rewards-distributor.0xbe5013dc
-  e.g. 0xae41387e0b21d44eb10954caa32cc74c2bd99889f0a4adca911bf402077a8273: calls another contract.0xb460af94
+  e.g. 0xae41387e0b21d44eb10954caa32cc74c2bd99889f0a4adca911bf402077a8273: calls 0x273DA948ACa9261043fbdb2a857BC255ECC29012.0xb460af94
 fit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes
 fields, over the 1 fitting transaction:
   call.to  [card vault]
@@ -498,18 +498,23 @@ fields, over the 1 fitting transaction:
     equalled the Safe in 1 of 1 (1 Safe); values: the Safe in 1
 examples that fit: 0x776f13538e1df9e7495e87b6e23d28472375afa16ea62d1a6e8d4534b3d131bd
 by EOAs, call 1 of 1 (redeem) as its own transaction:
-fit the call's shape: 79 transactions from 77 EOAs; misfits: 0 from 0 EOAs
-fields, over the 79 fitting transactions:
+fit the call's shape: 62 transactions from 60 EOAs; misfits: 17 from 17 EOAs
+fields, over the 62 fitting transactions:
   call.to  [card vault]
-    same as the other leaves bound to card vault in 79 of 79; values: fluid-fusdc in 62, another address in 17 (2 distinct other addresses)
+    same as the other leaves bound to card vault in 62 of 62; values: fluid-fusdc in 62
   call.value  [const 0]
-    equalled const 0 in 79 of 79 (77 EOAs); values: 0 in 79
+    equalled const 0 in 62 of 62 (60 EOAs); values: 0 in 62
   call.redeem.shares  [card shares]
-    same as the other leaves bound to card shares in 79 of 79; values: 79 distinct values
+    same as the other leaves bound to card shares in 62 of 62; values: 62 distinct values
   call.redeem.receiver  [the sender]
-    equalled the sender in 79 of 79 (77 EOAs); values: the sender in 79
+    equalled the sender in 62 of 62 (60 EOAs); values: the sender in 62
   call.redeem.owner  [the sender]
-    equalled the sender in 79 of 79 (77 EOAs); values: the sender in 79
+    equalled the sender in 62 of 62 (60 EOAs); values: the sender in 62
+misfits, by reason:
+  16 from 16 EOAs: call.to: expected steakhouse-prime-usdc-v2-0f51 or usual-boosted-usdc-v1-3a3d or fluid-fusdc or fluid-fusdt or steakhouse-high-yield-usdc-v2-a757 or steakhouse-usdt-v1-cfba or smokehouse-usdc-v1-f5bc or smokehouse-usdt-v1-7484 or hyperithm-usdc-apex-v1-7777 or hyperithm-usdc-apex-v2-9e2f, got 0x273DA948ACa9261043fbdb2a857BC255ECC29012
+    e.g. 0x11d2a65751cb731f7d1e80bd418e36cea183be0158b7e08e2308d441c69d74ec, 0x5833eeb0f684b724d4e4e4d40571fce2b343c8adbba8f7f21624861be002bf2d, 0xfd555e996a92767bdf2f158c3d65a1465e02f8112b084924855382bd3abcb36e
+  1 from 1 EOA: call.to: expected steakhouse-prime-usdc-v2-0f51 or usual-boosted-usdc-v1-3a3d or fluid-fusdc or fluid-fusdt or steakhouse-high-yield-usdc-v2-a757 or steakhouse-usdt-v1-cfba or smokehouse-usdc-v1-f5bc or smokehouse-usdt-v1-7484 or hyperithm-usdc-apex-v1-7777 or hyperithm-usdc-apex-v2-9e2f, got 0xBe53A109B494E5c9f97b9Cd39Fe969BE68BF6204
+    e.g. 0x4e2b0cfcd9171ea1f88ab1548f1f8b9c7c7877e24705abfaef1e29463fa05412
 examples that fit: 0x028ea14d2126c10e3dbbd1977757526216cbb823e02d19efaf340cfa801c945a, 0xdf41ba14d2c0f590bec31d3d218f7793c6b1d755b01fee5dfc91e144e2f920a6, 0xfc6fb5cd821956b26ce447b056f6e986be5989af3b3c66623211acc3f31ba383
 ```
 
