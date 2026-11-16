@@ -92,14 +92,6 @@
       }
     },
     {
-      "id": "instadapp",
-      "symbol": "fluid",
-      "name": "Fluid",
-      "platforms": {
-        "ethereum": "0x6f40d4a6237c257fff2db00fa0510deeecd303eb"
-      }
-    },
-    {
       "id": "morpho",
       "symbol": "morpho",
       "name": "Morpho",
@@ -129,6 +121,14 @@
       "name": "Steakhouse USDT Morpho Vault",
       "platforms": {
         "ethereum": "0xbeef047a543e45807105e51a8bbefcc5950fcfba"
+      }
+    },
+    {
+      "id": "instadapp",
+      "symbol": "fluid",
+      "name": "Fluid",
+      "platforms": {
+        "ethereum": "0x6f40d4a6237c257fff2db00fa0510deeecd303eb"
       }
     }
   ],
@@ -497,6 +497,42 @@
       "kind": "served",
       "blocks": []
     },
+    "https://raw.githubusercontent.com/safe-global/safe-deployments/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "released true contractName GnosisSafe version 1.3.0"
+        },
+        {
+          "text": "deployments canonical address 0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552 codeHash 0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/safe-global/safe-cli/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "["
+        },
+        {
+          "text": "\"0x41675C099F32341bf84BFc5382aF534df5C7461a\", # v1.4.1"
+        },
+        {
+          "text": "\"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\", # v1.3.0"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/safe-global/safe-deployments/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "released true contractName Safe version 1.4.1"
+        },
+        {
+          "text": "deployments canonical address 0x41675C099F32341bf84BFc5382aF534df5C7461a codeHash 0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4"
+        }
+      ]
+    },
     "https://developers.merkl.xyz/resources/chains-and-contracts": {
       "kind": "served",
       "blocks": [
@@ -542,7 +578,7 @@
     "morpho-org/sdks@56f1ed62827a7aab39d979c0143d1fbf970c37ca": {
       "kind": "on-default",
       "branch": "main",
-      "status": "identical"
+      "status": "behind"
     },
     "instadapp/fluid-contracts-public@404d73f91e6806f881f8dabeb30494f93f9e99b7": {
       "kind": "on-default",
@@ -553,6 +589,11 @@
       "kind": "on-default",
       "branch": "main",
       "status": "identical"
+    },
+    "safe-global/safe-cli@a7044bb5be4f8ee16e8d57d69bc5777aace01f0d": {
+      "kind": "on-default",
+      "branch": "main",
+      "status": "behind"
     }
   },
   "apis": {

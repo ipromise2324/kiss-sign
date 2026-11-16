@@ -1,0 +1,48 @@
+{
+  "title": "移除 Safe 的簽署人",
+  "summary": "Safe 呼叫自己的 `removeOwner`，移除你選的簽署人，並把門檻設成你填的數字。`prevOwner` 是 Safe 內部名單排在他前面的人，程式在鏈上讀 `getOwners` 算出，不用你填。",
+  "verdict": {
+    "status": "caution",
+    "text": "不動任何資產，但改的是誰能動這個 Safe：確認移除的是對的人，剩下的人數夠用。"
+  },
+  "flow": [],
+  "protocols": {},
+  "judgments": [
+    {
+      "text": "移除後，剩下的簽署人數不能少於門檻。門檻設成剩下的人數時，少一把鑰匙就再也動不了 Safe。",
+      "recommendation": "門檻留一點餘裕：例如剩 3 人時設 2。"
+    },
+    {
+      "text": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。",
+      "recommendation": "每次只改一項，一項一筆交易。"
+    }
+  ],
+  "reviews": {},
+  "entries": {
+    "safe-1.3.0": {
+      "role": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "safe-1.4.1": {
+      "role": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "fields": {
+    "1.removeOwner.prevOwner": "Safe 把簽署人存成一條鏈；這是排在被移除者前面的那個人，第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。",
+    "1.removeOwner.owner": "要移除的簽署人。",
+    "1.removeOwner._threshold": "移除後的門檻，不能大於剩下的人數。"
+  }
+}
