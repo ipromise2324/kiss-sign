@@ -5,7 +5,8 @@ import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 /**
  * A recording keeps each distinct code once, in its top-level `bytecode` table by keccak256, and each code answer
  * names it as `{ "keccak256": ... }`. Code answers are the providers' answers of an `eth_getCode` exchange and the
- * `value` of an ABI case's `getCode` read.
+ * `value` of an ABI case's `getCode` read. An answer that is not lowercase hex, such as a provider's null or uppercase
+ * code, stays as it was, so the reader judges it as it did live.
  */
 const TABLE = 'bytecode';
 
@@ -37,8 +38,8 @@ export function packRecording(recording: Json): Json {
   if (!isObject(recording)) throw new RecordingError('a recording is a JSON object');
   if (Object.hasOwn(recording, TABLE)) throw new RecordingError(`a recording to write already has "${TABLE}"`);
   const table = new Map<string, string>();
-  const packed = mapCodes(recording, (answer, where) => {
-    if (!isHex(answer)) throw new RecordingError(`${where}: a code answer is lowercase hex`);
+  const packed = mapCodes(recording, (answer) => {
+    if (!isHex(answer)) return answer;
     const hash = keccakHex(answer);
     table.set(hash, answer);
     return { keccak256: hash };
@@ -60,7 +61,8 @@ export function unpackRecording(recording: Json, where: string): Json {
   }
   const named = new Set<string>();
   const unpacked = mapCodes(rest, (answer, at) => {
-    if (!isRef(answer)) return refuse(`${at} holds code itself, not its keccak256 in "${TABLE}"; record it again`);
+    if (isHex(answer)) return refuse(`${at} holds code itself, not its keccak256 in "${TABLE}"; record it again`);
+    if (!isRef(answer)) return answer;
     if (!Object.hasOwn(table, answer.keccak256)) return refuse(`${at} names ${answer.keccak256}, which "${TABLE}" lacks`);
     named.add(answer.keccak256);
     return table[answer.keccak256];
