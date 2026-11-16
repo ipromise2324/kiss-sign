@@ -589,7 +589,7 @@ test('card new lists only the entries of the protocol a contract field names, an
   configure(home);
   const made = await run(['card', 'new', 'test/fluid-only'], home, ['steakhouse-prime-usdc-v2-0f51'], { ...mainnet(), repoRoot });
   assert.equal(made.code, 1);
-  assert.match(made.stdout, /vault:\n  1\. fluid-fusdc 0x\w{40} \(registry\)\n  2\. fluid-fusdt 0x\w{40} \(registry\)\n/);
+  assert.match(made.stdout, /vault:\n  1\. fluid-fusdc 0x\w{40} \(registry\)  \(factory fluid-lending-factory 0x\w{40}\)\n  2\. fluid-fusdt 0x\w{40} \(registry\)  \(factory fluid-lending-factory 0x\w{40}\)\n/);
   assert.match(made.stderr, /vault: "steakhouse-prime-usdc-v2-0f51" is none of the listed choices/);
 });
 
