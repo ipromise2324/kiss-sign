@@ -1,0 +1,14 @@
+{
+  "multicall(bytes[])": {
+    "contract": "acuto-usdc-v2-4a57",
+    "url": "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol"
+  },
+  "decreaseAbsoluteCap(bytes,uint256)": {
+    "contract": "acuto-usdc-v2-4a57",
+    "url": "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol"
+  },
+  "decreaseRelativeCap(bytes,uint256)": {
+    "contract": "acuto-usdc-v2-4a57",
+    "url": "https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol"
+  }
+}

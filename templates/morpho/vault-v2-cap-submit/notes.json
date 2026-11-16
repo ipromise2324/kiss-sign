@@ -31,6 +31,11 @@
       "status": "concern",
       "text": "AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
       "recommendation": "可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。"
+    },
+    "morpho-oracle-usp-usdc/address": {
+      "status": "concern",
+      "text": "AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
+      "recommendation": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
     }
   },
   "entries": {
@@ -51,6 +56,12 @@
     },
     "morpho-market-v1-adapter-v2-factory": {
       "role": "建立 Vault V2 市場轉接合約的工廠，它回答 `isMorphoMarketV1AdapterV2` = true，轉接合約是它建立的"
+    },
+    "usp": {
+      "role": "USP 市場的抵押代幣"
+    },
+    "morpho-oracle-usp-usdc": {
+      "role": "USP 市場用來給 USP 定價的 oracle"
     }
   },
   "fields": {
