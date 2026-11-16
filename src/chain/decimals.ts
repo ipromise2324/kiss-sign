@@ -21,3 +21,21 @@ export function wholeTokens(value: bigint, decimals: number): string {
   const fraction = (value % scale).toString().padStart(decimals, '0').replace(/0+$/, '');
   return `${value / scale}${fraction === '' ? '' : `.${fraction}`}`;
 }
+
+export const SHOWN_PLACES = 6;
+
+const grouped = (whole: string): string => {
+  const [integer = '', fraction] = whole.split('.');
+  const withCommas = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return fraction === undefined ? withCommas : `${withCommas}.${fraction}`;
+};
+
+/** Cuts to `places` fraction digits, never rounds, so a cut amount is never more than the exact one. */
+export function groupedTokens(amount: bigint, decimals: number, places?: number): string {
+  if (amount < 0n) return `−${groupedTokens(-amount, decimals, places)}`;
+  const whole = wholeTokens(amount, decimals);
+  if (places === undefined) return grouped(whole);
+  const [integer = '', fraction = ''] = whole.split('.');
+  const cut = fraction.slice(0, places).replace(/0+$/, '');
+  return grouped(cut === '' ? integer : `${integer}.${cut}`);
+}

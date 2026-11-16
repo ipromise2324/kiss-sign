@@ -159,6 +159,14 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   assert.doesNotMatch(pages[0]!, /比對清單 -->|domain hash|message hash/);
 });
 
+test('replay of a recorded MISMATCH reproduces it, says so, and exits 0', async () => {
+  const { code, repo, home, verdicts } = await verifyTx(service, `0x${'00'.repeat(32)}`);
+  assert.equal(code, 1);
+  const replayed = await run(['replay', verdicts[0]!], repo, home);
+  assert.equal(replayed.code, 0, replayed.stderr);
+  assert.match(replayed.stdout, /^MISMATCH\n[\s\S]*No hashes are shown\. Do not sign this transaction\.\nSame verdict as recorded\.\n$/);
+});
+
 test('a template that differs from its approved hash is MISMATCH', async () => {
   const { code, stdout } = await verifyTx(service, `0x${'00'.repeat(32)}`);
   assert.equal(code, 1);
