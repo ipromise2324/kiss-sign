@@ -87,7 +87,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 `pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc universal-router-2.1.2 usp` prints what each check compared.
 
-| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
@@ -98,11 +98,22 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | DefiLlama site | GitHub commit | Address on page |
+| Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `universal-router-2.1.2` | <https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json> | FINDING | PASS | PASS |
+| `universal-router-2.1.2` | <https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json> | PASS | PASS | PASS |
 
-6 entries, 2 findings.
+More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+
+| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
+| --- | --- | --- | --- | --- |
+| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
+| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
+| `cbbtc` | n/a | n/a | n/a | FINDING |
+| `universal-router-2.1.2` | n/a | PASS | PASS | FINDING `0x2179a60856E37dfeAacA0ab043B931fE224b27B6` |
+| `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
+
+6 entries, 7 findings.
 
 ## Code pins
 
@@ -135,11 +146,11 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429289 `0xc86c6653c9bc706feb861e81644669897c6990f28c364d04c9dde0cfb1093aaa`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26430210 `0xf5636f2d8f866e696bd36af871e03c8757d4916c3c33254aa1f558c67b83be15`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `uniswap-v4` | `5690` | `parent#uniswap` | 2025-01-29 | 1050001624 | 680459082 |
+| `uniswap-v4` | `5690` | `parent#uniswap` | 2025-01-29 | 1003469886 | 634116144 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

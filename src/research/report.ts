@@ -11,7 +11,7 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, parseHttpsUrl } from '../registry.ts';
+import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -20,13 +20,16 @@ import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, inScope, 
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
-import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
+import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { pathText } from './api-source.ts';
+import { provenanceRepositories } from './npm-package.ts';
+import { judge } from './ledger.ts';
+import type { Result } from './ledger.ts';
 import { githubRef, isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
@@ -390,7 +393,7 @@ export function functionOnPage(doc: DocLink): RegExp {
 }
 
 export function docSiteLine(doc: DocLink, listings: Listings): Line {
-  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.contract.defillama, listings);
+  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.contract, listings);
   const ref = githubRef(new URL(doc.url));
   const org = ref.kind === 'pinned' ? ref.owner.toLowerCase() : undefined;
   if (org === doc.standard.org) return { kind: 'agrees', check: 'defillama', text: `GitHub org ${org} publishes ${doc.standard.name}` };
@@ -499,6 +502,14 @@ const code = (text: string): string => `\`${text}\``;
 const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(checksumAddress(entry.address))}`;
 const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
 const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : VERDICTS[line.kind]);
+
+/** The deployer as the ledger counts it: PASS only through an entry confirmed in two other places, which it names. */
+function deployerCell(line: Line | undefined, result: Result | undefined): string {
+  if (line === undefined || result === undefined) return verdict(line);
+  const word = line.kind === 'unverifiable' ? VERDICTS.unverifiable : result.finding.kind === 'agrees' ? VERDICTS.agrees : VERDICTS.finding;
+  const shared = result.shared;
+  return shared === undefined ? word : `${word} ${code(checksumAddress(shared.deployer))}${shared.siblings.length === 0 ? '' : `, also ${shared.siblings.map(code).join(', ')}`}`;
+}
 
 function readText(read: ComputedRead): string {
   const args = read.args.map((arg) => (arg.kind === 'safe' ? 'the Safe' : arg.kind === 'card' ? refText(arg.ref) : readText(arg.read)));
@@ -1026,7 +1037,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
     '',
     `${code('pnpm check-sources')} on every entry the operation can touch. ${code(`pnpm check-sources ${entries.map((e) => e.name).join(' ')}`)} prints what each check compared.`,
     '',
-    '| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |',
+    '| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |',
     '| --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   for (const { entry, lines } of checked) {
@@ -1041,11 +1052,26 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       '',
       `Each entry's ${code('moreSources')}: more official pages that list its address, each checked as the source is.`,
       '',
-      '| Entry | Page | DefiLlama site | GitHub commit | Address on page |',
+      '| Entry | Page | Site | GitHub commit | Address on page |',
       '| --- | --- | --- | --- | --- |',
       ...more.map(({ entry, page, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
         return `| ${code(entry.name)} | <${page.url}> | ${verdict(of('defillama'))} | ${verdict(of('github'))} | ${verdict(of('page'))} |`;
+      }),
+    );
+  }
+  const deployers = new Map(judge(inputs, []).results.flatMap((r) => (r.source?.of === 'deployer' && r.about.kind === 'entry' ? [[r.about.entry.name, r] as const] : [])));
+  const placed = checked.filter(({ lines }) => lines.some((l) => l.check === 'bounty' || l.check === 'sdk' || l.check === 'deployer'));
+  if (placed.length > 0) {
+    out.push(
+      '',
+      `More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.`,
+      '',
+      '| Entry | Bounty scope | SDK file | SDK publisher | Deployer |',
+      '| --- | --- | --- | --- | --- |',
+      ...placed.map(({ entry, lines }) => {
+        const of = (check: Line['check']) => lines.find((l) => l.check === check);
+        return `| ${code(entry.name)} | ${verdict(of('bounty'))} | ${verdict(of('sdk'))} | ${verdict(of('sdk-site'))} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
       }),
     );
   }
@@ -1189,13 +1215,15 @@ export async function replayInputs(
   const recordingPath = reportRecordingPath(target);
   const recording = readRecording(join(repoRoot, recordingPath)) as ReportRecording;
   const entries = entriesOf(subject, registry);
+  const docUrls = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
+  const pages = sourcePagesOf(recording);
   const pastRecordings = pastTxsRecordings(repoRoot, subject);
   const snapshot: Snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
   const inputs: ReportInputs = {
     subject,
     registry,
-    listings: await listingsFor(entries, suffixes, async (listing) => (listing === DEFILLAMA_PROTOCOLS ? recording.defillama : recording.coingecko)),
-    pages: sourcePagesOf(recording),
+    listings: await listingsFor(entries, suffixes, recordedListingReads(recording), [...entries.flatMap(pageUrlsOf), ...docUrls, ...provenanceRepositories(pages.packages ?? new Map())]),
+    pages,
     fetched: recording.fetched,
     abi: await replayAbiProofs(provedEntries(subject, registry), loadAbiCases(repoRoot), compilers),
     vaults: new Map(Object.entries(recording.vaults)),

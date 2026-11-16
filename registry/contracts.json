@@ -1073,6 +1073,14 @@
       }
     ],
     "defillama": "cowswap",
+    "immunefi": "cowprotocol",
+    "sdk": {
+      "package": "@cowprotocol/sdk-config",
+      "version": "2.11.2",
+      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
+      "file": "dist/index.js",
+      "label": "SETTLEMENT_CONTRACT"
+    },
     "code": {
       "hash": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9",
       "from": 12593265
@@ -1090,6 +1098,14 @@
       }
     ],
     "defillama": "cowswap",
+    "immunefi": "cowprotocol",
+    "sdk": {
+      "package": "@cowprotocol/sdk-config",
+      "version": "2.11.2",
+      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
+      "file": "dist/index.js",
+      "label": "VAULT_RELAYER"
+    },
     "code": {
       "hash": "0x500097799c1379a3728ed70b17de4132de2c07f6937b041c361deaade22b6a5e",
       "from": 12593265
@@ -1108,6 +1124,13 @@
       }
     ],
     "defillama": "uniswap-v4",
+    "sdk": {
+      "package": "@uniswap/permit2-sdk",
+      "version": "1.4.1",
+      "sha256": "0x9580855c93ca0cc3ff4d592d7ac2ec0d84183b790d812f98ece5282276b3efbf",
+      "file": "dist/cjs/src/constants.js",
+      "label": "PERMIT2_ADDRESS"
+    },
     "standingAllowance": {
       "via": "erc20",
       "why": "Permit2 has no owner and no proxy, and moves an owner's tokens only for a spender the owner approved on Permit2 itself, by its own call or signature (AllowanceTransfer.transferFrom), or for a transfer the owner signed (SignatureTransfer). An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens."
@@ -1130,6 +1153,13 @@
       }
     ],
     "defillama": "uniswap-v4",
+    "sdk": {
+      "package": "@uniswap/universal-router-sdk",
+      "version": "5.17.0",
+      "sha256": "0xe7abea16799826573fc5c69dc451a0ccfc5e25bb24f4bc4f166e46a1d6e74dd7",
+      "file": "dist/cjs/src/utils/constants.js",
+      "label": "UniversalRouterVersion.V2_1_2"
+    },
     "standingAllowance": {
       "via": "permit2",
       "why": "The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2_TRANSFER_FROM, and PERMIT2_TRANSFER_FROM_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes."

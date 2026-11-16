@@ -346,7 +346,7 @@ test('the vault its factory alone confirms is the one 待確認; every address r
   );
   const vault = open[0] ?? assert.fail('the vault row');
   assert.deepEqual(
-    vault.sources.map((s) => [s.label, s.state, s.phrase, s.site === undefined ? undefined : [s.site.state, s.site.slug, s.site.href]]),
+    vault.sources.map((s) => [s.label, s.state, s.phrase, s.site === undefined ? undefined : [s.site.state, s.site.slug, s.site.places[0]?.href]]),
     [
       ['app.morpho.org/ethereum/vault', 'na', '讀不到', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
       ['CoinGecko', 'na', '沒資料可比', undefined],

@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -275,8 +275,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <span class="opid">fluid/vault-deposit · fluid-fusdc</span>
   <p class="sub"><span class="aiw" data-ai><span>Safe 先授權你選的 fToken 剛好你填的金額，再呼叫同一個 fToken 的 <code>deposit</code>：fToken 經 Fluid 的 Liquidity 合約把這筆代幣從 Safe 拉走，鑄出 fToken 股份給 Safe。Fluid app 存款時只問金額，不設最少股份，所以卡片只問金庫和金額。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
-    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">2 / 4</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">2 個地址有結果要你看，見「待確認」。其餘 2 個都至少在 2 個地方確認。</span></span></li>
+    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>地址來源 <span class="n num">4 / 4</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">4 個地址都至少在 2 個地方確認：官方頁、協議 API、CoinGecko、金庫的登記工廠、漏洞賞金範圍、SDK 套件或共用的部署者列出同一個地址。</span></span></li>
     <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">3 / 3</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。fluid-liquidity 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。</span></span></li>
     <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">4 / 4</span>
@@ -286,9 +286,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
   </ul>
-  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。代幣實際放在 Fluid 的 Liquidity 合約，程式每次簽名都確認它的程式碼沒變；第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>可以用。代幣實際放在 Fluid 的 Liquidity 合約，程式每次簽名都確認它的程式碼沒變；第一次先送小額。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">2 個呼叫</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">4</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -367,7 +367,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>fluid-lending</h2>
   <p class="intro"><span class="aiw" data-ai><span>Fluid（Instadapp 團隊）的借貸池：存入 USDC 或 USDT 換 fToken，資產集中放在 Fluid 的 Liquidity 合約，借給 Fluid 的借款 vault。</span><span class="byai">AI 研究</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$593.52 M</span></span><span class="sub2">Ethereum 上 <span class="num">$428.44 M</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$583.62 M</span></span><span class="sub2">Ethereum 上 <span class="num">$415.35 M</span></span></dd></div>
     <div><dt>上線</dt><dd><span><span class="num">2024-02-25</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
     <div><dt>proxy</dt><dd><span>2 個合約</span><span class="sub2">從 code pin 讀到</span>
       <dl class="nest">
@@ -387,87 +387,59 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>金庫</h2>
   <p class="lead"><a href="#a-fluid-fusdc">fluid-fusdc</a>：程式記錄的 <code>pnpm vault-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
   <dl class="props">
-    <div><dt>工廠</dt><dd>fluid-lending-factory 回答 <code>computeToken(usdc,&#34;fToken&#34;)</code> = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</dd><dd class="src">區塊 26426610</dd></div>
-    <div><dt>現在的 totalAssets</dt><dd><span class="num">135,208,541.45 usdc</span></dd><dd class="src">2026-11-16，區塊 26426610</dd></div>
-    <div><dt>持有人</dt><dd><span class="num">2128</span> 個地址持有，曾經收過的 <span class="num">10977</span> 個</dd><dd class="src"></dd></div>
-    <div><dt>最大持有人</dt><dd><span class="num">9.55%</span></dd><dd class="src">占全部股份</dd></div>
-    <div><dt>前 10 名</dt><dd><span class="num">39.24%</span></dd><dd class="src">占全部股份</dd></div>
+    <div><dt>工廠</dt><dd>fluid-lending-factory 回答 <code>computeToken(usdc,&#34;fToken&#34;)</code> = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</dd><dd class="src">區塊 26429890</dd></div>
+    <div><dt>現在的 totalAssets</dt><dd><span class="num">136,195,745.74 usdc</span></dd><dd class="src">2026-11-16，區塊 26429890</dd></div>
+    <div><dt>持有人</dt><dd><span class="num">2155</span> 個地址持有，曾經收過的 <span class="num">11000</span> 個</dd><dd class="src"></dd></div>
+    <div><dt>最大持有人</dt><dd><span class="num">9.48%</span></dd><dd class="src">占全部股份</dd></div>
+    <div><dt>前 10 名</dt><dd><span class="num">38.82%</span></dd><dd class="src">占全部股份</dd></div>
   </dl>
   <h3>每月的 totalAssets</h3>
   <div class="diagram">
   <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
     <title id="vt">每月的 totalAssets</title>
-    <desc id="vd">13 個月，2025-11-19 到 2026-11-16，最高 313,803,118.7 usdc</desc>
-    <text class="tick" x="16" y="18">最高 313,803,118.7 usdc</text>
+    <desc id="vd">13 個月，2025-11-20 到 2026-11-16，最高 319,865,700.76 usdc</desc>
+    <text class="tick" x="16" y="18">最高 319,865,700.76 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
-    <rect class="bar" x="25.7" y="45" width="29.0" height="105"><title>2025-11-19：282,705,487.92 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
-    <rect class="bar" x="74.0" y="41" width="29.0" height="109"><title>2025-12-20：294,157,400.09 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
-    <rect class="bar" x="122.3" y="34" width="29.0" height="116"><title>2026-01-19：313,803,118.7 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
-    <rect class="bar" x="170.6" y="58" width="29.0" height="92"><title>2026-02-18：248,941,182.68 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
-    <rect class="bar" x="218.9" y="59" width="29.0" height="91"><title>2026-03-20：247,168,969.68 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
-    <rect class="bar" x="267.2" y="86" width="29.0" height="64"><title>2026-04-19：172,307,919.42 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
-    <rect class="bar" x="315.5" y="76" width="29.0" height="74"><title>2026-05-19：198,854,614.2 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
-    <rect class="bar" x="363.8" y="107" width="29.0" height="43"><title>2026-06-18：115,999,393.16 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
-    <rect class="bar" x="412.1" y="99" width="29.0" height="51"><title>2026-07-18：138,921,029.32 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
-    <rect class="bar" x="460.4" y="94" width="29.0" height="56"><title>2026-08-18：151,547,870.27 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
-    <rect class="bar" x="508.7" y="91" width="29.0" height="59"><title>2026-09-17：160,832,100.75 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
-    <rect class="bar" x="557.0" y="101" width="29.0" height="49"><title>2026-10-17：133,448,158.1 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
-    <rect class="bar last" x="605.4" y="100" width="29.0" height="50"><title>2026-11-16：135,208,541.45 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
+    <rect class="bar" x="25.7" y="47" width="29.0" height="103"><title>2025-11-20：284,242,199.87 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="42" width="29.0" height="108"><title>2025-12-20：297,151,381.85 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
+    <rect class="bar" x="122.3" y="34" width="29.0" height="116"><title>2026-01-19：319,865,700.76 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="63" width="29.0" height="87"><title>2026-02-18：241,003,860.71 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="bar" x="218.9" y="62" width="29.0" height="88"><title>2026-03-20：241,593,559.82 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
+    <rect class="bar" x="267.2" y="90" width="29.0" height="60"><title>2026-04-20：164,963,058.75 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="315.5" y="77" width="29.0" height="73"><title>2026-05-20：202,274,790.06 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
+    <rect class="bar" x="363.8" y="107" width="29.0" height="43"><title>2026-06-19：118,790,878.15 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="412.1" y="100" width="29.0" height="50"><title>2026-07-19：138,882,488.62 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
+    <rect class="bar" x="460.4" y="95" width="29.0" height="55"><title>2026-08-18：150,998,254.58 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="508.7" y="92" width="29.0" height="58"><title>2026-09-17：160,929,539.95 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
+    <rect class="bar" x="557.0" y="101" width="29.0" height="49"><title>2026-10-17：135,972,375.44 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar last" x="605.4" y="101" width="29.0" height="49"><title>2026-11-16：136,195,745.74 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>13 個月的數字</summary>
     <dl class="props">
-      <div><dt class="num">2025-11-19</dt><dd class="num">282,705,487.92 usdc</dd></div>
-      <div><dt class="num">2025-12-20</dt><dd class="num">294,157,400.09 usdc</dd></div>
-      <div><dt class="num">2026-01-19</dt><dd class="num">313,803,118.7 usdc</dd></div>
-      <div><dt class="num">2026-02-18</dt><dd class="num">248,941,182.68 usdc</dd></div>
-      <div><dt class="num">2026-03-20</dt><dd class="num">247,168,969.68 usdc</dd></div>
-      <div><dt class="num">2026-04-19</dt><dd class="num">172,307,919.42 usdc</dd></div>
-      <div><dt class="num">2026-05-19</dt><dd class="num">198,854,614.2 usdc</dd></div>
-      <div><dt class="num">2026-06-18</dt><dd class="num">115,999,393.16 usdc</dd></div>
-      <div><dt class="num">2026-07-18</dt><dd class="num">138,921,029.32 usdc</dd></div>
-      <div><dt class="num">2026-08-18</dt><dd class="num">151,547,870.27 usdc</dd></div>
-      <div><dt class="num">2026-09-17</dt><dd class="num">160,832,100.75 usdc</dd></div>
-      <div><dt class="num">2026-10-17</dt><dd class="num">133,448,158.1 usdc</dd></div>
-      <div><dt class="num">2026-11-16</dt><dd class="num">135,208,541.45 usdc</dd></div>
+      <div><dt class="num">2025-11-20</dt><dd class="num">284,242,199.87 usdc</dd></div>
+      <div><dt class="num">2025-12-20</dt><dd class="num">297,151,381.85 usdc</dd></div>
+      <div><dt class="num">2026-01-19</dt><dd class="num">319,865,700.76 usdc</dd></div>
+      <div><dt class="num">2026-02-18</dt><dd class="num">241,003,860.71 usdc</dd></div>
+      <div><dt class="num">2026-03-20</dt><dd class="num">241,593,559.82 usdc</dd></div>
+      <div><dt class="num">2026-04-20</dt><dd class="num">164,963,058.75 usdc</dd></div>
+      <div><dt class="num">2026-05-20</dt><dd class="num">202,274,790.06 usdc</dd></div>
+      <div><dt class="num">2026-06-19</dt><dd class="num">118,790,878.15 usdc</dd></div>
+      <div><dt class="num">2026-07-19</dt><dd class="num">138,882,488.62 usdc</dd></div>
+      <div><dt class="num">2026-08-18</dt><dd class="num">150,998,254.58 usdc</dd></div>
+      <div><dt class="num">2026-09-17</dt><dd class="num">160,929,539.95 usdc</dd></div>
+      <div><dt class="num">2026-10-17</dt><dd class="num">135,972,375.44 usdc</dd></div>
+      <div><dt class="num">2026-11-16</dt><dd class="num">136,195,745.74 usdc</dd></div>
     </dl>
   </details>
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
-    <div class="row" data-state="warn" data-result="fluid-lending-factory/source.site">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">fluid-lending-factory：github.com/Instadapp/fluid-contracts-public/…/deployments.md，沒有第二個來源</div>
-        <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-fluid-lending-factory">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row" data-state="warn" data-result="fluid-lending-factory/source.more.1.site">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">fluid-lending-factory：github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json，沒有第二個來源</div>
-        <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-fluid-lending-factory">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row" data-state="warn" data-result="fluid-liquidity/source.site">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">fluid-liquidity：github.com/Instadapp/fluid-contracts-public/…/deployments.md，沒有第二個來源</div>
-        <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-fluid-liquidity">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
-    <div class="row" data-state="warn" data-result="fluid-liquidity/source.more.1.site">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">fluid-liquidity：github.com/Instadapp/fluid-contracts-public/…/Liquidity.json，沒有第二個來源</div>
-        <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-fluid-liquidity">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>github.com/instadapp 是 Fluid 的官方 GitHub：www.fluid.io 首頁連到 https://github.com/instadapp，fToken 的登記也用同一個 repo 的同一個 commit。DefiLlama 沒有列 Fluid 的 GitHub 組織，所以程式沒得比。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認，從 www.fluid.io 首頁點到 GitHub。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>存進去的代幣放在 Fluid 的 Liquidity 合約，它是可升級的 InfiniteProxy。程式每次簽名都確認它和它的 4 個實作沒變，升級後 verify 判 MISMATCH，直到新的 code pin 合併；只新增全新函式的實作看不到，Fluid 在區塊 24,649,359 做過一次。 <a class="aisrc" href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json">來源 1</a> <a class="aisrc" href="https://docs.fluid.io/autogenerated-docs/protocols/lending/fToken/main.sol/abstract.fTokenActions.html">來源 2</a></span><span class="byai">AI 研究</span></span></div>
@@ -494,19 +466,36 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="addresses">
   <h2>地址 <span class="c">4 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或金庫的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
   <div class="rows">
-    <div class="ad" id="a-fluid-lending-factory" data-state="warn">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><span class="nm">fluid-lending-factory</span><span class="role"><span class="aiw" data-ai><span>Fluid 的借貸池工廠，用 <code>computeToken</code> 算出每個資產的官方 fToken 地址</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 已確認</span></span></div>
-      <div class="body"><span class="addr">0x54B91A0D94cb471F37f949c60F7Fa7935b551D03</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json">github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a> 對照）</span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json</div></div>
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 4 個地址都沒有要你看的結果</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>存進 fUSDC 的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">部署者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒有已確認的合約同一個部署者</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
     </div>
-    <div class="ad" id="a-fluid-liquidity" data-state="warn">
-      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><span class="nm">fluid-liquidity</span><span class="role"><span class="aiw" data-ai><span>Fluid 的 Liquidity 合約：fToken 收到的代幣實際放在這裡，沒有呼叫直接打到它</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 已確認</span></span></div>
+    <div class="ad" id="a-fluid-fusdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">fluid-fusdc</span><span class="role"><span class="aiw" data-ai><span>Fluid 的 USDC 借貸池代幣（fUSDC），收 USDC、發股份</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 fluid-lending（<a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>、<a href="https://github.com/instadapp">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDC.json">github.com/Instadapp/fluid-contracts-public/…/fToken_fUSDC.json</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 fluid-lending（<a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>、<a href="https://github.com/instadapp">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html">docs.fluid.io/fluid-integration/lending/read</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 fluid-lending（<a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="na">CoinGecko<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div><div class="src"><span data-state="ok">工廠<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
+        <div class="confirmed">在 4 個地方確認：官方頁、github.com/Instadapp/fluid-contracts-public/…/fToken_fUSDC.json、docs.fluid.io/fluid-integration/lending/read、工廠</div>
+        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：已驗證合約名 fToken，建立交易由 0x8e7fb4d4fabc504a4ad73d44e09080cb68960098 送出，經 CREATE3 部署 <a class="aisrc" href="https://etherscan.io/tx/0x3771681407c5f5d10c779a2bc685470c559652d83eb69d86b3af68ae7c6e0494">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+    </div>
+    <div class="ad" id="a-fluid-lending-factory" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">fluid-lending-factory</span><span class="role"><span class="aiw" data-ai><span>Fluid 的借貸池工廠，用 <code>computeToken</code> 算出每個資產的官方 fToken 地址</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x54B91A0D94cb471F37f949c60F7Fa7935b551D03</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 fluid-lending（<a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>、<a href="https://github.com/instadapp">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json">github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 fluid-lending（<a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>、<a href="https://github.com/instadapp">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://etherscan.io/address/0x0ed35b1609ec45c7079e80d11149a52717e4859a">部署者 0x0Ed35B1609Ec45c7079E80d11149a52717e4859A，也部署了 fluid-liquidity</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">在 3 個地方確認：官方頁、github.com/Instadapp/fluid-contracts-public/…/LendingFactory.json、部署者</div></div>
+    </div>
+    <div class="ad" id="a-fluid-liquidity" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">fluid-liquidity</span><span class="role"><span class="aiw" data-ai><span>Fluid 的 Liquidity 合約：fToken 收到的代幣實際放在這裡，沒有呼叫直接打到它</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x52Aa899454998Be5b000Ad077a46Bbe360F4e497</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json">github.com/Instadapp/fluid-contracts-public/…/Liquidity.json</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a> 對照）</span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、github.com/Instadapp/fluid-contracts-public/…/Liquidity.json</div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 fluid-lending（<a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>、<a href="https://github.com/instadapp">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json">github.com/Instadapp/fluid-contracts-public/…/Liquidity.json</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 fluid-lending（<a href="https://www.coingecko.com/en/coins/instadapp">CoinGecko</a>、<a href="https://github.com/instadapp">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://etherscan.io/address/0x0ed35b1609ec45c7079e80d11149a52717e4859a">部署者 0x0Ed35B1609Ec45c7079E80d11149a52717e4859A，也部署了 fluid-lending-factory</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">在 3 個地方確認：官方頁、github.com/Instadapp/fluid-contracts-public/…/Liquidity.json、部署者</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名碰到 <a href="#a-fluid-fusdc">fluid-fusdc</a> 時，程式也確認它的程式碼還是 code pin 記錄的那份。</div>
         <div class="confirmed">它依函式選擇器把呼叫分給各自的實作。code pin 的 seeds 接到 4 個實作：</div>
         <div class="confirmed"><span class="addr">0x463874c5A102ceEa919D63f748a433304D1bd1c0</span>，程式碼 hash <span class="addr">0xbc00fc015819200e56be193bbd03bfead8c29986bdfe03f395c8e319e8c22fc1</span>，9 個函式</div>
@@ -515,23 +504,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="confirmed"><span class="addr">0xea78faBC13D603895FE9efe8BB4A4F2c56e5698E</span>，程式碼 hash <span class="addr">0xb79bc58959e4c0457f70d336ccee8a04e6a88fe0a49d0fbdf00e6b6d6108fda9</span>，18 個函式</div>
         <div class="confirmed">沒有 seed 接到的實作，code pin 沒有記錄，程式也不檢查。</div>
         <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan 上這個合約的 LogSetImplementation、LogRemoveImplementation 事件：目前仍設定的實作有 4 個，最後一次變更在區塊 25,007,782；四個 seed 各接到其中一個，程式讀到的也是這 4 個 <a class="aisrc" href="https://etherscan.io/address/0x52Aa899454998Be5b000Ad077a46Bbe360F4e497#events">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
-    </div>
-    <details class="fold">
-      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 2 個地址都沒有要你看的結果</summary>
-    <div class="ad" id="a-usdc" data-state="ok">
-      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>存進 fUSDC 的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
-      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
-    </div>
-    <div class="ad" id="a-fluid-fusdc" data-state="ok">
-      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
-      <div><span class="nm">fluid-fusdc</span><span class="role"><span class="aiw" data-ai><span>Fluid 的 USDC 借貸池代幣（fUSDC），收 USDC、發股份</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
-      <div class="body"><span class="addr">0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md">github.com/Instadapp/fluid-contracts-public/…/deployments.md</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDC.json">github.com/Instadapp/fluid-contracts-public/…/fToken_fUSDC.json</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html">docs.fluid.io/fluid-integration/lending/read</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 fluid-lending（<a href="https://defillama.com/protocol/fluid-lending">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="na">CoinGecko<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div><div class="src"><span data-state="ok">工廠<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
-        <div class="confirmed">在 4 個地方確認：官方頁、github.com/Instadapp/fluid-contracts-public/…/fToken_fUSDC.json、docs.fluid.io/fluid-integration/lending/read、工廠</div>
-        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：已驗證合約名 fToken，建立交易由 0x8e7fb4d4fabc504a4ad73d44e09080cb68960098 送出，經 CREATE3 部署 <a class="aisrc" href="https://etherscan.io/tx/0x3771681407c5f5d10c779a2bc685470c559652d83eb69d86b3af68ae7c6e0494">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
     </div>
     </details>
   </div>

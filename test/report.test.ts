@@ -44,6 +44,7 @@ import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/temp
 import { reportedVaultsIn } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
+import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -68,7 +69,7 @@ function quick(
   const inputs: ReportInputs = {
     subject,
     registry: reg,
-    listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes },
+    listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes, sites: NO_SITE_LISTINGS },
     pages: sourcePagesOf({ pages, commits }),
     fetched: recording.fetched,
     abi,

@@ -390,8 +390,8 @@ function walletBody({ view }: Extract<Body, { kind: 'wallet' }>): Html {
 }
 
 function siteLine(site: SiteResult): Html {
-  const llama = site.href === undefined ? 'DefiLlama' : h`<a href="${site.href}">DefiLlama</a>`;
-  return h`<span class="site" data-state="${site.state}">${icon(site.state)}<span>${site.state === 'ok' ? h`網站屬於 ${site.slug}` : h`網站：${site.phrase}`}（${llama} 對照）</span></span>`;
+  const places = site.places.map((place, i) => h`${i === 0 ? '' : '、'}${place.href === undefined ? place.word : h`<a href="${place.href}">${place.word}</a>`}`);
+  return h`<span class="site" data-state="${site.state}">${icon(site.state)}<span>${site.state === 'ok' ? h`網站屬於 ${site.slug}` : h`網站：${site.phrase}`}（${places} 對照）</span></span>`;
 }
 
 function sourceLine(line: SourceLine): Html {

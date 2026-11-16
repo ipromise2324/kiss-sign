@@ -59,23 +59,32 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 `pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdt fluid-fusdt fluid-lending-factory fluid-liquidity` prints what each check compared.
 
-| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
-| `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | vault | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | FINDING | FINDING | PASS | PASS |
-| `fluid-lending-factory` | `0x54B91A0D94cb471F37f949c60F7Fa7935b551D03` | factory | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | FINDING | n/a | PASS | PASS |
-| `fluid-liquidity` | `0x52Aa899454998Be5b000Ad077a46Bbe360F4e497` | lending | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | FINDING | n/a | PASS | PASS |
+| `fluid-fusdt` | `0x5C20B550819128074FD538Edf79791733ccEdd18` | vault | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | PASS | FINDING | PASS | PASS |
+| `fluid-lending-factory` | `0x54B91A0D94cb471F37f949c60F7Fa7935b551D03` | factory | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | PASS | n/a | PASS | PASS |
+| `fluid-liquidity` | `0x52Aa899454998Be5b000Ad077a46Bbe360F4e497` | lending | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/deployments.md> | PASS | n/a | PASS | PASS |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | DefiLlama site | GitHub commit | Address on page |
+| Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `fluid-fusdt` | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDT.json> | FINDING | PASS | PASS |
+| `fluid-fusdt` | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/fToken_fUSDT.json> | PASS | PASS | PASS |
 | `fluid-fusdt` | <https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html> | PASS | n/a | PASS |
-| `fluid-lending-factory` | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json> | FINDING | PASS | PASS |
-| `fluid-liquidity` | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json> | FINDING | PASS | PASS |
+| `fluid-lending-factory` | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json> | PASS | PASS | PASS |
+| `fluid-liquidity` | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json> | PASS | PASS | PASS |
 
-4 entries, 7 findings.
+More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+
+| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
+| --- | --- | --- | --- | --- |
+| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
+| `fluid-fusdt` | n/a | n/a | n/a | FINDING |
+| `fluid-lending-factory` | n/a | n/a | n/a | PASS `0x0Ed35B1609Ec45c7079E80d11149a52717e4859A`, also `fluid-liquidity` |
+| `fluid-liquidity` | n/a | n/a | n/a | PASS `0x0Ed35B1609Ec45c7079E80d11149a52717e4859A`, also `fluid-lending-factory` |
+
+4 entries, 3 findings.
 
 ## Code pins
 
@@ -107,7 +116,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `fluid-liquidity` | PASS | 26426623 |
+| `fluid-liquidity` | PASS | 26429902 |
 
 ### Routes
 
@@ -168,37 +177,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `fluid-fusdt`
 
 ```text
-admitted     fluid-lending-factory answered computeToken(usdt,"fToken") = 0x5C20B550819128074FD538Edf79791733ccEdd18 at block 26426624
+admitted     fluid-lending-factory answered computeToken(usdt,"fToken") = 0x5C20B550819128074FD538Edf79791733ccEdd18 at block 26429904
 vault        fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18
-latest block 26426624 0x2f77556edfb4128eeb132d698a738ba3397379738262043e0c949303019aedc1
+latest block 26429904 0x47552b4314000b5591af13fc7bd499f0abb1e6c7a58e1f7dc2f71fc5747157e6
 asset()      usdt 0xdAC17F958D2ee523a2206206994597C13D831ec7, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-16  block 26426624  124,082,933.957735 usdt
-  2026-10-17  block 26210624  127,225,359.402115 usdt
-  2026-09-17  block 25994624  131,418,730.037597 usdt
-  2026-08-18  block 25778624  135,443,503.903364 usdt
-  2026-07-18  block 25562624  138,436,426.423013 usdt
-  2026-06-18  block 25346624  112,658,688.552683 usdt
-  2026-05-19  block 25130624  131,444,635.814794 usdt
-  2026-04-19  block 24914624  120,605,323.679337 usdt
-  2026-03-20  block 24698624  142,593,311.424000 usdt
-  2026-02-18  block 24482624  156,567,198.501529 usdt
-  2026-01-19  block 24266624  201,079,570.976932 usdt
-  2025-12-20  block 24050624  222,296,494.245227 usdt
-  2025-11-19  block 23834624  205,312,854.149027 usdt
+  2026-11-16  block 26429904  113,843,755.389184 usdt
+  2026-10-17  block 26213904  127,351,549.479983 usdt
+  2026-09-17  block 25997904  129,872,199.966850 usdt
+  2026-08-18  block 25781904  135,429,130.521455 usdt
+  2026-07-19  block 25565904  138,223,578.700444 usdt
+  2026-06-19  block 25349904  115,900,307.693295 usdt
+  2026-05-20  block 25133904  133,392,805.457458 usdt
+  2026-04-20  block 24917904  116,009,113.733050 usdt
+  2026-03-20  block 24701904  141,294,698.664304 usdt
+  2026-02-18  block 24485904  156,491,097.052503 usdt
+  2026-01-19  block 24269904  198,989,051.742397 usdt
+  2025-12-20  block 24053904  220,512,709.601192 usdt
+  2025-11-20  block 23837904  204,390,598.104899 usdt
 
-holders      1435 addresses hold shares at block 26426624, of 6850 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 102015881256242
-top 10       hold 34.83% of the shares; each: 5.22%, 5.12%, 4.17%, 3.90%, 3.60%, 3.00%, 2.51%, 2.51%, 2.48%, 2.33%
+holders      1427 addresses hold shares at block 26429904, of 6857 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 93587094593662
+top 10       hold 34.40% of the shares; each: 5.69%, 4.54%, 4.25%, 3.93%, 3.27%, 2.73%, 2.71%, 2.54%, 2.39%, 2.35%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26426623 `0xd0ee2a5d3ea2f6e67044154266ef1c2118eca5d5da6c7e7cac4218a7ff5b208d`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429902 `0x754ed73c9cd6bacd7593538f3dce1b0c3c4be6d03c24e0ea3e3e6741a0205fde`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `fluid-lending` | `4167` | `parent#fluid` | 2024-02-25 | 593523300 | 428441973 |
+| `fluid-lending` | `4167` | `parent#fluid` | 2024-02-25 | 583624812 | 415349727 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |
