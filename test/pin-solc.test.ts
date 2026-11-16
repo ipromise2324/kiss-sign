@@ -120,5 +120,5 @@ test('a new pin is written in version order', () => {
   const change = addSolcPin(source, SOLC_PINS, '0.8.4+commit.c7e474f2', pin);
   assert.equal(change.kind, 'written');
   const versions = [...(change.kind === 'written' ? change.text : '').matchAll(/^ {2}'([^']+)': \{$/gm)].map((match) => match[1]);
-  assert.deepEqual(versions.slice(2, 6), ['0.7.3+commit.9bfce1f6', '0.7.6+commit.7338295f', '0.8.4+commit.c7e474f2', '0.8.19+commit.7dd6d404']);
+  assert.deepEqual(versions.slice(2, 6), ['0.7.3+commit.9bfce1f6', '0.7.6+commit.7338295f', '0.8.4+commit.c7e474f2', '0.8.17+commit.8df45f5f']);
 });

@@ -64,6 +64,7 @@ test('the -extra row names the template\'s allowance as a program fact and its r
     expected: { kind: 'expected', changes: new Map() },
     calls: { kind: 'scanned', movesNothing: [] },
     tree,
+    kept: [],
     verdictFile: '/verdicts/x.json',
   });
   const extra = page.split('\n').find((line) => line.includes('<span class="id">C3-extra</span>'));
@@ -105,6 +106,7 @@ test('the verify page holds no script, loads nothing, and shows text from a caus
     expected: { kind: 'expected', changes: new Map() },
     calls: { kind: 'scanned', movesNothing: [] },
     tree: undefined,
+    kept: [],
     verdictFile: '/verdicts/x.json',
   });
   assert.match(page, /<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">/);
@@ -126,6 +128,7 @@ test('when the simulation could not run, the page does not show the checks that 
     expected: { kind: 'expected', changes: new Map() },
     calls: { kind: 'unverifiable', reasons: ['no agreed block'] },
     tree: undefined,
+    kept: [],
     verdictFile: '/verdicts/x.json',
   });
   const state = (name: string) => new RegExp(`aria-label="([^"]+)"><use href="#[a-z]+"/></svg>${name}</li>`).exec(page)?.[1];
@@ -150,6 +153,7 @@ test('the card and the expected changes show each amount in whole tokens with it
     expected: { kind: 'expected', changes: new Map([[usdc, { kind: 'exactly', change: -10001000000n }], [vault, { kind: 'more-than', change: 0n }]]) },
     calls: { kind: 'scanned', movesNothing: [] },
     tree,
+    kept: [],
     verdictFile: '/verdicts/x.json',
   });
   const text = page.slice(page.indexOf('<h2>卡片</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
@@ -172,6 +176,7 @@ test('an amount whose token decimals() was not read shows its base units and say
     expected: { kind: 'expected', changes: new Map() },
     calls: { kind: 'scanned', movesNothing: [] },
     tree,
+    kept: [],
     verdictFile: '/verdicts/x.json',
   });
   const text = page.slice(page.indexOf('<h2>卡片</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');

@@ -1,14 +1,6 @@
-import { bytesToHex } from '@noble/hashes/utils.js';
-import { selectorOf } from '../decode/abi.ts';
-import { regionBytes } from '../decode/codec.ts';
-import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { FloorResult } from '../floor/floor.ts';
-import type { Address, SafeTx } from '../safe/types.ts';
+import type { SafeTx } from '../safe/types.ts';
 import type { Verdict } from '../verify/verdict.ts';
-
-/** CoW Protocol's settlement contract on mainnet, github.com/cowprotocol/contracts `networks.json`. */
-export const GPV2_SETTLEMENT = '0x9008d19f58aabd9ed0d60971565aa8510560ab41' as Address;
-const COW_CALLS = new Map<string, string>(['setPreSignature(bytes,bool)', 'invalidateOrder(bytes)'].map((sig) => [selectorOf(sig), sig.slice(0, sig.indexOf('('))]));
 
 /** What the harness knows about one past transaction when it picks the reason it is not MATCH. */
 export type Facts = {
@@ -23,15 +15,6 @@ export type Facts = {
 
 /** `key` groups rows in the summary; `detail` says what about this transaction gave it. */
 export type Reason = { readonly key: string; readonly detail: string };
-
-function cowCalls(tx: SafeTx): string[] {
-  const unwrapped = unwrapSafeTx(tx);
-  if (unwrapped.kind !== 'direct' && unwrapped.kind !== 'multisend') return [];
-  return unwrapped.calls.flatMap((call) => {
-    const name = call.to === GPV2_SETTLEMENT ? COW_CALLS.get(`0x${bytesToHex(regionBytes(call.data).subarray(0, 4))}`) : undefined;
-    return name === undefined ? [] : [`${name} at ${call.path}`];
-  });
-}
 
 const floorRules = (floor: FloorResult): string | undefined =>
   floor.kind === 'pass' ? undefined : [...new Set(floor.findings.map((f) => `${f.rule} at ${f.callPath}`))].join(', ');
@@ -50,21 +33,8 @@ function verdictCauses(outcome: Facts['outcome']): Reason | undefined {
   };
 }
 
-/**
- * Why a past transaction is not MATCH, first row that applies. A MATCH has no reason, whatever the rows say.
- * The CoW row comes first because pre-signing or cancelling an order is a known next-phase operation even when the
- * floor refuses the open approval that comes with it.
- */
+/** Why a past transaction is not MATCH, first row that applies. A MATCH has no reason, whatever the rows say. */
 export const REASONS: readonly { readonly key: string; readonly decide: (facts: Facts) => string | undefined }[] = [
-  {
-    key: 'cow-next-phase',
-    decide: ({ tx, floor }) => {
-      const calls = cowCalls(tx);
-      if (calls.length === 0) return undefined;
-      const refused = floorRules(floor);
-      return `GPv2Settlement ${calls.join(', ')}${refused === undefined ? '' : `; the floor also refuses ${refused}`}`;
-    },
-  },
   {
     key: 'refused-by-design',
     decide: ({ floor }) => floorRules(floor),

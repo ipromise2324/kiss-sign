@@ -5,7 +5,9 @@ import { uintWord } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { checkTemplateFields, inspectTemplateFields } from './check.ts';
-import type { FieldCheck, Leaf } from './check.ts';
+import type { FieldCheck, Leaf, MessageLeaf, Messages } from './check.ts';
+import { memberJson, typedDataDigest } from './eip712.ts';
+import type { MemberValue } from './eip712.ts';
 import type { Template } from './template.ts';
 
 export type Checker = typeof checkTemplateFields;
@@ -36,9 +38,9 @@ function mutateBytes(type: AbiType, current: Uint8Array): Uint8Array | undefined
     }
     case 'uint':
     case 'int':
-      return uintWord(nextInt(type, word));
+      return uintWord(nextInt(type, word)).subarray(32 - current.length);
     case 'bool':
-      return uintWord(word === 0n ? 1n : 0n);
+      return uintWord(word === 0n ? 1n : 0n).subarray(32 - current.length);
     case 'fixed-bytes':
     case 'bytes':
     case 'string': {
@@ -54,7 +56,47 @@ function mutateBytes(type: AbiType, current: Uint8Array): Uint8Array | undefined
 
 const MAX_UINT = (1n << 256n) - 1n;
 
-function mutate(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
+type Mutated = { readonly tx: SafeTx; readonly messages: Messages };
+
+/** Another value of the member's type, or for an `atLeast` bound 0, its loosest; undefined when none differs. */
+function otherMember(leaf: Leaf, value: MemberValue): MemberValue | undefined {
+  if (leaf.rule.kind === 'at-least') return value.kind === 'uint' && value.value !== 0n ? { kind: 'uint', value: 0n } : undefined;
+  if (value.kind === 'string') return { kind: 'string', value: `${value.value}78` as Hex };
+  if (value.kind === 'uint' || value.kind === 'int') {
+    if (leaf.type.kind !== 'uint' && leaf.type.kind !== 'int') return undefined;
+    return { kind: value.kind, value: nextInt(leaf.type, value.value) };
+  }
+  if (value.kind === 'bool') return { kind: 'bool', value: !value.value };
+  const bytes = mutateBytes(leaf.type, hexToBytes((value.value as Hex).slice(2)));
+  return bytes === undefined ? undefined : ({ kind: value.kind, value: `0x${bytesToHex(bytes)}` } as MemberValue);
+}
+
+/** The message with one member changed, its digest written again into the transaction, and the new message given. */
+function mutateMember(tx: SafeTx, leaf: Leaf, at: MessageLeaf, messages: Messages): Mutated | undefined {
+  const other = otherMember(leaf, at.values[at.member] as MemberValue);
+  if (other === undefined) return undefined;
+  const values = at.values.map((v, i) => (i === at.member ? other : v));
+  const name = at.message.struct.members[at.member]?.name as string;
+  const body = { ...at.body, [name]: memberJson(other) };
+  const data = hexToBytes(tx.data.slice(2));
+  data.set(hexToBytes(typedDataDigest(at.message.separator, at.message.struct, values).slice(2)), at.digest[0]);
+  return { tx: { ...tx, data: `0x${bytesToHex(data)}` as Hex }, messages: [...messages, JSON.stringify(body)] };
+}
+
+function mutate(tx: SafeTx, leaf: Leaf, messages: Messages): Mutated | undefined {
+  if (leaf.message !== undefined) return mutateMember(tx, leaf, leaf.message, messages);
+  const changed = mutateTx(tx, leaf);
+  return changed === undefined ? undefined : { tx: changed, messages };
+}
+
+function mutateTx(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
+  if (leaf.rule.kind === 'at-least' && leaf.bytes !== undefined) {
+    const data = hexToBytes(tx.data.slice(2));
+    const [start, end] = leaf.bytes;
+    if (BigInt(`0x${bytesToHex(data.subarray(start, end))}`) === 0n) return undefined;
+    data.fill(0, start, end);
+    return { ...tx, data: `0x${bytesToHex(data)}` as Hex };
+  }
   if (leaf.rule.kind === 'share-price' && leaf.bytes !== undefined) {
     const data = hexToBytes(tx.data.slice(2));
     const loosest = leaf.rule.bound === 'max' ? MAX_UINT : 0n;
@@ -76,29 +118,34 @@ function mutate(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
   return { ...tx, data: `0x${bytesToHex(data)}` as Hex };
 }
 
+/** Empty constant bytes have no byte to change in place, and any other value is longer, which the field check compares. */
+const isEmptyConst = ({ rule }: Leaf): boolean => rule.kind === 'const' && (rule.value.kind === 'bytes' || rule.value.kind === 'string') && rule.value.value.length === 2;
+
 /**
  * Changes each bound leaf of a matching transaction, one at a time, and requires the checker to give `mismatch` for
  * every copy. A copy that still matches means the template, or the checker, does not hold that field.
  */
+
 export function checkMutations(
   tx: SafeTx,
   card: ResolvedCard,
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
+  messages: Messages = [],
   checker: Checker = checkTemplateFields,
 ): MutationResult {
-  const { check, leaves } = inspectTemplateFields(tx, card, templates, registry);
+  const { check, leaves } = inspectTemplateFields(tx, card, templates, registry, messages);
   if (check.kind !== 'match') return { kind: 'not-run', check };
-  const bound = leaves.filter((leaf) => leaf.rule.kind !== 'free');
-  const free = leaves.length - bound.length;
+  const bound = leaves.filter((leaf) => leaf.rule.kind !== 'free' && !isEmptyConst(leaf));
+  const free = leaves.filter((leaf) => leaf.rule.kind === 'free').length;
   const uncaught: Uncaught[] = [];
   for (const leaf of bound) {
-    const mutated = mutate(tx, leaf);
+    const mutated = mutate(tx, leaf, messages);
     if (mutated === undefined) {
       uncaught.push({ leaf, mutated: 'not-mutable' });
       continue;
     }
-    const result = checker(mutated, card, templates, registry);
+    const result = checker(mutated.tx, card, templates, registry, mutated.messages);
     if (result.kind !== 'mismatch') uncaught.push({ leaf, mutated: result.kind });
   }
   return uncaught.length === 0
