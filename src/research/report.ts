@@ -11,22 +11,25 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, parseHttpsUrl } from '../registry.ts';
+import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, callTargets, inScope, loadTemplate, refNames, scopeEntries, slippageBps } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, inScope, loadTemplate, refNames, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
-import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
+import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { pathText } from './api-source.ts';
+import { provenanceRepositories } from './npm-package.ts';
+import { judge } from './ledger.ts';
+import type { Result } from './ledger.ts';
 import { githubRef, isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
@@ -246,7 +249,7 @@ function namedInRules(template: Template): Set<string> {
     if (rule?.kind === 'contract') names.add(rule.name);
     if (rule?.kind === 'equals') visit(rule.rule);
     if (rule?.kind === 'share-price') for (const q of [rule.assets, rule.shares]) if (q.kind === 'path') visit(q.rule);
-    if (rule?.kind === 'call') rule.call.args.forEach(visit);
+    if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
     if (rule?.kind === 'items') rule.items.forEach(visit);
     if (rule?.kind === 'fields') rule.fields.forEach(visit);
     if (rule?.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
@@ -262,7 +265,7 @@ function namedInRules(template: Template): Set<string> {
     if (call.data !== 'empty') call.data.args.forEach(visit);
   }
   for (const view of template.effects.views) {
-    names.add(view.to);
+    if (view.to.kind === 'contract') names.add(view.to.name);
     view.args.forEach(visit);
   }
   return names;
@@ -284,10 +287,16 @@ export const vaultsOf = (subject: Subject, registry: Registry): RegistryEntry[] 
 function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   const names = new Set<string>();
   const roots = subject.kind === 'vault' ? [subject.vault] : [...[...namedInRules(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
-  for (const entry of roots) {
+  const named = (entry: RegistryEntry): void => {
+    if (names.has(entry.name)) return;
     names.add(entry.name);
-    for (const target of Object.values(entry.attributes)) names.add(target);
-  }
+    for (const target of Object.values(entry.attributes)) {
+      const attribute = registry.entries.get(target);
+      if (attribute === undefined) names.add(target);
+      else named(attribute);
+    }
+  };
+  roots.forEach(named);
   if (subject.kind === 'template') for (const doc of subject.docs) names.add(doc.contract.name);
   if (subject.kind === 'template' && callsSafeWithData(subject.template)) {
     for (const entry of registry.entries.values()) if (entry.kind === 'singleton') names.add(entry.name);
@@ -300,8 +309,8 @@ const callsSafeWithData = (template: Template): boolean => template.calls.some((
 
 /**
  * Every registry entry the operation can touch, in registry order: those the template names, those a card field can
- * name, every entry those name as an attribute, such as a vault's asset and factory, and every entry any of these
- * depends on.
+ * name, every entry those name as an attribute, such as a vault's asset and factory, and its attributes in turn, such as
+ * the factory of a vault's adapter, and every entry any of these depends on.
  */
 export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[] {
   const names = directlyTouched(subject, registry);
@@ -309,18 +318,59 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
   return [...registry.entries.values()].filter((entry) => names.has(entry.name));
 }
 
-export function onlyDependedOn(subject: Subject, registry: Registry): Set<string> {
-  const touched = directlyTouched(subject, registry);
-  return new Set(entriesOf(subject, registry).flatMap((entry) => (touched.has(entry.name) ? [] : [entry.name])));
+/**
+ * The entries `verify` compares with their code pin at each signing, as `codeClaims` names them: each contract a rule
+ * or a view names, each entry a card field can name, each a card reference's attribute names, and each these depend on.
+ * An attribute no card reference reads, such as a vault's factory, is checked only by the report.
+ */
+export function signedEntryNames(template: Template, registry: Registry): Set<string> {
+  const names = new Set([
+    ...namedInRules(template),
+    ...cardCandidates(template, registry).map((entry) => entry.name),
+    ...cardRefs(template).flatMap((ref) => (ref.attribute === undefined ? [] : refNames(ref, template, registry))),
+  ]);
+  for (const name of [...names]) for (const target of registry.entries.get(name)?.dependsOn ?? []) names.add(target);
+  return names;
 }
 
 /**
- * The entries `pnpm prove-abi` proves: not one the operation reaches only through `dependsOn`, which no call targets,
- * nor one with `routes`, whose calls run in the implementations its routes reach, so no proof of one contract covers it.
+ * The entries whose ABI the program uses: each contract a call targets, a nested call's included, each a function's
+ * page documents, each a view of the effects or a `facts` view reads, each token the effects move or an amount field
+ * counts, each a computed field's read calls, each token or vault whose `decimals()` the protocol facts read, each Safe
+ * singleton a call to the Safe itself runs, and each vault the report holds evidence for, with its asset and its factory, whose `instanceCheck` it asks.
+ */
+function abiUsed(subject: Subject, registry: Registry): Set<string> {
+  const names = new Set(vaultsOf(subject, registry).flatMap((vault) => [vault.name, ...[vault.attributes.asset, vault.attributes.factory].filter((name) => name !== undefined)]));
+  if (subject.kind === 'vault') return names;
+  const { template } = subject;
+  subject.docs.forEach((doc) => names.add(doc.contract.name));
+  if (callsSafeWithData(template)) for (const entry of registry.entries.values()) if (entry.kind === 'singleton') names.add(entry.name);
+  for (const entry of entriesOf(subject, registry)) if (entry.kind === 'token' || entry.kind === 'vault') names.add(entry.name);
+  const token = (ref: TokenRef): string[] => (ref === 'eth' ? [] : refNames(ref, template, registry));
+  const read = (r: ComputedRead): string[] => [...refNames(r.to, template, registry), ...r.args.flatMap((arg) => (arg.kind === 'read' ? read(arg.read) : []))];
+  [
+    ...callTargetEntries(template, registry).map((entry) => entry.name),
+    ...template.effects.views.flatMap((view) => viewTargetNames(view.to, template, registry)),
+    ...template.facts.map((fact) => fact.to),
+    ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => token(effect.token)),
+    ...[...template.card.values()].flatMap((field) => (field.kind === 'amount' ? [...token(field.of), ...(field.computed === undefined ? [] : read(field.computed.read))] : [])),
+  ].forEach((name) => names.add(name));
+  return names;
+}
+
+/** The entries the operation can touch whose ABI the program does not use: no call or answer is decoded with it. */
+export function abiUnused(subject: Subject, registry: Registry): Set<string> {
+  const used = abiUsed(subject, registry);
+  return new Set(entriesOf(subject, registry).flatMap((entry) => (used.has(entry.name) ? [] : [entry.name])));
+}
+
+/**
+ * The entries `pnpm prove-abi` proves: not one whose ABI the program does not use, nor one with `routes`, whose calls
+ * run in the implementations its routes reach, so no proof of one contract covers it.
  */
 export function provedEntries(subject: Subject, registry: Registry): RegistryEntry[] {
-  const depended = onlyDependedOn(subject, registry);
-  return entriesOf(subject, registry).filter((entry) => !depended.has(entry.name) && entry.routes === undefined);
+  const unused = abiUnused(subject, registry);
+  return entriesOf(subject, registry).filter((entry) => !unused.has(entry.name) && entry.routes === undefined);
 }
 
 /** The entries no ABI proof compares with the chain, so the report reads their code at its latest block (`checkToday`). */
@@ -343,7 +393,7 @@ export function functionOnPage(doc: DocLink): RegExp {
 }
 
 export function docSiteLine(doc: DocLink, listings: Listings): Line {
-  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.contract.defillama, listings);
+  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.contract, listings);
   const ref = githubRef(new URL(doc.url));
   const org = ref.kind === 'pinned' ? ref.owner.toLowerCase() : undefined;
   if (org === doc.standard.org) return { kind: 'agrees', check: 'defillama', text: `GitHub org ${org} publishes ${doc.standard.name}` };
@@ -453,6 +503,14 @@ const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(check
 const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
 const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : VERDICTS[line.kind]);
 
+/** The deployer as the ledger counts it: PASS only through an entry confirmed in two other places, which it names. */
+function deployerCell(line: Line | undefined, result: Result | undefined): string {
+  if (line === undefined || result === undefined) return verdict(line);
+  const word = line.kind === 'unverifiable' ? VERDICTS.unverifiable : result.finding.kind === 'agrees' ? VERDICTS.agrees : VERDICTS.finding;
+  const shared = result.shared;
+  return shared === undefined ? word : `${word} ${code(checksumAddress(shared.deployer))}${shared.siblings.length === 0 ? '' : `, also ${shared.siblings.map(code).join(', ')}`}`;
+}
+
 function readText(read: ComputedRead): string {
   const args = read.args.map((arg) => (arg.kind === 'safe' ? 'the Safe' : arg.kind === 'card' ? refText(arg.ref) : readText(arg.read)));
   return `${code(read.fn.signature)} on ${refText(read.to)}${args.length === 0 ? '' : ` of ${args.join(', ')}`}`;
@@ -504,6 +562,7 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'at-least':
       return `at least the card's ${code(rule.field)}`;
     case 'call':
+    case 'keccak':
     case 'items':
     case 'fields':
     case 'packed':
@@ -581,6 +640,11 @@ function effectRow(side: string, effect: Effect, template: Template, registry: R
 }
 
 function argumentText(rule: Rule, param: AbiParam, template: Template, registry: Registry): string {
+  if (rule.kind === 'call' || rule.kind === 'keccak') {
+    const { fn, args } = rule.call;
+    const inner = fn.params.map((p, i) => `${code(paramName(p, i))} ${argumentText(args[i] as Rule, p, template, registry)}`).join('; ');
+    return `${rule.kind === 'keccak' ? 'keccak256 of ' : ''}${code(fn.signature)} with (${inner})`;
+  }
   if (rule.kind !== 'fields' || param.type.kind !== 'tuple') return ruleText(rule, template, registry);
   const { components } = param.type;
   return `(${rule.fields.map((field, i) => `${code(paramName(components[i] as AbiParam, i))} ${argumentText(field, components[i] as AbiParam, template, registry)}`).join('; ')})`;
@@ -589,8 +653,11 @@ function argumentText(rule: Rule, param: AbiParam, template: Template, registry:
 function viewRow(view: ViewEffect, template: Template, registry: Registry): string {
   const returns = view.returns.map((r, i) => `${canonicalType(r.type)} ${paramName(r, i)}`).join(', ');
   const args = view.fn.params.map((param, i) => `${code(paramName(param, i))} ${argumentText(view.args[i] as Rule, param, template, registry)}`).join('; ');
-  const changes = view.changes.map(({ value, change }) => `${code(paramName(view.returns[value] as AbiParam, value))} ${change}`).join('; ');
-  return `| registry ${full(registry.entries.get(view.to) as RegistryEntry)} | ${code(view.fn.signature)}, selector ${code(view.fn.selector)}, returns ${code(`(${returns})`)} | ${args} | ${changes} |`;
+  const changes = view.changes
+    .map(({ value, change }) => `${code(paramName(view.returns[value] as AbiParam, value))} ${typeof change === 'string' ? change : `equals the card's ${code(change.equals)}`}`)
+    .join('; ');
+  const to = view.to.kind === 'contract' ? `registry ${full(registry.entries.get(view.to.name) as RegistryEntry)}` : `${refText(view.to.ref)}${refAddresses(view.to.ref, template, registry)}`;
+  return `| ${to} | ${code(view.fn.signature)}, selector ${code(view.fn.selector)}, returns ${code(`(${returns})`)} | ${args} | ${changes} |`;
 }
 
 function templateSections(template: Template, docs: readonly DocLink[], inputs: ReportInputs): string[] {
@@ -602,8 +669,10 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
         ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}, picked by number from the list below`
         : field.kind === 'amount'
           ? field.computed === undefined
-            ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}`
+            ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}${field.max === undefined ? '' : `, or ${code('max')}, ${field.max.value}: ${byAi(field.max.why)}`}`
             : `nothing: computed by ${code('card new')} in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}, ${computedText(field.computed)}`
+          : field.kind === 'percent'
+            ? `a percent, at most 100, held in WAD base units (100% is ${WAD})`
           : field.kind === 'nonce'
             ? 'a Safe nonce'
             : field.kind === 'threshold'
@@ -809,9 +878,9 @@ export function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
   return matches ? 'PASS' : 'FINDING';
 }
 
-function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, depended: boolean): string {
+function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean): string {
   const name = `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} |`;
-  if (depended) return `${name} not proved: the operation reaches it only through ${code('dependsOn')}, so no call targets it and none is decoded with its ABI; its code pin is above | | | | | | |`;
+  if (unused) return `${name} not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |`;
   if (entry.routes !== undefined) return `${name} not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above | | | | | | |`;
   if (proof === undefined) return `${name} not read | | | | | | |`;
   if (proof.kind === 'refused') return `${name} REFUSED: ${code(proof.refusal.why)}${proof.refusal.why === 'compiler-not-pinned' ? ` solc ${code(proof.refusal.version)}` : ''} | | | | | | ${proof.block.number} |`;
@@ -930,7 +999,7 @@ function todaySection(inputs: ReportInputs): string[] {
   return [
     "### Today's code",
     '',
-    `No ABI proof compares these entries' code with the chain: the operation reaches one only through ${code('dependsOn')}, or its calls run in the implementations its ${code('routes')} reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.`,
+    `No ABI proof compares these entries' code with the chain: no call or answer is decoded with one's ABI, or its calls run in the implementations its ${code('routes')} reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.`,
     '',
     '| Entry | Today | Block |',
     '| --- | --- | --- |',
@@ -961,14 +1030,14 @@ function routesSection(entries: readonly RegistryEntry[]): string[] {
 
 function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs): string[] {
   const out: string[] = [];
-  const depended = onlyDependedOn(inputs.subject, inputs.registry);
+  const unused = abiUnused(inputs.subject, inputs.registry);
   const checked = checkSources(entries, inputs.listings, inputs.pages);
   out.push(
     '## Registry entries',
     '',
     `${code('pnpm check-sources')} on every entry the operation can touch. ${code(`pnpm check-sources ${entries.map((e) => e.name).join(' ')}`)} prints what each check compared.`,
     '',
-    '| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |',
+    '| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |',
     '| --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   for (const { entry, lines } of checked) {
@@ -983,11 +1052,26 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       '',
       `Each entry's ${code('moreSources')}: more official pages that list its address, each checked as the source is.`,
       '',
-      '| Entry | Page | DefiLlama site | GitHub commit | Address on page |',
+      '| Entry | Page | Site | GitHub commit | Address on page |',
       '| --- | --- | --- | --- | --- |',
       ...more.map(({ entry, page, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
         return `| ${code(entry.name)} | <${page.url}> | ${verdict(of('defillama'))} | ${verdict(of('github'))} | ${verdict(of('page'))} |`;
+      }),
+    );
+  }
+  const deployers = new Map(judge(inputs, []).results.flatMap((r) => (r.source?.of === 'deployer' && r.about.kind === 'entry' ? [[r.about.entry.name, r] as const] : [])));
+  const placed = checked.filter(({ lines }) => lines.some((l) => l.check === 'bounty' || l.check === 'sdk' || l.check === 'deployer'));
+  if (placed.length > 0) {
+    out.push(
+      '',
+      `More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.`,
+      '',
+      '| Entry | Bounty scope | SDK file | SDK publisher | Deployer |',
+      '| --- | --- | --- | --- | --- |',
+      ...placed.map(({ entry, lines }) => {
+        const of = (check: Line['check']) => lines.find((l) => l.check === check);
+        return `| ${code(entry.name)} | ${verdict(of('bounty'))} | ${verdict(of('sdk'))} | ${verdict(of('sdk-site'))} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
       }),
     );
   }
@@ -1037,7 +1121,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
     '',
     '| Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |',
     '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
-    ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address), depended.has(entry.name))),
+    ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address), unused.has(entry.name))),
     '',
   );
   return out;
@@ -1131,13 +1215,15 @@ export async function replayInputs(
   const recordingPath = reportRecordingPath(target);
   const recording = readRecording(join(repoRoot, recordingPath)) as ReportRecording;
   const entries = entriesOf(subject, registry);
+  const docUrls = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
+  const pages = sourcePagesOf(recording);
   const pastRecordings = pastTxsRecordings(repoRoot, subject);
   const snapshot: Snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
   const inputs: ReportInputs = {
     subject,
     registry,
-    listings: await listingsFor(entries, suffixes, async (listing) => (listing === DEFILLAMA_PROTOCOLS ? recording.defillama : recording.coingecko)),
-    pages: sourcePagesOf(recording),
+    listings: await listingsFor(entries, suffixes, recordedListingReads(recording), [...entries.flatMap(pageUrlsOf), ...docUrls, ...provenanceRepositories(pages.packages ?? new Map())]),
+    pages,
     fetched: recording.fetched,
     abi: await replayAbiProofs(provedEntries(subject, registry), loadAbiCases(repoRoot), compilers),
     vaults: new Map(Object.entries(recording.vaults)),

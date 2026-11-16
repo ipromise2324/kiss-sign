@@ -19,6 +19,7 @@ Written by `pnpm report cow/swap-approve --record` from `templates/cow/swap-appr
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |  |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` |  |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |  |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |  |
 
 `buy-token` can name:
 
@@ -28,6 +29,7 @@ Written by `pnpm report cow/swap-approve --record` from `templates/cow/swap-appr
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |  |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` |  |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |  |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |  |
 
 ## Calls and field rules
 
@@ -35,7 +37,7 @@ Written by `pnpm report cow/swap-approve --record` from `templates/cow/swap-appr
 
 | Field | Rule |
 | --- | --- |
-| `to` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `to` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
 | `value` | constant `0` |
 | `approve` | calls `approve(address,uint256)`, selector `0x095ea7b3`; no bytes after the arguments |
 | `approve.spender` | registry `gpv2-vault-relayer` `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` |
@@ -50,8 +52,8 @@ Written by `pnpm report cow/swap-approve --record` from `templates/cow/swap-appr
 | `setPreSignature` | calls `setPreSignature(bytes,bool)`, selector `0xec6cb13f`; no bytes after the arguments |
 | `setPreSignature.orderUid` | exactly 56 bytes, packed with no padding: `digest` `bytes32`, `owner` `address`, `validTo` `uint32` |
 | `setPreSignature.orderUid.digest` | the EIP-712 digest of a `Order(address sellToken,address buyToken,address receiver,uint256 sellAmount,uint256 buyAmount,uint32 validTo,bytes32 appData,uint256 feeAmount,string kind,bool partiallyFillable,string sellTokenBalance,string buyTokenBalance)` message, domain name `Gnosis Protocol`, version `v2`, chain 1, verifying contract `gpv2-settlement` `0x9008D19f58AAbD9eD0D60971565AA8510560ab41` (domain separator `0xc078f884a2676e1345748b1feace7b0abee5d00ecadb6e574dcdd109a63e8943`); the message is read from https://api.cow.fi/mainnet/api/v1/orders/<argument> and must hash to this digest |
-| `setPreSignature.orderUid.digest.sellToken` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
-| `setPreSignature.orderUid.digest.buyToken` | the card's `buy-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `setPreSignature.orderUid.digest.sellToken` | the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
+| `setPreSignature.orderUid.digest.buyToken` | the card's `buy-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
 | `setPreSignature.orderUid.digest.receiver` | the Safe |
 | `setPreSignature.orderUid.digest.sellAmount` | the card's `sell-amount` |
 | `setPreSignature.orderUid.digest.buyAmount` | at least the card's `min-buy` |
@@ -70,7 +72,7 @@ Written by `pnpm report cow/swap-approve --record` from `templates/cow/swap-appr
 
 The Safe gives and gets nothing: any change to its balances is a `MISMATCH`.
 
-The Safe's allowance of the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` to registry `gpv2-vault-relayer` `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` may end higher than it started, at no more than the card's `sell-amount`; every other allowance may not rise.
+The Safe's allowance of the card's `sell-token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` to registry `gpv2-vault-relayer` `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` may end higher than it started, at no more than the card's `sell-amount`; every other allowance may not rise.
 
 ## Official documentation
 
@@ -79,31 +81,44 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | Function | Contract | Page | Site | GitHub commit | Function on page |
 | --- | --- | --- | --- | --- | --- |
 | `approve(address,uint256)` | `usdc` | ERC-20 standard page <https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md> | PASS | PASS | PASS |
-| `setPreSignature(bytes,bool)` | `gpv2-settlement` | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol> | FINDING | PASS | PASS |
+| `setPreSignature(bytes,bool)` | `gpv2-settlement` | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol> | PASS | PASS | PASS |
 
 `approve(address,uint256)` on `usdc`: the ERC-20 standard defines this function, as `function approve(address _spender, uint256 _value)`; this does not show that the contract follows the standard.
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc gpv2-settlement gpv2-vault-relayer` prints what each check compared.
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc gpv2-settlement gpv2-vault-relayer usp` prints what each check compared.
 
-| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | token | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | PASS | n/a | PASS |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS |
-| `gpv2-settlement` | `0x9008D19f58AAbD9eD0D60971565AA8510560ab41` | router | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json> | FINDING | n/a | PASS | PASS |
-| `gpv2-vault-relayer` | `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` | adapter | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json> | FINDING | n/a | PASS | PASS |
+| `gpv2-settlement` | `0x9008D19f58AAbD9eD0D60971565AA8510560ab41` | router | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json> | PASS | n/a | PASS | PASS |
+| `gpv2-vault-relayer` | `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` | adapter | <https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json> | PASS | n/a | PASS | PASS |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | DefiLlama site | GitHub commit | Address on page |
+| Entry | Page | Site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `gpv2-settlement` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | FINDING | PASS | PASS |
-| `gpv2-vault-relayer` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | FINDING | PASS | PASS |
+| `gpv2-settlement` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | PASS | PASS | PASS |
+| `gpv2-vault-relayer` | <https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts> | PASS | PASS | PASS |
 
-6 entries, 5 findings.
+More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+
+| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
+| --- | --- | --- | --- | --- |
+| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
+| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
+| `cbbtc` | n/a | n/a | n/a | FINDING |
+| `gpv2-settlement` | PASS | PASS | PASS | PASS `0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa`, also `gpv2-vault-relayer` |
+| `gpv2-vault-relayer` | PASS | PASS | PASS | PASS `0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa`, also `gpv2-settlement` |
+| `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
+
+7 entries, 6 findings.
 
 ## Code pins
 
@@ -120,6 +135,15 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `cbbtc` | 20570548 | `0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71` | `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS |
 | `gpv2-settlement` | 12593265 | `0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9` | none | PASS |
 | `gpv2-vault-relayer` | 12593265 | `0x500097799c1379a3728ed70b17de4132de2c07f6937b041c361deaade22b6a5e` | none | PASS |
+| `usp` | 23195672 | `0x4c64cb2303edec6193910f660f82375d5bff982c070f14e1944c7a568ed5bb2e` | `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS |
+
+### Today's code
+
+No ABI proof compares these entries' code with the chain: no call or answer is decoded with one's ABI, or its calls run in the implementations its `routes` reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.
+
+| Entry | Today | Block |
+| --- | --- | --- |
+| `gpv2-vault-relayer` | PASS | 26430185 |
 
 ## ABI proofs
 
@@ -132,11 +156,12 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | PROVEN | eip1967, implementation `0x4364fd2371b6318159366abFA51f190df5C24852` | `MorphoTokenEthereum`, solc `0.8.27+commit.40a35a09` | `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS | 2 immutable, 0 library spans masked | 26383745 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
 | `gpv2-settlement` | `0x9008D19f58AAbD9eD0D60971565AA8510560ab41` | PROVEN | none | `GPv2Settlement`, solc `0.7.6+commit.7338295f` | `0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9` | PASS | 11 immutable, 0 library spans masked | 26428503 |
-| `gpv2-vault-relayer` | `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` | PROVEN | none | `GPv2VaultRelayer`, solc `0.7.6+commit.7338295f` | `0x500097799c1379a3728ed70b17de4132de2c07f6937b041c361deaade22b6a5e` | PASS | 5 immutable, 0 library spans masked | 26428508 |
+| `gpv2-vault-relayer` | `0xC92E8bdf79f0507f65a392b0ab4667716BFE0110` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | PROVEN | eip1967, implementation `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` | `ERC20IssuanceUpgradeable_Blacklist_v1`, solc `0.8.23+commit.f704f362` | `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS | 0 immutable, 0 library spans masked | 26429052 |
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26428508 `0x03e4ea4e1c3810b58fcfb3b8ee96b3fa14162e8f622573f0c7d1fd0775b227e6`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26430185 `0x342ee0c0130fd2703dbacd26bef51e76b0cdf33f63cc2ff19ff15441535f1c13`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
@@ -158,6 +183,7 @@ What DefiLlama and the chain say about the protocols this template's calls go to
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | 18 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | 18 |
 
 ## Past transactions
 
@@ -165,7 +191,7 @@ No `pnpm past-txs --record` recording names this template.
 
 ## ERC-7730
 
-`pnpm erc7730 usdc usdt morpho cbbtc gpv2-settlement gpv2-vault-relayer`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdc usdt morpho cbbtc gpv2-settlement gpv2-vault-relayer usp`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -202,6 +228,10 @@ gpv2-settlement 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 (router)
   index        index.calldata.json has no entry for this address
 
 gpv2-vault-relayer 0xC92E8bdf79f0507f65a392b0ab4667716BFE0110 (adapter)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+usp 0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 ```

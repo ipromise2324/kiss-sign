@@ -1073,6 +1073,14 @@
       }
     ],
     "defillama": "cowswap",
+    "immunefi": "cowprotocol",
+    "sdk": {
+      "package": "@cowprotocol/sdk-config",
+      "version": "2.11.2",
+      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
+      "file": "dist/index.js",
+      "label": "SETTLEMENT_CONTRACT"
+    },
     "code": {
       "hash": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9",
       "from": 12593265
@@ -1090,6 +1098,14 @@
       }
     ],
     "defillama": "cowswap",
+    "immunefi": "cowprotocol",
+    "sdk": {
+      "package": "@cowprotocol/sdk-config",
+      "version": "2.11.2",
+      "sha256": "0xcefb8b4829e651dc333dd2e4309b17c98e152605ea46ae7dd6b962189713ea99",
+      "file": "dist/index.js",
+      "label": "VAULT_RELAYER"
+    },
     "code": {
       "hash": "0x500097799c1379a3728ed70b17de4132de2c07f6937b041c361deaade22b6a5e",
       "from": 12593265
@@ -1108,6 +1124,13 @@
       }
     ],
     "defillama": "uniswap-v4",
+    "sdk": {
+      "package": "@uniswap/permit2-sdk",
+      "version": "1.4.1",
+      "sha256": "0x9580855c93ca0cc3ff4d592d7ac2ec0d84183b790d812f98ece5282276b3efbf",
+      "file": "dist/cjs/src/constants.js",
+      "label": "PERMIT2_ADDRESS"
+    },
     "standingAllowance": {
       "via": "erc20",
       "why": "Permit2 has no owner and no proxy, and moves an owner's tokens only for a spender the owner approved on Permit2 itself, by its own call or signature (AllowanceTransfer.transferFrom), or for a transfer the owner signed (SignatureTransfer). An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens."
@@ -1130,6 +1153,13 @@
       }
     ],
     "defillama": "uniswap-v4",
+    "sdk": {
+      "package": "@uniswap/universal-router-sdk",
+      "version": "5.17.0",
+      "sha256": "0xe7abea16799826573fc5c69dc451a0ccfc5e25bb24f4bc4f166e46a1d6e74dd7",
+      "file": "dist/cjs/src/utils/constants.js",
+      "label": "UniversalRouterVersion.V2_1_2"
+    },
     "standingAllowance": {
       "via": "permit2",
       "why": "The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2_TRANSFER_FROM, and PERMIT2_TRANSFER_FROM_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes."
@@ -1138,6 +1168,272 @@
     "code": {
       "hash": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac",
       "from": 25999984
+    }
+  },
+  "morpho-blue": {
+    "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb",
+    "kind": "lending",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Morpho",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "blue"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c",
+      "from": 18883124
+    }
+  },
+  "adaptive-curve-irm": {
+    "address": "0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC",
+    "kind": "irm",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "Adaptive Curve Irm",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "adaptiveCurveIrm"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd",
+      "from": 18883124
+    }
+  },
+  "morpho-market-v1-adapter-v2-factory": {
+    "address": "0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1",
+    "kind": "factory",
+    "source": "https://docs.morpho.org/developers/contracts/addresses/",
+    "sourceLabel": "MorphoMarketV1AdapterV2Factory",
+    "moreSources": [
+      {
+        "url": "https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts",
+        "label": "morphoMarketV1AdapterV2Factory"
+      }
+    ],
+    "defillama": "morpho-blue",
+    "instanceCheck": "isMorphoMarketV1AdapterV2(address)",
+    "code": {
+      "hash": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4",
+      "from": 23981459
+    }
+  },
+  "morpho-oracle-cbbtc-usdc-86": {
+    "address": "0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11",
+      "from": 20678797
+    }
+  },
+  "gauntlet-usdc-prime-v2-a3d0": {
+    "address": "0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime",
+    "defillama": "morpho-blue",
+    "coingecko": "gauntlet-usdc-prime",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "gauntlet-usdc-prime-v2-a3d0-market-adapter"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 23479188
+    }
+  },
+  "gauntlet-usdc-prime-v2-a3d0-market-adapter": {
+    "address": "0xDF62f57Ea333a842Db200d4892c90F98204fa22F",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
+        "variables": {
+          "vault": "0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "vaultV2ByAddress",
+        "adapters",
+        "items",
+        0,
+        "address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x4fb6881dcd9eeb017fa714f179ea3f691c98f1511fd0d41045c142b2a49c087a",
+      "from": 24879846
+    }
+  },
+  "flowmark-fgenesis-v2-6439": {
+    "address": "0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "flowmark-fgenesis-v2-6439-market-adapter"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 25076384
+    }
+  },
+  "flowmark-fgenesis-v2-6439-market-adapter": {
+    "address": "0x79DA02d9C638cC9ae925188AD9DC245337981518",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
+        "variables": {
+          "vault": "0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "vaultV2ByAddress",
+        "adapters",
+        "items",
+        0,
+        "address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x6e6dee95322ce5509c4fe250f5069dd2ab817dc63e8e209fd954283ebc5734f7",
+      "from": 25079237
+    }
+  },
+  "usp": {
+    "address": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
+    "kind": "token",
+    "source": "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts",
+    "sourceLabel": "USP",
+    "defillama": "piku-finance",
+    "coingecko": "usp-yield-optimized-stablecoin",
+    "code": {
+      "hash": "0x4c64cb2303edec6193910f660f82375d5bff982c070f14e1944c7a568ed5bb2e",
+      "implementation": {
+        "address": "0x9E40B6be5aFFC984F36cf118C778f0A83be20370",
+        "hash": "0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7"
+      },
+      "from": 23195672
+    }
+  },
+  "morpho-oracle-usp-usdc": {
+    "address": "0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0xf69bd2099fe1c6f91f0ecd55934adc3a9fd8b4cf0443f181086d590b13a131ec",
+      "from": 24512804
+    }
+  },
+  "acuto-usdc-v2-4a57": {
+    "address": "0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57",
+    "kind": "vault",
+    "source": "https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto",
+    "defillama": "morpho-blue",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "acuto-usdc-v2-4a57-market-adapter"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 24509998
+    }
+  },
+  "acuto-usdc-v2-4a57-market-adapter": {
+    "address": "0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5",
+    "kind": "adapter",
+    "source": "https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }",
+        "variables": {
+          "vault": "0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "vaultV2ByAddress",
+        "adapters",
+        "items",
+        0,
+        "address"
+      ]
+    },
+    "defillama": "morpho-blue",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x0bfb1f9cdc766db966a6c758661a4ce7f015c43965158d606c797aabc2f4c696",
+      "from": 24510137
     }
   }
 }

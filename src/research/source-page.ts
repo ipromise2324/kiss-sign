@@ -3,6 +3,8 @@ import { fallbackLookup, publicHost } from '../chain/dns.ts';
 import { requestText, retried, transientError, transientStatus } from '../chain/https.ts';
 import type { HttpAnswer, NoteUnread } from '../chain/https.ts';
 import type { ApiAnswers } from './api-source.ts';
+import type { Creations } from './deployer.ts';
+import type { PackageReads } from './npm-package.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 
@@ -22,7 +24,15 @@ export type CommitCheck =
   | { readonly kind: 'unread'; readonly why: string };
 
 /** What each page, commit and entry's API answered. An entry whose API request has no answer here was not read. */
-export type SourcePages = { readonly pages: ReadonlyMap<string, Page>; readonly commits: ReadonlyMap<string, CommitCheck>; readonly apis?: ApiAnswers };
+export type SourcePages = {
+  readonly pages: ReadonlyMap<string, Page>;
+  readonly commits: ReadonlyMap<string, CommitCheck>;
+  readonly apis?: ApiAnswers;
+  /** Each SDK package version an entry names, by `<package>@<version>`. */
+  readonly packages?: PackageReads;
+  /** Each entry's creation, by address. */
+  readonly creations?: Creations;
+};
 
 export type GitHubSourceRef =
   | { readonly kind: 'pinned'; readonly owner: string; readonly repo: string; readonly commit: string; readonly path: string }

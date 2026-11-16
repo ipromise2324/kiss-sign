@@ -12,6 +12,7 @@ import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { compareReports, entriesOf, loadReport, renderReport, reportRecordingPath } from '../src/research/report.ts';
 import type { ReportRecording } from '../src/research/report.ts';
 import type { Hex } from '../src/safe/types.ts';
+import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
@@ -62,7 +63,7 @@ function section(facts: ProtocolFacts | undefined): string {
     {
       subject,
       registry,
-      listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes },
+      listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes, sites: NO_SITE_LISTINGS },
       pages: sourcePagesOf(recording),
       fetched: recording.fetched,
       abi: new Map(),

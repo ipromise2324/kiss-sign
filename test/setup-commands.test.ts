@@ -168,7 +168,7 @@ test('init creates a key file readable by its owner only, with an empty line per
   assert.equal(first.code, 0);
   assert.match(first.stdout, new RegExp(`Created the key file ${keyFile}, readable by you only`));
   assert.match(first.stdout, /ALCHEMY_API_KEY +get it at https:\/\/dashboard\.alchemy\.com\/\n +needed by pnpm kiss-sign verify, pnpm kiss-sign card new/);
-  assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs/);
+  assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs, pnpm check-sources and pnpm report/);
   assert.match(first.stdout, new RegExp(`\\n {7}\\$\\{EDITOR:-nano\\} ${keyFile}\\n`));
   assert.match(first.stdout, /\n {5}Or enter each key with the command below; what you type is not shown on screen:\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add etherscan\n/);
   assert.equal(statSync(keyFile).mode & 0o777, 0o600);
@@ -496,6 +496,25 @@ test('card new lists only the vaults with a report for a template reported per v
   const listed = [...made.stdout.matchAll(/^ {2}\d+\. ([a-z0-9.-]+) 0x/gm)].map((m) => m[1]);
   assert.deepEqual(listed, ['steakhouse-prime-usdc-v2-0f51', 'hyperithm-usdc-apex-v2-9e2f']);
   assert.match(made.stderr, /vault: "smokehouse-usdc-v1-f5bc" is none of the listed choices/);
+});
+
+test('card new takes a Vault V2 cap as max or in whole tokens and a relative cap as a percent, and seals them in base units', async () => {
+  const home = freshHome();
+  configure(home);
+  const id = '0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64';
+  const made = await run(['card', 'new', 'morpho/vault-v2-cap-submit'], home, ['flowmark-fgenesis-v2-6439', id, 'max', '35.5', 'y'], decimalsChain({ [USDC]: 6 }));
+  assert.equal(made.code, 0, made.stderr);
+  assert.equal(made.asked[2], `absolute-cap (usdc ${USDC}, 6 decimals, or max): `);
+  assert.equal(made.asked[3], 'relative-cap (a percent, 100 at most, such as 100 or 35.5): ');
+  assert.ok(made.stdout.includes('  max, as the template says: Vault V2 stores an absolute cap in 128 bits'), made.stdout);
+  assert.ok(made.stdout.includes('  absolute-cap: 340282366920938463463374607431768.211455 usdc = 340282366920938463463374607431768211455 base units\n'), made.stdout);
+  assert.ok(made.stdout.includes('  relative-cap: 35.5% = 355000000000000000 base units, 100% being 1000000000000000000\n'), made.stdout);
+  assert.match(made.stdout, /Sealed card 0x[0-9a-f]{64}/);
+  const other = freshHome();
+  configure(other);
+  const refused = await run(['card', 'new', 'morpho/vault-v2-cap-submit'], other, ['flowmark-fgenesis-v2-6439', id, '5', '100.5'], decimalsChain({ [USDC]: 6 }));
+  assert.equal(refused.code, 1);
+  assert.match(refused.stderr, /relative-cap: "100\.5" is more than 100 percent/);
 });
 
 test('card new refuses a template reported per vault when no vault has a report', async () => {
