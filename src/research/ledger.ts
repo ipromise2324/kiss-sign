@@ -273,7 +273,7 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
     case 'coingecko':
       return line.cause === 'differs' ? { kind: 'other-coin' } : line.cause === 'unexplained' ? { kind: 'unexplained-coin' } : { kind: 'no-coin' };
     case 'bounty':
-      return { kind: 'not-listed' };
+      return line.cause === 'differs' ? { kind: 'site-differs' } : { kind: 'not-listed' };
     case 'sdk':
       return line.cause === 'differs' ? { kind: 'package-differs' } : line.cause === 'not-fetched' ? { kind: 'page-unread', why: 'not-fetched' } : { kind: 'not-listed' };
     case 'deployer':
@@ -422,9 +422,12 @@ function deployerCounts(result: Result, confirmedElsewhere: ReadonlySet<string>)
   return { ...result, shared: { ...result.shared, siblings }, ...(siblings.length === 0 ? { finding: { kind: 'deployer-alone' } } : {}) };
 }
 
-/** The sources whose every result passed, each one place that showed the entry's address for its role; a site shows none. */
+/**
+ * The sources whose every result passed, each one place that showed the entry's address for its role; a site shows
+ * none. An SDK counts only with its publisher too, since anyone can publish a package that names an address.
+ */
 function confirmingSources(results: readonly Result[]): ProgramSource[] {
-  const showing = results.filter((r) => r.source?.part === 'address');
+  const showing = results.filter((r) => r.source?.part === 'address' || r.source?.of === 'sdk');
   const sources = [...new Set(showing.map((r) => (r.source as RowPart).of))];
   return sources.filter((source) => showing.every((r) => r.source?.of !== source || STATE_OF[r.finding.kind] === 'ok')).sort((a, b) => sourceRank(a) - sourceRank(b));
 }

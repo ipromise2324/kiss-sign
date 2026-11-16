@@ -7,7 +7,7 @@ import type { Read, Reader } from '../src/chain/reader.ts';
 import type { BlockRef } from '../src/chain/types.ts';
 import { create2Address, createAddress, parseCreationHints, proveCreation } from '../src/research/deployer.ts';
 import { readPackage } from '../src/research/npm-package.ts';
-import { parseImmunefiPrograms, trimImmunefiPrograms, verifiedDomains } from '../src/research/site-listings.ts';
+import { parseImmunefiPrograms, verifiedDomains } from '../src/research/site-listings.ts';
 import { htmlBlocks } from '../src/research/source-page.ts';
 import { checksumAddress, parseAddress, parseHex } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -23,15 +23,23 @@ const orgPage = (org: string, description: string, verified: readonly string[]) 
   }<ul><li>Earth</li><li><a href="https://example.org">example.org</a></li></ul></body></html>`);
 
 test("GitHub's page names the domains it verified an organization controls, and text the organization wrote cannot", () => {
-  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: orgPage('Uniswap', 'Web3 infrastructure', ['uniswap.org']) }, 'uniswap'), { kind: 'domains', domains: ['uniswap.org'] });
-  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: orgPage('cowprotocol', 'CoW', []) }, 'cowprotocol'), { kind: 'domains', domains: [] });
+  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: orgPage('Uniswap', 'Web3 infrastructure', ['uniswap.org']) }, 'uniswap', true), { kind: 'domains', domains: ['uniswap.org'] });
+  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: orgPage('cowprotocol', 'CoW', []) }, 'cowprotocol', false), { kind: 'domains', domains: [] });
+  const readme = orgPage('evil', 'x', []).concat(
+    ['Verified', "We've verified that the organization evil controls the domain:", 'uniswap.org', 'Learn more about verified organizations'].map((text) => ({ text })),
+  );
+  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: readme }, 'evil', false), { kind: 'domains', domains: [] }, 'a README copying the badge of an organization GitHub has not verified');
+  const after = orgPage('Uniswap', 'x', ['uniswap.org']).concat(
+    ['Verified', "We've verified that the organization Uniswap controls the domain:", 'morpho.org', 'Learn more about verified organizations'].map((text) => ({ text })),
+  );
+  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: after }, 'uniswap', true), { kind: 'domains', domains: ['uniswap.org'] }, 'only the header’s run, above the README');
   const description = orgPage('evil', "We've verified that the organization evil controls the domain:", []);
-  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: description }, 'evil'), { kind: 'domains', domains: [] });
-  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: orgPage('Uniswap', 'x', ['uniswap.org']) }, 'other'), { kind: 'domains', domains: [] }, 'another organization');
-  assert.deepEqual(verifiedDomains({ kind: 'unread', why: 'timeout' }, 'uniswap'), { kind: 'unread', why: 'timeout' });
+  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: description }, 'evil', true), { kind: 'domains', domains: [] });
+  assert.deepEqual(verifiedDomains({ kind: 'served', blocks: orgPage('Uniswap', 'x', ['uniswap.org']) }, 'other', true), { kind: 'domains', domains: [] }, 'another organization');
+  assert.deepEqual(verifiedDomains({ kind: 'unread', why: 'timeout' }, 'uniswap', true), { kind: 'unread', why: 'timeout' });
 });
 
-test("an Immunefi program's scope holds each Ethereum address an etherscan.io link names, and its recording keeps only those", () => {
+test("an Immunefi program's scope holds each Ethereum address an etherscan.io link names", () => {
   const raw = [
     {
       slug: 'cowprotocol',
@@ -47,9 +55,6 @@ test("an Immunefi program's scope holds each Ethereum address an etherscan.io li
   const cow = programs.get('cowprotocol')!;
   assert.deepEqual([...cow.addresses].sort(), [SETTLEMENT, RELAYER].sort());
   assert.equal(cow.github?.href, 'http://github.com/cowprotocol');
-  const kept = trimImmunefiPrograms(raw, new Set(['cowprotocol']));
-  assert.deepEqual(parseImmunefiPrograms(JSON.parse(JSON.stringify(kept))), new Map([['cowprotocol', cow]]));
-  assert.doesNotMatch(JSON.stringify(kept), /long text|gnosisscan/);
 });
 
 const BLOCK = 512;

@@ -48,9 +48,12 @@ function json(got: Got & { kind: 'answer' }): unknown {
   }
 }
 
-/** The repository a provenance statement names: SLSA v1's workflow repository. */
+const GITHUB_REPOSITORY = /^https:\/\/github\.com\/[A-Za-z0-9-]+\/[A-Za-z0-9._-]+$/;
+
+/** The GitHub repository a provenance statement names, SLSA v1's workflow repository, preferring one for this tarball. */
 function provenanceOf(raw: unknown, sha512: string): Provenance {
   const attestations = isRecord(raw) && Array.isArray(raw.attestations) ? raw.attestations : [];
+  let found: Provenance | undefined;
   for (const attestation of attestations) {
     if (!isRecord(attestation) || attestation.predicateType !== 'https://slsa.dev/provenance/v1') continue;
     const envelope = isRecord(attestation.bundle) && isRecord(attestation.bundle.dsseEnvelope) ? attestation.bundle.dsseEnvelope : {};
@@ -63,12 +66,13 @@ function provenanceOf(raw: unknown, sha512: string): Provenance {
     if (!isRecord(statement) || !isRecord(statement.predicate) || !isRecord(statement.predicate.buildDefinition)) continue;
     const external = statement.predicate.buildDefinition.externalParameters;
     const repository = isRecord(external) && isRecord(external.workflow) ? external.workflow.repository : undefined;
-    if (typeof repository !== 'string') continue;
+    if (typeof repository !== 'string' || !GITHUB_REPOSITORY.test(repository)) continue;
     const subjects = Array.isArray(statement.subject) ? statement.subject : [];
     const sameTarball = subjects.some((s) => isRecord(s) && isRecord(s.digest) && s.digest.sha512 === sha512);
-    return { kind: 'built', repository, sameTarball };
+    if (sameTarball) return { kind: 'built', repository, sameTarball };
+    found ??= { kind: 'built', repository, sameTarball };
   }
-  return { kind: 'none' };
+  return found ?? { kind: 'none' };
 }
 
 /**

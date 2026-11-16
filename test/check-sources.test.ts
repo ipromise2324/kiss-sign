@@ -524,7 +524,7 @@ test('the registry refuses a sourceLabel that is empty, padded, or too long', ()
 
 test('a report that names no registry entry reads no listing, so its recording may hold both lists empty', async () => {
   const read = async (): Promise<unknown> => assert.fail('no listing should be read');
-  const none = await listingsFor([], suffixes, { list: read, orgPage: read as never });
+  const none = await listingsFor([], suffixes, { list: read, org: read as never });
   assert.deepEqual([none.protocols.size, none.coinsByAddress.size], [0, 0]);
   const multisend = loadRegistry(ROOT).entries.get('multisend-1.4.1') as RegistryEntry;
   const recordedFor = trimForRecording([multisend], listings, recordedPages, new Date());

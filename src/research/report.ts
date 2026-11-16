@@ -27,6 +27,9 @@ import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts
 import type { PastTxs } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { pathText } from './api-source.ts';
+import { provenanceRepositories } from './npm-package.ts';
+import { judge } from './ledger.ts';
+import type { Result } from './ledger.ts';
 import { githubRef, isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
@@ -452,6 +455,14 @@ const code = (text: string): string => `\`${text}\``;
 const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(checksumAddress(entry.address))}`;
 const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
 const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : VERDICTS[line.kind]);
+
+/** The deployer as the ledger counts it: PASS only through an entry confirmed in two other places, which it names. */
+function deployerCell(line: Line | undefined, result: Result | undefined): string {
+  if (line === undefined || result === undefined) return verdict(line);
+  const word = line.kind === 'unverifiable' ? VERDICTS.unverifiable : result.finding.kind === 'agrees' ? VERDICTS.agrees : VERDICTS.finding;
+  const shared = result.shared;
+  return shared === undefined ? word : `${word} ${code(checksumAddress(shared.deployer))}${shared.siblings.length === 0 ? '' : `, also ${shared.siblings.map(code).join(', ')}`}`;
+}
 
 function readText(read: ComputedRead): string {
   const args = read.args.map((arg) => (arg.kind === 'safe' ? 'the Safe' : arg.kind === 'card' ? refText(arg.ref) : readText(arg.read)));
@@ -991,6 +1002,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       }),
     );
   }
+  const deployers = new Map(judge(inputs, []).results.flatMap((r) => (r.source?.of === 'deployer' && r.about.kind === 'entry' ? [[r.about.entry.name, r] as const] : [])));
   const placed = checked.filter(({ lines }) => lines.some((l) => l.check === 'bounty' || l.check === 'sdk' || l.check === 'deployer'));
   if (placed.length > 0) {
     out.push(
@@ -1001,9 +1013,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       '| --- | --- | --- | --- | --- |',
       ...placed.map(({ entry, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
-        const deployer = of('deployer');
-        const shared = deployer?.shared === undefined ? '' : ` ${code(checksumAddress(deployer.shared.deployer))}${deployer.shared.siblings.length === 0 ? '' : `, also ${deployer.shared.siblings.map(code).join(', ')}`}`;
-        return `| ${code(entry.name)} | ${verdict(of('bounty'))} | ${verdict(of('sdk'))} | ${verdict(of('sdk-site'))} | ${verdict(deployer)}${shared} |`;
+        return `| ${code(entry.name)} | ${verdict(of('bounty'))} | ${verdict(of('sdk'))} | ${verdict(of('sdk-site'))} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
       }),
     );
   }
@@ -1148,13 +1158,14 @@ export async function replayInputs(
   const recording = readRecording(join(repoRoot, recordingPath)) as ReportRecording;
   const entries = entriesOf(subject, registry);
   const docUrls = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
+  const pages = sourcePagesOf(recording);
   const pastRecordings = pastTxsRecordings(repoRoot, subject);
   const snapshot: Snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };
   const inputs: ReportInputs = {
     subject,
     registry,
-    listings: await listingsFor(entries, suffixes, recordedListingReads(recording), [...entries.flatMap(pageUrlsOf), ...docUrls]),
-    pages: sourcePagesOf(recording),
+    listings: await listingsFor(entries, suffixes, recordedListingReads(recording), [...entries.flatMap(pageUrlsOf), ...docUrls, ...provenanceRepositories(pages.packages ?? new Map())]),
+    pages,
     fetched: recording.fetched,
     abi: await replayAbiProofs(provedEntries(subject, registry), loadAbiCases(repoRoot), compilers),
     vaults: new Map(Object.entries(recording.vaults)),
