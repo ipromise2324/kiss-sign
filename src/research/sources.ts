@@ -137,13 +137,32 @@ export async function searchBoth(anchor: Anchor, ask: Ask): Promise<Hits> {
 
 export type SourceExchange = { readonly request: SourceRequest; readonly answer: unknown };
 
-/** Passes every request through and keeps each answer. */
+/**
+ * The answer cut to the fields the search reads, so its replay finds the same transfers and the same overflow. An
+ * answer over one page keeps only its length (Etherscan) or its page key (Alchemy): a halved window never reads its
+ * transfers, and a busy token's windows halve many times.
+ */
+function readFields(source: SourceName, answer: unknown): unknown {
+  if (!isRecord(answer)) return answer;
+  if (source === 'alchemy') {
+    if (!Array.isArray(answer.transfers)) return answer;
+    const { transfers, pageKey } = answer;
+    if (typeof pageKey === 'string') return { transfers: [], pageKey };
+    return { transfers: transfers.map((t: unknown) => (isRecord(t) ? { hash: t.hash, from: t.from, to: t.to } : t)) };
+  }
+  if (answer.status !== '1' || !Array.isArray(answer.result)) return answer;
+  const { status, message, result } = answer;
+  if (result.length >= PAGE) return { status, message, result: result.map(() => ({})) };
+  return { status, message, result: result.map((log: unknown) => (isRecord(log) ? { transactionHash: log.transactionHash, topics: log.topics } : log)) };
+}
+
+/** Passes every request through and keeps each answer, cut to what the search reads. */
 export function recordingAsk(inner: Ask): { ask: Ask; exchanges: () => SourceExchange[] } {
   const exchanges: SourceExchange[] = [];
   return {
     ask: async (req) => {
       const answer = await inner(req);
-      exchanges.push({ request: req, answer });
+      exchanges.push({ request: req, answer: readFields(req.source, answer) });
       return answer;
     },
     exchanges: () => [...exchanges],
