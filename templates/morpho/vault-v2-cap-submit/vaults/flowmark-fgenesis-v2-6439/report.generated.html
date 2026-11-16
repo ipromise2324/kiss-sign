@@ -174,6 +174,7 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part:first-child,.plabel+.part{border-top:0;padding-top:2px}
 .part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
 .part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
@@ -329,7 +330,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">data</div><div><div class="is"><code>increaseAbsoluteCap</code> (<span class="addr">0xf6f98fd5</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要排隊的完整呼叫，下面逐項列出。vault 記下它的 <code>executableAt</code>，到期才能執行這一模一樣的呼叫。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">idData</div><div><div class="is"><code>abi.encode</code> 編碼的值</div>
+        <div class="part"><div class="pn">idData</div><div><div class="is"><code>capId</code> 的參數</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>上限的編號資料。vault 用它的 keccak256 當上限的 id，這裡是「這個轉接合約裡的這個市場」。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">kind<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">&#34;this/marketParams&#34;</div><div class="is">固定為 &#34;this/marketParams&#34;</div>
@@ -385,7 +386,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="part"><div class="pn">data</div><div><div class="is"><code>increaseRelativeCap</code> (<span class="addr">0x2438525b</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要排隊的完整呼叫，下面逐項列出。</span></span></div></div>
       <div class="parts">
-        <div class="part"><div class="pn">idData</div><div><div class="is"><code>abi.encode</code> 編碼的值</div>
+        <div class="part"><div class="pn">idData</div><div><div class="is"><code>capId</code> 的參數</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>跟第一項同一個上限 id。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">kind<div class="pchips"><span class="who">固定</span></div></div><div><div class="raw">&#34;this/marketParams&#34;</div><div class="is">固定為 &#34;this/marketParams&#34;</div>

@@ -174,6 +174,7 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part:first-child,.plabel+.part{border-top:0;padding-top:2px}
 .part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
 .part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}
@@ -329,7 +330,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="parts">
         <div class="part"><div class="pn">adapter<div class="pchips"><span class="who you">你選：金庫</span></div></div><div><div class="raw">0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5</div><div class="is"><a href="#a-acuto-usdc-v2-4a57-market-adapter">acuto-usdc-v2-4a57-market-adapter</a> <span class="f3">你選的金庫的轉接合約</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>vault 的市場轉接合約，錢經由它進出 Morpho Blue 市場。</span></span></div></div></div>
-        <div class="part"><div class="pn">data</div><div><div class="is"><code>abi.encode</code> 編碼的值</div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>market</code> 的參數</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>告訴轉接合約是哪個市場：來源市場的五個參數。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">marketParams<div class="pchips"><span class="who you">你選：市場（from）</span></div></div><div><div class="is">你選的市場（from） <span class="f3">5 個值，任何一個不同就 MISMATCH</span></div>
@@ -379,7 +380,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="parts">
         <div class="part"><div class="pn">adapter<div class="pchips"><span class="who you">你選：金庫</span></div></div><div><div class="raw">0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5</div><div class="is"><a href="#a-acuto-usdc-v2-4a57-market-adapter">acuto-usdc-v2-4a57-market-adapter</a> <span class="f3">你選的金庫的轉接合約</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>vault 的市場轉接合約，錢經由它進出 Morpho Blue 市場。</span></span></div></div></div>
-        <div class="part"><div class="pn">data</div><div><div class="is"><code>abi.encode</code> 編碼的值</div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>market</code> 的參數</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>告訴轉接合約是哪個市場：目標市場的五個參數。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">marketParams<div class="pchips"><span class="who you">你選：市場（to）</span></div></div><div><div class="is">你選的市場（to） <span class="f3">5 個值，任何一個不同就 MISMATCH</span></div>
