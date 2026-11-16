@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { RegistryError, loadRegistry, pageUrlsOf, parseRegistry } from '../src/registry.ts';
 import type { RegistryEntry } from '../src/registry.ts';
-import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf, trimForRecording, trimPage } from '../src/research/listings.ts';
+import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, recordedListingReads, sourcePagesOf, trimForRecording, trimPage } from '../src/research/listings.ts';
 import type { Listings } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
@@ -16,12 +16,8 @@ import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 const ROOT = repoWithTestFixtures();
 const recording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'sources', 'registry.json'), 'utf8'));
 const suffixes = parsePublicSuffixList(readFileSync(join(ROOT, 'testdata', 'sources', 'public-suffix-list.dat'), 'utf8'));
-const listingsOf = (defillama: unknown, coingecko: unknown): Listings => ({
-  protocols: parseDefiLlamaProtocols(defillama),
-  coinsByAddress: parseCoinGeckoCoins(coingecko),
-  suffixes,
-});
-const listings = listingsOf(recording.defillama, recording.coingecko);
+const listings = await listingsFor([...loadRegistry(ROOT).entries.values()], suffixes, recordedListingReads(recording));
+const listingsOf = (defillama: unknown, coingecko: unknown): Listings => ({ ...listings, protocols: parseDefiLlamaProtocols(defillama, recording.defillamaParents), coinsByAddress: parseCoinGeckoCoins(coingecko) });
 
 const recordedPages = sourcePagesOf(recording);
 const report = (entries: readonly RegistryEntry[], using: Listings = listings, pages: SourcePages = recordedPages) => formatResults(checkSources(entries, using, pages));
@@ -528,18 +524,19 @@ test('the registry refuses a sourceLabel that is empty, padded, or too long', ()
 
 test('a report that names no registry entry reads no listing, so its recording may hold both lists empty', async () => {
   const read = async (): Promise<unknown> => assert.fail('no listing should be read');
-  const none = await listingsFor([], suffixes, read);
+  const none = await listingsFor([], suffixes, { list: read, orgPage: read as never });
   assert.deepEqual([none.protocols.size, none.coinsByAddress.size], [0, 0]);
   const multisend = loadRegistry(ROOT).entries.get('multisend-1.4.1') as RegistryEntry;
   const recordedFor = trimForRecording([multisend], listings, recordedPages, new Date());
   assert.deepEqual(recordedFor.coingecko, []);
-  const replayed = await listingsFor([multisend], suffixes, async (listing) => (listing.hostname === 'api.llama.fi' ? recordedFor.defillama : recordedFor.coingecko));
+  const replayed = await listingsFor([multisend], suffixes, recordedListingReads(recordedFor));
   assert.equal(replayed.coinsByAddress.size, 0);
   assert.match(report([multisend], replayed), /defillama {2}agrees {2}GitHub org safe-global is one safe \(Safe\) names/);
 });
 
 test('an empty listing an entry needs is refused, since it would hide every comparison', async () => {
   const usdc = loadRegistry(ROOT).entries.get('usdc') as RegistryEntry;
-  await assert.rejects(listingsFor([usdc], suffixes, async (listing) => (listing.hostname === 'api.llama.fi' ? [] : recording.coingecko)), /DefiLlama sent an empty protocol list/);
-  await assert.rejects(listingsFor([usdc], suffixes, async (listing) => (listing.hostname === 'api.llama.fi' ? recording.defillama : [])), /CoinGecko sent no Ethereum coins/);
+  const reads = recordedListingReads(recording);
+  await assert.rejects(listingsFor([usdc], suffixes, { ...reads, list: async (target) => (target.path === '/protocols' ? [] : reads.list(target)) }), /DefiLlama sent an empty protocol list/);
+  await assert.rejects(listingsFor([usdc], suffixes, { ...reads, list: async (target) => (target.hostname === 'api.coingecko.com' ? [] : reads.list(target)) }), /CoinGecko sent no Ethereum coins/);
 });

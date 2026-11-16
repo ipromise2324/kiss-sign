@@ -168,7 +168,7 @@ test('init creates a key file readable by its owner only, with an empty line per
   assert.equal(first.code, 0);
   assert.match(first.stdout, new RegExp(`Created the key file ${keyFile}, readable by you only`));
   assert.match(first.stdout, /ALCHEMY_API_KEY +get it at https:\/\/dashboard\.alchemy\.com\/\n +needed by pnpm kiss-sign verify, pnpm kiss-sign card new/);
-  assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs/);
+  assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs, pnpm check-sources and pnpm report/);
   assert.match(first.stdout, new RegExp(`\\n {7}\\$\\{EDITOR:-nano\\} ${keyFile}\\n`));
   assert.match(first.stdout, /\n {5}Or enter each key with the command below; what you type is not shown on screen:\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add etherscan\n/);
   assert.equal(statSync(keyFile).mode & 0o777, 0o600);
