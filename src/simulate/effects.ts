@@ -56,7 +56,7 @@ export type Asset = 'eth' | Address;
  * A change of exactly `change`; of more than `change` when the Safe also gets a `positive` amount, or less when it gives
  * one; or, when the Safe gives `all` of a token, any change that leaves it holding none.
  */
-export type Expected = { readonly kind: 'exactly' | 'more-than' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
+export type Expected = { readonly kind: 'exactly' | 'more-than' | 'at-least' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
 
 export type EffectFinding =
   | { readonly kind: 'balance'; readonly asset: Asset; readonly expected: Exclude<Expected, { kind: 'all' }>; readonly actual: bigint }
@@ -137,8 +137,7 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         else if (base.kind !== 'exactly' || stated.has(token)) reasons.push(mixed(token));
         else {
           stated.add(token);
-          // More than one less than the amount is at least the amount.
-          changes.set(token, { kind: open, change: base.change + least.value - 1n });
+          changes.set(token, { kind: 'at-least', change: base.change + least.value });
         }
         continue;
       }
@@ -329,7 +328,13 @@ const CHANGED: Readonly<Record<ViewChange, (before: bigint, after: bigint) => bo
 };
 
 const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): boolean =>
-  expected.kind === 'exactly' ? actual === expected.change : expected.kind === 'more-than' ? actual > expected.change : actual < expected.change;
+  expected.kind === 'exactly'
+    ? actual === expected.change
+    : expected.kind === 'more-than'
+      ? actual > expected.change
+      : expected.kind === 'at-least'
+        ? actual >= expected.change
+        : actual < expected.change;
 
 /**
  * Every change to the Safe's balances must be one the card's effects explain, and no allowance, ERC-20 or Permit2, may
@@ -424,6 +429,11 @@ export function describeFinding(finding: EffectFinding, registry: Registry): str
     return `Permit2 allowance raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${show(finding.before)} before, ${show(finding.after)} after`;
   }
   const { expected } = finding;
-  const want = expected.kind === 'exactly' ? signed(expected.change) : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${signed(expected.change)}`;
+  const want =
+    expected.kind === 'exactly'
+      ? signed(expected.change)
+      : expected.kind === 'at-least'
+        ? `at least ${signed(expected.change)}`
+        : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${signed(expected.change)}`;
   return `${nameOf(finding.asset, registry)} changed by ${signed(finding.actual)}, the card explains ${want}`;
 }
