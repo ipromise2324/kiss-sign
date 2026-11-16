@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ProviderName } from '../chain/providers.ts';
 import type { Read, Reader } from '../chain/reader.ts';
@@ -7,6 +7,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import { proveAbi } from './prove.ts';
 import type { AbiProof, AbiRefusal, ProveDeps } from './prove.ts';
 import type { SourcifyAnswer } from './sourcify.ts';
+import { readRecording } from '../chain/bytecode.ts';
 
 export type RecordedRead = { readonly method: string; readonly args: readonly unknown[]; readonly value: unknown };
 
@@ -99,7 +100,7 @@ export function loadAbiCases(repoRoot: string): Map<Address, AbiCase> {
   const dir = join(repoRoot, ABI_CASES_DIR);
   const cases = new Map<Address, AbiCase>();
   for (const file of readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
-    const fixture = JSON.parse(readFileSync(join(dir, file), 'utf8')) as AbiCase;
+    const fixture = readRecording(join(dir, file)) as AbiCase;
     const address = fixture.address.toLowerCase() as Address;
     const known = cases.get(address);
     if (known === undefined || BigInt(known.block.number) < BigInt(fixture.block.number)) cases.set(address, fixture);

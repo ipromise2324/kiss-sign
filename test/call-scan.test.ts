@@ -10,9 +10,10 @@ import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { describeCallScan, scanCalls } from '../src/simulate/simulate.ts';
 import type { CallScan } from '../src/simulate/simulate.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
-const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
+const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
 const registry = loadRegistry(ROOT);
 
 type Fixture = { executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };

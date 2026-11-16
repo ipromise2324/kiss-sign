@@ -38,7 +38,7 @@ const KEYED = ['reviews', 'entries'];
 /**
  * The template's notes and a vault's, as one: each key once, except that `flow` and `judgments` join and `reviews` and `entries`
  * join by name. A vault's notes may hold only `VAULT_KEYS`, may review and describe only the entries in `owned`, the
- * vault and the entries its attributes name, and a key or name both define is refused. A template's `flow` line that
+ * vault, the entries its attributes name and those it depends on, and a key or name both define is refused. A template's `flow` line that
  * names an entry in `owned` is refused, since another vault's report could not name it.
  */
 export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, owned: ReadonlySet<string>): unknown {
@@ -53,7 +53,7 @@ export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, o
     if (!VAULT_KEYS.includes(key)) refuse(vaultPath, `${shown(key)} belongs in the template's ${NOTES_FILE}, which every vault's report shares`);
     if (KEYED.includes(key) && isRecord(value)) {
       const other = Object.keys(value).find((name) => !owned.has(key === 'reviews' ? name.split('/')[0]! : name));
-      if (other !== undefined) refuse(`${vaultPath}.${key}`, `${shown(other)} is not about ${[...owned].join(' or ')}; a shared contract belongs in the template's ${NOTES_FILE}`);
+      if (other !== undefined) refuse(`${vaultPath}.${key}`, `${shown(other)} is not the vault or an entry it names (${[...owned].join(', ')}); a shared contract belongs in the template's ${NOTES_FILE}`);
     }
     const before = own(shared, key);
     if (before === undefined) merged[key] = value;
@@ -72,17 +72,19 @@ export function readNotes(repoRoot: string, template: string, vault?: RegistryEn
   const shared = readJson(join(repoRoot, notesPath(template)));
   if (vault === undefined) return shared;
   const path = notesPath(template, vault.name);
-  return mergeNotes(shared, readJson(join(repoRoot, path)), path, new Set([vault.name, ...Object.values(vault.attributes)]));
+  return mergeNotes(shared, readJson(join(repoRoot, path)), path, new Set([vault.name, ...Object.values(vault.attributes), ...(vault.dependsOn ?? [])]));
 }
 
 /** What notes.json may name and must name, derived from the template, the report's inputs and its ledger. */
 export type NotesScope = {
   /** How many calls the template makes: a `flow` line's `after` is one of 1..calls. */
   readonly calls: number;
-  /** The registry names a call or an effects' view targets, and the tokens the effects move: a `flow` line's `from` and `to`. */
+  /** The registry names a call or an effects' view targets, the entries those depend on, and the tokens the effects move: a `flow` line's `from` and `to`. */
   readonly contracts: ReadonlySet<string>;
   /** The registry entries the report covers; `entries` may name any of them. */
   readonly entries: ReadonlySet<string>;
+  /** The covered entries with `routes`, each of which `entries` must describe, with a role and its sources. */
+  readonly routed: ReadonlySet<string>;
   /** Each covered protocol by DefiLlama slug, every one required, with the hacks DefiLlama lists, or `unread`. */
   readonly protocols: ReadonlyMap<string, number | 'unread'>;
   /** Every argument and tuple part's field key, in page order, every one required. */
@@ -149,14 +151,16 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
     inputs.facts === undefined
       ? new Map(factsScope(template, registry, ledger.entries).protocols.map(({ slug }) => [slug, 'unread']))
       : new Map(inputs.facts.protocols.map((sheet) => [sheet.slug, sheet.listing.kind === 'read' ? sheet.hacks.length : 'unread']));
+  const targets = [...callTargetEntries(template, registry).map((entry) => entry.name), ...template.effects.views.map((view) => view.to)];
   return {
     calls: template.calls.length,
     contracts: new Set([
-      ...callTargetEntries(template, registry).map((entry) => entry.name),
-      ...template.effects.views.map((view) => view.to),
+      ...targets,
+      ...targets.flatMap((name) => registry.entries.get(name)?.dependsOn ?? []),
       ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => (effect.token === 'eth' ? [] : refNames(effect.token, template, registry))),
     ]),
     entries: new Set(ledger.entries.map((entry) => entry.name)),
+    routed: new Set(ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name)),
     protocols,
     fields: fieldKeys(template),
     reviews: ledger.results.filter(needsSigner).map((result) => result.id),
@@ -211,7 +215,7 @@ const callNumber: P<number> = (path, raw, scope) =>
 
 const contract: P<string> = (path, raw, scope) => {
   const name = str(80)(path, raw, scope);
-  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, nor a token the effects move`);
+  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, an entry one of those depends on, nor a token the effects move`);
 };
 
 const list =
@@ -270,7 +274,7 @@ const protocolNotes = (slug: string) =>
     return hacks === 'unread' || protocol.incidents.length === hacks ? undefined : `incidents lists ${protocol.incidents.length}; DefiLlama lists ${hacks} hacks`;
   });
 
-const NOTES_SCHEMA = obj({
+const NOTES_FIELDS = obj({
   title: str(100),
   summary: str(2000),
   verdict: obj({ status: oneOf('safe', 'caution'), text: str(100) }),
@@ -287,6 +291,16 @@ const NOTES_SCHEMA = obj({
   ),
   fields: keyed((scope) => scope.fields, 'an argument of the template', true, () => str(2000)),
   pastTxsConclusion: opt(str(200)),
+});
+
+const NOTES_SCHEMA = where(NOTES_FIELDS, (notes, scope) => {
+  const undescribed = [...scope.routed].find((name) => {
+    const entry = notes.entries?.get(name);
+    return entry?.role === undefined || entry.sources.length === 0;
+  });
+  return undescribed === undefined
+    ? undefined
+    : `entries.${undescribed} needs a role and at least one source: its routes reach only the implementations its seeds name, so list the history that shows a seed reaches every implementation still set`;
 });
 
 export type Notes = ReturnType<typeof NOTES_SCHEMA>;

@@ -31,6 +31,7 @@ import { checkCode, codeClaims } from './code.ts';
 import { amountTokens } from './expected.ts';
 import { decideVerdict } from './verdict.ts';
 import type { ChainCheck, TemplateApproval, Verdict } from './verdict.ts';
+import { RecordingError, unpackRecording } from '../chain/bytecode.ts';
 
 /** The Safe transaction as given: Transaction Service JSON, which carries its safeTxHash, or the Safe web app's JSON. */
 export type TxInput = { readonly format: 'service' | 'web-app'; readonly json: unknown };
@@ -58,7 +59,7 @@ export type MessageReader = (url: string) => Promise<{ readonly text: string } |
 /** `calls` is information for the signer, not a check: which of the Safe's calls move none of its assets. */
 export type Evaluation = { readonly verdict: Verdict; readonly hashes: SafeTxHashes; readonly calls: CallScan };
 
-export const VERDICT_FORMAT = 'kiss-sign-verdict-2';
+export const VERDICT_FORMAT = 'kiss-sign-verdict-3';
 
 export type VerdictFile = {
   readonly format: typeof VERDICT_FORMAT;
@@ -269,7 +270,15 @@ export function parseVerdictFile(raw: unknown): VerdictFile {
   if (raw.format !== VERDICT_FORMAT) {
     throw new VerifyError(`this verdict file is in format ${JSON.stringify(raw.format)}, not ${VERDICT_FORMAT}; run verify again to get a file this program can replay`);
   }
-  const { inputs, exchanges, result } = raw;
+  let unpacked: unknown;
+  try {
+    unpacked = unpackRecording(raw, 'the verdict file');
+  } catch (error) {
+    if (error instanceof RecordingError) throw new VerifyError(error.message);
+    throw error;
+  }
+  if (!isRecord(unpacked)) return refuse('format');
+  const { inputs, exchanges, result } = unpacked;
   if (!isRecord(inputs) || !isText(inputs.commit) || !isText(inputs.safe) || !isText(inputs.registry)) return refuse('inputs');
   if (inputs.markets !== undefined && !isText(inputs.markets)) return refuse('inputs.markets');
   if (!isRecord(inputs.tx) || (inputs.tx.format !== 'service' && inputs.tx.format !== 'web-app')) return refuse('inputs.tx');
@@ -281,5 +290,5 @@ export function parseVerdictFile(raw: unknown): VerdictFile {
   const exchangeOk = (e: unknown) => isRecord(e) && isText(e.method) && isRecord(e.answers);
   if (!Array.isArray(exchanges) || !exchanges.every(exchangeOk)) return refuse('exchanges');
   if (!isRecord(result) || !isRecord(result.verdict) || !isRecord(result.hashes) || !isRecord(result.calls)) return refuse('result');
-  return raw as unknown as VerdictFile;
+  return unpacked as unknown as VerdictFile;
 }

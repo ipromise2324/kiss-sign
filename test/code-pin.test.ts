@@ -14,9 +14,11 @@ import { checkCode } from '../src/verify/code.ts';
 import type { Verdict } from '../src/verify/verdict.ts';
 import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile, VerifyInputs } from '../src/verify/verify.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
+import type { AbiCase } from '../src/contracts/abi-case.ts';
 
 const ROOT = join(import.meta.dirname, '..');
-const recorded: VerdictFile = JSON.parse(readFileSync(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'), 'utf8'));
+const recorded: VerdictFile = readRecording(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'));
 const BUNDLER3 = '0x6566194141eefa99af43bb5aa71460ca2dc90245';
 const USDC = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48';
 const ZEPPELINOS_SLOT = `0x${ZEPPELINOS_IMPLEMENTATION_SLOT.toString(16)}`;
@@ -104,7 +106,7 @@ test('a pin that names no implementation for a contract that now delegates is MI
 
 test('pinned code that delegates a call it has no function for to an address in its storage is MISMATCH', async () => {
   const vault = '0xbeef088055857739c12cd3765f20b7679def0f51';
-  const delegator = JSON.parse(readFileSync(join(ROOT, 'testdata', 'abi', 'fluid-token.json'), 'utf8')).reads[0].value as Hex;
+  const delegator = readRecording<AbiCase>(join(ROOT, 'testdata', 'abi', 'fluid-token.json')).reads[0]!.value as Hex;
   const inputs = withRegistry((entries) => {
     entries['steakhouse-prime-usdc']!.code = { hash: keccakCode(delegator) };
   });
@@ -116,7 +118,7 @@ test('pinned code that delegates a call it has no function for to an address in 
 
 test('a pinned implementation that delegates a call it has no function for to an address in its storage is MISMATCH', async () => {
   const implementation = '0x43506849d7c04f9138d1a2050bbf3a0c054402dd';
-  const delegator = JSON.parse(readFileSync(join(ROOT, 'testdata', 'abi', 'fluid-token.json'), 'utf8')).reads[0].value as Hex;
+  const delegator = readRecording<AbiCase>(join(ROOT, 'testdata', 'abi', 'fluid-token.json')).reads[0]!.value as Hex;
   const inputs = withRegistry((entries) => {
     (entries.usdc!.code as { implementation: { hash: Hex } }).implementation.hash = keccakCode(delegator);
   });
