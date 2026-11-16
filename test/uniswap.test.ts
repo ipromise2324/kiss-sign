@@ -26,7 +26,7 @@ import type { Template } from '../src/template/template.ts';
 const ROOT = join(import.meta.dirname, '..');
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
 const registry = loadRegistry(ROOT);
-const IDS = ['uniswap/swap', 'uniswap/approve-permit2', 'uniswap/allow-router'];
+const IDS = ['uniswap/swap', 'uniswap/swap-permit', 'uniswap/approve-permit2', 'uniswap/allow-router'];
 const templates = new Map<string, Template>(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
 const addressOf = (name: string): Address => registry.entries.get(name)!.address;
 const OTHER = '0x1111111111111111111111111111111111111111' as Address;
@@ -63,8 +63,8 @@ type Case = {
   readonly bound: number;
 };
 
-const swapOp = (sell: string, buy: string, amount: bigint, minBuy: bigint) => ({
-  template: 'uniswap/swap',
+const swapOp = (sell: string, buy: string, amount: bigint, minBuy: bigint, template = 'uniswap/swap') => ({
+  template,
   values: { 'sell-token': sell, 'buy-token': buy, 'sell-amount': `${amount}`, 'min-buy': `${minBuy}` },
 });
 
@@ -82,7 +82,17 @@ const BATCHED: Case = {
   },
 };
 
-const CASES: readonly Case[] = [BATCHED];
+const CASES: readonly Case[] = [
+  BATCHED,
+  { name: 'uniswap-swap-usdc-usdt', sell: 130000000n, minBuy: 129893802n, bound: 16, card: { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] } },
+  {
+    name: 'uniswap-swap-permit-usdc-usdt',
+    sell: 24000000000n,
+    minBuy: 23978654164n,
+    bound: 19,
+    card: { operations: [swapOp('usdc', 'usdt', 24000000000n, 23978654164n, 'uniswap/swap-permit')] },
+  },
+];
 
 function resolved(tx: SafeTx, card: Card): ResolvedCard {
   const result = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
@@ -98,13 +108,14 @@ function mismatchAt(result: FieldCheck): string[] {
 }
 
 const withMinBuy = (card: Card, minBuy: bigint): Card => ({
-  operations: card.operations.map((op) => (op.template === 'uniswap/swap' ? { ...op, values: { ...op.values, 'min-buy': `${minBuy}` } } : op)),
+  operations: card.operations.map((op) => (op.template.startsWith('uniswap/swap') ? { ...op, values: { ...op.values, 'min-buy': `${minBuy}` } } : op)),
 });
 
 for (const c of CASES) {
   const tx = safeTx(c.name);
   const swapAt = c.card.operations.length === 1 ? 'call' : `multiSend[${c.card.operations.length - 1}]`;
-  const v4 = `${swapAt}.execute.inputs[0].V4_SWAP`;
+  const permits = c.card.operations.some((op) => op.template === 'uniswap/swap-permit');
+  const v4 = `${swapAt}.execute.inputs[${permits ? 1 : 0}].V4_SWAP`;
 
   test(`${c.name} matches its card`, () => {
     assert.deepEqual(check(tx, c.card), { kind: 'match' });
