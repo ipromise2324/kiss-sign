@@ -122,7 +122,7 @@ test('the HTML report holds no script and loads nothing', () => {
   }
 });
 
-test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, a standard\'s page, one of the four the program builds, or an id on the page', () => {
+test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, a standard\'s page, one the program builds from an id a parser checked, or an id on the page', () => {
   for (const [id, { html }] of replayed) {
     const notes = notesOf(id);
     const { target, root, registry } = reportOf(id);
@@ -136,6 +136,8 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
         ...(e.apiSource === undefined ? [] : [e.apiSource.url]),
         ...(e.coingecko === undefined ? [] : [`https://www.coingecko.com/en/coins/${e.coingecko}`]),
         ...(e.defillama === undefined ? [] : [`https://defillama.com/protocol/${e.defillama}`]),
+        ...(e.immunefi === undefined ? [] : [`https://immunefi.com/bug-bounty/${e.immunefi}/`]),
+        ...(e.sdk === undefined ? [] : [`https://www.npmjs.com/package/${e.sdk.package}/v/${e.sdk.version}`]),
       ]),
       ...Object.values(docs).map((d) => d.url),
       ...[...STANDARDS.values()].map((standard) => standard.page),
@@ -146,7 +148,10 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
     for (const [, raw] of html.matchAll(/\shref="([^"]*)"/g)) {
       const href = unescape(raw as string);
       if (href.startsWith('#')) assert.ok(ids.has(href.slice(1)), `${id}: ${href} names no id on the page`);
-      else assert.ok(allowed.has(href) || /^https:\/\/etherscan\.io\/tx\/0x[0-9a-f]{64}$/.test(href), `${id}: ${href} is not a URL the report may link`);
+      else {
+        const built = /^https:\/\/(etherscan\.io\/(tx\/0x[0-9a-f]{64}|address\/0x[0-9a-fA-F]{40})|www\.coingecko\.com\/en\/coins\/[a-z0-9._-]+|github\.com\/[a-z0-9-]+)$/;
+        assert.ok(allowed.has(href) || built.test(href), `${id}: ${href} is not a URL the report may link`);
+      }
     }
   }
 });
