@@ -129,9 +129,9 @@ const packageRead = (change: Partial<Extract<PackageRead, { kind: 'read' }>> = {
   entry: { ...ENTRY, sdk: SDK },
   packages: new Map([[SDK_KEY, { kind: 'read', sha256: PIN, integrity: true, provenance: BUILT, file: { kind: 'served', blocks: [{ text: `VAULT = "${ADDRESS}"` }] }, ...change }]]),
 });
-const program = (addresses: readonly Address[], github?: string): SiteListings => ({
+const program = (addresses: readonly Address[], github?: string, website = 'https://example.org'): SiteListings => ({
   ...NO_SITE_LISTINGS,
-  programs: new Map([['proto', { slug: 'proto', website: undefined, github: github === undefined ? undefined : new URL(github), addresses: new Set(addresses) }]]),
+  programs: new Map([['proto', { slug: 'proto', website: new URL(website), github: github === undefined ? undefined : new URL(github), addresses: new Set(addresses) }]]),
 });
 const coinLinks = (homepages: readonly string[], github: readonly string[]): SiteListings => ({
   ...NO_SITE_LISTINGS,
@@ -294,6 +294,7 @@ const ROWS: readonly Row[] = [
   { what: 'a selector-routed proxy that runs its pin and routes at the latest block', change: { entry: ROUTED, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
   { what: 'a bounty program with the address in scope', change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS]) }, id: 'vault/source.bounty', kind: 'agrees', state: 'ok' },
   { what: 'a bounty program without the address in scope', change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([OTHER]) }, id: 'vault/source.bounty', kind: 'not-listed', state: 'na' },
+  { what: "a bounty program that lists none of the protocol's sites", change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS], 'https://github.com/other', 'https://other.org') }, id: 'vault/source.bounty', kind: 'site-differs', state: 'bad' },
   { what: 'a bounty program Immunefi does not list', change: { entry: { ...ENTRY, immunefi: 'proto' } }, id: 'vault/source.bounty', kind: 'not-listed', state: 'na' },
   { what: 'an SDK file with the address next to its label', change: packageRead(), id: 'vault/source.sdk', kind: 'agrees', state: 'ok' },
   { what: "an SDK built from the protocol's GitHub org", change: packageRead(), id: 'vault/source.sdk.site', kind: 'agrees', state: 'ok' },
@@ -327,6 +328,14 @@ test('two entries that share a deployer and are confirmed nowhere else never con
   const confirmed = ledgerOf({ ...sharing(true), coins: [] });
   assert.deepEqual(confirmations(confirmed, ENTRY), ['page', 'deployer']);
   assert.deepEqual(resultOf(confirmed, 'vault/source.deployer').shared, { deployer: DEPLOYER, siblings: ['sibling'] });
+});
+
+test('an SDK whose publisher nothing ties to the protocol confirms nothing, though its file shows the address', () => {
+  const ledger = ledgerOf({ ...packageRead({ provenance: { kind: 'none' } }), coins: [] });
+  assert.equal(resultOf(ledger, 'vault/source.sdk').finding.kind, 'agrees');
+  assert.deepEqual(confirmations(ledger, { ...ENTRY, sdk: SDK }), ['page']);
+  assert.equal(resultOf(ledger, 'vault/address').finding.kind, 'few-confirmations');
+  assert.deepEqual(confirmations(ledgerOf({ ...packageRead(), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
 });
 
 test('every finding kind has a row', () => {
@@ -368,8 +377,8 @@ test('an empty address source is grey; the address result alone puts the entry i
   assert.deepEqual(
     sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link, s.site]),
     [
-      ['page', 'na', '讀不到', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto' }],
-      ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto' }],
+      ['page', 'na', '讀不到', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
+      ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
       ['coingecko', 'ok', undefined, 'https://www.coingecko.com/en/coins/vault-coin', undefined],
     ],
   );

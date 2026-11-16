@@ -27,7 +27,7 @@ export const NO_SITE_LISTINGS: SiteListings = { coins: new Map(), programs: new 
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-function httpsUrl(raw: unknown): URL | undefined {
+export function httpsUrl(raw: unknown): URL | undefined {
   if (typeof raw !== 'string' || raw.trim() === '') return undefined;
   try {
     const url = new URL(raw.includes('://') ? raw.trim() : `https://${raw.trim()}`);
@@ -45,12 +45,6 @@ export function parseCoinLinks(raw: unknown): CoinLinks {
   return { kind: 'links', homepages: urls(links.homepage), github: urls(isRecord(links.repos_url) ? links.repos_url.github : undefined) };
 }
 
-/** Only the fields `parseCoinLinks` reads, for a recording. */
-export const trimCoinLinks = (raw: unknown): unknown => {
-  const links = isRecord(raw) && isRecord(raw.links) ? raw.links : {};
-  return { links: { homepage: links.homepage ?? [], repos_url: { github: isRecord(links.repos_url) ? (links.repos_url.github ?? []) : [] } } };
-};
-
 const ETHERSCAN_ADDRESS = /https?:\/\/(?:www\.)?etherscan\.io\/address\/(0x[0-9a-fA-F]{40})(?![0-9a-fA-F])/g;
 
 /** Each address an `etherscan.io/address/` link in `text` names, lowercased. */
@@ -62,9 +56,13 @@ function scopeText(program: Record<string, unknown>): string {
   return [...assets, typeof program.assetsBodyV2 === 'string' ? program.assetsBodyV2 : ''].join('\n');
 }
 
+export class SiteListingError extends Error {
+  override name = 'SiteListingError';
+}
+
 /** Immunefi's `public-api/bounties.json`, by program slug. */
 export function parseImmunefiPrograms(raw: unknown): Map<string, ImmunefiProgram> {
-  if (!Array.isArray(raw)) throw new Error('Immunefi sent no program list');
+  if (!Array.isArray(raw)) throw new SiteListingError('Immunefi sent no program list');
   const programs = new Map<string, ImmunefiProgram>();
   for (const item of raw) {
     if (!isRecord(item) || typeof item.slug !== 'string' || item.slug === '') continue;
@@ -73,53 +71,32 @@ export function parseImmunefiPrograms(raw: unknown): Map<string, ImmunefiProgram
   return programs;
 }
 
-/** The programs `slugs` name, cut to what `parseImmunefiPrograms` reads, with the scope kept only as its etherscan.io address links. */
-export function trimImmunefiPrograms(raw: unknown, slugs: ReadonlySet<string>): unknown {
-  if (!Array.isArray(raw)) return raw;
-  return raw
-    .filter((item): item is Record<string, unknown> => isRecord(item) && typeof item.slug === 'string' && slugs.has(item.slug))
-    .map((item) => ({
-      slug: item.slug,
-      websiteUrl: item.websiteUrl ?? null,
-      githubUrl: item.githubUrl ?? null,
-      assetsBodyV2: [...new Set(etherscanAddresses(scopeText(item)))].map((address) => `https://etherscan.io/address/${address}`).join('\n'),
-    }));
-}
-
 const DOMAIN = /^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/i;
 const VERIFIED_END = 'Learn more about verified organizations';
 
 /**
- * The domains on GitHub's page for `org`, as served: the badge `Verified`, the sentence that GitHub verified the
- * organization controls the domain, one block per domain, then GitHub's link on verified organizations. The whole run
- * must stand in that order, so text the organization wrote, a description or a location, cannot make one up.
+ * The domains on GitHub's page for `org`, as served, for an organization GitHub's API says is verified: the first run
+ * of the badge `Verified`, the sentence that GitHub verified the organization controls the domain, one block per
+ * domain, then GitHub's link on verified organizations. The badge sits in the page's header, above anything the
+ * organization wrote, such as its profile README, so only the first run is GitHub's; an organization GitHub has not
+ * verified has none, whatever its README holds.
  */
-export function verifiedDomains(page: Page, org: string): OrgDomains {
+export function verifiedDomains(page: Page, org: string, verified: boolean): OrgDomains {
   if (page.kind !== 'served') return page;
+  if (!verified) return { kind: 'domains', domains: [] };
   const { blocks } = page;
   const sentence = new RegExp(`^We(?:'|’)ve verified that the organization (\\S+) controls the domains?:$`);
   for (let i = 1; i < blocks.length; i++) {
     const said = sentence.exec((blocks[i] as PageBlock).text);
-    if (said === null || (blocks[i - 1] as PageBlock).text !== 'Verified' || (said[1] as string).toLowerCase() !== org.toLowerCase()) continue;
+    if (said === null || (blocks[i - 1] as PageBlock).text !== 'Verified') continue;
+    if ((said[1] as string).toLowerCase() !== org.toLowerCase()) break;
     const domains: string[] = [];
     let at = i + 1;
     while (at < blocks.length && DOMAIN.test((blocks[at] as PageBlock).text)) domains.push((blocks[at++] as PageBlock).text.toLowerCase());
-    if (domains.length > 0 && blocks[at]?.text === VERIFIED_END) return { kind: 'domains', domains };
+    return domains.length > 0 && blocks[at]?.text === VERIFIED_END ? { kind: 'domains', domains } : { kind: 'domains', domains: [] };
   }
   return { kind: 'domains', domains: [] };
 }
-
-/** A page that gives `found` again to `verifiedDomains`, for a recording: only the verified run, or no blocks for none. */
-export const orgPageOf = (found: OrgDomains, org: string): Page =>
-  found.kind !== 'domains'
-    ? found
-    : {
-        kind: 'served',
-        blocks:
-          found.domains.length === 0
-            ? []
-            : [{ text: 'Verified' }, { text: `We've verified that the organization ${org} controls the domain:` }, ...found.domains.map((text) => ({ text })), { text: VERIFIED_END }],
-      };
 
 /** The organization a github.com URL names, in lowercase; undefined for any other URL. */
 export function githubOrg(url: URL): string | undefined {
