@@ -2,34 +2,13 @@
   "title": "從 Safe 轉出 ERC-20 代幣",
   "summary": "Safe 直接呼叫你選的代幣合約的 `transfer`，把你填的金額轉給你選的收款人。只有一個呼叫，不經過任何路由或其他合約，也不留下授權。",
   "verdict": {
-    "status": "caution",
-    "text": "USDC、USDT、cbBTC、MORPHO 可以轉；FLUID 的實作能被換掉而程式看不到，先別轉。"
+    "status": "safe",
+    "text": "單純的代幣轉帳：Safe 直接呼叫代幣合約的 transfer，不留下授權。"
   },
   "flow": [],
   "protocols": {},
-  "judgments": [
-    {
-      "text": "FLUID 代幣（InstaToken）把每個函式轉給 `implementation` 指向的實作，Instadapp 能換掉它；程式的 code pin 和 ABI 證明只看到外殼。",
-      "sources": [
-        "https://etherscan.io/address/0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb#code"
-      ],
-      "recommendation": "先不要用這個模板轉 FLUID。"
-    },
-    {
-      "text": "USDT 的 owner 能凍結地址、開手續費，或用 `deprecate` 把轉帳改交給新合約。",
-      "sources": [
-        "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code"
-      ],
-      "recommendation": "轉 USDT 等於信任 Tether。"
-    }
-  ],
-  "reviews": {
-    "fluid/address": {
-      "status": "concern",
-      "text": "Fluid 技術文件的合約地址頁沒有列它；Instadapp GitHub 的 deployments.md 只在別的合約的參數裡出現 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb，沒有一列是代幣本身。",
-      "recommendation": "只有 CoinGecko 一個來源，先不要轉 FLUID。"
-    }
-  },
+  "judgments": [],
+  "reviews": {},
   "entries": {
     "usdc": {
       "role": "可選的代幣：Circle 發行的 USDC",
@@ -48,21 +27,6 @@
           "text": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
           "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
           "result": "pass"
-        }
-      ]
-    },
-    "fluid": {
-      "role": "可選的代幣：Fluid（原 Instadapp INST）的治理代幣",
-      "sources": [
-        {
-          "text": "Etherscan：合約名 InstaToken，創建者 0xf6839085F692bDe6A8062573E3DA35E7e947C21E；是委派合約",
-          "url": "https://etherscan.io/address/0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb#code",
-          "result": "attention"
-        },
-        {
-          "text": "Fluid 技術文件的合約地址頁沒有列這個代幣",
-          "url": "https://docs.fluid.instadapp.io/contracts/contract-addresses.html",
-          "result": "attention"
         }
       ]
     },
