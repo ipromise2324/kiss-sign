@@ -506,7 +506,7 @@ test('card new takes a Vault V2 cap as max or in whole tokens and a relative cap
   assert.equal(made.asked[2], `absolute-cap (usdc ${USDC}, 6 decimals, or max): `);
   assert.equal(made.asked[3], 'relative-cap (a percent, 100 at most, such as 100 or 35.5): ');
   assert.ok(made.stdout.includes('  max, as the template says: Vault V2 stores an absolute cap in 128 bits'), made.stdout);
-  assert.ok(made.stdout.includes('  absolute-cap: 340,282,366,920,938,463,463,374,607,431,768.211455 usdc = 340282366920938463463374607431768211455 base units\n'), made.stdout);
+  assert.ok(made.stdout.includes('  absolute-cap: 340282366920938463463374607431768.211455 usdc = 340282366920938463463374607431768211455 base units\n'), made.stdout);
   assert.ok(made.stdout.includes('  relative-cap: 35.5% = 355000000000000000 base units, 100% being 1000000000000000000\n'), made.stdout);
   assert.match(made.stdout, /Sealed card 0x[0-9a-f]{64}/);
   const other = freshHome();
