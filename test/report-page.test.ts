@@ -476,13 +476,17 @@ test('past transactions count, per kind of sender, those using the operation and
     recording?.blocks.map((b) => [b.title, plain(b.lead)]),
     [
       ['Safe', '0 筆用了這個操作的呼叫（0 個 Safe），0 筆跟模板一模一樣。'],
-      ['EOA 直接呼叫 blueBundlesV1Supply', '8 筆用了這個操作的呼叫（8 個地址），0 筆跟模板一模一樣，8 筆形狀一樣、但用的是 registry 外的市場。'],
+      ['EOA 直接呼叫 blueBundlesV1Supply', '8 筆用了這個操作的呼叫（8 個地址），0 筆跟模板一模一樣，1 筆形狀一樣、但用的是 registry 外的市場。'],
     ],
   );
   assert.deepEqual(
-    recording?.blocks[1]?.groups.map((g) => [g.count, plain(g.reason)]),
-    [[8, '形狀一樣，但 marketParams 用的是 registry 外的市場']],
-    'a supply to a market outside the registry has the template shape, apart from those exactly the template',
+    recording?.blocks[1]?.groups.map((g) => [g.count, g.senders, plain(g.reason)]),
+    [
+      [1, 1, '形狀一樣，但 marketParams 用的是 registry 外的市場'],
+      [4, 4, 'call.blueBundlesV1Supply.loanTokenPermit.kind 的值跟模板不同：模板要 0，交易是 1'],
+      [3, 3, 'call.blueBundlesV1Supply.loanTokenPermit.kind 的值跟模板不同：模板要 0，交易是 2'],
+    ],
+    'a supply to a market outside the registry has the template shape; one with a signed permit, which the template fixes to kind 0, has another shape',
   );
   assert.equal(plain(recording?.search), 'Alchemy 和 Etherscan 找到的完全一樣（528 = 528）。');
 });
@@ -521,7 +525,7 @@ test('過去交易 leads with how many past transactions were exactly the templa
   );
   assert.equal(
     plain(body(pageOf(inputs), 'past').same),
-    '過去的記錄裡，跟模板一模一樣的有 0 筆；形狀一樣、但用的是 registry 外的市場的有 8 筆：Safe 0 筆、EOA 8 筆（8 個地址，各自送模板的一個呼叫）；形狀不同的有 0 筆。這些交易全部成功執行：它們是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。形狀一樣的最近 3 筆：0x6adc75b9…、0x42dd3365…、0x368e54bd…。',
+    '過去的記錄裡，跟模板一模一樣的有 0 筆；形狀一樣、但用的是 registry 外的市場的有 1 筆：Safe 0 筆、EOA 1 筆（1 個地址，各自送模板的一個呼叫）；形狀不同的有 7 筆，列在其他做法。它成功執行：它是從 usdc 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。形狀一樣的最近 1 筆：0x2f82601d…。',
   );
   const twice = [...depositInputs.pastTxs, ...depositInputs.pastTxs];
   assert.deepEqual(body(buildPage({ ...depositInputs, pastTxs: twice }, depositNotes, depositTitle), 'past').same, body(depositPage, 'past').same);

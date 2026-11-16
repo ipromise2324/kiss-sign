@@ -32,7 +32,7 @@ function treeOf(card: Card, fixture = FIXTURE, book: Record<string, Address> = {
   assert.equal(resolution.kind, 'resolved');
   const resolved = (resolution as Extract<typeof resolution, { kind: 'resolved' }>).card;
   const decimals = new Map([['0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address, 6]]);
-  return { tree: callTree(tx, { registry, safe: tx.safe, card: resolved, templates, addressBook, decimals }), card: resolved };
+  return { tree: callTree(tx, { registry, safe: tx.safe, card: resolved, templates, addressBook, decimals }), card: resolved, templates, decimals };
 }
 
 const ethPayee = String(recordedTx('eth-transfer-null-data').service.to).toLowerCase() as Address;
@@ -52,13 +52,15 @@ for (const { fixture, card, book } of PINNED) {
 }
 
 test('the -extra row names the template\'s allowance as a program fact and its reason as AI text, its value as check.sh writes it', () => {
-  const { tree, card } = treeOf(CARD);
+  const { tree, card, templates, decimals } = treeOf(CARD);
   const page = verdictPage({
     verdict: { kind: 'MATCH' },
     nonce: tree.nonce,
     card,
     cardHash: `0x${'00'.repeat(32)}`,
     registry,
+    templates,
+    decimals,
     expected: { kind: 'expected', changes: new Map() },
     calls: { kind: 'scanned', movesNothing: [] },
     tree,
@@ -91,13 +93,15 @@ test('a long value folds to its length and keccak256, with the full text inside 
 });
 
 test('the verify page holds no script, loads nothing, and shows text from a cause as inert text', () => {
-  const { tree, card } = treeOf(CARD);
+  const { tree, card, templates, decimals } = treeOf(CARD);
   const page = verdictPage({
     verdict: { kind: 'MISMATCH', causes: [{ check: 'effects', details: ['<script>alert(1)</script> "><img src=x onerror=alert(1)> \u202eevil'] }] },
     nonce: tree.nonce,
     card,
     cardHash: `0x${'00'.repeat(32)}`,
     registry,
+    templates,
+    decimals,
     expected: { kind: 'expected', changes: new Map() },
     calls: { kind: 'scanned', movesNothing: [] },
     tree: undefined,
@@ -110,13 +114,15 @@ test('the verify page holds no script, loads nothing, and shows text from a caus
 });
 
 test('when the simulation could not run, the page does not show the checks that read it as passed', () => {
-  const { tree, card } = treeOf(CARD);
+  const { tree, card, templates, decimals } = treeOf(CARD);
   const page = verdictPage({
     verdict: { kind: 'UNVERIFIABLE', causes: [{ check: 'simulation', details: ['no agreed block'] }] },
     nonce: tree.nonce,
     card,
     cardHash: `0x${'00'.repeat(32)}`,
     registry,
+    templates,
+    decimals,
     expected: { kind: 'expected', changes: new Map() },
     calls: { kind: 'unverifiable', reasons: ['no agreed block'] },
     tree: undefined,
@@ -127,6 +133,49 @@ test('when the simulation could not run, the page does not show the checks that 
   assert.equal(state('模擬後的底線規則'), '沒資料可比');
   assert.equal(state('Safe 的資產變化符合卡片'), '沒資料可比');
   assert.equal(state('每個欄位符合模板和卡片'), '通過');
+});
+
+test('the card and the expected changes show each amount in whole tokens with its registry name, full address and exact base units', () => {
+  const { tree, card, templates, decimals } = treeOf(CARD);
+  const usdc = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address;
+  const vault = '0x777791c4d6dc2ce140d00d2828a7c93503c67777' as Address;
+  const page = verdictPage({
+    verdict: { kind: 'MATCH' },
+    nonce: tree.nonce,
+    card,
+    cardHash: `0x${'00'.repeat(32)}`,
+    registry,
+    templates,
+    decimals: new Map([...decimals, [vault, 18]]),
+    expected: { kind: 'expected', changes: new Map([[usdc, { kind: 'exactly', change: -10001000000n }], [vault, { kind: 'more-than', change: 0n }]]) },
+    calls: { kind: 'scanned', movesNothing: [] },
+    tree,
+    verdictFile: '/verdicts/x.json',
+  });
+  const text = page.slice(page.indexOf('<h2>卡片</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  assert.match(text, / amount 10,001 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 10001000000 最小單位，6 位小數 /);
+  assert.match(text, / min-shares 約 9,482.91773 hyperithm-usdc-apex-v1-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 9482917730630123475126 最小單位，18 位小數 /);
+  assert.match(text, / 給出 剛好 10,001 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 10001000000 最小單位，6 位小數 /);
+  assert.match(text, / 收到 多於 0 hyperithm-usdc-apex-v1-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 不移動資產的呼叫 /);
+});
+
+test('an amount whose token decimals() was not read shows its base units and says so', () => {
+  const { tree, card, templates } = treeOf(CARD);
+  const page = verdictPage({
+    verdict: { kind: 'MATCH' },
+    nonce: tree.nonce,
+    card,
+    cardHash: `0x${'00'.repeat(32)}`,
+    registry,
+    templates,
+    decimals: new Map(),
+    expected: { kind: 'expected', changes: new Map() },
+    calls: { kind: 'scanned', movesNothing: [] },
+    tree,
+    verdictFile: '/verdicts/x.json',
+  });
+  const text = page.slice(page.indexOf('<h2>卡片</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  assert.match(text, / amount 10001000000 最小單位 的 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 decimals\(\) 沒讀到 /);
 });
 
 test('format characters, tag characters and variation selectors become U+FFFD too', () => {

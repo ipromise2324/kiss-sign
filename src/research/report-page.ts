@@ -1,7 +1,7 @@
 import { hexToBytes } from '@noble/hashes/utils.js';
 import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
-import { wholeTokens } from '../chain/decimals.ts';
+import { SHOWN_PLACES, groupedTokens, wholeTokens } from '../chain/decimals.ts';
 import { castValue } from '../decode/cast.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
@@ -331,21 +331,6 @@ const FINDING_WORDS: { readonly [K in FindingKind]?: { readonly title: string; r
 
 const ZERO_ADDRESS = `0x${'0'.repeat(40)}`;
 
-const grouped = (whole: string): string => {
-  const [integer = '', fraction] = whole.split('.');
-  const withCommas = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  return fraction === undefined ? withCommas : `${withCommas}.${fraction}`;
-};
-
-/** A base-unit amount in whole tokens with grouping, cut to `places` fraction digits when given. */
-function tokens(amount: bigint, decimals: number, places?: number): string {
-  const whole = wholeTokens(amount, decimals);
-  if (places === undefined) return grouped(whole);
-  const [integer = '', fraction = ''] = whole.split('.');
-  const cut = fraction.slice(0, places).replace(/0+$/, '');
-  return grouped(cut === '' ? integer : `${integer}.${cut}`);
-}
-
 const usd = (value: number): string => {
   const steps: [number, string][] = [
     [1e9, 'B'],
@@ -436,13 +421,10 @@ function amountWords(amount: bigint, ref: TokenRef, context: Context): { readonl
   if (token === undefined) return { words: [{ num: amount.toString() }, ' 最小單位'], qualifier: undefined };
   const decimals = token.address === 'eth' ? 18 : decimalsOf(context, token.address);
   if (decimals === undefined) return { words: [{ num: amount.toString() }, ` 最小單位的 ${token.name}`], qualifier: ['decimals() 沒讀到'] };
-  const shown = tokens(amount, decimals, SHOWN_PLACES);
-  if (shown === tokens(amount, decimals)) return { words: [{ num: shown }, ` ${token.name}`], qualifier: [`${decimals} 位小數`] };
+  const shown = groupedTokens(amount, decimals, SHOWN_PLACES);
+  if (shown === groupedTokens(amount, decimals)) return { words: [{ num: shown }, ` ${token.name}`], qualifier: [`${decimals} 位小數`] };
   return { words: ['約 ', { num: shown }, ` ${token.name}（`, { num: amount.toString() }, ' 最小單位）'], qualifier: [`${decimals} 位小數`] };
 }
-
-/** The most fraction digits an amount shows in words; a longer one is cut, marked 約, with its exact base units beside it. */
-const SHOWN_PLACES = 6;
 
 const SAFE = '你的 Safe';
 
@@ -931,7 +913,7 @@ function sheetRows(context: Context, sheet: ProtocolSheet, facts: ProtocolFacts,
           const name = amount.token === 'eth' ? 'ETH' : (registry.byAddress.get(amount.token)?.name ?? '');
           nested.push({
             label: [{ code: paramName(fact.returns[unit.value] as AbiParam, unit.value) }],
-            value: decimals === undefined ? [{ num: amount.amount.toString() }, ' 最小單位'] : [{ num: tokens(amount.amount, decimals, 2) }, ` ${name}`],
+            value: decimals === undefined ? [{ num: amount.amount.toString() }, ' 最小單位'] : [{ num: groupedTokens(amount.amount, decimals, 2) }, ` ${name}`],
             ai: undefined,
           });
         });
@@ -1002,7 +984,7 @@ function vaultSection(context: Context): Section[] {
   if (text === undefined) return section({ lead: [link(vault), '：沒有 ', { code: 'pnpm vault-evidence' }, ' 的記錄。'], rows: [], bars: [], most: undefined });
   const evidence = readStoredEvidence(text, vault, context.registry);
   const unit = evidence.asset?.name === undefined ? '' : ` ${evidence.asset.name}`;
-  const amount = (value: bigint): string => (evidence.asset === undefined ? `${value} 最小單位` : `${tokens(value, evidence.asset.decimals, 2)}${unit}`);
+  const amount = (value: bigint): string => (evidence.asset === undefined ? `${value} 最小單位` : `${groupedTokens(value, evidence.asset.decimals, 2)}${unit}`);
   const most = evidence.points.reduce<bigint | undefined>((top, p) => (p.assets.kind === 'amount' && (top === undefined || p.assets.amount > top) ? p.assets.amount : top), undefined);
   const bars = evidence.points.map(
     (p): VaultBar => ({
@@ -1315,6 +1297,10 @@ function misfitWords(reason: MisfitReason, template: string, registry: Registry)
       return [{ code: last(reason.at) }, ` 有 ${reason.got} 項，模板是 ${reason.expected} 項`];
     case 'field':
       return [{ code: reason.at }, ' 的值跟模板不同：模板要 ', { mono: reason.expected }, '，交易是 ', { mono: reason.actual }];
+    case 'not-sender':
+      return [{ code: reason.at }, ' 不是送出交易的 Safe 或地址'];
+    case 'differs':
+      return [{ code: reason.at }, ' 跟 ', { code: reason.other }, ' 的值不同，模板要兩個一樣'];
     case 'trailer':
       return ['參數後面多了模板不允許的位元組，在 ', { code: reason.at }];
     case 'foreign-delegatecall':

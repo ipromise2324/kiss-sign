@@ -78,6 +78,10 @@ export type MisfitReason =
   /** An array with another number of items; `calls` names each item when the template decodes the items as calls. */
   | { readonly kind: 'items'; readonly at: string; readonly expected: number; readonly got: number; readonly calls: readonly CallName[] | undefined }
   | { readonly kind: 'field'; readonly at: string; readonly expected: string; readonly actual: string }
+  /** A leaf the template binds to the Safe holds another address than the sender's. */
+  | { readonly kind: 'not-sender'; readonly at: string }
+  /** A leaf the template binds to the same value as the leaf at `other` holds another value. */
+  | { readonly kind: 'differs'; readonly at: string; readonly other: string }
   /**
    * An address the template binds to registry entries, such as a call's `to` bound to the card's vault, holds another
    * contract than any of them: one a `contract` rule names, or, for a card field that can name the anchor token, any
@@ -301,6 +305,10 @@ export function misfitText(reason: MisfitReason, registry: Registry, names: Read
       return `${reason.at}: expected ${reason.expected} items, got ${reason.got} items${reason.calls === undefined ? '' : `, calling ${reason.calls.map(call).join(', ')}`}`;
     case 'field':
       return `${reason.at}: expected ${reason.expected}, got ${reason.actual}`;
+    case 'not-sender':
+      return `${reason.at}: not the sender`;
+    case 'differs':
+      return `${reason.at}: differs from ${reason.other}`;
     case 'entry':
       return `${reason.at}: expected ${reason.expected.join(' or ')}, got ${registry.byAddress.get(reason.actual)?.name ?? checksumAddress(reason.actual)}`;
     case 'other':
@@ -350,8 +358,47 @@ function judge({ hash, block }: { readonly hash: Hex; readonly block: bigint }, 
   const paths = inspection.leaves.map((leaf) => `${leaf.callPath}.${leaf.arg}`);
   const values = inspection.leaves.map((leaf) => leafValue(leaf, tx));
   const bound = boundEntries(paths, values, loosened.rules, template, context);
+  const wrongTarget = bound.kind === 'misfit' && bound.reason.kind === 'entry' && bound.reason.at.endsWith('.to');
+  const broken = wrongTarget ? undefined : loosened.rules.map((rule, i) => brokenRule(rule, i, loosened.rules, paths, values, sender)).find((reason) => reason !== undefined);
+  if (broken !== undefined) return { kind: 'misfit', hash, sender, reason: broken };
   if (bound.kind === 'misfit') return { kind: 'misfit', hash, sender, reason: bound.reason };
   return { kind: 'fit', hash, block, sender, paths, types: inspection.leaves.map((leaf) => leaf.type), values, outside: bound.outside };
+}
+
+const cardKey = (rule: LeafRule): string | undefined => (rule.kind === 'card' ? `${rule.ref.field}.${rule.ref.attribute ?? ''}` : undefined);
+
+/**
+ * The reason leaf `i` breaks its rule, when the transaction alone shows it. A card value is unknown, so a card rule
+ * breaks only where two leaves bound to it differ; an `equals` naming a leaf of a call an EOA did not make has nothing
+ * to compare. Registry bindings are judged by `boundEntries`.
+ */
+export function brokenRule(
+  rule: LeafRule,
+  i: number,
+  rules: readonly LeafRule[],
+  paths: readonly string[],
+  values: readonly string[],
+  sender: Sender,
+): MisfitReason | undefined {
+  const at = paths[i] as string;
+  const actual = values[i] as string;
+  const differs = (j: number): MisfitReason | undefined => (j === -1 || values[j] === actual ? undefined : { kind: 'differs', at, other: paths[j] as string });
+  switch (rule.kind) {
+    case 'safe':
+      return actual === sender.address ? undefined : { kind: 'not-sender', at };
+    case 'const': {
+      const expected = constText(rule.value);
+      return actual === expected ? undefined : { kind: 'field', at, expected, actual };
+    }
+    case 'card':
+      return differs(rules.findIndex((other, k) => cardKey(other) === cardKey(rule) && values[k] !== actual));
+    case 'equals':
+      return differs(rules.indexOf(rule.rule));
+    case 'contract':
+    case 'free':
+    case 'share-price':
+      return undefined;
+  }
 }
 
 /**
