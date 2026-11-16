@@ -225,12 +225,11 @@ test('an empty address source is grey; the address result alone puts the entry i
   assert.deepEqual(forSigner(ledger), []);
   assert.equal(confidence(ledger, ENTRY), 'medium', 'no official page among the confirmations');
   assert.deepEqual(
-    sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link]),
+    sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link, s.site]),
     [
-      ['page', 'na', '讀不到', SOURCE],
-      ['api', 'ok', undefined, API.url],
-      ['coingecko', 'ok', undefined, 'https://www.coingecko.com/en/coins/vault-coin'],
-      ['defillama', 'ok', undefined, 'https://defillama.com/protocol/proto'],
+      ['page', 'na', '讀不到', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto' }],
+      ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto' }],
+      ['coingecko', 'ok', undefined, 'https://www.coingecko.com/en/coins/vault-coin', undefined],
     ],
   );
   const alone = ledgerOf({ page: { kind: 'served', blocks: [{ text: 'Vault' }] } });
@@ -268,24 +267,27 @@ test('a coin CoinGecko lists at an address the entry names no coin for stays for
   assert.deepEqual(confirmations(ledger, entry), ['page']);
 });
 
-test("a second page is its own row, and its site joins DefiLlama's", () => {
+test('a second page is its own row, each page with its own site under it, and no site is a source of its own', () => {
   const entry = { ...ENTRY, moreSources: [MORE] };
+  const other = { ...BASE.protocol!, url: new URL('https://other.org') };
   assert.deepEqual(
-    sourcesOf(ledgerOf({ entry }), entry).map((s) => [s.source, s.state, s.link]),
+    sourcesOf(ledgerOf({ entry, protocol: other }), entry).map((s) => [s.source, s.state, s.link, s.site?.state, s.site?.phrase]),
     [
-      ['page', 'ok', SOURCE],
-      ['more.1', 'ok', GITHUB],
-      ['coingecko', 'ok', 'https://www.coingecko.com/en/coins/vault-coin'],
-      ['defillama', 'ok', 'https://defillama.com/protocol/proto'],
+      ['page', 'ok', SOURCE, 'bad', '是另一個網站'],
+      ['more.1', 'ok', GITHUB, 'ok', undefined],
+      ['coingecko', 'ok', 'https://www.coingecko.com/en/coins/vault-coin', undefined, undefined],
     ],
   );
 });
 
-test('an address source line names a differing site, another address, or nothing to compare', () => {
-  const phrase = (change: Partial<Setup>, source: string) => sourcesOf(ledgerOf(change), change.entry ?? ENTRY).find((s) => s.source === source)?.phrase;
-  assert.equal(phrase({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'defillama'), '是另一個網站');
-  assert.equal(phrase({ entry: { ...ENTRY, apiSource: API }, api: { kind: 'answered', json: { address: OTHER } } }, 'api'), '是另一個地址');
-  assert.equal(phrase({ protocol: { ...BASE.protocol!, url: undefined } }, 'defillama'), '沒資料可比');
+test('an address source line names another address, and the site under it a differing site or nothing to compare', () => {
+  const line = (change: Partial<Setup>, source: string) => sourcesOf(ledgerOf(change), change.entry ?? ENTRY).find((s) => s.source === source);
+  assert.equal(line({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'page')?.site?.phrase, '是另一個網站');
+  assert.equal(line({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'page')?.phrase, undefined, 'the page still showed the address');
+  assert.equal(line({ entry: { ...ENTRY, apiSource: API }, api: { kind: 'answered', json: { address: OTHER } } }, 'api')?.phrase, '是另一個地址');
+  assert.equal(line({ protocol: { ...BASE.protocol!, url: undefined } }, 'page')?.site?.phrase, '沒資料可比');
+  const api = line({ entry: { ...ENTRY, apiSource: API }, protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'api');
+  assert.deepEqual([api?.state, api?.site?.state, api?.site?.phrase], ['ok', 'bad', '是另一個網站'], "the API still answered the address on a site that is not the protocol's");
 });
 
 test('confidence: high with an official page among two confirmations and a span, medium without the page, low for the signer', () => {

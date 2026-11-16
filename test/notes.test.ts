@@ -232,7 +232,7 @@ test('field keys walk every argument, tuple part, array item and nested call of 
 test('the scope of morpho/market-supply: its calls, their targets and views, its protocols, every field, and the results for the signer', () => {
   const subject = loadReport(ROOT, registry, { template: 'morpho/market-supply' }).subject;
   const entries = entriesOf(subject, registry);
-  const result = (id: string, kind: 'agrees' | 'no-answer'): Result => ({ id, line: 'sources', about: { kind: 'entry', entry: entries[0]! }, source: 'page', link: undefined, finding: { kind } });
+  const result = (id: string, kind: 'agrees' | 'no-answer'): Result => ({ id, line: 'sources', about: { kind: 'entry', entry: entries[0]! }, source: { of: 'page', part: 'address' }, link: undefined, finding: { kind } });
   const ledger: Ledger = { entries, results: [result('usdc/source.page', 'agrees'), result('usdc/source.api', 'no-answer')] };
   const scope = notesScope({ registry, facts: undefined } as unknown as ReportInputs, ledger, template);
   assert.equal(scope.calls, 2);

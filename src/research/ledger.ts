@@ -18,14 +18,19 @@ export type StripLine = (typeof STRIP_LINES)[number];
 
 /**
  * The sources an address row lists for the program: the `source` page, each of `moreSources` by its number from 1, the
- * protocol API, CoinGecko, a vault's registry factory, and the DefiLlama site of each page and API. Every one but the
- * site can confirm the address.
+ * protocol API, CoinGecko and a vault's registry factory. Each can confirm the address.
  */
-export type ProgramSource = 'page' | `more.${number}` | 'api' | 'coingecko' | 'factory' | 'defillama';
+export type ProgramSource = 'page' | `more.${number}` | 'api' | 'coingecko' | 'factory';
+
+/**
+ * Where an address row shows a result: under its source, either as whether the source showed the address, or as the
+ * source's site compared with what DefiLlama lists. A site confirms no address: DefiLlama lists none.
+ */
+export type RowPart = { readonly of: ProgramSource; readonly part: 'address' | 'site' };
 
 const sourceRank = (source: ProgramSource): number => {
   const more = /^more\.(\d+)$/.exec(source);
-  return more !== null ? Number(more[1]) : { page: 0, api: 1e6, coingecko: 1e6 + 1, factory: 1e6 + 2, defillama: 1e6 + 3 }[source as Exclude<ProgramSource, `more.${number}`>];
+  return more !== null ? Number(more[1]) : { page: 0, api: 1e6, coingecko: 1e6 + 1, factory: 1e6 + 2 }[source as Exclude<ProgramSource, `more.${number}`>];
 };
 
 /** The words an address row's source line shows beside a result that did not pass. */
@@ -155,9 +160,9 @@ export type Result = {
   readonly id: ResultId;
   readonly line: StripLine;
   readonly about: { readonly kind: 'entry'; readonly entry: RegistryEntry } | { readonly kind: 'fixture'; readonly name: string };
-  /** The address-row source it is shown under; undefined for the address, documentation, market, ABI, code and fixture results. */
-  readonly source: ProgramSource | undefined;
-  /** What that source line links: the entry's page, its API, its CoinGecko coin or its DefiLlama protocol. */
+  /** Where the address row shows it; undefined for the address, documentation, market, ABI, code and fixture results. */
+  readonly source: RowPart | undefined;
+  /** What it links: the entry's page, its API, its CoinGecko coin, or for a site its DefiLlama protocol. */
   readonly link: HttpsUrl | undefined;
   readonly finding: Finding;
 };
@@ -185,19 +190,20 @@ const LINE_SOURCE: Readonly<Record<Line['check'], ProgramSource>> = {
   github: 'page',
   api: 'api',
   coingecko: 'coingecko',
-  defillama: 'defillama',
-  'api-site': 'defillama',
+  defillama: 'page',
+  'api-site': 'api',
 };
+const SITE_CHECKS: ReadonlySet<Line['check']> = new Set(['defillama', 'api-site']);
 
 const coingeckoUrl = (id: string | undefined) => (id === undefined ? undefined : parseHttpsUrl(`https://www.coingecko.com/en/coins/${id}`));
 const defillamaUrl = (slug: string | undefined) => (slug === undefined ? undefined : parseHttpsUrl(`https://defillama.com/protocol/${slug}`));
 
-function linkOf(entry: RegistryEntry, source: ProgramSource): HttpsUrl | undefined {
-  if (source.startsWith('more.')) return entry.moreSources?.[Number(source.slice(5)) - 1]?.url;
-  if (source === 'page') return entry.source;
-  if (source === 'api') return entry.apiSource?.url;
-  if (source === 'coingecko') return coingeckoUrl(entry.coingecko);
-  return source === 'defillama' ? defillamaUrl(entry.defillama) : undefined;
+function linkOf(entry: RegistryEntry, { of, part }: RowPart): HttpsUrl | undefined {
+  if (part === 'site') return defillamaUrl(entry.defillama);
+  if (of.startsWith('more.')) return entry.moreSources?.[Number(of.slice(5)) - 1]?.url;
+  if (of === 'page') return entry.source;
+  if (of === 'api') return entry.apiSource?.url;
+  return of === 'coingecko' ? coingeckoUrl(entry.coingecko) : undefined;
 }
 
 function siteFinding(line: Line): Finding {
@@ -229,7 +235,6 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
   }
 }
 
-/** A `moreSources` page's own lines: its page and commit under its own row, its site under DefiLlama's. */
 const MORE_KEYS: Readonly<Partial<Record<Line['check'], string>>> = { page: 'page', github: 'commit', defillama: 'site' };
 
 function sourceResults(entry: RegistryEntry, lines: readonly Line[]): Result[] {
@@ -239,9 +244,9 @@ function sourceResults(entry: RegistryEntry, lines: readonly Line[]): Result[] {
     .sort((a, b) => order(a) - order(b))
     .map((line): Result => {
       const more = line.more === undefined ? undefined : (`more.${line.more}` as const);
-      const source = more === undefined || line.check === 'defillama' ? LINE_SOURCE[line.check] : more;
+      const source: RowPart = { of: more ?? LINE_SOURCE[line.check], part: SITE_CHECKS.has(line.check) ? 'site' : 'address' };
       const id = more === undefined ? LINE_KEYS[line.check] : `source.${more}.${MORE_KEYS[line.check]}`;
-      return { id: `${entry.name}/${id}`, line: 'sources', about, source, link: linkOf(entry, more ?? source), finding: lineFinding(entry, line) };
+      return { id: `${entry.name}/${id}`, line: 'sources', about, source, link: linkOf(entry, source), finding: lineFinding(entry, line) };
     });
 }
 
@@ -286,7 +291,7 @@ const FACTORY_FINDINGS: Readonly<Record<ReturnType<typeof factoryAnswer>, Findin
 function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
   if (entry.kind !== 'vault' || entry.attributes.factory === undefined) return [];
   const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry.attributes.factory)];
-  return [{ id: `${entry.name}/factory.admitted`, line: 'sources', about: { kind: 'entry', entry }, source: 'factory', link: undefined, finding }];
+  return [{ id: `${entry.name}/factory.admitted`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link: undefined, finding }];
 }
 
 function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined): Finding {
@@ -332,8 +337,9 @@ function unvouchedUnlistedHasNoSecondSource(entry: RegistryEntry, results: reado
 
 /** The sources whose every result passed, each one place that showed the entry's address for its role; a site shows none. */
 function confirmingSources(results: readonly Result[]): ProgramSource[] {
-  const sources = [...new Set(results.flatMap((r) => (r.source === undefined || r.source === 'defillama' ? [] : [r.source])))];
-  return sources.filter((source) => results.every((r) => r.source !== source || STATE_OF[r.finding.kind] === 'ok')).sort((a, b) => sourceRank(a) - sourceRank(b));
+  const showing = results.filter((r) => r.source?.part === 'address');
+  const sources = [...new Set(showing.map((r) => (r.source as RowPart).of))];
+  return sources.filter((source) => showing.every((r) => r.source?.of !== source || STATE_OF[r.finding.kind] === 'ok')).sort((a, b) => sourceRank(a) - sourceRank(b));
 }
 
 export const MIN_CONFIRMATIONS = 2;
@@ -434,23 +440,30 @@ export function confidence(ledger: Ledger, entry: RegistryEntry): Confidence {
   return page && pinned ? 'high' : 'medium';
 }
 
-export type SourceLine = {
-  readonly source: ProgramSource;
+/** The worst of some results, worded by the worst one; a passing one has no phrase, only its icon. */
+export type Judged = {
   readonly state: State;
-  /** Undefined when the source passed: the icon alone. */
   readonly phrase: Phrase | undefined;
   readonly link: HttpsUrl | undefined;
-  readonly results: readonly Result[];
 };
 
-/** The entry's program sources in row order, each the worst of its results, worded by its worst result. */
+/** A program source: whether it showed the entry's address, and for a page or the API, whether its site is the protocol's. */
+export type SourceLine = Judged & { readonly source: ProgramSource; readonly site: Judged | undefined };
+
+function judged(results: readonly Result[]): Judged {
+  const state = worst(results);
+  const shown = results.find((r) => stateOf(r) === state) as Result;
+  return { state, phrase: state === 'ok' ? undefined : PHRASE_OF[shown.finding.kind], link: shown.link };
+}
+
+/** The entry's program sources in row order, each judged by its address results, with its site judged apart. */
 export function sourcesOf(ledger: Ledger, entry: RegistryEntry): SourceLine[] {
   const results = resultsOf(ledger, entry);
-  const sources = [...new Set(results.flatMap((r) => (r.source === undefined ? [] : [r.source])))].sort((a, b) => sourceRank(a) - sourceRank(b));
+  const sources = [...new Set(results.flatMap((r) => (r.source === undefined ? [] : [r.source.of])))].sort((a, b) => sourceRank(a) - sourceRank(b));
   return sources.map((source) => {
-    const of = results.filter((r) => r.source === source);
-    const state = worst(of);
-    const shown = of.find((r) => stateOf(r) === state) as Result;
-    return { source, state, phrase: state === 'ok' ? undefined : PHRASE_OF[shown.finding.kind], link: shown.link, results: of };
+    const of = (part: RowPart['part']) => results.filter((r) => r.source?.of === source && r.source.part === part);
+    const site = of('site');
+    if (of('address').length === 0) throw new Error(`${entry.name}: source ${source} has a site result but none for its address`);
+    return { ...judged(of('address')), source, site: site.length === 0 ? undefined : judged(site) };
   });
 }

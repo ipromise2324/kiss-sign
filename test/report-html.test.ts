@@ -187,6 +187,20 @@ test('a code span in AI text prints as <code> in prose and as a boxed monospace 
   assert.deepEqual([...caption.matchAll(/<tspan class="capc"[^>]*>([^<]*)<\/tspan>/g)].map((m) => m[1]), ['erc20TransferFrom', 'erc4626Deposit']);
 });
 
+test('an AI source sits under AI 補查 with its result in words, never with a state icon among the program sources', () => {
+  let groups = 0;
+  for (const [id, { html }] of replayed) {
+    for (const [srcs] of html.matchAll(/<div class="srcs">.*?<\/div>\n/gs)) assert.ok(!srcs.includes('data-ai'), `${id}: AI text among the program sources`);
+    for (const [group] of html.matchAll(/<div class="aisrcs">.*?<\/div>/gs)) {
+      groups += 1;
+      assert.match(group, /^<div class="aisrcs"><span class="lbl">AI 補查<\/span>/, id);
+      assert.ok(!group.includes('<svg') && !group.includes('data-state'), `${id}: an AI source with a state mark`);
+      assert.match(group, /<span class="aires">AI 判斷：(沒問題|要注意|有問題)<\/span>/, id);
+    }
+  }
+  assert.ok(groups > 0, 'a replayed report has AI sources');
+});
+
 test('every state icon is an image with a Chinese name, and the rest are hidden from screen readers', () => {
   for (const [id, { html }] of replayed) {
     for (const [svg] of html.matchAll(/<svg class="i[^"]*"[^>]*>/g)) assert.match(svg, /role="img" aria-label="[^"]*[\u4e00-\u9fff][^"]*"|aria-hidden="true"/, `${id}: ${svg}`);

@@ -4,7 +4,7 @@ import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Body, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SourceLine, VaultBlock } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Body, Chip, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
 import { reportDir } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
@@ -348,9 +348,15 @@ function walletBody({ view }: Extract<Body, { kind: 'wallet' }>): Html {
   <div class="warnline">${decor('info')}<span>${text(line)}</span></div>`)}`;
 }
 
+function siteLine(site: SiteResult): Html {
+  const llama = site.href === undefined ? 'DefiLlama' : h`<a href="${site.href}">DefiLlama</a>`;
+  return h`<span class="site" data-state="${site.state}">${icon(site.state)}<span>${site.state === 'ok' ? h`網站屬於 ${site.slug}` : h`網站：${site.phrase}`}（${llama} 對照）</span></span>`;
+}
+
 function sourceLine(line: SourceLine): Html {
-  if (line.by === 'ai') return h`<span data-state="${line.state}">${ai(line.text)}<span class="res">${icon(line.state)}</span></span>`;
-  return h`<span data-state="${line.state}">${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}<span class="res">${icon(line.state)}${line.phrase ?? ''}</span></span>`;
+  return h`<div class="src"><span data-state="${line.state}">${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}<span class="res">${icon(line.state)}${line.phrase ?? ''}</span></span>${
+    line.site === undefined ? '' : siteLine(line.site)
+  }</div>`;
 }
 
 const CONFIDENCE: Readonly<Record<AddressRow['confidence'], string>> = { high: '高信心', medium: '中信心', low: '低信心' };
@@ -364,7 +370,12 @@ function addressRow(row: AddressRow): Html {
       }</span></div>
       <div class="body"><span class="addr">${row.address}</span>
         <div class="srcs">${row.sources.map(sourceLine)}</div>
-        <div class="confirmed">${row.confirmed}</div></div>
+        <div class="confirmed">${row.confirmed}</div>${
+          row.aiSources.length === 0
+            ? ''
+            : h`
+        <div class="aisrcs"><span class="lbl">AI 補查</span>${row.aiSources.map((s) => h`<span>${ai(s.text)}<span class="aires">${s.result}</span></span>`)}</div>`
+        }</div>
     </div>`;
 }
 
@@ -427,7 +438,7 @@ function nextBody(body: Extract<Body, { kind: 'next' }>): Html {
 }
 
 const ADDRESS_RULE =
-  '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題。AI 補查不改變信心等級。';
+  '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或 vault 的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。';
 
 function section(s: Section): Html {
   const count =
@@ -738,7 +749,13 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .ad .reviewed{margin-left:10px;color:var(--fg2)}
 .ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
 .srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
-.srcs .byai{margin-right:8px}
+.src{display:flex;flex-direction:column;gap:4px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:16px;font-size:var(--t-small);color:var(--fg2)}
+.ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs .byai{margin-right:8px}
+.aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
 .res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
 .res .i{width:14px;height:14px}
 .confirmed{font-size:var(--t-small);color:var(--fg2)}
