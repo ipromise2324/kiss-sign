@@ -13,9 +13,9 @@ import { PERTURB_DIR, checkPerturbations, replayPerturbRecording } from '../src/
 import type { PerturbationReport } from '../src/template/perturb.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 
 function safeTx(name: string): SafeTx {

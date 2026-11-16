@@ -17,9 +17,9 @@ import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const target = { template: 'morpho/market-supply' };
 let inputs: HtmlInputs;
@@ -70,7 +70,6 @@ function oneCall(of: HtmlInputs, n: number): HtmlInputs {
 
 const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), flow: [] }, title);
 
-/** The page of another template on the market-supply recordings, for what the template alone decides. */
 function templatePage(id: string): Page {
   const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
   return oneCallPage({ ...inputs, subject: { ...subject, template: loadTemplate(ROOT, id, registry) }, example: undefined, fixtures: [] });

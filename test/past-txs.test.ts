@@ -15,9 +15,9 @@ import type { Anchor, AnchorKind, SourceExchange, SourceRequest } from '../src/r
 import type { Address } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const SCRIPTS = join(import.meta.dirname, '..', 'scripts');
 const recording: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit.json'), 'utf8'));
 const registry = loadRegistry(ROOT);

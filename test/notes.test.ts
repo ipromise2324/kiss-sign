@@ -12,9 +12,9 @@ import { entriesOf, loadReport } from '../src/research/report.ts';
 import type { ReportInputs } from '../src/research/report.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { vaultReportDir } from '../src/template/vault-reports.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, 'morpho/market-supply', registry);
 

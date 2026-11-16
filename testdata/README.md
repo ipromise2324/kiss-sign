@@ -2,7 +2,7 @@
 
 Every fixture is a fact about Ethereum mainnet, recorded by a script in this repository. None comes from the Safe kiss-sign is configured for.
 
-Many fixtures belong to operations this repository ships no template for: claims, withdrawals, a migration, a market supply, a cancellation, a CCTP receive. Their templates are test fixtures in `test/fixtures/templates/`, with the registry entries and markets only they name in `test/fixtures/registry/`, and the tests read them through `test/fixture-root.ts`. They were recorded while those templates were in `templates/`. To record one again, work in a scratch clone with `test/fixtures/templates/` copied into `templates/` and `test/fixtures/registry/` merged into `registry/`; the scripts read only `templates/` and `registry/`.
+Many fixtures belong to operations this repository ships no template for: claims, withdrawals, a migration, a market supply, a cancellation, a CCTP receive. Their templates are test fixtures in `test/fixtures/templates/`, with the registry entries and markets only they name in `test/fixtures/registry/`, and the tests read them through `test/repo-with-test-fixtures.ts`. They were recorded while those templates were in `templates/`. To record one again, work in a scratch clone with `test/fixtures/templates/` copied into `templates/` and `test/fixtures/registry/` merged into `registry/`; the scripts read only `templates/` and `registry/`.
 
 ## Safe transactions
 

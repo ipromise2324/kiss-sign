@@ -22,9 +22,9 @@ import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
-import { fixtureRoot } from './fixture-root.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = fixtureRoot();
+const ROOT = repoWithTestFixtures();
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
 const REWARD_TOKENS_OUTSIDE_REGISTRY = {
   aethusde: { address: '0x3a4de44B29995a3D8Cd02d46243E1563E55bCc8b', kind: 'token', source: 'https://aave.com/docs/resources/addresses' },
