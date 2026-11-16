@@ -119,21 +119,19 @@ In your own terminal, pick the vault from a list with full addresses and type th
 
 ![pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by name, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
 
-### 4. Propose in the Safe web app, then verify
+### 4. Verify on your computer, and check on a second one
+
+Propose the transaction in the Safe web app as usual. Then, on your computer:
 
 ```sh
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-![The verify page: MATCH, every check passed, then the comparison list with the safeTxHash, domain hash, message hash and every call](docs/readme/verify.png)
+On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. Both write a page with the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do.
 
-### 5. Check on a second computer
+![The verify page (MATCH, every check passed) and the check.sh page side by side, with the same hashes and the same calls row by row](docs/readme/side-by-side.png)
 
-`check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. Its comparison list must equal `verify`'s row by row, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do.
-
-![The comparison lists of kiss-sign verify and check.sh side by side, with the same hashes and the same calls](docs/readme/side-by-side.png)
-
-### 6. Sign
+### 5. Sign
 
 Compare the domain hash and message hash with your hardware wallet's screen, character by character, then sign.
 
@@ -219,4 +217,4 @@ Copy the address from this page on GitHub, and compare it in full before you sen
 
 ## License
 
-kiss-sign is released into the public domain under the [Unlicense](LICENSE). Anyone may copy, change, publish, use or sell it, for any purpose, without asking.
+[MIT](LICENSE). Anyone may use, copy, change, publish and sell kiss-sign, provided the license notice stays with it.

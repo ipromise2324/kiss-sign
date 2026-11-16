@@ -12,7 +12,7 @@ render() {
   url="file://$src${3:-}"
   width=$(sed -n 's/.*name="render-width" content="\([0-9]*\)".*/\1/p' "$src")
   profile=$(mktemp -d)
-  flags="--headless=new --disable-gpu --hide-scrollbars --no-first-run --no-default-browser-check --disable-extensions --user-data-dir=$profile"
+  flags="--headless=new --disable-gpu --hide-scrollbars --no-first-run --no-default-browser-check --disable-extensions --virtual-time-budget=3000 --user-data-dir=$profile"
   height=$("$chrome" $flags --window-size="$width,1000" --dump-dom "$url" 2>/dev/null | sed -n 's/.*data-height="\([0-9]*\)".*/\1/p')
   [ -n "$height" ] || { echo "could not measure $1" >&2; rm -rf "$profile"; exit 1; }
   "$chrome" $flags --force-device-scale-factor=2 --window-size="$width,$height" --screenshot="$out" "$url" 2>/dev/null
