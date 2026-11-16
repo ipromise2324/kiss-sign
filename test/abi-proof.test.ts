@@ -490,12 +490,15 @@ test('an EIP-1967 slot does not vouch for code that delegates through another sl
   assert.deepEqual(refused, { why: 'unknown-delegator', at: fixture.address, pc: 156 });
 });
 
-test('contracts that DELEGATECALL only to themselves or to a target the call names keep their proven ABI', async () => {
-  for (const name of ['morpho-vault-v2-apex', 'steakhouse-prime-usdc', 'metamorpho-v1-1-apex']) {
-    const fixture = load(name);
-    const proof = proven(await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
-    assert.equal(proof.proxy.kind, 'none', name);
-  }
+test('a fallback that delegates to the contract itself, or to the first word of the call data, is not refused for delegating', async () => {
+  assert.deepEqual(refusal(await proveUnknown('5f5f365f5f305af400')), { why: 'not-on-sourcify', at: UNKNOWN });
+  assert.deepEqual(refusal(await proveUnknown('5f5f365f5f5f355af400')), { why: 'not-on-sourcify', at: UNKNOWN });
+});
+
+test('a fallback the walk cannot follow to its delegatecall is refused, with where and why', async () => {
+  assert.deepEqual(refusal(await proveUnknown('5f35565b5f5f5f5f305af400')), { why: 'fallback-unfollowable', at: UNKNOWN, pc: 2, cause: 'dynamic-jump' });
+  assert.deepEqual(refusal(await proveUnknown('0c5f5f5f5f305af400')), { why: 'fallback-unfollowable', at: UNKNOWN, pc: 0, cause: 'unknown-opcode' });
+  assert.deepEqual(refusal(await proveUnknown('620fffff5b600190038060045700305af4')), { why: 'fallback-unfollowable', at: UNKNOWN, pc: 4, cause: 'too-many-states' });
 });
 
 test('an EIP-1967 implementation that itself delegates its fallback to an address in its storage is refused', async () => {
