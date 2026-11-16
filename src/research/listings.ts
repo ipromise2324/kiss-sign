@@ -662,19 +662,21 @@ export const liveListingReads = (note: NoteUnread, list: ListingReads['list'] = 
   orgPage: (org) => fetchPage(`https://github.com/${encodeURIComponent(org)}`, retryingGet(httpsGet, note)),
 });
 
-/** The listings a recording holds, read as `listingsFor` reads them live; a list or page it does not hold has no answer. */
+/**
+ * The listings a recording holds, read as `listingsFor` reads them live. A coin, program list or organization a
+ * recording made before they were read does not hold lists no site, as if that run had not read it.
+ */
 export function recordedListingReads(recording: ListingsRecording): ListingReads {
-  const missing = (what: string) => Promise.reject(new ListingError(`${what} is not in the recording`));
   return {
     list: async (target) => {
       if (target.path === DEFILLAMA_PROTOCOLS.path) return recording.defillama;
       if (target.path === DEFILLAMA_PARENTS.path) return recording.defillamaParents ?? {};
       if (target.path === COINGECKO_COINS.path) return recording.coingecko;
-      if (target.path === IMMUNEFI_PROGRAMS.path) return recording.immunefi ?? missing("Immunefi's program list");
+      if (target.path === IMMUNEFI_PROGRAMS.path) return recording.immunefi ?? [];
       const id = COIN_PATH.exec(target.path)?.[1];
-      const coin = id === undefined ? undefined : recording.coinLinks?.[id];
-      return coin ?? missing(`${target.hostname}${target.path}`);
+      if (id === undefined) throw new ListingError(`${target.hostname}${target.path} is not a listing a recording holds`);
+      return recording.coinLinks?.[id] ?? {};
     },
-    orgPage: async (org) => recording.orgs?.[org] ?? { kind: 'unread', why: `GitHub's page for ${org} is not in the recording` },
+    orgPage: async (org) => recording.orgs?.[org] ?? { kind: 'served', blocks: [] },
   };
 }
