@@ -640,7 +640,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
     id: undefined,
     ai: fieldsNote(context, node.key),
     parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall, inMessage || node.rule.kind === 'eip712')) }],
-    doc: node.rule.kind === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
+    doc: node.rule.kind === 'call' && node.rule.call.encoding === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
   };
 }
 
