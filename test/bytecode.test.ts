@@ -24,6 +24,13 @@ test('a recording keeps each distinct code once, by its keccak256, and reads bac
   assert.deepEqual(parseRecording(text, 'r.json'), recording);
 });
 
+test('an answer that is not lowercase hex, such as a provider sending null or uppercase code, is kept as it was', () => {
+  const odd = { code: [getCode('0xaa', CODE, null), getCode('0xbb', '0xABCD', '0xabc')] };
+  const text = recordingText(odd);
+  assert.deepEqual(JSON.parse(text).code[1].answers, { alchemy: '0xABCD', drpc: '0xabc' });
+  assert.deepEqual(parseRecording(text, 'r.json'), odd);
+});
+
 test('a recording without code gets no table', () => {
   assert.equal(recordingText({ exchanges: [] }), '{"exchanges":[]}\n');
 });
