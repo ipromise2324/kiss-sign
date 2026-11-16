@@ -165,12 +165,17 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
   return reasons.length > 0 ? { kind: 'unverifiable', reasons } : { kind: 'expected', changes };
 }
 
-/** An allowance the card's templates let the transaction leave open, resolved: at most `limit`, or any amount. */
-export type KeptAllowance = { readonly via: AllowanceRoute; readonly token: Address; readonly spender: Address; readonly limit: bigint | 'unlimited' };
+/**
+ * The most each allowance from the Safe may end at, by route, token and spender, summed over the card's operations whose
+ * template leaves it open (`effects.approves`); `unlimited` when any of them keeps it so.
+ */
+export type KeptAllowances = ReadonlyMap<string, bigint | 'unlimited'>;
+
+const keptKey = (via: AllowanceRoute, token: Address, spender: Address): string => `${via}|${token}|${spender}`;
 
 /** The allowances the card's templates keep (`effects.approves`), and why any could not be resolved. */
-export function keptAllowances(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): { readonly kept: readonly KeptAllowance[]; readonly reasons: readonly string[] } {
-  const kept: KeptAllowance[] = [];
+export function keptAllowances(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): { readonly kept: KeptAllowances; readonly reasons: readonly string[] } {
+  const kept = new Map<string, bigint | 'unlimited'>();
   const reasons: string[] = [];
   for (const op of card.operations) {
     for (const approval of templates.get(op.template)?.effects.approves ?? []) {
@@ -179,15 +184,21 @@ export function keptAllowances(card: ResolvedCard, templates: ReadonlyMap<string
       const amount = approval.amount.kind === 'card' ? op.values.get(approval.amount.field) : undefined;
       if ('problem' in token) reasons.push(token.problem);
       else if (spender === undefined) reasons.push(`the registry has no ${approval.spender}`);
-      else if (approval.amount.kind === 'card' && amount?.kind !== 'amount') reasons.push(`the card has no amount ${approval.amount.field}`);
-      else kept.push({ via: approval.via, token: token.address, spender: spender.address, limit: amount?.kind === 'amount' ? amount.value : 'unlimited' });
+      else if (approval.amount.kind === 'card' && amount?.kind !== 'amount') reasons.push(`no card amount ${approval.amount.field}`);
+      else {
+        const key = keptKey(approval.via, token.address, spender.address);
+        const known = kept.get(key) ?? 0n;
+        kept.set(key, known === 'unlimited' || amount?.kind !== 'amount' ? 'unlimited' : known + amount.value);
+      }
     }
   }
   return { kept, reasons };
 }
 
-const keeps = (kept: readonly KeptAllowance[], via: AllowanceRoute, token: Address, spender: Address, after: bigint): boolean =>
-  kept.some((k) => k.via === via && k.token === token && k.spender === spender && (k.limit === 'unlimited' || after <= k.limit));
+const keeps = (kept: KeptAllowances, via: AllowanceRoute, token: Address, spender: Address, after: bigint): boolean => {
+  const limit = kept.get(keptKey(via, token, spender));
+  return limit !== undefined && (limit === 'unlimited' || after <= limit);
+};
 
 /** An allowance the transaction left higher than it started, which a template on the card keeps; `expiration` only through Permit2. */
 export type KeptSeen = { readonly via: AllowanceRoute; readonly token: Address; readonly spender: Address; readonly amount: bigint; readonly expiration: bigint | undefined };
@@ -322,8 +333,9 @@ const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): bo
 
 /**
  * Every change to the Safe's balances must be one the card's effects explain, and no allowance, ERC-20 or Permit2, may
- * end higher than it started: an approval is spent in the transaction that gives it, unless a template on the card keeps
- * it open (`effects.approves`).
+ * end higher than it started: an approval is spent in the transaction that gives it, unless a template on the card leaves
+ * it open (`effects.approves`), and then it may end at no more than the card's amount, or at any amount for one kept
+ * `unlimited` to a spender that declares a standing allowance.
  */
 export function judgeEffects(
   observed: Observed,

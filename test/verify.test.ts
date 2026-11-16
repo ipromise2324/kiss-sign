@@ -75,6 +75,7 @@ async function run(argv: string[], repo: string, home: string) {
     repoRoot: repo,
     transport: replayTransport(fixture.exchanges, mainnetEndpoints(env)),
     fetchJson: async () => assert.fail('these tests give the transaction as a file'),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return { code, stdout, stderr };
 }

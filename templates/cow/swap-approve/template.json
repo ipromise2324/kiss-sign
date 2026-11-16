@@ -1,0 +1,136 @@
+{
+  "id": "cow/swap-approve",
+  "card": {
+    "sell-token": {
+      "kind": "contract",
+      "registryKind": "token"
+    },
+    "buy-token": {
+      "kind": "contract",
+      "registryKind": "token"
+    },
+    "sell-amount": {
+      "kind": "amount",
+      "of": "sell-token"
+    },
+    "min-buy": {
+      "kind": "amount",
+      "of": "buy-token"
+    }
+  },
+  "calls": [
+    {
+      "to": {
+        "card": "sell-token"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": {
+          "contract": "gpv2-vault-relayer"
+        },
+        "value": {
+          "card": "sell-amount"
+        }
+      }
+    },
+    {
+      "to": {
+        "contract": "gpv2-settlement"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "setPreSignature(bytes orderUid, bool signed)",
+      "args": {
+        "orderUid": {
+          "packed": [
+            {
+              "name": "digest",
+              "type": "bytes32",
+              "rule": {
+                "eip712": {
+                  "domain": {
+                    "name": "Gnosis Protocol",
+                    "version": "v2",
+                    "verifyingContract": "gpv2-settlement"
+                  },
+                  "type": "Order(address sellToken,address buyToken,address receiver,uint256 sellAmount,uint256 buyAmount,uint32 validTo,bytes32 appData,uint256 feeAmount,string kind,bool partiallyFillable,string sellTokenBalance,string buyTokenBalance)",
+                  "lookup": "https://api.cow.fi/mainnet/api/v1/orders/{arg}",
+                  "fields": {
+                    "sellToken": {
+                      "card": "sell-token"
+                    },
+                    "buyToken": {
+                      "card": "buy-token"
+                    },
+                    "receiver": {
+                      "safe": true
+                    },
+                    "sellAmount": {
+                      "card": "sell-amount"
+                    },
+                    "buyAmount": {
+                      "atLeast": "card.min-buy"
+                    },
+                    "validTo": {
+                      "free": "When the order expires. The CoW Swap app sets it 30 minutes after the quote (DEFAULT_DEADLINE_FROM_NOW); a later expiry only keeps the order open longer, and it still fills at most once, at no less than the card's minimum, to the Safe. The Safe can cancel it with invalidateOrder."
+                    },
+                    "appData": {
+                      "free": "The hash of the app's JSON note on the order (app code, slippage, an optional partner fee or hooks). The settlement contract never reads it and enforces the signed tokens, amounts and receiver whatever it says; a partner fee comes out of the price above the card's minimum, and a hook runs from CoW's trampoline contract, not as the Safe."
+                    },
+                    "feeAmount": {
+                      "const": "0"
+                    },
+                    "kind": {
+                      "const": "sell"
+                    },
+                    "partiallyFillable": {
+                      "const": "false"
+                    },
+                    "sellTokenBalance": {
+                      "const": "erc20"
+                    },
+                    "buyTokenBalance": {
+                      "const": "erc20"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "owner",
+              "type": "address",
+              "rule": {
+                "safe": true
+              }
+            },
+            {
+              "name": "validTo",
+              "type": "uint32",
+              "rule": {
+                "equals": "calls[1].args.orderUid.packed.digest.eip712.fields.validTo"
+              }
+            }
+          ]
+        },
+        "signed": {
+          "const": "true"
+        }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "approves": [
+      {
+        "token": "card.sell-token",
+        "spender": "gpv2-vault-relayer",
+        "amount": "card.sell-amount"
+      }
+    ]
+  }
+}

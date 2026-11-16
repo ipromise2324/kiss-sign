@@ -6,6 +6,8 @@ import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, i
 import type { AllowanceRoute, Attribute, ContractKind, HttpsUrl, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
+import { domainSeparator, isMemberType } from './eip712.ts';
+import type { StructType } from './eip712.ts';
 
 /**
  * The registry entries a contract card field accepts: those of `registryKind`, and when `protocol` is set, only those
@@ -113,6 +115,10 @@ export type Rule =
   /** A number at least the card amount `field`, such as the fewest tokens a swap may give. */
   | { readonly kind: 'at-least'; readonly field: string }
   | { readonly kind: 'call'; readonly call: CallNode }
+  /** `bytes` that are the concatenation of fixed-size parts with no padding, as `abi.encodePacked` writes them. */
+  | { readonly kind: 'packed'; readonly parts: readonly PackedPart[] }
+  /** A `bytes32` that is the EIP-712 digest of a message the transaction does not hold, read from `lookup`. */
+  | { readonly kind: 'eip712'; readonly message: SignedMessage }
   /** An array of exactly this many items. */
   | { readonly kind: 'items'; readonly items: readonly Rule[] }
   /** A tuple's components, by position. */
@@ -120,7 +126,23 @@ export type Rule =
 
 export type Quantity = { readonly kind: 'card'; readonly field: string } | { readonly kind: 'path'; readonly path: string; readonly rule: LeafRule };
 
-export type LeafRule = Exclude<Rule, { readonly kind: 'call' | 'items' | 'fields' }>;
+export type LeafRule = Exclude<Rule, { readonly kind: 'call' | 'items' | 'fields' | 'packed' | 'eip712' }>;
+
+export type PackedPart = { readonly name: string; readonly type: AbiType; readonly size: number; readonly rule: Rule };
+
+/**
+ * A message of one struct type under an EIP-712 domain on chain 1, `separator` computed from `domain`. `fields` holds a
+ * rule per member, by position. `lookup` is an https URL where `{arg}` stands for the hex of the call argument that
+ * holds the digest.
+ */
+export type SignedMessage = {
+  readonly domain: { readonly name: string; readonly version: string; readonly verifyingContract: string };
+  readonly separator: Hex;
+  readonly struct: StructType;
+  readonly fields: readonly Rule[];
+  readonly lookup: string;
+};
+
 
 /** Bytes a contract ignores after a call's arguments, which the template lets through up to `maxBytes`. */
 export type TrailerAllowance = { readonly maxBytes: number; readonly why: string };
@@ -260,7 +282,8 @@ function exactKeys(path: string, value: Json, required: readonly string[], optio
   if (extra !== undefined) throw new TemplateError(`${path}.${extra}`, 'unexpected field');
 }
 
-type Scope = { readonly card: CardFields; readonly registry: Registry; readonly uintLeaves: Map<string, LeafRule> };
+/** `inMessage` while parsing the members of a signed message, which is hashed, never called. */
+type Scope = { readonly card: CardFields; readonly registry: Registry; readonly uintLeaves: Map<string, LeafRule>; readonly inMessage: boolean };
 
 type CardFields = ReadonlyMap<string, CardField>;
 
@@ -376,15 +399,88 @@ function sharePrice(path: string, raw: unknown, type: AbiType, scope: Scope, bou
 
 function rule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
   const parsed = parseRule(path, raw, type, scope);
-  if (type.kind === 'uint' && parsed.kind !== 'call' && parsed.kind !== 'items' && parsed.kind !== 'fields') scope.uintLeaves.set(path, parsed);
+  if (type.kind === 'uint' && !['call', 'items', 'fields', 'packed', 'eip712'].includes(parsed.kind)) scope.uintLeaves.set(path, parsed as LeafRule);
   return parsed;
+}
+
+const PACKABLE: readonly AbiType['kind'][] = ['address', 'uint', 'int', 'bool', 'fixed-bytes'];
+
+const packedSize = (type: AbiType): number =>
+  type.kind === 'address' ? ADDRESS_BYTES : type.kind === 'uint' || type.kind === 'int' ? type.bits / 8 : type.kind === 'fixed-bytes' ? type.size : 1;
+
+function abiType(path: string, raw: unknown): AbiType {
+  try {
+    const [param, ...rest] = parseFunctionSignature(`t(${text(path, raw)})`).params;
+    if (param === undefined || rest.length > 0) throw new TemplateError(path, 'not one type');
+    return param.type;
+  } catch (error) {
+    if (error instanceof AbiSignatureError) throw new TemplateError(path, error.message);
+    throw error;
+  }
+}
+
+function packed(path: string, raw: unknown, scope: Scope): Rule {
+  const names = new Set<string>();
+  const parts = array(path, raw).map((item, i): PackedPart => {
+    const at = `${path}[${i}]`;
+    const value = object(at, item);
+    exactKeys(at, value, ['name', 'type', 'rule']);
+    const name = text(`${at}.name`, value.name);
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name) || names.has(name)) throw new TemplateError(`${at}.name`, 'not an identifier, or named twice');
+    names.add(name);
+    const type = abiType(`${at}.type`, value.type);
+    if (!PACKABLE.includes(type.kind)) throw new TemplateError(`${at}.type`, `${canonicalType(type)} is not a fixed-size part`);
+    return { name, type, size: packedSize(type), rule: rule(`${path}.${name}`, value.rule, type, scope) };
+  });
+  if (parts.length === 0) throw new TemplateError(path, 'no parts');
+  return { kind: 'packed', parts };
+}
+
+function structType(path: string, raw: unknown): StructType {
+  const written = text(path, raw);
+  let fn: AbiFunction;
+  try {
+    fn = parseFunctionSignature(written);
+  } catch (error) {
+    if (error instanceof AbiSignatureError) throw new TemplateError(path, error.message);
+    throw error;
+  }
+  const bad = fn.params.find((param) => param.name === undefined || !isMemberType(param.type));
+  if (bad !== undefined || fn.params.length === 0) throw new TemplateError(path, 'every member is named, of an atomic type, string or bytes');
+  const encoded = `${fn.name}(${fn.params.map((param) => `${canonicalType(param.type)} ${param.name}`).join(',')})`;
+  if (encoded !== written) throw new TemplateError(path, `not written as EIP-712 encodes it: ${encoded}`);
+  return { name: fn.name, members: fn.params, encoded };
+}
+
+function signedMessage(path: string, raw: unknown, scope: Scope): Rule {
+  const value = object(path, raw);
+  exactKeys(path, value, ['domain', 'type', 'fields', 'lookup']);
+  const domain = object(`${path}.domain`, value.domain);
+  exactKeys(`${path}.domain`, domain, ['name', 'version', 'verifyingContract']);
+  const verifyingContract = text(`${path}.domain.verifyingContract`, domain.verifyingContract);
+  const entry = scope.registry.entries.get(verifyingContract);
+  if (entry === undefined) throw new TemplateError(`${path}.domain.verifyingContract`, `${JSON.stringify(verifyingContract)} is not in the contract registry`);
+  const name = text(`${path}.domain.name`, domain.name);
+  const version = text(`${path}.domain.version`, domain.version);
+  const lookup = text(`${path}.lookup`, value.lookup);
+  if (lookup.split('{arg}').length !== 2 || parseHttpsUrl(lookup.replace('{arg}', '0x00')) === undefined) {
+    throw new TemplateError(`${path}.lookup`, 'an https URL holding {arg} once');
+  }
+  const struct = structType(`${path}.type`, value.type);
+  const fields = params(`${path}.fields`, value.fields, struct.members, { ...scope, inMessage: true });
+  return {
+    kind: 'eip712',
+    message: { domain: { name, version, verifyingContract }, separator: domainSeparator({ name, version, verifyingContract: entry.address }), struct, fields, lookup },
+  };
 }
 
 function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
   const value = object(path, raw);
   const keys = Object.keys(value);
   const key = keys[0];
-  if (keys.length !== 1 || key === undefined) throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, const, free, equals, atLeast, maxSharePrice, minSharePrice, call, encoded, items, fields');
+  if (keys.length !== 1 || key === undefined) {
+    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, const, free, equals, atLeast, maxSharePrice, minSharePrice, call, encoded, items, fields, packed, eip712');
+  }
   const body = value[key];
   const at = `${path}.${key}`;
   const cannotBind = () => new TemplateError(path, `a ${key} rule cannot bind a ${canonicalType(type)}`);
@@ -417,18 +513,28 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       if (constant.kind === 'address' && BigInt(constant.value) !== 0n) {
         throw new TemplateError(at, 'a constant address must be the zero address; bind any other with contract, from the registry');
       }
-      if (constant.kind === 'string' && constant.value.length > 2) throw new TemplateError(at, 'a constant string must be empty');
       if (constant.kind === 'bytes' && (constant.value.length - 2) / 2 > MAX_TRAILER) throw new TemplateError(at, `a constant bytes holds at most ${MAX_TRAILER} bytes, so no whole address fits`);
+      if (constant.kind === 'string' && constant.value.length > 2 && !scope.inMessage) throw new TemplateError(at, 'a constant string must be empty outside a signed message');
       return { kind: 'const', value: constant };
     }
-    case 'free':
-      return free(at, body, type);
+    case 'free': {
+      const freed = free(at, body, type);
+      if (scope.inMessage && freed.kind === 'free' && freed.claim !== 'scalar') throw new TemplateError(at, 'a member of a signed message is free only as a number, a bool or bytesN');
+      return freed;
+    }
     case 'atLeast': {
       needs(['uint']);
       const field = cardFieldName(text(at, body));
       if (field === undefined || scope.card.get(field)?.kind !== 'amount') throw new TemplateError(at, `${JSON.stringify(body)} is not card.<amount field>`);
       return { kind: 'at-least', field };
     }
+    case 'packed':
+      needs(['bytes']);
+      if (scope.inMessage) throw cannotBind();
+      return packed(at, body, scope);
+    case 'eip712':
+      if (type.kind !== 'fixed-bytes' || type.size !== 32 || scope.inMessage) throw cannotBind();
+      return signedMessage(at, body, scope);
     case 'equals': {
       const quantityAt = quantity(at, body, scope);
       if (quantityAt.kind !== 'path' || type.kind !== 'uint') throw new TemplateError(at, 'must name the path of an earlier uint argument, on a uint');
@@ -440,6 +546,7 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       return sharePrice(at, body, type, scope, 'min');
     case 'call':
       needs(['bytes']);
+      if (scope.inMessage) throw cannotBind();
       return { kind: 'call', call: callNode(at, body, scope) };
     case 'encoded':
       needs(['bytes']);
@@ -890,7 +997,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   });
   const fields = new Map<string, CardField>(pending.map(([name]) => [name, { kind: 'address' }]));
   for (const [name, build] of pending) fields.set(name, build(fields));
-  const scope: Scope = { card: fields, registry, uintLeaves: new Map() };
+  const scope: Scope = { card: fields, registry, uintLeaves: new Map(), inMessage: false };
   const rawCard = object('card', value.card);
   const order = pending.map(([name]) => [name, object(`card.${name}`, rawCard[name]).computed !== undefined] as const);
   for (const [name, isComputed] of order) {
@@ -935,6 +1042,8 @@ export function cardRefs(template: Template): CardRef[] {
     else if (rule?.kind === 'call') rule.call.args.forEach(visit);
     else if (rule?.kind === 'items') rule.items.forEach(visit);
     else if (rule?.kind === 'fields') rule.fields.forEach(visit);
+    else if (rule?.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
+    else if (rule?.kind === 'eip712') rule.message.fields.forEach(visit);
   };
   visit(template.nonce);
   for (const call of template.calls) {
@@ -944,6 +1053,7 @@ export function cardRefs(template: Template): CardRef[] {
   }
   for (const { args } of template.effects.views) args.forEach(visit);
   for (const field of template.card.values()) if (field.kind === 'amount' && field.of !== 'eth') refs.push(field.of);
+  for (const { token } of template.effects.approves) refs.push(token);
   for (const { token, to } of [...template.effects.gives, ...template.effects.gets]) {
     if (token !== 'eth') refs.push(token);
     if (to !== undefined) refs.push(to);

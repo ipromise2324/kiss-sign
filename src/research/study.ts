@@ -40,6 +40,9 @@ export function loosen(template: Template): Loosened {
         return { kind: 'items', items: rule.items.map((item) => looseRule(item, wideTrailer, record)) };
       case 'fields':
         return { kind: 'fields', fields: rule.fields.map((field) => looseRule(field, wideTrailer, record)) };
+      case 'packed':
+      case 'eip712':
+        return { kind: 'free', reason: 'study', claim: 'unread' };
       default:
         if (record) rules.push(rule);
         return { kind: 'free', reason: 'study', claim: 'scalar' };
