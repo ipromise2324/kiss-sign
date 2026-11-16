@@ -43,6 +43,7 @@ import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { reportedVaultsIn } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -50,7 +51,7 @@ const suffixes = loadPublicSuffixList();
 const ID = 'morpho/vault-deposit';
 const TARGET = { template: ID, cardVault: 'steakhouse-prime-usdc-v2-0f51' };
 const scoped = loadReport(ROOT, registry, TARGET);
-const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath(TARGET)), 'utf8')) as ReportRecording;
+const recording = readRecording(join(ROOT, reportRecordingPath(TARGET))) as ReportRecording;
 
 /** The report with no ABI proofs, vault evidence or past transactions, which the replay test covers. */
 function quick(
@@ -420,7 +421,7 @@ test("each ERC-20 declaration the program holds names the function's canonical s
 });
 
 const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
-const vaultRecording: { exchanges: Exchange[] } = JSON.parse(readFileSync(join(ROOT, 'testdata', 'vault-evidence', `${VAULT}.json`), 'utf8'));
+const vaultRecording: { exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'vault-evidence', `${VAULT}.json`));
 
 test('--compare reads each vault again at the blocks its evidence names, so a changed month, holder count or top-10 share differs', async () => {
   const transport = replayTransport(vaultRecording.exchanges, REPLAY_ENDPOINTS);

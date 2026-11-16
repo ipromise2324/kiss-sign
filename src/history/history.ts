@@ -25,6 +25,7 @@ import { reasonFor, spentReason } from './reasons.ts';
 import type { Facts } from './reasons.ts';
 import { renderMarkdown, renderText } from './render.ts';
 import type { Report, Row } from './render.ts';
+import { RecordingError, parseRecording, recordingText } from '../chain/bytecode.ts';
 
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 
@@ -43,7 +44,13 @@ function readCache(path: string, safeTxHash: string): Cache | undefined {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') return undefined;
     throw error;
   }
-  const cache = JSON.parse(text) as Cache;
+  let cache: Cache;
+  try {
+    cache = parseRecording(text, path) as Cache;
+  } catch (error) {
+    if (error instanceof RecordingError) return undefined;
+    throw error;
+  }
   return cache.safeTxHash === safeTxHash && Array.isArray(cache.exchanges) ? cache : undefined;
 }
 
@@ -109,7 +116,7 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
     const { verdict } = await evaluate(inputs, reader);
     if (recorded !== undefined) {
       mkdirSync(cacheDir(ctx.home), { recursive: true, mode: 0o700 });
-      writePrivate(path, `${JSON.stringify({ safeTxHash, exchanges: recorded() })}\n`);
+      writePrivate(path, recordingText({ safeTxHash, exchanges: recorded() }));
     }
     return { kind: 'verdict', verdict };
   } catch (error) {

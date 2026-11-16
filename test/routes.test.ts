@@ -22,6 +22,7 @@ import { checkToday } from '../src/research/report.ts';
 import { checkCode } from '../src/verify/code.ts';
 import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const REGISTRY = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8')) as Record<string, Record<string, unknown>>;
@@ -41,8 +42,11 @@ const AGGREGATE = parseFunctionSignature('aggregate((address,bytes)[])');
 
 type Proxied = { readonly codes: Readonly<Record<string, string>>; readonly implementationOf: Readonly<Record<string, Address>>; readonly selectorsOf: Readonly<Record<string, readonly Hex[]>> };
 
+/** Like an InfiniteProxy, it delegates a call to an address it read from storage, which only its routes name. */
+const PROXY_CODE = '0x5f545f525f5f5f5f5f515af400';
+
 const TODAY: Proxied = {
-  codes: { [PROXY]: '0x6000f4', [DUMMY]: '0x6001', [A]: '0x600a', [B]: '0x600b' },
+  codes: { [PROXY]: PROXY_CODE, [DUMMY]: '0x6001', [A]: '0x600a', [B]: '0x600b' },
   implementationOf: { [S1]: A, [S2]: A, [S3]: B, [S4]: B },
   selectorsOf: { [A]: [S2, S1], [B]: [S3, S4] },
 };
@@ -102,7 +106,7 @@ const hash = (code: string): Hex => keccakCode(code as Hex);
 const ROUTING = { implementationOf: 'getSigsImplementation(bytes4)', selectorsOf: 'getImplementationSigs(address)', seeds: [S3, S1] };
 const routeJson = (address: Address, code: string, selectors: readonly Hex[]) => ({ address: checksumAddress(address), hash: hash(code), selectors });
 const TODAY_PIN = {
-  hash: hash('0x6000f4'),
+  hash: hash(PROXY_CODE),
   implementation: { address: checksumAddress(DUMMY), hash: hash('0x6001') },
   routes: [routeJson(A, '0x600a', [S2, S1]), routeJson(B, '0x600b', [S3, S4])],
 };
@@ -174,7 +178,7 @@ test('the pin of a selector-routed proxy holds each implementation its seeds rea
     { address: B, hash: hash('0x600b'), selectors: [S3, S4] },
   ]);
   const withoutRouting = await readRunningCode(chain(() => TODAY), PROXY, AT);
-  assert.equal(withoutRouting.kind === 'read' ? withoutRouting.code.routes : 'refused', undefined, 'an entry without routes reads none');
+  assert.equal(withoutRouting.kind === 'refused' ? withoutRouting.refusal.why : 'read', 'unknown-delegator', 'without routes, nothing names the code its fallback delegates to');
 });
 
 const refusedRead = async (state: Proxied, tweaks?: Tweaks): Promise<string> => {
@@ -201,7 +205,7 @@ test('pin-code finds the block an implementation was added to the routes, so eac
   const before: Proxied = { codes: TODAY.codes, implementationOf: { [S1]: A, [S2]: A }, selectorsOf: { [A]: [S2, S1] } };
   const state = (block: bigint): Proxied => (block < 100n ? { codes: {}, implementationOf: {}, selectorsOf: {} } : block < 250n ? before : TODAY);
   const history = await readCodeHistory(chain(state), PROXY, HEAD, LIQUIDITY.code!.current.pin, LIQUIDITY.routes);
-  const pin = (routes: unknown) => ({ hash: hash('0x6000f4'), implementation: { address: DUMMY, hash: hash('0x6001') }, routes });
+  const pin = (routes: unknown) => ({ hash: hash(PROXY_CODE), implementation: { address: DUMMY, hash: hash('0x6001') }, routes });
   assert.deepEqual(history, {
     kind: 'read',
     pins: {
@@ -269,7 +273,7 @@ test('an executed transaction is judged by the routes of the span that holds its
 });
 
 test("verify checks the code of every entry a touched entry depends on, though no call targets it", async () => {
-  const recorded: VerdictFile = JSON.parse(readFileSync(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'), 'utf8'));
+  const recorded: VerdictFile = readRecording(join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json'));
   const entries = JSON.parse(recorded.inputs.registry) as Record<string, Record<string, unknown>>;
   const liquidity = { address: PROXY, kind: 'lending', source: 'https://docs.example.org/liquidity', code: { hash: hash('0x6000') } };
   const registry = JSON.stringify({ ...entries, bundler3: { ...entries.bundler3, dependsOn: ['liquidity'] }, liquidity });

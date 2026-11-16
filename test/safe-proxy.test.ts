@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import type { Exchange } from '../src/chain/recording.ts';
@@ -7,9 +7,10 @@ import { replayReader } from '../src/chain/recording.ts';
 import { safeProxyFactory } from '../src/contracts/proxy.ts';
 import { OFFICIAL_SAFE_PROXY_FACTORIES, safeProxyCreated } from '../src/safe/deployments.ts';
 import type { Hex } from '../src/safe/types.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const DIR = join(import.meta.dirname, '..', 'testdata', 'safe-proxy');
-const fixtures = readdirSync(DIR).map((file) => JSON.parse(readFileSync(join(DIR, file), 'utf8')) as { transaction: Hex; exchanges: Exchange[] });
+const fixtures = readdirSync(DIR).map((file) => readRecording<{ transaction: Hex; exchanges: Exchange[] }>(join(DIR, file)));
 
 async function created(fixture: (typeof fixtures)[number]) {
   const reader = replayReader(fixture.exchanges);

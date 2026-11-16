@@ -14,6 +14,7 @@ import { endsNeeded, expectedChanges, viewCalls } from '../src/simulate/effects.
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
 import { checkPerturbations } from '../src/template/perturb.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
+import { recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/perturb.ts <safe-tx fixture name> --card '<card json>' [--template <template.json>] [--record <name>]`;
 const ROOT = join(import.meta.dirname, '..');
@@ -78,6 +79,6 @@ if (flags.record !== undefined) {
     exchanges: recorder.exchanges().filter((e) => reader.providers.every((p) => p in e.answers || p in (e.errors ?? {}))),
   };
   mkdirSync(join(out, '..'), { recursive: true });
-  writeFileSync(out, `${JSON.stringify(recording, null, 2)}\n`);
+  writeFileSync(out, recordingText(recording, 2));
   console.log(`wrote ${out}: ${recording.exchanges.length} requests`);
 }

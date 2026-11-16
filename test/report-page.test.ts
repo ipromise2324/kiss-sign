@@ -690,6 +690,9 @@ test('an entry reached only through dependsOn shows its routes, seeds and code a
   assert.ok(markdown.includes(`| \`liquidity-layer\` | \`${checksumAddress(LAYER)}\` | not proved: the operation reaches it only through \`dependsOn\`, so no call targets it and none is decoded with its ABI; its code pin is above |`), 'the ABI row says why it is not proved');
 
   const ledger = judge(of, of.fixtures);
+  assert.ok(notesScope(of, ledger, of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report')).contracts.has('liquidity-layer'), 'a flow line may name what a called contract depends on');
+  const siteRow = body(pageOf(of), 'review').rows.find((r) => r.id === 'liquidity-layer/source.site') ?? assert.fail('no site review row');
+  assert.equal(plain(siteRow.title), 'liquidity-layer：docs.example.org/liquidity，網站跟 DefiLlama 列的不同', 'a source result names its page as the address row does');
   assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/abi') ?? assert.fail('no ABI result')), 'na');
   assert.equal(stateOf(ledger.results.find((r) => r.id === 'liquidity-layer/code.today') ?? assert.fail('no result at the latest block')), 'ok');
   const abiItem = (ledgerOf: typeof ledger) => strip(ledgerOf).find((item) => item.line === 'abi');

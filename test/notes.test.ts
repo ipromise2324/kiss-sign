@@ -112,7 +112,7 @@ test('a flow line after a call the template does not make is refused', () => {
 });
 
 test('a flow line naming a contract no call or view targets is refused', () => {
-  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target, nor a token the effects move');
+  refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target, an entry one of those depends on, nor a token the effects move');
 });
 
 test('more than four flow lines or judgments are refused', () => {
@@ -219,7 +219,7 @@ test("a vault's notes review and describe only the vault and the entries its att
   assert.deepEqual(Object.keys(merged.entries).slice(-2), ['vault-a', 'vault-factory']);
   const refusedFor = (notes: unknown, message: string) =>
     assert.throws(() => mergeNotes(SHARED, notes, VAULT_PATH, owned), (e: unknown) => e instanceof NotesError && e.message === message);
-  const shared = "is not about vault-a or vault-factory; a shared contract belongs in the template's notes.json";
+  const shared = "is not the vault or an entry it names (vault-a, vault-factory); a shared contract belongs in the template's notes.json";
   refusedFor({ entries: { 'bundler3': { role: '共用' } } }, `${VAULT_PATH}.entries: "bundler3" ${shared}`);
   refusedFor({ reviews: { 'bundler3/abi': review } }, `${VAULT_PATH}.reviews: "bundler3/abi" ${shared}`);
   refusedFor({ reviews: { 'fixture.deposit': review } }, `${VAULT_PATH}.reviews: "fixture.deposit" ${shared}`);
@@ -234,7 +234,7 @@ test("a vault's notes may also describe the entries its attributes name, such as
   write({ 'fluid-fusdt': { role: '金庫' }, usdt: { role: '存進去的代幣' } });
   assert.deepEqual(Object.keys((readNotes(root, 'fluid/vault-deposit', fusdt) as { entries: Record<string, unknown> }).entries).slice(-2), ['fluid-fusdt', 'usdt']);
   write({ usdc: { role: '別的代幣' } });
-  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not about fluid-fusdt or usdt or fluid-lending-factory or fluid-liquidity;/);
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not the vault or an entry it names \(fluid-fusdt, usdt\);/);
 });
 
 test('the judgments of both notes count toward the limit of four', () => {

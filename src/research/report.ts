@@ -11,7 +11,7 @@ import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl } from '../registry.ts';
+import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -20,7 +20,7 @@ import { TEMPLATES_DIR, callTargets, inScope, loadTemplate, refNames, scopeEntri
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
-import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
+import { DEFILLAMA_PROTOCOLS, checkSources, githubLine, listingsFor, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
@@ -36,6 +36,7 @@ import { ANCHOR_KINDS, replayAsk } from './sources.ts';
 import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
 import type { AnchorKind } from './sources.ts';
+import { readRecording } from '../chain/bytecode.ts';
 
 /** A template, with the one vault its report covers when it is reported per vault; or one registry vault alone. */
 export type Subject =
@@ -355,7 +356,7 @@ export function trimReportRecording(
       url,
       trimPage(
         page,
-        entries.filter((e) => pageUrlsOf(e).some((source) => pageUrlOf(source) === url)).map((e) => e.address),
+        readsOn(entries, url),
         docs.filter((d) => pageUrlOf(d.url) === url).map(functionOnPage),
       ),
     ]),
@@ -374,7 +375,7 @@ export function pastTxsRecordings(repoRoot: string, subject: Subject): { readonl
   return readdirSync(dir)
     .filter((f) => f.endsWith('.json'))
     .sort()
-    .map((f) => ({ file: join(RESEARCH_DIR, f), recording: JSON.parse(readFileSync(join(dir, f), 'utf8')) as PastTxsRecording }))
+    .map((f) => ({ file: join(RESEARCH_DIR, f), recording: readRecording(join(dir, f)) as PastTxsRecording }))
     .filter(({ file, recording: { query } }) => {
       if (!printableQuery(file, query)) throw new ReportError(`${file}: its name or query holds a value \`pnpm past-txs --record\` never writes`);
       const onVault = subject.vault === undefined || query.token.toLowerCase() === subject.vault.address;
@@ -1049,7 +1050,7 @@ export async function replayInputs(
 ): Promise<{ readonly inputs: ReportInputs; readonly title: ReportTitle }> {
   const { subject, registry } = loadReport(repoRoot, full, target);
   const recordingPath = reportRecordingPath(target);
-  const recording = JSON.parse(readFileSync(join(repoRoot, recordingPath), 'utf8')) as ReportRecording;
+  const recording = readRecording(join(repoRoot, recordingPath)) as ReportRecording;
   const entries = entriesOf(subject, registry);
   const pastRecordings = pastTxsRecordings(repoRoot, subject);
   const snapshot: Snapshot = { commit: recording.erc7730.commit, files: new Map(Object.entries(recording.erc7730.files)) };

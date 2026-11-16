@@ -23,9 +23,10 @@ import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
-const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
+const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
 const REWARD_TOKENS_OUTSIDE_REGISTRY = {
   aethusde: { address: '0x3a4de44B29995a3D8Cd02d46243E1563E55bCc8b', kind: 'token', source: 'https://aave.com/docs/resources/addresses' },
   fxn: { address: '0x365AccFCa291e7D3914637ABf1F7635dB165Bb09', kind: 'token', source: 'https://github.com/AladdinDAO/aladdin-v3-contracts/blob/main/scripts/utils/tokens.ts' },

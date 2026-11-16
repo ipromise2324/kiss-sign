@@ -53,7 +53,7 @@ export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, o
     if (!VAULT_KEYS.includes(key)) refuse(vaultPath, `${shown(key)} belongs in the template's ${NOTES_FILE}, which every vault's report shares`);
     if (KEYED.includes(key) && isRecord(value)) {
       const other = Object.keys(value).find((name) => !owned.has(key === 'reviews' ? name.split('/')[0]! : name));
-      if (other !== undefined) refuse(`${vaultPath}.${key}`, `${shown(other)} is not about ${[...owned].join(' or ')}; a shared contract belongs in the template's ${NOTES_FILE}`);
+      if (other !== undefined) refuse(`${vaultPath}.${key}`, `${shown(other)} is not the vault or an entry it names (${[...owned].join(', ')}); a shared contract belongs in the template's ${NOTES_FILE}`);
     }
     const before = own(shared, key);
     if (before === undefined) merged[key] = value;
@@ -79,7 +79,7 @@ export function readNotes(repoRoot: string, template: string, vault?: RegistryEn
 export type NotesScope = {
   /** How many calls the template makes: a `flow` line's `after` is one of 1..calls. */
   readonly calls: number;
-  /** The registry names a call or an effects' view targets, and the tokens the effects move: a `flow` line's `from` and `to`. */
+  /** The registry names a call or an effects' view targets, the entries those depend on, and the tokens the effects move: a `flow` line's `from` and `to`. */
   readonly contracts: ReadonlySet<string>;
   /** The registry entries the report covers; `entries` may name any of them. */
   readonly entries: ReadonlySet<string>;
@@ -146,11 +146,12 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
     inputs.facts === undefined
       ? new Map(factsScope(template, registry, ledger.entries).protocols.map(({ slug }) => [slug, 'unread']))
       : new Map(inputs.facts.protocols.map((sheet) => [sheet.slug, sheet.listing.kind === 'read' ? sheet.hacks.length : 'unread']));
+  const targets = [...callTargetEntries(template, registry).map((entry) => entry.name), ...template.effects.views.map((view) => view.to)];
   return {
     calls: template.calls.length,
     contracts: new Set([
-      ...callTargetEntries(template, registry).map((entry) => entry.name),
-      ...template.effects.views.map((view) => view.to),
+      ...targets,
+      ...targets.flatMap((name) => registry.entries.get(name)?.dependsOn ?? []),
       ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => (effect.token === 'eth' ? [] : refNames(effect.token, template, registry))),
     ]),
     entries: new Set(ledger.entries.map((entry) => entry.name)),
@@ -209,7 +210,7 @@ const callNumber: P<number> = (path, raw, scope) =>
 
 const contract: P<string> = (path, raw, scope) => {
   const name = str(80)(path, raw, scope);
-  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, nor a token the effects move`);
+  return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, an entry one of those depends on, nor a token the effects move`);
 };
 
 const list =
