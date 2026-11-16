@@ -221,6 +221,7 @@ const KIND_WORDS: Readonly<Record<RegistryEntry['kind'], string>> = {
   oracle: '價格來源',
   irm: '利率模型',
   allowance: '授權合約',
+  singleton: 'Safe 合約本體',
 };
 const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
 
@@ -240,6 +241,10 @@ function kindWord(field: CardField, template: Template): string {
       return '收款人';
     case 'nonce':
       return 'nonce';
+    case 'owner':
+      return '簽署人';
+    case 'threshold':
+      return '門檻';
     case 'market':
       return '市場';
   }
@@ -457,8 +462,10 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
   switch (rule.kind) {
     case 'card': {
       const kind = template.card.get(rule.ref.field)?.kind;
-      return { who: kind === 'amount' || kind === 'nonce' ? 'you-type' : 'you-pick', field: rule.ref.field };
+      return { who: kind === 'amount' || kind === 'nonce' || kind === 'threshold' ? 'you-type' : 'you-pick', field: rule.ref.field };
     }
+    case 'owner-before':
+      return { who: 'fixed', field: undefined };
     case 'safe':
     case 'contract':
     case 'const':
@@ -525,7 +532,7 @@ function cardWords(ref: CardRef, key: string, context: Context): { readonly word
     if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
     return amountWords(example.value, field.of, context);
   }
-  if (field?.kind === 'nonce') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
+  if (field?.kind === 'nonce' || field?.kind === 'threshold') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
   const picked = example?.kind === 'address' ? context.registry.byAddress.get(example.value) : undefined;
   if (picked !== undefined) return { words: [link(picked)], qualifier: [picks] };
   if (field?.kind === 'market' && ref.attribute === 'lltv' && example?.kind === 'uint') return { words: [lltvWords(example.value)], qualifier: [picks] };
@@ -553,6 +560,8 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
       return { words: ['每筆不同'], qualifier: [FREE_WORDS[rule.claim]] };
     case 'equals':
       return { words: ['跟 ', { code: rule.path }, ' 同一個數'], qualifier: undefined };
+    case 'owner-before':
+      return { words: [before('Safe 簽署人名單裡排在這個人前面的', refWord(context.template, rule.ref))], qualifier: ['程式在鏈上讀 getOwners() 算出，你不用填'] };
     case 'share-price':
       return { words: [rule.bound === 'max' ? '價格上限' : '價格下限'], qualifier: ['依你填的數量算出，交易裡的要一樣嚴或更嚴'] };
     case 'at-least':
@@ -807,6 +816,24 @@ function afterRows(context: Context): AfterRow[] {
     ...template.effects.gives.map((e) => ({ label: [`Safe 的 ${name(e.token)}`], value: amountOf(e, true), note: note(e), gains: false })),
     ...template.effects.gets.map((e) => ({ label: [`Safe 的 ${name(e.token)}`], value: amountOf(e, false), note: note(e), gains: true })),
   ];
+  const settings = template.effects.safe;
+  if (settings !== undefined) {
+    const owners: Inline =
+      settings.add !== undefined && settings.remove !== undefined
+        ? [before('換掉', refWord(template, settings.remove)), before('，換成', refWord(template, settings.add))]
+        : settings.add !== undefined
+          ? [before('多一個', refWord(template, settings.add))]
+          : settings.remove !== undefined
+            ? [before('少一個', refWord(template, settings.remove))]
+            : ['不變'];
+    rows.push({ label: ['Safe 的簽署人'], value: owners, note: ['交易前後各讀一次 getOwners()，其他人不能變'], gains: false });
+    rows.push({
+      label: ['Safe 的門檻'],
+      value: settings.threshold === undefined ? ['不變'] : [before('變成你填的', fieldWord(template, settings.threshold.field))],
+      note: ['交易前後各讀一次 getThreshold()'],
+      gains: false,
+    });
+  }
   for (const view of template.effects.views) {
     for (const { value, change } of view.changes) {
       rows.push({
@@ -1172,8 +1199,10 @@ function ruleWords(rule: Rule, context: Context): Inline {
       const only = onlyEntry(rule.ref, context);
       if (only !== undefined) return [link(only)];
       const kind = context.template.card.get(rule.ref.field)?.kind;
-      return [before(kind === 'amount' || kind === 'nonce' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
+      return [before(kind === 'amount' || kind === 'nonce' || kind === 'threshold' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
     }
+    case 'owner-before':
+      return [before('簽署人名單裡排在前面的', refWord(context.template, rule.ref))];
     case 'free':
       return ['不限'];
     case 'equals':
@@ -1600,6 +1629,10 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
       return step([...cardNewPrompt, '：它列出你的 Safe 和地址簿裡的名字，每個附完整地址。選你要的那個，完整地址要對。']);
     case 'nonce':
       return step([...cardNewPrompt, '：打 Safe 交易的 nonce，純數字。']);
+    case 'threshold':
+      return step([...cardNewPrompt, '：打新的門檻，也就是要幾個簽署人簽才能執行，純數字，至少 1。']);
+    case 'owner':
+      return step([...cardNewPrompt, '：它列出地址簿裡的名字，每個附完整地址。選你要的那個簽署人，完整地址要對。']);
     case 'amount': {
       const token = field.of === 'eth' ? 'ETH' : (onlyName(field.of, context)?.name ?? before('你選的', refWord(context.template, field.of)));
       if (field.computed === undefined) {
@@ -1624,7 +1657,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
 function nextSection(context: Context): Section {
   const { template } = context;
   const fields = [...template.card];
-  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce';
+  const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold';
   const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
   const vault = context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined;
   const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? `（第一次用這個模板${vault ? '或這個金庫' : ''}，先用小額）` : '';
@@ -1640,6 +1673,16 @@ function nextSection(context: Context): Section {
       then: [['它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 ', { code: 'y' }, '。']],
       hashes: false,
     },
+    ...(fields.some(([, f]) => f.kind === 'owner')
+      ? [
+          {
+            say: ['先把要加、要移除或要換的簽署人加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得'],
+            command: 'bin/kiss-sign book add <name> <address>',
+            then: [['它印出名字和完整地址，問 ', { code: 'Add this entry? [y/N]' }, ' 。每個字元都跟聊天以外的來源核對過才打 ', { code: 'y' }, ' 。同一個人只要加一次。']],
+            hashes: false,
+          } satisfies NextStep,
+        ]
+      : []),
     ...(fields.some(([, f]) => f.kind === 'recipient')
       ? [
           {
@@ -1688,6 +1731,9 @@ function nextSection(context: Context): Section {
     ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`, ...(e.amount.kind === 'at-least' ? [before('，不少於你填的', fieldWord(template, e.amount.field))] : [])]),
     ...(template.effects.gives.length + template.effects.gets.length === 0 ? [['模擬後 Safe 的餘額一點都不能變'] as Inline] : []),
     ...(template.nonce === undefined ? [] : [['Safe 交易的 nonce 是', ...ruleWords(template.nonce, context)] as Inline]),
+    ...(template.effects.safe === undefined
+      ? []
+      : [['模擬前後讀 Safe 的簽署人和門檻：只變卡片上寫的那一項；模組、guard、fallback handler、singleton 都不能變'] as Inline]),
     template.effects.approves.length === 0
       ? ['沒有任何授權在交易後變高']
       : template.effects.approves.every((a) => a.amount.kind === 'card')

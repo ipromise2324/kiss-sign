@@ -10,6 +10,10 @@ import type { Transport } from '../src/chain/rpc.ts';
 import { history } from '../src/history/history.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
+import { selectorOf } from '../src/decode/abi.ts';
+import { hashSafeTx } from '../src/safe/hash.ts';
+import type { Hex } from '../src/safe/types.ts';
+import { parseServiceTx } from '../src/safe/parse.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
@@ -39,7 +43,7 @@ function write(path: string, text: string): string {
  * A clone whose origin/main holds this repository's template and registry, and a home holding one Safe's history. Its
  * origin is the configured repository's URL, served offline from a local bare repository through core.sshCommand.
  */
-function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<string, unknown> = {}) {
+function setUp(name: string | Record<string, unknown>[], cards: Record<number, unknown> = {}, notes: Record<string, unknown> = {}) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-history-'));
   const origin = join(base, 'origin.git');
   const repo = join(base, 'repo');
@@ -55,7 +59,7 @@ function setUp(name: string, cards: Record<number, unknown> = {}, notes: Record<
   chmodSync(ssh, 0o755);
   git(repo, 'remote', 'set-url', 'origin', 'git@github.com:signer/kiss-sign.git');
   git(repo, 'config', 'core.sshCommand', ssh);
-  const txs = records(name);
+  const txs = typeof name === 'string' ? records(name) : name;
   const home = join(base, 'home');
   write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: txs[0]!.safe, repo: 'github.com/signer/kiss-sign' }));
   write(join(home, 'history', 'txs.jsonl'), txs.map((r) => `${JSON.stringify(r)}\n`).join(''));
@@ -144,6 +148,18 @@ test('a note whose spending nonce is itself an approval spent later is refused',
 test('reason row refused-by-design: the static floor refuses an unlimited approval, and names the rule', async () => {
   const { stdout } = await run(setUp('morpho-safe', withCard, { 338: 'approved for a migration' }));
   assert.match(rowOf(stdout, 338), /\n {33}refused-by-design: unlimited-approval at multiSend\[0\]; note: approved for a migration$/);
+});
+
+test("reason row: a past owner change is not refused by design, as a template declares one; enableModule still is", async () => {
+  const fixture = readJson(join(ROOT, 'testdata', 'safe-tx', 'safe-change-threshold-raise.json'));
+  const change = fixture.service as Record<string, unknown>;
+  const tx = parseServiceTx(change, { chainId: 1n, version: fixture.chain.version });
+  const data = `${selectorOf('enableModule(address)')}${'0'.repeat(24)}${'44'.repeat(20)}` as Hex;
+  const { safeTxHash } = hashSafeTx({ ...tx, nonce: tx.nonce + 1n, data });
+  const module = { ...change, nonce: Number(tx.nonce + 1n), data, dataDecoded: null, safeTxHash };
+  const { stdout } = await run(setUp([change, module]));
+  assert.match(rowOf(stdout, Number(change.nonce)), /\n {33}no-card-yet: no card file, so no template covers it yet$/);
+  assert.match(rowOf(stdout, Number(module.nonce)), /\n {33}refused-by-design: self-call at call$/);
 });
 
 test('reason row no-card-yet: a transaction without a card file is not run', async () => {

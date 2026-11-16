@@ -13,11 +13,11 @@ import { parseServiceTx } from '../src/safe/parse.ts';
 import { checksumAddress, parseAddress, parseUint256 } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
-import { keptUnlimited } from '../src/floor/floor.ts';
-import type { StandingSpender } from '../src/floor/floor.ts';
+import type { FloorAllowed } from '../src/floor/floor.ts';
+import { floorAllowed } from '../src/floor/summary.ts';
 import { describeFinding, endsNeeded, expectedChanges, judgeEffects, viewCalls } from '../src/simulate/effects.ts';
 import type { EffectVerdict, Observed, Permit2Allowance, ViewAnswer, ViewCall } from '../src/simulate/effects.ts';
-import { observeExecuted, withSimulatedViews } from '../src/simulate/executed.ts';
+import { observeExecuted, withSimulatedSafeState, withSimulatedViews } from '../src/simulate/executed.ts';
 import { describeCallScan, scanCalls, simulateSafeTx } from '../src/simulate/simulate.ts';
 import type { Observation } from '../src/simulate/simulate.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
@@ -80,7 +80,7 @@ const tx = parseServiceTx(service, { chainId: 1n, version });
 
 const markets = marketsText(ROOT);
 const registry = parseRegistry(JSON.parse(readFileSync(flags.registry ?? join(ROOT, 'registry', 'contracts.json'), 'utf8')), markets === undefined ? {} : JSON.parse(markets));
-function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Address[]; ends: Address[]; views: ViewCall[]; standing: StandingSpender[] } | undefined {
+function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Address[]; ends: Address[]; views: ViewCall[]; allowed: FloorAllowed } | undefined {
   if (flags.card === undefined) return undefined;
   const card = parseCard(JSON.parse(flags.card));
   const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(ROOT, op.template, registry)]));
@@ -97,7 +97,7 @@ function judged(): { judge: (observed: Observed) => EffectVerdict; watch: Addres
     watch: expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset): asset is Address => asset !== 'eth') : [],
     ends: endsNeeded(expectations),
     views: viewCalls(resolution.card, templates, registry),
-    standing: keptUnlimited(resolution.card, templates, registry),
+    allowed: floorAllowed(resolution.card, templates, registry),
   };
 }
 const card = judged();
@@ -130,7 +130,7 @@ function print(label: string, observation: Observation): void {
       }
     } else console.log(`  safe settings from ${evidence.logs.length} receipt logs`);
   }
-  const floor = checkSimulatedFloor(observed, safe, card?.standing ?? []);
+  const floor = checkSimulatedFloor(observed, safe, card?.allowed);
   if (floor.kind === 'pass') console.log('  simulated floor PASS');
   else console.log(`  simulated floor REFUSED\n${floor.findings.map((f) => `    ${f.rule}: ${f.detail}`).join('\n')}`);
   if (card === undefined) return;
@@ -143,7 +143,8 @@ function print(label: string, observation: Observation): void {
 console.log(`nonce ${tx.nonce}, executed in block ${executed.number}; simulating on block ${parent.number}, agreed by ${reader.providers.join(' and ')}`);
 const simulated = await simulateSafeTx(reader, { tx, parent, time: executedHeader.time, watch, ends, views });
 print(`simulated through execTransaction at block ${parent.number}`, simulated);
-print(`from the receipt of ${txHash}`, withSimulatedViews(await observeExecuted(reader, txHash, tx, ends, views), simulated, views));
+const receiptObservation = withSimulatedViews(await observeExecuted(reader, txHash, tx, ends, views), simulated, views);
+print(`from the receipt of ${txHash}`, card?.allowed.change === undefined ? receiptObservation : withSimulatedSafeState(receiptObservation, simulated));
 console.log(`\neach call run as a Safe transaction of its own at block ${parent.number}`);
 for (const line of describeCallScan(await scanCalls(reader, { tx, parent, time: executedHeader.time, watch }), registry)) console.log(`  ${line}`);
 

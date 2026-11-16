@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>safe/remove-owner 報告</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.callh .what{font-size:16px;font-weight:590}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.src{display:flex;flex-direction:column;gap:4px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:16px;font-size:var(--t-small);color:var(--fg2)}
+.ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs .byai{margin-right:8px}
+.aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="目錄">
+  <h2>目錄</h2>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>移除 Safe 的簽署人</span><span class="byai">AI 研究</span></span></h1>
+  <span class="opid">safe/remove-owner</span>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫自己的 <code>removeOwner</code>，移除你選的簽署人，並把門檻設成你填的數字。<code>prevOwner</code> 是 Safe 內部名單排在他前面的人，程式在鏈上讀 <code>getOwners</code> 算出，不用你填。</span><span class="byai">AI 研究</span></span></p>
+  <ul class="checks">
+    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>地址來源 <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">2 個地址都至少在 2 個地方確認：官方頁、協議 API、CoinGecko 或金庫的登記工廠列出同一個地址。</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">2 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認這 2 個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
+    <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>參數保護 <span class="n num">沒有測試</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
+  </ul>
+  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>不動任何資產，但改的是誰能動這個 Safe：確認移除的是對的人，剩下的人數夠用。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">2</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>流程 <span class="c">1 個呼叫</span></h2>
+  <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
+  <div class="diagram">
+  <svg viewBox="0 0 660 152" role="img" aria-labelledby="dt dd">
+    <title id="dt">交易流程</title>
+    <desc id="dd">呼叫 1：Safe 呼叫 自己 的 removeOwner。</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="144"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">removeOwner</text>
+    <path class="call" d="M90 104h64v16h-61" marker-end="url(#m-call)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">圖可以左右滑動</div>
+  <div class="key">
+    <span class="k0">誰決定</span>
+    <span><span class="who you">你填</span>每次簽名填</span>
+    <span><span class="who you">你選</span>每次簽名選</span>
+    <span><span class="who">固定</span>改了就 MISMATCH</span>
+  </div>
+  <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">你的 Safe.</span>removeOwner</span><span class="sel">0xf8dc5dd9</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://docs.safe.global/reference-smart-account/owners/removeOwner">docs.safe.global/reference-smart-account/owners</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
+    <div class="arg" data-field="1.removeOwner.prevOwner">
+      <div class="nm"><span class="pn">prevOwner</span><span class="who">固定</span></div>
+      <div class="val"><div class="is">Safe 簽署人名單裡排在這個人前面的簽署人 <span class="f3">程式在鏈上讀 getOwners() 算出，你不用填</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Safe 把簽署人存成一條鏈；這是排在被移除者前面的那個人，第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.removeOwner.owner">
+      <div class="nm"><span class="pn">owner</span><span class="who you">你選：簽署人</span></div>
+      <div class="val"><div class="is">你選的簽署人</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要移除的簽署人。</span></span></div></div>
+    </div>
+    <div class="arg" data-field="1.removeOwner._threshold">
+      <div class="nm"><span class="pn">_threshold</span><span class="who you">你填：門檻</span></div>
+      <div class="val"><div class="is">你填的門檻</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>移除後的門檻，不能大於剩下的人數。</span></span></div></div>
+    </div>
+  </div>
+  <h3>交易後</h3>
+  <dl class="props">
+    <div><dt>Safe 的簽署人</dt><dd class="">少一個簽署人</dd><dd class="src">交易前後各讀一次 getOwners()，其他人不能變</dd></div>
+    <div><dt>Safe 的門檻</dt><dd class="">變成你填的門檻</dd><dd class="src">交易前後各讀一次 getThreshold()</dd></div>
+  </dl>
+</section>
+
+<section id="review">
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>2</span></span></h2>
+  <p class="lead">每一項 AI 都先查過，附上建議。</p>
+  <div class="rows">
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>移除後，剩下的簽署人數不能少於門檻。門檻設成剩下的人數時，少一把鑰匙就再也動不了 Safe。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>門檻留一點餘裕：例如剩 3 人時設 2。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>每次只改一項，一項一筆交易。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>錢包顯示 <span class="c">ERC-7730 描述檔</span></h2>
+  <p class="lead">硬體錢包用 ERC-7730 描述檔顯示每個呼叫。</p>
+  <dl class="props two">
+    <div><dt>1 你的 Safe.removeOwner</dt><dd class="f3">沒有描述檔，只顯示原始資料</dd></div>
+  </dl>
+</section>
+
+<section id="addresses">
+  <h2>地址 <span class="c">2 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或金庫的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
+  <div class="rows">
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 2 個地址都沒有要你看的結果</summary>
+    <div class="ad" id="a-safe-1.3.0" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">safe-1.3.0</span><span class="role"><span class="aiw" data-ai><span>Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json">github.com/safe-global/safe-deployments</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">github.com/safe-global/safe-cli</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/safe-global/safe-cli</div>
+        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 <a class="aisrc" href="https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+    </div>
+    <div class="ad" id="a-safe-1.4.1" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">safe-1.4.1</span><span class="role"><span class="aiw" data-ai><span>Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0x41675C099F32341bf84BFc5382aF534df5C7461a</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json">github.com/safe-global/safe-deployments</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py">github.com/safe-global/safe-cli</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 safe（<a href="https://defillama.com/protocol/safe">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/safe-global/safe-cli</div>
+        <div class="aisrcs"><span class="lbl">AI 補查</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26 <a class="aisrc" href="https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code">來源</a></span></span><span class="aires">AI 判斷：沒問題</span></span></div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>過去交易</h2><p class="lead">這個操作沒有研究過去交易。</p>
+</section>
+
+<section id="next">
+  <h2>下一步</h2>
+  <ol class="steps">
+    <li><div>第一次用這個模板，或模板改過之後，先核准它<pre class="cmd"><code>bin/kiss-sign template approve safe/remove-owner</code></pre>
+      <p class="then">它印出模板、GitHub 上 main 的 commit 和模板的 keccak256。是你審過的那份才回答 <code>y</code>。</p></div></li>
+    <li><div>先把要加、要移除或要換的簽署人加進地址簿。名字自己取，用小寫英文和 - 連接；地址從聊天以外的來源取得<pre class="cmd"><code>bin/kiss-sign book add &#60;name&#62; &#60;address&#62;</code></pre>
+      <p class="then">它印出名字和完整地址，問 <code>Add this entry? [y/N]</code> 。每個字元都跟聊天以外的來源核對過才打 <code>y</code> 。同一個人只要加一次。</p></div></li>
+    <li><div>做卡片<pre class="cmd"><code>bin/kiss-sign card new safe/remove-owner</code></pre>
+      <p class="then">你這份 clone 的 <code>templates/</code> 或 <code>registry/</code> 跟 GitHub 上的 main 不一樣時，它什麼都不問就停下，叫你先跑 <code>git pull</code> 。</p></div></li>
+    <li><div>簽署人（<code>owner</code>）：它列出地址簿裡的名字，每個附完整地址。選你要的那個簽署人，完整地址要對。</div></li>
+    <li><div>門檻（<code>threshold</code>）：打新的門檻，也就是要幾個簽署人簽才能執行，純數字，至少 1。</div></li>
+    <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
+      <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
+    <li><div>在 Safe web app 提出交易，複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。</p>
+      <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
+    <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">它算出的 hash 跟硬體錢包比對；它的網頁上的比對清單跟 <code>verify</code> 網頁上的逐列比對。</p></div></li>
+    <li><div>硬體錢包上的 domain hash 和 message hash，跟 <code>verify</code> 網頁上的逐字比對，一樣才簽。
+      <div class="hash"><span>比對</span><span class="f2">domain hash 和 message hash，都是 0x 開頭 64 個字元</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>程式每次簽名自動做的事</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>交易只有這 1 個呼叫，MultiSend 也一個個解開</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>每個參數符合上面的規則，重新編碼要一模一樣</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 的餘額一點都不能變</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬前後讀 Safe 的簽署人和門檻：只變卡片上寫的那一項；模組、guard、fallback handler、singleton 都不能變</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>碰到的 2 個登記合約，程式碼還是 code pin 記錄的那份</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">由 <code>pnpm report safe/remove-owner --record</code> 從 <code>templates/safe/remove-owner/template.json</code>、<code>templates/safe/remove-owner/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/safe-remove-owner.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/safe/remove-owner/notes.json</code> 寫出，資料在 2026-11-16 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>

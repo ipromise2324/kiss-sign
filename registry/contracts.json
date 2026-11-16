@@ -1027,6 +1027,40 @@
       "from": 23666454
     }
   },
+  "safe-1.3.0": {
+    "address": "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+    "kind": "singleton",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json",
+    "sourceLabel": "canonical",
+    "moreSources": [
+      {
+        "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
+        "label": "v1.3.0"
+      }
+    ],
+    "defillama": "safe",
+    "code": {
+      "hash": "0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e",
+      "from": 12504268
+    }
+  },
+  "safe-1.4.1": {
+    "address": "0x41675C099F32341bf84BFc5382aF534df5C7461a",
+    "kind": "singleton",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json",
+    "sourceLabel": "canonical",
+    "moreSources": [
+      {
+        "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
+        "label": "v1.4.1"
+      }
+    ],
+    "defillama": "safe",
+    "code": {
+      "hash": "0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4",
+      "from": 17487000
+    }
+  },
   "gpv2-settlement": {
     "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
     "kind": "router",
