@@ -69,11 +69,17 @@ export type FactsScope = {
 export function factsScope(template: Template, registry: Registry, entries: readonly RegistryEntry[]): FactsScope {
   const reads = template.facts.flatMap((fact) => valuesOf(template, fact.field, registry).map((value) => ({ fact, value })));
   return {
-    protocols: [...calledProtocols(template, registry)].map(([slug, contracts]) => ({ slug, contracts })),
+    protocols: [...calledProtocols(template, registry)].map(([slug, contracts]) => ({ slug, contracts: withDependencies(contracts, registry) })),
     unlisted: callTargetEntries(template, registry).filter((entry) => entry.kind !== 'token' && protocolOf(entry, registry).slug === undefined),
     reads,
     tokens: entries.filter((entry) => entry.kind === 'token' || entry.kind === 'vault'),
   };
+}
+
+/** The contracts, each followed by the entries it depends on that are not already listed. */
+function withDependencies(contracts: readonly RegistryEntry[], registry: Registry): RegistryEntry[] {
+  const all = contracts.flatMap((entry) => [entry, ...(entry.dependsOn ?? []).map((name) => registry.entries.get(name) as RegistryEntry)]);
+  return all.filter((entry, i) => all.findIndex((other) => other.name === entry.name) === i);
 }
 
 function valuesOf(template: Template, field: string, registry: Registry): FactValue[] {
@@ -133,7 +139,10 @@ function hacksOf(raw: unknown, listing: Listing): Hack[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-const proxyOf = (entry: RegistryEntry): Proxy => (entry.code === undefined ? 'not pinned' : entry.code.current.pin.implementation === undefined ? 'not a proxy' : 'proxy');
+const proxyOf = (entry: RegistryEntry): Proxy => {
+  const pin = entry.code?.current.pin;
+  return pin === undefined ? 'not pinned' : pin.implementation === undefined && pin.routes === undefined ? 'not a proxy' : 'proxy';
+};
 
 function boundValue(value: FactValue): ResolvedValue {
   return value.kind === 'market' ? { kind: 'market', market: value.market } : { kind: 'contract', name: value.entry.name, entry: value.entry };

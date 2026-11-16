@@ -218,6 +218,6 @@ test("verify's recorded MATCH for another Safe's order replays from its file, th
 test('the same verdict file without the order it read is UNVERIFIABLE at the fields, naming the order API', async () => {
   const { verdict } = await evaluate({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges));
   assert.equal(verdict.kind, 'UNVERIFIABLE');
-  const fields = verdict.kind === 'MATCH' ? undefined : verdict.causes.find((c) => c.check === 'fields');
+  const fields = verdict.causes.find((c) => c.check === 'fields');
   assert.match(fields?.details[0] ?? '', /no Order read from https:\/\/api\.cow\.fi\/mainnet\/api\/v1\/orders\/0x[0-9a-f]{112} hashes to/);
 });

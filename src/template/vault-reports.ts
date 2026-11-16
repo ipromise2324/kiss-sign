@@ -6,9 +6,7 @@ import { TEMPLATES_DIR } from './template.ts';
 import type { Template } from './template.ts';
 
 /** Templates that predate the HTML report: each keeps its one report until it is rebuilt. The list only shrinks. */
-export const NOT_YET_REBUILT: ReadonlySet<string> = new Set([
-  'fluid/vault-deposit',
-]);
+export const NOT_YET_REBUILT: ReadonlySet<string> = new Set([]);
 
 /** Whether a template's reports gate the vaults its card names: every template but those not yet rebuilt. */
 export const gatesVaults = (template: Template): boolean => !NOT_YET_REBUILT.has(template.id);

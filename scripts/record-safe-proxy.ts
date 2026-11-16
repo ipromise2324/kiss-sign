@@ -8,6 +8,7 @@ import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { safeProxyCreated } from '../src/safe/deployments.ts';
 import { parseHex } from '../src/safe/types.ts';
+import { recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = 'usage: ALCHEMY_API_KEY=... node scripts/record-safe-proxy.ts <name> <transaction hash>';
 
@@ -34,5 +35,5 @@ const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
 if (safe !== undefined && JSON.stringify(fixture).toLowerCase().includes(safe.slice(2))) throw new Error('the recording mentions the configured Safe; nothing written');
 const out = join(import.meta.dirname, '..', 'testdata', 'safe-proxy', `${name}.json`);
 mkdirSync(join(out, '..'), { recursive: true });
-writeFileSync(out, `${JSON.stringify(fixture, null, 1)}\n`);
+writeFileSync(out, recordingText(fixture, 1));
 console.log(`wrote ${out}: the ${created.version} factory ${created.factory} created ${created.proxy} in block ${block.value.number}, ${(code.value.length - 2) / 2} bytes of code`);

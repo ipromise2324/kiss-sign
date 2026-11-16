@@ -24,9 +24,10 @@ import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
-const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
+const load = (dir: string, name: string) => readRecording<any>(join(ROOT, 'testdata', dir, `${name}.json`));
 const registry = loadRegistry(ROOT);
 const templates = new Map<string, Template>(
   ['fluid/vault-deposit', 'fluid/vault-withdraw', 'fluid/vault-redeem'].map((id) => [id, loadTemplate(ROOT, id, registry)]),
@@ -118,6 +119,12 @@ test('a deposit whose card amount differs from the approval and the deposit mism
   const c = caseNamed('fluid-deposit-usdc');
   const tx = safeTx(c.name);
   assert.deepEqual(mismatchAt(check(tx, impliedCard(c, tx, firstArg(tx) - 1n))), ['multiSend[0].approve.value', 'multiSend[1].deposit.assets']);
+});
+
+test('a deposit card naming a Morpho vault is refused before any check', () => {
+  const tx = safeTx('fluid-deposit-usdc');
+  const result = resolveCard({ operations: [{ template: 'fluid/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '1' } }] }, { templates, registry, addressBook: new Map(), safe: tx.safe });
+  assert.deepEqual(result.kind === 'refused' ? [result.reason, result.detail] : result.kind, ['wrong-protocol', 'steakhouse-prime-usdc-v2-0f51 is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending']);
 });
 
 test('a withdrawal from shares the Safe does not own is a mismatch at the owner', () => {

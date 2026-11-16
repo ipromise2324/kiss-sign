@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
+import { STANDARDS } from '../src/research/standards.ts';
 import { NOTES_FILE, notesChanges, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { GENERATED_HTML_FILE, generatedHtml, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
@@ -70,9 +72,9 @@ test('the list of templates not yet rebuilt only shrinks: each one predates the 
 });
 
 test('a template without notes.json gets no HTML report', async () => {
-  const id = [...NOT_YET_REBUILT][0] ?? assert.fail('every template has notes');
-  const { subject } = loadReport(ROOT, registry, { template: id });
-  assert.equal(await generatedHtml(ROOT, { subject, registry } as ReportInputs, { command: '', sources: [] }), undefined);
+  const { subject } = loadReport(ROOT, registry, { template: 'eth/transfer' });
+  const withoutNotes = mkdtempSync(join(tmpdir(), 'kiss-sign-no-notes-'));
+  assert.equal(await generatedHtml(withoutNotes, { subject, registry } as ReportInputs, { command: '', sources: [] }), undefined);
 });
 
 test('the committed HTML report is what the program writes from the recordings and notes.json, byte for byte', () => {
@@ -120,7 +122,7 @@ test('the HTML report holds no script and loads nothing', () => {
   }
 });
 
-test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, one of the four the program builds, or an id on the page', () => {
+test('every link is a URL the registry, docs.json, notes.json or a computed card field holds, a standard\'s page, one of the four the program builds, or an id on the page', () => {
   for (const [id, { html }] of replayed) {
     const notes = notesOf(id);
     const { target, root, registry } = reportOf(id);
@@ -136,6 +138,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
         ...(e.defillama === undefined ? [] : [`https://defillama.com/protocol/${e.defillama}`]),
       ]),
       ...Object.values(docs).map((d) => d.url),
+      ...[...STANDARDS.values()].map((standard) => standard.page),
       ...Object.values(card).flatMap((field) => (field.computed === undefined ? [] : [field.computed.default.source])),
       ...(JSON.stringify(notes).match(/https:\/\/[^"]+/g) ?? []),
     ]);
