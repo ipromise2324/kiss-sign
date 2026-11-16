@@ -19,11 +19,13 @@ import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import { signedEntryNames } from '../src/research/report.ts';
+import { codeClaims } from '../src/verify/code.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures('vault-v2');
 const registry = loadRegistry(ROOT);
-const IDS = ['morpho/vault-v2-cap-submit', 'morpho/vault-v2-cap-accept', 'morpho/vault-v2-cap-decrease', 'morpho/vault-v2-reallocate'];
+const IDS = ['morpho/vault-v2-cap-submit', 'morpho/vault-v2-cap-accept', 'morpho/vault-v2-cap-decrease', 'morpho/vault-v2-reallocate', 'morpho/vault-v2-revoke'];
 const templates = new Map(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
 const VAULT = 'acuto-usdc-v2-4a57';
 const NO_LIMIT = `${(1n << 128n) - 1n}`;
@@ -57,6 +59,7 @@ const CASES = [
   { fixture: 'vault-v2-cap-accept', template: 'morpho/vault-v2-cap-accept', values: caps('usdc-usp-915', NO_LIMIT, ALL), bound: 18 },
   { fixture: 'vault-v2-cap-decrease', template: 'morpho/vault-v2-cap-decrease', values: caps('usdc-usp-915', '0', '0'), bound: 18 },
   { fixture: 'vault-v2-cap-decrease-other-safe', template: 'morpho/vault-v2-cap-decrease', values: caps('usdc-usp-915', '10', '0'), bound: 18 },
+  { fixture: 'vault-v2-revoke', template: 'morpho/vault-v2-revoke', values: caps('usdc-usp-915', '1000000', '10000000000000000'), bound: 18 },
   { fixture: 'vault-v2-reallocate', template: 'morpho/vault-v2-reallocate', values: { vault: VAULT, from: 'usdc-usp-915', to: 'usdc-usp-86', amount: '1' }, bound: 16 },
   { fixture: 'vault-v2-reallocate-back', template: 'morpho/vault-v2-reallocate', values: { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1000000' }, bound: 16 },
 ] as const;
@@ -70,6 +73,12 @@ for (const c of CASES) {
 
   test(`${c.fixture}: every bound field, changed alone, gives a mismatch`, () => {
     assert.deepEqual(checkMutations(tx, resolved(tx, card(c.template, c.values)), templates, registry), { kind: 'pass', bound: c.bound, free: 0 });
+  });
+
+  test(`${c.fixture}: every contract verify compares with its code pin is one the report says each signing checks`, () => {
+    const signed = signedEntryNames(templates.get(c.template) as Template, registry);
+    const claimed = codeClaims(tx, resolved(tx, card(c.template, c.values)), templates, registry).map((entry) => entry.name);
+    assert.deepEqual(claimed.filter((name) => !signed.has(name)), []);
   });
 }
 
@@ -144,6 +153,7 @@ const RECORDED = [
   { name: 'vault-v2-cap-submit', given: card('morpho/vault-v2-cap-submit', caps('usdc-usp-915', NO_LIMIT, ALL)) },
   { name: 'vault-v2-cap-accept', given: card('morpho/vault-v2-cap-accept', caps('usdc-usp-915', NO_LIMIT, ALL)) },
   { name: 'vault-v2-cap-decrease', given: card('morpho/vault-v2-cap-decrease', caps('usdc-usp-915', '0', '0')) },
+  { name: 'vault-v2-revoke', given: card('morpho/vault-v2-revoke', caps('usdc-usp-915', '1000000', '10000000000000000')) },
   { name: 'vault-v2-reallocate', given: card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-915', to: 'usdc-usp-86', amount: '1' }) },
 ];
 

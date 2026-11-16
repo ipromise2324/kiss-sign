@@ -1216,13 +1216,18 @@ function walletSection(context: Context): Section {
   return section({ kind: 'calls', calls, lines });
 }
 
-function codeLines(ledger: Ledger, entry: RegistryEntry): Inline[] {
+function codeLines(ledger: Ledger, entry: RegistryEntry, signed: ReadonlySet<string>): Inline[] {
   const lines: Inline[] = [];
   const notCalled = ledger.results.some((r) => r.finding.kind === 'not-called' && r.about.kind === 'entry' && r.about.entry.name === entry.name);
   if (notCalled) {
     const dependents = ledger.entries.filter((other) => other.dependsOn?.includes(entry.name));
     const links = dependents.flatMap((other, i): Span[] => [...(i === 0 ? [] : ['、']), { href: entryAnchor(other.name), label: other.name }]);
-    const checked: Inline = dependents.length === 0 ? ['報告在最新區塊確認它跑的程式碼還是 code pin 記錄的那份。'] : ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。'];
+    const checked: Inline =
+      dependents.length > 0
+        ? ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。']
+        : signed.has(entry.name)
+          ? ['每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。']
+          : ['簽名時不碰；報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。'];
     lines.push(['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。', ...(entry.code === undefined ? [] : checked)]);
   }
   const routes = entry.code?.current.pin.routes;
@@ -1264,7 +1269,7 @@ function addressSection(context: Context): Section[] {
       address: checksumAddress(entry.address),
       sources,
       confirmed: confirmedWords(entry, confirmations(ledger, entry)),
-      codeLines: codeLines(ledger, entry),
+      codeLines: codeLines(ledger, entry, signedEntryNames(context.template, context.registry)),
       aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'AI'), result: AI_RESULTS[s.result] })),
     };
   };
@@ -1660,15 +1665,9 @@ function nextSection(context: Context): Section {
       { code: `${viewLabel(v, context)}.${v.fn.name}` },
       `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${typeof c.change === 'string' ? CHANGE_WORDS[c.change] : `等於你填的 ${fieldWord(template, c.change.equals)}`}`).join('、')}`,
     ]),
-    ...(context.ledger.entries.length === 0 ? [] : [[`碰到的 ${signedCount(context)} 個登記合約，程式碼還是 code pin 記錄的那份`] as Inline]),
+    ...(context.ledger.entries.length === 0 ? [] : [['卡片用到的每個登記合約，程式碼還是 code pin 記錄的那份'] as Inline]),
   ];
   return { anchor: anchor('next'), label: '下一步', count: undefined, body: { kind: 'next', steps, automatic } };
-}
-
-/** How many of the report's entries `verify` compares with their code pin at each signing. */
-function signedCount(context: Context): number {
-  const signed = signedEntryNames(context.template, context.registry);
-  return new Set(context.ledger.entries.map((e) => e.name).filter((name) => signed.has(name))).size;
 }
 
 /** The claims of the template's free arguments, in claim order; empty when every argument is bound. */
@@ -1715,7 +1714,7 @@ function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<stri
         notCalled.length === 0 ? '' : `${notCalled.join('、')} 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。`
       }${unprovable.length === 0 ? '' : `${unprovable.join('、')} 依函式選擇器把呼叫分給各自的實作，沒有一份程式碼能證明，不算在內；它的 routes 在「合約沒被換掉」比對。`}`,
     code: () =>
-      `每次簽名都確認${subjects === 1 ? '這個合約' : `這 ${subjects} 個合約`}還是研究時那份程式碼。被升級或換掉就擋下。${
+      `每次簽名都確認卡片用到的${subjects === 1 ? '這個合約' : '每個合約'}還是研究時那份程式碼。被升級或換掉就擋下。${
         reportOnly.length === 0 ? '' : `${reportOnly.join('、')} 簽名時不碰，只有報告比對它的程式碼。`
       }${
         today.length === 0 ? '' : `${today.join('、')} 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。`
