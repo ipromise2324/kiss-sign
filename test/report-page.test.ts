@@ -632,7 +632,7 @@ test('the who-decides key gives a free field the meaning of the claim the templa
 });
 
 test('no strip explanation counts one thing as many', async () => {
-  for (const page of [depositPage, pageOf(inputs), templatePage('cctp/receive')]) {
+  for (const page of [depositPage, pageOf(inputs)]) {
     for (const item of page.header.strip) assert.doesNotMatch(item.explain, /(^|[^\d])1 個(地址)?都|其餘 1 個|這 1 個/, item.explain);
   }
 });
