@@ -110,7 +110,7 @@ export function bookList(args: readonly string[], io: Io): number {
 }
 
 function show(value: ResolvedValue): string {
-  if (value.kind === 'amount' || value.kind === 'nonce') return `${value.value}`;
+  if (value.kind === 'amount' || value.kind === 'nonce' || value.kind === 'threshold') return `${value.value}`;
   if (value.kind === 'percent') return `${percentText(value.value)} = ${value.value}`;
   if (value.kind === 'contract') return `${value.name} ${checksumAddress(value.entry.address)} (registry)`;
   if (value.kind === 'market') {

@@ -42,8 +42,8 @@
                     "card": "vault.adapter"
                   },
                   "data": {
-                    "abi": {
-                      "params": "(address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                    "encoded": {
+                      "as": "market((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
                       "args": {
                         "marketParams": {
                           "card": "from"
@@ -65,8 +65,8 @@
                     "card": "vault.adapter"
                   },
                   "data": {
-                    "abi": {
-                      "params": "(address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams",
+                    "encoded": {
+                      "as": "market((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams)",
                       "args": {
                         "marketParams": {
                           "card": "to"

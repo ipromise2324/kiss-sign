@@ -26,9 +26,13 @@ export type SafeStateField = keyof SafeState;
  * How a transaction's effect on the Safe's settings was observed: read before and after it inside one simulated block,
  * or, for an executed transaction, the receipt's logs.
  */
-export type SafeStateEvidence =
-  | { readonly kind: 'read'; readonly before: SafeState; readonly after: SafeState }
-  | { readonly kind: 'receipt'; readonly logs: readonly EventLog[] };
+export type SafeStateRead = { readonly kind: 'read'; readonly before: SafeState; readonly after: SafeState };
+
+/**
+ * For an executed transaction, `alone` is the reading of a simulation of it alone on its parent block, taken when the
+ * card declares an owner or threshold change.
+ */
+export type SafeStateEvidence = SafeStateRead | { readonly kind: 'receipt'; readonly logs: readonly EventLog[]; readonly alone?: SafeStateRead };
 
 /** Slot constants from safe-global/safe-smart-account v1.3.0, v1.4.1 and v1.5.0; `singleton` is the first state variable. */
 export const SLOTS = {
@@ -66,7 +70,7 @@ function addressArray(data: Hex, offsetWord: number): Address[] | undefined {
   return items.every((item) => item.startsWith('0x000000000000000000000000')) ? items.map(addressOf) : undefined;
 }
 
-const ownersOf = (data: Hex): Address[] | undefined => (words(data) >= 2 && uintOf(data, 0) === 32n ? addressArray(data, 0) : undefined);
+export const ownersOf = (data: Hex): Address[] | undefined => (words(data) >= 2 && uintOf(data, 0) === 32n ? addressArray(data, 0) : undefined);
 
 /** `(address[] array, address next)`: the whole list only when `next` is the sentinel, the end of the list. */
 function modulesOf(data: Hex): Address[] | undefined {

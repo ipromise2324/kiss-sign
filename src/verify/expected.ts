@@ -11,7 +11,6 @@ import { hashSafeTx } from '../safe/hash.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { decodeTemplateCall, expectedCalls } from '../template/check.ts';
 import type { ExpectedCall, Values } from '../template/check.ts';
-import { isEncoding } from '../template/template.ts';
 import type { CallNode, Rule, Template, TokenRef, TrailerAllowance } from '../template/template.ts';
 
 /** What kiss-sign knows an address as: the Safe, the zero address, a registry entry or an address-book entry. */
@@ -120,7 +119,8 @@ function addressesIn(value: AbiValue): Address[] {
 const regionOf = (value: AbiValue, root: Uint8Array): Region => ({ root, start: value.span[0], end: value.span[1] });
 
 function callsIn(rule: Rule | undefined, value: AbiValue, values: Values, walk: Walk, itemValues?: readonly Values[]): CallData[] {
-  if (rule?.kind === 'call' && !isEncoding(rule.call) && value.kind === 'bytes') return [callData(rule.call, regionOf(value, walk.root), values, walk)];
+  // check.sh decodes only a call with a selector it knows, never parameters a router reads without one, so neither does this.
+  if (rule?.kind === 'call' && value.kind === 'bytes') return rule.call.encoding === 'call' ? [callData(rule.call, regionOf(value, walk.root), values, walk)] : [];
   if (rule?.kind === 'items' && value.kind === 'array') return value.items.flatMap((item, i) => callsIn(rule.items[i], item, itemValues?.[i] ?? values, walk));
   if (rule?.kind === 'fields' && value.kind === 'tuple') return value.fields.flatMap((field, i) => callsIn(rule.fields[i], field, values, walk));
   return [];
@@ -136,7 +136,7 @@ function bundle(rule: Rule | undefined, value: AbiValue, values: Values, walk: W
     const shown =
       data.value.length === 0
         ? ({ kind: 'empty' } as const)
-        : dataRule?.kind === 'call'
+        : dataRule?.kind === 'call' && dataRule.call.encoding === 'call'
           ? callData(dataRule.call, regionOf(data, walk.root), itemValues?.[i] ?? values, walk)
           : ({ kind: 'raw', hex: hex(data.value) } as const);
     return { to: labeled(to.value, walk), value: amount.value, data: shown };

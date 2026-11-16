@@ -1,0 +1,21 @@
+{
+  "id": "safe/change-threshold",
+  "card": {
+    "threshold": { "kind": "threshold" }
+  },
+  "calls": [
+    {
+      "to": { "safe": true },
+      "value": { "const": "0" },
+      "function": "changeThreshold(uint256 _threshold)",
+      "args": {
+        "_threshold": { "card": "threshold" }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "safe": { "threshold": "card.threshold" }
+  }
+}

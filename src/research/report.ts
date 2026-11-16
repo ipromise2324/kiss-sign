@@ -16,7 +16,7 @@ import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, inScope, isEncoding, loadTemplate, refNames, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, inScope, loadTemplate, refNames, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
@@ -130,7 +130,7 @@ export function templateFunctions(template: Template): AbiFunction[] {
     if (rule.kind === 'fields') rule.fields.forEach(visitRule);
   };
   const visitCall = (node: CallNode): void => {
-    if (!isEncoding(node) && !found.has(node.fn.signature)) found.set(node.fn.signature, node.fn);
+    if (node.encoding === 'call' && !found.has(node.fn.signature)) found.set(node.fn.signature, node.fn);
     node.args.forEach(visitRule);
   };
   for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data);
@@ -163,6 +163,8 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
       if (!standard.kinds.includes(contract.kind)) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract ${contract.name} is a ${contract.kind}; ${standard.name} applies to ${standard.kinds.join(' and ')} entries`);
       if (!standard.declarations.has(fn.signature)) throw new ReportError(`${DOCS_FILE}: ${standard.name} does not define ${fn.signature}`);
     }
+    const onSafe = template.calls.some((call) => call.to.kind === 'safe' && call.data !== 'empty' && call.data.fn.signature === fn.signature);
+    if (onSafe && contract.kind !== 'singleton') throw new ReportError(`${DOCS_FILE}: ${fn.signature} is called on the Safe itself, so its contract must be a registry singleton, not ${contract.name}`);
     const names = targets.get(fn.signature);
     if (names !== undefined && !names.includes(contract.name)) {
       throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is ${contract.name}, but the template calls it on ${names.length === 1 ? names[0] : `one of ${names.join(', ')}`}`);
@@ -247,6 +249,11 @@ function namedInRules(template: Template): Set<string> {
     if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
     if (rule?.kind === 'items') rule.items.forEach(visit);
     if (rule?.kind === 'fields') rule.fields.forEach(visit);
+    if (rule?.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
+    if (rule?.kind === 'eip712') {
+      names.add(rule.message.domain.verifyingContract);
+      rule.message.fields.forEach(visit);
+    }
   };
   visit(template.nonce);
   for (const call of template.calls) {
@@ -288,8 +295,14 @@ function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   };
   roots.forEach(named);
   if (subject.kind === 'template') for (const doc of subject.docs) names.add(doc.contract.name);
+  if (subject.kind === 'template' && callsSafeWithData(subject.template)) {
+    for (const entry of registry.entries.values()) if (entry.kind === 'singleton') names.add(entry.name);
+  }
   return names;
 }
+
+/** A call to the Safe itself with data runs the Safe's singleton, one of the registry's. */
+const callsSafeWithData = (template: Template): boolean => template.calls.some((call) => call.to.kind === 'safe' && call.data !== 'empty');
 
 /**
  * Every registry entry the operation can touch, in registry order: those the template names, those a card field can
@@ -507,7 +520,12 @@ function refAddresses(ref: CardRef, template: Template, registry: Registry): str
   return `: one of ${names.map((n) => full(registry.entries.get(n) as RegistryEntry)).join(', ')}`;
 }
 
-const FREE_CLAIMS = { scalar: 'free', proof: 'free, claimed `proof`: every changed value must revert or be refused', unread: 'free, claimed `unread`: no changed value may change anything' } as const;
+const FREE_CLAIMS = {
+  scalar: 'free',
+  proof: 'free, claimed `proof`: every changed value must revert or be refused',
+  unread: 'free, claimed `unread`: no changed value may change anything',
+  route: "free, claimed `route`: a changed value may pick another pool, and must still meet every effect, which bounds each token the Safe gets",
+} as const;
 
 const quantityText = (q: Quantity): string => (q.kind === 'card' ? `the card's ${code(q.field)}` : `the number at ${code(q.path)}`);
 
@@ -520,17 +538,23 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'contract':
       return `registry ${full(registry.entries.get(rule.name) as RegistryEntry)}`;
     case 'const':
-      return rule.value.kind === 'string' ? `constant string ${code(JSON.stringify(Buffer.from(rule.value.value.slice(2), 'hex').toString('utf8')))}` : `constant ${code(constText(rule.value))}`;
+      return `constant ${code(rule.value.kind === 'string' ? JSON.stringify(Buffer.from(rule.value.value.slice(2), 'hex').toString('utf8')) : constText(rule.value))}`;
     case 'free':
       return `${FREE_CLAIMS[rule.claim]}; ${byAi(rule.reason)}`;
     case 'equals':
       return `the same number as ${code(rule.path)}, which is ${ruleText(rule.rule, template, registry)}`;
+    case 'owner-before':
+      return `the owner listed just before ${refText(rule.ref)} in the Safe's ${code('getOwners()')}, read on chain, or the sentinel ${code('0x0000000000000000000000000000000000000001')} when it is first`;
     case 'share-price':
       return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e27 / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
+    case 'at-least':
+      return `at least the card's ${code(rule.field)}`;
     case 'call':
     case 'keccak':
     case 'items':
     case 'fields':
+    case 'packed':
+    case 'eip712':
       return '';
   }
 }
@@ -551,6 +575,22 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
       const components = param?.type.kind === 'tuple' ? param.type.components : [];
       return argRows(components, rule.fields, `${path}.`, template, registry);
     }
+    case 'packed': {
+      const layout = rule.parts.map((part) => `${code(part.name)} ${code(canonicalType(part.type))}`).join(', ');
+      const size = rule.parts.reduce((sum, part) => sum + part.size, 0);
+      return [
+        `| ${code(path)} | exactly ${size} bytes, packed with no padding: ${layout} |`,
+        ...rule.parts.flatMap((part) => rowsOf(part.rule, `${path}.${part.name}`, { name: part.name, type: part.type }, template, registry)),
+      ];
+    }
+    case 'eip712': {
+      const { domain, struct, separator, lookup } = rule.message;
+      const contract = full(registry.entries.get(domain.verifyingContract) as RegistryEntry);
+      return [
+        `| ${code(path)} | the EIP-712 digest of a ${code(struct.encoded)} message, domain name ${code(domain.name)}, version ${code(domain.version)}, chain 1, verifying contract ${contract} (domain separator ${code(separator)}); the message is read from ${lookup.replace('{arg}', '<argument>')} and must hash to this digest |`,
+        ...argRows(struct.members, rule.message.fields, `${path}.`, template, registry),
+      ];
+    }
     default:
       return [`| ${code(path)} | ${ruleText(rule, template, registry)} |`];
   }
@@ -558,10 +598,14 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
 
 function callRows(node: CallNode, prefix: string, template: Template, registry: Registry): string[] {
   const trailer = node.trailer === undefined ? 'no bytes after the arguments' : `at most ${node.trailer.maxBytes} bytes after the arguments; ${byAi(node.trailer.why)}`;
+  if (node.encoding === 'params') {
+    return [
+      `| ${code(`${prefix}${node.fn.name}`)} | holds the parameters ${code(node.fn.signature)}, ABI-encoded with no selector; no bytes after them |`,
+      ...argRows(node.fn.params, node.args, `${prefix}${node.fn.name}.`, template, registry),
+    ];
+  }
   return [
-    isEncoding(node)
-      ? `| ${code(`${prefix}${node.fn.name}`)} | values ABI-encoded as ${code(node.fn.signature)}, with no selector; no bytes after them |`
-      : `| ${code(`${prefix}${node.fn.name}`)} | calls ${code(node.fn.signature)}, selector ${code(node.fn.selector)}; ${trailer} |`,
+    `| ${code(`${prefix}${node.fn.name}`)} | calls ${code(node.fn.signature)}, selector ${code(node.fn.selector)}; ${trailer} |`,
     ...argRows(node.fn.params, node.args, `${prefix}${node.fn.name}.`, template, registry),
   ];
 }
@@ -571,7 +615,14 @@ function tokenText(token: TokenRef, template: Template, registry: Registry): str
 }
 
 function effectRow(side: string, effect: Effect, template: Template, registry: Registry): string {
-  const amount = effect.amount.kind === 'card' ? `the card's ${code(effect.amount.field)}` : effect.amount.kind === 'positive' ? 'more than nothing' : 'its whole balance';
+  const amount =
+    effect.amount.kind === 'card'
+      ? `the card's ${code(effect.amount.field)}`
+      : effect.amount.kind === 'at-least'
+        ? `at least the card's ${code(effect.amount.field)}`
+        : effect.amount.kind === 'positive'
+          ? 'more than nothing'
+          : 'its whole balance';
   const to = effect.to === undefined ? '' : `, to ${refText(effect.to)}`;
   return `| ${side} | ${tokenText(effect.token, template, registry)} | ${amount}${to} |`;
 }
@@ -612,6 +663,10 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
             ? `a percent, at most 100, held in WAD base units (100% is ${WAD})`
           : field.kind === 'nonce'
             ? 'a Safe nonce'
+            : field.kind === 'threshold'
+              ? 'a whole number from 1: how many owners must sign'
+            : field.kind === 'owner'
+              ? 'an address-book name, confirmed by the signer'
             : field.kind === 'market'
               ? `a market from ${code(MARKETS_PATH)}, picked by number from the list below`
               : field.kind === 'address'
@@ -645,6 +700,8 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     if (call.data === 'empty') out.push(`| ${code('data')} | empty |`);
     else out.push(...callRows(call.data, '', template, registry));
     if (call.merge !== undefined) out.push('', `Several operations on one card share this call; ${byAi(call.merge)}`);
+    const reads = call.to.kind === 'contract' && call.data !== 'empty' && call.data.trailer !== undefined ? registry.entries.get(call.to.name)?.ignoresTrailer : undefined;
+    if (reads !== undefined) out.push('', `The registry entry of ${code(call.to.kind === 'contract' ? call.to.name : '')} declares it never reads calldata past a call's arguments, so this call's trailer may be longer than 19 bytes; ${byAi(reads)}`);
     out.push('');
   });
 
@@ -654,6 +711,26 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     out.push('| Side | Token | Amount |', '| --- | --- | --- |');
     for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
     for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+  }
+  const settings = template.effects.safe;
+  if (settings !== undefined) {
+    const owners = [
+      ...(settings.remove === undefined ? [] : [`lose exactly ${refText(settings.remove)}, who must be an owner before`]),
+      ...(settings.add === undefined ? [] : [`gain exactly ${refText(settings.add)}, who must not be an owner before`]),
+    ];
+    out.push(
+      '',
+      `The Safe's own settings, read just before and just after the transaction: its owners ${owners.length === 0 ? 'stay the same' : owners.join(', and ')}, compared as a set; its threshold ${settings.threshold === undefined ? 'stays the same' : `ends at ${refText(settings.threshold)}`}; its singleton, modules, guard and fallback handler stay the same. Any other change is a ${code('MISMATCH')}.`,
+    );
+  }
+  for (const open of template.effects.approves) {
+    const spender = registry.entries.get(open.spender) as RegistryEntry;
+    const route = open.via === 'permit2' ? ', inside Permit2,' : '';
+    const bound =
+      open.amount.kind === 'card'
+        ? `at no more than the card's ${code(open.amount.field)}`
+        : `at any amount, unlimited included, as the registry entry declares a standing allowance: ${byAi(spender.standingAllowance?.why ?? '')}`;
+    out.push('', `The Safe's allowance of ${tokenText(open.token, template, registry)}${route} to registry ${full(spender)} may end higher than it started, ${bound}; every other allowance may not rise.`);
   }
   if (template.effects.views.length > 0) {
     out.push('', 'The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:', '');

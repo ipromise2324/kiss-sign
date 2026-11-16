@@ -46,7 +46,7 @@
     "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     "kind": "token",
     "source": "https://tether.to/en/supported-protocols/",
-    "sourceLabel": "USD\u20ae contract address",
+    "sourceLabel": "USD₮ contract address",
     "defillama": "tether",
     "coingecko": "tether",
     "code": {
@@ -1025,6 +1025,119 @@
     "code": {
       "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
       "from": 23666454
+    }
+  },
+  "safe-1.3.0": {
+    "address": "0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552",
+    "kind": "singleton",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.3.0/gnosis_safe.json",
+    "sourceLabel": "canonical",
+    "moreSources": [
+      {
+        "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
+        "label": "v1.3.0"
+      }
+    ],
+    "defillama": "safe",
+    "code": {
+      "hash": "0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e",
+      "from": 12504268
+    }
+  },
+  "safe-1.4.1": {
+    "address": "0x41675C099F32341bf84BFc5382aF534df5C7461a",
+    "kind": "singleton",
+    "source": "https://github.com/safe-global/safe-deployments/blob/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json",
+    "sourceLabel": "canonical",
+    "moreSources": [
+      {
+        "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
+        "label": "v1.4.1"
+      }
+    ],
+    "defillama": "safe",
+    "code": {
+      "hash": "0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4",
+      "from": 17487000
+    }
+  },
+  "gpv2-settlement": {
+    "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
+    "kind": "router",
+    "source": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
+    "sourceLabel": "GPv2Settlement",
+    "moreSources": [
+      {
+        "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
+        "label": "SETTLEMENT_CONTRACT"
+      }
+    ],
+    "defillama": "cowswap",
+    "code": {
+      "hash": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9",
+      "from": 12593265
+    }
+  },
+  "gpv2-vault-relayer": {
+    "address": "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110",
+    "kind": "adapter",
+    "source": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
+    "sourceLabel": "GPv2VaultRelayer",
+    "moreSources": [
+      {
+        "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
+        "label": "VAULT_RELAYER"
+      }
+    ],
+    "defillama": "cowswap",
+    "code": {
+      "hash": "0x500097799c1379a3728ed70b17de4132de2c07f6937b041c361deaade22b6a5e",
+      "from": 12593265
+    }
+  },
+  "permit2": {
+    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+    "kind": "allowance",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+    "sourceLabel": "Permit2",
+    "sourceHeading": "Ethereum",
+    "moreSources": [
+      {
+        "url": "https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts",
+        "label": "PERMIT2_ADDRESS"
+      }
+    ],
+    "defillama": "uniswap-v4",
+    "standingAllowance": {
+      "via": "erc20",
+      "why": "Permit2 has no owner and no proxy, and moves an owner's tokens only for a spender the owner approved on Permit2 itself, by its own call or signature (AllowanceTransfer.transferFrom), or for a transfer the owner signed (SignatureTransfer). An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens."
+    },
+    "code": {
+      "hash": "0xc67d1657868aa5146eaf24fb879fb1fdec3d2d493b3683a61c9c2f4fb2851131",
+      "from": 15986406
+    }
+  },
+  "universal-router-2.1.2": {
+    "address": "0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
+    "kind": "router",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+    "sourceLabel": "Universal Router 2.1.2",
+    "sourceHeading": "Ethereum",
+    "moreSources": [
+      {
+        "url": "https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json",
+        "label": "UniversalRouterV2_1_2"
+      }
+    ],
+    "defillama": "uniswap-v4",
+    "standingAllowance": {
+      "via": "permit2",
+      "why": "The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2_TRANSFER_FROM, and PERMIT2_TRANSFER_FROM_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes."
+    },
+    "ignoresTrailer": "UniversalRouter.execute(bytes,bytes[],uint256) reads only its ABI-decoded arguments: its verified source (contracts/UniversalRouter.sol, Dispatcher.sol and the modules) never reads msg.data or calldatasize, and it takes its caller from msg.sender through Lock.sol, never from calldata as an ERC-2771 contract does.",
+    "code": {
+      "hash": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac",
+      "from": 25999984
     }
   },
   "morpho-blue": {

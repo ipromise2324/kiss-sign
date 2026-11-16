@@ -10,6 +10,7 @@ import type { KeySpec } from '../keys.ts';
 import { RegistryError } from '../registry.ts';
 import { SafeTxParseError } from '../safe/types.ts';
 import { TemplateError } from '../template/template.ts';
+import { httpsMessage } from '../verify/messages.ts';
 import { VerifyError } from '../verify/verify.ts';
 import { cardNew } from './card-new.ts';
 import { FAILED, OK, USAGE, UsageError } from './io.ts';
@@ -132,6 +133,7 @@ export function nodeIo(): Io {
       if (!response.ok) throw new VerifyError(`${new URL(url).host} answered ${response.status}`);
       return response.json();
     },
+    readMessage: httpsMessage,
   };
 }
 

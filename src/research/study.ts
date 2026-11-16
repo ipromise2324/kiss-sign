@@ -27,7 +27,7 @@ import type { Anchor } from './sources.ts';
  */
 export type Loosened = { readonly shape: Template; readonly anyTrailer: Template; readonly rules: readonly LeafRule[] };
 
-const MAX_TRAILER = 32;
+const MAX_TRAILER = 64;
 const ZERO = `0x${'00'.repeat(20)}` as Address;
 
 export function loosen(template: Template): Loosened {
@@ -42,15 +42,19 @@ export function loosen(template: Template): Loosened {
         return { kind: 'items', items: rule.items.map((item) => looseRule(item, wideTrailer, record)) };
       case 'fields':
         return { kind: 'fields', fields: rule.fields.map((field) => looseRule(field, wideTrailer, record)) };
+      case 'packed':
+      case 'eip712':
+        return { kind: 'free', reason: 'study', claim: 'unread' };
       default:
         if (record) rules.push(rule);
         return { kind: 'free', reason: 'study', claim: 'scalar' };
     }
   };
   const looseCall = (node: CallNode, wideTrailer: boolean, record: boolean): CallNode => ({
+    encoding: node.encoding,
     fn: node.fn,
     args: node.args.map((arg) => looseRule(arg, wideTrailer, record)),
-    trailer: wideTrailer ? { maxBytes: MAX_TRAILER, why: 'study' } : node.trailer,
+    trailer: wideTrailer && node.encoding === 'call' ? { maxBytes: MAX_TRAILER, why: 'study' } : node.trailer,
   });
   const looseTop = (call: TemplateCall, wideTrailer: boolean, record: boolean): TemplateCall => {
     const to = looseRule(call.to, wideTrailer, record);
@@ -212,7 +216,7 @@ export function functionNames(template: Template): Map<string, string> {
     if (rule.kind === 'fields') rule.fields.forEach(visitRule);
   };
   const visitCall = (node: CallNode): void => {
-    names.set(node.fn.selector, node.fn.name);
+    if (node.encoding === 'call') names.set(node.fn.selector, node.fn.name);
     node.args.forEach(visitRule);
   };
   for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data);
@@ -235,14 +239,14 @@ function onlyAddress(value: Extract<AbiValue, { kind: 'tuple' }>): Address | und
  */
 function itemCalls(calls: readonly InnerCall[], template: Template, span: Span): CallName[] | undefined {
   const name = (rule: Rule | undefined, item: AbiValue, target: Address | undefined): CallName | undefined => {
-    if (rule?.kind === 'call') return item.kind === 'bytes' ? { to: target, selector: selectorOf(item.value) } : undefined;
+    if (rule?.kind === 'call') return item.kind === 'bytes' && rule.call.encoding === 'call' ? { to: target, selector: selectorOf(item.value) } : undefined;
     if (rule?.kind !== 'fields' || item.kind !== 'tuple') return undefined;
     const data = item.fields[rule.fields.findIndex((field) => field.kind === 'call')];
     return data?.kind === 'bytes' ? { to: onlyAddress(item), selector: selectorOf(data.value) } : undefined;
   };
   const visit = (rule: Rule, value: AbiValue | undefined, root: Uint8Array, target: Address | undefined): CallName[] | undefined => {
     if (value === undefined) return undefined;
-    if (rule.kind === 'call') return value.kind === 'bytes' ? visitCall(rule.call, { root, start: value.span[0], end: value.span[1] }, target) : undefined;
+    if (rule.kind === 'call') return value.kind === 'bytes' && rule.call.encoding === 'call' ? visitCall(rule.call, { root, start: value.span[0], end: value.span[1] }, target) : undefined;
     if (rule.kind === 'fields') return value.kind === 'tuple' ? firstOf(rule.fields.map((field, i) => visit(field, value.fields[i], root, onlyAddress(value) ?? target))) : undefined;
     if (rule.kind !== 'items' || value.kind !== 'array') return undefined;
     if (value.span[0] !== span[0] || value.span[1] !== span[1]) return firstOf(rule.items.map((item, i) => visit(item, value.items[i], root, target)));
@@ -399,6 +403,8 @@ export function brokenRule(
     case 'contract':
     case 'free':
     case 'share-price':
+    case 'owner-before':
+    case 'at-least':
       return undefined;
   }
 }
