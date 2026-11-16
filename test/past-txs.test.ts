@@ -147,36 +147,38 @@ test('a window with more transfers than one page is halved, and the report names
   assert.equal(text.match(/halved/g)?.length, 1);
 });
 
-test('a recording keeps only what the search reads, so a busy token\'s halved windows replay the same report at a size bounded by the transfers found', async () => {
-  const windowed: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'), 'utf8'));
-  const [full, half] = [26373601n, 26377201n];
-  const replay = replayAsk(windowed.sources);
-  const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
-  const bulk = { metadata: 'x'.repeat(2000) };
-  const live = async (request: SourceRequest): Promise<unknown> => {
-    if (fromBlockOf(request) === full) {
-      const page = Array.from({ length: 1000 }, () => bulk);
-      return request.source === 'alchemy' ? { transfers: page, pageKey: 'more' } : { status: '1', message: 'OK', result: page };
-    }
-    const answer = (await replay(
-      fromBlockOf(request) !== half ? request : request.source === 'alchemy' ? { ...request, params: { ...request.params, fromBlock: `0x${full.toString(16)}` } } : { ...request, query: { ...request.query, fromBlock: full.toString() } },
-    )) as Record<string, unknown>;
-    const padded = (list: unknown) => (Array.isArray(list) ? list.map((item) => ({ ...(item as object), ...bulk })) : list);
-    return { ...answer, ...('transfers' in answer ? { transfers: padded(answer.transfers) } : {}), ...('result' in answer ? { result: padded(answer.result) } : {}) };
-  };
-  const { query } = windowed;
-  const study = (ask: Ask) =>
-    pastTxs(
-      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: DEFAULT_SPREAD },
-      { ask, reader: replayReader(windowed.exchanges), registry, exclude: undefined, maxTxs: query.maxTxs },
-    );
-  const recorder = recordingAsk(live);
-  const run = await study(recorder.ask);
-  const recorded = recorder.exchanges();
-  assert.equal(renderPastTxs(await study(replayAsk(recorded)), registry), renderPastTxs(run, registry));
-  assert.match(renderPastTxs(run, registry), /halved, too many transfers in 26373601 to 26380800/);
-  const hits = [...run.found.values()].reduce((n, sources) => n + sources.length, 0);
-  assert.ok(JSON.stringify(recorded).length < recorded.length * 3_000 + hits * 300, `${JSON.stringify(recorded).length} bytes for ${recorded.length} answers and ${hits} transfers`);
+test('a recording keeps only what the search reads, so a busy token\'s halved windows, overflowing in either source alone, replay the same report at a size bounded by the answers and transfers found', async () => {
+  for (const overflowing of ['alchemy', 'etherscan'] as const) {
+    const windowed: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'), 'utf8'));
+    const [full, half] = [26373601n, 26377201n];
+    const replay = replayAsk(windowed.sources);
+    const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
+    const bulk = { metadata: 'x'.repeat(2000) };
+    const live = async (request: SourceRequest): Promise<unknown> => {
+      if (fromBlockOf(request) === full && request.source === overflowing) {
+        const page = Array.from({ length: 1000 }, () => bulk);
+        return request.source === 'alchemy' ? { transfers: page, pageKey: 'more' } : { status: '1', message: 'OK', result: page };
+      }
+      const answer = (await replay(
+        fromBlockOf(request) !== half ? request : request.source === 'alchemy' ? { ...request, params: { ...request.params, fromBlock: `0x${full.toString(16)}` } } : { ...request, query: { ...request.query, fromBlock: full.toString() } },
+      )) as Record<string, unknown>;
+      const padded = (list: unknown) => (Array.isArray(list) ? list.map((item) => ({ ...(item as object), ...bulk })) : list);
+      return { ...answer, ...('transfers' in answer ? { transfers: padded(answer.transfers) } : {}), ...('result' in answer ? { result: padded(answer.result) } : {}) };
+    };
+    const { query } = windowed;
+    const study = (ask: Ask) =>
+      pastTxs(
+        { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: DEFAULT_SPREAD },
+        { ask, reader: replayReader(windowed.exchanges), registry, exclude: undefined, maxTxs: query.maxTxs },
+      );
+    const recorder = recordingAsk(live);
+    const run = await study(recorder.ask);
+    const recorded = recorder.exchanges();
+    assert.equal(renderPastTxs(await study(replayAsk(recorded)), registry), renderPastTxs(run, registry));
+    assert.match(renderPastTxs(run, registry), /halved, too many transfers in 26373601 to 26380800/);
+    const hits = [...run.found.values()].reduce((n, sources) => n + sources.length, 0);
+    assert.ok(JSON.stringify(recorded).length < recorded.length * 3_000 + hits * 300, `${JSON.stringify(recorded).length} bytes for ${recorded.length} answers and ${hits} transfers`);
+  }
 });
 
 test('--max-txs below one transaction per window is refused', () => {
