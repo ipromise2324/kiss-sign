@@ -519,28 +519,28 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或金庫的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="flowmark-fgenesis-v2-6439/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">flowmark-fgenesis-v2-6439：地址只在 1 個地方確認：工廠</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或金庫的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-flowmark-fgenesis-v2-6439">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-flowmark-fgenesis-v2-6439">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。AI 問 Morpho API 這個地址，名稱是 Flowmark fGenesis，curator 是 0xe5F7d857C129a6349f2A150665DCFF4FeF979744，列出的網站 flowmark.xyz 在 AI 這邊連不上。AI 沒找到 Flowmark 不靠網址帶地址就列出這個地址的頁面。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>先在 Morpho app 的 vault 列表點進去比對地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="flowmark-fgenesis-v2-6439-market-adapter/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">flowmark-fgenesis-v2-6439-market-adapter：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或金庫的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-flowmark-fgenesis-v2-6439-market-adapter">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-flowmark-fgenesis-v2-6439-market-adapter">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x79DA02d9C638cC9ae925188AD9DC245337981518。AI 另外跑了 pnpm prove-instance：MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 回答 <code>isMorphoMarketV1AdapterV2</code> = true，兩個節點一致。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；上限的 id 用的就是這個地址，填錯只會設到一個沒人用的 id。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">morpho-oracle-usp-usdc：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko，或金庫的登記工廠。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
