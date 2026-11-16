@@ -83,6 +83,7 @@ async function run(at: { repo: string; home: string }, args: string[] = [], tran
     repoRoot: at.repo,
     transport: transport ?? replayTransport(deposit.exchanges, mainnetEndpoints(env)),
     fetchJson: async () => assert.fail('only history fetch reads the Transaction Service'),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return { code, stdout, stderr };
 }
@@ -106,26 +107,19 @@ test('a deposit with its card is MATCH, and the card column says which values ca
   assert.match(stdout, /Templates are approved at their origin\/main hash \([0-9a-f]{40}\) for this run only, since history is not a signing: morpho\/vault-deposit 0x[0-9a-f]{64}\./);
 });
 
-test('reason row cow-next-phase: a setPreSignature inside a MultiSend, even when the floor refuses its approval', async () => {
+test('a CoW pre-signature without a card has no template row of its own: its unlimited approval is refused by design', async () => {
   const { stdout } = await run(setUp('cow-safe'));
-  assert.match(
-    rowOf(stdout, 559),
-    /^  559  [\d-]{10}  not run       intent of nonce 559\n {33}cow-next-phase: GPv2Settlement setPreSignature at multiSend\[1\]; the floor also refuses unlimited-approval at multiSend\[0\]$/,
-  );
+  assert.match(rowOf(stdout, 559), /^  559  [\d-]{10}  not run       intent of nonce 559\n {33}refused-by-design: unlimited-approval at multiSend\[0\]$/);
+  assert.match(rowOf(stdout, 558), /^  558  [\d-]{10}  not run       intent of nonce 558\n {33}no-card-yet: no card file, so no template covers it yet$/);
 });
 
-test('reason row cow-next-phase: an order cancelled with GPv2Settlement invalidateOrder', async () => {
-  const { stdout } = await run(setUp('cow-safe'));
-  assert.match(rowOf(stdout, 558), /^  558  [\d-]{10}  not run       intent of nonce 558\n {33}cow-next-phase: GPv2Settlement invalidateOrder at call$/);
-});
-
-test('a note naming the nonce that spends an approval gives the approval that nonce\'s reason', async () => {
+test("a note naming the nonce that spends an approval gives the approval that nonce's reason", async () => {
   const { stdout } = await run(setUp('cow-safe', {}, { 10: { note: 'approval for the order', spentBy: 11 } }));
   assert.match(
     rowOf(stdout, 10),
-    /^   10  [\d-]{10}  not run       intent of nonce 10\n {33}cow-next-phase: its approval is spent by nonce 11: GPv2Settlement setPreSignature at call; note: approval for the order$/,
+    /^   10  [\d-]{10}  not run       intent of nonce 10\n {33}no-card-yet: its approval is spent by nonce 11: no card file, so no template covers it yet; note: approval for the order$/,
   );
-  assert.match(rowOf(stdout, 11), /\n {33}cow-next-phase: GPv2Settlement setPreSignature at call$/);
+  assert.match(rowOf(stdout, 11), /\n {33}no-card-yet: no card file, so no template covers it yet$/);
 });
 
 test('a note whose spending nonce is not later is refused', async () => {
@@ -229,6 +223,7 @@ test('history fetch follows the service pages and writes every record', async ()
     repoRoot: at.repo,
     transport: OFFLINE,
     fetchJson: async (url) => pages[url] ?? assert.fail(`unexpected ${url}`),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   assert.equal(code, 0);
   assert.match(stdout, /^Wrote 3 transactions \(3 executed\) to /);

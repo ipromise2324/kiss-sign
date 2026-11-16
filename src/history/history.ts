@@ -9,15 +9,16 @@ import type { Exchange } from '../chain/recording.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
 import { requireConfig } from '../cli/setup.ts';
-import { checkFloor } from '../floor/floor.ts';
+import { checkFloor, standingSpenders } from '../floor/floor.ts';
+import type { StandingSpender } from '../floor/floor.ts';
 import { kissSignHome } from '../keys.ts';
-import { MARKETS_PATH, REGISTRY_PATH } from '../registry.ts';
+import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fetchOriginMain, fileAt, localOriginMain, optionalFileAt } from '../verify/self-check.ts';
 import type { GithubRepo } from '../verify/self-check.ts';
-import { VerifyError, evaluate, keccakText } from '../verify/verify.ts';
+import { VerifyError, evaluateTx, keccakText } from '../verify/verify.ts';
 import type { VerifyInputs } from '../verify/verify.ts';
 import { HistoryError, cacheDir, historyDir, loadHistory, mergeRegistry, txsPath } from './load.ts';
 import type { History, HistoryCard, HistoryTx } from './load.ts';
@@ -29,7 +30,8 @@ import { RecordingError, parseRecording, recordingText } from '../chain/bytecode
 
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 
-type Cache = { readonly safeTxHash: string; readonly exchanges: readonly Exchange[] };
+/** `messages`: each signed message read from a template's `lookup`, absent in a cache from before messages. */
+type Cache = { readonly safeTxHash: string; readonly exchanges: readonly Exchange[]; readonly messages?: readonly string[] };
 
 function writePrivate(path: string, text: string): void {
   writeFileSync(`${path}.tmp`, text, { mode: 0o600 });
@@ -73,6 +75,8 @@ type Context = {
   readonly history: History;
   readonly commit: string;
   readonly registry: string;
+  /** Allowances some template could keep, so a past transaction that leaves one is not refused by design. */
+  readonly standing: readonly StandingSpender[];
   readonly markets: string | undefined;
   readonly refresh: boolean;
   readonly templateText: (id: string) => string | undefined;
@@ -87,7 +91,7 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
   });
   if (templates.length < ids.length) return { kind: 'no-template', ids: ids.filter((id) => !templates.some((t) => t.id === id)) };
   const named = new Set(card.card.operations.flatMap((op) => Object.values(op.values)));
-  const inputs: VerifyInputs = {
+  let inputs: VerifyInputs = {
     commit: ctx.commit,
     safe: checksumAddress(ctx.safe),
     tx: { format: 'service', json: entry.service },
@@ -106,6 +110,7 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
   let recorded: (() => Exchange[]) | undefined;
   if (cached !== undefined) {
     reader = replayReader(cached.exchanges);
+    if (cached.messages !== undefined) inputs = { ...inputs, messages: cached.messages };
   } else {
     const endpoints = mainnetEndpoints(ctx.io.env);
     const recorder = recordingTransport(ctx.io.transport, endpoints);
@@ -113,10 +118,11 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
     recorded = recorder.exchanges;
   }
   try {
-    const { verdict } = await evaluate(inputs, reader);
+    const { evaluation, inputs: used } = await evaluateTx(inputs, reader, recorded === undefined ? undefined : ctx.io.readMessage);
+    const { verdict } = evaluation;
     if (recorded !== undefined) {
       mkdirSync(cacheDir(ctx.home), { recursive: true, mode: 0o700 });
-      writePrivate(path, recordingText({ safeTxHash, exchanges: recorded() }));
+      writePrivate(path, recordingText({ safeTxHash, exchanges: recorded(), messages: used.messages ?? [] }));
     }
     return { kind: 'verdict', verdict };
   } catch (error) {
@@ -129,7 +135,7 @@ async function rowFor(ctx: Context, entry: HistoryTx): Promise<Row> {
   const card = ctx.history.cards.get(entry.nonce);
   const outcome: Facts['outcome'] = card === undefined ? { kind: 'no-card' } : await evaluateCard(ctx, entry, card);
   const intent = ctx.history.intents.get(entry.nonce);
-  const reason = reasonFor({ tx: entry.tx, floor: checkFloor(entry.tx), outcome });
+  const reason = reasonFor({ tx: entry.tx, floor: checkFloor(entry.tx, ctx.standing), outcome });
   return {
     nonce: entry.nonce,
     date: intent?.date ?? entry.executionDate.slice(0, 10),
@@ -169,13 +175,15 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     }
     return text;
   };
+  const registry = mergeRegistry(fileAt(io.repoRoot, commit, REGISTRY_PATH), history.registryOverlay);
   const ctx: Context = {
     io,
     home,
     safe,
     history,
     commit,
-    registry: mergeRegistry(fileAt(io.repoRoot, commit, REGISTRY_PATH), history.registryOverlay),
+    registry,
+    standing: standingSpenders(parseRegistry(JSON.parse(registry))),
     markets: optionalFileAt(io.repoRoot, commit, MARKETS_PATH),
     refresh,
     templateText,
