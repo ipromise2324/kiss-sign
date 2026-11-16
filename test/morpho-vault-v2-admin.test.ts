@@ -19,8 +19,9 @@ import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures('vault-v2');
 const registry = loadRegistry(ROOT);
 const IDS = ['morpho/vault-v2-cap-submit', 'morpho/vault-v2-cap-accept', 'morpho/vault-v2-cap-decrease', 'morpho/vault-v2-reallocate'];
 const templates = new Map(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
@@ -47,6 +48,9 @@ const mismatchedArgs = (result: FieldCheck) => (result.kind === 'mismatch' ? res
 const caps = (market: string, absolute: string, relative: string) => ({ vault: VAULT, market, 'absolute-cap': absolute, 'relative-cap': relative });
 
 const CASES = [
+  { fixture: 'vault-v2-cap-submit-gauntlet', template: 'morpho/vault-v2-cap-submit', values: { ...caps('usdc-cbbtc-86', '300000000000000', ALL), vault: 'gauntlet-usdc-prime-v2-a3d0' }, bound: 18 },
+  { fixture: 'vault-v2-cap-submit-flowmark', template: 'morpho/vault-v2-cap-submit', values: { ...caps('usdc-cbbtc-86', '50000000000', '50000000000000000'), vault: 'flowmark-fgenesis-v2-6439' }, bound: 18 },
+  { fixture: 'vault-v2-cap-submit-murmurr', template: 'morpho/vault-v2-cap-submit', values: { ...caps('usdc-cbbtc-86', NO_LIMIT, '800000000000000000'), vault: 'murmurr-usdc-frontier-v2-5f99' }, bound: 18 },
   { fixture: 'vault-v2-cap-submit', template: 'morpho/vault-v2-cap-submit', values: caps('usdc-usp-915', NO_LIMIT, ALL), bound: 18 },
   { fixture: 'vault-v2-cap-submit-other-safe', template: 'morpho/vault-v2-cap-submit', values: caps('usdc-usp-915', '1000000', '10000000000000000'), bound: 18 },
   { fixture: 'vault-v2-cap-submit-860', template: 'morpho/vault-v2-cap-submit', values: caps('usdc-usp-86', NO_LIMIT, ALL), bound: 18 },
@@ -136,6 +140,7 @@ async function recordedVerdicts(name: string, given: Card): Promise<{ simulated:
 }
 
 const RECORDED = [
+  { name: 'vault-v2-cap-submit-flowmark', given: card('morpho/vault-v2-cap-submit', { ...caps('usdc-cbbtc-86', '50000000000', '50000000000000000'), vault: 'flowmark-fgenesis-v2-6439' }) },
   { name: 'vault-v2-cap-submit', given: card('morpho/vault-v2-cap-submit', caps('usdc-usp-915', NO_LIMIT, ALL)) },
   { name: 'vault-v2-cap-accept', given: card('morpho/vault-v2-cap-accept', caps('usdc-usp-915', NO_LIMIT, ALL)) },
   { name: 'vault-v2-cap-decrease', given: card('morpho/vault-v2-cap-decrease', caps('usdc-usp-915', '0', '0')) },

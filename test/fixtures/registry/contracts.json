@@ -97,34 +97,6 @@
       "from": 25832676
     }
   },
-  "morpho-oracle-cbbtc-usdc-86": {
-    "address": "0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a",
-    "kind": "oracle",
-    "source": "https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc",
-    "apiSource": {
-      "url": "https://api.morpho.org/graphql",
-      "method": "POST",
-      "body": {
-        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
-        "variables": {
-          "id": "0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64",
-          "chainId": 1
-        }
-      },
-      "path": [
-        "data",
-        "marketById",
-        "oracle",
-        "address"
-      ]
-    },
-    "sourceLabel": "Oracle",
-    "defillama": "morpho-blue",
-    "code": {
-      "hash": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11",
-      "from": 20678797
-    }
-  },
   "fluid": {
     "address": "0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb",
     "kind": "token",
