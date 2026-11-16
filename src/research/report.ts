@@ -333,14 +333,15 @@ export function signedEntryNames(template: Template, registry: Registry): Set<st
 /**
  * The entries whose ABI the program uses: each contract a call targets, a nested call's included, each a function's
  * page documents, each a view of the effects or a `facts` view reads, each token the effects move or an amount field
- * counts, each a computed field's read calls, each token or vault whose `decimals()` the protocol facts read, and each
- * vault the report holds evidence for, with its asset and its factory, whose `instanceCheck` it asks.
+ * counts, each a computed field's read calls, each token or vault whose `decimals()` the protocol facts read, each Safe
+ * singleton a call to the Safe itself runs, and each vault the report holds evidence for, with its asset and its factory, whose `instanceCheck` it asks.
  */
 function abiUsed(subject: Subject, registry: Registry): Set<string> {
   const names = new Set(vaultsOf(subject, registry).flatMap((vault) => [vault.name, ...[vault.attributes.asset, vault.attributes.factory].filter((name) => name !== undefined)]));
   if (subject.kind === 'vault') return names;
   const { template } = subject;
   subject.docs.forEach((doc) => names.add(doc.contract.name));
+  if (callsSafeWithData(template)) for (const entry of registry.entries.values()) if (entry.kind === 'singleton') names.add(entry.name);
   for (const entry of entriesOf(subject, registry)) if (entry.kind === 'token' || entry.kind === 'vault') names.add(entry.name);
   const token = (ref: TokenRef): string[] => (ref === 'eth' ? [] : refNames(ref, template, registry));
   const read = (r: ComputedRead): string[] => [...refNames(r.to, template, registry), ...r.args.flatMap((arg) => (arg.kind === 'read' ? read(arg.read) : []))];

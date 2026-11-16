@@ -263,6 +263,9 @@ function encodeValue(type: AbiType, value: AbiValue): Uint8Array {
   }
 }
 
+/** `fn`'s parameters ABI-encoded with no selector before them, as `decodeParams` reads them. */
+export const encodeParams = (fn: AbiFunction, args: readonly AbiValue[]): Uint8Array => encodeTuple(fn.params.map((p) => p.type), args);
+
 /** The canonical encoding: selector, arguments, then the trailer if the call has one. */
 export function encodeCall(call: Pick<DecodedCall, 'fn' | 'args' | 'trailer'>): Uint8Array {
   return concatBytes(
