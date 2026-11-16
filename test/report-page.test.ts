@@ -369,13 +369,13 @@ test('a contract a flow line names gets its own lifeline, so every inside arrow 
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {
   const { block } = body(pageOf(inputs), 'protocol');
   const row = (label: string) => block.rows.find((r) => r.label === label) ?? assert.fail(`no ${label} row`);
-  assert.equal(plain(row('TVL').value), '$10.47 B');
+  assert.equal(plain(row('TVL').value), '$9.97 B');
   assert.equal(plain(row('上線').value), '2024-01-14');
   assert.equal(plain(row('proxy').value), '不是 proxy');
   assert.equal(plain(row('事故').value), '0 起');
   assert.deepEqual(
     row('usdc-cbbtc-86').nested.map((n) => plain(n.value)),
-    ['353,557,246.53 usdc', '302,305,558.99 usdc', '85.50%'],
+    ['334,728,609.95 usdc', '294,561,858.97 usdc', '88.00%'],
   );
   assert.deepEqual(
     block.sources.map((s) => s.href),
@@ -414,7 +414,7 @@ test('the oracle only the protocol API confirms is the one row to review, open i
     page.header.strip.map((s) => [s.name, s.state, s.count]),
     [
       ['地址來源', 'warn', '5 / 6'],
-      ['原始碼驗證', 'ok', '6 / 6'],
+      ['原始碼驗證', 'ok', '3 / 3'],
       ['合約沒被換掉', 'ok', '6 / 6'],
       ['參數保護', 'ok', '1 / 1'],
       ['雙節點比對', 'ok', undefined],
@@ -672,7 +672,7 @@ function withLiquidityLayer(today: TodayCheck | undefined, { pinned = true }: { 
     ...inputs,
     registry: withLayer,
     spans: new Map([...inputs.spans, [LAYER, [{ kind: 'pass', text: 'PASS' }]]]),
-    today: today === undefined ? undefined : { block: TODAY_BLOCK, checks: new Map([[LAYER, today]]) },
+    today: today === undefined ? undefined : { block: TODAY_BLOCK, checks: new Map([...(inputs.today?.checks ?? []), [LAYER, today]]) },
   };
 }
 
@@ -688,7 +688,7 @@ test('an entry reached only through dependsOn shows its routes, seeds and code a
   assert.ok(markdown.includes(`| \`liquidity-layer\` | PASS | 24000000 |`), 'its code at the latest block is its current pin');
   assert.ok(markdown.includes('`liquidity-layer` seeds: `0x00000001`.'), 'the seeds print');
   assert.ok(markdown.includes(`| \`liquidity-layer\` | 100 | \`${routedTo}\` | \`0x00000002\`, \`0x00000001\` |`), 'each route prints every selector it serves');
-  assert.ok(markdown.includes(`| \`liquidity-layer\` | \`${checksumAddress(LAYER)}\` | not proved: the operation reaches it only through \`dependsOn\`, so no call targets it and none is decoded with its ABI; its code pin is above |`), 'the ABI row says why it is not proved');
+  assert.ok(markdown.includes(`| \`liquidity-layer\` | \`${checksumAddress(LAYER)}\` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above |`), 'the ABI row says why it is not proved');
 
   const ledger = judge(of, of.fixtures);
   assert.ok(notesScope(of, ledger, of.subject.kind === 'template' ? of.subject.template : assert.fail('a template report')).contracts.has('liquidity-layer'), 'a flow line may name what a called contract depends on');

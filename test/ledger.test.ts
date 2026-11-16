@@ -109,6 +109,7 @@ const BASE: Setup = {
 };
 
 const DEPENDENT: RegistryEntry = { ...ENTRY, name: 'dependent', address: OTHER, kind: 'vault', dependsOn: ['vault'] };
+const ADAPTED: RegistryEntry = { ...ENTRY, name: 'adapted', address: OTHER, kind: 'vault', attributes: { adapter: 'vault' } };
 const ROUTED: RegistryEntry = {
   ...ENTRY,
   routes: { implementationOf: parseFunctionSignature('getSigsImplementation(bytes4)'), selectorsOf: parseFunctionSignature('getImplementationSigs(address)'), seeds: ['0x00000001' as Hex] },
@@ -241,6 +242,7 @@ const ROWS: readonly Row[] = [
   { what: 'an entry reached only through dependsOn that runs other code at the latest block', change: { reachedThrough: DEPENDENT, ...today('finding') }, id: 'vault/code.today', kind: 'pin-not-run', state: 'bad' },
   { what: "an entry reached only through dependsOn whose code at the latest block got no answer", change: { reachedThrough: DEPENDENT, ...today('unverifiable') }, id: 'vault/code.today', kind: 'no-answer', state: 'warn' },
   { what: 'an entry reached only through dependsOn with no read at the latest block', change: { reachedThrough: DEPENDENT }, id: 'vault/code.today', kind: 'no-chain-result', state: 'warn' },
+  { what: "a vault's adapter, whose address only goes into an argument, with its proof refused", change: { reachedThrough: ADAPTED, abi: refused({ why: 'not-on-sourcify' }) }, id: 'vault/abi', kind: 'not-called', state: 'na' },
   { what: 'a selector-routed proxy a call targets', change: { entry: ROUTED }, id: 'vault/abi', kind: 'routed-proxy', state: 'na' },
   { what: 'a selector-routed proxy that runs its pin and routes at the latest block', change: { entry: ROUTED, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
 ];
@@ -397,7 +399,7 @@ test('morpho/market-supply from its recordings: one address confirmed in one pla
   assert.equal(resultOf(ledger, 'cbbtc/source.site').finding.kind, 'unlisted');
   assert.deepEqual(strip(ledger).map((s) => [s.line, s.state, `${s.passed}/${s.counted}`]), [
     ['sources', 'warn', '5/6'],
-    ['abi', 'ok', '6/6'],
+    ['abi', 'ok', '3/3'],
     ['code', 'ok', '6/6'],
     ['params', 'ok', '1/1'],
   ]);

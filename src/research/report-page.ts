@@ -26,6 +26,7 @@ import type { CallName, MisfitReason, OutsideKind, Sender, TxStudy } from './stu
 import { readStoredEvidence } from './vault-evidence.ts';
 import type { StoredPoint } from './vault-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
+import { signedEntryNames } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 
 declare const anchorBrand: unique symbol;
@@ -1221,7 +1222,8 @@ function codeLines(ledger: Ledger, entry: RegistryEntry): Inline[] {
   if (notCalled) {
     const dependents = ledger.entries.filter((other) => other.dependsOn?.includes(entry.name));
     const links = dependents.flatMap((other, i): Span[] => [...(i === 0 ? [] : ['、']), { href: entryAnchor(other.name), label: other.name }]);
-    lines.push(['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。', ...(entry.code === undefined ? [] : ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。'])]);
+    const checked: Inline = dependents.length === 0 ? ['報告在最新區塊確認它跑的程式碼還是 code pin 記錄的那份。'] : ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。'];
+    lines.push(['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。', ...(entry.code === undefined ? [] : checked)]);
   }
   const routes = entry.code?.current.pin.routes;
   if (routes !== undefined) {
@@ -1658,9 +1660,15 @@ function nextSection(context: Context): Section {
       { code: `${viewLabel(v, context)}.${v.fn.name}` },
       `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${typeof c.change === 'string' ? CHANGE_WORDS[c.change] : `等於你填的 ${fieldWord(template, c.change.equals)}`}`).join('、')}`,
     ]),
-    ...(context.ledger.entries.length === 0 ? [] : [[`碰到的 ${new Set(context.ledger.entries.map((e) => e.name)).size} 個登記合約，程式碼還是 code pin 記錄的那份`] as Inline]),
+    ...(context.ledger.entries.length === 0 ? [] : [[`碰到的 ${signedCount(context)} 個登記合約，程式碼還是 code pin 記錄的那份`] as Inline]),
   ];
   return { anchor: anchor('next'), label: '下一步', count: undefined, body: { kind: 'next', steps, automatic } };
+}
+
+/** How many of the report's entries `verify` compares with their code pin at each signing. */
+function signedCount(context: Context): number {
+  const signed = signedEntryNames(context.template, context.registry);
+  return new Set(context.ledger.entries.map((e) => e.name).filter((name) => signed.has(name))).size;
 }
 
 /** The claims of the template's free arguments, in claim order; empty when every argument is bound. */
@@ -1687,8 +1695,10 @@ const unrecordedParams = (template: Template): string =>
     ? '模板有不限的參數，但沒有換值測試的記錄，程式沒有測過它們。'
     : '模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。';
 
-function stripItems(ledger: Ledger, template: Template): StripItem[] {
-  const subjects = new Set(ledger.entries.map((e) => e.name)).size;
+function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<string>): StripItem[] {
+  const names = [...new Set(ledger.entries.map((e) => e.name))];
+  const subjects = names.filter((name) => signed.has(name)).length;
+  const reportOnly = names.filter((name) => !signed.has(name));
   const recorded = ledger.results.some((r) => r.line === 'params');
   const named = (match: (result: Result) => boolean): string[] => [...new Set(ledger.results.flatMap((r) => (match(r) && r.about.kind === 'entry' ? [r.about.entry.name] : [])))];
   const notCalled = named((r) => r.finding.kind === 'not-called');
@@ -1706,6 +1716,8 @@ function stripItems(ledger: Ledger, template: Template): StripItem[] {
       }${unprovable.length === 0 ? '' : `${unprovable.join('、')} 依函式選擇器把呼叫分給各自的實作，沒有一份程式碼能證明，不算在內；它的 routes 在「合約沒被換掉」比對。`}`,
     code: () =>
       `每次簽名都確認${subjects === 1 ? '這個合約' : `這 ${subjects} 個合約`}還是研究時那份程式碼。被升級或換掉就擋下。${
+        reportOnly.length === 0 ? '' : `${reportOnly.join('、')} 簽名時不碰，只有報告比對它的程式碼。`
+      }${
         today.length === 0 ? '' : `${today.join('、')} 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。`
       }${routed.length === 0 ? '' : `${routed.join('、')} 依函式選擇器把呼叫分給各自的實作：seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。`}`,
     params: (_, c) => (!recorded ? unrecordedParams(template) : `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`),
@@ -1747,7 +1759,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     header: {
       title: research(notes.title),
       summary: research(notes.summary),
-      strip: stripItems(ledger, template),
+      strip: stripItems(ledger, template, signedEntryNames(template, registry)),
       verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'AI 研究：可以用' : 'AI 研究：要小心') },
     },
     sections,
