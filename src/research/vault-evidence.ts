@@ -4,6 +4,7 @@ import type { NoteUnread } from '../chain/https.ts';
 import { aggregate } from '../chain/multicall.ts';
 import type { Reader } from '../chain/reader.ts';
 import { proveInstance } from '../contracts/instance.ts';
+import { trimBlockAnswers } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Transport } from '../chain/rpc.ts';
 import type { BlockRef, BlockTag } from '../chain/types.ts';
@@ -43,14 +44,8 @@ export function alchemyCall(transport: Transport, url: string, note: NoteUnread,
   };
 }
 
-const BLOCK_FIELDS = ['number', 'hash', 'timestamp', 'gasLimit', 'mixHash'];
-
 export function trimVaultRecording(exchanges: readonly Exchange[]): Exchange[] {
-  return exchanges.map((exchange) => {
-    if (exchange.method === 'eth_getBlockByNumber' || exchange.method === 'eth_getBlockByHash') {
-      const pick = (block: unknown) => (isRecord(block) ? Object.fromEntries(BLOCK_FIELDS.map((f) => [f, block[f]])) : block);
-      return { ...exchange, answers: Object.fromEntries(Object.entries(exchange.answers).map(([provider, block]) => [provider, pick(block)])) };
-    }
+  return exchanges.map(trimBlockAnswers).map((exchange) => {
     const answer = exchange.answers.alchemy;
     if (exchange.method !== 'alchemy_getAssetTransfers' || !isRecord(answer) || !Array.isArray(answer.transfers)) return exchange;
     const to = [...new Set((answer.transfers as unknown[]).map((t) => (isRecord(t) ? t.to : undefined)))];
