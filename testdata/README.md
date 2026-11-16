@@ -337,7 +337,7 @@ ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env) \
 cp "$KISS_SIGN_HOME"/verdicts/0x8e7bcfd5*.json testdata/verify/morpho-migrate-all.json
 ```
 
-Run it from a clean clone at origin/main, or the self-check stops it.
+Run it from a clean clone at origin/main, or the self-check stops it. `morpho/vault-migrate-all` is now a test fixture, so recording `morpho-migrate-all.json` again needs a fork whose `main` has `test/fixtures/templates/morpho/vault-migrate-all/` in `templates/` and `test/fixtures/registry/` merged into `registry/`.
 
 Both files were recorded before the Morpho templates took a slippage limit, so they hold a card without one and the template text of that time. `replay` and the tests use the card and template a file holds, so they still give `MATCH`; a new recording uses the cards above.
 

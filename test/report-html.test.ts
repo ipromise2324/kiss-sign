@@ -76,7 +76,7 @@ test('a template without notes.json gets no HTML report', async () => {
 });
 
 test('the committed HTML report is what the program writes from the recordings and notes.json, byte for byte', () => {
-  assert.ok(withNotes.size > 0);
+  assert.ok([...withNotes.values()].some((report) => report.root === ROOT));
   for (const [path, { html }] of replayed) if (reportOf(path).root === ROOT) assert.equal(htmlDifference(readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
 });
 
