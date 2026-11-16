@@ -8,7 +8,6 @@ import type { Template } from './template.ts';
 /** Templates that predate the HTML report: each keeps its one report until it is rebuilt. The list only shrinks. */
 export const NOT_YET_REBUILT: ReadonlySet<string> = new Set([
   'erc20/transfer',
-  'eth/transfer',
   'fluid/vault-deposit',
 ]);
 

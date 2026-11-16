@@ -1,0 +1,18 @@
+{
+  "title": "從 Safe 轉出 ETH",
+  "summary": "Safe 把你填的 ETH 數量直接送到你選的收款人，不呼叫任何合約。卡片只問收款人和金額，跟 Safe web app 送 ETH 時要填的一樣。",
+  "verdict": {
+    "status": "safe",
+    "text": "最單純的操作，不呼叫任何協議合約；風險只在收款地址，加進地址簿時要從聊天以外的來源核對。"
+  },
+  "flow": [],
+  "protocols": {},
+  "judgments": [
+    {
+      "text": "收款人如果是合約（例如另一個 Safe），收到 ETH 時會執行它自己的程式。verify 檢查你的 Safe 的每一項餘額和授權變化，多動一點點（哪怕 1 wei）就 MISMATCH；但對方合約內部記了什麼、之後怎麼處理這筆 ETH，它看不到。",
+      "recommendation": "收款人是合約時，先確認它能收 ETH；第一次轉給新地址先送小額。"
+    }
+  ],
+  "reviews": {},
+  "fields": {}
+}
