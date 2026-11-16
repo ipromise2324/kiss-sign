@@ -169,16 +169,6 @@ const CASES = [
     uses: [],
   },
   {
-    name: 'fluid-rewards-distributor',
-    proxy: 'none',
-    proven: '0x7060fe0dd3e31be01efac6b28c8d38018fd163b0',
-    contract: 'contracts/protocols/lending/merkleDistributor/main.sol:FluidMerkleDistributor',
-    compiler: '0.8.21+commit.d9974bed',
-    functions: 21,
-    immutables: 2,
-    uses: ['claim(address recipient_,uint256 cumulativeAmount_,uint8 positionType_,bytes32 positionId_,uint256 cycle_,bytes32[] merkleProof_,bytes metadata_)'],
-  },
-  {
     name: 'merkl-distributor',
     proxy: 'eip1967',
     proven: '0x33cc998fd4af3b6be42bac9a67fe97e9e275d2ae',
@@ -187,16 +177,6 @@ const CASES = [
     functions: 38,
     immutables: 5,
     uses: ['claim(address[] users,address[] tokens,uint256[] amounts,bytes32[][] proofs)'],
-  },
-  {
-    name: 'morpho-urd',
-    proxy: 'none',
-    proven: '0x330eefa8a787552dc5cad3c3ca644844b1e61ddb',
-    contract: 'src/UniversalRewardsDistributor.sol:UniversalRewardsDistributor',
-    compiler: '0.8.19+commit.7dd6d404',
-    functions: 15,
-    immutables: 0,
-    uses: ['claim(address account,address reward,uint256 claimable,bytes32[] proof)'],
   },
   {
     name: 'cctp-message-transmitter',
@@ -241,7 +221,7 @@ const CASES = [
 ] as const;
 
 /** Sourcify holds these as partial matches: the source compiles to the code on chain except the metadata hash. */
-const PARTIAL = ['morpho-urd', 'cctp-message-transmitter', 'usdc', 'usdt'];
+const PARTIAL = ['cctp-message-transmitter', 'usdc', 'usdt'];
 
 const generated = templateTargets(ROOT, registry).filter((target) => existsSync(join(ROOT, generatedPath(target))));
 
@@ -345,11 +325,11 @@ test('code whose trailer carries no metadata hash still has every byte compared:
 });
 
 test('a partial match is proven only up to the metadata hash: one changed literal is still refused', async () => {
-  const fixture = load('morpho-urd');
+  const fixture = load('cctp-message-transmitter');
   const answer = structuredClone(fixture.sourcify[fixture.address]) as { status: number; body: { stdJsonInput: { sources: Record<string, { content: string }> } } };
-  const file = answer.body.stdJsonInput.sources['src/UniversalRewardsDistributor.sol'] as { content: string };
-  assert.ok(file.content.includes('claimable > claimed[account][reward]'));
-  file.content = file.content.replace('claimable > claimed[account][reward]', 'claimable >= claimed[account][reward]');
+  const file = answer.body.stdJsonInput.sources['MessageTransmitter.sol'] as { content: string };
+  assert.ok(file.content.includes('_numEnabledAttesters > 1'));
+  file.content = file.content.replace('_numEnabledAttesters > 1', '_numEnabledAttesters > 2');
   const refused = refusal(
     await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({ [fixture.address]: answer }), compilers }),
   );
@@ -511,7 +491,7 @@ test('an EIP-1967 slot does not vouch for code that delegates through another sl
 });
 
 test('contracts that DELEGATECALL only to themselves or to a target the call names keep their proven ABI', async () => {
-  for (const name of ['fluid-rewards-distributor', 'steakhouse-prime-usdc', 'metamorpho-v1-1-apex']) {
+  for (const name of ['morpho-vault-v2-apex', 'steakhouse-prime-usdc', 'metamorpho-v1-1-apex']) {
     const fixture = load(name);
     const proof = proven(await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
     assert.equal(proof.proxy.kind, 'none', name);

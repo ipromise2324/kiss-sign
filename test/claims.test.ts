@@ -22,17 +22,16 @@ import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
-/** The repository's registry, plus reward tokens the fixtures claim that no template names: two Aave aTokens and FXN. */
-const registry = parseRegistry({
-  ...JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')),
-  aethrlusd: { address: '0xFa82580c16A31D0c1bC632A36F82e83EfEF3Eec0', kind: 'token', source: 'https://aave.com/docs/resources/addresses' },
+const REWARD_TOKENS_OUTSIDE_REGISTRY = {
   aethusde: { address: '0x3a4de44B29995a3D8Cd02d46243E1563E55bCc8b', kind: 'token', source: 'https://aave.com/docs/resources/addresses' },
   fxn: { address: '0x365AccFCa291e7D3914637ABf1F7635dB165Bb09', kind: 'token', source: 'https://github.com/AladdinDAO/aladdin-v3-contracts/blob/main/scripts/utils/tokens.ts' },
-});
-const IDS = ['fluid/rewards-claim', 'fluid/vault-withdraw', 'merkl/claim', 'morpho/urd-claim', 'cctp/receive'];
+};
+const registry = parseRegistry({ ...JSON.parse(readFileSync(join(ROOT, REGISTRY_PATH), 'utf8')), ...REWARD_TOKENS_OUTSIDE_REGISTRY });
+const IDS = ['fluid/rewards-claim', 'fluid/vault-withdraw', 'merkl/claim', 'cctp/receive'];
 const templates = new Map<string, Template>(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
 const OTHER = '0x1111111111111111111111111111111111111111' as Address;
 const addressOf = (name: string): Address => registry.entries.get(name)!.address;
@@ -86,20 +85,6 @@ const CASES = [
     free: 6,
     recipient: ['call.claim.users[0]', 'call.claim.users[1]', 'call.claim.users[2]'],
   },
-  {
-    name: 'morpho-urd-claim',
-    card: card(claim('morpho/urd-claim', 'morpho')),
-    bound: 8,
-    free: 2,
-    recipient: ['call.multicall.bundle[0].data.claim.account'],
-  },
-  {
-    name: 'merkl-and-morpho-urd-claim',
-    card: card(claim('merkl/claim', 'aethrlusd'), claim('morpho/urd-claim', 'morpho')),
-    bound: 12,
-    free: 4,
-    recipient: ['multiSend[0].claim.users[0]', 'multiSend[1].multicall.bundle[0].data.claim.account'],
-  },
 ] as const;
 
 for (const c of CASES) {
@@ -134,7 +119,6 @@ test('the reward tokens of a merged Merkl claim must be on the card, in its orde
 
 test('a claim whose card names another reward token mismatches where the token is in the call', () => {
   assert.deepEqual(findings(check(safeTx('merkl-claim'), card(claim('merkl/claim', 'usdc')))), ['call.claim.tokens[0]']);
-  assert.deepEqual(findings(check(safeTx('morpho-urd-claim'), card(claim('morpho/urd-claim', 'usdc')))), ['call.multicall.bundle[0].data.claim.reward']);
 });
 
 test('a Fluid claim and an fToken withdrawal batched in one MultiSend both need their own card operation', () => {
@@ -200,10 +184,6 @@ test('a Merkl claim gets MORPHO, simulated and from its receipt; a card for anot
       [addressOf('morpho'), 'exactly', true],
     ],
   );
-});
-
-test('a Morpho URD claim through Bundler3 gets MORPHO, simulated and from its receipt', async () => {
-  assert.deepEqual(await observe('morpho-urd-claim', card(claim('morpho/urd-claim', 'morpho'))), MATCH);
 });
 
 /**

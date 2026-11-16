@@ -63,9 +63,9 @@ Written by `pnpm report morpho/vault-deposit --vault-of steakhouse-prime-usdc-v2
 
 ## Official documentation
 
-Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks for the function's bare name as a whole word in the page as served, without scripts. A PASS there shows that the page names a function of that name, not that it documents this contract's function.
+Each page comes from `docs.json`, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by `(`, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.
 
-| Function | Contract | Page | Site | GitHub commit | Function name appears on page |
+| Function | Contract | Page | Site | GitHub commit | Function on page |
 | --- | --- | --- | --- | --- | --- |
 | `approve(address,uint256)` | `usdc` | <https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol> | FINDING | PASS | PASS |
 | `multicall((address,bytes,uint256,bool,bytes32)[])` | `bundler3` | <https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/Bundler3.sol> | FINDING | PASS | PASS |
@@ -214,7 +214,7 @@ misfits, by reason:
     e.g. 0xd43657332f2ddfc79c07b482e3c4cda62fd95ab5306de32871625819cb527160, 0x4b55fa0ca1e00ba10d595be0232f0c5e82a116932652910351411df652a7fb76, 0x65620751ec1e1678a0ac0aca4735da773e7de4775e67bde1547ea83eb046413b
   1 from 1 EOA: call.multicall.bundle: expected 2 items, got 6 items, calling general-adapter-1.0xa7f6e606, general-adapter-1.erc4626Deposit, general-adapter-1.0xf2522bcd, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
     e.g. 0xb2e1fa9d798a29a9b80f78b5efd8c0673b61805048bcbf576dc327308a36c492
-  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 3 items, calling general-adapter-1.erc20TransferFrom, another contract.0x6dc916f5, general-adapter-1.erc4626Deposit
+  1 from 1 EOA: call.multicall.bundle: expected 2 items, got 3 items, calling general-adapter-1.erc20TransferFrom, 0xb09e40EbE31b738fbf20289270a397118707D475.0x6dc916f5, general-adapter-1.erc4626Deposit
     e.g. 0xc8149650e9d0acd4af24a9176665485f613e0cc02b85ab23798d69c4254398b1
   1 from 1 EOA: call.multicall.bundle: expected 2 items, got 5 items, calling general-adapter-1.erc20TransferFrom, general-adapter-1.erc4626Deposit, general-adapter-1.0xf2522bcd, general-adapter-1.0x3790767d, general-adapter-1.0x3790767d
     e.g. 0x226c6f637d787a5e0d04064b0ea51401e9fe4f4244a159dc1a7ea70c8e5cc01c
@@ -336,7 +336,7 @@ examples that fit: 0x44ea4609aad8d06c8934e4ef174b2c5b9572169b6420abe09ccd955fbea
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
-1 descriptor(s) scoped by factory: registry/railnet/calldata-Conduit.json; one applies below only when its factory is the entry's registry factory
+no descriptor is scoped by the registry factory of an entry below
 
 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1
