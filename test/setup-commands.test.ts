@@ -87,6 +87,7 @@ async function run(argv: string[], home: string, answers?: readonly Answer[], ch
     repoRoot: chain.repoRoot === undefined ? signerClone() : chain.unpublished === true ? chain.repoRoot : published(chain.repoRoot),
     transport: chain.transport,
     fetchJson: async () => assert.fail('setup commands fetch nothing'),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return { code, stdout, stderr, asked };
 }

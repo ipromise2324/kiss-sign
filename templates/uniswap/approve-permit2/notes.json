@@ -1,0 +1,78 @@
+{
+  "title": "授權 Uniswap 的 Permit2 使用一個代幣（無上限）",
+  "summary": "Safe 對你選的代幣呼叫 `approve`，把無上限的額度給 Permit2。這是 Uniswap app 第一次賣某個代幣前要的授權；Permit2 本身不能動用它，要 Safe 之後在 Permit2 另外授權某個合約（例如 Universal Router）才行。",
+  "verdict": {
+    "status": "caution",
+    "text": "無上限授權給 Permit2 會留著；只有 Safe 另外在 Permit2 授權過的合約能用。"
+  },
+  "flow": [],
+  "protocols": {},
+  "judgments": [
+    {
+      "text": "授權給 Permit2 之後，任何 Safe 簽過的 Permit2 訊息都能動用這個代幣，而 Safe 訊息（EIP-1271）不經過 kiss-sign。",
+      "recommendation": "簽任何 Permit2 訊息前確認 spender；不再用 Uniswap 時把授權改回 0。"
+    }
+  ],
+  "reviews": {},
+  "entries": {
+    "usdc": {
+      "role": "可選的代幣：Circle 發行的 USDC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "usdt": {
+      "role": "可選的代幣：Tether 發行的 USDT",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
+          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "morpho": {
+      "role": "可選的代幣：Morpho 的治理代幣",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
+          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "cbbtc": {
+      "role": "可選的代幣：Coinbase 發行的 cbBTC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
+          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "permit2": {
+      "role": "Uniswap 的 Permit2：替使用者保管代幣授權，只依使用者在 Permit2 上的授權轉代幣",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 Permit2（已驗證，solc 0.8.17），創建者 0xd32ff78579352ca78f416120a9f68b65c410871b",
+          "url": "https://etherscan.io/address/0x000000000022D473030F116dDEE9F6B43aC78BA3#code",
+          "result": "pass"
+        },
+        {
+          "text": "Permit2 原始碼：沒有 owner、沒有 proxy；AllowanceTransfer 只在 owner 授權過的 spender 呼叫時轉帳",
+          "url": "https://github.com/Uniswap/permit2/blob/cc56ad0f3439c502c246fc5cfcc3db92bb8b7219/src/AllowanceTransfer.sol",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "fields": {
+    "1.approve.spender": "被授權的地址：Permit2 0x000000000022D473030F116dDEE9F6B43aC78BA3。",
+    "1.approve.value": "授權額度 2^256-1，無上限；Uniswap app 的預設。"
+  }
+}

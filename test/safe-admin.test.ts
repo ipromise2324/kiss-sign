@@ -15,12 +15,16 @@ import type { Card, ResolvedCard } from '../src/card.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { selectorOf } from '../src/decode/abi.ts';
 import { checkFloor } from '../src/floor/floor.ts';
+import type { FloorAllowed } from '../src/floor/floor.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldChain, FieldCheck, OwnersRead } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+
+/** A card that declares an owner change, which lets the four owner and threshold functions past the static floor. */
+const DECLARES_CHANGE: FloorAllowed = { change: { add: '0x00000000000000000000000000000000000000aa' as Address, remove: undefined, threshold: undefined } };
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -122,11 +126,11 @@ test('no shipped template matches a module, guard, fallback handler or singleton
   ];
   const owners: OwnersRead = { kind: 'read', owners: [ALICE, BOB] };
   for (const [name, tx] of attacks) {
-    assert.equal(checkFloor(tx, true).kind, 'refused', name);
+    assert.equal(checkFloor(tx, DECLARES_CHANGE).kind, 'refused', name);
     for (const card of cards) {
       const resolved = resolve(card);
       assert.equal(resolved.kind, 'resolved');
-      const fields = checkTemplateFields(tx, (resolved as Extract<typeof resolved, { kind: 'resolved' }>).card, templates, registry, { owners });
+      const fields = checkTemplateFields(tx, (resolved as Extract<typeof resolved, { kind: 'resolved' }>).card, templates, registry, [], { owners });
       assert.equal(fields.kind, 'mismatch', `${name} against ${card.operations[0]!.template}`);
     }
   }
@@ -142,7 +146,7 @@ test('prevOwner must be the owner listed before the card owner, or the sentinel 
     return (resolved as Extract<typeof resolved, { kind: 'resolved' }>).card;
   };
   const remove = (prev: Address, owner: Address): SafeTx => selfCall(call('removeOwner(address,address,uint256)', prev, owner, 1n));
-  const fields = (tx: SafeTx, c: ResolvedCard, chain: FieldChain = { owners }) => checkTemplateFields(tx, c, templates, registry, chain);
+  const fields = (tx: SafeTx, c: ResolvedCard, chain: FieldChain = { owners }) => checkTemplateFields(tx, c, templates, registry, [], chain);
   assert.deepEqual(fields(remove(SENTINEL, ALICE), card('alice')), { kind: 'match' });
   assert.deepEqual(fields(remove(ALICE, BOB), card('bob')), { kind: 'match' });
   const wrong = fields(remove(SENTINEL, BOB), card('bob'));
@@ -156,7 +160,7 @@ test('prevOwner must be the owner listed before the card owner, or the sentinel 
     reasons: ["the Safe's owners: the providers disagree"],
   });
   assert.deepEqual(fields(remove(ALICE, BOB), card('bob'), {}), { kind: 'unverifiable', reasons: ["the Safe's owners: not read"] });
-  assert.deepEqual(checkMutations(remove(ALICE, BOB), card('bob'), templates, registry, checkTemplateFields, { owners }), { kind: 'pass', bound: 5, free: 0 });
+  assert.deepEqual(checkMutations(remove(ALICE, BOB), card('bob'), templates, registry, [], { owners }), { kind: 'pass', bound: 5, free: 0 });
 });
 
 type Recorded = { executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; transactionHash: Hex; exchanges: Exchange[] };
@@ -214,9 +218,9 @@ for (const c of FIXTURES) {
     const { parent, executed } = await blocks(r);
     const owners = await readOwners(r, tx.safe, parent);
     assert.equal(owners.kind, 'read');
-    assert.equal(checkFloor(tx, true).kind, 'pass');
-    assert.deepEqual(checkTemplateFields(tx, card, templates, registry, { owners }), { kind: 'match' });
-    const mutations = checkMutations(tx, card, templates, registry, checkTemplateFields, { owners });
+    assert.equal(checkFloor(tx, DECLARES_CHANGE).kind, 'pass');
+    assert.deepEqual(checkTemplateFields(tx, card, templates, registry, [], { owners }), { kind: 'match' });
+    const mutations = checkMutations(tx, card, templates, registry, [], { owners });
     assert.equal(mutations.kind, 'pass');
     const simulated = await simulateSafeTx(r, { tx, parent, time: executed.time, watch: [], ends: [] });
     const simChecks = checkObservation(simulated, tx.safe, card, templates, registry);
@@ -237,7 +241,7 @@ test('the same executed transactions give MISMATCH for a card naming another own
     const changedBook = Object.fromEntries(Object.entries(c.book).map(([name], i) => [name, i === Object.keys(c.book).length - 1 ? OTHER : c.book[name] as Address]));
     const changedValues = c.template === 'safe/change-threshold' ? { threshold: c.values.threshold === '1' ? '2' : '1' } : c.values;
     const card = cardFor(changedValues, changedBook);
-    const fields = checkTemplateFields(tx, card, templates, registry, { owners });
+    const fields = checkTemplateFields(tx, card, templates, registry, [], { owners });
     assert.equal(fields.kind, 'mismatch', c.name);
     const simulated = await simulateSafeTx(r, { tx, parent, time: executed.time, watch: [], ends: [] });
     const checks = checkObservation(simulated, tx.safe, card, templates, registry);

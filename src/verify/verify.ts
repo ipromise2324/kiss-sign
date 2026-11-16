@@ -10,20 +10,21 @@ import type { Reader } from '../chain/reader.ts';
 import type { BlockHeader, BlockRef } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
 import { checkFloor } from '../floor/floor.ts';
-import { checkObservation, settingsChange } from '../floor/summary.ts';
+import { checkObservation, floorAllowed, settingsChange } from '../floor/summary.ts';
 import { parseRegistry } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { hashSafeTx } from '../safe/hash.ts';
 import { parseSafeWebAppTx, parseServiceTx } from '../safe/parse.ts';
 import { parseAddress, parseHex, parseSafeVersion } from '../safe/types.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
-import { endsNeeded, expectedChanges, viewCalls } from '../simulate/effects.ts';
+import { endsNeeded, expectedChanges, keptSeen, viewCalls } from '../simulate/effects.ts';
+import type { KeptSeen } from '../simulate/effects.ts';
 import { observeExecuted, withSimulatedSafeState, withSimulatedViews } from '../simulate/executed.ts';
 import { ownersOf } from '../simulate/safe-state.ts';
 import { scanCalls, simulateSafeTx } from '../simulate/simulate.ts';
 import type { CallScan, Observation } from '../simulate/simulate.ts';
-import { checkTemplateFields } from '../template/check.ts';
-import type { FieldChain, OwnersRead } from '../template/check.ts';
+import { checkTemplateFields, inspectTemplateFields } from '../template/check.ts';
+import type { FieldChain, Messages, OwnersRead } from '../template/check.ts';
 import { checkMutations } from '../template/mutation.ts';
 import { parseTemplate } from '../template/template.ts';
 import type { Rule, Template } from '../template/template.ts';
@@ -50,7 +51,12 @@ export type VerifyInputs = {
   readonly markets?: string;
   /** Only the entries the card names. */
   readonly addressBook: Readonly<Record<string, string>>;
+  /** Each signed message read from a template's `lookup`, as text; absent in a verdict file from before messages. */
+  readonly messages?: readonly string[];
 };
+
+/** Reads the text at a `lookup` URL, or says why it could not. */
+export type MessageReader = (url: string) => Promise<{ readonly text: string } | { readonly why: string }>;
 
 /** `calls` is information for the signer, not a check: which of the Safe's calls move none of its assets. */
 export type Evaluation = { readonly verdict: Verdict; readonly hashes: SafeTxHashes; readonly calls: CallScan };
@@ -113,6 +119,7 @@ export type Prepared = {
   readonly templates: ReadonlyMap<string, Template>;
   readonly approvals: readonly TemplateApproval[];
   readonly addressBook: AddressBook;
+  readonly messages: Messages;
 };
 
 export function prepare(inputs: VerifyInputs): Prepared {
@@ -130,7 +137,8 @@ export function prepare(inputs: VerifyInputs): Prepared {
   const addressBook = guard('the address book', () => parseAddressBook(inputs.addressBook));
   const resolution = resolveCard(card, { templates, registry, addressBook, safe });
   if (resolution.kind === 'refused') throw new VerifyError(`the card is refused at ${resolution.at}: ${resolution.detail}`);
-  return { registry, safe, card: resolution.card, templates, approvals, addressBook };
+  if (inputs.messages !== undefined && !inputs.messages.every((m) => typeof m === 'string')) throw new VerifyError('the signed messages are not texts');
+  return { registry, safe, card: resolution.card, templates, approvals, addressBook, messages: inputs.messages ?? [] };
 }
 
 /** Every check on the transaction, given what a simulation or its receipt showed it doing. */
@@ -141,12 +149,12 @@ export function judge(
   read: { readonly assets: ChainCheck; readonly code: ChainCheck },
   chain: FieldChain = {},
 ): Verdict {
-  const { registry, safe, card, templates, approvals } = prepared;
+  const { registry, safe, card, templates, approvals, messages } = prepared;
   const checks = {
-    staticFloor: checkFloor(tx, settingsChange(card, templates) !== undefined),
-    fields: checkTemplateFields(tx, card, templates, registry, chain),
+    staticFloor: checkFloor(tx, floorAllowed(card, templates, registry)),
+    fields: checkTemplateFields(tx, card, templates, registry, messages, chain),
     ...read,
-    mutation: checkMutations(tx, card, templates, registry, checkTemplateFields, chain),
+    mutation: checkMutations(tx, card, templates, registry, messages, chain),
     simulation: checkObservation(observation, safe, card, templates, registry),
     approvals,
   };
@@ -202,19 +210,58 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   return (await evaluateTx(inputs, reader)).evaluation;
 }
 
-/** `evaluate`, with the transaction it judged, the inputs it prepared and the latest block it read, for showing what that transaction does. */
-export async function evaluateTx(
+/**
+ * The inputs with each signed message the transaction names by its digest and the inputs lack, read through
+ * `readMessage`, keeping only the messages that hash to their digest, cut to their members. A message that cannot be
+ * read is left out, so the field check says it was not read, and `unread` says why, for the signer and not the verdict.
+ */
+async function withMessages(
   inputs: VerifyInputs,
+  prepared: Prepared,
+  tx: SafeTx,
+  readMessage: MessageReader | undefined,
+): Promise<{ inputs: VerifyInputs; prepared: Prepared; unread: readonly string[] }> {
+  const inspect = (messages: Messages) => inspectTemplateFields(tx, prepared.card, prepared.templates, prepared.registry, messages);
+  const { lookups } = inspect(prepared.messages);
+  if (readMessage === undefined || lookups.length === 0) return { inputs, prepared, unread: [] };
+  const read: string[] = [];
+  const unread: string[] = [];
+  for (const url of new Set(lookups)) {
+    const answer = await readMessage(url);
+    if ('text' in answer) read.push(answer.text);
+    else unread.push(`${url}: ${answer.why}`);
+  }
+  const messages = [...new Set(inspect([...prepared.messages, ...read]).signed)];
+  return { inputs: { ...inputs, messages }, prepared: { ...prepared, messages }, unread };
+}
+
+/**
+ * `evaluate`, with the transaction it judged, the inputs it used, signed messages read through `readMessage` included,
+ * the inputs it prepared and the latest block it read, for showing what that transaction does. `unread` says why each
+ * signed message could not be read; it is not part of the verdict.
+ */
+export async function evaluateTx(
+  given: VerifyInputs,
   reader: Reader,
-): Promise<{ readonly evaluation: Evaluation; readonly tx: SafeTx; readonly prepared: Prepared; readonly latest: BlockRef }> {
-  const prepared = prepare(inputs);
-  const { safe } = prepared;
+  readMessage?: MessageReader,
+): Promise<{
+  readonly evaluation: Evaluation;
+  readonly tx: SafeTx;
+  readonly inputs: VerifyInputs;
+  readonly prepared: Prepared;
+  readonly latest: BlockRef;
+  readonly unread: readonly string[];
+  readonly kept: readonly KeptSeen[];
+}> {
+  const parsed = prepare(given);
+  const { safe } = parsed;
   const latest = await reader.block('latest');
   if (latest.kind === 'unverifiable') throw new VerifyError(`no agreed latest block: ${latest.reason}`);
   const versionRead = await reader.call({ to: safe, data: selectorOf('VERSION()') }, latest.value);
   if (versionRead.kind === 'unverifiable') throw new VerifyError(`the Safe's version: ${versionRead.reason}`);
   const version = versionRead.value.kind === 'returned' ? abiString(versionRead.value.data) : undefined;
-  const tx = parseTx(inputs.tx, safe, guard("the Safe's version", () => parseSafeVersion(version)));
+  const tx = parseTx(given.tx, safe, guard("the Safe's version", () => parseSafeVersion(version)));
+  const { inputs, prepared, unread } = await withMessages(given, parsed, tx, readMessage);
 
   const executed = guard('the Safe transaction', () => executedIn(inputs.tx));
   const expected = expectedChanges(prepared.card, prepared.templates, prepared.registry);
@@ -244,7 +291,8 @@ export async function evaluateTx(
     code: await readAt(pinned, (block) => checkCode(reader, pinned, block, executed === undefined ? 'pending' : 'executed')),
   };
   const chain: FieldChain = !needsOwners ? {} : { owners: typeof at === 'string' ? { kind: 'unread', why: at } : await readOwners(reader, safe, at) };
-  return { evaluation: { verdict: judge(prepared, tx, observation, read, chain), hashes: hashSafeTx(tx), calls }, tx, prepared, latest: latest.value };
+  const kept = observation.kind === 'observed' ? keptSeen(observation.observed, prepared.card, prepared.templates, prepared.registry) : [];
+  return { evaluation: { verdict: judge(prepared, tx, observation, read, chain), hashes: hashSafeTx(tx), calls }, tx, inputs, prepared, latest: latest.value, unread, kept };
 }
 
 /**
@@ -289,6 +337,7 @@ export function parseVerdictFile(raw: unknown): VerdictFile {
   if (!isRecord(inputs.tx) || (inputs.tx.format !== 'service' && inputs.tx.format !== 'web-app')) return refuse('inputs.tx');
   if (!isRecord(inputs.card) || !isText(inputs.card.hash) || !isText(inputs.card.text)) return refuse('inputs.card');
   if (!isRecord(inputs.addressBook)) return refuse('inputs.addressBook');
+  if (inputs.messages !== undefined && !(Array.isArray(inputs.messages) && inputs.messages.every(isText))) return refuse('inputs.messages');
   const templateOk = (t: unknown) => isRecord(t) && isText(t.id) && isText(t.text) && (t.approved === null || isText(t.approved));
   if (!Array.isArray(inputs.templates) || !inputs.templates.every(templateOk)) return refuse('inputs.templates');
   const exchangeOk = (e: unknown) => isRecord(e) && isText(e.method) && isRecord(e.answers);

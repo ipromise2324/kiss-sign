@@ -214,7 +214,7 @@ test('a computed card field reads one uint256 view with arguments bound to the c
   assert.doesNotThrow(() => parseTemplate(nested, registry));
 });
 
-test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes are empty', () => {
+test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes hold at most 19 bytes', () => {
   const fixtures = repoWithTestFixtures();
   const registry = loadRegistry(fixtures);
   const fluid = JSON.parse(readFileSync(join(fixtures, 'templates', 'fluid', 'rewards-claim', 'template.json'), 'utf8'));
@@ -224,7 +224,7 @@ test('bytes, a string or an array is free only with a proof or unread claim, and
     [(t) => (claim(t).merkleProof_ = { free: 'x' }), `${at}.merkleProof_.free`, /needs \{"proof": why\} or \{"unread": why\}/],
     [(t) => (claim(t).metadata_ = { free: 'x' }), `${at}.metadata_.free`, /needs \{"proof": why\} or \{"unread": why\}/],
     [(t) => (claim(t).merkleProof_ = { free: { trust: 'x' } }), `${at}.merkleProof_.free`, /exactly one of proof, unread/],
-    [(t) => (claim(t).metadata_ = { const: '0x00' }), `${at}.metadata_.const`, /must be empty/],
+    [(t) => (claim(t).metadata_ = { const: `0x${'00'.repeat(20)}` }), `${at}.metadata_.const`, /at most 19 bytes, so no whole address fits/],
   ];
   for (const [edit, path, problem] of cases) {
     const broken = structuredClone(fluid);
@@ -233,6 +233,7 @@ test('bytes, a string or an array is free only with a proof or unread claim, and
   }
   const scalar = structuredClone(fluid);
   claim(scalar).cumulativeAmount_ = { free: { proof: 'the leaf amount' } };
+  claim(scalar).metadata_ = { const: `0x${'0a'.repeat(19)}` };
   assert.equal(parseTemplate(scalar, registry).id, 'fluid/rewards-claim');
 });
 
@@ -281,6 +282,7 @@ test('the template parses its card fields and effects', () => {
     gets: [{ token: { field: 'vault', attribute: undefined }, amount: { kind: 'positive' }, to: undefined }],
     views: [],
     safe: undefined,
+    approves: [],
   });
 });
 

@@ -7,9 +7,9 @@ import type { Observation } from '../simulate/simulate.ts';
 import type { FieldCheck } from '../template/check.ts';
 import type { MutationResult } from '../template/mutation.ts';
 import type { CardRef, Template } from '../template/template.ts';
-import type { FloorResult } from './floor.ts';
+import { keptUnlimited } from './floor.ts';
+import type { FloorAllowed, FloorResult, SettingsChange } from './floor.ts';
 import { checkSimulatedFloor } from './simulated.ts';
-import type { SettingsChange } from './simulated.ts';
 
 export type SimulatedChecks =
   | { readonly kind: 'observed'; readonly effects: EffectVerdict; readonly floor: FloorResult }
@@ -42,6 +42,12 @@ export function settingsChange(card: ResolvedCard, templates: ReadonlyMap<string
   return undefined;
 }
 
+/** What the card lets past the floor: the allowances its templates keep unlimited and the settings change it declares. */
+export const floorAllowed = (card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): FloorAllowed => ({
+  standing: keptUnlimited(card, templates, registry),
+  change: settingsChange(card, templates),
+});
+
 /** The effects verdict and the floor rules on one observation, from a simulation or a receipt. */
 export function checkObservation(
   observation: Observation,
@@ -52,5 +58,5 @@ export function checkObservation(
 ): SimulatedChecks {
   if (observation.kind === 'unverifiable') return observation;
   const { observed } = observation;
-  return { kind: 'observed', effects: judgeEffects(observed, card, templates, registry), floor: checkSimulatedFloor(observed, safe, settingsChange(card, templates)) };
+  return { kind: 'observed', effects: judgeEffects(observed, card, templates, registry), floor: checkSimulatedFloor(observed, safe, floorAllowed(card, templates, registry)) };
 }

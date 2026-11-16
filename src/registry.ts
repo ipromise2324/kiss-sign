@@ -10,7 +10,7 @@ import { samePageKey, sourceHoldsAddress } from './research/source-page.ts';
 import { SafeTxParseError, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 
-export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm', 'singleton'] as const;
+export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm', 'allowance', 'singleton'] as const;
 export type ContractKind = (typeof CONTRACT_KINDS)[number];
 
 /** What a registry entry may say about itself, each naming another registry entry, and which kinds may say it. */
@@ -71,7 +71,19 @@ export type RegistryEntry = {
   readonly dependsOn?: readonly string[];
   /** The code a call to this address ran at each block `pnpm pin-code` found; verify requires the code of the block it reads. */
   readonly code?: CodePins;
+  /** An allowance from the Safe that this contract may keep after the transaction, and why its code makes that safe. */
+  readonly standingAllowance?: StandingAllowance;
+  /** Why this contract's code never reads calldata past a call's arguments, so a template may allow a trailer of more than 19 bytes. */
+  readonly ignoresTrailer?: string;
 };
+
+/**
+ * What a standing allowance goes through: an ERC-20 `approve` of a token to this contract, or a Permit2 allowance to it.
+ * A template may keep such an allowance open (`effects.approves`) only to a registry entry that declares it.
+ */
+export const ALLOWANCE_ROUTES = ['erc20', 'permit2'] as const;
+export type AllowanceRoute = (typeof ALLOWANCE_ROUTES)[number];
+export type StandingAllowance = { readonly via: AllowanceRoute; readonly why: string };
 
 /**
  * A factory's view that vouches for a contract it created: one that answers true for that contract's address, such as
@@ -430,10 +442,23 @@ function moreSourcesOf(path: string, raw: unknown, address: Address, source: Htt
   });
 }
 
+function nonEmpty(path: string, raw: unknown): string {
+  if (typeof raw !== 'string' || raw.trim() === '') throw new RegistryError(path, 'not a non-empty string');
+  return raw;
+}
+
+function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['via', 'why']);
+  const via = ALLOWANCE_ROUTES.find((route) => route === value.via);
+  if (via === undefined) throw new RegistryError(`${path}.via`, `not one of ${ALLOWANCE_ROUTES.join(', ')}`);
+  return { via, why: nonEmpty(`${path}.why`, value.why) };
+}
+
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'routes', 'dependsOn', 'code', 'instanceCheck']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'attributes', 'routes', 'dependsOn', 'code', 'instanceCheck', 'standingAllowance', 'ignoresTrailer']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const routes = value.routes === undefined ? undefined : routingOf(`${path}.routes`, value.routes);
   const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code, routes);
@@ -477,6 +502,8 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     ...(routes === undefined ? {} : { routes }),
     ...(dependsOn === undefined ? {} : { dependsOn }),
     ...(code === undefined ? {} : { code }),
+    ...(value.standingAllowance === undefined ? {} : { standingAllowance: standingAllowanceOf(`${path}.standingAllowance`, value.standingAllowance) }),
+    ...(value.ignoresTrailer === undefined ? {} : { ignoresTrailer: nonEmpty(`${path}.ignoresTrailer`, value.ignoresTrailer) }),
   };
   if (kind !== 'factory') {
     if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
