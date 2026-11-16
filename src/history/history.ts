@@ -9,9 +9,9 @@ import type { Exchange } from '../chain/recording.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
 import { requireConfig } from '../cli/setup.ts';
-import { checkFloor } from '../floor/floor.ts';
+import { checkFloor, standingSpenders } from '../floor/floor.ts';
 import { kissSignHome } from '../keys.ts';
-import { MARKETS_PATH, REGISTRY_PATH } from '../registry.ts';
+import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
@@ -122,7 +122,7 @@ async function rowFor(ctx: Context, entry: HistoryTx): Promise<Row> {
   const card = ctx.history.cards.get(entry.nonce);
   const outcome: Facts['outcome'] = card === undefined ? { kind: 'no-card' } : await evaluateCard(ctx, entry, card);
   const intent = ctx.history.intents.get(entry.nonce);
-  const reason = reasonFor({ tx: entry.tx, floor: checkFloor(entry.tx), outcome });
+  const reason = reasonFor({ tx: entry.tx, floor: checkFloor(entry.tx, standingSpenders(parseRegistry(JSON.parse(ctx.registry)))), outcome });
   return {
     nonce: entry.nonce,
     date: intent?.date ?? entry.executionDate.slice(0, 10),

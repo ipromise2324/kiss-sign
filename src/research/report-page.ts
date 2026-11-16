@@ -215,6 +215,7 @@ const KIND_WORDS: Readonly<Record<RegistryEntry['kind'], string>> = {
   lending: '借貸合約',
   oracle: '價格來源',
   irm: '利率模型',
+  allowance: '授權合約',
 };
 const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
 
@@ -450,6 +451,8 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
       return whoOf(rule.rule, template);
     case 'share-price':
       return { who: 'you-type', field: rule.assets.kind === 'card' ? rule.assets.field : undefined };
+    case 'at-least':
+      return { who: 'you-type', field: rule.field };
     case 'call':
     case 'items':
     case 'fields':
@@ -532,8 +535,12 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
       return { words: ['跟 ', { code: rule.path }, ' 同一個數'], qualifier: undefined };
     case 'share-price':
       return { words: [rule.bound === 'max' ? '價格上限' : '價格下限'], qualifier: ['依你填的數量算出，交易裡的要一樣嚴或更嚴'] };
+    case 'at-least':
+      return { words: [before('至少你填的', fieldWord(context.template, rule.field))], qualifier: ['交易裡的可以更多，不能更少'] };
     case 'call':
-      return { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
+      return rule.call.encoding === 'params'
+        ? { words: [{ code: rule.call.fn.name }, ' 的參數'], qualifier: undefined }
+        : { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
     case 'items':
       return { words: [`${rule.items.length} 項`], qualifier: undefined };
     case 'fields':
@@ -715,6 +722,7 @@ function afterRows(context: Context): AfterRow[] {
   const amountOf = (effect: Template['effects']['gives'][number], gives: boolean): Inline => {
     if (effect.amount.kind === 'all') return ['全部'];
     if (effect.amount.kind === 'positive') return [gives ? '給出多於 0' : '收到多於 0'];
+    if (effect.amount.kind === 'at-least') return [before('至少你填的', fieldWord(template, effect.amount.field))];
     const value = context.card?.get(effect.amount.field);
     if (value?.kind !== 'amount') return [before('你填的', fieldWord(template, effect.amount.field))];
     const { words } = amountWords(value.value, effect.token, context);
@@ -722,7 +730,14 @@ function afterRows(context: Context): AfterRow[] {
     return words[0] === '約 ' ? ['約 ', sign, ...words.slice(1)] : [sign, ...words];
   };
   const note = (effect: Template['effects']['gives'][number]): Inline => {
-    const amount = effect.amount.kind === 'card' ? before('剛好你填的', fieldWord(template, effect.amount.field)) : effect.amount.kind === 'all' ? '全部餘額，交易後一個都不剩' : '程式只查方向，不查數量';
+    const amount =
+      effect.amount.kind === 'card'
+        ? before('剛好你填的', fieldWord(template, effect.amount.field))
+        : effect.amount.kind === 'at-least'
+          ? before('收到的不能少於你填的', fieldWord(template, effect.amount.field))
+          : effect.amount.kind === 'all'
+            ? '全部餘額，交易後一個都不剩'
+            : '程式只查方向，不查數量';
     return effect.to === undefined ? [amount] : [amount, before('，給', refWord(template, effect.to))];
   };
   const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : before('你選的', refWord(template, token)));
@@ -740,10 +755,19 @@ function afterRows(context: Context): AfterRow[] {
       });
     }
   }
+  const keptTo = (spender: string, via: 'erc20' | 'permit2') => template.effects.approves.some((k) => k.spender === spender && k.via === via);
   for (const call of template.calls) {
     if (call.data === 'empty' || call.data.fn.signature !== 'approve(address,uint256)') continue;
     const spender = call.data.args[0] as Rule;
+    if (spender.kind === 'contract' && keptTo(spender.name, 'erc20')) continue;
     rows.push({ label: ['給 ', ...ruleWords(spender, context), ` 的 ${targetOf(call.to, context).label} 授權`], value: [{ num: '0' }], note: ['交易內用完，不能比交易前高'], gains: false });
+  }
+  for (const kept of template.effects.approves) {
+    const spender = context.registry.entries.get(kept.spender) as RegistryEntry;
+    const route = kept.via === 'permit2' ? '透過 Permit2 ' : '';
+    const value: Inline = kept.amount.kind === 'unlimited' ? ['可以保留，不限數量'] : [before('可以保留，最多你填的', fieldWord(template, kept.amount.field))];
+    const note: Inline = kept.via === 'permit2' ? ['到期時間在 Permit2 裡，verify 的網頁會顯示'] : ['登記資料說明為什麼可以保留'];
+    rows.push({ label: [`${route}給 `, link(spender), ` 的 ${name(kept.token)} 授權`], value, note, gains: false });
   }
   return rows;
 }
@@ -1082,6 +1106,8 @@ function ruleWords(rule: Rule, context: Context): Inline {
       return ['跟 ', { code: rule.path }, ' 同一個數'];
     case 'share-price':
       return [rule.bound === 'max' ? '價格上限' : '價格下限'];
+    case 'at-least':
+      return [before('至少你填的', fieldWord(context.template, rule.field))];
     case 'call':
       return ['呼叫 ', { code: rule.call.fn.name }, '，參數見流程'];
     case 'items':
@@ -1565,10 +1591,10 @@ function nextSection(context: Context): Section {
     [`交易只有這 ${template.calls.length} 個呼叫，MultiSend 也一個個解開`],
     ['每個參數符合上面的規則，重新編碼要一模一樣'],
     ...template.effects.gives.map((e): Inline => [`模擬後 Safe 給出的 ${tokenName(e.token)} ${e.amount.kind === 'card' ? before('剛好是你填的', fieldWord(template, e.amount.field)) : e.amount.kind === 'all' ? '是全部餘額' : '多於 0'}`]),
-    ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`]),
+    ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`, ...(e.amount.kind === 'at-least' ? [before('，不少於你填的', fieldWord(template, e.amount.field))] : [])]),
     ...(template.effects.gives.length + template.effects.gets.length === 0 ? [['模擬後 Safe 的餘額一點都不能變'] as Inline] : []),
     ...(template.nonce === undefined ? [] : [['Safe 交易的 nonce 是', ...ruleWords(template.nonce, context)] as Inline]),
-    ['沒有任何授權在交易後變高'],
+    template.effects.approves.length === 0 ? ['沒有任何授權在交易後變高'] : ['除了上面「交易後」列出可以保留的授權，沒有任何授權在交易後變高'],
     ...template.effects.views.map((v): Inline => [
       { code: `${v.to}.${v.fn.name}` },
       `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${{ increases: '增加', decreases: '減少', same: '不變' }[c.change]}`).join('、')}`,

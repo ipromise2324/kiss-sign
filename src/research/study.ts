@@ -46,9 +46,10 @@ export function loosen(template: Template): Loosened {
     }
   };
   const looseCall = (node: CallNode, wideTrailer: boolean, record: boolean): CallNode => ({
+    encoding: node.encoding,
     fn: node.fn,
     args: node.args.map((arg) => looseRule(arg, wideTrailer, record)),
-    trailer: wideTrailer ? { maxBytes: MAX_TRAILER, why: 'study' } : node.trailer,
+    trailer: wideTrailer && node.encoding === 'call' ? { maxBytes: MAX_TRAILER, why: 'study' } : node.trailer,
   });
   const looseTop = (call: TemplateCall, wideTrailer: boolean, record: boolean): TemplateCall => {
     const to = looseRule(call.to, wideTrailer, record);
@@ -210,7 +211,7 @@ export function functionNames(template: Template): Map<string, string> {
     if (rule.kind === 'fields') rule.fields.forEach(visitRule);
   };
   const visitCall = (node: CallNode): void => {
-    names.set(node.fn.selector, node.fn.name);
+    if (node.encoding === 'call') names.set(node.fn.selector, node.fn.name);
     node.args.forEach(visitRule);
   };
   for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data);
@@ -233,7 +234,7 @@ function onlyAddress(value: Extract<AbiValue, { kind: 'tuple' }>): Address | und
  */
 function itemCalls(calls: readonly InnerCall[], template: Template, span: Span): CallName[] | undefined {
   const name = (rule: Rule | undefined, item: AbiValue, target: Address | undefined): CallName | undefined => {
-    if (rule?.kind === 'call') return item.kind === 'bytes' ? { to: target, selector: selectorOf(item.value) } : undefined;
+    if (rule?.kind === 'call') return item.kind === 'bytes' && rule.call.encoding === 'call' ? { to: target, selector: selectorOf(item.value) } : undefined;
     if (rule?.kind !== 'fields' || item.kind !== 'tuple') return undefined;
     const data = item.fields[rule.fields.findIndex((field) => field.kind === 'call')];
     return data?.kind === 'bytes' ? { to: onlyAddress(item), selector: selectorOf(data.value) } : undefined;
@@ -397,6 +398,7 @@ export function brokenRule(
     case 'contract':
     case 'free':
     case 'share-price':
+    case 'at-least':
       return undefined;
   }
 }

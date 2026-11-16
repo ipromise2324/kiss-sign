@@ -410,5 +410,49 @@
       "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
       "from": 23666454
     }
+  },
+  "permit2": {
+    "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3",
+    "kind": "allowance",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+    "sourceLabel": "Permit2",
+    "sourceHeading": "Ethereum",
+    "moreSources": [
+      {
+        "url": "https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts",
+        "label": "PERMIT2_ADDRESS"
+      }
+    ],
+    "defillama": "uniswap-v4",
+    "standingAllowance": {
+      "via": "erc20",
+      "why": "Permit2 has no owner and no proxy, and moves an owner's tokens only for a spender the owner approved on Permit2 itself, by its own call or signature (AllowanceTransfer.transferFrom), or for a transfer the owner signed (SignatureTransfer). An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens."
+    },
+    "code": {
+      "hash": "0xc67d1657868aa5146eaf24fb879fb1fdec3d2d493b3683a61c9c2f4fb2851131",
+      "from": 15986406
+    }
+  },
+  "universal-router-2.1.2": {
+    "address": "0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85",
+    "kind": "router",
+    "source": "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments",
+    "sourceLabel": "Universal Router 2.1.2",
+    "sourceHeading": "Ethereum",
+    "moreSources": [
+      {
+        "url": "https://github.com/Uniswap/universal-router/blob/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json",
+        "label": "UniversalRouterV2_1_2"
+      }
+    ],
+    "defillama": "uniswap-v4",
+    "standingAllowance": {
+      "via": "permit2",
+      "why": "The router pulls tokens through Permit2 only from the address that called execute, its locker (msgSender() in Dispatcher.sol, set by Lock.sol): Permit2Payments.permit2TransferFrom takes msgSender() as the owner for V2, V3 and V4 swaps with payerIsUser and for PERMIT2_TRANSFER_FROM, and PERMIT2_TRANSFER_FROM_BATCH reverts when a transfer's from is not the locker. It has no owner and no proxy. So a Permit2 allowance to it can be spent only by a later execute the Safe itself makes."
+    },
+    "code": {
+      "hash": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac",
+      "from": 25999984
+    }
   }
 }
