@@ -12,7 +12,7 @@ import { abiCaseBlock, abiCaseReader, abiCaseSourcify } from '../src/contracts/a
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal, Refusal } from '../src/contracts/prove.ts';
-import { EIP1967_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
+import { EIP1967_BEACON_SLOT, EIP1967_IMPLEMENTATION_SLOT, ZEPPELINOS_IMPLEMENTATION_SLOT } from '../src/contracts/proxy.ts';
 import { pinnedCompilers } from '../src/contracts/solc.ts';
 import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { SourcifyAnswer } from '../src/contracts/sourcify.ts';
@@ -165,16 +165,6 @@ const CASES = [
     contract: 'contracts/GnosisSafeL2.sol:GnosisSafeL2',
     compiler: '0.7.6+commit.7338295f',
     functions: 31,
-    immutables: 0,
-    uses: [],
-  },
-  {
-    name: 'fluid-token',
-    proxy: 'none',
-    proven: '0x6f40d4a6237c257fff2db00fa0510deeecd303eb',
-    contract: 'contracts/TokenDelegator.sol:InstaToken',
-    compiler: '0.7.3+commit.9bfce1f6',
-    functions: 7,
     immutables: 0,
     uses: [],
   },
@@ -435,6 +425,89 @@ test('an EIP-1967 slot on code that cannot DELEGATECALL is refused', async () =>
   const reader = abiCaseReader(fixture, [{ method: 'getStorageAt', args: [BUNDLER3, slot], value: `0x${GENERAL_ADAPTER1.slice(2).padStart(64, '0')}` }]);
   const refused = refusal(await proveAbi(reader, BUNDLER3, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
   assert.equal(refused.why, 'slot-without-delegatecall');
+});
+
+test('the FLUID token hands a call it has no function for to an implementation in its storage, so its ABI is refused, not proven', async () => {
+  const fixture = load('fluid-token');
+  const refused = refusal(await proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
+  assert.deepEqual(refused, { why: 'unknown-delegator', at: fixture.address, pc: 156 });
+  assert.equal(
+    describeRefusal(refused),
+    '0x6f40d4a6237c257fff2db00fa0510deeecd303eb hands a call it has no function for, at byte 156 of its code, to code the program neither proves nor pins',
+  );
+});
+
+const UNKNOWN = `0x${'d0'.repeat(20)}` as Address;
+const noSlots = (address: Address) =>
+  [EIP1967_IMPLEMENTATION_SLOT, EIP1967_BEACON_SLOT, ZEPPELINOS_IMPLEMENTATION_SLOT].map((slot) => ({
+    method: 'getStorageAt',
+    args: [address, `0x${slot.toString(16)}`],
+    value: `0x${'0'.repeat(64)}`,
+  }));
+const DELEGATE_TO_MEMORY_WORD_0 = '5f5f5f5f5f515af400';
+
+async function proveUnknown(code: string): Promise<AbiProof | AbiRefusal> {
+  const fixture = load('bundler3');
+  const reader = abiCaseReader(fixture, [{ method: 'getCode', args: [UNKNOWN], value: `0x${code}` }, ...noSlots(UNKNOWN)]);
+  return proveAbi(reader, UNKNOWN, abiCaseBlock(fixture), { sourcify: abiCaseSourcify({}), compilers });
+}
+
+test('a fallback that delegates to an address it moved from storage through memory is refused', async () => {
+  const refused = refusal(await proveUnknown(`5f545f52${DELEGATE_TO_MEMORY_WORD_0}`));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test("a fallback that delegates to the address another contract answered is refused, as a beacon's would be", async () => {
+  const refused = refusal(await proveUnknown(`60205f5f5f5f73${'be'.repeat(20)}5af150${DELEGATE_TO_MEMORY_WORD_0}`));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test('a fallback that delegates to a constant address is refused, since the code there is neither proven nor pinned', async () => {
+  const refused = refusal(await proveUnknown(`5f5f5f5f73${'be'.repeat(20)}5af400`));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test('a fallback that delegates to an address in the call data is not refused for delegating, so the proof goes on to its source', async () => {
+  const refused = refusal(await proveUnknown('5f5f5f5f60043560a01b60a01c5af400'));
+  assert.deepEqual(refused, { why: 'not-on-sourcify', at: UNKNOWN });
+});
+
+test('a fallback that runs code from storage through CALLCODE alone is refused', async () => {
+  const refused = refusal(await proveUnknown('5f5f365f5f5f545af200'));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test('a delegator whose last two bytes read like a metadata length is still refused', async () => {
+  const refused = refusal(await proveUnknown('5f5f365f5f545af4000002'));
+  assert.equal(refused.why, 'unknown-delegator');
+});
+
+test('an EIP-1967 slot does not vouch for code that delegates through another slot', async () => {
+  const fixture = load('fluid-token');
+  const slot = `0x${EIP1967_IMPLEMENTATION_SLOT.toString(16)}`;
+  const reader = abiCaseReader(fixture, [{ method: 'getStorageAt', args: [fixture.address, slot], value: `0x${BUNDLER3.slice(2).padStart(64, '0')}` }]);
+  const refused = refusal(await proveAbi(reader, fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
+  assert.deepEqual(refused, { why: 'unknown-delegator', at: fixture.address, pc: 156 });
+});
+
+test('a fallback that delegates to the contract itself, or to the first word of the call data, is not refused for delegating', async () => {
+  assert.deepEqual(refusal(await proveUnknown('5f5f365f5f305af400')), { why: 'not-on-sourcify', at: UNKNOWN });
+  assert.deepEqual(refusal(await proveUnknown('5f5f365f5f5f355af400')), { why: 'not-on-sourcify', at: UNKNOWN });
+});
+
+test('a fallback the walk cannot follow to its delegatecall is refused, with where and why', async () => {
+  assert.deepEqual(refusal(await proveUnknown('5f35565b5f5f5f5f305af400')), { why: 'fallback-unfollowable', at: UNKNOWN, pc: 2, cause: 'dynamic-jump' });
+  assert.deepEqual(refusal(await proveUnknown('0c5f5f5f5f305af400')), { why: 'fallback-unfollowable', at: UNKNOWN, pc: 0, cause: 'unknown-opcode' });
+  assert.deepEqual(refusal(await proveUnknown('620fffff5b600190038060045700305af4')), { why: 'fallback-unfollowable', at: UNKNOWN, pc: 4, cause: 'too-many-states' });
+});
+
+test('an EIP-1967 implementation that itself delegates its fallback to an address in its storage is refused', async () => {
+  const fixture = load('morpho-token-eip1967');
+  const delegator = load('fluid-token').reads.find((read) => read.method === 'getCode')!.value;
+  const implementation = '0x4364fd2371b6318159366abfa51f190df5c24852' as Address;
+  const reader = abiCaseReader(fixture, [{ method: 'getCode', args: [implementation], value: delegator }]);
+  const refused = refusal(await proveAbi(reader, fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }));
+  assert.deepEqual(refused, { why: 'unknown-delegator', at: implementation, pc: 156 });
 });
 
 test('an address with no code is refused', async () => {

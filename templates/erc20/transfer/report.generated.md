@@ -73,7 +73,7 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `usdc` | 12317814 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF` `0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c` | PASS |
 | `usdc` | 18963716 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS |
 | `usdt` | 4634748 | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | none | PASS |
-| `fluid` | 12183236 | `0x8cf49f6749c84d0c4fad1cac5dcd25451e3714b0d0e2bda19610e97809ae017e` | none | PASS |
+| `fluid` | 12183236 | `0x8cf49f6749c84d0c4fad1cac5dcd25451e3714b0d0e2bda19610e97809ae017e` | none | FINDING: block 12183236 runs no code it can pin, `unknown-delegator` |
 | `morpho` | 21157386 | `0x9d47be5e1fade278a449fcd67e4fc7b69ce5c451c36ad7c4f380280d127f5532` | `0x4364fd2371b6318159366abFA51f190df5C24852` `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS |
 | `cbbtc` | 20570548 | `0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71` | `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS |
 
@@ -85,7 +85,7 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | PROVEN | none | `TetherToken`, solc `0.4.18+commit.9cf6e910` | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26399489 |
-| `fluid` | `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | PROVEN | none | `InstaToken`, solc `0.7.3+commit.9bfce1f6` | `0x8cf49f6749c84d0c4fad1cac5dcd25451e3714b0d0e2bda19610e97809ae017e` | PASS | 0 immutable, 0 library spans masked | 26385844 |
+| `fluid` | `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | REFUSED: `unknown-delegator` | | | | | | 26385844 |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | PROVEN | eip1967, implementation `0x4364fd2371b6318159366abFA51f190df5C24852` | `MorphoTokenEthereum`, solc `0.8.27+commit.40a35a09` | `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS | 2 immutable, 0 library spans masked | 26383745 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
 
