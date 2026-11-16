@@ -101,7 +101,7 @@ function memberValue(type: AbiType, raw: unknown): MemberValue | undefined {
  * Each member of `struct`, read by its name from the top-level JSON object `text` holds, or why it cannot be. Other
  * keys are left alone, since an API answers more than the message.
  */
-export function readMessage(struct: StructType, text: string): { readonly values: readonly MemberValue[]; readonly body: Readonly<Record<string, unknown>> } | string {
+export function parseMessage(struct: StructType, text: string): { readonly values: readonly MemberValue[]; readonly body: Readonly<Record<string, unknown>> } | string {
   let body: unknown;
   try {
     body = JSON.parse(text);
@@ -119,7 +119,7 @@ export function readMessage(struct: StructType, text: string): { readonly values
   return { values, body: record };
 }
 
-/** The JSON a message holds for `value`, as `readMessage` reads it back. */
+/** The JSON a message holds for `value`, as `parseMessage` reads it back. */
 export function memberJson(value: MemberValue): unknown {
   switch (value.kind) {
     case 'uint':
