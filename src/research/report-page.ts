@@ -1043,7 +1043,8 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
   const span = /\/code\.(\d+)$/.exec(result.id);
   const where = span !== null ? `（第 ${span[1]} 段）` : result.id.endsWith('/code.today') ? '（最新區塊）' : '';
   const refused = result.finding.kind === 'refused' ? ` 原因：${result.finding.why}。` : '';
-  return { title: [`${name}：${words.title}${where}`], why: [`${words.why}${refused}`] };
+  const source = result.source === undefined ? '' : `${sourceWord(result.about.entry, result.source.of)}，`;
+  return { title: [`${name}：${source}${words.title}${where}`], why: [`${words.why}${refused}`] };
 }
 
 function reviewSection(context: Context): Section {
