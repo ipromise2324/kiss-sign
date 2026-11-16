@@ -46,7 +46,7 @@
     "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     "kind": "token",
     "source": "https://tether.to/en/supported-protocols/",
-    "sourceLabel": "USD₮ contract address",
+    "sourceLabel": "USD\u20ae contract address",
     "defillama": "tether",
     "coingecko": "tether",
     "code": {
@@ -1145,7 +1145,6 @@
         "address"
       ]
     },
-    "sourceLabel": "Adapter",
     "defillama": "morpho-blue",
     "attributes": {
       "factory": "morpho-market-v1-adapter-v2-factory"

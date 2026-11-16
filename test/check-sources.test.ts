@@ -456,7 +456,7 @@ test('the report lists the sites each protocol\'s sources use', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
   assert.match(text, /sites per protocol, for the signer to check each is the protocol's own:\n/);
   assert.match(text, /\n {2}safe\n {4}github\.com\/safe-global: multisend-1\.3\.0, multisend-1\.3\.0-eip155,/);
-  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}github\.com\/morpho-org: bundler3, vault-v2-factory, general-adapter-1, morpho-blue, blue-bundles-v1, adaptive-curve-irm\n {2}steakhouse-financial\n/);
+  assert.match(text, /\n {2}morpho-blue\n {4}morpho\.org: bundler3,.*\n {4}github\.com\/morpho-org: bundler3, vault-v2-factory, general-adapter-1, morpho-blue, adaptive-curve-irm, morpho-market-v1-adapter-v2-factory, blue-bundles-v1\n {2}steakhouse-financial\n/);
   assert.match(text, /\n {2}steakhouse-financial\n {4}steakhouse\.financial: steakhouse-prime-usdc-v2-0f51, steakhouse-high-yield-usdc-v2-a757, steakhouse-usdt-v1-cfba, smokehouse-usdc-v1-f5bc\n/);
 });
 
