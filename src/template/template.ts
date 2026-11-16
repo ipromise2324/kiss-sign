@@ -56,6 +56,10 @@ export type CardField =
   | { readonly kind: 'recipient' }
   /** A Safe nonce. */
   | { readonly kind: 'nonce' }
+  /** An owner of the Safe, to add, remove or replace: an address-book name. */
+  | { readonly kind: 'owner' }
+  /** The Safe's threshold: a whole number from 1. */
+  | { readonly kind: 'threshold' }
   /** A Morpho Blue market from `registry/markets.json`. */
   | { readonly kind: 'market' };
 
@@ -113,6 +117,8 @@ export type Rule =
    * `min` at least, `assets` × 1e27 / `shares`, so the transaction's bound is at least as strict as the card's amounts.
    */
   | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity }
+  /** The owner listed just before the card's owner in the Safe's `getOwners()`, or the sentinel when it is first. */
+  | { readonly kind: 'owner-before'; readonly ref: CardRef }
   /** A number at least the card amount `field`, such as the fewest tokens a swap may give. */
   | { readonly kind: 'at-least'; readonly field: string }
   | { readonly kind: 'call'; readonly call: CallNode }
@@ -225,6 +231,16 @@ export type Fact = BoundView & {
   readonly reason: string | undefined;
 };
 
+/**
+ * How the operation changes the Safe's own settings: the owner it adds, the one it removes, or both for a replacement,
+ * and the card threshold the Safe's threshold ends at, unchanged when absent.
+ */
+export type SafeSettingsEffect = {
+  readonly add: CardRef | undefined;
+  readonly remove: CardRef | undefined;
+  readonly threshold: CardRef | undefined;
+};
+
 export type Template = {
   readonly id: string;
   readonly card: ReadonlyMap<string, CardField>;
@@ -237,6 +253,7 @@ export type Template = {
     readonly gives: readonly Effect[];
     readonly gets: readonly Effect[];
     readonly views: readonly ViewEffect[];
+    readonly safe: SafeSettingsEffect | undefined;
     readonly approves: readonly KeptApproval[];
   };
   readonly facts: readonly Fact[];
@@ -310,7 +327,7 @@ type RefType = 'address' | 'uint' | 'bytes32' | 'market';
 function refType(ref: CardRef, card: CardFields): RefType {
   const kind = card.get(ref.field)?.kind;
   if (kind === 'market') return ref.attribute === undefined ? 'market' : ref.attribute === 'lltv' ? 'uint' : ref.attribute === 'id' ? 'bytes32' : 'address';
-  return ref.attribute === undefined && (kind === 'amount' || kind === 'nonce') ? 'uint' : 'address';
+  return ref.attribute === undefined && (kind === 'amount' || kind === 'nonce' || kind === 'threshold') ? 'uint' : 'address';
 }
 
 const binds = (ref: Exclude<RefType, 'market'>, type: AbiType): boolean =>
@@ -481,7 +498,7 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
   const keys = Object.keys(value);
   const key = keys[0];
   if (keys.length !== 1 || key === undefined) {
-    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, const, free, equals, atLeast, maxSharePrice, minSharePrice, call, encoded, items, fields, packed, eip712');
+    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, ownerBefore, const, free, equals, atLeast, maxSharePrice, minSharePrice, call, encoded, items, fields, packed, eip712');
   }
   const body = value[key];
   const at = `${path}.${key}`;
@@ -509,6 +526,10 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       if (!scope.registry.entries.has(name)) throw new TemplateError(at, `${JSON.stringify(name)} is not in the contract registry`);
       needs(['address']);
       return { kind: 'contract', name };
+    }
+    case 'ownerBefore': {
+      needs(['address']);
+      return { kind: 'owner-before', ref: ownerRef(at, body, scope.card) };
     }
     case 'const': {
       const constant = constValue(at, body, type);
@@ -689,11 +710,17 @@ function cardField(path: string, raw: unknown, registry: Registry): (fields: Car
     case 'nonce':
       exactKeys(path, value, ['kind']);
       return () => ({ kind: 'nonce' });
+    case 'owner':
+      exactKeys(path, value, ['kind']);
+      return () => ({ kind: 'owner' });
+    case 'threshold':
+      exactKeys(path, value, ['kind']);
+      return () => ({ kind: 'threshold' });
     case 'market':
       exactKeys(path, value, ['kind']);
       return () => ({ kind: 'market' });
     default:
-      throw new TemplateError(`${path}.kind`, 'not one of contract, amount, address, recipient, nonce, market');
+      throw new TemplateError(`${path}.kind`, 'not one of contract, amount, address, recipient, nonce, owner, threshold, market');
   }
 }
 
@@ -877,6 +904,31 @@ function view(path: string, raw: unknown, scope: Scope): ViewEffect {
   return { to, fn, args, returns, changes };
 }
 
+function fieldOfKind(path: string, raw: unknown, card: CardFields, kind: 'owner' | 'threshold'): CardRef {
+  const name = cardFieldName(text(path, raw));
+  if (name === undefined || card.get(name)?.kind !== kind) throw new TemplateError(path, `must be card.<${kind} field>`);
+  return { field: name, attribute: undefined };
+}
+
+const ownerRef = (path: string, raw: unknown, card: CardFields): CardRef => fieldOfKind(path, raw, card, 'owner');
+
+function safeSettings(path: string, raw: unknown, scope: Scope): SafeSettingsEffect {
+  const value = object(path, raw);
+  exactKeys(path, value, [], ['owners', 'threshold']);
+  let owners: Json = {};
+  if (value.owners !== undefined) {
+    owners = object(`${path}.owners`, value.owners);
+    exactKeys(`${path}.owners`, owners, [], ['add', 'remove']);
+    if (owners.add === undefined && owners.remove === undefined) throw new TemplateError(`${path}.owners`, 'names neither add nor remove');
+  }
+  const add = owners.add === undefined ? undefined : ownerRef(`${path}.owners.add`, owners.add, scope.card);
+  const remove = owners.remove === undefined ? undefined : ownerRef(`${path}.owners.remove`, owners.remove, scope.card);
+  if (add !== undefined && add.field === remove?.field) throw new TemplateError(`${path}.owners`, 'adds and removes one card field');
+  const threshold = value.threshold === undefined ? undefined : fieldOfKind(`${path}.threshold`, value.threshold, scope.card, 'threshold');
+  if (add === undefined && remove === undefined && threshold === undefined) throw new TemplateError(path, 'declares no change');
+  return { add, remove, threshold };
+}
+
 function ruleLeaves(rule: Rule): Rule[] {
   if (rule.kind === 'fields') return rule.fields.flatMap(ruleLeaves);
   if (rule.kind === 'items') return rule.items.flatMap(ruleLeaves);
@@ -1023,7 +1075,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   const calls = rawCalls.map((call, i) => templateCall(`calls[${i}]`, call, scope, i === rawCalls.length - 1));
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
   const effects = object('effects', value.effects);
-  exactKeys('effects', effects, ['gives', 'gets'], ['views', 'approves']);
+  exactKeys('effects', effects, ['gives', 'gets'], ['views', 'safe', 'approves']);
   const template: Template = {
     id,
     card: fields,
@@ -1034,6 +1086,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
       gives: array('effects.gives', effects.gives).map((e, i) => effect(`effects.gives[${i}]`, e, scope, 'gives')),
       gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets')),
       views: effects.views === undefined ? [] : array('effects.views', effects.views).map((v, i) => view(`effects.views[${i}]`, v, scope)),
+      safe: effects.safe === undefined ? undefined : safeSettings('effects.safe', effects.safe, scope),
       approves: effects.approves === undefined ? [] : array('effects.approves', effects.approves).map((a, i) => keptApproval(`effects.approves[${i}]`, a, scope)),
     },
     facts: [],
@@ -1059,7 +1112,7 @@ function routes(template: Template): boolean {
 export function cardRefs(template: Template): CardRef[] {
   const refs: CardRef[] = [...template.same];
   const visit = (rule: Rule | undefined): void => {
-    if (rule?.kind === 'card') refs.push(rule.ref);
+    if (rule?.kind === 'card' || rule?.kind === 'owner-before') refs.push(rule.ref);
     else if (rule?.kind === 'share-price') {
       for (const q of [rule.assets, rule.shares]) if (q.kind === 'card') refs.push({ field: q.field, attribute: undefined });
     }
@@ -1078,6 +1131,8 @@ export function cardRefs(template: Template): CardRef[] {
   }
   for (const { args } of template.effects.views) args.forEach(visit);
   for (const field of template.card.values()) if (field.kind === 'amount' && field.of !== 'eth') refs.push(field.of);
+  const settings = template.effects.safe;
+  for (const ref of [settings?.add, settings?.remove, settings?.threshold]) if (ref !== undefined) refs.push(ref);
   for (const { token } of template.effects.approves) refs.push(token);
   for (const { token, to } of [...template.effects.gives, ...template.effects.gets]) {
     if (token !== 'eth') refs.push(token);

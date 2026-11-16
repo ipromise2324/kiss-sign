@@ -27,10 +27,16 @@ type View = { readonly tx: SafeTx; readonly calls: readonly InnerCall[]; readonl
 /** A finding before the table stamps it with the rule that made it. */
 type Found = Omit<FloorFinding, 'rule'>;
 
-type StaticRule = { readonly id: FloorRuleId; readonly check: (view: View, standing: readonly StandingSpender[]) => readonly Found[] };
+type StaticRule = { readonly id: FloorRuleId; readonly check: (view: View, allowed: FloorAllowed) => readonly Found[] };
 
 /** An unlimited allowance from the Safe that may stay: of `token`, or of any token when undefined, to `spender` through `via`. */
 export type StandingSpender = { readonly via: AllowanceRoute; readonly spender: Address; readonly token: Address | undefined };
+
+/** The owner or threshold change the card's one `effects.safe` declares, resolved to addresses and a number. */
+export type SettingsChange = { readonly add: Address | undefined; readonly remove: Address | undefined; readonly threshold: bigint | undefined };
+
+/** What a card lets past the floor rules: the unlimited allowances its templates keep, and the owner or threshold change it declares. */
+export type FloorAllowed = { readonly standing?: readonly StandingSpender[]; readonly change?: SettingsChange | undefined };
 
 /** The allowances the card's templates keep unlimited (`effects.approves`): the only ones `verify`'s floor lets through. */
 export const keptUnlimited = (card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): StandingSpender[] =>
@@ -111,17 +117,29 @@ function delegatecall({ calls, unwrapError }: View): Found[] {
   return unwrapError === undefined ? nested : [unwrapError, ...nested];
 }
 
-/** Every owner, threshold, module, guard, fallback handler and singleton change is a call from the Safe to itself. */
-function selfCall({ tx, calls }: View): Found[] {
+/**
+ * The owner and threshold functions a template may call on the Safe itself; the simulated floor then requires the
+ * change its `effects.safe` declares, and no other.
+ */
+export const OWNER_FUNCTIONS: ReadonlySet<Hex> = new Set(
+  ['addOwnerWithThreshold(address,uint256)', 'removeOwner(address,address,uint256)', 'swapOwner(address,address,address)', 'changeThreshold(uint256)'].map(selectorOf),
+);
+
+/**
+ * Every owner, threshold, module, guard, fallback handler and singleton change is a call from the Safe to itself. Only
+ * the owner and threshold functions pass, and only for a card that declares such a change.
+ */
+function selfCall({ tx, calls }: View, { change }: FloorAllowed): Found[] {
   return calls
     .filter((call) => call.to === tx.safe && call.data.end > call.data.start)
+    .filter((call) => change === undefined || !OWNER_FUNCTIONS.has(`0x${bytesToHex(regionBytes(call.data).subarray(0, 4))}` as Hex))
     .map((call) => {
       const selector = bytesToHex(regionBytes(call.data).subarray(0, 4));
       return { callPath: call.path, detail: `a call to the Safe itself with data (selector 0x${selector})`, bytes: [call.data.start, call.data.end] as const };
     });
 }
 
-function unlimitedApproval({ calls }: View, standing: readonly StandingSpender[]): Found[] {
+function unlimitedApproval({ calls }: View, { standing = [] }: FloorAllowed): Found[] {
   const findings: Found[] = [];
   for (const call of calls) {
     const data = regionBytes(call.data);
@@ -175,11 +193,12 @@ function viewOf(tx: SafeTx): View {
 }
 
 /**
- * Protocol-free rules every Safe transaction must meet, whatever its template says. An unlimited approval passes only
- * when `standing` names it: for `verify`, an allowance the card's templates keep unlimited, which template load allows
- * only to a registry contract that declares a standing allowance of that route.
+ * Protocol-free rules every Safe transaction must meet, whatever its template says. Only what `allowed` names passes
+ * beyond them: for `verify`, the unlimited allowances the card's templates keep, which template load allows only to a
+ * registry contract that declares a standing allowance of that route, and the Safe's owner and threshold functions
+ * when one of the card's operations declares such a change.
  */
-export function checkFloor(tx: SafeTx, standing: readonly StandingSpender[] = []): FloorResult {
+export function checkFloor(tx: SafeTx, allowed: FloorAllowed = {}): FloorResult {
   const view = viewOf(tx);
-  return floorResult(STATIC_RULES.flatMap((rule) => rule.check(view, standing).map((found) => ({ rule: rule.id, ...found }))));
+  return floorResult(STATIC_RULES.flatMap((rule) => rule.check(view, allowed).map((found) => ({ rule: rule.id, ...found }))));
 }

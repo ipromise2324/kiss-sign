@@ -181,7 +181,7 @@ test('the batched swap leaves USDT approved to Permit2 and a Permit2 allowance t
       [[addressOf('usdt'), addressOf('universal-router-2.1.2'), PERMIT2_MAX]],
     );
     assert.deepEqual(judgeEffects(observed, card, templates, registry), { kind: 'match' });
-    assert.deepEqual(checkSimulatedFloor(observed, tx.safe, standingSpenders(registry)), { kind: 'pass' });
+    assert.deepEqual(checkSimulatedFloor(observed, tx.safe, { standing: standingSpenders(registry) }), { kind: 'pass' });
     assert.equal(checkSimulatedFloor(observed, tx.safe).kind, 'refused');
     assert.deepEqual(
       keptSeen(observed, card, templates, registry).map((k) => [k.via, k.spender, k.amount, k.expiration]),
@@ -191,7 +191,7 @@ test('the batched swap leaves USDT approved to Permit2 and a Permit2 allowance t
       ],
     );
   }
-  assert.deepEqual(checkFloor(tx, standingSpenders(registry)), { kind: 'pass' });
+  assert.deepEqual(checkFloor(tx, { standing: standingSpenders(registry) }), { kind: 'pass' });
   assert.equal(checkFloor(tx).kind, 'refused');
 });
 

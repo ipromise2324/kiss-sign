@@ -1,0 +1,42 @@
+{
+  "title": "更改 Safe 的門檻",
+  "summary": "Safe 呼叫自己的 `changeThreshold`，把需要幾個簽署人簽才能執行改成你填的數字。簽署人名單不變。",
+  "verdict": {
+    "status": "caution",
+    "text": "不動任何資產，但門檻決定幾把鑰匙就能動這個 Safe。"
+  },
+  "flow": [],
+  "protocols": {},
+  "judgments": [
+    {
+      "text": "門檻 1 表示任何一個簽署人就能動全部資產；門檻等於人數時，少一把鑰匙就再也動不了。",
+      "recommendation": "門檻介於兩者之間，例如 3 人設 2。"
+    }
+  ],
+  "reviews": {},
+  "entries": {
+    "safe-1.3.0": {
+      "role": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "safe-1.4.1": {
+      "role": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "fields": {
+    "1.changeThreshold._threshold": "新的門檻，介於 1 和簽署人數之間。"
+  }
+}
