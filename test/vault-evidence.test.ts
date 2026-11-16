@@ -7,8 +7,12 @@ import { unreadRefusal } from '../src/chain/https.ts';
 import { REPLAY_ENDPOINTS, replayTransport } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
-import { loadRegistry } from '../src/registry.ts';
-import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/vault-evidence.ts';
+import type { Read, Reader } from '../src/chain/reader.ts';
+import type { BlockRef, CallResult } from '../src/chain/types.ts';
+import { loadRegistry, parseRegistry } from '../src/registry.ts';
+import { checksumAddress } from '../src/safe/types.ts';
+import type { Hex } from '../src/safe/types.ts';
+import { alchemyCall, factoryAnswer, formatVaultEvidence, gatherVaultEvidence, readStoredEvidence, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -102,4 +106,48 @@ test('a Transfers API that refuses the request is noted, so --record refuses to 
   assert.ok(!('kind' in evidence), 'the latest block is read');
   assert.match(formatVaultEvidence(evidence, registry), /holders {6}UNVERIFIABLE the Alchemy Transfers API failed \(alchemy refused the request\)/);
   assert.deepEqual(unread, ['alchemy alchemy_getAssetTransfers: refused the request']);
+});
+
+test("a vault its factory computes the address of is read after a first line naming the call and the address it answered", async () => {
+  const FUSDC = '0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33';
+  const fluid = parseRegistry({
+    usdc: { address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', kind: 'token', source: 'https://example.org/usdc' },
+    'fluid-lending-factory': {
+      address: '0x54B91A0D94cb471F37f949c60F7Fa7935b551D03',
+      kind: 'factory',
+      source: 'https://example.org/lending-factory',
+      instanceCheck: { function: 'computeToken(address,string)', args: [{ attribute: 'asset' }, { string: 'fToken' }] },
+    },
+    'fluid-fusdc': { address: FUSDC, kind: 'vault', source: 'https://example.org/fusdc', attributes: { asset: 'usdc', factory: 'fluid-lending-factory' } },
+  });
+  const at: BlockRef = { number: 24_000_000n, hash: `0x${'ab'.repeat(32)}` as Hex };
+  const blocks: Read<BlockRef>[] = [
+    { kind: 'agreed', value: at, providers: ['alchemy', 'drpc'] },
+    { kind: 'unverifiable', reason: 'no second block', answers: [{ provider: 'alchemy', kind: 'malformed' }, { provider: 'drpc', kind: 'malformed' }] },
+  ];
+  const reader = {
+    block: async () => blocks.shift()!,
+    call: async (): Promise<Read<CallResult>> => ({ kind: 'agreed', value: { kind: 'returned', data: `0x${'00'.repeat(12)}${FUSDC.slice(2).toLowerCase()}` as Hex }, providers: ['alchemy', 'drpc'] }),
+  } as Partial<Reader> as Reader;
+  const { text } = await vaultEvidenceText(reader, async () => assert.fail('no Transfers API read'), fluid, fluid.entries.get('fluid-fusdc')!);
+  assert.equal(text.split('\n')[0], `admitted     fluid-lending-factory answered computeToken(usdc,"fToken") = ${FUSDC} at block 24000000`);
+  const fusdc = fluid.entries.get('fluid-fusdc')!;
+  assert.equal(factoryAnswer(text, fusdc, fluid), 'admitted');
+  assert.deepEqual(readStoredEvidence(text, fusdc, fluid).admitted, { factory: 'fluid-lending-factory', check: 'computeToken(usdc,"fToken")', answer: FUSDC, block: 24_000_000n });
+  for (const answer of ['0x5C20B550819128074FD538Edf79791733ccEdd18', FUSDC.toLowerCase(), 'true']) {
+    const other = text.replace(FUSDC, answer);
+    assert.equal(factoryAnswer(other, fusdc, fluid), 'unread', `${answer} does not admit a vault whose factory computes its address`);
+    assert.equal(readStoredEvidence(other, fusdc, fluid).admitted, undefined);
+  }
+});
+
+test('a factory that answers true admits only with true, and a stored line from before the computed check reads as it did', () => {
+  const vault = registry.entries.get('hyperithm-usdc-apex-v2-9e2f')!;
+  const line = 'admitted     vault-v2-factory answered isVaultV2(address) = true at block 26404800';
+  assert.equal(factoryAnswer(line, vault, registry), 'admitted');
+  assert.deepEqual(readStoredEvidence(line, vault, registry).admitted, { factory: 'vault-v2-factory', check: 'isVaultV2(address)', answer: 'true', block: 26_404_800n });
+  const computed = line.replace('= true', `= ${checksumAddress(vault.address)}`);
+  assert.equal(factoryAnswer(computed, vault, registry), 'unread');
+  assert.equal(readStoredEvidence(computed, vault, registry).admitted, undefined);
+  assert.equal(factoryAnswer("REFUSED vault-v2-factory answered isVaultV2(address) false for hyperithm-usdc-apex-v2-9e2f: it did not create it; the vault's code is not read", vault, registry), 'not-created');
 });

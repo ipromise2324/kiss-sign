@@ -274,19 +274,31 @@ export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry)
 
 const ADMITTED = 'admitted     ';
 
+const ADMITTED_LINE = new RegExp(`^${ADMITTED}(\\S+) answered (\\S+) = (true|0x[0-9a-fA-F]{40}) at block (\\d+)$`);
+
+function admission(first: string, vault: RegistryEntry, registry: Registry): StoredEvidence['admitted'] {
+  const line = ADMITTED_LINE.exec(first);
+  const factory = vault.attributes.factory;
+  if (line === null || factory === undefined || line[1] !== factory) return undefined;
+  const answer = registry.entries.get(factory)?.instanceCheck?.kind === 'computes-address' ? checksumAddress(vault.address) : 'true';
+  return line[3] === answer ? { factory, check: line[2] as string, answer, block: BigInt(line[4] as string) } : undefined;
+}
+
 /**
  * What stored `pnpm vault-evidence` output says the vault's registry factory answered, from its first line: `admitted`
- * when that factory answered true, `not-created` when it answered false, `other-answer` when it answered neither.
- * Anything else, such as a read with no answer, an answer from another factory, or no output, is unread.
+ * when it admitted the vault, `not-created` when it answered false or another address, `other-answer` when it answered
+ * neither. Anything else, such as a read with no answer, an answer from another factory, or no output, is unread.
  */
-export function factoryAnswer(text: string | undefined, factory: string): 'admitted' | 'not-created' | 'other-answer' | 'unread' {
-  if (text === undefined) return 'unread';
-  if (text.startsWith(`${ADMITTED}${factory} answered `)) return 'admitted';
+export function factoryAnswer(text: string | undefined, vault: RegistryEntry, registry: Registry): 'admitted' | 'not-created' | 'other-answer' | 'unread' {
+  const factory = vault.attributes.factory;
+  if (text === undefined || factory === undefined) return 'unread';
+  const first = text.split('\n')[0]!;
+  if (admission(first, vault, registry) !== undefined) return 'admitted';
   const refused = `REFUSED ${factory} answered `;
-  if (!text.startsWith(refused)) return 'unread';
-  const rest = text.slice(refused.length).split('\n')[0]!;
-  if (/^\S+ false for \S+: it did not create it;/.test(rest)) return 'not-created';
-  return /^\S+ with .*, not true or false;/.test(rest) ? 'other-answer' : 'unread';
+  if (!first.startsWith(refused)) return 'unread';
+  const rest = first.slice(refused.length);
+  if (/^\S+ (false for \S+: it did not create it|= 0x[0-9a-fA-F]{40}, not \S+: its official contract is another);/.test(rest)) return 'not-created';
+  return /^\S+ with .*, not (true or false|an address);/.test(rest) ? 'other-answer' : 'unread';
 }
 
 /**
@@ -309,7 +321,7 @@ export async function vaultEvidenceText(
   } else {
     const admitted = await proveInstance(reader, registry, vault.name, block.value);
     if (admitted.kind === 'refused') return { read: false, text: `REFUSED ${admitted.why}; the vault's code is not read` };
-    lines.push(`${ADMITTED}${admitted.factory.name} answered ${admitted.factory.instanceCheck?.signature} = true at block ${block.value.number}`);
+    lines.push(`${ADMITTED}${admitted.factory.name} answered ${admitted.asked} = ${admitted.answered} at block ${block.value.number}`);
   }
   const evidence = await gatherVaultEvidence(reader, alchemy, vault, block.value.number);
   if ('kind' in evidence) return { read: false, text: [...lines, `UNVERIFIABLE ${evidence.reason}`].join('\n') };
@@ -325,7 +337,8 @@ export type StoredPoint = {
 
 /** Stored `pnpm vault-evidence` output read back into its facts; a fact its text does not hold is undefined. */
 export type StoredEvidence = {
-  readonly admitted: { readonly factory: string; readonly check: string; readonly block: bigint } | undefined;
+  /** `answer` is `true` or the vault's checksum address. */
+  readonly admitted: { readonly factory: string; readonly check: string; readonly answer: string; readonly block: bigint } | undefined;
   /** `name` is undefined for an asset outside the registry. */
   readonly asset: { readonly name: string | undefined; readonly decimals: number } | undefined;
   /** Oldest first. */
@@ -343,10 +356,9 @@ function storedAmount(text: string, decimals: number | undefined): bigint | unde
   return BigInt(integer.replace(/,/g, '')) * 10n ** BigInt(decimals) + (fraction === '' ? 0n : BigInt(fraction));
 }
 
-/** What `formatVaultEvidence`, behind `vaultEvidenceText`'s first line, printed. */
-export function readStoredEvidence(text: string): StoredEvidence {
+/** What `vaultEvidenceText` printed for `vault`: its factory's admission on the first line, then `formatVaultEvidence`'s. */
+export function readStoredEvidence(text: string, vault: RegistryEntry, registry: Registry): StoredEvidence {
   const lines = text.split('\n');
-  const admitted = new RegExp(`^${ADMITTED}(\\S+) answered (\\S+) = true at block (\\d+)$`).exec(lines[0] ?? '');
   const asset = /^asset\(\) {6}(.+?) 0x[0-9a-fA-F]{40}, (\d+) decimals/.exec(lines.find((l) => l.startsWith('asset()')) ?? '');
   const decimals = asset === null ? undefined : Number(asset[2]);
   const points = lines.flatMap((line): StoredPoint[] => {
@@ -361,7 +373,7 @@ export function readStoredEvidence(text: string): StoredEvidence {
   const holders = /^holders {6}(\d+) addresses hold shares at block \d+, of (\d+) that ever received them/.exec(lines.find((l) => l.startsWith('holders')) ?? '');
   const top = /^top 10 {7}hold (\S+) of the shares; each: (.*)$/.exec(lines.find((l) => l.startsWith('top 10')) ?? '');
   return {
-    admitted: admitted === null ? undefined : { factory: admitted[1] as string, check: admitted[2] as string, block: BigInt(admitted[3] as string) },
+    admitted: admission(lines[0] ?? '', vault, registry),
     asset: asset === null ? undefined : { name: asset[1] === 'not in the registry' ? undefined : asset[1], decimals: decimals as number },
     points: [...points].reverse(),
     holders:

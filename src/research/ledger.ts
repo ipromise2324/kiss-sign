@@ -297,7 +297,7 @@ const FACTORY_FINDINGS: Readonly<Record<ReturnType<typeof factoryAnswer>, Findin
 
 function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
   if (entry.kind !== 'vault' || entry.attributes.factory === undefined) return [];
-  const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry.attributes.factory)];
+  const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry, inputs.registry)];
   return [{ id: `${entry.name}/factory.admitted`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link: undefined, finding }];
 }
 

@@ -750,7 +750,7 @@ function pastTxsCommand({ query, file }: PastTxsSummary): string {
 }
 
 /** The characters `pnpm vault-evidence` prints. Its text is stored, not recomputed, so anything else is refused. */
-const VAULT_TEXT = /^[A-Za-z0-9 \n%(),.:;=_/'-]*$/;
+const VAULT_TEXT = /^[A-Za-z0-9 \n%(),.:;=_/'"-]*$/;
 
 /** A ```text block. Program output never holds three backticks, so text that does could close the block and is refused. */
 function fenced(text: string): string[] {
