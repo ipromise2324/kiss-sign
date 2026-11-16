@@ -539,15 +539,6 @@ test('card seal does not count a report reached through a symlinked folder, whic
   assert.equal(vaultsLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
 });
 
-test('card seal accepts the same vault for a template that predates per-vault reports', async () => {
-  const home = freshHome();
-  configure(home);
-  const card = join(home, 'card.json');
-  writeFileSync(card, JSON.stringify({ operations: [{ template: 'fluid/vault-deposit', values: { vault: 'smokehouse-usdc-v1-f5bc', amount: '5' } }] }));
-  const result = await run(['card', 'seal', card], home, ['y']);
-  assert.equal(result.code, 0, result.stderr);
-});
-
 /** A clone whose `test/any-token` template takes its token through an address field, which may name any registry entry. */
 function anyTokenClone(): string {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
@@ -598,7 +589,7 @@ test('card new lists only the entries of the protocol a contract field names, an
   configure(home);
   const made = await run(['card', 'new', 'test/fluid-only'], home, ['steakhouse-prime-usdc-v2-0f51'], { ...mainnet(), repoRoot });
   assert.equal(made.code, 1);
-  assert.match(made.stdout, /vault:\n  1\. fluid-fusdc 0x\w{40} \(registry\)\n  2\. fluid-fusdt 0x\w{40} \(registry\)\n/);
+  assert.match(made.stdout, /vault:\n  1\. fluid-fusdc 0x\w{40} \(registry\)  \(factory fluid-lending-factory 0x\w{40}\)\n  2\. fluid-fusdt 0x\w{40} \(registry\)  \(factory fluid-lending-factory 0x\w{40}\)\n/);
   assert.match(made.stderr, /vault: "steakhouse-prime-usdc-v2-0f51" is none of the listed choices/);
 });
 

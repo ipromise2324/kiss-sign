@@ -234,7 +234,7 @@ test("a vault's notes may also describe the entries its attributes name, such as
   write({ 'fluid-fusdt': { role: '金庫' }, usdt: { role: '存進去的代幣' } });
   assert.deepEqual(Object.keys((readNotes(root, 'fluid/vault-deposit', fusdt) as { entries: Record<string, unknown> }).entries).slice(-2), ['fluid-fusdt', 'usdt']);
   write({ usdc: { role: '別的代幣' } });
-  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not the vault or an entry it names \(fluid-fusdt, usdt\);/);
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /entries: "usdc" is not the vault or an entry it names \(fluid-fusdt, usdt, fluid-lending-factory, fluid-liquidity\);/);
 });
 
 test('the judgments of both notes count toward the limit of four', () => {
