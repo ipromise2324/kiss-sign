@@ -385,27 +385,30 @@ test('待確認 lists red before amber, and an entry with no result for the sign
   assert.deepEqual(forSigner(ledgerOf({})), []);
 });
 
-test('morpho/market-supply from its recordings: one address confirmed in one place for the signer, the rest folded', { timeout: 600_000 }, async () => {
+test('morpho/market-supply from its recordings: the two oracles confirmed in one place each for the signer, the rest folded', { timeout: 600_000 }, async () => {
   const registry = loadRegistry(ROOT);
   const target = { template: 'morpho/market-supply' };
   const compilers = await warmCompilers(reportCases(ROOT, registry, [target]));
   const { inputs } = await replayInputs(ROOT, registry, target, compilers, suffixes);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail('a template report');
   const ledger = judge(inputs, await judgeFixtures(ROOT, template, registry));
-  assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding]), [['morpho-oracle-cbbtc-usdc-86/address', { kind: 'few-confirmations', by: ['api'] }]]);
+  assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding]), [
+    ['morpho-oracle-cbbtc-usdc-86/address', { kind: 'few-confirmations', by: ['api'] }],
+    ['morpho-oracle-usp-usdc/address', { kind: 'few-confirmations', by: ['api'] }],
+  ]);
   assert.equal(stateOf(resultOf(ledger, 'morpho-oracle-cbbtc-usdc-86/source.page')), 'na');
   assert.equal(stateOf(resultOf(ledger, 'morpho-oracle-cbbtc-usdc-86/source.api')), 'ok');
   assert.equal(stateOf(resultOf(ledger, 'fixture.morpho-market-supply')), 'ok');
   assert.equal(resultOf(ledger, 'cbbtc/source.site').finding.kind, 'unlisted');
   assert.deepEqual(strip(ledger).map((s) => [s.line, s.state, `${s.passed}/${s.counted}`]), [
-    ['sources', 'warn', '5/6'],
-    ['abi', 'ok', '3/3'],
-    ['code', 'ok', '6/6'],
+    ['sources', 'warn', '6/8'],
+    ['abi', 'ok', '5/5'],
+    ['code', 'ok', '8/8'],
     ['params', 'ok', '1/1'],
   ]);
   const rows = addressRows(ledger);
-  assert.deepEqual(rows.open.map((e) => e.name), ['morpho-oracle-cbbtc-usdc-86']);
-  assert.equal(rows.folded.length, 5);
+  assert.deepEqual(rows.open.map((e) => e.name), ['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc']);
+  assert.equal(rows.folded.length, 6);
   assert.deepEqual(
     ledger.entries.map((e) => [e.name, confidence(ledger, e)]),
     [
@@ -414,6 +417,8 @@ test('morpho/market-supply from its recordings: one address confirmed in one pla
       ['morpho-blue', 'high'],
       ['adaptive-curve-irm', 'high'],
       ['morpho-oracle-cbbtc-usdc-86', 'low'],
+      ['usp', 'high'],
+      ['morpho-oracle-usp-usdc', 'low'],
       ['blue-bundles-v1', 'high'],
     ],
   );

@@ -369,13 +369,13 @@ test('a contract a flow line names gets its own lifeline, so every inside arrow 
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {
   const { block } = body(pageOf(inputs), 'protocol');
   const row = (label: string) => block.rows.find((r) => r.label === label) ?? assert.fail(`no ${label} row`);
-  assert.equal(plain(row('TVL').value), '$9.97 B');
+  assert.equal(plain(row('TVL').value), '$10.00 B');
   assert.equal(plain(row('上線').value), '2024-01-14');
   assert.equal(plain(row('proxy').value), '不是 proxy');
   assert.equal(plain(row('事故').value), '0 起');
   assert.deepEqual(
     row('usdc-cbbtc-86').nested.map((n) => plain(n.value)),
-    ['334,728,609.95 usdc', '294,561,858.97 usdc', '88.00%'],
+    ['333,591,085.13 usdc', '294,510,908.73 usdc', '88.28%'],
   );
   assert.deepEqual(
     block.sources.map((s) => s.href),
@@ -397,25 +397,31 @@ test('without recorded protocol facts each protocol still shows its AI notes and
   );
 });
 
-test('the oracle only the protocol API confirms is the one row to review, open in 地址, and the verdict icon is amber', () => {
+test('the two oracles only the protocol API confirms are the rows to review, open in 地址, and the verdict icon is amber', () => {
   const page = pageOf(inputs);
   assert.deepEqual(
     body(page, 'review').rows.map((r) => [r.id, r.state, r.entry]),
-    [['morpho-oracle-cbbtc-usdc-86/address', 'warn', 'a-morpho-oracle-cbbtc-usdc-86']],
+    [
+      ['morpho-oracle-cbbtc-usdc-86/address', 'warn', 'a-morpho-oracle-cbbtc-usdc-86'],
+      ['morpho-oracle-usp-usdc/address', 'warn', 'a-morpho-oracle-usp-usdc'],
+    ],
   );
   const addresses = body(page, 'addresses');
   assert.deepEqual(
     addresses.open.map((r) => [r.name, r.confidence, r.reviewed, r.confirmed]),
-    [['morpho-oracle-cbbtc-usdc-86', 'low', 'AI 有疑慮', '只在 1 個地方確認：協議 API']],
+    [
+      ['morpho-oracle-cbbtc-usdc-86', 'low', 'AI 有疑慮', '只在 1 個地方確認：協議 API'],
+      ['morpho-oracle-usp-usdc', 'low', 'AI 有疑慮', '只在 1 個地方確認：協議 API'],
+    ],
   );
-  assert.equal(addresses.folded.length, 5);
+  assert.equal(addresses.folded.length, 6);
   assert.equal(page.header.verdict.state, 'warn');
   assert.deepEqual(
     page.header.strip.map((s) => [s.name, s.state, s.count]),
     [
-      ['地址來源', 'warn', '5 / 6'],
-      ['原始碼驗證', 'ok', '3 / 3'],
-      ['合約沒被換掉', 'ok', '6 / 6'],
+      ['地址來源', 'warn', '6 / 8'],
+      ['原始碼驗證', 'ok', '5 / 5'],
+      ['合約沒被換掉', 'ok', '8 / 8'],
       ['參數保護', 'ok', '1 / 1'],
       ['雙節點比對', 'ok', undefined],
     ],
