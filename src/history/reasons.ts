@@ -14,9 +14,11 @@ const COW_CALLS = new Map<string, string>(['setPreSignature(bytes,bool)', 'inval
 export type Facts = {
   readonly tx: SafeTx;
   readonly floor: FloorResult;
-  readonly hasCard: boolean;
-  /** Absent when no card was evaluated; `error` when the evaluation stopped before a verdict. */
-  readonly outcome: { readonly kind: 'verdict'; readonly verdict: Verdict } | { readonly kind: 'error'; readonly message: string } | undefined;
+  readonly outcome:
+    | { readonly kind: 'no-card' }
+    | { readonly kind: 'verdict'; readonly verdict: Verdict }
+    | { readonly kind: 'no-template'; readonly ids: readonly string[] }
+    | { readonly kind: 'error'; readonly message: string };
 };
 
 /** `key` groups rows in the summary; `detail` says what about this transaction gave it. */
@@ -35,7 +37,7 @@ const floorRules = (floor: FloorResult): string | undefined =>
   floor.kind === 'pass' ? undefined : [...new Set(floor.findings.map((f) => `${f.rule} at ${f.callPath}`))].join(', ');
 
 function verdictCauses(outcome: Facts['outcome']): Reason | undefined {
-  if (outcome === undefined) return undefined;
+  if (outcome.kind === 'no-card' || outcome.kind === 'no-template') return undefined;
   if (outcome.kind === 'error') return { key: 'error', detail: outcome.message };
   const { verdict } = outcome;
   if (verdict.kind === 'MATCH') return undefined;
@@ -67,11 +69,15 @@ export const REASONS: readonly { readonly key: string; readonly decide: (facts: 
     key: 'refused-by-design',
     decide: ({ floor }) => floorRules(floor),
   },
-  { key: 'no-card-yet', decide: ({ hasCard }) => (hasCard ? undefined : 'no card file, so no template covers it yet') },
+  { key: 'no-card-yet', decide: ({ outcome }) => (outcome.kind === 'no-card' ? 'no card file, so no template covers it yet' : undefined) },
+  {
+    key: 'no-template',
+    decide: ({ outcome }) => (outcome.kind === 'no-template' ? `the card names ${outcome.ids.join(', ')}, which origin/main does not hold` : undefined),
+  },
 ];
 
 export function reasonFor(facts: Facts): Reason | undefined {
-  if (facts.outcome?.kind === 'verdict' && facts.outcome.verdict.kind === 'MATCH') return undefined;
+  if (facts.outcome.kind === 'verdict' && facts.outcome.verdict.kind === 'MATCH') return undefined;
   for (const { key, decide } of REASONS) {
     const detail = decide(facts);
     if (detail !== undefined) return { key, detail };

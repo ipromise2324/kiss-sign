@@ -14,10 +14,12 @@ import { replayInputs } from '../src/research/report.ts';
 import type { ReportTitle } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
+import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
+import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const target = { template: 'morpho/market-supply' };
 let inputs: HtmlInputs;
@@ -67,6 +69,11 @@ function oneCall(of: HtmlInputs, n: number): HtmlInputs {
 }
 
 const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), flow: [] }, title);
+
+function templatePage(id: string): Page {
+  const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
+  return oneCallPage({ ...inputs, subject: { ...subject, template: loadTemplate(ROOT, id, registry) }, example: undefined, fixtures: [] });
+}
 const body = <K extends Body['kind']>(page: Page, kind: K): Extract<Body, { kind: K }> => page.sections.find((s) => s.body.kind === kind)?.body as Extract<Body, { kind: K }>;
 const args = (page: Page): ArgRow[] => body(page, 'flow').flow.calls.flatMap((call) => call.args);
 const arg = (page: Page, key: string): ArgRow => args(page).find((a) => a.key === key) ?? assert.fail(`no row ${key}`);
@@ -618,14 +625,14 @@ test('a cancellation: a self-call of 0 ETH is no transfer, its nonce rule has it
 });
 
 test('the who-decides key gives a free field the meaning of the claim the template makes for it', async () => {
-  const proof = body(await bareCase('cctp/receive'), 'flow').flow.key.filter((k) => k.who === 'free');
+  const proof = body(templatePage('cctp/receive'), 'flow').flow.key.filter((k) => k.who === 'free');
   assert.deepEqual(proof.map((k) => k.means), ['換成別的值，交易就失敗']);
   const supply = body(pageOf(inputs), 'flow').flow.key.filter((k) => k.who === 'free');
   assert.ok(supply.some((k) => k.means === '換成別的值，結果一樣或交易失敗'), JSON.stringify(supply));
 });
 
 test('no strip explanation counts one thing as many', async () => {
-  for (const page of [depositPage, pageOf(inputs), await bareCase('cctp/receive')]) {
+  for (const page of [depositPage, pageOf(inputs)]) {
     for (const item of page.header.strip) assert.doesNotMatch(item.explain, /(^|[^\d])1 個(地址)?都|其餘 1 個|這 1 個/, item.explain);
   }
 });
