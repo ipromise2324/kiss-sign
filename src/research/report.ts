@@ -446,7 +446,7 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'contract':
       return `registry ${full(registry.entries.get(rule.name) as RegistryEntry)}`;
     case 'const':
-      return `constant ${code(constText(rule.value))}`;
+      return `constant ${code(rule.value.kind === 'string' ? JSON.stringify(Buffer.from(rule.value.value.slice(2), 'hex').toString('utf8')) : constText(rule.value))}`;
     case 'free':
       return `${FREE_CLAIMS[rule.claim]}; ${byAi(rule.reason)}`;
     case 'equals':
