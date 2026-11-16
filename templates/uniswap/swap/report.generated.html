@@ -150,6 +150,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
 .callh .what{font-size:16px;font-weight:590}
 .sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
 .arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
 .arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
 .arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
@@ -319,7 +322,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。標「例」的你填、你選和 app 填的值取自第一筆測試交易 <code>uniswap-swap-usdc-usdt</code>，金額（sell-amount） <span class="num">130</span> usdc，金額（min-buy） <span class="num">129.893802</span> usdt。</p>
   
   <div class="cb">
-    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">universal-router-2.1.2.</span>execute</span><span class="sel">0x3593564c</span></div>
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">universal-router-2.1.2.</span>execute</span><span class="sel">0x3593564c</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://developers.uniswap.org/llms.mdx/docs/protocols/universal-router/concepts/commands">developers.uniswap.org/llms.mdx/docs/protocols</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
     <div class="arg" data-field="1.execute.commands">
       <div class="nm"><span class="pn">commands</span><span class="who">固定</span></div>
       <div class="val"><div class="raw">0x10</div><div class="is">固定為 0x10</div>
