@@ -9,7 +9,7 @@ import { decodeValues, encodeCall } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import type { CodePin, CodePins, CodeSpan, Route, SelectorRouting } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { locate, minimalProxyTarget, safeProxyFactory } from './proxy.ts';
+import { locate, minimalProxyTarget, safeProxyFactory, unknownDelegation } from './proxy.ts';
 import type { Proxy, ProxyRefusal } from './proxy.ts';
 
 /** `call` and `detail` hold only function names, selectors and addresses. */
@@ -136,6 +136,8 @@ export async function readRunningCode(reader: Reader, address: Address, at: Bloc
     const code = await codeAt(reader, proxy.implementation, at);
     if (typeof code !== 'string') return refused(code);
     if (minimalProxyTarget(code) !== undefined || safeProxyFactory(code) !== undefined) return refused({ why: 'chained-proxy', at: proxy.implementation });
+    const delegation = unknownDelegation(proxy.implementation, code);
+    if (delegation !== undefined) return refused(delegation);
     runs = code;
   }
   if (routing === undefined) return { kind: 'read', code: { own, proxy, runs } };

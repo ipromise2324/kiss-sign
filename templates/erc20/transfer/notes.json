@@ -1,0 +1,58 @@
+{
+  "title": "從 Safe 轉出 ERC-20 代幣",
+  "summary": "Safe 直接呼叫你選的代幣合約的 `transfer`，把你填的金額轉給你選的收款人。只有一個呼叫，不經過任何路由或其他合約，也不留下授權。",
+  "verdict": {
+    "status": "safe",
+    "text": "單純的代幣轉帳：Safe 直接呼叫代幣合約的 transfer，不留下授權。"
+  },
+  "flow": [],
+  "protocols": {},
+  "judgments": [],
+  "reviews": {},
+  "entries": {
+    "usdc": {
+      "role": "可選的代幣：Circle 發行的 USDC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911",
+          "url": "https://etherscan.io/address/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "usdt": {
+      "role": "可選的代幣：Tether 發行的 USDT",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 TetherToken，創建者 0x36928500Bc1dCd7af6a2B4008875CC336b927D57",
+          "url": "https://etherscan.io/address/0xdAC17F958D2ee523a2206206994597C13D831ec7#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "morpho": {
+      "role": "可選的代幣：Morpho 的治理代幣",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 ERC1967Proxy，創建者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5",
+          "url": "https://etherscan.io/address/0x58D97B57BB95320F9a05dC918Aef65434969c2B2#code",
+          "result": "pass"
+        }
+      ]
+    },
+    "cbbtc": {
+      "role": "可選的代幣：Coinbase 發行的 cbBTC",
+      "sources": [
+        {
+          "text": "Etherscan：合約名 FiatTokenProxy，創建者 0xCE97003ea2E0a565A9a0b6e36209c6ddaaa14B05",
+          "url": "https://etherscan.io/address/0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf#code",
+          "result": "pass"
+        }
+      ]
+    }
+  },
+  "fields": {
+    "1.transfer.to": "收款地址。",
+    "1.transfer.value": "轉出的數量，以代幣的最小單位計；card new 讓你填整顆代幣，再用鏈上的 `decimals` 換算。"
+  }
+}

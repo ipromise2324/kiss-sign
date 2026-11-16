@@ -3,7 +3,7 @@ import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import { keccakCode, readRoutes } from '../contracts/code.ts';
 import { describeRefusal } from '../contracts/prove.ts';
-import { locate } from '../contracts/proxy.ts';
+import { locate, unknownDelegation } from '../contracts/proxy.ts';
 import type { Proxy } from '../contracts/proxy.ts';
 import { MARKET_ENTRY_PARTS, isAttribute, pinAt } from '../registry.ts';
 import type { CodePin, Registry, RegistryEntry, Route } from '../registry.ts';
@@ -105,7 +105,8 @@ async function compareImplementation(reader: Reader, proxy: Proxy, pin: CodePin,
   if (runs.kind === 'unverifiable') return unverifiable(runs.reason);
   const runsHash = keccakCode(runs.value);
   if (runsHash !== was.hash) return mismatch(`${where}'s implementation ${was.address} has code hash ${runsHash} ${block}, the registry pins ${was.hash}`);
-  return PASS;
+  const delegation = unknownDelegation(was.address, runs.value);
+  return delegation === undefined ? PASS : mismatch(`${where} ${block}: ${describeRefusal(delegation)}`);
 }
 
 function routeDifferences(pinned: readonly Route[], read: readonly Route[], where: string, block: string): string[] {

@@ -4,6 +4,7 @@ import { parseAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
 import { parseCard, resolveCard } from '../card.ts';
 import type { ResolvedCard } from '../card.ts';
+import { readDecimals } from '../chain/decimals.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockHeader, BlockRef } from '../chain/types.ts';
@@ -26,6 +27,7 @@ import { parseTemplate } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
 import { assetClaims, checkAssets } from './assets.ts';
 import { checkCode, codeClaims } from './code.ts';
+import { amountTokens } from './expected.ts';
 import { decideVerdict } from './verdict.ts';
 import type { ChainCheck, TemplateApproval, Verdict } from './verdict.ts';
 
@@ -173,8 +175,11 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
   return (await evaluateTx(inputs, reader)).evaluation;
 }
 
-/** `evaluate`, with the transaction it judged and the inputs it prepared, for showing what that transaction does. */
-export async function evaluateTx(inputs: VerifyInputs, reader: Reader): Promise<{ readonly evaluation: Evaluation; readonly tx: SafeTx; readonly prepared: Prepared }> {
+/** `evaluate`, with the transaction it judged, the inputs it prepared and the latest block it read, for showing what that transaction does. */
+export async function evaluateTx(
+  inputs: VerifyInputs,
+  reader: Reader,
+): Promise<{ readonly evaluation: Evaluation; readonly tx: SafeTx; readonly prepared: Prepared; readonly latest: BlockRef }> {
   const prepared = prepare(inputs);
   const { safe } = prepared;
   const latest = await reader.block('latest');
@@ -205,7 +210,23 @@ export async function evaluateTx(inputs: VerifyInputs, reader: Reader): Promise<
     assets: await readAt(claims, (block) => checkAssets(reader, claims, block)),
     code: await readAt(pinned, (block) => checkCode(reader, pinned, block, executed === undefined ? 'pending' : 'executed')),
   };
-  return { evaluation: { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls }, tx, prepared };
+  return { evaluation: { verdict: judge(prepared, tx, observation, read), hashes: hashSafeTx(tx), calls }, tx, prepared, latest: latest.value };
+}
+
+/**
+ * decimals() of each token the card counts or its effects watch, for the page alone. Read at the block `evaluateTx`
+ * read as latest, never at `latest` again: the recording keeps one answer per request, and a second `latest` would
+ * replace the block the verdict used.
+ */
+export async function readTokenDecimals(reader: Reader, prepared: Prepared, at: BlockRef): Promise<ReadonlyMap<Address, number>> {
+  const expected = expectedChanges(prepared.card, prepared.templates, prepared.registry);
+  const watched = expected.kind === 'expected' ? [...expected.changes.keys()].filter((asset) => asset !== 'eth') : [];
+  const decimals = new Map<Address, number>();
+  for (const token of new Set([...amountTokens(prepared.card, prepared.templates, prepared.registry), ...watched])) {
+    const answer = await readDecimals(reader, token, at);
+    if (typeof answer === 'number') decimals.set(token, answer);
+  }
+  return decimals;
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);

@@ -4,26 +4,23 @@ import { parseArgs } from 'node:util';
 import { loadAddressBook } from '../address-book.ts';
 import { cardsDir, loadSealed } from '../card.ts';
 import { canonicalJson } from '../canonical.ts';
-import { readDecimals } from '../chain/decimals.ts';
 import { mainnetEndpoints } from '../chain/providers.ts';
 import { createReader } from '../chain/reader.ts';
-import type { Reader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { loadApproved } from '../config.ts';
 import { kissSignHome } from '../keys.ts';
 import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress, parseHex } from '../safe/types.ts';
-import type { Address } from '../safe/types.ts';
 import { describeCallScan } from '../simulate/simulate.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fileAt, optionalFileAt, pathsAt, selfCheck } from '../verify/self-check.ts';
 import { reportedVaults, unreportedVault } from '../template/vault-reports.ts';
-import { amountTokens, callTree } from '../verify/expected.ts';
+import { callTree } from '../verify/expected.ts';
 import type { CallTree } from '../verify/expected.ts';
 import { verdictPage } from '../verify/page.ts';
 import { expectedChanges } from '../simulate/effects.ts';
-import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile, prepare } from '../verify/verify.ts';
+import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile, prepare, readTokenDecimals } from '../verify/verify.ts';
 import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
 import { FAILED, OK, UsageError } from './io.ts';
 import type { Io } from './io.ts';
@@ -43,18 +40,6 @@ function printReplay({ verdict, hashes, calls }: Evaluation, registry: Registry,
     return;
   }
   io.stdout('No hashes are shown. Do not sign this transaction.\n');
-}
-
-async function tokenDecimals(reader: Reader, tokens: readonly Address[]): Promise<Map<Address, number>> {
-  const decimals = new Map<Address, number>();
-  if (tokens.length === 0) return decimals;
-  const latest = await reader.block('latest');
-  if (latest.kind === 'unverifiable') return decimals;
-  for (const token of tokens) {
-    const read = await readDecimals(reader, token, latest.value);
-    if (typeof read === 'number') decimals.set(token, read);
-  }
-  return decimals;
 }
 
 async function txInput(file: string | undefined, safeTxHash: string | undefined, io: Io): Promise<TxInput> {
@@ -114,7 +99,9 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   }
   const endpoints = mainnetEndpoints(io.env);
   const recorder = recordingTransport(io.transport, endpoints);
-  const { evaluation: result, tx, prepared } = await evaluateTx(inputs, createReader(endpoints, recorder.transport));
+  const reader = createReader(endpoints, recorder.transport);
+  const { evaluation: result, tx, prepared, latest } = await evaluateTx(inputs, reader);
+  const decimals = await readTokenDecimals(reader, prepared, latest);
   const file: VerdictFile = { format: VERDICT_FORMAT, inputs, exchanges: recorder.exchanges(), result };
   const dir = verdictsDir(home);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
@@ -126,7 +113,6 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   if (verdict.kind !== 'MATCH') for (const cause of verdict.causes) for (const detail of cause.details) io.stdout(`  ${cause.check}: ${detail}\n`);
   let tree: CallTree | undefined;
   if (verdict.kind === 'MATCH') {
-    const decimals = await tokenDecimals(createReader(endpoints, io.transport), amountTokens(prepared.card, prepared.templates, prepared.registry));
     tree = callTree(tx, { ...prepared, decimals });
     io.stdout(`  safeTxHash  ${hashes.safeTxHash}\n`);
   } else {
@@ -139,6 +125,8 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
     card: prepared.card,
     cardHash: values.card,
     registry: prepared.registry,
+    templates: prepared.templates,
+    decimals,
     expected: expectedChanges(prepared.card, prepared.templates, prepared.registry),
     calls: result.calls,
     tree,
@@ -169,5 +157,5 @@ export async function replay(args: readonly string[], io: Io): Promise<number> {
     return FAILED;
   }
   io.stdout('Same verdict as recorded.\n');
-  return result.verdict.kind === 'MATCH' ? OK : FAILED;
+  return OK;
 }
