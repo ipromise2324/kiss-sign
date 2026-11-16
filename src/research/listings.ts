@@ -477,6 +477,9 @@ export type ListingTarget = { readonly hostname: string; readonly path: string }
 /** How listings are read: a JSON list by target, which throws when it has no answer, and GitHub's page for an organization. */
 export type ListingReads = { readonly list: (target: ListingTarget) => Promise<unknown>; readonly org: (org: string) => Promise<OrgDomains> };
 
+/** CoinGecko's public API answers a few requests a minute and then 429s for about a minute. */
+const COINGECKO_PAUSES_MS: readonly number[] = [20_000, 60_000, 90_000];
+
 /** Both answers are public and need no key. A list with no answer after every retry is noted, then refused. */
 export async function fetchListing(target: { readonly hostname: string; readonly path: string }, note: NoteUnread): Promise<unknown> {
   let answer;
@@ -495,7 +498,8 @@ export async function fetchListing(target: { readonly hostname: string; readonly
         undefined,
         64 * 1024 * 1024,
       );
-    answer = await retried(`https://${target.hostname}${target.path}`, read, (a) => transientStatus(a), note);
+    const pauses = target.hostname === COINGECKO_COINS.hostname ? COINGECKO_PAUSES_MS : undefined;
+    answer = await retried(`https://${target.hostname}${target.path}`, read, (a) => transientStatus(a), note, pauses);
   } catch {
     throw new ListingError(`${target.hostname} unreachable`);
   }
@@ -688,8 +692,14 @@ export const liveListingReads = (note: NoteUnread, list: ListingReads['list'] = 
   org: (org) => orgDomains(org, retryingGet(httpsGet, note)),
 });
 
-/** GitHub's API says whether the organization is verified; for one that is, its page names the domains. */
+/**
+ * GitHub's page names the domains; its API says whether the organization is verified, asked only when the page shows a
+ * badge's run, since the API allows 60 requests an hour without a token.
+ */
 async function orgDomains(org: string, get: HttpGet): Promise<OrgDomains> {
+  const page = await fetchPage(`https://github.com/${encodeURIComponent(org)}`, get);
+  const shown = verifiedDomains(page, org, true);
+  if (shown.kind !== 'domains' || shown.domains.length === 0) return shown;
   const url = `https://api.github.com/orgs/${encodeURIComponent(org)}`;
   let answer;
   try {
@@ -706,8 +716,7 @@ async function orgDomains(org: string, get: HttpGet): Promise<OrgDomains> {
   } catch {
     return { kind: 'failed', why: `${url} sent no JSON` };
   }
-  const verified = isRecord(body) && body.is_verified === true;
-  return verifiedDomains(await fetchPage(`https://github.com/${encodeURIComponent(org)}`, get), org, verified);
+  return isRecord(body) && body.is_verified === true ? shown : { kind: 'domains', domains: [] };
 }
 
 /**
