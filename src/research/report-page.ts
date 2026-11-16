@@ -258,6 +258,7 @@ const FREE_WORDS: Readonly<Record<FreeClaim, string>> = {
   scalar: '換成別的值測過，結果不變或交易失敗',
   proof: '合約會驗證它，換成別的值交易就失敗',
   unread: '合約不讀它，換成別的值結果一樣',
+  route: '換成別的值測過，會走別的池子，收到的仍不少於卡片',
 };
 const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}`>, string>> = { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠' };
 
@@ -851,7 +852,12 @@ function callBlocks(context: Context): CallBlock[] {
   });
 }
 
-const FREE_KEY: Readonly<Record<FreeClaim, string>> = { scalar: '換成別的值，結果一樣或交易失敗', proof: '換成別的值，交易就失敗', unread: '合約不讀它，換成別的值結果一樣' };
+const FREE_KEY: Readonly<Record<FreeClaim, string>> = {
+  scalar: '換成別的值，結果一樣或交易失敗',
+  proof: '換成別的值，交易就失敗',
+  unread: '合約不讀它，換成別的值結果一樣',
+  route: '換成別的值會走別的池子，但 Safe 給出和收到的數量仍要符合卡片，否則交易失敗或 MISMATCH',
+};
 
 /** The who-decides key for the words the rows use: a free field's line by each claim the template makes. */
 function keyItems(used: ReadonlySet<Who>, template: Template): KeyItem[] {
@@ -1678,7 +1684,7 @@ function freeRules(template: Template): { readonly claims: Set<FreeClaim>; reado
   const calls = template.calls.flatMap((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)]);
   calls.forEach(collect);
   calls.forEach(visit);
-  return { claims: new Set((['scalar', 'proof', 'unread'] as const).filter((claim) => found.has(claim))), member: [...members].some((rule) => rule.kind === 'free') };
+  return { claims: new Set((['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => found.has(claim))), member: [...members].some((rule) => rule.kind === 'free') };
 }
 
 /** 參數保護 when no test transaction is recorded, from the template. */
