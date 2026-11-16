@@ -9,146 +9,161 @@
 
 <p align="center"><b><i>Keep it simple, stupid, and sign.</i></b></p>
 
-kiss-sign checks a Safe multisig transaction against what you meant to do, before you sign it on a hardware wallet. You state the intent first, on a short card. A fixed program then checks the transaction against that card and prints `MATCH`, `MISMATCH` or `UNVERIFIABLE`.
+Signing tools today show you a transaction and ask whether it looks right. Your intent is checked last, by you, at the moment you are most likely to click through. kiss-sign turns that around: you say what you want first, and a program checks the transaction against it before you sign on a hardware wallet.
 
-> **Status.** It works end to end for the four operations listed under [What it can sign today](#what-it-can-sign-today). It has not been audited. The four templates were written by an AI and are being reviewed by their first signer now. Start every new operation with a small amount.
+```mermaid
+flowchart LR
+    subgraph once["Once per operation"]
+        I["You: 'deposit USDC into this Morpho vault'"] --> AI["Your AI researches it<br/>and writes a template + report"]
+        AI --> PR["You review the pull request<br/>and merge it"]
+    end
+    subgraph every["Every signing"]
+        C["You fill a card:<br/>which vault, how much"] --> V["kiss-sign checks the Safe transaction<br/>against your card"]
+        V --> K["A second computer decodes<br/>the same transaction on its own"]
+        K --> W["You compare the hashes<br/>on your hardware wallet and sign"]
+    end
+    PR --> C
+```
 
 ## Why
 
-Every signature on a Safe makes you responsible for the exact bytes you approve. Today the transaction is built first and the signer checks it last. That last check is like the terms on an insurance form: everyone means to read it, and most people click sign.
+- **You are responsible for the exact bytes you sign.** Today the transaction is built first and checked last. That last check is like the terms on an insurance form: everyone means to read it, and most people click sign. At Bybit in 2025, the signers saw a normal transfer in a tampered Safe web app and signed a change to the Safe itself.
+- **Checking by hand is slow and needs expertise.** Tools such as [safe-tx-hashes](https://github.com/pcaversaccio/safe-tx-hashes-util) compute the hashes your wallet should show, but the decoded method and parameters they print come from the Safe Transaction Service, and the tool itself warns: *"Always independently decode the transaction Data yourself before you sign!"* Decoding one ordinary Morpho vault deposit yourself looks like this:
 
-Checking properly is slow. You have to rebuild the transaction yourself and know how it is encoded. Clear signing (ERC-7730) makes the final screen readable, but you still read it at the end and must notice what is wrong, and it does not yet decode Safe MultiSend batches.
+  <details>
+  <summary>Decoding a real Morpho deposit by hand (another Safe's nonce 20)</summary>
 
-The Bybit hack in 2025 showed the cost: the signers saw a normal transfer in a tampered Safe web app and signed a change to the Safe itself.
+  ```sh
+  # 1. The Safe calls MultiSend. Its one argument is packed bytes, not ABI.
+  $ cast 4byte-calldata $DATA
+  1) "multiSend(bytes)"
+
+  # 2. Split the packed bytes yourself: 1 byte operation, 20 bytes to, 32 value, 32 length, data.
+  call 1  op=00  to=0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48  76 bytes  selector 0x095ea7b3
+  call 2  op=00  to=0x6566194141eefa99af43bb5aa71460ca2dc90245  812 bytes selector 0x374f435d
+
+  # 3. Call 1: an approve. 76 bytes is 8 more than approve needs; cast does not say so.
+  $ cast decode-calldata "approve(address,uint256)" $CALL1
+  0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
+  10001000000 [1e10]
+
+  # 4. Call 2: a Bundler3 multicall, whose bundle holds more calls.
+  $ cast decode-calldata "multicall((address,bytes,uint256,bool,bytes32)[])" $CALL2
+  [(0x4A6c…0aE0, 0xd96ca0b9…, 0, false, 0x00…), (0x4A6c…0aE0, 0x6ef5eeae…, 0, false, 0x00…)]
+
+  # 5. Decode each inner call.
+  $ cast decode-calldata "erc20TransferFrom(address,address,uint256)" 0xd96ca0b9…
+  0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+  0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
+  10001000000 [1e10]
+  $ cast decode-calldata "erc4626Deposit(address,uint256,uint256,address)" 0x6ef5eeae…
+  0x777791C4d6DC2CE140D00D2828a7C93503c67777
+  10001000000 [1e10]
+  1054633213541066 [1.054e15]
+  0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B
+  ```
+
+  Then the real questions start. Is `0x4A6c…0aE0` Morpho's GeneralAdapter1 or a look-alike? Is `0x7777…7777` the vault you meant? Is `1.054e15` a sane minimum of shares for 10,001 USDC? What are the 8 extra bytes after the approve? And you do all of this again for the next transaction.
+  </details>
+
+- **Clear signing (ERC-7730) does not decode batched calls well yet.** It turns a call into readable fields, but only for contracts with a descriptor. For the deposit above, at registry commit `3bebbd0`, only Bundler3 has one. It names the call "Bundler3 Multicall" and passes each inner action to the descriptor of its target. MultiSend, GeneralAdapter1 and the vault have none. The screen can look reasonable while the parts that move your money are not shown.
 
 ## How it works
 
-kiss-sign turns the order around.
-
-1. **Once per operation, an AI writes a template.** It researches the contracts, proves their ABIs by compiling the verified source, studies past transactions of other Safes, and opens a pull request with a generated report of its evidence. You read the report and merge. The AI never merges.
-2. **At every signing, you fill a card in your own terminal.** You pick each vault or recipient from a numbered list with its full address and type the amount. You confirm the card and it is sealed under its hash, before you see any transaction.
-3. **A fixed program judges.** `verify` recomputes the Safe hashes, decodes the transaction with the template, simulates it on two providers, and compares every change to the Safe's balances and allowances with the card.
-   - `MATCH`: it does what the card says. Compare the two printed hashes with your hardware wallet's screen, then sign.
-   - `MISMATCH`: something differs. Do not sign.
-   - `UNVERIFIABLE`: it could not be proven either way. Do not sign.
-
-The verdict is never the AI's judgment. The AI writes templates, and the program runs them.
-
-![kiss-sign flow: build a template once per operation, then check every signing](docs/architecture.png)
-
-## What it can sign today
-
-| Template | Operation | You confirm |
-|---|---|---|
-| `eth/transfer` | Send ETH | amount, recipient from your address book |
-| `erc20/transfer` | Send an ERC-20 token | token, amount, recipient from your address book |
-| `morpho/vault-deposit` | Deposit into a Morpho vault | vault, amount |
-| `fluid/vault-deposit` | Deposit into a Fluid fToken | vault, amount |
-
-Each vault has its own report, under the template's `vaults/` folder. For another operation or vault, ask your AI to build it with the kiss-sign skill (`.claude/skills/kiss-sign/SKILL.md`). It opens a pull request for you to review.
-
-Ethereum mainnet only. Safe multisig only.
-
-## Two tiers
-
-kiss-sign does not try to stop a prompt-injected AI. The AI that writes templates reads the web, and nobody yet knows how to stop such an AI from editing code it may edit. Pick how much else you trust.
-
-**Basic.** kiss-sign runs on your work computer, and your AI may run there too. This stops attacks from outside kiss-sign. It does not stop kiss-sign itself being wrong or changed.
-
-**Hardened.** Add a second computer that runs no AI and no kiss-sign, only Foundry's `cast`, `curl`, `jq` and one short script, [`kiss-sign-check`](https://github.com/ipromise2324/kiss-sign-check). Before you sign, you type `check.sh <nonce>` there. It fetches the transaction, computes its hashes itself, decodes every call, and labels each address from a list you wrote by hand. Both programs write an HTML page with the same comparison list (the 比對清單): the hashes and every call, argument by argument, one numbered row each. You compare the two pages row by row and the hashes with your hardware wallet. A broken or rewritten kiss-sign then cannot make you sign something other than what that computer decodes.
-
-| Attack | Basic | Hardened |
-|---|---|---|
-| A tampered Safe web app shows one transaction and sends another, as at Bybit | Stopped | Stopped |
-| The transaction does more or other than your card says | Stopped | Stopped |
-| A call hands over the Safe: owner, module, guard, threshold, fallback handler or implementation change, or a `delegatecall` other than the official MultiSend | Stopped | Stopped |
-| An unlimited approval, or any allowance that ends higher than it started | Stopped | Stopped |
-| One RPC provider lies about the chain | Stopped | Stopped |
-| A registry contract was upgraded since its review | Stopped (`MISMATCH` until the new code is pinned) | Stopped |
-| A bug in kiss-sign, or an AI that rewrites kiss-sign, your cards or your config on the same computer | **Not stopped** | Stopped: you sign only what the second computer decodes |
-| An address that is not the protocol's real contract | Rests on the report and your review | Rests on the report, your review and your own address list |
-| A template that was wrong when you merged it | **Not stopped**. A small first amount catches crude mistakes | **Not stopped** |
-| A contract that behaves differently for large amounts, turns hostile later through its settings, or two RPC providers that collude | **Not stopped** | **Not stopped** |
-
-The full list of limits is in [Known limits](docs/design.md#known-limits).
-
-Three habits close more of the gap:
-
-- **Branch protection on `main`.** `verify` trusts your fork's `main`. With protection on, only your approval merges, and the AI pushes from an account that cannot approve or merge. That holds only while the AI cannot use your own GitHub credentials.
-- **A small amount first.** The first time a template or a vault is used, send a small amount and wait for it to settle as expected.
-- **Read every pull request's report.** A permission or parameter change moves no value, so a small amount cannot test it. It relies on the program's checks and on your review.
-
-## Setup
-
-You need Node 22.21 or later, pnpm, git, a GitHub account, a free [Alchemy](https://dashboard.alchemy.com/) key, and a hardware wallet that shows a Safe transaction's domain hash and message hash.
-
-1. Fork this repository. Your fork's `main` is the program `verify` trusts, so merging a pull request into it is your confirmation, whether it changes a template or the program.
-2. Clone your fork and set it up:
-
-   ```sh
-   git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
-   pnpm install
-   pnpm kiss-sign init --safe 0x…
-   pnpm kiss-sign key add alchemy
-   ```
-
-   `init` writes `~/.kiss-sign/config.json` with your Safe and your fork. Your Safe's address stays there, never in the repository; a pre-push hook refuses any push that contains it or an API key. `key add` reads the key at a hidden prompt into `~/.kiss-sign/.env`, readable only by you.
-
-3. Run every command from the clone as `pnpm kiss-sign <command>`.
-
-To build templates, the research scripts also need a free [Etherscan](https://etherscan.io/myapikey) key (`pnpm kiss-sign key add etherscan`). They download the pinned compilers and lists they need on first use and refuse any file whose sha256 differs from its pin.
-
-## Sign with it
+**Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts, so merging a pull request into it is your confirmation.
 
 ```sh
-git pull                                              # the lists you pick from must equal GitHub's main
-pnpm kiss-sign template approve morpho/vault-deposit  # once per template version
-pnpm kiss-sign card new morpho/vault-deposit          # pick the vault, type the amount, seal
-# propose the transaction in the Safe web app as usual
-pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
+git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
+pnpm install
+pnpm kiss-sign init --safe 0x…
+pnpm kiss-sign key add alchemy
 ```
 
-On `MATCH`, `verify` prints the domain hash and message hash and writes an HTML page with the card, the expected balance changes and the 比對清單. Compare both hashes with your hardware wallet, character by character, then sign.
+You need Node 22.21 or later, pnpm, a free [Alchemy](https://dashboard.alchemy.com/) key, and a hardware wallet that shows a Safe transaction's domain hash and message hash. For the second computer, see [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check).
 
-The signer-facing pages, the report and `verify`'s page, are in Traditional Chinese. The terminal, the code and the docs are in English.
+**1. Tell your AI what you want.** In Claude Code, from the clone, say it in one sentence, such as "deposit 10,000 USDC into the Steakhouse Prime USDC vault". If there is no template for the operation yet, the AI builds one with the [kiss-sign skill](.claude/skills/kiss-sign/SKILL.md). It researches the contracts, reads the operation's transaction history, and opens a pull request with a generated report of its evidence.
 
-## What each check stops
+> 📸 *Screenshot: telling the AI the intent.*
+
+**2. Review the report and merge.** The report says where every address came from, which checks passed, and what the AI wrote, marked as AI text. You read it and merge. The AI never merges. This happens once per operation, or once per vault.
+
+![The generated report for a Morpho vault deposit](docs/readme/report.png)
+
+**3. Fill a card.** In your own terminal, `pnpm kiss-sign card new morpho/vault-deposit` lists the vaults with their full addresses. You pick one and type the amount. The card is sealed under its hash before you see any transaction.
+
+> 📸 *Screenshot: `card new` in the terminal.*
+
+**4. Propose in the Safe web app, then verify.** `pnpm kiss-sign verify --card <hash> --safe-tx-hash <hash>` prints `MATCH`, `MISMATCH` or `UNVERIFIABLE`, and writes a page with the card, the expected balance changes and a comparison list of every call.
+
+> 📸 *Screenshot: the verify page after `MATCH`.*
+
+**5. Check on a second computer.** There, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` alone. Its page shows the same comparison list. Compare the two pages row by row.
+
+> 📸 *Screenshot: the two pages side by side.*
+
+**6. Sign.** Compare the domain hash and message hash with your hardware wallet's screen, then sign.
+
+The signer-facing pages are in Traditional Chinese. The terminal, the code and the docs are in English.
+
+### Add your own operation
+
+The templates in `templates/` are examples: ETH and ERC-20 transfers, and Morpho and Fluid vault deposits. kiss-sign is meant to grow with what you sign. For anything else, tell your AI what you want to do, as in step 1. It builds the template, and you review its pull request. Before merging, rerun every fact in the report yourself:
+
+```sh
+pnpm report <protocol>/<operation> --compare --data origin/<branch>
+```
+
+## What it protects against
+
+No single check is trusted alone. To make you sign something you did not mean, an attacker has to beat several independent views of the same transaction at once:
+
+| View | Runs on | Shows |
+|---|---|---|
+| kiss-sign `verify` | Your work computer | Whether the transaction matches your card, simulated on two providers |
+| `kiss-sign-check` | A second computer with no AI and no kiss-sign | The hashes and every decoded call, labelled from an address list you wrote by hand |
+| The Safe web app's own simulation | Safe's servers | What the transaction does, as Safe sees it |
+| Your hardware wallet | The device | The two hashes you actually sign |
+
+### What kiss-sign checks
 
 When a template is built:
 
-- **Addresses come from more than one source.** The protocol's own site or GitHub, cross-checked against DefiLlama and CoinGecko by `pnpm check-sources`, with the factory that created each vault proven on chain. Stops an address copied from a look-alike site.
-- **ABIs are proven by compiling.** The verified source from Sourcify is compiled locally with a pinned `solc` and must match the code on chain. Stops an ABI that labels a field as something it is not.
-- **Rules come from past transactions.** "`receiver` was the depositing Safe in all 42 past deposits" becomes the rule "`receiver` equals the Safe". Stops a field the template forgot to bind.
-- **Every free field is perturbed.** Each field the template leaves free is changed and simulated; it must revert or change nothing. Stops a free field that quietly grants a permission.
+- **Addresses come from more than one source.** The protocol's own site or GitHub, cross-checked against DefiLlama and CoinGecko, and the factory that created each vault is asked on chain.
+- **ABIs are proven by compiling.** The verified source from Sourcify is compiled locally with a pinned `solc` and must match the code on chain.
+- **Rules come from history.** "`receiver` was the sender in every past deposit" becomes the rule "`receiver` equals the Safe".
+- **Every field the template leaves free is changed and simulated.** It must revert or change nothing.
 
 At every signing:
 
-- **The program checks itself first.** The clone must equal your fork's `main` byte for byte. Stops an edit made in the clone instead of through a pull request.
-- **The card is sealed before you see the transaction.** Stops the transaction shaping what you think you asked for.
-- **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted. Stops a tampered interface.
-- **Decode, then re-encode byte for byte.** Stops bytes hidden in the calldata.
-- **Floor rules for every template.** No unlimited approval, no foreign `delegatecall`, no change to the Safe's owners, modules, guard, threshold, fallback handler or implementation, and no gas refund. Stops the attacks that take over the Safe.
-- **Simulation on two providers.** Every change to the Safe's balances and allowances must be one the card explains, and Alchemy and drpc must agree. Stops hidden side effects and one lying provider.
-- **Code pins.** Every registry contract the transaction touches must run the code its review pinned. Stops a contract upgraded since its review.
+- **The program checks itself first.** Your clone must equal your fork's `main` byte for byte.
+- **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
+- **Decode, then re-encode byte for byte.** No hidden bytes.
+- **Floor rules for every template.** No unlimited approval, no `delegatecall` except the official MultiSend, no change to the Safe's owners, modules, guard, threshold or implementation, and no gas refund.
+- **Two RPC providers.** The transaction is simulated on Alchemy and drpc, and every change to the Safe's balances and allowances must be one your card explains. The two must agree.
+- **Code pins.** Every contract the transaction touches must run the code its review pinned. An upgraded contract is `MISMATCH` until it is reviewed again.
 
-[docs/design.md](docs/design.md) is the source of truth for every check, data shape and limit.
+Your Safe's address stays in `~/.kiss-sign/` and never enters the repository. A pre-push hook refuses any push that contains it or an API key.
+
+### What it does not protect against
+
+- **A prompt-injected AI.** The AI that writes templates reads the web, and nobody yet knows how to stop it from editing code it may edit. An AI on your work computer can rewrite kiss-sign, its self-check and your cards together. The second computer is the answer: it never runs kiss-sign, so it still decodes what you actually sign.
+- **A template that was wrong when you merged it.** No check catches it later. Your review and a small first amount are the defense.
+- **Which address is the real contract.** That rests on the report, your review, and your own address list.
+- **A contract that turns hostile without an upgrade**, through settings an admin can change or code that behaves differently for large amounts.
+- **Two RPC providers that collude** or share a backend.
+- **What your fork shows.** Your fork is public. The vaults and protocols you add to it are visible, even though your Safe's address is not.
+
+The full list is in [Known limits](docs/design.md#known-limits). [docs/design.md](docs/design.md) is the source of truth for every check.
+
+## Scope
+
+Safe multisig transactions on Ethereum mainnet. Not EOAs, off-chain signatures or other chains.
 
 ## Contributing
 
-Each signer owns their own fork, and their AI may change templates, the registry and the program in pull requests to it. This repository is a source of updates you pull when you want them:
+Open an issue or a pull request. Tests run offline with `pnpm test`. For a program change, change `docs/design.md` first.
 
-```sh
-git remote add upstream https://github.com/ipromise2324/kiss-sign.git
-git pull upstream main && git push origin main
-```
-
-A program change (`src/`, `scripts/`, `docs/design.md`) works for you as soon as you merge it into your fork. Please also open it here, so other signers can review it and every fork keeps running the same program. Change `docs/design.md` first. Tests replay recorded transactions of other Safes and run offline with `pnpm test`.
-
-## Security
-
-Report a vulnerability privately through [GitHub's security advisories](https://github.com/ipromise2324/kiss-sign/security/advisories/new), not in a public issue.
-
-kiss-sign never signs, never sends a transaction and never asks for a private key.
+Report security problems as an issue too.
 
 ## License
 
