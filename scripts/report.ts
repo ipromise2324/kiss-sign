@@ -55,7 +55,7 @@ import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
+const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
        node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) (--offline | --render)
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
