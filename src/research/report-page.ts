@@ -457,7 +457,7 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
   switch (rule.kind) {
     case 'card': {
       const kind = template.card.get(rule.ref.field)?.kind;
-      return { who: kind === 'amount' || kind === 'nonce' ? 'you-type' : 'you-pick', field: rule.ref.field };
+      return { who: kind === 'amount' || kind === 'nonce' || kind === 'percent' ? 'you-type' : 'you-pick', field: rule.ref.field };
     }
     case 'safe':
     case 'contract':
@@ -533,6 +533,10 @@ function cardWords(ref: CardRef, key: string, context: Context): { readonly word
   if (field?.kind === 'amount') {
     if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
     return amountWords(example.value, field.of, context);
+  }
+  if (field?.kind === 'percent') {
+    if (example?.kind !== 'uint') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
+    return { words: [before('你填的', fieldWord(context.template, ref.field)), '，例如 ', { num: `${wholeTokens(example.value * 100n, 18)}%` }], qualifier: undefined };
   }
   if (field?.kind === 'nonce') return { words: [before('你填的', fieldWord(context.template, ref.field))], qualifier: undefined };
   const picked = example?.kind === 'address' ? context.registry.byAddress.get(example.value) : undefined;
@@ -1120,7 +1124,7 @@ function ruleWords(rule: Rule, context: Context): Inline {
       const only = onlyEntry(rule.ref, context);
       if (only !== undefined) return [link(only)];
       const kind = context.template.card.get(rule.ref.field)?.kind;
-      return [before(kind === 'amount' || kind === 'nonce' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
+      return [before(kind === 'amount' || kind === 'nonce' || kind === 'percent' ? '你填的' : '你選的', refWord(context.template, rule.ref))];
     }
     case 'free':
       return ['不限'];
