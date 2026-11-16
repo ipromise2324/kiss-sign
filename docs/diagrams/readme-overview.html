@@ -1,103 +1,183 @@
 <!doctype html>
-<!-- Source of docs/readme/overview.png and overview-dark.png. Re-render with docs/diagrams/render.sh. -->
+<!-- Source of docs/readme/overview.png and overview-dark.png. Values come from a real run: another Safe's nonce 1566. Re-render with docs/diagrams/render.sh. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="render-width" content="1100">
+<meta name="render-width" content="1240">
 <title>kiss-sign at a glance</title>
 <style>
   :root {
-    --bg: #ffffff; --ink: #1b1f27; --muted: #57606a; --line: #d0d7de; --panel: #f6f8fa;
+    --bg: #ffffff; --ink: #1b1f27; --muted: #57606a; --faint: #6e7781; --line: #d0d7de; --panel: #f6f8fa; --chip: #eef1f4;
     --you: #2463d1; --you-bg: #e8f0fd;
-    --ai: #845200; --ai-bg: #fdf3e1;
+    --ai: #9a6100; --ai-bg: #fdf3e1;
     --prog: #136b42; --prog-bg: #e3f4ea;
     --ind: #6639ba; --ind-bg: #f1ebfc;
+    --dev: #1b1f27; --dev-screen: #0f141a; --dev-ink: #e6edf3;
   }
   :root.dark {
-    --bg: #0d1117; --ink: #e6edf3; --muted: #9198a1; --line: #30363d; --panel: #151b23;
+    --bg: #0d1117; --ink: #e6edf3; --muted: #9198a1; --faint: #8b949e; --line: #30363d; --panel: #151b23; --chip: #212830;
     --you: #6ea8ff; --you-bg: #132544;
     --ai: #e3b341; --ai-bg: #2e2410;
     --prog: #4ac286; --prog-bg: #10291c;
     --ind: #b392f0; --ind-bg: #241a3a;
+    --dev: #2d333b; --dev-screen: #05080c; --dev-ink: #e6edf3;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { width: 1100px; background: var(--bg); color: var(--ink); font: 16px/1.4 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; padding: 32px 36px 30px; }
-  code { font: 13.5px ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  body { width: 1240px; background: var(--bg); color: var(--ink); font: 15px/1.35 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; padding: 30px 34px 26px; }
+  .mono, code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
 
-  .intent { display: flex; align-items: baseline; gap: 18px; margin-bottom: 26px; }
-  .intent q { font-size: 30px; font-weight: 700; letter-spacing: -0.4px; color: var(--you); quotes: "“" "”"; }
-  .intent span { color: var(--muted); font-size: 16px; }
+  .intent { display: flex; align-items: baseline; gap: 16px; margin-bottom: 22px; }
+  .intent q { font-size: 28px; font-weight: 700; letter-spacing: -0.3px; color: var(--you); quotes: "“" "”"; }
+  .intent span { color: var(--muted); }
 
-  .lane { display: grid; grid-template-columns: 150px 1fr; gap: 0 18px; align-items: center; }
-  .lane + .lane { margin-top: 18px; }
-  .when { font-size: 15px; font-weight: 650; color: var(--muted); line-height: 1.3; }
-  .when small { display: block; font-weight: 400; font-size: 13.5px; }
+  .lane { display: grid; grid-template-columns: 112px 1fr; gap: 0 16px; align-items: center; }
+  .lane + .lane { margin-top: 16px; }
+  .when { font-size: 14px; font-weight: 650; color: var(--muted); }
+  .when small { display: block; font-weight: 400; font-size: 13px; color: var(--faint); }
   .track { display: flex; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px; }
 
-  .box { background: var(--bg); border: 1.5px solid var(--c); border-radius: 9px; padding: 10px 12px; min-width: 0; }
-  .box .who { display: inline-block; white-space: nowrap; font-size: 12.5px; font-weight: 650; color: var(--c); background: var(--cb); border-radius: 5px; padding: 0 7px; margin-bottom: 5px; }
-  .box .what { font-weight: 650; font-size: 15.5px; }
-  .box .how { color: var(--muted); font-size: 13.5px; margin-top: 2px; }
+  .box { background: var(--bg); border: 1.5px solid var(--c); border-radius: 9px; padding: 10px 12px; }
+  .who { display: inline-block; white-space: nowrap; font-size: 12px; font-weight: 650; color: var(--c); background: var(--cb); border-radius: 5px; padding: 0 7px; }
+  .head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .head b { font-size: 15px; white-space: nowrap; }
   .you { --c: var(--you); --cb: var(--you-bg); }
   .ai { --c: var(--ai); --cb: var(--ai-bg); }
   .prog { --c: var(--prog); --cb: var(--prog-bg); }
   .ind { --c: var(--ind); --cb: var(--ind-bg); }
 
-  .arrow { flex: none; width: 34px; height: 2px; background: var(--line); position: relative; margin: 0 4px; }
+  .arrow { flex: none; width: 26px; height: 2px; background: var(--line); position: relative; margin: 0 6px; }
   .arrow::after { content: ""; position: absolute; right: -1px; top: -5px; border: 6px solid transparent; border-left: 8px solid var(--line); border-right: 0; }
 
+  .svc { display: inline-block; white-space: nowrap; font-size: 12px; color: var(--ink); background: var(--chip); border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; line-height: 20px; }
+
   .once .track { align-items: stretch; }
-  .once .box { flex: 1; }
   .once .arrow { align-self: center; }
-  .every .track { align-items: stretch; }
-  .every .col { display: flex; align-items: center; }
-  .card { width: 190px; align-self: center; }
-  .split { display: flex; flex-direction: column; gap: 12px; flex: 1; min-width: 0; }
-  .split .box { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 14px; }
-  .split .box .tag { grid-row: 1 / 3; grid-column: 2; font: 650 13px ui-monospace, "SF Mono", Menlo, monospace; color: var(--c); border: 1px solid var(--c); border-radius: 6px; padding: 3px 8px; white-space: nowrap; }
-  .fork, .join { flex: none; width: 40px; align-self: stretch; }
+  .research { flex: 1.6; }
+  .steps { display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; align-items: center; }
+  .steps .k { font-weight: 600; font-size: 14px; white-space: nowrap; }
+  .steps .v { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .steps .v i { font-style: normal; color: var(--faint); font-size: 12px; }
+
+  .report { flex: 1; }
+  .report ul { list-style: none; display: grid; gap: 6px; }
+  .report li { display: flex; align-items: center; gap: 7px; font-size: 14px; }
+  .ok { width: 14px; height: 14px; border-radius: 50%; background: var(--prog); flex: none; position: relative; }
+  .ok::after { content: ""; position: absolute; left: 4.5px; top: 2px; width: 3px; height: 7px; border: solid var(--bg); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .warn { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ai); flex: none; }
+
+  .merge { flex: 0.62; }
+  .merge .big { font-size: 15px; font-weight: 650; }
+  .merge .small { color: var(--muted); font-size: 13px; margin-top: 3px; }
+
+  .card { width: 318px; flex: none; }
+  .ticket .r span { white-space: nowrap; }
+  .ticket { border: 1px dashed var(--line); border-radius: 7px; padding: 8px 10px; display: grid; gap: 3px; font-size: 12.5px; }
+  .ticket .r { display: grid; grid-template-columns: 52px 1fr; gap: 6px; }
+  .ticket .r span:first-child { color: var(--muted); }
+  .ticket .r span:last-child { font-weight: 600; }
+  .ticket .r .addr { font-weight: 400 !important; color: var(--muted); }
+  .ticket .seal { color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 4px; margin-top: 2px; }
+
+  .split { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0; }
+  .split .box { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 12px; }
+  .split .row { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .split .row .t { font-size: 13px; color: var(--muted); margin-right: 2px; }
+  .tag { grid-row: 1 / 3; grid-column: 2; white-space: nowrap; font: 650 13px ui-monospace, "SF Mono", Menlo, monospace; color: var(--c); border: 1.5px solid var(--c); border-radius: 6px; padding: 4px 9px; }
+
+  .fork, .join { flex: none; width: 34px; align-self: stretch; }
   .fork svg, .join svg { width: 100%; height: 100%; display: block; }
   .fork path, .join path { fill: none; stroke: var(--line); stroke-width: 2; }
   .join path.head { fill: var(--line); stroke: none; }
-  .wallet { width: 230px; align-self: center; }
-  .hash { margin-top: 7px; display: grid; gap: 3px; }
-  .hash div { font: 12.5px ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink); background: var(--panel); border-radius: 4px; padding: 2px 6px; }
-  .hash div b { color: var(--muted); font-weight: 400; }
 
-  .foot { margin-top: 20px; color: var(--muted); font-size: 14.5px; }
-  .foot b { color: var(--ink); font-weight: 650; }
+  .device { flex: none; width: 206px; }
+  .shell { background: var(--dev); border-radius: 14px; padding: 10px; }
+  .screen { background: var(--dev-screen); color: var(--dev-ink); border-radius: 6px; padding: 8px 10px; font: 12.5px/1.45 ui-monospace, "SF Mono", Menlo, monospace; }
+  .screen .l { color: #8b949e; font-size: 11px; }
+  .btns { display: flex; justify-content: space-between; margin-top: 8px; padding: 0 22px; }
+  .btns i { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #6e7681; display: block; }
+  .device .cap { text-align: center; margin-top: 7px; font-size: 13px; color: var(--muted); }
+  .device .cap b { color: var(--you); }
+
+  .foot { margin-top: 16px; display: flex; gap: 20px; color: var(--muted); font-size: 13px; align-items: center; }
+  .foot span { display: inline-flex; align-items: center; gap: 6px; }
+  .foot .sw { width: 12px; height: 12px; border-radius: 3px; border: 2px solid var(--c); background: var(--cb); display: block; }
 </style>
 <script>if (location.search.includes('dark')) document.documentElement.classList.add('dark');</script>
 </head>
 <body>
-  <div class="intent"><q>Deposit 10,000 USDC into this Morpho vault</q><span>You say what you want first.</span></div>
+  <div class="intent"><q>Deposit 1,000,611.448606 USDC into the Hyperithm vault</q><span>You say what you want first.</span></div>
 
   <div class="lane once">
-    <div class="when">Once per operation<small>or per vault</small></div>
+    <div class="when">Once<small>per operation or vault</small></div>
     <div class="track">
-      <div class="box ai"><span class="who">Your AI</span><div class="what">Researches the contracts</div><div class="how">Sources, compiled ABIs, past transactions</div></div>
+      <div class="box ai research">
+        <div class="head"><span class="who">Your AI</span><b>Research</b></div>
+        <div class="steps">
+          <span class="k">Addresses</span><span class="v"><span class="svc">protocol docs</span><i>vs</i><span class="svc">DefiLlama</span><span class="svc">CoinGecko</span><span class="svc">factory on chain</span></span>
+          <span class="k">ABI</span><span class="v"><span class="svc">Sourcify</span><i>→</i><span class="svc">pinned solc</span><i>=</i><span class="svc">bytecode on chain</span></span>
+          <span class="k">Rules</span><span class="v"><span class="svc">past transactions</span><span class="svc">Alchemy</span><span class="svc">Etherscan</span></span>
+          <span class="k">Code pin</span><span class="v"><span class="svc">code hash</span><span class="svc">Alchemy</span><span class="svc">drpc</span></span>
+        </div>
+      </div>
       <div class="arrow"></div>
-      <div class="box ai"><span class="who">Your AI</span><div class="what">Writes a template and a report</div><div class="how">Opens a pull request to your fork</div></div>
+      <div class="box ai report">
+        <div class="head"><span class="who">Report</span><b>in the pull request</b></div>
+        <ul>
+          <li><span class="ok"></span>Call flow</li>
+          <li><span class="ok"></span>Each field: fixed or yours</li>
+          <li><span class="ok"></span>Where each address came from</li>
+          <li><span class="warn"></span>What still needs your eye</li>
+        </ul>
+      </div>
       <div class="arrow"></div>
-      <div class="box you"><span class="who">You</span><div class="what">Read the report and merge</div><div class="how">The AI never merges</div></div>
+      <div class="box you merge">
+        <div class="head"><span class="who">You</span></div>
+        <div class="big">Review and merge</div>
+        <div class="small">The AI never merges</div>
+      </div>
     </div>
   </div>
 
-  <div class="lane every">
+  <div class="lane">
     <div class="when">Every signing</div>
     <div class="track">
-      <div class="box you card"><span class="who">You</span><div class="what">Fill a card</div><div class="how">Pick the vault from a list, type the amount. Sealed before you see the transaction.</div></div>
-      <div class="fork"><svg viewBox="0 0 40 100" preserveAspectRatio="none"><path d="M0 50 H14 Q20 50 20 44 V31 Q20 25 26 25 H40 M14 50 Q20 50 20 56 V69 Q20 75 26 75 H40" vector-effect="non-scaling-stroke"/></svg></div>
-      <div class="split">
-        <div class="box prog"><div><span class="who">kiss-sign verify · your computer</span><div class="what">Checks the transaction against your card</div><div class="how">Recomputes hashes, decodes, simulates on two providers</div></div><span class="tag">MATCH</span></div>
-        <div class="box ind"><div><span class="who">kiss-sign-check · second computer</span><div class="what">Decodes the same transaction on its own</div><div class="how">No AI, no kiss-sign: only <code>cast</code>, <code>curl</code>, <code>jq</code></div></div><span class="tag">same rows</span></div>
+      <div class="box you card">
+        <div class="head"><span class="who">You</span><b>Fill a card</b></div>
+        <div class="ticket mono">
+          <div class="r"><span>vault</span><span>hyperithm-usdc-apex-v2</span></div>
+          <div class="r"><span></span><span class="addr">0x0932…9E2F</span></div>
+          <div class="r"><span>amount</span><span>1,000,611.448606 USDC</span></div>
+          <div class="seal">sealed 0xfaad…a988</div>
+        </div>
       </div>
-      <div class="join"><svg viewBox="0 0 40 100" preserveAspectRatio="none"><path d="M0 25 H14 Q20 25 20 31 V44 Q20 50 26 50 H33 M0 75 H14 Q20 75 20 69 V56 Q20 50 26 50" vector-effect="non-scaling-stroke"/><path class="head" d="M32 46 L40 50 L32 54 Z"/></svg></div>
-      <div class="box you wallet"><span class="who">You</span><div class="what">Sign on the hardware wallet</div><div class="how">After both hashes match the screen</div><div class="hash"><div><b>domain</b> 0x435f…130e</div><div><b>message</b> 0xf7f0…7c13</div></div></div>
+      <div class="fork"><svg viewBox="0 0 34 100" preserveAspectRatio="none"><path d="M0 50 H11 Q17 50 17 44 V31 Q17 25 23 25 H34 M11 50 Q17 50 17 56 V69 Q17 75 23 75 H34" vector-effect="non-scaling-stroke"/></svg></div>
+      <div class="split">
+        <div class="box prog">
+          <div class="head" style="margin:0"><span class="who">kiss-sign verify</span><b>your computer</b></div>
+          <div class="row"><span class="t">hashes, decode, simulate on</span><span class="svc">Alchemy</span><span class="svc">drpc</span></div>
+          <span class="tag">MATCH</span>
+        </div>
+        <div class="box ind">
+          <div class="head" style="margin:0"><span class="who">check.sh</span><b>second computer, no AI</b></div>
+          <div class="row"><span class="t">fetch and decode with</span><span class="svc">Safe Tx Service</span><span class="svc">cast</span></div>
+          <span class="tag">same rows</span>
+        </div>
+      </div>
+      <div class="join"><svg viewBox="0 0 34 100" preserveAspectRatio="none"><path d="M0 25 H11 Q17 25 17 31 V44 Q17 50 23 50 H27 M0 75 H11 Q17 75 17 69 V56 Q17 50 23 50" vector-effect="non-scaling-stroke"/><path class="head" d="M26 46 L34 50 L26 54 Z"/></svg></div>
+      <div class="device">
+        <div class="shell">
+          <div class="screen"><div class="l">Domain hash</div>0xad49…7a5b<div class="l">Message hash</div>0x691e…8c15</div>
+          <div class="btns"><i></i><i></i></div>
+        </div>
+        <div class="cap"><b>You</b> compare, then sign</div>
+      </div>
     </div>
   </div>
 
-  <p class="foot"><b>The AI writes templates. A fixed program judges.</b> Any doubt is <code>MISMATCH</code> or <code>UNVERIFIABLE</code>, and the hashes print only on <code>MATCH</code>.</p>
+  <div class="foot">
+    <span class="ai"><i class="sw"></i>AI</span><span class="you"><i class="sw"></i>You</span><span class="prog"><i class="sw"></i>kiss-sign</span><span class="ind"><i class="sw"></i>Independent check</span>
+    <span style="margin-left:auto">Any doubt is <code>MISMATCH</code> or <code>UNVERIFIABLE</code>. Hashes print only on <code>MATCH</code>.</span>
+  </div>
   <script>document.body.dataset.height = Math.ceil(document.body.getBoundingClientRect().height);</script>
 </body>
 </html>
