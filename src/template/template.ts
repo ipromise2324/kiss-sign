@@ -420,8 +420,8 @@ function structType(path: string, raw: unknown): StructType {
     if (error instanceof AbiSignatureError) throw new TemplateError(path, error.message);
     throw error;
   }
-  const bad = fn.params.find((param) => param.name === undefined || !isMemberType(param.type));
-  if (bad !== undefined || fn.params.length === 0) throw new TemplateError(path, 'every member is named, of an atomic type, string or bytes');
+  const bad = fn.params.find((param, i) => param.name === undefined || !isMemberType(param.type) || fn.params.findIndex((p) => p.name === param.name) !== i);
+  if (bad !== undefined || fn.params.length === 0) throw new TemplateError(path, 'every member is named once, of an atomic type, string or bytes');
   const encoded = `${fn.name}(${fn.params.map((param) => `${canonicalType(param.type)} ${param.name}`).join(',')})`;
   if (encoded !== written) throw new TemplateError(path, `not written as EIP-712 encodes it: ${encoded}`);
   return { name: fn.name, members: fn.params, encoded };
@@ -765,8 +765,11 @@ function openApproval(path: string, raw: unknown, scope: Scope): OpenApproval {
   const spender = text(`${path}.spender`, value.spender);
   if (!scope.registry.entries.has(spender)) throw new TemplateError(`${path}.spender`, `${JSON.stringify(spender)} is not in the contract registry`);
   const amount = cardFieldName(text(`${path}.amount`, value.amount)) ?? '';
-  if (scope.card.get(amount)?.kind !== 'amount') throw new TemplateError(`${path}.amount`, 'must be card.<amount field>');
-  return { token: cardToken(`${path}.token`, token, scope.card), spender, amount };
+  const field = scope.card.get(amount);
+  const ref = cardToken(`${path}.token`, token, scope.card);
+  if (field?.kind !== 'amount') throw new TemplateError(`${path}.amount`, 'must be card.<amount field>');
+  if (JSON.stringify(field.of) !== JSON.stringify(ref)) throw new TemplateError(`${path}.amount`, `counts another token than card.${token}`);
+  return { token: ref, spender, amount };
 }
 
 /** A view's arguments are known before the transaction runs: bound by card, safe, contract or const, never free. */

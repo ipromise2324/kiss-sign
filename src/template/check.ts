@@ -9,7 +9,7 @@ import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import { readMessage, typedDataDigest } from './eip712.ts';
+import { memberJson, parseMessage, typedDataDigest } from './eip712.ts';
 import type { MemberValue } from './eip712.ts';
 import type { CallNode, ConstValue, LeafRule, PackedPart, Quantity, Rule, SignedMessage, Template, TemplateCall } from './template.ts';
 
@@ -68,6 +68,8 @@ type Context = {
   readonly messages: Messages;
   /** Each `lookup` URL whose message the check needed and no given text held. */
   readonly lookups: string[];
+  /** Each message that hashed to its digest, cut to the struct's members. */
+  readonly signed: string[];
 };
 
 const RAY = 10n ** 27n;
@@ -200,8 +202,9 @@ function packedValue(type: AbiType, bytes: Uint8Array): ConstValue {
  */
 function checkMessage(message: SignedMessage, digest: Hex, span: Span, holder: Uint8Array, callPath: string, arg: string, context: Context): void {
   for (const text of context.messages) {
-    const read = readMessage(message.struct, text);
+    const read = parseMessage(message.struct, text);
     if (typeof read === 'string' || typedDataDigest(message.separator, message.struct, read.values) !== digest) continue;
+    context.signed.push(JSON.stringify(Object.fromEntries(message.struct.members.map((member, i) => [member.name, memberJson(read.values[i] as MemberValue)]))));
     message.struct.members.forEach((member, i) => {
       const value = read.values[i] as MemberValue;
       const leaf: MessageLeaf = { message, body: read.body, values: read.values, member: i, digest: span };
@@ -226,6 +229,10 @@ function checkPacked(parts: readonly PackedPart[], actual: { readonly value: Uin
     const bytes = actual.value.subarray(offset, offset + part.size);
     const span: Span = [actual.span[0] + offset, actual.span[0] + offset + part.size];
     offset += part.size;
+    if (part.type.kind === 'bool' && (bytes[0] ?? 0) > 1) {
+      context.findings.push({ callPath, arg: `${arg}.${part.name}`, bytes: span, expected: '0x00 or 0x01, as abi.encodePacked writes a bool', actual: `0x${bytesToHex(bytes)}` });
+      continue;
+    }
     const value = packedValue(part.type, bytes);
     if (part.rule.kind === 'eip712') checkMessage(part.rule.message, value.value as Hex, span, actual.value, callPath, `${arg}.${part.name}`, context);
     else compareLeaf(part.rule, part.type, value, span, callPath, `${arg}.${part.name}`, context);
@@ -316,8 +323,11 @@ function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context, it
   }
 }
 
-/** `lookups`: each URL whose signed message the check needed and was not given. */
-export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[]; readonly lookups: readonly string[] };
+/**
+ * `lookups`: each URL whose signed message the check needed and was not given. `signed`: each given message that hashed
+ * to its digest, cut to the struct's members, the only part a verdict file needs to keep.
+ */
+export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[]; readonly lookups: readonly string[]; readonly signed: readonly string[] };
 
 export type Values = ReadonlyMap<string, ResolvedValue>;
 
@@ -390,7 +400,7 @@ export function inspectTemplateFields(
   const nonces: { rule: Rule; values: Values }[] = [];
   for (const op of card.operations) {
     const template = templates.get(op.template);
-    if (template === undefined) return { check: { kind: 'unverifiable', reasons: [`no template ${op.template}`] }, leaves: [], lookups: [] };
+    if (template === undefined) return { check: { kind: 'unverifiable', reasons: [`no template ${op.template}`] }, leaves: [], lookups: [], signed: [] };
     operations.push({ template, values: op.values });
     if (template.nonce !== undefined) nonces.push({ rule: template.nonce, values: op.values });
   }
@@ -399,7 +409,8 @@ export function inspectTemplateFields(
   const unverifiable: string[] = [];
   const leaves: Leaf[] = [];
   const lookups: string[] = [];
-  const done = (check: FieldCheck): Inspection => ({ check, leaves, lookups });
+  const signed: string[] = [];
+  const done = (check: FieldCheck): Inspection => ({ check, leaves, lookups, signed });
   const seen = new Map<Values, Map<LeafRule, bigint>>();
   const contextFor = (values: Values, root: Uint8Array): Context => ({
     safe: card.safe,
@@ -412,6 +423,7 @@ export function inspectTemplateFields(
     seen,
     messages,
     lookups,
+    signed,
   });
   for (const { rule, values } of nonces) {
     compareLeaf(rule, { kind: 'uint', bits: 256 }, { kind: 'uint', value: tx.nonce }, undefined, 'safeTx', 'nonce', contextFor(values, new Uint8Array()));
