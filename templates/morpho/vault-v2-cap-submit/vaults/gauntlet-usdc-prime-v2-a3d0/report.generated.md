@@ -22,6 +22,8 @@ Written by `pnpm report morpho/vault-v2-cap-submit --vault-of gauntlet-usdc-prim
 | Name | Market id | LLTV | Parts |
 | --- | --- | --- | --- |
 | `usdc-cbbtc-86` | `0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64` | 860000000000000000 | lending `morpho-blue` `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb`; loanToken `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; collateralToken `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`; oracle `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a`; irm `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` |
+| `usdc-usp-86` | `0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461` | 860000000000000000 | lending `morpho-blue` `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb`; loanToken `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; collateralToken `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`; oracle `morpho-oracle-usp-usdc` `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d`; irm `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` |
+| `usdc-usp-915` | `0x60977eff30f04afef416234f4c67160b339f7429fc334888c522896c1c5808f1` | 915000000000000000 | lending `morpho-blue` `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb`; loanToken `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; collateralToken `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`; oracle `morpho-oracle-usp-usdc` `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d`; irm `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` |
 
 Must name one address: the `asset` of the card's `vault`, the `loanToken` of the card's `market`.
 
@@ -41,8 +43,8 @@ Must name one address: the `asset` of the card's `vault`, the `loanToken` of the
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.kind` | constant string `"this/marketParams"` |
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.adapter` | the `adapter` of the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0-market-adapter` `0xDF62f57Ea333a842Db200d4892c90F98204fa22F` |
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.marketParams.loanToken` | the `loanToken` of the card's `market`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |
-| `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.marketParams.collateralToken` | the `collateralToken` of the card's `market`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
-| `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.marketParams.oracle` | the `oracle` of the card's `market`: one of `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` |
+| `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.marketParams.collateralToken` | the `collateralToken` of the card's `market`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
+| `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.marketParams.oracle` | the `oracle` of the card's `market`: one of `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a`, `morpho-oracle-usp-usdc` `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` |
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.marketParams.irm` | the `irm` of the card's `market`: one of `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` |
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → abi.encode.marketParams.lltv` | the `lltv` of the card's `market` |
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.newAbsoluteCap` | the card's `absolute-cap` |
@@ -52,8 +54,8 @@ Must name one address: the `asset` of the card's `vault`, the `loanToken` of the
 | `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.kind` | constant string `"this/marketParams"` |
 | `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.adapter` | the `adapter` of the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0-market-adapter` `0xDF62f57Ea333a842Db200d4892c90F98204fa22F` |
 | `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.marketParams.loanToken` | the `loanToken` of the card's `market`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |
-| `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.marketParams.collateralToken` | the `collateralToken` of the card's `market`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
-| `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.marketParams.oracle` | the `oracle` of the card's `market`: one of `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` |
+| `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.marketParams.collateralToken` | the `collateralToken` of the card's `market`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
+| `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.marketParams.oracle` | the `oracle` of the card's `market`: one of `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a`, `morpho-oracle-usp-usdc` `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` |
 | `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.marketParams.irm` | the `irm` of the card's `market`: one of `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` |
 | `multicall.data[1] → submit.data → increaseRelativeCap.idData → abi.encode.marketParams.lltv` | the `lltv` of the card's `market` |
 | `multicall.data[1] → submit.data → increaseRelativeCap.newRelativeCap` | the card's `relative-cap` |
@@ -66,8 +68,8 @@ The program calls each of these views just before and just after the transaction
 
 | Contract | Function | Arguments | Change |
 | --- | --- | --- | --- |
-| the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0` `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | `executableAt(bytes)`, selector `0x8639fb07`, returns `(uint256 executableAt)` | `data` `increaseAbsoluteCap(bytes,uint256)` with (`idData` `abi.encode(string,address,(address,address,address,address,uint256))` with (`kind` constant string `"this/marketParams"`; `adapter` the `adapter` of the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0-market-adapter` `0xDF62f57Ea333a842Db200d4892c90F98204fa22F`; `marketParams` (`loanToken` the `loanToken` of the card's `market`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; `collateralToken` the `collateralToken` of the card's `market`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`; `oracle` the `oracle` of the card's `market`: one of `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a`; `irm` the `irm` of the card's `market`: one of `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC`; `lltv` the `lltv` of the card's `market`)); `newAbsoluteCap` the card's `absolute-cap`) | `executableAt` increases |
-| the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0` `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | `executableAt(bytes)`, selector `0x8639fb07`, returns `(uint256 executableAt)` | `data` `increaseRelativeCap(bytes,uint256)` with (`idData` `abi.encode(string,address,(address,address,address,address,uint256))` with (`kind` constant string `"this/marketParams"`; `adapter` the `adapter` of the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0-market-adapter` `0xDF62f57Ea333a842Db200d4892c90F98204fa22F`; `marketParams` (`loanToken` the `loanToken` of the card's `market`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; `collateralToken` the `collateralToken` of the card's `market`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`; `oracle` the `oracle` of the card's `market`: one of `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a`; `irm` the `irm` of the card's `market`: one of `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC`; `lltv` the `lltv` of the card's `market`)); `newRelativeCap` the card's `relative-cap`) | `executableAt` increases |
+| the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0` `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | `executableAt(bytes)`, selector `0x8639fb07`, returns `(uint256 executableAt)` | `data` `increaseAbsoluteCap(bytes,uint256)` with (`idData` `abi.encode(string,address,(address,address,address,address,uint256))` with (`kind` constant string `"this/marketParams"`; `adapter` the `adapter` of the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0-market-adapter` `0xDF62f57Ea333a842Db200d4892c90F98204fa22F`; `marketParams` (`loanToken` the `loanToken` of the card's `market`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; `collateralToken` the `collateralToken` of the card's `market`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`; `oracle` the `oracle` of the card's `market`: one of `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a`, `morpho-oracle-usp-usdc` `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d`; `irm` the `irm` of the card's `market`: one of `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC`; `lltv` the `lltv` of the card's `market`)); `newAbsoluteCap` the card's `absolute-cap`) | `executableAt` increases |
+| the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0` `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | `executableAt(bytes)`, selector `0x8639fb07`, returns `(uint256 executableAt)` | `data` `increaseRelativeCap(bytes,uint256)` with (`idData` `abi.encode(string,address,(address,address,address,address,uint256))` with (`kind` constant string `"this/marketParams"`; `adapter` the `adapter` of the card's `vault`: one of `gauntlet-usdc-prime-v2-a3d0-market-adapter` `0xDF62f57Ea333a842Db200d4892c90F98204fa22F`; `marketParams` (`loanToken` the `loanToken` of the card's `market`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; `collateralToken` the `collateralToken` of the card's `market`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`; `oracle` the `oracle` of the card's `market`: one of `morpho-oracle-cbbtc-usdc-86` `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a`, `morpho-oracle-usp-usdc` `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d`; `irm` the `irm` of the card's `market`: one of `adaptive-curve-irm` `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC`; `lltv` the `lltv` of the card's `market`)); `newRelativeCap` the card's `relative-cap`) | `executableAt` increases |
 
 ## Official documentation
 
@@ -82,7 +84,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc vault-v2-factory cbbtc morpho-blue adaptive-curve-irm morpho-market-v1-adapter-v2-factory morpho-oracle-cbbtc-usdc-86 gauntlet-usdc-prime-v2-a3d0 gauntlet-usdc-prime-v2-a3d0-market-adapter` prints what each check compared.
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc vault-v2-factory cbbtc morpho-blue adaptive-curve-irm morpho-market-v1-adapter-v2-factory morpho-oracle-cbbtc-usdc-86 gauntlet-usdc-prime-v2-a3d0 gauntlet-usdc-prime-v2-a3d0-market-adapter usp morpho-oracle-usp-usdc` prints what each check compared.
 
 | Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -95,6 +97,8 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | oracle | <https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc> | PASS | n/a | n/a | FINDING |
 | `gauntlet-usdc-prime-v2-a3d0` | `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | vault | <https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime> | PASS | PASS | n/a | FINDING |
 | `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `0xDF62f57Ea333a842Db200d4892c90F98204fa22F` | adapter | <https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime> | PASS | n/a | n/a | FINDING |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
+| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/market/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
@@ -105,7 +109,7 @@ Each entry's `moreSources`: more official pages that list its address, each chec
 | `adaptive-curve-irm` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | FINDING | PASS | PASS |
 | `morpho-market-v1-adapter-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | FINDING | PASS | PASS |
 
-9 entries, 8 findings.
+11 entries, 9 findings.
 
 ### Official APIs
 
@@ -115,6 +119,7 @@ Each entry's `apiSource`: the protocol's own API, asked with the request the reg
 | --- | --- | --- | --- | --- |
 | `morpho-oracle-cbbtc-usdc-86` | POST <https://api.morpho.org/graphql> | `data.marketById.oracle.address` | PASS | PASS |
 | `gauntlet-usdc-prime-v2-a3d0-market-adapter` | POST <https://api.morpho.org/graphql> | `data.vaultV2ByAddress.adapters.items.0.address` | PASS | PASS |
+| `morpho-oracle-usp-usdc` | POST <https://api.morpho.org/graphql> | `data.marketById.oracle.address` | PASS | PASS |
 
 ## Code pins
 
@@ -134,6 +139,8 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `morpho-oracle-cbbtc-usdc-86` | 20678797 | `0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11` | none | PASS |
 | `gauntlet-usdc-prime-v2-a3d0` | 23479188 | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | none | PASS |
 | `gauntlet-usdc-prime-v2-a3d0-market-adapter` | 24879846 | `0x4fb6881dcd9eeb017fa714f179ea3f691c98f1511fd0d41045c142b2a49c087a` | none | PASS |
+| `usp` | 23195672 | `0x4c64cb2303edec6193910f660f82375d5bff982c070f14e1944c7a568ed5bb2e` | `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS |
+| `morpho-oracle-usp-usdc` | 24512804 | `0xf69bd2099fe1c6f91f0ecd55934adc3a9fd8b4cf0443f181086d590b13a131ec` | none | PASS |
 
 ### Today's code
 
@@ -141,12 +148,12 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `cbbtc` | PASS | 26428108 |
-| `morpho-blue` | PASS | 26428108 |
-| `adaptive-curve-irm` | PASS | 26428108 |
-| `morpho-market-v1-adapter-v2-factory` | PASS | 26428108 |
-| `morpho-oracle-cbbtc-usdc-86` | PASS | 26428108 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | PASS | 26428108 |
+| `morpho-blue` | PASS | 26429024 |
+| `adaptive-curve-irm` | PASS | 26429024 |
+| `morpho-market-v1-adapter-v2-factory` | PASS | 26429024 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26429024 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | PASS | 26429024 |
+| `morpho-oracle-usp-usdc` | PASS | 26429024 |
 
 ## ABI proofs
 
@@ -156,13 +163,15 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
 | `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | PROVEN | none | `VaultV2Factory`, solc `0.8.28+commit.7893614a` | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | PASS | 0 immutable, 0 library spans masked | 26399583 |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
 | `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 | `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 | `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 | `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 | `gauntlet-usdc-prime-v2-a3d0` | `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26428108 |
 | `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `0xDF62f57Ea333a842Db200d4892c90F98204fa22F` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | PROVEN | eip1967, implementation `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` | `ERC20IssuanceUpgradeable_Blacklist_v1`, solc `0.8.23+commit.f704f362` | `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS | 0 immutable, 0 library spans masked | 26429052 |
+| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 
 ## Vaults
 
@@ -171,37 +180,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `gauntlet-usdc-prime-v2-a3d0`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26428111
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26429028
 vault        gauntlet-usdc-prime-v2-a3d0 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0
-latest block 26428111 0x24725b414bd97f66e0943dccf94f8336f536f4b2c88e6bd331a0794659f266af
+latest block 26429028 0x70bb10ac7a48f82b383d7c83f0de60e7e6913359110fa4b9c9b88c6b351669e9
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-16  block 26428111  97,969,165.144104 usdc
-  2026-10-17  block 26212111  124,480,923.584102 usdc
-  2026-09-17  block 25996111  89,404,357.293767 usdc
-  2026-08-18  block 25780111  72,566,816.672260 usdc
-  2026-07-19  block 25564111  72,472,682.287778 usdc
-  2026-06-19  block 25348111  83,414,067.286740 usdc
-  2026-05-19  block 25132111  101,874,868.435182 usdc
-  2026-04-19  block 24916111  60,188,674.579272 usdc
-  2026-03-20  block 24700111  68,681,874.718760 usdc
-  2026-02-18  block 24484111  76,527,632.553601 usdc
-  2026-01-19  block 24268111  101,789.353875 usdc
-  2025-12-20  block 24052111  100,348.223024 usdc
-  2025-11-19  block 23836111  100,065.223341 usdc
+  2026-11-16  block 26429028  97,957,300.324212 usdc
+  2026-10-17  block 26213028  124,487,852.966905 usdc
+  2026-09-17  block 25997028  95,892,934.037644 usdc
+  2026-08-18  block 25781028  72,714,143.901013 usdc
+  2026-07-19  block 25565028  72,473,504.530774 usdc
+  2026-06-19  block 25349028  83,193,606.188892 usdc
+  2026-05-20  block 25133028  101,866,733.610903 usdc
+  2026-04-19  block 24917028  63,028,846.105601 usdc
+  2026-03-20  block 24701028  68,685,046.170394 usdc
+  2026-02-18  block 24485028  76,528,184.401950 usdc
+  2026-01-19  block 24269028  101,790.516891 usdc
+  2025-12-20  block 24053028  100,349.366021 usdc
+  2025-11-20  block 23837028  100,066.468829 usdc
 
-holders      739 addresses hold shares at block 26428111, of 1796 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 93903224208756876729667582
-top 10       hold 46.65% of the shares; each: 11.51%, 8.11%, 7.54%, 3.88%, 3.50%, 2.71%, 2.57%, 2.43%, 2.32%, 2.09%
+holders      738 addresses hold shares at block 26429028, of 1797 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 93890389466204661993359718
+top 10       hold 46.66% of the shares; each: 11.51%, 8.11%, 7.54%, 3.88%, 3.50%, 2.71%, 2.57%, 2.43%, 2.32%, 2.09%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26428108 `0x5812266a4d2d92c63f872e312adc799bdd1c2c5cc4a8e0c6f1dd21a1a1a181ee`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429024 `0xef57dabb523db192f8a5fd5f4f44afa75ddbd04c05e477d6826b9475b6418cdb`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9944301217 | 4449065303 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9984979303 | 4463194962 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |
@@ -218,6 +227,7 @@ What DefiLlama and the chain say about the protocols this template's calls go to
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 |
 | `gauntlet-usdc-prime-v2-a3d0` | `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | 18 |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | 18 |
 
 ## Past transactions
 
@@ -225,7 +235,7 @@ No `pnpm past-txs --record` recording names this template.
 
 ## ERC-7730
 
-`pnpm erc7730 usdc vault-v2-factory cbbtc morpho-blue adaptive-curve-irm morpho-market-v1-adapter-v2-factory morpho-oracle-cbbtc-usdc-86 gauntlet-usdc-prime-v2-a3d0 gauntlet-usdc-prime-v2-a3d0-market-adapter`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdc vault-v2-factory cbbtc morpho-blue adaptive-curve-irm morpho-market-v1-adapter-v2-factory morpho-oracle-cbbtc-usdc-86 gauntlet-usdc-prime-v2-a3d0 gauntlet-usdc-prime-v2-a3d0-market-adapter usp morpho-oracle-usp-usdc`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -355,5 +365,13 @@ gauntlet-usdc-prime-v2-a3d0 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0 (vault)
 
 gauntlet-usdc-prime-v2-a3d0-market-adapter 0xDF62f57Ea333a842Db200d4892c90F98204fa22F (adapter)
   descriptor   none: no calldata descriptor lists this address on chain 1 or is scoped by its factory morpho-market-v1-adapter-v2-factory
+  index        index.calldata.json has no entry for this address
+
+usp 0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6 (token)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+morpho-oracle-usp-usdc 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d (oracle)
+  descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 ```

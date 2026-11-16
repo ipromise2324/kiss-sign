@@ -1,7 +1,7 @@
 {
   "verdict": {
     "status": "safe",
-    "text": "可以用。CoinGecko 和工廠都確認這個 vault；轉接合約只有 Morpho API 列出，見待確認。"
+    "text": "可以用。CoinGecko 和工廠都確認這個 vault；待確認是只有 Morpho API 列出的轉接合約和 oracle，AI 在鏈上查過。"
   },
   "judgments": [
     {

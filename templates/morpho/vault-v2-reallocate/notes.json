@@ -1,0 +1,83 @@
+{
+  "title": "在 Morpho Vault V2 的兩個市場之間搬錢（allocator）",
+  "summary": "Safe 以 allocator 身分呼叫 vault 的 `multicall`：從你選的來源市場撤出你填的數量，放進你選的目標市場。錢只在 vault 的市場之間移動，不動 Safe 的任何資產。",
+  "protocols": {
+    "morpho-blue": {
+      "intro": "Morpho Vault V2 把存款分配到多個 Morpho Blue 市場。curator 設定每個市場能放多少（上限），allocator 在上限內搬錢。提高上限要先 `submit`，等 timelock 過了才能執行。",
+      "audits": {
+        "text": "Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。",
+        "sources": [
+          "https://github.com/morpho-org/vault-v2/tree/main/audits"
+        ]
+      },
+      "incidents": []
+    }
+  },
+  "judgments": [
+    {
+      "text": "搬進的市場要在上限內，否則 vault 會 revert；verify 確認 vault 轉接合約在來源市場的 supply shares 減少、在目標市場的增加。",
+      "recommendation": "先確認目標市場的上限夠放你填的數量。"
+    }
+  ],
+  "reviews": {
+    "morpho-oracle-cbbtc-usdc-86/address": {
+      "status": "concern",
+      "text": "AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
+      "recommendation": "可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。"
+    },
+    "morpho-oracle-usp-usdc/address": {
+      "status": "concern",
+      "text": "AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。",
+      "recommendation": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
+    }
+  },
+  "entries": {
+    "usdc": {
+      "role": "vault 的資產，也是市場借出的代幣"
+    },
+    "cbbtc": {
+      "role": "市場的抵押代幣"
+    },
+    "morpho-blue": {
+      "role": "Morpho Blue 本體，市場在它裡面"
+    },
+    "morpho-oracle-cbbtc-usdc-86": {
+      "role": "市場用來給 cbBTC 定價的 oracle"
+    },
+    "adaptive-curve-irm": {
+      "role": "市場的利率模型"
+    },
+    "morpho-market-v1-adapter-v2-factory": {
+      "role": "建立 Vault V2 市場轉接合約的工廠，它回答 `isMorphoMarketV1AdapterV2` = true，轉接合約是它建立的"
+    },
+    "usp": {
+      "role": "USP 市場的抵押代幣"
+    },
+    "morpho-oracle-usp-usdc": {
+      "role": "USP 市場用來給 USP 定價的 oracle"
+    }
+  },
+  "fields": {
+    "1.multicall.data": "vault 依序執行的兩個呼叫，固定兩項：先從來源市場撤出，再放進目標市場。任一個失敗，整筆失敗。",
+    "1.multicall.data[0]": "第一項：從來源市場撤出。",
+    "1.multicall.data[0].deallocate.adapter": "vault 的市場轉接合約，錢經由它進出 Morpho Blue 市場。",
+    "1.multicall.data[0].deallocate.data": "告訴轉接合約是哪個市場：來源市場的五個參數。",
+    "1.multicall.data[0].deallocate.data.abi.encode.marketParams": "市場的五個參數，合起來就是你選的市場。",
+    "1.multicall.data[0].deallocate.data.abi.encode.marketParams.loanToken": "市場借出的代幣，等於 vault 的資產。",
+    "1.multicall.data[0].deallocate.data.abi.encode.marketParams.collateralToken": "市場的抵押代幣。",
+    "1.multicall.data[0].deallocate.data.abi.encode.marketParams.oracle": "市場的 oracle。",
+    "1.multicall.data[0].deallocate.data.abi.encode.marketParams.irm": "市場的利率模型。",
+    "1.multicall.data[0].deallocate.data.abi.encode.marketParams.lltv": "市場的清算門檻。",
+    "1.multicall.data[0].deallocate.assets": "撤出的資產數量，等於你填的。",
+    "1.multicall.data[1]": "第二項：放進目標市場。",
+    "1.multicall.data[1].allocate.adapter": "vault 的市場轉接合約，錢經由它進出 Morpho Blue 市場。",
+    "1.multicall.data[1].allocate.data": "告訴轉接合約是哪個市場：目標市場的五個參數。",
+    "1.multicall.data[1].allocate.data.abi.encode.marketParams": "市場的五個參數，合起來就是你選的市場。",
+    "1.multicall.data[1].allocate.data.abi.encode.marketParams.loanToken": "市場借出的代幣，等於 vault 的資產。",
+    "1.multicall.data[1].allocate.data.abi.encode.marketParams.collateralToken": "市場的抵押代幣。",
+    "1.multicall.data[1].allocate.data.abi.encode.marketParams.oracle": "市場的 oracle。",
+    "1.multicall.data[1].allocate.data.abi.encode.marketParams.irm": "市場的利率模型。",
+    "1.multicall.data[1].allocate.data.abi.encode.marketParams.lltv": "市場的清算門檻。",
+    "1.multicall.data[1].allocate.assets": "放進的資產數量，等於你填的，跟撤出的一樣多。"
+  }
+}
