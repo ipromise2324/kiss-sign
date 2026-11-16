@@ -227,7 +227,7 @@ test('an anchor with a sender asks both sources only for transfers out of it, an
 
 const LOAN = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address;
 const LENDING = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' as Address;
-const DISTRIBUTOR = '0x330eefa8a787552dc5cad3c3ca644844b1e61ddb' as Address;
+const DISTRIBUTOR = '0x3ef3d8ba38ebe18db133cec108f4d14ce00dd9ae' as Address;
 
 /** The requests a search sends for `anchor`, each answered as finding nothing. */
 async function requestsFor(anchor: Omit<Anchor, 'token' | 'kind' | 'fromBlock' | 'toBlock'>): Promise<SourceRequest[]> {
@@ -278,7 +278,7 @@ test('the report names where the anchor transfers move', async () => {
       { ask: async (r) => (r.source === 'alchemy' ? { transfers: [] } : { status: '0', message: 'No records found' }), reader: replayReader([]), registry, exclude: undefined, maxTxs: 12 },
     );
   assert.match(renderPastTxs(await run({ to: LENDING }), registry), /^anchor: Transfer of usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 moved into morpho-blue$/m);
-  assert.match(renderPastTxs(await run({ from: DISTRIBUTOR, to: LENDING }), registry), /moved out of morpho-urd into morpho-blue$/m);
+  assert.match(renderPastTxs(await run({ from: DISTRIBUTOR, to: LENDING }), registry), /moved out of merkl-distributor into morpho-blue$/m);
 });
 
 test('--to goes with --anchor any only', () => {
