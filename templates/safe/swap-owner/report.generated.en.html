@@ -312,13 +312,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who you">you pick</span>picked at each signing</span>
     <span><span class="who">fixed</span>any change is a MISMATCH</span>
   </div>
-  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below.No perturbation test is recorded to serve as an example, so values decided at each signing show only their rule.</p>
+  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below. No perturbation test is recorded to serve as an example, so values decided at each signing show only their rule.</p>
   
   <div class="cb">
     <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">your Safe.</span>swapOwner</span><span class="sel">0xe318b52b</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://docs.safe.global/reference-smart-account/owners/swapOwner">docs.safe.global/reference-smart-account/owners</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
     <div class="arg" data-field="1.swapOwner.prevOwner">
       <div class="nm"><span class="pn">prevOwner</span><span class="who">fixed</span></div>
-      <div class="val"><div class="is">the signer before the signer (old-owner) in the Safe&#39;s owner list <span class="f3">the program reads getOwners() on chain; you do not type it</span></div>
+      <div class="val"><div class="is">the owner just before the signer (old-owner) in the Safe&#39;s owner list <span class="f3">the program reads getOwners() on chain; you do not type it</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The signer just before the old signer in the Safe&#39;s linked list of signers; the one before the first signer is 0x0000000000000000000000000000000000000001. If it is wrong, the transaction fails (GS205).</span></span></div></div>
     </div>
     <div class="arg" data-field="1.swapOwner.oldOwner">

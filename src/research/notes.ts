@@ -210,18 +210,24 @@ const str =
 
 /** How many characters a language may use for what Traditional Chinese says in `max`. */
 const LENGTH: Readonly<Record<Language, number>> = { 'zh-TW': 1, en: 3 };
+/** Chinese characters and full-width punctuation, which the English page must not show. */
+const CHINESE = /[\u2e80-\u9fff\u3000-\u303f\uff00-\uffef]/u;
 
-/** AI text, `{ "en": ..., "zh-TW": ... }`, each language under its limit; the page's language is returned. */
+/** AI text, `{ "en": ..., "zh-TW": ... }`, each under its limit, the English with no Chinese; the page's language is returned. */
 const text =
   (max: number): P<string> =>
   (path, raw, scope) => {
     if (!isRecord(raw)) return refuse(path, `not a JSON object with ${LANGUAGES.join(' and ')}`);
     const extra = Object.keys(raw).find((key) => !(LANGUAGES as readonly string[]).includes(key));
     if (extra !== undefined) refuse(path, `${shown(extra)} is not a language; use ${LANGUAGES.join(' and ')}`);
-    const each = Object.fromEntries(LANGUAGES.map((language) => {
-      const value = own(raw, language);
-      return [language, value === undefined ? refuse(path, `${language} is missing`) : str(max * LENGTH[language])(`${path}.${language}`, value, scope)];
-    })) as Record<Language, string>;
+    const each = Object.fromEntries(
+      LANGUAGES.map((language) => {
+        const value = own(raw, language);
+        if (value === undefined) return refuse(path, `${language} is missing`);
+        const parsed = str(max * LENGTH[language])(`${path}.${language}`, value, scope);
+        return [language, language === 'en' && CHINESE.test(parsed) ? refuse(`${path}.en`, 'holds Chinese characters or full-width punctuation') : parsed];
+      }),
+    ) as Record<Language, string>;
     return each[scope.language];
   };
 

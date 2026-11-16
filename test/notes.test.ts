@@ -30,7 +30,8 @@ const SCOPE: NotesScope = {
 };
 
 /** One AI text in both languages; the English is the Chinese with a marker, so a test can tell which one came back. */
-const t = (zh: string) => ({ en: `en:${zh}`, 'zh-TW': zh });
+/** A text in both languages; its English stands in for a translation, each Chinese character an x. */
+const t = (zh: string) => ({ en: `en:${zh.replace(/[^\u0000-\u2e7f]/gu, 'x')}`, 'zh-TW': zh });
 
 const NOTE = { text: t('說明'), sources: ['https://docs.morpho.org/'] };
 const VALID = {
@@ -76,9 +77,9 @@ test('valid notes parse, in the scope order, with fields as plain strings', () =
 
 test("each language's page gets that language's text", () => {
   const en = parseNotes(VALID, { ...SCOPE, language: 'en' });
-  assert.equal(en.title, 'en:供應 USDC 到 Morpho 市場');
-  assert.equal(en.fields.get('2.blueBundlesV1Supply.marketParams.oracle'), 'en:價格來源');
-  assert.equal(en.protocols.get('morpho-blue')?.audits.text, 'en:說明');
+  assert.equal(en.title, t('供應 USDC 到 Morpho 市場').en);
+  assert.equal(en.fields.get('2.blueBundlesV1Supply.marketParams.oracle'), t('價格來源').en);
+  assert.equal(en.protocols.get('morpho-blue')?.audits.text, t('說明').en);
   assert.equal(parseNotes(VALID, SCOPE).title, '供應 USDC 到 Morpho 市場');
 });
 
@@ -174,6 +175,10 @@ test('a source that is not an https URL is refused', () => {
 test('a control or bidirectional character is refused', () => {
   for (const mark of ['\u202e', '\u200e', '\u200f', '\u061c']) refused(edited(['summary'], { en: 'ab', 'zh-TW': `a${mark}b` }), 'notes.json.summary.zh-TW: holds a control or bidirectional character');
   refused(edited(['summary'], { en: 'a\u202eb', 'zh-TW': 'ab' }), 'notes.json.summary.en: holds a control or bidirectional character');
+});
+
+test('English text that holds Chinese characters or full-width punctuation is refused, so none reaches the English page', () => {
+  for (const en of ['供應 USDC', 'Supply USDC，then deposit', 'Supply（USDC）']) refused(edited(['summary'], { en, 'zh-TW': '供應 USDC' }), 'notes.json.summary.en: holds Chinese characters or full-width punctuation');
 });
 
 test('text over its limit is refused: 2,000, 300 for a review, 200 for a judgment, role, recommendation, intro or AI source, 100 for a title, flow line or verdict; English may be three times as long', () => {

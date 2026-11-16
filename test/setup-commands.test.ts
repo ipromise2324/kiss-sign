@@ -117,13 +117,13 @@ test('init records the Safe on chain 1 and the repository origin names, and prin
       `kiss-sign checks transactions of the Safe ${SAFE} on Ethereum mainnet (chain 1).\n` +
         "It runs only what is on main of github.com/signer/kiss-sign, the repository this clone's origin names.\n" +
         'Merging a pull request into that main is your confirmation.\n' +
-        'Reports and the verify page are in English (en); init --language en|zh-TW changes it.\n',
+        'Reports and the verify page are in English (en); pnpm kiss-sign init --language en|zh-TW changes it.\n',
     ),
     result.stdout,
   );
 });
 
-test('init records the report language, keeps it when run again without --language, changes it with one, and refuses any other', async () => {
+test('init records the report language, keeps it when run again without --language, changes it with one even without --safe once set up, and refuses any other', async () => {
   const home = freshHome();
   const language = () => JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')).language;
   const chinese = await run(['init', '--safe', SAFE, '--language', 'zh-TW'], home, undefined, fork);
@@ -132,8 +132,12 @@ test('init records the report language, keeps it when run again without --langua
   assert.equal(language(), 'zh-TW');
   assert.equal((await run(['init', '--safe', SAFE], home, undefined, fork)).code, 0);
   assert.equal(language(), 'zh-TW');
-  assert.equal((await run(['init', '--safe', SAFE, '--language', 'en'], home, undefined, fork)).code, 0);
+  assert.equal((await run(['init', '--language', 'en'], home, undefined, fork)).code, 0);
   assert.equal(language(), 'en');
+  assert.equal(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')).safe, SAFE);
+  const unset = await run(['init', '--language', 'en'], freshHome(), undefined, fork);
+  assert.equal(unset.code, 64);
+  assert.match(unset.stderr, /init needs --safe <address>\./);
   const other = await run(['init', '--safe', SAFE, '--language', 'fr'], home, undefined, fork);
   assert.equal(other.code, 64);
   assert.match(other.stderr, /--language takes en or zh-TW\./);

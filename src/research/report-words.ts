@@ -16,6 +16,8 @@ const ZH = {
   /** `a、b和c`. */
   and: (items: readonly string[]): string => (items.length <= 1 ? items.join('') : before(`${items.slice(0, -1).join('、')}和`, items.at(-1) as string)),
   sentences: (items: readonly string[]): string => items.join(''),
+  /** What stands between two sentences. */
+  sentenceGap: '',
 
   tag: { research: 'AI 研究', ai: 'AI', safe: 'AI 研究：可以用', caution: 'AI 研究：要小心' } satisfies Record<AiTag, string>,
   strip: { sources: '地址來源', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', providers: '雙節點比對' } satisfies Record<StripLine | 'providers', string>,
@@ -34,7 +36,7 @@ const ZH = {
     allowance: '授權合約',
     singleton: 'Safe 合約本體',
   } satisfies Record<RegistryEntry['kind'], string>,
-  part: { asset: '資產', factory: '工廠', adapter: '轉接合約', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' } as Readonly<Record<string, string>>,
+  part: { asset: '資產', factory: '工廠', adapter: '轉接合約', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' },
   field: {
     floor: '最少收到的數量',
     ceiling: '最多付出的數量',
@@ -112,7 +114,7 @@ const ZH = {
     'no-abi-case': { title: '沒有 ABI 證明的紀錄', why: 'testdata/abi 沒有這個合約的 ABI 證明，程式沒有比對它的原始碼。' },
     'compiler-not-pinned': { title: '編譯器沒有釘選', why: '這個合約用的 solc 版本沒有釘選，程式沒有重新編譯它的原始碼。' },
     'pinned-before-spans': { title: 'code pin 沒有區段紀錄', why: '這個 code pin 寫在記錄區塊範圍之前，程式沒有讀鏈上從哪個區塊起跑這份程式碼。' },
-  } satisfies { readonly [K in FindingKind]?: { readonly title: string; readonly why: string } } as { readonly [K in FindingKind]?: { readonly title: string; readonly why: string } },
+  } satisfies { readonly [K in FindingKind]?: { readonly title: string; readonly why: string } },
   needsReview: '要你看',
   fixtureTitle: (name: Span, title: string): Span[] => ['測試交易 ', name, `：${title}`],
   docTitle: (entry: string, page: string, fn: Span, title: string): Span[] => [`${entry}：${page} `, fn, `，${title}`],
@@ -272,7 +274,7 @@ const ZH = {
     spender: '被授權者',
     referralFeePct: '推薦費比例',
     referralFeeRecipient: '推薦費收款地址',
-  } as Readonly<Record<string, string>>,
+  },
   descriptorsOf: (n: number, described: readonly string[], without: readonly string[]): string =>
     `呼叫 ${n}：列的是 ${described.join('、')} 的描述檔；${without.join('、')} 沒有描述檔，錢包只顯示原始資料。`,
   walletHides: (n: number, paths: readonly Span[]): Span[] => [`呼叫 ${n}：錢包不顯示 `, ...paths.flatMap((p, i): Span[] => [...(i === 0 ? [] : ['、']), p]), '。'],
@@ -525,6 +527,7 @@ const EN: Words = {
   list: (items) => items.join(', '),
   and: (items) => (items.length <= 1 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1) as string}`),
   sentences: (items) => items.join(' '),
+  sentenceGap: ' ',
 
   tag: { research: 'AI research', ai: 'AI', safe: 'AI research: OK to use', caution: 'AI research: be careful' },
   strip: { sources: 'Address sources', abi: 'Source verified', code: 'Code unchanged', params: 'Parameter checks', providers: 'Two providers' },
@@ -545,8 +548,8 @@ const EN: Words = {
   },
   part: { asset: 'asset', factory: 'factory', adapter: 'adapter', loanToken: 'loan token', collateralToken: 'collateral token', oracle: 'oracle', irm: 'interest rate model', lltv: 'LLTV' },
   field: {
-    floor: 'minimum received',
-    ceiling: 'maximum paid',
+    floor: 'minimum to receive',
+    ceiling: 'maximum to pay',
     shares: 'shares',
     amount: 'amount',
     address: 'address',
@@ -669,8 +672,8 @@ const EN: Words = {
   fixedValue: 'a fixed value',
   differs: 'differs each time',
   sameAs: (path) => ['the same number as ', path],
-  ownerBefore: (owner) => `the signer before the ${owner} in the Safe's owner list`,
-  ownerBeforeShort: (owner) => `the signer before the ${owner} in the owner list`,
+  ownerBefore: (owner) => `the owner just before the ${owner} in the Safe's owner list`,
+  ownerBeforeShort: (owner) => `the owner just before the ${owner} in the owner list`,
   ownerBeforeHow: 'the program reads getOwners() on chain; you do not type it',
   priceMax: 'price ceiling',
   priceMin: 'price floor',
@@ -736,7 +739,7 @@ const EN: Words = {
   ],
   noExample: (vault) => [`No perturbation test is recorded to serve as an example${vault === undefined ? '' : ` for ${vault}`}`, ', so values decided at each signing show only their rule.'],
 
-  notRead: 'not read',
+  notRead: 'could not be read',
   noneFromDefillama: 'DefiLlama gives none',
   onEthereum: 'on Ethereum ',
   listed: 'Listed',
@@ -758,7 +761,7 @@ const EN: Words = {
   readApi: 'the protocol API',
 
   vault: 'Vault',
-  point: { unread: 'not read', 'no-code': 'no code yet', reverted: 'totalAssets() reverted' },
+  point: { unread: 'could not be read', 'no-code': 'no code yet', reverted: 'totalAssets() reverted' },
   vaultLead: (vault, command) => [vault, ': the recorded output of ', command, '. Every number was asked of two providers. No conversion to US dollars here.'],
   vaultNone: (vault, command) => [vault, ': no recording of ', command, '.'],
   dateUnknown: 'date unknown',
@@ -973,7 +976,7 @@ const EN: Words = {
 
   state: { ok: 'pass', warn: 'attention', bad: 'fail', na: 'nothing to compare', ask: 'AI judgment' },
   phrase: {
-    unread: 'not read',
+    unread: 'could not be read',
     'other-address': 'another address',
     'other-site': 'another site',
     'nothing-to-compare': 'nothing to compare',

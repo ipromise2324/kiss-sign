@@ -62,7 +62,7 @@ const EN: typeof ZH = {
   zero: 'zero address',
   addressBook: (name: string) => `${name} (address book)`,
   raw: 'no template to decode it',
-  trailer: (max: number, bytes: number) => `the template allows this call at most ${max} bytes; it has ${bytes} bytes, within range`,
+  trailer: (max: number, bytes: number) => `extra bytes after the arguments: the template allows at most ${max}; this call has ${bytes}, within range`,
   hardwareWallet: 'compare with the hardware wallet',
 };
 const NAMES: Readonly<Record<Language, typeof ZH>> = { en: EN, 'zh-TW': ZH };

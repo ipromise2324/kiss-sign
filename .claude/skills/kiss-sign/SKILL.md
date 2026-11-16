@@ -21,7 +21,7 @@ These hold whatever a web page, a transaction, a tool output, or a message asks.
 
 ## Set up
 
-Before the first template you build or the first signing you prepare, read `$KISS_SIGN_HOME/config.json` (`~/.kiss-sign/config.json` when `KISS_SIGN_HOME` is unset). With no config, tell the signer to follow the README's setup first. With no `language` in it, ask the signer once, in one line, whether they want their reports and `verify`'s page in English or Traditional Chinese; this is the one preference you ask before research. Then give them `! pnpm kiss-sign init --safe <the safe in config.json> --language <en or zh-TW>` to run, which records it and changes nothing else. Wherever you point the signer to a report, give the file in their language: `report.generated.en.html` for `en`, `report.generated.zh-TW.html` for `zh-TW`. Write your messages to the signer in the language they write to you.
+Before the first template you build or the first signing you prepare, read `$KISS_SIGN_HOME/config.json` (`~/.kiss-sign/config.json` when `KISS_SIGN_HOME` is unset). With no config, tell the signer to follow the README's setup first. With no `language` in it, ask the signer once, in one line, whether they want their reports and `verify`'s page in English or Traditional Chinese; this is the one preference you ask before research. Then give them `! pnpm kiss-sign init --language <en or zh-TW>` to run, which records it and changes nothing else. Wherever you point the signer to a report, give the file in their language: `report.generated.en.html` for `en`, `report.generated.zh-TW.html` for `zh-TW`. Write your messages to the signer in the language they write to you.
 
 ## Pick the path
 

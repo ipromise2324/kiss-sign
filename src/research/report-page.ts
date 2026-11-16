@@ -19,7 +19,7 @@ import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPar
 import type { FieldFact } from './erc7730.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
-import type { Confidence, Ledger, Phrase, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
+import type { Confidence, FindingKind, Ledger, Phrase, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { factsScope } from './protocol-facts.ts';
@@ -255,7 +255,7 @@ function fieldWord(template: Template, name: string, w: Words): string {
 
 /** A card reference in the signer's words: the field, and the attribute or market part it names. */
 const refWord = (template: Template, ref: CardRef, w: Words): string =>
-  ref.attribute === undefined ? fieldWord(template, ref.field, w) : w.partOf(fieldWord(template, ref.field, w), w.part[ref.attribute] ?? ref.attribute);
+  ref.attribute === undefined ? fieldWord(template, ref.field, w) : w.partOf(fieldWord(template, ref.field, w), (w.part as Readonly<Partial<Record<string, string>>>)[ref.attribute] ?? ref.attribute);
 
 /**
  * Each official page of an entry by its short URL: the `source` as `page`, each of `moreSources` as `more.<n>`. Two
@@ -1138,7 +1138,7 @@ function vaultSection(context: Context): Section[] {
 
 function reviewTitle(result: Result, context: Context): { readonly title: Inline; readonly why: Inline } {
   const { w } = context;
-  const words = w.finding[result.finding.kind] ?? { title: w.needsReview, why: '' };
+  const words = (w.finding as Readonly<Partial<Record<FindingKind, { readonly title: string; readonly why: string }>>>)[result.finding.kind] ?? { title: w.needsReview, why: '' };
   if (result.about.kind === 'fixture') {
     const detail = result.finding.kind === 'judged-otherwise' ? ` ${result.finding.detail}` : '';
     return { title: w.fixtureTitle({ code: result.about.name }, words.title), why: [`${words.why}${detail}`] };
@@ -1260,7 +1260,7 @@ function walletSection(context: Context): Section {
       const targets = find(field.path);
       if (targets.length === 0) return [{ label: [w.notAnArgument], value: [w.noValue] }];
       return targets.map(({ path, node }) => ({
-        label: targets.length > 1 ? [{ code: path }] : [Object.hasOwn(w.walletArg, node.name) ? (w.walletArg[node.name] as string) : node.name],
+        label: targets.length > 1 ? [{ code: path }] : [Object.hasOwn(w.walletArg, node.name) ? ((w.walletArg as Readonly<Record<string, string>>)[node.name] as string) : node.name],
         value: ruleWords(node.rule, context),
       }));
     });
