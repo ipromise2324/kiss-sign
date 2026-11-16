@@ -80,7 +80,7 @@ async function compare(reader: Reader, entry: RegistryEntry, at: BlockRef, time:
   if (own.kind === 'unverifiable') return unverifiable(own.reason);
   const hash = keccakCode(own.value);
   if (hash !== pin.hash) return mismatch(`${where} has code hash ${hash} ${block}, the registry pins ${pin.hash}`);
-  const located = await locate(reader, entry.address, own.value, at);
+  const located = await locate(reader, entry.address, own.value, at, entry.routes !== undefined);
   if (located.kind === 'refused') {
     const detail = `${where} ${block}: ${describeRefusal(located.refusal)}`;
     return located.refusal.why === 'unverifiable' ? unverifiable(detail) : mismatch(detail);
