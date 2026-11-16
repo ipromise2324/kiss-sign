@@ -15,8 +15,10 @@ import type { Anchor, AnchorKind, SourceExchange, SourceRequest } from '../src/r
 import type { Address } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import { fixtureRoot } from './fixture-root.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = fixtureRoot();
+const SCRIPTS = join(import.meta.dirname, '..', 'scripts');
 const recording: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit.json'), 'utf8'));
 const registry = loadRegistry(ROOT);
 
@@ -146,7 +148,7 @@ test('a window with more transfers than one page is halved, and the report names
 });
 
 test('--max-txs below one transaction per window is refused', () => {
-  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '11'], { encoding: 'utf8' });
+  const run = spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '11'], { encoding: 'utf8' });
   assert.equal(run.status, 64);
   assert.match(run.stderr, /--max-txs must be at least 12, one transaction per window/);
 });
@@ -282,7 +284,7 @@ test('the report names where the anchor transfers move', async () => {
 });
 
 test('--to goes with --anchor any only', () => {
-  const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--to', 'bundler3'], { encoding: 'utf8' });
+  const run = spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--to', 'bundler3'], { encoding: 'utf8' });
   assert.equal(run.status, 64);
   assert.match(run.stderr, /--to goes with --anchor any/);
 });

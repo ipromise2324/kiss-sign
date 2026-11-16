@@ -2,6 +2,8 @@
 
 Every fixture is a fact about Ethereum mainnet, recorded by a script in this repository. None comes from the Safe kiss-sign is configured for.
 
+Many fixtures belong to operations this repository ships no template for: claims, withdrawals, a migration, a market supply, a cancellation, a CCTP receive. Their templates are test fixtures in `test/fixtures/templates/`, with the registry entries and markets only they name in `test/fixtures/registry/`, and the tests read them through `test/fixture-root.ts`. They were recorded while those templates were in `templates/`. To record one again, work in a scratch clone with `test/fixtures/templates/` copied into `templates/` and `test/fixtures/registry/` merged into `registry/`; the scripts read only `templates/` and `registry/`.
+
 ## Safe transactions
 
 `safe-tx/<name>.json` holds one executed Safe transaction:
@@ -58,9 +60,9 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 | `uniswap-v4-add-liquidity-permit2.json` | `0xAD7DbDC63bb75C056AC55Fbd7c813ffA77d7DFC5`, Safe 1.3.0 | 125 | `0xab5bab5d60c2235f9d7e6d6ff214f871875f6fd5befc90e0df8b12ba7448e3cd`, block 26,350,094 | MultiSendCallOnly 1.3.0: PENDLE (`0x808507121b80c02388fad14726482e061b8da827`) `approve` to Permit2, Permit2 `approve` of the same amount to the Uniswap v4 PositionManager (`0xbd216513d74c8cf14cf4747e6aaa6420ff64ee9e`), `modifyLiquidities` minting a position, then a Permit2 `approve` and a PENDLE `approve` back to zero. safeTxHash `0x33061cab0c751522b1a7c994738fcad071596c0121203feec5b821f6bee6522e` |
 | `permit2-unlimited-approval.json` | `0xB3313a655b4c01abE5A46faDbB7855952863633A`, Safe 1.4.1 | 561 | `0x7eeaeb6fbd2f3fd131a47b75e9200e856149f6c686f85cc86d891f23244611c5`, block 26,361,406 | MultiSendCallOnly 1.4.1: Permit2 `approve`s of 2^160-1 WBTC and USDC to the Uniswap v4 PositionManager, then a PositionManager `multicall` minting a position. safeTxHash `0x5ddf364b6199c45b5bf4e631a52083d125bfadf538a3647cb050dc244b9fea2e` |
 
-The claim fixtures were found with `pnpm past-txs` on transfers of the reward token out of its distributor (`--from`), the CCTP one on USDC mints; see each template's `report.generated.md`. Each Safe's nonce is its `nonce()` at the block before. No Safe in the searched blocks received a CCTP message in a transaction of its own, so `cctp-receive-then-call` serves the CCTP tests twice: whole, and with its first call taken out as a direct call.
+The claim fixtures were found with `pnpm past-txs` on transfers of the reward token out of its distributor (`--from`), the CCTP one on USDC mints. Each Safe's nonce is its `nonce()` at the block before. No Safe in the searched blocks received a CCTP message in a transaction of its own, so `cctp-receive-then-call` serves the CCTP tests twice: whole, and with its first call taken out as a direct call.
 
-The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see `templates/morpho/vault-deposit/report.generated.md`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service. The Fluid fixtures come from two Safes that `pnpm past-txs fluid/vault-deposit` and `fluid/vault-withdraw` found, and from those Safes' histories in the Safe Transaction Service; the Fluid app is the origin of each. One Safe was upgraded from 1.3.0 to 1.4.1 between its nonces 124 and 152.
+The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see the reports in `templates/morpho/vault-deposit/vaults/`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service. The Fluid fixtures come from two Safes that `pnpm past-txs fluid/vault-deposit` and `fluid/vault-withdraw` found, and from those Safes' histories in the Safe Transaction Service; the Fluid app is the origin of each. One Safe was upgraded from 1.3.0 to 1.4.1 between its nonces 124 and 152.
 
 ### Recording again
 
@@ -105,7 +107,7 @@ pnpm record-safe-tx permit2-unlimited-approval 0xB3313a655b4c01abE5A46faDbB78559
 
 The `morpho-*-set-authorization` fixtures were found from Morpho Blue's `SetAuthorization` events, and the two Permit2 fixtures from Permit2's `Approval` events, in Etherscan's log search, keeping each transaction a Safe sent to itself through `execTransaction`.
 
-The `morpho-migrate-*` fixtures were found with `pnpm past-txs morpho/vault-migrate-all` on Smokehouse USDC share burns (see `templates/morpho/vault-migrate-all/report.generated.md`). The `morpho-withdraw-*` and `morpho-bundles-*` fixtures were found with `pnpm past-txs` on share burns and mints (see the reports of `morpho/vault-withdraw`, `morpho/vault-withdraw-all` and `morpho/vault-bundles-deposit`), and each transaction looked up in the Safe Transaction Service by `transaction_hash`.
+The `morpho-migrate-*` fixtures were found with `pnpm past-txs morpho/vault-migrate-all` on Smokehouse USDC share burns. The `morpho-withdraw-*` and `morpho-bundles-*` fixtures were found with `pnpm past-txs` on share burns and mints, and each transaction looked up in the Safe Transaction Service by `transaction_hash`.
 
 The last argument is a nonce (the executed transaction at that nonce) or a safeTxHash. The script reads from Alchemy and drpc and writes only the providers' names.
 
@@ -133,7 +135,6 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 | `vault-bundles-v1.json` | Morpho VaultBundlesV1 `0x02912516d49dE997db75B9D7858faAE59209650B` | none | `VaultBundlesV1`, solc 0.8.34 |
 | `fluid-fusdc.json` | Fluid fUSDC `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | none | `fToken`, solc 0.8.21, 38 immutable spans masked |
 | `fluid-fusdt.json` | Fluid fUSDT `0x5C20B550819128074FD538Edf79791733ccEdd18` | none | `fToken`, solc 0.8.21, 38 immutable spans masked |
-| `fluid-rewards-distributor.json` | FluidMerkleDistributor "Fluid Rewards - Dec 2024" `0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0` | none | `FluidMerkleDistributor`, solc 0.8.21, 2 immutable spans masked |
 | `fluid-token.json` | FLUID token `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | none | `InstaToken`, solc 0.7.3 |
 | `merkl-distributor.json` | Merkl Distributor `0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae` | EIP-1967 | `Distributor` at `0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE`, solc 0.8.25, 5 immutable spans masked |
 | `cctp-message-transmitter.json` | Circle CCTP V1 MessageTransmitter `0x0a992d191DEeC32aFe36203Ad87D7d289a738F81` | none | `MessageTransmitter`, solc 0.7.6, 7 immutable and 5 library spans masked. Sourcify holds a partial match: the IPFS metadata hash differs and is masked too |
@@ -156,7 +157,6 @@ pnpm record-abi-case metamorpho-v1-1-apex 0x777791C4d6DC2CE140D00D2828a7C93503c6
 pnpm record-abi-case vault-bundles-v1 0x02912516d49dE997db75B9D7858faAE59209650B
 pnpm record-abi-case fluid-fusdc 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33
 pnpm record-abi-case fluid-fusdt 0x5C20B550819128074FD538Edf79791733ccEdd18
-pnpm record-abi-case fluid-rewards-distributor 0x7060FE0Dd3E31be01EFAc6B28C8D38018fD163B0
 pnpm record-abi-case fluid-token 0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb
 pnpm record-abi-case merkl-distributor 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae
 pnpm record-abi-case cctp-message-transmitter 0x0a992d191DEeC32aFe36203Ad87D7d289a738F81

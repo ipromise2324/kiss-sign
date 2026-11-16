@@ -13,8 +13,9 @@ import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { evaluate } from '../src/verify/verify.ts';
 import type { VerdictFile, VerifyInputs } from '../src/verify/verify.ts';
+import { fixtureRoot } from './fixture-root.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = fixtureRoot();
 const registry = loadRegistry(ROOT);
 const ALL = 'morpho/vault-migrate-all';
 const templates = new Map([ALL].map((id) => [id, loadTemplate(ROOT, id, registry)]));

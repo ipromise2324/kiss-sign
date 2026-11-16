@@ -13,26 +13,35 @@ import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
+import { fixtureRoot } from './fixture-root.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
 const templates = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
 const has = (id: string, file: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, file));
-/** Each report of a template with notes.json, by its HTML path: one per template, or one per reported vault. */
-const withNotes = new Map(templateTargets(ROOT, registry).filter((t) => has(t.template, NOTES_FILE)).map((t) => [generatedHtmlPath(t), t]));
+const FIXTURES = fixtureRoot();
+type TemplateTarget = ReturnType<typeof templateTargets>[number];
+const MARKET: TemplateTarget = { template: 'morpho/market-supply' };
+/** Each report of a template with notes.json, by its HTML path: one per template, or one per reported vault; and the test-only morpho/market-supply, reported as a whole template. */
+const withNotes = new Map<string, TemplateTarget>([...templateTargets(ROOT, registry).filter((t) => has(t.template, NOTES_FILE)).map((t): [string, TemplateTarget] => [generatedHtmlPath(t), t]), [generatedHtmlPath(MARKET), MARKET]]);
+const fixtureRegistry = loadRegistry(FIXTURES);
+/** The repository a report is read from: this one, or for the test-only template the fixture root. */
+const readFrom = (path: string) => (path === generatedHtmlPath(MARKET) ? { root: FIXTURES, registry: fixtureRegistry } : { root: ROOT, registry });
 const notesOf = (path: string): unknown => {
   const target = withNotes.get(path) ?? assert.fail(path);
-  return readNotes(ROOT, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
+  const { root, registry } = readFrom(path);
+  return readNotes(root, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
 };
 
 const replayed = new Map<string, { readonly inputs: ReportInputs; readonly title: ReportTitle; readonly html: string }>();
 
 before(async () => {
-  const compilers = await warmCompilers(reportCases(ROOT, registry, [...withNotes.values()]));
+  const compilers = await warmCompilers([...withNotes].flatMap(([path, target]) => reportCases(readFrom(path).root, readFrom(path).registry, [target])));
   for (const [path, target] of withNotes) {
-    const { inputs, title } = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
-    replayed.set(path, { inputs, title, html: (await generatedHtml(ROOT, inputs, title)) ?? assert.fail(`${path}: notes but no HTML`) });
+    const { root, registry } = readFrom(path);
+    const { inputs, title } = await replayInputs(root, registry, target, compilers, loadPublicSuffixList());
+    replayed.set(path, { inputs, title, html: (await generatedHtml(root, inputs, title)) ?? assert.fail(`${path}: notes but no HTML`) });
   }
 });
 
@@ -69,7 +78,7 @@ test('a template without notes.json gets no HTML report', async () => {
 
 test('the committed HTML report is what the program writes from the recordings and notes.json, byte for byte', () => {
   assert.ok(withNotes.size > 0);
-  for (const [path, { html }] of replayed) assert.equal(htmlDifference(readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
+  for (const [path, { html }] of replayed) if (readFrom(path).root === ROOT) assert.equal(htmlDifference(readFileSync(join(ROOT, path), 'utf8'), html), undefined, path);
 });
 
 const unescape = (text: string): string => text.replace(/&#(\d+);/g, (_, n: string) => String.fromCharCode(Number(n)));
@@ -116,8 +125,9 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
   for (const [id, { html }] of replayed) {
     const notes = notesOf(id);
     const target = withNotes.get(id) ?? assert.fail(id);
-    const folder = join(ROOT, TEMPLATES_DIR, target.template);
-    const docs = readDocs(ROOT, target.template, target.cardVault) as Record<string, { url: string }>;
+    const { root, registry } = readFrom(id);
+    const folder = join(root, TEMPLATES_DIR, target.template);
+    const docs = readDocs(root, target.template, target.cardVault) as Record<string, { url: string }>;
     const card = (JSON.parse(readFileSync(join(folder, 'template.json'), 'utf8')) as { card: Record<string, { computed?: { default: { source: string } } }> }).card;
     const allowed = new Set<string>([
       'https://defillama.com/hacks',

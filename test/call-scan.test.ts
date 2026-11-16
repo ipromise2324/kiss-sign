@@ -9,8 +9,9 @@ import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { describeCallScan, scanCalls } from '../src/simulate/simulate.ts';
 import type { CallScan } from '../src/simulate/simulate.ts';
+import { fixtureRoot } from './fixture-root.ts';
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = fixtureRoot();
 const load = (dir: string, name: string) => JSON.parse(readFileSync(join(ROOT, 'testdata', dir, `${name}.json`), 'utf8'));
 const registry = loadRegistry(ROOT);
 

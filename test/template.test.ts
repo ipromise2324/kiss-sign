@@ -16,6 +16,7 @@ import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck, Finding } from '../src/template/check.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
+import { fixtureRoot } from './fixture-root.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
@@ -214,7 +215,9 @@ test('a computed card field reads one uint256 view with arguments bound to the c
 });
 
 test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes are empty', () => {
-  const fluid = JSON.parse(readFileSync(join(ROOT, 'templates', 'fluid', 'rewards-claim', 'template.json'), 'utf8'));
+  const fixtures = fixtureRoot();
+  const registry = loadRegistry(fixtures);
+  const fluid = JSON.parse(readFileSync(join(fixtures, 'templates', 'fluid', 'rewards-claim', 'template.json'), 'utf8'));
   const claim = (t: any) => t.calls[0].args;
   const at = 'calls[0].args';
   const cases: [(t: any) => void, string, RegExp][] = [

@@ -298,7 +298,7 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
     `\`steakhouse-prime-usdc-v2-0f51\` › totalAssets() every 216000 blocks (about 30 days), read through both providers: › only live: ${raised}`,
   ]);
 
-  const attested = readFileSync(join(ROOT, TEMPLATES_DIR, 'morpho/vault-withdraw', GENERATED_FILE), 'utf8');
+  const attested = readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', GENERATED_FILE), 'utf8');
   const revoked = attested.replace('VALID: ERC-8176', 'REVOKED: ERC-8176');
   assert.equal(compareReports(attested, revoked).length, 2);
   assert.match(compareReports(attested, revoked).join('\n'), /^ERC-7730 › [a-z0-9.-]+ 0x[0-9a-fA-F]{40} \(\w+\) › only live: .*REVOKED: ERC-8176/m);
@@ -462,14 +462,14 @@ test('a market field lists every market with its id, lltv and parts, binds each 
   );
   assert.deepEqual(
     entriesOf(subject, reg).map((e) => e.name),
-    ['usdc', 'morpho-blue', 'adaptive-curve-irm', 'morpho-oracle-cbbtc-usdc-86', 'cbbtc'],
+    ['usdc', 'cbbtc', 'morpho-blue', 'morpho-oracle-cbbtc-usdc-86', 'adaptive-curve-irm'],
   );
 });
 
 test('a template whose card names a vault is reported per vault: without the vault, with another template, or with a vault the field refuses, it is refused', () => {
   const refused = (target: Parameters<typeof loadReport>[2], message: string) => assert.throws(() => loadReport(ROOT, registry, target), (e: unknown) => e instanceof ReportError && e.message === message);
   refused({ template: ID }, 'morpho/vault-deposit is reported per vault; name the vault (reports exist for hyperithm-usdc-apex-v2-9e2f, steakhouse-prime-usdc-v2-0f51)');
-  refused({ template: 'morpho/market-supply', cardVault: 'steakhouse-prime-usdc-v2-0f51' }, 'morpho/market-supply has one report, not one per vault; leave out the vault');
+  refused({ template: 'eth/transfer', cardVault: 'steakhouse-prime-usdc-v2-0f51' }, 'eth/transfer has one report, not one per vault; leave out the vault');
   refused({ template: ID, cardVault: 'fluid-fusdc' }, "fluid-fusdc is not a vault the card's vault of morpho/vault-deposit accepts");
   refused({ template: ID, cardVault: 'bundler3' }, "bundler3 is not a vault the card's vault of morpho/vault-deposit accepts");
 });
