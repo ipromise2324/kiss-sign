@@ -10,8 +10,8 @@ import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs
 import type { Sampling } from '../src/research/past-txs.ts';
 import { scrubRecording } from '../src/research/recording.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
-import { replayAsk, searchBoth } from '../src/research/sources.ts';
-import type { Anchor, AnchorKind, SourceExchange, SourceRequest } from '../src/research/sources.ts';
+import { recordingAsk, replayAsk, searchBoth } from '../src/research/sources.ts';
+import type { Anchor, AnchorKind, Ask, SourceExchange, SourceRequest } from '../src/research/sources.ts';
 import type { Address } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
@@ -147,6 +147,40 @@ test('a window with more transfers than one page is halved, and the report names
   assert.equal(text.match(/halved/g)?.length, 1);
 });
 
+test('a recording keeps only what the search reads, so a busy token\'s halved windows, overflowing in either source alone, replay the same report at a size bounded by the answers and transfers found', async () => {
+  for (const overflowing of ['alchemy', 'etherscan'] as const) {
+    const windowed: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'), 'utf8'));
+    const [full, half] = [26373601n, 26377201n];
+    const replay = replayAsk(windowed.sources);
+    const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
+    const bulk = { metadata: 'x'.repeat(2000) };
+    const live = async (request: SourceRequest): Promise<unknown> => {
+      if (fromBlockOf(request) === full && request.source === overflowing) {
+        const page = Array.from({ length: 1000 }, () => bulk);
+        return request.source === 'alchemy' ? { transfers: page, pageKey: 'more' } : { status: '1', message: 'OK', result: page };
+      }
+      const answer = (await replay(
+        fromBlockOf(request) !== half ? request : request.source === 'alchemy' ? { ...request, params: { ...request.params, fromBlock: `0x${full.toString(16)}` } } : { ...request, query: { ...request.query, fromBlock: full.toString() } },
+      )) as Record<string, unknown>;
+      const padded = (list: unknown) => (Array.isArray(list) ? list.map((item) => ({ ...(item as object), ...bulk })) : list);
+      return { ...answer, ...('transfers' in answer ? { transfers: padded(answer.transfers) } : {}), ...('result' in answer ? { result: padded(answer.result) } : {}) };
+    };
+    const { query } = windowed;
+    const study = (ask: Ask) =>
+      pastTxs(
+        { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: DEFAULT_SPREAD },
+        { ask, reader: replayReader(windowed.exchanges), registry, exclude: undefined, maxTxs: query.maxTxs },
+      );
+    const recorder = recordingAsk(live);
+    const run = await study(recorder.ask);
+    const recorded = recorder.exchanges();
+    assert.equal(renderPastTxs(await study(replayAsk(recorded)), registry), renderPastTxs(run, registry));
+    assert.match(renderPastTxs(run, registry), /halved, too many transfers in 26373601 to 26380800/);
+    const hits = [...run.found.values()].reduce((n, sources) => n + sources.length, 0);
+    assert.ok(JSON.stringify(recorded).length < recorded.length * 3_000 + hits * 300, `${JSON.stringify(recorded).length} bytes for ${recorded.length} answers and ${hits} transfers`);
+  }
+});
+
 test('--max-txs below one transaction per window is refused', () => {
   const run = spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '11'], { encoding: 'utf8' });
   assert.equal(run.status, 64);
@@ -213,6 +247,42 @@ test('a template whose trailer allowance is shorter than real use lists those tr
   const text = await report({ template: parseTemplate(raw, registry) });
   assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
   assert.match(text, /^ {2}2 from 1 Safe: more bytes after the arguments than the template allows, at multiSend\[1\]$/m);
+});
+
+test('a transaction whose leaf the template binds to the Safe holds another address is a misfit naming that leaf', async () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  raw.calls[0].args.spender = { safe: true };
+  const text = await report({ template: parseTemplate(raw, registry) });
+  assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
+  assert.match(text, /^ {2}2 from 1 Safe: multiSend\[0\]\.approve\.spender: not the sender$/m);
+});
+
+test('a call to another contract than the template binds is named by that contract, even where a rule also breaks', async () => {
+  const bundler3 = (registry.entries.get('bundler3')?.address as Address).slice(2).toLowerCase();
+  const safe = safeOf(FIT).slice(2).toLowerCase();
+  const exchanges = recording.exchanges.map((e) =>
+    e.method === 'eth_getTransactionByHash' && JSON.stringify(e.params) === JSON.stringify([FIT])
+      ? { ...e, answers: Object.fromEntries(Object.entries(e.answers).map(([p, a]) => [p, { ...(a as object), input: (a as { input: string }).input.replaceAll(bundler3, 'de'.repeat(20)).replaceAll(safe, 'ef'.repeat(20)) }])) }
+      : e,
+  );
+  const text = await report({ exchanges });
+  assert.match(text, new RegExp(`^ {2}1 from 1 Safe: multiSend\\[1\\]\\.to: expected bundler3, got 0x(de){20}\\n {4}e\\.g\\. ${FIT}$`, 'im'));
+});
+
+test('two leaves bound to one card value that hold different values make the transaction a misfit naming both', async () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  raw.calls[1].args.bundle.items[0].fields.value = { card: 'amount' };
+  const text = await report({ template: parseTemplate(raw, registry) });
+  assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
+  assert.match(text, /^ {2}2 from 1 Safe: \S+: differs from \S+$/m);
+});
+
+test('an EOA making one call is not judged by an equals rule naming a leaf of a call it did not make', async () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  raw.calls[1].args.bundle.items[1].fields.data.call.args.assets = { equals: 'calls[0].args.value' };
+  const text = await report({ template: parseTemplate(raw, registry) });
+  assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe$/m);
+  assert.match(text, /^by EOAs, call 2 of 2 \(multicall\) as its own transaction:\nfit the call's shape: 2 transactions from 2 EOAs; /m);
 });
 
 test('an anchor with a sender asks both sources only for transfers out of it, and the report names it', async () => {
