@@ -156,6 +156,8 @@ function describeRule(rule: LeafRule, sender: string): string {
       return 'free';
     case 'equals':
       return `same as ${rule.path}`;
+    case 'owner-before':
+      return `the owner before card ${rule.ref.field}`;
     case 'share-price': {
       const name = (q: Quantity): string => (q.kind === 'card' ? `card ${q.field}` : q.path);
       return `${rule.bound} share price, against ${name(rule.assets)} per ${name(rule.shares)}`;

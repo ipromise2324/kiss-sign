@@ -5,7 +5,7 @@ import { uintWord } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { checkTemplateFields, inspectTemplateFields } from './check.ts';
-import type { FieldCheck, Leaf } from './check.ts';
+import type { FieldChain, FieldCheck, Leaf } from './check.ts';
 import type { Template } from './template.ts';
 
 export type Checker = typeof checkTemplateFields;
@@ -86,8 +86,9 @@ export function checkMutations(
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
   checker: Checker = checkTemplateFields,
+  chain: FieldChain = {},
 ): MutationResult {
-  const { check, leaves } = inspectTemplateFields(tx, card, templates, registry);
+  const { check, leaves } = inspectTemplateFields(tx, card, templates, registry, chain);
   if (check.kind !== 'match') return { kind: 'not-run', check };
   const bound = leaves.filter((leaf) => leaf.rule.kind !== 'free');
   const free = leaves.length - bound.length;
@@ -98,7 +99,7 @@ export function checkMutations(
       uncaught.push({ leaf, mutated: 'not-mutable' });
       continue;
     }
-    const result = checker(mutated, card, templates, registry);
+    const result = checker(mutated, card, templates, registry, chain);
     if (result.kind !== 'mismatch') uncaught.push({ leaf, mutated: result.kind });
   }
   return uncaught.length === 0

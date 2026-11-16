@@ -10,7 +10,7 @@ import { samePageKey, sourceHoldsAddress } from './research/source-page.ts';
 import { SafeTxParseError, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 
-export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm'] as const;
+export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm', 'singleton'] as const;
 export type ContractKind = (typeof CONTRACT_KINDS)[number];
 
 /** What a registry entry may say about itself, each naming another registry entry, and which kinds may say it. */

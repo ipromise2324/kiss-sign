@@ -10,6 +10,7 @@ import type { Unwrapped } from '../src/decode/multisend.ts';
 import { checkFloor } from '../src/floor/floor.ts';
 import type { FloorResult } from '../src/floor/floor.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
+import type { SettingsChange } from '../src/floor/simulated.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import type { Observed } from '../src/simulate/effects.ts';
@@ -78,16 +79,35 @@ test('a MultiSend that does not decode is refused, not passed', () => {
   assert.match(details(result)[0]!, /does not decode/);
 });
 
-test('a call to the Safe with data is refused, whether it adds an owner, changes the threshold or sets a fallback handler', () => {
+test('a call to the Safe with data is refused unless it changes the owners or threshold: modules, guards, handlers, setup, singleton', () => {
   const cases: [string, SafeTx, string][] = [
-    ['addOwnerWithThreshold(address,uint256)', direct(SAFE, calldata('addOwnerWithThreshold(address,uint256)', OTHER, 1n)), 'self-call call'],
-    ['changeThreshold(uint256)', multiSend({ to: SAFE, data: calldata('changeThreshold(uint256)', 1n) }), 'self-call multiSend[0]'],
+    ['enableModule(address)', direct(SAFE, calldata('enableModule(address)', OTHER)), 'self-call call'],
+    ['setGuard(address)', multiSend({ to: SAFE, data: calldata('setGuard(address)', OTHER) }), 'self-call multiSend[0]'],
     ['setFallbackHandler(address)', direct(SAFE, calldata('setFallbackHandler(address)', OTHER)), 'self-call call'],
+    ['disableModule(address,address)', direct(SAFE, calldata('disableModule(address,address)', OTHER, OTHER)), 'self-call call'],
+    ['setModuleGuard(address)', direct(SAFE, calldata('setModuleGuard(address)', OTHER)), 'self-call call'],
+    ['changeMasterCopy(address)', direct(SAFE, calldata('changeMasterCopy(address)', OTHER)), 'self-call call'],
+    ['approveHash(bytes32)', direct(SAFE, calldata('approveHash(bytes32)', 1n)), 'self-call call'],
   ];
   for (const [signature, tx, rule] of cases) {
-    const result = checkFloor(tx);
+    const result = checkFloor(tx, true);
     assert.deepEqual(rules(result), [rule], signature);
     assert.deepEqual(details(result), [`a call to the Safe itself with data (selector ${selectorOf(signature)})`], signature);
+  }
+});
+
+test('the four owner and threshold functions on the Safe itself pass the static floor only for a card that declares such a change', () => {
+  const calls = [
+    calldata('addOwnerWithThreshold(address,uint256)', OTHER, 1n),
+    calldata('removeOwner(address,address,uint256)', OTHER, OTHER, 1n),
+    calldata('swapOwner(address,address,address)', OTHER, OTHER, OTHER),
+    calldata('changeThreshold(uint256)', 1n),
+  ];
+  for (const data of calls) {
+    assert.deepEqual(checkFloor(direct(SAFE, data), true), { kind: 'pass' });
+    assert.deepEqual(checkFloor(multiSend({ to: SAFE, data }), true), { kind: 'pass' });
+    assert.deepEqual(rules(checkFloor(direct(SAFE, data))), ['self-call call']);
+    assert.deepEqual(rules(checkFloor(multiSend({ to: SAFE, data }))), ['self-call multiSend[0]']);
   }
 });
 
@@ -186,4 +206,50 @@ test('a receipt with an unlimited Approval from the Safe is refused; the same ev
   ];
   const result = checkSimulatedFloor(executed({ safeState: { kind: 'receipt', logs } }), SAFE);
   assert.deepEqual(rules(result), ['unlimited-approval receipt']);
+});
+
+const NEW_OWNER = '0x3333333333333333333333333333333333333333' as Address;
+const SECOND = STATE.owners[1] as Address;
+const changed = (after: Partial<SafeState>): Observed => executed({ safeState: { kind: 'read', before: STATE, after: { ...STATE, ...after } } });
+
+test('a declared owner or threshold change passes exactly as declared, in any owner order', () => {
+  const cases: [string, Partial<SafeState>, SettingsChange][] = [
+    ['add, threshold kept', { owners: [NEW_OWNER, ...STATE.owners] }, { add: NEW_OWNER, remove: undefined, threshold: 2n }],
+    ['add, threshold raised', { owners: [NEW_OWNER, ...STATE.owners], threshold: 3n }, { add: NEW_OWNER, remove: undefined, threshold: 3n }],
+    ['remove', { owners: [OTHER], threshold: 1n }, { add: undefined, remove: SECOND, threshold: 1n }],
+    ['replace in place', { owners: [OTHER, NEW_OWNER] }, { add: NEW_OWNER, remove: SECOND, threshold: undefined }],
+    ['threshold only', { threshold: 1n }, { add: undefined, remove: undefined, threshold: 1n }],
+  ];
+  for (const [name, after, change] of cases) assert.deepEqual(checkSimulatedFloor(changed(after), SAFE, change), { kind: 'pass' }, name);
+});
+
+test('a declared owner change is refused when another owner, another threshold, or anything else changes', () => {
+  const add: SettingsChange = { add: NEW_OWNER, remove: undefined, threshold: 2n };
+  const refused = (after: Partial<SafeState>, change = add): string[] => details(checkSimulatedFloor(changed(after), SAFE, change));
+  assert.match(refused({ owners: [USDC, ...STATE.owners] })[0]!, /^owners changed .* not to/);
+  assert.match(refused({ owners: [NEW_OWNER, ...STATE.owners], threshold: 1n })[0]!, /^threshold changed from 2 to 1$/);
+  assert.match(refused({ owners: [NEW_OWNER, ...STATE.owners], fallbackHandler: wordOf(OTHER) })[0]!, /^fallbackHandler changed/);
+  assert.match(refused({ owners: [NEW_OWNER, ...STATE.owners], modules: [OTHER] })[0]!, /^modules changed/);
+  assert.match(refused({ owners: [NEW_OWNER, ...STATE.owners], guard: wordOf(OTHER) })[0]!, /^guard changed/);
+  assert.match(refused({ owners: STATE.owners })[0]!, /^owners stayed .*, not to /);
+  assert.deepEqual(refused({ owners: [OTHER] }, { add: undefined, remove: NEW_OWNER, threshold: undefined }), [`${NEW_OWNER}, to remove, is not an owner before the transaction`]);
+  assert.deepEqual(refused({ owners: STATE.owners }, { add: OTHER, remove: undefined, threshold: undefined }), [`${OTHER}, to add, is an owner before the transaction already`]);
+});
+
+test("a receipt's owner events pass only when they name the declared owners and threshold, with the change read alone", () => {
+  const add: SettingsChange = { add: NEW_OWNER, remove: undefined, threshold: 3n };
+  const alone = { kind: 'read', before: STATE, after: { ...STATE, owners: [NEW_OWNER, ...STATE.owners], threshold: 3n } } as const;
+  const indexed = { address: SAFE, topics: [topic('AddedOwner(address)'), wordOf(NEW_OWNER)], data: '0x' as Hex };
+  const inData = { address: SAFE, topics: [topic('AddedOwner(address)')], data: wordOf(NEW_OWNER) };
+  const threshold = { address: SAFE, topics: [topic('ChangedThreshold(uint256)')], data: hex(word(3n)) };
+  const receipt = (logs: { address: Address; topics: Hex[]; data: Hex }[], withAlone = true): Observed =>
+    executed({ safeState: { kind: 'receipt', logs, ...(withAlone ? { alone } : {}) } });
+  assert.deepEqual(checkSimulatedFloor(receipt([indexed, threshold]), SAFE, add), { kind: 'pass' });
+  assert.deepEqual(checkSimulatedFloor(receipt([inData, threshold]), SAFE, add), { kind: 'pass' });
+  const other = { address: SAFE, topics: [topic('AddedOwner(address)'), wordOf(USDC)], data: '0x' as Hex };
+  assert.deepEqual(details(checkSimulatedFloor(receipt([other, threshold]), SAFE, add)), ['the Safe logged AddedOwner(address), which the card does not declare']);
+  const module = { address: SAFE, topics: [topic('EnabledModule(address)')], data: wordOf(OTHER) };
+  assert.deepEqual(details(checkSimulatedFloor(receipt([indexed, threshold, module]), SAFE, add)), ['the Safe logged EnabledModule(address), which the card does not declare']);
+  assert.deepEqual(details(checkSimulatedFloor(receipt([indexed, threshold], false), SAFE, add)), ["the Safe's settings were not read in a simulation of the transaction alone"]);
+  assert.deepEqual(details(checkSimulatedFloor(receipt([indexed], false), SAFE)), ['the Safe logged AddedOwner(address)']);
 });
