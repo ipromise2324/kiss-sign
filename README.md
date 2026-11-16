@@ -13,7 +13,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
-  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI checks the addresses, ABIs, past transactions, the protocol's state and the code it runs, one step at a time, writes a report, and you review and merge it. At every signing, you fill a card, kiss-sign verify checks the transaction against it on your computer, check.sh decodes the same transaction on a second computer, and you compare the hashes on your hardware wallet before signing.">
+  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI runs kiss-sign's checks on the addresses, ABIs, past transactions, the protocol's state and the code it runs, one step at a time, writes a report, and you review and merge it. At every signing, you fill a card, kiss-sign verify checks the transaction against it on your computer, check.sh decodes the same transaction on a second computer, and you compare the hashes on your hardware wallet before signing.">
 </picture>
 
 ## Contents
@@ -37,7 +37,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 ## Why
 
 - **You are responsible for the exact bytes you sign.** Today the transaction is built first and checked last. That last check is like the terms on an insurance form: everyone means to read it, and most people click sign. At Bybit in 2025, the signers saw a normal transfer in a tampered Safe web app and signed a change to the Safe itself.
-- **Checking by hand is slow and needs expertise.** Tools such as [safe-tx-hashes](https://github.com/pcaversaccio/safe-tx-hashes-util) compute the hashes your wallet should show, but the decoded method and parameters they print come from the Safe Transaction Service, and the tool itself warns: *"Always independently decode the transaction Data yourself before you sign!"* Decoding one real Morpho vault deposit yourself (another Safe's, not the one pictured below) looks like this:
+- **Checking by hand is slow and needs expertise.** Tools such as [safe-tx-hashes](https://github.com/pcaversaccio/safe-tx-hashes-util) compute the hashes your wallet should show, but the decoded method and parameters they print come from the Safe Transaction Service, and the tool itself warns: *"Always independently decode the transaction "Data" yourself before you sign!"* Decoding one real Morpho vault deposit yourself (another Safe's, not the one pictured below) looks like this:
 
   ```sh
   # 1. The Safe calls MultiSend. Its one argument is packed bytes, not ABI.
@@ -71,7 +71,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
   Then the real questions start. Is `0x4A6c…0aE0` Morpho's GeneralAdapter1 or a look-alike? Is `0x7777…7777` the vault you meant? Is `1.054e15` a sane minimum of shares for 10,001 USDC? What are the 8 extra bytes after the approve? And you do all of this again for the next transaction.
 
-- **[Clear signing (ERC-7730)](https://eips.ethereum.org/EIPS/eip-7730) does not decode batched calls well yet.** It turns a call into readable fields, but only for contracts with a descriptor. For the deposit above, at [registry](https://github.com/ethereum/clear-signing-erc7730-registry) commit [`3bebbd0`](https://github.com/ethereum/clear-signing-erc7730-registry/tree/3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4), only Bundler3 has one. It names the call "Bundler3 Multicall" and passes each inner action to the descriptor of its target. MultiSend, GeneralAdapter1 and the vault have none. The screen can look reasonable while the parts that move your money are not shown.
+- **[Clear signing (ERC-7730)](https://eips.ethereum.org/EIPS/eip-7730) does not decode batched calls well yet.** It turns a call into readable fields, but only for contracts with a descriptor. For the deposit above, at [registry](https://github.com/ethereum/clear-signing-erc7730-registry) commit [`3bebbd0`](https://github.com/ethereum/clear-signing-erc7730-registry/tree/3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4), only Bundler3 has one. It names the call "Bundler3 Multicall" and passes each inner action to the descriptor of its target. MultiSend, USDC, GeneralAdapter1 and the vault have none. The screen can look reasonable while the parts that move your money are not shown.
 
 ## How it works
 
@@ -92,7 +92,9 @@ pnpm kiss-sign key add etherscan   # only to build templates
 
 You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check).
 
-Turn on branch protection for your fork's `main`, so that a pull request needs your approval, and let your AI push from a GitHub account that cannot approve or merge. Until you do, nothing on GitHub stops an AI that can push from merging. On a private repository, GitHub offers branch protection only on a paid plan.
+kiss-sign has two tiers. The basic tier is kiss-sign alone, on your computer. The hardened tier adds `check.sh` on a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. See [Two tiers](docs/design.md#two-tiers).
+
+Turn on branch protection for your fork's `main`, so that a pull request needs your approval, and let your AI push from a GitHub account that cannot approve or merge. Until you do, nothing on GitHub stops an AI that can push from merging.
 
 ### 1. Tell your AI what you want
 
@@ -106,7 +108,7 @@ The report shows what the transaction will do and where every fact came from. Te
 
 ![The call flow in the report: the Safe approves USDC to general-adapter-1, then calls bundler3.multicall, which pulls the USDC and deposits it, and the vault shares come back to the Safe](docs/readme/report-flow.png)
 
-**Every field.** Each argument is either fixed by the template or filled from your card.
+**Every field.** Each argument is fixed by the template, filled from your card, or, like a deadline or a route, left to the protocol's app within limits the template states.
 
 ![The fields of usdc.approve in the report: spender is fixed to general-adapter-1 with its full address, and value is the amount you fill in](docs/readme/report-fields.png)
 
@@ -118,18 +120,18 @@ Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by it
 
 ![An address confirmed in only one place, flagged with low confidence](docs/readme/report-address-flagged.png)
 
-Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
+This review happens once per operation, and once per vault. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
 ```sh
 git pull
 pnpm kiss-sign template approve morpho/vault-deposit
 ```
 
-This happens once per operation, or once per vault.
+Approval records the template's hash, so a new vault for an approved template needs only its report reviewed and merged.
 
 ### 3. Fill a card
 
-In your own terminal, pick the vault from a list with full addresses and type the amount. Values the protocol's app fills in by itself, such as the minimum shares, are computed from an on-chain read and the app's default slippage. The card is sealed under its hash before you see any transaction.
+In your own terminal, pick the vault from a list with full addresses and type the amount. Values the protocol's app fills in by itself, such as the minimum shares, are computed from an on-chain read, the app's default slippage and a small margin the template states (0.10% in all for a Morpho deposit). The card is sealed under its hash before you see any transaction.
 
 ![pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by name, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
 
@@ -153,9 +155,10 @@ The report and both pages are in Traditional Chinese. The terminal, the code and
 
 ### Add your own operation
 
-The templates in [`templates/`](templates/) are examples, from ETH transfers to Morpho deposits and Uniswap swaps, and were written by an AI. Read each one's report before you approve it, as you would your own AI's. kiss-sign is meant to grow with what you sign: tell your AI what you want, as in step 1, and review its pull request. Before merging, read the report's facts again live:
+The templates in [`templates/`](templates/) are examples, from ETH transfers to Morpho deposits and Uniswap swaps, and were written by an AI. Read each one's report before you approve it, as you would your own AI's. kiss-sign is meant to grow with what you sign: tell your AI what you want, as in step 1, and review its pull request. Before merging, read the report's facts again live, from a clone of your `main`, so the pull request cannot change the check that reads it (this needs the Alchemy key):
 
 ```sh
+git fetch origin <branch>
 pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/<branch>
 ```
 
@@ -187,31 +190,33 @@ Some changes move no balance kiss-sign measures, such as an NFT `setApprovalForA
 
 When a template is built:
 
-- **Addresses come from the protocol's own site.** `check-sources` reads each source page without scripts and looks for the address next to its label. It compares the page's domain, found with the Public Suffix List, with the protocol's website on DefiLlama, or a GitHub source's organization with the protocol's GitHub organizations, and checks that a GitHub source is pinned to a commit on the default branch. For tokens and vaults, it checks that CoinGecko lists the coin at that address. A vault's factory is asked on chain whether it created the vault. Each check prints PASS or FINDING in the report for you to judge; none blocks a merge.
-- **ABIs are proven by compiling.** The verified source from Sourcify is compiled locally with a pinned `solc` and must match the code on chain.
+- **Each address is checked against the protocol's own site.** `check-sources` reads each source page without scripts and looks for the address next to its label. It compares the page's domain, found with the Public Suffix List, with the protocol's website on DefiLlama, or a GitHub source's organization with the protocol's GitHub organizations, and checks that a GitHub source is pinned to a commit on the default branch. For tokens and vaults, it checks that CoinGecko lists the coin at that address. A vault's factory is asked on chain whether it created the vault. Each check prints PASS or FINDING in the report for you to judge; none blocks a merge.
+- **ABIs are proven by compiling.** The verified source from Sourcify is compiled locally with a pinned `solc` and must match the code on chain. A contract reached only through another, or one that routes calls by selector, is not proved this way; the report says so and checks its code pin instead.
+- **The protocol's facts are read.** DefiLlama's TVL, listing date and past hacks, and for a vault its size over a year and its share holders, read through both providers.
+- **Code is pinned.** Each registry contract's code, and behind a proxy its implementation, is read through both providers at one block and recorded, with every past change of that code.
 - **Rules are measured against history.** The AI writes a rule such as "`receiver` equals the Safe", and `past-txs` counts how many past deposits, by Safes and other senders, held it.
-- **Free fields are perturbed.** Each field the template leaves free is changed to a few other values and simulated. Each change must revert, be refused, or change nothing the template does not allow.
+- **Free fields are perturbed.** Fields the template leaves free are changed to a few other values each and simulated on a past transaction. Each change must revert, be refused, or change nothing the template does not allow. Empty bytes and arrays, and the members of a signed order, are not perturbed.
 
 At every signing:
 
-- **The program checks itself first.** Your clone must equal your fork's `main` byte for byte.
+- **The program checks itself first.** Every tracked file in your clone must equal your fork's `main`. Ignored folders, such as `node_modules/` and `vendor/`, are not compared.
 - **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
 - **Decode, then re-encode byte for byte.** No hidden bytes beyond what the template allows and explains.
-- **Floor rules for every template.** No unlimited approval, except where a reviewed registry entry declares a standing allowance, as Uniswap's Permit2 does. No `delegatecall` except to the official MultiSend. No change to the Safe's modules, guard, fallback handler or implementation. An owner or threshold change passes only exactly as the card declares it, one per transaction. No gas refund.
+- **Floor rules for every template.** No unlimited (max-value) approval, except where a reviewed registry entry declares a standing allowance, as Uniswap's Permit2 does. No `delegatecall` except to the official MultiSend. No change to the Safe's modules, guard, fallback handler or implementation. An owner or threshold change passes only exactly as the card declares it, one per transaction. No gas refund.
 - **Simulation on two providers.** Every change to the Safe's balances and allowances must be one the template and your card explain.
 - **Code pins.** Every registry contract the transaction touches must run the code pinned for it.
 
-Your Safe's address stays in `~/.kiss-sign/` and never enters the repository. A pre-push hook refuses any push that contains it or an API key.
+Your Safe's address stays in `~/.kiss-sign/` and never enters the repository. A pre-push hook refuses any push that contains it, an API key from your `~/.kiss-sign/.env`, or a string you list in `~/.kiss-sign/push-deny`.
 
 [docs/design.md](docs/design.md) is the source of truth for every check.
 
 ## Scope
 
-Safe multisig transactions on Ethereum mainnet. Not EOAs, off-chain signatures or other chains.
+Safe multisig transactions on Ethereum mainnet. Not EOAs, Safe off-chain messages (`signMessage`) or other chains. A CoW order, which the transaction names by its digest, is read and checked.
 
 ## Contributing
 
-Open an issue or a pull request. `pnpm test` downloads the pinned compilers and lists it needs once, then runs offline. For a program change, change `docs/design.md` first.
+Open an issue or a pull request. `pnpm test` downloads the pinned `solc` compilers and the Public Suffix List once, then runs offline. For a program change, change `docs/design.md` first.
 
 Report security problems as an issue too.
 
@@ -233,4 +238,4 @@ Copy the address from this page on GitHub, and compare it in full before you sen
 
 ## License
 
-[MIT](LICENSE). Anyone may use, copy, change, publish and sell kiss-sign, provided the license notice stays with it. The diagram font in `docs/diagrams/fonts/` is Excalifont, under the SIL Open Font License, and the logos in `docs/diagrams/logos/` belong to their owners.
+[MIT](LICENSE). Anyone may use, copy, change, publish and sell kiss-sign, provided the license notice stays with it. The diagram font in `docs/diagrams/fonts/` is Excalifont, under the SIL Open Font License, and the logos in `docs/diagrams/logos/`, also drawn into `docs/readme/overview.png` and `overview-dark.png`, belong to their owners and are not under MIT.
