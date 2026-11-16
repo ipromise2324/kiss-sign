@@ -199,7 +199,7 @@
     }
   },
   "vaults": {
-    "flowmark-fgenesis-v2-6439": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26427922\nvault        flowmark-fgenesis-v2-6439 0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439\nlatest block 26427922 0xe9de643a28076eebcf4c558048d14d565ee895614f997e2e7643e09ec2c1239e\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-16  block 26427922  403,362.424250 usdc\n  2026-10-17  block 26211922  224,103.921383 usdc\n  2026-09-17  block 25995922  35,576.897065 usdc\n  2026-08-18  block 25779922  5,618.037316 usdc\n  2026-07-19  block 25563922  1,486.478144 usdc\n  2026-06-19  block 25347922  1,400.131340 usdc\n  2026-05-19  block 25131922  10.000000 usdc\n  2026-04-19  block 24915922  no code at the vault yet\n  2026-03-20  block 24699922  no code at the vault yet\n  2026-02-18  block 24483922  no code at the vault yet\n  2026-01-19  block 24267922  no code at the vault yet\n  2025-12-20  block 24051922  no code at the vault yet\n  2025-11-19  block 23835922  no code at the vault yet\n\nholders      28 addresses hold shares at block 26427922, of 64 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 392992396252690956395290\ntop 10       hold 99.83% of the shares; each: 54.04%, 15.91%, 9.76%, 7.51%, 7.04%, 2.59%, 2.51%, 0.25%, 0.12%, 0.10%"
+    "flowmark-fgenesis-v2-6439": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26428206\nvault        flowmark-fgenesis-v2-6439 0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439\nlatest block 26428206 0xb2c5240be1cb1e76a0c191898738be8deb20512869ea2829a029f4cf34550da3\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-16  block 26428206  403,365.386695 usdc\n  2026-10-17  block 26212206  224,105.585374 usdc\n  2026-09-17  block 25996206  35,577.086638 usdc\n  2026-08-18  block 25780206  5,618.078519 usdc\n  2026-07-19  block 25564206  1,486.485016 usdc\n  2026-06-19  block 25348206  1,400.135726 usdc\n  2026-05-19  block 25132206  10.000000 usdc\n  2026-04-19  block 24916206  no code at the vault yet\n  2026-03-20  block 24700206  no code at the vault yet\n  2026-02-18  block 24484206  no code at the vault yet\n  2026-01-19  block 24268206  no code at the vault yet\n  2025-12-20  block 24052206  no code at the vault yet\n  2025-11-19  block 23836206  no code at the vault yet\n\nholders      28 addresses hold shares at block 26428206, of 64 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 392992396252690956395290\ntop 10       hold 99.83% of the shares; each: 54.04%, 15.91%, 9.76%, 7.51%, 7.04%, 2.59%, 2.51%, 0.25%, 0.12%, 0.10%"
   },
   "erc7730": {
     "commit": "3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4",
@@ -274,8 +274,8 @@
         }
       ],
       "answers": {
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000"
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
     },
     {
@@ -440,10 +440,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -1819,12 +1819,317 @@
           "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
         }
       }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71"
+        },
+        "drpc": {
+          "keccak256": "0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000007458bfdc30034eb860b265e6068121d18fa5aa72",
+        "drpc": "0x0000000000000000000000007458bfdc30034eb860b265e6068121d18fa5aa72"
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0x7458bfdc30034eb860b265e6068121d18fa5aa72",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
+        },
+        "drpc": {
+          "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
+        }
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c"
+        },
+        "drpc": {
+          "keccak256": "0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd"
+        },
+        "drpc": {
+          "keccak256": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0x32bb1c0d48d8b1b3363e86eeb9a0300bad61ccc1",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4"
+        },
+        "drpc": {
+          "keccak256": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x32bb1c0d48d8b1b3363e86eeb9a0300bad61ccc1",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x32bb1c0d48d8b1b3363e86eeb9a0300bad61ccc1",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0xa6d6950c9f177f1de7f7757fb33539e3ec60182a",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11"
+        },
+        "drpc": {
+          "keccak256": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xa6d6950c9f177f1de7f7757fb33539e3ec60182a",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xa6d6950c9f177f1de7f7757fb33539e3ec60182a",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0x79da02d9c638cc9ae925188ad9dc245337981518",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0x6e6dee95322ce5509c4fe250f5069dd2ab817dc63e8e209fd954283ebc5734f7"
+        },
+        "drpc": {
+          "keccak256": "0x6e6dee95322ce5509c4fe250f5069dd2ab817dc63e8e209fd954283ebc5734f7"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x79da02d9c638cc9ae925188ad9dc245337981518",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x79da02d9c638cc9ae925188ad9dc245337981518",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
     }
   ],
+  "today": {
+    "number": "26428203",
+    "hash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
+  },
   "facts": {
     "block": {
-      "number": "26427916",
-      "hash": "0x83e48362ddc82c0c7defc737678f57079d53c83112bf6f509c72c7850accf507"
+      "number": "26428203",
+      "hash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
     },
     "defillama": [
       {
@@ -1832,9 +2137,9 @@
         "id": "4025",
         "parentProtocol": "parent#morpho",
         "listedAt": 1705261273,
-        "tvl": 9944301217.303318,
+        "tvl": 9972481699.06249,
         "chainTvls": {
-          "Ethereum": 4449065303.41145
+          "Ethereum": 4453528820.364618
         }
       }
     ],
@@ -1848,7 +2153,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x83e48362ddc82c0c7defc737678f57079d53c83112bf6f509c72c7850accf507"
+            "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
           }
         ],
         "answers": {
@@ -1864,7 +2169,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x83e48362ddc82c0c7defc737678f57079d53c83112bf6f509c72c7850accf507"
+            "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
           }
         ],
         "answers": {
@@ -1880,7 +2185,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x83e48362ddc82c0c7defc737678f57079d53c83112bf6f509c72c7850accf507"
+            "blockHash": "0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6"
           }
         ],
         "answers": {

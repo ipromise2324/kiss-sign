@@ -23,11 +23,6 @@
       "status": "concern",
       "text": "程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x79DA02d9C638cC9ae925188AD9DC245337981518。AI 另外跑了 pnpm prove-instance：MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 回答 `isMorphoMarketV1AdapterV2` = true，兩個節點一致。",
       "recommendation": "可以接受；上限的 id 用的就是這個地址，填錯只會設到一個沒人用的 id。"
-    },
-    "flowmark-fgenesis-v2-6439-market-adapter/abi": {
-      "status": "concern",
-      "text": "Sourcify 沒有這個轉接合約的原始碼，所以沒有 ABI 證明。這個模板不呼叫它，只把它的地址放進上限的 id；它的程式碼由工廠建立（`isMorphoMarketV1AdapterV2` = true），code pin 記下它的 hash。",
-      "recommendation": "可以接受；它的程式碼改變時 verify 會判 MISMATCH。"
     }
   },
   "entries": {

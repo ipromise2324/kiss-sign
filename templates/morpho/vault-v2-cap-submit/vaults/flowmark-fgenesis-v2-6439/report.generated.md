@@ -135,6 +135,19 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `flowmark-fgenesis-v2-6439` | 25076384 | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | none | PASS |
 | `flowmark-fgenesis-v2-6439-market-adapter` | 25079237 | `0x6e6dee95322ce5509c4fe250f5069dd2ab817dc63e8e209fd954283ebc5734f7` | none | PASS |
 
+### Today's code
+
+No ABI proof compares these entries' code with the chain: no call or answer is decoded with one's ABI, or its calls run in the implementations its `routes` reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.
+
+| Entry | Today | Block |
+| --- | --- | --- |
+| `cbbtc` | PASS | 26428203 |
+| `morpho-blue` | PASS | 26428203 |
+| `adaptive-curve-irm` | PASS | 26428203 |
+| `morpho-market-v1-adapter-v2-factory` | PASS | 26428203 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26428203 |
+| `flowmark-fgenesis-v2-6439-market-adapter` | PASS | 26428203 |
+
 ## ABI proofs
 
 `pnpm prove-abi`: Sourcify's source, compiled with a pinned solc, against the code both providers return. Equals pin: whether the proved code, and the implementation behind a proxy, are the last span of the registry's code pin, which every signing of a new transaction requires.
@@ -143,13 +156,13 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
 | `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | PROVEN | none | `VaultV2Factory`, solc `0.8.28+commit.7893614a` | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | PASS | 0 immutable, 0 library spans masked | 26399583 |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
-| `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | PROVEN | none | `Morpho`, solc `0.8.19+commit.7dd6d404` | `0xfa259fa317198f88f5fa3c119f06c066295dbcd47d715e0a30e1bcf94c02ef8c` | PASS | 2 immutable, 0 library spans masked | 26391177 |
-| `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | PROVEN | none | `AdaptiveCurveIrm`, solc `0.8.19+commit.7dd6d404` | `0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd` | PASS | 2 immutable, 0 library spans masked | 26391177 |
-| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | PROVEN | none | `MorphoMarketV1AdapterV2Factory`, solc `0.8.28+commit.7893614a` | `0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4` | PASS | 4 immutable, 0 library spans masked | 26427916 |
-| `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | PROVEN | none | `MorphoChainlinkOracleV2`, solc `0.8.21+commit.d9974bed` | `0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11` | PASS | 18 immutable, 0 library spans masked | 26391177 |
+| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 | `flowmark-fgenesis-v2-6439` | `0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439` | PROVEN | none | `VaultV2`, solc `0.8.28+commit.7893614a` | `0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9` | PASS | 12 immutable, 0 library spans masked | 26427903 |
-| `flowmark-fgenesis-v2-6439-market-adapter` | `0x79DA02d9C638cC9ae925188AD9DC245337981518` | REFUSED: `not-on-sourcify` | | | | | | 26427903 |
+| `flowmark-fgenesis-v2-6439-market-adapter` | `0x79DA02d9C638cC9ae925188AD9DC245337981518` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 
 ## Vaults
 
@@ -158,37 +171,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `flowmark-fgenesis-v2-6439`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26427922
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26428206
 vault        flowmark-fgenesis-v2-6439 0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439
-latest block 26427922 0xe9de643a28076eebcf4c558048d14d565ee895614f997e2e7643e09ec2c1239e
+latest block 26428206 0xb2c5240be1cb1e76a0c191898738be8deb20512869ea2829a029f4cf34550da3
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-16  block 26427922  403,362.424250 usdc
-  2026-10-17  block 26211922  224,103.921383 usdc
-  2026-09-17  block 25995922  35,576.897065 usdc
-  2026-08-18  block 25779922  5,618.037316 usdc
-  2026-07-19  block 25563922  1,486.478144 usdc
-  2026-06-19  block 25347922  1,400.131340 usdc
-  2026-05-19  block 25131922  10.000000 usdc
-  2026-04-19  block 24915922  no code at the vault yet
-  2026-03-20  block 24699922  no code at the vault yet
-  2026-02-18  block 24483922  no code at the vault yet
-  2026-01-19  block 24267922  no code at the vault yet
-  2025-12-20  block 24051922  no code at the vault yet
-  2025-11-19  block 23835922  no code at the vault yet
+  2026-11-16  block 26428206  403,365.386695 usdc
+  2026-10-17  block 26212206  224,105.585374 usdc
+  2026-09-17  block 25996206  35,577.086638 usdc
+  2026-08-18  block 25780206  5,618.078519 usdc
+  2026-07-19  block 25564206  1,486.485016 usdc
+  2026-06-19  block 25348206  1,400.135726 usdc
+  2026-05-19  block 25132206  10.000000 usdc
+  2026-04-19  block 24916206  no code at the vault yet
+  2026-03-20  block 24700206  no code at the vault yet
+  2026-02-18  block 24484206  no code at the vault yet
+  2026-01-19  block 24268206  no code at the vault yet
+  2025-12-20  block 24052206  no code at the vault yet
+  2025-11-19  block 23836206  no code at the vault yet
 
-holders      28 addresses hold shares at block 26427922, of 64 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 392992396252690956395290
+holders      28 addresses hold shares at block 26428206, of 64 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 392992396252690956395290
 top 10       hold 99.83% of the shares; each: 54.04%, 15.91%, 9.76%, 7.51%, 7.04%, 2.59%, 2.51%, 0.25%, 0.12%, 0.10%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26427916 `0x83e48362ddc82c0c7defc737678f57079d53c83112bf6f509c72c7850accf507`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26428203 `0xa2c893bddbed382178e891ffd997d016f255b0b9a95f65aa57de8d99847d39a6`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9944301217 | 4449065303 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9972481699 | 4453528820 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

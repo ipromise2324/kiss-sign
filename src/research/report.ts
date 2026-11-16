@@ -16,7 +16,7 @@ import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, WAD, callTargets, inScope, isEncoding, loadTemplate, refNames, scopeEntries, slippageBps } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, inScope, isEncoding, loadTemplate, refNames, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording } from './listings.ts';
@@ -302,18 +302,56 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
   return [...registry.entries.values()].filter((entry) => names.has(entry.name));
 }
 
-export function onlyDependedOn(subject: Subject, registry: Registry): Set<string> {
-  const touched = directlyTouched(subject, registry);
-  return new Set(entriesOf(subject, registry).flatMap((entry) => (touched.has(entry.name) ? [] : [entry.name])));
+/**
+ * The entries `verify` compares with their code pin at each signing, as `codeClaims` names them: each contract a rule
+ * or a view names, each entry a card field can name, each a card reference's attribute names, and each these depend on.
+ * An attribute no card reference reads, such as a vault's factory, is checked only by the report.
+ */
+export function signedEntryNames(template: Template, registry: Registry): Set<string> {
+  const names = new Set([
+    ...namedInRules(template),
+    ...cardCandidates(template, registry).map((entry) => entry.name),
+    ...cardRefs(template).flatMap((ref) => (ref.attribute === undefined ? [] : refNames(ref, template, registry))),
+  ]);
+  for (const name of [...names]) for (const target of registry.entries.get(name)?.dependsOn ?? []) names.add(target);
+  return names;
 }
 
 /**
- * The entries `pnpm prove-abi` proves: not one the operation reaches only through `dependsOn`, which no call targets,
- * nor one with `routes`, whose calls run in the implementations its routes reach, so no proof of one contract covers it.
+ * The entries whose ABI the program uses: each contract a call targets, a nested call's included, each a function's
+ * page documents, each a view of the effects or a `facts` view reads, each token the effects move or an amount field counts, each a computed field's read
+ * calls, and each vault the report holds evidence for, with its asset and its factory, whose `instanceCheck` it asks.
+ */
+function abiUsed(subject: Subject, registry: Registry): Set<string> {
+  const names = new Set(vaultsOf(subject, registry).flatMap((vault) => [vault.name, ...[vault.attributes.asset, vault.attributes.factory].filter((name) => name !== undefined)]));
+  if (subject.kind === 'vault') return names;
+  const { template } = subject;
+  subject.docs.forEach((doc) => names.add(doc.contract.name));
+  const token = (ref: TokenRef): string[] => (ref === 'eth' ? [] : refNames(ref, template, registry));
+  const read = (r: ComputedRead): string[] => [...refNames(r.to, template, registry), ...r.args.flatMap((arg) => (arg.kind === 'read' ? read(arg.read) : []))];
+  [
+    ...callTargetEntries(template, registry).map((entry) => entry.name),
+    ...template.effects.views.flatMap((view) => viewTargetNames(view.to, template, registry)),
+    ...template.facts.map((fact) => fact.to),
+    ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => token(effect.token)),
+    ...[...template.card.values()].flatMap((field) => (field.kind === 'amount' ? [...token(field.of), ...(field.computed === undefined ? [] : read(field.computed.read))] : [])),
+  ].forEach((name) => names.add(name));
+  return names;
+}
+
+/** The entries the operation can touch whose ABI the program does not use: no call or answer is decoded with it. */
+export function abiUnused(subject: Subject, registry: Registry): Set<string> {
+  const used = abiUsed(subject, registry);
+  return new Set(entriesOf(subject, registry).flatMap((entry) => (used.has(entry.name) ? [] : [entry.name])));
+}
+
+/**
+ * The entries `pnpm prove-abi` proves: not one whose ABI the program does not use, nor one with `routes`, whose calls
+ * run in the implementations its routes reach, so no proof of one contract covers it.
  */
 export function provedEntries(subject: Subject, registry: Registry): RegistryEntry[] {
-  const depended = onlyDependedOn(subject, registry);
-  return entriesOf(subject, registry).filter((entry) => !depended.has(entry.name) && entry.routes === undefined);
+  const unused = abiUnused(subject, registry);
+  return entriesOf(subject, registry).filter((entry) => !unused.has(entry.name) && entry.routes === undefined);
 }
 
 /** The entries no ABI proof compares with the chain, so the report reads their code at its latest block (`checkToday`). */
@@ -749,9 +787,9 @@ export function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
   return matches ? 'PASS' : 'FINDING';
 }
 
-function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, depended: boolean): string {
+function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean): string {
   const name = `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} |`;
-  if (depended) return `${name} not proved: the operation reaches it only through ${code('dependsOn')}, so no call targets it and none is decoded with its ABI; its code pin is above | | | | | | |`;
+  if (unused) return `${name} not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |`;
   if (entry.routes !== undefined) return `${name} not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above | | | | | | |`;
   if (proof === undefined) return `${name} not read | | | | | | |`;
   if (proof.kind === 'refused') return `${name} REFUSED: ${code(proof.refusal.why)}${proof.refusal.why === 'compiler-not-pinned' ? ` solc ${code(proof.refusal.version)}` : ''} | | | | | | ${proof.block.number} |`;
@@ -870,7 +908,7 @@ function todaySection(inputs: ReportInputs): string[] {
   return [
     "### Today's code",
     '',
-    `No ABI proof compares these entries' code with the chain: the operation reaches one only through ${code('dependsOn')}, or its calls run in the implementations its ${code('routes')} reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.`,
+    `No ABI proof compares these entries' code with the chain: no call or answer is decoded with one's ABI, or its calls run in the implementations its ${code('routes')} reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.`,
     '',
     '| Entry | Today | Block |',
     '| --- | --- | --- |',
@@ -901,7 +939,7 @@ function routesSection(entries: readonly RegistryEntry[]): string[] {
 
 function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs): string[] {
   const out: string[] = [];
-  const depended = onlyDependedOn(inputs.subject, inputs.registry);
+  const unused = abiUnused(inputs.subject, inputs.registry);
   const checked = checkSources(entries, inputs.listings, inputs.pages);
   out.push(
     '## Registry entries',
@@ -977,7 +1015,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
     '',
     '| Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |',
     '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
-    ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address), depended.has(entry.name))),
+    ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address), unused.has(entry.name))),
     '',
   );
   return out;

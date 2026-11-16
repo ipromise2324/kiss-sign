@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-13",
+  "fetched": "2026-11-16",
   "defillama": [
     {
       "slug": "circle-usdc",
@@ -8,15 +8,15 @@
       "github": []
     },
     {
-      "slug": "morpho-blue",
-      "name": "Morpho Blue",
-      "url": "https://app.morpho.org/",
-      "github": []
-    },
-    {
       "slug": "coinbase",
       "name": "Coinbase",
       "url": "https://www.coinbase.com/",
+      "github": []
+    },
+    {
+      "slug": "morpho-blue",
+      "name": "Morpho Blue",
+      "url": "https://app.morpho.org/",
       "github": []
     }
   ],
@@ -52,6 +52,17 @@
         }
       ]
     },
+    "https://raw.githubusercontent.com/coinbase/agentkit/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "EURC: \"0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        }
+      ]
+    },
     "https://docs.morpho.org/developers/contracts/addresses/": {
       "kind": "served",
       "blocks": [
@@ -65,22 +76,6 @@
         },
         {
           "text": "| Adaptive Curve Irm | [ 0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC ](https://etherscan.io/address/0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC#code) <AddressCopyButton address=\"0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC\" /> | [morpho-blue-irm](https://github.com/morpho-org/morpho-blue-irm/tree/v1.0.0) |",
-          "heading": "Morpho Blue [#morpho-blue]"
-        },
-        {
-          "text": "| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------- |",
-          "heading": "Morpho Blue [#morpho-blue]"
-        },
-        {
-          "text": "| Morpho | [ 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb ](https://basescan.org/address/0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb#code) <AddressCopyButton address=\"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" /> | [morpho-blue](https://github.com/morpho-org/morpho-blue/tree/v1.0.0) |",
-          "heading": "Morpho Blue [#morpho-blue]"
-        },
-        {
-          "text": "| :--------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------- |",
-          "heading": "Morpho Blue [#morpho-blue]"
-        },
-        {
-          "text": "| Morpho | [ 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb ](https://sepolia.basescan.org/address/0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb#code) <AddressCopyButton address=\"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" /> | [morpho-org/morpho-blue](https://github.com/morpho-org/morpho-blue/tree/v1.0.0) |",
           "heading": "Morpho Blue [#morpho-blue]"
         },
         {
@@ -113,12 +108,6 @@
         },
         {
           "text": "adaptiveCurveIrm: \"0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC\","
-        },
-        {
-          "text": "[ChainId.BaseMainnet]: {"
-        },
-        {
-          "text": "blue: \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\","
         }
       ]
     },
@@ -126,34 +115,11 @@
       "kind": "served",
       "blocks": []
     },
-    "https://raw.githubusercontent.com/coinbase/agentkit/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "EURC: \"0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42\","
-        },
-        {
-          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
-        },
-        {
-          "text": "EURC: \"0x1abaea1f7c830bd89acc67ec4af516284b1bc33c\","
-        },
-        {
-          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/circlefin/stablecoin-evm/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol": {
       "kind": "served",
       "blocks": [
         {
           "text": "function approve(address spender, uint256 value)"
-        },
-        {
-          "text": "require(owner != address(0), \"ERC20: approve from the zero address\");"
-        },
-        {
-          "text": "require(spender != address(0), \"ERC20: approve to the zero address\");"
         }
       ]
     },
@@ -163,21 +129,17 @@
         {
           "text": "| `blueBundlesV1Supply`, `vaultBundlesV1Deposit` | Assets pulled from the caller | `fee = assets * referralFeePct / WAD`; the remainder is supplied or deposited. |",
           "heading": "Referral fees and deadlines [#referral-fees-and-deadlines]"
-        },
-        {
-          "text": "| `blueBundlesV1Supply` | Supply loan assets to a market. |",
-          "heading": "`BlueBundlesV1` [#bluebundlesv1]"
         }
       ]
     }
   },
   "commits": {
-    "morpho-org/sdks@56f1ed62827a7aab39d979c0143d1fbf970c37ca": {
+    "coinbase/agentkit@f2f3e8c11a91d56a17979a229a172ba6e61a85c2": {
       "kind": "on-default",
       "branch": "main",
       "status": "identical"
     },
-    "coinbase/agentkit@f2f3e8c11a91d56a17979a229a172ba6e61a85c2": {
+    "morpho-org/sdks@56f1ed62827a7aab39d979c0143d1fbf970c37ca": {
       "kind": "on-default",
       "branch": "main",
       "status": "identical"
@@ -208,7 +170,6 @@
     "files": {
       "registry/morpho/calldata-BlueBundlesV1.json": "{\n  \"$schema\": \"../../specs/erc7730-v2.schema.json\",\n  \"context\": {\n    \"$id\": \"BlueBundlesV1\",\n    \"contract\": {\n      \"deployments\": [\n        { \"chainId\": 1, \"address\": \"0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD\" },\n        { \"chainId\": 10, \"address\": \"0x317ca3534f8Cf92Accb4b4366F48017E596bc34a\" },\n        { \"chainId\": 14, \"address\": \"0x1E9687F6c35563EA7a2E97BF0ccF1c748695E728\" },\n        { \"chainId\": 25, \"address\": \"0xAf633156EE25405912c67318838C855E1834CC53\" },\n        { \"chainId\": 50, \"address\": \"0x0C0DdfD7DE7a2A426DB1eA51b9E19bF148189341\" },\n        { \"chainId\": 56, \"address\": \"0xC87df4659277D0652fEEec8f9fF9776378CfB5a5\" },\n        { \"chainId\": 100, \"address\": \"0xac71b36982bfe021B85803C0d1588fba67d420Cb\" },\n        { \"chainId\": 130, \"address\": \"0x2c4331BC5EC245da744F35832C8797456cFC8045\" },\n        { \"chainId\": 137, \"address\": \"0x93a1B342f3DF2c2bb5D0d8D5AF819450fFA4bE78\" },\n        { \"chainId\": 143, \"address\": \"0x9C76E91bf08E712a713e3baB2F5AE01f6ec8845A\" },\n        { \"chainId\": 146, \"address\": \"0x4B406F947FB5BdFa5e922f4290Fd7838BA4b8293\" },\n        { \"chainId\": 252, \"address\": \"0x5fF2943F6AA2e6AE18237F075CF8Ec7ac086fe3e\" },\n        { \"chainId\": 480, \"address\": \"0xEd44094c917D891D68f46E8cc2fd50D790707a65\" },\n        { \"chainId\": 714, \"address\": \"0x6B7f70C0dFdf943D96892E81b78ce5c38eB62fEB\" },\n        { \"chainId\": 988, \"address\": \"0xFB606389166c04828D6Dba36F77871489673CeA0\" },\n        { \"chainId\": 999, \"address\": \"0x84849171E1783630E1C4253b9C9d4b4208b0D86A\" },\n        { \"chainId\": 1135, \"address\": \"0xDE4F975AebEc74f3B42E9a30bFbfb2A90aE7d45C\" },\n        { \"chainId\": 1329, \"address\": \"0x5a8a6A1C7F5f56a9BDEe8538846ef6b6Ae3f79E4\" },\n        { \"chainId\": 1672, \"address\": \"0x244f4B5E8B5231382C1630B2c682A0B1Cc9e8bA4\" },\n        { \"chainId\": 1776, \"address\": \"0x01Aa19C7bAa401855e2B2D9F43EA26133A46bed7\" },\n        { \"chainId\": 1868, \"address\": \"0x454Bf01c6D31f6587375a82daB9aF9AfFe136A33\" },\n        { \"chainId\": 2741, \"address\": \"0x1e80d51dd7ce3d6877F0477F6AAa8564B72456Bc\" },\n        { \"chainId\": 2818, \"address\": \"0x5326A7Bc61dA8eaDB54Df799dC20870852D84Db9\" },\n        { \"chainId\": 4114, \"address\": \"0xF203927Eb4d9A2f8E499A216Dc4f768D3D43C37a\" },\n        { \"chainId\": 4153, \"address\": \"0xC7aE0828519d0C7B2462F4Ec78Ec7692bF5ea570\" },\n        { \"chainId\": 4217, \"address\": \"0xAE863452f44ADD237739A85eb6BB1989E2368362\" },\n        { \"chainId\": 4326, \"address\": \"0x3a3657A7CC0A043D3d2B9d85c0BCC7daA410E1F9\" },\n        { \"chainId\": 4663, \"address\": \"0x53A1eB6589861F686af7c531211E35Aefe30210f\" },\n        { \"chainId\": 5042, \"address\": \"0x3c4BaE2a2Ef708ddaAE40A0b66623afE44eF4A7F\" },\n        { \"chainId\": 8217, \"address\": \"0xfA1bCB842b521ad85c261448524d3C558871Dbd6\" },\n        { \"chainId\": 8453, \"address\": \"0x4D28D900e381eCE4B351302f1Abe588496793A2b\" },\n        { \"chainId\": 9745, \"address\": \"0xC2bAA82011CCcA449CB1726703b61064D271ECe9\" },\n        { \"chainId\": 16661, \"address\": \"0xdCE25D58C95B3d366ABAeFF3650D376c2f6b642a\" },\n        { \"chainId\": 34443, \"address\": \"0x54A5c525172957Ec281BE75811cD907472784858\" },\n        { \"chainId\": 42161, \"address\": \"0x30a388A64b99192702a83D2CA9B95D79702afbf2\" },\n        { \"chainId\": 42220, \"address\": \"0x62EF11424B0d356Baa0Aa7318D0137Bf84A02d7D\" },\n        { \"chainId\": 42793, \"address\": \"0x76dEaB2e5CB0110E9fF703B0E88f6ff0BED9398e\" },\n        { \"chainId\": 43111, \"address\": \"0x5cf792e97F03D66e5261D68709F46Bb8c8f1047D\" },\n        { \"chainId\": 43114, \"address\": \"0xCEEe668237413ee87806641dfce3433eb2eE19eb\" },\n        { \"chainId\": 48900, \"address\": \"0x095a51f2EA38dF292Ff523c81A11aABBB388cf2c\" },\n        { \"chainId\": 57073, \"address\": \"0xDC51Bf4a0ee7d638B00F6a14c53e2894d1586359\" },\n        { \"chainId\": 59144, \"address\": \"0x7c192500813AC1bC4EB7A931530a2Aaab2Bc8ACF\" },\n        { \"chainId\": 98866, \"address\": \"0x4a9988AcC2Cbd9f1f99C8d44C5e99928CF486ea7\" },\n        { \"chainId\": 534352, \"address\": \"0xC4D114040510614a8B7CeA7E04b354CdFA73aEc8\" },\n        { \"chainId\": 685689, \"address\": \"0xCd4c0eF83BFA16720b497b14a97BF48864610e88\" },\n        { \"chainId\": 747474, \"address\": \"0xCA52e5B901D9939013Fa8744dCbDeE0B6BdD5B39\" }\n      ]\n    }\n  },\n  \"metadata\": { \"owner\": \"Morpho DAO\", \"info\": { \"url\": \"https://morpho.org\" } },\n  \"display\": {\n    \"formats\": {\n      \"blueBundlesV1SupplyCollateralAndBorrow((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 collateralAssets, uint256 borrowAssets, uint256 maxLtv, (uint8 kind, bytes data) collateralPermit, ((uint8 v, bytes32 r, bytes32 s) signature, uint256 nonce, uint256 deadline) signedAuthorization, (address vault, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, bool fromIdle, address sourceAdapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) sourceMarketParams, uint128 assets, uint64 penalty)[] reallocations, uint256 referralFeePct, address referralFeeRecipient, uint256 deadline)\": {\n        \"intent\": \"Supply collateral and borrow\",\n        \"fields\": [\n          { \"label\": \"Native collateral\", \"format\": \"amount\", \"path\": \"@.value\", \"visible\": { \"ifNotIn\": [\"0\"] } },\n          {\n            \"label\": \"Loan token\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"token\"] },\n            \"path\": \"#.marketParams.loanToken\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Collateral token\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"token\"] },\n            \"path\": \"#.marketParams.collateralToken\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Liquidation LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.marketParams.lltv\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Collateral to supply\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.collateralToken\" },\n            \"path\": \"#.collateralAssets\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Borrow before fees\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.borrowAssets\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"path\": \"#.reallocations.[]\",\n            \"iteration\": \"bundled\",\n            \"fields\": [\n              {\n                \"label\": \"Liquidity moved in\",\n                \"format\": \"tokenAmount\",\n                \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n                \"path\": \"assets\",\n                \"visible\": \"always\"\n              },\n              {\n                \"label\": \"Liquidity penalty\",\n                \"format\": \"unit\",\n                \"params\": { \"base\": \"%\", \"decimals\": 16 },\n                \"path\": \"penalty\",\n                \"visible\": \"always\"\n              }\n            ]\n          },\n          {\n            \"label\": \"Max resulting LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.maxLtv\",\n            \"visible\": { \"ifNotIn\": [\"115792089237316195423570985008687907853269984665640564039457584007913129639935\"] }\n          },\n          {\n            \"label\": \"Referral fee\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.referralFeePct\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Fee recipient\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"] },\n            \"path\": \"#.referralFeeRecipient\",\n            \"visible\": { \"ifNotIn\": [\"0x0000000000000000000000000000000000000000\"] }\n          },\n          {\n            \"label\": \"Bundler access (no expiry), signature valid until\",\n            \"format\": \"date\",\n            \"params\": { \"encoding\": \"timestamp\" },\n            \"path\": \"#.signedAuthorization.deadline\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          { \"label\": \"Deadline\", \"format\": \"date\", \"params\": { \"encoding\": \"timestamp\" }, \"path\": \"#.deadline\", \"visible\": \"always\" },\n          { \"label\": \"Market oracle\", \"path\": \"#.marketParams.oracle\", \"visible\": \"never\" },\n          { \"label\": \"Market rate model\", \"path\": \"#.marketParams.irm\", \"visible\": \"never\" },\n          { \"label\": \"Collateral permit\", \"path\": \"#.collateralPermit\", \"visible\": \"never\" },\n          { \"label\": \"Auth signature\", \"path\": \"#.signedAuthorization.signature\", \"visible\": \"never\" },\n          { \"label\": \"Auth nonce\", \"path\": \"#.signedAuthorization.nonce\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation vault\", \"path\": \"#.reallocations.[].vault\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation adapter\", \"path\": \"#.reallocations.[].adapter\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation market\", \"path\": \"#.reallocations.[].marketParams\", \"visible\": \"never\" },\n          { \"label\": \"From idle\", \"path\": \"#.reallocations.[].fromIdle\", \"visible\": \"never\" },\n          { \"label\": \"Source adapter\", \"path\": \"#.reallocations.[].sourceAdapter\", \"visible\": \"never\" },\n          { \"label\": \"Source market\", \"path\": \"#.reallocations.[].sourceMarketParams\", \"visible\": \"never\" }\n        ]\n      },\n      \"blueBundlesV1RepayAndWithdrawCollateral((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 repayAssets, uint256 repayShares, uint256 maxRepayAssets, uint256 collateralAssets, uint256 maxLtv, (uint8 kind, bytes data) loanTokenPermit, ((uint8 v, bytes32 r, bytes32 s) signature, uint256 nonce, uint256 deadline) signedAuthorization, uint256 referralFeePct, address referralFeeRecipient, uint256 deadline)\": {\n        \"intent\": \"Repay and withdraw collateral\",\n        \"fields\": [\n          { \"label\": \"Native to repay\", \"format\": \"amount\", \"path\": \"@.value\", \"visible\": { \"ifNotIn\": [\"0\"] } },\n          {\n            \"label\": \"Collateral token\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"token\"] },\n            \"path\": \"#.marketParams.collateralToken\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Liquidation LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.marketParams.lltv\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Amount to repay\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.repayAssets\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Debt shares to repay (max = all debt)\",\n            \"format\": \"raw\",\n            \"path\": \"#.repayShares\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Max amount to spend\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.maxRepayAssets\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Withdraw collateral\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.collateralToken\" },\n            \"path\": \"#.collateralAssets\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Max resulting LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.maxLtv\",\n            \"visible\": { \"ifNotIn\": [\"115792089237316195423570985008687907853269984665640564039457584007913129639935\"] }\n          },\n          {\n            \"label\": \"Referral fee\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.referralFeePct\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Fee recipient\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"] },\n            \"path\": \"#.referralFeeRecipient\",\n            \"visible\": { \"ifNotIn\": [\"0x0000000000000000000000000000000000000000\"] }\n          },\n          {\n            \"label\": \"Bundler access (no expiry), signature valid until\",\n            \"format\": \"date\",\n            \"params\": { \"encoding\": \"timestamp\" },\n            \"path\": \"#.signedAuthorization.deadline\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          { \"label\": \"Deadline\", \"format\": \"date\", \"params\": { \"encoding\": \"timestamp\" }, \"path\": \"#.deadline\", \"visible\": \"always\" },\n          { \"label\": \"Market oracle\", \"path\": \"#.marketParams.oracle\", \"visible\": \"never\" },\n          { \"label\": \"Market rate model\", \"path\": \"#.marketParams.irm\", \"visible\": \"never\" },\n          { \"label\": \"Loan token permit\", \"path\": \"#.loanTokenPermit\", \"visible\": \"never\" },\n          { \"label\": \"Auth signature\", \"path\": \"#.signedAuthorization.signature\", \"visible\": \"never\" },\n          { \"label\": \"Auth nonce\", \"path\": \"#.signedAuthorization.nonce\", \"visible\": \"never\" }\n        ]\n      },\n      \"blueBundlesV1Supply((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, (uint8 kind, bytes data) loanTokenPermit, uint256 referralFeePct, address referralFeeRecipient, uint256 deadline)\": {\n        \"intent\": \"Supply to Morpho market\",\n        \"interpolatedIntent\": \"Supply {#.assets} to Morpho, fee included\",\n        \"fields\": [\n          { \"label\": \"Native to supply\", \"format\": \"amount\", \"path\": \"@.value\", \"visible\": { \"ifNotIn\": [\"0\"] } },\n          {\n            \"label\": \"Amount to pay, with fee\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.assets\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Collateral token\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"token\"] },\n            \"path\": \"#.marketParams.collateralToken\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Liquidation LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.marketParams.lltv\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Referral fee\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.referralFeePct\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Fee recipient\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"] },\n            \"path\": \"#.referralFeeRecipient\",\n            \"visible\": { \"ifNotIn\": [\"0x0000000000000000000000000000000000000000\"] }\n          },\n          { \"label\": \"Deadline\", \"format\": \"date\", \"params\": { \"encoding\": \"timestamp\" }, \"path\": \"#.deadline\", \"visible\": \"always\" },\n          { \"label\": \"Market oracle\", \"path\": \"#.marketParams.oracle\", \"visible\": \"never\" },\n          { \"label\": \"Market rate model\", \"path\": \"#.marketParams.irm\", \"visible\": \"never\" },\n          { \"label\": \"Loan token permit\", \"path\": \"#.loanTokenPermit\", \"visible\": \"never\" }\n        ]\n      },\n      \"blueBundlesV1Withdraw((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 withdrawAssets, uint256 withdrawShares, ((uint8 v, bytes32 r, bytes32 s) signature, uint256 nonce, uint256 deadline) signedAuthorization, (address vault, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, bool fromIdle, address sourceAdapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) sourceMarketParams, uint128 assets, uint64 penalty)[] reallocations, uint256 referralFeePct, address referralFeeRecipient, uint256 deadline)\": {\n        \"intent\": \"Withdraw from Morpho market\",\n        \"fields\": [\n          {\n            \"label\": \"Withdraw before fees\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.withdrawAssets\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          { \"label\": \"Shares to withdraw\", \"format\": \"raw\", \"path\": \"#.withdrawShares\", \"visible\": { \"ifNotIn\": [\"0\"] } },\n          {\n            \"label\": \"Token\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"token\"] },\n            \"path\": \"#.marketParams.loanToken\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Collateral token\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"token\"] },\n            \"path\": \"#.marketParams.collateralToken\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Liquidation LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.marketParams.lltv\",\n            \"visible\": \"always\"\n          },\n          {\n            \"path\": \"#.reallocations.[]\",\n            \"iteration\": \"bundled\",\n            \"fields\": [\n              {\n                \"label\": \"Liquidity moved in\",\n                \"format\": \"tokenAmount\",\n                \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n                \"path\": \"assets\",\n                \"visible\": \"always\"\n              },\n              {\n                \"label\": \"Liquidity penalty\",\n                \"format\": \"unit\",\n                \"params\": { \"base\": \"%\", \"decimals\": 16 },\n                \"path\": \"penalty\",\n                \"visible\": \"always\"\n              }\n            ]\n          },\n          {\n            \"label\": \"Referral fee\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.referralFeePct\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Fee recipient\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"] },\n            \"path\": \"#.referralFeeRecipient\",\n            \"visible\": { \"ifNotIn\": [\"0x0000000000000000000000000000000000000000\"] }\n          },\n          {\n            \"label\": \"Bundler access (no expiry), signature valid until\",\n            \"format\": \"date\",\n            \"params\": { \"encoding\": \"timestamp\" },\n            \"path\": \"#.signedAuthorization.deadline\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          { \"label\": \"Deadline\", \"format\": \"date\", \"params\": { \"encoding\": \"timestamp\" }, \"path\": \"#.deadline\", \"visible\": \"always\" },\n          { \"label\": \"Market oracle\", \"path\": \"#.marketParams.oracle\", \"visible\": \"never\" },\n          { \"label\": \"Market rate model\", \"path\": \"#.marketParams.irm\", \"visible\": \"never\" },\n          { \"label\": \"Auth signature\", \"path\": \"#.signedAuthorization.signature\", \"visible\": \"never\" },\n          { \"label\": \"Auth nonce\", \"path\": \"#.signedAuthorization.nonce\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation vault\", \"path\": \"#.reallocations.[].vault\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation adapter\", \"path\": \"#.reallocations.[].adapter\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation market\", \"path\": \"#.reallocations.[].marketParams\", \"visible\": \"never\" },\n          { \"label\": \"From idle\", \"path\": \"#.reallocations.[].fromIdle\", \"visible\": \"never\" },\n          { \"label\": \"Source adapter\", \"path\": \"#.reallocations.[].sourceAdapter\", \"visible\": \"never\" },\n          { \"label\": \"Source market\", \"path\": \"#.reallocations.[].sourceMarketParams\", \"visible\": \"never\" }\n        ]\n      },\n      \"blueBundlesV1MigrateBorrowPosition((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) sourceMarketParams, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) destMarketParams, uint256 maxLtv, ((uint8 v, bytes32 r, bytes32 s) signature, uint256 nonce, uint256 deadline) signedAuthorization, (address vault, address adapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, bool fromIdle, address sourceAdapter, (address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) sourceMarketParams, uint128 assets, uint64 penalty)[] reallocations, uint256 referralFeePct, address referralFeeRecipient, uint256 deadline)\": {\n        \"intent\": \"Move full borrow position, fees add to debt\",\n        \"interpolatedIntent\": \"Move full borrow position from {#.sourceMarketParams.lltv} to {#.destMarketParams.lltv} liquidation LTV, fees add to debt\",\n        \"fields\": [\n          {\n            \"label\": \"Collateral token\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"token\"] },\n            \"path\": \"#.sourceMarketParams.collateralToken\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Loan token\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"token\"] },\n            \"path\": \"#.sourceMarketParams.loanToken\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Old liquidation LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.sourceMarketParams.lltv\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"New liquidation LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.destMarketParams.lltv\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"New market oracle\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"contract\"] },\n            \"path\": \"#.destMarketParams.oracle\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"New rate model\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"contract\"] },\n            \"path\": \"#.destMarketParams.irm\",\n            \"visible\": \"always\"\n          },\n          {\n            \"path\": \"#.reallocations.[]\",\n            \"iteration\": \"bundled\",\n            \"fields\": [\n              {\n                \"label\": \"Liquidity moved in\",\n                \"format\": \"tokenAmount\",\n                \"params\": { \"tokenPath\": \"#.sourceMarketParams.loanToken\" },\n                \"path\": \"assets\",\n                \"visible\": \"always\"\n              },\n              {\n                \"label\": \"Liquidity penalty\",\n                \"format\": \"unit\",\n                \"params\": { \"base\": \"%\", \"decimals\": 16 },\n                \"path\": \"penalty\",\n                \"visible\": \"always\"\n              }\n            ]\n          },\n          {\n            \"label\": \"Max resulting LTV\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.maxLtv\",\n            \"visible\": { \"ifNotIn\": [\"115792089237316195423570985008687907853269984665640564039457584007913129639935\"] }\n          },\n          {\n            \"label\": \"Referral fee\",\n            \"format\": \"unit\",\n            \"params\": { \"base\": \"%\", \"decimals\": 16 },\n            \"path\": \"#.referralFeePct\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          {\n            \"label\": \"Fee recipient\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"] },\n            \"path\": \"#.referralFeeRecipient\",\n            \"visible\": { \"ifNotIn\": [\"0x0000000000000000000000000000000000000000\"] }\n          },\n          {\n            \"label\": \"Bundler access (no expiry), signature valid until\",\n            \"format\": \"date\",\n            \"params\": { \"encoding\": \"timestamp\" },\n            \"path\": \"#.signedAuthorization.deadline\",\n            \"visible\": { \"ifNotIn\": [\"0\"] }\n          },\n          { \"label\": \"Deadline\", \"format\": \"date\", \"params\": { \"encoding\": \"timestamp\" }, \"path\": \"#.deadline\", \"visible\": \"always\" },\n          { \"label\": \"Old market oracle\", \"path\": \"#.sourceMarketParams.oracle\", \"visible\": \"never\" },\n          { \"label\": \"Old rate model\", \"path\": \"#.sourceMarketParams.irm\", \"visible\": \"never\" },\n          { \"label\": \"New loan token\", \"path\": \"#.destMarketParams.loanToken\", \"visible\": \"never\" },\n          { \"label\": \"New collateral token\", \"path\": \"#.destMarketParams.collateralToken\", \"visible\": \"never\" },\n          { \"label\": \"Auth signature\", \"path\": \"#.signedAuthorization.signature\", \"visible\": \"never\" },\n          { \"label\": \"Auth nonce\", \"path\": \"#.signedAuthorization.nonce\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation vault\", \"path\": \"#.reallocations.[].vault\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation adapter\", \"path\": \"#.reallocations.[].adapter\", \"visible\": \"never\" },\n          { \"label\": \"Reallocation market\", \"path\": \"#.reallocations.[].marketParams\", \"visible\": \"never\" },\n          { \"label\": \"From idle\", \"path\": \"#.reallocations.[].fromIdle\", \"visible\": \"never\" },\n          { \"label\": \"Source adapter\", \"path\": \"#.reallocations.[].sourceAdapter\", \"visible\": \"never\" },\n          { \"label\": \"Source market\", \"path\": \"#.reallocations.[].sourceMarketParams\", \"visible\": \"never\" }\n        ]\n      }\n    }\n  }\n}\n",
       "registry/morpho/calldata-MorphoBlue.json": "{\n  \"$schema\": \"../../specs/erc7730-v2.schema.json\",\n  \"context\": {\n    \"contract\": {\n      \"deployments\": [\n        { \"chainId\": 1, \"address\": \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" },\n        { \"chainId\": 56, \"address\": \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" },\n        { \"chainId\": 137, \"address\": \"0x1bF0c2541F820E775182832f06c0B7Fc27A25f67\" },\n        { \"chainId\": 8453, \"address\": \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" },\n        { \"chainId\": 84532, \"address\": \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" },\n        { \"chainId\": 11155111, \"address\": \"0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb\" }\n      ]\n    }\n  },\n  \"metadata\": { \"owner\": \"Morpho DAO\", \"info\": { \"url\": \"https://docs.morpho.org/governance/organization/multisigs-and-addresses\" } },\n  \"display\": {\n    \"formats\": {\n      \"borrow((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, uint256 shares, address onBehalf, address receiver)\": {\n        \"intent\": \"Borrow from Morpho Market\",\n        \"interpolatedIntent\": \"Borrow {#.assets} ({#.shares} shares) for {#.onBehalf} to {#.receiver}\",\n        \"fields\": [\n          {\n            \"path\": \"#.marketParams\",\n            \"fields\": [\n              { \"label\": \"Loan Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"loanToken\" },\n              { \"label\": \"Collateral Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"collateralToken\" },\n              {\n                \"label\": \"Oracle\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"oracle\"\n              },\n              {\n                \"label\": \"Irm\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"irm\"\n              },\n              { \"label\": \"Liquidation LTV\", \"format\": \"unit\", \"params\": { \"base\": \"%\", \"decimals\": 16 }, \"path\": \"lltv\" }\n            ]\n          },\n          {\n            \"label\": \"Assets (0 if shares)\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.assets\",\n            \"visible\": \"always\"\n          },\n          { \"label\": \"Shares (0 if assets)\", \"format\": \"raw\", \"path\": \"#.shares\", \"visible\": \"always\" },\n          {\n            \"label\": \"On Behalf\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n            \"path\": \"#.onBehalf\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Receiver\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"] },\n            \"path\": \"#.receiver\",\n            \"visible\": \"always\"\n          }\n        ]\n      },\n      \"repay((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, uint256 shares, address onBehalf, bytes data)\": {\n        \"intent\": \"Repay on Morpho Market\",\n        \"interpolatedIntent\": \"Repay {#.assets} ({#.shares} shares) for {#.onBehalf}\",\n        \"fields\": [\n          {\n            \"path\": \"#.marketParams\",\n            \"fields\": [\n              { \"label\": \"Loan Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"loanToken\" },\n              { \"label\": \"Collateral Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"collateralToken\" },\n              {\n                \"label\": \"Oracle\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"oracle\"\n              },\n              {\n                \"label\": \"Irm\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"irm\"\n              },\n              { \"label\": \"Liquidation LTV\", \"format\": \"unit\", \"params\": { \"base\": \"%\", \"decimals\": 16 }, \"path\": \"lltv\" }\n            ]\n          },\n          {\n            \"label\": \"Assets (0 if shares)\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.assets\",\n            \"visible\": \"always\"\n          },\n          { \"label\": \"Shares (0 if assets)\", \"format\": \"raw\", \"path\": \"#.shares\", \"visible\": \"always\" },\n          {\n            \"label\": \"On Behalf\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n            \"path\": \"#.onBehalf\",\n            \"visible\": \"always\"\n          },\n          { \"label\": \"Data\", \"format\": \"raw\", \"path\": \"#.data\", \"visible\": \"always\" }\n        ]\n      },\n      \"supply((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, uint256 shares, address onBehalf, bytes data)\": {\n        \"intent\": \"Supply on Morpho Market\",\n        \"interpolatedIntent\": \"Supply {#.assets} ({#.shares} shares) for {#.onBehalf}\",\n        \"fields\": [\n          {\n            \"path\": \"#.marketParams\",\n            \"fields\": [\n              { \"label\": \"Loan Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"loanToken\" },\n              { \"label\": \"Collateral Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"collateralToken\" },\n              {\n                \"label\": \"Oracle\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"oracle\"\n              },\n              {\n                \"label\": \"Irm\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"irm\"\n              },\n              { \"label\": \"Liquidation LTV\", \"format\": \"unit\", \"params\": { \"base\": \"%\", \"decimals\": 16 }, \"path\": \"lltv\" }\n            ]\n          },\n          {\n            \"label\": \"Assets (0 if shares)\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.assets\",\n            \"visible\": \"always\"\n          },\n          { \"label\": \"Shares (0 if assets)\", \"format\": \"raw\", \"path\": \"#.shares\", \"visible\": \"always\" },\n          {\n            \"label\": \"On Behalf\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n            \"path\": \"#.onBehalf\",\n            \"visible\": \"always\"\n          },\n          { \"label\": \"Data\", \"format\": \"raw\", \"path\": \"#.data\", \"visible\": \"always\" }\n        ]\n      },\n      \"supplyCollateral((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, address onBehalf, bytes data)\": {\n        \"intent\": \"Supply Collateral on Morpho Market\",\n        \"interpolatedIntent\": \"Supply {#.assets} as collateral for {#.onBehalf}\",\n        \"fields\": [\n          {\n            \"path\": \"#.marketParams\",\n            \"fields\": [\n              { \"label\": \"Loan Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"loanToken\" },\n              { \"label\": \"Collateral Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"collateralToken\" },\n              {\n                \"label\": \"Oracle\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"oracle\"\n              },\n              {\n                \"label\": \"Irm\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"irm\"\n              },\n              { \"label\": \"Liquidation LTV\", \"format\": \"unit\", \"params\": { \"base\": \"%\", \"decimals\": 16 }, \"path\": \"lltv\" }\n            ]\n          },\n          {\n            \"label\": \"Assets\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.collateralToken\" },\n            \"path\": \"#.assets\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"On Behalf\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n            \"path\": \"#.onBehalf\",\n            \"visible\": \"always\"\n          },\n          { \"label\": \"Data\", \"format\": \"raw\", \"path\": \"#.data\", \"visible\": \"always\" }\n        ]\n      },\n      \"withdraw((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, uint256 shares, address onBehalf, address receiver)\": {\n        \"intent\": \"Withdraw from Morpho Market\",\n        \"interpolatedIntent\": \"Withdraw {#.assets} ({#.shares} shares) for {#.onBehalf} to {#.receiver}\",\n        \"fields\": [\n          {\n            \"path\": \"#.marketParams\",\n            \"fields\": [\n              { \"label\": \"Loan Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"loanToken\" },\n              { \"label\": \"Collateral Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"collateralToken\" },\n              {\n                \"label\": \"Oracle\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"oracle\"\n              },\n              {\n                \"label\": \"Irm\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"irm\"\n              },\n              { \"label\": \"Liquidation LTV\", \"format\": \"unit\", \"params\": { \"base\": \"%\", \"decimals\": 16 }, \"path\": \"lltv\" }\n            ]\n          },\n          {\n            \"label\": \"Assets (0 if shares)\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.loanToken\" },\n            \"path\": \"#.assets\",\n            \"visible\": \"always\"\n          },\n          { \"label\": \"Shares (0 if assets)\", \"format\": \"raw\", \"path\": \"#.shares\", \"visible\": \"always\" },\n          {\n            \"label\": \"On Behalf\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n            \"path\": \"#.onBehalf\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Receiver\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"] },\n            \"path\": \"#.receiver\",\n            \"visible\": \"always\"\n          }\n        ]\n      },\n      \"withdrawCollateral((address loanToken, address collateralToken, address oracle, address irm, uint256 lltv) marketParams, uint256 assets, address onBehalf, address receiver)\": {\n        \"intent\": \"Withdraw Collateral from Morpho Market\",\n        \"interpolatedIntent\": \"Withdraw {#.assets} of collateral for {#.onBehalf} to {#.receiver}\",\n        \"fields\": [\n          {\n            \"path\": \"#.marketParams\",\n            \"fields\": [\n              { \"label\": \"Loan Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"loanToken\" },\n              { \"label\": \"Collateral Token\", \"format\": \"addressName\", \"params\": { \"types\": [\"token\"] }, \"path\": \"collateralToken\" },\n              {\n                \"label\": \"Oracle\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"oracle\"\n              },\n              {\n                \"label\": \"Irm\",\n                \"format\": \"addressName\",\n                \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n                \"path\": \"irm\"\n              },\n              { \"label\": \"Liquidation LTV\", \"format\": \"unit\", \"params\": { \"base\": \"%\", \"decimals\": 16 }, \"path\": \"lltv\" }\n            ]\n          },\n          {\n            \"label\": \"Assets\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.marketParams.collateralToken\" },\n            \"path\": \"#.assets\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"On Behalf\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"wallet\", \"eoa\", \"contract\", \"token\", \"collection\"] },\n            \"path\": \"#.onBehalf\",\n            \"visible\": \"always\"\n          },\n          {\n            \"label\": \"Receiver\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"] },\n            \"path\": \"#.receiver\",\n            \"visible\": \"always\"\n          }\n        ]\n      }\n    }\n  }\n}\n",
-      "registry/railnet/calldata-Conduit.json": "{\n  \"$schema\": \"../../specs/erc7730-v2.schema.json\",\n  \"$comment\": \"Every Conduit is a BeaconProxy deployed by the Railnet ConduitFactory, which emits ConduitDeployed with the new Conduit as the indexed `conduit` topic. `factory` covers every Conduit the production ConduitFactory deploys; `deployments` lists the Conduits live today for wallets that only match fixed addresses. The last entry is a test Syrup USDC Conduit (rstgSyrUSDC) from the Railnet test factory, used as the test fixture.\",\n  \"context\": {\n    \"$id\": \"Conduit\",\n    \"contract\": {\n      \"deployments\": [\n        { \"chainId\": 1, \"address\": \"0xE627A511c9aC2D9FD271F10c7A200779c833AC5A\" },\n        { \"chainId\": 1, \"address\": \"0xF3bFE863103d4F4a604a6739DF80945bf0Ef7d07\" },\n        { \"chainId\": 1, \"address\": \"0xbb09C703e48A54E8E48F6B088cb9578ACE9848cB\" },\n        { \"chainId\": 1, \"address\": \"0xC0a76b15704F2A3A50105B11b88763b205B9298a\" },\n        { \"chainId\": 1, \"address\": \"0x46E0c35465ce9Bda1E62D8464bBcdE1D523757A4\" },\n        { \"chainId\": 1, \"address\": \"0x6B2Bc4d0614D7744dC5f71B7A2555A9Cef2535D9\" }\n      ],\n      \"factory\": {\n        \"deployEvent\": \"ConduitDeployed(address indexed deployer, address indexed conduit, (string name, string symbol, address vehicle, address feeManager, address accountList, address ownerRegistry, address accessControl, bool transferEnabled, (address asset, (address target, uint256 shareBps, uint256 chainId)[] recipients)[] initialInterceptions, uint256 initialExpectedSupply, bytes32 querySalt, bytes32 deploymentSalt) params)\",\n        \"deployments\": [{ \"chainId\": 1, \"address\": \"0x9A103cf026824Af04395e09516e68D96fcE6DC7a\" }]\n      }\n    }\n  },\n  \"metadata\": {\n    \"owner\": \"Railnet\",\n    \"info\": { \"url\": \"https://railnet.org\" },\n    \"enums\": { \"mode\": { \"0\": \"Deposit\", \"1\": \"Redeem\" } },\n    \"contractName\": \"Conduit\"\n  },\n  \"display\": {\n    \"formats\": {\n      \"create((address owner, address receiver, (address asset, uint256 value) input, (address asset, uint256 value) output, uint8 mode, bytes32 salt, bytes data) query, address receiver, bytes32 sourceSalt)\": {\n        \"intent\": \"Deposit or redeem\",\n        \"interpolatedIntent\": \"{#.query.mode} {#.query.input.value}\",\n        \"fields\": [\n          {\n            \"path\": \"#.query.mode\",\n            \"label\": \"Operation\",\n            \"format\": \"enum\",\n            \"params\": { \"$ref\": \"$.metadata.enums.mode\" },\n            \"visible\": \"always\"\n          },\n          {\n            \"path\": \"#.query.input.value\",\n            \"label\": \"Amount in (vehicle shares if redeem)\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.query.input.asset\" },\n            \"visible\": \"always\"\n          },\n          {\n            \"path\": \"#.query.output.value\",\n            \"label\": \"Vehicle min. output, before fees\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.query.output.asset\" },\n            \"visible\": \"always\"\n          },\n          {\n            \"path\": \"#.receiver\",\n            \"label\": \"Receiver\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"], \"sources\": [\"local\", \"ens\"] },\n            \"visible\": \"always\"\n          },\n          { \"path\": \"#.query.data\", \"label\": \"Vehicle data\", \"format\": \"raw\", \"visible\": \"optional\" },\n          { \"path\": \"#.query.owner\", \"label\": \"Query owner\", \"visible\": \"never\" },\n          { \"path\": \"#.query.receiver\", \"label\": \"Query receiver\", \"visible\": \"never\" },\n          { \"path\": \"#.query.salt\", \"label\": \"Query salt\", \"visible\": \"never\" },\n          { \"path\": \"#.sourceSalt\", \"label\": \"Source salt\", \"visible\": \"never\" }\n        ]\n      },\n      \"createRedeemFromConduitShares(uint256 conduitShares, (address asset, uint256 value) outputAsset, bytes32 sourceSalt, address receiver)\": {\n        \"intent\": \"Request redeem of Conduit shares\",\n        \"interpolatedIntent\": \"Request redeem of {#.conduitShares}\",\n        \"fields\": [\n          {\n            \"path\": \"#.conduitShares\",\n            \"label\": \"Shares to redeem\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"@.to\" },\n            \"visible\": \"always\"\n          },\n          {\n            \"path\": \"#.outputAsset.value\",\n            \"label\": \"Minimum output, before fees\",\n            \"format\": \"tokenAmount\",\n            \"params\": { \"tokenPath\": \"#.outputAsset.asset\" },\n            \"visible\": \"always\"\n          },\n          {\n            \"path\": \"#.receiver\",\n            \"label\": \"Receiver\",\n            \"format\": \"addressName\",\n            \"params\": { \"types\": [\"eoa\", \"wallet\", \"contract\"], \"sources\": [\"local\", \"ens\"] },\n            \"visible\": \"always\"\n          },\n          { \"path\": \"#.sourceSalt\", \"label\": \"Source salt\", \"visible\": \"never\" }\n        ]\n      }\n    }\n  }\n}\n",
       "index.calldata.json": "{\n  \"eip155:1:0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb\": \"registry/morpho/calldata-MorphoBlue.json\",\n  \"eip155:1:0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad\": \"registry/morpho/calldata-BlueBundlesV1.json\"\n}\n"
     },
     "chain": []
@@ -258,7 +219,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xb2f6986457f5a24ff088a0beb5567c8c1fe2da02687c78e743507ee7c982b977"
         }
@@ -272,7 +233,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xb2f6986457f5a24ff088a0beb5567c8c1fe2da02687c78e743507ee7c982b977"
         }
@@ -595,7 +556,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x0e39af2627d684c7f0ac4ec56d5a0b8419c0d257a8ec27e03b209031ee9f4e0d"
         }
@@ -609,7 +570,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x0e39af2627d684c7f0ac4ec56d5a0b8419c0d257a8ec27e03b209031ee9f4e0d"
         }
@@ -694,7 +655,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x238bea3d03150d94fad95e9857867679db35265d0a90ff82346383c1b55a2822"
         }
@@ -708,7 +669,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x238bea3d03150d94fad95e9857867679db35265d0a90ff82346383c1b55a2822"
         }
@@ -741,10 +702,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -950,6 +911,145 @@
     {
       "method": "eth_getBlockByNumber",
       "params": [
+        "0x139e1b4",
+        false
+      ],
+      "answers": {
+        "alchemy": {
+          "number": "0x139e1b4",
+          "hash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e",
+          "timestamp": "0x66c4ad9b",
+          "gasLimit": "0x1c9c380",
+          "mixHash": "0x9869bf34ef92ddfd6ce813dd0595df36731dc0363804ed359f21f814e7020d28"
+        },
+        "drpc": {
+          "number": "0x139e1b4",
+          "hash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e",
+          "timestamp": "0x66c4ad9b",
+          "gasLimit": "0x1c9c380",
+          "mixHash": "0x9869bf34ef92ddfd6ce813dd0595df36731dc0363804ed359f21f814e7020d28"
+        }
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        {
+          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71"
+        },
+        "drpc": {
+          "keccak256": "0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3",
+        {
+          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000007458bfdc30034eb860b265e6068121d18fa5aa72",
+        "drpc": "0x0000000000000000000000007458bfdc30034eb860b265e6068121d18fa5aa72"
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0x7458bfdc30034eb860b265e6068121d18fa5aa72",
+        {
+          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
+        },
+        "drpc": {
+          "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
+        }
+      }
+    },
+    {
+      "method": "eth_getBlockByNumber",
+      "params": [
+        "0x139e1b3",
+        false
+      ],
+      "answers": {
+        "alchemy": {
+          "number": "0x139e1b3",
+          "hash": "0xac792803b4b28de15054093b1347e24226b7caeadd650631b2ebd93f707eae0a",
+          "timestamp": "0x66c4ad8f",
+          "gasLimit": "0x1c9c380",
+          "mixHash": "0x605975cb5733540a6eb7a27b2c1196fe8a77b28a3b6ae381d36b959c79d022aa"
+        },
+        "drpc": {
+          "number": "0x139e1b3",
+          "hash": "0xac792803b4b28de15054093b1347e24226b7caeadd650631b2ebd93f707eae0a",
+          "timestamp": "0x66c4ad8f",
+          "gasLimit": "0x1c9c380",
+          "mixHash": "0x605975cb5733540a6eb7a27b2c1196fe8a77b28a3b6ae381d36b959c79d022aa"
+        }
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        {
+          "blockHash": "0xac792803b4b28de15054093b1347e24226b7caeadd650631b2ebd93f707eae0a"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+        },
+        "drpc": {
+          "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+        }
+      }
+    },
+    {
+      "method": "eth_getBlockByNumber",
+      "params": [
         "0x1202234",
         false
       ],
@@ -1044,114 +1144,6 @@
         "0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb",
         {
           "blockHash": "0x0f3fe249559e76893a8c76856e4664d39d3f38dc9599cafa443e1b6e423f1d31"
-        }
-      ],
-      "answers": {
-        "alchemy": {
-          "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-        },
-        "drpc": {
-          "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
-        }
-      }
-    },
-    {
-      "method": "eth_getBlockByNumber",
-      "params": [
-        "0x18a2ce4",
-        false
-      ],
-      "answers": {
-        "alchemy": {
-          "number": "0x18a2ce4",
-          "hash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267",
-          "timestamp": "0x6a8da01b",
-          "gasLimit": "0x3938700",
-          "mixHash": "0xc140f1f7b5763efa1201d2dbb8aa2f8867858b567be9e711090bf87c464ca53a"
-        },
-        "drpc": {
-          "number": "0x18a2ce4",
-          "hash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267",
-          "timestamp": "0x6a8da01b",
-          "gasLimit": "0x3938700",
-          "mixHash": "0xc140f1f7b5763efa1201d2dbb8aa2f8867858b567be9e711090bf87c464ca53a"
-        }
-      }
-    },
-    {
-      "method": "eth_getCode",
-      "params": [
-        "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
-        {
-          "blockHash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267"
-        }
-      ],
-      "answers": {
-        "alchemy": {
-          "keccak256": "0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888"
-        },
-        "drpc": {
-          "keccak256": "0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888"
-        }
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getBlockByNumber",
-      "params": [
-        "0x18a2ce3",
-        false
-      ],
-      "answers": {
-        "alchemy": {
-          "number": "0x18a2ce3",
-          "hash": "0x53c78238d64c5200b737e09d4d6c032ab6fcf4d47ba19098b170a37df7a795e1",
-          "timestamp": "0x6a8da00f",
-          "gasLimit": "0x3938700",
-          "mixHash": "0x07434ba93de82c42487297c615df390422b3490cc473ef04937ee146ecaffeb1"
-        },
-        "drpc": {
-          "number": "0x18a2ce3",
-          "hash": "0x53c78238d64c5200b737e09d4d6c032ab6fcf4d47ba19098b170a37df7a795e1",
-          "timestamp": "0x6a8da00f",
-          "gasLimit": "0x3938700",
-          "mixHash": "0x07434ba93de82c42487297c615df390422b3490cc473ef04937ee146ecaffeb1"
-        }
-      }
-    },
-    {
-      "method": "eth_getCode",
-      "params": [
-        "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
-        {
-          "blockHash": "0x53c78238d64c5200b737e09d4d6c032ab6fcf4d47ba19098b170a37df7a795e1"
         }
       ],
       "answers": {
@@ -1336,23 +1328,108 @@
     {
       "method": "eth_getBlockByNumber",
       "params": [
-        "0x139e1b4",
+        "0x18a2ce4",
         false
       ],
       "answers": {
         "alchemy": {
-          "number": "0x139e1b4",
-          "hash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e",
-          "timestamp": "0x66c4ad9b",
-          "gasLimit": "0x1c9c380",
-          "mixHash": "0x9869bf34ef92ddfd6ce813dd0595df36731dc0363804ed359f21f814e7020d28"
+          "number": "0x18a2ce4",
+          "hash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267",
+          "timestamp": "0x6a8da01b",
+          "gasLimit": "0x3938700",
+          "mixHash": "0xc140f1f7b5763efa1201d2dbb8aa2f8867858b567be9e711090bf87c464ca53a"
         },
         "drpc": {
-          "number": "0x139e1b4",
-          "hash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e",
-          "timestamp": "0x66c4ad9b",
-          "gasLimit": "0x1c9c380",
-          "mixHash": "0x9869bf34ef92ddfd6ce813dd0595df36731dc0363804ed359f21f814e7020d28"
+          "number": "0x18a2ce4",
+          "hash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267",
+          "timestamp": "0x6a8da01b",
+          "gasLimit": "0x3938700",
+          "mixHash": "0xc140f1f7b5763efa1201d2dbb8aa2f8867858b567be9e711090bf87c464ca53a"
+        }
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+        {
+          "blockHash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888"
+        },
+        "drpc": {
+          "keccak256": "0x858c1bec7c0feacd5fc0430dec85c632be2c8dd20b7e94c87e1e53c438a88888"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0x56795a70100dfdc50acbdc1170046060cb49f08112283731b0719dcfe75d1267"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getBlockByNumber",
+      "params": [
+        "0x18a2ce3",
+        false
+      ],
+      "answers": {
+        "alchemy": {
+          "number": "0x18a2ce3",
+          "hash": "0x53c78238d64c5200b737e09d4d6c032ab6fcf4d47ba19098b170a37df7a795e1",
+          "timestamp": "0x6a8da00f",
+          "gasLimit": "0x3938700",
+          "mixHash": "0x07434ba93de82c42487297c615df390422b3490cc473ef04937ee146ecaffeb1"
+        },
+        "drpc": {
+          "number": "0x18a2ce3",
+          "hash": "0x53c78238d64c5200b737e09d4d6c032ab6fcf4d47ba19098b170a37df7a795e1",
+          "timestamp": "0x6a8da00f",
+          "gasLimit": "0x3938700",
+          "mixHash": "0x07434ba93de82c42487297c615df390422b3490cc473ef04937ee146ecaffeb1"
+        }
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0x38b0c12ab81976e9417d4ebfe2a34db6df22e6ad",
+        {
+          "blockHash": "0x53c78238d64c5200b737e09d4d6c032ab6fcf4d47ba19098b170a37df7a795e1"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+        },
+        "drpc": {
+          "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
         }
       }
     },
@@ -1361,7 +1438,7 @@
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
         {
-          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
         }
       ],
       "answers": {
@@ -1379,7 +1456,7 @@
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
         }
       ],
       "answers": {
@@ -1393,7 +1470,7 @@
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
         }
       ],
       "answers": {
@@ -1407,7 +1484,7 @@
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
         "0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3",
         {
-          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
         }
       ],
       "answers": {
@@ -1420,7 +1497,7 @@
       "params": [
         "0x7458bfdc30034eb860b265e6068121d18fa5aa72",
         {
-          "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
         }
       ],
       "answers": {
@@ -1429,54 +1506,108 @@
         },
         "drpc": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
-        }
-      }
-    },
-    {
-      "method": "eth_getBlockByNumber",
-      "params": [
-        "0x139e1b3",
-        false
-      ],
-      "answers": {
-        "alchemy": {
-          "number": "0x139e1b3",
-          "hash": "0xac792803b4b28de15054093b1347e24226b7caeadd650631b2ebd93f707eae0a",
-          "timestamp": "0x66c4ad8f",
-          "gasLimit": "0x1c9c380",
-          "mixHash": "0x605975cb5733540a6eb7a27b2c1196fe8a77b28a3b6ae381d36b959c79d022aa"
-        },
-        "drpc": {
-          "number": "0x139e1b3",
-          "hash": "0xac792803b4b28de15054093b1347e24226b7caeadd650631b2ebd93f707eae0a",
-          "timestamp": "0x66c4ad8f",
-          "gasLimit": "0x1c9c380",
-          "mixHash": "0x605975cb5733540a6eb7a27b2c1196fe8a77b28a3b6ae381d36b959c79d022aa"
         }
       }
     },
     {
       "method": "eth_getCode",
       "params": [
-        "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+        "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
         {
-          "blockHash": "0xac792803b4b28de15054093b1347e24226b7caeadd650631b2ebd93f707eae0a"
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
         }
       ],
       "answers": {
         "alchemy": {
-          "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+          "keccak256": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd"
         },
         "drpc": {
-          "keccak256": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+          "keccak256": "0x73b578a0cd95d0d6e77f85a3945a670a9b8679670f8fc190ca97e89a1f07f6cd"
         }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x870ac11d48b15db9a138cf899d20f13f79ba00bc",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getCode",
+      "params": [
+        "0xa6d6950c9f177f1de7f7757fb33539e3ec60182a",
+        {
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
+        }
+      ],
+      "answers": {
+        "alchemy": {
+          "keccak256": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11"
+        },
+        "drpc": {
+          "keccak256": "0x2f02515e84336f19fede110d7b3fee0a087c629adb34a32c165559303675bf11"
+        }
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xa6d6950c9f177f1de7f7757fb33539e3ec60182a",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xa6d6950c9f177f1de7f7757fb33539e3ec60182a",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
     }
   ],
+  "today": {
+    "number": "26428210",
+    "hash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
+  },
   "facts": {
     "block": {
-      "number": "26404789",
-      "hash": "0x467d035f5b7424c2b9e365159384b351c04e84c80566c7f4dd217f0f26d6adeb"
+      "number": "26428210",
+      "hash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
     },
     "defillama": [
       {
@@ -1484,9 +1615,9 @@
         "id": "4025",
         "parentProtocol": "parent#morpho",
         "listedAt": 1705261273,
-        "tvl": 10465555459.249125,
+        "tvl": 9972481699.06249,
         "chainTvls": {
-          "Ethereum": 4705253678.61267
+          "Ethereum": 4453528820.364618
         }
       }
     ],
@@ -1500,12 +1631,12 @@
             "data": "0x5c60e39a64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64"
           },
           {
-            "blockHash": "0x467d035f5b7424c2b9e365159384b351c04e84c80566c7f4dd217f0f26d6adeb"
+            "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
           }
         ],
         "answers": {
-          "alchemy": "0x0000000000000000000000000000000000000000000000000001418ef61669fc0000000000000000000000000000000000000000000000116bd76c6e033e9d25000000000000000000000000000000000000000000000000000112f1ff750eaf00000000000000000000000000000000000000000000000eb49e54b72e83cc7a000000000000000000000000000000000000000000000000000000006af6c6bb0000000000000000000000000000000000000000000000000000000000000000",
-          "drpc": "0x0000000000000000000000000000000000000000000000000001418ef61669fc0000000000000000000000000000000000000000000000116bd76c6e033e9d25000000000000000000000000000000000000000000000000000112f1ff750eaf00000000000000000000000000000000000000000000000eb49e54b72e83cc7a000000000000000000000000000000000000000000000000000000006af6c6bb0000000000000000000000000000000000000000000000000000000000000000"
+          "alchemy": "0x0000000000000000000000000000000000000000000000000001306f13e476ed0000000000000000000000000000000000000000000000107cb3193ca3872fba00000000000000000000000000000000000000000000000000010be706f8011700000000000000000000000000000000000000000000000e528e6387ecbafaf4000000000000000000000000000000000000000000000000000000006afb13df0000000000000000000000000000000000000000000000000000000000000000",
+          "drpc": "0x0000000000000000000000000000000000000000000000000001306f13e476ed0000000000000000000000000000000000000000000000107cb3193ca3872fba00000000000000000000000000000000000000000000000000010be706f8011700000000000000000000000000000000000000000000000e528e6387ecbafaf4000000000000000000000000000000000000000000000000000000006afb13df0000000000000000000000000000000000000000000000000000000000000000"
         }
       },
       {
@@ -1516,7 +1647,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x467d035f5b7424c2b9e365159384b351c04e84c80566c7f4dd217f0f26d6adeb"
+            "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
           }
         ],
         "answers": {
@@ -1532,7 +1663,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x467d035f5b7424c2b9e365159384b351c04e84c80566c7f4dd217f0f26d6adeb"
+            "blockHash": "0x6393c6a7ec4edffa079f3447d09969c798c466ce9f1ac91a391ad99c920fc0fd"
           }
         ],
         "answers": {
