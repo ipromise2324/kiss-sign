@@ -175,6 +175,22 @@ export function decodeCall(fn: AbiFunction, region: Region, options: DecodeOptio
   }
 }
 
+/**
+ * Decodes `fn`'s parameters from `region` with no selector before them, as a command router takes each command's input,
+ * and accepts them only when re-encoding gives the same bytes, with nothing after them.
+ */
+export function decodeParams(fn: AbiFunction, region: Region): DecodedCall | DecodeFailure {
+  const types = fn.params.map((p) => p.type);
+  try {
+    const read = decodeTuple(region.root, types, region.start, region.end);
+    const call: DecodedCall = { kind: 'decoded', fn, args: read.value, trailer: undefined, span: [region.start, region.end] };
+    return requireCanonical(encodeTuple(types, read.value), region) ?? call;
+  } catch (error) {
+    if (error instanceof Failure) return error.failure;
+    throw error;
+  }
+}
+
 /** Decodes return data of `types`, accepting only its canonical encoding with nothing after it. */
 export function decodeValues(types: readonly AbiType[], data: Uint8Array): readonly AbiValue[] | undefined {
   try {

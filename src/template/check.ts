@@ -3,7 +3,7 @@ import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
 import type { AbiType } from '../decode/abi.ts';
-import { decodeCall } from '../decode/codec.ts';
+import { decodeCall, decodeParams } from '../decode/codec.ts';
 import type { AbiValue, DecodeFailure, DecodedCall, Region, Span } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
@@ -284,9 +284,9 @@ function checkValue(rule: Rule, type: AbiType, actual: AbiValue, callPath: strin
   compareLeaf(rule, type, leaf, actual.span, callPath, arg, context);
 }
 
-/** `region` decoded as `node`'s function, allowing the trailer the template allows. */
+/** `region` decoded as `node`'s function, allowing the trailer the template allows, or as its parameters alone. */
 export const decodeTemplateCall = (node: CallNode, region: Region): DecodedCall | DecodeFailure =>
-  decodeCall(node.fn, region, { trailerMaxBytes: node.trailer?.maxBytes ?? 0 });
+  node.encoding === 'params' ? decodeParams(node.fn, region) : decodeCall(node.fn, region, { trailerMaxBytes: node.trailer?.maxBytes ?? 0 });
 
 function checkCall(node: CallNode, region: Region, callPath: string, context: Context, itemContexts?: readonly Context[]): void {
   const decoded = decodeTemplateCall(node, region);

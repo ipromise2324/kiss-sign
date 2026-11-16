@@ -14,7 +14,7 @@ import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { refNames, slippageBps } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
@@ -220,6 +220,7 @@ const KIND_WORDS: Readonly<Record<RegistryEntry['kind'], string>> = {
   lending: '借貸合約',
   oracle: '價格來源',
   irm: '利率模型',
+  allowance: '授權合約',
 };
 const PART_WORDS: Readonly<Record<string, string>> = { asset: '資產', factory: '工廠', loanToken: '借出代幣', collateralToken: '抵押代幣', oracle: 'oracle', irm: '利率模型', lltv: 'LLTV' };
 
@@ -262,6 +263,7 @@ const FREE_WORDS: Readonly<Record<FreeClaim, string>> = {
   scalar: '換成別的值測過，結果不變或交易失敗',
   proof: '合約會驗證它，換成別的值交易就失敗',
   unread: '合約不讀它，換成別的值結果一樣',
+  route: '換成別的值測過，會走別的池子，收到的仍不少於卡片',
 };
 const SOURCE_LABELS: Readonly<Record<Exclude<ProgramSource, 'page' | `more.${number}`>, string>> = { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠' };
 
@@ -556,7 +558,9 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     case 'at-least':
       return { words: [before('至少你填的', fieldWord(context.template, rule.field))], qualifier: ['比這個少就 MISMATCH'] };
     case 'call':
-      return { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
+      return rule.call.encoding === 'params'
+        ? { words: [{ code: rule.call.fn.name }, ' 的參數'], qualifier: undefined }
+        : { words: [{ code: rule.call.fn.name }, ' (', { mono: rule.call.fn.selector }, ')'], qualifier: undefined };
     case 'packed':
       return { words: [`${rule.parts.reduce((sum, part) => sum + part.size, 0)} bytes，${rule.parts.length} 段接在一起`], qualifier: undefined };
     case 'eip712':
@@ -636,7 +640,7 @@ function argRow(node: ArgNode, context: Context, withChips: boolean, inMessage =
     id: undefined,
     ai: fieldsNote(context, node.key),
     parts: node.children.length === 0 ? [] : [{ label: undefined, rows: node.children.map((child) => argRow(child, context, nestedCall, inMessage || node.rule.kind === 'eip712')) }],
-    doc: node.rule.kind === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
+    doc: node.rule.kind === 'call' && node.rule.call.encoding === 'call' ? docLine(node.rule.call.fn.signature, context) : undefined,
   };
 }
 
@@ -780,6 +784,7 @@ function afterRows(context: Context): AfterRow[] {
   const amountOf = (effect: Template['effects']['gives'][number], gives: boolean): Inline => {
     if (effect.amount.kind === 'all') return ['全部'];
     if (effect.amount.kind === 'positive') return [gives ? '給出多於 0' : '收到多於 0'];
+    if (effect.amount.kind === 'at-least') return [before('至少你填的', fieldWord(template, effect.amount.field))];
     const value = context.card?.get(effect.amount.field);
     if (value?.kind !== 'amount') return [before('你填的', fieldWord(template, effect.amount.field))];
     const { words } = amountWords(value.value, effect.token, context);
@@ -787,7 +792,14 @@ function afterRows(context: Context): AfterRow[] {
     return words[0] === '約 ' ? ['約 ', sign, ...words.slice(1)] : [sign, ...words];
   };
   const note = (effect: Template['effects']['gives'][number]): Inline => {
-    const amount = effect.amount.kind === 'card' ? before('剛好你填的', fieldWord(template, effect.amount.field)) : effect.amount.kind === 'all' ? '全部餘額，交易後一個都不剩' : '程式只查方向，不查數量';
+    const amount =
+      effect.amount.kind === 'card'
+        ? before('剛好你填的', fieldWord(template, effect.amount.field))
+        : effect.amount.kind === 'at-least'
+          ? before('收到的不能少於你填的', fieldWord(template, effect.amount.field))
+          : effect.amount.kind === 'all'
+            ? '全部餘額，交易後一個都不剩'
+            : '程式只查方向，不查數量';
     return effect.to === undefined ? [amount] : [amount, before('，給', refWord(template, effect.to))];
   };
   const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : before('你選的', refWord(template, token)));
@@ -805,13 +817,22 @@ function afterRows(context: Context): AfterRow[] {
       });
     }
   }
+  const shown = new Set<KeptApproval>();
   for (const call of template.calls) {
     if (call.data === 'empty' || call.data.fn.signature !== 'approve(address,uint256)') continue;
     const spender = call.data.args[0] as Rule;
     const label: Inline = ['給 ', ...ruleWords(spender, context), ` 的 ${targetOf(call.to, context).label} 授權`];
-    const open = template.effects.approves.find((a) => spender.kind === 'contract' && a.spender === spender.name && call.to.kind === 'card' && JSON.stringify(call.to.ref) === JSON.stringify(a.token));
+    const open = template.effects.approves.find((a) => a.via === 'erc20' && spender.kind === 'contract' && a.spender === spender.name && call.to.kind === 'card' && JSON.stringify(call.to.ref) === JSON.stringify(a.token));
+    if (open !== undefined) shown.add(open);
     if (open === undefined) rows.push({ label, value: [{ num: '0' }], note: ['交易內用完，不能比交易前高'], gains: false });
-    else rows.push({ label, value: [before('最多你填的', fieldWord(template, open.amount))], note: ['留給之後成交的訂單用，不能超過這個數'], gains: false });
+    else if (open.amount.kind === 'card') rows.push({ label, value: [before('最多你填的', fieldWord(template, open.amount.field))], note: ['留給之後成交的訂單用，不能超過這個數'], gains: false });
+    else rows.push({ label, value: ['可以留著，不限數量'], note: ['登記資料說明為什麼這個合約可以留著授權'], gains: false });
+  }
+  for (const open of template.effects.approves.filter((a) => !shown.has(a))) {
+    const spender = context.registry.entries.get(open.spender) as RegistryEntry;
+    const value: Inline = open.amount.kind === 'unlimited' ? ['可以留著，不限數量'] : [before('最多你填的', fieldWord(template, open.amount.field))];
+    const note: Inline = open.via === 'permit2' ? ['到期時間記在 Permit2 裡，verify 的網頁會顯示'] : ['登記資料說明為什麼這個合約可以留著授權'];
+    rows.push({ label: [open.via === 'permit2' ? '透過 Permit2 給 ' : '給 ', link(spender), ` 的 ${name(open.token)} 授權`], value, note, gains: false });
   }
   return rows;
 }
@@ -853,7 +874,12 @@ function callBlocks(context: Context): CallBlock[] {
   });
 }
 
-const FREE_KEY: Readonly<Record<FreeClaim, string>> = { scalar: '換成別的值，結果一樣或交易失敗', proof: '換成別的值，交易就失敗', unread: '合約不讀它，換成別的值結果一樣' };
+const FREE_KEY: Readonly<Record<FreeClaim, string>> = {
+  scalar: '換成別的值，結果一樣或交易失敗',
+  proof: '換成別的值，交易就失敗',
+  unread: '合約不讀它，換成別的值結果一樣',
+  route: '換成別的值會走別的池子，但 Safe 給出和收到的數量仍要符合卡片，否則交易失敗或 MISMATCH',
+};
 
 /** The who-decides key for the words the rows use: a free field's line by each claim the template makes. */
 function keyItems(used: ReadonlySet<Who>, template: Template): KeyItem[] {
@@ -1659,12 +1685,14 @@ function nextSection(context: Context): Section {
     [`交易只有這 ${template.calls.length} 個呼叫，MultiSend 也一個個解開`],
     ['每個參數符合上面的規則，重新編碼要一模一樣'],
     ...template.effects.gives.map((e): Inline => [`模擬後 Safe 給出的 ${tokenName(e.token)} ${e.amount.kind === 'card' ? before('剛好是你填的', fieldWord(template, e.amount.field)) : e.amount.kind === 'all' ? '是全部餘額' : '多於 0'}`]),
-    ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`]),
+    ...template.effects.gets.map((e): Inline => [`模擬後 Safe 收到 ${tokenName(e.token)}`, ...(e.amount.kind === 'at-least' ? [before('，不少於你填的', fieldWord(template, e.amount.field))] : [])]),
     ...(template.effects.gives.length + template.effects.gets.length === 0 ? [['模擬後 Safe 的餘額一點都不能變'] as Inline] : []),
     ...(template.nonce === undefined ? [] : [['Safe 交易的 nonce 是', ...ruleWords(template.nonce, context)] as Inline]),
     template.effects.approves.length === 0
       ? ['沒有任何授權在交易後變高']
-      : [`除了留給 ${template.effects.approves.map((a) => a.spender).join('、')} 的授權最多是你填的數量，沒有任何授權在交易後變高`],
+      : template.effects.approves.every((a) => a.amount.kind === 'card')
+        ? [`除了留給 ${template.effects.approves.map((a) => a.spender).join('、')} 的授權最多是你填的數量，沒有任何授權在交易後變高`]
+        : ['除了上面「交易後」列出可以留著的授權，沒有任何授權在交易後變高'],
     ...template.effects.views.map((v): Inline => [
       { code: `${v.to}.${v.fn.name}` },
       `：${v.changes.map((c) => `${paramName(v.returns[c.value] as AbiParam, c.value)} ${{ increases: '增加', decreases: '減少', same: '不變' }[c.change]}`).join('、')}`,
@@ -1696,7 +1724,7 @@ function freeRules(template: Template): { readonly claims: Set<FreeClaim>; reado
   const calls = template.calls.flatMap((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)]);
   calls.forEach(collect);
   calls.forEach(visit);
-  return { claims: new Set((['scalar', 'proof', 'unread'] as const).filter((claim) => found.has(claim))), member: [...members].some((rule) => rule.kind === 'free') };
+  return { claims: new Set((['scalar', 'route', 'proof', 'unread'] as const).filter((claim) => found.has(claim))), member: [...members].some((rule) => rule.kind === 'free') };
 }
 
 /** 參數保護 when no test transaction is recorded, from the template. */

@@ -57,6 +57,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
       add(registry.entries.get(view.to));
       view.args.forEach(visit);
     }
+    for (const kept of template.effects.approves) add(registry.entries.get(kept.spender));
   }
   for (const entry of [...touched.values()]) entry.dependsOn?.forEach((name) => add(registry.entries.get(name)));
   return [...touched.values()];
