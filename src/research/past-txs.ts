@@ -156,6 +156,8 @@ function describeRule(rule: LeafRule, sender: string): string {
       return 'free';
     case 'equals':
       return `same as ${rule.path}`;
+    case 'owner-before':
+      return `the owner before card ${rule.ref.field}`;
     case 'at-least':
       return `at least card ${rule.field}`;
     case 'share-price': {

@@ -2,6 +2,7 @@ import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { SHOWN_PLACES, groupedTokens } from '../chain/decimals.ts';
 import { CSS, Html, SYMBOLS, h, icon } from '../research/report-html.ts';
 import type { State } from '../research/ledger.ts';
+import { settingsChange } from '../floor/summary.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
@@ -93,6 +94,7 @@ function cardValue(value: ResolvedValue, token: AmountToken | undefined, page: V
     case 'amount':
       return tokenAmount(value.value, token, page);
     case 'nonce':
+    case 'threshold':
       return h`<span class="num">${`${value.value}`}</span>`;
     case 'market':
       return h`${value.market.name} ${mono(value.market.id)}`;
@@ -134,6 +136,12 @@ function effectsSection(page: VerdictPage): Html {
           const { does, bound, amount } = changeWords(change);
           return prop(does, amount === undefined ? h`${bound}的 ${tokenName(token)}` : h`${bound}${tokenAmount(amount, token, page)}`);
         });
+  const change = settingsChange(page.card, page.templates);
+  if (change !== undefined) {
+    if (change.remove !== undefined) rows.push(prop('移除簽署人', mono(checksumAddress(change.remove))));
+    if (change.add !== undefined) rows.push(prop('新增簽署人', mono(checksumAddress(change.add))));
+    rows.push(prop('門檻', change.threshold === undefined ? '不變' : h`變成 <span class="num">${`${change.threshold}`}</span>`));
+  }
   return h`
 <section>
   <h2>預期效果</h2>
@@ -174,7 +182,7 @@ function callsSection(page: VerdictPage): Html {
         ? h`<p class="intro">每個呼叫都會移動 Safe 的資產。</p>`
         : h`<p class="intro">這些呼叫不移動 Safe 的任何資產，它們做的事是改設定或給權限：</p>
   <dl class="props two">${calls.movesNothing.map(({ path, to, selector }) =>
-    prop(path, h`${nameOf(to, registry)} ${mono(checksumAddress(to))} ${selector === undefined ? '沒有資料' : h`selector ${mono(selector)}`}`),
+    prop(path, h`${to === page.card.safe ? '本 Safe' : nameOf(to, registry)} ${mono(checksumAddress(to))} ${selector === undefined ? '沒有資料' : h`selector ${mono(selector)}`}`),
   )}</dl>`;
   return h`
 <section>

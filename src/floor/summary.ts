@@ -6,9 +6,9 @@ import type { EffectVerdict } from '../simulate/effects.ts';
 import type { Observation } from '../simulate/simulate.ts';
 import type { FieldCheck } from '../template/check.ts';
 import type { MutationResult } from '../template/mutation.ts';
-import type { Template } from '../template/template.ts';
+import type { CardRef, Template } from '../template/template.ts';
 import { keptUnlimited } from './floor.ts';
-import type { FloorResult } from './floor.ts';
+import type { FloorAllowed, FloorResult, SettingsChange } from './floor.ts';
 import { checkSimulatedFloor } from './simulated.ts';
 
 export type SimulatedChecks =
@@ -23,6 +23,31 @@ export type EngineChecks = {
   readonly simulation: SimulatedChecks;
 };
 
+/**
+ * The owner or threshold change the card's one operation with `effects.safe` declares, or undefined when none does.
+ * Template load binds each to an owner or threshold field, which a resolved card holds as an address or a number.
+ */
+export function settingsChange(card: ResolvedCard, templates: ReadonlyMap<string, Template>): SettingsChange | undefined {
+  for (const op of card.operations) {
+    const declared = templates.get(op.template)?.effects.safe;
+    if (declared === undefined) continue;
+    const value = (ref: CardRef | undefined) => (ref === undefined ? undefined : op.values.get(ref.field));
+    const address = (ref: CardRef | undefined): Address | undefined => {
+      const held = value(ref);
+      return held?.kind === 'address' ? held.address : undefined;
+    };
+    const threshold = value(declared.threshold);
+    return { add: address(declared.add), remove: address(declared.remove), threshold: threshold?.kind === 'threshold' ? threshold.value : undefined };
+  }
+  return undefined;
+}
+
+/** What the card lets past the floor: the allowances its templates keep unlimited and the settings change it declares. */
+export const floorAllowed = (card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): FloorAllowed => ({
+  standing: keptUnlimited(card, templates, registry),
+  change: settingsChange(card, templates),
+});
+
 /** The effects verdict and the floor rules on one observation, from a simulation or a receipt. */
 export function checkObservation(
   observation: Observation,
@@ -33,5 +58,5 @@ export function checkObservation(
 ): SimulatedChecks {
   if (observation.kind === 'unverifiable') return observation;
   const { observed } = observation;
-  return { kind: 'observed', effects: judgeEffects(observed, card, templates, registry), floor: checkSimulatedFloor(observed, safe, keptUnlimited(card, templates, registry)) };
+  return { kind: 'observed', effects: judgeEffects(observed, card, templates, registry), floor: checkSimulatedFloor(observed, safe, floorAllowed(card, templates, registry)) };
 }

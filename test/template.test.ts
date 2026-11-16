@@ -281,6 +281,7 @@ test('the template parses its card fields and effects', () => {
     gives: [{ token: { field: 'vault', attribute: 'asset' }, amount: { kind: 'card', field: 'amount' }, to: undefined }],
     gets: [{ token: { field: 'vault', attribute: undefined }, amount: { kind: 'positive' }, to: undefined }],
     views: [],
+    safe: undefined,
     approves: [],
   });
 });
