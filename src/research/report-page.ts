@@ -182,6 +182,7 @@ export type AddressRow = {
   readonly sources: readonly SourceLine[];
   /** The places that confirmed the address, in plain words. */
   readonly confirmed: string;
+  readonly codeLines: readonly Inline[];
   readonly aiSources: readonly AiSource[];
 };
 
@@ -1037,7 +1038,7 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
     };
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
-  const where = span === null ? '' : `（第 ${span[1]} 段）`;
+  const where = span !== null ? `（第 ${span[1]} 段）` : result.id.endsWith('/code.today') ? '（最新區塊）' : '';
   const refused = result.finding.kind === 'refused' ? ` 原因：${result.finding.why}。` : '';
   return { title: [`${name}：${words.title}${where}`], why: [`${words.why}${refused}`] };
 }
@@ -1171,6 +1172,23 @@ function walletSection(context: Context): Section {
   return section({ kind: 'calls', calls, lines });
 }
 
+function codeLines(ledger: Ledger, entry: RegistryEntry): Inline[] {
+  const lines: Inline[] = [];
+  const notCalled = ledger.results.some((r) => r.finding.kind === 'not-called' && r.about.kind === 'entry' && r.about.entry.name === entry.name);
+  if (notCalled) {
+    const dependents = ledger.entries.filter((other) => other.dependsOn?.includes(entry.name));
+    const links = dependents.flatMap((other, i): Span[] => [...(i === 0 ? [] : ['、']), { href: entryAnchor(other.name), label: other.name }]);
+    lines.push(['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。', ...(entry.code === undefined ? [] : ['每次簽名碰到 ', ...links, ' 時，程式也確認它的程式碼還是 code pin 記錄的那份。'])]);
+  }
+  const routes = entry.code?.current.pin.routes;
+  if (routes !== undefined) {
+    lines.push([`它依函式選擇器把呼叫分給各自的實作${notCalled ? '' : '，沒有一份程式碼能做 ABI 證明'}。code pin 的 seeds 接到 ${routes.length} 個實作：`]);
+    for (const route of routes) lines.push([{ mono: checksumAddress(route.address) }, '，程式碼 hash ', { mono: route.hash }, `，${route.selectors.length} 個函式`]);
+    lines.push(['沒有 seed 接到的實作，code pin 沒有記錄，程式也不檢查。']);
+  }
+  return lines;
+}
+
 function addressSection(context: Context): Section[] {
   const { ledger, notes } = context;
   if (ledger.entries.length === 0) return [];
@@ -1201,6 +1219,7 @@ function addressSection(context: Context): Section[] {
       address: checksumAddress(entry.address),
       sources,
       confirmed: confirmedWords(entry, confirmations(ledger, entry)),
+      codeLines: codeLines(ledger, entry),
       aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'AI'), result: AI_RESULTS[s.result] })),
     };
   };
@@ -1619,13 +1638,24 @@ const unrecordedParams = (template: Template): string =>
 function stripItems(ledger: Ledger, template: Template): StripItem[] {
   const subjects = new Set(ledger.entries.map((e) => e.name)).size;
   const recorded = ledger.results.some((r) => r.line === 'params');
+  const named = (match: (result: Result) => boolean): string[] => [...new Set(ledger.results.flatMap((r) => (match(r) && r.about.kind === 'entry' ? [r.about.entry.name] : [])))];
+  const notCalled = named((r) => r.finding.kind === 'not-called');
+  const unprovable = named((r) => r.finding.kind === 'routed-proxy');
+  const today = named((r) => r.id.endsWith('/code.today'));
+  const routed = ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name);
   const explain: Readonly<Record<StripLine, (passed: number, counted: number) => string>> = {
     sources: (p, c) =>
       p === c
         ? `${c === 1 ? '這個地址' : `${c} 個地址都`}至少在 ${MIN_CONFIRMATIONS} 個地方確認：官方頁、協議 API、CoinGecko 或金庫的登記工廠列出同一個地址。`
         : `${c - p} 個地址有結果要你看，見「待確認」。${p === 0 ? '' : p === 1 ? `另外那個地址至少在 ${MIN_CONFIRMATIONS} 個地方確認。` : `其餘 ${p} 個都至少在 ${MIN_CONFIRMATIONS} 個地方確認。`}`,
-    abi: () => 'Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。',
-    code: () => `每次簽名都確認${subjects === 1 ? '這個合約' : `這 ${subjects} 個合約`}還是研究時那份程式碼。被升級或換掉就擋下。`,
+    abi: () =>
+      `Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。${
+        notCalled.length === 0 ? '' : `${notCalled.join('、')} 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。`
+      }${unprovable.length === 0 ? '' : `${unprovable.join('、')} 依函式選擇器把呼叫分給各自的實作，沒有一份程式碼能證明，不算在內；它的 routes 在「合約沒被換掉」比對。`}`,
+    code: () =>
+      `每次簽名都確認${subjects === 1 ? '這個合約' : `這 ${subjects} 個合約`}還是研究時那份程式碼。被升級或換掉就擋下。${
+        today.length === 0 ? '' : `${today.join('、')} 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。`
+      }${routed.length === 0 ? '' : `${routed.join('、')} 依函式選擇器把呼叫分給各自的實作：seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。`}`,
     params: (_, c) => (!recorded ? unrecordedParams(template) : `程式把 ${c} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`),
   };
   const items = strip(ledger)

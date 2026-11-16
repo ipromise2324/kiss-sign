@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
+import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { HttpsUrl, Registry, RegistryEntry } from '../src/registry.ts';
 import type { ApiAnswer } from '../src/research/api-source.ts';
@@ -10,7 +11,7 @@ import type { FindingKind, Ledger, State } from '../src/research/ledger.ts';
 import type { CoinGeckoCoin, DefiLlamaProtocol } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { replayInputs } from '../src/research/report.ts';
-import type { ReportInputs, SpanCheck } from '../src/research/report.ts';
+import type { ReportInputs, SpanCheck, TodayCheck } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import type { Standard } from '../src/research/standards.ts';
@@ -70,10 +71,12 @@ type Setup = {
   readonly doc: Page | undefined;
   readonly abi: AbiProof | AbiRefusal | undefined;
   readonly spans: readonly SpanCheck[] | undefined;
+  readonly today: TodayCheck | undefined;
   readonly documented: boolean;
   readonly approveStandard: Standard | undefined;
   readonly fixtures: readonly FixtureJudgement[];
   readonly vaults: ReadonlyMap<string, string>;
+  readonly reachedThrough: RegistryEntry | undefined;
 };
 
 const BASE: Setup = {
@@ -87,11 +90,21 @@ const BASE: Setup = {
   doc: { kind: 'served', blocks: [{ text: 'function approve(address spender, uint256 value)' }] },
   abi: { kind: 'proven', proxy: { kind: 'none' }, codeHash: PIN } as unknown as AbiProof,
   spans: [{ kind: 'pass', text: '' }],
+  today: undefined,
   documented: true,
   approveStandard: undefined,
   fixtures: [],
   vaults: new Map(),
+  reachedThrough: undefined,
 };
+
+const DEPENDENT: RegistryEntry = { ...ENTRY, name: 'dependent', address: OTHER, kind: 'vault', dependsOn: ['vault'] };
+const ROUTED: RegistryEntry = {
+  ...ENTRY,
+  routes: { implementationOf: parseFunctionSignature('getSigsImplementation(bytes4)'), selectorsOf: parseFunctionSignature('getImplementationSigs(address)'), seeds: ['0x00000001' as Hex] },
+  code: { earlier: [], current: { from: 100n, pin: { hash: PIN, routes: [{ address: OTHER, hash: PIN, selectors: ['0x00000001' as Hex] }] } } },
+};
+const today = (kind: TodayCheck['kind']): Partial<Setup> => ({ today: { kind, text: '' } });
 
 const proven = (codeHash: Hex): AbiProof => ({ kind: 'proven', proxy: { kind: 'none' }, codeHash }) as unknown as AbiProof;
 const refused = (refusal: object): AbiRefusal => ({ kind: 'refused', refusal }) as unknown as AbiRefusal;
@@ -106,13 +119,22 @@ const failedRuns = (...outcomes: Run['outcome'][]): PerturbationReport => {
   return { kind: 'fail', runs, failed: runs };
 };
 
-/** A one-entry report: the entry, documented by one page for `approve`, as the template's only contract. */
+/**
+ * A one-entry report: the entry, documented by one page for `approve`, as the template's only contract. With
+ * `reachedThrough`, a report of that vault alone, which reaches the entry only through its `dependsOn`.
+ */
 function ledgerOf(change: Partial<Setup>): Ledger {
   const s = { ...BASE, ...change };
-  const registry: Registry = { entries: new Map([[s.entry.name, s.entry]]), byAddress: new Map([[s.entry.address, s.entry]]), markets: new Map() };
+  const all = s.reachedThrough === undefined ? [s.entry] : [s.entry, s.reachedThrough];
+  const registry: Registry = { entries: new Map(all.map((e) => [e.name, e])), byAddress: new Map(all.map((e) => [e.address, e])), markets: new Map() };
   const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [] }, facts: [] } as Template;
   const inputs = {
-    subject: s.documented ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }] } : { kind: 'vault', vault: s.entry },
+    subject:
+      s.reachedThrough !== undefined
+        ? { kind: 'vault', vault: s.reachedThrough }
+        : s.documented
+          ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }] }
+          : { kind: 'vault', vault: s.entry },
     registry,
     listings: { protocols: new Map(s.protocol === undefined ? [] : [['proto', [s.protocol]]]), coinsByAddress: new Map([[ADDRESS, s.coins]]), suffixes },
     pages: {
@@ -126,6 +148,7 @@ function ledgerOf(change: Partial<Setup>): Ledger {
     },
     abi: new Map(s.abi === undefined ? [] : [[ADDRESS, s.abi]]),
     spans: new Map(s.spans === undefined ? [] : [[ADDRESS, s.spans]]),
+    today: s.today === undefined ? undefined : { block: { number: 200n, hash: PIN }, checks: new Map([[ADDRESS, s.today]]) },
     vaults: s.vaults,
   } as unknown as ReportInputs;
   return judge(inputs, s.fixtures);
@@ -199,6 +222,13 @@ const ROWS: readonly Row[] = [
   { what: 'a coin at the address the entry names no id for', change: { entry: without('coingecko') }, id: 'vault/source.coingecko', kind: 'unexplained-coin', state: 'warn' },
   { what: 'a compiler not pinned', change: { abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }, id: 'vault/abi', kind: 'compiler-not-pinned', state: 'warn' },
   { what: 'a pin recorded before spans', change: { spans: [{ kind: 'not-read', text: '' }] }, id: 'vault/code.1', kind: 'pinned-before-spans', state: 'warn' },
+  { what: 'an entry reached only through dependsOn, with no ABI case', change: { reachedThrough: DEPENDENT, abi: undefined }, id: 'vault/abi', kind: 'not-called', state: 'na' },
+  { what: 'an entry reached only through dependsOn that runs its pin at the latest block', change: { reachedThrough: DEPENDENT, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
+  { what: 'an entry reached only through dependsOn that runs other code at the latest block', change: { reachedThrough: DEPENDENT, ...today('finding') }, id: 'vault/code.today', kind: 'pin-not-run', state: 'bad' },
+  { what: "an entry reached only through dependsOn whose code at the latest block got no answer", change: { reachedThrough: DEPENDENT, ...today('unverifiable') }, id: 'vault/code.today', kind: 'no-answer', state: 'warn' },
+  { what: 'an entry reached only through dependsOn with no read at the latest block', change: { reachedThrough: DEPENDENT }, id: 'vault/code.today', kind: 'no-chain-result', state: 'warn' },
+  { what: 'a selector-routed proxy a call targets', change: { entry: ROUTED }, id: 'vault/abi', kind: 'routed-proxy', state: 'na' },
+  { what: 'a selector-routed proxy that runs its pin and routes at the latest block', change: { entry: ROUTED, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
 ];
 
 for (const row of ROWS) {
@@ -211,6 +241,11 @@ for (const row of ROWS) {
 
 test('every finding kind has a row', () => {
   assert.deepEqual(new Set(ROWS.map((row) => row.kind)), new Set(Object.keys(STATE_OF)));
+});
+
+test('only an entry no ABI proof compares with the chain has a result for its code at the latest block', () => {
+  assert.ok(!ledgerOf(today('pass')).results.some((r) => r.id.endsWith('/code.today')));
+  assert.ok(!ledgerOf({ reachedThrough: DEPENDENT, entry: without('code'), ...today('pass') }).results.some((r) => r.id.endsWith('/code.today')), 'an entry with no pin has only its not-pinned result');
 });
 
 test('only a vault that names a factory has a factory result', () => {

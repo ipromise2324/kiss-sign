@@ -1,14 +1,14 @@
-import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
+import { bytesToHex } from '@noble/hashes/utils.js';
 import { retried, transientError, transientStatus } from '../chain/https.ts';
 import type { NoteUnread } from '../chain/https.ts';
+import { aggregate } from '../chain/multicall.ts';
 import type { Reader } from '../chain/reader.ts';
 import { proveInstance } from '../contracts/instance.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Transport } from '../chain/rpc.ts';
 import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { parseFunctionSignature } from '../decode/abi.ts';
-import { decodeCall, encodeCall, wholeRegion } from '../decode/codec.ts';
-import type { AbiValue } from '../decode/codec.ts';
+import { encodeCall } from '../decode/codec.ts';
 import type { Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
@@ -85,7 +85,6 @@ export type VaultEvidence = {
 const SECONDS_PER_SLOT = 12n;
 export const BLOCKS_PER_MONTH = (30n * 24n * 3600n) / SECONDS_PER_SLOT;
 export const MONTHS = 12;
-export const MULTICALL3 = parseAddress('multicall3', '0xcA11bde05977b3631167028862bE2a173976CA11');
 const MAX_TRANSFER_PAGES = 300;
 const BALANCES_PER_CALL = 500;
 
@@ -94,8 +93,6 @@ const TOTAL_SUPPLY = '0x18160ddd' as Hex;
 const ASSET = '0x38d52e0f' as Hex;
 const DECIMALS = '0x313ce567' as Hex;
 const BALANCE_OF = parseFunctionSignature('balanceOf(address)');
-const AGGREGATE = parseFunctionSignature('aggregate((address target, bytes callData)[] calls)');
-const AGGREGATE_RETURN_AS_ARGUMENTS = parseFunctionSignature('aggregateReturn(uint256 blockNumber, bytes[] returnData)');
 
 const ZERO = parseAddress('zero', `0x${'00'.repeat(20)}`);
 const hex = (n: bigint): string => `0x${n.toString(16)}`;
@@ -177,24 +174,14 @@ async function balancesOf(reader: Reader, vault: Address, holders: readonly Addr
   const balances: bigint[] = [];
   for (let i = 0; i < holders.length; i += BALANCES_PER_CALL) {
     const chunk = holders.slice(i, i + BALANCES_PER_CALL);
-    const calls: AbiValue[] = chunk.map((holder) => ({
-      kind: 'tuple',
-      span: [0, 0],
-      fields: [
-        { kind: 'address', value: vault, span: [0, 0] },
-        { kind: 'bytes', value: encodeCall({ fn: BALANCE_OF, args: [{ kind: 'address', value: holder, span: [0, 0] }], trailer: undefined }), span: [0, 0] },
-      ],
-    }));
-    const data = `0x${bytesToHex(encodeCall({ fn: AGGREGATE, args: [{ kind: 'array', items: calls, span: [0, 0] }], trailer: undefined }))}` as Hex;
-    const read = await reader.call({ to: MULTICALL3, data }, at);
-    if (read.kind === 'unverifiable') return unverifiable(read.reason);
-    if (read.value.kind === 'reverted') return unverifiable('a Multicall3 balanceOf batch reverted');
-    const decoded = decodeCall(AGGREGATE_RETURN_AS_ARGUMENTS, wholeRegion(concatBytes(hexToBytes(AGGREGATE_RETURN_AS_ARGUMENTS.selector.slice(2)), hexToBytes(read.value.data.slice(2)))));
-    const returned = decoded.kind === 'decoded' ? decoded.args[1] : undefined;
-    if (returned?.kind !== 'array' || returned.items.length !== chunk.length) return unverifiable('Multicall3 answered a malformed balanceOf batch');
-    for (const item of returned.items) {
-      if (item.kind !== 'bytes' || item.value.length !== 32) return unverifiable('balanceOf answered more or less than one word');
-      balances.push(BigInt(`0x${bytesToHex(item.value)}`));
+    const batch = await aggregate(reader, chunk.map((holder) => ({ to: vault, data: encodeCall({ fn: BALANCE_OF, args: [{ kind: 'address', value: holder, span: [0, 0] }], trailer: undefined }) })), at);
+    if (batch.kind === 'unverifiable') return unverifiable(batch.reason);
+    if (batch.kind === 'no-code') return unverifiable(`Multicall3 has no code at block ${at.number}`);
+    if (batch.kind === 'reverted') return unverifiable('a Multicall3 balanceOf batch reverted');
+    if (batch.kind === 'malformed') return unverifiable('Multicall3 answered a malformed balanceOf batch');
+    for (const balance of batch.data) {
+      if (balance.length !== 32) return unverifiable('balanceOf answered more or less than one word');
+      balances.push(BigInt(`0x${bytesToHex(balance)}`));
     }
   }
   return { kind: 'read', value: balances };

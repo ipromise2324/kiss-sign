@@ -65,6 +65,14 @@ export function describeRefusal(refusal: Refusal): string {
       return `${refusal.at} has no code`;
     case 'chained-proxy':
       return `the implementation ${refusal.at} is itself a proxy`;
+    case 'multicall-no-code':
+      return 'Multicall3 has no code at this block, so the routes cannot be read';
+    case 'routes-reverted':
+      return 'a Multicall3 batch of route reads reverted';
+    case 'routes-malformed':
+      return `${refusal.call} answered something other than its canonical encoding`;
+    case 'routes-inconsistent':
+      return `the routes are inconsistent: ${refusal.detail}`;
     case 'not-on-sourcify':
       return `Sourcify has no verified source for ${refusal.at}`;
     case 'sourcify-unreadable':

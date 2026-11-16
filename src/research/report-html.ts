@@ -406,7 +406,8 @@ function addressRow(row: AddressRow): Html {
       }</span></div>
       <div class="body"><span class="addr">${row.address}</span>
         <div class="srcs">${row.sources.map(sourceLine)}</div>
-        <div class="confirmed">${row.confirmed}</div>${
+        <div class="confirmed">${row.confirmed}</div>${row.codeLines.map((line) => h`
+        <div class="confirmed">${text(line)}</div>`)}${
           row.aiSources.length === 0
             ? ''
             : h`
