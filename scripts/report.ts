@@ -60,7 +60,7 @@ const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/rep
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
 docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
-the operation can touch (pnpm prove-abi but for one it reaches only through dependsOn or one with routes, whose code it reads at the latest block instead), each span of its code pin checked on the chain, pnpm vault-evidence for every vault its card
+the operation can touch (pnpm prove-abi but for one whose ABI it does not use, such as a market's oracle, or one with routes, whose code it reads at the latest block instead), each span of its code pin checked on the chain, pnpm vault-evidence for every vault its card
 can name, the protocol facts (DefiLlama's TVL, listing date and hacks for each protocol a call goes to, each facts view
 for every value its card field can name, and each token's decimals()), the past-txs recordings of the template studied
 again with each recorded transaction fetched again by hash through both providers, and pnpm erc7730 for every such

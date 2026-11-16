@@ -1,13 +1,14 @@
+import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { canonicalType } from '../decode/abi.ts';
 import type { AbiParam, AbiType } from '../decode/abi.ts';
-import { decodeValues, encodeCall } from '../decode/codec.ts';
+import { decodeValues, encodeCall, encodeParams } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import type { BoundView, CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect } from '../template/template.ts';
+import type { BoundView, CallNode, CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect, ViewTarget } from '../template/template.ts';
 import type { Execution } from './events.ts';
 import type { SafeStateEvidence } from './safe-state.ts';
 
@@ -63,7 +64,7 @@ export type EffectFinding =
   | { readonly kind: 'not-all'; readonly asset: Address; readonly left: bigint }
   | ({ readonly kind: 'open-allowance' } & AllowanceChange)
   | ({ readonly kind: 'open-permit2-allowance' } & Permit2Change)
-  | { readonly kind: 'view'; readonly to: Address; readonly call: string; readonly value: string; readonly change: ViewChange; readonly before: bigint; readonly after: bigint; readonly readIn: ViewReadIn };
+  | { readonly kind: 'view'; readonly to: Address; readonly call: string; readonly value: string; readonly change: ViewChange | { readonly equals: bigint }; readonly before: bigint; readonly after: bigint; readonly readIn: ViewReadIn };
 
 export type EffectVerdict =
   | { readonly kind: 'match' }
@@ -217,7 +218,7 @@ export function keptSeen(observed: Observed, card: ResolvedCard, templates: Read
 }
 
 /** A view a template on the card reads, its arguments bound to this card, and the call as it reads in a finding. */
-export type ExpectedView = { readonly view: ViewEffect; readonly call: ViewCall; readonly text: string };
+export type ExpectedView = { readonly view: ViewEffect; readonly call: ViewCall; readonly text: string; readonly values: ReadonlyMap<string, ResolvedValue> };
 
 /** What a view's arguments are bound to. A fact never reads the Safe, so it binds none. */
 type Bound = { readonly safe: Address | undefined; readonly values: ReadonlyMap<string, ResolvedValue>; readonly registry: Registry };
@@ -257,9 +258,25 @@ function argument(rule: Rule, type: AbiType, bound: Bound): AbiValue | string {
       if (target.kind === 'bytes32') return { kind: 'fixed-bytes', value: target.value, span };
       return 'a whole market is bound part by part';
     }
+    case 'call': {
+      const data = encoded(rule.call, bound);
+      return typeof data === 'string' ? data : { kind: 'bytes', value: data, span };
+    }
+    case 'keccak': {
+      const data = encoded(rule.call, bound);
+      return typeof data === 'string' ? data : { kind: 'fixed-bytes', value: `0x${bytesToHex(keccak_256(data))}` as Hex, span };
+    }
     default:
       return `a ${rule.kind} rule gives no value before the transaction`;
   }
+}
+
+/** A call, or values ABI-encoded without a selector, built from bound arguments. */
+function encoded(node: CallNode, bound: Bound): Uint8Array | string {
+  const args = node.fn.params.map((param, i) => argument(node.args[i] as Rule, param.type, bound));
+  const problem = args.find((arg) => typeof arg === 'string');
+  if (problem !== undefined) return problem;
+  return node.encoding === 'params' ? encodeParams(node.fn, args as AbiValue[]) : encodeCall({ fn: node.fn, args: args as AbiValue[], trailer: undefined });
 }
 
 function valueText(value: AbiValue): string {
@@ -276,10 +293,22 @@ function valueText(value: AbiValue): string {
   }
 }
 
+/** The contract a view reads: a registry name, or a view effect's target, which may be a card field. */
+function viewContract(to: string | ViewTarget, bound: Bound): { readonly address: Address } | { readonly problem: string } {
+  if (typeof to === 'string' || to.kind === 'contract') {
+    const name = typeof to === 'string' ? to : to.name;
+    const entry = bound.registry.entries.get(name);
+    return entry === undefined ? { problem: `the registry has no ${name}` } : entry;
+  }
+  const target = resolveRef(to.ref, bound.values, bound.registry);
+  if ('problem' in target) return target;
+  return target.kind === 'address' ? target : { problem: `card.${to.ref.field} names no contract` };
+}
+
 /** The call a view makes with its arguments bound, and how it reads in a finding, or why they cannot be bound. */
-export function bindView(view: BoundView, bound: Bound): { readonly call: ViewCall; readonly text: string } | { readonly problem: string } {
-  const to = bound.registry.entries.get(view.to);
-  if (to === undefined) return { problem: `the registry has no ${view.to}` };
+export function bindView(view: Omit<BoundView, 'to'> & { readonly to: string | ViewTarget }, bound: Bound): { readonly call: ViewCall; readonly text: string } | { readonly problem: string } {
+  const to = viewContract(view.to, bound);
+  if ('problem' in to) return to;
   const args = view.fn.params.map((param, i) => argument(view.args[i] as Rule, param.type, bound));
   const problem = args.find((arg) => typeof arg === 'string');
   if (problem !== undefined) return { problem };
@@ -295,8 +324,8 @@ export function expectedViews(card: ResolvedCard, templates: ReadonlyMap<string,
   for (const op of card.operations) {
     for (const view of templates.get(op.template)?.effects.views ?? []) {
       const bound = bindView(view, { safe: card.safe, values: op.values, registry });
-      if ('problem' in bound) reasons.push(`${view.fn.signature} on ${view.to}: ${bound.problem}`);
-      else views.push({ view, ...bound });
+      if ('problem' in bound) reasons.push(`${view.fn.signature} on ${view.to.kind === 'contract' ? view.to.name : `card.${view.to.ref.field}${view.to.ref.attribute === undefined ? '' : `.${view.to.ref.attribute}`}`}: ${bound.problem}`);
+      else views.push({ view, ...bound, values: op.values });
     }
   }
   return { views, reasons };
@@ -309,7 +338,7 @@ export function viewCalls(card: ResolvedCard, templates: ReadonlyMap<string, Tem
 }
 
 /** Each return value of a view's answer, as a number where it is one, or why the answer has none. */
-export function numbersOf(view: BoundView, answer: ViewAnswer): readonly (bigint | undefined)[] | string {
+export function numbersOf(view: Pick<BoundView, 'returns'>, answer: ViewAnswer): readonly (bigint | undefined)[] | string {
   if (answer.kind === 'unread') return answer.why;
   const values = decodeValues(view.returns.map((r) => r.type), hexToBytes(answer.data.slice(2)));
   if (values === undefined) return `its answer does not decode as ${view.returns.map((r) => canonicalType(r.type)).join(', ')}`;
@@ -377,7 +406,11 @@ export function judgeEffects(
   }
   const expectedReads = expectedViews(card, templates, registry);
   unread.push(...expectedReads.reasons);
-  for (const { view, call, text } of expectedReads.views) {
+  for (const { view, call, text, values } of expectedReads.views) {
+    const cardNumber = (field: string): bigint | undefined => {
+      const value = values.get(field);
+      return value?.kind === 'amount' || value?.kind === 'percent' ? value.value : undefined;
+    };
     const where = `${nameOf(call.to, registry)} ${text}`;
     const readings = observed.views?.filter((r) => r.to === call.to && r.data === call.data) ?? [];
     if (readings.length === 0) unread.push(`${where} was not read`);
@@ -394,8 +427,14 @@ export function judgeEffects(
       for (const { value, change } of view.changes) {
         // Template load lets a change name only a number.
         const [was, now] = [before[value] as bigint, after[value] as bigint];
-        if (!CHANGED[change](was, now)) {
-          findings.push({ kind: 'view', to: call.to, call: text, value: view.returns[value]?.name ?? String(value), change, before: was, after: now, readIn: reading.readIn });
+        const wanted = typeof change === 'string' ? change : cardNumber(change.equals);
+        if (wanted === undefined) {
+          unread.push(`${where}: the card has no number ${typeof change === 'string' ? '' : change.equals}`);
+          continue;
+        }
+        if (typeof wanted === 'string' ? !CHANGED[wanted](was, now) : now !== wanted) {
+          const shown = typeof wanted === 'string' ? wanted : { equals: wanted };
+          findings.push({ kind: 'view', to: call.to, call: text, value: view.returns[value]?.name ?? String(value), change: shown, before: was, after: now, readIn: reading.readIn });
         }
       }
     }
@@ -421,7 +460,7 @@ export function describeFinding(finding: EffectFinding, registry: Registry): str
     return `approval raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${finding.before} before, ${finding.after} after`;
   }
   if (finding.kind === 'view') {
-    const want = { increases: 'increase', decreases: 'decrease', same: 'stay the same' }[finding.change];
+    const want = typeof finding.change === 'string' ? { increases: 'increase', decreases: 'decrease', same: 'stay the same' }[finding.change] : `be ${finding.change.equals}, as the card says`;
     return `${nameOf(finding.to, registry)} ${finding.call} ${finding.value}: ${finding.before} before, ${finding.after} after ${READ_IN[finding.readIn]}; the template needs it to ${want}`;
   }
   if (finding.kind === 'open-permit2-allowance') {

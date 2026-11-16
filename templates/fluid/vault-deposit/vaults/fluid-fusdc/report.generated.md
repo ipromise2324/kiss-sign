@@ -113,7 +113,7 @@ An entry with `routes` sends each function selector to an implementation of its 
 
 ### Today's code
 
-No ABI proof compares these entries' code with the chain: the operation reaches one only through `dependsOn`, or its calls run in the implementations its `routes` reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.
+No ABI proof compares these entries' code with the chain: no call or answer is decoded with one's ABI, or its calls run in the implementations its `routes` reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.
 
 | Entry | Today | Block |
 | --- | --- | --- |
@@ -169,7 +169,7 @@ Each implementation an entry's `routes` reach, in every span of its code pin, wi
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
 | `fluid-fusdc` | `0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33` | PROVEN | none | `fToken`, solc `0.8.21+commit.d9974bed` | `0x131b2014b67d86e5a1fcd6be7b6817b76ae9ac1663266f88366e526666297828` | PASS | 38 immutable, 0 library spans masked | 26384739 |
 | `fluid-lending-factory` | `0x54B91A0D94cb471F37f949c60F7Fa7935b551D03` | PROVEN | none | `FluidLendingFactory`, solc `0.8.21+commit.d9974bed` | `0x8489c155ce8c58e8fd4a6dc6799c1e5d23259b55f69ceaeb8d525db13da01e9a` | PASS | 3 immutable, 0 library spans masked | 26426609 |
-| `fluid-liquidity` | `0x52Aa899454998Be5b000Ad077a46Bbe360F4e497` | not proved: the operation reaches it only through `dependsOn`, so no call targets it and none is decoded with its ABI; its code pin is above | | | | | | |
+| `fluid-liquidity` | `0x52Aa899454998Be5b000Ad077a46Bbe360F4e497` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 
 ## Vaults
 

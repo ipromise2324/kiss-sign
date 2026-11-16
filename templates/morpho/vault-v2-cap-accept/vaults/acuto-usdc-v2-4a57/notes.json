@@ -1,0 +1,39 @@
+{
+  "verdict": {
+    "status": "caution",
+    "text": "可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。"
+  },
+  "judgments": [
+    {
+      "text": "這個 vault 沒有列在 Morpho app 上（Morpho API `listed` = false），2026-03 約 705 萬 USDC，現在約 76 萬；68 個地址持有股份，最大一個占 30.36%，前 10 名占 96.50%。curator 是 Safe 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5。",
+      "recommendation": "只有這個 vault 的 curator、sentinel 或 allocator 會用到；它小又集中，簽之前再看一次待確認。"
+    },
+    {
+      "text": "這個 vault 的 `increaseAbsoluteCap` 和 `increaseRelativeCap` 的 timelock 都是 3 天（鏈上讀 `timelock`，259200 秒）；到期前執行會 revert。",
+      "recommendation": "timelock 到期後再送；數字要跟排隊時一樣。"
+    }
+  ],
+  "reviews": {
+    "acuto-usdc-v2-4a57/address": {
+      "status": "concern",
+      "text": "程式只有工廠確認：VaultV2Factory 回答 `isVaultV2` = true。AI 問 Morpho API 這個地址，名稱是 Acuto、沒有上架、curator 是 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5；AI 沒找到不靠網址帶地址就列出它的頁面。",
+      "recommendation": "只在你就是這個 vault 的 curator 或 allocator 時用；先在 Morpho app 的 curator 頁比對地址。"
+    },
+    "acuto-usdc-v2-4a57-market-adapter/address": {
+      "status": "confirmed",
+      "text": "程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5。AI 另外在鏈上確認：vault 的 `isAdapter` 回答 true、`adaptersLength` 是 1；pnpm prove-instance 時 MorphoMarketV1AdapterV2Factory 回答 `isMorphoMarketV1AdapterV2` = true，兩個節點一致。",
+      "recommendation": "可以接受；上限的 id 和搬錢都用這個地址，填錯只會 revert 或設到一個 vault 不用的 id。"
+    }
+  },
+  "entries": {
+    "acuto-usdc-v2-4a57": {
+      "role": "Acuto 的 USDC vault（V2），沒有上架"
+    },
+    "acuto-usdc-v2-4a57-market-adapter": {
+      "role": "vault 的 Morpho Blue 市場轉接合約"
+    },
+    "vault-v2-factory": {
+      "role": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+    }
+  }
+}

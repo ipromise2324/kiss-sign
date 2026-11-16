@@ -4,7 +4,7 @@ import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { checkSources, githubLine } from './listings.ts';
 import type { DeployerShare, Line, SitePlace } from './listings.ts';
-import { docSiteLine, entriesOf, functionOnPage, hasMarket, onlyDependedOn, pinVerdict, todayEntries } from './report.ts';
+import { abiUnused, docSiteLine, entriesOf, functionOnPage, hasMarket, pinVerdict, todayEntries } from './report.ts';
 import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './vault-evidence.ts';
@@ -361,8 +361,8 @@ function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
   return [{ id: `${entry.name}/factory.admitted`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link: undefined, finding }];
 }
 
-function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, depended: boolean): Finding {
-  if (depended) return { kind: 'not-called' };
+function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean): Finding {
+  if (unused) return { kind: 'not-called' };
   if (entry.routes !== undefined) return { kind: 'routed-proxy' };
   if (proof === undefined) return { kind: 'no-abi-case' };
   if (proof.kind === 'refused') {
@@ -463,7 +463,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
   const { subject } = inputs;
   const docs = subject.kind === 'template' ? subject.docs : [];
   const checked = checkSources(entriesOf(subject, inputs.registry), inputs.listings, inputs.pages);
-  const depended = onlyDependedOn(subject, inputs.registry);
+  const unused = abiUnused(subject, inputs.registry);
   const today = new Set(todayEntries(subject, inputs.registry).map((entry) => entry.name));
   const byEntry = checked.map(({ entry, lines }) => ({
     entry,
@@ -472,7 +472,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
       ...factoryResults(entry, inputs),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
       ...marketResults(entry, inputs),
-      { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address), depended.has(entry.name)) },
+      { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address), unused.has(entry.name)) },
       ...spanResults(entry, inputs.spans.get(entry.address)),
       ...todayResults(entry, inputs, today),
     ]),

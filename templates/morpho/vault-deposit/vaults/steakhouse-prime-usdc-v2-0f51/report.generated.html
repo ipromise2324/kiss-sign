@@ -280,7 +280,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">5 / 5</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。</span></span></li>
     <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">5 / 5</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認這 5 個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認卡片用到的每個合約還是研究時那份程式碼。被升級或換掉就擋下。vault-v2-factory 簽名時不碰，只有報告比對它的程式碼。</span></span></li>
     <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>參數保護 <span class="n num">1 / 1</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">程式把 1 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
@@ -620,7 +620,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 給出的 usdc 剛好是你填的金額</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 收到 steakhouse-prime-usdc-v2-0f51</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
-      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>碰到的 5 個登記合約，程式碼還是 code pin 記錄的那份</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>卡片用到的每個登記合約，程式碼還是 code pin 記錄的那份</span></li>
     </ul>
   </div>
 </section>

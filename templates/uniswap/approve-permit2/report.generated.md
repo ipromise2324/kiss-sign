@@ -16,6 +16,7 @@ Written by `pnpm report uniswap/approve-permit2 --record` from `templates/uniswa
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |  |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` |  |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |  |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |  |
 
 ## Calls and field rules
 
@@ -23,7 +24,7 @@ Written by `pnpm report uniswap/approve-permit2 --record` from `templates/uniswa
 
 | Field | Rule |
 | --- | --- |
-| `to` | the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |
+| `to` | the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |
 | `value` | constant `0` |
 | `approve` | calls `approve(address,uint256)`, selector `0x095ea7b3`; no bytes after the arguments |
 | `approve.spender` | registry `permit2` `0x000000000022D473030F116dDEE9F6B43aC78BA3` |
@@ -33,7 +34,7 @@ Written by `pnpm report uniswap/approve-permit2 --record` from `templates/uniswa
 
 The Safe gives and gets nothing: any change to its balances is a `MISMATCH`.
 
-The Safe's allowance of the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` to registry `permit2` `0x000000000022D473030F116dDEE9F6B43aC78BA3` may end higher than it started, at any amount, unlimited included, as the registry entry declares a standing allowance: written by the AI in the template: Permit2 has no owner and no proxy, and moves an owner's tokens only for a spender the owner approved on Permit2 itself, by its own call or signature (AllowanceTransfer.transferFrom), or for a transfer the owner signed (SignatureTransfer). An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens.; every other allowance may not rise.
+The Safe's allowance of the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` to registry `permit2` `0x000000000022D473030F116dDEE9F6B43aC78BA3` may end higher than it started, at any amount, unlimited included, as the registry entry declares a standing allowance: written by the AI in the template: Permit2 has no owner and no proxy, and moves an owner's tokens only for a spender the owner approved on Permit2 itself, by its own call or signature (AllowanceTransfer.transferFrom), or for a transfer the owner signed (SignatureTransfer). An ERC-20 allowance to Permit2 alone lets no one move the Safe's tokens.; every other allowance may not rise.
 
 ## Official documentation
 
@@ -47,33 +48,24 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc permit2` prints what each check compared.
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt morpho cbbtc permit2 usp` prints what each check compared.
 
-| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
+| Entry | Address | Kind | Source | DefiLlama site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | token | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | PASS | n/a | PASS |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS |
 | `permit2` | `0x000000000022D473030F116dDEE9F6B43aC78BA3` | allowance | <https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments> | PASS | n/a | n/a | PASS |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | Site | GitHub commit | Address on page |
+| Entry | Page | DefiLlama site | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- |
-| `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | PASS | PASS | PASS |
+| `permit2` | <https://github.com/Uniswap/sdks/blob/8ae0425c57e1699b0ae48ebb3077a2f526ae3818/sdks/permit2-sdk/src/constants.ts> | FINDING | PASS | PASS |
 
-More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
-
-| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
-| --- | --- | --- | --- | --- |
-| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
-| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
-| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
-| `cbbtc` | n/a | n/a | n/a | FINDING |
-| `permit2` | n/a | PASS | PASS | FINDING `0xD32Ff78579352cA78f416120A9f68b65c410871b` |
-
-5 entries, 6 findings.
+6 entries, 2 findings.
 
 ## Code pins
 
@@ -89,6 +81,15 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `morpho` | 21157386 | `0x9d47be5e1fade278a449fcd67e4fc7b69ce5c451c36ad7c4f380280d127f5532` | `0x4364fd2371b6318159366abFA51f190df5C24852` `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS |
 | `cbbtc` | 20570548 | `0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71` | `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS |
 | `permit2` | 15986406 | `0xc67d1657868aa5146eaf24fb879fb1fdec3d2d493b3683a61c9c2f4fb2851131` | none | PASS |
+| `usp` | 23195672 | `0x4c64cb2303edec6193910f660f82375d5bff982c070f14e1944c7a568ed5bb2e` | `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS |
+
+### Today's code
+
+No ABI proof compares these entries' code with the chain: no call or answer is decoded with one's ABI, or its calls run in the implementations its `routes` reach. Today: whether, through both providers, the code a call to it runs at the report's latest block, its routes included, is its current pin.
+
+| Entry | Today | Block |
+| --- | --- | --- |
+| `permit2` | PASS | 26429301 |
 
 ## ABI proofs
 
@@ -100,11 +101,12 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | PROVEN | none | `TetherToken`, solc `0.4.18+commit.9cf6e910` | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26399489 |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | PROVEN | eip1967, implementation `0x4364fd2371b6318159366abFA51f190df5C24852` | `MorphoTokenEthereum`, solc `0.8.27+commit.40a35a09` | `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS | 2 immutable, 0 library spans masked | 26383745 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
-| `permit2` | `0x000000000022D473030F116dDEE9F6B43aC78BA3` | PROVEN | none | `Permit2`, solc `0.8.17+commit.8df45f5f` | `0xc67d1657868aa5146eaf24fb879fb1fdec3d2d493b3683a61c9c2f4fb2851131` | PASS | 2 immutable, 0 library spans masked | 26427903 |
+| `permit2` | `0x000000000022D473030F116dDEE9F6B43aC78BA3` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | PROVEN | eip1967, implementation `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` | `ERC20IssuanceUpgradeable_Blacklist_v1`, solc `0.8.23+commit.f704f362` | `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS | 0 immutable, 0 library spans masked | 26429052 |
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429919 `0x34192300ce85207f86176de7771c1e2ff3ead3e20ad12438f94dc1f1b23d2858`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26429301 `0x6b06291ed78e564427c4e00164f837b792416b9e36118d8eaed2a771ca0c354b`; a read they do not agree on prints as not read.
 
 No call of this template goes to a contract other than a token.
 
@@ -116,6 +118,7 @@ No call of this template goes to a contract other than a token.
 | `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 |
 | `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | 18 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | 18 |
 
 ## Past transactions
 
@@ -123,7 +126,7 @@ No `pnpm past-txs --record` recording names this template.
 
 ## ERC-7730
 
-`pnpm erc7730 usdc usdt morpho cbbtc permit2`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdc usdt morpho cbbtc permit2 usp`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -156,6 +159,10 @@ cbbtc 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf (token)
   index        index.calldata.json has no entry for this address
 
 permit2 0x000000000022D473030F116dDEE9F6B43aC78BA3 (allowance)
+  descriptor   none: no calldata descriptor lists this address on chain 1
+  index        index.calldata.json has no entry for this address
+
+usp 0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 ```

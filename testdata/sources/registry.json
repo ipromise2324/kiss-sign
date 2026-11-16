@@ -67,6 +67,14 @@
       "name": "Uniswap V4",
       "url": "https://app.uniswap.org/",
       "github": []
+    },
+    {
+      "slug": "piku-finance",
+      "name": "Piku Finance",
+      "url": "https://piku.co/",
+      "github": [
+        "piku-co"
+      ]
     }
   ],
   "coingecko": [
@@ -140,6 +148,22 @@
       "name": "USDC",
       "platforms": {
         "ethereum": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+      }
+    },
+    {
+      "id": "gauntlet-usdc-prime",
+      "symbol": "gtusdcp",
+      "name": "Gauntlet USDC PRIME V2",
+      "platforms": {
+        "ethereum": "0x8c106eedad96553e64287a5a6839c3cc78afa3d0"
+      }
+    },
+    {
+      "id": "usp-yield-optimized-stablecoin",
+      "symbol": "usp",
+      "name": "USP Yield Optimized Stablecoin",
+      "platforms": {
+        "ethereum": "0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6"
       }
     }
   ],
@@ -262,6 +286,14 @@
         },
         {
           "text": "| VaultV2Factory | [ 0xA1D94F746dEfa1928926b84fB2596c06926C0405 ](https://etherscan.io/address/0xA1D94F746dEfa1928926b84fB2596c06926C0405#code) <AddressCopyButton address=\"0xA1D94F746dEfa1928926b84fB2596c06926C0405\" /> | [vault-v2](https://github.com/morpho-org/vault-v2) |",
+          "heading": "Morpho Vault V2 [#morpho-vault-v2]"
+        },
+        {
+          "text": "| MorphoVaultV1AdapterFactory | [ 0xD1B8E2dee25c2b89DCD2f98448a7ce87d6F63394 ](https://etherscan.io/address/0xD1B8E2dee25c2b89DCD2f98448a7ce87d6F63394#code) <AddressCopyButton address=\"0xD1B8E2dee25c2b89DCD2f98448a7ce87d6F63394\" /> | [vault-v2](https://github.com/morpho-org/vault-v2) |",
+          "heading": "Morpho Vault V2 [#morpho-vault-v2]"
+        },
+        {
+          "text": "| MorphoMarketV1AdapterV2Factory | [ 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 ](https://etherscan.io/address/0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1#code) <AddressCopyButton address=\"0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1\" /> | [vault-v2](https://github.com/morpho-org/vault-v2) |",
           "heading": "Morpho Vault V2 [#morpho-vault-v2]"
         },
         {
@@ -481,6 +513,12 @@
         },
         {
           "text": "vaultV2Factory: \"0xA1D94F746dEfa1928926b84fB2596c06926C0405\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1\","
         }
       ]
     },
@@ -643,6 +681,35 @@
           "heading": "Legacy Vaults"
         }
       ]
+    },
+    "https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "USP",
+          "heading": "©️Token & Workflow Contracts"
+        },
+        {
+          "text": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
+          "heading": "©️Token & Workflow Contracts"
+        }
+      ]
+    },
+    "https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp": {
+      "kind": "served",
+      "blocks": []
     }
   },
   "commits": {
@@ -705,6 +772,66 @@
           "marketById": {
             "oracle": {
               "address": "0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a"
+            }
+          }
+        }
+      }
+    },
+    "POST https://api.morpho.org/graphql {\"query\":\"query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }\",\"variables\":{\"vault\":\"0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439\",\"chainId\":1}}": {
+      "kind": "answered",
+      "json": {
+        "data": {
+          "vaultV2ByAddress": {
+            "adapters": {
+              "items": [
+                {
+                  "address": "0x79DA02d9C638cC9ae925188AD9DC245337981518"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "POST https://api.morpho.org/graphql {\"query\":\"query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }\",\"variables\":{\"vault\":\"0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0\",\"chainId\":1}}": {
+      "kind": "answered",
+      "json": {
+        "data": {
+          "vaultV2ByAddress": {
+            "adapters": {
+              "items": [
+                {
+                  "address": "0xDF62f57Ea333a842Db200d4892c90F98204fa22F"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "POST https://api.morpho.org/graphql {\"query\":\"query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }\",\"variables\":{\"id\":\"0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461\",\"chainId\":1}}": {
+      "kind": "answered",
+      "json": {
+        "data": {
+          "marketById": {
+            "oracle": {
+              "address": "0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d"
+            }
+          }
+        }
+      }
+    },
+    "POST https://api.morpho.org/graphql {\"query\":\"query($vault: String!, $chainId: Int!) { vaultV2ByAddress(address: $vault, chainId: $chainId) { adapters { items { address } } } }\",\"variables\":{\"vault\":\"0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57\",\"chainId\":1}}": {
+      "kind": "answered",
+      "json": {
+        "data": {
+          "vaultV2ByAddress": {
+            "adapters": {
+              "items": [
+                {
+                  "address": "0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5"
+                }
+              ]
             }
           }
         }
