@@ -8,14 +8,16 @@ import { encodeCall, uintWord } from '../src/decode/codec.ts';
 import { MULTISEND, unwrapSafeTx } from '../src/decode/multisend.ts';
 import type { Unwrapped } from '../src/decode/multisend.ts';
 import { checkFloor } from '../src/floor/floor.ts';
-import type { FloorResult } from '../src/floor/floor.ts';
+import type { FloorAllowed, FloorResult, SettingsChange } from '../src/floor/floor.ts';
 import { checkSimulatedFloor } from '../src/floor/simulated.ts';
-import type { SettingsChange } from '../src/floor/simulated.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import type { Observed } from '../src/simulate/effects.ts';
 import { APPROVAL, topic, wordOf } from '../src/simulate/events.ts';
 import type { SafeState } from '../src/simulate/safe-state.ts';
+
+/** A card that declares an owner change, which lets the four owner and threshold functions past the static floor. */
+const DECLARES_CHANGE: FloorAllowed = { change: { add: '0x00000000000000000000000000000000000000aa' as Address, remove: undefined, threshold: undefined } };
 
 const ROOT = join(import.meta.dirname, '..');
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
@@ -90,7 +92,7 @@ test('a call to the Safe with data is refused unless it changes the owners or th
     ['approveHash(bytes32)', direct(SAFE, calldata('approveHash(bytes32)', 1n)), 'self-call call'],
   ];
   for (const [signature, tx, rule] of cases) {
-    const result = checkFloor(tx, true);
+    const result = checkFloor(tx, DECLARES_CHANGE);
     assert.deepEqual(rules(result), [rule], signature);
     assert.deepEqual(details(result), [`a call to the Safe itself with data (selector ${selectorOf(signature)})`], signature);
   }
@@ -104,8 +106,8 @@ test('the four owner and threshold functions on the Safe itself pass the static 
     calldata('changeThreshold(uint256)', 1n),
   ];
   for (const data of calls) {
-    assert.deepEqual(checkFloor(direct(SAFE, data), true), { kind: 'pass' });
-    assert.deepEqual(checkFloor(multiSend({ to: SAFE, data }), true), { kind: 'pass' });
+    assert.deepEqual(checkFloor(direct(SAFE, data), DECLARES_CHANGE), { kind: 'pass' });
+    assert.deepEqual(checkFloor(multiSend({ to: SAFE, data }), DECLARES_CHANGE), { kind: 'pass' });
     assert.deepEqual(rules(checkFloor(direct(SAFE, data))), ['self-call call']);
     assert.deepEqual(rules(checkFloor(multiSend({ to: SAFE, data }))), ['self-call multiSend[0]']);
   }
@@ -220,12 +222,12 @@ test('a declared owner or threshold change passes exactly as declared, in any ow
     ['replace in place', { owners: [OTHER, NEW_OWNER] }, { add: NEW_OWNER, remove: SECOND, threshold: undefined }],
     ['threshold only', { threshold: 1n }, { add: undefined, remove: undefined, threshold: 1n }],
   ];
-  for (const [name, after, change] of cases) assert.deepEqual(checkSimulatedFloor(changed(after), SAFE, change), { kind: 'pass' }, name);
+  for (const [name, after, change] of cases) assert.deepEqual(checkSimulatedFloor(changed(after), SAFE, { change }), { kind: 'pass' }, name);
 });
 
 test('a declared owner change is refused when another owner, another threshold, or anything else changes', () => {
   const add: SettingsChange = { add: NEW_OWNER, remove: undefined, threshold: 2n };
-  const refused = (after: Partial<SafeState>, change = add): string[] => details(checkSimulatedFloor(changed(after), SAFE, change));
+  const refused = (after: Partial<SafeState>, change = add): string[] => details(checkSimulatedFloor(changed(after), SAFE, { change }));
   assert.match(refused({ owners: [USDC, ...STATE.owners] })[0]!, /^owners changed .* not to/);
   assert.match(refused({ owners: [NEW_OWNER, ...STATE.owners], threshold: 1n })[0]!, /^threshold changed from 2 to 1$/);
   assert.match(refused({ owners: [NEW_OWNER, ...STATE.owners], fallbackHandler: wordOf(OTHER) })[0]!, /^fallbackHandler changed/);
@@ -244,12 +246,12 @@ test("a receipt's owner events pass only when they name the declared owners and 
   const threshold = { address: SAFE, topics: [topic('ChangedThreshold(uint256)')], data: hex(word(3n)) };
   const receipt = (logs: { address: Address; topics: Hex[]; data: Hex }[], withAlone = true): Observed =>
     executed({ safeState: { kind: 'receipt', logs, ...(withAlone ? { alone } : {}) } });
-  assert.deepEqual(checkSimulatedFloor(receipt([indexed, threshold]), SAFE, add), { kind: 'pass' });
-  assert.deepEqual(checkSimulatedFloor(receipt([inData, threshold]), SAFE, add), { kind: 'pass' });
+  assert.deepEqual(checkSimulatedFloor(receipt([indexed, threshold]), SAFE, { change: add }), { kind: 'pass' });
+  assert.deepEqual(checkSimulatedFloor(receipt([inData, threshold]), SAFE, { change: add }), { kind: 'pass' });
   const other = { address: SAFE, topics: [topic('AddedOwner(address)'), wordOf(USDC)], data: '0x' as Hex };
-  assert.deepEqual(details(checkSimulatedFloor(receipt([other, threshold]), SAFE, add)), ['the Safe logged AddedOwner(address), which the card does not declare']);
+  assert.deepEqual(details(checkSimulatedFloor(receipt([other, threshold]), SAFE, { change: add })), ['the Safe logged AddedOwner(address), which the card does not declare']);
   const module = { address: SAFE, topics: [topic('EnabledModule(address)')], data: wordOf(OTHER) };
-  assert.deepEqual(details(checkSimulatedFloor(receipt([indexed, threshold, module]), SAFE, add)), ['the Safe logged EnabledModule(address), which the card does not declare']);
-  assert.deepEqual(details(checkSimulatedFloor(receipt([indexed, threshold], false), SAFE, add)), ["the Safe's settings were not read in a simulation of the transaction alone"]);
+  assert.deepEqual(details(checkSimulatedFloor(receipt([indexed, threshold, module]), SAFE, { change: add })), ['the Safe logged EnabledModule(address), which the card does not declare']);
+  assert.deepEqual(details(checkSimulatedFloor(receipt([indexed, threshold], false), SAFE, { change: add })), ["the Safe's settings were not read in a simulation of the transaction alone"]);
   assert.deepEqual(details(checkSimulatedFloor(receipt([indexed], false), SAFE)), ['the Safe logged AddedOwner(address)']);
 });

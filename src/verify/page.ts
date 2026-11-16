@@ -6,7 +6,8 @@ import { settingsChange } from '../floor/summary.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
-import type { Expectations, Expected } from '../simulate/effects.ts';
+import { PERMIT2_MAX, UNLIMITED_ERC20 } from '../floor/floor.ts';
+import type { Expectations, Expected, KeptSeen } from '../simulate/effects.ts';
 import type { CallScan } from '../simulate/simulate.ts';
 import type { Template } from '../template/template.ts';
 import { CHECKLIST_CSS, checklist, checklistHtml, visible } from './checklist.ts';
@@ -24,6 +25,8 @@ export type VerdictPage = {
   readonly decimals: ReadonlyMap<Address, number>;
   readonly expected: Expectations;
   readonly calls: CallScan;
+  /** The allowances the transaction leaves open that the card's templates keep. */
+  readonly kept: readonly KeptSeen[];
   readonly tree: CallTree | undefined;
   readonly verdictFile: string;
 };
@@ -118,6 +121,7 @@ function changeWords(change: Expected): { readonly does: string; readonly bound:
   const { change: c } = change;
   const by = c < 0n ? -c : c;
   if (change.kind === 'exactly') return { does: c === 0n ? '不變' : c < 0n ? '給出' : '收到', bound: '剛好 ', amount: by };
+  if (change.kind === 'at-least') return c >= 0n ? { does: '收到', bound: '至少 ', amount: c } : { does: '淨變化', bound: '至少 ', amount: c };
   if (change.kind === 'more-than') return c >= 0n ? { does: '收到', bound: '多於 ', amount: c } : { does: '淨變化', bound: '多於 ', amount: c };
   return c <= 0n ? { does: '給出', bound: '多於 ', amount: by } : { does: '淨變化', bound: '少於 ', amount: c };
 }
@@ -143,6 +147,29 @@ function effectsSection(page: VerdictPage): Html {
   <h2>預期效果</h2>
   <p class="lead">卡片說 Safe 的每種資產該怎麼變，淨變化是收到減給出。「Safe 的資產變化符合卡片」這項檢查拿它和模擬或收據比對。</p>
   <dl class="props two">${rows.length === 0 ? prop('無', '卡片沒有說 Safe 的資產會變') : rows}</dl>
+</section>`;
+}
+
+const isUnlimited = ({ via, amount }: KeptSeen): boolean => amount >= (via === 'permit2' ? PERMIT2_MAX : UNLIMITED_ERC20);
+
+/** The latest second a JavaScript date holds; a later expiration is shown in seconds. */
+const LAST_DATE = 8_640_000_000_000n;
+const utc = (seconds: bigint): string => (seconds > LAST_DATE ? `第 ${seconds} 秒（UNIX 時間）` : `${new Date(Number(seconds) * 1000).toISOString().replace('T', ' ').slice(0, 16)} UTC`);
+
+function keptSection(page: VerdictPage): Html {
+  if (![...page.templates.values()].some((t) => t.effects.approves.length > 0)) return h``;
+  const { registry } = page;
+  const rows = page.kept.map((kept) => {
+    const token: AmountToken = { address: kept.token, name: nameOf(kept.token, registry) };
+    const amount = isUnlimited(kept) ? h`無上限的 ${tokenName(token)}` : tokenAmount(kept.amount, token, page);
+    const expires = kept.expiration === undefined ? '' : h`，到 ${utc(kept.expiration)} 為止（Permit2 的到期時間）`;
+    return prop(kept.via === 'permit2' ? '透過 Permit2' : 'ERC-20 授權', h`給 ${nameOf(kept.spender, registry)} ${mono(checksumAddress(kept.spender))}：${amount}${expires}`);
+  });
+  return h`
+<section>
+  <h2>交易後保留的授權</h2>
+  <p class="lead">模板允許這些授權在交易後留著；登記資料寫了為什麼可以留。其他授權都不能比交易前高。</p>
+  <dl class="props two">${rows.length === 0 ? prop('無', '這筆交易沒有留下新的授權') : rows}</dl>
 </section>`;
 }
 
@@ -215,6 +242,7 @@ ${causesSection(page.verdict)}
 ${checklistSection(page)}
 ${cardSection(page)}
 ${effectsSection(page)}
+${keptSection(page)}
 ${callsSection(page)}
 <footer class="foot">這頁由 <code>kiss-sign verify</code> 寫出。標 AI 的是模板裡 AI 寫的理由，程式不檢查它；其他都不是 AI 文字。判決檔：<code>${page.verdictFile}</code>，可以用 <code>bin/kiss-sign replay</code> 重算。</footer>`;
   const text = `<!doctype html>

@@ -130,7 +130,7 @@ export function templateFunctions(template: Template): AbiFunction[] {
     if (rule.kind === 'fields') rule.fields.forEach(visitRule);
   };
   const visitCall = (node: CallNode): void => {
-    if (!found.has(node.fn.signature)) found.set(node.fn.signature, node.fn);
+    if (node.encoding === 'call' && !found.has(node.fn.signature)) found.set(node.fn.signature, node.fn);
     node.args.forEach(visitRule);
   };
   for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data);
@@ -249,6 +249,11 @@ function namedInRules(template: Template): Set<string> {
     if (rule?.kind === 'call') rule.call.args.forEach(visit);
     if (rule?.kind === 'items') rule.items.forEach(visit);
     if (rule?.kind === 'fields') rule.fields.forEach(visit);
+    if (rule?.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
+    if (rule?.kind === 'eip712') {
+      names.add(rule.message.domain.verifyingContract);
+      rule.message.fields.forEach(visit);
+    }
   };
   visit(template.nonce);
   for (const call of template.calls) {
@@ -469,7 +474,12 @@ function refAddresses(ref: CardRef, template: Template, registry: Registry): str
   return `: one of ${names.map((n) => full(registry.entries.get(n) as RegistryEntry)).join(', ')}`;
 }
 
-const FREE_CLAIMS = { scalar: 'free', proof: 'free, claimed `proof`: every changed value must revert or be refused', unread: 'free, claimed `unread`: no changed value may change anything' } as const;
+const FREE_CLAIMS = {
+  scalar: 'free',
+  proof: 'free, claimed `proof`: every changed value must revert or be refused',
+  unread: 'free, claimed `unread`: no changed value may change anything',
+  route: "free, claimed `route`: a changed value may pick another pool, and must still meet every effect, which bounds each token the Safe gets",
+} as const;
 
 const quantityText = (q: Quantity): string => (q.kind === 'card' ? `the card's ${code(q.field)}` : `the number at ${code(q.path)}`);
 
@@ -482,7 +492,7 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'contract':
       return `registry ${full(registry.entries.get(rule.name) as RegistryEntry)}`;
     case 'const':
-      return `constant ${code(constText(rule.value))}`;
+      return `constant ${code(rule.value.kind === 'string' ? JSON.stringify(Buffer.from(rule.value.value.slice(2), 'hex').toString('utf8')) : constText(rule.value))}`;
     case 'free':
       return `${FREE_CLAIMS[rule.claim]}; ${byAi(rule.reason)}`;
     case 'equals':
@@ -491,9 +501,13 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
       return `the owner listed just before ${refText(rule.ref)} in the Safe's ${code('getOwners()')}, read on chain, or the sentinel ${code('0x0000000000000000000000000000000000000001')} when it is first`;
     case 'share-price':
       return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e27 / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
+    case 'at-least':
+      return `at least the card's ${code(rule.field)}`;
     case 'call':
     case 'items':
     case 'fields':
+    case 'packed':
+    case 'eip712':
       return '';
   }
 }
@@ -514,6 +528,22 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
       const components = param?.type.kind === 'tuple' ? param.type.components : [];
       return argRows(components, rule.fields, `${path}.`, template, registry);
     }
+    case 'packed': {
+      const layout = rule.parts.map((part) => `${code(part.name)} ${code(canonicalType(part.type))}`).join(', ');
+      const size = rule.parts.reduce((sum, part) => sum + part.size, 0);
+      return [
+        `| ${code(path)} | exactly ${size} bytes, packed with no padding: ${layout} |`,
+        ...rule.parts.flatMap((part) => rowsOf(part.rule, `${path}.${part.name}`, { name: part.name, type: part.type }, template, registry)),
+      ];
+    }
+    case 'eip712': {
+      const { domain, struct, separator, lookup } = rule.message;
+      const contract = full(registry.entries.get(domain.verifyingContract) as RegistryEntry);
+      return [
+        `| ${code(path)} | the EIP-712 digest of a ${code(struct.encoded)} message, domain name ${code(domain.name)}, version ${code(domain.version)}, chain 1, verifying contract ${contract} (domain separator ${code(separator)}); the message is read from ${lookup.replace('{arg}', '<argument>')} and must hash to this digest |`,
+        ...argRows(struct.members, rule.message.fields, `${path}.`, template, registry),
+      ];
+    }
     default:
       return [`| ${code(path)} | ${ruleText(rule, template, registry)} |`];
   }
@@ -521,6 +551,12 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
 
 function callRows(node: CallNode, prefix: string, template: Template, registry: Registry): string[] {
   const trailer = node.trailer === undefined ? 'no bytes after the arguments' : `at most ${node.trailer.maxBytes} bytes after the arguments; ${byAi(node.trailer.why)}`;
+  if (node.encoding === 'params') {
+    return [
+      `| ${code(`${prefix}${node.fn.name}`)} | holds the parameters ${code(node.fn.signature)}, ABI-encoded with no selector; no bytes after them |`,
+      ...argRows(node.fn.params, node.args, `${prefix}${node.fn.name}.`, template, registry),
+    ];
+  }
   return [
     `| ${code(`${prefix}${node.fn.name}`)} | calls ${code(node.fn.signature)}, selector ${code(node.fn.selector)}; ${trailer} |`,
     ...argRows(node.fn.params, node.args, `${prefix}${node.fn.name}.`, template, registry),
@@ -532,7 +568,14 @@ function tokenText(token: TokenRef, template: Template, registry: Registry): str
 }
 
 function effectRow(side: string, effect: Effect, template: Template, registry: Registry): string {
-  const amount = effect.amount.kind === 'card' ? `the card's ${code(effect.amount.field)}` : effect.amount.kind === 'positive' ? 'more than nothing' : 'its whole balance';
+  const amount =
+    effect.amount.kind === 'card'
+      ? `the card's ${code(effect.amount.field)}`
+      : effect.amount.kind === 'at-least'
+        ? `at least the card's ${code(effect.amount.field)}`
+        : effect.amount.kind === 'positive'
+          ? 'more than nothing'
+          : 'its whole balance';
   const to = effect.to === undefined ? '' : `, to ${refText(effect.to)}`;
   return `| ${side} | ${tokenText(effect.token, template, registry)} | ${amount}${to} |`;
 }
@@ -600,6 +643,8 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     if (call.data === 'empty') out.push(`| ${code('data')} | empty |`);
     else out.push(...callRows(call.data, '', template, registry));
     if (call.merge !== undefined) out.push('', `Several operations on one card share this call; ${byAi(call.merge)}`);
+    const reads = call.to.kind === 'contract' && call.data !== 'empty' && call.data.trailer !== undefined ? registry.entries.get(call.to.name)?.ignoresTrailer : undefined;
+    if (reads !== undefined) out.push('', `The registry entry of ${code(call.to.kind === 'contract' ? call.to.name : '')} declares it never reads calldata past a call's arguments, so this call's trailer may be longer than 19 bytes; ${byAi(reads)}`);
     out.push('');
   });
 
@@ -620,6 +665,15 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
       '',
       `The Safe's own settings, read just before and just after the transaction: its owners ${owners.length === 0 ? 'stay the same' : owners.join(', and ')}, compared as a set; its threshold ${settings.threshold === undefined ? 'stays the same' : `ends at ${refText(settings.threshold)}`}; its singleton, modules, guard and fallback handler stay the same. Any other change is a ${code('MISMATCH')}.`,
     );
+  }
+  for (const open of template.effects.approves) {
+    const spender = registry.entries.get(open.spender) as RegistryEntry;
+    const route = open.via === 'permit2' ? ', inside Permit2,' : '';
+    const bound =
+      open.amount.kind === 'card'
+        ? `at no more than the card's ${code(open.amount.field)}`
+        : `at any amount, unlimited included, as the registry entry declares a standing allowance: ${byAi(spender.standingAllowance?.why ?? '')}`;
+    out.push('', `The Safe's allowance of ${tokenText(open.token, template, registry)}${route} to registry ${full(spender)} may end higher than it started, ${bound}; every other allowance may not rise.`);
   }
   if (template.effects.views.length > 0) {
     out.push('', 'The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:', '');

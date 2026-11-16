@@ -69,6 +69,7 @@ async function runIn(clone: string, home: string, argv: string[], answers?: stri
     repoRoot: clone,
     transport: async () => assert.fail('a refused command reads no chain'),
     fetchJson: async () => assert.fail('a refused command fetches nothing'),
+    readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return { code, stdout, stderr, asked };
 }

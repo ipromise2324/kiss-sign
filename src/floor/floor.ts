@@ -4,7 +4,12 @@ import type { Span } from '../decode/codec.ts';
 import { regionBytes } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
+import type { ResolvedCard } from '../card.ts';
+import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
+import { keptAllowances } from '../simulate/effects.ts';
+import { PERMIT2 } from '../simulate/events.ts';
+import type { Template } from '../template/template.ts';
 
 export type FloorRuleId = 'fee-fields' | 'delegatecall' | 'self-call' | 'unlimited-approval' | 'safe-state';
 
@@ -17,12 +22,38 @@ export const floorResult = (findings: readonly FloorFinding[]): FloorResult =>
   findings.length === 0 ? { kind: 'pass' } : { kind: 'refused', findings };
 
 /** The Safe transaction with its calls unwrapped; `calls` is empty when a delegatecall cannot be unwrapped. */
-type View = { readonly tx: SafeTx; readonly calls: readonly InnerCall[]; readonly unwrapError: Found | undefined; readonly ownerCalls: boolean };
+type View = { readonly tx: SafeTx; readonly calls: readonly InnerCall[]; readonly unwrapError: Found | undefined };
 
 /** A finding before the table stamps it with the rule that made it. */
 type Found = Omit<FloorFinding, 'rule'>;
 
-type StaticRule = { readonly id: FloorRuleId; readonly check: (view: View) => readonly Found[] };
+type StaticRule = { readonly id: FloorRuleId; readonly check: (view: View, allowed: FloorAllowed) => readonly Found[] };
+
+/** An unlimited allowance from the Safe that may stay: of `token`, or of any token when undefined, to `spender` through `via`. */
+export type StandingSpender = { readonly via: AllowanceRoute; readonly spender: Address; readonly token: Address | undefined };
+
+/** The owner or threshold change the card's one `effects.safe` declares, resolved to addresses and a number. */
+export type SettingsChange = { readonly add: Address | undefined; readonly remove: Address | undefined; readonly threshold: bigint | undefined };
+
+/** What a card lets past the floor rules: the unlimited allowances its templates keep, and the owner or threshold change it declares. */
+export type FloorAllowed = { readonly standing?: readonly StandingSpender[]; readonly change?: SettingsChange | undefined };
+
+/** The allowances the card's templates keep unlimited (`effects.approves`): the only ones `verify`'s floor lets through. */
+export const keptUnlimited = (card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): StandingSpender[] =>
+  [...keptAllowances(card, templates, registry).kept].flatMap(([key, limit]) => {
+    const [via, token, spender] = key.split('|') as [AllowanceRoute, Address, Address];
+    return limit === 'unlimited' ? [{ via, spender, token }] : [];
+  });
+
+/**
+ * Every registry contract whose entry declares a standing allowance, for any token: what some template could keep, so a
+ * past transaction's unlimited approval to one is not refused by design.
+ */
+export const standingSpenders = (registry: Registry): StandingSpender[] =>
+  [...registry.entries.values()].flatMap((entry) => (entry.standingAllowance === undefined ? [] : [{ via: entry.standingAllowance.via, spender: entry.address, token: undefined }]));
+
+export const isStanding = (standing: readonly StandingSpender[], via: AllowanceRoute, spender: Address, token: Address): boolean =>
+  standing.some((s) => s.via === via && s.spender.toLowerCase() === spender.toLowerCase() && (s.token === undefined || s.token.toLowerCase() === token.toLowerCase()));
 
 const ZERO = '0x0000000000000000000000000000000000000000' as Address;
 
@@ -31,23 +62,33 @@ export const UNLIMITED_ERC20 = 1n << 255n;
 /** Permit2 never lowers an allowance of 2^160-1 when it is spent. */
 export const PERMIT2_MAX = (1n << 160n) - 1n;
 
-type Approval = { readonly signature: string; readonly selector: Hex; readonly token: 'target' | number; readonly spender: number; readonly amount: number; readonly unlimited: bigint };
+/** `via` is the route a registry entry's standing allowance must name to keep this approval unlimited; none for an NFT approve-all. */
+type Approval = {
+  readonly signature: string;
+  readonly selector: Hex;
+  readonly token: 'target' | number;
+  readonly spender: number;
+  readonly amount: number;
+  readonly unlimited: bigint;
+  readonly via: AllowanceRoute | undefined;
+};
 
-const approval = (signature: string, token: 'target' | number, spender: number, amount: number, unlimited: bigint): Approval => ({
+const approval = (signature: string, token: 'target' | number, spender: number, amount: number, unlimited: bigint, via: AllowanceRoute | undefined): Approval => ({
   signature,
   selector: selectorOf(signature),
   token,
   spender,
   amount,
   unlimited,
+  via,
 });
 
 /** Argument positions by word. An NFT approve-all is unlimited whenever its flag is set. Permit2's `approve` names the token as its first argument and is called on Permit2. */
 const APPROVALS: readonly Approval[] = [
-  approval('approve(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20),
-  approval('increaseAllowance(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20),
-  approval('approve(address,address,uint160,uint48)', 0, 1, 2, PERMIT2_MAX),
-  approval('setApprovalForAll(address,bool)', 'target', 0, 1, 1n),
+  approval('approve(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20, 'erc20'),
+  approval('increaseAllowance(address,uint256)', 'target', 0, 1, UNLIMITED_ERC20, 'erc20'),
+  approval('approve(address,address,uint160,uint48)', 0, 1, 2, PERMIT2_MAX, 'permit2'),
+  approval('setApprovalForAll(address,bool)', 'target', 0, 1, 1n, undefined),
 ];
 
 const addressIn = (word: bigint): Address => `0x${word.toString(16).padStart(64, '0').slice(24)}` as Address;
@@ -88,17 +129,17 @@ export const OWNER_FUNCTIONS: ReadonlySet<Hex> = new Set(
  * Every owner, threshold, module, guard, fallback handler and singleton change is a call from the Safe to itself. Only
  * the owner and threshold functions pass, and only for a card that declares such a change.
  */
-function selfCall({ tx, calls, ownerCalls }: View): Found[] {
+function selfCall({ tx, calls }: View, { change }: FloorAllowed): Found[] {
   return calls
     .filter((call) => call.to === tx.safe && call.data.end > call.data.start)
-    .filter((call) => !ownerCalls || !OWNER_FUNCTIONS.has(`0x${bytesToHex(regionBytes(call.data).subarray(0, 4))}` as Hex))
+    .filter((call) => change === undefined || !OWNER_FUNCTIONS.has(`0x${bytesToHex(regionBytes(call.data).subarray(0, 4))}` as Hex))
     .map((call) => {
       const selector = bytesToHex(regionBytes(call.data).subarray(0, 4));
       return { callPath: call.path, detail: `a call to the Safe itself with data (selector 0x${selector})`, bytes: [call.data.start, call.data.end] as const };
     });
 }
 
-function unlimitedApproval({ calls }: View): Found[] {
+function unlimitedApproval({ calls }: View, { standing = [] }: FloorAllowed): Found[] {
   const findings: Found[] = [];
   for (const call of calls) {
     const data = regionBytes(call.data);
@@ -114,6 +155,9 @@ function unlimitedApproval({ calls }: View): Found[] {
     const amount = word(kind.amount);
     if (amount < kind.unlimited) continue;
     const token = kind.token === 'target' ? call.to : addressIn(word(kind.token));
+    // Permit2's approve counts only when it is Permit2 that is called.
+    const route = kind.via === 'permit2' && call.to.toLowerCase() !== PERMIT2 ? undefined : kind.via;
+    if (route !== undefined && isStanding(standing, route, addressIn(word(kind.spender)), token)) continue;
     const at = call.data.start + 4 + kind.amount * 32;
     findings.push({
       callPath: call.path,
@@ -131,18 +175,17 @@ export const STATIC_RULES: readonly StaticRule[] = [
   { id: 'unlimited-approval', check: unlimitedApproval },
 ];
 
-function viewOf(tx: SafeTx, ownerCalls: boolean): View {
+function viewOf(tx: SafeTx): View {
   const unwrapped = unwrapSafeTx(tx);
   switch (unwrapped.kind) {
     case 'direct':
     case 'multisend':
-      return { tx, calls: unwrapped.calls, unwrapError: undefined, ownerCalls };
+      return { tx, calls: unwrapped.calls, unwrapError: undefined };
     case 'foreign-delegatecall':
-      return { tx, ownerCalls, calls: [], unwrapError: { callPath: 'safeTx', detail: `a delegatecall to ${unwrapped.to}, which is not an official MultiSend`, bytes: undefined } };
+      return { tx, calls: [], unwrapError: { callPath: 'safeTx', detail: `a delegatecall to ${unwrapped.to}, which is not an official MultiSend`, bytes: undefined } };
     default:
       return {
         tx,
-        ownerCalls,
         calls: [],
         unwrapError: { callPath: 'safeTx', detail: `the MultiSend data does not decode (${unwrapped.kind} at byte ${unwrapped.at})`, bytes: [unwrapped.at, unwrapped.at + 1] },
       };
@@ -150,10 +193,12 @@ function viewOf(tx: SafeTx, ownerCalls: boolean): View {
 }
 
 /**
- * Protocol-free rules every Safe transaction must meet, whatever its template says. `ownerCalls` lets the Safe's owner
- * and threshold functions through, for a card one of whose operations declares that change.
+ * Protocol-free rules every Safe transaction must meet, whatever its template says. Only what `allowed` names passes
+ * beyond them: for `verify`, the unlimited allowances the card's templates keep, which template load allows only to a
+ * registry contract that declares a standing allowance of that route, and the Safe's owner and threshold functions
+ * when one of the card's operations declares such a change.
  */
-export function checkFloor(tx: SafeTx, ownerCalls = false): FloorResult {
-  const view = viewOf(tx, ownerCalls);
-  return floorResult(STATIC_RULES.flatMap((rule) => rule.check(view).map((found) => ({ rule: rule.id, ...found }))));
+export function checkFloor(tx: SafeTx, allowed: FloorAllowed = {}): FloorResult {
+  const view = viewOf(tx);
+  return floorResult(STATIC_RULES.flatMap((rule) => rule.check(view, allowed).map((found) => ({ rule: rule.id, ...found }))));
 }
