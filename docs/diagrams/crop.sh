@@ -34,6 +34,6 @@ crop=$("$chrome" $flags --window-size="$width,1000" --dump-dom "file://$work/pag
 IFS=, read -r x y w h <<EOF
 $crop
 EOF
-"$chrome" $flags --force-device-scale-factor=2 --window-size="$width,$((y + h))" --screenshot="$work/full.png" "file://$work/page.html" 2>/dev/null
+"$chrome" $flags --force-device-scale-factor=2 --window-size="$width,$((y + h + 40))" --screenshot="$work/full.png" "file://$work/page.html" 2>/dev/null
 sips -s format png --cropOffset $((y * 2)) $((x * 2)) -c $((h * 2)) $((w * 2)) "$work/full.png" --out "$out" >/dev/null
 echo "$out: ${w}x${h} CSS px at 2x"
