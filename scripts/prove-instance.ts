@@ -21,7 +21,7 @@ console.log(
   [
     `contract   ${name} ${checksumAddress(proof.entry.address)}`,
     `factory    ${proof.factory.name} ${checksumAddress(proof.factory.address)}`,
-    `answered   ${proof.factory.instanceCheck?.signature} = true`,
+    `answered   ${proof.asked} = ${proof.answered}`,
     `block      ${proof.block.number} ${proof.block.hash}`,
     `providers  ${proof.providers.join(', ')}`,
   ].join('\n'),

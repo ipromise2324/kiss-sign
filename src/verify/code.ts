@@ -1,11 +1,12 @@
 import type { ResolvedCard } from '../card.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
-import { keccakCode } from '../contracts/code.ts';
+import { keccakCode, readRoutes } from '../contracts/code.ts';
 import { describeRefusal } from '../contracts/prove.ts';
 import { locate, unknownDelegation } from '../contracts/proxy.ts';
+import type { Proxy } from '../contracts/proxy.ts';
 import { MARKET_ENTRY_PARTS, isAttribute, pinAt } from '../registry.ts';
-import type { Registry, RegistryEntry } from '../registry.ts';
+import type { CodePin, Registry, RegistryEntry, Route } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
 import { cardRefs } from '../template/template.ts';
 import type { Rule, Template } from '../template/template.ts';
@@ -14,7 +15,8 @@ import type { ChainCheck } from './verdict.ts';
 /**
  * Every registry contract the transaction or the card names: the Safe transaction's target, each contract a template
  * rule names, each registry address on the card, each entry a card reference's attribute names, such as a vault's asset,
- * each entry a market on the card names, and the contract of each view a template reads.
+ * each entry a market on the card names, the contract of each view a template reads, and each entry any of these
+ * names in `dependsOn`.
  */
 export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): RegistryEntry[] {
   const touched = new Map<string, RegistryEntry>();
@@ -57,6 +59,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
     }
     for (const kept of template.effects.approves) add(registry.entries.get(kept.spender));
   }
+  for (const entry of [...touched.values()]) entry.dependsOn?.forEach((name) => add(registry.entries.get(name)));
   return [...touched.values()];
 }
 
@@ -78,12 +81,23 @@ async function compare(reader: Reader, entry: RegistryEntry, at: BlockRef, time:
   if (own.kind === 'unverifiable') return unverifiable(own.reason);
   const hash = keccakCode(own.value);
   if (hash !== pin.hash) return mismatch(`${where} has code hash ${hash} ${block}, the registry pins ${pin.hash}`);
-  const located = await locate(reader, entry.address, own.value, at);
+  const located = await locate(reader, entry.address, own.value, at, entry.routes !== undefined);
   if (located.kind === 'refused') {
     const detail = `${where} ${block}: ${describeRefusal(located.refusal)}`;
     return located.refusal.why === 'unverifiable' ? unverifiable(detail) : mismatch(detail);
   }
-  const { proxy } = located;
+  const delegation = await compareImplementation(reader, located.proxy, pin, where, block, at);
+  if (delegation.kind !== 'pass' || entry.routes === undefined) return delegation;
+  const read = await readRoutes(reader, entry.address, entry.routes, at);
+  if (read.kind === 'refused') {
+    const detail = `${where} ${block}: ${describeRefusal(read.refusal)}`;
+    return read.refusal.why === 'unverifiable' ? unverifiable(detail) : mismatch(detail);
+  }
+  const findings = routeDifferences(pin.routes ?? [], read.routes, where, block);
+  return findings.length === 0 ? PASS : { kind: 'mismatch', findings };
+}
+
+async function compareImplementation(reader: Reader, proxy: Proxy, pin: CodePin, where: string, block: string, at: BlockRef): Promise<ChainCheck> {
   const was = pin.implementation;
   if (proxy.kind === 'none') return was === undefined ? PASS : mismatch(`${where} no longer delegates to ${was.address} ${block}, the registry pins that implementation`);
   if (was === undefined) return mismatch(`${where} delegates to ${proxy.implementation} ${block}, the registry pins no implementation`);
@@ -96,9 +110,30 @@ async function compare(reader: Reader, entry: RegistryEntry, at: BlockRef, time:
   return delegation === undefined ? PASS : mismatch(`${where} ${block}: ${describeRefusal(delegation)}`);
 }
 
+function routeDifferences(pinned: readonly Route[], read: readonly Route[], where: string, block: string): string[] {
+  const addresses = [...new Set([...pinned, ...read].map((route) => route.address))].sort();
+  return addresses.flatMap((address): string[] => {
+    const was = pinned.find((route) => route.address === address);
+    const now = read.find((route) => route.address === address);
+    if (was === undefined) return [`${where} routes selectors to ${address} ${block}, an implementation the registry does not pin`];
+    if (now === undefined) return [`${where} routes no seed to ${address} ${block}, an implementation the registry pins`];
+    const of = `${where}'s routed implementation ${address}`;
+    const added = now.selectors.filter((selector) => !was.selectors.includes(selector));
+    const gone = was.selectors.filter((selector) => !now.selectors.includes(selector));
+    const reordered = added.length === 0 && gone.length === 0 && now.selectors.some((selector, i) => selector !== was.selectors[i]);
+    return [
+      ...(now.hash === was.hash ? [] : [`${of} has code hash ${now.hash} ${block}, the registry pins ${was.hash}`]),
+      ...(added.length === 0 ? [] : [`${of} serves ${added.join(', ')} ${block}, which the registry does not pin`]),
+      ...(gone.length === 0 ? [] : [`${of} no longer serves ${gone.join(', ')} ${block}, which the registry pins`]),
+      ...(reordered ? [`${of} lists the pinned selectors in another order ${block}`] : []),
+    ];
+  });
+}
+
 /**
- * Each entry must run, at `at`, the code its registry pin names: the same code, and behind a proxy the same
- * implementation. A pending transaction needs the current pin; an executed one the pin whose span holds `at`.
+ * Each entry must run, at `at`, the code its registry pin names: the same code, behind a proxy the same
+ * implementation, and for an entry with `routes` the same routes. A pending transaction needs the current pin; an
+ * executed one the pin whose span holds `at`.
  */
 export async function checkCode(reader: Reader, entries: readonly RegistryEntry[], at: BlockRef, time: CodeTime): Promise<ChainCheck> {
   const results: ChainCheck[] = [];

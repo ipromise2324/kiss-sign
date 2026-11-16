@@ -13,12 +13,13 @@ import { compareReports, entriesOf, loadReport, renderReport, reportRecordingPat
 import type { ReportRecording } from '../src/research/report.ts';
 import type { Hex } from '../src/safe/types.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
+import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const suffixes = loadPublicSuffixList();
 const ID = 'morpho/market-supply';
-const recording = JSON.parse(readFileSync(join(ROOT, reportRecordingPath({ template: ID })), 'utf8')) as ReportRecording;
+const recording = readRecording(join(ROOT, reportRecordingPath({ template: ID }))) as ReportRecording;
 const recorded = parseFactsRecording(recording.facts) as FactsRecording;
 const subject = loadReport(ROOT, registry, { template: ID }).subject;
 const entries = entriesOf(subject, registry);
@@ -68,6 +69,7 @@ function section(facts: ProtocolFacts | undefined): string {
       vaults: new Map(),
       pastTxs: [],
       spans: new Map(),
+      today: undefined,
       erc7730: { text: 'not read', reports: [] },
       facts,
     },

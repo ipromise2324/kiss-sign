@@ -150,6 +150,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
 .callh .what{font-size:16px;font-weight:590}
 .sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
 .arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
 .arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
 .arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
@@ -327,7 +330,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。標「例」的你填和你選的值取自 hyperithm-usdc-apex-v2-9e2f 的第一筆測試交易 <code>morpho-vault-deposit-v2</code>，金額 <span class="num">1,000,611.448606</span> usdc，最少收到的數量 約 <span class="num">973,551.731159</span> hyperithm-usdc-apex-v2-9e2f（<span class="num">973551731159989631767877</span> 最小單位）。</p>
   
   <div class="cb">
-    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div>
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">usdc.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol">github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
     <div class="arg" data-field="1.approve.spender">
       <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
       <div class="val"><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
@@ -340,7 +343,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
   </div>
   <div class="cb">
-    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">bundler3.</span>multicall</span><span class="sel">0x374f435d</span></div>
+    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">bundler3.</span>multicall</span><span class="sel">0x374f435d</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/Bundler3.sol">github.com/morpho-org/bundler3/…/Bundler3.sol</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
     <div class="arg" data-field="2.multicall.bundle">
       <div class="nm"><span class="pn">bundle</span><span class="who">固定</span></div>
       <div class="val"><div class="is">2 項</div>
@@ -351,7 +354,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="parts">
         <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
-        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc20TransferFrom</code> (<span class="addr">0xd96ca0b9</span>)</div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc20TransferFrom</code> (<span class="addr">0xd96ca0b9</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol">github.com/morpho-org/bundler3/…/GeneralAdapter1.sol</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">token<div class="pchips"><span class="who you">你選：金庫</span></div></div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a> <span class="f3">你選的金庫的資產</span></div>
@@ -373,7 +376,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div class="parts">
         <div class="part"><div class="pn">to</div><div><div class="raw">0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0</div><div class="is"><a href="#a-general-adapter-1">general-adapter-1</a></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步呼叫的合約，固定是 GeneralAdapter1。</span></span></div></div></div>
-        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc4626Deposit</code> (<span class="addr">0x6ef5eeae</span>)</div>
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>erc4626Deposit</code> (<span class="addr">0x6ef5eeae</span>)</div><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol">github.com/morpho-org/bundler3/…/GeneralAdapter1.sol</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>這一步要執行的函式和參數，下面逐項列出。</span></span></div></div>
       <div class="parts">
         <div class="part"><div class="pn">vault<div class="pchips"><span class="who you">你選：金庫</span></div></div><div><div class="raw">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</div><div class="is"><a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a> <span class="f3">你選的金庫</span></div>

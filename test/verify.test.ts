@@ -9,6 +9,7 @@ import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { main } from '../src/cli/main.ts';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
+import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 import { replayTransport } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
@@ -16,7 +17,7 @@ import type { VerdictFile } from '../src/verify/verify.ts';
 const ROOT = join(import.meta.dirname, '..');
 const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
 const FIXTURE_PATH = join(ROOT, 'testdata', 'verify', 'morpho-vault-deposit.json');
-const fixture: VerdictFile = readJson(FIXTURE_PATH);
+const fixture: VerdictFile = readRecording(FIXTURE_PATH);
 const chain = readJson(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json')).chain;
 const service = fixture.inputs.tx.json as Record<string, unknown>;
 const template = fixture.inputs.templates[0]!;
@@ -216,7 +217,7 @@ test('replay of the recorded deposit gives MATCH from the verdict file alone and
 test('replay refuses a verdict file whose card was edited', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
   const edited = { ...fixture, inputs: { ...fixture.inputs, card: { ...fixture.inputs.card, text: fixture.inputs.card.text.replace('1800000000180', '1800000000181') } } };
-  const path = write(join(dir, 'edited.json'), JSON.stringify(edited));
+  const path = write(join(dir, 'edited.json'), recordingText(edited));
   const { code, stderr } = await run(['replay', path], dir, dir);
   assert.equal(code, 1);
   assert.match(stderr, /the card does not hash to 0x/);
@@ -225,7 +226,7 @@ test('replay refuses a verdict file whose card was edited', async () => {
 test('replay reports a recorded verdict this program does not reproduce', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
   const claimed = { ...fixture, result: { ...fixture.result, verdict: { kind: 'MISMATCH', causes: [] } } };
-  const path = write(join(dir, 'claimed.json'), JSON.stringify(claimed));
+  const path = write(join(dir, 'claimed.json'), recordingText(claimed));
   const { code, stdout, stderr } = await run(['replay', path], dir, dir);
   assert.equal(code, 1);
   assert.match(stdout, /^MATCH\n/);
@@ -234,16 +235,24 @@ test('replay reports a recorded verdict this program does not reproduce', async 
 
 test('replay names an older verdict format and says to run verify again', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
-  const path = write(join(dir, 'old.json'), JSON.stringify({ ...fixture, format: 'kiss-sign-verdict-1' }));
+  const path = write(join(dir, 'old.json'), recordingText({ ...fixture, format: 'kiss-sign-verdict-1' }));
   const { code, stderr } = await run(['replay', path], dir, dir);
   assert.equal(code, 1);
-  assert.match(stderr, /format "kiss-sign-verdict-1", not kiss-sign-verdict-2; run verify again/);
+  assert.match(stderr, /format "kiss-sign-verdict-1", not kiss-sign-verdict-3; run verify again/);
+});
+
+test('replay refuses a verdict file that writes code out in full instead of naming it by its keccak256', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const path = write(join(dir, 'inline.json'), JSON.stringify(fixture));
+  const { code, stderr } = await run(['replay', path], dir, dir);
+  assert.equal(code, 1);
+  assert.match(stderr, /the verdict file: \.exchanges\[\d+\]\.answers\.\w+ holds code itself, not its keccak256 in "bytecode"/);
 });
 
 test('replay says when only the call marks differ from the recorded ones', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
   const claimed = { ...fixture, result: { ...fixture.result, calls: { kind: 'unverifiable', reasons: ['edited'] } } };
-  const path = write(join(dir, 'calls.json'), JSON.stringify(claimed));
+  const path = write(join(dir, 'calls.json'), recordingText(claimed));
   const { code, stderr } = await run(['replay', path], dir, dir);
   assert.equal(code, 1);
   assert.match(stderr, /the recorded verdict was MATCH; this program now gives the same verdict but different call marks or hashes/);

@@ -10,6 +10,7 @@ import type { AbiFunction } from '../decode/abi.ts';
 import { parseServiceTx } from '../safe/parse.ts';
 import { SAFE_VERSIONS, parseAddress, parseUint256 } from '../safe/types.ts';
 import type { Address, SafeTx } from '../safe/types.ts';
+import { readRecording } from '../chain/bytecode.ts';
 
 export const ATTACKS_DIR = join('testdata', 'attacks');
 
@@ -107,7 +108,7 @@ export function loadCase(repoRoot: string, id: string): AttackCase {
 }
 
 export function loadRecording(repoRoot: string, id: string): Recording {
-  return parseRecording(id, readJson(join(repoRoot, ATTACKS_DIR, id, 'recording.json')));
+  return parseRecording(id, readRecording(join(repoRoot, ATTACKS_DIR, id, 'recording.json')));
 }
 
 /**

@@ -25,6 +25,7 @@ import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/v
 import { FAILED, OK, UsageError } from './io.ts';
 import type { Io } from './io.ts';
 import { requireConfig, shellWord } from './setup.ts';
+import { recordingText } from '../chain/bytecode.ts';
 
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v1';
 
@@ -106,7 +107,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const dir = verdictsDir(home);
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   const path = join(dir, `nonce-${tx.nonce}-${Date.now()}.json`);
-  writeFileSync(`${path}.tmp`, `${JSON.stringify(file, null, 2)}\n`, { mode: 0o600 });
+  writeFileSync(`${path}.tmp`, recordingText(file, 2), { mode: 0o600 });
   renameSync(`${path}.tmp`, path);
   const { verdict, hashes } = result;
   io.stdout(`${verdict.kind}\n`);

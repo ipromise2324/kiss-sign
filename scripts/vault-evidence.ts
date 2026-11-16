@@ -10,6 +10,7 @@ import { unreadRefusal } from '../src/chain/https.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { alchemyCall, trimVaultRecording, vaultEvidenceText } from '../src/research/vault-evidence.ts';
+import { recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/vault-evidence.ts <registry vault name> [--record <name>]
 
@@ -55,6 +56,6 @@ if (flags.record !== undefined) {
   const dir = join(root, 'testdata', 'vault-evidence');
   mkdirSync(dir, { recursive: true });
   const path = join(dir, `${flags.record}.json`);
-  writeFileSync(path, `${JSON.stringify(fixture, null, 2)}\n`);
+  writeFileSync(path, recordingText(fixture, 2));
   console.log(`recorded ${path}`);
 }
