@@ -9,7 +9,7 @@ import type { Exchange } from '../chain/recording.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockHeader, BlockRef } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
-import { checkFloor, standingSpenders } from '../floor/floor.ts';
+import { checkFloor, keptUnlimited } from '../floor/floor.ts';
 import { checkObservation } from '../floor/summary.ts';
 import { parseRegistry } from '../registry.ts';
 import type { Registry } from '../registry.ts';
@@ -143,7 +143,7 @@ export function prepare(inputs: VerifyInputs): Prepared {
 export function judge(prepared: Prepared, tx: SafeTx, observation: Observation, read: { readonly assets: ChainCheck; readonly code: ChainCheck }): Verdict {
   const { registry, safe, card, templates, approvals, messages } = prepared;
   const checks = {
-    staticFloor: checkFloor(tx, standingSpenders(registry)),
+    staticFloor: checkFloor(tx, keptUnlimited(card, templates, registry)),
     fields: checkTemplateFields(tx, card, templates, registry, messages),
     ...read,
     mutation: checkMutations(tx, card, templates, registry, messages),

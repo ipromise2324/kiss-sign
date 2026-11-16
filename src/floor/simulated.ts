@@ -41,7 +41,7 @@ function unlimitedPermit2Of(log: EventLog, safe: Address, standing: readonly Sta
   const [first, owner, token, spender] = log.topics;
   if (log.address !== PERMIT2 || first === undefined || !PERMIT2_INDEXED.has(first) || !namesAddress(owner, safe)) return undefined;
   if (token === undefined || spender === undefined || uintOf(log.data) !== PERMIT2_MAX) return undefined;
-  if (isStanding(standing, 'permit2', addressOf(spender))) return undefined;
+  if (isStanding(standing, 'permit2', addressOf(spender), addressOf(token))) return undefined;
   const detail = `Permit2 allowance of token ${addressOf(token)} to spender ${addressOf(spender)} for ${PERMIT2_MAX}`;
   return { rule: 'unlimited-approval', callPath: 'receipt', detail, bytes: undefined };
 }
@@ -56,7 +56,7 @@ function receiptFindings(logs: readonly EventLog[], safe: Address, standing: rea
     const [first, owner, spender] = log.topics;
     if (first !== APPROVAL || log.topics.length !== 3 || !namesAddress(owner, safe) || spender === undefined) continue;
     const value = uintOf(log.data);
-    if (value >= UNLIMITED_ERC20 && !isStanding(standing, 'erc20', addressOf(spender))) {
+    if (value >= UNLIMITED_ERC20 && !isStanding(standing, 'erc20', addressOf(spender), log.address)) {
       findings.push({
         rule: 'unlimited-approval',
         callPath: 'receipt',
@@ -71,7 +71,7 @@ function receiptFindings(logs: readonly EventLog[], safe: Address, standing: rea
 /**
  * Floor rules on what the transaction did: the Safe's settings must end as they started, and no allowance from the
  * Safe, ERC-20 or Permit2, may be left unlimited, however the transaction reached it, except to a registry contract
- * that declares a standing allowance of that route (`standing`). A transaction that did not execute changed nothing.
+ * when `standing` names it, as the card's templates keep it. A transaction that did not execute changed nothing.
  */
 export function checkSimulatedFloor(observed: Observed, safe: Address, standing: readonly StandingSpender[] = []): FloorResult {
   if (observed.kind === 'not-executed') return floorResult([]);
@@ -79,7 +79,7 @@ export function checkSimulatedFloor(observed: Observed, safe: Address, standing:
   const findings =
     evidence.kind === 'read' ? stateFindings(evidence.before, evidence.after) : receiptFindings(evidence.logs, safe, standing);
   for (const allowance of observed.allowances) {
-    if (allowance.after < UNLIMITED_ERC20 || isStanding(standing, 'erc20', allowance.spender)) continue;
+    if (allowance.after < UNLIMITED_ERC20 || isStanding(standing, 'erc20', allowance.spender, allowance.token)) continue;
     findings.push({
       rule: 'unlimited-approval',
       callPath: 'allowances',
@@ -88,7 +88,7 @@ export function checkSimulatedFloor(observed: Observed, safe: Address, standing:
     });
   }
   for (const allowance of observed.permit2) {
-    if (allowance.after.amount !== PERMIT2_MAX || isStanding(standing, 'permit2', allowance.spender)) continue;
+    if (allowance.after.amount !== PERMIT2_MAX || isStanding(standing, 'permit2', allowance.spender, allowance.token)) continue;
     findings.push({
       rule: 'unlimited-approval',
       callPath: 'permit2',

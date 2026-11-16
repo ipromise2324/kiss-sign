@@ -118,11 +118,13 @@ function mutateTx(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
   return { ...tx, data: `0x${bytesToHex(data)}` as Hex };
 }
 
+/** Empty constant bytes have no byte to change in place, and any other value is longer, which the field check compares. */
+const isEmptyConst = ({ rule }: Leaf): boolean => rule.kind === 'const' && (rule.value.kind === 'bytes' || rule.value.kind === 'string') && rule.value.value.length === 2;
+
 /**
  * Changes each bound leaf of a matching transaction, one at a time, and requires the checker to give `mismatch` for
  * every copy. A copy that still matches means the template, or the checker, does not hold that field.
  */
-const isEmptyConst = ({ rule }: Leaf): boolean => rule.kind === 'const' && (rule.value.kind === 'bytes' || rule.value.kind === 'string') && rule.value.value.length === 2;
 
 export function checkMutations(
   tx: SafeTx,
@@ -134,12 +136,10 @@ export function checkMutations(
 ): MutationResult {
   const { check, leaves } = inspectTemplateFields(tx, card, templates, registry, messages);
   if (check.kind !== 'match') return { kind: 'not-run', check };
-  const bound = leaves.filter((leaf) => leaf.rule.kind !== 'free');
-  const free = leaves.length - bound.length;
+  const bound = leaves.filter((leaf) => leaf.rule.kind !== 'free' && !isEmptyConst(leaf));
+  const free = leaves.filter((leaf) => leaf.rule.kind === 'free').length;
   const uncaught: Uncaught[] = [];
   for (const leaf of bound) {
-    // Empty constant bytes have no byte to change in place, and any other value is longer, which the field check compares.
-    if (isEmptyConst(leaf)) continue;
     const mutated = mutate(tx, leaf, messages);
     if (mutated === undefined) {
       uncaught.push({ leaf, mutated: 'not-mutable' });

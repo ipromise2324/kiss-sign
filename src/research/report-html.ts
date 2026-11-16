@@ -757,6 +757,7 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .part:first-child,.plabel+.part{border-top:0;padding-top:2px}
 .part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
 .part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 .part .raw{font-size:var(--t-small)}
 .part .is{font-size:var(--t-small)}
 .part .ai{margin-top:4px}

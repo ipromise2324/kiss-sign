@@ -72,7 +72,7 @@ const BATCHED: Case = {
   name: 'uniswap-swap-approve-usdt-usdc',
   sell: 4342485506n,
   minBuy: 4334865289n,
-  bound: 25,
+  bound: 24,
   card: {
     operations: [
       { template: 'uniswap/approve-permit2', values: { token: 'usdt' } },
@@ -84,12 +84,12 @@ const BATCHED: Case = {
 
 const CASES: readonly Case[] = [
   BATCHED,
-  { name: 'uniswap-swap-usdc-usdt', sell: 130000000n, minBuy: 129893802n, bound: 16, card: { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] } },
+  { name: 'uniswap-swap-usdc-usdt', sell: 130000000n, minBuy: 129893802n, bound: 15, card: { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] } },
   {
     name: 'uniswap-swap-permit-usdc-usdt',
     sell: 24000000000n,
     minBuy: 23978654164n,
-    bound: 19,
+    bound: 18,
     card: { operations: [swapOp('usdc', 'usdt', 24000000000n, 23978654164n, 'uniswap/swap-permit')] },
   },
 ];
@@ -231,7 +231,7 @@ test('an unlimited kept allowance needs a registry spender that declares a stand
 
 test('a trailer over 19 bytes is allowed only on a call to a registry contract that declares it ignores trailing calldata', () => {
   const swap = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap', 'template.json'), 'utf8'));
-  assert.equal(parseTemplate(swap, registry).calls[0]?.data !== 'empty', true);
+  assert.doesNotThrow(() => parseTemplate(swap, registry));
   const raw = JSON.parse(readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
   delete raw['universal-router-2.1.2'].ignoresTrailer;
   assert.throws(() => parseTemplate(swap, parseRegistry(raw)), /an integer from 1 to 19; more only on a call to a registry contract that declares ignoresTrailer/);
@@ -240,5 +240,15 @@ test('a trailer over 19 bytes is allowed only on a call to a registry contract t
 test('a route claim needs every token the Safe gets bounded, since another pool gives another price', () => {
   const swap = JSON.parse(readFileSync(join(ROOT, 'templates', 'uniswap', 'swap', 'template.json'), 'utf8'));
   swap.effects.gets[0].amount = 'positive';
-  assert.throws(() => parseTemplate(swap, registry), /a template with a route claim must bound each token the Safe gets/);
+  assert.throws(() => parseTemplate(swap, registry), /a template with a route claim must bound each token the Safe gives or gets/);
+});
+
+test('a router input whose bytes do not re-encode exactly is a mismatch at its encoding', () => {
+  const tx = safeTx('uniswap-swap-usdc-usdt');
+  const card = { operations: [swapOp('usdc', 'usdt', 130000000n, 129893802n)] };
+  const bytes = hexToBytes(tx.data.slice(2));
+  const actions = tx.data.slice(2).indexOf('070b0e00');
+  assert.ok(actions > 0 && actions % 2 === 0, 'the action list is in the data');
+  bytes[actions / 2 + 3] = 1;
+  assert.deepEqual(mismatchAt(check(withData(tx, bytes), card)), ['call.execute.inputs[0].encoding']);
 });
