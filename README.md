@@ -61,6 +61,9 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 ## How it works
 
+> [!CAUTION]
+> kiss-sign is provided as is, with no warranty. It can be wrong, and you alone are responsible for what you sign. See [Disclaimer](#disclaimer).
+
 The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault. One address crop is from another vault's report, as marked.
 
 **Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts, so merging a pull request into it is your confirmation.
@@ -198,6 +201,22 @@ Open an issue or a pull request. Tests run offline with `pnpm test`. For a progr
 
 Report security problems as an issue too.
 
+## Disclaimer
+
+kiss-sign is provided as is, without warranty of any kind. It can be wrong: a bug, a wrong template or registry entry, a compromised service or a compromised computer can make it print `MATCH` for a transaction you did not mean. `MATCH` says only that the transaction matches the template you approved and the card you sealed. It does not say that a protocol, a contract or a transaction is safe, and nothing here is financial, legal or security advice.
+
+You alone are responsible for every transaction you sign. The authors and contributors are not liable for any loss, however it arises, including through the use of kiss-sign or `kiss-sign-check`.
+
+## Donate
+
+If kiss-sign is useful to you, you can support it with ETH on Ethereum mainnet:
+
+```
+TODO: donation address
+```
+
+Copy the address from this page on GitHub, and compare it in full before you send.
+
 ## License
 
-TODO
+kiss-sign is released into the public domain under the [Unlicense](LICENSE). Anyone may copy, change, publish, use or sell it, for any purpose, without asking.

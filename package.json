@@ -2,6 +2,7 @@
   "name": "kiss-sign",
   "version": "0.0.0",
   "private": true,
+  "license": "Unlicense",
   "type": "module",
   "engines": {
     "node": ">=22.21"
