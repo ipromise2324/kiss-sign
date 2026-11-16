@@ -450,7 +450,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>morpho-blue</h2>
   <p class="intro"><span class="aiw" data-ai><span>Morpho Vault V2 把存款分配到多個 Morpho Blue 市場。curator 設定每個市場能放多少（上限），allocator 在上限內搬錢。提高上限要先 <code>submit</code>，等 timelock 過了才能執行。</span><span class="byai">AI 研究</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$9.98 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.46 B</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$10.04 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.49 B</span></span></dd></div>
     <div><dt>上線</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
     <div><dt>proxy</dt><dd><span>不是 proxy</span><span class="sub2"><a href="#a-acuto-usdc-v2-4a57">acuto-usdc-v2-4a57</a>，從 code pin 讀到</span></dd></div>
     <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。 <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">來源</a></span><span class="byai">AI 研究</span></span></dd></div>
@@ -463,8 +463,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>金庫</h2>
   <p class="lead"><a href="#a-acuto-usdc-v2-4a57">acuto-usdc-v2-4a57</a>：程式記錄的 <code>pnpm vault-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
   <dl class="props">
-    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26428995</dd></div>
-    <div><dt>現在的 totalAssets</dt><dd><span class="num">758,853.9 usdc</span></dd><dd class="src">2026-11-16，區塊 26428995</dd></div>
+    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26429893</dd></div>
+    <div><dt>現在的 totalAssets</dt><dd><span class="num">758,880.66 usdc</span></dd><dd class="src">2026-11-16，區塊 26429893</dd></div>
     <div><dt>持有人</dt><dd><span class="num">68</span> 個地址持有，曾經收過的 <span class="num">558</span> 個</dd><dd class="src"></dd></div>
     <div><dt>最大持有人</dt><dd><span class="num">30.36%</span></dd><dd class="src">占全部股份</dd></div>
     <div><dt>前 10 名</dt><dd><span class="num">96.50%</span></dd><dd class="src">占全部股份</dd></div>
@@ -473,22 +473,22 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="diagram">
   <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
     <title id="vt">每月的 totalAssets</title>
-    <desc id="vd">13 個月，2025-11-20 到 2026-11-16，最高 7,049,925.27 usdc</desc>
-    <text class="tick" x="16" y="18">最高 7,049,925.27 usdc</text>
+    <desc id="vd">13 個月，2025-11-20 到 2026-11-16，最高 7,070,044.1 usdc</desc>
+    <text class="tick" x="16" y="18">最高 7,070,044.1 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
     <rect class="barna" x="25.7" y="138" width="29.0" height="12"><title>2025-11-20：還沒有程式碼</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
     <rect class="barna" x="74.0" y="138" width="29.0" height="12"><title>2025-12-20：還沒有程式碼</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
     <rect class="barna" x="122.3" y="138" width="29.0" height="12"><title>2026-01-19：還沒有程式碼</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
     <rect class="barna" x="170.6" y="138" width="29.0" height="12"><title>2026-02-18：還沒有程式碼</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
-    <rect class="bar" x="218.9" y="34" width="29.0" height="116"><title>2026-03-20：7,049,925.27 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
-    <rect class="bar" x="267.2" y="71" width="29.0" height="79"><title>2026-04-19：4,819,077.36 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
-    <rect class="bar" x="315.5" y="92" width="29.0" height="58"><title>2026-05-20：3,500,702.39 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
-    <rect class="bar" x="363.8" y="106" width="29.0" height="44"><title>2026-06-19：2,651,883.02 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
-    <rect class="bar" x="412.1" y="125" width="29.0" height="25"><title>2026-07-19：1,493,517.4 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
-    <rect class="bar" x="460.4" y="103" width="29.0" height="47"><title>2026-08-18：2,827,827.9 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
-    <rect class="bar" x="508.7" y="131" width="29.0" height="19"><title>2026-09-17：1,175,537.72 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
-    <rect class="bar" x="557.0" y="134" width="29.0" height="16"><title>2026-10-17：953,952.39 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
-    <rect class="bar last" x="605.4" y="138" width="29.0" height="12"><title>2026-11-16：758,853.9 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
+    <rect class="bar" x="218.9" y="34" width="29.0" height="116"><title>2026-03-20：7,070,044.1 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
+    <rect class="bar" x="267.2" y="71" width="29.0" height="79"><title>2026-04-20：4,813,174.55 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="315.5" y="89" width="29.0" height="61"><title>2026-05-20：3,701,892.77 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
+    <rect class="bar" x="363.8" y="106" width="29.0" height="44"><title>2026-06-19：2,651,959.94 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="412.1" y="125" width="29.0" height="25"><title>2026-07-19：1,493,565.19 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
+    <rect class="bar" x="460.4" y="104" width="29.0" height="46"><title>2026-08-18：2,830,915.22 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="508.7" y="131" width="29.0" height="19"><title>2026-09-17：1,175,582.49 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
+    <rect class="bar" x="557.0" y="134" width="29.0" height="16"><title>2026-10-17：953,979.32 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar last" x="605.4" y="138" width="29.0" height="12"><title>2026-11-16：758,880.66 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
@@ -499,15 +499,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><dt class="num">2025-12-20</dt><dd class="num">還沒有程式碼</dd></div>
       <div><dt class="num">2026-01-19</dt><dd class="num">還沒有程式碼</dd></div>
       <div><dt class="num">2026-02-18</dt><dd class="num">還沒有程式碼</dd></div>
-      <div><dt class="num">2026-03-20</dt><dd class="num">7,049,925.27 usdc</dd></div>
-      <div><dt class="num">2026-04-19</dt><dd class="num">4,819,077.36 usdc</dd></div>
-      <div><dt class="num">2026-05-20</dt><dd class="num">3,500,702.39 usdc</dd></div>
-      <div><dt class="num">2026-06-19</dt><dd class="num">2,651,883.02 usdc</dd></div>
-      <div><dt class="num">2026-07-19</dt><dd class="num">1,493,517.4 usdc</dd></div>
-      <div><dt class="num">2026-08-18</dt><dd class="num">2,827,827.9 usdc</dd></div>
-      <div><dt class="num">2026-09-17</dt><dd class="num">1,175,537.72 usdc</dd></div>
-      <div><dt class="num">2026-10-17</dt><dd class="num">953,952.39 usdc</dd></div>
-      <div><dt class="num">2026-11-16</dt><dd class="num">758,853.9 usdc</dd></div>
+      <div><dt class="num">2026-03-20</dt><dd class="num">7,070,044.1 usdc</dd></div>
+      <div><dt class="num">2026-04-20</dt><dd class="num">4,813,174.55 usdc</dd></div>
+      <div><dt class="num">2026-05-20</dt><dd class="num">3,701,892.77 usdc</dd></div>
+      <div><dt class="num">2026-06-19</dt><dd class="num">2,651,959.94 usdc</dd></div>
+      <div><dt class="num">2026-07-19</dt><dd class="num">1,493,565.19 usdc</dd></div>
+      <div><dt class="num">2026-08-18</dt><dd class="num">2,830,915.22 usdc</dd></div>
+      <div><dt class="num">2026-09-17</dt><dd class="num">1,175,582.49 usdc</dd></div>
+      <div><dt class="num">2026-10-17</dt><dd class="num">953,979.32 usdc</dd></div>
+      <div><dt class="num">2026-11-16</dt><dd class="num">758,880.66 usdc</dd></div>
     </dl>
   </details>
 </section>
@@ -585,7 +585,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><span class="nm">morpho-oracle-usp-usdc</span><span class="role"><span class="aiw" data-ai><span>USP 市場用來給 USP 定價的 oracle</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
       <div class="body"><span class="addr">0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d</span>
-        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/market/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp">app.morpho.org/ethereum/market</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
         <div class="confirmed">只在 1 個地方確認：協議 API</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
