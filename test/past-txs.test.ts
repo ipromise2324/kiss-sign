@@ -249,6 +249,42 @@ test('a template whose trailer allowance is shorter than real use lists those tr
   assert.match(text, /^ {2}2 from 1 Safe: more bytes after the arguments than the template allows, at multiSend\[1\]$/m);
 });
 
+test('a transaction whose leaf the template binds to the Safe holds another address is a misfit naming that leaf', async () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  raw.calls[0].args.spender = { safe: true };
+  const text = await report({ template: parseTemplate(raw, registry) });
+  assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
+  assert.match(text, /^ {2}2 from 1 Safe: multiSend\[0\]\.approve\.spender: not the sender$/m);
+});
+
+test('a call to another contract than the template binds is named by that contract, even where a rule also breaks', async () => {
+  const bundler3 = (registry.entries.get('bundler3')?.address as Address).slice(2).toLowerCase();
+  const safe = safeOf(FIT).slice(2).toLowerCase();
+  const exchanges = recording.exchanges.map((e) =>
+    e.method === 'eth_getTransactionByHash' && JSON.stringify(e.params) === JSON.stringify([FIT])
+      ? { ...e, answers: Object.fromEntries(Object.entries(e.answers).map(([p, a]) => [p, { ...(a as object), input: (a as { input: string }).input.replaceAll(bundler3, 'de'.repeat(20)).replaceAll(safe, 'ef'.repeat(20)) }])) }
+      : e,
+  );
+  const text = await report({ exchanges });
+  assert.match(text, new RegExp(`^ {2}1 from 1 Safe: multiSend\\[1\\]\\.to: expected bundler3, got 0x(de){20}\\n {4}e\\.g\\. ${FIT}$`, 'im'));
+});
+
+test('two leaves bound to one card value that hold different values make the transaction a misfit naming both', async () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  raw.calls[1].args.bundle.items[0].fields.value = { card: 'amount' };
+  const text = await report({ template: parseTemplate(raw, registry) });
+  assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 3 from 1 Safe$/m);
+  assert.match(text, /^ {2}2 from 1 Safe: \S+: differs from \S+$/m);
+});
+
+test('an EOA making one call is not judged by an equals rule naming a leaf of a call it did not make', async () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  raw.calls[1].args.bundle.items[1].fields.data.call.args.assets = { equals: 'calls[0].args.value' };
+  const text = await report({ template: parseTemplate(raw, registry) });
+  assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe$/m);
+  assert.match(text, /^by EOAs, call 2 of 2 \(multicall\) as its own transaction:\nfit the call's shape: 2 transactions from 2 EOAs; /m);
+});
+
 test('an anchor with a sender asks both sources only for transfers out of it, and the report names it', async () => {
   const claims: PastTxsRecording = JSON.parse(readFileSync(join(ROOT, 'testdata', 'research', 'merkl-claim.json'), 'utf8'));
   const text = await report({ recorded: claims });
