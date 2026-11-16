@@ -150,6 +150,9 @@ svg .tick{fill:var(--fg3);font:12px var(--sans)}
 .callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
 .callh .what{font-size:16px;font-weight:590}
 .sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
 .arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
 .arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
 .arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
@@ -319,7 +322,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。</p>
   
   <div class="cb">
-    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">代幣（sell-token）.</span>approve</span><span class="sel">0x095ea7b3</span></div>
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">代幣（sell-token）.</span>approve</span><span class="sel">0x095ea7b3</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md">ERC-20 標準頁</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span> <span class="f3">標準定義這個函式，不代表合約照標準做</span></div></div>
     <div class="arg" data-field="1.approve.spender">
       <div class="nm"><span class="pn">spender</span><span class="who">固定</span></div>
       <div class="val"><div class="raw">0xC92E8bdf79f0507f65a392b0ab4667716BFE0110</div><div class="is"><a href="#a-gpv2-vault-relayer">gpv2-vault-relayer</a></div>
@@ -332,7 +335,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
   </div>
   <div class="cb">
-    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">gpv2-settlement.</span>setPreSignature</span><span class="sel">0xec6cb13f</span></div>
+    <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">gpv2-settlement.</span>setPreSignature</span><span class="sel">0xec6cb13f</span></div><div class="cdoc"><div class="doc" data-state="warn"><span class="f3">文件：</span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol">github.com/cowprotocol/contracts</a><span class="res"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>沒資料可比</span></div></div>
     <div class="arg" data-field="2.setPreSignature.orderUid">
       <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken、buyToken 你選</span><span class="who">receiver、feeAmount、kind、partiallyFillable、sellTokenBalance、buyTokenBalance、owner 固定</span><span class="who you">sellAmount、buyAmount 你填</span><span class="who app">validTo、appData、validTo 不限</span></div>
       <div class="val"><div class="is">56 bytes，3 段接在一起</div>
@@ -406,14 +409,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="rows">
     <div class="row" data-state="warn" data-result="gpv2-settlement/source.site">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">gpv2-settlement：沒有第二個來源</div>
+      <div><div class="t">gpv2-settlement：github.com/cowprotocol/contracts，沒有第二個來源</div>
         <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-gpv2-settlement">看來源</a></div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="gpv2-settlement/source.more.1.site">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">gpv2-settlement：沒有第二個來源</div>
+      <div><div class="t">gpv2-settlement：github.com/cowprotocol/cow-sdk，沒有第二個來源</div>
         <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-gpv2-settlement">看來源</a></div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。</span><span class="byai">AI 研究</span></span></div></div>
@@ -427,14 +430,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row" data-state="warn" data-result="gpv2-vault-relayer/source.site">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">gpv2-vault-relayer：沒有第二個來源</div>
+      <div><div class="t">gpv2-vault-relayer：github.com/cowprotocol/contracts，沒有第二個來源</div>
         <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-gpv2-vault-relayer">看來源</a></div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="gpv2-vault-relayer/source.more.1.site">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">gpv2-vault-relayer：沒有第二個來源</div>
+      <div><div class="t">gpv2-vault-relayer：github.com/cowprotocol/cow-sdk，沒有第二個來源</div>
         <div class="meta">DefiLlama 沒有列這個協議的網站或 GitHub 組織，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。<a href="#a-gpv2-vault-relayer">看來源</a></div>
         <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>DefiLlama 的 cowswap 沒登記網站和 GitHub。CoW 官方 docs.cow.fi（CoinGecko 的 cow-protocol 列的官網是 cow.fi）連到 github.com/cowprotocol。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；這是 DefiLlama 資料缺漏，不是地址有問題。</span><span class="byai">AI 研究</span></span></div></div>
