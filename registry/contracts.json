@@ -410,5 +410,39 @@
       "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
       "from": 23666454
     }
+  },
+  "gpv2-settlement": {
+    "address": "0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
+    "kind": "router",
+    "source": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
+    "sourceLabel": "GPv2Settlement",
+    "moreSources": [
+      {
+        "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
+        "label": "SETTLEMENT_CONTRACT"
+      }
+    ],
+    "defillama": "cowswap",
+    "code": {
+      "hash": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9",
+      "from": 12593265
+    }
+  },
+  "gpv2-vault-relayer": {
+    "address": "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110",
+    "kind": "adapter",
+    "source": "https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json",
+    "sourceLabel": "GPv2VaultRelayer",
+    "moreSources": [
+      {
+        "url": "https://github.com/cowprotocol/cow-sdk/blob/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts",
+        "label": "VAULT_RELAYER"
+      }
+    ],
+    "defillama": "cowswap",
+    "code": {
+      "hash": "0x500097799c1379a3728ed70b17de4132de2c07f6937b041c361deaade22b6a5e",
+      "from": 12593265
+    }
   }
 }
