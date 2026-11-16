@@ -12,9 +12,11 @@ import { NotesError, notesScope, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { renderPage } from '../src/research/report-html.ts';
 import { buildPage, constCast } from '../src/research/report-page.ts';
-import type { ArgRow, Body, HtmlInputs, Inline, Page, WalletCall } from '../src/research/report-page.ts';
-import { entriesOf, renderReport, replayInputs } from '../src/research/report.ts';
-import type { RegistryEntry } from '../src/registry.ts';
+import type { ArgRow, Body, DocLine, HtmlInputs, Inline, Page, WalletCall } from '../src/research/report-page.ts';
+import { pageUrlOf } from '../src/research/source-page.ts';
+import { STANDARDS } from '../src/research/standards.ts';
+import type { HttpsUrl, RegistryEntry } from '../src/registry.ts';
+import { entriesOf, parseDocs, readDocs, renderReport, replayInputs } from '../src/research/report.ts';
 import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -78,7 +80,8 @@ const oneCallPage = (of: HtmlInputs): Page => buildPage(of, { ...notesFor(of), f
 
 function templatePage(id: string): Page {
   const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
-  return oneCallPage({ ...inputs, subject: { ...subject, template: loadTemplate(ROOT, id, registry) }, example: undefined, fixtures: [] });
+  const other = loadTemplate(ROOT, id, registry);
+  return oneCallPage({ ...inputs, subject: { ...subject, template: other, docs: parseDocs(readDocs(ROOT, id), other, registry) }, example: undefined, fixtures: [] });
 }
 const body = <K extends Body['kind']>(page: Page, kind: K): Extract<Body, { kind: K }> => page.sections.find((s) => s.body.kind === kind)?.body as Extract<Body, { kind: K }>;
 const args = (page: Page): ArgRow[] => body(page, 'flow').flow.calls.flatMap((call) => call.args);
@@ -727,6 +730,59 @@ test("a dependency with no code pin says only that it has no ABI proof, not that
   assert.deepEqual(row.codeLines.map(plain), ['沒有呼叫直接打到這個合約，所以沒有 ABI 證明。']);
   assert.ok(!judge(of, of.fixtures).results.some((r) => r.id === 'liquidity-layer/code.today'), 'an unpinned entry has only its not-pinned result');
   assert.ok(renderReport(of, title).includes('| `liquidity-layer` | not pinned |  |'));
+});
+
+const callDoc = (page: Page, n: number): DocLine => {
+  const head = body(page, 'flow').flow.calls[n - 1]?.head;
+  return head?.kind === 'fn' ? head.doc : assert.fail(`call ${n} has no function`);
+};
+const nestedDocs = (page: Page): [string, string | undefined][] => {
+  const all = (rows: readonly ArgRow[]): ArgRow[] => rows.flatMap((row) => [row, ...all(row.parts.flatMap((g) => g.rows))]);
+  return all(args(page)).flatMap((row) => (row.doc === undefined ? [] : [[plain(row.words), row.doc.label] as [string, string | undefined]]));
+};
+const APPROVE_PAGE = 'https://github.com/circlefin/stablecoin-evm/blob/fc85788bc7c23cefe3df1a757133048bfddadeaa/contracts/v1/FiatTokenV1.sol';
+
+test("each call shows its function's documentation page under its heading, and a nested call in its data row", () => {
+  assert.deepEqual(callDoc(depositPage, 1), { state: 'ok', phrase: undefined, href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
+  assert.equal(callDoc(depositPage, 2).label, 'github.com/morpho-org/bundler3/…/Bundler3.sol');
+  assert.deepEqual(nestedDocs(depositPage), [
+    ['erc20TransferFrom (0xd96ca0b9)', 'github.com/morpho-org/bundler3/…/GeneralAdapter1.sol'],
+    ['erc4626Deposit (0x6ef5eeae)', 'github.com/morpho-org/bundler3/…/GeneralAdapter1.sol'],
+  ]);
+  const html = renderPage(depositPage);
+  assert.ok(html.includes(`<div class="doc" data-state="ok"><span class="f3">文件：</span><a href="${APPROVE_PAGE}">github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i ok" role="img" aria-label="通過">`));
+});
+
+test("a function named by its standard shows the standard's page, with the caveat that the contract may not follow it", () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const erc20 = STANDARDS.get('erc-20') ?? assert.fail('erc-20');
+  const docs = subject.docs.map((d) => (d.fn.signature === 'approve(address,uint256)' ? { ...d, url: erc20.page, standard: erc20 } : d));
+  const pages = new Map([...depositInputs.pages.pages, [pageUrlOf(erc20.page), { kind: 'served', blocks: [{ text: 'function approve(address _spender, uint256 _value) public returns (bool success)' }] }]]);
+  const commits = new Map([...depositInputs.pages.commits, ['ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2', { kind: 'on-default', branch: 'master', status: 'behind' }]]);
+  const page = buildPage({ ...depositInputs, subject: { ...subject, docs }, pages: { ...depositInputs.pages, pages, commits } as HtmlInputs['pages'] }, depositNotes, depositTitle);
+  assert.deepEqual(callDoc(page, 1), { state: 'ok', phrase: undefined, href: erc20.page, label: 'ERC-20 標準頁', note: '標準定義這個函式，不代表合約照標準做' });
+  assert.ok(renderPage(page).includes(`<a href="${erc20.page}">ERC-20 標準頁</a>`));
+});
+
+test('a documentation page read that does not name the function shows its amber icon and 頁上沒有這個函式 under the call', () => {
+  const pages = new Map([...depositInputs.pages.pages].map(([url, page]) => [url, url === pageUrlOf(APPROVE_PAGE as HttpsUrl) ? { kind: 'served', blocks: [{ text: 'a page about something else' }] } : page] as const));
+  const lacking = { ...depositInputs, pages: { ...depositInputs.pages, pages } } as HtmlInputs;
+  const notes = depositNotes as { readonly reviews: Record<string, unknown> };
+  const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: 'review', recommendation: 'look' } };
+  const page = buildPage(lacking, { ...notes, reviews }, depositTitle);
+  assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: '頁上沒有這個函式', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
+  assert.ok(renderPage(page).includes(`github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i warn" role="img" aria-label="`));
+  assert.ok(renderPage(page).includes('頁上沒有這個函式</span>'));
+});
+
+test('a documentation page the program has no copy of shows its amber icon and 讀不到 under the call', () => {
+  const pages = new Map([...depositInputs.pages.pages].filter(([url]) => url !== pageUrlOf(APPROVE_PAGE as HttpsUrl)));
+  const unread = { ...depositInputs, pages: { ...depositInputs.pages, pages } };
+  const notes = depositNotes as { readonly reviews: Record<string, unknown> };
+  const reviews = { ...notes.reviews, 'usdc/doc.0x095ea7b3.page': { status: 'concern', text: 'review', recommendation: 'look' } };
+  const page = buildPage(unread, { ...notes, reviews }, depositTitle);
+  assert.deepEqual(callDoc(page, 1), { state: 'warn', phrase: '讀不到', href: APPROVE_PAGE, label: 'github.com/circlefin/stablecoin-evm', note: undefined });
+  assert.ok(renderPage(page).includes(`github.com/circlefin/stablecoin-evm</a><span class="res"><svg class="i warn" role="img" aria-label="`));
 });
 
 function withComputingFactory(first: string): { readonly of: HtmlInputs; readonly notes: unknown; readonly vault: RegistryEntry } {

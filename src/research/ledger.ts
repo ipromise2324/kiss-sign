@@ -33,8 +33,8 @@ const sourceRank = (source: ProgramSource): number => {
   return more !== null ? Number(more[1]) : { page: 0, api: 1e6, coingecko: 1e6 + 1, factory: 1e6 + 2 }[source as Exclude<ProgramSource, `more.${number}`>];
 };
 
-/** The words an address row's source line shows beside a result that did not pass. */
-export type Phrase = '讀不到' | '是另一個地址' | '是另一個網站' | '沒資料可比' | '工廠說不是它建的';
+/** The words an address row's source line, or a call's documentation line, shows beside a result that did not pass. */
+export type Phrase = '讀不到' | '是另一個地址' | '是另一個網站' | '沒資料可比' | '工廠說不是它建的' | '頁上沒有這個函式';
 
 /** Why a result has its state. The kind alone fixes the state (`STATE_OF`), so evidence missing can never read as red. */
 export type Finding =
@@ -147,7 +147,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'unexplained-coin': '沒資料可比',
   'commit-unconfirmed': '讀不到',
   'page-not-fetched': '讀不到',
-  'name-not-on-page': '讀不到',
+  'name-not-on-page': '頁上沒有這個函式',
   'no-chain-result': undefined,
   'factory-unread': '讀不到',
   'not-pinned': undefined,
@@ -488,3 +488,6 @@ export function sourcesOf(ledger: Ledger, entry: RegistryEntry): SourceLine[] {
     return { ...judged(of('address')), source, site: site.length === 0 ? undefined : judged(site) };
   });
 }
+
+/** A documentation page's results, the function on the page, its site and a GitHub page's commit, judged as one. */
+export const docOf = (ledger: Ledger, doc: DocLink): Judged => judged(ledger.results.filter((r) => r.id.startsWith(`${doc.contract.name}/doc.${doc.fn.selector}.`)));
