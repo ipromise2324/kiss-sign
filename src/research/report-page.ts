@@ -304,7 +304,9 @@ const placeLinks = (entry: RegistryEntry, places: readonly SitePlace[], w: Words
 const sourceWord = (entry: RegistryEntry, source: ProgramSource, w: Words): string =>
   source === 'sdk' && entry.sdk !== undefined
     ? `npm ${entry.sdk.package}@${entry.sdk.version}`
-    : (pageLabels(entry).get(source) ?? w.source[source as Exclude<ProgramSource, 'page' | `more.${number}` | 'sdk'>]);
+    : source === 'factory' && entry.kind === 'adapter'
+      ? w.adapterFactory
+      : (pageLabels(entry).get(source) ?? w.source[source as Exclude<ProgramSource, 'page' | `more.${number}` | 'sdk'>]);
 
 /** An address row's line for a source: the deployer names its address and the confirmed entries it also deployed. */
 function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerShare | undefined, w: Words): string {

@@ -37,5 +37,43 @@
     "attributes": {
       "factory": "morpho-market-v1-adapter-v2-factory"
     }
+  },
+  "kpk-eth-yield-v2-7725": {
+    "address": "0x5dbf760b4fd0cDdDe0366b33aEb338b2A6d77725",
+    "kind": "vault",
+    "source": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/eth-yield",
+    "sourceLabel": "Address",
+    "defillama": "kpk",
+    "attributes": {
+      "asset": "weth",
+      "factory": "vault-v2-factory",
+      "adapter": "kpk-eth-yield-v2-7725-market-adapter"
+    }
+  },
+  "kpk-eth-yield-v2-7725-market-adapter": {
+    "address": "0xC0cf47D16a332F9e12E506E9A5C8B4bAf2A6F1f6",
+    "kind": "adapter",
+    "source": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/eth-yield",
+    "sourceLabel": "Markets V1 Adapter",
+    "defillama": "kpk",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    }
+  },
+  "weth": {
+    "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    "kind": "token",
+    "source": "https://weth.io/",
+    "sourceLabel": "WETH",
+    "defillama": "weth",
+    "coingecko": "weth"
+  },
+  "lseth": {
+    "address": "0x8c1BEd5b9a0928467c9B1341Da1D7BD5e10b6549",
+    "kind": "token",
+    "source": "https://docs.liquidcollective.io/eth/tokenomics/lseth",
+    "sourceLabel": "LsETH",
+    "defillama": "liquid-collective",
+    "coingecko": "liquid-staked-ethereum"
   }
 }

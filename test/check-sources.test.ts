@@ -171,7 +171,7 @@ const onDocs = (body: string, fields: Record<string, unknown> = {}) =>
 test('the registry: every labelled source page has its address next to its label, and every GitHub source is pinned to a default-branch commit', () => {
   const text = report([...loadRegistry(ROOT).entries.values()]);
   // No page served without scripts lists these oracles; Morpho's API, asked for each market, answers its address.
-  const SHOWN_ONLY_BY_SCRIPT = new Set(['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc']);
+  const SHOWN_ONLY_BY_SCRIPT = new Set(['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc', 'morpho-oracle-weeth-usdc-86']);
   for (const entry of loadRegistry(ROOT).entries.values()) {
     if (SHOWN_ONLY_BY_SCRIPT.has(entry.name)) {
       assert.match(text, new RegExp(`${entry.name} [^\\n]*\\n(?: {2}.*\\n)*? {2}page {7}FINDING the address is not found on the page as served`), entry.name);
