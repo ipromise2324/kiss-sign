@@ -13,7 +13,27 @@ export const PUBLIC_SUFFIX_PIN = {
 
 export const PUBLIC_SUFFIX_DIR = join(import.meta.dirname, '..', '..', 'vendor', 'publicsuffix');
 
-const UNLISTED_SHARED = ['medium.com', 'mirror.xyz', 'substack.com'];
+/** Hosts on which unrelated owners each hold a page, by subdomain or by path, that the list leaves out: it names only hosts whose subdomains are separate sites. */
+const UNLISTED_SHARED = [
+  'medium.com',
+  'mirror.xyz',
+  'substack.com',
+  'github.com',
+  'gitlab.com',
+  'linktr.ee',
+  'x.com',
+  'twitter.com',
+  't.me',
+  'discord.gg',
+  'discord.com',
+  'youtube.com',
+  'notion.so',
+  'docs.google.com',
+  'sites.google.com',
+  'play.google.com',
+  'apps.apple.com',
+  'immunefi.com',
+];
 
 export type PublicSuffixList = { readonly rules: ReadonlySet<string> };
 export type SuffixListUnavailable = { readonly unavailable: string };
