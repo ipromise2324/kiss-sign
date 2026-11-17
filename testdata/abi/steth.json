@@ -1,8 +1,8 @@
 {
   "address": "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
   "block": {
-    "number": "26433306",
-    "hash": "0x418960e01b5de3f02ce66f96f2e66bfd643e110ced2f4c43a95548ad6b3b9725"
+    "number": "26433354",
+    "hash": "0x31420fc98ef8ea3e82b57f44bad99de2df5c563c7adc206089ab9d58a53d7b03"
   },
   "providers": [
     "alchemy",
@@ -35,11 +35,11 @@
         "0xae7ab96520de3a18e5e111b5eaab095312d7fe84",
         "0xfffffffe",
         "0x028271e30a695c0527a0c50ca30603fed004cdb0",
-        "0x73ae7ab96520de3a18e5e111b5eaab095312d7fe843014601e57600080fd5b7f4a7fe78813ae8c3cda58120fcad3b4776f52201334f5aeb9d06d0c2d3206b20c60005260206000f3"
+        "0x73ae7ab96520de3a18e5e111b5eaab095312d7fe843014601e57600080fd5b7f2a66dff467e5247dfd1ae062293a10982d121af24ac722763beda6b396d63dec60005260206000f3"
       ],
       "value": {
         "kind": "returned",
-        "data": "0x4a7fe78813ae8c3cda58120fcad3b4776f52201334f5aeb9d06d0c2d3206b20c"
+        "data": "0x2a66dff467e5247dfd1ae062293a10982d121af24ac722763beda6b396d63dec"
       }
     },
     {

@@ -317,7 +317,7 @@ export function parseImplementationRead(path: string, raw: unknown): Implementat
     const fn = signatureOf(`${at}.function`, step.function);
     const types = fn.params.map((param) => canonicalType(param.type));
     if (!types.every((type) => READ_PARAM_TYPES.includes(type))) throw new RegistryError(`${at}.function`, `may take only ${READ_PARAM_TYPES.join(', ')}`);
-    const args = step.args ?? [];
+    const args = step.args === undefined ? [] : step.args;
     if (!Array.isArray(args) || args.length !== types.length) throw new RegistryError(`${at}.args`, `not ${types.length} arguments`);
     return {
       fn,

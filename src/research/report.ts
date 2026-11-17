@@ -1279,7 +1279,7 @@ export async function replayAbiProofs(entries: readonly RegistryEntry[], cases: 
   const proofs = new Map<Address, AbiProof | AbiRefusal>();
   for (const entry of entries) {
     const recorded = cases.get(entry.address);
-    if (recorded !== undefined) proofs.set(entry.address, await replayAbiCase(recorded, compilers));
+    if (recorded !== undefined) proofs.set(entry.address, await replayAbiCase(recorded, compilers, entry));
   }
   return proofs;
 }

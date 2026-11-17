@@ -76,9 +76,12 @@ export const abiCaseSourcify =
   async (address: Address): Promise<SourcifyAnswer> =>
     answers[address] ?? { status: 404, body: { error: 'not found' } };
 
-/** Proves the ABI again from a recording alone: the recorded code and Sourcify source, compiled with the pinned solc. */
-export const replayAbiCase = (fixture: AbiCase, compilers: ProveDeps['compilers']): Promise<AbiProof | AbiRefusal> =>
-  proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }, abiCaseDeclaration(fixture));
+/**
+ * Proves the ABI again from a recording alone: the recorded code and Sourcify source, compiled with the pinned solc.
+ * `declared` is the registry entry's declaration when there is an entry, so a case recorded under another one fails.
+ */
+export const replayAbiCase = (fixture: AbiCase, compilers: ProveDeps['compilers'], declared: ProxyDeclaration = abiCaseDeclaration(fixture)): Promise<AbiProof | AbiRefusal> =>
+  proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }, declared);
 
 /** Proves the ABI live and keeps every read and Sourcify answer it used. A read the providers disagree on throws. */
 export async function recordAbiCase(

@@ -98,6 +98,9 @@ const REFUSAL: readonly Shape[] = [
   shape(`(${ADDRESS}) hands a call it has no function for, at byte (\\d+) of its code, to code the program neither proves nor pins`, (address, pc) =>
     `${address} 把沒有對應函式的呼叫（在它程式碼的第 ${pc} 位元組）交給程式既沒證明也沒釘選的程式碼`,
   ),
+  shape(`(${ADDRESS}) runs a call it has no function for without handing it to other code, so its implementationRead names no code it runs`, (address) =>
+    `${address} 自己執行沒有對應函式的呼叫，沒有交給別的程式碼，所以它的 implementationRead 指不到它會執行的程式碼`,
+  ),
   shape(`(\\S+) on (${ADDRESS}), a view of the entry's implementationRead, did not answer one nonzero address other than the proxy's own`, (call, address) =>
     `${address} 的 ${call}（登記項目 implementationRead 的一個 view）沒有回答一個不是零、也不是 proxy 自己的地址`,
   ),

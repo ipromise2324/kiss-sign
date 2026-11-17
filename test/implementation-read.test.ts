@@ -1,5 +1,3 @@
-import { keccak_256 } from '@noble/hashes/sha3.js';
-import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -97,13 +95,23 @@ test('a view that answers no address is refused before any probe', async () => {
 /** A fallback that delegates at byte 12 to the address in slot 0, then at byte 26 to the address in slot 1. */
 const TWO_DELEGATIONS = '0x60006000600060006000545af45060006000600060006001545af45000' as Hex;
 
+/** A fallback that delegates nowhere and returns the 32 bytes after the selector, so it could answer any word asked. */
+const NO_DELEGATION = '0x60206004600037602060006000f3' as Hex;
+
+test('a fallback that hands its call to no other code is refused, whatever the probe would answer', async () => {
+  const reader = abiCaseReader(fixture, [], { getCode: async () => ({ kind: 'agreed', value: NO_DELEGATION, providers: fixture.providers }) });
+  const read = await readRunningCode(reader, STETH, at, steth);
+  assert.equal(read.kind === 'refused' ? describeRefusal(read.refusal) : 'read', `${STETH} runs a call it has no function for without handing it to other code, so its implementationRead names no code it runs`);
+});
+
 test('a fallback with a second delegation the probe cannot account for is refused, whatever the views answer', async () => {
   const reader = abiCaseReader(fixture, [], { getCode: async () => ({ kind: 'agreed', value: TWO_DELEGATIONS, providers: fixture.providers }) });
   const read = await readRunningCode(reader, STETH, at, steth);
   assert.equal(read.kind === 'refused' ? describeRefusal(read.refusal) : 'read', `${STETH} hands a call it has no function for, at byte 26 of its code, to code the program neither proves nor pins`);
 });
 
-const PROBE_WORD = `0x${bytesToHex(keccak_256(utf8ToBytes('kiss-sign implementation probe')))}` as Hex;
+/** What the probe code returns when it runs as the proxy: the word its PUSH32 holds, after its first 32 bytes. */
+const probeAnswer = (code: Hex): Hex => `0x${code.slice(2 + 32 * 2, 2 + 32 * 2 + 64)}` as Hex;
 const ONE_DELEGATION = '0x60006000600060006000545af45000' as Hex;
 const A = `0x${'a'.repeat(40)}` as Address;
 const B = `0x${'b'.repeat(40)}` as Address;
@@ -119,7 +127,7 @@ function upgradedProxy(): Reader {
     call: async (request: CallRequest, ref: BlockRef) => {
       const runs = implementation(ref.number);
       if (request.override === undefined) return agreed({ kind: 'returned', data: word(runs) } as const);
-      return agreed(request.override.address === runs ? ({ kind: 'returned', data: PROBE_WORD } as const) : ({ kind: 'reverted' } as const));
+      return agreed(request.override.address === runs ? ({ kind: 'returned', data: probeAnswer(request.override.code) } as const) : ({ kind: 'reverted' } as const));
     },
   };
 }
@@ -152,6 +160,7 @@ test('an implementationRead is refused beside routes, with a parameter type it c
   assert.equal(refusal([view, view, view, view]), 'steth.implementationRead: not a list of 1 to 3 views');
   assert.equal(refusal([{ function: 'getApp(bytes32,string)', args: [`0x${'0'.repeat(64)}`, 'x'] }]), 'steth.implementationRead[0].function: may take only address, bytes32, uint256');
   assert.equal(refusal([{ function: 'getApp(bytes32,bytes32)', args: [`0x${'0'.repeat(64)}`] }]), 'steth.implementationRead[0].args: not 2 arguments');
+  assert.equal(refusal([{ function: 'getApp(bytes32)', args: null }]), 'steth.implementationRead[0].args: not 1 arguments');
   assert.equal(refusal([{ function: 'getApp(bytes32)', args: ['0x01'] }]), 'steth.implementationRead[0].args[0]: not a lowercase 32-byte word');
   assert.equal(refusal([{ function: 'implementationOf(address)', args: [`0x${'f'.repeat(64)}`] }]), 'steth.implementationRead[0].args[0]: not an address word');
   assert.equal(refusal([{ ...view, label: 'x' }]), 'steth.implementationRead[0].label: unexpected field');

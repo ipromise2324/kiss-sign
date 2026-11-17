@@ -66,6 +66,8 @@ export function describeRefusal(refusal: Refusal): string {
       return `${refusal.at} hands a call it has no function for, at byte ${refusal.pc} of its code, to code the program neither proves nor pins`;
     case 'fallback-unfollowable':
       return `the program cannot follow what ${refusal.at} does with a call it has no function for (${refusal.cause} at byte ${refusal.pc}), so whether it delegates elsewhere is unknown`;
+    case 'declared-without-delegation':
+      return `${refusal.at} runs a call it has no function for without handing it to other code, so its implementationRead names no code it runs`;
     case 'declared-read-failed':
       return `${refusal.call} on ${refusal.at}, a view of the entry's implementationRead, did not answer one nonzero address other than the proxy's own`;
     case 'declared-probe-failed':
