@@ -16,7 +16,7 @@ import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall, inspectTemplateFields } from '../template/check.ts';
 import type { Leaf } from '../template/check.ts';
 import { isMarketEntryPart } from '../registry.ts';
-import { targetNames } from '../template/template.ts';
+import { targetNames, wordAddress } from '../template/template.ts';
 import type { CallNode, ConstValue, LeafRule, Rule, Template, TemplateCall } from '../template/template.ts';
 import type { Anchor } from './sources.ts';
 
@@ -364,7 +364,10 @@ function judge({ hash, block }: { readonly hash: Hex; readonly block: bigint }, 
     return { kind: 'misfit', hash, sender, reason: misfitReason(tx, loosened, template, context, check) };
   }
   const paths = inspection.leaves.map((leaf) => `${leaf.callPath}.${leaf.arg}`);
-  const values = inspection.leaves.map((leaf) => leafValue(leaf, tx));
+  const values = inspection.leaves.map((leaf, i) => {
+    const value = leafValue(leaf, tx);
+    return loosened.rules[i]?.kind === 'address-word' ? (wordAddress(value) ?? value) : value;
+  });
   const bound = boundEntries(paths, values, loosened.rules, template, context);
   const wrongTarget = bound.kind === 'misfit' && bound.reason.kind === 'entry' && bound.reason.at.endsWith('.to');
   const broken = wrongTarget ? undefined : loosened.rules.map((rule, i) => brokenRule(rule, i, loosened.rules, paths, values, sender)).find((reason) => reason !== undefined);
@@ -373,7 +376,8 @@ function judge({ hash, block }: { readonly hash: Hex; readonly block: bigint }, 
   return { kind: 'fit', hash, block, sender, paths, types: inspection.leaves.map((leaf) => leaf.type), values, outside: bound.outside };
 }
 
-const cardKey = (rule: LeafRule): string | undefined => (rule.kind === 'card' ? `${rule.ref.field}.${rule.ref.attribute ?? ''}` : undefined);
+const cardKey = (rule: LeafRule): string | undefined =>
+  rule.kind === 'address-word' ? cardKey(rule.rule) : rule.kind === 'card' ? `${rule.ref.field}.${rule.ref.attribute ?? ''}` : undefined;
 
 /**
  * The reason leaf `i` breaks its rule, when the transaction alone shows it. A card value is unknown, so a card rule
@@ -402,6 +406,10 @@ export function brokenRule(
       return differs(rules.findIndex((other, k) => cardKey(other) === cardKey(rule) && values[k] !== actual));
     case 'equals':
       return differs(rules.indexOf(rule.rule));
+    case 'address-word':
+      return actual.length !== 42
+        ? { kind: 'field', at, expected: 'an address left-padded with 12 zero bytes', actual }
+        : brokenRule(rule.rule, i, rules, paths, values, sender);
     case 'contract':
     case 'free':
     case 'share-price':
@@ -453,9 +461,11 @@ function boundEntries(
   const outside: Outside[] = [];
   const markets = new Map<string, { at: string; parts: [string, string][] }>();
   const anchorHeld = rules.some((rule, i) => values[i] === context.anchor.token && targetNames(rule, template, context.registry) !== undefined);
-  for (const [i, rule] of rules.entries()) {
+  for (const [i, leaf] of rules.entries()) {
     const value = values[i] as string;
     const at = paths[i] as string;
+    if (leaf.kind === 'address-word' && value.length !== 42) continue;
+    const rule = leaf.kind === 'address-word' ? leaf.rule : leaf;
     if (rule.kind === 'card' && template.card.get(rule.ref.field)?.kind === 'market' && !at.endsWith('.to')) {
       const market = markets.get(rule.ref.field) ?? { at: at.slice(0, at.lastIndexOf('.')), parts: [] };
       if (rule.ref.attribute !== undefined) market.parts.push([rule.ref.attribute, value]);

@@ -121,6 +121,8 @@ export type Rule =
   | { readonly kind: 'card'; readonly ref: CardRef }
   | { readonly kind: 'safe' }
   | { readonly kind: 'contract'; readonly name: string }
+  /** A `bytes32` that holds the address `rule` binds, left-padded with 12 zero bytes, as bridges hold a recipient. */
+  | { readonly kind: 'address-word'; readonly rule: AddressRule }
   | { readonly kind: 'const'; readonly value: ConstValue }
   | { readonly kind: 'free'; readonly reason: Prose; readonly claim: FreeClaim }
   /** The same number as the transaction holds at an earlier template path, such as an approval its transfer spends. */
@@ -145,6 +147,18 @@ export type Rule =
   | { readonly kind: 'items'; readonly items: readonly Rule[] }
   /** A tuple's components, by position. */
   | { readonly kind: 'fields'; readonly fields: readonly Rule[] };
+
+/** A rule that binds an address, which `addressWord` may hold as a 32-byte word. */
+export type AddressRule = Extract<Rule, { readonly kind: 'card' | 'safe' | 'contract' }>;
+
+const WORD_PADDING = `0x${'00'.repeat(12)}`;
+
+/** `address` as a 32-byte word, left-padded with 12 zero bytes, as `addressWord` binds it. */
+export const addressWord = (address: Address): Hex => `${WORD_PADDING}${address.slice(2)}` as Hex;
+
+/** The address a 32-byte word holds, or undefined when its first 12 bytes are not all zero. */
+export const wordAddress = (word: string): Address | undefined =>
+  word.length === 66 && word.startsWith(WORD_PADDING) ? (`0x${word.slice(26).toLowerCase()}` as Address) : undefined;
 
 export type Quantity = { readonly kind: 'card'; readonly field: string } | { readonly kind: 'path'; readonly path: string; readonly rule: LeafRule };
 
@@ -503,7 +517,7 @@ function packed(path: string, raw: unknown, scope: Scope): Rule {
     names.add(name);
     const type = abiType(`${at}.type`, value.type);
     if (!PACKABLE.includes(type.kind)) throw new TemplateError(`${at}.type`, `${canonicalType(type)} is not a fixed-size part`);
-    return { name, type, size: packedSize(type), rule: rule(`${path}.${name}`, value.rule, type, scope) };
+    return { name, type, size: packedSize(type), rule: recipientWord(`${path}.${name}`, name, type, rule(`${path}.${name}`, value.rule, type, scope)) };
   });
   if (parts.length === 0) throw new TemplateError(path, 'no parts');
   return { kind: 'packed', parts };
@@ -552,7 +566,7 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
   const keys = Object.keys(value);
   const key = keys[0];
   if (keys.length !== 1 || key === undefined) {
-    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, ownerBefore, const, free, equals, atLeast, maxSharePrice, minSharePrice, call, encoded, keccak, items, fields, packed, eip712');
+    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, addressWord, ownerBefore, const, free, equals, atLeast, maxSharePrice, minSharePrice, call, encoded, keccak, items, fields, packed, eip712');
   }
   const body = value[key];
   const at = `${path}.${key}`;
@@ -580,6 +594,12 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       if (!scope.registry.entries.has(name)) throw new TemplateError(at, `${JSON.stringify(name)} is not in the contract registry`);
       needs(['address']);
       return { kind: 'contract', name };
+    }
+    case 'addressWord': {
+      if (type.kind !== 'fixed-bytes' || type.size !== 32) throw cannotBind();
+      const inner = parseRule(at, body, { kind: 'address' }, scope);
+      if (inner.kind !== 'card' && inner.kind !== 'safe' && inner.kind !== 'contract') throw new TemplateError(at, 'holds one card, safe or contract rule');
+      return { kind: 'address-word', rule: inner };
     }
     case 'ownerBefore': {
       needs(['address']);
@@ -655,11 +675,25 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
 function params(path: string, raw: unknown, list: readonly AbiParam[], scope: Scope): Rule[] {
   if (Array.isArray(raw)) {
     if (raw.length !== list.length) throw new TemplateError(path, `${list.length} rules needed, ${raw.length} given`);
-    return list.map((param, i) => rule(`${path}[${i}]`, raw[i], param.type, scope));
+    return list.map((param, i) => recipientWord(`${path}[${i}]`, param.name, param.type, rule(`${path}[${i}]`, raw[i], param.type, scope)));
   }
   const value = object(path, raw);
   exactKeys(path, value, list.map(paramName));
-  return list.map((param, i) => rule(`${path}.${paramName(param, i)}`, value[paramName(param, i)], param.type, scope));
+  return list.map((param, i) => {
+    const at = `${path}.${paramName(param, i)}`;
+    return recipientWord(at, param.name, param.type, rule(at, value[paramName(param, i)], param.type, scope));
+  });
+}
+
+const RECIPIENT_NAME = /^_?to$|recipient$|receiver$|beneficiary$/i;
+
+/** A `bytes32` named as a recipient holds an address as a word, so it is never free or a constant other than zero. */
+function recipientWord(path: string, name: string | undefined, type: AbiType, parsed: Rule): Rule {
+  if (name === undefined || type.kind !== 'fixed-bytes' || type.size !== 32 || !RECIPIENT_NAME.test(name)) return parsed;
+  if (parsed.kind === 'free' || (parsed.kind === 'const' && BigInt(parsed.value.value as Hex) !== 0n)) {
+    throw new TemplateError(path, `${name} names a recipient, whose address a bytes32 holds as a word; bind it with {"addressWord": {"card": ...}}, {"addressWord": {"safe": true}} or {"addressWord": {"contract": ...}}`);
+  }
+  return parsed;
 }
 
 function signature(path: string, raw: unknown): AbiFunction {
@@ -1085,6 +1119,7 @@ export function refNames(ref: CardRef, template: Template, registry: Registry): 
 
 /** The registry names a rule binds an address to: a named contract, or the entries a card field can name; undefined for any other rule. */
 export function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
+  if (rule.kind === 'address-word') return targetNames(rule.rule, template, registry);
   if (rule.kind === 'contract') return [rule.name];
   const names = rule.kind === 'card' ? refNames(rule.ref, template, registry) : [];
   return names.length > 0 ? names : undefined;
@@ -1231,6 +1266,7 @@ export function cardRefs(template: Template): CardRef[] {
   const refs: CardRef[] = [...template.same];
   const visit = (rule: Rule | undefined): void => {
     if (rule?.kind === 'card' || rule?.kind === 'owner-before') refs.push(rule.ref);
+    else if (rule?.kind === 'address-word') visit(rule.rule);
     else if (rule?.kind === 'share-price') {
       for (const q of [rule.assets, rule.shares]) if (q.kind === 'card') refs.push({ field: q.field, attribute: undefined });
     }
