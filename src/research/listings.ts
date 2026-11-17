@@ -16,6 +16,7 @@ import { registrableDomain } from './public-suffix.ts';
 import { SiteListingError, githubOrg, httpsUrl, parseCoinLinks, parseImmunefiPrograms, verifiedDomains } from './site-listings.ts';
 import type { CoinLinks, ImmunefiProgram, OrgDomains, SiteListings, SiteUnread } from './site-listings.ts';
 import type { PublicSuffixList, SuffixListUnavailable } from './public-suffix.ts';
+import type { GithubToken } from './github-token.ts';
 import { MAX_LABEL_ADDRESS_GAP, commitKey, fetchPage, findOnPage, githubRef, httpsGet, isGitHubPage, pageUrlOf, retryingGet, sourceHoldsAddress } from './source-page.ts';
 import type { CommitCheck, HttpGet, Page, PageBlock, SourcePages } from './source-page.ts';
 
@@ -687,9 +688,9 @@ async function siteListingsFor(entries: readonly RegistryEntry[], protocols: Lis
 }
 
 /** The live listings: each list from its service, and an organization's verified domains from GitHub, read with retries. */
-export const liveListingReads = (note: NoteUnread, list: ListingReads['list'] = (target) => fetchListing(target, note)): ListingReads => ({
+export const liveListingReads = (note: NoteUnread, githubToken: GithubToken | undefined, list: ListingReads['list'] = (target) => fetchListing(target, note)): ListingReads => ({
   list,
-  org: (org) => orgDomains(org, retryingGet(httpsGet, note)),
+  org: (org) => orgDomains(org, retryingGet(httpsGet(githubToken), note)),
 });
 
 /**
