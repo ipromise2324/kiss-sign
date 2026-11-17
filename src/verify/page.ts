@@ -64,6 +64,7 @@ const ZH = {
   cardHash: '卡片 hash',
   does: { gives: '給出', gets: '收到', unchanged: '不變', net: '淨變化' } satisfies Record<Does, string>,
   bound: { all: '全部餘額', exactly: '剛好 ', 'at-least': '至少 ', 'more-than': '多於 ', 'less-than': '少於 ' } satisfies Record<Bound, string>,
+  between: (low: Html, high: Html) => h`介於 ${low} 和 ${high} 之間`,
   allOf: '的 ',
   cannotCompute: '無法算出',
   removeSigner: '移除簽署人',
@@ -129,6 +130,7 @@ const EN: typeof ZH = {
   cardHash: 'Card hash',
   does: { gives: 'Gives', gets: 'Gets', unchanged: 'Unchanged', net: 'Net change' },
   bound: { all: 'the whole balance', exactly: 'exactly ', 'at-least': 'at least ', 'more-than': 'more than ', 'less-than': 'less than ' },
+  between: (low: Html, high: Html) => h`between ${low} and ${high}`,
   allOf: ' of ',
   cannotCompute: 'Cannot compute',
   removeSigner: 'Remove signer',
@@ -232,7 +234,7 @@ function cardSection(page: VerdictPage): Html {
 </section>`;
 }
 
-function changeWords(change: Expected): { readonly does: Does; readonly bound: Bound; readonly amount: bigint | undefined } {
+function changeWords(change: Exclude<Expected, { kind: 'between' }>): { readonly does: Does; readonly bound: Bound; readonly amount: bigint | undefined } {
   if (change.kind === 'all') return { does: 'gives', bound: 'all', amount: undefined };
   const { change: c } = change;
   const by = c < 0n ? -c : c;
@@ -250,6 +252,10 @@ function effectsSection(page: VerdictPage): Html {
       ? expected.reasons.map((reason) => prop(w.cannotCompute, reason))
       : [...expected.changes].map(([asset, change]) => {
           const token: AmountToken = asset === 'eth' ? { address: 'eth', name: 'ETH' } : { address: asset, name: nameOf(asset, page) };
+          if (change.kind === 'between') {
+            const [does, low, high]: [Does, bigint, bigint] = change.high <= 0n ? ['gives', -change.high, -change.low] : change.low >= 0n ? ['gets', change.low, change.high] : ['net', change.low, change.high];
+            return prop(w.does[does], w.between(tokenAmount(low, token, page), tokenAmount(high, token, page)));
+          }
           const { does, bound, amount } = changeWords(change);
           return prop(w.does[does], amount === undefined ? h`${w.bound[bound]}${w.allOf}${tokenName(token)}` : h`${w.bound[bound]}${tokenAmount(amount, token, page)}`);
         });
