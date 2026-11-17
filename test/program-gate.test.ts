@@ -59,9 +59,9 @@ test('a core change that keeps every canary and test passing is ELIGIBLE, with e
   branch(repo, 'core', { 'src/check.ts': 'export const ok: number = 2 - 1;\n', 'docs/notes.md': 'why\n' });
   const result = gate(repo, 'core');
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /^program-gate: core \([0-9a-f]+\) against origin\/main \([0-9a-f]{7}\)\nverdict core changed \(1\), which changes what verify checks for every signing:\n {2}src\/check\.ts\nother program files changed \(1\):\n {2}docs\/notes\.md\n/);
+  assert.match(result.stdout, /^program-gate: core at [0-9a-f]{40} against origin\/main \([0-9a-f]{7}\)\nverdict core changed \(1\), which changes what verify checks for every signing:\n {2}src\/check\.ts\nother program files changed \(1\):\n {2}docs\/notes\.md\n/);
   assert.match(result.stdout, /\ntypecheck: pass\ncanary test\/canaries\/x\.canary\.ts: pass, 1 passed, 0 failed\n {2}guards: the check still answers 1\ntests: pass, 1 passed, 0 failed, the canaries apart\n/);
-  assert.match(result.stdout, /\nELIGIBLE {2}core changes no template, registry entry or gate file, and typecheck, every canary \(1\) and the test suite pass\. The AI may merge it with a merge commit once a fresh reviewer finds no security regression\.\n$/);
+  assert.match(result.stdout, /\nELIGIBLE {2}core at ([0-9a-f]{40}) changes no template, registry entry or gate file, and typecheck, every canary \(1\) and the test suite pass\. The AI may merge exactly this commit with a merge commit once a fresh reviewer finds no security regression: gh pr merge <number> --merge --match-head-commit \1\n$/);
 });
 
 test('a core change a canary catches is NOT ELIGIBLE, naming the canary', () => {
@@ -107,4 +107,15 @@ test('a run that changes a tracked file is NOT ELIGIBLE, naming the file', () =>
   const result = gate(repo, 'tamper');
   assert.equal(result.status, 1);
   assert.match(result.stdout, /\n {2}the run changed tracked files, so its results cannot be trusted: tamper: docs\/canaries\.txt\n$/);
+});
+
+test('a branch that does not hold origin/main is NOT ELIGIBLE, since main may have changed its canaries since', () => {
+  const repo = gateRepo();
+  branch(repo, 'behind', { 'src/check.ts': 'export const ok: number = 1;\n// changed\n' });
+  write(repo, 'test/a.test.ts', "import { test } from 'node:test';\n\ntest('a', () => {});\ntest('b', () => {});\n");
+  git(repo, 'commit', '-q', '-am', 'main moves on');
+  git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
+  const result = gate(repo, 'behind');
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /^NOT ELIGIBLE {2}the AI may not merge behind:\n {2}behind does not hold origin\/main \([0-9a-f]{7}\), so it would be judged by canaries and tests main has since changed; merge origin\/main into it and run this again\n$/);
 });

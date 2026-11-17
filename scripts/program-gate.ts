@@ -50,10 +50,25 @@ if (main === undefined || head !== main || changedOnDisk(root, 'HEAD').length > 
   notEligible([`run program-gate in a clone whose checkout is exactly origin/main, so the gate that judges ${ref} is main's and not the branch's own; fetch, check out main, and run it again`]);
 }
 
-const split = branchSplit(root, 'origin/main', ref);
+const sha = (() => {
+  try {
+    return git(root, 'rev-parse', '--verify', `${ref}^{commit}`).trim();
+  } catch {
+    return notEligible([`git has no commit ${ref}; fetch it and run this again`]);
+  }
+})();
+const mergeBase = (() => {
+  try {
+    return git(root, 'merge-base', 'origin/main', sha).trim();
+  } catch {
+    return undefined;
+  }
+})();
+if (mergeBase !== main) notEligible([`${ref} does not hold origin/main (${main.slice(0, 7)}), so it would be judged by canaries and tests main has since changed; merge origin/main into it and run this again`]);
+const split = branchSplit(root, 'origin/main', sha);
 if (split === undefined) notEligible([`git could not compare ${ref} with origin/main; fetch both and run this again`]);
 const verdict = split.core.filter((path) => !split.gate.includes(path));
-say(`program-gate: ${ref} (${git(root, 'rev-parse', '--short', ref).trim()}) against origin/main (${main.slice(0, 7)})`);
+say(`program-gate: ${ref} at ${sha} against origin/main (${main.slice(0, 7)})`);
 say(verdict.length === 0 ? 'verdict core changed: none' : `verdict core changed (${verdict.length}), which changes what verify checks for every signing:`);
 for (const line of listed(verdict)) say(line);
 say(split.other.length === 0 ? 'other program files changed: none' : `other program files changed (${split.other.length}):`);
@@ -68,7 +83,7 @@ if (refusals.length > 0) notEligible(refusals);
 const canaries = parseCanaryList(readFileSync(join(root, CANARY_LIST), 'utf8'));
 const work = mkdtempSync(join(tmpdir(), 'kiss-sign-program-gate-'));
 const tree = join(work, 'tree');
-git(root, 'worktree', 'add', '--quiet', '--detach', tree, ref);
+git(root, 'worktree', 'add', '--quiet', '--detach', tree, sha);
 process.on('exit', () => {
   try {
     git(root, 'worktree', 'remove', '--force', tree);
@@ -125,10 +140,10 @@ if (!testsPass) {
   for (const line of tail(tests.output.split('\n').filter((line) => /^\s*not ok /.test(line)).join('\n') || tests.output)) say(line);
 }
 
-const touched = [...changedOnDisk(root, 'HEAD').map((path) => `main's checkout: ${path}`), ...changedOnDisk(tree, ref).map((path) => `${ref}: ${path}`)];
+const touched = [...changedOnDisk(root, 'HEAD').map((path) => `main's checkout: ${path}`), ...changedOnDisk(tree, sha).map((path) => `${ref}: ${path}`)];
 if (touched.length > 0) {
   failures.push(`the run changed tracked files, so its results cannot be trusted: ${touched.join(', ')}`);
 }
 
 if (failures.length > 0) notEligible(failures);
-say(`ELIGIBLE  ${ref} changes no template, registry entry or gate file, and typecheck, every canary (${runs.length}) and the test suite pass. The AI may merge it with a merge commit once a fresh reviewer finds no security regression.`);
+say(`ELIGIBLE  ${ref} at ${sha} changes no template, registry entry or gate file, and typecheck, every canary (${runs.length}) and the test suite pass. The AI may merge exactly this commit with a merge commit once a fresh reviewer finds no security regression: gh pr merge <number> --merge --match-head-commit ${sha}`);
