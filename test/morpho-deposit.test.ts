@@ -10,7 +10,7 @@ import type { Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
-import { loadTemplate } from '../src/template/template.ts';
+import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
@@ -77,4 +77,22 @@ test('a transaction whose price bound would accept 1 wei of shares is a mismatch
 test('a stricter price bound than the card needs still matches', () => {
   const c = CASES[0];
   assert.deepEqual(check(safeTx(c.name), deposit(c.vault, c.amount, '1')), { kind: 'match' });
+});
+
+test('a template that declares another price scale compares the bound against assets × 10^scale / shares, and names the scale', () => {
+  const c = CASES[0];
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  const bound = raw.calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice;
+  const checkScaled = (scale: number): FieldCheck => {
+    bound.scale = scale;
+    const scaled = new Map([['morpho/vault-deposit', parseTemplate(raw, registry)]]);
+    const tx = safeTx(c.name);
+    const result = resolveCard(deposit(c.vault, c.amount, c.minShares), { templates: scaled, registry, addressBook: new Map(), safe: tx.safe });
+    assert.equal(result.kind, 'resolved');
+    return checkTemplateFields(tx, (result as Extract<typeof result, { kind: 'resolved' }>).card, scaled, registry);
+  };
+  assert.deepEqual(checkScaled(27), { kind: 'match' });
+  const result = checkScaled(18);
+  assert.deepEqual(result.kind === 'mismatch' ? result.findings.map((f) => [f.callPath, f.arg]) : result, [[DEPOSIT_PATH, 'maxSharePriceE27']]);
+  assert.equal(result.kind === 'mismatch' ? result.findings[0]!.expected : '', `at most ${(BigInt(c.amount) * 10n ** 18n) / BigInt(c.minShares)}: ${c.amount} assets for ${c.minShares} shares, scaled by 1e18`);
 });

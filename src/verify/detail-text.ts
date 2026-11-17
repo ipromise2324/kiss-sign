@@ -36,8 +36,8 @@ const DECODE: Readonly<Record<string, string>> = { malformed: '格式錯誤', 'n
 const DECODE_KIND = `(${Object.keys(DECODE).join('|')})`;
 
 const EXPECTED: readonly Shape[] = [
-  shape('at (most|least) (\\S+): (\\d+) assets for (\\d+) shares, scaled by 1e27', (bound, limit, assets, shares) =>
-    `${bound === 'most' ? '最多' : '至少'} ${limit === 'any' ? '任意值' : limit}：${assets} 資產換 ${shares} 份額，乘上 1e27`,
+  shape('at (most|least) (\\S+): (\\d+) assets for (\\d+) shares, scaled by 1e(\\d+)', (bound, limit, assets, shares, scale) =>
+    `${bound === 'most' ? '最多' : '至少'} ${limit === 'any' ? '任意值' : limit}：${assets} 資產換 ${shares} 份額，乘上 1e${scale}`,
   ),
   shape('a stated share count, not the whole balance \\(2\\^256-1\\), to bound the price against', () => '明確的份額數量，而不是整個餘額（2^256-1），用來限制價格'),
   shape('at least (\\S+)', (v) => `至少 ${v}`),
