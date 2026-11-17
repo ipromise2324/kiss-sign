@@ -1,0 +1,37 @@
+{
+  "id": "cctp/deposit-for-burn",
+  "card": {
+    "token": { "kind": "contract", "registryKind": "token" },
+    "amount": { "kind": "amount", "of": "token" },
+    "recipient": { "kind": "recipient" }
+  },
+  "calls": [
+    {
+      "to": { "card": "token" },
+      "value": { "const": "0" },
+      "function": "approve(address spender, uint256 value)",
+      "args": {
+        "spender": { "contract": "cctp-token-messenger-v2" },
+        "value": { "card": "amount" }
+      }
+    },
+    {
+      "to": { "contract": "cctp-token-messenger-v2" },
+      "value": { "const": "0" },
+      "function": "depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken, bytes32 destinationCaller, uint256 maxFee, uint32 minFinalityThreshold)",
+      "args": {
+        "amount": { "card": "amount" },
+        "destinationDomain": { "const": "15" },
+        "mintRecipient": { "addressWord": { "card": "recipient" } },
+        "burnToken": { "card": "token" },
+        "destinationCaller": { "const": "0x0000000000000000000000000000000000000000000000000000000000000000" },
+        "maxFee": { "const": "0" },
+        "minFinalityThreshold": { "const": "2000" }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [{ "token": "card.token", "amount": "card.amount" }],
+    "gets": []
+  }
+}
