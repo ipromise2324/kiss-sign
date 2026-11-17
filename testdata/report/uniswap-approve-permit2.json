@@ -138,6 +138,20 @@
       }
     }
   },
+  "immunefi": [
+    {
+      "slug": "compoundfinance",
+      "websiteUrl": null,
+      "githubUrl": null,
+      "assetsBodyV2": "https://etherscan.io/address/0xc3d688b66703497daa19211eedff47f25384cdc3\nhttps://etherscan.io/address/0x285617313887d43256f852cae0ee4de4b68d45b0\nhttps://etherscan.io/address/0x316f9708bb98af7da9c68c1c3b5e79039cd336e3\nhttps://etherscan.io/address/0x1ec63b5883c3481134fd50d5daebc83ecd2e8779\nhttps://etherscan.io/address/0xa7f7de6ccad4d83d81676717053883337ac2c1b4\nhttps://etherscan.io/address/0x1b0e765f6224c21223aea2af16c1c46e38885a40\nhttps://etherscan.io/address/0x74a81f84268744a40febc48f8b812a1f188d80c3\nhttps://etherscan.io/address/0x309a862bbc1a00e45506cb8a802d1ff10004c8c0\nhttps://etherscan.io/address/0x6d903f6003cca6255d85cca4d3b5e5146dc33925\nhttps://etherscan.io/address/0xc00e94cb662c3520282e6f5717214004a7f26888\nhttps://etherscan.io/address/0xa17581a9e3356d9a858b789d68b4d866e593ae94\nhttps://etherscan.io/address/0xe2c1f54aff6b38fd9df7a69f22cb5fd3ba09f030\nhttps://etherscan.io/address/0xa397a8c2086c554b531c02e29f3291c9704b00c7\nhttps://etherscan.io/address/0xbe9895146f7af43049ca1c1ae358b0541ea49704\nhttps://etherscan.io/address/0xbf5495efe5db9ce00f80364c8b423567e58d2110\nhttps://etherscan.io/address/0xf1c9acdc66974dfb6decb12aa385b9cd01190e38\nhttps://etherscan.io/address/0xae78736cd615f374d3085123a210448e74fc6393\nhttps://etherscan.io/address/0xa1290d69c65a6fe4df752f95823fae25cb99e5a7\nhttps://etherscan.io/address/0x2260fac5e5542a773aa44fbcfedf7c193bc2c599\nhttps://etherscan.io/address/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee\nhttps://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\nhttps://etherscan.io/address/0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0\nhttps://etherscan.io/address/0x3afdc9bca9213a35503b077a6072f3d0d5ab0840\nhttps://etherscan.io/address/0x5c58d4479a1e9b2d19ee052143fa73f0ee79a36e\nhttps://etherscan.io/address/0x698a949f3b4f7a5dde236106f25fa0eaca0fcef1\nhttps://etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984\nhttps://etherscan.io/address/0x514910771af9ca656af840dff83e8264ecf986ca\nhttps://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7\nhttps://etherscan.io/address/0xe65cdb6479bac1e22340e4e755fae7e509ecd06c\nhttps://etherscan.io/address/0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e\nhttps://etherscan.io/address/0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4\nhttps://etherscan.io/address/0x5d3a536e4d6dbd6114cc1ead35777bab948e3643\nhttps://etherscan.io/address/0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5\nhttps://etherscan.io/address/0x7713dd9ca933848f6819f38b8352d9a15ea73f67\nhttps://etherscan.io/address/0xface851a4921ce59e912d19329929ce6da6eb0c7\nhttps://etherscan.io/address/0x95b4ef2869ebd94beb4eee400a99824bf5dc325b\nhttps://etherscan.io/address/0x158079ee67fce2f58472a96584a73c7ab9ac95c1\nhttps://etherscan.io/address/0xf5dce57282a584d2746faf1593d3121fcac444dc\nhttps://etherscan.io/address/0x4b0181102a0112a2ef11abee5563bb4a3176c9d7\nhttps://etherscan.io/address/0x12392f67bdf24fae0af363c24ac620a2f67dad86\nhttps://etherscan.io/address/0x35a18000230da775cac24873d00ff85bccded550\nhttps://etherscan.io/address/0x39aa39c021dfbae8fac545936693ac917d5e7563\nhttps://etherscan.io/address/0x041171993284df560249b57358f931d9eb7b925d\nhttps://etherscan.io/address/0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9\nhttps://etherscan.io/address/0xc11b1268c1a384e55c48c2391d8d480264a3a7f4\nhttps://etherscan.io/address/0xccf4429db6322d5c611ee964527d42e5d685dd6a\nhttps://etherscan.io/address/0x80a2ae356fc9ef4305676f7a3e2ed04e12c33946\nhttps://etherscan.io/address/0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407\nhttps://etherscan.io/address/0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b"
+    },
+    {
+      "slug": "etherfi",
+      "websiteUrl": null,
+      "githubUrl": null,
+      "assetsBodyV2": "https://etherscan.io/address/0xf76f1bea29b5f63409a9d9797540a8e7934b52ea\nhttps://etherscan.io/address/0xf4e147db314947fc1275a8cbb6cde48c510cd8cf\nhttps://etherscan.io/address/0xeb39db7a020db2ac0890d51f9d5b817e7ef2b1a3\nhttps://etherscan.io/address/0x86016539796e660d4cd333459378763faffa6eee\nhttps://etherscan.io/address/0x55963de88267aa3d1d995c359e8068d0df34bebb\nhttps://etherscan.io/address/0x3e0ccbce6c3bec4826397005c877be66c39d9912\nhttps://etherscan.io/address/0x319a33b9a3080c17a825e3a539c49a60bbb2e793\nhttps://etherscan.io/address/0x16b4ae4d4c96793524084a22e6f4c160cad08975\nhttps://etherscan.io/address/0x1b7a4c3797236a1c37f8741c0be35c2c72736fff\nhttps://etherscan.io/address/0x9ffdf407cde9a93c47611799da23924af3ef764f\nhttps://etherscan.io/address/0x9f26d4c958fd811a1f59b01b86be7dffc9d20761\nhttps://etherscan.io/address/0x6599861e55abd28b91dd9d86a826ec0cc8d72c2c\nhttps://etherscan.io/address/0x7b5ae07e2af1c861bcc4736d23f5f66a61e0ca5e\nhttps://etherscan.io/address/0xcd2eb13d6831d4602d80e5db9230a57596cdca63\nhttps://etherscan.io/address/0x2093bbb221f1d8c7c932c32ee28be6dee4a37a6a\nhttps://etherscan.io/address/0x25e821b7197b146f7713c3b89b6a4d83516b912d\nhttps://etherscan.io/address/0x00c452affee3a17d9cecc1bcd2b8d5c7635c4cb9\nhttps://etherscan.io/address/0xd789870bea40d056a4d26055d0befcc8755da146\nhttps://etherscan.io/address/0xea1a6307d9b18f8d1cbf1c3dd6aad8416c06a221\nhttps://etherscan.io/address/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee\nhttps://etherscan.io/address/0xdadef1ffbfeaab4f68a9fd181395f68b4e4e7ae0\nhttps://etherscan.io/address/0x57aaf0004c716388b21795431cd7d5f9d3bb6a41\nhttps://etherscan.io/address/0x9a8c5046a290664bf42d065d33512fe403484534\nhttps://etherscan.io/address/0x308861a430be4cce5502d0a12724771fc6daf216\nhttps://etherscan.io/address/0xd5edf7730abad812247f6f54d7bd31a52554e35e\nhttps://etherscan.io/address/0x8b71140ad2e5d1e7018d2a7f8a288bd3cd38916f\nhttps://etherscan.io/address/0x7d5706f6ef3f89b3951e23e557cdfbc3239d4e2c\nhttps://etherscan.io/address/0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb\nhttps://etherscan.io/address/0x3c55986cfee455e2533f4d29006634ecf9b7c03f\nhttps://etherscan.io/address/0x0ef8fa4760db8f5cd4d993f3e3416f30f942d705\nhttps://etherscan.io/address/0x35fa164735182de50811e8e2e824cfb9b6118ac2\nhttps://etherscan.io/address/0x6329004e903b7f420245e7af3f355186f2432466\nhttps://etherscan.io/address/0x52bbf281fbcfa7cf3e9101a52af5dcb32754e3c0\nhttps://etherscan.io/address/0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2"
+    }
+  ],
   "orgs": {
     "coinbase": {
       "kind": "domains",
@@ -317,6 +331,75 @@
           "heading": "approve"
         }
       ]
+    },
+    "https://raw.githubusercontent.com/coinbase/agentkit/refs/heads/main/typescript/agentkit/src/action-providers/erc20/constants.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "EURC: \"0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        },
+        {
+          "text": "CBETH: \"0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22\","
+        },
+        {
+          "text": "EURC: \"0x808456652fdb597867f38412077A9182bf77359F\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0006F23900c38EB856149F799620fcb8A4a\","
+        },
+        {
+          "text": "WETH: \"0x4200000000000000000000000000000000000006\","
+        },
+        {
+          "text": "EURC: \"0x1abaea1f7c830bd89acc67ec4af516284b1bc33c\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        },
+        {
+          "text": "WETH: \"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2\","
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/Uniswap/sdks/refs/heads/main/sdks/permit2-sdk/src/constants.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "// @deprecated please use permit2Address(chainId: number)"
+        },
+        {
+          "text": "export const PERMIT2_ADDRESS = '0x000000000022D473030F116dDEE9F6B43aC78BA3'"
+        },
+        {
+          "text": "export function permit2Address(chainId?: number): string {"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/refs/heads/master/script/deploys/Deployed.s.sol": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
+        },
+        {
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
+        },
+        {
+          "text": "// Membership & NFTs"
+        },
+        {
+          "text": "address public constant ETHERFI_REDEMPTION_MANAGER = 0xDadEf1fFBFeaAB4f68A9fD181395F68b4e4E7Ae0;"
+        },
+        {
+          "text": "address public constant WEETH_WITHDRAW_ADAPTER = 0xFbfe6b9cEe0E555Bad7e2E7309EFFC75200cBE38;"
+        },
+        {
+          "text": "address public constant PRIORITY_WITHDRAWAL_QUEUE = 0x35e7D6feF6f72aDd3c3e39dEc6d9CCc29e3345FA;"
+        }
+      ]
     }
   },
   "commits": {
@@ -344,6 +427,7 @@
   "packages": {
     "@uniswap/permit2-sdk@1.4.1": {
       "kind": "read",
+      "version": "1.4.1",
       "sha256": "0x9580855c93ca0cc3ff4d592d7ac2ec0d84183b790d812f98ece5282276b3efbf",
       "integrity": true,
       "provenance": {
@@ -359,6 +443,31 @@
           },
           {
             "text": "exports.PERMIT2_ADDRESS = '0x000000000022D473030F116dDEE9F6B43aC78BA3';"
+          }
+        ]
+      }
+    },
+    "@uniswap/permit2-sdk@latest": {
+      "kind": "read",
+      "version": "1.4.1",
+      "sha256": "0x9580855c93ca0cc3ff4d592d7ac2ec0d84183b790d812f98ece5282276b3efbf",
+      "integrity": true,
+      "provenance": {
+        "kind": "built",
+        "repository": "https://github.com/Uniswap/sdks",
+        "sameTarball": true
+      },
+      "file": {
+        "kind": "served",
+        "blocks": [
+          {
+            "text": "// @deprecated please use permit2Address(chainId: number)"
+          },
+          {
+            "text": "exports.PERMIT2_ADDRESS = '0x000000000022D473030F116dDEE9F6B43aC78BA3';"
+          },
+          {
+            "text": "function permit2Address(chainId) {"
           }
         ]
       }
@@ -526,10 +635,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         }
       }
@@ -962,10 +1071,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -1492,10 +1601,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
         }
       }
@@ -2230,10 +2339,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         }
       }
@@ -2282,20 +2391,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0xc493e87a59afadb22f072dd6cad120a8369d159b59b8dbc3128fb7c466af80ea"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000002d10683e941275d502173053927ad6066e6afd6b",
-        "drpc": "0x0000000000000000000000002d10683e941275d502173053927ad6066e6afd6b"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xc493e87a59afadb22f072dd6cad120a8369d159b59b8dbc3128fb7c466af80ea"
@@ -2307,6 +2402,20 @@
       }
     },
     {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xc493e87a59afadb22f072dd6cad120a8369d159b59b8dbc3128fb7c466af80ea"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000002d10683e941275d502173053927ad6066e6afd6b",
+        "drpc": "0x0000000000000000000000002d10683e941275d502173053927ad6066e6afd6b"
+      }
+    },
+    {
       "method": "eth_getCode",
       "params": [
         "0x2d10683e941275d502173053927ad6066e6afd6b",
@@ -2315,10 +2424,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
         }
       }
@@ -2367,20 +2476,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0xf367326e0eea97763e1ea3181c4ff429d01df6873bb4d1ef28dfe9c5ccdb3e72"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb",
-        "drpc": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xf367326e0eea97763e1ea3181c4ff429d01df6873bb4d1ef28dfe9c5ccdb3e72"
@@ -2389,6 +2484,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xf367326e0eea97763e1ea3181c4ff429d01df6873bb4d1ef28dfe9c5ccdb3e72"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb",
+        "drpc": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb"
       }
     },
     {
@@ -2583,7 +2692,7 @@
       "params": [
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         {
-          "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+          "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
         }
       ],
       "answers": {
@@ -2601,7 +2710,7 @@
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+          "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
         }
       ],
       "answers": {
@@ -2615,7 +2724,7 @@
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+          "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
         }
       ],
       "answers": {
@@ -2625,13 +2734,13 @@
     }
   ],
   "today": {
-    "number": "26432918",
-    "hash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+    "number": "26434396",
+    "hash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
   },
   "facts": {
     "block": {
-      "number": "26432918",
-      "hash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+      "number": "26434396",
+      "hash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
     },
     "defillama": [],
     "hacks": [],
@@ -2644,7 +2753,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+            "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
           }
         ],
         "answers": {
@@ -2660,7 +2769,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+            "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
           }
         ],
         "answers": {
@@ -2676,7 +2785,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+            "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
           }
         ],
         "answers": {
@@ -2692,7 +2801,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+            "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
           }
         ],
         "answers": {
@@ -2708,7 +2817,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+            "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
           }
         ],
         "answers": {
@@ -2724,7 +2833,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
+            "blockHash": "0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd"
           }
         ],
         "answers": {

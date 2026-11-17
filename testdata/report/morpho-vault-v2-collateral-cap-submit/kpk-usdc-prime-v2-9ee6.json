@@ -125,6 +125,20 @@
       }
     }
   },
+  "immunefi": [
+    {
+      "slug": "etherfi",
+      "websiteUrl": null,
+      "githubUrl": null,
+      "assetsBodyV2": "https://etherscan.io/address/0xf76f1bea29b5f63409a9d9797540a8e7934b52ea\nhttps://etherscan.io/address/0xf4e147db314947fc1275a8cbb6cde48c510cd8cf\nhttps://etherscan.io/address/0xeb39db7a020db2ac0890d51f9d5b817e7ef2b1a3\nhttps://etherscan.io/address/0x86016539796e660d4cd333459378763faffa6eee\nhttps://etherscan.io/address/0x55963de88267aa3d1d995c359e8068d0df34bebb\nhttps://etherscan.io/address/0x3e0ccbce6c3bec4826397005c877be66c39d9912\nhttps://etherscan.io/address/0x319a33b9a3080c17a825e3a539c49a60bbb2e793\nhttps://etherscan.io/address/0x16b4ae4d4c96793524084a22e6f4c160cad08975\nhttps://etherscan.io/address/0x1b7a4c3797236a1c37f8741c0be35c2c72736fff\nhttps://etherscan.io/address/0x9ffdf407cde9a93c47611799da23924af3ef764f\nhttps://etherscan.io/address/0x9f26d4c958fd811a1f59b01b86be7dffc9d20761\nhttps://etherscan.io/address/0x6599861e55abd28b91dd9d86a826ec0cc8d72c2c\nhttps://etherscan.io/address/0x7b5ae07e2af1c861bcc4736d23f5f66a61e0ca5e\nhttps://etherscan.io/address/0xcd2eb13d6831d4602d80e5db9230a57596cdca63\nhttps://etherscan.io/address/0x2093bbb221f1d8c7c932c32ee28be6dee4a37a6a\nhttps://etherscan.io/address/0x25e821b7197b146f7713c3b89b6a4d83516b912d\nhttps://etherscan.io/address/0x00c452affee3a17d9cecc1bcd2b8d5c7635c4cb9\nhttps://etherscan.io/address/0xd789870bea40d056a4d26055d0befcc8755da146\nhttps://etherscan.io/address/0xea1a6307d9b18f8d1cbf1c3dd6aad8416c06a221\nhttps://etherscan.io/address/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee\nhttps://etherscan.io/address/0xdadef1ffbfeaab4f68a9fd181395f68b4e4e7ae0\nhttps://etherscan.io/address/0x57aaf0004c716388b21795431cd7d5f9d3bb6a41\nhttps://etherscan.io/address/0x9a8c5046a290664bf42d065d33512fe403484534\nhttps://etherscan.io/address/0x308861a430be4cce5502d0a12724771fc6daf216\nhttps://etherscan.io/address/0xd5edf7730abad812247f6f54d7bd31a52554e35e\nhttps://etherscan.io/address/0x8b71140ad2e5d1e7018d2a7f8a288bd3cd38916f\nhttps://etherscan.io/address/0x7d5706f6ef3f89b3951e23e557cdfbc3239d4e2c\nhttps://etherscan.io/address/0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb\nhttps://etherscan.io/address/0x3c55986cfee455e2533f4d29006634ecf9b7c03f\nhttps://etherscan.io/address/0x0ef8fa4760db8f5cd4d993f3e3416f30f942d705\nhttps://etherscan.io/address/0x35fa164735182de50811e8e2e824cfb9b6118ac2\nhttps://etherscan.io/address/0x6329004e903b7f420245e7af3f355186f2432466\nhttps://etherscan.io/address/0x52bbf281fbcfa7cf3e9101a52af5dcb32754e3c0\nhttps://etherscan.io/address/0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2"
+    },
+    {
+      "slug": "compoundfinance",
+      "websiteUrl": null,
+      "githubUrl": null,
+      "assetsBodyV2": "https://etherscan.io/address/0xc3d688b66703497daa19211eedff47f25384cdc3\nhttps://etherscan.io/address/0x285617313887d43256f852cae0ee4de4b68d45b0\nhttps://etherscan.io/address/0x316f9708bb98af7da9c68c1c3b5e79039cd336e3\nhttps://etherscan.io/address/0x1ec63b5883c3481134fd50d5daebc83ecd2e8779\nhttps://etherscan.io/address/0xa7f7de6ccad4d83d81676717053883337ac2c1b4\nhttps://etherscan.io/address/0x1b0e765f6224c21223aea2af16c1c46e38885a40\nhttps://etherscan.io/address/0x74a81f84268744a40febc48f8b812a1f188d80c3\nhttps://etherscan.io/address/0x309a862bbc1a00e45506cb8a802d1ff10004c8c0\nhttps://etherscan.io/address/0x6d903f6003cca6255d85cca4d3b5e5146dc33925\nhttps://etherscan.io/address/0xc00e94cb662c3520282e6f5717214004a7f26888\nhttps://etherscan.io/address/0xa17581a9e3356d9a858b789d68b4d866e593ae94\nhttps://etherscan.io/address/0xe2c1f54aff6b38fd9df7a69f22cb5fd3ba09f030\nhttps://etherscan.io/address/0xa397a8c2086c554b531c02e29f3291c9704b00c7\nhttps://etherscan.io/address/0xbe9895146f7af43049ca1c1ae358b0541ea49704\nhttps://etherscan.io/address/0xbf5495efe5db9ce00f80364c8b423567e58d2110\nhttps://etherscan.io/address/0xf1c9acdc66974dfb6decb12aa385b9cd01190e38\nhttps://etherscan.io/address/0xae78736cd615f374d3085123a210448e74fc6393\nhttps://etherscan.io/address/0xa1290d69c65a6fe4df752f95823fae25cb99e5a7\nhttps://etherscan.io/address/0x2260fac5e5542a773aa44fbcfedf7c193bc2c599\nhttps://etherscan.io/address/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee\nhttps://etherscan.io/address/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2\nhttps://etherscan.io/address/0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0\nhttps://etherscan.io/address/0x3afdc9bca9213a35503b077a6072f3d0d5ab0840\nhttps://etherscan.io/address/0x5c58d4479a1e9b2d19ee052143fa73f0ee79a36e\nhttps://etherscan.io/address/0x698a949f3b4f7a5dde236106f25fa0eaca0fcef1\nhttps://etherscan.io/address/0x1f9840a85d5af5bf1d1762f925bdaddc4201f984\nhttps://etherscan.io/address/0x514910771af9ca656af840dff83e8264ecf986ca\nhttps://etherscan.io/address/0xdac17f958d2ee523a2206206994597c13d831ec7\nhttps://etherscan.io/address/0xe65cdb6479bac1e22340e4e755fae7e509ecd06c\nhttps://etherscan.io/address/0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e\nhttps://etherscan.io/address/0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4\nhttps://etherscan.io/address/0x5d3a536e4d6dbd6114cc1ead35777bab948e3643\nhttps://etherscan.io/address/0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5\nhttps://etherscan.io/address/0x7713dd9ca933848f6819f38b8352d9a15ea73f67\nhttps://etherscan.io/address/0xface851a4921ce59e912d19329929ce6da6eb0c7\nhttps://etherscan.io/address/0x95b4ef2869ebd94beb4eee400a99824bf5dc325b\nhttps://etherscan.io/address/0x158079ee67fce2f58472a96584a73c7ab9ac95c1\nhttps://etherscan.io/address/0xf5dce57282a584d2746faf1593d3121fcac444dc\nhttps://etherscan.io/address/0x4b0181102a0112a2ef11abee5563bb4a3176c9d7\nhttps://etherscan.io/address/0x12392f67bdf24fae0af363c24ac620a2f67dad86\nhttps://etherscan.io/address/0x35a18000230da775cac24873d00ff85bccded550\nhttps://etherscan.io/address/0x39aa39c021dfbae8fac545936693ac917d5e7563\nhttps://etherscan.io/address/0x041171993284df560249b57358f931d9eb7b925d\nhttps://etherscan.io/address/0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9\nhttps://etherscan.io/address/0xc11b1268c1a384e55c48c2391d8d480264a3a7f4\nhttps://etherscan.io/address/0xccf4429db6322d5c611ee964527d42e5d685dd6a\nhttps://etherscan.io/address/0x80a2ae356fc9ef4305676f7a3e2ed04e12c33946\nhttps://etherscan.io/address/0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407\nhttps://etherscan.io/address/0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b"
+    }
+  ],
   "orgs": {
     "morpho-org": {
       "kind": "domains",
@@ -307,6 +321,615 @@
           "text": "function increaseRelativeCap(bytes memory idData, uint256 newRelativeCap) external {"
         }
       ]
+    },
+    "https://raw.githubusercontent.com/morpho-org/sdks/refs/heads/main/packages/morpho-ts/src/addresses.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "metaMorphoFactory: \"0x1897A8997241C1cD4bD0698647e4EB7213535c24\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xA1D94F746dEfa1928926b84fB2596c06926C0405\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xb049465969ac6355127cDf9E88deE63d25204d5D\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xFf62A7c278C62eD665133147129245053Bbf5918\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x4501125508079A99ebBebCE205DeC9593C2b5857\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x133baC94306B99f6dAD85c381a5be851d8DD717c\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x9a1B378C43BA535cDB89934230F0D3890c51C0EB\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xa9c87daB340631C34BB738625C70499e29ddDC98\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xC11a53eE9B1eCc7a068D8e40F8F17926584F97Cf\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xD1A0C86F28ecD1657Ad06415c2B230cC89D9b6dd\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xc0006f52B38625C283dd2f972dD9B779A5851Dd0\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x878988f5f561081deEa117717052164ea1Ef0c82\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x6b46fa3cc9EBF8aB230aBAc664E37F2966Bf7971\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x96456Bf888D4de607Bf3ca0b3C8e4DF9b0d0Ad47\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xeF84b1ecEbe43283ec5AF95D7a5c4D7dE0a9859b\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x3Bb6A6A0Bc85b367EFE0A5bAc81c5E52C892839a\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x6128b680b277Bf4Df80DFE9D8c55A498660870ef\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x65956d5Ba4974983ecCe111612FC0A0c22650A11\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x71B299bDb52b6396429cd1E11c418324502CB434\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x4DBB3a642a2146d5413750Cca3647086D9ba5F12\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x6846EA318B6B987Ee6b28eBFd87c3409F1d13108\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xAf93F2d8508053432659d509b0210fdF1472493D\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xEd0b06fcdDB6dD0985e2de9D22ad034d313b7dBd\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x373ccddcd3F09D2e1430B3F2b290B9bF56Ae7336\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x711bCE12269a3a496eFaABB8B9AD5A4485E08A24\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xa036C78AE8e162feD4db4abbD41f79995F28bC4b\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xeD960178e4aDA0296786Fa79D84e8FDF7bd44B25\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x474cdCF6B3be2eb770065b88d2F7c57A9BC609E0\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x3199Ddb2aA394B175a814EB79BB654822Ee1100F\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x30607fEa77168d2c0401B6f60F0B40E32F9339E3\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x35587F8d98eA305FB762934a63F3c1564037F9C7\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x92A070b2b4Af436ba4a168451fb360e45b849355\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xe9EdE3929F43a7062a007C3e8652e4ACa610Bdc0\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xC9b34c108014B44e5a189A830e7e04c56704a0c9\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x117b92Ab1C025B175ED38a0CDe5A067a745224a0\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x9a13bdA35F98811fbAcf097966b2C838f3F9c58C\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xc72129DA4CC808e955699111b8c22B22Ca8A10b8\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xc8BE2FD6f65FB3ce25Dd6a50F21A9245B9E399d7\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xc49224e28992E693aFaa778a6F54c329E5Ac9704\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x40F2896C551194e364F7C846046C34d8a9FE97e4\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x3c75C433e7902193497617EaFCc8385A3D031836\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x0d9E428075b8A691e12237984b8284E40ab9363A\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x249E4808264c545861e43728186a731dE7c7D745\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x68DCEA6df0f07385946AA0cDA2648c27a050e26e\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x97CF0f15bf580838900161F2a4D7CE9BC88E8d5D\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x2525D453D9BA13921D5aB5D8c12F9202b0e19456\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x4f0a370bb367843CFd914c4d9972523aD2f8FCc9\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x1675357fdA9e6784DdAD7AD5b3C3DF1fdD4dc4C9\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xB7c243AfACb25870775ADFdAe9D0EAc2324dD152\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x1c8De6889acee12257899BFeAa2b7e534de32E16\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xFcb8b57E56787bB29e130Fca67f3c5a1232975D1\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x2e6BE3a3A27fb45c6AbA2D1833eeA48E8788538e\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x6d6A3ba62836d6B40277767dCAc8fd390d4BcedC\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xd1c37fDd941256FC184eF3A07Be540a90b81Ec21\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xDa4C5e0f8830002750f788eA729891B4B38EC1c2\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x588737013F0302a2fa82Dc03DA06126a81B8be45\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x5851C1e423A2F93aFb821834a63cA052D19ae4Ef\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x0437C5B0CF1edFb8309613E4fEBE2a512D9a735d\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xabA00365C6284548F90480993fc46dbB7775FB96\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xF2c325F26691b6556e6f66451bb38bDa37FEbaa7\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x8DB1483C64384FA8581D6e6e82C6F44812090c2d\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x382d00918B744Bd91B906f38CAe54e67649E770C\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xec051b19d654C48c357dC974376DeB6272f24e53\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xD7217E5687FF1071356C780b5fe4803D9D967da7\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xc6b8B565C715134b0Ca3D6fa3D29B25759D0b9e2\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xaEff6Ef4B7bbfbAadB18b634A8F11392CBeB72Be\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x65eD61058cEB4895B7d62437BaCEA39b04f6D27B\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x30f5b078C80bD06fEdc3B40b4a4441a96Dd9cf22\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xbADd49F7db90f65fF5822681AA6B8548E8356a1D\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x534858821653467c2ae231dc027aa1F2c8D91802\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x9c7E1f6fc953aED9C273D8D7B17A654e70721E80\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xb76A46cC0c4E8B25Df7Df278371b3D78d95D0b2b\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x2614BAEA6aE12117565668720aD92ca0149aBA03\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xA148a8223B622A72dC36472DE1492aBb5c089BA7\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x5DC11CF8BA4C39d1194F91218D35008d9F52A5d0\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x3267BbdC94274B4BE081c01ffc6123dA12E8c043\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xcAB7C66F7191Ad3Ef1e7fEeb67F3137BC975F8cE\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x33f20973275B2F574488b18929cd7DCBf1AbF275\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x8B2F922162FBb60A6a072cC784A2E4168fB0bb0c\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x8Da54fbF89B3D6fC6DCC92F31CF75a211ACF3d46\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xa00666E86C7e2FA8d2c78d9481E687e098340180\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xb4ae5673c48621189E2bEfBA96F31912032DD1AE\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x7fc35488803D49D00a94b206A223f7661898BE3a\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x2A5F218FE4Dac3b1f4E096e8ae83074bB1713833\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x9282DBa3d1788f4f02B5DdFc4fc5985e70197620\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xEA67e5566Ca2c0176d9db172A7f9A1e1F22E9D3A\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x05519a0835a1bFD90f110aA7ca46e9A5F81Ed3b4\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xaCFf4ad3B357F5A43A20570cF3eb9Ba0086d4e9a\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xE39f6B5Dd03F4ce8C201b946E662E653d94fA121\","
+        },
+        {
+          "text": "usdc: \"0xcebA9300f2b948710d2653dD7B07f33A8B32118C\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xB237fdB403992f4AAe0963F5304799242035E22d\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x8F5C08671A3986b2B0261FF78f5c2F291208BceC\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x1058DA51242dF63bA3A61c838A61405ea6Edb083\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xecCd168c7d8e40f7166Fe226B4cf2cA3Db7A9754\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xAA2D848d759d872A45e5658B55B02e589101D9C0\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x4E28CAE07A008FF2D7D345992C969118eb253CD6\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x20d7eAd4830b53fB29bb4C4e8a80FD5F1f7d7F2c\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x626f8ea9b3B70C03F8cf9a29eFBb9F3b093d1599\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xEB8871F0FA8aB787AbCD28d1095f7B486d241D42\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x29955201601630f686beAF47b0B03be7b86d160F\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x18c1b03ac8007224FE86442a91fEE3135ba767CD\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xcBD0710425613d666C5Ffb4dE2eE73554F21c34B\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x783b4853Da42DBA4A86eFa4b94ABd48100c6D982\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xd25Ae31a2480DF33b7E5F8CfEE4229248309d519\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0xDC9693CE6488640faEf173Ec2635ff99fdC25a07\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x3DE400E3F79113194fa5AF6Ae5C474947E0C82Db\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xF85aD5f14cC903533FC409B8098B58b4C2f36697\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0x08A7b3a39E5425d616Cc9c046cf96B5eF21a139f\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x9aaCAA01F5e6BC876D07f023744E3E0A456a64cf\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x59e8C53D383F22b6371b5833504dfAa4136aE6f7\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0xD5E02889C13230458506CC842347c4E62F8cDF3a\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x8E01ed1E1A41029b3137FcE9Aa880c0A54827498\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xe510e1fcC429943cA3455A7bfBD79f0307Cd8403\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0x549EFFAE58F9Db253AAF60fbCeC8B4cB74a952A8\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xe2558155AEcEF57cAADB98e39b0538ab0ae95693\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x155134544AE2Ec3AB23034BF620538482C5E3c40\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0xE5B5627C5973AfAE1928a6b8e5c1D6AABFEC8a7a\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x6FC83ECc0e8142635D77200e5052be8A0a9D2f42\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xd8237ea1b5974c83C6b0c8942dc2a16F42f789dd\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0x15c7312B0f26aa0AA70B24a0D2AF87B9e7D614A0\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x227544d6989cD15c05AAB6dde4F29523dcfdbe2B\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x5C00c99F2235439725417E9f037B7D38FfF35d31\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0x3b369B37eba1655e8c44bC08E3A604D592c4a14F\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xf2Aecd4a4d4C21d08770e34F392C4C271aBD9144\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x4d04C39ca604b560c50F4045c558378FD9AEBCF4\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0x4c2ff4D792d0a03A0e461e4B9B00Bc812A0147C2\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x3b0eefaBfa22ec7CF2c73877ac16e78D76749f12\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x6C2FF5114E45b50bc7195c2F1f87C98cbdad62Cc\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0x20d990D9eBf8003Df8cAD3Aa36aeF4404e3Ccb86\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x7D8BF8B276f967F7539c9e91E1a85a33fefE612B\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xa01D7c41cf419405d4DF2e5750d26438DCAC28a6\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0xB4A1B0EF18d169c19fC7617aCE898A06Dc495a7C\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xf133FA5A78C398B31Cc4a180E6Ae84111D6DCF5B\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x00a58b7a9B3E86CB21f5F11f29F4A12346457012\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0xCe5c1aFa115fF8b1D6913509bfc79D9AE08CC857\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x0FBad98595b0186dA120E41f77C102beb49f803c\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x79370Ed003CE325C088E530d5e8655c99c2993e1\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0x1b7C60330E3aFe5bA876F518Ff14316EA497f683\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x63D6eAc0d16D57dd131D9023ADb060277d3237d7\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xDD0FC0c74bd89A9C6623202473E75CbF472b33A4\","
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/coinbase/agentkit/refs/heads/main/typescript/agentkit/src/action-providers/erc20/constants.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "EURC: \"0x60a3E35Cc302bFA44Cb288Bc5a4F316Fdb1adb42\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        },
+        {
+          "text": "CBETH: \"0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22\","
+        },
+        {
+          "text": "EURC: \"0x808456652fdb597867f38412077A9182bf77359F\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0006F23900c38EB856149F799620fcb8A4a\","
+        },
+        {
+          "text": "WETH: \"0x4200000000000000000000000000000000000006\","
+        },
+        {
+          "text": "EURC: \"0x1abaea1f7c830bd89acc67ec4af516284b1bc33c\","
+        },
+        {
+          "text": "CBBTC: \"0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf\","
+        },
+        {
+          "text": "WETH: \"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2\","
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/refs/heads/master/script/deploys/Deployed.s.sol": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
+        },
+        {
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
+        },
+        {
+          "text": "// Membership & NFTs"
+        },
+        {
+          "text": "address public constant ETHERFI_REDEMPTION_MANAGER = 0xDadEf1fFBFeaAB4f68A9fD181395F68b4e4E7Ae0;"
+        },
+        {
+          "text": "address public constant WEETH_WITHDRAW_ADAPTER = 0xFbfe6b9cEe0E555Bad7e2E7309EFFC75200cBE38;"
+        },
+        {
+          "text": "address public constant PRIORITY_WITHDRAWAL_QUEUE = 0x35e7D6feF6f72aDd3c3e39dEc6d9CCc29e3345FA;"
+        }
+      ]
     }
   },
   "commits": {
@@ -381,7 +1004,7 @@
     }
   },
   "vaults": {
-    "kpk-usdc-prime-v2-9ee6": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432967\nvault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6\nlatest block 26432967 0x98300de1369146a480f2fdd081b55e6ae3b0d7672ffc163ed5dc83154b97c6d8\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-17  block 26432967  31,754,002.517668 usdc\n  2026-10-18  block 26216967  30,526,432.682391 usdc\n  2026-09-18  block 26000967  21,093,293.512158 usdc\n  2026-08-18  block 25784967  20,679,869.648893 usdc\n  2026-07-19  block 25568967  20,821,023.476539 usdc\n  2026-06-19  block 25352967  25,256,196.421413 usdc\n  2026-05-20  block 25136967  22,358,717.961301 usdc\n  2026-04-20  block 24920967  8,719,659.553925 usdc\n  2026-03-21  block 24704967  6,451,468.332903 usdc\n  2026-02-19  block 24488967  7,038,280.339260 usdc\n  2026-01-20  block 24272967  4,069,203.444257 usdc\n  2025-12-20  block 24056967  4,066,303.841463 usdc\n  2025-11-20  block 23840967  5,003,801.002276 usdc\n\nholders      97 addresses hold shares at block 26432967, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30480168096208931315743366\ntop 10       hold 94.31% of the shares; each: 50.56%, 19.25%, 9.43%, 6.21%, 2.11%, 1.87%, 1.64%, 1.37%, 0.94%, 0.93%"
+    "kpk-usdc-prime-v2-9ee6": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26434652\nvault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6\nlatest block 26434652 0xbfe351653ef7a9d217680ad04ba7a95dc748608bd58d7324543294fcadab3b28\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-17  block 26434652  30,773,998.042456 usdc\n  2026-10-18  block 26218652  30,537,656.336929 usdc\n  2026-09-18  block 26002652  21,093,961.343288 usdc\n  2026-08-19  block 25786652  20,680,472.375452 usdc\n  2026-07-20  block 25570652  20,821,494.517661 usdc\n  2026-06-19  block 25354652  28,004,090.352105 usdc\n  2026-05-20  block 25138652  22,359,229.309485 usdc\n  2026-04-20  block 24922652  8,719,901.384314 usdc\n  2026-03-21  block 24706652  6,451,582.525152 usdc\n  2026-02-19  block 24490652  7,038,426.921529 usdc\n  2026-01-20  block 24274652  4,069,302.305060 usdc\n  2025-12-21  block 24058652  4,066,389.491395 usdc\n  2025-11-20  block 23842652  5,003,914.814167 usdc\n\nholders      98 addresses hold shares at block 26434652, of 205 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 29538619263680683343661883\ntop 10       hold 94.07% of the shares; each: 48.92%, 19.86%, 9.73%, 6.41%, 2.18%, 1.93%, 1.69%, 1.41%, 0.98%, 0.95%"
   },
   "erc7730": {
     "commit": "3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4",
@@ -2445,20 +3068,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0xf367326e0eea97763e1ea3181c4ff429d01df6873bb4d1ef28dfe9c5ccdb3e72"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb",
-        "drpc": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xf367326e0eea97763e1ea3181c4ff429d01df6873bb4d1ef28dfe9c5ccdb3e72"
@@ -2467,6 +3076,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xf367326e0eea97763e1ea3181c4ff429d01df6873bb4d1ef28dfe9c5ccdb3e72"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb",
+        "drpc": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb"
       }
     },
     {
@@ -2530,20 +3153,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
-        "drpc": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
@@ -2552,6 +3161,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+        "drpc": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3"
       }
     },
     {
@@ -2661,7 +3284,7 @@
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
         {
-          "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+          "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
         }
       ],
       "answers": {
@@ -2679,7 +3302,7 @@
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+          "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
         }
       ],
       "answers": {
@@ -2693,7 +3316,7 @@
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+          "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
         }
       ],
       "answers": {
@@ -2709,7 +3332,7 @@
           "data": "0xd6aebf940000000000000000000000001d511811aca9d8817a3e50f29cadff6243a02902"
         },
         {
-          "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+          "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
         }
       ],
       "answers": {
@@ -2725,7 +3348,7 @@
           "data": "0x68c18beb0000000000000000000000001d511811aca9d8817a3e50f29cadff6243a02902"
         },
         {
-          "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+          "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
         }
       ],
       "answers": {
@@ -2741,7 +3364,7 @@
           "data": "0x0fe36536"
         },
         {
-          "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+          "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
         }
       ],
       "answers": {
@@ -2751,17 +3374,17 @@
     }
   ],
   "today": {
-    "number": "26432961",
-    "hash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+    "number": "26434645",
+    "hash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
   },
   "instances": {
-    "number": "26432961",
-    "hash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+    "number": "26434645",
+    "hash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
   },
   "facts": {
     "block": {
-      "number": "26432961",
-      "hash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+      "number": "26434645",
+      "hash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
     },
     "defillama": [
       {
@@ -2769,9 +3392,9 @@
         "id": "4025",
         "parentProtocol": "parent#morpho",
         "listedAt": 1705261273,
-        "tvl": 10056510399.169086,
+        "tvl": 9986815475.185385,
         "chainTvls": {
-          "Ethereum": 4496318454.530387
+          "Ethereum": 4464931134.987227
         }
       }
     ],
@@ -2785,7 +3408,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+            "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
           }
         ],
         "answers": {
@@ -2801,7 +3424,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+            "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
           }
         ],
         "answers": {
@@ -2817,7 +3440,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+            "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
           }
         ],
         "answers": {
@@ -2833,7 +3456,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+            "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
           }
         ],
         "answers": {
@@ -2849,7 +3472,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d"
+            "blockHash": "0x2b2160e9333f9913af5ee4a6de05899f164b4b476dfc711c49e0616bcf96a477"
           }
         ],
         "answers": {

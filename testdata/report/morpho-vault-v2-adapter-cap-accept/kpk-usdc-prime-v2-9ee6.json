@@ -71,6 +71,7 @@
       }
     }
   },
+  "immunefi": [],
   "orgs": {
     "morpho-org": {
       "kind": "domains",
@@ -183,6 +184,560 @@
           "text": "function increaseRelativeCap(bytes memory idData, uint256 newRelativeCap) external {"
         }
       ]
+    },
+    "https://raw.githubusercontent.com/morpho-org/sdks/refs/heads/main/packages/morpho-ts/src/addresses.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "metaMorphoFactory: \"0x1897A8997241C1cD4bD0698647e4EB7213535c24\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xA1D94F746dEfa1928926b84fB2596c06926C0405\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xb049465969ac6355127cDf9E88deE63d25204d5D\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xFf62A7c278C62eD665133147129245053Bbf5918\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x4501125508079A99ebBebCE205DeC9593C2b5857\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x133baC94306B99f6dAD85c381a5be851d8DD717c\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x9a1B378C43BA535cDB89934230F0D3890c51C0EB\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xa9c87daB340631C34BB738625C70499e29ddDC98\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xC11a53eE9B1eCc7a068D8e40F8F17926584F97Cf\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xD1A0C86F28ecD1657Ad06415c2B230cC89D9b6dd\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xc0006f52B38625C283dd2f972dD9B779A5851Dd0\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x878988f5f561081deEa117717052164ea1Ef0c82\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x6b46fa3cc9EBF8aB230aBAc664E37F2966Bf7971\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x96456Bf888D4de607Bf3ca0b3C8e4DF9b0d0Ad47\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xeF84b1ecEbe43283ec5AF95D7a5c4D7dE0a9859b\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x3Bb6A6A0Bc85b367EFE0A5bAc81c5E52C892839a\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x6128b680b277Bf4Df80DFE9D8c55A498660870ef\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x65956d5Ba4974983ecCe111612FC0A0c22650A11\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x71B299bDb52b6396429cd1E11c418324502CB434\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x4DBB3a642a2146d5413750Cca3647086D9ba5F12\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x6846EA318B6B987Ee6b28eBFd87c3409F1d13108\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xAf93F2d8508053432659d509b0210fdF1472493D\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xEd0b06fcdDB6dD0985e2de9D22ad034d313b7dBd\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x373ccddcd3F09D2e1430B3F2b290B9bF56Ae7336\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x711bCE12269a3a496eFaABB8B9AD5A4485E08A24\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xa036C78AE8e162feD4db4abbD41f79995F28bC4b\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xeD960178e4aDA0296786Fa79D84e8FDF7bd44B25\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x474cdCF6B3be2eb770065b88d2F7c57A9BC609E0\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x3199Ddb2aA394B175a814EB79BB654822Ee1100F\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x30607fEa77168d2c0401B6f60F0B40E32F9339E3\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x35587F8d98eA305FB762934a63F3c1564037F9C7\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x92A070b2b4Af436ba4a168451fb360e45b849355\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xe9EdE3929F43a7062a007C3e8652e4ACa610Bdc0\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xC9b34c108014B44e5a189A830e7e04c56704a0c9\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x117b92Ab1C025B175ED38a0CDe5A067a745224a0\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x9a13bdA35F98811fbAcf097966b2C838f3F9c58C\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xc72129DA4CC808e955699111b8c22B22Ca8A10b8\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xc8BE2FD6f65FB3ce25Dd6a50F21A9245B9E399d7\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xc49224e28992E693aFaa778a6F54c329E5Ac9704\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x40F2896C551194e364F7C846046C34d8a9FE97e4\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x3c75C433e7902193497617EaFCc8385A3D031836\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x0d9E428075b8A691e12237984b8284E40ab9363A\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x249E4808264c545861e43728186a731dE7c7D745\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x68DCEA6df0f07385946AA0cDA2648c27a050e26e\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x97CF0f15bf580838900161F2a4D7CE9BC88E8d5D\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x2525D453D9BA13921D5aB5D8c12F9202b0e19456\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x4f0a370bb367843CFd914c4d9972523aD2f8FCc9\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x1675357fdA9e6784DdAD7AD5b3C3DF1fdD4dc4C9\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xB7c243AfACb25870775ADFdAe9D0EAc2324dD152\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x1c8De6889acee12257899BFeAa2b7e534de32E16\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xFcb8b57E56787bB29e130Fca67f3c5a1232975D1\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x2e6BE3a3A27fb45c6AbA2D1833eeA48E8788538e\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x6d6A3ba62836d6B40277767dCAc8fd390d4BcedC\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xd1c37fDd941256FC184eF3A07Be540a90b81Ec21\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xDa4C5e0f8830002750f788eA729891B4B38EC1c2\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x588737013F0302a2fa82Dc03DA06126a81B8be45\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x5851C1e423A2F93aFb821834a63cA052D19ae4Ef\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x0437C5B0CF1edFb8309613E4fEBE2a512D9a735d\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xabA00365C6284548F90480993fc46dbB7775FB96\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xF2c325F26691b6556e6f66451bb38bDa37FEbaa7\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x8DB1483C64384FA8581D6e6e82C6F44812090c2d\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x382d00918B744Bd91B906f38CAe54e67649E770C\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xec051b19d654C48c357dC974376DeB6272f24e53\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xD7217E5687FF1071356C780b5fe4803D9D967da7\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xc6b8B565C715134b0Ca3D6fa3D29B25759D0b9e2\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xaEff6Ef4B7bbfbAadB18b634A8F11392CBeB72Be\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x65eD61058cEB4895B7d62437BaCEA39b04f6D27B\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x30f5b078C80bD06fEdc3B40b4a4441a96Dd9cf22\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xbADd49F7db90f65fF5822681AA6B8548E8356a1D\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x534858821653467c2ae231dc027aa1F2c8D91802\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x9c7E1f6fc953aED9C273D8D7B17A654e70721E80\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xb76A46cC0c4E8B25Df7Df278371b3D78d95D0b2b\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x2614BAEA6aE12117565668720aD92ca0149aBA03\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xA148a8223B622A72dC36472DE1492aBb5c089BA7\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x5DC11CF8BA4C39d1194F91218D35008d9F52A5d0\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x3267BbdC94274B4BE081c01ffc6123dA12E8c043\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xcAB7C66F7191Ad3Ef1e7fEeb67F3137BC975F8cE\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0x33f20973275B2F574488b18929cd7DCBf1AbF275\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x8B2F922162FBb60A6a072cC784A2E4168fB0bb0c\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x8Da54fbF89B3D6fC6DCC92F31CF75a211ACF3d46\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xa00666E86C7e2FA8d2c78d9481E687e098340180\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xb4ae5673c48621189E2bEfBA96F31912032DD1AE\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x7fc35488803D49D00a94b206A223f7661898BE3a\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0x2A5F218FE4Dac3b1f4E096e8ae83074bB1713833\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x9282DBa3d1788f4f02B5DdFc4fc5985e70197620\","
+        },
+        {
+          "text": "metaMorphoFactory: \"0xEA67e5566Ca2c0176d9db172A7f9A1e1F22E9D3A\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x05519a0835a1bFD90f110aA7ca46e9A5F81Ed3b4\","
+        },
+        {
+          "text": "morphoMarketV1AdapterFactory: \"0xaCFf4ad3B357F5A43A20570cF3eb9Ba0086d4e9a\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xE39f6B5Dd03F4ce8C201b946E662E653d94fA121\","
+        },
+        {
+          "text": "usdc: \"0xcebA9300f2b948710d2653dD7B07f33A8B32118C\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xB237fdB403992f4AAe0963F5304799242035E22d\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x8F5C08671A3986b2B0261FF78f5c2F291208BceC\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x1058DA51242dF63bA3A61c838A61405ea6Edb083\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xecCd168c7d8e40f7166Fe226B4cf2cA3Db7A9754\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xAA2D848d759d872A45e5658B55B02e589101D9C0\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0x4E28CAE07A008FF2D7D345992C969118eb253CD6\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x20d7eAd4830b53fB29bb4C4e8a80FD5F1f7d7F2c\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x626f8ea9b3B70C03F8cf9a29eFBb9F3b093d1599\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xEB8871F0FA8aB787AbCD28d1095f7B486d241D42\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x29955201601630f686beAF47b0B03be7b86d160F\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x18c1b03ac8007224FE86442a91fEE3135ba767CD\","
+        },
+        {
+          "text": "preLiquidationFactory: \"0xcBD0710425613d666C5Ffb4dE2eE73554F21c34B\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x783b4853Da42DBA4A86eFa4b94ABd48100c6D982\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xd25Ae31a2480DF33b7E5F8CfEE4229248309d519\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0xDC9693CE6488640faEf173Ec2635ff99fdC25a07\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x3DE400E3F79113194fa5AF6Ae5C474947E0C82Db\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xF85aD5f14cC903533FC409B8098B58b4C2f36697\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0x08A7b3a39E5425d616Cc9c046cf96B5eF21a139f\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x9aaCAA01F5e6BC876D07f023744E3E0A456a64cf\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x59e8C53D383F22b6371b5833504dfAa4136aE6f7\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0xD5E02889C13230458506CC842347c4E62F8cDF3a\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x8E01ed1E1A41029b3137FcE9Aa880c0A54827498\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xe510e1fcC429943cA3455A7bfBD79f0307Cd8403\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0x549EFFAE58F9Db253AAF60fbCeC8B4cB74a952A8\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xe2558155AEcEF57cAADB98e39b0538ab0ae95693\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x155134544AE2Ec3AB23034BF620538482C5E3c40\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0xE5B5627C5973AfAE1928a6b8e5c1D6AABFEC8a7a\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x6FC83ECc0e8142635D77200e5052be8A0a9D2f42\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xd8237ea1b5974c83C6b0c8942dc2a16F42f789dd\","
+        },
+        {
+          "text": "adaptiveCurveIrm: \"0x15c7312B0f26aa0AA70B24a0D2AF87B9e7D614A0\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x227544d6989cD15c05AAB6dde4F29523dcfdbe2B\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x5C00c99F2235439725417E9f037B7D38FfF35d31\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0x3b369B37eba1655e8c44bC08E3A604D592c4a14F\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xf2Aecd4a4d4C21d08770e34F392C4C271aBD9144\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x4d04C39ca604b560c50F4045c558378FD9AEBCF4\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0x4c2ff4D792d0a03A0e461e4B9B00Bc812A0147C2\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x3b0eefaBfa22ec7CF2c73877ac16e78D76749f12\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x6C2FF5114E45b50bc7195c2F1f87C98cbdad62Cc\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0x20d990D9eBf8003Df8cAD3Aa36aeF4404e3Ccb86\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x7D8BF8B276f967F7539c9e91E1a85a33fefE612B\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xa01D7c41cf419405d4DF2e5750d26438DCAC28a6\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0xB4A1B0EF18d169c19fC7617aCE898A06Dc495a7C\","
+        },
+        {
+          "text": "vaultV2Factory: \"0xf133FA5A78C398B31Cc4a180E6Ae84111D6DCF5B\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x00a58b7a9B3E86CB21f5F11f29F4A12346457012\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0xCe5c1aFa115fF8b1D6913509bfc79D9AE08CC857\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x0FBad98595b0186dA120E41f77C102beb49f803c\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0x79370Ed003CE325C088E530d5e8655c99c2993e1\","
+        },
+        {
+          "text": "vaultV2BluePublicAllocator: \"0x1b7C60330E3aFe5bA876F518Ff14316EA497f683\","
+        },
+        {
+          "text": "vaultV2Factory: \"0x63D6eAc0d16D57dd131D9023ADb060277d3237d7\","
+        },
+        {
+          "text": "morphoMarketV1AdapterV2Factory:"
+        },
+        {
+          "text": "\"0xDD0FC0c74bd89A9C6623202473E75CbF472b33A4\","
+        }
+      ]
     }
   },
   "commits": {
@@ -225,7 +780,7 @@
     }
   },
   "vaults": {
-    "kpk-usdc-prime-v2-9ee6": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432975\nvault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6\nlatest block 26432975 0x4625775d4902ba4236f8b0375a96c7dbf4a18a57021cf63580e733ea1a8b7bdb\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-17  block 26432975  31,754,006.876243 usdc\n  2026-10-18  block 26216975  30,526,436.889577 usdc\n  2026-09-18  block 26000975  21,093,296.753737 usdc\n  2026-08-18  block 25784975  20,679,872.266732 usdc\n  2026-07-19  block 25568975  20,821,025.685388 usdc\n  2026-06-19  block 25352975  25,256,199.354531 usdc\n  2026-05-20  block 25136975  22,358,720.324870 usdc\n  2026-04-20  block 24920975  8,719,660.783712 usdc\n  2026-03-21  block 24704975  6,451,468.865772 usdc\n  2026-02-19  block 24488975  7,038,281.004985 usdc\n  2026-01-20  block 24272975  4,069,203.911280 usdc\n  2025-12-20  block 24056975  4,066,304.248585 usdc\n  2025-11-20  block 23840975  5,003,801.550322 usdc\n\nholders      97 addresses hold shares at block 26432975, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30480168096208931315743366\ntop 10       hold 94.31% of the shares; each: 50.56%, 19.25%, 9.43%, 6.21%, 2.11%, 1.87%, 1.64%, 1.37%, 0.94%, 0.93%"
+    "kpk-usdc-prime-v2-9ee6": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26434487\nvault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6\nlatest block 26434487 0x064ed7e1fd9e0ebdf5c9c9a95b8d3adc1bd9717f96679a604f419fc53647c076\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-17  block 26434487  30,773,910.231857 usdc\n  2026-10-18  block 26218487  30,537,568.819423 usdc\n  2026-09-18  block 26002487  21,093,895.076276 usdc\n  2026-08-19  block 25786487  20,680,414.635399 usdc\n  2026-07-20  block 25570487  20,821,447.959857 usdc\n  2026-06-19  block 25354487  28,004,023.619705 usdc\n  2026-05-20  block 25138487  22,359,176.925786 usdc\n  2026-04-20  block 24922487  8,719,879.612102 usdc\n  2026-03-21  block 24706487  6,451,571.431436 usdc\n  2026-02-19  block 24490487  7,038,412.552926 usdc\n  2026-01-20  block 24274487  4,069,292.575707 usdc\n  2025-12-21  block 24058487  4,066,381.142432 usdc\n  2025-11-20  block 23842487  5,003,903.636230 usdc\n\nholders      98 addresses hold shares at block 26434487, of 205 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 29538619263680683343661883\ntop 10       hold 94.07% of the shares; each: 48.92%, 19.86%, 9.73%, 6.41%, 2.18%, 1.93%, 1.69%, 1.41%, 0.98%, 0.95%"
   },
   "erc7730": {
     "commit": "3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4",
@@ -329,10 +884,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         }
       }
@@ -421,7 +976,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x839eb93509922839c22e22219a33fda7d48380bfd372c218e8f203681543dd64"
         }
@@ -435,7 +990,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x839eb93509922839c22e22219a33fda7d48380bfd372c218e8f203681543dd64"
         }
@@ -468,10 +1023,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -567,10 +1122,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         }
       }
@@ -666,10 +1221,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c"
         }
       }
@@ -916,7 +1471,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x492e02d4c523b15786bca175e9ab276979e13919f381de9fbab2f21ce39035bc"
         }
@@ -930,7 +1485,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x492e02d4c523b15786bca175e9ab276979e13919f381de9fbab2f21ce39035bc"
         }
@@ -1003,10 +1558,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503"
         }
       }
@@ -1125,10 +1680,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4"
         }
       }
@@ -1233,10 +1788,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9"
         }
       }
@@ -1367,7 +1922,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x8dd9f4bc5f85205dec1a7cc429946363c0265f98e95701f8af11f92f173275f5"
         }
@@ -1381,7 +1936,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x8dd9f4bc5f85205dec1a7cc429946363c0265f98e95701f8af11f92f173275f5"
         }
@@ -1436,7 +1991,7 @@
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
         {
-          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+          "blockHash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
         }
       ],
       "answers": {
@@ -1452,9 +2007,9 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+          "blockHash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
         }
       ],
       "answers": {
@@ -1466,9 +2021,9 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+          "blockHash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
         }
       ],
       "answers": {
@@ -1484,7 +2039,7 @@
           "data": "0xd6aebf940000000000000000000000001d511811aca9d8817a3e50f29cadff6243a02902"
         },
         {
-          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+          "blockHash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
         }
       ],
       "answers": {
@@ -1500,7 +2055,7 @@
           "data": "0x68c18beb0000000000000000000000001d511811aca9d8817a3e50f29cadff6243a02902"
         },
         {
-          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+          "blockHash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
         }
       ],
       "answers": {
@@ -1516,7 +2071,7 @@
           "data": "0x0fe36536"
         },
         {
-          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+          "blockHash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
         }
       ],
       "answers": {
@@ -1526,17 +2081,17 @@
     }
   ],
   "today": {
-    "number": "26432971",
-    "hash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+    "number": "26434482",
+    "hash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
   },
   "instances": {
-    "number": "26432971",
-    "hash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+    "number": "26434482",
+    "hash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
   },
   "facts": {
     "block": {
-      "number": "26432971",
-      "hash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+      "number": "26434482",
+      "hash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
     },
     "defillama": [
       {
@@ -1544,9 +2099,9 @@
         "id": "4025",
         "parentProtocol": "parent#morpho",
         "listedAt": 1705261273,
-        "tvl": 10056510399.169086,
+        "tvl": 9986815475.185385,
         "chainTvls": {
-          "Ethereum": 4496318454.530387
+          "Ethereum": 4464931134.987227
         }
       }
     ],
@@ -1560,7 +2115,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+            "blockHash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
           }
         ],
         "answers": {
@@ -1576,7 +2131,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+            "blockHash": "0xdead2532cf87caaa448fbf2e596f322d5424853e81a60c0688ae20212b4b14a4"
           }
         ],
         "answers": {
