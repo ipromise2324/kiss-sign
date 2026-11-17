@@ -99,6 +99,21 @@ test('morpho/vault-deposit: rules name registry entries with full addresses, and
   assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter-1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
 });
 
+test('the report says what a computed field reads: the registry contract it calls, each argument, and the number it picks', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8'));
+  raw.card['min-shares'].computed.read = {
+    to: { contract: 'fluid-fusdc' },
+    function: 'quote(int128 i, uint256 dx, address who) returns (uint256 low, (uint256 shares, uint128 fee) best)',
+    args: { i: { const: '-1' }, dx: { card: 'amount' }, who: { safe: true } },
+    output: 'best.shares',
+  };
+  const subject: Subject = { ...scoped.subject, template: parseTemplate(raw, registry) } as Subject;
+  const text = quick(recording.pages, new Map(), subject);
+  assert.match(text, /\| `min-shares` \| nothing: computed by `card new` in base units of the card's `vault`, `quote\(int128,uint256,address\)` on registry `fluid-fusdc` `0x[0-9a-fA-F]{40}` of constant `-1`, the card's `amount`, the Safe, its `best\.shares`, less 10 bps/);
+  const named = (s: Subject) => entriesOf(s, registry).map((entry) => entry.name);
+  assert.ok(!named(scoped.subject).includes('fluid-fusdc') && named(subject).includes('fluid-fusdc'), 'the contract the read calls is an entry the report checks');
+});
+
 test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
   const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
   const template = parseTemplate({ ...raw, card: { ...raw.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } }, registry);
