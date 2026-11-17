@@ -148,7 +148,7 @@ const CASES = [
     name: 'morpho-vault-v2-apex',
     proxy: 'none',
     proven: '0x093272c07700d3ca5301c3bf9b3a392624179e2f',
-    contract: '../lib/vault-v2/src/VaultV2.sol:VaultV2',
+    contract: 'lib/vault-v2/src/VaultV2.sol:VaultV2',
     compiler: '0.8.28+commit.7893614a',
     functions: 97,
     immutables: 12,

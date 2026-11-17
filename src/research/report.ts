@@ -13,7 +13,7 @@ import { proveAdapterOf, proveInstance, proveParentOf } from '../contracts/insta
 import type { AdapterAnswer, InstanceProof, InstanceRefusal, ParentAnswer } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
-import { canonicalType, namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
+import { AbiSignatureError, canonicalType, namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
@@ -151,10 +151,13 @@ export function templateFunctions(template: Template): AbiFunction[] {
 
 /**
  * Each function the template calls or reads on a registry entry, by entry name: each call whose target the template
- * binds, each call to the Safe itself on every registry singleton, each effect view, each `facts` view and each
- * computed field's read. A proven ABI must hold each of them by its canonical signature.
+ * binds, each function on the contract its `docs.json` names, which covers a call nested in `bytes` such as a
+ * `multicall` item, each call to the Safe itself on every registry singleton, each effect view, each `facts` view and
+ * each computed field's read. A proven ABI must hold each of them by its canonical signature.
  */
-export function functionsOn(template: Template, registry: Registry): Map<string, AbiFunction[]> {
+export function functionsOn(subject: Subject, registry: Registry): Map<string, AbiFunction[]> {
+  if (subject.kind !== 'template') return new Map();
+  const { template } = subject;
   const on = new Map<string, Map<string, AbiFunction>>();
   const add = (names: readonly string[], fn: AbiFunction): void => {
     for (const name of names) on.set(name, (on.get(name) ?? new Map()).set(fn.signature, fn));
@@ -164,6 +167,7 @@ export function functionsOn(template: Template, registry: Registry): Map<string,
     const fn = called.get(signature);
     if (fn !== undefined) add(names, fn);
   }
+  for (const doc of subject.docs) add([doc.contract.name], doc.fn);
   const singletons = [...registry.entries.values()].filter((entry) => entry.kind === 'singleton').map((entry) => entry.name);
   for (const call of template.calls) if (call.to.kind === 'safe' && call.data !== 'empty') add(singletons, call.data.fn);
   for (const view of template.effects.views) add(viewTargetNames(view.to, template, registry), view.fn);
@@ -178,10 +182,20 @@ export function functionsOn(template: Template, registry: Registry): Map<string,
 
 /** The signatures of the functions the subject's template calls or reads on `entry` that its proven ABI does not hold. */
 export function missingFromAbi(subject: Subject, registry: Registry, entry: RegistryEntry, proof: AbiProof): string[] {
-  const fns = subject.kind === 'template' ? (functionsOn(subject.template, registry).get(entry.name) ?? []) : [];
+  const fns = functionsOn(subject, registry).get(entry.name) ?? [];
   if (fns.length === 0) return [];
-  const proven = new Set(proof.abi.filter((item) => item.type === 'function').map((item) => parseFunctionSignature(namedSignatureOfAbiEntry(item)).signature));
+  const proven = new Set(proof.abi.filter((item) => item.type === 'function').flatMap((item) => signatureOf(item) ?? []));
   return fns.map((fn) => fn.signature).filter((signature) => !proven.has(signature));
+}
+
+/** The canonical signature of an ABI function entry, or undefined for one with a type no template can name, such as `function`. */
+function signatureOf(item: Readonly<Record<string, unknown>>): string | undefined {
+  try {
+    return parseFunctionSignature(namedSignatureOfAbiEntry(item)).signature;
+  } catch (error) {
+    if (error instanceof AbiSignatureError) return undefined;
+    throw error;
+  }
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -1008,7 +1022,7 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, 
   const contract = /^[A-Za-z_$][A-Za-z0-9_$]{0,63}$/.test(proof.contractName) ? code(proof.contractName) : 'a name that is not a Solidity identifier';
   const metadata = proof.metadataHashMasked ? '; FINDING: the metadata hash differs, so the verified source is not the deployed text and its parameter names are not proven' : '';
   const masked = `${proof.immutablesMasked} immutable, ${proof.librariesMasked} library spans masked${metadata}`;
-  const fns = subject.kind === 'template' ? (functionsOn(subject.template, registry).get(entry.name) ?? []) : [];
+  const fns = functionsOn(subject, registry).get(entry.name) ?? [];
   const missing = missingFromAbi(subject, registry, entry, proof);
   const called = fns.length === 0 ? 'none' : missing.length === 0 ? `PASS, all ${fns.length}` : `FINDING: not in the ABI: ${missing.map(code).join(', ')}`;
   return `${name} PROVEN | ${proxy} | ${contract}, solc ${code(proof.compiler)} | ${code(proof.codeHash)} | ${pinVerdict(entry, proof)} | ${called} | ${masked} | ${proof.block.number} |`;

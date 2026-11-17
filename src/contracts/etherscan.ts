@@ -71,18 +71,21 @@ export function etherscanFromEnv(env: Env): EtherscanGet {
   return etherscanHttps(key);
 }
 
-/** Etherscan says it is rate limited in an answer with HTTP status 200. */
-function rateLimited({ body }: EtherscanAnswer): boolean {
-  if (typeof body !== 'object' || body === null) return false;
-  const { status, result } = body as Record<string, unknown>;
-  return status === '0' && typeof result === 'string' && /rate limit/i.test(result);
+/**
+ * Etherscan refuses with HTTP status 200 and `status` "0", such as for a rate limit, a daily limit or a bad key; an
+ * unverified contract is status "1" with no source. A refusal is no answer about the contract.
+ */
+function refused({ body }: EtherscanAnswer): string | undefined {
+  if (typeof body !== 'object' || body === null || (body as Record<string, unknown>).status !== '0') return undefined;
+  const { result } = body as Record<string, unknown>;
+  return typeof result === 'string' && /rate limit/i.test(result) ? 'rate limited' : 'refused';
 }
 
-/** `get`, asking again after each pause while Etherscan gives no answer or is rate limited, and noting an address that never got one. */
+/** `get`, asking again after each pause while Etherscan gives no answer or refuses, and noting an address that never got one. */
 export const retryingEtherscan =
   (get: EtherscanGet, note: NoteUnread, pausesMs?: readonly number[]): EtherscanGet =>
   (address) =>
-    retried(`etherscan ${address}`, () => get(address), (answer) => transientStatus({ status: answer.status, text: '' }) ?? (rateLimited(answer) ? 'rate limited' : undefined), note, pausesMs);
+    retried(`etherscan ${address}`, () => get(address), (answer) => transientStatus({ status: answer.status, text: '' }) ?? refused(answer), note, pausesMs);
 
 function text(fields: Record<string, unknown>, name: string): string {
   const value = fields[name];
