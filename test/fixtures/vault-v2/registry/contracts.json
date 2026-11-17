@@ -75,5 +75,29 @@
     "sourceLabel": "LsETH",
     "defillama": "liquid-collective",
     "coingecko": "liquid-staked-ethereum"
+  },
+  "morpho-oracle-lseth-usdc-86": {
+    "address": "0x377F722043bb5D021f4366127d49c772e1c01c7b",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0xfb7d54e0ce71efc8fffd3f4e1db0afa9265882da5cc76604b62adfac64501e80/usdc-lseth",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0xfb7d54e0ce71efc8fffd3f4e1db0afa9265882da5cc76604b62adfac64501e80",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue"
   }
 }
