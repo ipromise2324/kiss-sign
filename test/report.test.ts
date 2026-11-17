@@ -37,6 +37,7 @@ import {
 } from '../src/research/report.ts';
 import type { ReportInputs, ReportRecording, Subject } from '../src/research/report.ts';
 import type { Page } from '../src/research/source-page.ts';
+import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/vault-evidence.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
@@ -445,13 +446,42 @@ test('docs.json may name the ERC-20 standard for a function it defines on a toke
   assert.match(text, /^`approve\(address,uint256\)` on `usdt`: the ERC-20 standard defines this function, as `function approve\(address _spender, uint256 _value\)`; this does not show that the contract follows the standard\.$/m);
 });
 
-test("each ERC-20 declaration the program holds names the function's canonical signature", () => {
+test("each declaration the program holds names the function's canonical signature, or for a YAML entry its name", () => {
   for (const standard of STANDARDS.values()) {
     for (const [signature, declaration] of standard.declarations) {
-      const [, name, params] = /^function (\w+)\((.*)\)$/.exec(declaration)!;
-      assert.equal(`${name}(${params!.split(', ').map((p) => p.split(' ')[0]).join(',')})`, signature);
+      const yaml = /^- name: (\w+)$/.exec(declaration);
+      if (yaml !== null) assert.equal(yaml[1], signature.slice(0, signature.indexOf('(')), declaration);
+      else assert.equal(parseFunctionSignature(declaration.replace(/^function /, '')).signature, signature, declaration);
     }
   }
+});
+
+test('docs.json may name ERC-4626 for a vault function and WETH9 for a token function, each checked against its own page and org', () => {
+  const fluid = loadTemplate(ROOT, 'fluid/vault-deposit', registry);
+  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', 'vaults', 'fluid-fusdt', 'docs.json'), 'utf8')) as Record<string, unknown>;
+  const named = (standard: string, contract = 'fluid-fusdt') => parseDocs({ ...valid, 'deposit(uint256,address)': { contract, standard } }, fluid, registry);
+  const docs = named('erc-4626');
+  const deposit = docs.find((d) => d.fn.signature === 'deposit(uint256,address)')!;
+  assert.equal(deposit.url, 'https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-4626.md');
+  assert.throws(() => named('weth9'), /contract fluid-fusdt is a vault; WETH9 applies to token entries/);
+  assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { contract: 'usdt', standard: 'erc-4626' } }, fluid, registry), /contract usdt is a token; ERC-4626 applies to vault entries/);
+  assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { contract: 'usdt', standard: 'weth9' } }, fluid, registry), /WETH9 does not define approve\(address,uint256\)/);
+
+  const raw = 'https://raw.githubusercontent.com/ethereum/ERCs/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-4626.md';
+  const commits = { ...recording.commits, 'ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2': { kind: 'on-default', branch: 'master', status: 'identical' } } as const;
+  const onPage = (blocks: Extract<Page, { kind: 'served' }>['blocks']) => {
+    const text = quick({ ...recording.pages, [raw]: { kind: 'served', blocks } as Page }, new Map(), { kind: 'template', template: fluid, docs, vault: undefined }, new Map(), [], new Map(), registry, commits);
+    return cellsOf(text.split('\n').find((l) => l.startsWith('| `deposit(uint256,address)` |'))!).map((c) => c.trim());
+  };
+  assert.deepEqual(onPage([{ text: '#### deposit' }, { text: '- name: deposit', heading: 'deposit' }]), [
+    '`deposit(uint256,address)`',
+    '`fluid-fusdt`',
+    `ERC-4626 standard page <${deposit.url}>`,
+    'PASS',
+    'PASS',
+    'PASS',
+  ]);
+  assert.equal(onPage([{ text: '#### deposit' }, { text: 'deposit(uint256 assets, address receiver)' }]).at(-1), 'FINDING');
 });
 
 const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
