@@ -366,7 +366,7 @@ const ZH = {
   amountsToken: (token: string, n: number, safes: number, eoas: number, inRegistry: boolean): string =>
     `${token}：${n} 筆（Safe ${safes} 筆、EOA ${eoas} 筆）${inRegistry ? '' : '，這個代幣不在 registry 裡，卡片不能選它，所以不算待確認'}`,
   amountsParty: (party: 'sender' | 'receiver'): string => (party === 'sender' ? '寄出方：' : '收款方：'),
-  amountsBy: (by: bigint): string => (by === 0n ? '剛好' : `${by < 0n ? '少' : '多'} ${by < 0n ? -by : by} 單位`),
+  amountsBy: (by: bigint): string => (by === 0n ? '剛好' : `${by < 0n ? '少' : '多'} ${by < 0n ? -by : by} 個最小單位`),
   amountsCount: (n: number): string => `${n} 筆`,
   amountsBeyond: (lower: bigint, higher: bigint): string =>
     `寄出方的餘額最多${[lower > 0n ? `少了 ${lower}` : '', higher > 0n ? `多了 ${higher}` : ''].filter((t) => t !== '').join('、')} 個最小單位，超過模板容許的誤差；這樣的交易拿來簽，會是 MISMATCH。`,
@@ -924,12 +924,12 @@ const EN: Words = {
   searchSame: (same, counts) => [same ? 'Alchemy and Etherscan found exactly the same' : 'Alchemy and Etherscan found different transactions', ' (', counts, ').'],
   amountsLead:
     'Each transaction that fits the template was run again alone on its parent block, with the sender\'s and the receiver\'s balances read just before and after it, and compared with the amount it states. Shown only for an effect that declares a tolerance, or whose balances did not all move by exactly the stated amount.',
-  amountsTolerance: (less, more) => (less === 0n && more === 0n ? 'The template declares no tolerance, so it allows 0' : `The template's tolerance: up to ${less} base units lower, ${more} higher`),
+  amountsTolerance: (less, more) => (less === 0n && more === 0n ? 'The template declares no tolerance, so it allows 0' : `The template's tolerance: up to ${less} ${plural(Number(less), 'base unit', 'base units')} lower, ${more} higher`),
   amountsToken: (token, n, safes, eoas, inRegistry) =>
     `${token}: ${n} ${plural(n, 'transaction', 'transactions')} (${safes} from Safes, ${eoas} from EOAs)${inRegistry ? '' : '; this token is not in the registry, so no card can name it and it needs no review'}`,
   amountsParty: (party) => (party === 'sender' ? 'Sender: ' : 'Receiver: '),
-  amountsBy: (by) => (by === 0n ? 'exact' : `${by < 0n ? -by : by} ${by < 0n ? 'lower' : 'higher'}`),
-  amountsCount: (n) => `${n}`,
+  amountsBy: (by) => (by === 0n ? 'exact' : `${by < 0n ? -by : by} ${plural(Number(by < 0n ? -by : by), 'base unit', 'base units')} ${by < 0n ? 'lower' : 'higher'}`),
+  amountsCount: (n) => `in ${n}`,
   amountsBeyond: (lower, higher) =>
     `A sender's balance ended up to ${[lower > 0n ? `${lower} base units lower` : '', higher > 0n ? `${higher} base units higher` : ''].filter((t) => t !== '').join(' and ')} than stated, beyond the template's tolerance; such a transaction to sign would be MISMATCH.`,
   amountsUnfounded: 'The template declares a tolerance, but every measured transaction moved exactly the stated amount: no evidence for it.',
