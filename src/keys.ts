@@ -11,7 +11,7 @@ export const KEYS = [
     signup: 'https://dashboard.alchemy.com/',
     usedBy: 'pnpm kiss-sign verify, pnpm kiss-sign card new, and the pnpm research scripts',
   },
-  { name: 'etherscan', label: 'Etherscan', env: 'ETHERSCAN_API_KEY', signup: 'https://etherscan.io/myapikey', usedBy: 'pnpm past-txs, pnpm check-sources and pnpm report' },
+  { name: 'etherscan', label: 'Etherscan', env: 'ETHERSCAN_API_KEY', signup: 'https://etherscan.io/myapikey', usedBy: 'pnpm past-txs, pnpm check-sources, pnpm prove-abi, pnpm record-abi-case and pnpm report' },
   {
     name: 'github',
     label: 'GitHub',
