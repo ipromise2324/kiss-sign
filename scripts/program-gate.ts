@@ -1,8 +1,8 @@
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runCanary } from '../src/canaries.ts';
+import { runCanary, runProcess } from '../src/canaries.ts';
 import { CANARY_LIST, branchSplit, parseCanaryList } from '../src/verdict-core.ts';
 
 const USAGE = 'usage: pnpm program-gate <branch>, run in a clone at origin/main, such as pnpm program-gate origin/my-branch';
@@ -78,16 +78,7 @@ process.on('exit', () => {
 for (const shared of ['node_modules', 'vendor']) if (existsSync(join(root, shared))) symlinkSync(join(root, shared), join(tree, shared));
 if (existsSync(join(root, '.cache'))) cpSync(join(root, '.cache'), join(tree, '.cache'), { recursive: true });
 
-function run(command: string, args: readonly string[]): Promise<{ code: number | null; output: string }> {
-  return new Promise((done, fail) => {
-    const child = spawn(command, args, { cwd: tree, env: { ...process.env, NODE_TEST_CONTEXT: undefined }, stdio: ['ignore', 'pipe', 'pipe'] });
-    let output = '';
-    child.stdout.on('data', (chunk) => void (output += chunk));
-    child.stderr.on('data', (chunk) => void (output += chunk));
-    child.on('error', fail);
-    child.on('close', (code) => done({ code, output }));
-  });
-}
+const run = (command: string, args: readonly string[]) => runProcess(command, args, tree);
 
 const tail = (output: string) => output.trimEnd().split('\n').slice(-30).map((line) => `    ${line}`);
 const failures: string[] = [];
