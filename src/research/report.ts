@@ -31,6 +31,7 @@ import { factsScope, parseFactsRecording, protocolFacts, replaySources } from '.
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
 import type { PastTxs, Sampling } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
+import { replayMessages } from './messages.ts';
 import { pathText } from './api-source.ts';
 import { provenanceRepositories } from './npm-package.ts';
 import { judge } from './ledger.ts';
@@ -40,7 +41,7 @@ import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
 import type { ChainAccess, EntryReport, Snapshot } from './erc7730.ts';
 import { constText } from './study.ts';
-import { ANCHOR_KINDS, replayAsk } from './sources.ts';
+import { ANCHOR_KINDS, anchorEvent, replayAsk } from './sources.ts';
 import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
 import type { AnchorKind } from './sources.ts';
@@ -553,6 +554,14 @@ export function pastTxsRecordings(repoRoot: string, subject: Subject): { readonl
     });
 }
 
+function canonicalEvent(signature: string): boolean {
+  try {
+    return anchorEvent(signature).signature === signature;
+  } catch {
+    return false;
+  }
+}
+
 /** The report prints a recording's file name and query as a command, so each must be what `pnpm past-txs` writes. */
 function printableQuery(file: string, query: PastTxsRecording['query']): boolean {
   const address = (v: unknown) => typeof v === 'string' && /^0x[0-9a-fA-F]{40}$/.test(v);
@@ -564,6 +573,8 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
     (query.from === undefined || address(query.from)) &&
     (query.to === undefined || address(query.to)) &&
     (ANCHOR_KINDS as readonly string[]).includes(query.anchor) &&
+    (query.anchor === 'event') === (query.event !== undefined) &&
+    (query.event === undefined || canonicalEvent(query.event)) &&
     block(query.fromBlock) &&
     block(query.toBlock) &&
     block(query.head) &&
@@ -594,10 +605,11 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
         kind: query.anchor as AnchorKind,
         ...(query.from === undefined ? {} : { from: query.from as Address }),
         ...(query.to === undefined ? {} : { to: query.to as Address }),
+        ...(query.event === undefined ? {} : { event: anchorEvent(query.event) }),
       },
       sampling: pastTxsSampling(query),
     },
-    { ask: replayAsk(recording.sources), reader, registry, exclude: undefined, maxTxs: query.maxTxs },
+    { ask: replayAsk(recording.sources), reader, registry, readMessage: replayMessages(recording.messages ?? []), exclude: undefined, maxTxs: query.maxTxs },
   );
   return { file, query, text: renderPastTxs(run, registry), run };
 }
@@ -675,6 +687,8 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
       return `constant ${code(rule.value.kind === 'string' ? JSON.stringify(Buffer.from(rule.value.value.slice(2), 'hex').toString('utf8')) : constText(rule.value))}`;
     case 'free':
       return `${FREE_CLAIMS[rule.claim]}; ${byAi(rule.reason)}`;
+    case 'within-seconds':
+      return `a time at most ${rule.seconds} seconds after the time of the block the transaction is judged on: the latest block for a pending transaction, the block it ran in for an executed one; a later time is a MISMATCH`;
     case 'equals':
       return `the same number as ${code(rule.path)}, which is ${ruleText(rule.rule, template, registry)}`;
     case 'owner-before':
@@ -1034,13 +1048,13 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, 
   return `${name} PROVEN | ${proxy} | ${contract}, solc ${code(proof.compiler)} | ${code(proof.codeHash)} | ${pinVerdict(entry, proof)} | ${called} | ${masked} | ${proof.block.number} |`;
 }
 
-const COMMAND_FLAGS = ['token', 'anchor', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
+const COMMAND_FLAGS = ['token', 'anchor', 'event', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
 
 /** A recording that keeps its head names itself with `--same-windows-as`, so the command searches its windows again. */
 function pastTxsCommand({ query, file }: PastTxsSummary): string {
   const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
   const flag = (key: (typeof COMMAND_FLAGS)[number]) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
-  const args = COMMAND_FLAGS.flatMap((key) => (query[key] === undefined ? [] : [`${flag(key)} ${String(query[key])}`]));
+  const args = COMMAND_FLAGS.flatMap((key) => (query[key] === undefined ? [] : [`${flag(key)} ${key === 'event' ? `'${query[key]}'` : String(query[key])}`]));
   const windows = query.head === undefined ? [] : [`--same-windows-as ${name}`];
   return `pnpm past-txs ${query.template} ${[...args, ...windows].join(' ')} --record ${name}`;
 }

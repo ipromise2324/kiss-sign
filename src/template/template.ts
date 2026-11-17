@@ -151,7 +151,13 @@ export type Rule =
   /** A `bytes32` that holds the address `rule` binds, left-padded with 12 zero bytes, as bridges hold a recipient. */
   | { readonly kind: 'address-word'; readonly rule: AddressRule }
   | { readonly kind: 'const'; readonly value: ConstValue }
-  | { readonly kind: 'free'; readonly reason: Prose; readonly claim: FreeClaim }
+  /** `time`: a number of seconds since 1970, as a block's timestamp counts, which `pnpm past-txs` measures against the block's time. */
+  | { readonly kind: 'free'; readonly reason: Prose; readonly claim: FreeClaim; readonly time?: true }
+  /**
+   * A time, in seconds since 1970 as a block's timestamp counts, at most `seconds` after the time of the block the
+   * transaction is judged on, such as an order's expiry.
+   */
+  | { readonly kind: 'within-seconds'; readonly seconds: bigint }
   /** The same number as the transaction holds at an earlier template path, such as an approval its transfer spends. */
   | { readonly kind: 'equals'; readonly path: string; readonly rule: LeafRule }
   /**
@@ -522,8 +528,12 @@ function free(path: string, raw: unknown, type: AbiType): Rule {
   }
   const value = object(path, raw);
   const [claim, ...extra] = Object.keys(value);
-  if ((claim !== 'proof' && claim !== 'unread' && claim !== 'route') || extra.length > 0) throw new TemplateError(path, 'must be a reason, or exactly one of proof, unread, route');
+  if ((claim !== 'proof' && claim !== 'unread' && claim !== 'route' && claim !== 'time') || extra.length > 0) throw new TemplateError(path, 'must be a reason, or exactly one of proof, unread, route, time');
   if (claim === 'route' && type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(path, 'a route is a number that picks a pool');
+  if (claim === 'time') {
+    if (type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(path, 'a time is a number of seconds');
+    return { kind: 'free', reason: prose(`${path}.time`, value.time), claim: 'scalar', time: true };
+  }
   return { kind: 'free', reason: prose(`${path}.${claim}`, value[claim]), claim };
 }
 
@@ -538,6 +548,9 @@ function quantity(path: string, raw: unknown, scope: Scope): Quantity {
   if (rule === undefined) throw new TemplateError(path, `${JSON.stringify(name)} is neither card.<amount> nor the path of an earlier uint argument`);
   return { kind: 'path', path: name, rule };
 }
+
+/** The longest `withinSeconds` a template may declare: a time bound beyond a year bounds next to nothing. */
+const MAX_WITHIN_SECONDS = 365 * 24 * 60 * 60;
 
 const SHARE_PRICE_SCALE = { default: 27, min: 1, max: 36 } as const;
 
@@ -669,7 +682,7 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
   const keys = Object.keys(value);
   const key = keys[0];
   if (keys.length !== 1 || key === undefined) {
-    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, addressWord, ownerBefore, const, free, equals, atLeast, atMost, maxSharePrice, minSharePrice, call, encoded, keccak, items, fields, packed, eip712');
+    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, addressWord, ownerBefore, const, free, withinSeconds, equals, atLeast, atMost, maxSharePrice, minSharePrice, call, encoded, keccak, items, fields, packed, eip712');
   }
   const body = value[key];
   const at = `${path}.${key}`;
@@ -722,6 +735,12 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       if (scope.inMessage && freed.kind === 'free' && freed.claim !== 'scalar') throw new TemplateError(at, 'a member of a signed message is free only as a number, a bool or bytesN');
       return freed;
     }
+    case 'withinSeconds':
+      needs(['uint', 'int']);
+      if (typeof body !== 'number' || !Number.isInteger(body) || body < 1 || body > MAX_WITHIN_SECONDS) {
+        throw new TemplateError(at, `a whole number of seconds from 1 to ${MAX_WITHIN_SECONDS} (365 days)`);
+      }
+      return { kind: 'within-seconds', seconds: BigInt(body) };
     case 'atLeast':
     case 'atMost': {
       needs(['uint']);
