@@ -18,7 +18,7 @@ import { callTree, signedMessages } from '../verify/expected.ts';
 import type { CallTree } from '../verify/expected.ts';
 import { verdictPage } from '../verify/page.ts';
 import { expectedChanges } from '../simulate/effects.ts';
-import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, findingDecimals, parseVerdictFile, prepare, readTokenDecimals } from '../verify/verify.ts';
+import { CardRefusedError, VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, findingDecimals, parseVerdictFile, prepare, readTokenDecimals } from '../verify/verify.ts';
 import { decideVerdict } from '../verify/verdict.ts';
 import type { Evaluation, Prepared, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
 import type { Verdict } from '../verify/verdict.ts';
@@ -29,7 +29,7 @@ import type { Labels } from './labels.ts';
 import type { Language } from '../language.ts';
 import { detailText } from '../verify/detail-text.ts';
 import type { Io } from './io.ts';
-import { requireConfig, shellWord } from './setup.ts';
+import { refusalText, requireConfig, shellWord } from './setup.ts';
 import { recordingText } from '../chain/bytecode.ts';
 
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v1';
@@ -109,7 +109,14 @@ export async function verify(args: readonly string[], io: Io, w: Labels): Promis
     ...(markets === undefined ? {} : { markets }),
     addressBook: Object.fromEntries([...book].filter(([name]) => named.has(name)).map(([name, address]) => [name, checksumAddress(address)])),
   };
-  const parsed = prepare(inputs);
+  let parsed: Prepared;
+  try {
+    parsed = prepare(inputs);
+  } catch (error) {
+    if (!(error instanceof CardRefusedError)) throw error;
+    io.stderr(`kiss-sign: ${refusalText(error.refusal, w.card)}\n`);
+    return FAILED;
+  }
   const unreported = unreportedVault(parsed.card, parsed.templates, parsed.registry, (id) => reportedVaults(id, pathsAt(io.repoRoot, check.commit, `${TEMPLATES_DIR}/${id}`)));
   if (unreported !== undefined) {
     io.stderr(`kiss-sign: ${V.refused(unreported)}\n`);

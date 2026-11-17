@@ -8,7 +8,7 @@ import { MARKET_ENTRY_PARTS, isAttribute, isMarketEntryPart } from './registry.t
 import type { Market, Registry, RegistryEntry } from './registry.ts';
 import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
-import { WAD, contractRefusal } from './template/template.ts';
+import { WAD, contractRefusal, floorFields } from './template/template.ts';
 import type { CardRef, Template } from './template/template.ts';
 
 /** What the signer confirms at each signing: which templates, and each one's values. Addresses appear only as names. */
@@ -40,12 +40,14 @@ export type CardRefusal =
   | 'not-a-nonce'
   | 'not-a-percent'
   | 'not-a-threshold'
+  | 'zero-floor'
   | 'not-the-same'
   | 'two-settings-changes';
 
 export type Resolution =
   | { readonly kind: 'resolved'; readonly card: ResolvedCard }
-  | { readonly kind: 'refused'; readonly reason: CardRefusal; readonly at: string; readonly detail: string };
+  | { readonly kind: 'refused'; readonly reason: CardRefusal; readonly at: string; readonly field: string; readonly detail: string };
+export type Refused = Extract<Resolution, { readonly kind: 'refused' }>;
 
 export class CardError extends Error {
   override name = 'CardError';
@@ -106,13 +108,14 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
   const settings = card.operations.filter((op) => context.templates.get(op.template)?.effects.safe !== undefined);
   if (settings.length > 1) {
     const at = card.operations.indexOf(settings[1] as CardOperation);
-    return { kind: 'refused', reason: 'two-settings-changes', at: `operations[${at}]`, detail: "a card changes the Safe's owners or threshold in at most one operation; make each change its own transaction" };
+    return { kind: 'refused', reason: 'two-settings-changes', at: `operations[${at}]`, field: '', detail: "a card changes the Safe's owners or threshold in at most one operation; make each change its own transaction" };
   }
   for (const [i, op] of card.operations.entries()) {
     const refuse = (reason: CardRefusal, field: string, detail: string): Resolution => ({
       kind: 'refused',
       reason,
       at: `operations[${i}]${field === '' ? '' : `.values.${field}`}`,
+      field,
       detail,
     });
     const template = context.templates.get(op.template);
@@ -183,6 +186,11 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
         }
       }
     }
+    const zero = [...floorFields(template)].find((name) => {
+      const value = values.get(name);
+      return value?.kind === 'amount' && value.value === 0n;
+    });
+    if (zero !== undefined) return refuse('zero-floor', zero, `${zero} is 0, which bounds nothing: a computed amount, or one a share price bound or atLeast compares with, must be at least 1`);
     const named = template.same.map((ref) => {
       const target = resolveRef(ref, values, context.registry);
       const label = ref.attribute === undefined ? ref.field : `${ref.field}.${ref.attribute}`;
