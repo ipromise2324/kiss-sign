@@ -71,6 +71,7 @@ function section(facts: ProtocolFacts | undefined): string {
       pastTxs: [],
       spans: new Map(),
       today: undefined,
+      instances: undefined,
       erc7730: { text: 'not read', reports: [] },
       facts,
     },

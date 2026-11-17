@@ -7,6 +7,8 @@ import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { ABI_CASES_DIR, loadAbiCases, replayAbiCase } from '../contracts/abi-case.ts';
 import type { AbiCase } from '../contracts/abi-case.ts';
 import { pinOf, readRunningCode, readRunningCodeAt, samePin } from '../contracts/code.ts';
+import { proveAdapterOf, proveInstance } from '../contracts/instance.ts';
+import type { AdapterAnswer, InstanceProof, InstanceRefusal } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
@@ -63,6 +65,8 @@ export type ReportRecording = ListingsRecording & {
   readonly code: readonly Exchange[];
   /** The block `checkToday` read at; absent when no entry needed it, and in older recordings. */
   readonly today?: { readonly number: string; readonly hash: Hex };
+  /** The block `readInstances` asked the factories and vaults at, its reads in `code`; absent when none was asked, and in older recordings. */
+  readonly instances?: { readonly number: string; readonly hash: Hex };
   /** A template's protocol facts, parsed by `parseFactsRecording`; absent in a vault's and in older recordings. */
   readonly facts?: unknown;
 };
@@ -84,6 +88,8 @@ export type ReportInputs = {
   readonly spans: ReadonlyMap<Address, readonly SpanCheck[]>;
   /** What `checkToday` read for `todayEntries`; undefined when none needs it or the recording predates it. */
   readonly today: { readonly block: BlockRef; readonly checks: ReadonlyMap<Address, TodayCheck> } | undefined;
+  /** What `readInstances` asked for `instanceEntries`; undefined when none needs it or the recording predates it. */
+  readonly instances: { readonly block: BlockRef; readonly answers: ReadonlyMap<string, InstanceAnswers> } | undefined;
   /** What `pnpm erc7730` prints for the entries, and the facts it prints them from. */
   readonly erc7730: { readonly text: string; readonly reports: readonly EntryReport[] };
   /** A template's protocol facts; undefined for a vault, or when the recording predates them. */
@@ -337,10 +343,12 @@ export function signedEntryNames(template: Template, registry: Registry): Set<st
  * The entries whose ABI the program uses: each contract a call targets, a nested call's included, each a function's
  * page documents, each a view of the effects or a `facts` view reads, each token the effects move or an amount field
  * counts, each a computed field's read calls, each token or vault whose `decimals()` the protocol facts read, each Safe
- * singleton a call to the Safe itself runs, and each vault the report holds evidence for, with its asset and its factory, whose `instanceCheck` it asks.
+ * singleton a call to the Safe itself runs, each vault the report holds evidence for, with its asset and its factory, whose `instanceCheck` it asks,
+ * and the factory of each of `instanceEntries`, whose `instanceCheck` it asks too.
  */
 function abiUsed(subject: Subject, registry: Registry): Set<string> {
   const names = new Set(vaultsOf(subject, registry).flatMap((vault) => [vault.name, ...[vault.attributes.asset, vault.attributes.factory].filter((name) => name !== undefined)]));
+  for (const entry of instanceEntries(subject, registry)) names.add(entry.attributes.factory as string);
   if (subject.kind === 'vault') return names;
   const { template } = subject;
   subject.docs.forEach((doc) => names.add(doc.contract.name));
@@ -371,6 +379,26 @@ export function abiUnused(subject: Subject, registry: Registry): Set<string> {
 export function provedEntries(subject: Subject, registry: Registry): RegistryEntry[] {
   const unused = abiUnused(subject, registry);
   return entriesOf(subject, registry).filter((entry) => !unused.has(entry.name) && entry.routes === undefined);
+}
+
+/** What an entry's registry factory answered about it, and for an adapter, what each registry vault naming it answered. */
+export type InstanceAnswers = { readonly factory: InstanceProof | InstanceRefusal; readonly vaults: readonly AdapterAnswer[] };
+
+/** The entries other than a vault that name a registry factory, which the report asks at its latest block (`readInstances`). */
+export function instanceEntries(subject: Subject, registry: Registry): RegistryEntry[] {
+  return entriesOf(subject, registry).filter((entry) => entry.kind !== 'vault' && entry.attributes.factory !== undefined);
+}
+
+/** Each of `instanceEntries` asked through its factory's `instanceCheck`, and an adapter through each vault naming it; undefined when there is none. */
+export async function readInstances(reader: Reader, subject: Subject, registry: Registry, block: BlockRef): Promise<ReportInputs['instances']> {
+  const asked = instanceEntries(subject, registry);
+  if (asked.length === 0) return undefined;
+  const answers = new Map<string, InstanceAnswers>();
+  for (const entry of asked) {
+    const factory = await proveInstance(reader, registry, entry.name, block);
+    answers.set(entry.name, { factory, vaults: entry.kind === 'adapter' ? await proveAdapterOf(reader, registry, entry, block) : [] });
+  }
+  return { block, answers };
 }
 
 /** The entries no ABI proof compares with the chain, so the report reads their code at its latest block (`checkToday`). */
@@ -411,6 +439,7 @@ export function trimReportRecording(
   erc7730: Erc7730Section,
   code: readonly Exchange[],
   today: BlockRef | undefined,
+  instances: BlockRef | undefined,
 ): ReportRecording {
   const base = trimForRecording(entries, listings, pages, fetched);
   const docs = subject.kind === 'template' ? subject.docs : [];
@@ -424,7 +453,16 @@ export function trimReportRecording(
       ),
     ]),
   );
-  return { ...base, pages: trimmed, vaults: Object.fromEntries(vaults), erc7730, code: code.map(trimBlockAnswers), ...(today === undefined ? {} : { today: { number: today.number.toString(), hash: today.hash } }) };
+  const at = (block: BlockRef) => ({ number: block.number.toString(), hash: block.hash });
+  return {
+    ...base,
+    pages: trimmed,
+    vaults: Object.fromEntries(vaults),
+    erc7730,
+    code: code.map(trimBlockAnswers),
+    ...(today === undefined ? {} : { today: at(today) }),
+    ...(instances === undefined ? {} : { instances: at(instances) }),
+  };
 }
 
 export async function erc7730Text(entries: readonly RegistryEntry[], registry: Registry, snapshot: Snapshot, chain: () => Promise<ChainAccess>): Promise<{ text: string; reports: EntryReport[] }> {
@@ -994,6 +1032,34 @@ function factsSection(template: Template, facts: ProtocolFacts | undefined, regi
   return out;
 }
 
+function factoryAnswersSection(inputs: ReportInputs): string[] {
+  const asked = instanceEntries(inputs.subject, inputs.registry);
+  if (asked.length === 0) return [];
+  const block = inputs.instances?.block.number ?? '';
+  const answer = (read: InstanceProof | InstanceRefusal | AdapterAnswer): string =>
+    read.kind === 'created' ? read.answered : read.kind === 'uses' ? 'true' : `REFUSED: ${read.why}`;
+  const rows = asked.flatMap((entry) => {
+    const answers = inputs.instances?.answers.get(entry.name);
+    const factory = entry.attributes.factory as string;
+    if (answers === undefined) return [`| ${code(entry.name)} | ${code(factory)} | not read | ${block} |`];
+    const asked = answers.factory.kind === 'created' ? answers.factory.asked : (inputs.registry.entries.get(factory)?.instanceCheck?.fn.signature as string);
+    const factoryRow = `| ${code(entry.name)} | ${code(factory)} ${code(asked)} | ${answer(answers.factory)} | ${block} |`;
+    const vaultRows = answers.vaults.map((read) => `| ${code(entry.name)} | ${code(read.vault.name)} ${code(read.asked)} | ${answer(read)} | ${block} |`);
+    const none = entry.kind === 'adapter' && answers.vaults.length === 0 ? [`| ${code(entry.name)} | no registry vault names it as its ${code('adapter')} | not read | ${block} |`] : [];
+    return [factoryRow, ...vaultRows, ...none];
+  });
+  return [
+    '### Factory answers',
+    '',
+    `Each entry other than a vault that names a registry ${code('factory')}: whether, through both providers at the report's latest block, that factory's ${code('instanceCheck')} answers that it created the entry, and for an adapter, whether each registry vault whose ${code('adapter')} attribute names it answers its own factory's ${code('adapterCheck')} true for it. An entry's answers together are one place for its address, which counts only when every one passes.`,
+    '',
+    '| Entry | Asked | Answer | Block |',
+    '| --- | --- | --- | --- |',
+    ...rows,
+    '',
+  ];
+}
+
 function todaySection(inputs: ReportInputs): string[] {
   const checked = todayEntries(inputs.subject, inputs.registry);
   if (checked.length === 0) return [];
@@ -1096,6 +1162,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       '',
     );
   }
+  out.push(...factoryAnswersSection(inputs));
 
   out.push(
     '## Code pins',
@@ -1232,6 +1299,8 @@ export async function replayInputs(
     pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
     spans: await checkSpans(replayReader(recording.code), entries),
     today: recording.today === undefined ? undefined : await readToday(replayReader(recording.code), subject, registry, { number: BigInt(recording.today.number), hash: recording.today.hash }),
+    instances:
+      recording.instances === undefined ? undefined : await readInstances(replayReader(recording.code), subject, registry, { number: BigInt(recording.instances.number), hash: recording.instances.hash }),
     erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
     facts: subject.kind === 'template' ? await replayFacts(subject.template, registry, entries, recording.facts) : undefined,
   };

@@ -166,6 +166,7 @@
     ],
     "defillama": "morpho-blue",
     "instanceCheck": "isVaultV2(address)",
+    "adapterCheck": "isAdapter(address)",
     "code": {
       "hash": "0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503",
       "from": 23375073

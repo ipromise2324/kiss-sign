@@ -28,6 +28,7 @@ import {
   readDocs,
   pastTxsRecordings,
   programChanges,
+  readInstances,
   readToday,
   renderReport,
   reportRecordingPath,
@@ -65,6 +66,7 @@ function quick(
   reg: Registry = scoped.registry,
   commits: ReportRecording['commits'] = recording.commits,
   today: ReportInputs['today'] = undefined,
+  instances: ReportInputs['instances'] = undefined,
 ): string {
   const inputs: ReportInputs = {
     subject,
@@ -77,6 +79,7 @@ function quick(
     pastTxs,
     spans,
     today,
+    instances,
     erc7730: { text: 'not read', reports: [] },
     facts: undefined,
   };
@@ -212,6 +215,36 @@ test("the report reads at its latest block the code of an entry no ABI proof cov
     `Today's code › \`liquidity\` › Today: committed PASS, live FINDING: runs \`${keccakCode('0x6003' as Hex)}\``,
   ]);
   assert.equal(await readToday(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
+});
+
+const IS_ADAPTER = '0x68c18beb';
+
+/** Answers each `eth_call` true, but `isAdapter(address)` with `isAdapter`. */
+const answering =
+  (isAdapter: Hex): Transport =>
+  async (_url, body) => {
+    const { params } = JSON.parse(body) as { params: [{ data: string }] };
+    const result = params[0].data.startsWith(IS_ADAPTER) ? isAdapter : `0x${'00'.repeat(31)}01`;
+    return { status: 200, text: JSON.stringify({ jsonrpc: '2.0', id: 1, result }) };
+  };
+
+test("the report asks an adapter's factory and the vault naming it, from its recording too, and --compare flags a vault that no longer allocates through it", async () => {
+  const { subject, registry: seen } = loadReport(ROOT, registry, { template: 'morpho/vault-v2-revoke', cardVault: 'acuto-usdc-v2-4a57' });
+  const block: BlockRef = { number: 300n, hash: `0x${'30'.repeat(32)}` as Hex };
+  const options = { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] };
+  const recorded = recordingTransport(answering(`0x${'00'.repeat(31)}01` as Hex), REPLAY_ENDPOINTS);
+  const live = await readInstances(createReader(REPLAY_ENDPOINTS, recorded.transport, options), subject, seen, block);
+  assert.deepEqual(await readInstances(replayReader(recorded.exchanges()), subject, seen, block), live, 'the recorded reads give the same result');
+  const render = (instances: ReportInputs['instances']) => quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, undefined, instances);
+  const committed = render(live);
+  assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2\(address\)` \| true \| 300 \|$/m);
+  assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `acuto-usdc-v2-4a57` `isAdapter\(address\)` \| true \| 300 \|$/m);
+  const removed = await readInstances(createReader(REPLAY_ENDPOINTS, answering(`0x${'00'.repeat(32)}` as Hex), options), subject, seen, { ...block, number: 400n });
+  assert.deepEqual(compareReports(committed, render(removed)), [
+    'Factory answers › `acuto-usdc-v2-4a57-market-adapter` (2) › Answer: committed true, live REFUSED: acuto-usdc-v2-4a57 answered isAdapter(address) false for acuto-usdc-v2-4a57-market-adapter: it does not allocate through it',
+  ]);
+  assert.doesNotMatch(render(undefined), /isAdapter/, 'a recording that predates the answers prints them as not read');
+  assert.equal(await readInstances(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
 });
 
 test('a selector-routed proxy a call targets is not provable, and the report reads its code and routes at the latest block', () => {

@@ -69,6 +69,8 @@ export type RegistryEntry = {
   readonly moreSources?: readonly SourcePage[];
   readonly attributes: { readonly [A in Attribute]?: string };
   readonly instanceCheck?: InstanceCheck;
+  /** A factory's: a view every contract it creates answers true for an adapter it allocates through, such as `isAdapter(address)`. */
+  readonly adapterCheck?: AbiFunction;
   /** The DefiLlama protocol slug this contract belongs to, such as `morpho-blue`; `pnpm check-sources` compares its listing with `source`. */
   readonly defillama?: string;
   /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
@@ -490,7 +492,7 @@ function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'dependsOn', 'code', 'instanceCheck', 'standingAllowance', 'ignoresTrailer']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'dependsOn', 'code', 'instanceCheck', 'adapterCheck', 'standingAllowance', 'ignoresTrailer']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const routes = value.routes === undefined ? undefined : routingOf(`${path}.routes`, value.routes);
   const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code, routes);
@@ -543,10 +545,14 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     ...(value.ignoresTrailer === undefined ? {} : { ignoresTrailer: nonEmpty(`${path}.ignoresTrailer`, value.ignoresTrailer) }),
   };
   if (kind !== 'factory') {
-    if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
+    for (const key of ['instanceCheck', 'adapterCheck'] as const) if (value[key] !== undefined) throw new RegistryError(`${path}.${key}`, `a ${kind} has no ${key}`);
     return entry;
   }
-  return { ...entry, instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck) };
+  return {
+    ...entry,
+    instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck),
+    ...(value.adapterCheck === undefined ? {} : { adapterCheck: oneParamFunction(`${path}.adapterCheck`, value.adapterCheck, 'address') }),
+  };
 }
 
 function dependsOnOf(path: string, raw: unknown, own: string): string[] {
