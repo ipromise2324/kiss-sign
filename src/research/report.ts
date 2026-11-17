@@ -9,6 +9,8 @@ import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { ABI_CASES_DIR, loadAbiCases, replayAbiCase } from '../contracts/abi-case.ts';
 import type { AbiCase } from '../contracts/abi-case.ts';
 import { pinOf, readRunningCode, readRunningCodeAt, samePin } from '../contracts/code.ts';
+import { proveAdapterOf, proveInstance } from '../contracts/instance.ts';
+import type { AdapterAnswer, InstanceProof, InstanceRefusal } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
@@ -21,7 +23,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, inScope, loadTemplate, refNames, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
-import type { Line, Listings, ListingsRecording } from './listings.ts';
+import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
@@ -49,7 +51,7 @@ export type Subject =
   | { readonly kind: 'vault'; readonly vault: RegistryEntry };
 
 /** The official page for one function. The program checks the page; the AI writes no text about it. */
-export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: HttpsUrl; readonly standard: Standard | undefined };
+export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly publisher: SiteOwner; readonly url: HttpsUrl; readonly standard: Standard | undefined };
 
 /** What a report is of: a template by id, with `cardVault` for one reported per vault; or one registry vault by name. */
 export type Target = { readonly template: string; readonly cardVault?: string } | { readonly vault: string };
@@ -65,6 +67,8 @@ export type ReportRecording = ListingsRecording & {
   readonly code: readonly Exchange[];
   /** The block `checkToday` read at; absent when no entry needed it, and in older recordings. */
   readonly today?: { readonly number: string; readonly hash: Hex };
+  /** The block `readInstances` asked the factories and vaults at, its reads in `code`; absent when none was asked, and in older recordings. */
+  readonly instances?: { readonly number: string; readonly hash: Hex };
   /** A template's protocol facts, parsed by `parseFactsRecording`; absent in a vault's and in older recordings. */
   readonly facts?: unknown;
 };
@@ -86,6 +90,8 @@ export type ReportInputs = {
   readonly spans: ReadonlyMap<Address, readonly SpanCheck[]>;
   /** What `checkToday` read for `todayEntries`; undefined when none needs it or the recording predates it. */
   readonly today: { readonly block: BlockRef; readonly checks: ReadonlyMap<Address, TodayCheck> } | undefined;
+  /** What `readInstances` asked for `instanceEntries`; undefined when none needs it or the recording predates it. */
+  readonly instances: { readonly block: BlockRef; readonly answers: ReadonlyMap<string, InstanceAnswers> } | undefined;
   /** What `pnpm erc7730` prints for the entries, and the facts it prints them from. */
   readonly erc7730: { readonly text: string; readonly reports: readonly EntryReport[] };
   /** A template's protocol facts; undefined for a vault, or when the recording predates them. */
@@ -144,6 +150,11 @@ export function templateFunctions(template: Template): AbiFunction[] {
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
+function publisherOf(contract: RegistryEntry, registry: Registry): SiteOwner {
+  const factory = contract.attributes.factory;
+  return (factory === undefined ? undefined : registry.entries.get(factory)) ?? contract;
+}
+
 /**
  * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`, or `{ contract,
  * standard }` for a function a standard in `STANDARDS` defines for that contract's kind. Nothing else. The contract
@@ -174,10 +185,11 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
     if (names !== undefined && !names.includes(contract.name)) {
       throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is ${contract.name}, but the template calls it on ${names.length === 1 ? names[0] : `one of ${names.join(', ')}`}`);
     }
-    if (standard !== undefined) return { fn, contract, url: standard.page, standard };
+    const publisher = publisherOf(contract, registry);
+    if (standard !== undefined) return { fn, contract, publisher, url: standard.page, standard };
     const url = parseHttpsUrl(value.url);
     if (url === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.url is not an https URL`);
-    return { fn, contract, url, standard: undefined };
+    return { fn, contract, publisher, url, standard: undefined };
   });
 }
 
@@ -339,10 +351,12 @@ export function signedEntryNames(template: Template, registry: Registry): Set<st
  * The entries whose ABI the program uses: each contract a call targets, a nested call's included, each a function's
  * page documents, each a view of the effects or a `facts` view reads, each token the effects move or an amount field
  * counts, each a computed field's read calls, each token or vault whose `decimals()` the protocol facts read, each Safe
- * singleton a call to the Safe itself runs, and each vault the report holds evidence for, with its asset and its factory, whose `instanceCheck` it asks.
+ * singleton a call to the Safe itself runs, each vault the report holds evidence for, with its asset and its factory, whose `instanceCheck` it asks,
+ * and the factory of each of `instanceEntries`, whose `instanceCheck` it asks too.
  */
 function abiUsed(subject: Subject, registry: Registry): Set<string> {
   const names = new Set(vaultsOf(subject, registry).flatMap((vault) => [vault.name, ...[vault.attributes.asset, vault.attributes.factory].filter((name) => name !== undefined)]));
+  for (const entry of instanceEntries(subject, registry)) names.add(entry.attributes.factory as string);
   if (subject.kind === 'vault') return names;
   const { template } = subject;
   subject.docs.forEach((doc) => names.add(doc.contract.name));
@@ -375,6 +389,26 @@ export function provedEntries(subject: Subject, registry: Registry): RegistryEnt
   return entriesOf(subject, registry).filter((entry) => !unused.has(entry.name) && entry.routes === undefined);
 }
 
+/** What an entry's registry factory answered about it, and for an adapter, what each registry vault naming it answered. */
+export type InstanceAnswers = { readonly factory: InstanceProof | InstanceRefusal; readonly vaults: readonly AdapterAnswer[] };
+
+/** The entries other than a vault that name a registry factory, which the report asks at its latest block (`readInstances`). */
+export function instanceEntries(subject: Subject, registry: Registry): RegistryEntry[] {
+  return entriesOf(subject, registry).filter((entry) => entry.kind !== 'vault' && entry.attributes.factory !== undefined);
+}
+
+/** Each of `instanceEntries` asked through its factory's `instanceCheck`, and an adapter through each vault naming it; undefined when there is none. */
+export async function readInstances(reader: Reader, subject: Subject, registry: Registry, block: BlockRef): Promise<ReportInputs['instances']> {
+  const asked = instanceEntries(subject, registry);
+  if (asked.length === 0) return undefined;
+  const answers = new Map<string, InstanceAnswers>();
+  for (const entry of asked) {
+    const factory = await proveInstance(reader, registry, entry.name, block);
+    answers.set(entry.name, { factory, vaults: entry.kind === 'adapter' ? await proveAdapterOf(reader, registry, entry, block) : [] });
+  }
+  return { block, answers };
+}
+
 /** The entries no ABI proof compares with the chain, so the report reads their code at its latest block (`checkToday`). */
 export function todayEntries(subject: Subject, registry: Registry): RegistryEntry[] {
   const proved = new Set(provedEntries(subject, registry).map((entry) => entry.name));
@@ -395,7 +429,7 @@ export function functionOnPage(doc: DocLink): RegExp {
 }
 
 export function docSiteLine(doc: DocLink, listings: Listings): Line {
-  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.contract, listings);
+  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.publisher, listings);
   const ref = githubRef(new URL(doc.url));
   const org = ref.kind === 'pinned' ? ref.owner.toLowerCase() : undefined;
   if (org === doc.standard.org) return { kind: 'agrees', check: 'defillama', text: `GitHub org ${org} publishes ${doc.standard.name}` };
@@ -413,6 +447,7 @@ export function trimReportRecording(
   erc7730: Erc7730Section,
   code: readonly Exchange[],
   today: BlockRef | undefined,
+  instances: BlockRef | undefined,
 ): ReportRecording {
   const base = trimForRecording(entries, listings, pages, fetched);
   const docs = subject.kind === 'template' ? subject.docs : [];
@@ -426,7 +461,16 @@ export function trimReportRecording(
       ),
     ]),
   );
-  return { ...base, pages: trimmed, vaults: Object.fromEntries(vaults), erc7730, code: code.map(trimBlockAnswers), ...(today === undefined ? {} : { today: { number: today.number.toString(), hash: today.hash } }) };
+  const at = (block: BlockRef) => ({ number: block.number.toString(), hash: block.hash });
+  return {
+    ...base,
+    pages: trimmed,
+    vaults: Object.fromEntries(vaults),
+    erc7730,
+    code: code.map(trimBlockAnswers),
+    ...(today === undefined ? {} : { today: at(today) }),
+    ...(instances === undefined ? {} : { instances: at(instances) }),
+  };
 }
 
 export async function erc7730Text(entries: readonly RegistryEntry[], registry: Registry, snapshot: Snapshot, chain: () => Promise<ChainAccess>): Promise<{ text: string; reports: EntryReport[] }> {
@@ -758,7 +802,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   out.push('', '## Official documentation', '');
   if (docs.length === 0) return [...out, `The template calls no function, so ${code(DOCS_FILE)} names no page.`, ''];
   out.push(
-    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by ${code('(')}, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.`,
+    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol that contract belongs to, its factory's for an entry a factory deploys, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by ${code('(')}, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.`,
     '',
     '| Function | Contract | Page | Site | GitHub commit | Function on page |',
     '| --- | --- | --- | --- | --- | --- |',
@@ -998,6 +1042,34 @@ function factsSection(template: Template, facts: ProtocolFacts | undefined, regi
   return out;
 }
 
+function factoryAnswersSection(inputs: ReportInputs): string[] {
+  const asked = instanceEntries(inputs.subject, inputs.registry);
+  if (asked.length === 0) return [];
+  const block = inputs.instances?.block.number ?? '';
+  const answer = (read: InstanceProof | InstanceRefusal | AdapterAnswer): string =>
+    read.kind === 'created' ? read.answered : read.kind === 'uses' ? 'true' : `REFUSED: ${read.why}`;
+  const rows = asked.flatMap((entry) => {
+    const answers = inputs.instances?.answers.get(entry.name);
+    const factory = entry.attributes.factory as string;
+    if (answers === undefined) return [`| ${code(entry.name)} | ${code(factory)} | not read | ${block} |`];
+    const asked = answers.factory.kind === 'created' ? answers.factory.asked : (inputs.registry.entries.get(factory)?.instanceCheck?.fn.signature as string);
+    const factoryRow = `| ${code(entry.name)} | ${code(factory)} ${code(asked)} | ${answer(answers.factory)} | ${block} |`;
+    const vaultRows = answers.vaults.map((read) => `| ${code(entry.name)} | ${code(read.vault.name)} ${code(read.asked)} | ${answer(read)} | ${block} |`);
+    const none = entry.kind === 'adapter' && answers.vaults.length === 0 ? [`| ${code(entry.name)} | no registry vault names it as its ${code('adapter')} | not read | ${block} |`] : [];
+    return [factoryRow, ...vaultRows, ...none];
+  });
+  return [
+    '### Factory answers',
+    '',
+    `Each entry other than a vault that names a registry ${code('factory')}: whether, through both providers at the report's latest block, that factory's ${code('instanceCheck')} answers that it created the entry, and for an adapter, whether each registry vault whose ${code('adapter')} attribute names it answers its own factory's ${code('adapterCheck')} true for it. An entry's answers together are one place for its address, which counts only when every one passes.`,
+    '',
+    '| Entry | Asked | Answer | Block |',
+    '| --- | --- | --- | --- |',
+    ...rows,
+    '',
+  ];
+}
+
 function todaySection(inputs: ReportInputs): string[] {
   const checked = todayEntries(inputs.subject, inputs.registry);
   if (checked.length === 0) return [];
@@ -1100,6 +1172,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       '',
     );
   }
+  out.push(...factoryAnswersSection(inputs));
 
   out.push(
     '## Code pins',
@@ -1236,6 +1309,8 @@ export async function replayInputs(
     pastTxs: await Promise.all(pastRecordings.map(({ file, recording: r }) => summarizePastTxs(repoRoot, registry, file, r))),
     spans: await checkSpans(replayReader(recording.code), entries),
     today: recording.today === undefined ? undefined : await readToday(replayReader(recording.code), subject, registry, { number: BigInt(recording.today.number), hash: recording.today.hash }),
+    instances:
+      recording.instances === undefined ? undefined : await readInstances(replayReader(recording.code), subject, registry, { number: BigInt(recording.instances.number), hash: recording.instances.hash }),
     erc7730: await erc7730Text(entries, registry, snapshot, () => chainAt(replayReader(recording.erc7730.chain))),
     facts: subject.kind === 'template' ? await replayFacts(subject.template, registry, entries, recording.facts) : undefined,
   };

@@ -25,5 +25,14 @@
     "irm": "adaptive-curve-irm",
     "lltv": "915000000000000000",
     "id": "0x60977eff30f04afef416234f4c67160b339f7429fc334888c522896c1c5808f1"
+  },
+  "usdc-weeth-86": {
+    "lending": "morpho-blue",
+    "loanToken": "usdc",
+    "collateralToken": "weeth",
+    "oracle": "morpho-oracle-weeth-usdc-86",
+    "irm": "adaptive-curve-irm",
+    "lltv": "860000000000000000",
+    "id": "0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e"
   }
 }

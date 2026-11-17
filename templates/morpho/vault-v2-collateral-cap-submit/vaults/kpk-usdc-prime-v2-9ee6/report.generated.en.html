@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'">
+<title>morpho/vault-v2-collateral-cap-submit · kpk-usdc-prime-v2-9ee6 report</title>
+<style>
+:root{
+  --bg:#0b0c0e; --sunk:#08090a; --hover:#121317; --pop:#1a1c20; --line:#212328; --line2:#30333a;
+  --fg:#eceef0; --fg2:#b0b4ba; --fg3:#8a8f97;
+  --ok:#4cb782; --warn:#eda152; --bad:#ec6a5e;
+  --shadow:rgb(4 5 8 / .55);
+  --r:6px;
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC","Noto Sans TC","Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --t-body:16px; --t-row:15px; --t-small:14px; --t-label:13px; --t-mono:14px;
+  color-scheme:dark;
+  scrollbar-color:var(--line2) transparent;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:var(--t-body);line-height:1.65;letter-spacing:.005em;-webkit-font-smoothing:antialiased}
+::selection{background:var(--line2)}
+a{color:var(--fg);text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:4px;overflow-wrap:anywhere}
+a:hover{text-decoration-color:var(--fg2)}
+:focus-visible{outline:2px solid var(--fg);outline-offset:2px;border-radius:2px}
+code{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);border:1px solid var(--line2);border-radius:var(--r);padding:1px 6px;overflow-wrap:anywhere}
+.addr{font-family:var(--mono);font-size:var(--t-mono);letter-spacing:.01em;overflow-wrap:anywhere;color:var(--fg)}
+.num{font-variant-numeric:tabular-nums}
+.f2{color:var(--fg2)} .f3{color:var(--fg3)}
+b,strong{font-weight:590}
+.wrap{max-width:1180px;margin:0 auto;padding-block:32px 120px;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+
+.i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px}
+.i.ok{color:var(--ok)} .i.warn{color:var(--warn)} .i.bad{color:var(--bad)} .i.mute{color:var(--fg3)}
+
+.page{display:grid;grid-template-columns:184px minmax(0,1fr);gap:0 56px;align-items:start}
+.main{display:flex;flex-direction:column;gap:72px;max-width:880px;min-width:0}
+.rail{position:sticky;top:32px;font-size:var(--t-small)}
+.rail h2{font-size:var(--t-label);font-weight:590;color:var(--fg3);margin:0 0 10px;letter-spacing:.02em}
+.rail ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.rail a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 14px;margin-left:-1px;border-left:1px solid transparent;color:var(--fg2);text-decoration:none;line-height:1.4;overflow-wrap:anywhere}
+.rail a:hover{color:var(--fg);border-left-color:var(--fg2)}
+.cnt{display:inline-flex;align-items:center;gap:5px;color:var(--fg3);font-variant-numeric:tabular-nums}
+.cnt .i{width:14px;height:14px}
+.tocfold{display:none}
+@media (max-width:1040px){
+  .page{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .main{max-width:none}
+  .tocfold{display:block;margin-top:24px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .tocfold>summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:10px 0;color:var(--fg2);font-size:var(--t-small)}
+  .tocfold>summary::-webkit-details-marker{display:none}
+  .tocfold[open]>summary .chev{transform:rotate(90deg)}
+  .tocfold ol{list-style:none;margin:0 0 10px;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 16px}
+  .tocfold a{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--fg2);text-decoration:none;font-size:var(--t-small)}
+}
+
+h1{font-size:30px;line-height:1.25;font-weight:590;letter-spacing:-.02em;margin:0;overflow-wrap:break-word}
+h1 .byai{vertical-align:6px;margin-left:12px}
+.opid{display:block;font-family:var(--mono);font-size:var(--t-label);color:var(--fg3);margin-top:8px}
+.sub{color:var(--fg2);margin:14px 0 0;max-width:60ch;font-size:17px}
+.sub .byai,.intro .byai,.rec .byai,.verdict .byai,.row .t .byai,.role .byai,.props dd .byai{margin-left:8px}
+.checks{list-style:none;margin:28px 0 0;padding:14px 0;display:flex;flex-wrap:wrap;gap:10px 28px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.checks li{display:inline-flex;align-items:center;gap:8px;font-size:var(--t-row);position:relative}
+.checks .n{color:var(--fg2)}
+@media (max-width:600px){.checks{flex-direction:column}}
+.verdict{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:18px;font-size:var(--t-row)}
+.verdict .lbl{color:var(--fg3);flex:none}
+.verdict .i{align-self:center}
+.verdict .aiw>span:first-child{flex:1 1 14em}
+section{scroll-margin-top:24px}
+
+.byai{display:inline-block;font-size:12px;color:var(--fg2);border:1px dashed var(--fg3);border-radius:var(--r);padding:0 6px;line-height:20px;white-space:nowrap;font-weight:400;letter-spacing:0}
+.aiw{display:contents}
+.aisrc{color:var(--fg2);font-size:var(--t-small)}
+
+.tip{position:relative;display:inline-flex;cursor:help;color:var(--fg3)}
+.tip:hover,.tip:focus-visible{color:var(--fg)}
+.tip .bub{position:absolute;left:-8px;top:calc(100% + 8px);width:max-content;max-width:min(320px,calc(100vw - 48px));background:var(--pop);border:1px solid var(--line2);color:var(--fg);font-size:var(--t-small);line-height:1.55;padding:9px 12px;border-radius:var(--r);box-shadow:0 6px 14px var(--shadow);opacity:0;visibility:hidden;transition:opacity .12s ease-out,visibility 0s linear .12s;z-index:5;pointer-events:none;font-weight:400;letter-spacing:0}
+.tip:hover .bub{opacity:1;visibility:visible;transition:opacity .12s ease-out .25s,visibility 0s linear .25s}
+.tip:focus-visible .bub{opacity:1;visibility:visible;transition:none}
+@media (min-width:601px){.checks li:nth-last-child(-n+2) .bub{left:auto;right:-8px}}
+@media (max-width:600px){.tip{position:static}.tip .bub{left:0;max-width:calc(100vw - 40px)}}
+
+section{border-top:1px solid var(--line2);padding-top:28px}
+section>h2 .tip{align-self:center}
+section>h2{font-size:22px;font-weight:590;letter-spacing:-.012em;margin:0 0 8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+section>h2 .c{font-weight:400;font-size:var(--t-small);color:var(--fg3);letter-spacing:0}
+.lead{color:var(--fg3);font-size:var(--t-small);margin:0 0 20px}
+.lead.keylead{margin-top:12px}
+.intro{color:var(--fg2);margin:0 0 20px;max-width:62ch}
+h3{font-size:16px;font-weight:590;margin:36px 0 10px}
+
+.props{margin:0;font-size:var(--t-row);border-top:1px solid var(--line)}
+.props>div{display:grid;grid-template-columns:minmax(140px,24%) minmax(0,1fr) auto;gap:0 20px;padding:11px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.props dt,.props dd{margin:0}
+.props dt{color:var(--fg2)}
+.props dd.src{text-align:right;font-size:var(--t-small);color:var(--fg3)}
+.props .sub2{display:block;font-size:var(--t-small);color:var(--fg3);margin-top:2px}
+.props .pos{color:var(--ok)}
+@media (max-width:600px){.props>div{grid-template-columns:minmax(0,1fr) auto}.props dt{grid-column:1/-1}}
+.props.two>div{grid-template-columns:minmax(140px,24%) minmax(0,1fr)}
+.nest{margin:10px 0 0;border-left:1px solid var(--line2);padding-left:16px}
+.nest.flat{margin-top:0}
+.nest{display:grid;grid-template-columns:minmax(96px,max-content) minmax(0,1fr);gap:0 16px}
+.nest>div{display:contents}
+.nest dt,.nest dd{padding:5px 0}
+.nest dt{color:var(--fg2)}
+.srcline{font-size:var(--t-small);color:var(--fg3);margin:12px 0 0}
+.srcline a{color:var(--fg2)}
+@media (max-width:600px){.props.two>div{grid-template-columns:minmax(0,1fr)}.nest{grid-template-columns:minmax(0,1fr)}.nest dd{padding-top:0}}
+
+.diagram{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--sunk)}
+.diagram svg{display:block;width:100%;min-width:660px;height:auto}
+svg .life{stroke:var(--line2);stroke-dasharray:2 4}
+svg .node{fill:var(--hover);stroke:var(--line2)}
+svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
+svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
+svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
+svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
+svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
+svg .fn{fill:var(--fg);font:400 14px var(--mono)}
+svg .no{fill:var(--fg3);font:400 14px var(--mono)}
+svg .cap{fill:var(--fg2);font:14px var(--sans)}
+svg .capc{fill:var(--fg);font:13px var(--mono)}
+svg .codebox{fill:var(--hover);stroke:var(--line2)}
+svg .capg{fill:var(--ok);font:590 14px var(--sans)}
+svg .tagbox{fill:none;stroke:var(--fg3);stroke-dasharray:3 2}
+svg .tagt{fill:var(--fg2);font:12px var(--sans)}
+svg .bar{fill:var(--line2)} svg .bar.last{fill:var(--fg2)}
+svg .barna{fill:none;stroke:var(--fg3);stroke-dasharray:3 3}
+svg .axis{stroke:var(--line2)}
+svg .tick{fill:var(--fg3);font:12px var(--sans)}
+.scrollhint{display:none;font-size:var(--t-label);color:var(--fg3);margin-top:6px}
+@media (max-width:700px){.scrollhint{display:block}}
+
+.key{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:center;margin:36px 0 0;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);font-size:var(--t-small);color:var(--fg3)}
+.key>span{display:inline-flex;gap:8px;align-items:center}
+.key .k0{color:var(--fg3);font-weight:590}
+.cb{margin-top:40px}
+.callh{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+.callh .no{font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.callh .fnn{font-family:var(--mono);font-size:16px;font-weight:590;overflow-wrap:anywhere}
+.callh .fnn .ct{color:var(--fg2);font-weight:400}
+.callh .sel{font-family:var(--mono);font-size:var(--t-label);color:var(--fg3)}
+.callh .what{font-size:16px;font-weight:590}
+.sends{font-size:var(--t-row);color:var(--fg2);padding:10px 0;border-bottom:1px solid var(--line)}
+.doc{font-size:var(--t-small);color:var(--fg2);margin-top:4px}
+.cdoc{padding:10px 0;border-bottom:1px solid var(--line)}
+.cdoc .doc{margin-top:0}
+.arg{display:grid;grid-template-columns:200px minmax(0,1fr);gap:4px 24px;padding:16px 0;border-bottom:1px solid var(--line)}
+.arg .nm{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
+.arg .pn{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere}
+.arg .val{min-width:0}
+.arg .mid{margin-top:6px;font-size:var(--t-small);color:var(--fg3)}
+.arg .mid .addr{font-size:13px;color:var(--fg2)}
+.arg .raw{font-family:var(--mono);font-size:var(--t-mono);color:var(--fg);overflow-wrap:anywhere;line-height:1.5}
+.arg .raw .ex{font-family:var(--sans);font-size:12px;color:var(--fg3);margin-left:8px}
+.arg .is{color:var(--fg);font-size:var(--t-row);margin-top:4px}
+.arg .is .f3{font-size:var(--t-small)}
+.arg .ai{display:flex;gap:10px;align-items:baseline;margin-top:8px;font-size:var(--t-small);color:var(--fg2);line-height:1.6}
+.arg .ai .byai{flex:none}
+.who{display:inline-flex;align-items:center;font-size:var(--t-label);line-height:22px;padding:0 8px;border-radius:var(--r);border:1px solid var(--line2);color:var(--fg3);white-space:nowrap}
+.who.you{color:var(--fg);border-color:var(--fg2);font-weight:590}
+.who.app{color:var(--warn);border-color:rgb(237 161 82 / .45)}
+.parts{grid-column:2;margin-top:12px;border-left:1px solid var(--line2);padding-left:16px}
+.plabel{font-size:var(--t-small);color:var(--fg2);padding:2px 0 8px}
+.part{display:grid;grid-template-columns:132px minmax(0,1fr);gap:2px 16px;padding:10px 0;border-top:1px solid var(--line)}
+.part:first-child,.plabel+.part{border-top:0;padding-top:2px}
+.part .pn{font-family:var(--mono);font-size:var(--t-small);color:var(--fg2);overflow-wrap:anywhere}
+.part .pchips{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:6px;font-family:var(--sans)}
+.part .pchips .who{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.part .raw{font-size:var(--t-small)}
+.part .is{font-size:var(--t-small)}
+.part .ai{margin-top:4px}
+.part>.parts{grid-column:1/-1}
+@media (max-width:720px){
+  .arg{grid-template-columns:minmax(0,1fr)}
+  .arg .nm{flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap}
+  .parts{grid-column:1}
+  .part{grid-template-columns:minmax(0,1fr)}
+}
+
+.rows{border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.row:hover,.ad:hover{background:var(--hover)}
+.row .i{margin-top:4px}
+.row .t{font-weight:590;font-size:var(--t-body)}
+.row .meta{font-size:var(--t-row);color:var(--fg2);margin-top:6px}
+.row .meta a{margin-left:8px;color:var(--fg2)}
+.row .rec{font-size:var(--t-row);margin-top:8px}
+.row .rec .lbl{color:var(--fg3);margin-right:8px}
+
+.ad{scroll-margin-top:24px;display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 12px;padding:16px 8px 16px 0;border-bottom:1px solid var(--line)}
+.ad .i{margin-top:4px}
+.ad .nm{font-weight:590}
+.ad .role{color:var(--fg3);font-size:var(--t-small);margin-left:10px}
+.ad .conf{margin-left:10px}
+.ad .reviewed{margin-left:10px;color:var(--fg2)}
+.ad .body{grid-column:2;display:flex;flex-direction:column;gap:8px}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row)}
+.src{display:flex;flex-direction:column;gap:4px}
+.site{display:flex;gap:6px;align-items:flex-start;padding-left:16px;font-size:var(--t-small);color:var(--fg2)}
+.ad .site .i{width:14px;height:14px;margin-top:3px;flex:none}
+.aisrcs{display:flex;flex-direction:column;gap:6px;font-size:var(--t-row);padding-top:8px;border-top:1px solid var(--line)}
+.aisrcs .lbl{font-size:var(--t-small);color:var(--fg3)}
+.aisrcs .byai{margin-right:8px}
+.aires{margin-left:8px;font-size:var(--t-small);color:var(--fg3)}
+.res{display:inline-flex;gap:6px;align-items:center;margin-left:8px;color:var(--fg2)}
+.res .i{width:14px;height:14px}
+.confirmed{font-size:var(--t-small);color:var(--fg2)}
+details.fold{border-bottom:1px solid var(--line)}
+details.fold>summary{cursor:pointer;list-style:none;display:flex;gap:10px;align-items:center;padding:14px 0;color:var(--fg2);font-size:var(--t-row)}
+details.fold>summary::-webkit-details-marker{display:none}
+details.fold>summary:hover{color:var(--fg)}
+.chev{color:var(--fg3);transition:transform .15s ease-out}
+details.fold[open]>summary .chev{transform:rotate(90deg)}
+details.fold .ad:last-child{border-bottom:0}
+
+.warnline{display:flex;gap:10px;font-size:var(--t-row);color:var(--fg2);margin-top:14px}
+.pblock{border-top:1px solid var(--line);margin-top:16px}
+.ph{display:flex;gap:14px;flex-wrap:wrap;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--line);font-size:var(--t-row)}
+.ph .pt{font-weight:590;min-width:9em}
+.pg{display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 12px;padding:12px 0 12px 16px;border-bottom:1px solid var(--line);font-size:var(--t-row);color:var(--fg2)}
+.pg .pc{color:var(--fg)}
+.pg .pcalls{margin-bottom:4px}
+.pg .pex{font-size:var(--t-small);margin-top:4px}
+.pg .pex a{color:var(--fg3);font-family:var(--mono)}
+@media (max-width:600px){.pg{grid-template-columns:minmax(0,1fr);padding-left:0}}
+.warnline .i{margin-top:4px;color:var(--fg3)}
+
+ol.steps{list-style:none;margin:0;padding:0;counter-reset:s;border-top:1px solid var(--line)}
+ol.steps>li{display:grid;grid-template-columns:32px minmax(0,1fr);padding:14px 0;border-bottom:1px solid var(--line);counter-increment:s}
+ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--fg3);font-size:var(--t-row)}
+.cmd{margin:10px 0 0;padding:10px 12px;background:var(--sunk);border:1px solid var(--line2);border-radius:var(--r);overflow-x:auto}
+.cmd code{border:0;padding:0;white-space:pre}
+.then{margin:8px 0 0;font-size:var(--t-row);color:var(--fg2)}
+.hash{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;font-size:var(--t-row);margin-top:10px}
+.hash span:nth-child(odd){color:var(--fg3)}
+.auto ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;font-size:var(--t-row);color:var(--fg2)}
+.auto li{display:flex;gap:10px;align-items:baseline}
+.auto li .i{width:14px;height:14px;color:var(--fg3);align-self:center}
+.foot{font-size:var(--t-small);color:var(--fg3);max-width:70ch;border-top:1px solid var(--line);padding-top:16px}
+.foot code{border:0;padding:0;font-size:13px;color:var(--fg2)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ok" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5 8.2l2 2 4-4.4" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="warn" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="8" cy="11.1" r=".95" fill="currentColor"/></symbol>
+  <symbol id="bad" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="currentColor"/><path style="stroke:var(--bg)" d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8" stroke-width="1.7" stroke-linecap="round"/></symbol>
+  <symbol id="ask" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2.6 1.9"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></symbol>
+  <symbol id="info" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M8 7.2v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="4.9" r=".9" fill="currentColor"/></symbol>
+  <symbol id="na" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8h5.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+  <symbol id="chev" viewBox="0 0 16 16"><path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+<div class="wrap">
+<div class="page">
+
+<nav class="rail" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">10</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+</nav>
+
+<div class="main">
+
+<header>
+  <h1><span class="aiw" data-ai><span>Submit a Morpho Vault V2 collateral cap increase (curator)</span><span class="byai">AI research</span></span></h1>
+  <span class="opid">morpho/vault-v2-collateral-cap-submit · kpk-usdc-prime-v2-9ee6</span>
+  <p class="sub"><span class="aiw" data-ai><span>As curator, the Safe calls the vault&#39;s <code>multicall</code> with two <code>submit</code> calls inside: one queues raising the absolute cap of the collateral token you pick to the amount you type, the other raising its relative cap to the percentage you type. One collateral cap limits every market of that collateral together. This transaction only queues; once the vault&#39;s timelock has passed, anyone can execute it. It moves none of the Safe&#39;s assets.</span><span class="byai">AI research</span></span></p>
+  <ul class="checks">
+    <li data-state="bad" data-line="sources"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>Address sources <span class="n num">9 / 10</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 address has results for you to review; see &#34;To review&#34;. The other 9 are all confirmed in at least 2 places.</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">9 / 9</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify&#39;s source, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts. kpk-usdc-prime-v2-9ee6-market-adapter: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under &#34;Code unchanged&#34;.</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">10 / 10</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped. Signing does not touch vault-v2-factory, morpho-market-v1-adapter-v2-factory, kpk-usdc-prime-v2-9ee6-market-adapter; only the report compares their code. No ABI proof compares the code kpk-usdc-prime-v2-9ee6-market-adapter runs today, so the report reads it at the latest block and compares it with the current code pin.</span></span></li>
+    <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>Parameter checks <span class="n num">no tests</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The template has no argument that takes any value: each is bound to the card or to a fixed value, so nothing needs a perturbation test and none is recorded. At each signing, verify changes every bound argument one by one and checks that each becomes a MISMATCH.</span></span></li>
+    <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result.</span></span></li>
+  </ul>
+  <div class="verdict" data-state="bad"><span class="lbl">Advice</span><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span class="aiw" data-ai><span>OK to use. KPK&#39;s docs, CoinGecko and the factory all confirm this vault.</span><span class="byai">AI research: OK to use</span></span></div>
+  <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
+    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">10</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  </details>
+</header>
+
+<section id="flow">
+  <h2>Flow <span class="c">1 call</span></h2>
+  <p class="lead">Solid lines are the Safe&#39;s calls, dashed lines what a contract does inside, green lines what you get.</p>
+  <div class="diagram">
+  <svg viewBox="0 0 660 136" role="img" aria-labelledby="dt dd">
+    <title id="dt">Transaction flow</title>
+    <desc id="dd">Call 1: the Safe calls multicall on kpk-usdc-prime-v2-9ee6.</desc>
+    <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
+    <line class="life" x1="90" y1="58" x2="90" y2="128"/>
+    <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">your Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">sender</text>
+    <line class="life" x1="280" y1="58" x2="280" y2="128"/>
+    <rect class="node" x="193" y="14" width="174" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">kpk-usdc-prime-v2-9ee6</text><text class="nodes" x="280" y="50" text-anchor="middle">vault</text>
+    <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">multicall</text>
+    <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+  </svg>
+  </div>
+  <div class="scrollhint">Scroll the diagram sideways</div>
+  <div class="key">
+    <span class="k0">Who decides</span>
+    <span><span class="who you">you type</span>typed at each signing</span>
+    <span><span class="who you">you pick</span>picked at each signing</span>
+    <span><span class="who">fixed</span>any change is a MISMATCH</span>
+  </div>
+  <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below. No perturbation test is recorded to serve as an example for kpk-usdc-prime-v2-9ee6, so values decided at each signing show only their rule.</p>
+  
+  <div class="cb">
+    <div class="callh"><span class="no">1</span><span class="fnn"><span class="ct">kpk-usdc-prime-v2-9ee6.</span>multicall</span><span class="sel">0xac9650d8</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
+    <div class="arg" data-field="1.multicall.data">
+      <div class="nm"><span class="pn">data</span></div>
+      <div class="val"><div class="is">2 items</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The two calls the vault runs in order, fixed at two items: queue the absolute cap first, then the relative cap. If either fails, the whole transaction fails.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">[0]</div><div><div class="is"><code>submit</code> (<span class="addr">0xef7fa71b</span>)</div><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Item 1: queue an absolute cap increase.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>increaseAbsoluteCap</code> (<span class="addr">0xf6f98fd5</span>)</div><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The full call to queue, listed item by item below. The vault records its <code>executableAt</code>; only after that time can this exact call run.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">idData</div><div><div class="is">the arguments of <code>capId</code></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The data that identifies the cap. The vault uses its keccak256 as the cap&#39;s id; here it means &#34;every market with this collateral&#34;.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">kind<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">&#34;collateralToken&#34;</div><div class="is">fixed to &#34;collateralToken&#34;</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The kind of id, fixed to collateralToken: one cap shared by every market of this collateral the adapter allocates to, not one market or the whole adapter.</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken<div class="pchips"><span class="who you">you pick: token</span></div></div><div><div class="is">the token you pick</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The collateral token you pick.</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">newAbsoluteCap<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="is">the amount you type</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The new absolute cap: the most assets the vault can put into the collateral. Typing <code>max</code> means no absolute cap, relying only on the relative cap.</span></span></div></div></div>
+      </div></div>
+      </div></div>
+        <div class="part"><div class="pn">[1]</div><div><div class="is"><code>submit</code> (<span class="addr">0xef7fa71b</span>)</div><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Item 2: queue a relative cap increase.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">data</div><div><div class="is"><code>increaseRelativeCap</code> (<span class="addr">0x2438525b</span>)</div><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/VaultV2.sol">github.com/morpho-org/vault-v2</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The full call to queue, listed item by item below.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">idData</div><div><div class="is">the arguments of <code>capId</code></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The same cap id as item 1.</span></span></div></div>
+      <div class="parts">
+        <div class="part"><div class="pn">kind<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">&#34;collateralToken&#34;</div><div class="is">fixed to &#34;collateralToken&#34;</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The kind of id, fixed to collateralToken: one cap shared by every market of this collateral the adapter allocates to, not one market or the whole adapter.</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken<div class="pchips"><span class="who you">you pick: token</span></div></div><div><div class="is">the token you pick</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The collateral token you pick.</span></span></div></div></div>
+      </div></div>
+        <div class="part"><div class="pn">newRelativeCap<div class="pchips"><span class="who you">you type: percent</span></div></div><div><div class="is">the percent you type</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The new relative cap: the largest share of the vault&#39;s total assets the collateral can hold, where 100% equals 10^18.</span></span></div></div></div>
+      </div></div>
+      </div></div>
+      </div>
+    </div>
+  </div>
+  <h3>After the transaction</h3>
+  <dl class="props">
+    <div><dt><code>executableAt</code></dt><dd class="">increases</dd><dd class="src">kpk-usdc-prime-v2-9ee6.executableAt (increaseAbsoluteCap), read before and after the transaction</dd></div>
+    <div><dt><code>executableAt</code></dt><dd class="">increases</dd><dd class="src">kpk-usdc-prime-v2-9ee6.executableAt (increaseRelativeCap), read before and after the transaction</dd></div>
+  </dl>
+</section>
+
+<section id="protocol-morpho-blue">
+  <h2>morpho-blue</h2>
+  <p class="intro"><span class="aiw" data-ai><span>Morpho Vault V2 spreads deposits across several Morpho Blue markets. The curator sets how much each market can hold (its cap), and the allocator moves funds within the caps. Raising a cap takes a <code>submit</code> first, and it can run only after the timelock has passed.</span><span class="byai">AI research</span></span></p>
+  <dl class="props two">
+    <div><dt>TVL</dt><dd><span><span class="num">$10.05 B</span></span><span class="sub2">on Ethereum <span class="num">$4.49 B</span></span></dd></div>
+    <div><dt>Listed</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
+    <div><dt>proxy</dt><dd><span>not a proxy</span><span class="sub2"><a href="#a-kpk-usdc-prime-v2-9ee6">kpk-usdc-prime-v2-9ee6</a>, read from the code pin</span></dd></div>
+    <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>Vault V2&#39;s GitHub lists 10 audits (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest). <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">source</a></span><span class="byai">AI research</span></span></dd></div>
+    <div><dt>Incidents</dt><dd><span>0</span><span class="sub2">DefiLlama hacks listed under this protocol or its parent</span></dd></div>
+  </dl>
+  <p class="srcline">On 2026-11-17 the program read <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+</section>
+
+<section id="vault-kpk-usdc-prime-v2-9ee6">
+  <h2>Vault</h2>
+  <p class="lead"><a href="#a-kpk-usdc-prime-v2-9ee6">kpk-usdc-prime-v2-9ee6</a>: the recorded output of <code>pnpm vault-evidence</code>. Every number was asked of two providers. No conversion to US dollars here.</p>
+  <dl class="props">
+    <div><dt>Factory</dt><dd>vault-v2-factory answers <code>isVaultV2(address)</code> = true</dd><dd class="src">block 26432017</dd></div>
+    <div><dt>totalAssets now</dt><dd><span class="num">31,718,145.49 usdc</span></dd><dd class="src">2026-11-17, block 26432017</dd></div>
+    <div><dt>Holders</dt><dd><span class="num">97</span> addresses hold shares, of <span class="num">204</span> that ever received them</dd><dd class="src"></dd></div>
+    <div><dt>Largest holder</dt><dd><span class="num">50.61%</span></dd><dd class="src">of all shares</dd></div>
+    <div><dt>Top 10</dt><dd><span class="num">94.31%</span></dd><dd class="src">of all shares</dd></div>
+  </dl>
+  <h3>Monthly totalAssets</h3>
+  <div class="diagram">
+  <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
+    <title id="vt">Monthly totalAssets</title>
+    <desc id="vd">13 months, 2025-11-20 to 2026-11-17, highest 31,718,145.49 usdc</desc>
+    <text class="tick" x="16" y="18">highest 31,718,145.49 usdc</text>
+    <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
+    <rect class="bar" x="25.7" y="132" width="29.0" height="18"><title>2025-11-20: 5,003,734.79 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="135" width="29.0" height="15"><title>2025-12-20: 4,066,255.07 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">Dec</text>
+    <rect class="bar" x="122.3" y="135" width="29.0" height="15"><title>2026-01-19: 4,069,148.48 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="124" width="29.0" height="26"><title>2026-02-19: 7,038,200.59 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">Feb</text>
+    <rect class="bar" x="218.9" y="126" width="29.0" height="24"><title>2026-03-21: 6,451,401.98 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
+    <rect class="bar" x="267.2" y="118" width="29.0" height="32"><title>2026-04-20: 8,719,515.85 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="315.5" y="68" width="29.0" height="82"><title>2026-05-20: 22,358,437.25 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
+    <rect class="bar" x="363.8" y="56" width="29.0" height="94"><title>2026-06-19: 25,588,120.94 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="412.1" y="74" width="29.0" height="76"><title>2026-07-19: 20,839,804.55 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
+    <rect class="bar" x="460.4" y="74" width="29.0" height="76"><title>2026-08-18: 20,679,555.49 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="508.7" y="73" width="29.0" height="77"><title>2026-09-17: 21,092,909.42 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
+    <rect class="bar" x="557.0" y="38" width="29.0" height="112"><title>2026-10-18: 30,525,929.75 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar last" x="605.4" y="34" width="29.0" height="116"><title>2026-11-17: 31,718,145.49 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
+  </svg>
+  </div>
+  <div class="scrollhint">Scroll the diagram sideways</div>
+  <details class="fold">
+    <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Figures for 13 months</summary>
+    <dl class="props">
+      <div><dt class="num">2025-11-20</dt><dd class="num">5,003,734.79 usdc</dd></div>
+      <div><dt class="num">2025-12-20</dt><dd class="num">4,066,255.07 usdc</dd></div>
+      <div><dt class="num">2026-01-19</dt><dd class="num">4,069,148.48 usdc</dd></div>
+      <div><dt class="num">2026-02-19</dt><dd class="num">7,038,200.59 usdc</dd></div>
+      <div><dt class="num">2026-03-21</dt><dd class="num">6,451,401.98 usdc</dd></div>
+      <div><dt class="num">2026-04-20</dt><dd class="num">8,719,515.85 usdc</dd></div>
+      <div><dt class="num">2026-05-20</dt><dd class="num">22,358,437.25 usdc</dd></div>
+      <div><dt class="num">2026-06-19</dt><dd class="num">25,588,120.94 usdc</dd></div>
+      <div><dt class="num">2026-07-19</dt><dd class="num">20,839,804.55 usdc</dd></div>
+      <div><dt class="num">2026-08-18</dt><dd class="num">20,679,555.49 usdc</dd></div>
+      <div><dt class="num">2026-09-17</dt><dd class="num">21,092,909.42 usdc</dd></div>
+      <div><dt class="num">2026-10-18</dt><dd class="num">30,525,929.75 usdc</dd></div>
+      <div><dt class="num">2026-11-17</dt><dd class="num">31,718,145.49 usdc</dd></div>
+    </dl>
+  </details>
+</section>
+
+<section id="review">
+  <h2>To review <span class="c"> <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></span></h2>
+  <p class="lead">The AI checked each item first and gives its advice.</p>
+  <div class="rows">
+    <div class="row" data-state="bad" data-result="weeth/source.site">
+      <svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>
+      <div><div class="t">weeth: etherfi.gitbook.io/etherfi/developers, site differs from the one DefiLlama lists</div>
+        <div class="meta">This page&#39;s domain or GitHub organization is not one DefiLlama lists for this protocol.<a href="#a-weeth">see source</a></div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The page is on etherfi.gitbook.io, not ether.fi, the site DefiLlama lists. CoinGecko&#39;s ether-fi coin links its whitepaper on etherfi.gitbook.io, and the page lists weETH as 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee, the address CoinGecko lists for Wrapped eETH.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable: CoinGecko lists the same address.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>This template accepts one collateral, with one <code>submit</code> each for the absolute and the relative cap, the shape established curators sent (21 such transactions in the recent history of 265 curator Safes). Several ids in one transaction get MISMATCH from verify.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Put one id in each transaction. On MISMATCH, do not sign.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>The card lists every registry token as a collateral, including tokens no market of this vault uses. A cap on a collateral no market uses lets nothing in by itself: a market cap is needed too, and the adapter checks all three ids on each allocation. <a class="aisrc" href="https://github.com/morpho-org/vault-v2/blob/6f2af6602e05d9e123a87c1067712a4566608044/src/adapters/MorphoMarketV1AdapterV2.sol">source</a></span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Pick the collateral of the markets you mean to open; check its address on the card.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>This vault holds about 31.7 million USDC. 97 addresses hold shares; the largest has 50.61% and the top 10 hold 94.31%. It held under 9 million USDC until 2026-04, then 20 million to 31.7 million from 2026-05 on.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Half the shares sit with one holder, so a cap change moves mostly that holder&#39;s funds. Set the cap by your risk framework.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row">
+      <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
+      <div><div class="t"><span class="aiw" data-ai><span>This vault&#39;s timelock for both <code>increaseAbsoluteCap</code> and <code>increaseRelativeCap</code> is 3 days and 1 second (<code>timelock</code> read on chain, 259201 seconds). For that time after it is sent, depositors can see this change, and the sentinel or curator can cancel it with <code>revoke</code>.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>If you find a mistake within 3 days of sending, cancel it with <code>revoke</code>; do not wait for it to be executed.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="wallet">
+  <h2>Wallet display <span class="c">ERC-7730 descriptors</span></h2>
+  <p class="lead">A hardware wallet shows each call with an ERC-7730 descriptor.</p>
+  <dl class="props two">
+    <div><dt>1 kpk-usdc-prime-v2-9ee6.multicall</dt><dd class="f3">no descriptor; the wallet shows only raw data</dd></div>
+  </dl>
+</section>
+
+<section id="addresses">
+  <h2>Addresses <span class="c">10</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the registered factory (for an adapter, with the vault that uses it) lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <div class="rows">
+    <div class="ad" id="a-weeth" data-state="bad">
+      <svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>
+      <div><span class="nm">weeth</span><span class="role"><span class="conf">low confidence</span><span class="reviewed">AI has concerns</span></span></div>
+      <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts">etherfi.gitbook.io/etherfi/developers</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span>site: another site (compared with <a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/ether-fi">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    <details class="fold">
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>9 more addresses have no result for you to review</summary>
+    <div class="ad" id="a-usdc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>The vault&#39;s asset; the absolute cap is counted in it</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to circle-usdc (compared with <a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">deployer 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-usdt" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">usdt</span><span class="role"><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xdAC17F958D2ee523a2206206994597C13D831ec7</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://tether.to/en/supported-protocols/">tether.to/en/supported-protocols</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to tether (compared with <a href="https://defillama.com/protocol/tether">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/tether">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x36928500bc1dcd7af6a2b4008875cc336b927d57">deployer 0x36928500Bc1dCd7af6a2B4008875CC336b927D57</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-vault-v2-factory" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">vault-v2-factory</span><span class="role"><span class="aiw" data-ai><span>The Morpho Vault V2 factory. It answers <code>isVaultV2</code> = true: it created this vault</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xA1D94F746dEfa1928926b84fB2596c06926C0405</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>, <a href="https://github.com/morpho-org">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div></div>
+    </div>
+    <div class="ad" id="a-morpho" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">morpho</span><span class="role"><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x58D97B57BB95320F9a05dC918Aef65434969c2B2</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x937ce2d6c488b361825d2db5e8a70e26d48afed5">deployer 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-cbbtc" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">cbbtc</span><span class="role"><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg><span>site: nothing to compare (compared with <a href="https://defillama.com/protocol/coinbase">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-morpho-market-v1-adapter-v2-factory" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">morpho-market-v1-adapter-v2-factory</span><span class="role"><span class="aiw" data-ai><span>The factory that creates Vault V2 market adapters. It answers <code>isMorphoMarketV1AdapterV2</code> = true: it created the adapter</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>, <a href="https://github.com/morpho-org">GitHub verified domains</a>)</span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, github.com/morpho-org/sdks</div></div>
+    </div>
+    <div class="ad" id="a-usp" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">usp</span><span class="role"><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">docs.piku.co/piku/piku-platform</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to piku-finance (compared with <a href="https://defillama.com/protocol/piku-finance">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/piku-utility-token">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xb8eaa4f956c6324435f4088cae9cda974c358508">deployer 0xB8eaa4f956C6324435f4088cAe9cDa974C358508</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-kpk-usdc-prime-v2-9ee6" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">kpk-usdc-prime-v2-9ee6</span><span class="role"><span class="aiw" data-ai><span>USDC vault (V2, USDC Prime) curated by KPK; you are its curator</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime">docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to kpk (compared with <a href="https://defillama.com/protocol/kpk">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/kpk">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/kpk-usdc-prime">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="ok">factory<span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
+        <div class="confirmed">Confirmed in 3 places: official page, CoinGecko, factory</div>
+        <div class="aisrcs"><span class="lbl">AI also checked</span><span><span class="aiw" data-ai><span class="byai">AI</span><span>KPK&#39;s docs page for USDC Prime lists this vault, its Markets V1 Adapter 0x1d511811ACA9d8817a3e50F29CadFf6243A02902 and its curator Safe, the vault&#39;s <code>curator</code> read on chain <a class="aisrc" href="https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime">source</a></span></span><span class="aires">AI judgment: no problem</span></span><span><span class="aiw" data-ai><span class="byai">AI</span><span>The vault&#39;s <code>owner</code> read on chain, 0x8b884f80B3B839F52b6cE168f133e7a5D1f0A537, is the Security Council Safe KPK&#39;s Morpho docs page names <a class="aisrc" href="https://docs.kpk.io/vaults/vaults/morpho">source</a></span></span><span class="aires">AI judgment: no problem</span></span></div></div>
+    </div>
+    <div class="ad" id="a-kpk-usdc-prime-v2-9ee6-market-adapter" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">kpk-usdc-prime-v2-9ee6-market-adapter</span><span class="role"><span class="aiw" data-ai><span>The vault&#39;s Morpho Blue market adapter; the adapter and market cap ids use its address</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0x1d511811ACA9d8817a3e50F29CadFf6243A02902</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime">docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to kpk (compared with <a href="https://defillama.com/protocol/kpk">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/kpk">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok">factory and the vault using it<span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, factory and the vault using it</div>
+        <div class="confirmed">No call goes to this contract directly, so it has no ABI proof. Signing does not touch it; the report reads the code it runs at the latest block and compares it with the current code pin.</div></div>
+    </div>
+    </details>
+  </div>
+</section>
+
+<section id="past">
+  <h2>Past transactions</h2><p class="lead">No past transactions were studied for this operation.</p>
+</section>
+
+<section id="next">
+  <h2>Next steps</h2>
+  <ol class="steps">
+    <li><div>The first time you use this template, or after it changes, approve it<pre class="cmd"><code>bin/kiss-sign template approve morpho/vault-v2-collateral-cap-submit</code></pre>
+      <p class="then">It prints the template, the commit of main on GitHub and the template&#39;s keccak256. Answer <code>y</code> only if it is the one you reviewed.</p></div></li>
+    <li><div>Make the card<pre class="cmd"><code>bin/kiss-sign card new morpho/vault-v2-collateral-cap-submit</code></pre>
+      <p class="then">When <code>templates/</code> or <code>registry/</code> in your clone differs from main on GitHub, it stops before asking anything and tells you to run <code>git pull</code> first.</p></div></li>
+    <li><div><code>vault</code>: it lists the contracts you can pick, each with its full address. Pick <a href="#a-kpk-usdc-prime-v2-9ee6">kpk-usdc-prime-v2-9ee6</a>, address <span class="addr">0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6</span>
+      <p class="then">The numbers in the list may differ from someone else&#39;s, so pick by name; you can also type the name <code>kpk-usdc-prime-v2-9ee6</code>.</p></div></li>
+    <li><div>token (<code>collateral</code>): it lists each token you can pick, with its full address. Pick the one you want; both its name and its full address must be right.</div></li>
+    <li><div>amount (<code>absolute-cap</code>): type the amount of usdc in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
+      <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p>
+      <p class="then">You can also type <code>max</code>, which is 340282366920938463463374607431768211455 base units; card new prints the template&#39;s reason.</p></div></li>
+    <li><div>percent (<code>relative-cap</code>): type a percent, at most 100, such as <code>100</code> or <code>35.5</code>.
+      <p class="then">The card it shows before asking [y/N] gives the percent and the base units (100% is 10^18); check that the number is what you want.</p></div></li>
+    <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
+      <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
+    <li><div>Propose the transaction in the Safe web app (the first time you use this template or this vault, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+      <p class="then"><code>MATCH</code>: it prints the safeTxHash and the path of a page with the domain hash, the message hash and the checklist. Go on.</p>
+      <p class="then"><code>MISMATCH</code> or <code>UNVERIFIABLE</code>: do not sign. Read the checks it lists, then the AI judgment under &#34;<a href="#review">To review</a>&#34; in this report, which may explain why.</p></div></li>
+    <li><div>Hardened tier: on an independent computer, run<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
+      <p class="then">Compare the hashes it computes with the hardware wallet, and its page&#39;s checklist row by row with the <code>verify</code> page.</p></div></li>
+    <li><div>Compare the domain hash and the message hash on the hardware wallet character by character with the <code>verify</code> page. Sign only if they are the same.
+      <div class="hash"><span>Compare</span><span class="f2">the domain hash and the message hash, each 0x followed by 64 characters</span></div></div></li>
+  </ol>
+  <div class="auto"><h3>What the program does at each signing</h3>
+    <ul>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>The transaction has only this call, counting each call inside a MultiSend</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every argument follows the rules above, and encoding them again gives exactly the same bytes</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, no balance of the Safe may change at all</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>No allowance is higher after the transaction</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span><code>kpk-usdc-prime-v2-9ee6.executableAt</code>: executableAt increases</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span><code>kpk-usdc-prime-v2-9ee6.executableAt</code>: executableAt increases</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every registry contract the card uses still runs the code its code pin records</span></li>
+    </ul>
+  </div>
+</section>
+
+<footer class="foot">Written by <code>pnpm report morpho/vault-v2-collateral-cap-submit --vault-of kpk-usdc-prime-v2-9ee6 --record</code> from <code>templates/morpho/vault-v2-collateral-cap-submit/template.json</code>, <code>templates/morpho/vault-v2-collateral-cap-submit/docs.json</code>, <code>templates/morpho/vault-v2-collateral-cap-submit/vaults/kpk-usdc-prime-v2-9ee6/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/morpho-vault-v2-collateral-cap-submit/kpk-usdc-prime-v2-9ee6.json</code>, <code>testdata/abi</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/morpho/vault-v2-collateral-cap-submit/notes.json</code>, <code>templates/morpho/vault-v2-collateral-cap-submit/vaults/kpk-usdc-prime-v2-9ee6/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+
+</div>
+</div>
+</div>
+</body>
+</html>

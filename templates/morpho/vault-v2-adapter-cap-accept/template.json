@@ -1,0 +1,213 @@
+{
+  "id": "morpho/vault-v2-adapter-cap-accept",
+  "card": {
+    "vault": {
+      "kind": "contract",
+      "registryKind": "vault",
+      "defillama": "morpho-blue"
+    },
+    "absolute-cap": {
+      "kind": "amount",
+      "of": "vault.asset",
+      "max": {
+        "value": "340282366920938463463374607431768211455",
+        "why": {
+          "en": "Vault V2 stores an absolute cap in 128 bits (increaseAbsoluteCap, newAbsoluteCap.toUint128()), so 2^128-1 is the largest cap it holds; curators set it for an adapter they cap only by its relative cap.",
+          "zh-TW": "Vault V2 用 128 bits 存絕對上限（increaseAbsoluteCap，newAbsoluteCap.toUint128()），所以 2^128-1 是它能存的最大上限；curator 只想用相對上限限制轉接合約時就設這個值。"
+        }
+      }
+    },
+    "relative-cap": {
+      "kind": "percent"
+    }
+  },
+  "calls": [
+    {
+      "to": {
+        "card": "vault"
+      },
+      "value": {
+        "const": "0"
+      },
+      "function": "multicall(bytes[] data)",
+      "args": {
+        "data": {
+          "items": [
+            {
+              "call": {
+                "function": "increaseAbsoluteCap(bytes idData, uint256 newAbsoluteCap)",
+                "args": {
+                  "idData": {
+                    "encoded": {
+                      "as": "capId(string kind, address adapter)",
+                      "args": {
+                        "kind": {
+                          "const": "this"
+                        },
+                        "adapter": {
+                          "card": "vault.adapter"
+                        }
+                      }
+                    }
+                  },
+                  "newAbsoluteCap": {
+                    "card": "absolute-cap"
+                  }
+                }
+              }
+            },
+            {
+              "call": {
+                "function": "increaseRelativeCap(bytes idData, uint256 newRelativeCap)",
+                "args": {
+                  "idData": {
+                    "encoded": {
+                      "as": "capId(string kind, address adapter)",
+                      "args": {
+                        "kind": {
+                          "const": "this"
+                        },
+                        "adapter": {
+                          "card": "vault.adapter"
+                        }
+                      }
+                    }
+                  },
+                  "newRelativeCap": {
+                    "card": "relative-cap"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "effects": {
+    "gives": [],
+    "gets": [],
+    "views": [
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "executableAt(bytes data) returns (uint256 executableAt)",
+        "args": {
+          "data": {
+            "call": {
+              "function": "increaseAbsoluteCap(bytes idData, uint256 newAbsoluteCap)",
+              "args": {
+                "idData": {
+                  "encoded": {
+                    "as": "capId(string kind, address adapter)",
+                    "args": {
+                      "kind": {
+                        "const": "this"
+                      },
+                      "adapter": {
+                        "card": "vault.adapter"
+                      }
+                    }
+                  }
+                },
+                "newAbsoluteCap": {
+                  "card": "absolute-cap"
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "executableAt": "decreases"
+        }
+      },
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "executableAt(bytes data) returns (uint256 executableAt)",
+        "args": {
+          "data": {
+            "call": {
+              "function": "increaseRelativeCap(bytes idData, uint256 newRelativeCap)",
+              "args": {
+                "idData": {
+                  "encoded": {
+                    "as": "capId(string kind, address adapter)",
+                    "args": {
+                      "kind": {
+                        "const": "this"
+                      },
+                      "adapter": {
+                        "card": "vault.adapter"
+                      }
+                    }
+                  }
+                },
+                "newRelativeCap": {
+                  "card": "relative-cap"
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "executableAt": "decreases"
+        }
+      },
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "absoluteCap(bytes32 id) returns (uint256 absoluteCap)",
+        "args": {
+          "id": {
+            "keccak": {
+              "encoded": {
+                "as": "capId(string kind, address adapter)",
+                "args": {
+                  "kind": {
+                    "const": "this"
+                  },
+                  "adapter": {
+                    "card": "vault.adapter"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "absoluteCap": "card.absolute-cap"
+        }
+      },
+      {
+        "to": {
+          "card": "vault"
+        },
+        "function": "relativeCap(bytes32 id) returns (uint256 relativeCap)",
+        "args": {
+          "id": {
+            "keccak": {
+              "encoded": {
+                "as": "capId(string kind, address adapter)",
+                "args": {
+                  "kind": {
+                    "const": "this"
+                  },
+                  "adapter": {
+                    "card": "vault.adapter"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "change": {
+          "relativeCap": "card.relative-cap"
+        }
+      }
+    ]
+  }
+}

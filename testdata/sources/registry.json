@@ -1,5 +1,5 @@
 {
-  "fetched": "2026-11-16",
+  "fetched": "2026-11-17",
   "defillama": [
     {
       "slug": "circle-usdc",
@@ -72,6 +72,22 @@
       "gecko_id": "piku-utility-token"
     },
     {
+      "slug": "kpk",
+      "name": "KPK",
+      "url": "https://kpk.io/",
+      "github": [
+        "karpatkey"
+      ],
+      "gecko_id": "kpk"
+    },
+    {
+      "slug": "ether.fi-stake",
+      "name": "ether.fi Stake",
+      "url": "https://www.ether.fi/",
+      "github": [],
+      "parentProtocol": "parent#ether-fi"
+    },
+    {
       "slug": "merkl",
       "name": "Merkl",
       "url": "https://app.merkl.xyz/",
@@ -117,6 +133,15 @@
           "Uniswap"
         ],
         "gecko_id": "uniswap"
+      },
+      {
+        "id": "parent#ether-fi",
+        "name": "ether.fi",
+        "url": "https://www.ether.fi/",
+        "github": [
+          "etherfi-protocol"
+        ],
+        "gecko_id": "ether-fi"
       }
     ]
   },
@@ -193,6 +218,28 @@
           "github": [
             "https://github.com/piku-dao"
           ]
+        }
+      }
+    },
+    "kpk": {
+      "links": {
+        "homepage": [
+          "https://kpk.io/"
+        ],
+        "repos_url": {
+          "github": [
+            "https://github.com/karpatkey"
+          ]
+        }
+      }
+    },
+    "ether-fi": {
+      "links": {
+        "homepage": [
+          "https://www.ether.fi/"
+        ],
+        "repos_url": {
+          "github": []
         }
       }
     }
@@ -318,6 +365,22 @@
       "name": "USP Yield Optimized Stablecoin",
       "platforms": {
         "ethereum": "0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6"
+      }
+    },
+    {
+      "id": "kpk-usdc-prime",
+      "symbol": "kpk_usdc_v2",
+      "name": "kpk USDC Prime V2 Morpho Vault (Ethereum)",
+      "platforms": {
+        "ethereum": "0x4ef53d2caa51c447fdfeeedee8f07fd1962c9ee6"
+      }
+    },
+    {
+      "id": "wrapped-eeth",
+      "symbol": "weeth",
+      "name": "Wrapped eETH",
+      "platforms": {
+        "ethereum": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee"
       }
     },
     {
@@ -847,6 +910,44 @@
       "kind": "served",
       "blocks": []
     },
+    "https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Address",
+          "heading": "Key information"
+        },
+        {
+          "text": "0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6",
+          "heading": "Key information"
+        },
+        {
+          "text": "Markets V1 Adapter",
+          "heading": "Key information"
+        },
+        {
+          "text": "0x1d511811ACA9d8817a3e50F29CadFf6243A02902",
+          "heading": "Key information"
+        }
+      ]
+    },
+    "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "weETH",
+          "heading": "Tokens"
+        },
+        {
+          "text": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
+          "heading": "Tokens"
+        }
+      ]
+    },
+    "https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth": {
+      "kind": "served",
+      "blocks": []
+    },
     "https://developers.merkl.xyz/resources/chains-and-contracts": {
       "kind": "served",
       "blocks": [
@@ -994,6 +1095,18 @@
                   "address": "0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5"
                 }
               ]
+            }
+          }
+        }
+      }
+    },
+    "POST https://api.morpho.org/graphql {\"query\":\"query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }\",\"variables\":{\"id\":\"0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e\",\"chainId\":1}}": {
+      "kind": "answered",
+      "json": {
+        "data": {
+          "marketById": {
+            "oracle": {
+              "address": "0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411"
             }
           }
         }
@@ -1376,6 +1489,27 @@
     "0x9b42102feb9ba61d9793e49239eda0d0c3cb5bd5": {
       "kind": "unproven",
       "why": "transaction 0x3c0f00e22d4de50261b0f67a90b82daaa961ad9b96917c1b17305445d28ad7a3 neither deploys the address nor calls or deploys the contract that did"
+    },
+    "0x4ef53d2caa51c447fdfeeedee8f07fd1962c9ee6": {
+      "kind": "unproven",
+      "why": "transaction 0x7f254a736cdf2f0a2a01045f889569752b6038e159857702db33b9ed61366c63 neither deploys the address nor calls or deploys the contract that did"
+    },
+    "0x1d511811aca9d8817a3e50f29cadff6243a02902": {
+      "kind": "unproven",
+      "why": "transaction 0xcedf04cb2b0398b86652322ea01ebce3aa02d5251ecb3beaf12cbae08a507161 neither deploys the address nor calls or deploys the contract that did"
+    },
+    "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee": {
+      "kind": "proven",
+      "tx": "0xa034bdf7ec3b407125fcfbb786d908b0bcfd9976f2fbaf489776ba58b9db61ac",
+      "block": "17664336",
+      "sender": "0xf8a86ea1ac39ec529814c377bd484387d395421e",
+      "via": {
+        "kind": "transaction"
+      }
+    },
+    "0xa3a7a3cefee206f9d7fe00ec3c83324ed4228411": {
+      "kind": "unproven",
+      "why": "transaction 0x730d2d37ba15f9269e4ea5eee32f4da5f79d74a27aa17a41a92239f80118534f neither deploys the address nor calls or deploys the contract that did"
     },
     "0x7060fe0dd3e31be01efac6b28c8d38018fd163b0": {
       "kind": "proven",
