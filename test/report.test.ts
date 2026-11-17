@@ -562,9 +562,10 @@ test('a recording that keeps its head block is studied again from it, and the co
   assert.match(command(quick(undefined, undefined, subject, undefined, [after])) ?? '', new RegExp(` --max-txs ${past.query.maxTxs} --same-windows-as ${name} --record ${name}`));
 });
 
-test('--compare names the verdict core apart from the other program files a pull request changes', () => {
+test('--compare names the verdict core apart from the other program files a pull request changes, and the program gate', () => {
   const changed = ['templates/morpho/vault-deposit/template.json', 'testdata/report/x.json', 'src/template/check.ts', 'scripts/report.ts', 'scripts/check-push.ts', 'docs/design.md'];
-  const lines = programChangeLines('origin/b', splitChanges(changed.map((path) => ({ path, modified: true })), new Set(['src/template/check.ts'])));
+  const isGate = (path: string) => path.startsWith('scripts/');
+  const lines = programChangeLines('origin/b', splitChanges(changed.map((path) => ({ path, modified: true })), new Set(['src/template/check.ts']), isGate));
   assert.deepEqual(lines, [
     'PROGRAM CHANGE  verdict core: origin/b changes 3 file(s) the signing commands run, or the check that keeps them apart; merging it changes what verify checks for every signing:',
     '  src/template/check.ts',
@@ -572,8 +573,11 @@ test('--compare names the verdict core apart from the other program files a pull
     '  scripts/check-push.ts',
     'PROGRAM CHANGE  not the verdict: origin/b changes 1 other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs; review them as code:',
     '  docs/design.md',
+    'PROGRAM CHANGE  gate: origin/b changes 2 file(s) of the program gate, the canaries of docs/canaries.txt, the files they import or read, or the code that enforces the rules; only the signer merges it:',
+    '  scripts/report.ts',
+    '  scripts/check-push.ts',
   ]);
-  assert.deepEqual(programChangeLines('origin/b', splitChanges([{ path: 'templates/a/b/notes.json', modified: true }], new Set())), []);
+  assert.deepEqual(programChangeLines('origin/b', splitChanges([{ path: 'templates/a/b/notes.json', modified: true }], new Set(), isGate)), []);
 });
 
 test('a market field lists every market with its id, lltv and parts, binds each MarketParams part, and prints the views read', () => {

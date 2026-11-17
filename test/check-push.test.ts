@@ -95,6 +95,13 @@ function splitRepo(): { repo: string; home: string } {
   writeFileSync(join(repo, 'src', 'research.ts'), 'export const r = 1;\n');
   writeFileSync(join(repo, 'templates', 'x', 'op', 'report.generated.md'), 'first\n');
   writeFileSync(join(repo, 'templates', 'x', 'op', 'report.generated.en.html'), '<p>first</p>\n');
+  mkdirSync(join(repo, 'docs'));
+  mkdirSync(join(repo, 'test', 'canaries'), { recursive: true });
+  mkdirSync(join(repo, 'testdata', 'x'), { recursive: true });
+  writeFileSync(join(repo, 'docs', 'canaries.txt'), 'canary test/canaries/x.canary.ts\nguards the check refuses x\nreads testdata/x/\n');
+  writeFileSync(join(repo, 'test', 'canaries', 'x.canary.ts'), "import '../helper.ts';\nimport '../../src/check.ts';\n");
+  writeFileSync(join(repo, 'test', 'helper.ts'), 'export const h = 1;\n');
+  writeFileSync(join(repo, 'testdata', 'x', 'bad.json'), '{}\n');
   commit(repo, 'templates/x/op/template.json', '{}\n');
   git(repo, 'branch', '-M', 'main');
   git(repo, 'checkout', '-q', '-b', 'pr');
@@ -157,4 +164,36 @@ test('the hook refuses a push it cannot compare with origin/main', () => {
   const result = spawnSync(process.execPath, [script], { cwd: repo, env, encoding: 'utf8', input: `refs/heads/pr ${head} refs/heads/pr ${'0'.repeat(40)}\n` });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /git could not compare refs\/heads\/pr with origin\/main/);
+});
+
+test('a branch that changes the verdict core and the program gate together is refused, naming both', () => {
+  const gateFiles = [
+    ['test/canaries/x.canary.ts', "import '../helper.ts';\nimport '../../src/check.ts';\n// weaker\n"],
+    ['docs/canaries.txt', 'canary test/canaries/x.canary.ts\nguards nothing\n'],
+    ['testdata/x/bad.json', '{"changed":true}\n'],
+    ['test/helper.ts', 'export const h = 2;\n'],
+    ['scripts/program-gate.ts', 'process.exit(0);\n'],
+    ['package.json', '{"scripts":{"test":"true"}}\n'],
+  ];
+  for (const [path, text] of gateFiles) {
+    const { repo, home } = splitRepo();
+    writeFileSync(join(repo, 'src', 'check.ts'), 'export const ok = 2;\n');
+    mkdirSync(join(repo, path!, '..'), { recursive: true });
+    commit(repo, path!, text!);
+    const result = checkBranch(repo, home);
+    assert.equal(result.status, 1, path);
+    assert.match(result.stderr, /HEAD changes the verdict core and the program gate together, counted from where it left main/, path);
+    assert.match(result.stderr, new RegExp(`verdict core:\n {2}src/check\\.ts\nprogram gate:\n {2}${path!.replaceAll('.', '\\.')}`), path);
+  }
+});
+
+test('a gate change alone, or a core change beside a new fixture no canary reads, passes the push check', () => {
+  const gate = splitRepo();
+  commit(gate.repo, 'test/canaries/x.canary.ts', "import '../../src/check.ts';\n");
+  assert.equal(checkBranch(gate.repo, gate.home).status, 0);
+  const core = splitRepo();
+  writeFileSync(join(core.repo, 'src', 'check.ts'), 'export const ok = 2;\n');
+  mkdirSync(join(core.repo, 'testdata', 'y'));
+  commit(core.repo, 'testdata/y/new.json', '{}\n');
+  assert.equal(checkBranch(core.repo, core.home).status, 0);
 });

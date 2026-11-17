@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit",
     "check-push": "node scripts/check-push.ts",
     "verdict-core": "node scripts/verdict-core.ts",
+    "program-gate": "node scripts/program-gate.ts",
     "record-safe-tx": "node scripts/record-safe-tx.ts",
     "fetch-solc": "node scripts/fetch-vendored.ts solc",
     "fetch-psl": "node scripts/fetch-vendored.ts psl",
