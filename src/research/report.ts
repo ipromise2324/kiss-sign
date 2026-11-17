@@ -873,7 +873,7 @@ export async function checkSpans(reader: Reader, entries: readonly RegistryEntry
     const finding = (text: string): number => verdicts.push({ kind: 'finding', text: `FINDING: ${text}` });
     const unverifiable = (block: bigint): number => verdicts.push({ kind: 'unverifiable', text: `UNVERIFIABLE at block ${block}` });
     for (const [i, { from, pin }] of spans.entries()) {
-      const at = await readRunningCodeAt(reader, entry.address, from, entry.routes);
+      const at = await readRunningCodeAt(reader, entry.address, from, entry);
       if (at.kind === 'refused') {
         if (at.refusal.why === 'unverifiable') unverifiable(from);
         else finding(`block ${from} runs no code it can pin, ${code(at.refusal.why)}`);
@@ -888,7 +888,7 @@ export async function checkSpans(reader: Reader, entries: readonly RegistryEntry
         continue;
       }
       const previous = spans[i - 1]?.pin;
-      const before = await readRunningCodeAt(reader, entry.address, from - 1n, entry.routes);
+      const before = await readRunningCodeAt(reader, entry.address, from - 1n, entry);
       if (before.kind === 'refused' && before.refusal.why === 'unverifiable') unverifiable(from - 1n);
       else if (before.kind === 'read' && (previous === undefined || !samePin(pinOf(before.code), previous))) finding(`block ${from - 1n} runs ${pinText(pinOf(before.code))}`);
       else if (before.kind === 'refused' && previous !== undefined) finding(`block ${from - 1n} runs no code it can pin, ${code(before.refusal.why)}`);
@@ -910,7 +910,7 @@ export async function checkToday(reader: Reader, entries: readonly RegistryEntry
   const checked = new Map<Address, TodayCheck>();
   for (const entry of entries) {
     if (entry.code === undefined) continue;
-    const read = await readRunningCode(reader, entry.address, block, entry.routes);
+    const read = await readRunningCode(reader, entry.address, block, entry);
     if (read.kind === 'refused') {
       checked.set(entry.address, read.refusal.why === 'unverifiable' ? { kind: 'unverifiable', text: 'UNVERIFIABLE' } : { kind: 'finding', text: `FINDING: runs no code it can pin, ${code(read.refusal.why)}` });
     } else {

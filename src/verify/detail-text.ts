@@ -98,6 +98,12 @@ const REFUSAL: readonly Shape[] = [
   shape(`(${ADDRESS}) hands a call it has no function for, at byte (\\d+) of its code, to code the program neither proves nor pins`, (address, pc) =>
     `${address} 把沒有對應函式的呼叫（在它程式碼的第 ${pc} 位元組）交給程式既沒證明也沒釘選的程式碼`,
   ),
+  shape(`(\\S+) on (${ADDRESS}), a view of the entry's implementationRead, did not answer one nonzero address other than the proxy's own`, (call, address) =>
+    `${address} 的 ${call}（登記項目 implementationRead 的一個 view）沒有回答一個不是零、也不是 proxy 自己的地址`,
+  ),
+  shape(`a call the proxy has no function for did not run the code at (${ADDRESS}), which its implementationRead answers, as the proxy`, (address) =>
+    `proxy 沒有對應函式的呼叫，沒有以 proxy 的身分執行 implementationRead 回答的 ${address} 的程式碼`,
+  ),
   shape('Multicall3 has no code at this block, so the routes cannot be read', () => 'Multicall3 在這個區塊沒有程式碼，所以讀不到轉送路徑'),
   shape('a Multicall3 batch of route reads reverted', () => '讀轉送路徑的 Multicall3 批次 revert 了'),
 ];
