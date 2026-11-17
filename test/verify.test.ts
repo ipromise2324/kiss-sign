@@ -184,13 +184,30 @@ test('a signer who chose zh-TW at init gets the verify page and the terminal in 
   assert.match(pages[0]!, /MISMATCH：交易和你的卡片不符，不要簽/);
   assert.match(pages[0]!, /不顯示任何 hash。不要簽這筆交易。/);
   assert.match(stdout, /^┌─ MISMATCH · 交易和你的卡片不符，不要簽 ─+\n│ nonce +\d+\n/);
-  assert.match(stdout.replaceAll(/\n│ {9,}/g, ' '), /│ fields +multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}\n/);
+  const detail = /multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver：應為 0x[0-9a-f]{40}，實際 0x1{40}/;
+  /** The box wraps a long row at a space or between Chinese characters; joined without spaces, the row reads whole. */
+  const joined = (text: string) => text.replaceAll(/\n│ {9,}/g, '').replaceAll(' ', '');
+  const compact = new RegExp(`│fields${detail.source.replaceAll(' ', '')}\n`);
+  assert.match(joined(stdout), compact);
+  assert.match(pages[0]!, new RegExp(`<div class="meta">${detail.source}</div>`));
+  assert.doesNotMatch(stdout + pages[0]!, /expected|got 0x/);
   assert.match(stdout, /│ 不顯示任何 hash。不要簽這筆交易。\n└─+\n頁面上有：每一項檢查\n/);
   const result = (path: string) => (JSON.parse(readFileSync(path, 'utf8')) as VerdictFile).result;
   assert.deepEqual(result(verdicts[0]!), result(english.verdicts[0]!));
   const replayed = await run(['replay', verdicts[0]!], repo, home);
   assert.equal(replayed.code, 0, replayed.stderr);
   assert.match(replayed.stdout, /^┌─ MISMATCH · 重算已記錄的判決 ─+\n[\s\S]*\n和記錄的判決相同。\n$/);
+  assert.match(joined(replayed.stdout), compact);
+});
+
+test('in English the verdict box and the page show each detail exactly as the verdict file stores it', async () => {
+  const { stdout, pages, verdicts } = await verifyTx(receiverChanged());
+  const { verdict } = (JSON.parse(readFileSync(verdicts[0]!, 'utf8')) as VerdictFile).result;
+  const details = verdict.kind === 'MATCH' ? [] : verdict.causes.flatMap((cause) => cause.details);
+  assert.equal(details.length, 1);
+  assert.match(details[0]!, /^multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}$/);
+  assert.ok(stdout.replaceAll(/\n│ {9,}/g, ' ').includes(`│ fields  ${details[0]}\n`));
+  assert.ok(pages[0]!.includes(`<div class="meta">${details[0]}</div>`));
 });
 
 test('replay of a recorded MISMATCH reproduces it, says so, and exits 0', async () => {

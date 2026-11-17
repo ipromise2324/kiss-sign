@@ -24,7 +24,7 @@ Preconditions:
 - One run per Safe, made with `--clone`: `eval "$("$V/new-run.sh" <run> <fixture safe> --clone)"`. `eth/transfer` and `erc20/transfer` share a Safe and may share a run.
 - `"$V/term.sh" start "$KSV_RUN" "$KSV_CHECKOUT"`; every prompt is answered there. `verify` runs directly in `$KSV_CHECKOUT`.
 - Each `T <cmd> ...` below is `"$V/term.sh" <cmd> "$KSV_RUN" ...`.
-- The journey runs in an English home (`KSV_LANGUAGE` unset), so the prompts and pass lines below are the English ones. In a `zh-TW` home the terminal is in Traditional Chinese: `<field>：輸入編號 (1-N): ` for `<field>: type its number (1-N): `, `amount (整顆 <token> 的數量，6 位小數): ` for `amount (whole <token>, 6 decimals): `, `已核准 <id>。` for `Approved <id>.`, `已封存卡片 0x...` for `Sealed card 0x...`, and `MATCH · 交易符合你的卡片` in the verdict box. The endings `\(1-[0-9]+\): *$`, `\): *$` and `\[y/N\] *$` match in both languages.
+- The journey runs in an English home (`KSV_LANGUAGE` unset), so the prompts and pass lines below are the English ones. In a `zh-TW` home the terminal is in Traditional Chinese: `<field>：輸入編號 (1-N): ` for `<field>: type its number (1-N): `, `amount (整顆 <token> 的數量，6 位小數): ` for `amount (whole <token>, 6 decimals): `, `已核准 <id>。` for `Approved <id>.`, `已密封卡片 0x...` for `Sealed card 0x...`, and `MATCH · 交易符合你的卡片` in the verdict box. The endings `\(1-[0-9]+\): *$`, `\): *$` and `\[y/N\] *$` match in both languages.
 
 The journey, the same for every template; the table after it gives each template's values.
 

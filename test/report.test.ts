@@ -278,15 +278,15 @@ test('a docs.json or registry URL holding a character outside RFC 3986, or one M
 });
 
 test('text the AI wrote in the template prints escaped and labelled as written by the AI in the template', () => {
-  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8')) as { calls: { trailer: { why: string } }[] };
-  raw.calls[0]!.trailer.why = 'harmless | PASS | `x` | *bold* _em_ [link](https://y) <b>';
+  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8')) as { calls: { trailer: { why: Record<string, string> } }[] };
+  raw.calls[0]!.trailer.why = { en: 'harmless | PASS | `x` | *bold* _em_ [link](https://y) <b>', 'zh-TW': '無害' };
   const template = parseTemplate(raw, registry);
   const docs = parseDocs(JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')), template, registry);
   const text = quick(recording.pages, new Map(), { kind: 'template', template, docs, vault: undefined });
   const row = text.split('\n').find((l) => l.startsWith('| `approve` |'))!;
   assert.equal(cellsOf(row).length, 2, row);
   assert.ok(row.includes('written by the AI in the template: harmless \\| PASS \\| \\`x\\` \\| \\*bold\\* \\_em\\_ \\[link\\](https://y) \\<b\\>'), row);
-  raw.calls[0]!.trailer.why = 'pinged @maxey and $x^2$ and $$y$$';
+  raw.calls[0]!.trailer.why = { en: 'pinged @maxey and $x^2$ and $$y$$', 'zh-TW': '無害' };
   const mention = parseTemplate(raw, registry);
   const pinged = quick(recording.pages, new Map(), { kind: 'template', template: mention, docs, vault: undefined }).split('\n').find((l) => l.startsWith('| `approve` |'))!;
   assert.ok(
