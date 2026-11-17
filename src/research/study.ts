@@ -92,6 +92,8 @@ export type MisfitReason =
   | { readonly kind: 'not-sender'; readonly at: string }
   /** A leaf the template binds to the same value as the leaf at `other` holds another value. */
   | { readonly kind: 'differs'; readonly at: string; readonly other: string }
+  /** A time more than `seconds` after the time of the block the transaction ran in, which a `withinSeconds` rule refuses. */
+  | { readonly kind: 'late'; readonly at: string; readonly seconds: bigint }
   /**
    * An address the template binds to registry entries, such as a call's `to` bound to the card's vault, holds another
    * contract than any of them: one a `contract` rule names, or, for a card field that can name the anchor token, any
@@ -124,7 +126,8 @@ export type TxStudy =
   | { readonly kind: 'misfit'; readonly hash: Hex; readonly sender: Sender; readonly reason: MisfitReason }
   /**
    * The template's calls and arguments: exactly the template when `outside` is empty. `values` pairs with the rules of
-   * the sender's `Shape`; `paths` names each leaf.
+   * the sender's `Shape`; `paths` names each leaf. `time` is its block's time, read only for a template that declares a
+   * time, and undefined when it could not be.
    */
   | {
       readonly kind: 'fit';
@@ -135,6 +138,7 @@ export type TxStudy =
       readonly types: readonly AbiType[];
       readonly values: readonly string[];
       readonly outside: readonly Outside[];
+      readonly time: bigint | undefined;
     };
 
 /** A Safe's transaction that makes none of the template's top-level calls: another operation, not a variant of this one. */
@@ -321,6 +325,8 @@ export function misfitText(reason: MisfitReason, registry: Registry, names: Read
       return `${reason.at}: not the sender`;
     case 'differs':
       return `${reason.at}: differs from ${reason.other}`;
+    case 'late':
+      return `${reason.at}: more than ${reason.seconds} seconds after its block's time`;
     case 'entry':
       return `${reason.at}: expected ${reason.expected.join(' or ')}, got ${registry.byAddress.get(reason.actual)?.name ?? checksumAddress(reason.actual)}`;
     case 'other':
@@ -371,7 +377,24 @@ async function readMessages(tx: SafeTx, sender: Sender, shape: Shape, context: S
   return { candidates, unread };
 }
 
-async function judge(at: { readonly hash: Hex; readonly block: bigint }, tx: SafeTx, sender: Sender, shape: Shape, context: StudyContext): Promise<TxStudy> {
+/** Whether a rule makes a number a time, measured against the time of the block that set it. */
+export const isTime = (rule: LeafRule): boolean => (rule.kind === 'free' && rule.time === true) || rule.kind === 'within-seconds';
+
+async function blockTime(reader: Reader, number: bigint): Promise<bigint | undefined> {
+  const block = await reader.block(number);
+  if (block.kind === 'unverifiable') return undefined;
+  const header = await reader.header(block.value);
+  return header.kind === 'unverifiable' ? undefined : header.value.time;
+}
+
+/** The first leaf a `withinSeconds` rule binds that holds a time more than its seconds after `time`. */
+function late(rules: readonly LeafRule[], paths: readonly string[], values: readonly string[], time: bigint): MisfitReason | undefined {
+  const i = rules.findIndex((rule, i) => rule.kind === 'within-seconds' && BigInt(values[i] as string) > time + rule.seconds);
+  const rule = rules[i];
+  return rule?.kind === 'within-seconds' ? { kind: 'late', at: paths[i] as string, seconds: rule.seconds } : undefined;
+}
+
+async function judge(reader: Reader, at: { readonly hash: Hex; readonly block: bigint }, tx: SafeTx, sender: Sender, shape: Shape, context: StudyContext): Promise<TxStudy> {
   const { hash } = at;
   const { template, loosened } = shape;
   const { registry } = context;
@@ -395,7 +418,13 @@ async function judge(at: { readonly hash: Hex; readonly block: bigint }, tx: Saf
   const broken = wrongTarget ? undefined : loosened.rules.map((rule, i) => brokenRule(rule, i, loosened.rules, paths, values, sender)).find((reason) => reason !== undefined);
   if (broken !== undefined) return { kind: 'misfit', hash, sender, reason: broken };
   if (bound.kind === 'misfit') return { kind: 'misfit', hash, sender, reason: bound.reason };
-  return { kind: 'fit', hash, block: at.block, sender, paths, types: inspection.leaves.map((leaf) => leaf.type), values, outside: bound.outside };
+  const time = loosened.rules.some(isTime) ? await blockTime(reader, at.block) : undefined;
+  if (loosened.rules.some((rule) => rule.kind === 'within-seconds')) {
+    if (time === undefined) return { kind: 'unreadable', hash, reason: `the time of block ${at.block}, which a withinSeconds rule counts from, was not read` };
+    const tooLate = late(loosened.rules, paths, values, time);
+    if (tooLate !== undefined) return { kind: 'misfit', hash, sender, reason: tooLate };
+  }
+  return { kind: 'fit', hash, block: at.block, sender, paths, types: inspection.leaves.map((leaf) => leaf.type), values, outside: bound.outside, time };
 }
 
 const cardKey = (rule: LeafRule): string | undefined =>
@@ -434,6 +463,7 @@ export function brokenRule(
         : brokenRule(rule.rule, i, rules, paths, values, sender);
     case 'contract':
     case 'free':
+    case 'within-seconds':
     case 'share-price':
     case 'owner-before':
     case 'at-least':
@@ -524,10 +554,10 @@ async function studySafeTx(reader: Reader, tx: Transaction & { readonly to: Addr
   if (receipt === null || !receipt.logs.some((log) => log.address === tx.to && log.topics[0] === EXECUTION_SUCCESS)) {
     return { kind: 'not-studied', hash, why: 'no ExecutionSuccess from the Safe', to: tx.to, selector };
   }
-  return judge({ hash, block: tx.blockNumber }, safeTx, { kind: 'safe', address: tx.to }, context.shapes.whole, context);
+  return judge(reader, { hash, block: tx.blockNumber }, safeTx, { kind: 'safe', address: tx.to }, context.shapes.whole, context);
 }
 
-async function studyDirectCall(tx: Transaction & { readonly to: Address; readonly blockNumber: bigint }, context: StudyContext): Promise<TxStudy> {
+async function studyDirectCall(reader: Reader, tx: Transaction & { readonly to: Address; readonly blockNumber: bigint }, context: StudyContext): Promise<TxStudy> {
   const selector = tx.input.length >= 10 ? tx.input.slice(0, 10) : 'no data';
   const candidates = context.shapes.calls.flatMap((shape, call) => {
     const templateCall = shape.template.calls[0];
@@ -539,7 +569,7 @@ async function studyDirectCall(tx: Transaction & { readonly to: Address; readonl
   });
   if (candidates.length === 0) return { kind: 'not-studied', hash: tx.hash, why: 'calls no function the template calls', to: tx.to, selector };
   const direct: SafeTx = { ...EMPTY_SAFE_TX, safe: tx.from, to: tx.to, value: tx.value, data: tx.input };
-  const studies = await Promise.all(candidates.map(({ shape, call }) => judge({ hash: tx.hash, block: tx.blockNumber }, direct, { kind: 'eoa', address: tx.from, call }, shape, context)));
+  const studies = await Promise.all(candidates.map(({ shape, call }) => judge(reader, { hash: tx.hash, block: tx.blockNumber }, direct, { kind: 'eoa', address: tx.from, call }, shape, context)));
   return studies.find((study) => study.kind === 'fit' && study.outside.length === 0) ?? studies.find((study) => study.kind === 'fit') ?? (studies[0] as TxStudy);
 }
 
@@ -553,5 +583,5 @@ export async function studyTx(reader: Reader, hash: Hex, context: StudyContext):
   if (to === null) return { kind: 'not-studied', hash, why: 'calls no function the template calls', to: undefined, selector: 'contract creation' };
   if (blockNumber === null) return { kind: 'unreadable', hash, reason: 'the transaction is pending' };
   if (tx.input.startsWith(EXEC_TRANSACTION.selector)) return studySafeTx(reader, { ...tx, to, blockNumber }, context);
-  return studyDirectCall({ ...tx, to, blockNumber }, context);
+  return studyDirectCall(reader, { ...tx, to, blockNumber }, context);
 }
