@@ -206,10 +206,14 @@ test('init creates a key file readable by its owner only, with an empty line per
   assert.match(first.stdout, /ALCHEMY_API_KEY +get it at https:\/\/dashboard\.alchemy\.com\/\n +needed by pnpm kiss-sign verify, pnpm kiss-sign card new/);
   assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs, pnpm check-sources and pnpm report/);
   assert.match(first.stdout, new RegExp(`\\n {7}\\$\\{EDITOR:-nano\\} ${keyFile}\\n`));
-  assert.match(first.stdout, /\n {5}Or enter each key with the command below; what you type is not shown on screen:\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add etherscan\n/);
+  assert.match(first.stdout, /\n {5}Or enter each key with the command below; what you type is not shown on screen:\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add etherscan\n {7}pnpm kiss-sign key add github\n/);
   assert.equal(statSync(keyFile).mode & 0o777, 0o600);
   const lines = readFileSync(keyFile, 'utf8').split('\n').filter((line) => !line.startsWith('#') && line !== '');
-  assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'ETHERSCAN_API_KEY=']);
+  assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'ETHERSCAN_API_KEY=', 'GITHUB_TOKEN=']);
+  assert.match(
+    readFileSync(keyFile, 'utf8'),
+    /# GitHub, optional, a fine-grained token with access to public repositories only, read-only from \S+, for pnpm check-sources, pnpm report, pnpm pin-solc and pnpm fetch-erc7730, only to raise the GitHub API rate limit\.\nGITHUB_TOKEN=\n/,
+  );
 
   writeFileSync(keyFile, 'ALCHEMY_API_KEY=kept-by-the-signer\n');
   const again = await run(['init', '--safe', SAFE], home, undefined, fork);
