@@ -1,0 +1,70 @@
+{
+  "verdict": {
+    "status": "safe",
+    "text": {
+      "en": "OK to use. KPK's docs, CoinGecko and the factory all confirm this vault.",
+      "zh-TW": "可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。"
+    }
+  },
+  "judgments": [
+    {
+      "text": {
+        "en": "This vault holds about 31.7 million USDC. 97 addresses hold shares; the largest has 50.61% and the top 10 hold 94.31%. It held under 9 million USDC until 2026-04, then 20 million to 31.7 million from 2026-05 on.",
+        "zh-TW": "這個 vault 約 3,170 萬 USDC，97 個地址持有股份，最大一個占 50.61%，前 10 名占 94.31%。2026-04 前不到 900 萬 USDC，2026-05 起在 2,000 萬到 3,170 萬之間。"
+      },
+      "recommendation": {
+        "en": "Half the shares sit with one holder, so a cap change moves mostly that holder's funds. Set the cap by your risk framework.",
+        "zh-TW": "一半股份在同一個持有人手上，改上限動的大多是他的錢；上限照你的風險框架給。"
+      }
+    },
+    {
+      "text": {
+        "en": "This vault's timelock for both `increaseAbsoluteCap` and `increaseRelativeCap` is 3 days and 1 second (`timelock` read on chain, 259201 seconds). For that time after it is sent, depositors can see this change, and the sentinel or curator can cancel it with `revoke`.",
+        "zh-TW": "這個 vault 的 `increaseAbsoluteCap` 和 `increaseRelativeCap` 的 timelock 都是 3 天又 1 秒（鏈上讀 `timelock`，259201 秒）：送出後這段時間內存款人看得到這個變更，sentinel 或 curator 可以用 `revoke` 取消。"
+      },
+      "recommendation": {
+        "en": "If you find a mistake within 3 days of sending, cancel it with `revoke`; do not wait for it to be executed.",
+        "zh-TW": "送出後 3 天內發現填錯，用 `revoke` 取消，不要等它被執行。"
+      }
+    }
+  ],
+  "reviews": {},
+  "entries": {
+    "kpk-usdc-prime-v2-9ee6": {
+      "role": {
+        "en": "USDC vault (V2, USDC Prime) curated by KPK; you are its curator",
+        "zh-TW": "KPK 管理的 USDC vault（V2，USDC Prime），你是它的 curator"
+      },
+      "sources": [
+        {
+          "text": {
+            "en": "KPK's docs page for USDC Prime lists this vault, its Markets V1 Adapter 0x1d511811ACA9d8817a3e50F29CadFf6243A02902 and its curator Safe, the vault's `curator` read on chain",
+            "zh-TW": "KPK 文件的 USDC Prime 頁列出這個 vault、它的 Markets V1 Adapter 0x1d511811ACA9d8817a3e50F29CadFf6243A02902 和 curator Safe，就是鏈上讀到的 `curator`"
+          },
+          "url": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime",
+          "result": "pass"
+        },
+        {
+          "text": {
+            "en": "The vault's `owner` read on chain, 0x8b884f80B3B839F52b6cE168f133e7a5D1f0A537, is the Security Council Safe KPK's Morpho docs page names",
+            "zh-TW": "鏈上讀 vault 的 `owner` 是 0x8b884f80B3B839F52b6cE168f133e7a5D1f0A537，就是 KPK 的 Morpho 文件頁寫的 Security Council Safe"
+          },
+          "url": "https://docs.kpk.io/vaults/vaults/morpho",
+          "result": "pass"
+        }
+      ]
+    },
+    "kpk-usdc-prime-v2-9ee6-market-adapter": {
+      "role": {
+        "en": "The vault's Morpho Blue market adapter; the adapter and market cap ids use its address",
+        "zh-TW": "vault 的 Morpho Blue 市場轉接合約，轉接合約和市場上限的 id 用它的地址"
+      }
+    },
+    "vault-v2-factory": {
+      "role": {
+        "en": "The Morpho Vault V2 factory. It answers `isVaultV2` = true: it created this vault",
+        "zh-TW": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+      }
+    }
+  }
+}
