@@ -3,10 +3,6 @@ import { syncBuiltinESMExports } from 'node:module';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-/**
- * Loaded with `--import` into a canary's process: appends every path the process reads, lists or tests through `node:fs` to the
- * file `KISS_SIGN_CANARY_READS` names, with symbolic links resolved, one absolute path a line, so the runner can require each fixture to be in docs/canaries.txt.
- */
 const log = process.env.KISS_SIGN_CANARY_READS;
 if (log !== undefined && log !== '') {
   const append = fs.appendFileSync;

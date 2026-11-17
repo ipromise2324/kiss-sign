@@ -11,7 +11,7 @@ const READS_HOOK = join(import.meta.dirname, 'canary-reads.ts');
 export type CanaryRun = { readonly canary: Canary; readonly ok: boolean; readonly passed: number; readonly failed: number; readonly output: string; readonly unlisted: readonly string[] };
 
 /** A path a canary may read only when its `reads` lines name it: anything under testdata/ or test/ but the canaries themselves and the modules Node loads, which the import walk already counts. */
-export const isFixturePath = (path: string): boolean => path.startsWith('testdata/') || path.startsWith('test/');
+export const isFixturePath = (path: string): boolean => (path.startsWith('testdata/') || path.startsWith('test/')) && !path.startsWith('test/canaries/') && !path.endsWith('.ts');
 
 /** Runs a command to its end with both outputs joined, outside any parent test run, so a test file reports in its own TAP. */
 export function runProcess(command: string, args: readonly string[], cwd: string, env: NodeJS.ProcessEnv = {}): Promise<{ code: number | null; output: string }> {
@@ -44,7 +44,7 @@ export async function runCanary(root: string, canary: Canary): Promise<CanaryRun
     const base = realpathSync(root);
     const fixtures = [...new Set(read.split('\n').filter((path) => path !== ''))]
       .map((path) => relative(base, path).split(sep).join('/'))
-      .filter((path) => isFixturePath(path) && !path.startsWith('test/canaries/') && !path.endsWith('.ts'));
+      .filter(isFixturePath);
     const unlisted = fixtures.filter((path) => !canary.reads.some((listed) => covers(listed, path))).sort();
     const passed = count('pass');
     const failed = count('fail');
