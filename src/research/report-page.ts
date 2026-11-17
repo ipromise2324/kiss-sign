@@ -349,7 +349,7 @@ const confirmedWords = (entry: RegistryEntry, by: readonly Place[], w: Words, re
   w.confirmed(
     by.map(({ owner, sources }) => {
       const words = sources.map((source) => confirmationWord(entry, source, w, registry));
-      return words.length === 1 ? (words[0] as string) : w.onePlace(words, owner);
+      return words.length === 1 ? (words[0] as string) : `${words.join(' + ')} (${owner})`;
     }),
     by.length >= MIN_CONFIRMATIONS,
   );
