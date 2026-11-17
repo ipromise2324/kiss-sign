@@ -363,8 +363,8 @@ const ZH = {
   searchSame: (same: boolean, counts: Span): Span[] => [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', counts, '）。'],
   amountsLead: '每筆符合模板形狀的交易，都在它的上一個區塊上單獨重跑一次，讀它前後寄出方和收款方的餘額，跟交易寫的金額比較。只列出有宣告誤差，或餘額沒有剛好照金額變動的效果。',
   amountsTolerance: (less: bigint, more: bigint): string => (less === 0n && more === 0n ? '模板沒有宣告誤差，所以容許 0' : `模板宣告的誤差：最多少 ${less}、多 ${more} 個最小單位`),
-  amountsToken: (token: string, n: number, safes: number, eoas: number, inRegistry: boolean): string =>
-    `${token}：${n} 筆（Safe ${safes} 筆、EOA ${eoas} 筆）${inRegistry ? '' : '，這個代幣不在 registry 裡，卡片不能選它，所以不算待確認'}`,
+  amountsToken: (token: string, safes: number, eoas: number, inRegistry: boolean): string =>
+    `${token}（Safe ${safes} 筆、EOA ${eoas} 筆）${inRegistry ? '' : '：這個代幣不在 registry 裡，卡片不能選它，所以不算待確認'}`,
   amountsParty: (party: 'sender' | 'receiver'): string => (party === 'sender' ? '寄出方：' : '收款方：'),
   amountsBy: (by: bigint): string => (by === 0n ? '剛好' : `${by < 0n ? '少' : '多'} ${by < 0n ? -by : by} 個最小單位`),
   amountsCount: (n: number): string => `${n} 筆`,
@@ -925,8 +925,8 @@ const EN: Words = {
   amountsLead:
     'Each transaction that fits the template was run again alone on its parent block, with the sender\'s and the receiver\'s balances read just before and after it, and compared with the amount it states. Shown only for an effect that declares a tolerance, or whose balances did not all move by exactly the stated amount.',
   amountsTolerance: (less, more) => (less === 0n && more === 0n ? 'The template declares no tolerance, so it allows 0' : `The template's tolerance: up to ${less} ${plural(Number(less), 'base unit', 'base units')} lower, ${more} higher`),
-  amountsToken: (token, n, safes, eoas, inRegistry) =>
-    `${token}: ${n} ${plural(n, 'transaction', 'transactions')} (${safes} from Safes, ${eoas} from EOAs)${inRegistry ? '' : '; this token is not in the registry, so no card can name it and it needs no review'}`,
+  amountsToken: (token, safes, eoas, inRegistry) =>
+    `${token} (${safes} from Safes, ${eoas} from EOAs)${inRegistry ? '' : ': this token is not in the registry, so no card can name it and it needs no review'}`,
   amountsParty: (party) => (party === 'sender' ? 'Sender: ' : 'Receiver: '),
   amountsBy: (by) => (by === 0n ? 'exact' : `${by < 0n ? -by : by} ${plural(Number(by < 0n ? -by : by), 'base unit', 'base units')} ${by < 0n ? 'lower' : 'higher'}`),
   amountsCount: (n) => `in ${n}`,

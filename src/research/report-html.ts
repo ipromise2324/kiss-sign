@@ -439,7 +439,7 @@ function pastBody(body: Extract<Body, { kind: 'past' }>, r: R): Html {
   <div class="pblock">
     <div class="ph"><span class="pt"><code>${a.effect}</code></span><span>${a.tolerance}</span></div>${a.tokens.map(
       (t) => h`
-    <div class="pg"><div><div>${t.lead}</div>${t.rows.map((row) => h`
+    <div class="pg"><span class="pc num">${r.w.txCount(t.count)}</span><div><div>${t.lead}</div>${t.rows.map((row) => h`
       <div class="pex">${row.party}${row.cells.map((c, i) => h`${i === 0 ? '' : r.w.sep}<span class="num">${c.by}</span> ${c.n}`)}</div>`)}</div></div>`,
     )}${a.finding === undefined ? '' : h`
     <div class="warnline">${icon('bad', r.language)}<span>FINDING: ${a.finding}</span></div>`}${a.unmeasured === undefined ? '' : h`
