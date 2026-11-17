@@ -1,7 +1,7 @@
+import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { createContext, runInContext } from 'node:vm';
 import { SOLC_PINS } from './solc-pins.ts';
 
 export const SOLC_DIR = join(import.meta.dirname, '..', '..', 'vendor', 'solc');
@@ -19,62 +19,38 @@ export type Compilers = (version: string) => CompilerLoad;
 
 export const sha256Hex = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
 
-const ENTRY_POINT = `var kissSignCompile = (function () {
-  if (typeof Module !== 'object' || Module === null) return 'no-module';
-  var compile =
-    Module._solidity_compile !== undefined
-      ? Module.cwrap('solidity_compile', 'string', ['string', 'number', 'number'])
-      : Module._compileStandard !== undefined
-        ? Module.cwrap('compileStandard', 'string', ['string', 'number'])
-        : undefined;
-  if (compile === undefined) return 'no-entry-point';
-  var reset = Module._solidity_reset === undefined ? undefined : Module.cwrap('solidity_reset', null, []);
-  return function (input) {
-    try {
-      return compile(input, 0, 0);
-    } finally {
-      if (reset !== undefined) reset();
-    }
-  };
-})();
-typeof kissSignCompile === 'function' ? 'ready' : kissSignCompile;`;
-
-function runSandboxed(code: string, context: object, filename: string): unknown {
-  try {
-    return runInContext(code, context, { filename });
-  } catch (error) {
-    let message: unknown;
-    try {
-      message = (error as { message?: unknown } | null | undefined)?.message;
-    } catch {
-      message = undefined;
-    }
-    throw new Error(typeof message === 'string' ? `${filename} threw: ${message}` : `${filename} threw`);
-  }
-}
+const RUNNER = join(import.meta.dirname, 'solc-run.ts');
+const COMPILE_TIMEOUT_MS = 5 * 60_000;
 
 /**
- * Runs the emscripten build in a context with no Node globals, a null-prototype global (so `this.constructor` cannot
- * reach the host realm's Function), and no `eval` or `new Function`. Only primitive strings cross into the context:
- * the arrays passed to `cwrap` and each call are built by code run inside it, and the input enters as a string literal.
- * A compile's output is used only when it is a primitive string, and a thrown value only for a `message` that is one.
+ * Each compile runs the build in a Node process of its own under the permission model: it may read only its runner and
+ * write no file, start no process or worker, and gets an empty environment, so it holds no key. The build and the input
+ * go in on its standard input and the output comes back on its standard output. The pin is the defense against a
+ * hostile build; this only limits what one could reach (see the design's known limitations).
  */
-export function instantiate(version: string, source: string): Solc {
-  const context = createContext(Object.create(null), { codeGeneration: { strings: false, wasm: true } });
-  const filename = `soljson-${version}.js`;
-  // Old builds such as 0.4.18 see no known environment here and call a global `print` unless Module has one. Defined
-  // inside the context, these functions reach only the context's Function.
-  runSandboxed('var Module = { print: function () {}, printErr: function () {} };', context, filename);
-  runSandboxed(source, context, filename);
-  const status = runSandboxed(ENTRY_POINT, context, filename);
-  if (status === 'no-module') throw new Error(`solc ${version} did not define Module`);
-  if (status !== 'ready') throw new Error(`solc ${version} exports no standard JSON entry point`);
+export function instantiate(version: string, source: string, timeoutMs: number = COMPILE_TIMEOUT_MS): Solc {
   return {
     version,
     compile: (input) => {
-      const output = runSandboxed(`kissSignCompile(${JSON.stringify(input)});`, context, filename);
-      if (typeof output !== 'string') throw new Error(`solc ${version} returned no text`);
-      return output;
+      const run = spawnSync(process.execPath, ['--permission', `--allow-fs-read=${RUNNER}`, RUNNER], {
+        input: JSON.stringify({ version, source, input }),
+        env: {},
+        encoding: 'utf8',
+        timeout: timeoutMs,
+        maxBuffer: 1 << 30,
+      });
+      if ((run.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT') throw new Error(`solc ${version} did not finish within ${timeoutMs / 1000} s`);
+      if (run.error !== undefined) throw new Error(`solc ${version} could not run: ${run.error.message}`);
+      let answer: unknown;
+      try {
+        answer = JSON.parse(run.stdout);
+      } catch {
+        answer = undefined;
+      }
+      const { output, error } = (typeof answer === 'object' && answer !== null ? answer : {}) as { output?: unknown; error?: unknown };
+      if (typeof output === 'string') return output;
+      if (typeof error === 'string') throw new Error(error);
+      throw new Error(`solc ${version} gave no answer (exit ${run.status ?? run.signal}): ${run.stderr.trim().split('\n').at(-1) ?? ''}`);
     },
   };
 }
