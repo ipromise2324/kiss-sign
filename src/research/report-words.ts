@@ -76,6 +76,7 @@ const ZH = {
   } satisfies Record<FreeClaim, string>,
   freeMember: '訂單裡的值，由雜湊鎖住；模板不限，也不換值測試',
   source: { api: '協議 API', coingecko: 'CoinGecko', factory: '工廠', bounty: 'Immunefi 漏洞賞金範圍', deployer: '部署者' },
+  adapterFactory: '工廠與用它的金庫',
   officialPage: '官方頁',
   docsPage: '文件頁',
   standardPage: (name: string): string => `${name} 標準頁`,
@@ -85,7 +86,7 @@ const ZH = {
   confirmed: (places: readonly string[], enough: boolean): string => (places.length === 0 ? '沒有任何地方確認' : `${enough ? '在' : '只在'} ${places.length} 個地方確認：${places.join('、')}`),
   addressConfirmed: (name: string, confirmed: string): string => `${name}：地址${confirmed}`,
   fewConfirmationsWhy: (min: number): string =>
-    `至少要 ${min} 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。`,
+    `至少要 ${min} 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。`,
 
   finding: {
     'site-differs': { title: '網站跟 DefiLlama 列的不同', why: '這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。' },
@@ -93,8 +94,10 @@ const ZH = {
     'other-answer': { title: '協議 API 回的是別的地址', why: '協議 API 在登記的路徑回了另一個地址、沒有地址，或不是 JSON。' },
     'pin-not-run': { title: '鏈上跑的不是登記的程式碼', why: '鏈上在這段區塊範圍跑的程式碼，跟 code pin 記錄的不一樣。' },
     'proof-not-pin': { title: '證明的程式碼不是現在登記的', why: 'ABI 證明用的程式碼，不是 code pin 現在的那一份。' },
-    'not-created': { title: '工廠說這個金庫不是它建的', why: '登記的工廠合約回答，這個地址不是它建立的金庫，所以它不屬於工廠的協議。' },
-    'factory-other-answer': { title: '工廠的回答看不懂', why: '問登記的工廠是否建立了這個金庫，它沒有回答 true、false 或一個地址（例如 revert），所以不能說這個金庫屬於工廠的協議。' },
+    'not-created': { title: '工廠說這個合約不是它建的', why: '登記的工廠合約回答，這個地址不是它建立的，所以它不屬於工廠的協議。' },
+    'factory-other-answer': { title: '工廠的回答看不懂', why: '問登記的工廠是否建立了這個合約，它沒有回答 true、false 或一個地址（例如 revert），所以不能說這個合約屬於工廠的協議。' },
+    'not-adapter': { title: '金庫說這不是它的轉接合約', why: '指名這個轉接合約的登記金庫，被問到它的工廠登記的 adapterCheck 時回答 false：金庫沒有透過這個地址分配資金。' },
+    'adapter-other-answer': { title: '金庫的回答看不懂', why: '問指名這個轉接合約的登記金庫是否透過它分配資金，它沒有回答 true 或 false（例如 revert）。' },
     refused: { title: 'ABI 證明被拒絕', why: '重新編譯 Sourcify 的原始碼，得不到鏈上的程式碼。' },
     'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
     'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
@@ -109,7 +112,8 @@ const ZH = {
     'page-not-fetched': { title: '文件頁沒讀到', why: '程式沒有這個文件頁的內容。' },
     'name-not-on-page': { title: '文件頁上找不到這個函式', why: '文件頁的原始網頁裡沒有寫成程式的函式名稱：緊接著括號、放在反引號裡，或自成一行（例如標題、清單項目或表格欄）。只在一般文字裡出現不算。' },
     'no-chain-result': { title: '程式碼區段沒有鏈上結果', why: '這段 code pin 沒有從鏈上讀到判定。' },
-    'factory-unread': { title: '沒有讀到工廠的回答', why: '沒有記錄登記的工廠是否建立了這個金庫。' },
+    'factory-unread': { title: '沒有讀到工廠的回答', why: '沒有記錄登記的工廠是否建立了這個合約。' },
+    'adapter-unread': { title: '沒有讀到金庫的回答', why: '沒有記錄指名這個轉接合約的登記金庫是否透過它分配資金，或沒有一個這樣的金庫，它的工廠登記了 adapterCheck 可以問。工廠的 instanceCheck 只回答它是不是工廠建的，說不出它是哪個金庫的轉接合約。' },
     'not-pinned': { title: '沒有 code pin', why: '這個合約沒有登記程式碼，簽名時會是 UNVERIFIABLE。' },
     'no-abi-case': { title: '沒有 ABI 證明的紀錄', why: 'testdata/abi 沒有這個合約的 ABI 證明，程式沒有比對它的原始碼。' },
     'compiler-not-pinned': { title: '編譯器沒有釘選', why: '這個合約用的 solc 版本沒有釘選，程式沒有重新編譯它的原始碼。' },
@@ -426,7 +430,7 @@ const ZH = {
   allBound: (member: boolean): string =>
     `${member ? '交易裡不限的值只在簽的訂單裡，由雜湊鎖住，不換值測試。' : ''}模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。`,
   sourcesOk: (counted: number, min: number): string =>
-    `${counted === 1 ? '這個地址' : `${counted} 個地址都`}至少在 ${min} 個地方確認：官方頁、協議 API、CoinGecko、金庫的登記工廠、漏洞賞金範圍、SDK 套件或共用的部署者列出同一個地址。`,
+    `${counted === 1 ? '這個地址' : `${counted} 個地址都`}至少在 ${min} 個地方確認：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、漏洞賞金範圍、SDK 套件或共用的部署者列出同一個地址。`,
   sourcesSome: (failed: number, passed: number, min: number): string =>
     `${failed} 個地址有結果要你看，見「待確認」。${passed === 0 ? '' : passed === 1 ? `另外那個地址至少在 ${min} 個地方確認。` : `其餘 ${passed} 個都至少在 ${min} 個地方確認。`}`,
   abiExplain: (notCalled: readonly string[], unprovable: readonly string[]): string =>
@@ -457,6 +461,7 @@ const ZH = {
     'other-site': '是另一個網站',
     'nothing-to-compare': '沒資料可比',
     'not-created': '工廠說不是它建的',
+    'not-adapter': '金庫說不是它的轉接合約',
     'not-on-page': '頁上沒有這個函式',
     'not-listed': '沒列出這個地址',
     'other-file': '是另一份檔案',
@@ -518,7 +523,7 @@ const ZH = {
   compareHashesWhat: 'domain hash 和 message hash，都是 0x 開頭 64 個字元',
   automatic: '程式每次簽名自動做的事',
   addressRule:
-    '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或金庫的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。',
+    '每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或登記工廠（轉接合約還要用它的金庫確認）列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。',
   addressRuleLabel: '信心等級說明',
   descriptors: 'ERC-7730 描述檔',
   addressCount: (n: string): string => `${n} 個`,
@@ -589,6 +594,7 @@ const EN: Words = {
   },
   freeMember: 'a value in the order, locked by its hash; the template allows any value and no perturbation test tries another',
   source: { api: 'protocol API', coingecko: 'CoinGecko', factory: 'factory', bounty: 'Immunefi bug bounty scope', deployer: 'deployer' },
+  adapterFactory: 'factory and the vault using it',
   officialPage: 'official page',
   docsPage: 'docs page',
   standardPage: (name) => `${name} standard's page`,
@@ -599,7 +605,7 @@ const EN: Words = {
     places.length === 0 ? 'Confirmed nowhere' : `Confirmed in ${enough ? '' : 'only '}${places.length} ${plural(places.length, 'place', 'places')}: ${places.join(', ')}`,
   addressConfirmed: (name, confirmed) => `${name}: address ${confirmed.charAt(0).toLowerCase()}${confirmed.slice(1)}`,
   fewConfirmationsWhy: (min) =>
-    `At least ${min} places must list the same address: the official page, the protocol API, CoinGecko, the vault's registered factory, the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.`,
+    `At least ${min} places must list the same address: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.`,
 
   finding: {
     'site-differs': { title: 'site differs from the one DefiLlama lists', why: "This page's domain or GitHub organization is not one DefiLlama lists for this protocol." },
@@ -607,10 +613,18 @@ const EN: Words = {
     'other-answer': { title: 'protocol API answered another address', why: 'The protocol API answered another address at the registered path, no address, or no JSON.' },
     'pin-not-run': { title: 'the chain ran other code than the registered code', why: 'The code the chain ran in this block range differs from what the code pin records.' },
     'proof-not-pin': { title: 'the proved code is not the current registered code', why: "The ABI proof's code is not the code pin's current code." },
-    'not-created': { title: 'the factory says it did not create this vault', why: "The registered factory answers that this address is not a vault it created, so it does not belong to the factory's protocol." },
+    'not-created': { title: 'the factory says it did not create this contract', why: "The registered factory answers that this address is not one it created, so it does not belong to the factory's protocol." },
     'factory-other-answer': {
       title: "the factory's answer cannot be read",
-      why: "Asked whether it created this vault, the registered factory did not answer true, false or an address (for example, it reverted), so the vault cannot be said to belong to the factory's protocol.",
+      why: "Asked whether it created this contract, the registered factory did not answer true, false or an address (for example, it reverted), so the contract cannot be said to belong to the factory's protocol.",
+    },
+    'not-adapter': {
+      title: 'the vault says this is not its adapter',
+      why: "The registered vault that names this adapter answers its factory's adapterCheck false for it: the vault does not allocate through this address.",
+    },
+    'adapter-other-answer': {
+      title: "the vault's answer cannot be read",
+      why: 'Asked whether it allocates through this adapter, the registered vault that names it did not answer true or false (for example, it reverted).',
     },
     refused: { title: 'ABI proof refused', why: "Compiling Sourcify's source again does not give the code on chain." },
     'judged-otherwise': { title: 'the test transaction is judged differently now', why: 'Running the recorded test transaction again with the current template gives another result than when it was recorded.' },
@@ -632,7 +646,11 @@ const EN: Words = {
       why: "The docs page's source does not write the function's name as code: followed by a bracket, in backticks, or on its own line (such as a heading, a list item or a table cell). A mention in plain text does not count.",
     },
     'no-chain-result': { title: 'no chain result for the code span', why: 'No verdict was read from the chain for this span of the code pin.' },
-    'factory-unread': { title: "the factory's answer was not read", why: 'Whether the registered factory created this vault was not recorded.' },
+    'factory-unread': { title: "the factory's answer was not read", why: 'Whether the registered factory created this contract was not recorded.' },
+    'adapter-unread': {
+      title: "the vault's answer was not read",
+      why: "Whether the registered vault that names this adapter allocates through it was not recorded, or no such vault's factory has an adapterCheck to ask. The factory's instanceCheck answers only whether it created the adapter, not whose adapter it is.",
+    },
     'not-pinned': { title: 'no code pin', why: 'This contract has no registered code; signing will be UNVERIFIABLE.' },
     'no-abi-case': { title: 'no recorded ABI proof', why: 'testdata/abi has no ABI proof of this contract; the program did not compare its source.' },
     'compiler-not-pinned': { title: 'compiler not pinned', why: "The solc version this contract uses is not pinned; the program did not compile its source again." },
@@ -954,7 +972,7 @@ const EN: Words = {
   allBound: (member) =>
     `${member ? 'The only values that may be anything are in the signed order, locked by its hash, and they are not perturbed. ' : ''}The template has no argument that takes any value: each is bound to the card or to a fixed value, so nothing needs a perturbation test and none is recorded. At each signing, verify changes every bound argument one by one and checks that each becomes a MISMATCH.`,
   sourcesOk: (counted, min) =>
-    `${counted === 1 ? 'This address is' : `All ${counted} addresses are`} confirmed in at least ${min} places: the official page, the protocol API, CoinGecko, the vault's registered factory, the bug bounty scope, the SDK package or a shared deployer lists the same address.`,
+    `${counted === 1 ? 'This address is' : `All ${counted} addresses are`} confirmed in at least ${min} places: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the bug bounty scope, the SDK package or a shared deployer lists the same address.`,
   sourcesSome: (failed, passed, min) =>
     `${failed} ${plural(failed, 'address has', 'addresses have')} results for you to review; see "To review".${
       passed === 0 ? '' : passed === 1 ? ` The other address is confirmed in at least ${min} places.` : ` The other ${passed} are all confirmed in at least ${min} places.`
@@ -990,6 +1008,7 @@ const EN: Words = {
     'other-site': 'another site',
     'nothing-to-compare': 'nothing to compare',
     'not-created': 'the factory says it did not create it',
+    'not-adapter': 'the vault says it is not its adapter',
     'not-on-page': 'function not on the page',
     'not-listed': 'address not listed',
     'other-file': 'another file',
@@ -1050,7 +1069,7 @@ const EN: Words = {
   compareHashesWhat: 'the domain hash and the message hash, each 0x followed by 64 characters',
   automatic: 'What the program does at each signing',
   addressRule:
-    "Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the vault's registered factory lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked \"–\" had nothing to compare: it does not count as a confirmation, but it is not a problem; a \"site\" line under a source marked \"–\" does not change whether that source counts. What the AI also checked does not change the confidence.",
+    "Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the registered factory (for an adapter, with the vault that uses it) lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked \"–\" had nothing to compare: it does not count as a confirmation, but it is not a problem; a \"site\" line under a source marked \"–\" does not change whether that source counts. What the AI also checked does not change the confidence.",
   addressRuleLabel: 'About confidence',
   descriptors: 'ERC-7730 descriptors',
   addressCount: (n) => n,

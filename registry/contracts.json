@@ -166,6 +166,7 @@
     ],
     "defillama": "morpho-blue",
     "instanceCheck": "isVaultV2(address)",
+    "adapterCheck": "isAdapter(address)",
     "code": {
       "hash": "0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503",
       "from": 23375073
@@ -1434,6 +1435,115 @@
     "code": {
       "hash": "0x0bfb1f9cdc766db966a6c758661a4ce7f015c43965158d606c797aabc2f4c696",
       "from": 24510137
+    }
+  },
+  "kpk-usdc-prime-v2-9ee6": {
+    "address": "0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6",
+    "kind": "vault",
+    "source": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime",
+    "sourceLabel": "Address",
+    "defillama": "kpk",
+    "coingecko": "kpk-usdc-prime",
+    "attributes": {
+      "asset": "usdc",
+      "factory": "vault-v2-factory",
+      "adapter": "kpk-usdc-prime-v2-9ee6-market-adapter"
+    },
+    "code": {
+      "hash": "0xb87264448eb495fa597c09eb4a576b7d6f029cb98957d3cb2491904a39abd8e9",
+      "from": 23641853
+    }
+  },
+  "kpk-usdc-prime-v2-9ee6-market-adapter": {
+    "address": "0x1d511811ACA9d8817a3e50F29CadFf6243A02902",
+    "kind": "adapter",
+    "source": "https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime",
+    "sourceLabel": "Markets V1 Adapter",
+    "defillama": "kpk",
+    "attributes": {
+      "factory": "morpho-market-v1-adapter-v2-factory"
+    },
+    "code": {
+      "hash": "0x5094349533f13b8aa7bd4a41360a3416f0e27004d5f94c4022d01e0f97cbde63",
+      "from": 24877491
+    }
+  },
+  "weeth": {
+    "address": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
+    "kind": "token",
+    "source": "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts",
+    "sourceLabel": "weETH",
+    "defillama": "ether.fi-stake",
+    "coingecko": "wrapped-eeth",
+    "code": {
+      "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+      "implementation": {
+        "address": "0xA6Ca0607190d03CF16fe6F2865Cf40c3D160ccf3",
+        "hash": "0xd43182be0eba15468f2e3f33cfe55685c9fcdda6c306156c046b6c4b076f52e7"
+      },
+      "from": 25533308,
+      "earlier": [
+        {
+          "from": 17664336,
+          "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+          "implementation": {
+            "address": "0xDd78355BcF9a9435BFcDd9C1482C0e72E7b08F79",
+            "hash": "0xb43b3e05d90da5c1b662af7a56ee3532d52d6e80f6208693f568e12816099145"
+          }
+        },
+        {
+          "from": 18537431,
+          "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+          "implementation": {
+            "address": "0xe629ee84C1Bd9Ea9c677d2D5391919fCf5E7d5D9",
+            "hash": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
+          }
+        },
+        {
+          "from": 22131382,
+          "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+          "implementation": {
+            "address": "0x353E98F34b6E5a8D9d1876Bf6dF01284d05837cB",
+            "hash": "0xaf80b4e5c85a0e16d8f3fdbe108c24ef3d85f780a05cd926d255b0d97bf4bba1"
+          }
+        },
+        {
+          "from": 23089686,
+          "hash": "0x0b58ec11caee361ca0c1e484c12f6e7177634222186f7639bd9183dfee9d2278",
+          "implementation": {
+            "address": "0x2d10683E941275D502173053927AD6066e6aFd6B",
+            "hash": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
+          }
+        }
+      ]
+    }
+  },
+  "morpho-oracle-weeth-usdc-86": {
+    "address": "0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411",
+    "kind": "oracle",
+    "source": "https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth",
+    "apiSource": {
+      "url": "https://api.morpho.org/graphql",
+      "method": "POST",
+      "body": {
+        "query": "query($id: String!, $chainId: Int!) { marketById(marketId: $id, chainId: $chainId) { oracle { address } } }",
+        "variables": {
+          "id": "0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e",
+          "chainId": 1
+        }
+      },
+      "path": [
+        "data",
+        "marketById",
+        "oracle",
+        "address"
+      ]
+    },
+    "sourceLabel": "Oracle",
+    "defillama": "morpho-blue",
+    "code": {
+      "hash": "0x71eee5c03d8891e15a5e226b9df454b405fe78003e6a5c511a1c03b06a4f0974",
+      "from": 24923459
     }
   }
 }

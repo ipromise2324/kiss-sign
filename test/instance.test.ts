@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { Read, Reader } from '../src/chain/reader.ts';
 import type { BlockRef, CallResult } from '../src/chain/types.ts';
-import { proveInstance } from '../src/contracts/instance.ts';
+import { proveAdapterOf, proveInstance } from '../src/contracts/instance.ts';
 import { RegistryError, parseRegistry } from '../src/registry.ts';
 import type { Hex } from '../src/safe/types.ts';
 
@@ -41,7 +41,7 @@ test("a vault its registry factory answers true for is proven that factory's ins
 
 test('a vault its factory answers false for is refused', async () => {
   const proof = await proveInstance(factoryAnswering(agreed(`0x${'00'.repeat(32)}`)), registry(), 'apex', AT);
-  assert.deepEqual(proof, { kind: 'refused', why: 'metamorpho-factory-v1-1 answered isMetaMorpho(address) false for apex: it did not create it' });
+  assert.deepEqual(proof, { kind: 'refused', cause: 'not-created', why: 'metamorpho-factory-v1-1 answered isMetaMorpho(address) false for apex: it did not create it' });
 });
 
 test('an answer that is neither true nor false, a revert, or providers that disagree are refused', async () => {
@@ -55,12 +55,12 @@ test('an answer that is neither true nor false, a revert, or providers that disa
     'apex',
     AT,
   );
-  assert.deepEqual(split, { kind: 'refused', why: 'eth_call: alchemy and drpc disagree' });
+  assert.deepEqual(split, { kind: 'refused', cause: 'no-answer', why: 'eth_call: alchemy and drpc disagree' });
 });
 
 test('a vault that names no factory is refused without a chain read', async () => {
   const proof = await proveInstance({} as Reader, registry(), 'lone', AT);
-  assert.deepEqual(proof, { kind: 'refused', why: 'lone names no factory' });
+  assert.deepEqual(proof, { kind: 'refused', cause: 'unaskable', why: 'lone names no factory' });
 });
 
 test('a factory must declare an instance check that takes one address, and only a factory may', () => {
@@ -121,28 +121,28 @@ test("a vault whose address its factory computes from the vault's asset is prove
 test("a factory that computes another address for the vault's asset did not create it", async () => {
   const fusdt = '0x5C20B550819128074FD538Edf79791733ccEdd18';
   const proof = await proveInstance(lendingFactoryAnswering(agreed(addressWord(fusdt))), fluid(), 'fluid-fusdc', AT);
-  assert.deepEqual(proof, { kind: 'refused', why: `fluid-lending-factory answered computeToken(usdc,"fToken") = ${fusdt}, not fluid-fusdc: its official contract is another` });
+  assert.deepEqual(proof, { kind: 'refused', cause: 'not-created', why: `fluid-lending-factory answered computeToken(usdc,"fToken") = ${fusdt}, not fluid-fusdc: its official contract is another` });
 });
 
 test('a computed answer that is not one address word, a revert, or providers that disagree are refused', async () => {
   for (const data of [`0x${'11'.repeat(32)}`, `${addressWord(FUSDC)}${'00'.repeat(32)}`, '0x']) {
     const proof = await proveInstance(lendingFactoryAnswering(agreed(data)), fluid(), 'fluid-fusdc', AT);
-    assert.deepEqual(proof, { kind: 'refused', why: `fluid-lending-factory answered computeToken(usdc,"fToken") with ${data}, not an address` });
+    assert.deepEqual(proof, { kind: 'refused', cause: 'other-answer', why: `fluid-lending-factory answered computeToken(usdc,"fToken") with ${data}, not an address` });
   }
   const reverted = await proveInstance(lendingFactoryAnswering({ kind: 'agreed', value: { kind: 'reverted' }, providers: ['alchemy', 'drpc'] }), fluid(), 'fluid-fusdc', AT);
-  assert.deepEqual(reverted, { kind: 'refused', why: 'fluid-lending-factory answered computeToken(usdc,"fToken") with a revert, not an address' });
+  assert.deepEqual(reverted, { kind: 'refused', cause: 'other-answer', why: 'fluid-lending-factory answered computeToken(usdc,"fToken") with a revert, not an address' });
   const split = await proveInstance(
     lendingFactoryAnswering({ kind: 'unverifiable', reason: 'eth_call: alchemy and drpc disagree', answers: [{ provider: 'alchemy', kind: 'malformed' }, { provider: 'drpc', kind: 'malformed' }] }),
     fluid(),
     'fluid-fusdc',
     AT,
   );
-  assert.deepEqual(split, { kind: 'refused', why: 'eth_call: alchemy and drpc disagree' });
+  assert.deepEqual(split, { kind: 'refused', cause: 'no-answer', why: 'eth_call: alchemy and drpc disagree' });
 });
 
 test("a vault that lacks an attribute its factory's check binds is refused without a chain read", async () => {
   const proof = await proveInstance({} as Reader, fluid(), 'bare', AT);
-  assert.deepEqual(proof, { kind: 'refused', why: "bare has no asset attribute, which fluid-lending-factory's instanceCheck computeToken(address,string) binds" });
+  assert.deepEqual(proof, { kind: 'refused', cause: 'unaskable', why: "bare has no asset attribute, which fluid-lending-factory's instanceCheck computeToken(address,string) binds" });
 });
 
 test('a computed instance check binds each parameter once, by its type, to an attribute or a short constant string, and binds an attribute', () => {
@@ -166,4 +166,62 @@ test('a computed instance check binds each parameter once, by its type, to an at
   assert.ok(fluid({ function: 'computeToken(address,string)', args: [{ attribute: 'asset' }, { string: 'f-Token_v1.2' }] }));
   refused(['computeToken(address,string)'], /instanceCheck: not a function signature or a \{"function", "args"\} object/);
   assert.ok(fluid({ function: 'computeToken(address,string)', args: [{ attribute: 'asset' }, { string: 'x'.repeat(32) }] }));
+});
+
+const VAULT_FACTORY = '0xA1D94F746dEfa1928926b84fB2596c06926C0405';
+const VAULT_V2 = '0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57';
+const ADAPTER = '0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5';
+const IS_ADAPTER = '0x68c18beb';
+
+const vaultV2 = (adapterCheck: unknown = 'isAdapter(address)') =>
+  parseRegistry({
+    'vault-v2-factory': { address: VAULT_FACTORY, kind: 'factory', source: 'https://example.org/vault-factory', instanceCheck: 'isVaultV2(address)', ...(adapterCheck === null ? {} : { adapterCheck }) },
+    'adapter-factory': { address: FACTORY, kind: 'factory', source: 'https://example.org/adapter-factory', instanceCheck: 'isMorphoMarketV1AdapterV2(address)' },
+    'market-adapter': { address: ADAPTER, kind: 'adapter', source: 'https://example.org/adapter', attributes: { factory: 'adapter-factory' } },
+    vault: { address: VAULT_V2, kind: 'vault', source: 'https://example.org/vault', attributes: { factory: 'vault-v2-factory', adapter: 'market-adapter' } },
+  });
+
+/** Answers only `isAdapter(ADAPTER)` on the vault, with `word`. */
+function vaultAnswering(word: Read<CallResult>): Reader {
+  return {
+    call: async (request, at) => {
+      assert.equal(at, AT);
+      assert.equal(request.to, VAULT_V2.toLowerCase());
+      assert.equal(request.data, `${IS_ADAPTER}${'00'.repeat(12)}${ADAPTER.slice(2).toLowerCase()}`);
+      return word;
+    },
+  } as Partial<Reader> as Reader;
+}
+
+const adapterOf = (registry: ReturnType<typeof vaultV2>, reader: Reader) => proveAdapterOf(reader, registry, registry.entries.get('market-adapter')!, AT);
+
+test('each registry vault naming an adapter is asked through its factory\'s adapterCheck whether it allocates through it', async () => {
+  const uses = await adapterOf(vaultV2(), vaultAnswering(agreed(`0x${'00'.repeat(31)}01`)));
+  assert.deepEqual(
+    uses.map((a) => [a.vault.name, a.asked, a.kind]),
+    [['vault', 'isAdapter(address)', 'uses']],
+  );
+  const refusals = async (word: Read<CallResult>) => (await adapterOf(vaultV2(), vaultAnswering(word))).map((a) => (a.kind === 'refused' ? [a.cause, a.why] : a.kind));
+  assert.deepEqual(await refusals(agreed(`0x${'00'.repeat(32)}`)), [['not-used', 'vault answered isAdapter(address) false for market-adapter: it does not allocate through it']]);
+  assert.deepEqual(await refusals({ kind: 'agreed', value: { kind: 'reverted' }, providers: ['alchemy', 'drpc'] }), [['other-answer', 'vault answered isAdapter(address) with a revert, not true or false']]);
+  assert.deepEqual(
+    await refusals({ kind: 'unverifiable', reason: 'eth_call: alchemy and drpc disagree', answers: [{ provider: 'alchemy', kind: 'malformed' }, { provider: 'drpc', kind: 'malformed' }] }),
+    [['no-answer', 'eth_call: alchemy and drpc disagree']],
+  );
+});
+
+test("a vault whose factory declares no adapterCheck is not asked, and an adapter no vault names gets no answer", async () => {
+  const unasked = await adapterOf(vaultV2(null), {} as Reader);
+  assert.deepEqual(unasked.map((a) => (a.kind === 'refused' ? [a.cause, a.why] : a.kind)), [['unaskable', 'vault-v2-factory has no adapterCheck']]);
+  const registry = vaultV2();
+  assert.deepEqual(await proveAdapterOf({} as Reader, registry, registry.entries.get('adapter-factory')!, AT), []);
+});
+
+test('only a factory may declare an adapterCheck, which takes one address', () => {
+  assert.throws(() => vaultV2('isAdapter(uint256)'), (e: unknown) => e instanceof RegistryError && /vault-v2-factory\.adapterCheck: must take exactly one address/.test(e.message));
+  assert.throws(
+    () => parseRegistry({ usdc: { address: FACTORY, kind: 'token', source: 'https://example.org/usdc', adapterCheck: 'isAdapter(address)' } }),
+    /usdc.adapterCheck: a token has no adapterCheck/,
+  );
+  assert.equal(vaultV2().entries.get('vault-v2-factory')?.adapterCheck?.signature, 'isAdapter(address)');
 });

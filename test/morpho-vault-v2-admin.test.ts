@@ -25,7 +25,16 @@ import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures('vault-v2');
 const registry = loadRegistry(ROOT);
-const IDS = ['morpho/vault-v2-cap-submit', 'morpho/vault-v2-cap-accept', 'morpho/vault-v2-cap-decrease', 'morpho/vault-v2-reallocate', 'morpho/vault-v2-revoke'];
+const IDS = [
+  'morpho/vault-v2-cap-submit',
+  'morpho/vault-v2-cap-accept',
+  'morpho/vault-v2-cap-decrease',
+  'morpho/vault-v2-reallocate',
+  'morpho/vault-v2-revoke',
+  'morpho/vault-v2-adapter-cap-submit',
+  'morpho/vault-v2-adapter-cap-accept',
+  'morpho/vault-v2-collateral-cap-submit',
+];
 const templates = new Map(IDS.map((id) => [id, loadTemplate(ROOT, id, registry)]));
 const VAULT = 'acuto-usdc-v2-4a57';
 const NO_LIMIT = `${(1n << 128n) - 1n}`;
@@ -48,11 +57,21 @@ const check = (tx: SafeTx, given: Card): FieldCheck => checkTemplateFields(tx, r
 const mismatchedArgs = (result: FieldCheck) => (result.kind === 'mismatch' ? result.findings.map((f) => f.arg) : result);
 
 const caps = (market: string, absolute: string, relative: string) => ({ vault: VAULT, market, 'absolute-cap': absolute, 'relative-cap': relative });
+const KPK_USDC = 'kpk-usdc-prime-v2-9ee6';
+const KPK_ETH = 'kpk-eth-yield-v2-7725';
+const unlimited = (vault: string) => ({ vault, 'absolute-cap': NO_LIMIT, 'relative-cap': ALL });
 
 const CASES = [
   { fixture: 'vault-v2-cap-submit-gauntlet', template: 'morpho/vault-v2-cap-submit', values: { ...caps('usdc-cbbtc-86', '300000000000000', ALL), vault: 'gauntlet-usdc-prime-v2-a3d0' }, bound: 18 },
   { fixture: 'vault-v2-cap-submit-flowmark', template: 'morpho/vault-v2-cap-submit', values: { ...caps('usdc-cbbtc-86', '50000000000', '50000000000000000'), vault: 'flowmark-fgenesis-v2-6439' }, bound: 18 },
   { fixture: 'vault-v2-cap-submit-murmurr', template: 'morpho/vault-v2-cap-submit', values: { ...caps('usdc-cbbtc-86', NO_LIMIT, '800000000000000000'), vault: 'murmurr-usdc-frontier-v2-5f99' }, bound: 18 },
+  { fixture: 'vault-v2-cap-submit-kpk', template: 'morpho/vault-v2-cap-submit', values: { ...unlimited(KPK_USDC), market: 'usdc-weeth-86' }, bound: 18 },
+  { fixture: 'vault-v2-adapter-cap-submit-kpk', template: 'morpho/vault-v2-adapter-cap-submit', values: unlimited(KPK_USDC), bound: 8 },
+  { fixture: 'vault-v2-adapter-cap-submit-kpk-eth', template: 'morpho/vault-v2-adapter-cap-submit', values: unlimited(KPK_ETH), bound: 8 },
+  { fixture: 'vault-v2-adapter-cap-accept-kpk', template: 'morpho/vault-v2-adapter-cap-accept', values: unlimited(KPK_USDC), bound: 8 },
+  { fixture: 'vault-v2-adapter-cap-accept-kpk-eth', template: 'morpho/vault-v2-adapter-cap-accept', values: unlimited(KPK_ETH), bound: 8 },
+  { fixture: 'vault-v2-collateral-cap-submit-kpk-weeth', template: 'morpho/vault-v2-collateral-cap-submit', values: { ...unlimited(KPK_USDC), collateral: 'weeth' }, bound: 8 },
+  { fixture: 'vault-v2-collateral-cap-submit-kpk-lseth', template: 'morpho/vault-v2-collateral-cap-submit', values: { ...unlimited(KPK_USDC), collateral: 'lseth' }, bound: 8 },
   { fixture: 'vault-v2-cap-submit', template: 'morpho/vault-v2-cap-submit', values: caps('usdc-usp-915', NO_LIMIT, ALL), bound: 18 },
   { fixture: 'vault-v2-cap-submit-other-safe', template: 'morpho/vault-v2-cap-submit', values: caps('usdc-usp-915', '1000000', '10000000000000000'), bound: 18 },
   { fixture: 'vault-v2-cap-submit-860', template: 'morpho/vault-v2-cap-submit', values: caps('usdc-usp-86', NO_LIMIT, ALL), bound: 18 },
@@ -90,6 +109,23 @@ test('a cap submission with another absolute cap or another market on the card i
   assert.deepEqual(otherMarket, ['marketParams.lltv', 'marketParams.lltv']);
 });
 
+test('a cap submission for another vault, another collateral or another cap than the transaction holds is a mismatch at that field', () => {
+  const adapter = safeTx('vault-v2-adapter-cap-submit-kpk');
+  assert.deepEqual(mismatchedArgs(check(adapter, card('morpho/vault-v2-adapter-cap-submit', { ...unlimited(KPK_USDC), 'relative-cap': '500000000000000000' }))), ['newRelativeCap']);
+  assert.deepEqual(mismatchedArgs(check(adapter, card('morpho/vault-v2-adapter-cap-submit', unlimited(KPK_ETH)))), ['to', 'adapter', 'adapter']);
+  const collateral = safeTx('vault-v2-collateral-cap-submit-kpk-weeth');
+  assert.deepEqual(mismatchedArgs(check(collateral, card('morpho/vault-v2-collateral-cap-submit', { ...unlimited(KPK_USDC), collateral: 'lseth' }))), ['collateralToken', 'collateralToken']);
+  assert.deepEqual(mismatchedArgs(check(collateral, card('morpho/vault-v2-collateral-cap-submit', { ...unlimited(KPK_USDC), collateral: 'weeth', 'absolute-cap': '1000000' }))), ['newAbsoluteCap']);
+});
+
+test('the market cap submission does not match an adapter or collateral cap submission, nor the other way round', () => {
+  const market = safeTx('vault-v2-cap-submit-kpk');
+  assert.notDeepEqual(check(market, card('morpho/vault-v2-adapter-cap-submit', unlimited(KPK_USDC))), { kind: 'match' });
+  assert.notDeepEqual(check(market, card('morpho/vault-v2-collateral-cap-submit', { ...unlimited(KPK_USDC), collateral: 'weeth' })), { kind: 'match' });
+  const adapter = safeTx('vault-v2-adapter-cap-submit-kpk');
+  assert.notDeepEqual(check(adapter, card('morpho/vault-v2-collateral-cap-submit', { ...unlimited(KPK_USDC), collateral: 'weeth' })), { kind: 'match' });
+});
+
 test('a reallocation with the markets swapped or another amount on the card is a mismatch', () => {
   const tx = safeTx('vault-v2-reallocate');
   const swapped = check(tx, card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1' }));
@@ -112,6 +148,14 @@ const refusal = (template: unknown): string => {
   }
   return 'parsed';
 };
+
+test('template load refuses a collateral cap id whose collateral is not a card field or is an amount', () => {
+  const text = JSON.stringify(raw('morpho/vault-v2-collateral-cap-submit'));
+  const { collateral: _, ...withoutField } = (JSON.parse(text) as { card: Record<string, unknown> }).card;
+  assert.match(refusal({ ...JSON.parse(text), card: withoutField }), /"collateral" is not a card field/);
+  const amount = JSON.parse(text.replaceAll('"collateralToken":{"card":"collateral"}', '"collateralToken":{"card":"absolute-cap"}'));
+  assert.match(refusal(amount), /a card rule cannot bind a address/);
+});
 
 test('template load refuses a keccak outside a view, a long constant string, and encoded parameters on a number', () => {
   const submit = raw('morpho/vault-v2-cap-submit');
@@ -158,6 +202,10 @@ async function recordedVerdicts(name: string, given: Card): Promise<{ simulated:
 const RECORDED = [
   { name: 'vault-v2-cap-submit-flowmark', given: card('morpho/vault-v2-cap-submit', { ...caps('usdc-cbbtc-86', '50000000000', '50000000000000000'), vault: 'flowmark-fgenesis-v2-6439' }) },
   { name: 'vault-v2-cap-submit', given: card('morpho/vault-v2-cap-submit', caps('usdc-usp-915', NO_LIMIT, ALL)) },
+  { name: 'vault-v2-cap-submit-kpk', given: card('morpho/vault-v2-cap-submit', { ...unlimited(KPK_USDC), market: 'usdc-weeth-86' }) },
+  { name: 'vault-v2-adapter-cap-submit-kpk', given: card('morpho/vault-v2-adapter-cap-submit', unlimited(KPK_USDC)) },
+  { name: 'vault-v2-adapter-cap-accept-kpk', given: card('morpho/vault-v2-adapter-cap-accept', unlimited(KPK_USDC)) },
+  { name: 'vault-v2-collateral-cap-submit-kpk-weeth', given: card('morpho/vault-v2-collateral-cap-submit', { ...unlimited(KPK_USDC), collateral: 'weeth' }) },
   { name: 'vault-v2-cap-accept', given: card('morpho/vault-v2-cap-accept', caps('usdc-usp-915', NO_LIMIT, ALL)) },
   { name: 'vault-v2-cap-decrease', given: card('morpho/vault-v2-cap-decrease', caps('usdc-usp-915', '0', '0')) },
   { name: 'vault-v2-revoke', given: card('morpho/vault-v2-revoke', caps('usdc-usp-915', '1000000', '10000000000000000')) },
@@ -193,4 +241,12 @@ test('a decrease the card states as another cap is a mismatch naming the cap the
   assert.equal(executed.kind, 'mismatch');
   const lines = executed.kind === 'mismatch' ? executed.findings.map((f) => describeFinding(f, registry)) : [];
   assert.ok(lines.some((line) => line.includes('absoluteCap') && line.endsWith('the template needs it to be 7, as the card says')), lines.join('\n'));
+});
+
+test('an adapter cap acceptance whose caps end other than the card says is a mismatch naming the cap the card wants', async () => {
+  const { tx, executed } = await recordedObservations('vault-v2-adapter-cap-accept-kpk', card('morpho/vault-v2-adapter-cap-accept', unlimited(KPK_USDC)));
+  const verdict = judgeEffects(executed, resolved(tx, card('morpho/vault-v2-adapter-cap-accept', { ...unlimited(KPK_USDC), 'relative-cap': '500000000000000000' })), templates, registry);
+  assert.equal(verdict.kind, 'mismatch');
+  const lines = verdict.kind === 'mismatch' ? verdict.findings.map((f) => describeFinding(f, registry)) : [];
+  assert.ok(lines.some((line) => line.includes('relativeCap') && line.endsWith('the template needs it to be 500000000000000000, as the card says')), lines.join('\n'));
 });

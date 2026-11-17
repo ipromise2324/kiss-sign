@@ -274,7 +274,7 @@ test('a zh-TW home prints card seal in Traditional Chinese with the same names, 
   assert.deepEqual([english.asked, chinese.asked], [['Is this what you mean to do? [y/N] '], ['這是你要做的事嗎？[y/N] ']]);
   const hash = (stdout: string, word: string) => new RegExp(`${word} (0x[0-9a-f]{64})`).exec(stdout)?.[1];
   assert.ok(hash(english.stdout, 'Sealed card') !== undefined);
-  assert.equal(hash(chinese.stdout, '已封存卡片'), hash(english.stdout, 'Sealed card'));
+  assert.equal(hash(chinese.stdout, '已密封卡片'), hash(english.stdout, 'Sealed card'));
 });
 
 test('a refusal before any config exists is in English, and init --language zh-TW prints its first run in Chinese', async () => {
@@ -385,11 +385,48 @@ test('card new lists a vault with the factory that created it, takes amounts in 
     made.stdout,
     new RegExp(`│   vault +steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n│   amount +5 usdc\\n│ +5000000 base units\\n│   min-shares +4\\.8951 steakhouse-prime-usdc-v2-0f51\\n│ +4895100000000000000 base units\\n│\\n│ chain reads at block ${HEAD}, where alchemy and drpc agree\\n`),
   );
+  assert.match(made.stdout, /\n    margin +The Morpho app reads its own preview when it builds the transaction/);
   assert.equal(made.stdout.match(/5000000 base units/g)?.length, 1, 'the amount is shown in base units once, in the card');
   assert.equal(made.asked.length, 3);
   assert.equal(made.asked[2], 'Is this what you mean to do? [y/N] ');
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(made.stdout)?.[1];
   assert.equal(hash, await sealedFile({ vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5000000', 'min-shares': '4895100000000000000' }));
+});
+
+test('a zh-TW home shows the template\'s margin reason in Traditional Chinese and seals the same card', async () => {
+  const [en, zh] = [freshHome(), freshHome()];
+  configure(en);
+  configure(zh, 'zh-TW');
+  const english = await run(['card', 'new', 'morpho/vault-deposit'], en, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], mainnet());
+  const chinese = await run(['card', 'new', 'morpho/vault-deposit'], zh, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], mainnet());
+  assert.equal(chinese.code, 0, chinese.stderr);
+  assert.match(chinese.stdout, /\n    緩衝 +Morpho app 在組交易時會自己讀一次預覽/);
+  assert.doesNotMatch(chinese.stdout, /The Morpho app reads/);
+  const hash = (stdout: string, word: string) => new RegExp(`${word} (0x[0-9a-f]{64})`).exec(stdout)?.[1];
+  assert.equal(hash(chinese.stdout, '已密封卡片'), hash(english.stdout, 'Sealed card'));
+});
+
+/** A copy of main whose morpho/vault-deposit holds each reason as `reason` makes it from the shipped `{ en, zh-TW }`. */
+function reasonsClone(reason: (both: Record<string, string>) => unknown): string {
+  const dir = dataClone();
+  const path = join(dir, 'templates', 'morpho', 'vault-deposit', 'template.json');
+  const template = JSON.parse(readFileSync(path, 'utf8'));
+  const margin = template.card['min-shares'].computed.margin;
+  margin.why = reason(margin.why);
+  for (const call of template.calls) call.trailer.why = reason(call.trailer.why);
+  writeFileSync(path, JSON.stringify(template, null, 2));
+  return publish(dir);
+}
+
+test('a reason the template holds only in another language is shown in that language, and a plain string reads as English', async () => {
+  const en = freshHome();
+  configure(en);
+  const zhOnly = await run(['card', 'new', 'morpho/vault-deposit'], en, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'n'], { ...mainnet(), repoRoot: reasonsClone((both) => ({ 'zh-TW': both['zh-TW'] })) });
+  assert.match(zhOnly.stdout, /\n    margin +Morpho app 在組交易時會自己讀一次預覽/);
+  const zh = freshHome();
+  configure(zh, 'zh-TW');
+  const plain = await run(['card', 'new', 'morpho/vault-deposit'], zh, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'n'], { ...mainnet(), repoRoot: reasonsClone((both) => both.en) });
+  assert.match(plain.stdout, /\n    緩衝 +The Morpho app reads its own preview/);
 });
 
 test('card new reads a computed field\'s inner read first, here the Safe\'s share balance for a withdrawal of all', async () => {

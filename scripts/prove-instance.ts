@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { openMainnetReader } from '../src/chain/reader.ts';
-import { proveInstance } from '../src/contracts/instance.ts';
+import { proveAdapterOf, proveInstance } from '../src/contracts/instance.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 
@@ -26,3 +26,12 @@ console.log(
     `providers  ${proof.providers.join(', ')}`,
   ].join('\n'),
 );
+if (proof.entry.kind === 'adapter') {
+  const answers = await proveAdapterOf(reader, registry, proof.entry, block.value);
+  if (answers.length === 0) console.log(`REFUSED no registry vault names ${name} as its adapter`);
+  for (const answer of answers) {
+    const vault = `vault      ${answer.vault.name} ${checksumAddress(answer.vault.address)}`;
+    console.log(answer.kind === 'uses' ? `${vault}\nanswered   ${answer.asked} = true\nproviders  ${answer.providers.join(', ')}` : `${vault}\nREFUSED    ${answer.why}`);
+  }
+  if (answers.length === 0 || answers.some((answer) => answer.kind === 'refused')) process.exit(1);
+}

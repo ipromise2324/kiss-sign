@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">11</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>5</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -275,20 +275,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <span class="opid">morpho/vault-v2-revoke · acuto-usdc-v2-4a57</span>
   <p class="sub"><span class="aiw" data-ai><span>Safe 呼叫 vault 的 <code>multicall</code>，裡面兩個 <code>revoke</code>：取消之前 <code>submit</code> 排隊、還沒執行的絕對上限和相對上限提高。取消後 <code>executableAt</code> 歸零，那兩個呼叫不能再執行。不動 Safe 的任何資產。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
-    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">7 / 11</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">4 個地址有結果要你看，見「待確認」。其餘 7 個都至少在 2 個地方確認。</span></span></li>
-    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">5 / 5</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。morpho-blue、adaptive-curve-irm、morpho-market-v1-adapter-v2-factory、morpho-oracle-cbbtc-usdc-86、morpho-oracle-usp-usdc、acuto-usdc-v2-4a57-market-adapter 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。</span></span></li>
-    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">11 / 11</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認卡片用到的每個合約還是研究時那份程式碼。被升級或換掉就擋下。vault-v2-factory、morpho-market-v1-adapter-v2-factory 簽名時不碰，只有報告比對它的程式碼。morpho-blue、adaptive-curve-irm、morpho-market-v1-adapter-v2-factory、morpho-oracle-cbbtc-usdc-86、morpho-oracle-usp-usdc、acuto-usdc-v2-4a57-market-adapter 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。</span></span></li>
+    <li data-state="bad" data-line="sources"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>地址來源 <span class="n num">8 / 13</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">5 個地址有結果要你看，見「待確認」。其餘 8 個都至少在 2 個地方確認。</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">7 / 7</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。morpho-blue、adaptive-curve-irm、morpho-oracle-cbbtc-usdc-86、morpho-oracle-usp-usdc、acuto-usdc-v2-4a57-market-adapter、morpho-oracle-weeth-usdc-86 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。</span></span></li>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">13 / 13</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認卡片用到的每個合約還是研究時那份程式碼。被升級或換掉就擋下。vault-v2-factory、morpho-market-v1-adapter-v2-factory 簽名時不碰，只有報告比對它的程式碼。morpho-blue、adaptive-curve-irm、morpho-oracle-cbbtc-usdc-86、morpho-oracle-usp-usdc、acuto-usdc-v2-4a57-market-adapter、morpho-oracle-weeth-usdc-86 沒有 ABI 證明比對它今天的程式碼，報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。</span></span></li>
     <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>參數保護 <span class="n num">沒有測試</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
   </ul>
-  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="bad"><span class="lbl">建議</span><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg><span class="aiw" data-ai><span>可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">11</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>5</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -374,6 +374,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
         <div class="part"><div class="pn">lltv</div><div><div class="raw">915000000000000000</div><div class="is">91.5%</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
+      </div>
+      <div class="parts"><div class="plabel">usdc / weeth，LLTV 86%，market id <span class="addr">0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e</span></div>
+        <div class="part"><div class="pn">loanToken</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場借出的代幣，等於 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken</div><div><div class="raw">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</div><div class="is"><a href="#a-weeth">weeth</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的抵押代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">oracle</div><div><div class="raw">0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411</div><div class="is"><a href="#a-morpho-oracle-weeth-usdc-86">morpho-oracle-weeth-usdc-86</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的 oracle。</span></span></div></div></div>
+        <div class="part"><div class="pn">irm</div><div><div class="raw">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</div><div class="is"><a href="#a-adaptive-curve-irm">adaptive-curve-irm</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
+        <div class="part"><div class="pn">lltv</div><div><div class="raw">860000000000000000</div><div class="is">86%</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
       </div></div>
       </div></div>
         <div class="part"><div class="pn">newAbsoluteCap<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">你填的金額</div>
@@ -430,6 +442,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
         <div class="part"><div class="pn">lltv</div><div><div class="raw">915000000000000000</div><div class="is">91.5%</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
+      </div>
+      <div class="parts"><div class="plabel">usdc / weeth，LLTV 86%，market id <span class="addr">0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e</span></div>
+        <div class="part"><div class="pn">loanToken</div><div><div class="raw">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</div><div class="is"><a href="#a-usdc">usdc</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場借出的代幣，等於 vault 的資產。</span></span></div></div></div>
+        <div class="part"><div class="pn">collateralToken</div><div><div class="raw">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</div><div class="is"><a href="#a-weeth">weeth</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的抵押代幣。</span></span></div></div></div>
+        <div class="part"><div class="pn">oracle</div><div><div class="raw">0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411</div><div class="is"><a href="#a-morpho-oracle-weeth-usdc-86">morpho-oracle-weeth-usdc-86</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的 oracle。</span></span></div></div></div>
+        <div class="part"><div class="pn">irm</div><div><div class="raw">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</div><div class="is"><a href="#a-adaptive-curve-irm">adaptive-curve-irm</a></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的利率模型。</span></span></div></div></div>
+        <div class="part"><div class="pn">lltv</div><div><div class="raw">860000000000000000</div><div class="is">86%</div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>市場的清算門檻。</span></span></div></div></div>
       </div></div>
       </div></div>
         <div class="part"><div class="pn">newRelativeCap<div class="pchips"><span class="who you">你填：百分比</span></div></div><div><div class="is">你填的百分比</div>
@@ -450,21 +474,21 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>morpho-blue</h2>
   <p class="intro"><span class="aiw" data-ai><span>Morpho Vault V2 把存款分配到多個 Morpho Blue 市場。curator 設定每個市場能放多少（上限），allocator 在上限內搬錢。提高上限要先 <code>submit</code>，等 timelock 過了才能執行。</span><span class="byai">AI 研究</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$10.04 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.49 B</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$10.05 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.49 B</span></span></dd></div>
     <div><dt>上線</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
     <div><dt>proxy</dt><dd><span>不是 proxy</span><span class="sub2"><a href="#a-acuto-usdc-v2-4a57">acuto-usdc-v2-4a57</a>，從 code pin 讀到</span></dd></div>
     <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。 <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">來源</a></span><span class="byai">AI 研究</span></span></dd></div>
     <div><dt>事故</dt><dd><span>0 起</span><span class="sub2">DefiLlama hacks 列在這個協議或它上層協議下的</span></dd></div>
   </dl>
-  <p class="srcline">程式在 2026-11-16 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>、鏈上和<a href="https://api.morpho.org/graphql">協議 API</a>。標 AI 研究的是 AI 查的。</p>
+  <p class="srcline">程式在 2026-11-17 讀 <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://defillama.com/hacks">DefiLlama hacks</a>、鏈上和<a href="https://api.morpho.org/graphql">協議 API</a>。標 AI 研究的是 AI 查的。</p>
 </section>
 
 <section id="vault-acuto-usdc-v2-4a57">
   <h2>金庫</h2>
   <p class="lead"><a href="#a-acuto-usdc-v2-4a57">acuto-usdc-v2-4a57</a>：程式記錄的 <code>pnpm vault-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
   <dl class="props">
-    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26429893</dd></div>
-    <div><dt>現在的 totalAssets</dt><dd><span class="num">758,880.66 usdc</span></dd><dd class="src">2026-11-16，區塊 26429893</dd></div>
+    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26432077</dd></div>
+    <div><dt>現在的 totalAssets</dt><dd><span class="num">758,945.33 usdc</span></dd><dd class="src">2026-11-17，區塊 26432077</dd></div>
     <div><dt>持有人</dt><dd><span class="num">68</span> 個地址持有，曾經收過的 <span class="num">558</span> 個</dd><dd class="src"></dd></div>
     <div><dt>最大持有人</dt><dd><span class="num">30.36%</span></dd><dd class="src">占全部股份</dd></div>
     <div><dt>前 10 名</dt><dd><span class="num">96.50%</span></dd><dd class="src">占全部股份</dd></div>
@@ -473,22 +497,22 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="diagram">
   <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
     <title id="vt">每月的 totalAssets</title>
-    <desc id="vd">13 個月，2025-11-20 到 2026-11-16，最高 7,070,044.1 usdc</desc>
-    <text class="tick" x="16" y="18">最高 7,070,044.1 usdc</text>
+    <desc id="vd">13 個月，2025-11-20 到 2026-11-17，最高 7,070,359.18 usdc</desc>
+    <text class="tick" x="16" y="18">最高 7,070,359.18 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
     <rect class="barna" x="25.7" y="138" width="29.0" height="12"><title>2025-11-20：還沒有程式碼</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
     <rect class="barna" x="74.0" y="138" width="29.0" height="12"><title>2025-12-20：還沒有程式碼</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
     <rect class="barna" x="122.3" y="138" width="29.0" height="12"><title>2026-01-19：還沒有程式碼</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
-    <rect class="barna" x="170.6" y="138" width="29.0" height="12"><title>2026-02-18：還沒有程式碼</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
-    <rect class="bar" x="218.9" y="34" width="29.0" height="116"><title>2026-03-20：7,070,044.1 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
-    <rect class="bar" x="267.2" y="71" width="29.0" height="79"><title>2026-04-20：4,813,174.55 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
-    <rect class="bar" x="315.5" y="89" width="29.0" height="61"><title>2026-05-20：3,701,892.77 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
-    <rect class="bar" x="363.8" y="106" width="29.0" height="44"><title>2026-06-19：2,651,959.94 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
-    <rect class="bar" x="412.1" y="125" width="29.0" height="25"><title>2026-07-19：1,493,565.19 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
-    <rect class="bar" x="460.4" y="104" width="29.0" height="46"><title>2026-08-18：2,830,915.22 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
-    <rect class="bar" x="508.7" y="131" width="29.0" height="19"><title>2026-09-17：1,175,582.49 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
-    <rect class="bar" x="557.0" y="134" width="29.0" height="16"><title>2026-10-17：953,979.32 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
-    <rect class="bar last" x="605.4" y="138" width="29.0" height="12"><title>2026-11-16：758,880.66 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
+    <rect class="barna" x="170.6" y="138" width="29.0" height="12"><title>2026-02-19：還沒有程式碼</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="bar" x="218.9" y="34" width="29.0" height="116"><title>2026-03-21：7,070,359.18 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
+    <rect class="bar" x="267.2" y="70" width="29.0" height="80"><title>2026-04-20：4,863,679.22 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="315.5" y="89" width="29.0" height="61"><title>2026-05-20：3,702,106.82 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
+    <rect class="bar" x="363.8" y="106" width="29.0" height="44"><title>2026-06-19：2,652,141.04 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="412.1" y="125" width="29.0" height="25"><title>2026-07-19：1,493,681.39 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
+    <rect class="bar" x="460.4" y="100" width="29.0" height="50"><title>2026-08-18：3,054,723.26 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="508.7" y="131" width="29.0" height="19"><title>2026-09-17：1,175,969.55 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
+    <rect class="bar" x="557.0" y="134" width="29.0" height="16"><title>2026-10-18：954,046.85 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar last" x="605.4" y="138" width="29.0" height="12"><title>2026-11-17：758,945.33 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
@@ -498,51 +522,58 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <div><dt class="num">2025-11-20</dt><dd class="num">還沒有程式碼</dd></div>
       <div><dt class="num">2025-12-20</dt><dd class="num">還沒有程式碼</dd></div>
       <div><dt class="num">2026-01-19</dt><dd class="num">還沒有程式碼</dd></div>
-      <div><dt class="num">2026-02-18</dt><dd class="num">還沒有程式碼</dd></div>
-      <div><dt class="num">2026-03-20</dt><dd class="num">7,070,044.1 usdc</dd></div>
-      <div><dt class="num">2026-04-20</dt><dd class="num">4,813,174.55 usdc</dd></div>
-      <div><dt class="num">2026-05-20</dt><dd class="num">3,701,892.77 usdc</dd></div>
-      <div><dt class="num">2026-06-19</dt><dd class="num">2,651,959.94 usdc</dd></div>
-      <div><dt class="num">2026-07-19</dt><dd class="num">1,493,565.19 usdc</dd></div>
-      <div><dt class="num">2026-08-18</dt><dd class="num">2,830,915.22 usdc</dd></div>
-      <div><dt class="num">2026-09-17</dt><dd class="num">1,175,582.49 usdc</dd></div>
-      <div><dt class="num">2026-10-17</dt><dd class="num">953,979.32 usdc</dd></div>
-      <div><dt class="num">2026-11-16</dt><dd class="num">758,880.66 usdc</dd></div>
+      <div><dt class="num">2026-02-19</dt><dd class="num">還沒有程式碼</dd></div>
+      <div><dt class="num">2026-03-21</dt><dd class="num">7,070,359.18 usdc</dd></div>
+      <div><dt class="num">2026-04-20</dt><dd class="num">4,863,679.22 usdc</dd></div>
+      <div><dt class="num">2026-05-20</dt><dd class="num">3,702,106.82 usdc</dd></div>
+      <div><dt class="num">2026-06-19</dt><dd class="num">2,652,141.04 usdc</dd></div>
+      <div><dt class="num">2026-07-19</dt><dd class="num">1,493,681.39 usdc</dd></div>
+      <div><dt class="num">2026-08-18</dt><dd class="num">3,054,723.26 usdc</dd></div>
+      <div><dt class="num">2026-09-17</dt><dd class="num">1,175,969.55 usdc</dd></div>
+      <div><dt class="num">2026-10-18</dt><dd class="num">954,046.85 usdc</dd></div>
+      <div><dt class="num">2026-11-17</dt><dd class="num">758,945.33 usdc</dd></div>
     </dl>
   </details>
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>5</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
+    <div class="row" data-state="bad" data-result="weeth/source.site">
+      <svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>
+      <div><div class="t">weeth：etherfi.gitbook.io/etherfi/developers，網站跟 DefiLlama 列的不同</div>
+        <div class="meta">這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。<a href="#a-weeth">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>頁面在 etherfi.gitbook.io，不是 DefiLlama 列的 ether.fi。CoinGecko 的 ether-fi 幣把白皮書連到 etherfi.gitbook.io，頁面上的 weETH 是 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee，跟 CoinGecko 列的 Wrapped eETH 地址一樣。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受：CoinGecko 列的是同一個地址。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
     <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">morpho-oracle-usp-usdc：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-result="acuto-usdc-v2-4a57/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">acuto-usdc-v2-4a57：地址只在 1 個地方確認：工廠</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-acuto-usdc-v2-4a57">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-acuto-usdc-v2-4a57">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。AI 問 Morpho API 這個地址，名稱是 Acuto、沒有上架、curator 是 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5；AI 沒找到不靠網址帶地址就列出它的頁面。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只在你就是這個 vault 的 curator 或 allocator 時用；先在 Morpho app 的 curator 頁比對地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
-    <div class="row" data-state="warn" data-result="acuto-usdc-v2-4a57-market-adapter/address">
+    <div class="row" data-state="warn" data-result="morpho-oracle-weeth-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">acuto-usdc-v2-4a57-market-adapter：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、金庫的登記工廠、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-acuto-usdc-v2-4a57-market-adapter">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5。AI 另外在鏈上確認：vault 的 <code>isAdapter</code> 回答 true、<code>adaptersLength</code> 是 1；pnpm prove-instance 時 MorphoMarketV1AdapterV2Factory 回答 <code>isMorphoMarketV1AdapterV2</code> = true，兩個節點一致。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；上限的 id 和搬錢都用這個地址，填錯只會 revert 或設到一個 vault 不用的 id。</span><span class="byai">AI 研究</span></span></div></div>
+      <div><div class="t">morpho-oracle-weeth-usdc-86：地址只在 1 個地方確認：協議 API</div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
+        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
@@ -571,13 +602,13 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>地址 <span class="c">11 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或金庫的登記工廠列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
+  <h2>地址 <span class="c">13 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或登記工廠（轉接合約還要用它的金庫確認）列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
   <div class="rows">
     <div class="ad" id="a-morpho-oracle-cbbtc-usdc-86" data-state="warn">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><span class="nm">morpho-oracle-cbbtc-usdc-86</span><span class="role"><span class="aiw" data-ai><span>市場用來給 cbBTC 定價的 oracle</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
       <div class="body"><span class="addr">0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a</span>
-        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
         <div class="confirmed">只在 1 個地方確認：協議 API</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
@@ -585,7 +616,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><span class="nm">morpho-oracle-usp-usdc</span><span class="role"><span class="aiw" data-ai><span>USP 市場用來給 USP 定價的 oracle</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
       <div class="body"><span class="addr">0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d</span>
-        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
         <div class="confirmed">只在 1 個地方確認：協議 API</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
@@ -593,70 +624,84 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><span class="nm">acuto-usdc-v2-4a57</span><span class="role"><span class="aiw" data-ai><span>Acuto 的 USDC vault（V2），沒有上架</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
       <div class="body"><span class="addr">0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57</span>
-        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="na">CoinGecko<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div><div class="src"><span data-state="ok">工廠<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="na">CoinGecko<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒資料可比</span></span></div><div class="src"><span data-state="ok">工廠<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
         <div class="confirmed">只在 1 個地方確認：工廠</div></div>
     </div>
-    <div class="ad" id="a-acuto-usdc-v2-4a57-market-adapter" data-state="warn">
+    <div class="ad" id="a-weeth" data-state="bad">
+      <svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>
+      <div><span class="nm">weeth</span><span class="role"><span class="aiw" data-ai><span>weETH 市場的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts">etherfi.gitbook.io/etherfi/developers</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg><span>網站：是另一個網站（<a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/ether-fi">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">部署者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒有已確認的合約同一個部署者</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-morpho-oracle-weeth-usdc-86" data-state="warn">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><span class="nm">acuto-usdc-v2-4a57-market-adapter</span><span class="role"><span class="aiw" data-ai><span>vault 的 Morpho Blue 市場轉接合約</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 已確認</span></span></div>
-      <div class="body"><span class="addr">0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5</span>
-        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+      <div><span class="nm">morpho-oracle-weeth-usdc-86</span><span class="role"><span class="aiw" data-ai><span>weETH 市場用來給 weETH 定價的 oracle</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
+      <div class="body"><span class="addr">0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411</span>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth">app.morpho.org/ethereum/variable</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
         <div class="confirmed">只在 1 個地方確認：協議 API</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
     <details class="fold">
-      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 7 個地址都沒有要你看的結果</summary>
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 8 個地址都沒有要你看的結果</summary>
     <div class="ad" id="a-usdc" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>vault 的資產，也是市場借出的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://developers.circle.com/stablecoins/usdc-contract-addresses">developers.circle.com/stablecoins</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 circle-usdc（<a href="https://defillama.com/protocol/circle-usdc">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usd-coin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0x95ba4cf87d6723ad9c0db21737d862be80e93911">部署者 0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒有已確認的合約同一個部署者</span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
     </div>
     <div class="ad" id="a-vault-v2-factory" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">vault-v2-factory</span><span class="role"><span class="aiw" data-ai><span>Morpho Vault V2 工廠，它回答 <code>isVaultV2</code> = true，這個 vault 是它建立的</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xA1D94F746dEfa1928926b84fB2596c06926C0405</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>、<a href="https://github.com/morpho-org">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
     </div>
     <div class="ad" id="a-cbbtc" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">cbbtc</span><span class="role"><span class="aiw" data-ai><span>市場的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/coinbase">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts">github.com/coinbase/agentkit</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/coinbase">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/coinbase-wrapped-btc">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
     </div>
     <div class="ad" id="a-morpho-blue" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">morpho-blue</span><span class="role"><span class="aiw" data-ai><span>Morpho Blue 本體，市場在它裡面</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>、<a href="https://github.com/morpho-org">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://etherscan.io/address/0x937ce2d6c488b361825d2db5e8a70e26d48afed5">部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，也部署了 adaptive-curve-irm</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">在 3 個地方確認：官方頁、github.com/morpho-org/sdks、部署者</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
     <div class="ad" id="a-adaptive-curve-irm" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">adaptive-curve-irm</span><span class="role"><span class="aiw" data-ai><span>市場的利率模型</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>、<a href="https://github.com/morpho-org">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://etherscan.io/address/0x937ce2d6c488b361825d2db5e8a70e26d48afed5">部署者 0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5，也部署了 morpho-blue</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="confirmed">在 3 個地方確認：官方頁、github.com/morpho-org/sdks、部署者</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
     <div class="ad" id="a-morpho-market-v1-adapter-v2-factory" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">morpho-market-v1-adapter-v2-factory</span><span class="role"><span class="aiw" data-ai><span>建立 Vault V2 市場轉接合約的工廠，它回答 <code>isMorphoMarketV1AdapterV2</code> = true，轉接合約是它建立的</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="na"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg><span>網站：沒資料可比（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a> 對照）</span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div>
-        <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。簽名時不碰；報告另外在最新區塊讀它跑的程式碼，跟 code pin 現在那一份比對。</div></div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.morpho.org/developers/contracts/addresses/">docs.morpho.org/developers/contracts/addresses</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts">github.com/morpho-org/sdks</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>、<a href="https://github.com/morpho-org">GitHub 驗證網域</a> 對照）</span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、github.com/morpho-org/sdks</div></div>
     </div>
     <div class="ad" id="a-usp" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">usp</span><span class="role"><span class="aiw" data-ai><span>USP 市場的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">docs.piku.co/piku/piku-platform</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 piku-finance（<a href="https://defillama.com/protocol/piku-finance">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div></div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts">docs.piku.co/piku/piku-platform</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 piku-finance（<a href="https://defillama.com/protocol/piku-finance">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/piku-utility-token">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/usp-yield-optimized-stablecoin">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xb8eaa4f956c6324435f4088cae9cda974c358508">部署者 0xB8eaa4f956C6324435f4088cAe9cDa974C358508</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒有已確認的合約同一個部署者</span></span></div></div>
         <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
+    </div>
+    <div class="ad" id="a-acuto-usdc-v2-4a57-market-adapter" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">acuto-usdc-v2-4a57-market-adapter</span><span class="role"><span class="aiw" data-ai><span>vault 的 Morpho Blue 市場轉接合約</span><span class="byai">AI 研究</span></span><span class="conf">中信心</span></span></div>
+      <div class="body"><span class="addr">0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5</span>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>讀不到</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">協議 API</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 morpho-blue（<a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok">工廠與用它的金庫<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：協議 API、工廠與用它的金庫</div>
+        <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
     </details>
   </div>
@@ -704,7 +749,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report morpho/vault-v2-revoke --vault-of acuto-usdc-v2-4a57 --record</code> 從 <code>templates/morpho/vault-v2-revoke/template.json</code>、<code>templates/morpho/vault-v2-revoke/docs.json</code>、<code>templates/morpho/vault-v2-revoke/vaults/acuto-usdc-v2-4a57/docs.json</code>、<code>registry/contracts.json</code>、<code>registry/markets.json</code>、<code>testdata/report/morpho-vault-v2-revoke/acuto-usdc-v2-4a57.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-revoke/notes.json</code>、<code>templates/morpho/vault-v2-revoke/vaults/acuto-usdc-v2-4a57/notes.json</code> 寫出，資料在 2026-11-16 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report morpho/vault-v2-revoke --vault-of acuto-usdc-v2-4a57 --record</code> 從 <code>templates/morpho/vault-v2-revoke/template.json</code>、<code>templates/morpho/vault-v2-revoke/docs.json</code>、<code>templates/morpho/vault-v2-revoke/vaults/acuto-usdc-v2-4a57/docs.json</code>、<code>registry/contracts.json</code>、<code>registry/markets.json</code>、<code>testdata/report/morpho-vault-v2-revoke/acuto-usdc-v2-4a57.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-revoke/notes.json</code>、<code>templates/morpho/vault-v2-revoke/vaults/acuto-usdc-v2-4a57/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>
