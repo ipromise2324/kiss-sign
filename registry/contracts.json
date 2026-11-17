@@ -1471,8 +1471,8 @@
   "weeth": {
     "address": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
     "kind": "token",
-    "source": "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts",
-    "sourceLabel": "weETH",
+    "source": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
+    "sourceLabel": "WEETH",
     "defillama": "ether.fi-stake",
     "coingecko": "wrapped-eeth",
     "code": {

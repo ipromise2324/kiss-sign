@@ -409,7 +409,7 @@ test('the protocol block holds the recorded facts and the market reading with it
   assert.equal(plain(row('事故').value), '0 起');
   assert.deepEqual(
     row('usdc-cbbtc-86').nested.map((n) => plain(n.value)),
-    ['333,387,875.96 usdc', '294,517,573.12 usdc', '88.34%'],
+    ['333,278,088.96 usdc', '294,523,917.68 usdc', '88.37%'],
   );
   assert.deepEqual(
     block.sources.map((s) => s.href),
@@ -431,12 +431,11 @@ test('without recorded protocol facts each protocol still shows its AI notes and
   );
 });
 
-test('the three oracles only the protocol API confirms and weETH\'s site are the rows to review, open in 地址, and the verdict icon is red', () => {
+test('the three oracles only the protocol API confirms are the rows to review, open in 地址, and the verdict icon is amber', () => {
   const page = pageOf(inputs);
   assert.deepEqual(
     body(page, 'review').rows.map((r) => [r.id, r.state, r.entry]),
     [
-      ['weeth/source.site', 'bad', 'a-weeth'],
       ['morpho-oracle-cbbtc-usdc-86/address', 'warn', 'a-morpho-oracle-cbbtc-usdc-86'],
       ['morpho-oracle-usp-usdc/address', 'warn', 'a-morpho-oracle-usp-usdc'],
       ['morpho-oracle-weeth-usdc-86/address', 'warn', 'a-morpho-oracle-weeth-usdc-86'],
@@ -448,16 +447,15 @@ test('the three oracles only the protocol API confirms and weETH\'s site are the
     [
       ['morpho-oracle-cbbtc-usdc-86', 'low', 'concern', '只在 1 個地方確認：協議 API'],
       ['morpho-oracle-usp-usdc', 'low', 'concern', '只在 1 個地方確認：協議 API'],
-      ['weeth', 'low', 'concern', '在 2 個地方確認：官方頁、CoinGecko'],
       ['morpho-oracle-weeth-usdc-86', 'low', 'concern', '只在 1 個地方確認：協議 API'],
     ],
   );
-  assert.equal(addresses.folded.length, 6);
-  assert.equal(page.header.verdict.state, 'bad');
+  assert.equal(addresses.folded.length, 7);
+  assert.equal(page.header.verdict.state, 'warn');
   assert.deepEqual(
     page.header.strip.map((s) => [s.name, s.state, s.count]),
     [
-      ['地址來源', 'bad', '6 / 10'],
+      ['地址來源', 'warn', '7 / 10'],
       ['原始碼驗證', 'ok', '6 / 6'],
       ['合約沒被換掉', 'ok', '10 / 10'],
       ['參數保護', 'ok', '1 / 1'],
