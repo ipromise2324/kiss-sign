@@ -1,6 +1,7 @@
 import { request } from 'node:https';
 import { fallbackLookup } from '../chain/dns.ts';
-import { requestText } from '../chain/https.ts';
+import { requestText, retried, transientStatus } from '../chain/https.ts';
+import type { NoteUnread } from '../chain/https.ts';
 import { MissingKeyError, mainnetEndpoints } from '../chain/providers.ts';
 import { httpsTransport } from '../chain/rpc.ts';
 import type { Transport } from '../chain/rpc.ts';
@@ -185,10 +186,11 @@ function requiredKey(name: 'alchemy' | 'etherscan', env: Env): string {
 }
 
 /**
- * The live sources, with keys from the environment or `$KISS_SIGN_HOME/.env`. A failure names the source only, never a
- * URL, since both URLs carry a key.
+ * The live sources, with keys from the environment or `$KISS_SIGN_HOME/.env`. A request that fails on the way or gets a
+ * busy answer is sent again a few times, then noted. A failure names the source only, never a URL, since both URLs
+ * carry a key.
  */
-export function liveAsk(env: Env, transport: Transport = httpsTransport()): Ask {
+export function liveAsk(env: Env, note: NoteUnread, transport: Transport = httpsTransport()): Ask {
   const alchemyUrl = mainnetEndpoints(env)[0].url;
   const etherscanKey = requiredKey('etherscan', env);
   const lookup = fallbackLookup();
@@ -198,7 +200,7 @@ export function liveAsk(env: Env, transport: Transport = httpsTransport()): Ask 
       const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'alchemy_getAssetTransfers', params: [req.params] });
       let answer;
       try {
-        answer = await transport(alchemyUrl, body, AbortSignal.timeout(30_000));
+        answer = await retried('alchemy alchemy_getAssetTransfers', () => transport(alchemyUrl, body, AbortSignal.timeout(30_000)), (a) => transientStatus(a), note);
       } catch {
         throw new ResearchError('alchemy unreachable');
       }
@@ -215,11 +217,17 @@ export function liveAsk(env: Env, transport: Transport = httpsTransport()): Ask 
       const path = `/v2/api?${new URLSearchParams({ ...req.query, apikey: etherscanKey })}`;
       let answer;
       try {
-        answer = await requestText(
-          request,
-          { method: 'GET', hostname: 'api.etherscan.io', path, servername: 'api.etherscan.io', rejectUnauthorized: true, lookup, signal: AbortSignal.timeout(30_000) },
-          undefined,
-          16 * 1024 * 1024,
+        answer = await retried(
+          'etherscan getLogs',
+          () =>
+            requestText(
+              request,
+              { method: 'GET', hostname: 'api.etherscan.io', path, servername: 'api.etherscan.io', rejectUnauthorized: true, lookup, signal: AbortSignal.timeout(30_000) },
+              undefined,
+              16 * 1024 * 1024,
+            ),
+          (a) => transientStatus(a),
+          note,
         );
       } catch {
         throw new ResearchError('etherscan unreachable');

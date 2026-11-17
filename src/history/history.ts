@@ -112,19 +112,20 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
   const cached = ctx.refresh ? undefined : readCache(path, safeTxHash);
   let reader: Reader;
   let recorded: (() => Exchange[]) | undefined;
+  const unread: string[] = [];
   if (cached !== undefined) {
     reader = replayReader(cached.exchanges);
     if (cached.messages !== undefined) inputs = { ...inputs, messages: cached.messages };
   } else {
     const endpoints = mainnetEndpoints(ctx.io.env);
     const recorder = recordingTransport(ctx.io.transport, endpoints);
-    reader = createReader(endpoints, recorder.transport);
+    reader = createReader(endpoints, recorder.transport, { note: (read) => void unread.push(read) });
     recorded = recorder.exchanges;
   }
   try {
-    const { evaluation, inputs: used } = await evaluateTx(inputs, reader, recorded === undefined ? undefined : ctx.io.readMessage);
+    const { evaluation, inputs: used, unread: messagesUnread } = await evaluateTx(inputs, reader, recorded === undefined ? undefined : ctx.io.readMessage);
     const { verdict } = evaluation;
-    if (recorded !== undefined) {
+    if (recorded !== undefined && unread.length === 0 && messagesUnread.length === 0) {
       mkdirSync(cacheDir(ctx.home), { recursive: true, mode: 0o700 });
       writePrivate(path, recordingText({ safeTxHash, exchanges: recorded(), messages: used.messages ?? [] }));
     }

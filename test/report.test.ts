@@ -543,6 +543,20 @@ test('--compare fetches each recorded past transaction again by hash, so one the
   assert.ok(differences.some((d) => d.startsWith(`\`${file}\``)), differences.join('\n'));
 });
 
+test('a recording that keeps its head block is studied again from it, and the command the report prints names it with --head', async () => {
+  const { subject } = scoped;
+  const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock === undefined)!;
+  const head = await replayReader(past.exchanges).blockNumber();
+  assert.equal(head.kind, 'agreed');
+  const kept = { ...past, query: { ...past.query, head: String(head.kind === 'agreed' ? head.value : '') }, exchanges: past.exchanges.filter((e) => e.method !== 'eth_blockNumber') };
+  const before = await summarizePastTxs(ROOT, registry, file, past);
+  const after = await summarizePastTxs(ROOT, registry, file, kept);
+  assert.equal(after.text, before.text);
+  const command = (text: string) => text.split('\n').find((line) => line.includes(`--record ${file.replace(/^.*\//, '').replace(/\.json$/, '')}`));
+  assert.doesNotMatch(command(quick(undefined, undefined, subject, undefined, [before])) ?? '', /--head/);
+  assert.match(command(quick(undefined, undefined, subject, undefined, [after])) ?? '', new RegExp(` --head ${kept.query.head} --max-txs ${past.query.maxTxs} `));
+});
+
 test('--compare names each file a pull request changes outside templates/, registry/ and testdata/', () => {
   const changed = ['templates/morpho/vault-deposit/template.json', 'registry/contracts.json', 'testdata/report/x.json', 'src/research/report.ts', 'scripts/report.ts', 'templates-x/a.json', 'docs/design.md', 'package.json'];
   assert.deepEqual(programChanges(changed), ['src/research/report.ts', 'scripts/report.ts', 'templates-x/a.json', 'docs/design.md', 'package.json']);

@@ -6,6 +6,7 @@ import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import type { Read } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
@@ -43,7 +44,8 @@ const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()
 
 const endpoints = mainnetEndpoints(process.env);
 const recorder = recordingTransport(httpsTransport(), endpoints);
-const reader = createReader(endpoints, recorder.transport);
+const unread: string[] = [];
+const reader = createReader(endpoints, recorder.transport, { note: (read) => void unread.push(read) });
 const agreed = <T>(read: Read<T>): T => {
   if (read.kind === 'unverifiable') throw new Error(read.reason);
   return read.value;
@@ -69,6 +71,11 @@ else {
 }
 
 if (flags.record !== undefined) {
+  const refusal = unreadRefusal(unread);
+  if (refusal !== undefined) {
+    console.error(refusal);
+    process.exit(1);
+  }
   const out = join(ROOT, 'testdata', 'perturb', `${flags.record}.json`);
   const recording = {
     safeTx: fixtureName,
