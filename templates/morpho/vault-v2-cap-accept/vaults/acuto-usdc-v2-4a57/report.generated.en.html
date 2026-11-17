@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>5</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -275,8 +275,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <span class="opid">morpho/vault-v2-cap-accept · acuto-usdc-v2-4a57</span>
   <p class="sub"><span class="aiw" data-ai><span>The Safe calls the vault&#39;s <code>multicall</code> to execute two calls queued earlier with <code>submit</code> whose timelock has ended: raise the absolute cap of the market you pick to the amount you type, and its relative cap to the percentage you type. It moves none of the Safe&#39;s assets.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
-    <li data-state="bad" data-line="sources"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>Address sources <span class="n num">8 / 13</span>
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">5 addresses have results for you to review; see &#34;To review&#34;. The other 8 are all confirmed in at least 2 places.</span></span></li>
+    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>Address sources <span class="n num">9 / 13</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">4 addresses have results for you to review; see &#34;To review&#34;. The other 9 are all confirmed in at least 2 places.</span></span></li>
     <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify&#39;s source, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts. morpho-blue, adaptive-curve-irm, morpho-oracle-cbbtc-usdc-86, morpho-oracle-usp-usdc, acuto-usdc-v2-4a57-market-adapter, morpho-oracle-weeth-usdc-86: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under &#34;Code unchanged&#34;.</span></span></li>
     <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">13 / 13</span>
@@ -286,9 +286,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result.</span></span></li>
   </ul>
-  <div class="verdict" data-state="bad"><span class="lbl">Advice</span><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span class="aiw" data-ai><span>OK to use, but this is a small unlisted vault with concentrated holders, and only the factory confirms its address. See To review.</span><span class="byai">AI research: be careful</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>OK to use, but this is a small unlisted vault with concentrated holders, and only the factory confirms its address. See To review.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>5</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
 
@@ -468,7 +468,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>morpho-blue</h2>
   <p class="intro"><span class="aiw" data-ai><span>Morpho Vault V2 spreads deposits across several Morpho Blue markets. The curator sets how much each market can hold (its cap), and the allocator moves funds within the caps. Raising a cap takes a <code>submit</code> first, and it can run only after the timelock has passed.</span><span class="byai">AI research</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$10.05 B</span></span><span class="sub2">on Ethereum <span class="num">$4.49 B</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$10.05 B</span></span><span class="sub2">on Ethereum <span class="num">$4.50 B</span></span></dd></div>
     <div><dt>Listed</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">the date DefiLlama first listed it</span></dd></div>
     <div><dt>proxy</dt><dd><span>not a proxy</span><span class="sub2"><a href="#a-acuto-usdc-v2-4a57">acuto-usdc-v2-4a57</a>, read from the code pin</span></dd></div>
     <div><dt>Audits</dt><dd><span class="aiw" data-ai><span>Vault V2&#39;s GitHub lists 10 audits (Spearbit, Zellic, Blackthorn, ChainSecurity, Certora and one contest). <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">source</a></span><span class="byai">AI research</span></span></dd></div>
@@ -481,8 +481,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>Vault</h2>
   <p class="lead"><a href="#a-acuto-usdc-v2-4a57">acuto-usdc-v2-4a57</a>: the recorded output of <code>pnpm vault-evidence</code>. Every number was asked of two providers. No conversion to US dollars here.</p>
   <dl class="props">
-    <div><dt>Factory</dt><dd>vault-v2-factory answers <code>isVaultV2(address)</code> = true</dd><dd class="src">block 26432053</dd></div>
-    <div><dt>totalAssets now</dt><dd><span class="num">758,944.64 usdc</span></dd><dd class="src">2026-11-17, block 26432053</dd></div>
+    <div><dt>Factory</dt><dd>vault-v2-factory answers <code>isVaultV2(address)</code> = true</dd><dd class="src">block 26433250</dd></div>
+    <div><dt>totalAssets now</dt><dd><span class="num">758,979.18 usdc</span></dd><dd class="src">2026-11-17, block 26433250</dd></div>
     <div><dt>Holders</dt><dd><span class="num">68</span> addresses hold shares, of <span class="num">558</span> that ever received them</dd><dd class="src"></dd></div>
     <div><dt>Largest holder</dt><dd><span class="num">30.36%</span></dd><dd class="src">of all shares</dd></div>
     <div><dt>Top 10</dt><dd><span class="num">96.50%</span></dd><dd class="src">of all shares</dd></div>
@@ -491,22 +491,22 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="diagram">
   <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
     <title id="vt">Monthly totalAssets</title>
-    <desc id="vd">13 months, 2025-11-20 to 2026-11-17, highest 7,070,355.73 usdc</desc>
-    <text class="tick" x="16" y="18">highest 7,070,355.73 usdc</text>
+    <desc id="vd">13 months, 2025-11-20 to 2026-11-17, highest 6,955,171.35 usdc</desc>
+    <text class="tick" x="16" y="18">highest 6,955,171.35 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
     <rect class="barna" x="25.7" y="138" width="29.0" height="12"><title>2025-11-20: no code yet</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">Nov</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
     <rect class="barna" x="74.0" y="138" width="29.0" height="12"><title>2025-12-20: no code yet</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">Dec</text>
-    <rect class="barna" x="122.3" y="138" width="29.0" height="12"><title>2026-01-19: no code yet</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="barna" x="122.3" y="138" width="29.0" height="12"><title>2026-01-20: no code yet</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">Jan</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
     <rect class="barna" x="170.6" y="138" width="29.0" height="12"><title>2026-02-19: no code yet</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">Feb</text>
-    <rect class="bar" x="218.9" y="34" width="29.0" height="116"><title>2026-03-21: 7,070,355.73 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
-    <rect class="bar" x="267.2" y="70" width="29.0" height="80"><title>2026-04-20: 4,863,673.33 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">Apr</text>
-    <rect class="bar" x="315.5" y="89" width="29.0" height="61"><title>2026-05-20: 3,702,104.7 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
-    <rect class="bar" x="363.8" y="106" width="29.0" height="44"><title>2026-06-19: 2,652,139.17 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">Jun</text>
-    <rect class="bar" x="412.1" y="125" width="29.0" height="25"><title>2026-07-19: 1,493,680.12 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
-    <rect class="bar" x="460.4" y="100" width="29.0" height="50"><title>2026-08-18: 3,054,720.38 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">Aug</text>
-    <rect class="bar" x="508.7" y="131" width="29.0" height="19"><title>2026-09-17: 1,175,968.45 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
-    <rect class="bar" x="557.0" y="134" width="29.0" height="16"><title>2026-10-18: 954,046.08 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">Oct</text>
-    <rect class="bar last" x="605.4" y="138" width="29.0" height="12"><title>2026-11-17: 758,944.64 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
+    <rect class="bar" x="218.9" y="34" width="29.0" height="116"><title>2026-03-21: 6,955,171.35 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">Mar</text>
+    <rect class="bar" x="267.2" y="69" width="29.0" height="81"><title>2026-04-20: 4,863,956.18 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">Apr</text>
+    <rect class="bar" x="315.5" y="92" width="29.0" height="58"><title>2026-05-20: 3,501,088.9 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">May</text>
+    <rect class="bar" x="363.8" y="106" width="29.0" height="44"><title>2026-06-19: 2,652,229.32 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">Jun</text>
+    <rect class="bar" x="412.1" y="125" width="29.0" height="25"><title>2026-07-19: 1,503,760.65 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">Jul</text>
+    <rect class="bar" x="460.4" y="99" width="29.0" height="51"><title>2026-08-18: 3,049,864.06 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">Aug</text>
+    <rect class="bar" x="508.7" y="130" width="29.0" height="20"><title>2026-09-18: 1,176,022.74 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">Sep</text>
+    <rect class="bar" x="557.0" y="134" width="29.0" height="16"><title>2026-10-18: 954,085.83 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">Oct</text>
+    <rect class="bar last" x="605.4" y="137" width="29.0" height="13"><title>2026-11-17: 758,979.18 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">Nov</text>
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways</div>
@@ -515,32 +515,25 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <dl class="props">
       <div><dt class="num">2025-11-20</dt><dd class="num">no code yet</dd></div>
       <div><dt class="num">2025-12-20</dt><dd class="num">no code yet</dd></div>
-      <div><dt class="num">2026-01-19</dt><dd class="num">no code yet</dd></div>
+      <div><dt class="num">2026-01-20</dt><dd class="num">no code yet</dd></div>
       <div><dt class="num">2026-02-19</dt><dd class="num">no code yet</dd></div>
-      <div><dt class="num">2026-03-21</dt><dd class="num">7,070,355.73 usdc</dd></div>
-      <div><dt class="num">2026-04-20</dt><dd class="num">4,863,673.33 usdc</dd></div>
-      <div><dt class="num">2026-05-20</dt><dd class="num">3,702,104.7 usdc</dd></div>
-      <div><dt class="num">2026-06-19</dt><dd class="num">2,652,139.17 usdc</dd></div>
-      <div><dt class="num">2026-07-19</dt><dd class="num">1,493,680.12 usdc</dd></div>
-      <div><dt class="num">2026-08-18</dt><dd class="num">3,054,720.38 usdc</dd></div>
-      <div><dt class="num">2026-09-17</dt><dd class="num">1,175,968.45 usdc</dd></div>
-      <div><dt class="num">2026-10-18</dt><dd class="num">954,046.08 usdc</dd></div>
-      <div><dt class="num">2026-11-17</dt><dd class="num">758,944.64 usdc</dd></div>
+      <div><dt class="num">2026-03-21</dt><dd class="num">6,955,171.35 usdc</dd></div>
+      <div><dt class="num">2026-04-20</dt><dd class="num">4,863,956.18 usdc</dd></div>
+      <div><dt class="num">2026-05-20</dt><dd class="num">3,501,088.9 usdc</dd></div>
+      <div><dt class="num">2026-06-19</dt><dd class="num">2,652,229.32 usdc</dd></div>
+      <div><dt class="num">2026-07-19</dt><dd class="num">1,503,760.65 usdc</dd></div>
+      <div><dt class="num">2026-08-18</dt><dd class="num">3,049,864.06 usdc</dd></div>
+      <div><dt class="num">2026-09-18</dt><dd class="num">1,176,022.74 usdc</dd></div>
+      <div><dt class="num">2026-10-18</dt><dd class="num">954,085.83 usdc</dd></div>
+      <div><dt class="num">2026-11-17</dt><dd class="num">758,979.18 usdc</dd></div>
     </dl>
   </details>
 </section>
 
 <section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>5</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">The AI checked each item first and gives its advice.</p>
   <div class="rows">
-    <div class="row" data-state="bad" data-result="weeth/source.site">
-      <svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>
-      <div><div class="t">weeth: etherfi.gitbook.io/etherfi/developers, site differs from the one DefiLlama lists</div>
-        <div class="meta">This page&#39;s domain or GitHub organization is not one DefiLlama lists for this protocol.<a href="#a-weeth">see source</a></div>
-        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The page is on etherfi.gitbook.io, not ether.fi, the site DefiLlama lists. CoinGecko&#39;s ether-fi coin links its whitepaper on etherfi.gitbook.io, and the page lists weETH as 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee, the address CoinGecko lists for Wrapped eETH.</span><span class="byai">AI research</span></span></div>
-        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable: CoinGecko lists the same address.</span><span class="byai">AI research</span></span></div></div>
-    </div>
     <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
       <div><div class="t">morpho-oracle-cbbtc-usdc-86: address confirmed in only 1 place: protocol API</div>
@@ -621,13 +614,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>could not be read</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="na">CoinGecko<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>nothing to compare</span></span></div><div class="src"><span data-state="ok">factory<span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
         <div class="confirmed">Confirmed in only 1 place: factory</div></div>
     </div>
-    <div class="ad" id="a-weeth" data-state="bad">
-      <svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>
-      <div><span class="nm">weeth</span><span class="role"><span class="aiw" data-ai><span>The collateral token of the weETH market</span><span class="byai">AI research</span></span><span class="conf">low confidence</span><span class="reviewed">AI has concerns</span></span></div>
-      <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts">etherfi.gitbook.io/etherfi/developers</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span>site: another site (compared with <a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/ether-fi">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
-        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
-    </div>
     <div class="ad" id="a-morpho-oracle-weeth-usdc-86" data-state="warn">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
       <div><span class="nm">morpho-oracle-weeth-usdc-86</span><span class="role"><span class="aiw" data-ai><span>The oracle the weETH market uses to price weETH</span><span class="byai">AI research</span></span><span class="conf">low confidence</span><span class="reviewed">AI has concerns</span></span></div>
@@ -637,7 +623,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="confirmed">No call goes to this contract directly, so it has no ABI proof. At each signing whose card uses it, the program checks that its code is still the code pin&#39;s.</div></div>
     </div>
     <details class="fold">
-      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>8 more addresses have no result for you to review</summary>
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>9 more addresses have no result for you to review</summary>
     <div class="ad" id="a-usdc" data-state="ok">
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
       <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>The vault&#39;s asset, also the token the markets lend</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
@@ -693,9 +679,16 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
       <div><span class="nm">acuto-usdc-v2-4a57-market-adapter</span><span class="role"><span class="aiw" data-ai><span>The vault&#39;s Morpho Blue market adapter</span><span class="byai">AI research</span></span><span class="conf">medium confidence</span></span></div>
       <div class="body"><span class="addr">0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5</span>
-        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>could not be read</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">protocol API</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok">factory and the vault using it<span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
-        <div class="confirmed">Confirmed in 2 places: protocol API, factory and the vault using it</div>
+        <div class="srcs"><div class="src"><span data-state="na"><a href="https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto">app.morpho.org/ethereum/vault</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>could not be read</span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://api.morpho.org/graphql">protocol API</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to morpho-blue (compared with <a href="https://defillama.com/protocol/morpho-blue">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/morpho">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok">factory, its vault and its own answer<span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">deployer<span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>not proven</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: protocol API, factory, its vault and its own answer</div>
         <div class="confirmed">No call goes to this contract directly, so it has no ABI proof. At each signing whose card uses it, the program checks that its code is still the code pin&#39;s.</div></div>
+    </div>
+    <div class="ad" id="a-weeth" data-state="ok">
+      <svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>
+      <div><span class="nm">weeth</span><span class="role"><span class="aiw" data-ai><span>The collateral token of the weETH market</span><span class="byai">AI research</span></span><span class="conf">high confidence</span></span></div>
+      <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol">github.com/etherfi-protocol/smart-contracts</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span>site belongs to ether.fi-stake (compared with <a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
     </div>
     </details>
   </div>
