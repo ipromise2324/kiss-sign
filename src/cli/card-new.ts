@@ -20,7 +20,7 @@ import { marketHead, marketTable } from './card-view.ts';
 import { paint, rows, section, table, text } from './format.ts';
 import type { Paint, Row } from './format.ts';
 import { FAILED, UsageError, terminal } from './io.ts';
-import { LABELS } from './labels.ts';
+import type { Labels } from './labels.ts';
 import type { Io, Terminal } from './io.ts';
 import { stopUnlessDataIsMain, requireConfig, seal } from './setup.ts';
 
@@ -56,7 +56,7 @@ function choicesFor(field: Exclude<ChosenField, { kind: 'market' }>, { registry,
 /** A name the signer can pick, with the address or market id it may also be picked by. */
 type Option = (Choice & { readonly id: Address }) | { readonly name: string; readonly id: Hex; readonly market: Market };
 
-const L = LABELS.card;
+type CardWords = Labels['card'];
 
 function optionsFor(field: ChosenField, sources: Sources): readonly Option[] {
   if (field.kind === 'market') return [...sources.registry.markets.values()].map((market) => ({ name: market.name, id: market.id, market }));
@@ -67,9 +67,9 @@ function optionsFor(field: ChosenField, sources: Sources): readonly Option[] {
  * The numbered list: names and full addresses in columns, each factory once below it, and a factory or source column
  * only when the listed choices differ in it.
  */
-function listLines(options: readonly Option[], p: Paint): string[] {
+function listLines(options: readonly Option[], p: Paint, L: CardWords): string[] {
   const markets = options.flatMap((o) => ('market' in o ? [o.market] : []));
-  if (markets.length > 0) return markets.flatMap((market, i) => [`${`${i + 1}.`.padStart(4)}  ${marketHead(market)}`, ...marketTable(market, 6)]);
+  if (markets.length > 0) return markets.flatMap((market, i) => [`${`${i + 1}.`.padStart(4)}  ${marketHead(market, L)}`, ...marketTable(market, L, 6)]);
   const choices = options.flatMap((o) => ('market' in o ? [] : [o]));
   const factories = [...new Map(choices.flatMap((c) => (c.factory === undefined ? [] : [[c.factory.address, c.factory] as const]))).values()];
   const factoryColumn = factories.length > 1 || (factories.length === 1 && choices.some((c) => c.factory === undefined));
@@ -120,14 +120,14 @@ const UINT256_LIMIT = 1n << 256n;
 type Chain = {
   readonly decimals: (entry: RegistryEntry) => Promise<number>;
   /** One uint256 a view answers. */
-  readonly call: (to: Address, data: Hex, what: string) => Promise<bigint>;
+  readonly call: (to: RegistryEntry, data: Hex, call: string) => Promise<bigint>;
   /** Each token's decimals read so far. */
   readonly known: ReadonlyMap<Address, number>;
   /** The block every read was made at and the providers that agreed, once anything was read. */
   readonly provenance: () => string | undefined;
 };
 
-function openChain(reader: Reader | undefined): Chain {
+function openChain(reader: Reader | undefined, L: CardWords): Chain {
   let at: BlockRef | undefined;
   const agreedBlock = async (refuse: (why: string) => never): Promise<{ readonly reader: Reader; readonly at: BlockRef }> => {
     if (reader === undefined) throw new Error('no chain reader');
@@ -145,7 +145,7 @@ function openChain(reader: Reader | undefined): Chain {
       const cached = known.get(entry.address);
       if (cached !== undefined) return cached;
       const refuse = (why: string): never => {
-        throw new CardError(`cannot read the decimals of ${entry.name} ${checksumAddress(entry.address)}: ${why}`);
+        throw new CardError(L.noDecimalsRead(entry.name, checksumAddress(entry.address), why));
       };
       const { reader: r, at: ref } = await agreedBlock(refuse);
       const decimals = await readDecimals(r, entry.address, ref);
@@ -153,15 +153,15 @@ function openChain(reader: Reader | undefined): Chain {
       known.set(entry.address, decimals);
       return decimals;
     },
-    call: async (to, data, what) => {
+    call: async (to, data, call) => {
       const refuse = (why: string): never => {
-        throw new CardError(`cannot read ${what}: ${why}`);
+        throw new CardError(L.noRead(call, to.name, checksumAddress(to.address), why));
       };
       const { reader: r, at: ref } = await agreedBlock(refuse);
-      const read = await r.call({ to, data }, ref);
+      const read = await r.call({ to: to.address, data }, ref);
       if (read.kind === 'unverifiable') return refuse(read.reason);
-      if (read.value.kind === 'reverted') return refuse('it reverted');
-      if (read.value.data.length !== 66) return refuse(`it answered ${(read.value.data.length - 2) / 2} bytes, not one word`);
+      if (read.value.kind === 'reverted') return refuse(L.reverted);
+      if (read.value.data.length !== 66) return refuse(L.notOneWord((read.value.data.length - 2) / 2));
       return BigInt(read.value.data);
     },
   };
@@ -170,15 +170,15 @@ function openChain(reader: Reader | undefined): Chain {
 /** Whole tokens in plain digits, or with commas between groups of exactly three digits before the point. */
 const AMOUNT = /^(0|[1-9][0-9]*|[1-9][0-9]{0,2}(?:,[0-9]{3})+)(?:\.([0-9]+))?$/;
 
-function baseUnits(name: string, typed: string, decimals: number, token: string): bigint {
+function baseUnits(name: string, typed: string, decimals: number, token: string, L: CardWords): bigint {
   const match = AMOUNT.exec(typed);
   const shown = JSON.stringify(typed.slice(0, 80));
-  if (match === null) throw new CardError(`${name}: ${shown} is not a plain decimal number such as 5, 1.25 or 1,000,000.5`);
+  if (match === null) throw new CardError(L.notDecimal(name, shown));
   const [, grouped = '', fraction = ''] = match;
   const whole = grouped.replaceAll(',', '');
-  if (fraction.length > decimals) throw new CardError(`${name}: ${shown} has more than ${decimals} digits after the point, and ${token} has ${decimals} decimals`);
+  if (fraction.length > decimals) throw new CardError(L.tooManyDigits(name, shown, decimals, token));
   const value = whole.length > 78 ? UINT256_LIMIT : BigInt(whole + fraction.padEnd(decimals, '0'));
-  if (value >= UINT256_LIMIT) throw new CardError(`${name}: ${shown} is 2^256 base units or more`);
+  if (value >= UINT256_LIMIT) throw new CardError(L.tooLarge(name, shown));
   return value;
 }
 
@@ -189,46 +189,46 @@ async function answer(ask: Terminal['ask'], question: string): Promise<string> {
 /** A percent in plain digits, at most 100 with at most 16 decimals, in WAD base units: 100% is 10^18. */
 const PERCENT = /^(0|[1-9][0-9]{0,2})(?:\.([0-9]{1,16}))?$/;
 
-function percentValue(name: string, typed: string): string {
+function percentValue(name: string, typed: string, L: CardWords): string {
   const match = PERCENT.exec(typed);
   const shown = JSON.stringify(typed.slice(0, 80));
-  if (match === null) throw new CardError(`${name}: ${shown} is not a percent such as 100 or 35.5, in plain digits with at most 16 decimals`);
+  if (match === null) throw new CardError(L.notPercent(name, shown));
   const [, whole = '', fraction = ''] = match;
   const value = BigInt(whole + fraction.padEnd(16, '0'));
-  if (value > WAD) throw new CardError(`${name}: ${shown} is more than 100 percent`);
+  if (value > WAD) throw new CardError(L.overHundred(name, shown));
   return value.toString();
 }
 
 async function typedValue(name: string, field: TypedField, values: Readonly<Record<string, string>>, ctx: Context): Promise<string> {
-  const { io, p } = ctx;
+  const { io, p, L } = ctx;
   io.stdout(text(section(p, name, L.type)));
-  if (field.kind === 'percent') return percentValue(name, await answer(ctx.ask, `${name} (a percent, 100 at most, such as 100 or 35.5): `));
+  if (field.kind === 'percent') return percentValue(name, await answer(ctx.ask, L.askPercent(name)), L);
   const unit = field.kind === 'amount' ? unitOf(field.of, values, ctx.sources.registry) : undefined;
   if (unit === undefined || unit.kind === 'unregistered') {
-    const label = field.kind === 'threshold' ? 'how many owners must sign, a whole number from 1' : unit === undefined ? 'a Safe nonce' : `base units of ${unit.ref}, which is no registry contract, so its decimals are not read`;
-    const typed = await answer(ctx.ask, `${name} (${label}): `);
+    const question = field.kind === 'threshold' ? L.askThreshold(name) : unit === undefined ? L.askNonce(name) : L.askBaseUnits(name, unit.ref);
+    const typed = await answer(ctx.ask, question);
     const parsed = parseUint256(typed);
-    if (parsed === undefined || (field.kind === 'threshold' && parsed === 0n)) throw new CardError(`${name}: ${JSON.stringify(typed.slice(0, 80))} is not a whole number in plain digits${field.kind === 'threshold' ? ' from 1' : ''}`);
+    if (parsed === undefined || (field.kind === 'threshold' && parsed === 0n)) throw new CardError(L.notWhole(name, JSON.stringify(typed.slice(0, 80)), field.kind === 'threshold'));
     return typed;
   }
   const token = unit.kind === 'eth' ? 'ETH' : unit.entry.name;
   const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
   io.stdout(text(rows([[L.token, unit.kind === 'eth' ? L.eth : `${token}  ${checksumAddress(unit.entry.address)}  ${L.decimals(decimals)}`]], 4)));
   const max = field.kind === 'amount' ? field.max : undefined;
-  const typed = await answer(ctx.ask, `${name} (whole ${token}, ${decimals} decimals${max === undefined ? '' : ', or max'}): `);
+  const typed = await answer(ctx.ask, L.askAmount(name, token, decimals, max !== undefined));
   if (max !== undefined && typed === 'max') {
     io.stdout(text(rows([[L.max, max.why, p.dim]], 4)));
     return max.value.toString();
   }
-  return baseUnits(name, typed, decimals, token).toString();
+  return baseUnits(name, typed, decimals, token, L).toString();
 }
 
 const word = (value: bigint): string => value.toString(16).padStart(64, '0');
 
-function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources: Sources): RegistryEntry {
+function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources: Sources, L: CardWords): RegistryEntry {
   const chosen = values[ref.field] as string;
   const entry = entryOf(chosen, ref.attribute, sources.registry);
-  if (entry === undefined) throw new CardError(`${ref.field}: ${chosen} has no ${ref.attribute ?? 'registry entry'} to read`);
+  if (entry === undefined) throw new CardError(L.nothingToRead(ref.field, chosen, ref.attribute));
   return entry;
 }
 
@@ -251,14 +251,14 @@ async function readValue(read: ComputedRead, values: Readonly<Record<string, str
       words.push(word(amount));
       shown.push(String(amount));
     } else {
-      const entry = entryAt(arg.ref, values, ctx.sources);
+      const entry = entryAt(arg.ref, values, ctx.sources, ctx.L);
       words.push(word(BigInt(entry.address)));
       shown.push(entry.name);
     }
   }
-  const to = entryAt(read.to, values, ctx.sources);
+  const to = entryAt(read.to, values, ctx.sources, ctx.L);
   const call = `${read.fn.name}(${shown.join(', ')})`;
-  const value = await ctx.chain.call(to.address, `${read.fn.selector}${words.join('')}` as Hex, `${call} on ${to.name} ${checksumAddress(to.address)}`);
+  const value = await ctx.chain.call(to, `${read.fn.selector}${words.join('')}` as Hex, call);
   steps.push({ call, on: to, value });
   return value;
 }
@@ -266,9 +266,9 @@ async function readValue(read: ComputedRead, values: Readonly<Record<string, str
 const percent = (bps: number): string => `${(bps / 100).toFixed(2)}%`;
 
 async function computedValue(name: string, field: TypedField & { readonly kind: 'amount' }, computed: Computed, values: Readonly<Record<string, string>>, ctx: Context): Promise<string> {
-  const { io, p } = ctx;
+  const { io, p, L } = ctx;
   const unit = unitOf(field.of, values, ctx.sources.registry);
-  if (unit.kind === 'unregistered') throw new CardError(`${name}: counts ${unit.ref}, which is no registry contract, so it cannot be computed in whole tokens`);
+  if (unit.kind === 'unregistered') throw new CardError(L.notComputable(name, unit.ref));
   const token = unit.kind === 'eth' ? 'ETH' : unit.entry.name;
   const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
   io.stdout(text(section(p, name, L.computed)));
@@ -290,8 +290,8 @@ async function computedValue(name: string, field: TypedField & { readonly kind: 
       ], 4),
     ),
   );
-  if (value === 0n) throw new CardError(`${name} comes to 0, which would bound nothing or nothing could meet`);
-  if (value >= UINT256_LIMIT) throw new CardError(`${name} comes to 2^256 base units or more`);
+  if (value === 0n) throw new CardError(L.comesToZero(name));
+  if (value >= UINT256_LIMIT) throw new CardError(L.comesTooLarge(name));
   return value.toString();
 }
 
@@ -302,6 +302,7 @@ type Context = {
   readonly ask: Terminal['ask'];
   readonly chain: Chain;
   readonly p: Paint;
+  readonly L: CardWords;
   /** The vaults with a report for a template reported per vault. */
   readonly reported: (template: string) => ReadonlySet<string>;
 };
@@ -315,6 +316,7 @@ const isChosen = (entry: [string, CardField]): entry is [string, ChosenField] =>
  */
 async function fill(template: Template, shared: Omit<Context, 'template'>): Promise<CardOperation> {
   const ctx: Context = { ...shared, template };
+  const { L } = ctx;
   const values: Record<string, string> = {};
   const fields = [...template.card];
   const unit = reportUnit(template);
@@ -323,17 +325,17 @@ async function fill(template: Template, shared: Omit<Context, 'template'>): Prom
     const listed = optionsFor(field, ctx.sources);
     const gated = gatesVaults(template) && field.kind !== 'market';
     const choices = gated ? listed.filter((choice) => !isRegistryVault(choice.name, ctx.sources.registry) || ctx.reported(template.id).has(choice.name)) : listed;
-    if (unit.kind === 'vault' && unit.field === name && choices.length === 0) throw new CardError(`${name}: no vault has a report for ${template.id}; build one first`);
+    if (unit.kind === 'vault' && unit.field === name && choices.length === 0) throw new CardError(L.noReportedVault(name, template.id));
     if (choices.length === 0) {
-      throw new CardError(`${name}: ${field.kind === 'market' ? 'registry/markets.json holds no market' : `the registry and address book hold nothing ${template.id} accepts here`}`);
+      throw new CardError(field.kind === 'market' ? L.noMarket(name) : L.nothingAccepted(name, template.id));
     }
-    ctx.io.stdout(text([...section(ctx.p, name, L.pick), ...listLines(choices, ctx.p)]));
+    ctx.io.stdout(text([...section(ctx.p, name, L.pick), ...listLines(choices, ctx.p, L)]));
     const range = `1-${choices.length}`;
-    const typed = await answer(ctx.ask, `${name}: type its number (${range}): `);
+    const typed = await answer(ctx.ask, L.askNumber(name, range));
     const [choice, ...others] = picked(typed, choices);
     const shown = JSON.stringify(typed.slice(0, 80));
-    if (choice === undefined) throw new CardError(`${name}: ${shown} is none of the listed choices; type the number in front of the one you mean (${range})`);
-    if (others.length > 0) throw new CardError(`${name}: ${shown} matches more than one listed choice; type the number in front of the one you mean (${range})`);
+    if (choice === undefined) throw new CardError(L.notListed(name, shown, range));
+    if (others.length > 0) throw new CardError(L.severalListed(name, shown, range));
     values[name] = choice.name;
   }
   for (const [name, field] of fields.filter(isTyped)) if (!isComputed(field)) values[name] = await typedValue(name, field, values, ctx);
@@ -345,19 +347,20 @@ const isComputed = (field: CardField): field is Extract<CardField, { kind: 'amou
 
 const readsChain = (template: Template): boolean => [...template.card.values()].some((f) => f.kind === 'amount' && (f.of !== 'eth' || f.computed !== undefined));
 
-export async function cardNew(args: readonly string[], io: Io): Promise<number> {
-  if (args.length === 0) throw new UsageError('card new takes one or more template ids, such as morpho/vault-deposit.');
-  const { ask, confirm } = terminal(io, 'card new');
-  if (!stopUnlessDataIsMain(io)) return FAILED;
+export async function cardNew(args: readonly string[], io: Io, w: Labels): Promise<number> {
+  const L = w.card;
+  if (args.length === 0) throw new UsageError(L.newUsage);
+  const { ask, confirm } = terminal(io, 'card new', w);
+  if (!stopUnlessDataIsMain(io, w)) return FAILED;
   const home = kissSignHome(io.env);
   const sources: Sources = { registry: loadRegistry(io.repoRoot), book: loadAddressBook(home), safe: requireConfig(home).safe };
   const templates = args.map((id) => {
-    if (!existsSync(join(io.repoRoot, TEMPLATES_DIR, id, 'template.json'))) throw new CardError(`no template ${id} in ${TEMPLATES_DIR}/`);
+    if (!existsSync(join(io.repoRoot, TEMPLATES_DIR, id, 'template.json'))) throw new CardError(L.noTemplate(id, TEMPLATES_DIR));
     return loadTemplate(io.repoRoot, id, sources.registry);
   });
   const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport) : undefined;
-  const chain = openChain(reader);
-  const ctx = { sources, io, ask, chain, p: paint(io.color === true), reported: (id: string) => reportedVaultsIn(io.repoRoot, id) };
+  const chain = openChain(reader, L);
+  const ctx = { sources, io, ask, chain, p: paint(io.color === true), L, reported: (id: string) => reportedVaultsIn(io.repoRoot, id) };
   const operations: CardOperation[] = [];
   for (const [i, template] of templates.entries()) {
     io.stdout(text(['', ctx.p.heading(L.operation(template.id, i + 1, templates.length))]));
@@ -365,5 +368,5 @@ export async function cardNew(args: readonly string[], io: Io): Promise<number> 
   }
   io.stdout('\n');
   const computed = new Set(templates.flatMap((template, i) => [...template.card].filter(([, field]) => isComputed(field)).map(([name]) => `${i}:${name}`)));
-  return seal({ operations }, io, confirm, { decimals: chain.known, provenance: chain.provenance(), computed });
+  return seal({ operations }, io, w, confirm, { decimals: chain.known, provenance: chain.provenance(), computed });
 }

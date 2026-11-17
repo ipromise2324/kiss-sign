@@ -1,21 +1,21 @@
 import assert from 'node:assert/strict';
-import { existsSync, mkdtempSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { before, test } from 'node:test';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { STANDARDS } from '../src/research/standards.ts';
-import { NOTES_FILE, notesChanges, notesPath, readNotes } from '../src/research/notes.ts';
+import { NOTES_FILE, notesChanges, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { LANGUAGES } from '../src/language.ts';
+import { LANGUAGES, isLanguage } from '../src/language.ts';
 import type { Language } from '../src/language.ts';
-import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, renderPage } from '../src/research/report-html.ts';
+import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, htmlDifferences, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
 import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
-import { NOT_YET_REBUILT } from '../src/template/vault-reports.ts';
+import { NOT_YET_REBUILT, reportedVaults } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
@@ -54,11 +54,13 @@ before(async () => {
   }
 });
 
-test('a report commits a page in each language exactly when its template has notes.json, no old one-language page, and none has report.md', () => {
+test('a report commits a page in exactly the languages its notes hold, none without notes.json, no old one-language page, and none has report.md', () => {
   for (const target of templateTargets(ROOT, registry)) {
+    const raw = readNotes(ROOT, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
+    const held = raw === undefined ? [] : notesLanguages(raw);
     for (const language of LANGUAGES) {
       const path = generatedHtmlPath(target, language);
-      assert.equal(existsSync(join(ROOT, path)), has(target.template, NOTES_FILE), `${path}: ${generatedHtmlFile(language)} without ${NOTES_FILE}, or the reverse`);
+      assert.equal(existsSync(join(ROOT, path)), held.includes(language), `${path}: committed in a language the notes do not hold, or missing in one they hold`);
     }
   }
   for (const id of templates) assert.ok(!has(id, 'report.md'), `${id} has report.md, which notes.json replaced`);
@@ -134,12 +136,18 @@ function withoutAi(html: string): { readonly rest: string; readonly cut: readonl
   return { rest, cut };
 }
 
+/** Whether a notes.json value is one AI text: an object keyed by languages alone. */
+const isText = (raw: object): boolean => Object.keys(raw).length > 0 && Object.keys(raw).every(isLanguage);
+/** The first report whose notes hold both languages, which a test that edits a text in each language needs. */
+const bilingual = (where: (dir: string) => boolean = () => true): string =>
+  [...withNotes.keys()].find((dir) => notesLanguages(notesOf(dir)).length === LANGUAGES.length && where(dir)) ?? assert.fail('a report whose notes hold both languages');
+
 /** Every piece of text in notes.json a page in `language` prints: its language's text, never a URL or an enum value. */
 function noteTexts(raw: unknown, language: Language): string[] {
   if (Array.isArray(raw)) return raw.flatMap((item) => noteTexts(item, language));
   if (typeof raw !== 'object' || raw === null) return [];
   const text = (raw as Record<string, unknown>)[language];
-  if (typeof text === 'string' && LANGUAGES.every((l) => l in raw)) return [text];
+  if (typeof text === 'string' && isText(raw)) return [text];
   return Object.entries(raw).flatMap(([key, value]) => (key === 'from' || key === 'to' ? [] : noteTexts(value, language)));
 }
 
@@ -202,7 +210,7 @@ test('every text the AI wrote is inside an element with its dashed AI tag, and n
 const both = (text: string) => ({ en: text, 'zh-TW': text });
 
 test('AI text is HTML-escaped', async () => {
-  const id = [...withNotes.keys()][0] as string;
+  const id = bilingual();
   const { inputs, title } = pages.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as Record<string, unknown>;
@@ -221,7 +229,7 @@ test('AI text is HTML-escaped', async () => {
 });
 
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
-  const id = [...withNotes.keys()].find((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0) ?? assert.fail('a report whose notes draw a flow line');
+  const id = bilingual((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0);
   const { inputs, title } = pages.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as { flow: { text: unknown }[] } & Record<string, unknown>;
@@ -277,7 +285,33 @@ test('--compare prints the first line where a committed HTML report differs, nam
   assert.equal(htmlDifference(file, 'a\nb', 'a\nb'), undefined);
   assert.equal(htmlDifference(file, 'a\nb ok', 'a\nb FINDING'), 'report.generated.en.html line 2: committed "b ok", the program writes "b FINDING"');
   assert.match(htmlDifference(file, undefined, 'a') ?? '', /no committed report\.generated\.en\.html/);
-  assert.match(htmlDifference(generatedHtmlFile('zh-TW'), 'a', undefined) ?? '', /^report\.generated\.zh-TW\.html is committed but there is no notes\.json/);
+  assert.match(htmlDifference(generatedHtmlFile('zh-TW'), 'a', undefined) ?? '', /^report\.generated\.zh-TW\.html is committed but no notes\.json holds text in its language/);
+});
+
+const folder = (files: Readonly<Record<string, string>>): string => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-pages-'));
+  for (const [file, text] of Object.entries(files)) writeFileSync(join(dir, file), text);
+  return dir;
+};
+
+test('--render writes a page only in the languages the notes hold and removes one in a language they no longer hold', () => {
+  const dir = folder({ 'report.generated.en.html': 'old en', 'report.generated.zh-TW.html': 'old zh', [OLD_HTML_FILE]: 'older' });
+  assert.deepEqual(writeHtmlPages(dir, new Map([['zh-TW', 'zh']])), ['report.generated.en.html', OLD_HTML_FILE]);
+  assert.deepEqual(readdirSync(dir), ['report.generated.zh-TW.html']);
+  assert.equal(readFileSync(join(dir, 'report.generated.zh-TW.html'), 'utf8'), 'zh');
+  assert.deepEqual(writeHtmlPages(dir, new Map([['en', 'en'], ['zh-TW', 'zh']])), []);
+  assert.deepEqual(readdirSync(dir).sort(), ['report.generated.en.html', 'report.generated.zh-TW.html']);
+});
+
+test('--compare flags a page committed in a language the notes do not hold, and one missing in a language they hold', () => {
+  const zhOnly = new Map<Language, string>([['zh-TW', 'zh']]);
+  assert.deepEqual(htmlDifferences(folder({ 'report.generated.zh-TW.html': 'zh' }), zhOnly), [{ file: 'report.generated.zh-TW.html', difference: undefined }]);
+  const extra = htmlDifferences(folder({ 'report.generated.zh-TW.html': 'zh', 'report.generated.en.html': 'en' }), zhOnly);
+  assert.match(extra.find((d) => d.file === 'report.generated.en.html')?.difference ?? '', /is committed but no notes\.json holds text in its language/);
+  const missing = htmlDifferences(folder({ 'report.generated.en.html': 'en' }), new Map<Language, string>([['en', 'en'], ['zh-TW', 'zh']]));
+  assert.match(missing.find((d) => d.file === 'report.generated.zh-TW.html')?.difference ?? '', /no committed report\.generated\.zh-TW\.html/);
+  assert.deepEqual(htmlDifferences(folder({}), undefined), []);
+  assert.match(htmlDifferences(folder({ [OLD_HTML_FILE]: 'x' }), undefined)[0]?.difference ?? '', /still committed/);
 });
 
 test('--compare names every notes.json a branch changes, as text the AI wrote', () => {
@@ -324,4 +358,38 @@ test('下一步 of a per-vault report names the vault in full, says to pick it b
   const at = ['金庫（vault）：', '金額（amount）：', '（min-shares）：'].map((prompt) => section.indexOf(prompt));
   assert.ok(at[0] !== -1 && at.every((i, n) => n === 0 || i > (at[n - 1] as number)), `${id}: the prompts in the order card new asks them`);
   assert.ok(section.includes('MISMATCH 或 UNVERIFIABLE：不要簽'), id);
+});
+
+/** Notes with every text in `language` alone, as an AI writes them for a signer who reads only that language. */
+const onlyIn = (raw: unknown, language: Language): unknown =>
+  Array.isArray(raw)
+    ? raw.map((item) => onlyIn(item, language))
+    : typeof raw === 'object' && raw !== null
+      ? isText(raw)
+        ? { [language]: (raw as Record<string, unknown>)[language] }
+        : Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, onlyIn(value, language)]))
+      : raw;
+
+const ONLY_IN: Readonly<Record<Language, string>> = { en: 'This report exists only in English.', 'zh-TW': '這份報告只有繁體中文版。' };
+
+test('notes in one language give a page in that language alone, which says, in that language, that no other exists', async () => {
+  const id = bilingual();
+  const { inputs, title, html } = pages.get(id) ?? assert.fail(id);
+  for (const page of html.values()) assert.ok(!Object.values(ONLY_IN).some((line) => page.includes(line)), `${id}: a report in both languages says it exists in one`);
+  const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
+  const withFixtures = { ...inputs, fixtures: await judgeFixtures(ROOT, template, registry), example: firstRecordedTx(ROOT, template, registry) };
+  for (const language of LANGUAGES) {
+    const raw = onlyIn(notesOf(id), language);
+    assert.deepEqual(notesLanguages(raw), [language]);
+    const page = renderPage(buildPage(withFixtures, raw, title, language));
+    assert.ok(page.includes(`<p class="srcline">${ONLY_IN[language]}</p>`), `${language}: the page says it exists only in ${language}`);
+    const other = LANGUAGES.find((l) => l !== language) as Language;
+    assert.throws(() => buildPage(withFixtures, raw, title, other), new RegExp(`holds no ${other} text`));
+  }
+});
+
+test('a vault whose report is in one language only still has a report, so card new, card seal and verify accept it', () => {
+  const dir = 'templates/morpho/vault-deposit/vaults';
+  for (const language of LANGUAGES)
+    assert.deepEqual(reportedVaults('morpho/vault-deposit', [`${dir}/v/notes.json`, `${dir}/v/report.generated.md`, `${dir}/v/${generatedHtmlFile(language)}`]), new Set(['v']));
 });
