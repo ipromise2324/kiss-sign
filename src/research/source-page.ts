@@ -4,7 +4,7 @@ import { requestText, retried, transientError, transientStatus } from '../chain/
 import type { HttpAnswer, NoteUnread, RequestFn } from '../chain/https.ts';
 import type { ApiAnswers } from './api-source.ts';
 import type { Creations } from './deployer.ts';
-import { githubAuthorization } from './github-token.ts';
+import { githubAuthorization, noteTokenRejected } from './github-token.ts';
 import type { GithubToken } from './github-token.ts';
 import type { PackageReads } from './npm-package.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -326,7 +326,7 @@ async function githubJson(url: string, get: HttpGet): Promise<{ kind: 'json'; st
   }
   const transient = transientStatus(answer, true);
   if (transient !== undefined) {
-    const limit = transient.startsWith('rate limited') ? ', the GitHub API rate limit (60 requests an hour without a token)' : '';
+    const limit = transient.startsWith('rate limited') ? ', the GitHub API rate limit (60 requests an hour without GITHUB_TOKEN, 5,000 with it)' : '';
     return { kind: 'unread', why: `api.github.com answered ${transient}${limit}; the commit is not checked, run again later` };
   }
   try {
@@ -400,23 +400,27 @@ export function httpsGet(githubToken?: GithubToken, send: RequestFn = request): 
     if (target.protocol !== 'https:') return Promise.reject(new Error('not https'));
     const refused = publicHost(target.hostname);
     if (refused !== undefined) return Promise.reject(Object.assign(new Error(refused), { code: 'ENOTPUBLIC' }));
-    return requestText(
-      send,
-      {
-        hostname: target.hostname,
-        path: target.pathname + target.search,
-        headers: {
-          'user-agent': 'kiss-sign',
-          accept: target.hostname === 'api.github.com' ? 'application/vnd.github+json' : 'text/html, application/json, text/plain',
-          ...githubAuthorization(url, githubToken),
+    const read = (authorization: { readonly authorization?: string }) =>
+      requestText(
+        send,
+        {
+          hostname: target.hostname,
+          path: target.pathname + target.search,
+          headers: {
+            'user-agent': 'kiss-sign',
+            accept: target.hostname === 'api.github.com' ? 'application/vnd.github+json' : 'text/html, application/json, text/plain',
+            ...authorization,
+          },
+          servername: target.hostname,
+          rejectUnauthorized: true,
+          lookup: fallbackLookup(undefined, true),
+          signal: AbortSignal.timeout(60_000),
         },
-        servername: target.hostname,
-        rejectUnauthorized: true,
-        lookup: fallbackLookup(undefined, true),
-        signal: AbortSignal.timeout(60_000),
-      },
-      undefined,
-      32 * 1024 * 1024,
-    );
+        undefined,
+        32 * 1024 * 1024,
+      );
+    const authorization = githubAuthorization(url, githubToken);
+    if (authorization.authorization === undefined) return read({});
+    return read(authorization).then((answer) => (answer.status === 401 ? (noteTokenRejected(), read({})) : answer));
   };
 }

@@ -74,6 +74,30 @@ test('a redirect from api.github.com is an answer, so the token never follows it
   assert.ok(!asJson(read).includes(TOKEN));
 });
 
+test('a token api.github.com refuses is dropped, so the answers are those no token gives, and the refusal is said once', async (t) => {
+  const said = t.mock.method(console, 'error', () => {});
+  const sent: Sent[] = [];
+  const refusing: RequestFn = (options, onResponse) => {
+    const github = (options.headers as OutgoingHttpHeaders).authorization !== undefined;
+    return fakeSend(github ? { [`${options.hostname}${options.path}`]: { status: 401, body: '{"message":"Bad credentials"}' } } : GITHUB_ANSWERS, sent)(options, onResponse);
+  };
+  const read = await gatherSourcePages([SOURCE], httpsGet(TOKEN, refusing));
+  const readWithout = await gatherSourcePages([SOURCE], httpsGet(undefined, fakeSend(GITHUB_ANSWERS, [])));
+  assert.equal(asJson(read), asJson(readWithout));
+  assert.deepEqual(
+    sent.map(({ host, headers }) => [host, headers.authorization]),
+    [
+      ['api.github.com', `Bearer ${TOKEN}`],
+      ['api.github.com', undefined],
+      ['api.github.com', `Bearer ${TOKEN}`],
+      ['api.github.com', undefined],
+      ['raw.githubusercontent.com', undefined],
+    ],
+  );
+  const lines = said.mock.calls.map((call) => String(call.arguments[0]));
+  assert.deepEqual(lines, ['NOTE  api.github.com refused GITHUB_TOKEN (HTTP 401), so GitHub is read without it; replace or remove the token']);
+});
+
 test('no URL but https://api.github.com gets the token', () => {
   assert.deepEqual(githubAuthorization('https://api.github.com/orgs/acme', TOKEN), { authorization: `Bearer ${TOKEN}` });
   for (const url of [
@@ -124,5 +148,5 @@ test('only the research scripts read the GitHub token, so no signing command can
     'src/research/github-token.ts',
   ]);
   assert.deepEqual(mentioning(/keySpec\('github'\)/), ['src/research/github-token.ts']);
-  assert.deepEqual(mentioning(/GITHUB_TOKEN/), ['src/keys.ts']);
+  assert.deepEqual(mentioning(/\.GITHUB_TOKEN\b|['"`]GITHUB_TOKEN['"`]/), ['src/keys.ts']);
 });
