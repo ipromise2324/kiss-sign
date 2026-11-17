@@ -186,24 +186,30 @@ Whether an address is the protocol's real contract rests in the end on the repor
 
 ## What kiss-sign checks
 
-When a template is built:
+Each check answers one way a signing can go wrong. The exceptions are in [Known limits](docs/design.md#known-limits).
 
-- **Each address is looked for in two places.** The page it comes from must be on the protocol's own site, as DefiLlama, CoinGecko, Immunefi and GitHub list it. Then the report looks for it in at least two places: the official pages, the protocol's API, CoinGecko, the factory that made it, the bug bounty's scope, the npm SDK, or a deployer it shares with a confirmed contract. One found in fewer is flagged for you to judge, as in step 2.
-- **ABIs are proven by compiling.** Etherscan's verified source, compiled with a pinned `solc`, must give the code on chain. `check.sh` uses Sourcify instead, so the two tiers rely on different third parties.
-- **The protocol's facts are read.** DefiLlama's TVL, listing date and past hacks, and for a vault its size over a year and its holders.
-- **Code is pinned.** Each registry contract's code is recorded, so an upgrade after your review gets `MISMATCH` at signing. A selector-routed proxy such as Fluid's is pinned only through the functions it is known to serve.
-- **Past transactions decide the shape.** A year of the same operation by other senders decides what the card asks and which form the template accepts: as narrow as real use allows, wide enough that the protocol's app still passes. Fluid's fToken has a deposit with a minimum-shares bound, but no plain wallet used it in a year, nor does Fluid's app, so the template takes the one without it. They also show how much rounding a balance needs.
-- **Free fields are tested.** Most fields the template leaves free are changed and simulated; every change must revert, be refused, or change nothing the template does not allow.
+**When a template is built**
 
-At every signing:
+| What could go wrong | What kiss-sign does |
+|---|---|
+| The AI uses a fake contract address | Finds the address on the protocol's own site and in at least one more place, such as CoinGecko or the factory that created it. If it finds fewer, the report flags it. |
+| The ABI used to read a call is wrong | Compiles the contract's verified source and checks that it gives the code on chain. |
+| The protocol or vault is new, small or was hacked | Shows its TVL, its age, its past hacks, and for a vault its size and holders over a year. |
+| The template accepts more than people really send | Studies a year of the same operation by other senders and accepts only the forms they use. |
+| A field the template leaves open can be abused | Changes each open field and simulates it. Nothing the template does not allow may happen. |
 
-- **The program checks itself first.** Your clone must be exactly your fork's `main`.
-- **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
-- **Decode, then re-encode byte for byte.** No hidden bytes beyond what the template allows.
-- **Floor rules for every template.** No unlimited approval, except a standing one the registry declares, such as Permit2; no `delegatecall` except to the official MultiSend, no change to the Safe's modules, guard or implementation, no gas refund.
-- **No 0 that bounds nothing.** A minimum of 0 is refused.
-- **Simulation on two providers.** Every change to the Safe's balances must be one your card explains, to the base unit, apart from a rounding allowance of at most 10 base units the template states.
-- **`MATCH` only on an explicit pass.** A check that fails silently, or a simulation that did not finish, is never `MATCH`.
+**At every signing**
+
+| What could go wrong | What kiss-sign does |
+|---|---|
+| Your copy of kiss-sign was changed | Runs only if it is exactly your fork's `main`. |
+| The Safe web app shows you something else | Recomputes every hash itself. |
+| Extra bytes hide in the call | Decodes the call and encodes it again. The bytes must be identical. |
+| The call does something dangerous | Refuses an unlimited approval (unless the registry allows one, as for Permit2), a `delegatecall` to anything but the official MultiSend, and any change to the Safe's modules, guard or implementation. |
+| A contract was upgraded after your review | Compares its code with the code recorded when you reviewed it. |
+| The transaction moves money you did not ask for | Simulates it on two providers. Every balance change must match your card, apart from a rounding of a few base units the template states. |
+| A minimum on your card is 0 | Refuses it, since it would protect nothing. |
+| A check fails without saying so | Says `MATCH` only when every check reports a pass. |
 
 Your Safe's address stays in `~/.kiss-sign/` and never enters the repository; a pre-push hook refuses a push that contains it or an API key. [docs/design.md](docs/design.md) is the source of truth for every check.
 
