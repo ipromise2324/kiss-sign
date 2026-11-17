@@ -48,6 +48,8 @@ export const WEIGHT_OF: { readonly [K in FindingKind]: Weight } = {
   'creation-unproven': 'reference',
   'source-no-answer': 'reference',
   'page-unread': 'reference',
+  'bounty-not-tied': 'reference',
+  'no-such-program': 'reference',
   'url-holds-address': 'reference',
   'not-listed': 'neutral',
   unlisted: 'neutral',

@@ -80,8 +80,12 @@ export type Finding =
   | { readonly kind: 'refused'; readonly why: string }
   /** The address is confirmed in fewer than two places; `by` names those that did. */
   | { readonly kind: 'few-confirmations'; readonly by: readonly ProgramSource[] }
-  /** A bounty program's scope, or an SDK file next to its label, does not hold the address: no confirmation. */
+  /** A bounty program's scope, or an SDK file, does not hold the address: no confirmation. */
   | { readonly kind: 'not-listed' }
+  /** The entry names an Immunefi program, but the protocol's sites are not known, so nothing ties the program to it. */
+  | { readonly kind: 'bounty-not-tied' }
+  /** The entry names an Immunefi program that Immunefi does not list. */
+  | { readonly kind: 'no-such-program' }
   /** The newest version of a pinned GitHub page or SDK binds the same label only to other addresses. */
   | { readonly kind: 'newer-differs' }
   /** The SDK tarball's hash is not the pinned one, or not the one npm gives. */
@@ -147,6 +151,8 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'judged-otherwise': 'bad',
   'few-confirmations': 'warn',
   'not-listed': 'na',
+  'bounty-not-tied': 'na',
+  'no-such-program': 'na',
   'newer-differs': 'bad',
   'package-differs': 'bad',
   'no-provenance': 'na',
@@ -192,6 +198,8 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'judged-otherwise': undefined,
   'few-confirmations': undefined,
   'not-listed': 'not-listed',
+  'bounty-not-tied': 'nothing-to-compare',
+  'no-such-program': 'unread',
   'newer-differs': 'other-address',
   'package-differs': 'other-file',
   'no-provenance': 'no-provenance',
@@ -322,9 +330,11 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
     case 'coingecko':
       return line.cause === 'differs' ? { kind: 'other-coin' } : line.cause === 'unexplained' ? { kind: 'unexplained-coin' } : { kind: 'no-coin' };
     case 'bounty':
-      return line.cause === 'differs' ? { kind: 'site-differs' } : { kind: 'not-listed' };
+      return line.cause === 'differs' ? { kind: 'site-differs' } : line.cause === 'not-fetched' ? { kind: 'no-such-program' } : { kind: 'bounty-not-tied' };
     case 'sdk':
-      return line.cause === 'differs' ? { kind: 'package-differs' } : line.cause === 'not-fetched' ? { kind: 'page-unread', why: 'not-fetched' } : { kind: 'not-listed' };
+      if (line.cause === 'differs') return { kind: 'package-differs' };
+      if (line.cause === 'not-fetched') return { kind: 'page-unread', why: 'not-fetched' };
+      return line.cause === 'not-served' ? { kind: 'not-listed' } : { kind: 'page-unread', why: 'not-by-label' };
     case 'deployer':
       return line.cause === 'unlisted' ? { kind: 'deployer-alone' } : { kind: 'creation-unproven' };
     case 'tip':
