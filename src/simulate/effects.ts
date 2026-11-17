@@ -9,7 +9,8 @@ import type { AbiValue } from '../decode/codec.ts';
 import { groupedTokens } from '../chain/decimals.ts';
 import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import type { BoundView, CallNode, CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect, ViewTarget } from '../template/template.ts';
+import { isNamedToken } from '../template/template.ts';
+import type { BoundView, CallNode, CardRef, EffectToken, Rule, Template, ViewChange, ViewEffect, ViewTarget } from '../template/template.ts';
 import type { Execution } from './events.ts';
 import type { SafeStateEvidence } from './safe-state.ts';
 
@@ -56,13 +57,21 @@ export type Asset = 'eth' | Address;
 
 /**
  * A change of exactly `change`; of more than `change` when the Safe also gets a `positive` amount, or less when it gives
- * one; of at least `change` when it gets at least a card amount or `any`; or, when the Safe gives `all` of a token, any
- * change that leaves it holding none.
+ * one; of at least `change` when it gets at least a card amount or `any`; from `low` to `high`, both included, when it
+ * gives at most a card amount or a tolerance widens an exact one; or, when the Safe gives `all` of a token, any change
+ * that leaves it holding none.
  */
-export type Expected = { readonly kind: 'exactly' | 'more-than' | 'at-least' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
+export type Expected =
+  | { readonly kind: 'exactly'; readonly change: bigint }
+  | { readonly kind: 'more-than' | 'at-least' | 'less-than'; readonly change: bigint }
+  | { readonly kind: 'between'; readonly low: bigint; readonly high: bigint }
+  | { readonly kind: 'all' };
+
+/** An expected change that bounds the amount, as a balance finding names it. */
+export type Bounded = Exclude<Expected, { kind: 'all' }>;
 
 export type EffectFinding =
-  | { readonly kind: 'balance'; readonly asset: Asset; readonly expected: Exclude<Expected, { kind: 'all' }>; readonly actual: bigint }
+  | { readonly kind: 'balance'; readonly asset: Asset; readonly expected: Bounded; readonly actual: bigint }
   | { readonly kind: 'not-all'; readonly asset: Address; readonly left: bigint }
   | ({ readonly kind: 'open-allowance' } & AllowanceChange)
   | ({ readonly kind: 'open-permit2-allowance' } & Permit2Change)
@@ -85,23 +94,51 @@ function addressOf(ref: CardRef, values: ReadonlyMap<string, ResolvedValue>, reg
   return target.kind === 'address' ? { address: target.address } : { problem: `card field ${ref.field} is a number, not an address` };
 }
 
-const assetOf = (ref: TokenRef, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): { readonly asset: Asset } | { readonly problem: string } => {
+const assetOf = (ref: EffectToken, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): { readonly asset: Asset } | { readonly problem: string } => {
   if (ref === 'eth') return { asset: 'eth' };
+  if (isNamedToken(ref)) {
+    const entry = registry.entries.get(ref.contract);
+    return entry === undefined ? { problem: `the registry has no ${ref.contract}` } : { asset: entry.address };
+  }
   const resolved = addressOf(ref, values, registry);
   return 'problem' in resolved ? resolved : { asset: resolved.address };
 };
 
-/** The sum over the card's operations of what each template's effects say the Safe gives and gets. */
+/** `expected` moved by a change from `low` to `high`: an exact amount becomes a range unless both ends are equal. */
+function shifted(expected: Extract<Bounded, { kind: 'exactly' | 'between' }>, low: bigint, high: bigint): Bounded {
+  const [from, to] = expected.kind === 'exactly' ? [expected.change, expected.change] : [expected.low, expected.high];
+  return low === high && from === to ? { kind: 'exactly', change: from + low } : { kind: 'between', low: from + low, high: to + high };
+}
+
+/**
+ * The sum over the card's operations of what each template's effects say the Safe gives and gets, each widened by the
+ * tolerances the templates declare (an effect's own and `effects.touches`), summed over the card as amounts are.
+ */
 export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Expectations {
   const changes = new Map<Asset, Expected>();
   const reasons: string[] = [];
   const stated = new Set<Asset>();
+  const slack = new Map<Asset, { readonly less: bigint; readonly more: bigint }>();
+  const touched = new Set<Asset>();
+  const named = new Set<Asset>();
+  const allow = (token: Asset, less: bigint, more: bigint): void => {
+    const known = slack.get(token) ?? { less: 0n, more: 0n };
+    slack.set(token, { less: known.less + less, more: known.more + more });
+  };
   const mixed = (token: Asset): string => `the card names an exact and an open amount of ${token}, so neither can be checked`;
   for (const op of card.operations) {
     const template = templates.get(op.template);
     if (template === undefined) {
       reasons.push(`no template ${op.template}`);
       continue;
+    }
+    for (const { token, tolerance } of template.effects.touches) {
+      const ref = assetOf({ contract: token }, op.values, registry);
+      if ('problem' in ref) reasons.push(ref.problem);
+      else {
+        touched.add(ref.asset);
+        allow(ref.asset, tolerance.less, tolerance.more);
+      }
     }
     const sides = [
       ...template.effects.gives.map((effect) => ({ effect, sign: -1n })),
@@ -122,6 +159,7 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         if (receiver.address === card.safe) continue;
       }
       const token = ref.asset;
+      named.add(token);
       const known = changes.get(token);
       if (effect.amount.kind === 'all') {
         if (token === 'eth' || known !== undefined) reasons.push(`the card gives all of ${token} and names it again`);
@@ -150,8 +188,8 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         else changes.set(token, { kind: open, change: base.change });
         continue;
       }
-      // An open amount of the same token would hide whether this one arrived exactly, which a template may rely on.
-      if (base.kind !== 'exactly') {
+      // An open amount of the same token would hide whether this one arrived within its bounds, which a template may rely on.
+      if (base.kind !== 'exactly' && base.kind !== 'between') {
         reasons.push(mixed(token));
         continue;
       }
@@ -161,8 +199,16 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         reasons.push(`the card has no amount ${effect.amount.field}`);
         continue;
       }
-      changes.set(token, { ...base, change: base.change + sign * amount.value });
+      changes.set(token, effect.amount.kind === 'at-most' ? shifted(base, -amount.value, 0n) : shifted(base, sign * amount.value, sign * amount.value));
+      if (effect.tolerance !== undefined) allow(token, effect.tolerance.less, effect.tolerance.more);
     }
+  }
+  // Before this loop only `atMost` makes a range, so a tolerance widens only an exact amount, never an open or atMost one.
+  for (const [token, { less, more }] of slack) {
+    const known = changes.get(token) ?? { kind: 'exactly', change: 0n };
+    if (touched.has(token) && named.has(token)) reasons.push(`the card touches ${token} and names it in an effect too`);
+    else if (known.kind !== 'exactly') reasons.push(`a tolerance on ${token} would widen an open or atMost amount of it`);
+    else changes.set(token, shifted(known, -less, more));
   }
   return reasons.length > 0 ? { kind: 'unverifiable', reasons } : { kind: 'expected', changes };
 }
@@ -358,14 +404,20 @@ const CHANGED: Readonly<Record<ViewChange, (before: bigint, after: bigint) => bo
   same: (before, after) => after === before,
 };
 
-const meets = (expected: Exclude<Expected, { kind: 'all' }>, actual: bigint): boolean =>
-  expected.kind === 'exactly'
-    ? actual === expected.change
-    : expected.kind === 'more-than'
-      ? actual > expected.change
-      : expected.kind === 'at-least'
-        ? actual >= expected.change
-        : actual < expected.change;
+const meets = (expected: Bounded, actual: bigint): boolean => {
+  switch (expected.kind) {
+    case 'exactly':
+      return actual === expected.change;
+    case 'more-than':
+      return actual > expected.change;
+    case 'at-least':
+      return actual >= expected.change;
+    case 'less-than':
+      return actual < expected.change;
+    case 'between':
+      return expected.low <= actual && actual <= expected.high;
+  }
+};
 
 /**
  * Every change to the Safe's balances must be one the card's effects explain, and no allowance, ERC-20 or Permit2, may
@@ -478,10 +530,12 @@ export function describeFinding(finding: EffectFinding, registry: Registry, deci
   const amount = (n: bigint): string =>
     places === undefined || n === 0n ? signed(n) : `${n > 0n ? '+' : '-'}${groupedTokens(n < 0n ? -n : n, places)} (${signed(n)} base units)`;
   const want =
-    expected.kind === 'exactly'
-      ? amount(expected.change)
-      : expected.kind === 'at-least'
-        ? `at least ${amount(expected.change)}`
-        : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${amount(expected.change)}`;
+    expected.kind === 'between'
+      ? `between ${amount(expected.low)} and ${amount(expected.high)}`
+      : expected.kind === 'exactly'
+        ? amount(expected.change)
+        : expected.kind === 'at-least'
+          ? `at least ${amount(expected.change)}`
+          : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${amount(expected.change)}`;
   return `${nameOf(asset, registry)} changed by ${amount(finding.actual)}, the card explains ${want}`;
 }
