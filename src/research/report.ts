@@ -21,7 +21,7 @@ import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, inScope, loadTemplate, refNames, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
-import type { Line, Listings, ListingsRecording } from './listings.ts';
+import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
@@ -49,7 +49,8 @@ export type Subject =
   | { readonly kind: 'vault'; readonly vault: RegistryEntry };
 
 /** The official page for one function. The program checks the page; the AI writes no text about it. */
-export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly url: HttpsUrl; readonly standard: Standard | undefined };
+/** `owner` is the entry whose protocol publishes the page: the contract, or the factory that deploys its code. */
+export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly owner: SiteOwner; readonly url: HttpsUrl; readonly standard: Standard | undefined };
 
 /** What a report is of: a template by id, with `cardVault` for one reported per vault; or one registry vault by name. */
 export type Target = { readonly template: string; readonly cardVault?: string } | { readonly vault: string };
@@ -178,10 +179,11 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
     if (names !== undefined && !names.includes(contract.name)) {
       throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is ${contract.name}, but the template calls it on ${names.length === 1 ? names[0] : `one of ${names.join(', ')}`}`);
     }
-    if (standard !== undefined) return { fn, contract, url: standard.page, standard };
+    const owner = registry.entries.get(contract.attributes.factory ?? '') ?? contract;
+    if (standard !== undefined) return { fn, contract, owner, url: standard.page, standard };
     const url = parseHttpsUrl(value.url);
     if (url === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.url is not an https URL`);
-    return { fn, contract, url, standard: undefined };
+    return { fn, contract, owner, url, standard: undefined };
   });
 }
 
@@ -421,7 +423,7 @@ export function functionOnPage(doc: DocLink): RegExp {
 }
 
 export function docSiteLine(doc: DocLink, listings: Listings): Line {
-  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.contract, listings);
+  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.owner, listings);
   const ref = githubRef(new URL(doc.url));
   const org = ref.kind === 'pinned' ? ref.owner.toLowerCase() : undefined;
   if (org === doc.standard.org) return { kind: 'agrees', check: 'defillama', text: `GitHub org ${org} publishes ${doc.standard.name}` };
@@ -792,7 +794,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   out.push('', '## Official documentation', '');
   if (docs.length === 0) return [...out, `The template calls no function, so ${code(DOCS_FILE)} names no page.`, ''];
   out.push(
-    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol of that contract, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by ${code('(')}, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.`,
+    `Each page comes from ${code(DOCS_FILE)}, whose contract must be the one the template calls the function on when the template binds it. The program compares the page's registrable domain, or GitHub organization, with the DefiLlama protocol that contract belongs to, its factory's for an entry a factory deploys, checks that a GitHub page is pinned to a commit on the default branch, and looks in the page as served, without scripts, for the function's name written as code: directly followed by ${code('(')}, between backticks, or alone as a block, such as a heading, a list item or a table cell. A PASS there shows that the page names a function of that name, not that it documents this contract's function. A function a token standard defines may instead name that standard: its page, the GitHub org that publishes it and the function's declaration are held by the program, the page must hold that declaration, and its org is compared with the standard's, not with the contract's protocol. Such a PASS shows that the standard defines the function, not that this contract follows the standard.`,
     '',
     '| Function | Contract | Page | Site | GitHub commit | Function on page |',
     '| --- | --- | --- | --- | --- | --- |',
