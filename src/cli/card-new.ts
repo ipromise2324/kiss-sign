@@ -5,7 +5,7 @@ import type { Language } from '../language.ts';
 import { join } from 'node:path';
 import { loadAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
-import { CardError, parseUint256, resolveRef, resolveValue } from '../card.ts';
+import { CardError, isZeroFloor, parseUint256, resolveRef, resolveValue } from '../card.ts';
 import type { CardOperation, ResolvedValue } from '../card.ts';
 import { groupedTokens, readDecimals } from '../chain/decimals.ts';
 import { canonicalType } from '../decode/abi.ts';
@@ -212,21 +212,33 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   const unit = field.kind === 'amount' ? unitOf(field.of, values, ctx.sources.registry) : undefined;
   if (unit === undefined || unit.kind === 'unregistered') {
     const question = field.kind === 'threshold' ? L.askThreshold(name) : unit === undefined ? L.askNonce(name) : L.askBaseUnits(name, unit.ref);
-    const typed = await answer(ctx.ask, question);
-    const parsed = parseUint256(typed);
-    if (parsed === undefined || (field.kind === 'threshold' && parsed === 0n)) throw new CardError(L.notWhole(name, JSON.stringify(typed.slice(0, 80)), field.kind === 'threshold'));
-    return typed;
+    return askedUntilNotZeroFloor(name, ctx, async () => {
+      const typed = await answer(ctx.ask, question);
+      const parsed = parseUint256(typed);
+      if (parsed === undefined || (field.kind === 'threshold' && parsed === 0n)) throw new CardError(L.notWhole(name, JSON.stringify(typed.slice(0, 80)), field.kind === 'threshold'));
+      return parsed;
+    });
   }
   const token = unit.kind === 'eth' ? 'ETH' : unit.entry.name;
   const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
   io.stdout(text(rows([[L.token, unit.kind === 'eth' ? L.eth : `${token}  ${checksumAddress(unit.entry.address)}  ${L.decimals(decimals)}`]], 4)));
   const max = field.kind === 'amount' ? field.max : undefined;
-  const typed = await answer(ctx.ask, L.askAmount(name, token, decimals, max !== undefined));
-  if (max !== undefined && typed === 'max') {
-    io.stdout(text(rows([[L.max, say(max.why, ctx.language), p.dim]], 4)));
-    return max.value.toString();
+  return askedUntilNotZeroFloor(name, ctx, async () => {
+    const typed = await answer(ctx.ask, L.askAmount(name, token, decimals, max !== undefined));
+    if (max !== undefined && typed === 'max') {
+      io.stdout(text(rows([[L.max, say(max.why, ctx.language), p.dim]], 4)));
+      return max.value;
+    }
+    return baseUnits(name, typed, decimals, token, L);
+  });
+}
+
+async function askedUntilNotZeroFloor(name: string, ctx: Context, asked: () => Promise<bigint>): Promise<string> {
+  for (;;) {
+    const value = await asked();
+    if (!isZeroFloor(ctx.template, name, value)) return value.toString();
+    ctx.io.stdout(text(rows([['', ctx.L.zeroFloorAgain(name), ctx.p.warn]], 2)));
   }
-  return baseUnits(name, typed, decimals, token, L).toString();
 }
 
 function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources: Sources, L: CardWords): RegistryEntry {

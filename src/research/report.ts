@@ -46,6 +46,7 @@ import type { Standard } from './standards.ts';
 import type { AnchorKind } from './sources.ts';
 import { readRecording } from '../chain/bytecode.ts';
 import { toleranceSpan } from './report-words.ts';
+import type { Split } from '../verdict-core.ts';
 
 /** A template, with the one vault its report covers when it is reported per vault; or one registry vault alone. */
 export type Subject =
@@ -1520,7 +1521,15 @@ export async function vaultsAt(
   return texts;
 }
 
-/** What a pull request may change and still be only data: anything else changes the program the signer runs. */
-const DATA_DIRS = ['templates/', 'registry/', 'testdata/'];
-
-export const programChanges = (changed: readonly string[]): string[] => changed.filter((file) => !DATA_DIRS.some((dir) => file.startsWith(dir)));
+/** `--compare`'s program lines: the verdict core apart from the rest, so the signer sees whether merging changes what `verify` checks. */
+export function programChangeLines(head: string, split: Split): string[] {
+  const list = (paths: readonly string[]) => paths.map((path) => `  ${path}`);
+  return [
+    ...(split.core.length === 0
+      ? []
+      : [`PROGRAM CHANGE  verdict core: ${head} changes ${split.core.length} file(s) the signing commands run, or the check that keeps them apart; merging it changes what verify checks for every signing:`, ...list(split.core)]),
+    ...(split.other.length === 0
+      ? []
+      : [`PROGRAM CHANGE  not the verdict: ${head} changes ${split.other.length} other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs; review them as code:`, ...list(split.other)]),
+  ];
+}
