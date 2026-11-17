@@ -6,6 +6,7 @@ import { canonicalType } from '../decode/abi.ts';
 import type { AbiParam, AbiType } from '../decode/abi.ts';
 import { decodeValues, encodeCall, encodeParams } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
+import { groupedTokens } from '../chain/decimals.ts';
 import type { AllowanceRoute, Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import type { BoundView, CallNode, CardRef, Rule, Template, TokenRef, ViewChange, ViewEffect, ViewTarget } from '../template/template.ts';
@@ -55,7 +56,8 @@ export type Asset = 'eth' | Address;
 
 /**
  * A change of exactly `change`; of more than `change` when the Safe also gets a `positive` amount, or less when it gives
- * one; or, when the Safe gives `all` of a token, any change that leaves it holding none.
+ * one; of at least `change` when it gets at least a card amount or `any`; or, when the Safe gives `all` of a token, any
+ * change that leaves it holding none.
  */
 export type Expected = { readonly kind: 'exactly' | 'more-than' | 'at-least' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
 
@@ -121,7 +123,6 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
       }
       const token = ref.asset;
       const known = changes.get(token);
-      const open = sign > 0n ? 'more-than' : 'less-than';
       if (effect.amount.kind === 'all') {
         if (token === 'eth' || known !== undefined) reasons.push(`the card gives all of ${token} and names it again`);
         else changes.set(token, { kind: 'all' });
@@ -142,7 +143,8 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         }
         continue;
       }
-      if (effect.amount.kind === 'positive') {
+      if (effect.amount.kind === 'positive' || effect.amount.kind === 'any') {
+        const open = effect.amount.kind === 'any' ? 'at-least' : sign > 0n ? 'more-than' : 'less-than';
         if (base.kind !== 'exactly' && base.kind !== open) reasons.push(`the card leaves the change of ${token} open both ways`);
         else if (stated.has(token)) reasons.push(mixed(token));
         else changes.set(token, { kind: open, change: base.change });
@@ -454,7 +456,11 @@ const nameOf = (asset: Asset, registry: Registry): string =>
 
 const signed = (n: bigint): string => (n > 0n ? `+${n}` : `${n}`);
 
-export function describeFinding(finding: EffectFinding, registry: Registry): string {
+/**
+ * One line per finding. With an asset's decimals, a balance change reads in whole tokens beside its base units, such as
+ * `+0.862161333415445038 (+862161333415445038 base units)`; without them, in base units alone.
+ */
+export function describeFinding(finding: EffectFinding, registry: Registry, decimals: ReadonlyMap<Asset, number> = new Map()): string {
   if (finding.kind === 'not-all') return `${nameOf(finding.asset, registry)} still held ${finding.left} after the transaction, the card gives all of it`;
   if (finding.kind === 'open-allowance') {
     return `approval raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${finding.before} before, ${finding.after} after`;
@@ -467,12 +473,15 @@ export function describeFinding(finding: EffectFinding, registry: Registry): str
     const show = ({ amount, expiration, nonce }: Permit2Allowance) => `${amount} until ${expiration} (nonce ${nonce})`;
     return `Permit2 allowance raised and not spent in the same transaction: ${nameOf(finding.token, registry)} to ${finding.spender}, ${show(finding.before)} before, ${show(finding.after)} after`;
   }
-  const { expected } = finding;
+  const { expected, asset } = finding;
+  const places = decimals.get(asset);
+  const amount = (n: bigint): string =>
+    places === undefined || n === 0n ? signed(n) : `${n > 0n ? '+' : '-'}${groupedTokens(n < 0n ? -n : n, places)} (${signed(n)} base units)`;
   const want =
     expected.kind === 'exactly'
-      ? signed(expected.change)
+      ? amount(expected.change)
       : expected.kind === 'at-least'
-        ? `at least ${signed(expected.change)}`
-        : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${signed(expected.change)}`;
-  return `${nameOf(finding.asset, registry)} changed by ${signed(finding.actual)}, the card explains ${want}`;
+        ? `at least ${amount(expected.change)}`
+        : `${expected.kind === 'more-than' ? 'more' : 'less'} than ${amount(expected.change)}`;
+  return `${nameOf(asset, registry)} changed by ${amount(finding.actual)}, the card explains ${want}`;
 }

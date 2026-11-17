@@ -81,7 +81,7 @@ function listLines(options: readonly Option[], p: Paint): string[] {
     ...(sourceColumn ? [p.dim(L.from[c.from])] : []),
     checksumAddress(c.address),
   ]);
-  const made = factories.map((f): Row => [factoryColumn ? L.factory : L.createdBy, `${f.name}  ${checksumAddress(f.address)}`]);
+  const made = factories.map((f): Row => [factoryColumn ? L.factory : L.createdBy(choices.length), `${f.name}  ${checksumAddress(f.address)}`]);
   return [...table(cells, 0), ...rows(made, 6)];
 }
 

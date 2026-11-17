@@ -8,7 +8,7 @@ export const LABELS = {
     pick: 'pick one by number',
     type: 'type it',
     computed: "computed, not asked: the protocol's app fills it in itself",
-    createdBy: 'created by',
+    createdBy: (count: number) => (count === 1 ? 'created by' : count === 2 ? 'both created by' : `all ${count} created by`),
     factory: 'factory',
     from: { registry: 'registry', 'address-book': 'address book', safe: 'this Safe' },
     token: 'token',
@@ -40,6 +40,9 @@ export const LABELS = {
     title: { MATCH: 'MATCH · the transaction fits your card', MISMATCH: 'MISMATCH · the transaction does not fit your card', UNVERIFIABLE: 'UNVERIFIABLE · the transaction could not be checked against your card' },
     replayTitle: (kind: string) => `${kind} · replay of a recorded verdict`,
     nonce: 'nonce',
+    unread: 'not read',
+    later: (structs: string) =>
+      `This transaction signs only the digest of a message (${structs}). The assets that message moves change later, when someone acts on it, not in this transaction.`,
     noHashes: 'No hashes are shown. Do not sign this transaction.',
     notPermission: 'This is a replay of a recorded verdict, not permission to sign. Run pnpm kiss-sign verify before signing.',
     page: 'The page shows',
