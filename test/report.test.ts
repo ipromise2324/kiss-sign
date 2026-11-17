@@ -202,10 +202,25 @@ test('the report prints every code span, and --compare flags an earlier span who
   const report = async (early: Hex) => quick(recording.pages, new Map(), subject, undefined, undefined, await checkSpans(chainReader(early), bundler3), seen);
   const committed = await report('0x6066' as Hex);
   assert.match(committed, new RegExp(`^\\| \`bundler3\` \\| 100 \\| \`${forged}\` \\| none \\| PASS \\|\n\\| \`bundler3\` \\| 250 \\| \`${keccakCode('0x6002' as Hex)}\` \\| none \\| PASS \\|$`, 'm'));
+  const spans = newKeyFindings([
+    ['bundler3/code.1', 'the chain ran other code than the registered code'],
+    ['bundler3/code.2', 'the chain ran other code than the registered code'],
+  ]);
   assert.deepEqual(compareReports(committed, await report('0x6001' as Hex)), [
     `Code pins › \`bundler3\` › Chain: committed PASS, live FINDING: block 100 runs \`${keccakCode('0x6001' as Hex)}\``,
     `Code pins › \`bundler3\` (2) › Chain: committed PASS, live FINDING: block 249 runs \`${keccakCode('0x6001' as Hex)}\``,
+    ...spans.rows,
+    ...spans.count(13, 0),
   ]);
+});
+
+/** What --compare prints for key findings the live report holds and the committed one does not, beside the count it changes. */
+const newKeyFindings = (found: readonly (readonly [string, string])[]) => ({
+  rows: found.flatMap(([id, title]) => [`Findings › \`${id}\` › Grade: committed absent, live key`, `Findings › \`${id}\` › Finding: committed absent, live ${title}`]),
+  count: (key: number, reference: number) => [
+    `Findings › only committed: ${key} key and ${reference} reference findings.`,
+    `Findings › only live: ${key + found.length} key and ${reference} reference findings.`,
+  ],
 });
 
 function withDependency(): Registry {
@@ -233,8 +248,11 @@ test("the report reads at its latest block the code of an entry no ABI proof cov
   assert.match(committed, /^\| `liquidity` \| PASS \| 300 \|$/m);
   assert.match(committed, /^\| `liquidity` \| `0x5252525252525252525252525252525252525252` \| not proved: no call targets it and nothing the program reads is decoded with its ABI/m);
   const other = await readToday(createReader(REPLAY_ENDPOINTS, serving('0x6003' as Hex), { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] }), subject, seen, { ...block, number: 400n });
+  const today = newKeyFindings([['liquidity/code.today', 'the chain ran other code than the registered code']]);
   assert.deepEqual(compareReports(committed, quick(recording.pages, new Map(), subject, undefined, undefined, undefined, seen, undefined, other)), [
     `Today's code › \`liquidity\` › Today: committed PASS, live FINDING: runs \`${keccakCode('0x6003' as Hex)}\``,
+    ...today.rows,
+    ...today.count(17, 1),
   ]);
   assert.equal(await readToday(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
 });
@@ -262,8 +280,11 @@ test("the report asks an adapter's factory and the vault naming it, from its rec
   assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2\(address\)` \| true \| 300 \|$/m);
   assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `acuto-usdc-v2-4a57` `isAdapter\(address\)` \| true \| 300 \|$/m);
   const removed = await readInstances(createReader(REPLAY_ENDPOINTS, answering(`0x${'00'.repeat(32)}` as Hex), options), subject, seen, { ...block, number: 400n });
+  const denied = newKeyFindings([['acuto-usdc-v2-4a57-market-adapter/factory.1.isAdapter.acuto-usdc-v2-4a57', 'a check the factory declares says no']]);
   assert.deepEqual(compareReports(committed, render(removed)), [
     'Factory answers › `acuto-usdc-v2-4a57-market-adapter` (2) › Answer: committed true, live REFUSED: acuto-usdc-v2-4a57 answered isAdapter(address) false for acuto-usdc-v2-4a57-market-adapter: it does not vouch for it',
+    ...denied.rows,
+    ...denied.count(65, 18),
   ]);
   assert.doesNotMatch(render(undefined), /isAdapter/, 'a recording that predates the answers prints them as not read');
   assert.equal(await readInstances(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
@@ -282,6 +303,37 @@ test('a selector-routed proxy a call targets is not provable, and the report rea
   assert.match(text, /^\| `bundler3` \| `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` \| not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above \|/m);
   assert.match(text, /^\| `bundler3` \| not read \| {2}\|$/m);
   assert.match(text, /^`bundler3` seeds: `0x00000001`\.$/m);
+});
+
+test('the report opens with every finding, key before reference, and a deployer no confirmed entry shares is n/a, not a finding', () => {
+  const text = renderReport(
+    {
+      subject: scoped.subject,
+      registry: scoped.registry,
+      listings: { protocols: parseDefiLlamaProtocols(recording.defillama), coinsByAddress: parseCoinGeckoCoins(recording.coingecko), suffixes, sites: NO_SITE_LISTINGS },
+      pages: sourcePagesOf(recording),
+      fetched: recording.fetched,
+      abi: new Map(),
+      vaults: new Map(),
+      pastTxs: [],
+      spans: new Map(),
+      today: undefined,
+      instances: undefined,
+      erc7730: { text: 'not read', reports: [] },
+      facts: undefined,
+    },
+    { command: 'test', sources: [] },
+  );
+  assert.match(text, /\| `usdc` \|[^\n]*\| n\/a: no confirmed entry shares `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` \|\n/);
+  const findings = text.slice(text.indexOf('## Findings'), text.indexOf('## Card'));
+  const rows = [...findings.matchAll(/^\| `([^`]+)` \| (key|reference) \|/gm)].map((m) => [m[2], m[1]]);
+  assert.ok(!rows.some(([, id]) => id === 'usdc/source.deployer'), 'a lone deployer is no finding');
+  assert.ok(rows.some(([grade, id]) => grade === 'key' && id === 'usdc/abi'), 'a missing ABI proof is key');
+  assert.ok(rows.some(([grade, id]) => grade === 'reference' && id === 'bundler3/source.deployer'), 'an unproven deployer is reference');
+  assert.deepEqual(rows.map(([grade]) => grade), [...rows.map(([grade]) => grade)].sort(), 'key rows first');
+  const count = (grade: string) => rows.filter(([g]) => g === grade).length;
+  assert.match(findings, new RegExp(`^${count('key')} key and ${count('reference')} reference findings\\.`, 'm'));
+  assert.ok(text.indexOf('## Findings') < text.indexOf('## Card'), 'the findings come before the card');
 });
 
 test('a page that does not name the function is a FINDING', () => {
@@ -391,7 +443,12 @@ test('every template folder holds report.generated.md, or design.md lists it amo
 test('--compare prints a verdict that changed, and ignores the date and the block an ABI proof was read at', () => {
   const pages = Object.fromEntries(Object.entries(recording.pages).map(([url, page]) => [url, url.endsWith('/src/Bundler3.sol') ? ({ kind: 'served', blocks: [] } as Page) : page]));
   const differences = compareReports(quick(), quick(pages));
-  assert.deepEqual(differences, ['Official documentation › `multicall((address,bytes,uint256,bool,bytes32)[])` › Function on page: committed PASS, live FINDING']);
+  const unnamed = newKeyFindings([['bundler3/doc.0x374f435d.page', 'function not found on the docs page']]);
+  assert.deepEqual(differences, [
+    'Official documentation › `multicall((address,bytes,uint256,bool,bytes32)[])` › Function on page: committed PASS, live FINDING',
+    ...unnamed.rows,
+    ...unnamed.count(14, 0),
+  ]);
 
   const committed = readFileSync(join(ROOT, generatedPath(TARGET)), 'utf8');
   const drifted = committed
