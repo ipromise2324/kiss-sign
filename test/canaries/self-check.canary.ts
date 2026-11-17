@@ -5,9 +5,9 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import { test } from 'node:test';
 import { deflateSync } from 'node:zlib';
-import { main } from '../src/cli/main.ts';
-import { fileAt, githubRepo, selfCheck } from '../src/verify/self-check.ts';
-import type { GithubRepo } from '../src/verify/self-check.ts';
+import { main } from '../../src/cli/main.ts';
+import { fileAt, githubRepo, selfCheck } from '../../src/verify/self-check.ts';
+import type { GithubRepo } from '../../src/verify/self-check.ts';
 
 const REPO = 'github.com/signer/kiss-sign' as GithubRepo;
 const SAFE = '0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0';
@@ -369,7 +369,7 @@ test('template approve refuses a clone whose origin is not the configured reposi
 
 test('template approve names the template, the main commit and its subject, and what the fingerprint is for', async () => {
   const { origin, clone } = cloneOfOrigin();
-  const ROOT = join(import.meta.dirname, '..');
+  const ROOT = join(import.meta.dirname, '..', '..');
   const path = 'templates/morpho/vault-deposit/template.json';
   const text = readFileSync(join(ROOT, path), 'utf8');
   write(clone, path, text);

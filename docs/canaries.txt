@@ -1,0 +1,75 @@
+# The canaries: tests that prove the verdict still refuses known-bad transactions. A branch that changes the verdict core may not
+# change a canary, this list, a file a canary imports outside the core or reads, or the code that enforces these rules; such a
+# change goes in a pull request of its own that the signer merges (Who owns the program in docs/design.md). Each block names one
+# file under test/canaries/, what it guards, and every path under testdata/ or test/ it reads, a directory ending in /. pnpm test
+# runs each canary and fails when one reads a path its block does not name.
+
+canary test/canaries/attacks.canary.ts
+guards Real blind-signing attacks on Safes (Bybit, WazirX, Radiant), replayed from their recordings, are never MATCH, and the same checks catch them: the fee fields and delegatecall floors, the field check and the effects, or a card refused before any check.
+reads testdata/attacks/
+
+canary test/canaries/mutation.canary.ts
+guards Every bound field of the Morpho vault deposit, changed alone, gives MISMATCH; a checker that ignores the receiver is reported weak, naming it.
+reads testdata/safe-tx/morpho-vault-deposit.json
+
+canary test/canaries/template.canary.ts
+guards The field check: a changed receiver, another chain, another amount, a MultiSend call added or missing, calls out of card order, another function, a delegatecall to anything but the official MultiSend, and a non-canonical encoding are MISMATCH; a template with a free address, tuple or array holding one, a constant address other than zero, free bytes without a proof or unread claim, or a trailer over 19 bytes fails to load.
+reads testdata/safe-tx/morpho-vault-deposit.json
+reads test/fixtures/registry/
+reads test/fixtures/templates/
+
+canary test/canaries/floor.canary.ts
+guards The floors every template gets: nonzero fee fields, a delegatecall to anything but an official MultiSend or inside it, a MultiSend that does not decode, a call to the Safe that changes its modules, guard, handler or singleton, an undeclared owner or threshold change, and an unlimited ERC-20, Permit2 or NFT approval are refused, statically and in the simulation or receipt.
+reads testdata/safe-tx/morpho-vault-deposit.json
+
+canary test/canaries/card-floor.canary.ts
+guards A card's declared Safe changes and approvals pass only as declared; an owner change or enableModule a card does not declare is refused by both floors; a card holding 0 as the fewest a swap may give is refused.
+
+canary test/canaries/effects.canary.ts
+guards The effects check: a balance change the card does not explain is MISMATCH; a tolerance holds only in its declared direction and up to its cap; a token no template names may not change; an atMost bound is caught by its mutation.
+reads testdata/safe-tx/eth-transfer-null-data.json
+reads testdata/safe-tx/morpho-vault-deposit.json
+reads testdata/simulate/morpho-vault-deposit.json
+
+canary test/canaries/allowance.canary.ts
+guards No allowance from the Safe ends higher than it started unless the card declares it: an approval raised and not spent in the same transaction is MISMATCH, a Permit2 allowance may fall or be voided but not rise or last longer, and a Permit2 approval of 2^160-1 is refused by the static floor, the simulated floor and the effects.
+reads testdata/safe-tx/permit2-unlimited-approval.json
+reads testdata/safe-tx/uniswap-v4-add-liquidity-permit2.json
+reads testdata/simulate/permit2-unlimited-approval.json
+reads testdata/simulate/uniswap-v4-add-liquidity-permit2.json
+
+canary test/canaries/perturb.canary.ts
+guards Every free field of each recorded transaction, changed, reverts, is refused, or changes nothing its claim forbids; a deposit whose assets were left free, a free field that adds an approveHash, and a proof field whose change still executes fail.
+reads testdata/perturb/
+reads testdata/safe-tx/fluid-claim.json
+reads testdata/safe-tx/fluid-deposit-usdc.json
+reads testdata/safe-tx/fluid-deposit-usdt-other-safe.json
+reads testdata/safe-tx/merkl-claim.json
+reads testdata/safe-tx/morpho-bundles-deposit.json
+reads testdata/safe-tx/morpho-market-supply.json
+reads testdata/safe-tx/morpho-migrate-all-smokehouse.json
+reads testdata/safe-tx/morpho-vault-deposit-v2.json
+reads testdata/safe-tx/morpho-vault-deposit.json
+reads testdata/safe-tx/morpho-withdraw-all-apex.json
+reads testdata/safe-tx/morpho-withdraw-apex.json
+reads testdata/safe-tx/uniswap-swap-approve-usdt-usdc.json
+reads testdata/safe-tx/uniswap-swap-permit-usdc-usdt.json
+reads testdata/safe-tx/uniswap-swap-usdc-usdt.json
+reads test/fixtures/registry/
+reads test/fixtures/templates/
+
+canary test/canaries/code-pin.canary.ts
+guards Every registry contract a transaction touches runs its pinned code: changed code, a proxy delegating to another implementation, an implementation whose code changed, a pin with no implementation for a contract that now delegates, code that hands a call to an address in its storage, and, for a past transaction, code outside the span its block falls in are MISMATCH; code the providers disagree on and an unpinned entry are UNVERIFIABLE.
+reads testdata/abi/fluid-token.json
+reads testdata/verify/morpho-vault-deposit.json
+
+canary test/canaries/verdict.canary.ts
+guards How checks become a verdict: a failed check is MISMATCH and an unfinished one UNVERIFIABLE, never MATCH, even when it gives no detail; a mismatch beside an unverifiable check stays MISMATCH.
+
+canary test/canaries/verify.canary.ts
+guards verify and replay as the signer runs them: a changed receiver is MISMATCH with no hashes shown; a template that differs from its approved hash is MISMATCH and one never approved UNVERIFIABLE; a card with a 0 floor or a vault with no report is refused before any verdict; replay reproduces a recorded MATCH and MISMATCH offline, and refuses an edited card or a verdict it does not reproduce.
+reads testdata/safe-tx/morpho-vault-deposit.json
+reads testdata/verify/morpho-vault-deposit.json
+
+canary test/canaries/self-check.canary.ts
+guards verify runs only main of the configured repository: a changed, extra or hidden file, a local commit, an old checkout, another origin, an insteadOf rewrite, a rewritten object, a replace ref, filters, hooks, worktree tricks and the global git config are all refused before anything is verified.
