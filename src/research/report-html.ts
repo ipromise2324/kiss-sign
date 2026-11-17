@@ -175,7 +175,7 @@ function diagram(sequence: Sequence, r: R): Html {
   <div class="scrollhint">${r.w.scrollHint}</div>`;
 }
 
-const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', fixed: 'who', free: 'who app' };
+const CHIP_CLASS: Readonly<Record<Chip['who'], string>> = { 'you-type': 'who you', 'you-pick': 'who you', fixed: 'who', free: 'who app', bounded: 'who app' };
 const chip = (c: Chip): Html => h`<span class="${CHIP_CLASS[c.who]}">${c.label}</span>`;
 
 const docLine = (doc: DocLine, r: R): Html =>

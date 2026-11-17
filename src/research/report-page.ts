@@ -100,7 +100,7 @@ export type Header = {
 
 export type StripItem = { readonly line: StripLine | 'providers'; readonly name: string; readonly state: State; readonly count: string | undefined; readonly explain: string };
 
-export type Who = 'you-type' | 'you-pick' | 'fixed' | 'free';
+export type Who = 'you-type' | 'you-pick' | 'fixed' | 'free' | 'bounded';
 export type KeyItem = { readonly who: Who; readonly label: string; readonly means: string };
 export type Chip = { readonly who: Who; readonly label: string };
 
@@ -506,6 +506,8 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
       return { who: 'fixed', field: undefined };
     case 'free':
       return { who: 'free', field: undefined };
+    case 'within-seconds':
+      return { who: 'bounded', field: undefined };
     case 'equals':
       return whoOf(rule.rule, template);
     case 'share-price':
@@ -523,7 +525,7 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
 }
 
 const chipLabel = (template: Template, who: Who, field: string | undefined, w: Words): string =>
-  who === 'free' ? w.appFills : field === undefined || who === 'fixed' ? w.who[who] : w.chip(w.who[who], fieldWord(template, field, w));
+  who === 'free' ? w.appFills : who === 'bounded' ? w.appBounded : field === undefined || who === 'fixed' ? w.who[who] : w.chip(w.who[who], fieldWord(template, field, w));
 
 function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; readonly who: Who; readonly field: string | undefined }[] {
   if (node.rule.kind === 'call') return [];
@@ -629,6 +631,8 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     }
     case 'free':
       return { words: [w.differs], qualifier: [w.free[rule.claim]] };
+    case 'within-seconds':
+      return { words: [w.within(rule.seconds)], qualifier: [w.withinHow] };
     case 'equals':
       return { words: w.sameAs({ code: rule.path }), qualifier: undefined };
     case 'owner-before':
@@ -1010,6 +1014,7 @@ function keyItems(used: ReadonlySet<Who>, template: Template, w: Words): KeyItem
     ...(used.has('fixed') ? [{ who: 'fixed' as const, label: w.who.fixed, means: w.whoMeans.fixed }] : []),
     ...(used.has('free') ? [...freeRules(template).claims].map((claim) => ({ who: 'free' as const, label: w.appFills, means: w.freeKey[claim] })) : []),
     ...(used.has('free') && freeRules(template).member ? [{ who: 'free' as const, label: w.appFills, means: w.whoMeans.member }] : []),
+    ...(used.has('bounded') ? [{ who: 'bounded' as const, label: w.appBounded, means: w.whoMeans.bounded }] : []),
   ];
 }
 
@@ -1050,7 +1055,7 @@ function flowSection(context: Context): Section {
 
 /** Who gives the values, in words, such as `you type, you pick and the app fills`. */
 const chosenWords = (used: ReadonlySet<Who>, w: Words): string =>
-  w.and((['you-type', 'you-pick', 'free'] as const).filter((who) => used.has(who)).map((who) => w.chosen[who]));
+  w.and((['you-type', 'you-pick', 'free'] as const).filter((who) => used.has(who) || (who === 'free' && used.has('bounded'))).map((who) => w.chosen[who]));
 
 type ProtocolNote = NonNullable<ReturnType<Notes['protocols']['get']>>;
 
@@ -1283,6 +1288,8 @@ function ruleWords(rule: Rule, context: Context): Inline {
       return [...ruleWords(rule.rule, context), w.asWord];
     case 'free':
       return [w.any];
+    case 'within-seconds':
+      return [w.within(rule.seconds)];
     case 'equals':
       return w.sameAs({ code: rule.path });
     case 'share-price':
@@ -1495,6 +1502,8 @@ function misfitWords(reason: MisfitReason, template: string, registry: Registry,
       return w.misfit.notSender({ code: reason.at });
     case 'differs':
       return w.misfit.differs({ code: reason.at }, { code: reason.other });
+    case 'late':
+      return w.misfit.late({ code: reason.at }, reason.seconds);
     case 'trailer':
       return w.misfit.trailer({ code: reason.at });
     case 'foreign-delegatecall':
@@ -1638,7 +1647,7 @@ function pastSection(context: Context): Section {
       ...run.shapes.calls.map((shape, call) => ({ safe: false, fits: fits.filter((f) => f.sender.kind === 'eoa' && f.sender.call === call), rules: shape.loosened.rules })),
     ];
     return groups.flatMap(({ safe, fits: of, rules }) =>
-      freeNumbers(run, of, rules).map(({ path, time, spread, unrecorded }): PastSpread => {
+      freeNumbers(of, rules).map(({ path, time, spread, unrecorded }): PastSpread => {
         const value = (n: bigint) => (time ? w.spreadSeconds(n) : `${n}`);
         const cells = spread === undefined ? [] : [['min', spread.min] as const, ...PERCENTILES.map((p, i) => [`p${p}`, spread.percentiles[i] as bigint] as const), ['max', spread.max] as const];
         return { field: path, who: w.spreadWho(safe), lead: w.spreadTime(time), count: spread?.count ?? 0, cells: cells.map(([label, n]) => ({ label, value: value(n) })), unrecorded: unrecorded === 0 ? undefined : w.spreadUnrecorded(unrecorded) };

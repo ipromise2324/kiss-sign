@@ -938,3 +938,28 @@ test('an address held as a 32-byte word reads as its address rule, left-padded, 
   assert.deepEqual(fixed.value, { cast: `0x${'00'.repeat(12)}${messenger.address.slice(2)}`, example: undefined });
   assert.equal(plain(fixed.words), 'cctp-token-messenger-v2, as a 32-byte word left-padded with 12 zero bytes');
 });
+
+test('a withinSeconds field says in plain words, in both languages and in the Markdown report, how far after the block time it may be', () => {
+  const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
+  const [n, at] = subject.template.calls.flatMap((call, n) => (call.data === 'empty' ? [] : call.data.fn.params.flatMap((param, i) => (param.type.kind === 'uint' ? [[n, i] as const] : [])))).at(-1) ?? assert.fail('a uint argument');
+  const calls = subject.template.calls.map((call, i) => {
+    if (i !== n || call.data === 'empty') return call;
+    return { ...call, data: { ...call.data, args: call.data.args.map((rule, a) => (a === at ? { kind: 'within-seconds' as const, seconds: 604800n } : rule)) } };
+  });
+  const bounded: HtmlInputs = { ...inputs, subject: { ...subject, template: { ...subject.template, calls } }, example: undefined, fixtures: [] };
+  const rowOf = (language: 'en' | 'zh-TW') => {
+    const page = buildPage(bounded, notesFor(bounded), title, language);
+    const rows = body(page, 'flow').flow.calls.flatMap((call) => call.args);
+    return { row: rows.find((r) => r.chips.some((c) => c.who === 'bounded')) ?? assert.fail('a bounded row'), key: body(page, 'flow').flow.key };
+  };
+  const zh = rowOf('zh-TW');
+  assert.equal(plain(zh.row.words), '最多比區塊時間晚 604800 秒（約 7 天）');
+  assert.match(plain(zh.row.qualifier), /還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH$/);
+  assert.deepEqual(zh.row.chips.map((c) => c.label), ['app 填，有上限']);
+  assert.ok(zh.key.some((k) => k.who === 'bounded' && k.means === '超過上限就 MISMATCH'));
+  const en = rowOf('en');
+  assert.equal(plain(en.row.words), "at most 604800 s (about 7 d) after the block's time");
+  assert.deepEqual(en.row.chips.map((c) => c.label), ['app fills, up to a limit']);
+  const markdown = renderReport(bounded, title);
+  assert.ok(markdown.includes('a time at most 604800 seconds after the time of the block the transaction is judged on: the latest block for a pending transaction, the block it ran in for an executed one; a later time is a MISMATCH'));
+});

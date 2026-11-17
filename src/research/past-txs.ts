@@ -9,7 +9,7 @@ import type { Difference, Measurement, StatedEffect } from './amounts.ts';
 import { ResearchError, SOURCES, TooManyTransfers, searchBoth, searchedBy } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
 import type { ReadMessage } from './messages.ts';
-import { brokenRule, constText, functionNames, isOtherOperation, misfitText, shapesOf, studyTx } from './study.ts';
+import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, shapesOf, studyTx } from './study.ts';
 import type { OutsideKind, Sender, TxStudy } from './study.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
@@ -68,7 +68,6 @@ export type PastTxs = {
   /** The template's effects that state an amount, and for each fitting transaction stating one, how its balances differed. */
   readonly effects: readonly StatedEffect[];
   readonly measurements: ReadonlyMap<Hex, Measurement>;
-  readonly blockTimes: ReadonlyMap<Hex, bigint>;
 };
 
 const ZERO = `0x${'00'.repeat(20)}`;
@@ -151,19 +150,9 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const rulesOf = (fit: Fit) => (fit.sender.kind === 'safe' ? shapes.whole : (shapes.calls[fit.sender.call] as (typeof shapes.calls)[number])).loosened.rules;
   const measured = await inPool(fits, 4, (fit) => measure(deps.reader, { hash: fit.hash, sender: fit.sender, rules: rulesOf(fit), values: fit.values }, effects, deps.registry));
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
-  const timed = shapes.whole.loosened.rules.some((rule) => rule.kind === 'free' && rule.time === true);
-  const times = timed ? await inPool(fits, 4, (fit) => blockTime(deps.reader, fit.block)) : [];
-  const blockTimes = new Map(fits.flatMap((fit, i) => (times[i] === undefined ? [] : [[fit.hash, times[i]] as const])));
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
   const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
-  return { query, head, windows, perWindow, found, studies, shapes, excluded, effects, measurements, blockTimes };
-}
-
-async function blockTime(reader: Reader, number: bigint): Promise<bigint | undefined> {
-  const block = await reader.block(number);
-  if (block.kind === 'unverifiable') return undefined;
-  const header = await reader.header(block.value);
-  return header.kind === 'unverifiable' ? undefined : header.value.time;
+  return { query, head, windows, perWindow, found, studies, shapes, excluded, effects, measurements };
 }
 
 export const PERCENTILES = [50, 90, 99] as const;
@@ -179,23 +168,22 @@ export function spreadOf(values: readonly bigint[]): Spread | undefined {
 }
 
 /**
- * One free `uint` or `int` field over the fitting transactions of one sender type: its values, or for a field the
- * template declares a time, each less its block's time; `unrecorded` counts transactions whose block time was not read.
+ * One free or `withinSeconds` `uint` or `int` field over the fitting transactions of one sender type: its values, or
+ * for a time, each less its block's time; `unrecorded` counts transactions whose block time was not read.
  */
 export type FreeNumber = { readonly path: string; readonly time: boolean; readonly spread: Spread | undefined; readonly unrecorded: number };
 
-export function freeNumbers(run: PastTxs, fits: readonly Fit[], rules: readonly LeafRule[]): FreeNumber[] {
+export function freeNumbers(fits: readonly Fit[], rules: readonly LeafRule[]): FreeNumber[] {
   const first = fits[0];
   if (first === undefined) return [];
   return rules.flatMap((rule, i): FreeNumber[] => {
     const type = first.types[i];
-    if (rule.kind !== 'free' || (type?.kind !== 'uint' && type?.kind !== 'int')) return [];
-    const time = rule.time === true;
+    if ((rule.kind !== 'free' && rule.kind !== 'within-seconds') || (type?.kind !== 'uint' && type?.kind !== 'int')) return [];
+    const time = isTime(rule);
     const values = fits.flatMap((fit) => {
       const value = BigInt(fit.values[i] as string);
       if (!time) return [value];
-      const at = run.blockTimes.get(fit.hash);
-      return at === undefined ? [] : [value - at];
+      return fit.time === undefined ? [] : [value - fit.time];
     });
     return [{ path: first.paths[i] as string, time, spread: spreadOf(values), unrecorded: fits.length - values.length }];
   });
@@ -223,6 +211,8 @@ function describeRule(rule: LeafRule, sender: string): string {
       return `card ${rule.ref.field}${rule.ref.attribute === undefined ? '' : `.${rule.ref.attribute}`}`;
     case 'free':
       return 'free';
+    case 'within-seconds':
+      return `at most ${rule.seconds} seconds after its block's time`;
     case 'equals':
       return `same as ${rule.path}`;
     case 'owner-before':
@@ -292,13 +282,13 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
   }
   if (fits.length > 0) {
     lines.push(`fields, over the ${plural(fits.length, 'fitting transaction')}:`);
-    const numbers = freeNumbers(run, fits, rules);
+    const numbers = freeNumbers(fits, rules);
     const paths = fits[0]?.paths ?? [];
     rules.forEach((rule, i) => {
       const holding = fits.filter((fit) => brokenRule(rule, i, rules, fit.paths, fit.values, fit.sender) === undefined);
       lines.push(`  ${paths[i]}  [${describeRule(rule, sender)}]`);
       const heldText =
-        rule.kind === 'free' || rule.kind === 'equals' || rule.kind === 'share-price' || rule.kind === 'at-least' || rule.kind === 'at-most'
+        rule.kind === 'free' || rule.kind === 'within-seconds' || rule.kind === 'equals' || rule.kind === 'share-price' || rule.kind === 'at-least' || rule.kind === 'at-most'
           ? ''
           : (rule.kind === 'address-word' ? rule.rule : rule).kind === 'card'
             ? `same as the other leaves bound to ${describeRule(rule, sender)} in ${holding.length} of ${fits.length}; `
