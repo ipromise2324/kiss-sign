@@ -73,11 +73,14 @@ pnpm kiss-sign key add etherscan   # to build or review templates
 pnpm kiss-sign key add github      # optional: raises GitHub's hourly limit to build or review templates
 ```
 
-You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash. A GitHub token is optional: it raises GitHub's API limit from 60 requests an hour to 5,000, which building or reviewing a template can reach. Make a fine-grained, read-only one with access to public repositories only. kiss-sign's signing commands never read it. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), with `LANGUAGE` in its `config` set to the language you give `init` (`en` unless you chose `zh-TW`).
+You need:
 
-kiss-sign has two tiers. The basic tier is kiss-sign alone, on your computer. The hardened tier adds `check.sh` on a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. See [Two tiers](docs/design.md#two-tiers).
+- Node 22.21 or later and pnpm.
+- Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys. A GitHub token is optional: a fine-grained, read-only one for public repositories raises GitHub's hourly limit when you build or review templates.
+- A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
+- For the hardened tier, a second computer with [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), its `LANGUAGE` set to the language you gave `init`. It runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. Without it you are on the basic tier, kiss-sign alone. See [Two tiers](docs/design.md#two-tiers).
 
-Turn on branch protection for your fork's `main`, so that a pull request needs your approval, and let your AI push from a GitHub account that cannot approve or merge. Until you do, nothing on GitHub stops an AI that can push from merging.
+Turn on branch protection for your fork's `main`, and let your AI push from a GitHub account that cannot approve or merge; until you do, nothing stops an AI that can push from merging.
 
 ### 1. Tell your AI what you want
 
