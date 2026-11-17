@@ -9,6 +9,8 @@ import type { Exchange } from '../chain/recording.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
 import { paint } from '../cli/format.ts';
+import { LABELS } from '../cli/labels.ts';
+import type { Labels } from '../cli/labels.ts';
 import { requireConfig } from '../cli/setup.ts';
 import { checkFloor, standingSpenders } from '../floor/floor.ts';
 import type { SettingsChange } from '../floor/floor.ts';
@@ -155,25 +157,26 @@ async function rowFor(ctx: Context, entry: HistoryTx): Promise<Row> {
   };
 }
 
-function originMain(root: string, repo: GithubRepo): string {
+function originMain(root: string, repo: GithubRepo, H: Labels['history']): string {
   const origin = fetchOriginMain(root, repo);
   if (origin.kind === 'fetched') return origin.commit;
-  if (origin.kind === 'refused') throw new HistoryError(`origin/main of ${repo} was refused: ${origin.problems.join('; ')}`);
+  if (origin.kind === 'refused') throw new HistoryError(H.originRefused(repo, origin.problems.join('; ')));
   try {
     return localOriginMain(root);
   } catch {
-    throw new HistoryError('this clone has no origin/main to read templates and the registry from');
+    throw new HistoryError(H.noOriginMain);
   }
 }
 
 async function run(io: Io, out: string | undefined, refresh: boolean): Promise<number> {
   const home = kissSignHome(io.env);
-  const { safe, repo } = requireConfig(home);
+  const { safe, repo, language } = requireConfig(home);
+  const H = LABELS[language].history;
   if (out !== undefined && !relative(resolve(io.repoRoot), resolve(out)).startsWith('..')) {
-    throw new UsageError('--out must be outside this repository, so the Safe history never lands in a commit.');
+    throw new UsageError(H.outInside);
   }
   const history = loadHistory(home, safe);
-  const commit = originMain(io.repoRoot, repo);
+  const commit = originMain(io.repoRoot, repo, H);
   const texts = new Map<string, string>();
   const templateText = (id: string): string | undefined => {
     let text = texts.get(id);
@@ -210,10 +213,10 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     overlay: Object.keys(history.registryOverlay).length,
     rows,
   };
-  io.stdout(renderText(report, paint(io.color === true)));
+  io.stdout(renderText(report, H, paint(io.color === true)));
   if (out !== undefined) {
-    writePrivate(out, renderMarkdown(report));
-    io.stdout(`Wrote ${out}\n`);
+    writePrivate(out, renderMarkdown(report, H));
+    io.stdout(`${H.wrote(out)}\n`);
   }
   return OK;
 }
@@ -221,7 +224,7 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
 /** Every multisig transaction of the configured Safe, newest first as the service lists them, into `txs.jsonl`. */
 async function fetchTxs(io: Io): Promise<number> {
   const home = kissSignHome(io.env);
-  const { safe } = requireConfig(home);
+  const { safe, language } = requireConfig(home);
   const first = `${SERVICE}/safes/${checksumAddress(safe)}/multisig-transactions/?limit=100`;
   const records: unknown[] = [];
   for (let url: string | null = first; url !== null; ) {
@@ -237,7 +240,7 @@ async function fetchTxs(io: Io): Promise<number> {
   mkdirSync(historyDir(home), { recursive: true, mode: 0o700 });
   writePrivate(txsPath(home), records.map((r) => `${JSON.stringify(r)}\n`).join(''));
   const executed = records.filter((r) => (r as { isExecuted?: unknown }).isExecuted === true).length;
-  io.stdout(`Wrote ${records.length} transactions (${executed} executed) to ${txsPath(home)}\n`);
+  io.stdout(`${LABELS[language].history.fetched(records.length, executed, txsPath(home))}\n`);
   return OK;
 }
 
