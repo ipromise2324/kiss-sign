@@ -707,8 +707,17 @@ const tipReadsOn = (entries: readonly RegistryEntry[], commits: SourcePages['com
     ),
   );
 
+/**
+ * A page cut to what the checks of `entries` read on it: the label bindings on a pinned page's newest version, else
+ * the address next to its label and, for each of `words`, the first block it matches.
+ */
+export function trimSourcePage(entries: readonly RegistryEntry[], commits: SourcePages['commits'], url: string, page: Page, words: readonly RegExp[] = []): Page {
+  const tips = tipReadsOn(entries, commits, url);
+  return tips.length > 0 ? trimBindings(page, tips) : trimPage(page, readsOn(entries, url), words);
+}
+
 /** What the checks of `entries` read on the page fetched from `url`. */
-export const readsOn = (entries: readonly RegistryEntry[], url: string): PageRead[] =>
+const readsOn = (entries: readonly RegistryEntry[], url: string): PageRead[] =>
   entries.flatMap((entry) => pageReadsOf(entry).filter(([at]) => at === url).map(([, read]) => read));
 
 export function trimForRecording(entries: readonly RegistryEntry[], listings: Listings, pages: SourcePages, fetched: Date): ListingsRecording {
@@ -737,10 +746,7 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
       .flatMap((address) => listings.coinsByAddress.get(address) ?? [])
       .map(({ id, symbol, name, ethereum }) => ({ id, symbol, name, platforms: { ethereum } })),
     pages: Object.fromEntries(
-      [...pages.pages].map(([url, page]) => {
-        const tips = tipReadsOn(entries, pages.commits, url);
-        return [url, tips.length > 0 ? trimBindings(page, tips) : trimPage(page, readsOn(entries, url))];
-      }),
+      [...pages.pages].map(([url, page]) => [url, trimSourcePage(entries, pages.commits, url, page)]),
     ),
     commits: Object.fromEntries(pages.commits),
     ...(pages.apis === undefined || pages.apis.size === 0 ? {} : { apis: pruneAnswers(entries, pages.apis) }),

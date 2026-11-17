@@ -24,7 +24,7 @@ import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedO
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
-import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
+import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
@@ -511,9 +511,11 @@ export function trimReportRecording(
   const trimmed = Object.fromEntries(
     [...pages.pages].map(([url, page]) => [
       url,
-      trimPage(
+      trimSourcePage(
+        entries,
+        pages.commits,
+        url,
         page,
-        readsOn(entries, url),
         docs.filter((d) => pageUrlOf(d.url) === url).map(functionOnPage),
       ),
     ]),
