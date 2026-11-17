@@ -100,13 +100,13 @@ The report shows what the transaction will do and where every fact came from. Te
 
 ![The fields of usdc.approve in the report: spender is fixed to general-adapter-1 with its full address, and value is the amount you fill in](docs/readme/report-fields.png)
 
-**Every address.** Where it was found, whether that site belongs to the protocol, and whether CoinGecko and the factory agree. This crop is from the Steakhouse vault's report.
+**Every address.** Each place it was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report, where CoW's settlement contract is confirmed in five places.
 
-![An address the report confirmed in three places: the official page, whose site DefiLlama lists for the protocol, CoinGecko, and the factory](docs/readme/report-address.png)
+![An address the report confirmed in five places: two pages on CoW's GitHub, whose organization Immunefi ties to the protocol, each still listing it at the newest version; Immunefi's bug bounty scope; CoW's SDK on npm; and the deployer, which also deployed another confirmed CoW contract](docs/readme/report-address.png)
 
 Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under To review (待確認 in the Traditional Chinese report), with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
 
-![An address confirmed in only one place, flagged with low confidence](docs/readme/report-address-flagged.png)
+![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page could not be read, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
 
 This review happens once per operation, and once per vault. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
