@@ -121,6 +121,15 @@ Each entry's `apiSource`: the protocol's own API, asked with the request the reg
 | `morpho-oracle-usp-usdc` | POST <https://api.morpho.org/graphql> | `data.marketById.oracle.address` | PASS | PASS |
 | `acuto-usdc-v2-4a57-market-adapter` | POST <https://api.morpho.org/graphql> | `data.vaultV2ByAddress.adapters.items.0.address` | PASS | PASS |
 
+### Factory answers
+
+Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it. An entry's answers together are one place for its address, which counts only when every one passes.
+
+| Entry | Asked | Answer | Block |
+| --- | --- | --- | --- |
+| `acuto-usdc-v2-4a57-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26429889 |
+| `acuto-usdc-v2-4a57-market-adapter` | `acuto-usdc-v2-4a57` `isAdapter(address)` | true | 26429889 |
+
 ## Code pins
 
 Every span of each entry's registry code pin, oldest first: a span holds from its block to the block before the next span's. A transaction to sign must run the last span's code, and an executed one the code of the span that holds its block. `pnpm pin-code` writes the spans from the chain, not from a review of that code. Chain: whether, through both providers, the code at the span's first block is its pin, and the code at the block before is the previous span's pin, or for the first span, no code `pnpm pin-code` can pin. A lone pin from block 0 was written before ranges and is not read.
@@ -150,7 +159,6 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 | --- | --- | --- |
 | `morpho-blue` | PASS | 26429889 |
 | `adaptive-curve-irm` | PASS | 26429889 |
-| `morpho-market-v1-adapter-v2-factory` | PASS | 26429889 |
 | `morpho-oracle-cbbtc-usdc-86` | PASS | 26429889 |
 | `morpho-oracle-usp-usdc` | PASS | 26429889 |
 | `acuto-usdc-v2-4a57-market-adapter` | PASS | 26429889 |
@@ -166,7 +174,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
 | `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 | `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
-| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
+| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | PROVEN | none | `MorphoMarketV1AdapterV2Factory`, solc `0.8.28+commit.7893614a` | `0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4` | PASS | 4 immutable, 0 library spans masked | 26431746 |
 | `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | PROVEN | eip1967, implementation `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` | `ERC20IssuanceUpgradeable_Blacklist_v1`, solc `0.8.23+commit.f704f362` | `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS | 0 immutable, 0 library spans masked | 26429052 |
 | `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |
