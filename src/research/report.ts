@@ -1528,7 +1528,7 @@ export async function vaultsAt(
   return texts;
 }
 
-/** `--compare`'s program lines: the verdict core apart from the rest, so the signer sees whether merging changes what `verify` checks. */
+/** `--compare`'s program lines: the verdict core apart from the rest, so the signer sees whether merging changes what `verify` checks, and the program gate, which only the signer merges. */
 export function programChangeLines(head: string, split: Split): string[] {
   const list = (paths: readonly string[]) => paths.map((path) => `  ${path}`);
   return [
@@ -1538,5 +1538,8 @@ export function programChangeLines(head: string, split: Split): string[] {
     ...(split.other.length === 0
       ? []
       : [`PROGRAM CHANGE  not the verdict: ${head} changes ${split.other.length} other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs; review them as code:`, ...list(split.other)]),
+    ...(split.gate.length === 0
+      ? []
+      : [`PROGRAM CHANGE  gate: ${head} changes ${split.gate.length} file(s) of the program gate, the canaries of docs/canaries.txt, the files they import or read, or the code that enforces the rules; only the signer merges it:`, ...list(split.gate)]),
   ];
 }
