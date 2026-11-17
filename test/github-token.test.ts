@@ -41,6 +41,7 @@ const GITHUB_ANSWERS: Record<string, Canned> = {
   'api.github.com/repos/acme/contracts': { status: 200, body: JSON.stringify({ default_branch: 'main' }) },
   [`api.github.com/repos/acme/contracts/compare/main...${COMMIT}?per_page=1`]: { status: 200, body: JSON.stringify({ status: 'behind' }) },
   [`raw.githubusercontent.com/acme/contracts/${COMMIT}/README.md`]: { status: 200, body: 'Vault 0x0000000000000000000000000000000000000001\n' },
+  'raw.githubusercontent.com/acme/contracts/refs/heads/main/README.md': { status: 200, body: 'Vault 0x0000000000000000000000000000000000000001\n' },
 };
 
 const asJson = (pages: Awaited<ReturnType<typeof gatherSourcePages>>): string => JSON.stringify({ pages: [...pages.pages], commits: [...pages.commits] });
@@ -59,6 +60,7 @@ test('the GitHub token goes to api.github.com only, and the answers are the same
     [
       ['api.github.com', `Bearer ${TOKEN}`],
       ['api.github.com', `Bearer ${TOKEN}`],
+      ['raw.githubusercontent.com', undefined],
       ['raw.githubusercontent.com', undefined],
     ],
   );
@@ -91,6 +93,7 @@ test('a token api.github.com refuses is dropped, so the answers are those no tok
       ['api.github.com', undefined],
       ['api.github.com', `Bearer ${TOKEN}`],
       ['api.github.com', undefined],
+      ['raw.githubusercontent.com', undefined],
       ['raw.githubusercontent.com', undefined],
     ],
   );

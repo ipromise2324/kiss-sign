@@ -87,48 +87,50 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 `pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc vault-v2-factory cbbtc morpho-blue adaptive-curve-irm morpho-market-v1-adapter-v2-factory morpho-oracle-cbbtc-usdc-86 flowmark-fgenesis-v2-6439 flowmark-fgenesis-v2-6439-market-adapter usp morpho-oracle-usp-usdc weeth morpho-oracle-weeth-usdc-86` prints what each check compared.
 
-| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
-| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS |
-| `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | lending | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | irm | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | oracle | <https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc> | PASS | n/a | n/a | FINDING |
-| `flowmark-fgenesis-v2-6439` | `0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439` | vault | <https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis> | PASS | FINDING | n/a | FINDING |
-| `flowmark-fgenesis-v2-6439-market-adapter` | `0x79DA02d9C638cC9ae925188AD9DC245337981518` | adapter | <https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis> | PASS | n/a | n/a | FINDING |
-| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
-| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS |
-| `morpho-oracle-weeth-usdc-86` | `0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411` | oracle | <https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth> | PASS | n/a | n/a | FINDING |
+Newest version: for a source pinned to a GitHub commit on the default branch, which addresses the same file at the tip of that branch binds to the same label; it is the same place, so it never counts as one.
+
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Newest version | Address on page |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | n/a | PASS |
+| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS | PASS |
+| `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | lending | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | irm | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | oracle | <https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc> | PASS | n/a | n/a | n/a | FINDING |
+| `flowmark-fgenesis-v2-6439` | `0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439` | vault | <https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis> | PASS | FINDING | n/a | n/a | FINDING |
+| `flowmark-fgenesis-v2-6439-market-adapter` | `0x79DA02d9C638cC9ae925188AD9DC245337981518` | adapter | <https://app.morpho.org/ethereum/vault/0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439/flowmark-fgenesis> | PASS | n/a | n/a | n/a | FINDING |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | n/a | PASS |
+| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | n/a | FINDING |
+| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS | PASS |
+| `morpho-oracle-weeth-usdc-86` | `0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411` | oracle | <https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth> | PASS | n/a | n/a | n/a | FINDING |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | Site | GitHub commit | Address on page |
-| --- | --- | --- | --- | --- |
-| `vault-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
-| `morpho-blue` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
-| `adaptive-curve-irm` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
-| `morpho-market-v1-adapter-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
+| Entry | Page | Site | GitHub commit | Newest version | Address on page |
+| --- | --- | --- | --- | --- | --- |
+| `vault-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
+| `morpho-blue` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
+| `adaptive-curve-irm` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
+| `morpho-market-v1-adapter-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
 
-More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+More places that may name the address: the scope of every Immunefi program tied to the entry's protocol, which the program finds, and of the one the entry names; its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and which addresses npm's latest version binds to the same label; and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places; a program not tied to the protocol and the SDK's latest version never count.
 
-| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
-| --- | --- | --- | --- | --- |
-| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
-| `vault-v2-factory` | n/a | n/a | n/a | FINDING |
-| `cbbtc` | n/a | n/a | n/a | FINDING |
-| `morpho-blue` | n/a | n/a | n/a | PASS `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5`, also `adaptive-curve-irm` |
-| `adaptive-curve-irm` | n/a | n/a | n/a | PASS `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5`, also `morpho-blue` |
-| `morpho-market-v1-adapter-v2-factory` | n/a | n/a | n/a | FINDING |
-| `morpho-oracle-cbbtc-usdc-86` | n/a | n/a | n/a | FINDING |
-| `flowmark-fgenesis-v2-6439` | n/a | n/a | n/a | FINDING |
-| `flowmark-fgenesis-v2-6439-market-adapter` | n/a | n/a | n/a | FINDING |
-| `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
-| `morpho-oracle-usp-usdc` | n/a | n/a | n/a | FINDING |
-| `weeth` | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
-| `morpho-oracle-weeth-usdc-86` | n/a | n/a | n/a | FINDING |
+| Entry | Bounty scope | SDK file | SDK publisher | SDK latest | Deployer |
+| --- | --- | --- | --- | --- | --- |
+| `usdc` | NOT LISTED | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `vault-v2-factory` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `cbbtc` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `morpho-blue` | NOT LISTED | n/a | n/a | n/a | PASS `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5`, also `adaptive-curve-irm` |
+| `adaptive-curve-irm` | NOT LISTED | n/a | n/a | n/a | PASS `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5`, also `morpho-blue` |
+| `morpho-market-v1-adapter-v2-factory` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `morpho-oracle-cbbtc-usdc-86` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `flowmark-fgenesis-v2-6439` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `flowmark-fgenesis-v2-6439-market-adapter` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `usp` | NOT LISTED | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
+| `morpho-oracle-usp-usdc` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `weeth` | NOT LISTED | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
+| `morpho-oracle-weeth-usdc-86` | NOT LISTED | n/a | n/a | n/a | FINDING |
 
 13 entries, 18 findings.
 
@@ -149,9 +151,9 @@ Each entry that names a registry `factory`, other than an instance whose stored 
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |
-| `flowmark-fgenesis-v2-6439-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26433229 |
-| `flowmark-fgenesis-v2-6439-market-adapter` | `flowmark-fgenesis-v2-6439` `isAdapter(address)` | true | 26433229 |
-| `flowmark-fgenesis-v2-6439-market-adapter` | `flowmark-fgenesis-v2-6439-market-adapter` `parentVault()`, for `flowmark-fgenesis-v2-6439` | 0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439 | 26433229 |
+| `flowmark-fgenesis-v2-6439-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26434632 |
+| `flowmark-fgenesis-v2-6439-market-adapter` | `flowmark-fgenesis-v2-6439` `isAdapter(address)` | true | 26434632 |
+| `flowmark-fgenesis-v2-6439-market-adapter` | `flowmark-fgenesis-v2-6439-market-adapter` `parentVault()`, for `flowmark-fgenesis-v2-6439` | 0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439 | 26434632 |
 
 ## Code pins
 
@@ -186,12 +188,12 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `morpho-blue` | PASS | 26433229 |
-| `adaptive-curve-irm` | PASS | 26433229 |
-| `morpho-oracle-cbbtc-usdc-86` | PASS | 26433229 |
-| `flowmark-fgenesis-v2-6439-market-adapter` | PASS | 26433229 |
-| `morpho-oracle-usp-usdc` | PASS | 26433229 |
-| `morpho-oracle-weeth-usdc-86` | PASS | 26433229 |
+| `morpho-blue` | PASS | 26434632 |
+| `adaptive-curve-irm` | PASS | 26434632 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26434632 |
+| `flowmark-fgenesis-v2-6439-market-adapter` | PASS | 26434632 |
+| `morpho-oracle-usp-usdc` | PASS | 26434632 |
+| `morpho-oracle-weeth-usdc-86` | PASS | 26434632 |
 
 ## ABI proofs
 
@@ -220,37 +222,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `flowmark-fgenesis-v2-6439`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26433238
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26434640
 vault        flowmark-fgenesis-v2-6439 0xfA5367bF43b9FC2a9764Ed946b29F6e6150F6439
-latest block 26433238 0xab441e08824ece6098a71f8a6d56b428fb9ac718ecd22acde3907631194da68a
+latest block 26434640 0x6e82ea276476b0b3ac0a5d2256fc237644df2361e912b504b22a7ba9c38cb35a
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-17  block 26433238  403,402.711074 usdc
-  2026-10-18  block 26217238  224,234.953621 usdc
-  2026-09-18  block 26001238  35,580.461757 usdc
-  2026-08-18  block 25785238  5,918.768928 usdc
-  2026-07-19  block 25569238  1,486.606421 usdc
-  2026-06-19  block 25353238  1,400.213102 usdc
-  2026-05-20  block 25137238  210.009217 usdc
-  2026-04-20  block 24921238  no code at the vault yet
-  2026-03-21  block 24705238  no code at the vault yet
-  2026-02-19  block 24489238  no code at the vault yet
-  2026-01-20  block 24273238  no code at the vault yet
-  2025-12-20  block 24057238  no code at the vault yet
-  2025-11-20  block 23841238  no code at the vault yet
+  2026-11-17  block 26434640  403,026.889078 usdc
+  2026-10-18  block 26218640  224,243.181373 usdc
+  2026-09-18  block 26002640  35,581.399055 usdc
+  2026-08-19  block 25786640  5,918.958450 usdc
+  2026-07-20  block 25570640  1,486.640071 usdc
+  2026-06-19  block 25354640  1,400.234631 usdc
+  2026-05-20  block 25138640  210.015968 usdc
+  2026-04-20  block 24922640  no code at the vault yet
+  2026-03-21  block 24706640  no code at the vault yet
+  2026-02-19  block 24490640  no code at the vault yet
+  2026-01-20  block 24274640  no code at the vault yet
+  2025-12-21  block 24058640  no code at the vault yet
+  2025-11-20  block 23842640  no code at the vault yet
 
-holders      27 addresses hold shares at block 26433238, of 64 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 392977452884838152404264
-top 10       hold 99.83% of the shares; each: 54.04%, 15.91%, 9.76%, 7.51%, 7.04%, 2.59%, 2.51%, 0.25%, 0.12%, 0.10%
+holders      26 addresses hold shares at block 26434640, of 64 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 392597001559544567172983
+top 10       hold 99.90% of the shares; each: 54.09%, 15.92%, 9.77%, 7.52%, 7.05%, 2.59%, 2.51%, 0.25%, 0.12%, 0.07%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26433229 `0xcb4ef7bb3fb5bfe3d49107bf5df83d4d838a027e410a3a9bff38eff1f6f49757`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26434632 `0x0c4ccda5ec0a81a8eb7e18ada81bfa8c59087c92f7202cc6c5babf4598b83d63`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10052494848 | 4495957292 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9986815475 | 4464931135 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

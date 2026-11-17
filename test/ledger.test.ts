@@ -43,6 +43,7 @@ const APPROVE = (loadTemplate(ROOT, 'morpho/market-supply', loadRegistry(ROOT)).
 const DOC = 'https://docs.example.org/approve' as HttpsUrl;
 const APPROVE_ABI = [{ type: 'function', name: 'approve', inputs: [{ name: 'spender', type: 'address' }, { name: 'value', type: 'uint256' }] }];
 const MORE = { url: GITHUB, label: 'Vault' };
+const TIP = 'https://raw.githubusercontent.com/example/repo/refs/heads/main/addresses.md';
 const ERC20 = STANDARDS.get('erc-20')!;
 const DECLARED = { kind: 'served', blocks: [{ text: 'function approve(address _spender, uint256 _value) public returns (bool success)' }] } as const;
 
@@ -87,6 +88,8 @@ type Setup = {
   /** What the entry's first `moreSources` page serves. */
   readonly more: Page | undefined;
   readonly commit: CommitCheck | undefined;
+  /** What a pinned GitHub page's file serves at the tip of its default branch. */
+  readonly tip: Page | undefined;
   readonly api: ApiAnswer | undefined;
   readonly doc: Page | undefined;
   readonly abi: AbiProof | AbiRefusal | undefined;
@@ -119,6 +122,7 @@ const BASE: Setup = {
   page: { kind: 'served', blocks: [{ text: `Vault ${ADDRESS}` }] },
   more: { kind: 'served', blocks: [{ text: `Vault ${ADDRESS}` }] },
   commit: { kind: 'on-default', branch: 'main', status: 'behind' },
+  tip: { kind: 'served', blocks: [{ text: `Vault ${ADDRESS}` }] },
   api: { kind: 'answered', json: { address: ADDRESS } },
   doc: { kind: 'served', blocks: [{ text: 'function approve(address spender, uint256 value)' }] },
   abi: { kind: 'proven', proxy: { kind: 'none' }, codeHash: PIN, abi: APPROVE_ABI } as unknown as AbiProof,
@@ -146,8 +150,14 @@ const SDK_KEY = '@example/sdk@1.0.0';
 const BUILT = { kind: 'built', repository: 'https://github.com/example/sdk', sameTarball: true } as const;
 const packageRead = (change: Partial<Extract<PackageRead, { kind: 'read' }>> = {}): Partial<Setup> => ({
   entry: { ...ENTRY, sdk: SDK },
-  packages: new Map([[SDK_KEY, { kind: 'read', sha256: PIN, integrity: true, provenance: BUILT, file: { kind: 'served', blocks: [{ text: `VAULT = "${ADDRESS}"` }] }, ...change }]]),
+  packages: new Map([[SDK_KEY, { kind: 'read', version: '1.0.0', sha256: PIN, integrity: true, provenance: BUILT, file: { kind: 'served', blocks: [{ text: `VAULT = "${ADDRESS}"` }] }, ...change }]]),
 });
+const LATEST_KEY = '@example/sdk@latest';
+const latestRead = (bound: Address): Partial<Setup> => {
+  const pinned = packageRead().packages as PackageReads;
+  const read: PackageRead = { kind: 'read', version: '1.1.0', sha256: PIN, integrity: true, provenance: BUILT, file: { kind: 'served', blocks: [{ text: `VAULT = "${bound}"` }] } };
+  return { entry: { ...ENTRY, sdk: SDK }, packages: new Map([...pinned, [LATEST_KEY, read]]) };
+};
 const program = (addresses: readonly Address[], github?: string, website = 'https://example.org'): SiteListings => ({
   ...NO_SITE_LISTINGS,
   programs: new Map([['proto', { slug: 'proto', website: new URL(website), github: github === undefined ? undefined : new URL(github), addresses: new Set(addresses) }]]),
@@ -241,6 +251,7 @@ function ledgerOf(change: Partial<Setup>): Ledger {
         ...(s.page === undefined ? [] : [[pageUrlOf(s.entry.source), s.page] as const]),
         ...(s.more === undefined || s.entry.moreSources === undefined ? [] : [[pageUrlOf(s.entry.moreSources[0]!.url), s.more] as const]),
         ...(s.doc === undefined ? [] : [[pageUrlOf(s.approveStandard?.page ?? DOC), s.doc] as const]),
+        ...(s.tip === undefined ? [] : [[TIP, s.tip] as const]),
         ...(siblingConfirmed ? [[pageUrlOf(SIBLING.source), { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }] }] as const] : []),
       ]),
       commits: new Map(s.commit === undefined ? [] : [[`example/repo@${'a'.repeat(40)}`, s.commit], ['ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2', s.commit]]),
@@ -372,6 +383,12 @@ const ROWS: readonly Row[] = [
   { what: "a GitHub org GitHub verified controls the protocol's website", change: { entry: { ...ENTRY, source: GITHUB }, protocol: { ...BASE.protocol!, github: [] }, sites: { ...NO_SITE_LISTINGS, orgs: new Map([['example', { kind: 'domains', domains: ['example.org'] }]]) } }, id: 'vault/source.site', kind: 'agrees', state: 'ok' },
   { what: 'a GitHub org GitHub verified controls another website', change: { entry: { ...ENTRY, source: GITHUB }, protocol: { ...BASE.protocol!, github: [] }, sites: { ...NO_SITE_LISTINGS, orgs: new Map([['example', { kind: 'domains', domains: ['other.org'] }]]) } }, id: 'vault/source.site', kind: 'unlisted', state: 'na' },
   { what: "a GitHub org other than the one the coin's repositories are on, with none DefiLlama names", change: { entry: { ...ENTRY, source: GITHUB }, protocol: { ...BASE.protocol!, github: [], gecko: 'proto-coin' }, sites: coinLinks([], ['https://github.com/someone/token']) }, id: 'vault/source.site', kind: 'unlisted', state: 'na' },
+  { what: 'an Immunefi program the entry does not name, tied to the protocol by its website, with the address in scope', change: { sites: program([ADDRESS]) }, id: 'vault/source.bounty', kind: 'agrees', state: 'ok' },
+  { what: 'an Immunefi program not tied to the protocol with the address in scope', change: { sites: program([ADDRESS], undefined, 'https://other.org') }, id: 'vault/source.bounty', kind: 'not-listed', state: 'na' },
+  { what: 'a pinned GitHub page whose file at the tip of its branch binds the label to the address too', change: { entry: { ...ENTRY, source: GITHUB } }, id: 'vault/source.tip', kind: 'agrees', state: 'ok' },
+  { what: 'a pinned GitHub page whose file at the tip of its branch binds the label to another address', change: { entry: { ...ENTRY, source: GITHUB }, tip: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }] } }, id: 'vault/source.tip', kind: 'newer-differs', state: 'bad' },
+  { what: 'a pinned GitHub page whose file is gone at the tip of its branch', change: { entry: { ...ENTRY, source: GITHUB }, tip: { kind: 'failed', why: 'HTTP 404' } }, id: 'vault/source.tip', kind: 'not-listed', state: 'na' },
+  { what: "an SDK whose npm latest version binds the label to another address", change: latestRead(OTHER), id: 'vault/source.sdk.latest', kind: 'newer-differs', state: 'bad' },
 ];
 
 for (const row of ROWS) {
@@ -432,6 +449,20 @@ test('the address needs two confirmations: a page by its label, the API, CoinGec
   assert.deepEqual(by({ protocol: { ...BASE.protocol!, url: undefined }, coins: [] }), [['page'], 'few-confirmations']);
 });
 
+test('the newest version of a pinned page or SDK never counts as a place, and never keeps the pinned one from counting', () => {
+  const github = { ...ENTRY, source: GITHUB };
+  const differing = ledgerOf({ entry: github, tip: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }] } });
+  assert.deepEqual(confirmations(differing, github), ['page', 'coingecko']);
+  assert.deepEqual(forSigner(differing).map((r) => r.id), ['vault/source.tip']);
+  const newest = sourcesOf(differing, github).find((line) => line.source === 'page')?.newest;
+  assert.deepEqual([newest?.state, newest?.phrase, newest?.others], ['bad', 'other-address', [OTHER]], 'the row names the other address');
+  assert.deepEqual(confirmations(ledgerOf({ entry: github, tip: { kind: 'failed', why: 'HTTP 404' } }), github), ['page', 'coingecko']);
+  assert.deepEqual(confirmations(ledgerOf({ ...latestRead(ADDRESS), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
+  assert.deepEqual(confirmations(ledgerOf({ ...latestRead(OTHER), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
+  assert.deepEqual(confirmations(ledgerOf({ sites: program([ADDRESS], undefined, 'https://other.org'), coins: [] }), ENTRY), ['page'], 'a program not tied to the protocol confirms nothing');
+  assert.deepEqual(confirmations(ledgerOf({ sites: program([ADDRESS]), coins: [] }), ENTRY), ['page', 'bounty']);
+});
+
 test("an adapter's factory, the vault naming it and the adapter's own answer are one place, counted only when every answer passes", () => {
   const by = (change: Partial<Setup>) => {
     const ledger = ledgerOf({ coins: [], ...change });
@@ -458,6 +489,7 @@ test('an empty address source is grey; the address result alone puts the entry i
       ['page', 'na', 'unread', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
       ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
       ['coingecko', 'ok', undefined, 'https://www.coingecko.com/en/coins/vault-coin', undefined],
+      ['bounty', 'na', 'not-listed', undefined, undefined],
     ],
   );
   const alone = ledgerOf({ page: { kind: 'served', blocks: [{ text: 'Vault' }] } });
@@ -504,6 +536,7 @@ test('a second page is its own row, each page with its own site under it, and no
       ['page', 'ok', SOURCE, 'bad', 'other-site'],
       ['more.1', 'ok', GITHUB, 'ok', undefined],
       ['coingecko', 'ok', 'https://www.coingecko.com/en/coins/vault-coin', undefined, undefined],
+      ['bounty', 'na', undefined, undefined, undefined],
     ],
   );
 });
