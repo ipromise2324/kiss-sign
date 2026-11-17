@@ -143,7 +143,7 @@ test('pruning keeps exactly what each path walks', () => {
 test('a URL or name that is not a public address is refused before any request', async () => {
   for (const host of ['127.0.0.1', '10.0.0.1', '169.254.169.254', '[::1]', '[fe80::1]']) assert.match(publicHost(host) ?? '', /is not a public address/, host);
   assert.equal(publicHost('api.morpho.org'), undefined);
-  await assert.rejects(httpsGet('https://127.0.0.1/x'), (e: unknown) => (e as { code?: string }).code === 'ENOTPUBLIC');
+  await assert.rejects(httpsGet()('https://127.0.0.1/x'), (e: unknown) => (e as { code?: string }).code === 'ENOTPUBLIC');
   const resolved = (address: string, family: 4 | 6) =>
     new Promise<string>((resolve) =>
       fallbackLookup({ system: async () => [{ address: '93.184.215.14', family: 4 }, { address, family }], query: async () => ({}) }, true)('rebind.example', { all: true }, (error) =>

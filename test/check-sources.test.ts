@@ -348,7 +348,7 @@ test('two files pinned in one repository ask GitHub for its default branch once'
 
 test('a GitHub rate limit or a GitHub server error is UNVERIFIABLE, never a FINDING: no answer is no disagreement', async () => {
   const limited = { status: 403, text: '{"message":"API rate limit exceeded for 1.2.3.4."}', headers: { 'x-ratelimit-remaining': '0' } };
-  const unchecked = /github {5}UNVERIFIABLE commit ca9cb0d2d5f5 of safe-global\/safe-deployments: api\.github\.com answered rate limited \(HTTP 403\), the GitHub API rate limit \(60 requests an hour without a token\); the commit is not checked, run again later/;
+  const unchecked = /github {5}UNVERIFIABLE commit ca9cb0d2d5f5 of safe-global\/safe-deployments: api\.github\.com answered rate limited \(HTTP 403\), the GitHub API rate limit \(60 requests an hour without GITHUB_TOKEN, 5,000 with it\); the commit is not checked, run again later/;
   for (const text of [await github(limited, limited), await github(limited)]) {
     assert.match(text, unchecked);
     assert.doesNotMatch(text, /github {5}FINDING/);

@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { SolcPin } from './solc-pins.ts';
+import { githubAuthorization, noteTokenRejected } from '../research/github-token.ts';
+import type { GithubToken } from '../research/github-token.ts';
 
 export const SOLC_BIN_LIST = 'https://binaries.soliditylang.org/bin/list.json';
 export const SOLC_WASM_LIST = 'https://binaries.soliditylang.org/wasm/list.json';
@@ -32,9 +34,17 @@ export async function readCapped(response: Response, limit: number): Promise<Uin
   return new Uint8Array(Buffer.concat(chunks, size));
 }
 
-export const nodePinSolcIo: PinSolcIo = {
+/** The GitHub token goes only to api.github.com, and a JSON read follows no redirect, so it cannot reach another host. */
+export const nodePinSolcIo = (githubToken: GithubToken | undefined): PinSolcIo => ({
   json: async (url) => {
-    const response = await fetch(url, { redirect: 'error', headers: { accept: 'application/json', 'user-agent': 'kiss-sign' } });
+    const read = (authorization: { readonly authorization?: string }) =>
+      fetch(url, { redirect: 'error', headers: { accept: 'application/json', 'user-agent': 'kiss-sign', ...authorization } });
+    const authorization = githubAuthorization(url, githubToken);
+    let response = await read(authorization);
+    if (response.status === 401 && authorization.authorization !== undefined) {
+      noteTokenRejected();
+      response = await read({});
+    }
     return response.ok ? { kind: 'ok', value: await response.json() } : { kind: 'failed', status: response.status };
   },
   bytes: async (url) => {
@@ -43,7 +53,7 @@ export const nodePinSolcIo: PinSolcIo = {
     const value = await readCapped(response, SOLC_ASSET_LIMIT);
     return value === undefined ? { kind: 'too-large', limit: SOLC_ASSET_LIMIT } : { kind: 'ok', value };
   },
-};
+});
 
 /** What `pin-solc` read, one line per source, and either the pin every source agreed on or why it refused. */
 export type Resolution =
