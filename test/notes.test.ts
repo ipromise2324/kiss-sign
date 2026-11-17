@@ -279,6 +279,16 @@ test("a vault's notes join the template's: its verdict, judgments after the shar
   assert.deepEqual([...(notes.entries?.keys() ?? [])], ['usdc', 'cbbtc']);
 });
 
+test("a vault's notes in other languages than the template's title are refused; in the same one language they parse", () => {
+  const vault = { verdict: { status: 'caution', text: { 'zh-TW': '要小心' } } };
+  assert.throws(
+    () => parseNotes(mergeNotes(SHARED, vault, VAULT_PATH, OWNED), SCOPE),
+    (e: unknown) => e instanceof NotesError && e.message === 'notes.json.verdict.text: en is missing; every text holds the languages the title holds, en and zh-TW',
+  );
+  const shared = Object.fromEntries(Object.entries(only('zh-TW')).filter(([key]) => key !== 'verdict'));
+  assert.equal(parseNotes(mergeNotes(shared, vault, VAULT_PATH, OWNED), SCOPE).verdict.text, '要小心');
+});
+
 test("a key or name both notes define is refused, and a vault's notes hold only verdict, judgments, reviews and entries", () => {
   mergeRefused({ verdict: VALID.verdict, entries: { usdc: { role: '又一次' } } }, `${VAULT_PATH}.entries: "usdc" is in the template's notes.json too`);
   mergeRefused({ reviews: { 'morpho-oracle/source.page': VALID.reviews['morpho-oracle/source.page'] } }, `${VAULT_PATH}.reviews: "morpho-oracle/source.page" is in the template's notes.json too`);
