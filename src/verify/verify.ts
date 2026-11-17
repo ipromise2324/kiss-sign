@@ -160,7 +160,6 @@ export function judge(prepared: Prepared, tx: SafeTx, observation: Observation, 
   return decideVerdict(allChecks(prepared, tx, observation, read, chain), prepared.registry);
 }
 
-/** decimals() at `at` of each token a balance finding names, and 18 for ETH, so each finding reads in whole tokens. */
 async function findingDecimals(reader: Reader, checks: AllChecks, at: BlockRef): Promise<FindingDecimals> {
   const { simulation } = checks;
   const decimals = new Map<Asset, number>();

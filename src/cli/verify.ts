@@ -40,8 +40,7 @@ const frameOf = (kind: Verdict['kind'], p: Paint): ((text: string) => string) =>
 /** Each check that caused a verdict other than MATCH, one row per detail. */
 const causeRows = (verdict: Verdict): Row[] => (verdict.kind === 'MATCH' ? [] : verdict.causes.flatMap((cause) => cause.details.map((detail): Row => [cause.check, detail])));
 
-/** The line saying the assets a signed message moves change later, when any template on the card signs one by its digest. */
-function laterLines(prepared: Prepared): string[] {
+function signedMessageLines(prepared: Prepared): string[] {
   const structs = signedMessages(prepared.card, prepared.templates);
   return structs.length === 0 ? [] : ['', ...wrap(V.later(structs.join(', ')), BOX_WIDTH)];
 }
@@ -50,8 +49,8 @@ function printReplay({ verdict, hashes }: Evaluation, prepared: Prepared, io: Io
   const p = paint(io.color === true);
   const body =
     verdict.kind === 'MATCH'
-      ? [...rows([['domain hash', hashes.domainHash], ['message hash', hashes.messageHash], ['safeTxHash', hashes.safeTxHash]], 0, BOX_WIDTH), ...laterLines(prepared), '', ...wrap(V.notPermission, BOX_WIDTH)]
-      : [...rows(causeRows(verdict), 0, BOX_WIDTH), ...laterLines(prepared), '', V.noHashes];
+      ? [...rows([['domain hash', hashes.domainHash], ['message hash', hashes.messageHash], ['safeTxHash', hashes.safeTxHash]], 0, BOX_WIDTH), ...signedMessageLines(prepared), '', ...wrap(V.notPermission, BOX_WIDTH)]
+      : [...rows(causeRows(verdict), 0, BOX_WIDTH), ...signedMessageLines(prepared), '', V.noHashes];
   io.stdout(text(box(V.replayTitle(verdict.kind), body, frameOf(verdict.kind, p))));
 }
 
@@ -127,8 +126,8 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const unreadRows = unread.map((why): Row => [V.unread, why]);
   const body =
     verdict.kind === 'MATCH'
-      ? [...rows([[V.nonce, `${tx.nonce}`], ['safeTxHash', hashes.safeTxHash, p.heading], ...unreadRows], 0, BOX_WIDTH), ...laterLines(prepared)]
-      : [...rows([[V.nonce, `${tx.nonce}`], ...causeRows(verdict), ...unreadRows], 0, BOX_WIDTH), ...laterLines(prepared), '', V.noHashes];
+      ? [...rows([[V.nonce, `${tx.nonce}`], ['safeTxHash', hashes.safeTxHash, p.heading], ...unreadRows], 0, BOX_WIDTH), ...signedMessageLines(prepared)]
+      : [...rows([[V.nonce, `${tx.nonce}`], ...causeRows(verdict), ...unreadRows], 0, BOX_WIDTH), ...signedMessageLines(prepared), '', V.noHashes];
   io.stdout(text(box(V.title[verdict.kind], body, frameOf(verdict.kind, p))));
   const page = path.replace(/\.json$/, '.html');
   const html = verdictPage({

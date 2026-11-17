@@ -55,7 +55,7 @@ const ZH = {
   raw: '沒有範本可以解碼',
   trailer: (max: number, bytes: number) => `模板允許這個呼叫最多 ${max} bytes，這裡 ${bytes} bytes，在範圍內`,
   hardwareWallet: '和硬體錢包比對',
-  sharePrice: { max: '每股價格上限', min: '每股價格下限' } as Readonly<Record<'max' | 'min', string>>,
+  sharePrice: { max: '每股價格上限', min: '每股價格下限' },
 };
 const EN: typeof ZH = {
   unregistered: 'not registered',

@@ -129,7 +129,6 @@ const fixture = (name: string): Fixture => JSON.parse(readFileSync(join(ROOT, 't
 
 type Observed = Extract<Observation, { kind: 'observed' }>['observed'];
 
-/** The recorded transaction, simulated on its parent block and observed from its receipt. */
 async function recordedObservations(name: string, given: Card): Promise<{ tx: SafeTx; simulated: Observed; executed: Observed }> {
   const recorded = fixture(name);
   const tx = safeTx(name);
@@ -150,7 +149,6 @@ async function recordedObservations(name: string, given: Card): Promise<{ tx: Sa
   return { tx, simulated: observed(simulated), executed: observed(fromReceipt) };
 }
 
-/** The recorded transaction, simulated on its parent block and observed from its receipt, judged against the card. */
 async function recordedVerdicts(name: string, given: Card): Promise<{ simulated: EffectVerdict; executed: EffectVerdict }> {
   const { tx, simulated, executed } = await recordedObservations(name, given);
   const judged = (observed: Observed): EffectVerdict => judgeEffects(observed, resolved(tx, given), templates, registry);
