@@ -3,6 +3,7 @@ import type { AddressBook } from '../address-book.ts';
 import { percentText, resolveRef } from '../card.ts';
 import type { ResolvedCard } from '../card.ts';
 import { wholeTokens } from '../chain/decimals.ts';
+import { canonicalType } from '../decode/abi.ts';
 import { castValue } from '../decode/cast.ts';
 import type { AbiValue, Region } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
@@ -32,6 +33,12 @@ export type ArgNote = { readonly kind: 'equals'; readonly text: string } | { rea
 /** One argument as `cast decode-calldata` prints it, and what the last column says of it. */
 export type ShownArg = { readonly text: string; readonly note: ArgNote | undefined };
 
+/**
+ * `bytes` the template reads as `encoded` parameters (`abi`) or `packed` parts, which no ABI describes. `at` is the
+ * argument's number, then each step into an item, a component, or a part of the layout read above it, all from 1.
+ */
+export type Layout = { readonly at: readonly number[]; readonly kind: 'abi' | 'packed'; readonly types: readonly string[] };
+
 export type Decoded = {
   readonly kind: 'decoded';
   readonly signature: string;
@@ -41,6 +48,7 @@ export type Decoded = {
   readonly trailer: { readonly hex: Hex; readonly allowance: TrailerAllowance } | undefined;
   /** Every address among the arguments, outside bytes, once each, ordered by its lowercase hex. */
   readonly addresses: readonly Labeled[];
+  readonly layouts: readonly Layout[];
   readonly nested: Nested | undefined;
 };
 
@@ -141,6 +149,19 @@ function callsIn(rule: Rule | undefined, value: AbiValue, values: Values, walk: 
   return [];
 }
 
+function layoutsIn(rule: Rule | undefined, value: AbiValue, at: readonly number[], root: Uint8Array): Layout[] {
+  if (rule?.kind === 'packed' && value.kind === 'bytes') return [{ at, kind: 'packed', types: rule.parts.map((part) => canonicalType(part.type)) }];
+  if (rule?.kind === 'call' && rule.call.encoding === 'params' && value.kind === 'bytes') {
+    const here: Layout = { at, kind: 'abi', types: rule.call.fn.params.map((param) => canonicalType(param.type)) };
+    const decoded = decodeTemplateCall(rule.call, regionOf(value, root));
+    if (decoded.kind !== 'decoded') return [here];
+    return [here, ...decoded.args.flatMap((arg, i) => layoutsIn(rule.call.args[i], arg, [...at, i + 1], root))];
+  }
+  if (rule?.kind === 'items' && value.kind === 'array') return value.items.flatMap((item, i) => layoutsIn(rule.items[i], item, [...at, i + 1], root));
+  if (rule?.kind === 'fields' && value.kind === 'tuple') return value.fields.flatMap((field, i) => layoutsIn(rule.fields[i], field, [...at, i + 1], root));
+  return [];
+}
+
 function bundle(rule: Rule | undefined, value: AbiValue, values: Values, walk: Walk, itemValues?: readonly Values[]): BundleCall[] {
   if (value.kind !== 'array') return [];
   return value.items.map((item, i) => {
@@ -180,6 +201,7 @@ function callData(node: CallNode | 'empty' | undefined, region: Region, values: 
     args,
     trailer: decoded.trailer === undefined || node.trailer === undefined ? undefined : { hex: hex(decoded.trailer.value), allowance: node.trailer },
     addresses: found.map((address) => labeled(address, walk)),
+    layouts: decoded.args.flatMap((value, i) => layoutsIn(node.args[i], value, [i + 1], region.root)),
     nested,
   };
 }
@@ -232,6 +254,7 @@ export function callTree(tx: SafeTx, context: TreeContext): CallTree {
     args: [{ text: packed === undefined ? '' : castValue(packed), note: undefined }],
     trailer: undefined,
     addresses: [],
+    layouts: [],
     nested: { kind: 'multisend', calls },
   };
   return tree(top(multiSend), 1 + calls.length);

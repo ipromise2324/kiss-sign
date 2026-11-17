@@ -108,7 +108,7 @@ test('the Morpho deposit verifies to MATCH, prints its safeTxHash, and writes a 
     new RegExp(
       `^┌─ MATCH · the transaction fits your card ─+\\n│ nonce +${service.nonce}\\n│ safeTxHash  ${chain.transactionHash}\\n└─+\\n` +
         `The page shows: the domain hash, the message hash and the checklist to compare with check\\.sh\\n  ${quoted(page)}\\nThe verdict file:\\n  ${quoted(verdicts[0]!)}\\n` +
-        `Open the page with:\\n  xdg-open ${quoted(page)}\\n$`,
+        `Open the page with:\\n  xdg-open ${quoted(page)}\\nOn the independent computer, run:\\n  \\./check\\.sh ${service.nonce}\\n$`,
     ),
   );
   const [domain, message, safeTxHash] = ['tx-domain', 'tx-message', 'tx-safeTxHash'].map((id) => rowValue(pages[0]!, id));
@@ -195,6 +195,7 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   const { code, stdout, pages, verdicts } = await verifyTx(receiverChanged());
   assert.equal(code, 1);
   assert.match(stdout, /^┌─ MISMATCH · the transaction does not fit your card ─+\n/);
+  assert.doesNotMatch(stdout, /check\.sh/);
   const file = JSON.parse(readFileSync(verdicts[0]!, 'utf8')) as VerdictFile;
   for (const hash of Object.values(file.result.hashes)) {
     assert.doesNotMatch(stdout, new RegExp(hash.slice(2)));
