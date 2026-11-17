@@ -16,7 +16,9 @@ export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint 
  * block alone. A window whose transfers do not fit one page of a source is halved until they do. `range`: one window
  * the caller chose, refused when it holds more than a page.
  */
-export type Sampling = { readonly kind: 'spread'; readonly count: number; readonly blocks: bigint } | { readonly kind: 'range'; readonly range: BlockRange };
+export type Sampling =
+  | { readonly kind: 'spread'; readonly count: number; readonly blocks: bigint; readonly head?: bigint }
+  | { readonly kind: 'range'; readonly range: BlockRange };
 
 export const DEFAULT_SPREAD: Extract<Sampling, { readonly kind: 'spread' }> = { kind: 'spread', count: 12, blocks: 7200n };
 
@@ -50,6 +52,7 @@ export type WindowRun = { readonly asked: BlockRange; readonly range: BlockRange
 
 export type PastTxs = {
   readonly query: PastTxsQuery;
+  readonly head: bigint | undefined;
   readonly windows: readonly WindowRun[];
   readonly perWindow: number;
   /** Each kept transaction with the sources that found it. */
@@ -108,11 +111,11 @@ const spacedSample = <T>(items: readonly T[], cap: number): T[] =>
 export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<PastTxs> {
   const { sampling } = query;
   let ranges: BlockRange[];
+  let head: bigint | undefined;
   if (sampling.kind === 'range') ranges = [sampling.range];
   else {
-    const head = await deps.reader.blockNumber();
-    if (head.kind === 'unverifiable') throw new ResearchError(`the head block: ${head.reason}`);
-    ranges = spreadWindows(head.value, sampling.count, sampling.blocks);
+    head = sampling.head ?? (await chainHead(deps.reader));
+    ranges = spreadWindows(head, sampling.count, sampling.blocks);
   }
   const perWindow = Math.floor(deps.maxTxs / ranges.length);
   const found = new Map<Hex, SourceName[]>();
@@ -137,7 +140,13 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   }
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
   const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
-  return { query, windows, perWindow, found, studies, shapes, excluded };
+  return { query, head, windows, perWindow, found, studies, shapes, excluded };
+}
+
+async function chainHead(reader: Reader): Promise<bigint> {
+  const head = await reader.blockNumber();
+  if (head.kind === 'unverifiable') throw new ResearchError(`the head block: ${head.reason}`);
+  return head.value;
 }
 
 const plural = (n: number, one: string, many = `${one}s`): string => `${n} ${n === 1 ? one : many}`;
