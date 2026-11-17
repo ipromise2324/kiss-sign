@@ -49,8 +49,7 @@ export type Subject =
   | { readonly kind: 'vault'; readonly vault: RegistryEntry };
 
 /** The official page for one function. The program checks the page; the AI writes no text about it. */
-/** `owner` is the entry whose protocol publishes the page: the contract, or the factory that deploys its code. */
-export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly owner: SiteOwner; readonly url: HttpsUrl; readonly standard: Standard | undefined };
+export type DocLink = { readonly fn: AbiFunction; readonly contract: RegistryEntry; readonly publisher: SiteOwner; readonly url: HttpsUrl; readonly standard: Standard | undefined };
 
 /** What a report is of: a template by id, with `cardVault` for one reported per vault; or one registry vault by name. */
 export type Target = { readonly template: string; readonly cardVault?: string } | { readonly vault: string };
@@ -154,6 +153,11 @@ const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
  * standard }` for a function a standard in `STANDARDS` defines for that contract's kind. Nothing else. The contract
  * must be one the template calls the function on, when the template binds that target.
  */
+function publisherOf(contract: RegistryEntry, registry: Registry): SiteOwner {
+  const factory = contract.attributes.factory;
+  return (factory === undefined ? undefined : registry.entries.get(factory)) ?? contract;
+}
+
 export function parseDocs(raw: unknown, template: Template, registry: Registry): DocLink[] {
   if (!isRecord(raw)) throw new ReportError(`${DOCS_FILE}: not a JSON object`);
   const fns = templateFunctions(template);
@@ -179,11 +183,11 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
     if (names !== undefined && !names.includes(contract.name)) {
       throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract is ${contract.name}, but the template calls it on ${names.length === 1 ? names[0] : `one of ${names.join(', ')}`}`);
     }
-    const owner = registry.entries.get(contract.attributes.factory ?? '') ?? contract;
-    if (standard !== undefined) return { fn, contract, owner, url: standard.page, standard };
+    const publisher = publisherOf(contract, registry);
+    if (standard !== undefined) return { fn, contract, publisher, url: standard.page, standard };
     const url = parseHttpsUrl(value.url);
     if (url === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.url is not an https URL`);
-    return { fn, contract, owner, url, standard: undefined };
+    return { fn, contract, publisher, url, standard: undefined };
   });
 }
 
@@ -423,7 +427,7 @@ export function functionOnPage(doc: DocLink): RegExp {
 }
 
 export function docSiteLine(doc: DocLink, listings: Listings): Line {
-  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.owner, listings);
+  if (doc.standard === undefined) return sourceSiteLine(doc.url, doc.publisher, listings);
   const ref = githubRef(new URL(doc.url));
   const org = ref.kind === 'pinned' ? ref.owner.toLowerCase() : undefined;
   if (org === doc.standard.org) return { kind: 'agrees', check: 'defillama', text: `GitHub org ${org} publishes ${doc.standard.name}` };
