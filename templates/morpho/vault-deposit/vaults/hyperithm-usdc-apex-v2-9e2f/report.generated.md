@@ -294,7 +294,7 @@ examples that fit: 0xd1b1b94f1be130f9e649ae93add1b91eae3b503f6d82033f9d4fb723fa1
 
 ### `testdata/research/morpho-vault-deposit-v2.json`
 
-Recorded with `pnpm past-txs morpho/vault-deposit --token 0x093272c07700d3ca5301c3bf9b3a392624179e2f --anchor mint --max-txs 240 --record morpho-vault-deposit-v2`, and studied again here with the template as it is now.
+Recorded with `pnpm past-txs morpho/vault-deposit --token 0x093272c07700d3ca5301c3bf9b3a392624179e2f --anchor mint --max-txs 240 --same-windows-as morpho-vault-deposit-v2 --record morpho-vault-deposit-v2`, and studied again here with the template as it is now.
 
 ```text
 past transactions for morpho/vault-deposit
