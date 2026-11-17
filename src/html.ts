@@ -12,7 +12,7 @@ export class Html {
 
 type Part = Html | string | number | undefined | false | readonly Part[];
 
-const escape = (text: string): string => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+export const escape = (text: string): string => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const part = (value: Part): string => (value instanceof Html ? value.text : Array.isArray(value) ? value.map(part).join('') : value === undefined || value === false ? '' : escape(String(value)));
 
 /** The one way markup is built: every interpolated value is escaped unless the renderer made it. */
