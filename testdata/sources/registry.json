@@ -284,6 +284,10 @@
       "domains": [
         "uniswap.org"
       ]
+    },
+    "etherfi-protocol": {
+      "kind": "domains",
+      "domains": []
     }
   },
   "coingecko": [
@@ -931,19 +935,6 @@
         }
       ]
     },
-    "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "weETH",
-          "heading": "Tokens"
-        },
-        {
-          "text": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
-          "heading": "Tokens"
-        }
-      ]
-    },
     "https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth": {
       "kind": "served",
       "blocks": []
@@ -971,6 +962,17 @@
         {
           "text": "Ethereum 0 0x0a992d191DEeC32aFe36203Ad87D7d289a738F81",
           "heading": "MessageTransmitter: Mainnet"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
+        },
+        {
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
         }
       ]
     }
@@ -1024,6 +1026,11 @@
     "uniswap/universal-router@3be05ae044039af7610414da0ac36e4944eea566": {
       "kind": "on-default",
       "branch": "main",
+      "status": "identical"
+    },
+    "etherfi-protocol/smart-contracts@15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88": {
+      "kind": "on-default",
+      "branch": "master",
       "status": "identical"
     }
   },

@@ -9,8 +9,8 @@ import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { ABI_CASES_DIR, loadAbiCases, replayAbiCase } from '../contracts/abi-case.ts';
 import type { AbiCase } from '../contracts/abi-case.ts';
 import { pinOf, readRunningCode, readRunningCodeAt, samePin } from '../contracts/code.ts';
-import { proveAdapterOf, proveInstance } from '../contracts/instance.ts';
-import type { AdapterAnswer, InstanceProof, InstanceRefusal } from '../contracts/instance.ts';
+import { proveAdapterOf, proveInstance, proveParentOf } from '../contracts/instance.ts';
+import type { AdapterAnswer, InstanceProof, InstanceRefusal, ParentAnswer } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { canonicalType, paramName } from '../decode/abi.ts';
@@ -402,8 +402,11 @@ export function provedEntries(subject: Subject, registry: Registry): RegistryEnt
   return entriesOf(subject, registry).filter((entry) => !unused.has(entry.name) && entry.routes === undefined);
 }
 
-/** What an entry's registry factory answered about it, and for an adapter, what each registry vault naming it answered. */
-export type InstanceAnswers = { readonly factory: InstanceProof | InstanceRefusal; readonly vaults: readonly AdapterAnswer[] };
+/**
+ * What an entry's registry factory answered about it, and for an adapter, what each registry vault naming it answered
+ * and whether the adapter's own answer names that vault as the one it was made for.
+ */
+export type InstanceAnswers = { readonly factory: InstanceProof | InstanceRefusal; readonly vaults: readonly AdapterAnswer[]; readonly parents: readonly ParentAnswer[] };
 
 /** The entries other than a vault that name a registry factory, which the report asks at its latest block (`readInstances`). */
 export function instanceEntries(subject: Subject, registry: Registry): RegistryEntry[] {
@@ -417,7 +420,12 @@ export async function readInstances(reader: Reader, subject: Subject, registry: 
   const answers = new Map<string, InstanceAnswers>();
   for (const entry of asked) {
     const factory = await proveInstance(reader, registry, entry.name, block);
-    answers.set(entry.name, { factory, vaults: entry.kind === 'adapter' ? await proveAdapterOf(reader, registry, entry, block) : [] });
+    const adapter = entry.kind === 'adapter';
+    answers.set(entry.name, {
+      factory,
+      vaults: adapter ? await proveAdapterOf(reader, registry, entry, block) : [],
+      parents: adapter ? await proveParentOf(reader, registry, entry, block) : [],
+    });
   }
   return { block, answers };
 }
@@ -740,7 +748,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   for (const [name, field] of template.card) {
     const takes =
       field.kind === 'contract'
-        ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}, picked by number from the list below`
+        ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}${field.scope.marketPart === undefined ? '' : ` that is the ${code(field.scope.marketPart)} of a market in ${code(MARKETS_PATH)}`}, picked by number from the list below`
         : field.kind === 'amount'
           ? field.computed === undefined
             ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}${field.max === undefined ? '' : `, or ${code('max')}, ${field.max.value}: ${byAi(field.max.why)}`}`
@@ -1073,8 +1081,8 @@ function factoryAnswersSection(inputs: ReportInputs): string[] {
   const asked = instanceEntries(inputs.subject, inputs.registry);
   if (asked.length === 0) return [];
   const block = inputs.instances?.block.number ?? '';
-  const answer = (read: InstanceProof | InstanceRefusal | AdapterAnswer): string =>
-    read.kind === 'created' ? read.answered : read.kind === 'uses' ? 'true' : `REFUSED: ${read.why}`;
+  const answer = (read: InstanceProof | InstanceRefusal | AdapterAnswer | ParentAnswer): string =>
+    read.kind === 'created' ? read.answered : read.kind === 'uses' ? 'true' : read.kind === 'made-for' ? checksumAddress(read.vault.address) : `REFUSED: ${read.why}`;
   const rows = asked.flatMap((entry) => {
     const answers = inputs.instances?.answers.get(entry.name);
     const factory = entry.attributes.factory as string;
@@ -1082,13 +1090,14 @@ function factoryAnswersSection(inputs: ReportInputs): string[] {
     const asked = answers.factory.kind === 'created' ? answers.factory.asked : (inputs.registry.entries.get(factory)?.instanceCheck?.fn.signature as string);
     const factoryRow = `| ${code(entry.name)} | ${code(factory)} ${code(asked)} | ${answer(answers.factory)} | ${block} |`;
     const vaultRows = answers.vaults.map((read) => `| ${code(entry.name)} | ${code(read.vault.name)} ${code(read.asked)} | ${answer(read)} | ${block} |`);
+    const parentRows = answers.parents.map((read) => `| ${code(entry.name)} | ${code(entry.name)} ${code(read.asked)}, for ${code(read.vault.name)} | ${answer(read)} | ${block} |`);
     const none = entry.kind === 'adapter' && answers.vaults.length === 0 ? [`| ${code(entry.name)} | no registry vault names it as its ${code('adapter')} | not read | ${block} |`] : [];
-    return [factoryRow, ...vaultRows, ...none];
+    return [factoryRow, ...vaultRows, ...parentRows, ...none];
   });
   return [
     '### Factory answers',
     '',
-    `Each entry other than a vault that names a registry ${code('factory')}: whether, through both providers at the report's latest block, that factory's ${code('instanceCheck')} answers that it created the entry, and for an adapter, whether each registry vault whose ${code('adapter')} attribute names it answers its own factory's ${code('adapterCheck')} true for it. An entry's answers together are one place for its address, which counts only when every one passes.`,
+    `Each entry other than a vault that names a registry ${code('factory')}: whether, through both providers at the report's latest block, that factory's ${code('instanceCheck')} answers that it created the entry, and for an adapter, whether each registry vault whose ${code('adapter')} attribute names it answers its own factory's ${code('adapterCheck')} true for it, and whether the adapter answers its factory's ${code('parentCheck')} with that vault's address. An entry's answers together are one place for its address, which counts only when every one passes.`,
     '',
     '| Entry | Asked | Answer | Block |',
     '| --- | --- | --- | --- |',

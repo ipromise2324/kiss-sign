@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
-import { ATTRIBUTES, CONTRACT_KINDS, MARKET_PARAMS, MARKET_PARTS, isAttribute, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
-import type { AllowanceRoute, Attribute, ContractKind, HttpsUrl, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import { ATTRIBUTES, CONTRACT_KINDS, MARKET_ENTRIES, MARKET_ENTRY_PARTS, MARKET_PARAMS, MARKET_PARTS, MARKETS_PATH, isAttribute, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
+import type { AllowanceRoute, Attribute, ContractKind, HttpsUrl, MarketEntryPart, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { domainSeparator, isMemberType } from './eip712.ts';
@@ -12,10 +12,11 @@ import { LANGUAGES, isProse } from '../language.ts';
 import type { Prose } from '../language.ts';
 
 /**
- * The registry entries a contract card field accepts: those of `registryKind`, and when `protocol` is set, only those
- * that belong to the DefiLlama protocol of that slug.
+ * The registry entries a contract card field accepts: those of `registryKind`, when `protocol` is set only those that
+ * belong to the DefiLlama protocol of that slug, and when `marketPart` is set only those that are that part of some
+ * market in the markets table, such as a market's `collateralToken`.
  */
-export type EntryScope = { readonly registryKind: ContractKind; readonly protocol: string | undefined };
+export type EntryScope = { readonly registryKind: ContractKind; readonly protocol: string | undefined; readonly marketPart: MarketEntryPart | undefined };
 
 /**
  * The DefiLlama protocol an entry belongs to. An entry with a `factory` belongs to its factory's protocol, which the
@@ -32,12 +33,15 @@ export function contractRefusal(
   scope: EntryScope,
   entry: RegistryEntry,
   registry: Registry,
-): { readonly reason: 'wrong-contract-kind' | 'wrong-protocol'; readonly detail: string } | undefined {
+): { readonly reason: 'wrong-contract-kind' | 'wrong-protocol' | 'not-in-markets'; readonly detail: string } | undefined {
   if (entry.kind !== scope.registryKind) return { reason: 'wrong-contract-kind', detail: `${entry.name} is a ${entry.kind}, not a ${scope.registryKind}` };
-  if (scope.protocol === undefined) return undefined;
-  const protocol = protocolOf(entry, registry);
-  if (protocol.slug !== scope.protocol) {
+  const protocol = scope.protocol === undefined ? undefined : protocolOf(entry, registry);
+  if (protocol !== undefined && protocol.slug !== scope.protocol) {
     return { reason: 'wrong-protocol', detail: `${entry.name} is a ${entry.kind} of ${protocol.slug ?? 'no DefiLlama protocol'}${protocol.why}, not of ${scope.protocol}` };
+  }
+  const part = scope.marketPart;
+  if (part !== undefined && ![...registry.markets.values()].some((market) => market[part].name === entry.name)) {
+    return { reason: 'not-in-markets', detail: `${entry.name} is not the ${part} of any market in ${MARKETS_PATH}` };
   }
   return undefined;
 }
@@ -845,13 +849,17 @@ function cardField(path: string, raw: unknown, registry: Registry): (fields: Car
   const value = object(path, raw);
   switch (value.kind) {
     case 'contract': {
-      exactKeys(path, value, ['kind', 'registryKind'], ['defillama']);
+      exactKeys(path, value, ['kind', 'registryKind'], ['defillama', 'marketPart']);
       const registryKind = CONTRACT_KINDS.find((k) => k === value.registryKind);
       if (registryKind === undefined) throw new TemplateError(`${path}.registryKind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
-      const scope = { registryKind, protocol: value.defillama === undefined ? undefined : text(`${path}.defillama`, value.defillama) };
-      if (scope.protocol !== undefined && scopeEntries(scope, registry).length === 0) {
+      const marketPart = value.marketPart === undefined ? undefined : MARKET_ENTRY_PARTS.find((part) => part === value.marketPart);
+      if (value.marketPart !== undefined && marketPart === undefined) throw new TemplateError(`${path}.marketPart`, `not one of ${MARKET_ENTRY_PARTS.join(', ')}`);
+      if (marketPart !== undefined && MARKET_ENTRIES[marketPart] !== registryKind) throw new TemplateError(`${path}.marketPart`, `a market's ${marketPart} is of kind ${MARKET_ENTRIES[marketPart]}, not ${registryKind}`);
+      const scope = { registryKind, protocol: value.defillama === undefined ? undefined : text(`${path}.defillama`, value.defillama), marketPart };
+      if (scope.protocol !== undefined && scopeEntries({ ...scope, marketPart: undefined }, registry).length === 0) {
         throw new TemplateError(`${path}.defillama`, `no registry ${registryKind} belongs to the DefiLlama protocol ${JSON.stringify(scope.protocol.slice(0, 80))}`);
       }
+      if (marketPart !== undefined && scopeEntries(scope, registry).length === 0) throw new TemplateError(`${path}.marketPart`, `no registry ${registryKind} this field accepts is the ${marketPart} of a market in ${MARKETS_PATH}`);
       return () => ({ kind: 'contract', scope });
     }
     case 'amount': {
