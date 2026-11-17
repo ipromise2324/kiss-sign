@@ -1,4 +1,5 @@
 import type { ContractKind, HttpsUrl } from '../registry.ts';
+import type { Address } from '../safe/types.ts';
 
 type CanonicalSignature = string;
 /**
@@ -7,12 +8,16 @@ type CanonicalSignature = string;
  */
 type Declaration = string;
 
-/** A token standard whose own page documents functions every contract of `kinds` has. */
+/**
+ * A token standard whose own page documents functions every contract of `kinds` has, or, with `only`, the one deployed
+ * contract at that address whose source the page is.
+ */
 export type Standard = {
   readonly name: string;
   readonly page: HttpsUrl;
   readonly org: string;
   readonly kinds: readonly ContractKind[];
+  readonly only?: Address;
   readonly declarations: ReadonlyMap<CanonicalSignature, Declaration>;
 };
 
@@ -69,6 +74,7 @@ export const STANDARDS: ReadonlyMap<string, Standard> = new Map([
       page: 'https://github.com/dapphub/ds-weth/blob/72355fbac1755331aeab354b3e4a92ca47d06b35/src/weth9.sol' as HttpsUrl,
       org: 'dapphub',
       kinds: ['token'],
+      only: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' as Address,
       declarations: new Map([
         ['deposit()', 'function deposit()'],
         ['withdraw(uint256)', 'function withdraw(uint wad)'],

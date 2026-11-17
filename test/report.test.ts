@@ -21,6 +21,7 @@ import {
   ReportError,
   compareReports,
   entriesOf,
+  signedEntryNames,
   erc7730Text,
   generatedPath,
   loadReport,
@@ -112,6 +113,7 @@ test('the report says what a computed field reads: the registry contract it call
   assert.match(text, /\| `min-shares` \| nothing: computed by `card new` in base units of the card's `vault`, `quote\(int128,uint256,address\)` on registry `fluid-fusdc` `0x[0-9a-fA-F]{40}` of constant `-1`, the card's `amount`, the Safe, its `best\.shares`, less 10 bps/);
   const named = (s: Subject) => entriesOf(s, registry).map((entry) => entry.name);
   assert.ok(!named(scoped.subject).includes('fluid-fusdc') && named(subject).includes('fluid-fusdc'), 'the contract the read calls is an entry the report checks');
+  assert.ok(subject.kind === 'template' && !signedEntryNames(subject.template, registry).has('fluid-fusdc'), 'verify, which never makes the read, claims no code pin for it');
 });
 
 test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
@@ -471,16 +473,16 @@ test("each declaration the program holds names the function's canonical signatur
   }
 });
 
-test('docs.json may name ERC-4626 for a vault function and WETH9 for a token function, each checked against its own page and org', () => {
+test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH itself, each checked against its own page and org', () => {
   const fluid = loadTemplate(ROOT, 'fluid/vault-deposit', registry);
   const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', 'vaults', 'fluid-fusdt', 'docs.json'), 'utf8')) as Record<string, unknown>;
   const named = (standard: string, contract = 'fluid-fusdt') => parseDocs({ ...valid, 'deposit(uint256,address)': { contract, standard } }, fluid, registry);
   const docs = named('erc-4626');
   const deposit = docs.find((d) => d.fn.signature === 'deposit(uint256,address)')!;
   assert.equal(deposit.url, 'https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-4626.md');
-  assert.throws(() => named('weth9'), /contract fluid-fusdt is a vault; WETH9 applies to token entries/);
+  assert.throws(() => named('weth9'), /contract fluid-fusdt is not WETH9, which is the one contract at 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/);
   assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { contract: 'usdt', standard: 'erc-4626' } }, fluid, registry), /contract usdt is a token; ERC-4626 applies to vault entries/);
-  assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { contract: 'usdt', standard: 'weth9' } }, fluid, registry), /WETH9 does not define approve\(address,uint256\)/);
+  assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { contract: 'usdt', standard: 'weth9' } }, fluid, registry), /contract usdt is not WETH9/);
 
   const raw = 'https://raw.githubusercontent.com/ethereum/ERCs/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-4626.md';
   const commits = { ...recording.commits, 'ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2': { kind: 'on-default', branch: 'master', status: 'identical' } } as const;
@@ -497,6 +499,7 @@ test('docs.json may name ERC-4626 for a vault function and WETH9 for a token fun
     'PASS',
   ]);
   assert.equal(onPage([{ text: '#### deposit' }, { text: 'deposit(uint256 assets, address receiver)' }]).at(-1), 'FINDING');
+  assert.equal(onPage([{ text: '- name: deposits' }]).at(-1), 'FINDING', 'a declaration is not found inside a longer name');
 });
 
 const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
