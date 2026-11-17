@@ -194,7 +194,7 @@ test('a computed card field reads a view with every argument bound as a view\'s 
     [(t) => (computed(t).read.args.assets = { card: 'vault' }), `${at}.read.args.assets`, /a card rule cannot bind a uint256/],
     [(t) => (computed(t).read.args.assets = { safe: true }), `${at}.read.args.assets`, /a safe rule cannot bind a uint256/],
     [(t) => (computed(t).read.args.assets = { free: 'any' }), `${at}.read.args.assets`, /a view's argument is bound by card, safe, contract or const, not free/],
-    [(t) => (computed(t).read.args.assets = 'card.amount'), `${at}.read.args.assets`, /not a JSON object/],
+    [(t) => (computed(t).read.args.assets = 'amount'), `${at}.read.args.assets`, /not a JSON object/],
     [(t) => (computed(t).read.function = 'previewDeposit(uint128 assets) returns (uint256 shares)', (computed(t).read.args.assets = balance)), `${at}.read.args.assets.read`, /answers a uint256, which a uint128 parameter cannot hold/],
     [(t) => (computed(t).read.function = 'previewDeposit(uint256 assets) returns (uint256 shares, uint256 more)'), `${at}.read.output`, /names none of the 2 values the function returns/],
     [(t) => (computed(t).read.output = 'assets'), `${at}.read.output`, /"assets" is not a named return value or tuple component/],
@@ -205,7 +205,8 @@ test('a computed card field reads a view with every argument bound as a view\'s 
     [(t) => (computed(t).read.to = { card: 'amount' }), `${at}.read.to`, /a card rule cannot bind a address/],
     [(t) => (computed(t).read.to = { safe: true }), `${at}.read.to`, /must name a registry contract, or a contract or market field/],
     [(t) => (computed(t).read.to = { contract: 'no-such-contract' }), `${at}.read.to.contract`, /not in the contract registry/],
-    [(t) => (computed(t).read.to = 'card.vault'), `${at}.read.to`, /not a JSON object/],
+    [(t) => (computed(t).read.to = 'vault'), `${at}.read.to`, /not a JSON object/],
+    [(t) => (computed(t).read.to = 'safe'), `${at}.read.to`, /must name a registry contract, or a contract or market field/],
     [(t) => (computed(t).margin.why = 'ok\u001b[8m'), `${at}.margin.why`, /control or bidirectional character/],
     [(t) => (computed(t).bound = 'down'), `${at}.bound`, /not one of floor, ceiling/],
     [(t) => (computed(t).default.bps = 3.5), `${at}.default.bps`, /whole number of basis points/],
@@ -222,6 +223,11 @@ test('a computed card field reads a view with every argument bound as a view\'s 
   const nested = structuredClone(rawTemplate);
   computed(nested).read.args.assets = balance;
   assert.doesNotThrow(() => parseTemplate(nested, registry));
+  const older = structuredClone(rawTemplate);
+  computed(older).read = { to: 'card.vault', function: 'previewRedeem(uint256 shares) returns (uint256 assets)', args: { shares: { to: 'card.vault', function: 'balanceOf(address account) returns (uint256 shares)', args: { account: 'safe' } } } };
+  const newer = structuredClone(rawTemplate);
+  computed(newer).read = { to: { card: 'vault' }, function: 'previewRedeem(uint256 shares) returns (uint256 assets)', args: { shares: { read: { to: { card: 'vault' }, function: 'balanceOf(address account) returns (uint256 shares)', args: { account: { safe: true } } } } } };
+  assert.deepEqual(parseTemplate(older, registry), parseTemplate(newer, registry), 'a template written before reads took rules reads the same');
   const curve = structuredClone(rawTemplate);
   computed(curve).read = {
     to: { contract: 'bundler3' },

@@ -913,8 +913,21 @@ function bps(path: string, raw: unknown): number {
  */
 type Readable = (field: string) => boolean;
 
+/**
+ * The older form of a computed read's `to` and arguments, which a template written before reads took rules may still hold
+ * and a verdict file of that time does: `"card.<field>"` is `{ "card": "<field>" }`, `"safe"` is `{ "safe": true }`, and a
+ * read written without `read` around it is `{ "read": ... }`. Nothing else is read as the older form.
+ */
+function olderReadForm(raw: unknown): unknown {
+  if (raw === 'safe') return { safe: true };
+  const field = typeof raw === 'string' ? cardFieldName(raw) : undefined;
+  if (field !== undefined) return { card: field };
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw) && 'to' in raw && !('read' in raw)) return { read: raw };
+  return raw;
+}
+
 function computedArg(path: string, raw: unknown, { name, type }: AbiParam, scope: Scope, readable: Readable): ComputedArg {
-  const value = object(path, raw);
+  const value = object(path, olderReadForm(raw));
   if (value.read !== undefined) {
     exactKeys(path, value, ['read']);
     const read = computedRead(`${path}.read`, value.read, scope, readable);
@@ -922,7 +935,7 @@ function computedArg(path: string, raw: unknown, { name, type }: AbiParam, scope
     if (type.kind !== 'uint' || type.bits < answer.bits) throw new TemplateError(`${path}.read`, `answers a uint${answer.bits}, which a ${canonicalType(type)} parameter cannot hold`);
     return { kind: 'read', read };
   }
-  const bound = rule(path, raw, type, scope);
+  const bound = rule(path, value, type, scope);
   boundArgument(path, bound);
   wholeCardNumbers(path, bound, type);
   for (const leaf of ruleLeaves(bound)) if (leaf.kind === 'card') readableRef(path, leaf.ref, readable);
@@ -963,7 +976,7 @@ function outputPath(path: string, raw: unknown, returns: readonly AbiParam[]): n
 function computedRead(path: string, raw: unknown, scope: Scope, readable: Readable): ComputedRead {
   const value = object(path, raw);
   exactKeys(path, value, ['to', 'function', 'args'], ['output']);
-  const target = parseRule(`${path}.to`, value.to, { kind: 'address' }, scope);
+  const target = parseRule(`${path}.to`, typeof value.to === 'string' ? olderReadForm(value.to) : value.to, { kind: 'address' }, scope);
   let to: ViewTarget;
   if (target.kind === 'contract') to = { kind: 'contract', name: target.name };
   else if (target.kind === 'card' && isContractRef(target.ref, scope.card)) to = { kind: 'card', ref: target.ref };
