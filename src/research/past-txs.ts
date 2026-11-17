@@ -4,6 +4,8 @@ import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import type { LeafRule, Quantity, Template } from '../template/template.ts';
+import { effectText, distributionOf, measure, shown, statedEffects, toleranceFinding } from './amounts.ts';
+import type { Difference, Measurement, StatedEffect } from './amounts.ts';
 import { ResearchError, SOURCES, TooManyTransfers, searchBoth } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, misfitText, shapesOf, studyTx } from './study.ts';
@@ -61,6 +63,9 @@ export type PastTxs = {
   readonly shapes: ReturnType<typeof shapesOf>;
   /** Transactions left out because they touch the configured Safe. Never printed. */
   readonly excluded: ReadonlySet<Hex>;
+  /** The template's effects that state an amount, and for each fitting transaction stating one, how its balances differed. */
+  readonly effects: readonly StatedEffect[];
+  readonly measurements: ReadonlyMap<Hex, Measurement>;
 };
 
 const ZERO = `0x${'00'.repeat(20)}`;
@@ -138,9 +143,14 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
       found.delete(hash);
     } else studies.push(study);
   }
+  const effects = statedEffects(query.template);
+  const fits = studies.filter((s): s is Fit => s.kind === 'fit');
+  const rulesOf = (fit: Fit) => (fit.sender.kind === 'safe' ? shapes.whole : (shapes.calls[fit.sender.call] as (typeof shapes.calls)[number])).loosened.rules;
+  const measured = await inPool(fits, 4, (fit) => measure(deps.reader, { hash: fit.hash, sender: fit.sender, rules: rulesOf(fit), values: fit.values }, effects, deps.registry));
+  const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
   const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
-  return { query, head, windows, perWindow, found, studies, shapes, excluded };
+  return { query, head, windows, perWindow, found, studies, shapes, excluded, effects, measurements };
 }
 
 async function chainHead(reader: Reader): Promise<bigint> {
@@ -264,6 +274,87 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
   if (fits.length > 0) lines.push(`examples that fit: ${exactFirst.slice(0, 3).map((f) => mark(f.hash)).join(', ')}`);
 }
 
+/** One token an effect moved in the measured transactions: each party's differences, and the sender types they came from. */
+type TokenAmounts = {
+  readonly token: Address;
+  /** A registry entry, which a card can name; only such a token gives a finding. */
+  readonly inRegistry: boolean;
+  readonly sender: readonly Difference[];
+  readonly receiver: readonly Difference[];
+  readonly safes: number;
+  readonly eoas: number;
+};
+
+/** A measured effect the report shows: one whose differences are not all 0, or that declares a tolerance. */
+type EffectAmounts = {
+  readonly effect: StatedEffect;
+  readonly tokens: readonly TokenAmounts[];
+  readonly finding: ReturnType<typeof toleranceFinding>;
+};
+
+export type Amounts = { readonly effects: readonly EffectAmounts[]; readonly unmeasured: ReadonlyMap<string, readonly Hex[]> };
+
+export function amountsOf(run: PastTxs, registry: Registry): Amounts {
+  const senderOf = new Map(run.studies.flatMap((s) => (s.kind === 'fit' ? [[s.hash, s.sender] as const] : [])));
+  const measured = [...run.measurements].flatMap(([hash, m]) => (m.kind === 'measured' ? m.differences.map((d) => ({ hash, d })) : []));
+  const effects = run.effects.flatMap((effect, i): EffectAmounts[] => {
+    const mine = measured.filter(({ d }) => d.effect === i);
+    if (!shown(effect, mine.map(({ d }) => d))) return [];
+    const tokens = [...new Set(mine.map(({ d }) => d.token))].map((token): TokenAmounts => {
+      const of = mine.filter(({ d }) => d.token === token);
+      const sender = of.filter(({ d }) => d.party === 'sender');
+      const kinds = sender.map(({ hash }) => senderOf.get(hash)?.kind);
+      return {
+        token,
+        inRegistry: registry.byAddress.has(token),
+        sender: sender.map(({ d }) => d),
+        receiver: of.filter(({ d }) => d.party === 'receiver').map(({ d }) => d),
+        safes: kinds.filter((k) => k === 'safe').length,
+        eoas: kinds.filter((k) => k === 'eoa').length,
+      };
+    });
+    return [{ effect, tokens, finding: toleranceFinding(effect, tokens.filter((t) => t.inRegistry).flatMap((t) => t.sender)) }];
+  });
+  const unmeasured = new Map<string, Hex[]>();
+  if (effects.length > 0) for (const [hash, m] of run.measurements) if (m.kind === 'unmeasured') unmeasured.set(m.why, [...(unmeasured.get(m.why) ?? []), hash]);
+  return { effects, unmeasured };
+}
+
+const unitsText = (n: bigint): string => `${n} base unit${n === 1n ? '' : 's'}`;
+const byText = (by: bigint): string => (by === 0n ? 'exact' : `${unitsText(by < 0n ? -by : by)} ${by < 0n ? 'lower' : 'higher'}`);
+
+/** Such as `2 base units lower in 8, 1 base unit lower in 10, exact in 20; at most 2 base units lower`. */
+function distributionText(differences: readonly Difference[]): string {
+  const { counts, lowest, highest } = distributionOf(differences);
+  const parts = [...counts].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([by, n]) => `${byText(by)} in ${n}`);
+  const extremes = [lowest < 0n ? `${unitsText(-lowest)} lower` : '', highest > 0n ? `${unitsText(highest)} higher` : ''].filter((t) => t !== '');
+  return `${parts.join(', ')}; at most ${extremes.length === 0 ? '0 base units either way' : extremes.join(' and ')}`;
+}
+
+const toleranceText = (effect: StatedEffect): string =>
+  effect.tolerance === undefined ? 'none declared, so 0' : `${unitsText(effect.tolerance.less)} lower, ${unitsText(effect.tolerance.more)} higher`;
+
+function renderAmounts(lines: string[], run: PastTxs, registry: Registry): void {
+  const { effects, unmeasured } = amountsOf(run, registry);
+  if (effects.length === 0) return;
+  lines.push("amounts against balances, each transaction run alone on its parent block (shown for an effect that declares a tolerance or whose balances did not all change by exactly the stated amount):");
+  for (const { effect, tokens, finding } of effects) {
+    lines.push(`  ${effectText(effect)}; tolerance: ${toleranceText(effect)}`);
+    for (const t of tokens) {
+      const name = registry.byAddress.get(t.token)?.name;
+      lines.push(`    ${name === undefined ? `${checksumAddress(t.token)}, outside the registry, so no card can name it and it gives no finding` : `${name} ${checksumAddress(t.token)}`}: ${plural(t.sender.length, 'transaction')}, ${t.safes} from Safes, ${t.eoas} from EOAs`);
+      lines.push(`      the sender: ${distributionText(t.sender)}`);
+      if (t.receiver.length > 0) lines.push(`      the receiver: ${distributionText(t.receiver)}`);
+    }
+    if (finding?.kind === 'beyond') {
+      const ends = [finding.lower > 0n ? `${unitsText(finding.lower)} lower` : '', finding.higher > 0n ? `${unitsText(finding.higher)} higher` : ''].filter((x) => x !== '').join(' and ');
+      lines.push(`    FINDING: a sender's balance ended up to ${ends} than stated, beyond the tolerance; such a transaction to sign would be MISMATCH`);
+    }
+    if (finding?.kind === 'unfounded') lines.push('    FINDING: a tolerance is declared, but no measured transaction ended other than exactly as stated: no evidence for it');
+  }
+  for (const [why, hashes] of unmeasured) lines.push(`  not measured, ${why}: ${hashes.length}, e.g. ${examples(hashes)}`);
+}
+
 /** What a reader of the report sees. Never names the configured Safe, and names no other sender either. */
 export function renderPastTxs(run: PastTxs, registry: Registry): string {
   const { anchor, template, sampling } = run.query;
@@ -329,6 +420,7 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
     lines.push(`  ${hashes.length} unreadable, ${reason}: ${examples(hashes)}`);
   }
 
+  renderAmounts(lines, run, registry);
   lines.push('by proven Safes, the whole template in one transaction:');
   const otherOperation = misfits.filter((m) => isOtherOperation(m, template));
   if (otherOperation.length > 0) {

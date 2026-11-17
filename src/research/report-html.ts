@@ -461,7 +461,19 @@ function pastBody(body: Extract<Body, { kind: 'past' }>, r: R): Html {
   if (body.recordings.length === 0) return h`<p class="lead">${r.w.noPast}</p>`;
   return h`
   <p class="lead">${text(body.same)}</p>${body.conclusion === undefined ? '' : h`
-  <p class="intro">${ai(body.conclusion, r)}</p>`}
+  <p class="intro">${ai(body.conclusion, r)}</p>`}${body.amounts.length === 0 ? '' : h`
+  <p class="lead">${r.w.amountsLead}</p>`}${body.amounts.map(
+    (a) => h`
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>${a.effect}</code></span><span>${a.tolerance}</span></div>${a.tokens.map(
+      (t) => h`
+    <div class="pg"><div><div>${t.lead}</div>${t.rows.map((row) => h`
+      <div class="pex">${row.party}${row.cells.map((c, i) => h`${i === 0 ? '' : r.w.sep}<span class="num">${c.by}</span> ${c.n}`)}</div>`)}</div></div>`,
+    )}${a.finding === undefined ? '' : h`
+    <div class="warnline">${icon('bad', r.language)}<span>FINDING: ${a.finding}</span></div>`}${a.unmeasured === undefined ? '' : h`
+    <div class="warnline">${decor('info')}<span>${a.unmeasured}</span></div>`}
+  </div>`,
+  )}
   <details class="fold">
   <summary>${decor('chev')}${r.w.otherWays}</summary>
   <p class="lead">${r.w.otherWaysLead}</p>${body.recordings.map(

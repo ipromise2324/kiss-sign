@@ -414,10 +414,10 @@ test('--same-windows-as goes with the spread windows only, not with a block rang
   assert.match(run.stderr, /--same-windows-as <recording>/);
 });
 
-test('--same-windows-as refuses a recording that keeps no head block, and a name with no recording', () => {
-  const old = pastTxsRun('--same-windows-as', 'morpho-vault-deposit-windows');
+test('--same-windows-as refuses a recording of one block range, and a name with no recording', () => {
+  const old = pastTxsRun('--same-windows-as', 'morpho-vault-deposit');
   assert.equal(old.status, 64);
-  assert.equal(old.stderr, '--same-windows-as morpho-vault-deposit-windows: the recording keeps no head block, so its windows cannot be searched again\n');
+  assert.equal(old.stderr, '--same-windows-as morpho-vault-deposit: the recording searched one block range and keeps no head block, so it has no windows to search again\n');
   const missing = pastTxsRun('--same-windows-as', 'no-such-study');
   assert.equal(missing.status, 64);
   assert.equal(missing.stderr, '--same-windows-as no-such-study: no recording testdata/research/no-such-study.json\n');
