@@ -9,6 +9,7 @@ import type { Exchange } from '../chain/recording.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
 import { paint } from '../cli/format.ts';
+import { LABELS } from '../cli/labels.ts';
 import { requireConfig } from '../cli/setup.ts';
 import { checkFloor, standingSpenders } from '../floor/floor.ts';
 import type { SettingsChange } from '../floor/floor.ts';
@@ -168,7 +169,8 @@ function originMain(root: string, repo: GithubRepo): string {
 
 async function run(io: Io, out: string | undefined, refresh: boolean): Promise<number> {
   const home = kissSignHome(io.env);
-  const { safe, repo } = requireConfig(home);
+  const { safe, repo, language } = requireConfig(home);
+  const H = LABELS[language].history;
   if (out !== undefined && !relative(resolve(io.repoRoot), resolve(out)).startsWith('..')) {
     throw new UsageError('--out must be outside this repository, so the Safe history never lands in a commit.');
   }
@@ -210,10 +212,10 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     overlay: Object.keys(history.registryOverlay).length,
     rows,
   };
-  io.stdout(renderText(report, paint(io.color === true)));
+  io.stdout(renderText(report, H, paint(io.color === true)));
   if (out !== undefined) {
-    writePrivate(out, renderMarkdown(report));
-    io.stdout(`Wrote ${out}\n`);
+    writePrivate(out, renderMarkdown(report, H));
+    io.stdout(`${H.wrote(out)}\n`);
   }
   return OK;
 }
@@ -221,7 +223,7 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
 /** Every multisig transaction of the configured Safe, newest first as the service lists them, into `txs.jsonl`. */
 async function fetchTxs(io: Io): Promise<number> {
   const home = kissSignHome(io.env);
-  const { safe } = requireConfig(home);
+  const { safe, language } = requireConfig(home);
   const first = `${SERVICE}/safes/${checksumAddress(safe)}/multisig-transactions/?limit=100`;
   const records: unknown[] = [];
   for (let url: string | null = first; url !== null; ) {
@@ -237,7 +239,7 @@ async function fetchTxs(io: Io): Promise<number> {
   mkdirSync(historyDir(home), { recursive: true, mode: 0o700 });
   writePrivate(txsPath(home), records.map((r) => `${JSON.stringify(r)}\n`).join(''));
   const executed = records.filter((r) => (r as { isExecuted?: unknown }).isExecuted === true).length;
-  io.stdout(`Wrote ${records.length} transactions (${executed} executed) to ${txsPath(home)}\n`);
+  io.stdout(`${LABELS[language].history.fetched(records.length, executed, txsPath(home))}\n`);
   return OK;
 }
 

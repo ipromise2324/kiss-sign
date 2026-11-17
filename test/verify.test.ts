@@ -176,11 +176,21 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   assert.doesNotMatch(pages[0]!, /比對清單 -->|domain hash|message hash/);
 });
 
-test('a signer who chose zh-TW at init gets the verify page in Traditional Chinese', async () => {
-  const { pages } = await verifyTx(receiverChanged(), undefined, undefined, 'zh-TW');
+test('a signer who chose zh-TW at init gets the verify page and the terminal in Traditional Chinese, with the same verdict file', async () => {
+  const english = await verifyTx(receiverChanged());
+  const { code, stdout, pages, verdicts, repo, home } = await verifyTx(receiverChanged(), undefined, undefined, 'zh-TW');
+  assert.equal(code, 1);
   assert.match(pages[0]!, /<html lang="zh-Hant">/);
   assert.match(pages[0]!, /MISMATCH：交易和你的卡片不符，不要簽/);
   assert.match(pages[0]!, /不顯示任何 hash。不要簽這筆交易。/);
+  assert.match(stdout, /^┌─ MISMATCH · 交易和你的卡片不符，不要簽 ─+\n│ nonce +\d+\n/);
+  assert.match(stdout.replaceAll(/\n│ {9,}/g, ' '), /│ fields +multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}\n/);
+  assert.match(stdout, /│ 不顯示任何 hash。不要簽這筆交易。\n└─+\n頁面上有：每一項檢查\n/);
+  const result = (path: string) => (JSON.parse(readFileSync(path, 'utf8')) as VerdictFile).result;
+  assert.deepEqual(result(verdicts[0]!), result(english.verdicts[0]!));
+  const replayed = await run(['replay', verdicts[0]!], repo, home);
+  assert.equal(replayed.code, 0, replayed.stderr);
+  assert.match(replayed.stdout, /^┌─ MISMATCH · 重算已記錄的判決 ─+\n[\s\S]*\n和記錄的判決相同。\n$/);
 });
 
 test('replay of a recorded MISMATCH reproduces it, says so, and exits 0', async () => {

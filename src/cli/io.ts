@@ -1,6 +1,7 @@
 import type { Transport } from '../chain/rpc.ts';
 import type { Env } from '../keys.ts';
 import type { MessageReader } from '../verify/verify.ts';
+import type { Labels } from './labels.ts';
 
 export type Io = {
   readonly env: Env;
@@ -37,10 +38,8 @@ export type Terminal = {
 };
 
 /** Refuses up front when there is no terminal to answer at, so nothing is shown or asked first. */
-export function terminal(io: Io, command: string): Terminal {
+export function terminal(io: Io, command: string, w: Labels): Terminal {
   const { ask } = io;
-  if (ask === undefined) {
-    throw new UsageError(`${command} asks you to confirm at a terminal, so run it in your own terminal with nothing piped into it.`);
-  }
+  if (ask === undefined) throw new UsageError(w.confirmAtTerminal(command));
   return { ask, confirm: async (question) => /^y(es)?$/i.test((await ask(question))?.trim() ?? '') };
 }

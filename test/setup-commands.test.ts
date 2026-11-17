@@ -95,7 +95,8 @@ async function run(argv: string[], home: string, answers?: readonly Answer[], ch
 const freshHome = () => mkdtempSync(join(tmpdir(), 'kiss-sign-setup-'));
 
 /** The config init writes for SAFE in a clone of github.com/signer/kiss-sign. */
-const configure = (home: string) => writeFileSync(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign' }));
+const configure = (home: string, language?: string) =>
+  writeFileSync(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign', ...(language === undefined ? {} : { language }) }));
 
 /** A clone whose origin fetches from each of `urls`, for init to read. */
 function cloneWithOrigin(...urls: string[]): Chain {
@@ -119,19 +120,20 @@ test('init records the Safe on chain 1 and the repository origin names, and prin
         '              Ethereum mainnet (chain 1)\n' +
         '  repository  github.com/signer/kiss-sign\n' +
         "              main of this clone's origin; merging a pull request into it is your confirmation\n" +
-        '  language    English (en), for reports and the verify page\n' +
+        '  language    English (en), for reports, the verify page and the terminal\n' +
         '              pnpm kiss-sign init --language en|zh-TW changes it\n',
     ),
     result.stdout,
   );
 });
 
-test('init records the report language, keeps it when run again without --language, changes it with one even without --safe once set up, and refuses any other', async () => {
+test('init records the language, prints in it, keeps it when run again without --language, changes it with one even without --safe once set up, and refuses any other', async () => {
   const home = freshHome();
   const language = () => JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')).language;
   const chinese = await run(['init', '--safe', SAFE, '--language', 'zh-TW'], home, undefined, fork);
   assert.equal(chinese.code, 0, chinese.stderr);
-  assert.match(chinese.stdout, /language +Traditional Chinese \(zh-TW\), for reports and the verify page/);
+  assert.match(chinese.stdout, /^kiss-sign 設定好了\n/);
+  assert.match(chinese.stdout, /語言 +繁體中文 \(zh-TW\)，用在報告、verify 頁面和終端機/);
   assert.equal(language(), 'zh-TW');
   assert.equal((await run(['init', '--safe', SAFE], home, undefined, fork)).code, 0);
   assert.equal(language(), 'zh-TW');
@@ -256,6 +258,36 @@ test('card seal prints every name with its full address and stores the card unde
   assert.match(sealed.stdout, /│   vault +steakhouse-prime-usdc-v2-0f51  0xbeef088055857739C12CD3765F20b7679Def0f51\n│   amount +5 base units of usdc\n│   min-shares +4 base units of steakhouse-prime-usdc-v2-0f51\n│\n│ card seal reads no decimals, so token amounts other than ETH are in base units only\n/);
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
   assert.ok(hash !== undefined && existsSync(join(home, 'cards', `${hash}.json`)));
+});
+
+test('a zh-TW home prints card seal in Traditional Chinese with the same names, addresses and prompt ending, and seals the same hash', async () => {
+  const card = join(freshHome(), 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5', 'min-shares': '4' } }] }));
+  const [en, zh] = [freshHome(), freshHome()];
+  configure(en);
+  configure(zh, 'zh-TW');
+  const english = await run(['card', 'seal', card], en, ['y']);
+  const chinese = await run(['card', 'seal', card], zh, ['y']);
+  assert.equal(chinese.code, 0, chinese.stderr);
+  assert.match(chinese.stdout, /^┌─ 你的卡片 ─+\n/);
+  assert.match(chinese.stdout, /│   vault +steakhouse-prime-usdc-v2-0f51  0xbeef088055857739C12CD3765F20b7679Def0f51\n│   amount +usdc 的 5 最小單位\n/);
+  assert.deepEqual([english.asked, chinese.asked], [['Is this what you mean to do? [y/N] '], ['這是你要做的事嗎？[y/N] ']]);
+  const hash = (stdout: string, word: string) => new RegExp(`${word} (0x[0-9a-f]{64})`).exec(stdout)?.[1];
+  assert.ok(hash(english.stdout, 'Sealed card') !== undefined);
+  assert.equal(hash(chinese.stdout, '已封存卡片'), hash(english.stdout, 'Sealed card'));
+});
+
+test('a refusal before any config exists is in English, and init --language zh-TW prints its first run in Chinese', async () => {
+  const card = join(freshHome(), 'card.json');
+  writeFileSync(card, '{}');
+  const none = await run(['book', 'list', 'extra'], freshHome());
+  assert.equal(none.stderr, 'kiss-sign: book list takes nothing more.\n');
+  const zh = freshHome();
+  configure(zh, 'zh-TW');
+  assert.equal((await run(['book', 'list', 'extra'], zh)).stderr, 'kiss-sign: book list 不接其他參數。\n');
+  assert.equal((await run(['book', 'list'], zh)).stdout, '地址簿是空的。\n');
+  const first = await run(['init', '--safe', SAFE, '--language', 'zh-TW'], freshHome(), undefined, fork);
+  assert.match(first.stdout, /^kiss-sign 設定好了\n  Safe    0x/);
 });
 
 test('card seal refuses a name in neither the registry nor the address book', async () => {
