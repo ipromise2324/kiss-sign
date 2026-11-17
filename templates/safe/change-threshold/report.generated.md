@@ -63,7 +63,7 @@ More places that may name the address: the scope of every Immunefi program tied 
 | Entry | Bounty scope | SDK file | SDK publisher | SDK latest | Deployer |
 | --- | --- | --- | --- | --- | --- |
 | `safe-1.3.0` | NOT LISTED | n/a | n/a | n/a | PASS `0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26`, also `safe-1.4.1` |
-| `safe-1.4.1` | NOT LISTED | n/a | n/a | n/a | FINDING `0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26` |
+| `safe-1.4.1` | NOT LISTED | n/a | n/a | n/a | n/a: no confirmed entry shares `0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26` |
 
 2 entries; each finding is graded and listed under Findings at the top.
 
