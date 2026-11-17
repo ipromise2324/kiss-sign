@@ -139,6 +139,11 @@ test('each argument says who decides it and prints what cast decode-calldata pri
       ['oracle', '0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d', 0],
       ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
       ['lltv', '915000000000000000', 0],
+      ['loanToken', '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 0],
+      ['collateralToken', '0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee', 0],
+      ['oracle', '0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411', 0],
+      ['irm', '0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC', 0],
+      ['lltv', '860000000000000000', 0],
     ],
   );
 
@@ -398,13 +403,13 @@ test('a contract a flow line names gets its own lifeline, so every inside arrow 
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {
   const { block } = body(pageOf(inputs), 'protocol');
   const row = (label: string) => block.rows.find((r) => r.label === label) ?? assert.fail(`no ${label} row`);
-  assert.equal(plain(row('TVL').value), '$10.04 B');
+  assert.equal(plain(row('TVL').value), '$10.06 B');
   assert.equal(plain(row('上線').value), '2024-01-14');
   assert.equal(plain(row('proxy').value), '不是 proxy');
   assert.equal(plain(row('事故').value), '0 起');
   assert.deepEqual(
     row('usdc-cbbtc-86').nested.map((n) => plain(n.value)),
-    ['333,499,365.02 usdc', '294,466,764.6 usdc', '88.29%'],
+    ['333,387,875.96 usdc', '294,517,573.12 usdc', '88.34%'],
   );
   assert.deepEqual(
     block.sources.map((s) => s.href),
@@ -426,13 +431,15 @@ test('without recorded protocol facts each protocol still shows its AI notes and
   );
 });
 
-test('the two oracles only the protocol API confirms are the rows to review, open in 地址, and the verdict icon is amber', () => {
+test('the three oracles only the protocol API confirms and weETH\'s site are the rows to review, open in 地址, and the verdict icon is red', () => {
   const page = pageOf(inputs);
   assert.deepEqual(
     body(page, 'review').rows.map((r) => [r.id, r.state, r.entry]),
     [
+      ['weeth/source.site', 'bad', 'a-weeth'],
       ['morpho-oracle-cbbtc-usdc-86/address', 'warn', 'a-morpho-oracle-cbbtc-usdc-86'],
       ['morpho-oracle-usp-usdc/address', 'warn', 'a-morpho-oracle-usp-usdc'],
+      ['morpho-oracle-weeth-usdc-86/address', 'warn', 'a-morpho-oracle-weeth-usdc-86'],
     ],
   );
   const addresses = body(page, 'addresses');
@@ -441,16 +448,18 @@ test('the two oracles only the protocol API confirms are the rows to review, ope
     [
       ['morpho-oracle-cbbtc-usdc-86', 'low', 'concern', '只在 1 個地方確認：協議 API'],
       ['morpho-oracle-usp-usdc', 'low', 'concern', '只在 1 個地方確認：協議 API'],
+      ['weeth', 'low', 'concern', '在 2 個地方確認：官方頁、CoinGecko'],
+      ['morpho-oracle-weeth-usdc-86', 'low', 'concern', '只在 1 個地方確認：協議 API'],
     ],
   );
   assert.equal(addresses.folded.length, 6);
-  assert.equal(page.header.verdict.state, 'warn');
+  assert.equal(page.header.verdict.state, 'bad');
   assert.deepEqual(
     page.header.strip.map((s) => [s.name, s.state, s.count]),
     [
-      ['地址來源', 'warn', '6 / 8'],
-      ['原始碼驗證', 'ok', '5 / 5'],
-      ['合約沒被換掉', 'ok', '8 / 8'],
+      ['地址來源', 'bad', '6 / 10'],
+      ['原始碼驗證', 'ok', '6 / 6'],
+      ['合約沒被換掉', 'ok', '10 / 10'],
       ['參數保護', 'ok', '1 / 1'],
       ['雙節點比對', 'ok', undefined],
     ],
