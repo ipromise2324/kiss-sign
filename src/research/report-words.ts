@@ -91,9 +91,10 @@ const ZH = {
   githubDomains: 'GitHub 驗證網域',
   deployer: (address: string, siblings: readonly string[]): string => `部署者 ${address}${siblings.length === 0 ? '' : `，也部署了 ${siblings.join('、')}`}`,
   confirmed: (places: readonly string[], enough: boolean): string => (places.length === 0 ? '沒有任何地方確認' : `${enough ? '在' : '只在'} ${places.length} 個地方確認：${places.join('、')}`),
+  onePlace: (sources: readonly string[], owner: string): string => `${sources.join('、')}（都屬於 ${owner}，算一個地方）`,
   addressConfirmed: (name: string, confirmed: string): string => `${name}：地址${confirmed}`,
   fewConfirmationsWhy: (min: number): string =>
-    `至少要 ${min} 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。`,
+    `至少要 ${min} 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。同一個網域上的頁面和 API、同一個 GitHub 組織，或 GitHub 驗證過擁有某網域的組織跟那個網域，都只算一個地方。`,
 
   finding: {
     'site-differs': { title: '網站跟 DefiLlama 列的不同', why: '這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。' },
@@ -639,9 +640,10 @@ const EN: Words = {
   deployer: (address, siblings) => `deployer ${address}${siblings.length === 0 ? '' : `, which also deployed ${siblings.join(', ')}`}`,
   confirmed: (places, enough) =>
     places.length === 0 ? 'Confirmed nowhere' : `Confirmed in ${enough ? '' : 'only '}${places.length} ${plural(places.length, 'place', 'places')}: ${places.join(', ')}`,
+  onePlace: (sources, owner) => `${sources.join(' and ')} (all on ${owner}, one place)`,
   addressConfirmed: (name, confirmed) => `${name}: address ${confirmed.charAt(0).toLowerCase()}${confirmed.slice(1)}`,
   fewConfirmationsWhy: (min) =>
-    `At least ${min} places must list the same address: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.`,
+    `At least ${min} places must list the same address: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL. Pages and an API on one domain, pages of one GitHub organization, and an organization GitHub verified for a domain with that domain, count as one place.`,
 
   finding: {
     'site-differs': { title: 'site differs from the one DefiLlama lists', why: "This page's domain or GitHub organization is not one DefiLlama lists for this protocol." },
