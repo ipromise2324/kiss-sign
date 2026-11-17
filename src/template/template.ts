@@ -882,7 +882,8 @@ type Readable = (field: string) => boolean;
 
 function computedArg(path: string, raw: unknown, { name, type }: AbiParam, scope: Scope, readable: Readable): ComputedArg {
   const value = object(path, raw);
-  if (Object.keys(value).length === 1 && value.read !== undefined) {
+  if (value.read !== undefined) {
+    exactKeys(path, value, ['read']);
     const read = computedRead(`${path}.read`, value.read, scope, readable);
     const answer = computedOutput(read).param.type as Extract<AbiType, { kind: 'uint' }>;
     if (type.kind !== 'uint' || type.bits < answer.bits) throw new TemplateError(`${path}.read`, `answers a uint${answer.bits}, which a ${canonicalType(type)} parameter cannot hold`);
@@ -890,8 +891,19 @@ function computedArg(path: string, raw: unknown, { name, type }: AbiParam, scope
   }
   const bound = rule(path, raw, type, scope);
   boundArgument(path, bound);
+  wholeCardNumbers(path, bound, type);
   for (const leaf of ruleLeaves(bound)) if (leaf.kind === 'card') readableRef(path, leaf.ref, readable);
   return { kind: 'bound', rule: recipientWord(path, name, type, bound) };
+}
+
+/** A card number, never range-checked against its parameter, is passed to a read only as a whole uint256. */
+function wholeCardNumbers(path: string, bound: Rule, type: AbiType): void {
+  if (bound.kind === 'card' && (type.kind === 'uint' || type.kind === 'int') && !(type.kind === 'uint' && type.bits === 256)) {
+    throw new TemplateError(path, `card.${bound.ref.field}${bound.ref.attribute === undefined ? '' : `.${bound.ref.attribute}`} is a number passed whole, so only to a uint256, not a ${canonicalType(type)}`);
+  }
+  if (bound.kind === 'fields' && type.kind === 'tuple') bound.fields.forEach((field, i) => wholeCardNumbers(path, field, (type.components[i] as AbiParam).type));
+  if (bound.kind === 'items' && (type.kind === 'array' || type.kind === 'fixed-array')) bound.items.forEach((item) => wholeCardNumbers(path, item, type.item));
+  if (bound.kind === 'call' || bound.kind === 'keccak') bound.call.args.forEach((arg, i) => wholeCardNumbers(path, arg, (bound.call.fn.params[i] as AbiParam).type));
 }
 
 function readableRef(path: string, ref: CardRef, readable: Readable): void {
@@ -911,7 +923,7 @@ function outputPath(path: string, raw: unknown, returns: readonly AbiParam[]): n
     params = type.kind === 'tuple' ? type.components : [];
   }
   const { type } = computedOutput({ returns, output }).param;
-  if (type.kind !== 'uint') throw new TemplateError(path, `names a ${canonicalType(type)}; a computed amount is an unsigned integer`);
+  if (type.kind !== 'uint') throw new TemplateError(path, `picks a value of type ${canonicalType(type)}; a computed amount is an unsigned integer`);
   return output;
 }
 
@@ -1099,7 +1111,7 @@ function safeSettings(path: string, raw: unknown, scope: Scope): SafeSettingsEff
   return { add, remove, threshold };
 }
 
-function ruleLeaves(rule: Rule): Rule[] {
+export function ruleLeaves(rule: Rule): Rule[] {
   if (rule.kind === 'fields') return rule.fields.flatMap(ruleLeaves);
   if (rule.kind === 'items') return rule.items.flatMap(ruleLeaves);
   if (rule.kind === 'call' || rule.kind === 'keccak') return rule.call.args.flatMap(ruleLeaves);

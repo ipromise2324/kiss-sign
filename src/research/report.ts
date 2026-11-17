@@ -20,7 +20,7 @@ import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, inScope, loadTemplate, refNames, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, inScope, loadTemplate, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
@@ -176,6 +176,7 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
     const standard = typeof value.standard === 'string' ? STANDARDS.get(value.standard) : undefined;
     if (keys === 'contract,standard') {
       if (standard === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.standard is not one of ${[...STANDARDS.keys()].join(', ')}`);
+      if (standard.only !== undefined && contract.address !== standard.only) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract ${contract.name} is not ${standard.name}, which is the one contract at ${standard.only}`);
       if (!standard.kinds.includes(contract.kind)) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract ${contract.name} is a ${contract.kind}; ${standard.name} applies to ${standard.kinds.join(' and ')} entries`);
       if (!standard.declarations.has(fn.signature)) throw new ReportError(`${DOCS_FILE}: ${standard.name} does not define ${fn.signature}`);
     }
@@ -282,15 +283,16 @@ function namedInRules(template: Template): Set<string> {
     if (view.to.kind === 'contract') names.add(view.to.name);
     view.args.forEach(visit);
   }
-  const read = ({ to, args }: ComputedRead): void => {
-    if (to.kind === 'contract') names.add(to.name);
-    for (const arg of args) {
-      if (arg.kind === 'read') read(arg.read);
-      else visit(arg.rule);
-    }
-  };
-  for (const field of template.card.values()) if (field.kind === 'amount' && field.computed !== undefined) read(field.computed.read);
   return names;
+}
+
+/** The registry contracts a computed field's reads call or pass, which `card new` reads and only the report checks. */
+function namedInReads(template: Template): string[] {
+  const read = ({ to, args }: ComputedRead): string[] => [
+    ...(to.kind === 'contract' ? [to.name] : []),
+    ...args.flatMap((arg) => (arg.kind === 'read' ? read(arg.read) : ruleLeaves(arg.rule).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : [])))),
+  ];
+  return [...template.card.values()].flatMap((field) => (field.kind === 'amount' && field.computed !== undefined ? read(field.computed.read) : []));
 }
 
 export const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
@@ -308,7 +310,7 @@ export const vaultsOf = (subject: Subject, registry: Registry): RegistryEntry[] 
 
 function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   const names = new Set<string>();
-  const roots = subject.kind === 'vault' ? [subject.vault] : [...[...namedInRules(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
+  const roots = subject.kind === 'vault' ? [subject.vault] : [...[...namedInRules(subject.template), ...namedInReads(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
   const named = (entry: RegistryEntry): void => {
     if (names.has(entry.name)) return;
     names.add(entry.name);
@@ -341,8 +343,8 @@ export function entriesOf(subject: Subject, registry: Registry): RegistryEntry[]
 }
 
 /**
- * The entries `verify` compares with their code pin at each signing, as `codeClaims` names them: each contract a rule,
- * a view or a computed field's read names, each entry a card field can name, each a card reference's attribute names, and each these depend on.
+ * The entries `verify` compares with their code pin at each signing, as `codeClaims` names them: each contract a rule
+ * or a view names, each entry a card field can name, each a card reference's attribute names, and each these depend on.
  * An attribute no card reference reads, such as a vault's factory, is checked only by the report.
  */
 export function signedEntryNames(template: Template, registry: Registry): Set<string> {
@@ -428,7 +430,7 @@ const escaped = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\
 export const declarationOf = (standard: Standard, fn: AbiFunction): string => standard.declarations.get(fn.signature) as string;
 
 export function functionOnPage(doc: DocLink): RegExp {
-  if (doc.standard !== undefined) return new RegExp(escaped(declarationOf(doc.standard, doc.fn)));
+  if (doc.standard !== undefined) return new RegExp(`${escaped(declarationOf(doc.standard, doc.fn))}(?![A-Za-z0-9_])`);
   const name = escaped(doc.fn.name);
   const called = `(?<![A-Za-z0-9_$])${name}\\(`;
   const inBackticks = `\`${name}\``;
