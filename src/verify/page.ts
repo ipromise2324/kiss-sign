@@ -1,7 +1,7 @@
 import { percentText, resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { groupedTokens } from '../chain/decimals.ts';
-import { CSS, Html, SYMBOLS, h, icon } from '../research/report-html.ts';
+import { CSS, Html, SYMBOLS, h, icon } from '../html.ts';
 import type { State } from '../research/ledger.ts';
 import { settingsChange } from '../floor/summary.ts';
 import type { Registry } from '../registry.ts';

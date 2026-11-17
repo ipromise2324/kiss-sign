@@ -35,7 +35,7 @@ import {
   ReportError,
   reportArgs,
   pastTxsRecordings,
-  programChanges,
+  programChangeLines,
   provedEntries,
   readInstances,
   readToday,
@@ -51,6 +51,7 @@ import {
 } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
 import { NOTES_FILE, notesChanges, NotesError } from '../src/research/notes.ts';
+import { branchSplit, mixedRefusal } from '../src/verdict-core.ts';
 import type { Language } from '../src/language.ts';
 import { generatedHtml, generatedHtmlPath, htmlDifferences, writeHtmlPages } from '../src/research/report-html.ts';
 import { gatherSourcePages, gatherTips, httpsGet, retryingGet } from '../src/research/source-page.ts';
@@ -140,18 +141,14 @@ function dataAt(ref: string): string {
 
 if (flags.compare) {
   const head = flags.data ?? 'HEAD';
-  let changed: string[] | undefined;
-  try {
-    changed = git('diff', '--name-only', `origin/main...${head}`).toString().split('\n').filter((f) => f !== '');
-  } catch {
-    say(`PROGRAM CHANGE?  git could not compare ${head} with origin/main; check by hand which files the pull request changes`);
+  const split = branchSplit(codeRoot, 'origin/main', head);
+  const refusal = split === undefined ? `git could not compare ${head} with origin/main; fetch both and run this again` : mixedRefusal('origin/main', head, split);
+  if (split === undefined || refusal !== undefined) {
+    console.error(`REFUSED  ${refusal}`);
+    process.exit(1);
   }
-  const program = changed === undefined ? [] : programChanges(changed);
-  if (program.length > 0) {
-    say(`PROGRAM CHANGE  ${head} changes ${program.length} file(s) outside templates/, registry/ and testdata/; review it as a program change, not a template:`);
-    for (const file of program) console.log(`  ${file}`);
-  }
-  for (const file of notesChanges(changed ?? [])) say(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
+  for (const line of programChangeLines(head, split)) say(line);
+  for (const file of notesChanges(split.data)) say(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
   if (flags.data === undefined) say('NOTE  this runs the code checked out here; to check a pull request, run --compare from main with --data <its branch>');
 }
 

@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { branchSplit, mixedRefusal } from '../src/verdict-core.ts';
 
 type Needle = { label: string; text: string };
 
@@ -40,24 +41,41 @@ function git(...args: string[]): string {
   return execFileSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 30 });
 }
 
-function outgoingCommits(rangeArg: string | undefined): string[] {
-  if (rangeArg !== undefined) return git('rev-list', rangeArg).split('\n').filter(Boolean);
-  const commits: string[] = [];
-  for (const line of readFileSync(0, 'utf8').split('\n')) {
-    const localSha = line.trim().split(/\s+/)[1];
-    if (localSha === undefined || ZERO_SHA.test(localSha)) continue;
-    commits.push(...git('rev-list', localSha, '--not', '--remotes').split('\n').filter(Boolean));
+type Branch = { readonly base: string; readonly head: string; readonly name: string };
+
+function outgoing(rangeArg: string | undefined): { readonly commits: string[]; readonly branches: Branch[] } {
+  const revList = (...args: string[]) => git('rev-list', ...args).split('\n').filter(Boolean);
+  if (rangeArg !== undefined) {
+    const [, base, head] = /^(.+?)\.\.\.?(.*)$/.exec(rangeArg) ?? [];
+    if (!base) {
+      console.error(`check-push takes a range such as origin/main..HEAD, not ${rangeArg}.`);
+      process.exit(2);
+    }
+    return { commits: revList(rangeArg), branches: [{ base, head: head || 'HEAD', name: head || 'HEAD' }] };
   }
-  return commits;
+  const pushed = readFileSync(0, 'utf8')
+    .split('\n')
+    .map((line) => line.trim().split(/\s+/))
+    .flatMap(([name, sha]) => (name !== undefined && sha !== undefined && !ZERO_SHA.test(sha) ? [{ name, sha }] : []));
+  return {
+    commits: pushed.flatMap(({ sha }) => revList(sha, '--not', '--remotes')),
+    branches: pushed.map(({ name, sha }) => ({ base: 'origin/main', head: sha, name })),
+  };
 }
 
 const needles = homes().flatMap(needlesIn);
+const { commits, branches } = outgoing(process.argv[2]);
 const findings: string[] = [];
-for (const commit of outgoingCommits(process.argv[2])) {
+for (const commit of commits) {
   const text = git('show', '--format=%B', '--patch', commit).toLowerCase();
   for (const needle of needles) {
     if (text.includes(needle.text.toLowerCase())) findings.push(`${commit.slice(0, 12)} contains ${needle.label}`);
   }
+}
+for (const { base, head, name } of branches) {
+  const split = branchSplit(process.cwd(), base, head);
+  const refusal = split === undefined ? `git could not compare ${name} with ${base}, so it cannot tell whether ${name} changes the verdict core beside a template; fetch ${base} and run this again` : mixedRefusal(base, name, split);
+  if (refusal !== undefined) findings.push(refusal);
 }
 
 if (findings.length > 0) {
