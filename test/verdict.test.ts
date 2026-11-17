@@ -141,3 +141,23 @@ test('a balance finding reads in whole tokens beside its base units when the tok
     [`usdc ${USDC} 變動了 -1.5（-1500000 最小單位），卡片說明的是 至少 0`, `usdc ${USDC} 變動了 -1500000，卡片說明的是 至少 0`],
   );
 });
+
+const silent: readonly { name: string; changes: Partial<AllChecks>; verdict: string; check: string; detail: string }[] = [
+  { name: 'a simulation that could not finish', changes: { simulation: { kind: 'unverifiable', reasons: [] } }, verdict: 'UNVERIFIABLE', check: 'simulation', detail: 'could not finish and gave no detail' },
+  { name: 'unfinished effects', changes: observedWith({ kind: 'unverifiable', reasons: [] }), verdict: 'UNVERIFIABLE', check: 'effects', detail: 'could not finish and gave no detail' },
+  { name: 'mismatched effects', changes: observedWith({ kind: 'mismatch', findings: [] }), verdict: 'MISMATCH', check: 'effects', detail: 'failed and gave no detail' },
+  { name: 'a refused simulated floor', changes: observedWith({ kind: 'match' }, { kind: 'refused', findings: [] }), verdict: 'MISMATCH', check: 'simulated-floor', detail: 'failed and gave no detail' },
+  { name: 'mismatched fields', changes: { fields: { kind: 'mismatch', findings: [] } }, verdict: 'MISMATCH', check: 'fields', detail: 'failed and gave no detail' },
+  { name: 'unfinished fields', changes: { fields: { kind: 'unverifiable', reasons: [] } }, verdict: 'UNVERIFIABLE', check: 'fields', detail: 'could not finish and gave no detail' },
+  { name: 'a weak template', changes: { mutation: { kind: 'weak-template', bound: 12, free: 1, uncaught: [] } }, verdict: 'UNVERIFIABLE', check: 'mutation', detail: 'could not finish and gave no detail' },
+  { name: 'a vault asset() mismatch', changes: { assets: { kind: 'mismatch', findings: [] } }, verdict: 'MISMATCH', check: 'vault-asset', detail: 'failed and gave no detail' },
+  { name: 'an unread contract code', changes: { code: { kind: 'unverifiable', reasons: [] } }, verdict: 'UNVERIFIABLE', check: 'contract-code', detail: 'could not finish and gave no detail' },
+];
+
+for (const row of silent) {
+  test(`${row.name} that names no detail is ${row.verdict}, never MATCH`, () => {
+    const verdict = verdictOf(row.changes);
+    assert.deepEqual(verdict, { kind: row.verdict, causes: [{ check: row.check, details: [row.detail] }] });
+    assert.notEqual(detailText(row.detail, 'zh-TW'), row.detail);
+  });
+}
