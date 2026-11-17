@@ -396,9 +396,9 @@ test("a Vault V2's market adapter is confirmed by the protocol API and, as one p
   assert.ok(!body(page, 'review').rows.some((r) => r.id.startsWith('acuto-usdc-v2-4a57-market-adapter/')), 'the adapter is not for the signer');
   const { open, folded } = body(page, 'addresses');
   const adapter = [...open, ...folded].find((r) => r.name === 'acuto-usdc-v2-4a57-market-adapter') ?? assert.fail('the adapter row');
-  assert.equal(adapter.confirmed, '在 2 個地方確認：協議 API、工廠、它的金庫和它自己的回答');
+  assert.equal(adapter.confirmed, '在 2 個地方確認：協議 API、工廠和它登記的每一項檢查');
   assert.deepEqual(
-    adapter.sources.filter((s) => s.label === '工廠、它的金庫和它自己的回答').map((s) => s.state),
+    adapter.sources.filter((s) => s.label === '工廠和它登記的每一項檢查').map((s) => s.state),
     ['ok'],
   );
 });
@@ -867,7 +867,15 @@ function withComputingFactory(first: string): { readonly of: HtmlInputs; readonl
   const factory = depositInputs.registry.entries.get(name) as RegistryEntry;
   const computing: RegistryEntry = {
     ...factory,
-    instanceCheck: { kind: 'computes-address', fn: parseFunctionSignature('computeToken(address,string)'), args: [{ kind: 'attribute', attribute: 'asset' }, { kind: 'string', value: 'fToken' }] },
+    instanceCheck: [
+      {
+        ask: { kind: 'factory' },
+        fn: parseFunctionSignature('computeToken(address,string)'),
+        args: [{ kind: 'party', party: { kind: 'attribute', attribute: 'asset' } }, { kind: 'string', value: 'fToken' }],
+        answers: { kind: 'party', party: { kind: 'instance' } },
+        word: undefined,
+      },
+    ],
   };
   const swap = (entry: RegistryEntry) => (entry.name === name ? computing : entry);
   const registry = {

@@ -1,0 +1,22 @@
+{
+  "weth": {
+    "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    "kind": "token",
+    "source": "https://docs.uniswap.org/contracts/v3/reference/deployments/ethereum-deployments"
+  },
+  "uniswap-v3-factory": {
+    "address": "0x1F98431c8aD98523631AE4a59f267346ea31F984",
+    "kind": "factory",
+    "source": "https://docs.uniswap.org/contracts/v3/reference/deployments/ethereum-deployments",
+    "instanceCheck": {
+      "function": "getPool(address,address,uint24)",
+      "args": [{ "attribute": "token0" }, { "attribute": "token1" }, { "uint": "500" }]
+    }
+  },
+  "uniswap-v3-usdc-weth-500": {
+    "address": "0x88e6A0c2dDD26FEEb64F039a2c41296FcB3f5640",
+    "kind": "pool",
+    "source": "https://app.uniswap.org/explore/pools/ethereum",
+    "attributes": { "factory": "uniswap-v3-factory", "token0": "usdc", "token1": "weth" }
+  }
+}
