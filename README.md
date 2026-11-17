@@ -80,8 +80,6 @@ You need:
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
 - For the hardened tier, a second computer with [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), its `LANGUAGE` set to the language you gave `init`. It runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. Without it you are on the basic tier, kiss-sign alone. See [Two tiers](docs/design.md#two-tiers).
 
-Turn on branch protection for your fork's `main`, and let your AI push from a GitHub account that cannot approve or merge; until you do, nothing stops an AI that can push from merging.
-
 ### 1. Tell your AI what you want
 
 In Claude Code, from the clone, say it in one sentence: "deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault". If no template covers it yet, the AI builds one with the [kiss-sign skill](.claude/skills/kiss-sign/SKILL.md) and opens a pull request with a generated report.
