@@ -4,8 +4,8 @@
     "zh-TW": "在 Morpho Vault V2 的兩個市場之間搬錢（allocator）"
   },
   "summary": {
-    "en": "As allocator, the Safe calls the vault's `multicall`: it withdraws the amount you type from the source market you pick and puts it into the target market you pick. Funds move only between the vault's markets; it moves none of the Safe's assets.",
-    "zh-TW": "Safe 以 allocator 身分呼叫 vault 的 `multicall`：從你選的來源市場撤出你填的數量，放進你選的目標市場。錢只在 vault 的市場之間移動，不動 Safe 的任何資產。"
+    "en": "As allocator, the Safe calls the vault's `multicall`: it withdraws the amount you type from the source market you pick and puts it into the target market you pick. Funds move only between the vault's markets. The only asset of the Safe that may change is the vault's own shares: `allocate` first accrues the vault's interest, which mints fee shares to the fee recipient, so a Safe that is that recipient gets some.",
+    "zh-TW": "Safe 以 allocator 身分呼叫 vault 的 `multicall`：從你選的來源市場撤出你填的數量，放進你選的目標市場。錢只在 vault 的市場之間移動。Safe 的資產只有 vault 自己的份額可能變：`allocate` 會先結算 vault 的利息，把手續費份額鑄給收費地址，Safe 是收費地址就會收到一些。"
   },
   "protocols": {
     "morpho-blue": {

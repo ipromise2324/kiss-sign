@@ -634,7 +634,9 @@ function effectRow(side: string, effect: Effect, template: Template, registry: R
         ? `at least the card's ${code(effect.amount.field)}`
         : effect.amount.kind === 'positive'
           ? 'more than nothing'
-          : 'its whole balance';
+          : effect.amount.kind === 'any'
+            ? 'any amount, none included'
+            : 'its whole balance';
   const to = effect.to === undefined ? '' : `, to ${refText(effect.to)}`;
   return `| ${side} | ${tokenText(effect.token, template, registry)} | ${amount}${to} |`;
 }

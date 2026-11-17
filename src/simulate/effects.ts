@@ -55,7 +55,8 @@ export type Asset = 'eth' | Address;
 
 /**
  * A change of exactly `change`; of more than `change` when the Safe also gets a `positive` amount, or less when it gives
- * one; or, when the Safe gives `all` of a token, any change that leaves it holding none.
+ * one; of at least `change` when it gets at least a card amount or `any`; or, when the Safe gives `all` of a token, any
+ * change that leaves it holding none.
  */
 export type Expected = { readonly kind: 'exactly' | 'more-than' | 'at-least' | 'less-than'; readonly change: bigint } | { readonly kind: 'all' };
 
@@ -121,7 +122,6 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
       }
       const token = ref.asset;
       const known = changes.get(token);
-      const open = sign > 0n ? 'more-than' : 'less-than';
       if (effect.amount.kind === 'all') {
         if (token === 'eth' || known !== undefined) reasons.push(`the card gives all of ${token} and names it again`);
         else changes.set(token, { kind: 'all' });
@@ -142,7 +142,8 @@ export function expectedChanges(card: ResolvedCard, templates: ReadonlyMap<strin
         }
         continue;
       }
-      if (effect.amount.kind === 'positive') {
+      if (effect.amount.kind === 'positive' || effect.amount.kind === 'any') {
+        const open = effect.amount.kind === 'any' ? 'at-least' : sign > 0n ? 'more-than' : 'less-than';
         if (base.kind !== 'exactly' && base.kind !== open) reasons.push(`the card leaves the change of ${token} open both ways`);
         else if (stated.has(token)) reasons.push(mixed(token));
         else changes.set(token, { kind: open, change: base.change });
