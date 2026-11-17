@@ -1,39 +1,72 @@
 {
-  "title": "移除 Safe 的簽署人",
-  "summary": "Safe 呼叫自己的 `removeOwner`，移除你選的簽署人，並把門檻設成你填的數字。`prevOwner` 是 Safe 內部名單排在他前面的人，程式在鏈上讀 `getOwners` 算出，不用你填。",
+  "title": {
+    "en": "Remove a Safe signer",
+    "zh-TW": "移除 Safe 的簽署人"
+  },
+  "summary": {
+    "en": "The Safe calls its own `removeOwner`, removing the signer you pick and setting the threshold to the number you type. `prevOwner` is the signer just before them in the Safe's internal list. The program computes it by reading `getOwners` on chain, so you do not type it.",
+    "zh-TW": "Safe 呼叫自己的 `removeOwner`，移除你選的簽署人，並把門檻設成你填的數字。`prevOwner` 是 Safe 內部名單排在他前面的人，程式在鏈上讀 `getOwners` 算出，不用你填。"
+  },
   "verdict": {
     "status": "caution",
-    "text": "不動任何資產，但改的是誰能動這個 Safe：確認移除的是對的人，剩下的人數夠用。"
+    "text": {
+      "en": "Moves no asset, but changes who controls this Safe: confirm you are removing the right person and that enough signers remain.",
+      "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：確認移除的是對的人，剩下的人數夠用。"
+    }
   },
   "flow": [],
   "protocols": {},
   "judgments": [
     {
-      "text": "移除後，剩下的簽署人數不能少於門檻。門檻設成剩下的人數時，少一把鑰匙就再也動不了 Safe。",
-      "recommendation": "門檻留一點餘裕：例如剩 3 人時設 2。"
+      "text": {
+        "en": "After the removal, the number of signers left cannot be lower than the threshold. With the threshold set to the number left, losing one key leaves the Safe unable to act ever again.",
+        "zh-TW": "移除後，剩下的簽署人數不能少於門檻。門檻設成剩下的人數時，少一把鑰匙就再也動不了 Safe。"
+      },
+      "recommendation": {
+        "en": "Leave some margin in the threshold: for example, 2 when 3 signers remain.",
+        "zh-TW": "門檻留一點餘裕：例如剩 3 人時設 2。"
+      }
     },
     {
-      "text": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。",
-      "recommendation": "每次只改一項，一項一筆交易。"
+      "text": {
+        "en": "When the Safe web app's \"Manage signers\" changes several things at once, it wraps several calls in a MultiSend. A kiss-sign card accepts only one signer or threshold change, so such a batch transaction gives MISMATCH.",
+        "zh-TW": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。"
+      },
+      "recommendation": {
+        "en": "Change one thing at a time, one transaction per change.",
+        "zh-TW": "每次只改一項，一項一筆交易。"
+      }
     }
   ],
   "reviews": {},
   "entries": {
     "safe-1.3.0": {
-      "role": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼",
+      "role": {
+        "en": "The Safe 1.3.0 contract itself (singleton): Safes of version 1.3.0 run this code through a proxy",
+        "zh-TW": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "text": {
+            "en": "Etherscan: contract name GnosisSafe, deployed by Arachnid's deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+            "zh-TW": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+          },
           "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
           "result": "pass"
         }
       ]
     },
     "safe-1.4.1": {
-      "role": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼",
+      "role": {
+        "en": "The Safe 1.4.1 contract itself (singleton): Safes of version 1.4.1 run this code through a proxy",
+        "zh-TW": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "text": {
+            "en": "Etherscan: contract name Safe, deployed by the Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+            "zh-TW": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+          },
           "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
           "result": "pass"
         }
@@ -41,8 +74,17 @@
     }
   },
   "fields": {
-    "1.removeOwner.prevOwner": "Safe 把簽署人存成一條鏈；這是排在被移除者前面的那個人，第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。",
-    "1.removeOwner.owner": "要移除的簽署人。",
-    "1.removeOwner._threshold": "移除後的門檻，不能大於剩下的人數。"
+    "1.removeOwner.prevOwner": {
+      "en": "The Safe stores its signers as a linked list. This is the signer just before the one removed; the one before the first signer is 0x0000000000000000000000000000000000000001. If it is wrong, the transaction fails (GS205).",
+      "zh-TW": "Safe 把簽署人存成一條鏈；這是排在被移除者前面的那個人，第一個人的前面是 0x0000000000000000000000000000000000000001。填錯時交易失敗（GS205）。"
+    },
+    "1.removeOwner.owner": {
+      "en": "The signer to remove.",
+      "zh-TW": "要移除的簽署人。"
+    },
+    "1.removeOwner._threshold": {
+      "en": "The threshold after the removal. It cannot be greater than the number of signers left.",
+      "zh-TW": "移除後的門檻，不能大於剩下的人數。"
+    }
   }
 }

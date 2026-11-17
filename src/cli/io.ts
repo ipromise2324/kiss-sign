@@ -8,6 +8,8 @@ export type Io = {
   readonly platform: NodeJS.Platform;
   readonly stdout: (text: string) => void;
   readonly stderr: (text: string) => void;
+  /** True when stdout is a terminal that takes colour; absent or false prints plain text. */
+  readonly color?: boolean;
   /** Undefined when stdin is not a terminal, so no key can arrive through a pipe or a chat. */
   readonly readSecret: ((question: string) => Promise<string | undefined>) | undefined;
   /** One line typed at the terminal, or undefined at the end of input. Undefined when stdin is not a terminal, so only the signer can answer. */

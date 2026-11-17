@@ -5,7 +5,7 @@ description: Drive the kiss-sign CLI the way a signer does and capture proof - a
 
 # Verify kiss-sign
 
-kiss-sign is a CLI (`bin/kiss-sign <command>`, the same as `pnpm kiss-sign <command>`) plus research scripts (`pnpm report`, `pnpm history`, ...). The signer touches three surfaces: terminal prompts (`card new`, `card seal`, `template approve`, `book add`, each refusing anything but a TTY), terminal output (`verify`, `replay`, `init`), and HTML pages it writes (`verify`'s page beside the verdict file, and each template's `report.generated.html`). This skill drives all three from an agent and keeps the evidence.
+kiss-sign is a CLI (`bin/kiss-sign <command>`, the same as `pnpm kiss-sign <command>`) plus research scripts (`pnpm report`, `pnpm history`, ...). The signer touches three surfaces: terminal prompts (`card new`, `card seal`, `template approve`, `book add`, each refusing anything but a TTY), terminal output (`verify`, `replay`, `init`), and HTML pages it writes (`verify`'s page beside the verdict file, and each template's `report.generated.en.html` and `report.generated.zh-TW.html`). This skill drives all three from an agent and keeps the evidence.
 
 The helpers are in `.claude/skills/verify-kiss-sign/bin/`. Call them by path from the repository root (below, `$V` is that folder):
 
@@ -29,7 +29,7 @@ There is no server. Launch means an isolated home, and, for `verify`, a plain cl
 eval "$("$V/new-run.sh" <run> <safe of a fixture> --clone)"
 ```
 
-It creates `${KSV_ROOT:-$TMPDIR/kiss-sign-verify}/<run>/` with `home/` (initialised by `bin/kiss-sign init --safe <safe>`, holding only `ALCHEMY_API_KEY` and `ETHERSCAN_API_KEY`), `evidence/` (or `$KSV_EVIDENCE` if set), and with `--clone` a fresh `git clone` of this checkout's `origin` URL plus `pnpm install` in `clone/`. It exports `KSV_RUN`, `KSV_DIR`, `KSV_EVIDENCE`, `KSV_CHECKOUT` (the clone, or this checkout without `--clone`) and `KISS_SIGN_HOME`. It refuses a run name whose `home/` already exists.
+It creates `${KSV_ROOT:-$TMPDIR/kiss-sign-verify}/<run>/` with `home/` (initialised by `bin/kiss-sign init --safe <safe> --language ${KSV_LANGUAGE:-en}`, so set `KSV_LANGUAGE=zh-TW` for a Traditional Chinese home, holding only `ALCHEMY_API_KEY` and `ETHERSCAN_API_KEY`), `evidence/` (or `$KSV_EVIDENCE` if set), and with `--clone` a fresh `git clone` of this checkout's `origin` URL plus `pnpm install` in `clone/`. It exports `KSV_RUN`, `KSV_DIR`, `KSV_EVIDENCE`, `KSV_CHECKOUT` (the clone, or this checkout without `--clone`) and `KISS_SIGN_HOME`. It refuses a run name whose `home/` already exists.
 
 Ready means `key list` prints `set (file)` for alchemy (it prints both to stderr during `new-run.sh`).
 
@@ -68,7 +68,7 @@ Prompts need a real terminal. `term.sh` gives each run its own tmux server (sock
 "$V/term.sh" save  "$KSV_RUN" "$KSV_EVIDENCE/card-new.txt"
 ```
 
-Stable prompt strings to wait on: `<field>: type its number (1-N): `, `amount (<token> <address>, <n> decimals): `, `Is this what you mean to do? [y/N] ` (card new and card seal), `Approve <id> as merged in that commit? [y/N] `, `Add this entry? [y/N] `. tmux drops trailing spaces, so end a prompt regex with ` *$`, not `: $`. Answers are literal text: a number, an exact name, or a whole-token amount such as `1,000,611.448606`.
+Stable prompt strings to wait on: `<field>: type its number (1-N): `, `amount (whole <token>, <n> decimals): ` (`, or max` before the `)` for a field that takes `max`), `Is this what you mean to do? [y/N] ` (card new and card seal), `Approve <id> as merged in that commit? [y/N] `, `Add this entry? [y/N] `. tmux drops trailing spaces, so end a prompt regex with ` *$`, not `: $`. Answers are literal text: a number, an exact name, or a whole-token amount such as `1,000,611.448606`.
 
 Commands that ask nothing (`verify`, `replay`, `key list`, `book list`, `pnpm report`) run directly with `KISS_SIGN_HOME` exported; no tmux needed.
 

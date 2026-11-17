@@ -12,6 +12,7 @@ import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 import { replayTransport } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
+import type { Language } from '../src/language.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -38,7 +39,7 @@ function write(path: string, text: string): string {
  */
 const VAULT = (JSON.parse(fixture.inputs.card.text) as { operations: { values: { vault: string } }[] }).operations[0]!.values.vault;
 
-function setUp(approved: string | null = template.approved, reported = true) {
+function setUp(approved: string | null = template.approved, reported = true, language?: Language) {
   const base = mkdtempSync(join(tmpdir(), 'kiss-sign-verify-'));
   const origin = join(base, 'origin.git');
   const repo = join(base, 'repo');
@@ -55,7 +56,7 @@ function setUp(approved: string | null = template.approved, reported = true) {
   git(repo, 'remote', 'set-url', 'origin', 'git@github.com:signer/kiss-sign.git');
   git(repo, 'config', 'core.sshCommand', ssh);
   const home = join(base, 'home');
-  write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: fixture.inputs.safe, repo: 'github.com/signer/kiss-sign' }));
+  write(join(home, 'config.json'), JSON.stringify({ chainId: 1, safe: fixture.inputs.safe, repo: 'github.com/signer/kiss-sign', language }));
   write(join(home, 'cards', `${fixture.inputs.card.hash}.json`), fixture.inputs.card.text);
   if (approved !== null) write(join(home, 'approved-templates.json'), JSON.stringify({ [template.id]: approved }));
   return { base, repo, home };
@@ -81,8 +82,8 @@ async function run(argv: string[], repo: string, home: string) {
   return { code, stdout, stderr };
 }
 
-async function verifyTx(tx: unknown, approved?: string | null, reported?: boolean) {
-  const { base, repo, home } = setUp(approved, reported);
+async function verifyTx(tx: unknown, approved?: string | null, reported?: boolean, language?: Language) {
+  const { base, repo, home } = setUp(approved, reported, language);
   const file = write(join(base, 'tx.json'), JSON.stringify(tx));
   const result = await run(['verify', '--card', fixture.inputs.card.hash, '--tx', file], repo, home);
   const names = readdirSync(join(home, 'verdicts'));
@@ -101,7 +102,15 @@ test('the Morpho deposit verifies to MATCH, prints its safeTxHash, and writes a 
   assert.equal(verdicts.length, 1);
   assert.equal(pages.length, 1);
   const page = verdicts[0]!.replace(/\.json$/, '.html');
-  assert.equal(stdout, `MATCH\n  safeTxHash  ${chain.transactionHash}\nVerdict file: ${verdicts[0]}\nkiss-sign verify page, nonce ${service.nonce}, MATCH, with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\nOpen it with: xdg-open ${page}\n`);
+  const quoted = (text: string) => text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+  assert.match(
+    stdout,
+    new RegExp(
+      `^┌─ MATCH · the transaction fits your card ─+\\n│ nonce +${service.nonce}\\n│ safeTxHash  ${chain.transactionHash}\\n└─+\\n` +
+        `The page shows: the domain hash, the message hash and the checklist to compare with check\\.sh\\n  ${quoted(page)}\\nThe verdict file:\\n  ${quoted(verdicts[0]!)}\\n` +
+        `Open the page with:\\n  xdg-open ${quoted(page)}\\n$`,
+    ),
+  );
   const [domain, message, safeTxHash] = ['tx-domain', 'tx-message', 'tx-safeTxHash'].map((id) => rowValue(pages[0]!, id));
   assert.equal(domain, chain.domainSeparator);
   assert.equal(safeTxHash, chain.transactionHash);
@@ -134,11 +143,12 @@ test('the verdict file verify writes replays to the same verdict', async () => {
   const { repo, home, verdicts } = await verifyTx(service);
   const replayed = await run(['replay', verdicts[0]!], repo, home);
   assert.equal(replayed.code, 0, replayed.stderr);
-  assert.match(replayed.stdout, /^MATCH\n[\s\S]*Same verdict as recorded\.\n$/);
+  assert.match(replayed.stdout, /^┌─ MATCH · replay of a recorded verdict ─+\n[\s\S]*\n└─+\nSame verdict as recorded\.\n$/);
   assert.doesNotMatch(replayed.stdout, /比對清單|呼叫/);
 });
 
-test('a copy with its receiver changed is MISMATCH, names the check and the field, and shows no hashes', async () => {
+/** The deposit as the Safe web app's JSON, with its receiver changed from the Safe to 0x1111…. */
+function receiverChanged(): Record<string, unknown> {
   const { safe: _safe, safeTxHash: _hash, ...rest } = service;
   const fields = ['to', 'value', 'data', 'operation', 'safeTxGas', 'baseGas', 'gasPrice', 'gasToken', 'refundReceiver', 'nonce'];
   const webApp = Object.fromEntries(Object.entries(rest).filter(([key]) => fields.includes(key)));
@@ -146,19 +156,31 @@ test('a copy with its receiver changed is MISMATCH, names the check and the fiel
   const data = String(webApp.data).toLowerCase();
   assert.equal(data.split(safe).length, 2, 'the Safe appears once in the deposit, as its receiver');
   webApp.data = data.replace(safe, '11'.repeat(20));
-  const { code, stdout, pages, verdicts } = await verifyTx(webApp);
+  return webApp;
+}
+
+test('a copy with its receiver changed is MISMATCH, names the check and the field, and shows no hashes', async () => {
+  const { code, stdout, pages, verdicts } = await verifyTx(receiverChanged());
   assert.equal(code, 1);
-  assert.match(stdout, /^MISMATCH\n/);
+  assert.match(stdout, /^┌─ MISMATCH · the transaction does not fit your card ─+\n/);
   const file = JSON.parse(readFileSync(verdicts[0]!, 'utf8')) as VerdictFile;
   for (const hash of Object.values(file.result.hashes)) {
     assert.doesNotMatch(stdout, new RegExp(hash.slice(2)));
     assert.doesNotMatch(pages[0]!, new RegExp(hash.slice(2)));
   }
-  assert.match(stdout, /fields: multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}/);
+  assert.match(stdout.replaceAll(/\n│ {9,}/g, ' '), /│ fields +multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}\n/);
   assert.doesNotMatch(stdout, /domain hash|message hash|safeTxHash/);
+  assert.match(pages[0]!, /<html lang="en">/);
+  assert.match(pages[0]!, /MISMATCH: the transaction does not fit your card\. Do not sign/);
+  assert.match(pages[0]!, /No hash is shown\. Do not sign this transaction\./);
+  assert.doesNotMatch(pages[0]!, /比對清單 -->|domain hash|message hash/);
+});
+
+test('a signer who chose zh-TW at init gets the verify page in Traditional Chinese', async () => {
+  const { pages } = await verifyTx(receiverChanged(), undefined, undefined, 'zh-TW');
+  assert.match(pages[0]!, /<html lang="zh-Hant">/);
   assert.match(pages[0]!, /MISMATCH：交易和你的卡片不符，不要簽/);
   assert.match(pages[0]!, /不顯示任何 hash。不要簽這筆交易。/);
-  assert.doesNotMatch(pages[0]!, /比對清單 -->|domain hash|message hash/);
 });
 
 test('replay of a recorded MISMATCH reproduces it, says so, and exits 0', async () => {
@@ -166,19 +188,19 @@ test('replay of a recorded MISMATCH reproduces it, says so, and exits 0', async 
   assert.equal(code, 1);
   const replayed = await run(['replay', verdicts[0]!], repo, home);
   assert.equal(replayed.code, 0, replayed.stderr);
-  assert.match(replayed.stdout, /^MISMATCH\n[\s\S]*No hashes are shown\. Do not sign this transaction\.\nSame verdict as recorded\.\n$/);
+  assert.match(replayed.stdout, /^┌─ MISMATCH · replay of a recorded verdict ─+\n[\s\S]*│ No hashes are shown\. Do not sign this transaction\.\n└─+\nSame verdict as recorded\.\n$/);
 });
 
 test('a template that differs from its approved hash is MISMATCH', async () => {
   const { code, stdout } = await verifyTx(service, `0x${'00'.repeat(32)}`);
   assert.equal(code, 1);
-  assert.match(stdout, /^MISMATCH\n  template-approval: morpho\/vault-deposit hashes to 0x[0-9a-f]{64}, the approved hash is 0x0{64}\n/);
+  assert.match(stdout.replaceAll(/\n│ {9,}/g, ' '), /^┌─ MISMATCH [^\n]*\n│ nonce +\d+\n│ template-approval  morpho\/vault-deposit hashes to 0x[0-9a-f]{64}, the approved hash is 0x0{64}\n/);
 });
 
 test('a template never approved is UNVERIFIABLE', async () => {
   const { code, stdout } = await verifyTx(service, null);
   assert.equal(code, 1);
-  assert.match(stdout, /^UNVERIFIABLE\n  template-approval: morpho\/vault-deposit was never approved/);
+  assert.match(stdout, /^┌─ UNVERIFIABLE [^\n]*\n│ nonce +\d+\n│ template-approval  morpho\/vault-deposit was never approved/);
 });
 
 /** Every socket connection attempted while `run` runs, refused before it reaches the network. */
@@ -214,6 +236,14 @@ test('replay of the recorded deposit gives MATCH from the verdict file alone and
   assert.match(result!.stdout, /Same verdict as recorded/);
 });
 
+test('replay of a CoW order says the assets the order moves change later, and prints the same box verify does, with no call list', async () => {
+  const empty = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const { code, stdout, stderr } = await run(['replay', join(ROOT, 'testdata', 'verify', 'cow-swap-approve.json')], empty, empty);
+  assert.equal(code, 0, stderr);
+  assert.match(stdout.replace(/\n│ */g, ' '), /This transaction signs only the digest of a message \(Order\)\. The assets that message moves change later, when someone acts on it, not in this transaction\./);
+  assert.doesNotMatch(stdout, /move no asset|moves an asset/);
+});
+
 test('replay refuses a verdict file whose card was edited', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
   const edited = { ...fixture, inputs: { ...fixture.inputs, card: { ...fixture.inputs.card, text: fixture.inputs.card.text.replace('1800000000180', '1800000000181') } } };
@@ -229,7 +259,7 @@ test('replay reports a recorded verdict this program does not reproduce', async 
   const path = write(join(dir, 'claimed.json'), recordingText(claimed));
   const { code, stdout, stderr } = await run(['replay', path], dir, dir);
   assert.equal(code, 1);
-  assert.match(stdout, /^MATCH\n/);
+  assert.match(stdout, /^┌─ MATCH · replay of a recorded verdict ─+\n/);
   assert.match(stderr, /the recorded verdict was MISMATCH; this program now gives another result/);
 });
 

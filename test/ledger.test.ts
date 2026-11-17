@@ -379,7 +379,7 @@ test('an empty address source is grey; the address result alone puts the entry i
   assert.deepEqual(
     sourcesOf(ledger, ENTRY).map((s) => [s.source, s.state, s.phrase, s.link, s.site]),
     [
-      ['page', 'na', '讀不到', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
+      ['page', 'na', 'unread', SOURCE, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
       ['api', 'ok', undefined, API.url, { state: 'ok', phrase: undefined, link: 'https://defillama.com/protocol/proto', places: [{ kind: 'defillama', id: 'proto' }] }],
       ['coingecko', 'ok', undefined, 'https://www.coingecko.com/en/coins/vault-coin', undefined],
     ],
@@ -425,7 +425,7 @@ test('a second page is its own row, each page with its own site under it, and no
   assert.deepEqual(
     sourcesOf(ledgerOf({ entry, protocol: other }), entry).map((s) => [s.source, s.state, s.link, s.site?.state, s.site?.phrase]),
     [
-      ['page', 'ok', SOURCE, 'bad', '是另一個網站'],
+      ['page', 'ok', SOURCE, 'bad', 'other-site'],
       ['more.1', 'ok', GITHUB, 'ok', undefined],
       ['coingecko', 'ok', 'https://www.coingecko.com/en/coins/vault-coin', undefined, undefined],
     ],
@@ -434,12 +434,12 @@ test('a second page is its own row, each page with its own site under it, and no
 
 test('an address source line names another address, and the site under it a differing site or nothing to compare', () => {
   const line = (change: Partial<Setup>, source: string) => sourcesOf(ledgerOf(change), change.entry ?? ENTRY).find((s) => s.source === source);
-  assert.equal(line({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'page')?.site?.phrase, '是另一個網站');
+  assert.equal(line({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'page')?.site?.phrase, 'other-site');
   assert.equal(line({ protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'page')?.phrase, undefined, 'the page still showed the address');
-  assert.equal(line({ entry: { ...ENTRY, apiSource: API }, api: { kind: 'answered', json: { address: OTHER } } }, 'api')?.phrase, '是另一個地址');
-  assert.equal(line({ protocol: { ...BASE.protocol!, url: undefined } }, 'page')?.site?.phrase, '沒資料可比');
+  assert.equal(line({ entry: { ...ENTRY, apiSource: API }, api: { kind: 'answered', json: { address: OTHER } } }, 'api')?.phrase, 'other-address');
+  assert.equal(line({ protocol: { ...BASE.protocol!, url: undefined } }, 'page')?.site?.phrase, 'nothing-to-compare');
   const api = line({ entry: { ...ENTRY, apiSource: API }, protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, 'api');
-  assert.deepEqual([api?.state, api?.site?.state, api?.site?.phrase], ['ok', 'bad', '是另一個網站'], "the API still answered the address on a site that is not the protocol's");
+  assert.deepEqual([api?.state, api?.site?.state, api?.site?.phrase], ['ok', 'bad', 'other-site'], "the API still answered the address on a site that is not the protocol's");
 });
 
 test('confidence: high with an official page among two confirmations and a span, medium without the page, low for the signer', () => {

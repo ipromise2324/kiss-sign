@@ -44,7 +44,7 @@ function shown(fixture: string, card: Card, book: Record<string, Address> = {}):
 }
 
 const rowsText = (tree: CallTree): string =>
-  checklist(tree)
+  checklist(tree, 'zh-TW')
     .map((line) => (line.kind === 'group' ? `[${line.id}] ${line.title}` : `${line.id} ${line.value} | ${line.name}`))
     .join('\n');
 
@@ -98,7 +98,7 @@ test('a Bundler3 deposit lists its bundle calls and the trailers the template al
   assert.match(text, /\nC3-extra 0x6915469b25afea44 \| 模板允許這個呼叫最多 12 bytes，這裡 8 bytes，在範圍內\n/);
   assert.match(text, /\n\[C3\.1\] Bundler3 呼叫 1\/2\nC3\.1-to 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0 \| general-adapter-1\nC3\.1-value 0 \| \n/);
   assert.match(text, /\n\[C3\.2\] Bundler3 呼叫 2\/2\n/);
-  assert.match(text, /\nC3\.2-a3 1054633213541066 \| \n/);
+  assert.match(text, /\nC3\.2-a3 1054633213541066 \| 每股價格上限\n/);
   assert.equal(text.match(/ 10001000000 \| = 10001 usdc/g)?.length, 3);
 });
 

@@ -115,7 +115,7 @@ Propose the transaction in the Safe web app as usual. Then, on your computer:
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` and `jq`, nothing else. On `MATCH`, both pages show the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list, and the one exception below. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. `check.sh` does not yet know Uniswap's `execute`, CoW's `setPreSignature` or a Morpho Vault V2's `multicall(bytes[])`: for those it shows the call's raw data with a warning, so that call's rows differ from `verify`'s. For that call only, compare the hashes and the contract called; what the call does, such as a swap's recipient and minimum out or a vault's new cap, rests on `verify` alone.
+On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` and `jq`, nothing else. On `MATCH`, both pages show the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. Some bytes inside a call are not a call themselves, such as a Uniswap swap's inputs, a CoW order's UID or the market data in a Morpho Vault V2 cap's id. `check.sh` shows each raw with one warning and the rows still match; what those bytes say, such as a swap's recipient and minimum out, rests on `verify` alone.
 
 ![The verify page (MATCH, every check passed) and the check.sh page side by side, with the same hashes and the same calls row by row](docs/readme/side-by-side.png)
 
@@ -123,7 +123,7 @@ On the second computer, `check.sh <nonce>` fetches the same transaction, compute
 
 Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or a vault, send a small amount first.
 
-The report and both pages are in Traditional Chinese. The terminal, the code and the docs are in English.
+The report and `verify`'s page are in English, or in Traditional Chinese after `pnpm kiss-sign init --language zh-TW`. The comparison list's row labels stay in Traditional Chinese in both languages, as `check.sh`'s page writes them, so the two pages compare byte for byte. The terminal, the code and the docs are in English.
 
 ### Add your own operation
 

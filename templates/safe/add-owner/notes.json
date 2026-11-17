@@ -1,39 +1,72 @@
 {
-  "title": "新增 Safe 的簽署人",
-  "summary": "Safe 呼叫自己的 `addOwnerWithThreshold`，把你選的地址加成簽署人，並把門檻設成你填的數字。卡片只問新簽署人和門檻，跟 Safe web app 新增簽署人時問的一樣。",
+  "title": {
+    "en": "Add a Safe signer",
+    "zh-TW": "新增 Safe 的簽署人"
+  },
+  "summary": {
+    "en": "The Safe calls its own `addOwnerWithThreshold`, adding the address you pick as a signer and setting the threshold to the number you type. The card asks only for the new signer and the threshold, the same as the Safe web app asks when it adds a signer.",
+    "zh-TW": "Safe 呼叫自己的 `addOwnerWithThreshold`，把你選的地址加成簽署人，並把門檻設成你填的數字。卡片只問新簽署人和門檻，跟 Safe web app 新增簽署人時問的一樣。"
+  },
   "verdict": {
     "status": "caution",
-    "text": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。"
+    "text": {
+      "en": "Moves no asset, but changes who controls this Safe: check the new signer's address against a source outside the chat.",
+      "zh-TW": "不動任何資產，但改的是誰能動這個 Safe：新簽署人的地址要從聊天以外的來源核對。"
+    }
   },
   "flow": [],
   "protocols": {},
   "judgments": [
     {
-      "text": "新簽署人之後就能簽 Safe 的交易；門檻太低時，少數幾把鑰匙就能動全部資產。verify 只檢查交易做的跟卡片一樣，不判斷這個人該不該當簽署人。",
-      "recommendation": "加進地址簿前，用聊天以外的管道跟本人確認完整地址；門檻維持在你原本的安全水準。"
+      "text": {
+        "en": "From then on the new signer can sign the Safe's transactions. If the threshold is too low, a few keys can move all the assets. verify only checks that the transaction does what the card says; it does not judge whether this person should be a signer.",
+        "zh-TW": "新簽署人之後就能簽 Safe 的交易；門檻太低時，少數幾把鑰匙就能動全部資產。verify 只檢查交易做的跟卡片一樣，不判斷這個人該不該當簽署人。"
+      },
+      "recommendation": {
+        "en": "Before you add it to the address book, confirm the full address with the person through a channel outside the chat. Keep the threshold at your current level of safety.",
+        "zh-TW": "加進地址簿前，用聊天以外的管道跟本人確認完整地址；門檻維持在你原本的安全水準。"
+      }
     },
     {
-      "text": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。",
-      "recommendation": "每次只改一項，一項一筆交易。"
+      "text": {
+        "en": "When the Safe web app's \"Manage signers\" changes several things at once, it wraps several calls in a MultiSend. A kiss-sign card accepts only one signer or threshold change, so such a batch transaction gives MISMATCH.",
+        "zh-TW": "Safe web app 的「Manage signers」一次改好幾項時，會把幾個呼叫包進 MultiSend 送出；kiss-sign 一張卡片只接受一項簽署人或門檻的變更，這種批次交易會 MISMATCH。"
+      },
+      "recommendation": {
+        "en": "Change one thing at a time, one transaction per change.",
+        "zh-TW": "每次只改一項，一項一筆交易。"
+      }
     }
   ],
   "reviews": {},
   "entries": {
     "safe-1.3.0": {
-      "role": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼",
+      "role": {
+        "en": "The Safe 1.3.0 contract itself (singleton): Safes of version 1.3.0 run this code through a proxy",
+        "zh-TW": "Safe 1.3.0 的合約本體（singleton）：1.3.0 版的 Safe 透過 proxy 執行這份程式碼"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "text": {
+            "en": "Etherscan: contract name GnosisSafe, deployed by Arachnid's deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+            "zh-TW": "Etherscan：合約名 GnosisSafe，由 Arachnid 的 deterministic deployment proxy 0x4e59b44847b379578588920cA78FbF26c0B4956C 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+          },
           "url": "https://etherscan.io/address/0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552#code",
           "result": "pass"
         }
       ]
     },
     "safe-1.4.1": {
-      "role": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼",
+      "role": {
+        "en": "The Safe 1.4.1 contract itself (singleton): Safes of version 1.4.1 run this code through a proxy",
+        "zh-TW": "Safe 1.4.1 的合約本體（singleton）：1.4.1 版的 Safe 透過 proxy 執行這份程式碼"
+      },
       "sources": [
         {
-          "text": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+          "text": {
+            "en": "Etherscan: contract name Safe, deployed by the Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7, transaction sent by 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26",
+            "zh-TW": "Etherscan：合約名 Safe，由 Safe Singleton Factory 0x914d7Fec6aaC8cd542e72Bca78B30650d45643d7 部署，交易發起人 0xd7df5bf3b8d2bd159664df54a30101d7faf6ca26"
+          },
           "url": "https://etherscan.io/address/0x41675C099F32341bf84BFc5382aF534df5C7461a#code",
           "result": "pass"
         }
@@ -41,7 +74,13 @@
     }
   },
   "fields": {
-    "1.addOwnerWithThreshold.owner": "要加的簽署人。不能是零地址、0x…01 或 Safe 自己，也不能已經是簽署人，否則交易失敗。",
-    "1.addOwnerWithThreshold._threshold": "加完之後的門檻。跟原本一樣時 Safe 不改門檻；不同時改成這個數，必須介於 1 和簽署人數之間。"
+    "1.addOwnerWithThreshold.owner": {
+      "en": "The signer to add. It cannot be the zero address, 0x…01 or the Safe itself, and cannot already be a signer, or the transaction fails.",
+      "zh-TW": "要加的簽署人。不能是零地址、0x…01 或 Safe 自己，也不能已經是簽署人，否則交易失敗。"
+    },
+    "1.addOwnerWithThreshold._threshold": {
+      "en": "The threshold after the addition. If it equals the current one, the Safe leaves the threshold as it is. Otherwise the threshold becomes this number, which must be between 1 and the number of signers.",
+      "zh-TW": "加完之後的門檻。跟原本一樣時 Safe 不改門檻；不同時改成這個數，必須介於 1 和簽署人數之間。"
+    }
   }
 }
