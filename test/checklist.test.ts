@@ -9,6 +9,8 @@ import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import { LANGUAGES } from '../src/language.ts';
+import type { Language } from '../src/language.ts';
 import { checklist, checklistHtml, checklistLineHtml } from '../src/verify/checklist.ts';
 import { callTree } from '../src/verify/expected.ts';
 import { verdictPage } from '../src/verify/page.ts';
@@ -78,14 +80,25 @@ const PINNED: readonly { readonly fixture: string; readonly card: Card; readonly
   },
 ];
 
+const namesAside = (block: string): string => `${block.replace(/<span class="nm">.*<\/span><\/div>$/gm, '</div>')}\n`;
+const checkSh = (language: Language, fixture: string): string => readFileSync(join(ROOT, 'testdata', 'checklist', language, `${fixture}.checklist.html`), 'utf8');
+
 for (const { fixture, card, book } of PINNED) {
-  test(`the 比對清單 of ${fixture} is, byte for byte, the block check.sh writes for it, names aside`, () => {
-    const { tree } = treeOf(card, fixture, book);
-    const ours = `${checklistHtml(checklist(tree, 'zh-TW')).replace(/<span class="nm">.*<\/span><\/div>$/gm, '</div>')}\n`;
-    const theirs = readFileSync(join(ROOT, 'testdata', 'checklist', `${fixture}.checklist.html`), 'utf8');
-    assert.equal(ours, theirs);
-  });
+  for (const language of LANGUAGES) {
+    test(`the ${language} 比對清單 of ${fixture} is, byte for byte, the block check.sh writes for it in ${language}, names aside`, () => {
+      const { tree } = treeOf(card, fixture, book);
+      assert.equal(namesAside(checklistHtml(checklist(tree, language), language)), checkSh(language, fixture));
+    });
+  }
 }
+
+test('a page in one language and check.sh in the other differ in every row with words, so the signer stops', () => {
+  const { tree } = treeOf(CARD);
+  const ours = namesAside(checklistHtml(checklist(tree, 'en'), 'en')).split('\n');
+  const theirs = checkSh('zh-TW', FIXTURE).split('\n');
+  const differing = ours.filter((line, i) => line !== theirs[i]).map((line) => /<span class="id">([^<]+)<\/span>/.exec(line)?.[1]);
+  assert.deepEqual(differing, ['tx', 'C1', 'C1-value', 'C1-fn', 'C1-a1', 'C2', 'C2-value', 'C2-fn', 'C2-a1', 'C2-a2', 'C2-extra', 'C3', 'C3-value', 'C3-fn', 'C3-a1', 'C3-extra', 'C3.1', 'C3.1-value', 'C3.1-fn', 'C3.1-a1', 'C3.1-a2', 'C3.1-a3', 'C3.2', 'C3.2-value', 'C3.2-fn', 'C3.2-a1', 'C3.2-a2', 'C3.2-a3', 'C3.2-a4', 'end', 'end-count']);
+});
 
 test('the -extra row names the template\'s allowance as a program fact and its reason as AI text, its value as check.sh writes it', () => {
   const { tree, card, templates, decimals } = treeOf(CARD);
@@ -115,7 +128,7 @@ test('the -extra row names the template\'s allowance as a program fact and its r
 });
 
 test('a row value from outside is escaped as jq @html escapes it, and characters that hide or reorder text are replaced', () => {
-  const line = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: '"><img src=x onerror=alert(1)><script>\u202eevil\u200f\u0007', name: "it's\u2066" });
+  const line = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: '"><img src=x onerror=alert(1)><script>\u202eevil\u200f\u0007', name: "it's\u2066" }, 'zh-TW');
   assert.equal(
     line,
     '<div class="r"><span class="id">C1-a1</span><span class="k">引數 1</span><span class="v">&quot;&gt;&lt;img src=x onerror=alert(1)&gt;&lt;script&gt;�evil��</span><span class="nm">it&apos;s�</span></div>',
@@ -123,12 +136,15 @@ test('a row value from outside is escaped as jq @html escapes it, and characters
 });
 
 test('a long value folds to its length and keccak256, with the full text inside a closed details element', () => {
-  const bytes = checklistLineHtml({ kind: 'row', id: 'C1-data', key: 'data', value: `0x${'ab'.repeat(33)}`, name: '' });
+  const bytes = checklistLineHtml({ kind: 'row', id: 'C1-data', key: 'data', value: `0x${'ab'.repeat(33)}`, name: '' }, 'zh-TW');
   assert.match(bytes, /<details><summary>33 bytes，keccak256 0x[0-9a-f]{64}<\/summary><span class="full">0x(ab){33}<\/span><\/details>/);
-  const exact = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: `0x${'ab'.repeat(32)}`, name: '' });
+  const exact = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: `0x${'ab'.repeat(32)}`, name: '' }, 'zh-TW');
   assert.doesNotMatch(exact, /<details>/);
-  const text = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: `[${'1, '.repeat(40)}1]`, name: '' });
+  const text = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: `[${'1, '.repeat(40)}1]`, name: '' }, 'zh-TW');
   assert.match(text, /<summary>123 字元，keccak256 0x[0-9a-f]{64}<\/summary>/);
+  const english = (value: string) => checklistLineHtml({ kind: 'row', id: 'C1-a1', key: 'argument 1', value, name: '' }, 'en');
+  assert.match(english(`0x${'ab'.repeat(33)}`), /<summary>33 bytes, keccak256 0x[0-9a-f]{64}<\/summary>/);
+  assert.match(english(`[${'1, '.repeat(40)}1]`), /<summary>123 characters, keccak256 0x[0-9a-f]{64}<\/summary>/);
 });
 
 test('the verify page holds no script, loads nothing, and shows text from a cause as inert text', () => {
@@ -254,7 +270,7 @@ test('an amount whose token decimals() was not read shows its base units and say
 
 test('format characters, tag characters and variation selectors become U+FFFD too', () => {
   const hidden = [0xad, 0x34f, 0x115f, 0x180e, 0x2028, 0x206a, 0x3164, 0xfe0f, 0xffa0, 0xfffb, 0xe0041, 0xe0100].map((c) => String.fromCodePoint(c)).join('');
-  const line = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: `a${hidden}b`, name: '' });
+  const line = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: `a${hidden}b`, name: '' }, 'en');
   assert.match(line, new RegExp(`<span class="v">a${'\ufffd'.repeat(12)}b</span>`, 'u'));
 });
 
