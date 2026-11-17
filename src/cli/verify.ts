@@ -9,7 +9,7 @@ import { createReader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { loadApproved } from '../config.ts';
 import { kissSignHome } from '../keys.ts';
-import { MARKETS_PATH, REGISTRY_PATH } from '../registry.ts';
+import { ATTRIBUTES_PATH, MARKETS_PATH, REGISTRY_PATH } from '../registry.ts';
 import { checksumAddress, parseHex } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fileAt, optionalFileAt, pathsAt, selfCheck } from '../verify/self-check.ts';
@@ -95,6 +95,7 @@ export async function verify(args: readonly string[], io: Io, w: Labels): Promis
   const named = new Set(card.operations.flatMap((op) => Object.values(op.values)));
   const ids = [...new Set(card.operations.map((op) => op.template))];
   const markets = optionalFileAt(io.repoRoot, check.commit, MARKETS_PATH);
+  const attributes = optionalFileAt(io.repoRoot, check.commit, ATTRIBUTES_PATH);
   const inputs: VerifyInputs = {
     commit: check.commit,
     safe: checksumAddress(safe),
@@ -107,6 +108,7 @@ export async function verify(args: readonly string[], io: Io, w: Labels): Promis
     })),
     registry: fileAt(io.repoRoot, check.commit, REGISTRY_PATH),
     ...(markets === undefined ? {} : { markets }),
+    ...(attributes === undefined ? {} : { attributes }),
     addressBook: Object.fromEntries([...book].filter(([name]) => named.has(name)).map(([name, address]) => [name, checksumAddress(address)])),
   };
   let parsed: Prepared;

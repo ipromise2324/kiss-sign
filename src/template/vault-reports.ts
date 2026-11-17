@@ -1,7 +1,7 @@
 import { existsSync, lstatSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
-import type { Registry } from '../registry.ts';
+import type { ContractKind, Registry } from '../registry.ts';
 import { TEMPLATES_DIR } from './template.ts';
 import type { Template } from './template.ts';
 
@@ -15,16 +15,24 @@ export const VAULTS_DIR = 'vaults';
 export const GENERATED_FILE = 'report.generated.md';
 
 /**
- * What one report of a template covers: the template, or the template and one vault its card field `field` names. A
- * rebuilt template whose card names two vaults has no per-vault report yet.
+ * What one report of a template covers: the template, or the template and one instance its card field `field` names,
+ * an entry of kind `kind`. A rebuilt template whose card has two contract fields of that kind has no per-instance report yet.
  */
-export type ReportUnit = { readonly kind: 'template' } | { readonly kind: 'vault'; readonly field: string } | { readonly kind: 'several-vaults' };
+export type ReportUnit = { readonly kind: 'template' } | { readonly kind: 'vault'; readonly field: string; readonly of: ContractKind } | { readonly kind: 'several-vaults' };
 
+/** The kind of entry a template is reported per: its declared instance field's, or else `vault`. */
+function instanceKind(template: Template): ContractKind {
+  const field = template.instanceField === undefined ? undefined : template.card.get(template.instanceField);
+  return field?.kind === 'contract' ? field.scope.registryKind : 'vault';
+}
+
+/** The template's instance field: the one it declares, or else its card's one contract field of kind `vault`. */
 export function reportUnit(template: Template): ReportUnit {
   if (!gatesVaults(template)) return { kind: 'template' };
-  const fields = [...template.card].filter(([, field]) => field.kind === 'contract' && field.scope.registryKind === 'vault').map(([name]) => name);
+  const of = instanceKind(template);
+  const fields = [...template.card].filter(([, field]) => field.kind === 'contract' && field.scope.registryKind === of).map(([name]) => name);
   if (fields.length === 0) return { kind: 'template' };
-  return fields.length === 1 ? { kind: 'vault', field: fields[0] as string } : { kind: 'several-vaults' };
+  return fields.length === 1 ? { kind: 'vault', field: fields[0] as string, of } : { kind: 'several-vaults' };
 }
 
 export const vaultReportDir = (template: string, vault: string): string => join(TEMPLATES_DIR, template, VAULTS_DIR, vault);
@@ -48,14 +56,14 @@ export function reportedVaultsIn(repoRoot: string, template: string): Set<string
   );
 }
 
-export const severalVaults = (template: string): string => `${template} names more than one vault, and no report covers such an operation yet`;
+export const severalVaults = (template: string): string => `${template} names more than one instance of its report's kind, and no report covers such an operation yet`;
 
-/** Whether a name a card field may take is a registry vault, which a gated template may name only with a report for it. */
-export const isRegistryVault = (name: string, registry: Registry): boolean => registry.entries.get(name)?.kind === 'vault';
+/** Whether a name a card field may take is a registry entry of the template's instance kind, which a gated template may name only with a report for it. */
+export const isInstanceOf = (template: Template, name: string, registry: Registry): boolean => registry.entries.get(name)?.kind === instanceKind(template);
 
-function vaultNamed(value: ResolvedValue, registry: Registry): string | undefined {
-  if (value.kind === 'contract') return value.entry.kind === 'vault' ? value.name : undefined;
-  return value.kind === 'address' && value.from === 'registry' && isRegistryVault(value.name, registry) ? value.name : undefined;
+function instanceNamed(template: Template, value: ResolvedValue, registry: Registry): string | undefined {
+  const name = value.kind === 'contract' || (value.kind === 'address' && value.from === 'registry') ? value.name : undefined;
+  return name !== undefined && isInstanceOf(template, name, registry) ? name : undefined;
 }
 
 /**
@@ -73,7 +81,7 @@ export function unreportedVault(
     if (template === undefined || !gatesVaults(template)) continue;
     if (reportUnit(template).kind === 'several-vaults') return severalVaults(template.id);
     for (const value of op.values.values()) {
-      const vault = vaultNamed(value, registry);
+      const vault = instanceNamed(template, value, registry);
       if (vault !== undefined && !reported(template.id).has(vault)) return `${vault} has no report for ${template.id}; build one first`;
     }
   }

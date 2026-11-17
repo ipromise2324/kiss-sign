@@ -1,11 +1,12 @@
-import type { AdapterCause, ParentCause, RefusalCause } from '../contracts/instance.ts';
+import { restsOnOthers } from '../contracts/instance.ts';
+import type { RefusalCause, ViewAnswer } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import { MARKET_ENTRY_PARTS, parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { checkSources, githubLine } from './listings.ts';
 import type { DeployerShare, Line, SitePlace } from './listings.ts';
-import { abiUnused, docSiteLine, entriesOf, functionOnPage, hasMarket, pinVerdict, todayEntries } from './report.ts';
+import { abiUnused, docSiteLine, entriesOf, evidenceEntries, functionOnPage, hasMarket, pinVerdict, todayEntries } from './report.ts';
 import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './vault-evidence.ts';
@@ -19,7 +20,7 @@ export type StripLine = (typeof STRIP_LINES)[number];
 
 /**
  * The sources an address row lists for the program: the `source` page, each of `moreSources` by its number from 1, the
- * protocol API, CoinGecko and an entry's registry factory, for an adapter with each vault naming it. Each can confirm the address.
+ * protocol API, CoinGecko and an entry's registry factory, with every view its `instanceCheck` lists. Each can confirm the address.
  */
 export type ProgramSource = 'page' | `more.${number}` | 'api' | 'coingecko' | 'factory' | 'bounty' | 'sdk' | 'deployer';
 
@@ -42,8 +43,7 @@ export type Phrase =
   | 'other-site'
   | 'nothing-to-compare'
   | 'not-created'
-  | 'not-adapter'
-  | 'not-parent'
+  | 'check-denied'
   | 'not-on-page'
   | 'not-listed'
   | 'other-file'
@@ -68,14 +68,10 @@ export type Finding =
   | { readonly kind: 'not-created' }
   /** The entry's registry factory answered neither true nor false. */
   | { readonly kind: 'factory-other-answer' }
-  /** A registry vault naming the adapter answered its factory's `adapterCheck` false for it. */
-  | { readonly kind: 'not-adapter' }
-  /** A registry vault naming the adapter answered its factory's `adapterCheck` neither true nor false. */
-  | { readonly kind: 'adapter-other-answer' }
-  /** The adapter answered its factory's `parentCheck` with another address than the registry vault naming it. */
-  | { readonly kind: 'not-parent' }
-  /** The adapter answered its factory's `parentCheck` with something other than one address. */
-  | { readonly kind: 'parent-other-answer' }
+  /** A view of the factory's `instanceCheck` asked of another party than the factory answered false, or another address than the one expected. */
+  | { readonly kind: 'check-denied' }
+  /** Such a view answered neither true, false nor an address. */
+  | { readonly kind: 'check-other-answer' }
   | { readonly kind: 'refused'; readonly why: string }
   /** The address is confirmed in fewer than two places; `by` names those that did. */
   | { readonly kind: 'few-confirmations'; readonly by: readonly ProgramSource[] }
@@ -113,10 +109,8 @@ export type Finding =
   | { readonly kind: 'no-chain-result' }
   /** No stored `pnpm vault-evidence` output or report recording holds the factory's answer, or the registry gives nothing to ask. */
   | { readonly kind: 'factory-unread' }
-  /** No report recording holds a vault's answer for the adapter, or no registry vault whose factory has an `adapterCheck` names it. */
-  | { readonly kind: 'adapter-unread' }
-  /** No report recording holds the adapter's `parentCheck` answer, or its factory declares no `parentCheck`. */
-  | { readonly kind: 'parent-unread' }
+  /** No report recording holds such a view's answer, or the registry gives it nothing to ask, such as no entry naming the instance. */
+  | { readonly kind: 'check-unread' }
   /** No code pin: signing would answer UNVERIFIABLE. */
   | { readonly kind: 'not-pinned' }
   /** DefiLlama lists no website or GitHub org to compare the site with, and another result vouches for the site. */
@@ -140,10 +134,8 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'proof-not-pin': 'bad',
   'not-created': 'bad',
   'factory-other-answer': 'bad',
-  'not-adapter': 'bad',
-  'adapter-other-answer': 'bad',
-  'not-parent': 'bad',
-  'parent-other-answer': 'bad',
+  'check-denied': 'bad',
+  'check-other-answer': 'bad',
   refused: 'bad',
   'judged-otherwise': 'bad',
   'few-confirmations': 'warn',
@@ -165,8 +157,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'name-not-on-page': 'warn',
   'no-chain-result': 'warn',
   'factory-unread': 'warn',
-  'adapter-unread': 'warn',
-  'parent-unread': 'warn',
+  'check-unread': 'warn',
   'not-pinned': 'warn',
   unlisted: 'na',
   'no-second-source': 'warn',
@@ -186,10 +177,8 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'proof-not-pin': undefined,
   'not-created': 'not-created',
   'factory-other-answer': 'unread',
-  'not-adapter': 'not-adapter',
-  'adapter-other-answer': 'unread',
-  'not-parent': 'not-parent',
-  'parent-other-answer': 'unread',
+  'check-denied': 'check-denied',
+  'check-other-answer': 'unread',
   refused: undefined,
   'judged-otherwise': undefined,
   'few-confirmations': undefined,
@@ -211,8 +200,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'name-not-on-page': 'not-on-page',
   'no-chain-result': undefined,
   'factory-unread': 'unread',
-  'adapter-unread': 'unread',
-  'parent-unread': 'unread',
+  'check-unread': 'unread',
   'not-pinned': undefined,
   unlisted: 'nothing-to-compare',
   'no-second-source': 'nothing-to-compare',
@@ -408,47 +396,38 @@ const FACTORY_FINDINGS: Readonly<Record<ReturnType<typeof factoryAnswer>, Findin
   unread: { kind: 'factory-unread' },
 };
 
-const REFUSAL_FINDINGS: Readonly<Record<RefusalCause, Finding>> = {
-  'not-created': { kind: 'not-created' },
+const FACTORY_REFUSALS: Readonly<Record<RefusalCause, Finding>> = {
+  denied: { kind: 'not-created' },
   'other-answer': { kind: 'factory-other-answer' },
   'no-answer': { kind: 'no-answer' },
   unaskable: { kind: 'factory-unread' },
 };
 
-const ADAPTER_FINDINGS: Readonly<Record<AdapterCause, Finding>> = {
-  'not-used': { kind: 'not-adapter' },
-  'other-answer': { kind: 'adapter-other-answer' },
+const OTHER_REFUSALS: Readonly<Record<RefusalCause, Finding>> = {
+  denied: { kind: 'check-denied' },
+  'other-answer': { kind: 'check-other-answer' },
   'no-answer': { kind: 'no-answer' },
-  unaskable: { kind: 'adapter-unread' },
+  unaskable: { kind: 'check-unread' },
 };
 
-const PARENT_FINDINGS: Readonly<Record<ParentCause, Finding>> = {
-  'other-parent': { kind: 'not-parent' },
-  'other-answer': { kind: 'parent-other-answer' },
-  'no-answer': { kind: 'no-answer' },
-  unaskable: { kind: 'parent-unread' },
-};
+/** A view's result id: `factory.admitted` for the first when it is asked once, else the view's place and function, and the entry naming the instance it was asked for. */
+const viewKey = (answer: Pick<ViewAnswer, 'index' | 'view' | 'namer'>): string =>
+  answer.index === 0 && answer.namer === undefined ? 'factory.admitted' : `factory.${answer.index}.${answer.view.fn.name}${answer.namer === undefined ? '' : `.${answer.namer.name}`}`;
 
 /**
- * The `factory` place: a vault's factory answer, stored by `pnpm vault-evidence`; another entry's, read by the report,
- * with, for an adapter, each registry vault naming it, since an `instanceCheck` answer does not say whose adapter it is.
+ * The `factory` place: an instance's factory answers, stored by `pnpm vault-evidence`; another entry's, read by the
+ * report, one result per view of the factory's `instanceCheck`, all of which must pass.
  */
 function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
-  if (entry.attributes.factory === undefined) return [];
+  const factory = entry.attributes.factory;
+  if (factory === undefined) return [];
   const result = (key: string, finding: Finding): Result => ({ id: `${entry.name}/${key}`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link: undefined, finding });
-  if (entry.kind === 'vault') return [result('factory.admitted', FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry, inputs.registry)])];
-  const answers = inputs.instances?.answers.get(entry.name);
-  const admitted = result('factory.admitted', answers === undefined ? { kind: 'factory-unread' } : answers.factory.kind === 'created' ? { kind: 'agrees' } : REFUSAL_FINDINGS[answers.factory.cause]);
-  if (entry.kind !== 'adapter') return [admitted];
-  if (answers === undefined || answers.vaults.length === 0) return [admitted, result('vault.adapter', { kind: 'adapter-unread' })];
-  return [
-    admitted,
-    ...answers.vaults.map((answer) => result(`vault.${answer.vault.name}.adapter`, answer.kind === 'uses' ? { kind: 'agrees' } : ADAPTER_FINDINGS[answer.cause])),
-    ...answers.vaults.map(({ vault }) => {
-      const parent = answers.parents.find((answer) => answer.vault.name === vault.name);
-      return result(`vault.${vault.name}.parent`, parent === undefined ? { kind: 'parent-unread' } : parent.kind === 'made-for' ? { kind: 'agrees' } : PARENT_FINDINGS[parent.cause]);
-    }),
-  ];
+  if (inputs.vaults.has(entry.name) || evidenceEntries(inputs.subject).some((e) => e.name === entry.name)) return [result('factory.admitted', FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry, inputs.registry)])];
+  const proof = inputs.instances?.answers.get(entry.name);
+  if (proof === undefined || proof.kind === 'unasked') return [result('factory.admitted', { kind: 'factory-unread' })];
+  return proof.answers.map((answer) =>
+    result(viewKey(answer), answer.kind === 'vouched' ? { kind: 'agrees' } : answer.view.ask.kind === 'factory' ? FACTORY_REFUSALS[answer.cause] : OTHER_REFUSALS[answer.cause]),
+  );
 }
 
 function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean): Finding {
@@ -568,7 +547,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
       ...todayResults(entry, inputs, today),
     ]),
   }));
-  const confirmedElsewhere = new Set(byEntry.filter(({ entry, results }) => confirmingSources(results.filter((r) => r.source?.of !== 'deployer' && !(entry.kind === 'adapter' && r.source?.of === 'factory'))).length >= MIN_CONFIRMATIONS).map(({ entry }) => entry.name));
+  const confirmedElsewhere = new Set(byEntry.filter(({ entry, results }) => confirmingSources(results.filter((r) => r.source?.of !== 'deployer' && !(r.source?.of === 'factory' && restsOnOthers(inputs.registry.entries.get(entry.attributes.factory ?? ''))))).length >= MIN_CONFIRMATIONS).map(({ entry }) => entry.name));
   const results = byEntry.flatMap(({ entry, results: own }) => withAddressResult(entry, own.map((r) => deployerCounts(r, confirmedElsewhere))));
   const judged = fixtures.map(
     (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),

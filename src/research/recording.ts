@@ -13,6 +13,7 @@ export type PastTxsRecording = {
     readonly to?: string;
     readonly fromBlock?: string;
     readonly toBlock?: string;
+    readonly head?: string;
     readonly maxTxs: number;
   };
   readonly sources: readonly SourceExchange[];

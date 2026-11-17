@@ -3,12 +3,16 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { replayReader } from '../src/chain/recording.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
+import { createReader } from '../src/chain/reader.ts';
+import type { Reader } from '../src/chain/reader.ts';
+import { REPLAY_ENDPOINTS, replayReader, replayTransport } from '../src/chain/recording.ts';
+import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
-import type { Sampling } from '../src/research/past-txs.ts';
 import { scrubRecording } from '../src/research/recording.ts';
+import { pastTxsSampling } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { recordingAsk, replayAsk, searchBoth } from '../src/research/sources.ts';
 import type { Anchor, AnchorKind, Ask, SourceExchange, SourceRequest } from '../src/research/sources.ts';
@@ -32,11 +36,8 @@ function safeOf(hash: string): Address {
   return (read?.answers.alchemy as { to: Address }).to;
 }
 
-const samplingOf = (query: PastTxsRecording['query']): Sampling =>
-  query.fromBlock === undefined || query.toBlock === undefined ? DEFAULT_SPREAD : { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
-
 async function report(
-  options: { exclude?: Address; sources?: readonly SourceExchange[]; template?: Template; exchanges?: PastTxsRecording['exchanges']; recorded?: PastTxsRecording; registry?: Registry } = {},
+  options: { exclude?: Address; sources?: readonly SourceExchange[]; template?: Template; exchanges?: PastTxsRecording['exchanges']; recorded?: PastTxsRecording; registry?: Registry; reader?: Reader } = {},
 ): Promise<string> {
   const recorded = options.recorded ?? recording;
   const seen = options.registry ?? registry;
@@ -45,9 +46,9 @@ async function report(
     {
       template: options.template ?? loadTemplate(ROOT, query.template, registry),
       anchor: { token: query.token as Address, kind: query.anchor as AnchorKind, ...(query.from === undefined ? {} : { from: query.from as Address }) },
-      sampling: samplingOf(query),
+      sampling: pastTxsSampling(query),
     },
-    { ask: replayAsk(options.sources ?? recorded.sources), reader: replayReader(options.exchanges ?? recorded.exchanges), registry: seen, exclude: options.exclude, maxTxs: query.maxTxs },
+    { ask: replayAsk(options.sources ?? recorded.sources), reader: options.reader ?? replayReader(options.exchanges ?? recorded.exchanges), registry: seen, exclude: options.exclude, maxTxs: query.maxTxs },
   );
   return renderPastTxs(run, seen);
 }
@@ -111,7 +112,7 @@ test('the same function called on a contract other than the one the template nam
 test('a deposit into the vault whose mint found it, when the registry does not hold that vault, has the template\'s shape outside the registry', async () => {
   const vault = recording.query.token as Address;
   const kept = [...registry.entries.values()].filter((entry) => entry.address !== vault);
-  const text = await report({ registry: { entries: new Map(kept.map((e) => [e.name, e])), byAddress: new Map(kept.map((e) => [e.address, e])), markets: registry.markets } });
+  const text = await report({ registry: { attributes: registry.attributes, entries: new Map(kept.map((e) => [e.name, e])), byAddress: new Map(kept.map((e) => [e.address, e])), markets: registry.markets } });
   assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe\n {2}exactly the template: 0 from 0 Safes; outside the registry: 2 from 1 Safe \(a vault outside the registry at \S+\.erc4626Deposit\.vault in 2\)$/m);
 });
 
@@ -368,4 +369,56 @@ test("a Safe's transaction that makes none of the template's calls is another op
     /^by proven Safes, the whole template in one transaction:\nanother operation, making none of the template's calls: 1 transaction from 1 Safe; not counted below\n {2}e\.g\. 0x76b2080d079470fd25ea8724b2aaf1f1d951e50ec48501d990f500105d3901bb: calls 0xe5139Fc0FB8eae81e30d8a85C22E88c6757120f2\.0x1d7d4ebc\nfit the template's shape: 1 transaction from 1 Safe; misfits: 0 from 0 Safes\n {2}exactly the template: 0 from 0 Safes; outside the registry: 1 from 1 Safe \(a token outside the registry at call\.to in 1\)$/m,
   );
   assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls /m);
+});
+
+function replayDroppingDrpc(hash: string, fails: number): Transport {
+  const replay = replayTransport(recording.exchanges, REPLAY_ENDPOINTS);
+  let left = fails;
+  return async (url, body, signal) => {
+    if (url === REPLAY_ENDPOINTS[1].url && body.includes(hash) && left-- > 0) throw Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' });
+    return replay(url, body, signal);
+  };
+}
+
+test('a read that fails on the way is asked again, so a dropped connection that heals changes nothing', async () => {
+  const unread: string[] = [];
+  const reader = createReader(REPLAY_ENDPOINTS, replayDroppingDrpc(FIT, 2), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
+  assert.equal(await report({ reader }), await report());
+  assert.deepEqual(unread, []);
+});
+
+test('a read that still fails on the way after every retry is named, and --record refuses to keep the study', async () => {
+  const unread: string[] = [];
+  const reader = createReader(REPLAY_ENDPOINTS, replayDroppingDrpc(FIT, Infinity), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
+  const text = await report({ reader });
+  assert.match(text, new RegExp(`^ {2}1 unreadable, eth_getTransactionByHash: drpc failed \\(unreachable\\): ${FIT}$`, 'm'));
+  assert.deepEqual(unread, ['drpc eth_getTransactionByHash: unreachable']);
+  assert.equal(unreadRefusal(unread), '1 read(s) got no answer after every retry, so nothing is recorded; run the command again later:\n  drpc eth_getTransactionByHash: unreachable');
+});
+
+test('a recording\'s head places the spread windows without reading the chain head, so a run again searches the same windows', async () => {
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+  const head = await replayReader(windowed.exchanges).blockNumber();
+  assert.equal(head.kind, 'agreed');
+  const kept = { ...windowed, query: { ...windowed.query, head: String(head.kind === 'agreed' ? head.value : '') } };
+  const noHead = { ...replayReader(windowed.exchanges), blockNumber: () => assert.fail('the head block is not read again') };
+  assert.equal(await report({ recorded: kept, reader: noHead }), await report({ recorded: windowed }));
+});
+
+const pastTxsRun = (...args: string[]) =>
+  spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', ...args], { encoding: 'utf8' });
+
+test('--same-windows-as goes with the spread windows only, not with a block range', () => {
+  const run = pastTxsRun('--same-windows-as', 'morpho-vault-deposit-windows', '--from-block', '1', '--to-block', '2');
+  assert.equal(run.status, 64);
+  assert.match(run.stderr, /--same-windows-as <recording>/);
+});
+
+test('--same-windows-as refuses a recording that keeps no head block, and a name with no recording', () => {
+  const old = pastTxsRun('--same-windows-as', 'morpho-vault-deposit-windows');
+  assert.equal(old.status, 64);
+  assert.equal(old.stderr, '--same-windows-as morpho-vault-deposit-windows: the recording keeps no head block, so its windows cannot be searched again\n');
+  const missing = pastTxsRun('--same-windows-as', 'no-such-study');
+  assert.equal(missing.status, 64);
+  assert.equal(missing.stderr, '--same-windows-as no-such-study: no recording testdata/research/no-such-study.json\n');
 });
