@@ -645,6 +645,7 @@ function messageAnswer(path: string, raw: unknown, struct: StructType): MessageA
   exactKeys(path, value, [], ['path', 'members']);
   if (value.path === undefined && value.members === undefined) throw new TemplateError(path, 'names a path, members, or both');
   const declared = value.members === undefined ? {} : object(`${path}.members`, value.members);
+  if (value.members !== undefined && Object.keys(declared).length === 0) throw new TemplateError(`${path}.members`, 'names no member');
   const unknown = Object.keys(declared).find((name) => !struct.members.some((member) => member.name === name));
   if (unknown !== undefined) throw new TemplateError(`${path}.members.${unknown}`, `not a member of ${struct.name}`);
   const members = struct.members.map((member, i): MemberSource => {
@@ -656,7 +657,9 @@ function messageAnswer(path: string, raw: unknown, struct: StructType): MessageA
     exactKeys(at, source, [], ['path', 'encoding']);
     if (source.path === undefined && source.encoding === undefined) throw new TemplateError(at, 'names a path, an encoding, or both');
     if (source.encoding !== undefined && (source.encoding !== 'hex' || member.type.kind !== 'uint')) throw new TemplateError(`${at}.encoding`, '"hex", on a uintN member only');
-    return { path: source.path === undefined ? own.path : pathSteps(`${at}.path`, source.path), encoding: source.encoding === undefined ? 'plain' : 'hex' };
+    const read: MemberSource = { path: source.path === undefined ? own.path : pathSteps(`${at}.path`, source.path), encoding: source.encoding === undefined ? 'plain' : 'hex' };
+    if (read.encoding === 'plain' && read.path.length === 1 && read.path[0] === name) throw new TemplateError(at, 'names nothing the default does not');
+    return read;
   });
   return { path: value.path === undefined ? [] : pathSteps(`${path}.path`, value.path), members };
 }

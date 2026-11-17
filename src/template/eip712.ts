@@ -136,7 +136,8 @@ function readMembers(struct: StructType, answer: MessageAnswer, text: string): r
   for (const [i, member] of struct.members.entries()) {
     const source = answer.members[i] as MemberSource;
     const value = memberValue(member.type, walk(root, source.path), source.encoding);
-    if (value === undefined) return `no ${member.name} of type ${member.type.kind}${source.encoding === 'hex' ? ' in hex' : ''} at ${[...answer.path, ...source.path].join('.')}`;
+    const at = [...answer.path, ...source.path].join('.');
+    if (value === undefined) return `no ${member.name} of type ${member.type.kind}${source.encoding === 'hex' ? ' in hex' : ''}${at === member.name ? '' : ` at ${at}`}`;
     values.push(value);
   }
   return values;

@@ -278,6 +278,10 @@ test('an order the lookup does not serve is named once, by the URL the reader al
   assert.deepEqual(unread, [`${url} answered HTTP 404`]);
   const host = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async () => ({ why: 'api.cow.fi unreachable or timed out' }));
   assert.deepEqual(host.unread, [`${url}: api.cow.fi unreachable or timed out`]);
+  const { sellToken: _, ...noSellToken } = JSON.parse(VERDICT.inputs.messages![0]!);
+  const partial = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async () => ({ text: JSON.stringify(noSellToken) }));
+  assert.equal(partial.evaluation.verdict.kind, 'UNVERIFIABLE');
+  assert.deepEqual(partial.unread, [`${url}: no sellToken of type address`]);
 });
 
 /** The verdict file's inputs with its CoW template reading the order where `answer` says, approved as so changed. */
@@ -339,6 +343,8 @@ test('template load refuses an answer naming no member of the struct, hex on a m
   refuses({ members: { sellAmount: { encoding: 'decimal' } } }, /answer\.members\.sellAmount\.encoding: "hex", on a uintN member only/);
   refuses({}, /answer: names a path, members, or both/);
   refuses({ members: { sellAmount: {} } }, /answer\.members\.sellAmount: names a path, an encoding, or both/);
+  refuses({ members: {} }, /answer\.members: names no member/);
+  refuses({ members: { sellAmount: { path: ['sellAmount'] } } }, /answer\.members\.sellAmount: names nothing the default does not/);
   refuses({ path: ['order.sell'] }, /answer\.path\[0\]: not a key of letters, digits and _ or an index below 10000/);
   refuses({ path: [] }, /answer\.path: not a list of 1 to 16 steps/);
 });
