@@ -13,6 +13,7 @@ import type { Language } from '../language.ts';
 import type { Expectations, Expected, KeptSeen } from '../simulate/effects.ts';
 import type { CallScan } from '../simulate/simulate.ts';
 import type { Rule, Template } from '../template/template.ts';
+import { checkCommand, checkHints } from './check-command.ts';
 import { CHECKLIST_CSS, checklist, checklistHtml, visible } from './checklist.ts';
 import { amountToken, signedMessages } from './expected.ts';
 import type { AmountToken, CallTree } from './expected.ts';
@@ -96,6 +97,8 @@ const ZH = {
   checklist: '比對清單',
   noHashes: '不顯示任何 hash。不要簽這筆交易。',
   checklistLanguage: '各列是繁體中文。獨立電腦上 check.sh 的 config 也要設 LANGUAGE=zh-TW，不然各列會不同。',
+  checklistHints:
+    '--hints 只告訴 check.sh 怎麼讀模板讀的 bytes；那些 bytes 在比對清單裡仍是收起來的一列。它不改任何一列，check.sh 也會對照它讀出的 bytes 給一個警告，說那是依 hint 的讀法顯示。',
   checklistLead: (command: Html) => h`每一列和獨立電腦上 ${command} 頁面的同一列比對：列號、欄位和值都要一模一樣。最右一欄是各自的名字，不用比。safeTxHash、domain hash 和 message hash 也要和硬體錢包逐字比對。`,
   causes: '原因',
   sub: 'kiss-sign 在工作電腦上對照你的卡片檢查這筆交易。',
@@ -163,6 +166,8 @@ const EN: typeof ZH = {
   checklist: 'Checklist',
   noHashes: 'No hash is shown. Do not sign this transaction.',
   checklistLanguage: "The rows are in English. check.sh's config on the independent computer must say LANGUAGE=en too, or the rows differ.",
+  checklistHints:
+    '--hints only tells check.sh how to read the bytes the template reads, which stay one folded row in the checklist. It changes no row, and check.sh warns that the bytes it reads with it are shown as the hints read them.',
   checklistLead: (command: Html) =>
     h`Compare each row with the same row of the ${command} page on the independent computer: the row id, the field and the value must be exactly the same. The last column is each page's own names; do not compare it. Also compare the safeTxHash, domain hash and message hash character by character with the hardware wallet.`,
   causes: 'Causes',
@@ -348,7 +353,8 @@ function checklistSection(page: VerdictPage): Html {
   return h`
 <section>
   <h2>${w.checklist}</h2>
-  <p class="lead">${w.checklistLead(h`<code>./check.sh ${`${page.nonce}`}</code>`)}</p>
+  <p class="lead">${w.checklistLead(h`<code>${checkCommand(page.tree)}</code>`)}</p>${checkHints(page.tree) === undefined ? '' : h`
+  <p class="lead">${w.checklistHints}</p>`}
   <p class="lead">${w.checklistLanguage}</p>
 ${new Html(checklistHtml(checklist(page.tree, page.language), page.language))}
 </section>`;
