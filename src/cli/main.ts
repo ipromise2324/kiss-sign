@@ -97,12 +97,13 @@ const usageText = (w: Labels): string => `${w.usage}\n${Object.values(COMMANDS)
   .join('')}`;
 
 /**
- * The language a command prints in: the one its `--language` names, else the config's, else English, so a command run
+ * The language a command prints in: the one its last `--language` names, as parseArgs takes, else the config's, else English, so a command run
  * before any config exists, or whose config cannot be read, prints English.
  */
 function languageOf(argv: readonly string[], io: Io): Language {
-  const at = argv.indexOf('--language');
-  const flag = at === -1 ? argv.find((arg) => arg.startsWith('--language='))?.slice('--language='.length) : argv[at + 1];
+  const at = argv.findLastIndex((arg) => arg === '--language' || arg.startsWith('--language='));
+  const arg = argv[at];
+  const flag = arg === '--language' ? argv[at + 1] : arg?.slice('--language='.length);
   if (isLanguage(flag)) return flag;
   try {
     return loadStoredConfig(kissSignHome(io.env))?.language ?? DEFAULT_LANGUAGE;

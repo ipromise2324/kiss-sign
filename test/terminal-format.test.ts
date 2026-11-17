@@ -28,6 +28,8 @@ test('a long value wraps at spaces within 100 columns and never splits an addres
   assert.ok(lines.every((line) => line.length <= WIDTH), lines.join('\n'));
   assert.ok(lines.some((line) => line.includes(ADDRESS)));
   assert.deepEqual(wrap('a b', 1), ['a', 'b']);
+  assert.deepEqual(wrap('aaaa   bbbb', 6), ['aaaa  ', 'bbbb'], 'a break keeps the spaces before it but one, as English output always has');
+  assert.deepEqual(wrap('地址（0xA0b8）。下一行', 8), ['地址', '（0xA0b8）。', '下一行'], 'opening punctuation stays with what follows it, closing with what precedes it');
   assert.deepEqual(wrap('  multiSend[1] to usdc 0xA0b8', 20), ['  multiSend[1] to', '  usdc 0xA0b8'], 'a leading indent stays on every line');
 });
 

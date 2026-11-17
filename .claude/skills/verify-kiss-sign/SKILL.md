@@ -70,7 +70,7 @@ Prompts need a real terminal. `term.sh` gives each run its own tmux server (sock
 
 Stable prompt strings to wait on: `<field>: type its number (1-N): `, `amount (whole <token>, <n> decimals): ` (`, or max` before the `)` for a field that takes `max`), `Is this what you mean to do? [y/N] ` (card new and card seal), `Approve <id> as merged in that commit? [y/N] `, `Add this entry? [y/N] `. tmux drops trailing spaces, so end a prompt regex with ` *$`, not `: $`. Answers are literal text: a number, an exact name, or a whole-token amount such as `1,000,611.448606`.
 
-In a home initialised with `KSV_LANGUAGE=zh-TW`, the terminal text follows the config's language: `<field>：輸入編號 (1-N): `, `amount (<token> 的數量，<n> 位小數，或 max): `, `這是你要做的事嗎？[y/N] `, `核准 <id> 在那個 commit 合併的版本？[y/N] `, `加入這一筆嗎？[y/N] `, and the result lines `已封存卡片 0x...`, `已核准 <id>。`. Each prompt ends the same in both languages, so `\(1-[0-9]+\): *$` and `\[y/N\] *$` wait in either; names, addresses, hashes, `MATCH`/`MISMATCH`/`UNVERIFIABLE` and check keys such as `fields` are never translated.
+In a home initialised with `KSV_LANGUAGE=zh-TW`, the terminal text follows the config's language: `<field>：輸入編號 (1-N): `, `amount (整顆 <token> 的數量，<n> 位小數，或 max): `, `這是你要做的事嗎？[y/N] `, `核准 <id> 在那個 commit 合併的版本？[y/N] `, `加入這一筆嗎？[y/N] `, and the result lines `已封存卡片 0x...`, `已核准 <id>。`. Each prompt ends the same in both languages, so `\(1-[0-9]+\): *$` and `\[y/N\] *$` wait in either; names, addresses, hashes, `MATCH`/`MISMATCH`/`UNVERIFIABLE` and check keys such as `fields` are never translated.
 
 Commands that ask nothing (`verify`, `replay`, `key list`, `book list`, `pnpm report`) run directly with `KISS_SIGN_HOME` exported; no tmux needed.
 

@@ -91,7 +91,7 @@ export function wrap(text: string, width: number): string[] {
   let line = '';
   for (const { gap, word } of pieces(text)) {
     if (line !== '' && visible(line) + gap.length + visible(word) > width) {
-      lines.push(line);
+      lines.push(`${line}${gap.slice(1)}`);
       line = word;
     } else {
       line = line === '' ? word : `${line}${gap}${word}`;
