@@ -188,20 +188,11 @@ Whether an address is the protocol's real contract rests in the end on the repor
 
 **When a template is built**
 
-- **Each address is looked up in several places.** The page it came from is checked against the protocol's own sites, as DefiLlama, CoinGecko, Immunefi and GitHub list them. Then the program looks for the same address in:
-  - the protocol's official pages,
-  - the protocol's own API,
-  - CoinGecko,
-  - the factory that created it, asked on chain,
-  - the protocol's bug bounty scope on Immunefi,
-  - the protocol's SDK package on npm,
-  - its deployer, when that deployer also deployed another confirmed contract of the protocol.
-
-  It needs at least two. It also reads the newest version of each GitHub page and SDK it found the address in. The report flags an address found in fewer than two places, a page off the protocol's sites, or a newest version that now lists only another address under the same name, for you to judge.
+- **Each address must show up in at least two places**, such as the protocol's official pages, its API, CoinGecko, the factory that created it, its bug bounty or its SDK. A page must be on the protocol's own site. Anything weaker is flagged in the report for you to judge.
 - **The ABI is proven by compiling.** Etherscan's verified source, compiled with a pinned `solc`, must give the code on chain.
 - **The protocol's facts are read.** Its TVL, listing date and past hacks, and for a vault its size over a year and its holders today.
 - **The code is recorded.** Each registry contract's code is pinned, so an upgrade after your review is caught at signing.
-- **Past transactions set the shape.** Samples of the same operation by other senders over the past year show which forms real senders use, and the template accepts only those. They also show how much rounding a balance needs.
+- **Past transactions show what is normal.** The CoW app sets an order to expire in 30 minutes, and in the past year almost every real order expired within a day, so the template can refuse an order that expires a year from now. The same history shows how much rounding a balance needs.
 - **Open fields are tested.** The fields the template leaves open are changed to a few other values each and simulated. Each change must revert or do nothing the template does not allow.
 
 **At every signing**
