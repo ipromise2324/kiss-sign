@@ -158,7 +158,7 @@ test('every shipped template holds each reason in English and Traditional Chines
     if (typeof raw !== 'object' || raw === null) return [];
     return Object.entries(raw).flatMap(([key, value]) => {
       const at = `${path}.${key}`;
-      const isReason = ['why', 'merge', 'reason', 'proof', 'unread', 'route'].includes(key) || (key === 'free' && (typeof value === 'string' || 'en' in (value as object) || 'zh-TW' in (value as object)));
+      const isReason = ['why', 'merge', 'reason', 'proof', 'unread', 'route', 'time'].includes(key) || (key === 'free' && (typeof value === 'string' || 'en' in (value as object) || 'zh-TW' in (value as object)));
       if (!isReason) return plain(value, at);
       return typeof value === 'object' && value !== null && Object.keys(value).sort().join() === 'en,zh-TW' ? [] : [at];
     });
@@ -296,3 +296,19 @@ test('the address book saves and loads, and refuses a bad checksum', () => {
   assert.throws(() => parseAddressBook({ safe: OTHER }), AddressBookError);
 });
 
+
+test('a free number may be declared a time, and only a number may', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cow', 'swap', 'template.json'), 'utf8'));
+  const fields = (t: any) => t.calls[0].args.orderUid.packed[0].rule.eip712.fields;
+  const why = { en: 'When the order expires.', 'zh-TW': '訂單到期的時間。' };
+  const timed = structuredClone(raw);
+  fields(timed).validTo = { free: { time: why } };
+  const rule = parseTemplate(timed, registry);
+  assert.equal(rule.id, 'cow/swap');
+  const bytes = structuredClone(raw);
+  fields(bytes).appData = { free: { time: why } };
+  assert.throws(
+    () => parseTemplate(bytes, registry),
+    (error: unknown) => error instanceof TemplateError && error.path.endsWith('fields.appData.free') && /a time is a number of seconds/.test(error.message),
+  );
+});

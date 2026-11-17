@@ -27,7 +27,8 @@ import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSi
 import type { Confidence, FindingKind, Ledger, Phrase, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
-import { amountsOf } from './past-txs.ts';
+import { PERCENTILES, amountsOf, freeNumbers } from './past-txs.ts';
+import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
 import { functionNames, isOtherOperation, misfitText } from './study.ts';
 import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
@@ -82,7 +83,7 @@ export type Body =
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
   | { readonly kind: 'wallet'; readonly view: WalletView }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
-  | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly amounts: readonly PastAmounts[]; readonly recordings: readonly PastRecording[] }
+  | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly amounts: readonly PastAmounts[]; readonly spreads: readonly PastSpread[]; readonly recordings: readonly PastRecording[] }
   | { readonly kind: 'next'; readonly steps: readonly NextStep[]; readonly automatic: readonly Inline[] };
 
 export type NextStep = { readonly say: Inline; readonly command: string | undefined; readonly then: readonly Inline[]; readonly hashes: boolean };
@@ -234,6 +235,15 @@ export type PastAmounts = {
   readonly tokens: readonly { readonly count: number; readonly lead: string; readonly rows: readonly PastAmountRow[] }[];
   readonly finding: string | undefined;
   readonly unmeasured: string | undefined;
+};
+/** One free number of one recording and sender type: the smallest value, the percentiles and the largest, each with its label. */
+export type PastSpread = {
+  readonly field: string;
+  readonly who: string;
+  readonly lead: string;
+  readonly count: number;
+  readonly cells: readonly { readonly label: string; readonly value: string }[];
+  readonly unrecorded: string | undefined;
 };
 export type PastRecording = { readonly file: string; readonly count: string; readonly search: Inline; readonly blocks: readonly PastBlock[]; readonly others: readonly Inline[] };
 
@@ -1424,7 +1434,9 @@ function addressSection(context: Context): Section[] {
 }
 
 /** A search anchor in words: a mint or burn of a vault's shares is a deposit or a withdrawal, of any other token only a mint or burn. */
-function anchorWords(anchor: string, token: RegistryEntry | undefined, w: Words): string {
+function anchorWords(query: PastTxsRecording['query'], token: RegistryEntry | undefined, w: Words): string {
+  const { anchor } = query;
+  if (anchor === 'event') return query.event?.split('(')[0] ?? anchor;
   const vault = token?.kind === 'vault';
   if (anchor === 'mint') return vault ? w.anchor.mintVault : w.anchor.mint;
   if (anchor === 'burn') return vault ? w.anchor.burnVault : w.anchor.burn;
@@ -1594,8 +1606,8 @@ function pastSection(context: Context): Section {
     const same = [...run.found.values()].every((s) => s.length === 2);
     return {
       file,
-      count: w.searchCount(nameOf(query.token), anchorWords(query.anchor, registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length),
-      search: w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
+      count: w.searchCount(nameOf(query.token), anchorWords(query, registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length),
+      search: query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
       blocks,
       others,
     };
@@ -1619,8 +1631,22 @@ function pastSection(context: Context): Section {
       unmeasured: missed === 0 ? undefined : w.amountsUnmeasured(missed),
     }));
   });
+  const spreads = context.inputs.pastTxs.flatMap(({ run }): PastSpread[] => {
+    const fits = run.studies.filter((s): s is Fit => s.kind === 'fit');
+    const groups = [
+      { safe: true, fits: fits.filter((f) => f.sender.kind === 'safe'), rules: run.shapes.whole.loosened.rules },
+      ...run.shapes.calls.map((shape, call) => ({ safe: false, fits: fits.filter((f) => f.sender.kind === 'eoa' && f.sender.call === call), rules: shape.loosened.rules })),
+    ];
+    return groups.flatMap(({ safe, fits: of, rules }) =>
+      freeNumbers(run, of, rules).map(({ path, time, spread, unrecorded }): PastSpread => {
+        const value = (n: bigint) => (time ? w.spreadSeconds(n) : `${n}`);
+        const cells = spread === undefined ? [] : [['min', spread.min] as const, ...PERCENTILES.map((p, i) => [`p${p}`, spread.percentiles[i] as bigint] as const), ['max', spread.max] as const];
+        return { field: path, who: w.spreadWho(safe), lead: w.spreadTime(time), count: spread?.count ?? 0, cells: cells.map(([label, n]) => ({ label, value: value(n) })), unrecorded: unrecorded === 0 ? undefined : w.spreadUnrecorded(unrecorded) };
+      }),
+    );
+  });
   const conclusion = context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion);
-  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, amounts, recordings } };
+  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, amounts, spreads, recordings } };
 }
 
 function sameShape(context: Context): Inline {
@@ -1653,7 +1679,7 @@ function sameShape(context: Context): Inline {
     ...new Set(
       context.inputs.pastTxs.map(({ query }) => {
         const token = registry.byAddress.get(query.token.toLowerCase() as Address);
-        return w.searched(token?.name ?? checksumAddress(query.token as Address), anchorWords(query.anchor, token, w));
+        return w.searched(token?.name ?? checksumAddress(query.token as Address), anchorWords(query, token, w));
       }),
     ),
   ];

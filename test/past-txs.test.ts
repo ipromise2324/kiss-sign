@@ -10,11 +10,12 @@ import { REPLAY_ENDPOINTS, replayReader, replayTransport } from '../src/chain/re
 import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
-import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
+import { DEFAULT_SPREAD, pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
 import { scrubRecording } from '../src/research/recording.ts';
+import { replayMessages } from '../src/research/messages.ts';
 import { pastTxsSampling } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
-import { recordingAsk, replayAsk, searchBoth } from '../src/research/sources.ts';
+import { anchorEvent, recordingAsk, replayAsk, searchBoth } from '../src/research/sources.ts';
 import type { Anchor, AnchorKind, Ask, SourceExchange, SourceRequest } from '../src/research/sources.ts';
 import type { Address } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
@@ -48,7 +49,7 @@ async function report(
       anchor: { token: query.token as Address, kind: query.anchor as AnchorKind, ...(query.from === undefined ? {} : { from: query.from as Address }) },
       sampling: pastTxsSampling(query),
     },
-    { ask: replayAsk(options.sources ?? recorded.sources), reader: options.reader ?? replayReader(options.exchanges ?? recorded.exchanges), registry: seen, exclude: options.exclude, maxTxs: query.maxTxs },
+    { ask: replayAsk(options.sources ?? recorded.sources), reader: options.reader ?? replayReader(options.exchanges ?? recorded.exchanges), registry: seen, readMessage: replayMessages([]), exclude: options.exclude, maxTxs: query.maxTxs },
   );
   return renderPastTxs(run, seen);
 }
@@ -142,7 +143,7 @@ test('a window with more transfers than one page is halved, and the report names
   const { query } = windowed;
   const run = await pastTxs(
     { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: DEFAULT_SPREAD },
-    { ask, reader: replayReader(windowed.exchanges), registry, exclude: undefined, maxTxs: query.maxTxs },
+    { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
   );
   const text = renderPastTxs(run, registry);
   assert.match(text, /^ {2}blocks 26377201 to 26380800: 45 found, 2 studied; halved, too many transfers in 26373601 to 26380800, so 26373601 to 26377200 not searched$/m);
@@ -171,7 +172,7 @@ test('a recording keeps only what the search reads, so a busy token\'s halved wi
     const study = (ask: Ask) =>
       pastTxs(
         { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: DEFAULT_SPREAD },
-        { ask, reader: replayReader(windowed.exchanges), registry, exclude: undefined, maxTxs: query.maxTxs },
+        { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
       );
     const recorder = recordingAsk(live);
     const run = await study(recorder.ask);
@@ -349,7 +350,7 @@ test('the report names where the anchor transfers move', async () => {
   const run = (anchor: Omit<Anchor, 'token' | 'kind' | 'fromBlock' | 'toBlock'>) =>
     pastTxs(
       { template, anchor: { token: LOAN, kind: 'any', ...anchor }, sampling: { kind: 'range', range: { fromBlock: 10n, toBlock: 20n } } },
-      { ask: async (r) => (r.source === 'alchemy' ? { transfers: [] } : { status: '0', message: 'No records found' }), reader: replayReader([]), registry, exclude: undefined, maxTxs: 12 },
+      { ask: async (r) => (r.source === 'alchemy' ? { transfers: [] } : { status: '0', message: 'No records found' }), reader: replayReader([]), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: 12 },
     );
   assert.match(renderPastTxs(await run({ to: LENDING }), registry), /^anchor: Transfer of usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 moved into morpho-blue$/m);
   assert.match(renderPastTxs(await run({ from: DISTRIBUTOR, to: LENDING }), registry), /moved out of merkl-distributor into morpho-blue$/m);
@@ -427,4 +428,88 @@ test('--same-windows-as refuses a recording of one block range, and a name with 
   const missing = pastTxsRun('--same-windows-as', 'no-such-study');
   assert.equal(missing.status, 64);
   assert.equal(missing.stderr, '--same-windows-as no-such-study: no recording testdata/research/no-such-study.json\n');
+});
+
+test('a free number is summarized by nearest rank: the smallest, the 50th, 90th and 99th percentile, and the largest', () => {
+  const hundred = Array.from({ length: 100 }, (_, i) => BigInt(100 - i));
+  assert.deepEqual(spreadOf(hundred), { count: 100, min: 1n, percentiles: [50n, 90n, 99n], max: 100n });
+  assert.deepEqual(spreadOf([7n, -3n, 1800n]), { count: 3, min: -3n, percentiles: [7n, 1800n, 1800n], max: 1800n });
+  assert.equal(spreadOf([]), undefined);
+});
+
+test('an event anchor is searched by Etherscan alone, under the topic of its canonical signature', async () => {
+  const asked: SourceRequest[] = [];
+  const ask: Ask = async (request) => {
+    asked.push(request);
+    return { status: '1', message: 'OK', result: [{ transactionHash: `0x${'ab'.repeat(32)}`, topics: [`0x${'00'.repeat(32)}`, `0x${'00'.repeat(12)}${'11'.repeat(20)}`] }] };
+  };
+  const event = anchorEvent('PreSignature(address indexed owner, bytes orderUid, bool signed)');
+  assert.deepEqual(event, { signature: 'PreSignature(address,bytes,bool)', topic: '0x01bf7c8b0ca55deecbea89d7e58295b7ffbf685fd0d96801034ba8c6ffe1c68d' });
+  const hits = await searchBoth({ token: `0x${'90'.repeat(20)}` as Address, kind: 'event', event, fromBlock: 1n, toBlock: 2n }, ask);
+  assert.deepEqual(asked.map((r) => r.source), ['etherscan']);
+  assert.equal(asked[0]?.source === 'etherscan' ? asked[0].query.topic0 : undefined, event.topic);
+  assert.deepEqual(hits, { alchemy: [], etherscan: [{ hash: `0x${'ab'.repeat(32)}`, from: `0x${'11'.repeat(20)}`, to: `0x${'00'.repeat(20)}` }] });
+});
+
+test('--event goes only with --anchor event, and --anchor event needs it', () => {
+  const run = (...args: string[]) => spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'cow/swap', '--token', 'gpv2-settlement', ...args], { encoding: 'utf8' });
+  for (const args of [['--anchor', 'event'], ['--anchor', 'any', '--event', 'PreSignature(address,bytes,bool)']]) {
+    const refused = run(...args);
+    assert.equal(refused.status, 64);
+    assert.equal(refused.stderr, '--event goes with --anchor event, and --anchor event needs --event\n');
+  }
+});
+
+const cow: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'cow-swap-presign.json'));
+
+async function cowRun(options: { time?: boolean; messages?: PastTxsRecording['messages']; reader?: Reader } = {}) {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cow', 'swap', 'template.json'), 'utf8'));
+  const fields = raw.calls[0].args.orderUid.packed[0].rule.eip712.fields;
+  if (options.time === true) fields.validTo = { free: { time: fields.validTo.free } };
+  const { query } = cow;
+  return pastTxs(
+    { template: parseTemplate(raw, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: pastTxsSampling(query) },
+    { ask: replayAsk(cow.sources), reader: options.reader ?? replayReader(cow.exchanges), registry, readMessage: replayMessages(options.messages ?? cow.messages ?? []), exclude: undefined, maxTxs: query.maxTxs },
+  );
+}
+
+test('a signed message read from the lookup is studied member by member, so an order paying its own Safe fits', async () => {
+  const text = renderPastTxs(await cowRun(), registry);
+  assert.match(text, /^anchor: PreSignature\(address,bytes,bool\) logged by gpv2-settlement 0x9008D19f58AAbD9eD0D60971565AA8510560ab41$/m);
+  assert.match(text, /^sources: etherscan found \d+; alchemy does not search an event/m);
+  const fits = /^fit the template's shape: (\d+) transactions from \d+ Safes;/m.exec(text)?.[1];
+  assert.ok(Number(fits) > 0, 'some Safe orders fit');
+  assert.match(text, new RegExp(`digest\\.receiver {2}\\[the Safe\\]\\n {4}equalled the Safe in ${fits} of ${fits} `));
+});
+
+test('a transaction whose signed message the recording does not hold is unreadable, saying where it was read from', async () => {
+  const text = renderPastTxs(await cowRun({ messages: [] }), registry);
+  assert.match(text, /^ {2}\d+ unreadable, no Order read from api\.cow\.fi: not recorded: 0x[0-9a-f]{64}/m);
+  assert.match(text, /^fit the template's shape: 0 transactions from 0 Safes;/m);
+});
+
+test('a free number declared a time is spread less the time of the block each transaction ran in', async () => {
+  const run = await cowRun();
+  const reader = replayReader(cow.exchanges);
+  const fits = run.studies.filter((s) => s.kind === 'fit' && s.sender.kind === 'safe');
+  const relative = await Promise.all(
+    fits.map(async (fit) => {
+      if (fit.kind !== 'fit') throw new Error('a fit');
+      const block = await reader.block(fit.block);
+      const header = block.kind === 'agreed' ? await reader.header(block.value) : undefined;
+      const time = header?.kind === 'agreed' ? header.value.time : assert.fail('the block time is recorded');
+      return BigInt(fit.values[fit.paths.findIndex((p) => p.endsWith('digest.validTo'))] as string) - time;
+    }),
+  );
+  const spread = spreadOf(relative);
+  assert.ok(spread !== undefined);
+  const text = renderPastTxs(await cowRun({ time: true }), registry);
+  const expected = `less the block's time, in seconds: ${spread.count} transactions, min ${spread.min}, p50 ${spread.percentiles[0]}, p90 ${spread.percentiles[1]}, p99 ${spread.percentiles[2]}, max ${spread.max}`;
+  assert.ok(text.includes(`digest.validTo  [free]\n    values: ${expected}\n`), expected);
+});
+
+test('a time whose block the recording does not hold is counted as not recorded, not guessed', async () => {
+  const reader = replayReader(cow.exchanges.filter((e) => e.method !== 'eth_getBlockByHash'));
+  const text = renderPastTxs(await cowRun({ time: true, reader }), registry);
+  assert.match(text, /digest\.validTo {2}\[free\]\n {4}values: less the block's time: none; block time not recorded for \d+\n/);
 });

@@ -151,7 +151,8 @@ export type Rule =
   /** A `bytes32` that holds the address `rule` binds, left-padded with 12 zero bytes, as bridges hold a recipient. */
   | { readonly kind: 'address-word'; readonly rule: AddressRule }
   | { readonly kind: 'const'; readonly value: ConstValue }
-  | { readonly kind: 'free'; readonly reason: Prose; readonly claim: FreeClaim }
+  /** `time`: a number of seconds since 1970, as a block's timestamp counts, which `pnpm past-txs` measures against the block's time. */
+  | { readonly kind: 'free'; readonly reason: Prose; readonly claim: FreeClaim; readonly time?: true }
   /** The same number as the transaction holds at an earlier template path, such as an approval its transfer spends. */
   | { readonly kind: 'equals'; readonly path: string; readonly rule: LeafRule }
   /**
@@ -522,8 +523,12 @@ function free(path: string, raw: unknown, type: AbiType): Rule {
   }
   const value = object(path, raw);
   const [claim, ...extra] = Object.keys(value);
-  if ((claim !== 'proof' && claim !== 'unread' && claim !== 'route') || extra.length > 0) throw new TemplateError(path, 'must be a reason, or exactly one of proof, unread, route');
+  if ((claim !== 'proof' && claim !== 'unread' && claim !== 'route' && claim !== 'time') || extra.length > 0) throw new TemplateError(path, 'must be a reason, or exactly one of proof, unread, route, time');
   if (claim === 'route' && type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(path, 'a route is a number that picks a pool');
+  if (claim === 'time') {
+    if (type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(path, 'a time is a number of seconds');
+    return { kind: 'free', reason: prose(`${path}.time`, value.time), claim: 'scalar', time: true };
+  }
   return { kind: 'free', reason: prose(`${path}.${claim}`, value[claim]), claim };
 }
 
