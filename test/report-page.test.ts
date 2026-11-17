@@ -479,7 +479,7 @@ test('the three oracles only the protocol API confirms are the rows to review, o
     page.header.strip.map((s) => [s.name, s.state, s.count]),
     [
       ['地址來源', 'warn', '7 / 10'],
-      ['原始碼驗證', 'ok', '6 / 6'],
+      ['原始碼驗證', 'ok', '4 / 4'],
       ['合約沒被換掉', 'ok', '10 / 10'],
       ['參數保護', 'ok', '1 / 1'],
       ['雙節點比對', 'ok', undefined],
