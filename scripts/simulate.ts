@@ -164,7 +164,7 @@ if (flags.record !== undefined) {
     executed: { number: executed.number.toString(), hash: executed.hash },
     parent: { number: parent.number.toString(), hash: parent.hash },
     providers: reader.providers,
-    exchanges: recorder.exchanges().filter((e) => reader.providers.every((p) => p in e.answers)),
+    exchanges: recorder.exchanges().filter((e) => reader.providers.every((p) => p in e.answers || p in (e.errors ?? {}))),
   };
   mkdirSync(join(out, '..'), { recursive: true });
   writeFileSync(out, recordingText(fixture, 2));

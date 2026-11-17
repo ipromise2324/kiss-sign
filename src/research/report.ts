@@ -527,6 +527,7 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
     block(query.fromBlock) &&
     block(query.toBlock) &&
     block(query.head) &&
+    (query.head === undefined || (query.fromBlock === undefined && query.toBlock === undefined)) &&
     Number.isSafeInteger(query.maxTxs)
   );
 }
