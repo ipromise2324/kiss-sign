@@ -20,9 +20,9 @@ import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, inScope, loadTemplate, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
-import type { CallNode, CardRef, Computed, ComputedRead, Effect, Quantity, Rule, Template, TokenRef, ViewEffect } from '../template/template.ts';
+import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, readsOn, sourceSiteLine, trimForRecording, trimPage } from './listings.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
@@ -44,6 +44,7 @@ import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
 import type { AnchorKind } from './sources.ts';
 import { readRecording } from '../chain/bytecode.ts';
+import { toleranceSpan } from './report-words.ts';
 
 /** A template, with the one vault its report covers when it is reported per vault; or one registry vault alone. */
 export type Subject =
@@ -283,6 +284,7 @@ function namedInRules(template: Template): Set<string> {
     if (view.to.kind === 'contract') names.add(view.to.name);
     view.args.forEach(visit);
   }
+  namedEffectTokens(template.effects).forEach((name) => names.add(name));
   return names;
 }
 
@@ -378,7 +380,8 @@ function abiUsed(subject: Subject, registry: Registry): Set<string> {
     ...callTargetEntries(template, registry).map((entry) => entry.name),
     ...template.effects.views.flatMap((view) => viewTargetNames(view.to, template, registry)),
     ...template.facts.map((fact) => fact.to),
-    ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => token(effect.token)),
+    ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => effectTokenNames(effect.token, template, registry)),
+    ...template.effects.touches.map((touch) => touch.token),
     ...[...template.card.values()].flatMap((field) => (field.kind === 'amount' ? [...token(field.of), ...(field.computed === undefined ? [] : read(field.computed.read))] : [])),
   ].forEach((name) => names.add(name));
   return names;
@@ -622,7 +625,8 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'share-price':
       return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e${rule.scale} / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
     case 'at-least':
-      return `at least the card's ${code(rule.field)}`;
+    case 'at-most':
+      return `at ${rule.kind === 'at-least' ? 'least' : 'most'} the card's ${code(rule.field)}`;
     case 'call':
     case 'keccak':
     case 'items':
@@ -684,23 +688,29 @@ function callRows(node: CallNode, prefix: string, template: Template, registry: 
   ];
 }
 
-function tokenText(token: TokenRef, template: Template, registry: Registry): string {
-  return token === 'eth' ? 'ETH' : `${refText(token)}${refAddresses(token, template, registry)}`;
+function tokenText(token: EffectToken, template: Template, registry: Registry): string {
+  if (token === 'eth') return 'ETH';
+  if (!isNamedToken(token)) return `${refText(token)}${refAddresses(token, template, registry)}`;
+  const entry = registry.entries.get(token.contract);
+  return entry === undefined ? code(token.contract) : full(entry);
 }
+
+/** A tolerance with the template's reason for it, after the amount it widens. */
+const toleranceText = ({ less, more, why }: Tolerance): string => `; the Safe's balance may end ${toleranceSpan(less, more)} than that, for rounding; ${byAi(why)}`;
 
 function effectRow(side: string, effect: Effect, template: Template, registry: Registry): string {
   const amount =
     effect.amount.kind === 'card'
       ? `the card's ${code(effect.amount.field)}`
-      : effect.amount.kind === 'at-least'
-        ? `at least the card's ${code(effect.amount.field)}`
+      : effect.amount.kind === 'at-least' || effect.amount.kind === 'at-most'
+        ? `at ${effect.amount.kind === 'at-least' ? 'least' : 'most'} the card's ${code(effect.amount.field)}${effect.amount.kind === 'at-most' ? ', and none gained' : ''}`
         : effect.amount.kind === 'positive'
           ? 'more than nothing'
           : effect.amount.kind === 'any'
             ? 'any amount, none included'
             : 'its whole balance';
   const to = effect.to === undefined ? '' : `, to ${refText(effect.to)}`;
-  return `| ${side} | ${tokenText(effect.token, template, registry)} | ${amount}${to} |`;
+  return `| ${side} | ${tokenText(effect.token, template, registry)} | ${amount}${to}${effect.tolerance === undefined ? '' : toleranceText(effect.tolerance)} |`;
 }
 
 function argumentText(rule: Rule, param: AbiParam, template: Template, registry: Registry): string {
@@ -782,11 +792,14 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   });
 
   out.push('## Effects', '');
-  if (template.effects.gives.length + template.effects.gets.length === 0) out.push(`The Safe gives and gets nothing: any change to its balances is a ${code('MISMATCH')}.`);
+  if (template.effects.gives.length + template.effects.gets.length + template.effects.touches.length === 0) out.push(`The Safe gives and gets nothing: any change to its balances is a ${code('MISMATCH')}.`);
   else {
     out.push('| Side | Token | Amount |', '| --- | --- | --- |');
     for (const effect of template.effects.gives) out.push(effectRow('the Safe gives', effect, template, registry));
     for (const effect of template.effects.gets) out.push(effectRow('the Safe gets', effect, template, registry));
+    for (const { token, tolerance } of template.effects.touches) {
+      out.push(`| the Safe keeps | ${tokenText({ contract: token }, template, registry)} | unchanged${toleranceText(tolerance)} |`);
+    }
   }
   const settings = template.effects.safe;
   if (settings !== undefined) {

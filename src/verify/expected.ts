@@ -115,7 +115,7 @@ export function amountTokens(card: ResolvedCard, templates: ReadonlyMap<string, 
 function argNote(rule: Rule | undefined, value: AbiValue, values: Values, walk: Walk): ArgNote | undefined {
   if (value.kind !== 'uint') return undefined;
   if (rule?.kind === 'share-price') return { kind: 'share-price', bound: rule.bound };
-  const name = rule?.kind === 'at-least' ? rule.field : rule?.kind === 'card' && rule.ref.attribute === undefined ? rule.ref.field : undefined;
+  const name = rule?.kind === 'at-least' || rule?.kind === 'at-most' ? rule.field : rule?.kind === 'card' && rule.ref.attribute === undefined ? rule.ref.field : undefined;
   const field = name === undefined ? undefined : walk.templateOf.get(values)?.card.get(name);
   if (field?.kind === 'percent') return { kind: 'equals', text: percentText(value.value) };
   const token = field?.kind === 'amount' ? amountToken(field.of, values, walk.registry) : undefined;
