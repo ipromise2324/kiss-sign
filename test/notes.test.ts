@@ -5,7 +5,8 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { loadRegistry } from '../src/registry.ts';
 import type { Ledger, Result } from '../src/research/ledger.ts';
-import { NotesError, fieldKeys, mergeNotes, notesChanges, notesPath, notesScope, parseNotes, readNotes } from '../src/research/notes.ts';
+import { NotesError, fieldKeys, mergeNotes, notesChanges, notesLanguages, notesPath, notesScope, parseNotes, readNotes } from '../src/research/notes.ts';
+import type { Language } from '../src/language.ts';
 import type { NotesScope } from '../src/research/notes.ts';
 import type { ProtocolFacts } from '../src/research/protocol-facts.ts';
 import { entriesOf, loadReport } from '../src/research/report.ts';
@@ -29,7 +30,6 @@ const SCOPE: NotesScope = {
   language: 'zh-TW',
 };
 
-/** One AI text in both languages; the English is the Chinese with a marker, so a test can tell which one came back. */
 /** A text in both languages; its English stands in for a translation, each Chinese character an x. */
 const t = (zh: string) => ({ en: `en:${zh.replace(/[^\u0000-\u2e7f]/gu, 'x')}`, 'zh-TW': zh });
 
@@ -83,15 +83,60 @@ test("each language's page gets that language's text", () => {
   assert.equal(parseNotes(VALID, SCOPE).title, '供應 USDC 到 Morpho 市場');
 });
 
-test('a text missing a language, holding another key, or written as a plain string is refused, whichever language the page is in', () => {
+/** VALID with every text in `language` alone, as a signer who reads only that language gets it. */
+function only(language: Language): Json {
+  const keep = (value: unknown): unknown =>
+    Array.isArray(value)
+      ? value.map(keep)
+      : typeof value === 'object' && value !== null
+        ? 'zh-TW' in value && 'en' in value
+          ? { [language]: (value as Record<string, unknown>)[language] }
+          : Object.fromEntries(Object.entries(value).map(([k, v]) => [k, keep(v)]))
+        : value;
+  return keep(VALID) as Json;
+}
+
+test('notes in one language parse for that language, and are the languages the title holds', () => {
+  assert.equal(parseNotes(only('zh-TW'), SCOPE).summary, '摘要');
+  assert.equal(parseNotes(only('en'), { ...SCOPE, language: 'en' }).summary, t('摘要').en);
+  assert.deepEqual(notesLanguages(only('zh-TW')), ['zh-TW']);
+  assert.deepEqual(notesLanguages(only('en')), ['en']);
+  assert.deepEqual(notesLanguages(VALID), ['en', 'zh-TW']);
+});
+
+test('a page in a language the notes do not hold is refused', () => {
+  assert.throws(() => parseNotes(only('zh-TW'), { ...SCOPE, language: 'en' }), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.title: holds no en text, so there is no en page to write');
+});
+
+test('a text whose languages differ from the title\'s is refused, a mix in either direction, whichever language the page is in', () => {
   for (const language of ['en', 'zh-TW'] as const) {
-    const scope = { ...SCOPE, language };
-    const refusedIn = (raw: unknown, message: string) => assert.throws(() => parseNotes(raw, scope), (e: unknown) => e instanceof NotesError && e.message === message);
-    refusedIn(edited(['title'], { en: 'Supply USDC' }), 'notes.json.title: zh-TW is missing');
-    refusedIn(edited(['verdict', 'text'], { 'zh-TW': '要小心' }), 'notes.json.verdict.text: en is missing');
-    refusedIn(edited(['fields', '1.approve.spender'], { ...t('誰'), fr: 'qui' }), 'notes.json.fields.1.approve.spender: "fr" is not a language; use en and zh-TW');
-    refusedIn(edited(['summary'], '摘要'), 'notes.json.summary: not a JSON object with en and zh-TW');
+    const refusedIn = (raw: unknown, message: string) => assert.throws(() => parseNotes(raw, { ...SCOPE, language }), (e: unknown) => e instanceof NotesError && e.message === message);
+    refusedIn(edited(['verdict', 'text'], { 'zh-TW': '要小心' }), 'notes.json.verdict.text: en is missing; every text holds the languages the title holds, en and zh-TW');
+    refusedIn(edited(['summary'], { en: 'Summary' }), 'notes.json.summary: zh-TW is missing; every text holds the languages the title holds, en and zh-TW');
   }
+  const oneZh = (path: readonly (string | number)[], value: unknown) => {
+    const raw = only('zh-TW');
+    let at = raw as Record<string | number, unknown>;
+    for (const key of path.slice(0, -1)) at = at[key] as Record<string | number, unknown>;
+    at[path.at(-1) as string | number] = value;
+    return raw;
+  };
+  refused(oneZh(['fields', '1.approve.spender'], t('誰')), 'notes.json.fields.1.approve.spender: en is not in the title; every text holds the languages the title holds, zh-TW');
+  refused(oneZh(['title'], t('標題')), 'notes.json.summary: en is missing; every text holds the languages the title holds, en and zh-TW');
+});
+
+test('a text holding an unknown language, a title holding none, or a plain string is refused', () => {
+  refused(edited(['fields', '1.approve.spender'], { ...t('誰'), fr: 'qui' }), 'notes.json.fields.1.approve.spender: "fr" is not a language; use en or zh-TW');
+  refused(edited(['summary'], '摘要'), 'notes.json.summary: not a JSON object with en and zh-TW');
+  refused(edited(['title'], { fr: 'Titre' }), 'notes.json.title: not a JSON object with en or zh-TW, or both');
+  refused(edited(['title'], '標題'), 'notes.json.title: not a JSON object with en or zh-TW, or both');
+  refused(edited(['title'], undefined), 'notes.json: title is missing');
+});
+
+test('English-only notes are refused when a text holds Chinese characters', () => {
+  const raw = only('en');
+  (raw as { summary: unknown }).summary = { en: '供應 USDC' };
+  assert.throws(() => parseNotes(raw, { ...SCOPE, language: 'en' }), (e: unknown) => e instanceof NotesError && e.message === 'notes.json.summary.en: holds Chinese characters or full-width punctuation');
 });
 
 test('flow, judgments and entries may be left out', () => {
@@ -232,6 +277,40 @@ test("a vault's notes join the template's: its verdict, judgments after the shar
   assert.deepEqual(notes.judgments.map((j) => j.text), ['判斷', '這個 vault']);
   assert.deepEqual([...notes.reviews.keys()], ['morpho-oracle/source.page']);
   assert.deepEqual([...(notes.entries?.keys() ?? [])], ['usdc', 'cbbtc']);
+});
+
+test("a vault's report is in the languages both notes hold: a zh-TW-only vault under a bilingual template gets a zh-TW page alone", () => {
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
+  mkdirSync(join(root, vaultReportDir('fluid/vault-deposit', 'fluid-fusdt')), { recursive: true });
+  const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
+  const write = (shared: unknown, vault: unknown) => {
+    writeFileSync(join(root, notesPath('fluid/vault-deposit')), JSON.stringify(shared));
+    writeFileSync(join(root, notesPath('fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify(vault));
+  };
+  const verdict = (text: Record<string, string>) => ({ verdict: { status: 'caution', text } });
+  const sharedZh = Object.fromEntries(Object.entries(only('zh-TW')).filter(([key]) => key !== 'verdict'));
+  const sharedEn = Object.fromEntries(Object.entries(only('en')).filter(([key]) => key !== 'verdict'));
+
+  write(SHARED, verdict({ 'zh-TW': '要小心' }));
+  const merged = readNotes(root, 'fluid/vault-deposit', fusdt);
+  assert.deepEqual(notesLanguages(merged), ['zh-TW']);
+  assert.equal(parseNotes(merged, SCOPE).verdict.text, '要小心');
+  assert.equal(parseNotes(merged, SCOPE).summary, '摘要');
+
+  write(SHARED, verdict(t('要小心')));
+  assert.deepEqual(notesLanguages(readNotes(root, 'fluid/vault-deposit', fusdt)), ['en', 'zh-TW']);
+  write(sharedZh, verdict(t('要小心')));
+  assert.deepEqual(notesLanguages(readNotes(root, 'fluid/vault-deposit', fusdt)), ['zh-TW']);
+
+  write(sharedEn, verdict({ 'zh-TW': '要小心' }));
+  assert.throws(
+    () => readNotes(root, 'fluid/vault-deposit', fusdt),
+    (e: unknown) =>
+      e instanceof NotesError &&
+      e.message === `${notesPath('fluid/vault-deposit', 'fluid-fusdt')}: holds zh-TW and ${notesPath('fluid/vault-deposit')} holds en; a vault's report is written in a language both hold`,
+  );
+  write(SHARED, { ...verdict({ 'zh-TW': '要小心' }), pastTxsConclusion: t('結論') });
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /holds texts in zh-TW, in en and zh-TW; every text in one file holds the same languages/);
 });
 
 test("a key or name both notes define is refused, and a vault's notes hold only verdict, judgments, reviews and entries", () => {
