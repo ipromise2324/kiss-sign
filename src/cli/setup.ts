@@ -37,7 +37,7 @@ function openCommand(platform: NodeJS.Platform, path: string): string {
 export async function init(args: readonly string[], io: Io, w: Labels): Promise<number> {
   const I = w.init;
   const { values } = parseArgs({ args: [...args], options: { safe: { type: 'string' }, language: { type: 'string' } }, strict: true });
-  if (values.language !== undefined && !isLanguage(values.language)) throw new UsageError(I.languageFlag(LANGUAGES.join(' or ')));
+  if (values.language !== undefined && !isLanguage(values.language)) throw new UsageError(I.languageFlag(LANGUAGES));
   const home = kissSignHome(io.env);
   const existing = loadStoredConfig(home);
   const safe = values.safe !== undefined ? parseAddress('--safe', values.safe) : existing?.safe;

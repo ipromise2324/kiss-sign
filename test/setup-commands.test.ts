@@ -511,6 +511,33 @@ test('card new counts eth in 18 decimals without reading the chain', async () =>
   assert.match(made.stdout, /│   amount +0\.5 ETH\n│ +500000000000000000 base units\n/);
 });
 
+test('card new in a zh-TW home asks in Traditional Chinese, with the same prompt endings and the same card hash', async () => {
+  const sealed: string[] = [];
+  for (const language of ['en', 'zh-TW']) {
+    const home = freshHome();
+    configure(home, language);
+    await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
+    const made = await run(['card', 'new', 'eth/transfer'], home, [numberOf('alice'), '0.5', 'y'], { ...noChain, env: {} });
+    assert.equal(made.code, 0, made.stderr);
+    assert.ok(made.asked.every((question, i) => /\(1-[0-9]+\): $|\): $|\[y\/N\] $/.test(question)), made.asked.join('|'));
+    if (language === 'zh-TW') {
+      assert.deepEqual(made.asked.slice(1), ['amount (整顆 ETH 的數量，18 位小數): ', '這是你要做的事嗎？[y/N] ']);
+      assert.match(made.asked[0]!, /^recipient：輸入編號 \(1-\d+\): $/);
+      assert.match(made.stdout, /│   amount +0\.5 ETH\n│ +500000000000000000 最小單位\n/);
+    }
+    sealed.push(/(0x[0-9a-f]{64})\n$/.exec(made.stdout)?.[1] ?? '');
+  }
+  assert.equal(sealed[0], sealed[1]);
+});
+
+test('--language=zh-TW sets the language of a first init, and a config that cannot be read leaves refusals in English', async () => {
+  const first = await run(['init', '--safe', SAFE, '--language=zh-TW'], freshHome(), undefined, fork);
+  assert.match(first.stdout, /^kiss-sign 設定好了\n/);
+  const broken = freshHome();
+  writeFileSync(join(broken, 'config.json'), '{"chainId": 1, "language": "zh-TW"}');
+  assert.equal((await run(['book', 'list', 'extra'], broken)).stderr, 'kiss-sign: book list takes nothing more.\n');
+});
+
 test('card new offers a transfer recipient only from the address book or the Safe', async () => {
   const home = freshHome();
   configure(home);
