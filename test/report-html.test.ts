@@ -185,7 +185,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
       const href = unescape(raw as string);
       if (href.startsWith('#')) assert.ok(ids.has(href.slice(1)), `${id}: ${href} names no id on the page`);
       else {
-        const built = /^https:\/\/(etherscan\.io\/(tx\/0x[0-9a-f]{64}|address\/0x[0-9a-fA-F]{40})|www\.coingecko\.com\/en\/coins\/[a-z0-9._-]+|github\.com\/[a-z0-9-]+)$/;
+        const built = /^https:\/\/(etherscan\.io\/(tx\/0x[0-9a-f]{64}|address\/0x[0-9a-fA-F]{40})|www\.coingecko\.com\/en\/coins\/[a-z0-9._-]+|immunefi\.com\/bug-bounty\/[a-z0-9-]+\/|github\.com\/[a-z0-9-]+)$/;
         assert.ok(allowed.has(href) || built.test(href), `${id}: ${href} is not a URL the report may link`);
       }
     }

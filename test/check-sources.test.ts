@@ -362,6 +362,22 @@ test('every Immunefi program tied to the protocol is read, whether or not the en
   assert.equal(bounty(programs(null, [ADDR], ['https://app.safe.global/'])), `  bounty     agrees  Immunefi program p of the protocol has ${ADDR} in scope as an etherscan.io address`, 'a website in scope ties it');
 });
 
+test('a program tied only by a website in its scope reads the same from a recording, and lends the protocol none of its own sites', async () => {
+  const source = `https://github.com/stranger/x/blob/${'a'.repeat(40)}/f.md`;
+  const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'safe', immunefi: 'p', source, sourceLabel: 'Bundler3' } });
+  const programs = parseImmunefiPrograms([
+    { slug: 'p', websiteUrl: null, githubUrl: 'https://github.com/stranger', assets: [{ type: 'websites_and_applications', url: 'https://app.safe.global/' }], assetsBodyV2: `https://etherscan.io/address/${ADDR}` },
+  ]);
+  const live = { ...listings, sites: { ...listings.sites, programs } };
+  const pages = { pages: new Map(), commits: new Map() };
+  const text = report(entries, live, pages);
+  assert.match(text, /bounty {5}agrees {2}Immunefi program p of the protocol has/);
+  assert.match(text, /defillama {2}FINDING source GitHub org stranger is not one the protocol's places list/);
+  const recorded = JSON.parse(JSON.stringify(trimForRecording(entries, live, pages, new Date('2026-11-17'))));
+  const replayed = await listingsFor(entries, suffixes, recordedListingReads(recorded), []);
+  assert.equal(report(entries, replayed, pages), text, 'the recording, read back, gives the same lines');
+});
+
 test('a protocol whose only listed site is on a shared host, such as linktr.ee, has no Immunefi program tied to it through that host', () => {
   const onShared = listingsOf([{ slug: 'p', name: 'P', url: 'https://linktr.ee/p' }], recording.coingecko);
   const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'p', source: DOCS, sourceLabel: 'Bundler3' } });

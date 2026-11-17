@@ -424,7 +424,7 @@ test('an SDK whose publisher nothing ties to the protocol confirms nothing, thou
   assert.deepEqual(confirmations(ledgerOf({ ...packageRead(), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
 });
 
-test('a bounty program is tied through a website its scope lists, and never through a shared host such as linktr.ee or github.com', () => {
+test('a bounty program is tied through a website its scope lists, and never through a shared host such as linktr.ee', () => {
   assert.deepEqual(confirmations(ledgerOf({ sites: program([ADDRESS], undefined, null, ['https://app.example.org/']), coins: [] }), ENTRY), ['page', 'bounty']);
   const shared = ledgerOf({
     protocol: { ...BASE.protocol!, url: new URL('https://linktr.ee/proto'), github: [] },
