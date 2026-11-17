@@ -8,7 +8,7 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { loadRegistry } from '../src/registry.ts';
-import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
+import { DEFAULT_SPREAD, pastTxs, renderPastTxs, spreadWindows } from '../src/research/past-txs.ts';
 import { ANCHOR_KINDS, liveAsk, recordingAsk } from '../src/research/sources.ts';
 import type { AnchorKind } from '../src/research/sources.ts';
 import { scrubRecording } from '../src/research/recording.ts';
@@ -91,6 +91,19 @@ const chain = recordingTransport(httpsTransport(), endpoints);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
 const sources = recordingAsk(liveAsk(process.env, note));
+const reader = createReader(endpoints, chain.transport, { note });
+if (head !== undefined) {
+  const latest = await reader.blockNumber();
+  if (latest.kind === 'unverifiable') throw new Error(`the head block: ${latest.reason}`);
+  if (head > latest.value) {
+    console.error(`--head ${head} is above the chain's head block ${latest.value}`);
+    process.exit(64);
+  }
+  if ((spreadWindows(head, DEFAULT_SPREAD.count, DEFAULT_SPREAD.blocks)[0]?.fromBlock ?? -1n) < 0n) {
+    console.error(`--head ${head} leaves no year of blocks before it`);
+    process.exit(64);
+  }
+}
 const query = {
   template,
   anchor: { token, kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }) },
@@ -98,7 +111,7 @@ const query = {
 };
 const run = await pastTxs(query, {
   ask: sources.ask,
-  reader: createReader(endpoints, chain.transport, { note }),
+  reader,
   registry,
   exclude,
   maxTxs,
