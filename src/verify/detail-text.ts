@@ -41,6 +41,7 @@ const EXPECTED: readonly Shape[] = [
   ),
   shape('a stated share count, not the whole balance \\(2\\^256-1\\), to bound the price against', () => '明確的份額數量，而不是整個餘額（2^256-1），用來限制價格'),
   shape('at least (\\S+)', (v) => `至少 ${v}`),
+  shape('at most (\\S+)', (v) => `最多 ${v}`),
   shape('(\\S+), as at (\\S+)', (v, path) => `${v}，和 ${path} 的值相同`),
   shape(`the owner before (\\S+) (${ADDRESS}), who is not an owner of the Safe`, (name, address) => `${name} ${address} 的前一位 owner，但 ${name} ${address} 不是這個 Safe 的 owner`),
   shape('a uint', () => '一個 uint'),
@@ -113,6 +114,7 @@ const AMOUNT: readonly Shape[] = [
 ];
 
 const WANT: readonly Shape[] = [
+  shape('between (.+) and (.+)', (low, high) => `介於 ${translate(AMOUNT, low)} 和 ${translate(AMOUNT, high)} 之間`),
   shape('at least (.+)', (amount) => `至少 ${translate(AMOUNT, amount)}`),
   shape('more than (.+)', (amount) => `多於 ${translate(AMOUNT, amount)}`),
   shape('less than (.+)', (amount) => `少於 ${translate(AMOUNT, amount)}`),

@@ -8,7 +8,7 @@ import type { Proxy } from '../contracts/proxy.ts';
 import { MARKET_ENTRY_PARTS, isAttribute, pinAt } from '../registry.ts';
 import type { CodePin, Registry, RegistryEntry, Route } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
-import { cardRefs } from '../template/template.ts';
+import { cardRefs, namedEffectTokens } from '../template/template.ts';
 import type { Rule, Template } from '../template/template.ts';
 import type { ChainCheck } from './verdict.ts';
 
@@ -58,6 +58,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
       if (view.to.kind === 'contract') add(registry.entries.get(view.to.name));
       view.args.forEach(visit);
     }
+    for (const name of namedEffectTokens(template.effects)) add(registry.entries.get(name));
     for (const kept of template.effects.approves) add(registry.entries.get(kept.spender));
   }
   for (const entry of [...touched.values()]) entry.dependsOn?.forEach((name) => add(registry.entries.get(name)));

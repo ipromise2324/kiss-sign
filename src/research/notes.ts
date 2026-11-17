@@ -6,7 +6,7 @@ import { LANGUAGES } from '../language.ts';
 import type { Language } from '../language.ts';
 import { parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
-import { TEMPLATES_DIR, callTargetEntries, refNames, viewTargetNames } from '../template/template.ts';
+import { TEMPLATES_DIR, callTargetEntries, effectTokenNames, refNames, viewTargetNames } from '../template/template.ts';
 import { vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, Rule, Template } from '../template/template.ts';
 import { needsSigner } from './ledger.ts';
@@ -208,7 +208,8 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
     contracts: new Set([
       ...targets,
       ...targets.flatMap((name) => registry.entries.get(name)?.dependsOn ?? []),
-      ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => (effect.token === 'eth' ? [] : refNames(effect.token, template, registry))),
+      ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => effectTokenNames(effect.token, template, registry)),
+      ...template.effects.touches.map((touch) => touch.token),
     ]),
     entries: new Set(ledger.entries.map((entry) => entry.name)),
     routed: new Set(ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name)),
