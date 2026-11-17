@@ -13,7 +13,8 @@ import type { Sender } from './study.ts';
 
 /**
  * An effect whose amount the transaction states: an exact card amount of a token, which the argument bound to that
- * card field holds, or a token the operation touches, stated as none. `receiver` is the card field of whom it gives to.
+ * card field holds, or a token the operation touches, stated as none. `receiver` is the card field of whom it gives to;
+ * giving to the sender itself changes nothing and is not measured, as `verify` does not judge it.
  */
 export type StatedEffect = {
   readonly side: 'gives' | 'gets' | 'touches';
@@ -43,7 +44,7 @@ export function effectText(effect: StatedEffect): string {
   return `${effect.side} card.${effect.amount} of ${tokenText(effect.token)}${effect.receiver === undefined ? '' : ` to ${refText(effect.receiver)}`}`;
 }
 
-export type Party = 'sender' | 'receiver';
+type Party = 'sender' | 'receiver';
 
 /** How far a party's balance of `token` ended from what the transaction states, in signed base units: below 0, lower. */
 export type Difference = { readonly effect: number; readonly token: Address; readonly party: Party; readonly by: bigint };
@@ -51,7 +52,7 @@ export type Difference = { readonly effect: number; readonly token: Address; rea
 export type Measurement = { readonly kind: 'measured'; readonly differences: readonly Difference[] } | { readonly kind: 'unmeasured'; readonly why: string };
 
 /** One fitting transaction as `measure` reads it: its leaves, paired with the rules of the shape it fit. */
-export type FitLeaves = { readonly hash: Hex; readonly sender: Sender; readonly rules: readonly LeafRule[]; readonly values: readonly string[] };
+type FitLeaves = { readonly hash: Hex; readonly sender: Sender; readonly rules: readonly LeafRule[]; readonly values: readonly string[] };
 
 const sameRef = (a: CardRef, b: CardRef): boolean => a.field === b.field && a.attribute === b.attribute;
 
@@ -81,7 +82,8 @@ function statedIn(fit: FitLeaves, effects: readonly StatedEffect[], registry: Re
     const raw = effect.amount === undefined ? '0' : cardValue(fit, { field: effect.amount, attribute: undefined });
     if (token === undefined || raw === undefined || !/^[0-9]+$/.test(raw)) return [];
     const receiver = effect.receiver === undefined ? undefined : addressOf(fit, effect.receiver, registry);
-    return [{ effect: i, token, amount: BigInt(raw), receiver: receiver === fit.sender.address ? undefined : receiver, side: effect.side }];
+    if (receiver === fit.sender.address) return [];
+    return [{ effect: i, token, amount: BigInt(raw), receiver, side: effect.side }];
   });
 }
 
@@ -158,7 +160,7 @@ export async function measure(reader: Reader, fit: FitLeaves, effects: readonly 
 }
 
 /** One effect over every measured transaction of one token, for one party: how many differed by each amount. */
-export type Distribution = { readonly counts: ReadonlyMap<bigint, number>; readonly lowest: bigint; readonly highest: bigint };
+type Distribution = { readonly counts: ReadonlyMap<bigint, number>; readonly lowest: bigint; readonly highest: bigint };
 
 export function distributionOf(differences: readonly Difference[]): Distribution {
   const counts = new Map<bigint, number>();
@@ -172,7 +174,7 @@ export function distributionOf(differences: readonly Difference[]): Distribution
  * `beyond` when one ended further than the tolerance allows (0 without one), `unfounded` when a tolerance is declared
  * and none differed at all.
  */
-export type ToleranceFinding = { readonly kind: 'beyond'; readonly lower: bigint; readonly higher: bigint } | { readonly kind: 'unfounded' };
+type ToleranceFinding = { readonly kind: 'beyond'; readonly lower: bigint; readonly higher: bigint } | { readonly kind: 'unfounded' };
 
 export function toleranceFinding(effect: StatedEffect, sender: readonly Difference[]): ToleranceFinding | undefined {
   const { lowest, highest } = distributionOf(sender);

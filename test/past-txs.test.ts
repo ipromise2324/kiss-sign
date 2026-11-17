@@ -371,6 +371,12 @@ test("a Safe's transaction that makes none of the template's calls is another op
   assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls /m);
 });
 
+/** The deposit template stating no amount, so the study reads only what this recording, made before amounts were measured, holds. */
+const noAmounts = (): Template => {
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), 'utf8'));
+  return parseTemplate({ ...raw, effects: { ...raw.effects, gives: [] } }, registry);
+};
+
 function replayDroppingDrpc(hash: string, fails: number): Transport {
   const replay = replayTransport(recording.exchanges, REPLAY_ENDPOINTS);
   let left = fails;
@@ -383,14 +389,14 @@ function replayDroppingDrpc(hash: string, fails: number): Transport {
 test('a read that fails on the way is asked again, so a dropped connection that heals changes nothing', async () => {
   const unread: string[] = [];
   const reader = createReader(REPLAY_ENDPOINTS, replayDroppingDrpc(FIT, 2), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
-  assert.equal(await report({ reader }), await report());
+  assert.equal(await report({ reader, template: noAmounts() }), await report({ template: noAmounts() }));
   assert.deepEqual(unread, []);
 });
 
 test('a read that still fails on the way after every retry is named, and --record refuses to keep the study', async () => {
   const unread: string[] = [];
   const reader = createReader(REPLAY_ENDPOINTS, replayDroppingDrpc(FIT, Infinity), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
-  const text = await report({ reader });
+  const text = await report({ reader, template: noAmounts() });
   assert.match(text, new RegExp(`^ {2}1 unreadable, eth_getTransactionByHash: drpc failed \\(unreachable\\): ${FIT}$`, 'm'));
   assert.deepEqual(unread, ['drpc eth_getTransactionByHash: unreachable']);
   assert.equal(unreadRefusal(unread), '1 read(s) got no answer after every retry, so nothing is recorded; run the command again later:\n  drpc eth_getTransactionByHash: unreachable');

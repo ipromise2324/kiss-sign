@@ -94,7 +94,8 @@ async function recordedHead(name: string): Promise<bigint> {
   if (kept !== undefined && /^[0-9]+$/.test(kept)) return BigInt(kept);
   const read = recording.query.fromBlock === undefined ? await replayReader(recording.exchanges).blockNumber() : undefined;
   if (read?.kind !== 'agreed') {
-    console.error(`--same-windows-as ${name}: the recording searched one block range and keeps no head block, so it has no windows to search again`);
+    const why = recording.query.fromBlock === undefined ? 'keeps no head block and no head read' : 'searched one block range and keeps no head block';
+    console.error(`--same-windows-as ${name}: the recording ${why}, so it has no windows to search again`);
     process.exit(64);
   }
   return read.value;

@@ -292,7 +292,7 @@ type EffectAmounts = {
   readonly finding: ReturnType<typeof toleranceFinding>;
 };
 
-export type Amounts = { readonly effects: readonly EffectAmounts[]; readonly unmeasured: ReadonlyMap<string, readonly Hex[]> };
+type Amounts = { readonly effects: readonly EffectAmounts[]; readonly unmeasured: ReadonlyMap<string, readonly Hex[]> };
 
 export function amountsOf(run: PastTxs, registry: Registry): Amounts {
   const senderOf = new Map(run.studies.flatMap((s) => (s.kind === 'fit' ? [[s.hash, s.sender] as const] : [])));
