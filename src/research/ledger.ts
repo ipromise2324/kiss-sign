@@ -10,6 +10,7 @@ import { abiUnused, docSiteLine, entriesOf, evidenceEntries, functionOnPage, has
 import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './vault-evidence.ts';
+import type { Address } from '../safe/types.ts';
 
 /** ok passed; warn evidence missing (amber); bad a real disagreement (red); na nothing to compare (grey). */
 export type State = 'ok' | 'warn' | 'bad' | 'na';
@@ -227,6 +228,8 @@ export type Result = {
   readonly places?: readonly SitePlace[];
   /** For the deployer, who it is and which other entries share it. */
   readonly shared?: DeployerShare;
+  /** For a newest version, the addresses it binds the label to instead of the entry's. */
+  readonly others?: readonly Address[];
 };
 
 export type Ledger = { readonly entries: readonly RegistryEntry[]; readonly results: readonly Result[] };
@@ -318,7 +321,9 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
       return line.cause === 'unlisted' ? { kind: 'deployer-alone' } : { kind: 'creation-unproven' };
     case 'tip':
     case 'sdk-latest':
-      return line.cause === 'differs' ? { kind: 'newer-differs' } : line.cause === 'unattested' ? { kind: 'no-provenance' } : { kind: 'page-unread', why: 'not-fetched' };
+      if (line.cause === 'differs') return { kind: 'newer-differs' };
+      if (line.cause === 'unexplained') return { kind: 'package-differs' };
+      return line.cause === 'unattested' ? { kind: 'no-provenance' } : { kind: 'page-unread', why: 'not-fetched' };
     case 'defillama':
     case 'api-site':
     case 'sdk-site':
@@ -346,6 +351,7 @@ function sourceResults(entry: RegistryEntry, lines: readonly Line[]): Result[] {
         finding: lineFinding(entry, line),
         ...(line.places === undefined ? {} : { places: line.places }),
         ...(line.shared === undefined ? {} : { shared: line.shared }),
+        ...(line.others === undefined ? {} : { others: line.others }),
       };
     });
 }
@@ -616,7 +622,12 @@ export type Judged = {
 };
 
 /** A program source: whether it showed the entry's address, and for a page or the API, whether its site is the protocol's. */
-export type SourceLine = Judged & { readonly source: ProgramSource; readonly site: Judged | undefined; readonly newest: Judged | undefined; readonly shared: DeployerShare | undefined };
+export type SourceLine = Judged & {
+  readonly source: ProgramSource;
+  readonly site: Judged | undefined;
+  readonly newest: (Judged & { readonly others: readonly Address[] }) | undefined;
+  readonly shared: DeployerShare | undefined;
+};
 
 function judged(results: readonly Result[]): Judged {
   const state = worst(results);
@@ -636,7 +647,7 @@ export function sourcesOf(ledger: Ledger, entry: RegistryEntry): SourceLine[] {
       ...judged(of('address')),
       source,
       site: site.length === 0 ? undefined : judged(site),
-      newest: newest.length === 0 ? undefined : judged(newest),
+      newest: newest.length === 0 ? undefined : { ...judged(newest), others: newest.flatMap((r) => r.others ?? []) },
       shared: of('address').find((r) => r.shared !== undefined)?.shared,
     };
   });

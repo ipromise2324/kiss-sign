@@ -420,7 +420,11 @@ function siteLine(site: SiteResult, r: R): Html {
 
 function newestLine(newest: NewestResult, r: R): Html {
   return h`<span class="site" data-state="${newest.state}">${icon(newest.state, r.language)}<span>${
-    newest.state === 'ok' ? r.w.newestOk(newest.where) : r.w.newestNot(newest.where, newest.phrase === undefined ? '' : r.w.phrase[newest.phrase])
+    newest.state === 'ok'
+      ? r.w.newestOk(newest.where)
+      : newest.others.length > 0
+        ? r.w.newestOther(newest.where, newest.others)
+        : r.w.newestNot(newest.where, newest.phrase === undefined ? '' : r.w.phrase[newest.phrase])
   }</span></span>`;
 }
 

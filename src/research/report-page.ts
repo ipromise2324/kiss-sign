@@ -189,7 +189,7 @@ export type PlaceLink = { readonly word: string; readonly href: HttpsUrl | undef
 /** A page's or the API's site, compared with the sites the places that list the entry's protocol `slug` name. */
 export type SiteResult = RowResult & { readonly slug: string | undefined; readonly places: readonly PlaceLink[] };
 /** What the newest version of a pinned page or SDK binds to the same label; `where` is its branch or npm version. */
-export type NewestResult = RowResult & { readonly where: string };
+export type NewestResult = RowResult & { readonly where: string; readonly others: readonly string[] };
 /** A program source: whether it showed the address, for a page or the API its site, and for a pinned page or SDK its newest version. */
 export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined; readonly newest: NewestResult | undefined };
 /** A function's documentation page from docs.json, linked, with the worst of its results; a standard's page carries its caveat. */
@@ -1379,7 +1379,10 @@ function addressSection(context: Context): Section[] {
         state: line.state,
         phrase: line.phrase,
         site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, places: placeLinks(entry, line.site.places, w) },
-        newest: line.newest === undefined ? undefined : { state: line.newest.state, phrase: line.newest.phrase, where: newestWhere(entry, line.source, context.inputs) },
+        newest:
+          line.newest === undefined
+            ? undefined
+            : { state: line.newest.state, phrase: line.newest.phrase, where: newestWhere(entry, line.source, context.inputs), others: line.newest.others.map(checksumAddress) },
       }),
     );
     return {
