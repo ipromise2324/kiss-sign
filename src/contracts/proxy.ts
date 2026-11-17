@@ -1,5 +1,5 @@
 import { keccak_256 } from '@noble/hashes/sha3.js';
-import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import type { Read, Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import type { ImplementationRead, ProxyDeclaration } from '../registry.ts';
@@ -63,6 +63,7 @@ export type ProxyRefusal =
   | { readonly why: 'slot-without-delegatecall' }
   | { readonly why: 'unknown-delegator'; readonly at: Address; readonly pc: number }
   | { readonly why: 'fallback-unfollowable'; readonly at: Address; readonly pc: number; readonly cause: Unfollowable }
+  | { readonly why: 'declared-without-delegation'; readonly at: Address }
   | { readonly why: 'declared-read-failed'; readonly call: string; readonly at: Address }
   | { readonly why: 'declared-probe-failed'; readonly implementation: Address };
 
@@ -144,10 +145,12 @@ function delegatingOnlyAs(address: Address, code: Hex, proxy: Proxy, routed: boo
 
 const NONE: Proxy = { kind: 'none' };
 
-const PROBE_WORD = `0x${bytesToHex(keccak_256(utf8ToBytes('kiss-sign implementation probe')))}` as Hex;
+/** A word no code deployed before block `at` can hold: it hashes that block's hash with the proxy and the implementation. */
+const probeWord = (at: BlockRef, proxy: Address, implementation: Address): Hex =>
+  `0x${bytesToHex(keccak_256(hexToBytes(`${at.hash.slice(2)}${proxy.slice(2)}${implementation.slice(2)}`)))}` as Hex;
 
-/** Returns `PROBE_WORD` when it runs as `proxy`, by a DELEGATECALL or CALLCODE from it, and reverts otherwise. */
-const probeCode = (proxy: Address): Hex => `0x73${proxy.slice(2)}3014601e57600080fd5b7f${PROBE_WORD.slice(2)}60005260206000f3` as Hex;
+/** Returns `word` when it runs as `proxy`, by a DELEGATECALL or CALLCODE from it, and reverts otherwise. */
+const probeCode = (proxy: Address, word: Hex): Hex => `0x73${proxy.slice(2)}3014601e57600080fd5b7f${word.slice(2)}60005260206000f3` as Hex;
 
 /** Each step's view on the address the step before answered, from the proxy on; every answer must be one nonzero address word. */
 async function readDeclared(reader: Reader, address: Address, read: ImplementationRead, at: BlockRef): Promise<Address | ProxyRefusal> {
@@ -163,19 +166,22 @@ async function readDeclared(reader: Reader, address: Address, read: Implementati
 }
 
 /**
- * An `implementationRead` is the AI's, so its answer counts only when the walk finds one delegation in the fallback
- * that no known target covers, and a call to the fallback, with the answer's code replaced by `probeCode`, comes back
- * with `PROBE_WORD`: that delegation then ran the declared address's code as the proxy.
+ * An `implementationRead` is the AI's, so its answer counts only when the walk finds exactly one delegation in the
+ * fallback that no known target covers, and a call to the fallback, with the answer's code replaced by `probeCode`,
+ * comes back with the probe's word: that delegation then ran the declared address's code as the proxy.
  */
 async function declaredProxy(reader: Reader, address: Address, code: Hex, at: BlockRef, read: ImplementationRead): Promise<Located> {
   const fallback = fallbackDelegation(code);
-  const elsewhere = unknownDelegation(address, code, [], fallback.kind === 'delegates' ? [fallback.pc] : []);
+  if (fallback.kind === 'unresolved') return refused({ why: 'fallback-unfollowable', at: address, pc: fallback.pc, cause: fallback.why });
+  if (fallback.kind === 'fixed') return refused({ why: 'declared-without-delegation', at: address });
+  const elsewhere = unknownDelegation(address, code, [], [fallback.pc]);
   if (elsewhere !== undefined) return refused(elsewhere);
   const implementation = await readDeclared(reader, address, read, at);
   if (typeof implementation !== 'string') return refused(implementation);
-  const probe = await reader.call({ to: address, data: fallbackSelector(code), override: { address: implementation, code: probeCode(address) } }, at);
+  const word = probeWord(at, address, implementation);
+  const probe = await reader.call({ to: address, data: fallbackSelector(code), override: { address: implementation, code: probeCode(address, word) } }, at);
   if (probe.kind === 'unverifiable') return unverifiable(probe);
-  if (probe.value.kind !== 'returned' || probe.value.data !== PROBE_WORD) return refused({ why: 'declared-probe-failed', implementation });
+  if (probe.value.kind !== 'returned' || probe.value.data !== word) return refused({ why: 'declared-probe-failed', implementation });
   return { kind: 'located', proxy: { kind: 'declared', implementation } };
 }
 
