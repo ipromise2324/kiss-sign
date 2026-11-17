@@ -279,14 +279,38 @@ test("a vault's notes join the template's: its verdict, judgments after the shar
   assert.deepEqual([...(notes.entries?.keys() ?? [])], ['usdc', 'cbbtc']);
 });
 
-test("a vault's notes in other languages than the template's title are refused; in the same one language they parse", () => {
-  const vault = { verdict: { status: 'caution', text: { 'zh-TW': '要小心' } } };
+test("a vault's report is in the languages both notes hold: a zh-TW-only vault under a bilingual template gets a zh-TW page alone", () => {
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
+  mkdirSync(join(root, vaultReportDir('fluid/vault-deposit', 'fluid-fusdt')), { recursive: true });
+  const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
+  const write = (shared: unknown, vault: unknown) => {
+    writeFileSync(join(root, notesPath('fluid/vault-deposit')), JSON.stringify(shared));
+    writeFileSync(join(root, notesPath('fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify(vault));
+  };
+  const verdict = (text: Record<string, string>) => ({ verdict: { status: 'caution', text } });
+  const sharedZh = Object.fromEntries(Object.entries(only('zh-TW')).filter(([key]) => key !== 'verdict'));
+  const sharedEn = Object.fromEntries(Object.entries(only('en')).filter(([key]) => key !== 'verdict'));
+
+  write(SHARED, verdict({ 'zh-TW': '要小心' }));
+  const merged = readNotes(root, 'fluid/vault-deposit', fusdt);
+  assert.deepEqual(notesLanguages(merged), ['zh-TW']);
+  assert.equal(parseNotes(merged, SCOPE).verdict.text, '要小心');
+  assert.equal(parseNotes(merged, SCOPE).summary, '摘要');
+
+  write(SHARED, verdict(t('要小心')));
+  assert.deepEqual(notesLanguages(readNotes(root, 'fluid/vault-deposit', fusdt)), ['en', 'zh-TW']);
+  write(sharedZh, verdict(t('要小心')));
+  assert.deepEqual(notesLanguages(readNotes(root, 'fluid/vault-deposit', fusdt)), ['zh-TW']);
+
+  write(sharedEn, verdict({ 'zh-TW': '要小心' }));
   assert.throws(
-    () => parseNotes(mergeNotes(SHARED, vault, VAULT_PATH, OWNED), SCOPE),
-    (e: unknown) => e instanceof NotesError && e.message === 'notes.json.verdict.text: en is missing; every text holds the languages the title holds, en and zh-TW',
+    () => readNotes(root, 'fluid/vault-deposit', fusdt),
+    (e: unknown) =>
+      e instanceof NotesError &&
+      e.message === `${notesPath('fluid/vault-deposit', 'fluid-fusdt')}: holds zh-TW and ${notesPath('fluid/vault-deposit')} holds en; a vault's report is written in a language both hold`,
   );
-  const shared = Object.fromEntries(Object.entries(only('zh-TW')).filter(([key]) => key !== 'verdict'));
-  assert.equal(parseNotes(mergeNotes(shared, vault, VAULT_PATH, OWNED), SCOPE).verdict.text, '要小心');
+  write(SHARED, { ...verdict({ 'zh-TW': '要小心' }), pastTxsConclusion: t('結論') });
+  assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /holds texts in zh-TW, in en and zh-TW; every text in one file holds the same languages/);
 });
 
 test("a key or name both notes define is refused, and a vault's notes hold only verdict, judgments, reviews and entries", () => {
