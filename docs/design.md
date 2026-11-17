@@ -13,6 +13,19 @@ The rule the whole design keeps: **the AI writes templates, the program runs the
 | Program (the engine) | Fetches and hashes the Safe transaction, decodes it, runs the template's checks, simulates, compares effects with the card | Reads web pages, follows instructions found in data |
 | Independent check (hardened tier) | Fetches the transaction by nonce, computes its hashes, decodes each call, labels addresses from the signer's own list | Reads kiss-sign, its templates or its registry; compares the transaction with the card |
 
+### The program offers checks, the AI picks them
+
+The same split holds for a protocol no one has tested. The program offers a generic vocabulary a template declares as data: field rules, effects, view reads, computed card fields, registry attributes and their factory checks, and the shapes under [Data shapes](#data-shapes). Each is protocol-free and enforced exactly as declared. The AI's research picks which of them an operation needs and their parameters, such as which view to read and which slippage to apply, and gives each choice a cited reason, which the report prints and `pnpm past-txs` tests against real transactions. The AI never writes code that becomes a check. When the vocabulary cannot say what an operation needs, the program gains a new generic shape through a pull request with this document changed first; the template never uses a looser rule in its place.
+
+No template can loosen the floors, whatever it declares (see [Engine checks that every template gets](#engine-checks-that-every-template-gets)):
+
+- No address is free, nor a tuple or an array that holds one, so a call's target and a payment's recipient are always bound.
+- No `delegatecall` except to the official MultiSend.
+- No change to the Safe's owners, threshold, modules, guard, fallback handler or implementation, except an owner or threshold change the card's `effects.safe` declares.
+- No allowance from the Safe ends higher than it started, except one `effects.approves` declares, and none is unlimited except a registry entry's standing allowance.
+- Every change to the Safe's balances is one the effects explain; no other token changes.
+- The Safe's fee fields are zero, and every registry contract touched runs its pinned code.
+
 ### Two tiers
 
 kiss-sign does not try to stop a prompt-injected AI. The signer picks how much else to trust.
