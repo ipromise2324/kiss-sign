@@ -147,6 +147,38 @@ test('the verdict file verify writes replays to the same verdict', async () => {
   assert.doesNotMatch(replayed.stdout, /比對清單|呼叫/);
 });
 
+test('a verdict whose template holds the older computed read form, "to": "card.<field>", still replays to the same verdict', async () => {
+  const older = JSON.parse(template.text);
+  older.card['min-shares'] = {
+    kind: 'amount',
+    of: 'vault',
+    computed: {
+      read: { to: 'card.vault', function: 'previewDeposit(uint256 assets) returns (uint256 shares)', args: { assets: 'card.amount' } },
+      bound: 'floor',
+      default: { bps: 3, source: 'https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24' },
+    },
+  };
+  const text = `${JSON.stringify(older, null, 2)}\n`;
+  const fingerprint = `0x${bytesToHex(keccak_256(new TextEncoder().encode(text)))}`;
+  const card = JSON.parse(fixture.inputs.card.text);
+  card.operations[0].values['min-shares'] = '1';
+  const cardText = JSON.stringify(card);
+  const cardHash = `0x${bytesToHex(keccak_256(new TextEncoder().encode(cardText)))}`;
+  const { base, repo, home } = setUp(fingerprint);
+  write(join(repo, 'templates', template.id, 'template.json'), text);
+  git(repo, 'commit', '--quiet', '-am', 'a template written before reads took rules');
+  git(repo, 'push', '--quiet', join(base, 'origin.git'), 'main');
+  write(join(home, 'cards', `${cardHash}.json`), cardText);
+  const verified = await run(['verify', '--card', cardHash, '--tx', write(join(base, 'tx.json'), JSON.stringify(service))], repo, home);
+  assert.equal(verified.code, 0, verified.stdout + verified.stderr);
+  const [verdict] = readdirSync(join(home, 'verdicts')).filter((name) => name.endsWith('.json'));
+  const path = join(home, 'verdicts', verdict!);
+  assert.ok(readFileSync(path, 'utf8').includes('\\"to\\": \\"card.vault\\"'), 'the verdict file holds the older form');
+  const replayed = await run(['replay', path], repo, home);
+  assert.equal(replayed.code, 0, replayed.stderr);
+  assert.match(replayed.stdout, /\nSame verdict as recorded\.\n$/);
+});
+
 /** The deposit as the Safe web app's JSON, with its receiver changed from the Safe to 0x1111…. */
 function receiverChanged(): Record<string, unknown> {
   const { safe: _safe, safeTxHash: _hash, ...rest } = service;
