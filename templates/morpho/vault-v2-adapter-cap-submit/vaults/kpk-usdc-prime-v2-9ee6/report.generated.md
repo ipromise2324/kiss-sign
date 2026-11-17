@@ -7,7 +7,7 @@ Written by `pnpm report morpho/vault-v2-adapter-cap-submit --vault-of kpk-usdc-p
 | Field | The signer gives |
 | --- | --- |
 | `vault` | a registry `vault` of the DefiLlama protocol `morpho-blue`, picked by number from the list below |
-| `absolute-cap` | an integer in base units of the `asset` of the card's `vault`, or `max`, 340282366920938463463374607431768211455: written by the AI in the template: Vault V2 stores an absolute cap in 128 bits (increaseAbsoluteCap, newAbsoluteCap.toUint128()), so 2^128-1 is the largest cap it holds; curators set it for an adapter they cap only by its relative cap. |
+| `absolute-cap` | an integer in base units of the `asset` of the card's `vault`, or `max`, 340282366920938463463374607431768211455: written by the AI in the template: Vault V2 stores an absolute cap in 128 bits (increaseAbsoluteCap, newAbsoluteCap.toUint128()), so 2^128-1 is the largest cap it holds; curators set it for an adapter they cap only by its relative cap.; in Traditional Chinese: Vault V2 用 128 bits 存絕對上限（increaseAbsoluteCap，newAbsoluteCap.toUint128()），所以 2^128-1 是它能存的最大上限；curator 只想用相對上限限制轉接合約時就設這個值。 |
 | `relative-cap` | a percent, at most 100, held in WAD base units (100% is 1000000000000000000) |
 
 `vault` can name:
