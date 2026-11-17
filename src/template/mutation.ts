@@ -61,17 +61,26 @@ const mutatedType = (leaf: Leaf): AbiType => (leaf.rule.kind === 'address-word' 
 
 type Mutated = { readonly tx: SafeTx; readonly messages: Messages };
 
-/** The loosest value of an `atLeast` (0) or `atMost` (its type's largest) bound, which a stricter value still matches. */
-function loosestCardBound(leaf: Leaf): bigint | undefined {
+/**
+ * The value a bound's mutation sets: an `atLeast` its loosest (0) and an `atMost` its type's largest, which a stricter
+ * value still matches, and a `withinSeconds` the first second past it, when that fits the leaf's type.
+ */
+function loosestBound(leaf: Leaf, chain: FieldChain): bigint | undefined {
   if (leaf.rule.kind === 'at-least') return 0n;
+  if (leaf.rule.kind === 'within-seconds') {
+    const block = chain.blockTime;
+    if (block?.kind !== 'read' || (leaf.type.kind !== 'uint' && leaf.type.kind !== 'int')) return undefined;
+    const past = block.time + leaf.rule.seconds + 1n;
+    return past === (leaf.type.kind === 'uint' ? BigInt.asUintN(leaf.type.bits, past) : BigInt.asIntN(leaf.type.bits, past)) ? past : undefined;
+  }
   if (leaf.rule.kind !== 'at-most') return undefined;
   return (1n << BigInt(leaf.type.kind === 'uint' ? leaf.type.bits : 256)) - 1n;
 }
 
-/** Another value of the member's type, or for an `atLeast` or `atMost` bound its loosest; undefined when none differs. */
-function otherMember(leaf: Leaf, value: MemberValue): MemberValue | undefined {
-  const loosest = loosestCardBound(leaf);
-  if (loosest !== undefined) return value.kind === 'uint' && value.value !== loosest ? { kind: 'uint', value: loosest } : undefined;
+/** Another value of the member's type, or for a bound its `loosestBound`; undefined when none differs. */
+function otherMember(leaf: Leaf, value: MemberValue, chain: FieldChain): MemberValue | undefined {
+  const loosest = loosestBound(leaf, chain);
+  if (loosest !== undefined) return (value.kind === 'uint' || value.kind === 'int') && value.value !== loosest ? { kind: value.kind, value: loosest } : undefined;
   if (value.kind === 'string') return { kind: 'string', value: `${value.value}78` as Hex };
   if (value.kind === 'uint' || value.kind === 'int') {
     if (leaf.type.kind !== 'uint' && leaf.type.kind !== 'int') return undefined;
@@ -83,8 +92,8 @@ function otherMember(leaf: Leaf, value: MemberValue): MemberValue | undefined {
 }
 
 /** The message with one member changed, its digest written again into the transaction, and the new message given. */
-function mutateMember(tx: SafeTx, leaf: Leaf, at: MessageLeaf, messages: Messages): Mutated | undefined {
-  const other = otherMember(leaf, at.values[at.member] as MemberValue);
+function mutateMember(tx: SafeTx, leaf: Leaf, at: MessageLeaf, messages: Messages, chain: FieldChain): Mutated | undefined {
+  const other = otherMember(leaf, at.values[at.member] as MemberValue, chain);
   if (other === undefined) return undefined;
   const values = at.values.map((v, i) => (i === at.member ? other : v));
   const name = at.message.struct.members[at.member]?.name as string;
@@ -94,14 +103,14 @@ function mutateMember(tx: SafeTx, leaf: Leaf, at: MessageLeaf, messages: Message
   return { tx: { ...tx, data: `0x${bytesToHex(data)}` as Hex }, messages: [...messages, JSON.stringify(body)] };
 }
 
-function mutate(tx: SafeTx, leaf: Leaf, messages: Messages): Mutated | undefined {
-  if (leaf.message !== undefined) return mutateMember(tx, leaf, leaf.message, messages);
-  const changed = mutateTx(tx, leaf);
+function mutate(tx: SafeTx, leaf: Leaf, messages: Messages, chain: FieldChain): Mutated | undefined {
+  if (leaf.message !== undefined) return mutateMember(tx, leaf, leaf.message, messages, chain);
+  const changed = mutateTx(tx, leaf, chain);
   return changed === undefined ? undefined : { tx: changed, messages };
 }
 
-function mutateTx(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
-  const loosest = loosestCardBound(leaf);
+function mutateTx(tx: SafeTx, leaf: Leaf, chain: FieldChain): SafeTx | undefined {
+  const loosest = loosestBound(leaf, chain);
   if (loosest !== undefined && leaf.bytes !== undefined) {
     const data = hexToBytes(tx.data.slice(2));
     const [start, end] = leaf.bytes;
@@ -119,7 +128,7 @@ function mutateTx(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
   if (leaf.bytes === undefined) {
     if (leaf.arg === 'to') return { ...tx, to: `0x${bytesToHex(mutateBytes(leaf.type, hexToBytes(tx.to.slice(2))) as Uint8Array)}` as Address };
     if (leaf.arg === 'value') {
-      const loosestValue = loosestCardBound(leaf);
+      const loosestValue = loosestBound(leaf, chain);
       if (loosestValue === undefined) return { ...tx, value: nextInt({ kind: 'uint', bits: 256 }, tx.value) };
       return tx.value === loosestValue ? undefined : { ...tx, value: loosestValue };
     }
@@ -156,7 +165,7 @@ export function checkMutations(
   const free = leaves.filter((leaf) => leaf.rule.kind === 'free').length;
   const uncaught: Uncaught[] = [];
   for (const leaf of bound) {
-    const mutated = mutate(tx, leaf, messages);
+    const mutated = mutate(tx, leaf, messages, chain);
     if (mutated === undefined) {
       uncaught.push({ leaf, mutated: 'not-mutable' });
       continue;

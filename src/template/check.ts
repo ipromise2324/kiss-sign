@@ -63,8 +63,14 @@ export type FieldCheck =
  */
 export type OwnersRead = { readonly kind: 'read'; readonly owners: readonly Address[] } | { readonly kind: 'unread'; readonly why: string };
 
+/**
+ * The time of the block the transaction is judged on, for a `withinSeconds` rule: the latest block a pending transaction
+ * is simulated on, or the block an executed one ran in.
+ */
+export type BlockTimeRead = { readonly kind: 'read'; readonly number: bigint; readonly time: bigint } | { readonly kind: 'unread'; readonly why: string };
+
 /** Chain readings a field rule depends on, read once before the field check. */
-export type FieldChain = { readonly owners?: OwnersRead };
+export type FieldChain = { readonly owners?: OwnersRead; readonly blockTime?: BlockTimeRead };
 
 /** The first entry of the Safe's owner list points back to this sentinel. */
 const SENTINEL_OWNERS = '0x0000000000000000000000000000000000000001' as Address;
@@ -115,6 +121,10 @@ function checkSharePrice(rule: Extract<Rule, { kind: 'share-price' }>, price: bi
   if (rule.bound === 'max') return price * shares <= assets * scale ? undefined : `at most ${limit}: ${assets} assets for ${shares} shares, scaled by 1e${rule.scale}`;
   return price * shares >= assets * scale ? undefined : `at least ${limit}: ${assets} assets for ${shares} shares, scaled by 1e${rule.scale}`;
 }
+
+/** What a `withinSeconds` rule allows, naming the block whose time it counts from. */
+const withinText = (seconds: bigint, block: Extract<BlockTimeRead, { kind: 'read' }>): string =>
+  `at most ${block.time + seconds}: ${seconds} seconds after the time of block ${block.number}, ${block.time}`;
 
 function render(value: ConstValue): string {
   if (value.kind === 'string') return JSON.stringify(Buffer.from(value.value.slice(2), 'hex').toString('utf8'));
@@ -201,6 +211,14 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
     if (card?.kind !== 'amount') context.unverifiable.push(`no card amount ${rule.field}`);
     else if (actual.kind !== 'uint' || (least ? actual.value < card.value : actual.value > card.value)) {
       context.findings.push({ callPath, arg, bytes, expected: `at ${least ? 'least' : 'most'} ${card.value}`, actual: render(actual) });
+    }
+    return;
+  }
+  if (rule.kind === 'within-seconds') {
+    const block = context.chain.blockTime;
+    if (block === undefined || block.kind === 'unread') context.unverifiable.push(`the time of the block the transaction is judged on: ${block?.why ?? 'not read'}`);
+    else if ((actual.kind !== 'uint' && actual.kind !== 'int') || actual.value > block.time + rule.seconds) {
+      context.findings.push({ callPath, arg, bytes, expected: withinText(rule.seconds, block), actual: render(actual) });
     }
     return;
   }
