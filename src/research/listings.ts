@@ -72,7 +72,15 @@ export type Line = (
   | { readonly kind: 'unverifiable'; readonly check: CheckName; readonly text: string }
   | { readonly kind: 'absent'; readonly check: CheckName; readonly text: string }
   | { readonly kind: 'finding'; readonly check: CheckName; readonly text: string; readonly cause: FindingCause }
-) & { readonly more?: number; readonly places?: readonly SitePlace[]; readonly shared?: DeployerShare; readonly program?: string };
+) & {
+  readonly more?: number;
+  readonly places?: readonly SitePlace[];
+  readonly shared?: DeployerShare;
+  /** The Immunefi program a bounty line names. */
+  readonly program?: string;
+  /** The addresses a newest version binds the label to instead of the entry's. */
+  readonly others?: readonly Address[];
+};
 /** `sites` holds the site of each page that lists the address, the `source` first. */
 export type EntryResult = { readonly entry: RegistryEntry; readonly sites: readonly string[]; readonly lines: readonly Line[] };
 
@@ -358,7 +366,7 @@ function bountyPrograms(entry: RegistryEntry, listings: Listings, programs: Read
   if (known === undefined) return { tied: [], others: [...programs.values()].filter((p) => p.addresses.has(entry.address)) };
   const { protocol, suffixes } = known;
   const domainOf = (url: URL | undefined) => (url === undefined ? undefined : registrableDomain(url.hostname, suffixes));
-  const sites = protocolSites(entry, protocol, listings, suffixes);
+  const sites = protocolSites({ defillama: protocol.slug }, protocol, listings, suffixes);
   const tied = [...programs.keys()].filter((slug) => programTie(slug, programs, sites.domains, sites.orgs, domainOf).kind === 'tied');
   return { tied: tied.map((slug) => programs.get(slug) as ImmunefiProgram), others: [...programs.values()].filter((p) => !tied.includes(p.slug) && p.addresses.has(entry.address)) };
 }
@@ -374,7 +382,11 @@ function bountyLine(entry: RegistryEntry, listings: Listings): Line {
   const { programs } = listings.sites;
   if ('kind' in programs) return { kind: 'unverifiable', check: 'bounty', text: `Immunefi's program list: ${programs.why}` };
   const named = entry.immunefi;
-  if (named !== undefined && protocolOf(entry, listings) === undefined) return { kind: 'finding', check: 'bounty', text: `the protocol's sites are not known, so Immunefi program ${named} is not tied to it`, cause: 'unexplained' };
+  if (protocolOf(entry, listings) === undefined) {
+    if (named !== undefined) return { kind: 'finding', check: 'bounty', text: `the protocol's sites are not known, so Immunefi program ${named} is not tied to it`, cause: 'unexplained' };
+    const { others } = bountyPrograms(entry, listings, programs);
+    return notListed(`the protocol's sites are not known, so no Immunefi program is tied to it${others.length === 0 ? '' : `; programs that hold the address: ${slugs(others)}`}`);
+  }
   if (named !== undefined && !programs.has(named)) return { kind: 'finding', check: 'bounty', text: `Immunefi lists no program ${named}`, cause: 'not-fetched' };
   const { tied, others } = bountyPrograms(entry, listings, programs);
   if (named !== undefined && !tied.some((p) => p.slug === named)) {
@@ -400,32 +412,32 @@ function newestLine(check: 'tip' | 'sdk-latest', page: Page, where: string, sour
   const bound = labelBindings(page.blocks, source.label, source.heading);
   if (bound.includes(address)) return { kind: 'agrees', check, text: `${where} binds ${named} to the address too` };
   if (bound.length === 0) return { kind: 'absent', check, text: `${where} binds ${named} to no address` };
-  return { kind: 'finding', check, text: `${where} binds ${named} to ${bound.map(checksumAddress).join(', ')}, not the entry's address ${checksumAddress(address)}`, cause: 'differs' };
+  return { kind: 'finding', check, text: `${where} binds ${named} to ${bound.map(checksumAddress).join(', ')}, not the entry's address ${checksumAddress(address)}`, cause: 'differs', others: bound };
 }
 
 /** A pinned GitHub page's file at the tip of its default branch; none for a page not pinned to a commit on that branch. */
 function tipLine(source: { readonly url: string; readonly label: string | undefined; readonly heading?: string | undefined }, address: Address, pages: SourcePages): Line[] {
   const tip = tipUrlOf(source.url, pages.commits);
   if (tip === undefined || source.label === undefined) return [];
-  const page = pages.pages.get(tip.url) ?? { kind: 'failed', why: `${tip.url} was not fetched` };
+  const page = pages.pages.get(tip.url) ?? { kind: 'unread', why: `${tip.url} was not read` };
   return [newestLine('tip', page, `the file at the tip of ${tip.branch} (${tip.url})`, { label: source.label, heading: source.heading }, address)];
 }
 
 /** The version npm's `latest` tag names, when its provenance ties it to the protocol as the pinned version's must. */
 function sdkLatestLine(entry: RegistryEntry, sdk: SdkPackage, read: PackageRead | undefined, listings: Listings): Line {
   const key = packageKey(latestOf(sdk));
-  if (read === undefined) return { kind: 'finding', check: 'sdk-latest', text: `${key} was not read`, cause: 'not-fetched' };
+  if (read === undefined) return { kind: 'unverifiable', check: 'sdk-latest', text: `${key} was not read` };
   if (read.kind === 'unread') return { kind: 'unverifiable', check: 'sdk-latest', text: read.why };
   if (read.kind === 'failed') return { kind: 'finding', check: 'sdk-latest', text: read.why, cause: 'not-fetched' };
   const at = `${sdk.package}@${read.version}, npm's latest`;
-  if (read.version === sdk.version) return { kind: 'agrees', check: 'sdk-latest', text: `the pinned version ${sdk.version} is npm's latest` };
   const unattested = (why: string): Line => ({ kind: 'finding', check: 'sdk-latest', text: `${why}, so ${at} is not compared`, cause: 'unattested' });
-  if (!read.integrity) return unattested(`the tarball of ${at} does not match the sha512 npm gives as its integrity`);
+  if (!read.integrity) return { kind: 'finding', check: 'sdk-latest', text: `the tarball of ${at} does not match the sha512 npm gives as its integrity`, cause: 'unexplained' };
   const { provenance } = read;
   if (provenance.kind === 'none') return unattested(`npm holds no provenance for ${at}`);
   if (!provenance.sameTarball) return unattested(`npm's provenance for ${at} names another tarball`);
   const site = sourceSiteLine(provenance.repository, entry, listings, `SDK build ${provenance.repository}`);
-  if (site.kind !== 'agrees') return unattested(`${site.text}`);
+  if (site.kind === 'unverifiable') return { ...site, check: 'sdk-latest' };
+  if (site.kind !== 'agrees') return unattested(site.text);
   return newestLine('sdk-latest', read.file, `${at}, file ${sdk.file}`, { label: sdk.label }, entry.address);
 }
 

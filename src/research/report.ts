@@ -565,7 +565,8 @@ const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(check
 const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', absent: 'NOT LISTED', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
 const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : VERDICTS[line.kind]);
 /** A newest version that binds the label to other addresses names them, since no other line of the report does. */
-const newestVerdict = (line: Line | undefined): string => (line?.kind === 'finding' && line.cause === 'differs' ? `FINDING: ${line.text}` : verdict(line));
+const newestVerdict = (line: Line | undefined): string =>
+  line?.kind === 'finding' && line.others !== undefined ? `FINDING: lists ${line.others.map((a) => code(checksumAddress(a))).join(', ')} under the same label` : verdict(line);
 
 /** The deployer as the ledger counts it: PASS only through an entry confirmed in two other places, which it names. */
 function deployerCell(line: Line | undefined, result: Result | undefined): string {

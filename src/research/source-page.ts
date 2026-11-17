@@ -375,7 +375,7 @@ async function defaultBranch(api: string, ref: Extract<GitHubSourceRef, { kind: 
   const repo = await githubJson(api, get);
   if (repo.kind !== 'json') return repo;
   if (repo.status === 404) return { kind: 'unknown', why: `GitHub has no repository ${ref.owner}/${ref.repo}` };
-  if (repo.status !== 200 || !isRecord(repo.body) || typeof repo.body.default_branch !== 'string') {
+  if (repo.status !== 200 || !isRecord(repo.body) || typeof repo.body.default_branch !== 'string' || !/^[A-Za-z0-9._/-]{1,100}$/.test(repo.body.default_branch)) {
     return { kind: 'unknown', why: `GitHub answered HTTP ${repo.status} for ${ref.owner}/${ref.repo} with no default branch` };
   }
   return { kind: 'branch', name: repo.body.default_branch };

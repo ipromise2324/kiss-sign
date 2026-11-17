@@ -444,6 +444,8 @@ test('the newest version of a pinned page or SDK never counts as a place, and ne
   const differing = ledgerOf({ entry: github, tip: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }] } });
   assert.deepEqual(confirmations(differing, github), ['page', 'coingecko']);
   assert.deepEqual(forSigner(differing).map((r) => r.id), ['vault/source.tip']);
+  const newest = sourcesOf(differing, github).find((line) => line.source === 'page')?.newest;
+  assert.deepEqual([newest?.state, newest?.phrase, newest?.others], ['bad', 'other-address', [OTHER]], 'the row names the other address');
   assert.deepEqual(confirmations(ledgerOf({ entry: github, tip: { kind: 'failed', why: 'HTTP 404' } }), github), ['page', 'coingecko']);
   assert.deepEqual(confirmations(ledgerOf({ ...latestRead(ADDRESS), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
   assert.deepEqual(confirmations(ledgerOf({ ...latestRead(OTHER), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
