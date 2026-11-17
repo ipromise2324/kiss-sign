@@ -9,7 +9,7 @@ import { replayReader } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
-import type { Hex } from '../src/safe/types.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
 import { describeFinding, judgeEffects } from '../src/simulate/effects.ts';
 import type { EffectVerdict, Observed } from '../src/simulate/effects.ts';
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
@@ -193,7 +193,7 @@ test("an atMost bound on a call's ETH value is mutated to the largest value, whi
   const templates = new Map([[template.id, template]]);
   const payee = String(fixture.service.to).toLowerCase();
   const resolve = (amount: bigint): ResolvedCard => {
-    const result = resolveCard({ operations: [{ template: template.id, values: { amount: `${amount}`, recipient: 'payee' } }] }, { templates, registry, addressBook: new Map([['payee', payee as Hex]]), safe: tx.safe });
+    const result = resolveCard({ operations: [{ template: template.id, values: { amount: `${amount}`, recipient: 'payee' } }] }, { templates, registry, addressBook: new Map([['payee', payee as Address]]), safe: tx.safe });
     assert.equal(result.kind, 'resolved', JSON.stringify(result));
     return (result as Extract<typeof result, { kind: 'resolved' }>).card;
   };
