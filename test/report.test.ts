@@ -564,16 +564,16 @@ test('a recording that keeps its head block is studied again from it, and the co
 
 test('--compare names the verdict core apart from the other program files a pull request changes', () => {
   const changed = ['templates/morpho/vault-deposit/template.json', 'testdata/report/x.json', 'src/template/check.ts', 'scripts/report.ts', 'scripts/check-push.ts', 'docs/design.md'];
-  const lines = programChangeLines('origin/b', splitChanges(changed, new Set(['src/template/check.ts'])));
+  const lines = programChangeLines('origin/b', splitChanges(changed.map((path) => ({ path, modified: true })), new Set(['src/template/check.ts'])));
   assert.deepEqual(lines, [
-    'PROGRAM CHANGE  verdict core: origin/b changes 2 file(s) the signing commands run, or the check that keeps them apart; merging it changes what verify checks for every signing:',
+    'PROGRAM CHANGE  verdict core: origin/b changes 3 file(s) the signing commands run, or the check that keeps them apart; merging it changes what verify checks for every signing:',
     '  src/template/check.ts',
-    '  scripts/check-push.ts',
-    'PROGRAM CHANGE  not the verdict: origin/b changes 2 other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs; review them as code:',
     '  scripts/report.ts',
+    '  scripts/check-push.ts',
+    'PROGRAM CHANGE  not the verdict: origin/b changes 1 other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs; review them as code:',
     '  docs/design.md',
   ]);
-  assert.deepEqual(programChangeLines('origin/b', splitChanges(['templates/a/b/notes.json'], new Set())), []);
+  assert.deepEqual(programChangeLines('origin/b', splitChanges([{ path: 'templates/a/b/notes.json', modified: true }], new Set())), []);
 });
 
 test('a market field lists every market with its id, lltv and parts, binds each MarketParams part, and prints the views read', () => {

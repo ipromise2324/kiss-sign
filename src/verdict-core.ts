@@ -4,15 +4,16 @@ import { dirname, join, normalize } from 'node:path';
 
 export const CORE_ENTRY = 'bin/kiss-sign';
 export const CORE_LIST = 'docs/verdict-core.txt';
-export const SPLIT_GUARDS = ['src/verdict-core.ts', 'scripts/check-push.ts', '.githooks/', '.github/workflows/'];
+export const SPLIT_GUARDS = ['src/verdict-core.ts', 'scripts/check-push.ts', 'scripts/report.ts', '.gitignore', '.githooks/', '.github/workflows/'];
 
-export const PACKAGE_FILES = ['package.json', 'pnpm-lock.yaml'];
-const TYPE_ONLY = /^\s*(?:import|export)\s+type\s[^;]*?from\s*'[^']*'\s*;?/gm;
-const QUOTED = /'([^'\n]+)'/g;
-const BARE_IMPORT = /\bfrom\s*'(?!node:|\.)[^']+'/;
+export const PACKAGE_FILES = ['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml'];
+const TYPE_ONLY = /^\s*(?:import|export)\s+type\s+(?:\{[^}]*\}|\*\s+as\s+\w+|\w+)\s+from\s*(['"])[^'"\n]*\1\s*;?/gm;
+const QUOTED = /(['"`])([^'"`\n]+)\1/g;
+const LOCAL_FILE = /\.(?:ts|mts|js|mjs|json)$/;
+const BARE_IMPORT = /\b(?:from|import)\s*\(?\s*['"`](?!node:|\.|\/)/;
 const GENERATED = /\.generated(\.[A-Za-z-]+)?\.(md|html)$/;
 
-/** Every repository path whose code the signing commands can run, walked from `bin/kiss-sign` through every import that is not type-only and every `.ts` file a core file names, such as the solc runner it spawns. */
+/** Every repository path whose code the signing commands can run, walked from `bin/kiss-sign` through every import that is not type-only and every script or JSON file a core file names by a relative path, such as one it spawns or reads. */
 export function verdictCore(read: (path: string) => string | undefined): string[] {
   const found = new Set<string>();
   const queue = [CORE_ENTRY];
@@ -23,8 +24,8 @@ export function verdictCore(read: (path: string) => string | undefined): string[
     found.add(path);
     const code = text.replace(TYPE_ONLY, '');
     if (BARE_IMPORT.test(code)) queue.push(...PACKAGE_FILES);
-    for (const [, literal] of code.matchAll(QUOTED)) {
-      if (literal?.endsWith('.ts') && !literal.startsWith('/')) queue.push(normalize(join(dirname(path), literal)));
+    for (const [, , literal] of code.matchAll(QUOTED)) {
+      if (literal !== undefined && LOCAL_FILE.test(literal) && !literal.startsWith('/')) queue.push(normalize(join(dirname(path), literal)));
     }
   }
   return [...found].sort();
@@ -37,25 +38,31 @@ export const coreListText = (paths: readonly string[]): string =>
 
 const isProgramSide = (core: ReadonlySet<string>, path: string): boolean => core.has(path) || SPLIT_GUARDS.some((guard) => guard.endsWith('/') ? path.startsWith(guard) : path === guard);
 
-/** A file a template or registry pull request writes by hand; the reports `pnpm report` renders from recordings are not, so a core change may render them again. */
-const isTemplateData = (path: string): boolean => (path.startsWith('templates/') || path.startsWith('registry/')) && !GENERATED.test(path);
+/** One file a branch changes; `modified` is false when the branch adds or deletes it. */
+export type Change = { readonly path: string; readonly modified: boolean };
+
+/**
+ * A change to a template or the registry. A report `pnpm report` renders from recordings may be rendered again beside a core change,
+ * but adding or deleting one is data, since a vault's report.generated.md decides which vaults `card seal` and `verify` accept.
+ */
+const isTemplateData = ({ path, modified }: Change): boolean => (path.startsWith('templates/') || path.startsWith('registry/')) && !(modified && GENERATED.test(path));
 
 export type Split = { readonly core: string[]; readonly other: string[]; readonly data: string[] };
 
-export function splitChanges(changed: readonly string[], core: ReadonlySet<string>): Split {
-  const outside = changed.filter((path) => !['templates/', 'registry/', 'testdata/'].some((dir) => path.startsWith(dir)));
+export function splitChanges(changed: readonly Change[], core: ReadonlySet<string>): Split {
+  const outside = changed.map(({ path }) => path).filter((path) => !['templates/', 'registry/', 'testdata/'].some((dir) => path.startsWith(dir)));
   return {
     core: outside.filter((path) => isProgramSide(core, path)),
     other: outside.filter((path) => !isProgramSide(core, path)),
-    data: changed.filter(isTemplateData),
+    data: changed.filter(isTemplateData).map(({ path }) => path),
   };
 }
 
 /** The refusal for a branch that changes the verdict core and a template or the registry together, or undefined when it does not. */
-export function mixedRefusal(head: string, split: Split): string | undefined {
+export function mixedRefusal(base: string, head: string, split: Split): string | undefined {
   if (split.core.length === 0 || split.data.length === 0) return undefined;
   return [
-    `${head} changes the verdict core and templates/ or registry/ together. Put the program change in a pull request of its own, reviewed as code and merged first, then the template in another.`,
+    `${head} changes the verdict core and templates/ or registry/ together, counted from where it left ${base} (if ${base} is behind GitHub, fetch it and run this again). Put the program change in a pull request of its own, reviewed as code and merged first, then the template in another.`,
     'verdict core:',
     ...split.core.map((path) => `  ${path}`),
     'templates/ and registry/:',
@@ -71,12 +78,16 @@ const gitText = (cwd: string, args: string[]): string | undefined => {
   }
 };
 
-/** What `head` changes since it left `base`, split into verdict core, other program files and template data; the core is walked at both ends, so a file the branch adds to the core or takes out of it counts. */
+/** What `head` changes since it left `base`, split into verdict core, other program files and template data, or undefined when git cannot tell; the core is walked at both ends, so a file the branch adds to the core or takes out of it counts. */
 export function branchSplit(cwd: string, base: string, head: string): Split | undefined {
   const forkPoint = gitText(cwd, ['merge-base', base, head])?.trim();
-  const changed = gitText(cwd, ['diff', '--name-only', '--no-renames', `${base}...${head}`]);
-  if (forkPoint === undefined || changed === undefined) return undefined;
+  const changed = gitText(cwd, ['diff', '--name-status', '--no-renames', `${base}...${head}`]);
+  if (!forkPoint || changed === undefined) return undefined;
   const coreAt = (rev: string) => verdictCore((path) => gitText(cwd, ['show', `${rev}:${path}`]));
   const core = new Set([...coreAt(forkPoint), ...coreAt(head)]);
-  return splitChanges(changed.split('\n').filter((path) => path !== ''), core);
+  const changes = changed
+    .split('\n')
+    .filter((line) => line !== '')
+    .map((line) => ({ path: line.slice(line.indexOf('\t') + 1), modified: line.startsWith('M') }));
+  return splitChanges(changes, core);
 }
