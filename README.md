@@ -67,7 +67,7 @@ The pictures below come from one real run: another Safe's deposit of 1,000,611.4
 ```sh
 git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
 pnpm install
-pnpm kiss-sign init --safe 0x…
+pnpm kiss-sign init --safe 0x… --language en   # or zh-TW for Traditional Chinese; see Language below
 pnpm kiss-sign key add alchemy
 pnpm kiss-sign key add etherscan   # to build or review templates
 pnpm kiss-sign key add github      # optional: raises GitHub's hourly limit to build or review templates
