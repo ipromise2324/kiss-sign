@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
-import { recordingTransport } from '../src/chain/recording.ts';
+import { recordingTransport, replayReader } from '../src/chain/recording.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
@@ -77,21 +77,27 @@ for (const flag of ['from', 'to'] as const) {
   }
 }
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
-const head = flags['same-windows-as'] === undefined ? undefined : recordedHead(flags['same-windows-as']);
+const head = flags['same-windows-as'] === undefined ? undefined : await recordedHead(flags['same-windows-as']);
 
-/** The head block a `--record` run kept, so a run again searches its windows; no one types a head block. */
-function recordedHead(name: string): bigint {
+/**
+ * The head block a `--record` run kept, or for a recording made before it kept one, its recorded head read, so a run
+ * again searches its windows; no one types a head block.
+ */
+async function recordedHead(name: string): Promise<bigint> {
   const path = join(ROOT, 'testdata', 'research', `${name}.json`);
   if (!/^[a-z0-9-]+$/.test(name) || !existsSync(path)) {
     console.error(`--same-windows-as ${name}: no recording testdata/research/${name}.json`);
     process.exit(64);
   }
-  const kept = (readRecording(path) as PastTxsRecording).query.head;
-  if (kept === undefined || !/^[0-9]+$/.test(kept)) {
-    console.error(`--same-windows-as ${name}: the recording keeps no head block, so its windows cannot be searched again`);
+  const recording = readRecording(path) as PastTxsRecording;
+  const kept = recording.query.head;
+  if (kept !== undefined && /^[0-9]+$/.test(kept)) return BigInt(kept);
+  const read = recording.query.fromBlock === undefined ? await replayReader(recording.exchanges).blockNumber() : undefined;
+  if (read?.kind !== 'agreed') {
+    console.error(`--same-windows-as ${name}: the recording searched one block range and keeps no head block, so it has no windows to search again`);
     process.exit(64);
   }
-  return BigInt(kept);
+  return read.value;
 }
 
 const registry = loadRegistry(ROOT);
