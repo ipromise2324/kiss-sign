@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { openMainnetReader } from '../src/chain/reader.ts';
+import { httpsTransport } from '../src/chain/rpc.ts';
 import { recordAbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal } from '../src/contracts/prove.ts';
 import { pinnedCompilers } from '../src/contracts/solc.ts';
@@ -18,12 +19,13 @@ if (name === undefined || addressArg === undefined || !/^[a-z0-9-]+$/.test(name)
 const address = parseAddress('address', addressArg);
 
 if (!(await ensureVendored(['solc']))) process.exit(1);
-const live = openMainnetReader(process.env);
+const unread: string[] = [];
+const note = (read: string) => void unread.push(read);
+const live = openMainnetReader(process.env, httpsTransport(), { note });
 const block = await live.block(blockArg === undefined ? 'latest' : parseUint256('block', blockArg));
 if (block.kind === 'unverifiable') throw new Error(block.reason);
 
-const unread: string[] = [];
-const sourcify = retryingSourcify(sourcifyHttps, (read) => void unread.push(read));
+const sourcify = retryingSourcify(sourcifyHttps, note);
 const entry = loadRegistry(join(import.meta.dirname, '..')).byAddress.get(address);
 const { proof, fixture } = await recordAbiCase(live, address, block.value, block.providers, { compilers: pinnedCompilers(), sourcify }, entry);
 const refusal = unreadRefusal(unread);
