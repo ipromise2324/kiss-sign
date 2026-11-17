@@ -44,7 +44,6 @@ export const coreListText = (paths: readonly string[]): string =>
 
 const isProgramSide = (core: ReadonlySet<string>, path: string): boolean => core.has(path) || underAny(SPLIT_GUARDS, path);
 
-/** True when `path` is one of `paths` or lies under one that ends in `/`. */
 const underAny = (paths: readonly string[], path: string): boolean => paths.some((entry) => (entry.endsWith('/') ? path.startsWith(entry) : path === entry));
 
 /** One test the verdict must keep passing: the file it lives in, what it guards, and every path under `testdata/` or `test/` it reads, a directory ending in `/`. */
