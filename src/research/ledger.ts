@@ -1,3 +1,4 @@
+import type { AdapterCause, RefusalCause } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import { MARKET_ENTRY_PARTS, parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
@@ -18,7 +19,7 @@ export type StripLine = (typeof STRIP_LINES)[number];
 
 /**
  * The sources an address row lists for the program: the `source` page, each of `moreSources` by its number from 1, the
- * protocol API, CoinGecko and a vault's registry factory. Each can confirm the address.
+ * protocol API, CoinGecko and an entry's registry factory, for an adapter with each vault naming it. Each can confirm the address.
  */
 export type ProgramSource = 'page' | `more.${number}` | 'api' | 'coingecko' | 'factory' | 'bounty' | 'sdk' | 'deployer';
 
@@ -40,6 +41,7 @@ export type Phrase =
   | 'other-site'
   | 'nothing-to-compare'
   | 'not-created'
+  | 'not-adapter'
   | 'not-on-page'
   | 'not-listed'
   | 'other-file'
@@ -60,10 +62,14 @@ export type Finding =
   | { readonly kind: 'pin-not-run' }
   /** The ABI proof proved code other than the current pin. */
   | { readonly kind: 'proof-not-pin' }
-  /** The vault's registry factory answered that it did not create the vault. */
+  /** The entry's registry factory answered that it did not create the entry. */
   | { readonly kind: 'not-created' }
-  /** The vault's registry factory answered neither true nor false. */
+  /** The entry's registry factory answered neither true nor false. */
   | { readonly kind: 'factory-other-answer' }
+  /** A registry vault naming the adapter answered its factory's `adapterCheck` false for it. */
+  | { readonly kind: 'not-adapter' }
+  /** A registry vault naming the adapter answered its factory's `adapterCheck` neither true nor false. */
+  | { readonly kind: 'adapter-other-answer' }
   | { readonly kind: 'refused'; readonly why: string }
   /** The address is confirmed in fewer than two places; `by` names those that did. */
   | { readonly kind: 'few-confirmations'; readonly by: readonly ProgramSource[] }
@@ -97,8 +103,10 @@ export type Finding =
   | { readonly kind: 'page-not-fetched' }
   | { readonly kind: 'name-not-on-page' }
   | { readonly kind: 'no-chain-result' }
-  /** No stored `pnpm vault-evidence` output holds the vault's factory's answer. */
+  /** No stored `pnpm vault-evidence` output or report recording holds the factory's answer, or the registry gives nothing to ask. */
   | { readonly kind: 'factory-unread' }
+  /** No report recording holds a vault's answer for the adapter, or no registry vault whose factory has an `adapterCheck` names it. */
+  | { readonly kind: 'adapter-unread' }
   /** No code pin: signing would answer UNVERIFIABLE. */
   | { readonly kind: 'not-pinned' }
   /** DefiLlama lists no website or GitHub org to compare the site with, and another result vouches for the site. */
@@ -122,6 +130,8 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'proof-not-pin': 'bad',
   'not-created': 'bad',
   'factory-other-answer': 'bad',
+  'not-adapter': 'bad',
+  'adapter-other-answer': 'bad',
   refused: 'bad',
   'judged-otherwise': 'bad',
   'few-confirmations': 'warn',
@@ -142,6 +152,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'name-not-on-page': 'warn',
   'no-chain-result': 'warn',
   'factory-unread': 'warn',
+  'adapter-unread': 'warn',
   'not-pinned': 'warn',
   unlisted: 'na',
   'no-second-source': 'warn',
@@ -161,6 +172,8 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'proof-not-pin': undefined,
   'not-created': 'not-created',
   'factory-other-answer': 'unread',
+  'not-adapter': 'not-adapter',
+  'adapter-other-answer': 'unread',
   refused: undefined,
   'judged-otherwise': undefined,
   'few-confirmations': undefined,
@@ -181,6 +194,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'name-not-on-page': 'not-on-page',
   'no-chain-result': undefined,
   'factory-unread': 'unread',
+  'adapter-unread': 'unread',
   'not-pinned': undefined,
   unlisted: 'nothing-to-compare',
   'no-second-source': 'nothing-to-compare',
@@ -366,10 +380,33 @@ const FACTORY_FINDINGS: Readonly<Record<ReturnType<typeof factoryAnswer>, Findin
   unread: { kind: 'factory-unread' },
 };
 
+const REFUSAL_FINDINGS: Readonly<Record<RefusalCause, Finding>> = {
+  'not-created': { kind: 'not-created' },
+  'other-answer': { kind: 'factory-other-answer' },
+  'no-answer': { kind: 'no-answer' },
+  unaskable: { kind: 'factory-unread' },
+};
+
+const ADAPTER_FINDINGS: Readonly<Record<AdapterCause, Finding>> = {
+  'not-used': { kind: 'not-adapter' },
+  'other-answer': { kind: 'adapter-other-answer' },
+  'no-answer': { kind: 'no-answer' },
+  unaskable: { kind: 'adapter-unread' },
+};
+
+/**
+ * The `factory` place: a vault's factory answer, stored by `pnpm vault-evidence`; another entry's, read by the report,
+ * with, for an adapter, each registry vault naming it, since an `instanceCheck` answer does not say whose adapter it is.
+ */
 function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
-  if (entry.kind !== 'vault' || entry.attributes.factory === undefined) return [];
-  const finding = FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry, inputs.registry)];
-  return [{ id: `${entry.name}/factory.admitted`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link: undefined, finding }];
+  if (entry.attributes.factory === undefined) return [];
+  const result = (key: string, finding: Finding): Result => ({ id: `${entry.name}/${key}`, line: 'sources', about: { kind: 'entry', entry }, source: { of: 'factory', part: 'address' }, link: undefined, finding });
+  if (entry.kind === 'vault') return [result('factory.admitted', FACTORY_FINDINGS[factoryAnswer(inputs.vaults.get(entry.name), entry, inputs.registry)])];
+  const answers = inputs.instances?.answers.get(entry.name);
+  const admitted = result('factory.admitted', answers === undefined ? { kind: 'factory-unread' } : answers.factory.kind === 'created' ? { kind: 'agrees' } : REFUSAL_FINDINGS[answers.factory.cause]);
+  if (entry.kind !== 'adapter') return [admitted];
+  if (answers === undefined || answers.vaults.length === 0) return [admitted, result('vault.adapter', { kind: 'adapter-unread' })];
+  return [admitted, ...answers.vaults.map((answer) => result(`vault.${answer.vault.name}.adapter`, answer.kind === 'uses' ? { kind: 'agrees' } : ADAPTER_FINDINGS[answer.cause]))];
 }
 
 function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean): Finding {

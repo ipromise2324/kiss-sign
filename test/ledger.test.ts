@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import type { AdapterAnswer, AdapterCause, InstanceProof, RefusalCause } from '../src/contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
@@ -15,7 +16,7 @@ import type { PackageRead, PackageReads } from '../src/research/npm-package.ts';
 import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
 import type { SiteListings } from '../src/research/site-listings.ts';
 import { replayInputs } from '../src/research/report.ts';
-import type { ReportInputs, SpanCheck, TodayCheck } from '../src/research/report.ts';
+import type { InstanceAnswers, ReportInputs, SpanCheck, TodayCheck } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import type { Standard } from '../src/research/standards.ts';
@@ -88,6 +89,8 @@ type Setup = {
   readonly approveStandard: Standard | undefined;
   readonly fixtures: readonly FixtureJudgement[];
   readonly vaults: ReadonlyMap<string, string>;
+  /** What the entry's factory, and for an adapter each vault naming it, answered; undefined when not read. */
+  readonly instances: InstanceAnswers | undefined;
   readonly reachedThrough: RegistryEntry | undefined;
   readonly factory: RegistryEntry | undefined;
   readonly sites: SiteListings;
@@ -113,6 +116,7 @@ const BASE: Setup = {
   approveStandard: undefined,
   fixtures: [],
   vaults: new Map(),
+  instances: undefined,
   reachedThrough: undefined,
   factory: undefined,
   sites: NO_SITE_LISTINGS,
@@ -156,6 +160,13 @@ const ROUTED: RegistryEntry = {
   code: { earlier: [], current: { from: 100n, pin: { hash: PIN, routes: [{ address: OTHER, hash: PIN, selectors: ['0x00000001' as Hex] }] } } },
 };
 const today = (kind: TodayCheck['kind']): Partial<Setup> => ({ today: { kind, text: '' } });
+
+const ADAPTER: RegistryEntry = { ...ENTRY, kind: 'adapter', attributes: { factory: 'vault-factory' } };
+const CREATED = { kind: 'created', asked: 'isVaultAdapter(address)', answered: 'true' } as unknown as InstanceProof;
+const factoryRefusal = (cause: RefusalCause): InstanceAnswers['factory'] => ({ kind: 'refused', cause, why: '' });
+const USES: AdapterAnswer = { vault: ADAPTED, asked: 'isAdapter(address)', block: { number: 200n, hash: PIN }, kind: 'uses', providers: ['alchemy', 'drpc'] };
+const vaultRefusal = (cause: AdapterCause): AdapterAnswer => ({ vault: ADAPTED, asked: 'isAdapter(address)', block: { number: 200n, hash: PIN }, kind: 'refused', cause, why: '' });
+const adapterAsked = (factory: InstanceAnswers['factory'], vaults: readonly AdapterAnswer[]): Partial<Setup> => ({ entry: ADAPTER, instances: { factory, vaults } });
 
 const proven = (codeHash: Hex): AbiProof => ({ kind: 'proven', proxy: { kind: 'none' }, codeHash }) as unknown as AbiProof;
 const refused = (refusal: object): AbiRefusal => ({ kind: 'refused', refusal }) as unknown as AbiRefusal;
@@ -210,6 +221,7 @@ function ledgerOf(change: Partial<Setup>): Ledger {
     spans: new Map(s.spans === undefined ? [] : [[ADDRESS, s.spans]]),
     today: s.today === undefined ? undefined : { block: { number: 200n, hash: PIN }, checks: new Map([[ADDRESS, s.today]]) },
     vaults: s.vaults,
+    instances: s.instances === undefined ? undefined : { block: { number: 200n, hash: PIN }, answers: new Map([[s.entry.name, s.instances]]) },
   } as unknown as ReportInputs;
   return judge(inputs, s.fixtures);
 }
@@ -247,6 +259,15 @@ const ROWS: readonly Row[] = [
   { what: "a vault whose factory's answer got no reply", change: evidence("REFUSED the providers disagree; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: 'a vault whose block was not read', change: evidence('UNVERIFIABLE no block'), id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: 'a vault with no stored evidence', change: { entry: VAULT }, id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
+  { what: 'an adapter its factory created', change: adapterAsked(CREATED, [USES]), id: 'vault/factory.admitted', kind: 'agrees', state: 'ok' },
+  { what: 'an adapter the vault naming it uses', change: adapterAsked(CREATED, [USES]), id: 'vault/vault.adapted.adapter', kind: 'agrees', state: 'ok' },
+  { what: 'an adapter its factory answered it did not create', change: adapterAsked(factoryRefusal('not-created'), [USES]), id: 'vault/factory.admitted', kind: 'not-created', state: 'bad' },
+  { what: "an adapter whose factory's answer got no reply", change: adapterAsked(factoryRefusal('no-answer'), [USES]), id: 'vault/factory.admitted', kind: 'no-answer', state: 'warn' },
+  { what: 'an adapter the vault naming it answered false for', change: adapterAsked(CREATED, [vaultRefusal('not-used')]), id: 'vault/vault.adapted.adapter', kind: 'not-adapter', state: 'bad' },
+  { what: 'an adapter the vault naming it answered neither true nor false for', change: adapterAsked(CREATED, [vaultRefusal('other-answer')]), id: 'vault/vault.adapted.adapter', kind: 'adapter-other-answer', state: 'bad' },
+  { what: "an adapter whose vault's factory has no adapterCheck", change: adapterAsked(CREATED, [vaultRefusal('unaskable')]), id: 'vault/vault.adapted.adapter', kind: 'adapter-unread', state: 'warn' },
+  { what: 'an adapter no registry vault names', change: adapterAsked(CREATED, []), id: 'vault/vault.adapter', kind: 'adapter-unread', state: 'warn' },
+  { what: 'an adapter in a recording that predates the answers', change: { entry: ADAPTER }, id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: 'a card the template now refuses', change: { fixtures: [{ name: 'safe-tx-1', outcome: { kind: 'card-refused', why: 'wrong-kind' } }] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'fields that no longer match', change: { fixtures: [judged({ kind: 'not-run', check: { kind: 'mismatch' } }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'fields the template or registry leaves UNVERIFIABLE', change: { fixtures: [judged({ kind: 'not-run', check: { kind: 'unverifiable', reasons: ['the registry has no usdc'] } }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
@@ -349,9 +370,11 @@ test('only an entry no ABI proof compares with the chain has a result for its co
   assert.ok(!ledgerOf({ reachedThrough: DEPENDENT, entry: without('code'), ...today('pass') }).results.some((r) => r.id.endsWith('/code.today')), 'an entry with no pin has only its not-pinned result');
 });
 
-test('only a vault that names a factory has a factory result', () => {
+test('only an entry that names a factory has a factory result', () => {
   const ids = (entry: RegistryEntry) => ledgerOf({ entry, vaults: new Map([['vault', ADMITTED]]) }).results.map((r) => r.id);
   assert.ok(ids(VAULT).includes('vault/factory.admitted'));
+  assert.ok(ids(ADAPTER).includes('vault/factory.admitted'));
+  assert.ok(!ids({ ...ADAPTER, kind: 'router', attributes: {} }).some((id) => id.endsWith('/factory.admitted')));
   assert.ok(!ids({ ...VAULT, attributes: {} }).some((id) => id.endsWith('/factory.admitted')));
   assert.ok(!ids(ENTRY).some((id) => id.endsWith('/factory.admitted')));
 });
@@ -369,6 +392,19 @@ test('the address needs two confirmations: a page by its label, the API, CoinGec
   assert.deepEqual(by({ entry: echoing, vaults: new Map([['vault', ADMITTED]]), coins: [] }), [['factory'], 'few-confirmations']);
   assert.deepEqual(by({ entry: echoing, vaults: new Map([['vault', ADMITTED]]) }), [['coingecko', 'factory'], 'agrees']);
   assert.deepEqual(by({ protocol: { ...BASE.protocol!, url: undefined }, coins: [] }), [['page'], 'few-confirmations']);
+});
+
+test("an adapter's factory and the vault naming it are one place, counted only when every answer passes", () => {
+  const by = (change: Partial<Setup>) => {
+    const ledger = ledgerOf({ coins: [], ...change });
+    return [confirmations(ledger, ADAPTER), resultOf(ledger, 'vault/address').finding.kind];
+  };
+  assert.deepEqual(by(adapterAsked(CREATED, [USES])), [['page', 'factory'], 'agrees']);
+  assert.deepEqual(by(adapterAsked(CREATED, [USES, { ...USES, vault: { ...ADAPTED, name: 'second' } }])), [['page', 'factory'], 'agrees'], 'two vaults naming it are still one place');
+  assert.deepEqual(by(adapterAsked(CREATED, [USES, vaultRefusal('not-used')])), [['page'], 'few-confirmations']);
+  assert.deepEqual(by(adapterAsked(CREATED, [])), [['page'], 'few-confirmations'], 'the factory alone does not say whose adapter it is');
+  assert.deepEqual(by(adapterAsked(factoryRefusal('not-created'), [USES])), [['page'], 'few-confirmations'], 'the vault alone does not say it is an official adapter');
+  assert.deepEqual(by({ entry: ADAPTER }), [['page'], 'few-confirmations']);
 });
 
 test('an empty address source is grey; the address result alone puts the entry in 待確認', () => {

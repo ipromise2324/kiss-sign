@@ -37,6 +37,7 @@ import {
   pastTxsRecordings,
   programChanges,
   provedEntries,
+  readInstances,
   readToday,
   renderReport,
   replayInputs,
@@ -257,6 +258,7 @@ const codeChain = recordingTransport(httpsTransport(), endpoints);
 const codeReader = createReader(endpoints, codeChain.transport, { note });
 const spans = await checkSpans(codeReader, entries);
 const today = await readToday(codeReader, subject, registry, latest.value);
+const instances = await readInstances(codeReader, subject, registry, latest.value);
 const erc7730Chain = recordingTransport(httpsTransport(), endpoints);
 const erc7730 = await erc7730Text(entries, registry, snapshot, () => chainAt(createReader(endpoints, erc7730Chain.transport, { note })));
 
@@ -268,7 +270,7 @@ const facts = scope === undefined ? undefined : await protocolFacts(scope, regis
 
 const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
 const fetched = new Date();
-const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, today, erc7730, facts };
+const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, today, instances, erc7730, facts };
 const command = `pnpm report ${reportArgs(subject)}`;
 const text = renderReport(live, { command, sources: ['live reads at the time it ran', ...pastTxs.map((p) => p.file)] });
 
@@ -323,7 +325,7 @@ if (flags.record) {
   const erc7730Section = { commit: snapshot.commit, files: Object.fromEntries(trimErc7730(snapshot, erc7730.reports)), chain: erc7730Chain.exchanges() };
   const raw = new Map(await Promise.all([...answers].map(async ([path, answer]) => [path, await answer] as const)));
   const factsSection = scope === undefined ? {} : { facts: factsRecording(scope, factsBlock, raw, factsChain.exchanges()) };
-  const recording = recordingText({ ...trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges(), today?.block), ...factsSection }, 2);
+  const recording = recordingText({ ...trimReportRecording(subject, entries, listings, pages, fetched, vaults, erc7730Section, codeChain.exchanges(), today?.block, instances?.block), ...factsSection }, 2);
   const safe = loadStoredConfig(kissSignHome(process.env))?.safe;
   if (safe !== undefined && recording.toLowerCase().includes(safe.slice(2))) {
     console.error('the recording would name the configured Safe; nothing written');
