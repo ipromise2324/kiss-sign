@@ -17,22 +17,23 @@ const HTML: Readonly<Record<string, string>> = { '<': '&lt;', '>': '&gt;', '&': 
 const html = (text: string): string => text.replace(/[<>&'"]/g, (c) => HTML[c] as string);
 
 /** The fixed words of the block, word for word those of check.sh's table for the same language, so the rows compare byte for byte. */
-const ROW_WORDS = {
-  en: {
-    tx: 'Transaction',
-    call: (n: number) => `Call #${n}`,
-    bundle: (i: number, n: number) => `Bundler3 call ${i}/${n}`,
-    inner: 'Inner call',
-    end: 'Total',
-    value: 'value (wei)',
-    fn: 'function',
-    arg: (n: number) => `argument ${n}`,
-    extra: 'bytes after the arguments',
-    count: 'calls the Safe makes',
-    none: 'none',
-    bytes: (n: number, hash: string) => `${n} bytes, keccak256 ${hash}`,
-    text: (n: number, hash: string) => `${n} characters, keccak256 ${hash}`,
-  },
+const EN_ROWS = {
+  tx: 'Transaction',
+  call: (n: number) => `Call #${n}`,
+  bundle: (i: number, n: number) => `Bundler3 call ${i}/${n}`,
+  inner: 'Inner call',
+  end: 'Total',
+  value: 'value (wei)',
+  fn: 'function',
+  arg: (n: number) => `argument ${n}`,
+  extra: 'bytes after the arguments',
+  count: 'calls the Safe makes',
+  none: 'none',
+  bytes: (n: number, hash: string) => `${n} bytes, keccak256 ${hash}`,
+  text: (n: number, hash: string) => `${n} characters, keccak256 ${hash}`,
+};
+const ROW_WORDS: Readonly<Record<Language, typeof EN_ROWS>> = {
+  en: EN_ROWS,
   'zh-TW': {
     tx: '交易',
     call: (n: number) => `呼叫 #${n}`,
@@ -48,8 +49,8 @@ const ROW_WORDS = {
     bytes: (n: number, hash: string) => `${n} bytes，keccak256 ${hash}`,
     text: (n: number, hash: string) => `${n} 字元，keccak256 ${hash}`,
   },
-} satisfies Record<Language, unknown>;
-type RowWords = (typeof ROW_WORDS)['en'];
+};
+type RowWords = typeof EN_ROWS;
 
 const BYTES_SHOWN = 32;
 const TEXT_SHOWN = 120;
