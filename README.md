@@ -141,15 +141,15 @@ On the second computer, run the command `verify` prints after `MATCH`:
 
 On `MATCH`, both pages show the same comparison list (Checklist, or 比對清單 in Traditional Chinese). Every row must be equal, except the last column, where each side writes its own names. If any other row differs, stop. `check.sh` does not judge the transaction: read its warnings, which say what it could not decode, and read its calls against what you meant to do.
 
-`--hints` tell `check.sh` how to read bytes that hold data rather than a call, such as a Vault V2 cap id. They carry positions and types only and never change a row, so a wrong hint cannot make the rows match. See [Hints from kiss-sign](https://github.com/ipromise2324/kiss-sign-check#hints-from-kiss-sign).
-
 First the hashes. They must be identical on both pages and on your hardware wallet's screen:
 
 ![The hash rows of both pages side by side: safeTxHash, domain hash and message hash, the same on kiss-sign verify and on check.sh](docs/readme/compare-hashes.png)
 
-Then every call, row by row. The value column must be identical; only the name column on the right is each side's own, such as `usdc` and `USDC`:
+Then every call, row by row. Every column must be identical except the names on the right, which each side writes from its own list, such as `usdc` and `USDC`:
 
 ![The rows of the USDC approve call on both pages side by side: the same to, function and arguments, with different names in the last column](docs/readme/compare-call.png)
+
+`--hints` tell `check.sh` how to read bytes that hold data rather than a call, such as a Vault V2 cap id. They carry positions and types only and never change a row, so a wrong hint cannot make the rows match. See [Hints from kiss-sign](https://github.com/ipromise2324/kiss-sign-check#hints-from-kiss-sign).
 
 ### 5. Sign
 
