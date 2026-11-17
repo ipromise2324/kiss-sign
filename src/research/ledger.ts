@@ -140,7 +140,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'pin-not-run': 'bad',
   'proof-not-pin': 'bad',
   'fn-not-in-abi': 'bad',
-  'metadata-differs': 'warn',
+  'metadata-differs': 'na',
   'not-created': 'bad',
   'factory-other-answer': 'bad',
   'not-adapter': 'bad',
