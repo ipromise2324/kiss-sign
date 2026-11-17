@@ -2,12 +2,12 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
-import { ATTRIBUTES_PATH, CONTRACT_KINDS, MARKET_ENTRIES, MARKET_ENTRY_PARTS, MARKET_PARAMS, MARKET_PARTS, MARKETS_PATH, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
-import type { AllowanceRoute, ContractKind, HttpsUrl, MarketEntryPart, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import { ATTRIBUTES_PATH, CONTRACT_KINDS, MARKET_ENTRIES, MARKET_ENTRY_PARTS, MARKET_PARAMS, MARKET_PARTS, MARKETS_PATH, MAX_API_PATH_STEPS, isApiPathStep, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
+import type { AllowanceRoute, ApiPathStep, ContractKind, HttpsUrl, MarketEntryPart, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { domainSeparator, isMemberType } from './eip712.ts';
-import type { StructType } from './eip712.ts';
+import { domainSeparator, isMemberType, ownNames } from './eip712.ts';
+import type { MemberSource, MessageAnswer, StructType } from './eip712.ts';
 import { LANGUAGES, isProse } from '../language.ts';
 import type { Prose } from '../language.ts';
 
@@ -197,7 +197,7 @@ export type PackedPart = { readonly name: string; readonly type: AbiType; readon
 /**
  * A message of one struct type under an EIP-712 domain on chain 1, `separator` computed from `domain`. `fields` holds a
  * rule per member, by position. `lookup` is an https URL where `{arg}` stands for the hex of the call argument that
- * holds the digest.
+ * holds the digest; `answer` says where its JSON answer holds the message.
  */
 export type SignedMessage = {
   readonly domain: { readonly name: string; readonly version: string; readonly verifyingContract: string };
@@ -205,6 +205,7 @@ export type SignedMessage = {
   readonly struct: StructType;
   readonly fields: readonly Rule[];
   readonly lookup: string;
+  readonly answer: MessageAnswer;
 };
 
 /** Bytes a contract ignores after a call's arguments, which the template lets through up to `maxBytes`. */
@@ -608,7 +609,7 @@ function structType(path: string, raw: unknown): StructType {
 
 function signedMessage(path: string, raw: unknown, scope: Scope): Rule {
   const value = object(path, raw);
-  exactKeys(path, value, ['domain', 'type', 'fields', 'lookup']);
+  exactKeys(path, value, ['domain', 'type', 'fields', 'lookup'], ['answer']);
   const domain = object(`${path}.domain`, value.domain);
   exactKeys(`${path}.domain`, domain, ['name', 'version', 'verifyingContract']);
   const verifyingContract = text(`${path}.domain.verifyingContract`, domain.verifyingContract);
@@ -622,10 +623,42 @@ function signedMessage(path: string, raw: unknown, scope: Scope): Rule {
   }
   const struct = structType(`${path}.type`, value.type);
   const fields = params(`${path}.fields`, value.fields, struct.members, { ...scope, inMessage: true });
+  const answer = value.answer === undefined ? ownNames(struct) : messageAnswer(`${path}.answer`, value.answer, struct);
   return {
     kind: 'eip712',
-    message: { domain: { name, version, verifyingContract }, separator: domainSeparator({ name, version, verifyingContract: entry.address }), struct, fields, lookup },
+    message: { domain: { name, version, verifyingContract }, separator: domainSeparator({ name, version, verifyingContract: entry.address }), struct, fields, lookup, answer },
   };
+}
+
+function pathSteps(path: string, raw: unknown): ApiPathStep[] {
+  const steps = array(path, raw);
+  if (steps.length === 0 || steps.length > MAX_API_PATH_STEPS) throw new TemplateError(path, `not a list of 1 to ${MAX_API_PATH_STEPS} steps`);
+  steps.forEach((step, i) => {
+    if (!isApiPathStep(step)) throw new TemplateError(`${path}[${i}]`, 'not a key of letters, digits and _ or an index below 10000');
+  });
+  return steps as ApiPathStep[];
+}
+
+/** Where a `lookup` answer holds the message: an optional `path` to its object and, per member, its own `path` and `encoding`. */
+function messageAnswer(path: string, raw: unknown, struct: StructType): MessageAnswer {
+  const value = object(path, raw);
+  exactKeys(path, value, [], ['path', 'members']);
+  if (value.path === undefined && value.members === undefined) throw new TemplateError(path, 'names a path, members, or both');
+  const declared = value.members === undefined ? {} : object(`${path}.members`, value.members);
+  const unknown = Object.keys(declared).find((name) => !struct.members.some((member) => member.name === name));
+  if (unknown !== undefined) throw new TemplateError(`${path}.members.${unknown}`, `not a member of ${struct.name}`);
+  const members = struct.members.map((member, i): MemberSource => {
+    const name = member.name as string;
+    const own = ownNames(struct).members[i] as MemberSource;
+    if (!Object.hasOwn(declared, name)) return own;
+    const at = `${path}.members.${name}`;
+    const source = object(at, declared[name]);
+    exactKeys(at, source, [], ['path', 'encoding']);
+    if (source.path === undefined && source.encoding === undefined) throw new TemplateError(at, 'names a path, an encoding, or both');
+    if (source.encoding !== undefined && (source.encoding !== 'hex' || member.type.kind !== 'uint')) throw new TemplateError(`${at}.encoding`, '"hex", on a uintN member only');
+    return { path: source.path === undefined ? own.path : pathSteps(`${at}.path`, source.path), encoding: source.encoding === undefined ? 'plain' : 'hex' };
+  });
+  return { path: value.path === undefined ? [] : pathSteps(`${path}.path`, value.path), members };
 }
 
 function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {

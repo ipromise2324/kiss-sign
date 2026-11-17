@@ -47,6 +47,10 @@ export const MAX_API_BODY_BYTES = 4096;
 export const MAX_API_PATH_STEPS = 16;
 const API_KEY_STEP = /^[A-Za-z_][A-Za-z0-9_]{0,63}$/;
 
+/** A step of a path into a JSON answer: a key of letters, digits and `_`, or an array index below 10000. */
+export const isApiPathStep = (step: unknown): step is ApiPathStep =>
+  (typeof step === 'string' && API_KEY_STEP.test(step)) || (typeof step === 'number' && Number.isSafeInteger(step) && step >= 0 && step < 10_000);
+
 export type RegistryEntry = {
   readonly name: string;
   readonly address: Address;
@@ -580,8 +584,7 @@ function apiSourceOf(path: string, raw: unknown, address: Address): ApiSource {
   const steps = value.path;
   if (!Array.isArray(steps) || steps.length === 0 || steps.length > MAX_API_PATH_STEPS) throw new RegistryError(`${path}.path`, `not a list of 1 to ${MAX_API_PATH_STEPS} steps`);
   steps.forEach((step: unknown, i) => {
-    const ok = (typeof step === 'string' && API_KEY_STEP.test(step)) || (typeof step === 'number' && Number.isSafeInteger(step) && step >= 0 && step < 10_000);
-    if (!ok) throw new RegistryError(`${path}.path[${i}]`, 'not a key of letters, digits and _ or an index below 10000');
+    if (!isApiPathStep(step)) throw new RegistryError(`${path}.path[${i}]`, 'not a key of letters, digits and _ or an index below 10000');
   });
   const walk = steps as ApiPathStep[];
   const echoes = (text: string) => namesAddress(text, address);

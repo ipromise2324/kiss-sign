@@ -24,6 +24,7 @@ import { ownersOf } from '../simulate/safe-state.ts';
 import { scanCalls, simulateSafeTx } from '../simulate/simulate.ts';
 import type { CallScan, Observation } from '../simulate/simulate.ts';
 import { checkTemplateFields, inspectTemplateFields } from '../template/check.ts';
+import { messageFromAnswer } from '../template/eip712.ts';
 import type { FieldChain, Messages, OwnersRead } from '../template/check.ts';
 import { checkMutations } from '../template/mutation.ts';
 import { parseTemplate } from '../template/template.ts';
@@ -236,8 +237,9 @@ export async function evaluate(inputs: VerifyInputs, reader: Reader): Promise<Ev
 
 /**
  * The inputs with each signed message the transaction names by its digest and the inputs lack, read through
- * `readMessage`, keeping only the messages that hash to their digest, cut to their members. A message that cannot be
- * read is left out, so the field check says it was not read, and `unread` says why, for the signer and not the verdict.
+ * `readMessage` and taken from each answer where the template's `answer` says, keeping only the messages that hash to
+ * their digest, cut to their members. A message that cannot be read, or an answer that does not hold it, is left out,
+ * so the field check says it was not read, and `unread` says why, for the signer and not the verdict.
  */
 async function withMessages(
   inputs: VerifyInputs,
@@ -250,10 +252,17 @@ async function withMessages(
   if (readMessage === undefined || lookups.length === 0) return { inputs, prepared, unread: [] };
   const read: string[] = [];
   const unread: string[] = [];
-  for (const url of new Set(lookups)) {
+  for (const url of new Set(lookups.map((lookup) => lookup.url))) {
     const answer = await readMessage(url);
-    if ('text' in answer) read.push(answer.text);
-    else unread.push(answer.why.includes(url) ? answer.why : `${url}: ${answer.why}`);
+    if (!('text' in answer)) {
+      unread.push(answer.why.includes(url) ? answer.why : `${url}: ${answer.why}`);
+      continue;
+    }
+    for (const message of new Set(lookups.filter((lookup) => lookup.url === url).map((lookup) => lookup.message))) {
+      const found = messageFromAnswer(message.struct, message.answer, answer.text);
+      if ('text' in found) read.push(found.text);
+      else unread.push(`${url}: ${found.why}`);
+    }
   }
   const messages = [...new Set(inspect([...prepared.messages, ...read]).signed)];
   return { inputs: { ...inputs, messages }, prepared: { ...prepared, messages }, unread };

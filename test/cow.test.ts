@@ -17,7 +17,7 @@ import { domainSeparator, parseMessage, typedDataDigest } from '../src/template/
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { SignedMessage, Template } from '../src/template/template.ts';
-import { evaluate, evaluateTx, parseVerdictFile } from '../src/verify/verify.ts';
+import { evaluate, evaluateTx, keccakText, parseVerdictFile } from '../src/verify/verify.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -100,7 +100,7 @@ for (const c of CASES) {
     const o = order(c.name);
     const inspection = inspectTemplateFields(tx, resolved(tx, impliedCard(c, o)), templates, registry, []);
     assert.equal(inspection.check.kind, 'unverifiable');
-    assert.deepEqual(inspection.lookups, [`https://api.cow.fi/mainnet/api/v1/orders/${o.uid}`]);
+    assert.deepEqual(inspection.lookups.map((lookup) => lookup.url), [`https://api.cow.fi/mainnet/api/v1/orders/${o.uid}`]);
   });
 }
 
@@ -278,4 +278,67 @@ test('an order the lookup does not serve is named once, by the URL the reader al
   assert.deepEqual(unread, [`${url} answered HTTP 404`]);
   const host = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async () => ({ why: 'api.cow.fi unreachable or timed out' }));
   assert.deepEqual(host.unread, [`${url}: api.cow.fi unreachable or timed out`]);
+});
+
+/** The verdict file's inputs with its CoW template reading the order where `answer` says, approved as so changed. */
+function withAnswer(answer: unknown): typeof VERDICT.inputs {
+  const templates = VERDICT.inputs.templates.map((t) => {
+    const raw = JSON.parse(t.text);
+    digestRule(raw).answer = answer;
+    const text = JSON.stringify(raw);
+    return { ...t, text, approved: keccakText(text) };
+  });
+  return { ...VERDICT.inputs, templates, messages: [] };
+}
+
+const NESTED = { path: ['data', 'order'], members: { sellAmount: { path: ['amounts', 'sell'], encoding: 'hex' } } };
+
+/** The recorded order as another API might serve it: under `data.order`, its sell amount in hex under `amounts.sell`. */
+function nestedOrder(): string {
+  const { sellAmount, ...rest } = JSON.parse(VERDICT.inputs.messages![0]!);
+  return JSON.stringify({ status: 'open', data: { order: { ...rest, amounts: { sell: `0x${BigInt(sellAmount).toString(16)}` } } } });
+}
+
+test("a template's answer finds the order nested and its sell amount in hex; the verdict file keeps the members under their own names and replays", async () => {
+  const { evaluation, inputs } = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: nestedOrder() }));
+  assert.equal(evaluation.verdict.kind, 'MATCH');
+  assert.deepEqual(inputs.messages, VERDICT.inputs.messages);
+  const replayed = await evaluate(inputs, replayReader(VERDICT.exchanges));
+  assert.equal(replayed.verdict.kind, 'MATCH');
+});
+
+test('an answer that holds a member elsewhere than the template says is not read, and the signer is told which member is missing where', async () => {
+  const url = `https://api.cow.fi/mainnet/api/v1/orders/${order('cow-swap-approve-usdt').uid}`;
+  const served = JSON.parse(nestedOrder());
+  served.data.order.amounts.sell = served.data.order.amounts.sell.replace('0x', '');
+  const { evaluation, unread } = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: JSON.stringify(served) }));
+  assert.equal(evaluation.verdict.kind, 'UNVERIFIABLE');
+  assert.deepEqual(unread, [`${url}: no sellAmount of type uint in hex at data.order.amounts.sell`]);
+  const flat = await evaluateTx(withAnswer(NESTED), replayReader(VERDICT.exchanges), async () => ({ text: VERDICT.inputs.messages![0]! }));
+  assert.deepEqual(flat.unread, [`${url}: no JSON object at data.order`]);
+});
+
+test('an answer path that leads to another order still has to hash to the digest', async () => {
+  const other = JSON.parse(load('messages', 'cow-swap-usdc'));
+  const { evaluation, unread } = await evaluateTx(withAnswer({ path: ['orders', 1] }), replayReader(VERDICT.exchanges), async () => ({
+    text: JSON.stringify({ orders: [JSON.parse(VERDICT.inputs.messages![0]!), other] }),
+  }));
+  assert.equal(evaluation.verdict.kind, 'UNVERIFIABLE');
+  assert.deepEqual(unread, []);
+  assert.match(evaluation.verdict.kind === 'UNVERIFIABLE' ? evaluation.verdict.causes.find((c) => c.check === 'fields')!.details[0]! : '', /no Order read from .* hashes to/);
+});
+
+test('template load refuses an answer naming no member of the struct, hex on a member that is not a uint, an empty answer, and a path step that is not a key or an index', () => {
+  const refuses = (answer: unknown, problem: RegExp) => {
+    const t = rawTemplate('cow/swap');
+    digestRule(t).answer = answer;
+    assert.throws(() => parseTemplate(t, registry), problem);
+  };
+  refuses({ members: { amount: { path: ['amount'] } } }, /answer\.members\.amount: not a member of Order/);
+  refuses({ members: { receiver: { encoding: 'hex' } } }, /answer\.members\.receiver\.encoding: "hex", on a uintN member only/);
+  refuses({ members: { sellAmount: { encoding: 'decimal' } } }, /answer\.members\.sellAmount\.encoding: "hex", on a uintN member only/);
+  refuses({}, /answer: names a path, members, or both/);
+  refuses({ members: { sellAmount: {} } }, /answer\.members\.sellAmount: names a path, an encoding, or both/);
+  refuses({ path: ['order.sell'] }, /answer\.path\[0\]: not a key of letters, digits and _ or an index below 10000/);
+  refuses({ path: [] }, /answer\.path: not a list of 1 to 16 steps/);
 });
