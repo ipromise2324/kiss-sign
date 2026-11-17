@@ -1,3 +1,4 @@
+import { detailText } from '../src/verify/detail-text.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -143,7 +144,12 @@ const BUNDLER3_PIN = '0xd3912f2b89d1e2848544ca398d337f59950ffb9ecc38a7bd644063fa
 const UPGRADED = `0x${'ab'.repeat(32)}`;
 
 const bundler3Code = (code: Record<string, unknown>) => withRegistry((entries) => (entries.bundler3!.code = code));
-const findings = (verdict: Verdict) => (verdict.kind === 'MISMATCH' ? verdict.causes.map((c) => `${c.check}: ${c.details.join('; ')}`) : []);
+/** Each check's details, each of which a Traditional Chinese signer reads translated. */
+const findings = (verdict: Verdict) => {
+  const causes = verdict.kind === 'MISMATCH' ? verdict.causes : [];
+  for (const detail of causes.flatMap((c) => c.details)) assert.notEqual(detailText(detail, 'zh-TW'), detail, `reads in Traditional Chinese: ${detail}`);
+  return causes.map((c) => `${c.check}: ${c.details.join('; ')}`);
+};
 
 test('a past transaction that ran before an upgrade MATCHes the earlier pin whose span holds its block', async () => {
   const inputs = bundler3Code({ hash: UPGRADED, from: Number(PARENT.number) + 1, earlier: [{ from: 20000000, hash: BUNDLER3_PIN }] });

@@ -46,7 +46,7 @@ test('every bound field of the Morpho deposit, changed alone, gives a mismatch',
 
 test('a template that frees the deposited assets still passes, with one more free field and one fewer bound', () => {
   const weakened = structuredClone(rawTemplate);
-  weakened.calls[1].args.bundle.items[1].fields.data.call.args.assets = { free: 'test: assets left free' };
+  weakened.calls[1].args.bundle.items[1].fields.data.call.args.assets = { free: { en: 'test: assets left free', 'zh-TW': '測試：資產數量不受限制' } };
   assert.deepEqual(mutations(parseTemplate(weakened, registry)), { kind: 'pass', bound: 20, free: 1 });
 });
 

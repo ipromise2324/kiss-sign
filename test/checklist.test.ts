@@ -121,7 +121,7 @@ test('the -extra row names the template\'s allowance as a program fact and its r
   const extra = page.split('\n').find((line) => line.includes('<span class="id">C3-extra</span>'));
   assert.match(
     extra ?? '',
-    /<span class="v">0x[0-9a-f]{16}<\/span><span class="nm">模板允許這個呼叫最多 12 bytes，這裡 8 bytes，在範圍內 <span class="aiw" data-ai><span class="byai">AI<\/span><span>the Morpho app appends [^<]*<\/span><\/span><\/span><\/div>$/,
+    /<span class="v">0x[0-9a-f]{16}<\/span><span class="nm">模板允許這個呼叫最多 12 bytes，這裡 8 bytes，在範圍內 <span class="aiw" data-ai><span class="byai">AI<\/span><span>Morpho app 會在後面附上[^<]*<\/span><\/span><\/span><\/div>$/,
   );
   assert.match(page, /<p class="lead">各列是繁體中文。獨立電腦上 check\.sh 的 config 也要設 LANGUAGE=zh-TW，不然各列會不同。<\/p>\n<!-- 比對清單 -->/);
   assert.match(page, new RegExp(`<title>kiss-sign verify · nonce ${tree.nonce} · MATCH</title>`));

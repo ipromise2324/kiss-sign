@@ -8,6 +8,8 @@ import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { domainSeparator, isMemberType } from './eip712.ts';
 import type { StructType } from './eip712.ts';
+import { LANGUAGES, isProse } from '../language.ts';
+import type { Prose } from '../language.ts';
 
 /**
  * The registry entries a contract card field accepts: those of `registryKind`, and when `protocol` is set, only those
@@ -89,11 +91,11 @@ export type Computed = {
   readonly read: ComputedRead;
   readonly bound: 'floor' | 'ceiling';
   readonly default: { readonly bps: number; readonly source: HttpsUrl };
-  readonly margin: { readonly bps: number; readonly why: string } | undefined;
+  readonly margin: { readonly bps: number; readonly why: Prose } | undefined;
 };
 
 /** A number the signer may type as `max`, with the reason the template gives for it. */
-export type AmountMax = { readonly value: bigint; readonly why: string };
+export type AmountMax = { readonly value: bigint; readonly why: Prose };
 
 /** A percent field's value for 100%. */
 export const WAD = 10n ** 18n;
@@ -120,7 +122,7 @@ export type Rule =
   | { readonly kind: 'safe' }
   | { readonly kind: 'contract'; readonly name: string }
   | { readonly kind: 'const'; readonly value: ConstValue }
-  | { readonly kind: 'free'; readonly reason: string; readonly claim: FreeClaim }
+  | { readonly kind: 'free'; readonly reason: Prose; readonly claim: FreeClaim }
   /** The same number as the transaction holds at an earlier template path, such as an approval its transfer spends. */
   | { readonly kind: 'equals'; readonly path: string; readonly rule: LeafRule }
   /**
@@ -164,7 +166,7 @@ export type SignedMessage = {
 };
 
 /** Bytes a contract ignores after a call's arguments, which the template lets through up to `maxBytes`. */
-export type TrailerAllowance = { readonly maxBytes: number; readonly why: string };
+export type TrailerAllowance = { readonly maxBytes: number; readonly why: Prose };
 
 /**
  * `call`: a selector, then the arguments. `params`: the arguments alone, ABI-encoded with no selector, as a command
@@ -184,7 +186,7 @@ export type CallNode = {
  * A call the Safe makes: a function call, or `empty` data, as a plain ETH transfer or a cancellation sends. `merge`,
  * with its reason, lets several operations share this call: see `checkTemplateFields`.
  */
-export type TemplateCall = { readonly to: Rule; readonly value: Rule; readonly data: CallNode | 'empty'; readonly merge: string | undefined };
+export type TemplateCall = { readonly to: Rule; readonly value: Rule; readonly data: CallNode | 'empty'; readonly merge: Prose | undefined };
 
 /**
  * `all`, only on what the Safe gives, means its whole balance: the Safe holds none of the token afterwards. `at-least`,
@@ -250,7 +252,7 @@ export type Fact = BoundView & {
   readonly units: readonly { readonly value: number; readonly unit: TokenRef }[];
   readonly ratio: readonly [number, number] | undefined;
   /** Where the protocol defines the ratio; present exactly when `ratio` is. */
-  readonly reason: string | undefined;
+  readonly reason: Prose | undefined;
 };
 
 /**
@@ -312,6 +314,29 @@ function array(path: string, raw: unknown): unknown[] {
 function text(path: string, raw: unknown): string {
   if (typeof raw !== 'string' || raw.trim() === '') throw new TemplateError(path, 'not a non-empty string');
   return raw;
+}
+
+/**
+ * A reason the author writes for the signer: an object keyed by language, `{ "en": ... }`, `{ "zh-TW": ... }` or both,
+ * or a plain string, as templates held before, which reads as English so an older verdict file still replays.
+ */
+function prose(path: string, raw: unknown): Prose {
+  if (typeof raw === 'string') return { en: printable(path, text(path, raw)) };
+  if (!isProse(raw)) throw new TemplateError(path, `not a non-empty string or an object keyed by ${LANGUAGES.join(' or ')}`);
+  return Object.fromEntries(LANGUAGES.flatMap((language) => (raw[language] === undefined ? [] : [[language, printable(`${path}.${language}`, text(`${path}.${language}`, raw[language]))]])));
+}
+
+function printable(path: string, written: string): string {
+  if (UNPRINTABLE.test(written)) throw new TemplateError(path, 'holds a control or bidirectional character');
+  return written;
+}
+
+/** The languages each reason holds, collected from the parsed template; a template whose reasons differ is refused. */
+function proseLanguages(value: unknown, sets: Set<string>): Set<string> {
+  if (value instanceof Map) value.forEach((item) => proseLanguages(item, sets));
+  else if (isProse(value)) sets.add(LANGUAGES.filter((language) => value[language] !== undefined).join(' and '));
+  else if (typeof value === 'object' && value !== null) Object.values(value).forEach((item) => proseLanguages(item, sets));
+  return sets;
 }
 
 function exactKeys(path: string, value: Json, required: readonly string[], optional: readonly string[] = []): void {
@@ -412,18 +437,18 @@ const contains = (type: AbiType, kind: AbiType['kind']): boolean =>
 function free(path: string, raw: unknown, type: AbiType): Rule {
   if (contains(type, 'address')) throw new TemplateError(path, 'an address is never free; bind it to the Safe, a card value or a registry contract');
   if (contains(type, 'tuple')) throw new TemplateError(path, 'a tuple is never free as a whole; bind its fields');
-  if (typeof raw === 'string') {
+  if (typeof raw === 'string' || isProse(raw)) {
     const numbers = (type.kind === 'array' || type.kind === 'fixed-array') && (type.item.kind === 'uint' || type.item.kind === 'int');
     if (!numbers && !['uint', 'int', 'bool', 'fixed-bytes'].includes(type.kind)) {
       throw new TemplateError(path, `a free ${canonicalType(type)} needs {"proof": why} or {"unread": why}`);
     }
-    return { kind: 'free', reason: text(path, raw), claim: 'scalar' };
+    return { kind: 'free', reason: prose(path, raw), claim: 'scalar' };
   }
   const value = object(path, raw);
   const [claim, ...extra] = Object.keys(value);
   if ((claim !== 'proof' && claim !== 'unread' && claim !== 'route') || extra.length > 0) throw new TemplateError(path, 'must be a reason, or exactly one of proof, unread, route');
   if (claim === 'route' && type.kind !== 'uint' && type.kind !== 'int') throw new TemplateError(path, 'a route is a number that picks a pool');
-  return { kind: 'free', reason: text(`${path}.${claim}`, value[claim]), claim };
+  return { kind: 'free', reason: prose(`${path}.${claim}`, value[claim]), claim };
 }
 
 function quantity(path: string, raw: unknown, scope: Scope): Quantity {
@@ -659,7 +684,7 @@ function trailer(path: string, raw: unknown, upTo: number = MAX_TRAILER): Traile
     const longer = upTo === MAX_TRAILER ? `; more only on a call to a registry contract that declares ignoresTrailer, up to ${MAX_IGNORED_TRAILER}` : '';
     throw new TemplateError(`${path}.maxBytes`, `an integer from 1 to ${upTo}${longer}`);
   }
-  return { maxBytes, why: text(`${path}.why`, value.why) };
+  return { maxBytes, why: prose(`${path}.why`, value.why) };
 }
 
 function callNode(path: string, raw: unknown, scope: Scope, trailerUpTo?: number): CallNode {
@@ -683,9 +708,9 @@ function encodedNode(path: string, raw: unknown, scope: Scope): CallNode {
  * the arrays, as the Merkl distributor takes parallel `users`, `tokens`, `amounts` and `proofs`. Only those items can
  * differ between them.
  */
-function mergeReason(path: string, raw: unknown, call: TemplateCall, last: boolean): string | undefined {
+function mergeReason(path: string, raw: unknown, call: TemplateCall, last: boolean): Prose | undefined {
   if (raw === undefined) return undefined;
-  const why = text(path, raw);
+  const why = prose(path, raw);
   const data = call.data === 'empty' ? undefined : call.data;
   if (!last) throw new TemplateError(path, 'only the last call may merge');
   if (call.to.kind !== 'contract' || call.value.kind !== 'const') throw new TemplateError(path, 'a merged call needs a contract target and a constant value');
@@ -769,9 +794,7 @@ function amountMax(path: string, raw: unknown): AmountMax {
   const value = object(path, raw);
   exactKeys(path, value, ['value', 'why']);
   const number = constValue(`${path}.value`, value.value, { kind: 'uint', bits: 256 });
-  const why = text(`${path}.why`, value.why);
-  if (UNPRINTABLE.test(why)) throw new TemplateError(`${path}.why`, 'holds a control or bidirectional character');
-  return { value: number.value as bigint, why };
+  return { value: number.value as bigint, why: prose(`${path}.why`, value.why) };
 }
 
 const MAX_BPS = 1000;
@@ -847,9 +870,7 @@ function computed(path: string, raw: unknown, name: string, scope: Scope, order:
   if (value.margin !== undefined) {
     const m = object(`${path}.margin`, value.margin);
     exactKeys(`${path}.margin`, m, ['bps', 'why']);
-    const why = text(`${path}.margin.why`, m.why);
-    if (UNPRINTABLE.test(why)) throw new TemplateError(`${path}.margin.why`, 'holds a control or bidirectional character');
-    margin = { bps: bps(`${path}.margin.bps`, m.bps), why };
+    margin = { bps: bps(`${path}.margin.bps`, m.bps), why: prose(`${path}.margin.why`, m.why) };
   }
   return { read, bound: value.bound, default: { bps: bps(`${path}.default.bps`, fallback.bps), source }, margin };
 }
@@ -1042,7 +1063,7 @@ function fact(path: string, raw: unknown, scope: Scope, protocols: ReadonlyMap<s
     if (JSON.stringify(a.unit) !== JSON.stringify(b.unit)) throw new TemplateError(`${path}.ratio`, 'names two values counted in different tokens');
     ratio = [a.value, b.value];
   }
-  const reason = value.reason === undefined ? undefined : text(`${path}.reason`, value.reason);
+  const reason = value.reason === undefined ? undefined : prose(`${path}.reason`, value.reason);
   if ((ratio === undefined) !== (reason === undefined)) {
     throw new TemplateError(`${path}.reason`, ratio === undefined ? 'explains a ratio the fact does not name' : 'missing: say where the protocol defines the ratio');
   }
@@ -1166,7 +1187,10 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   const unbounded = [...template.effects.gives, ...template.effects.gets].some((effect) => effect.amount.kind === 'positive' || effect.amount.kind === 'any');
   if (unbounded && routes(template)) throw new TemplateError('effects', 'a template with a route claim must bound each token the Safe gives or gets by a card amount, atLeast or all, since a route may change the price');
   const protocols = calledProtocols(template, registry);
-  return { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
+  const parsed = { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
+  const languages = proseLanguages(parsed, new Set());
+  if (languages.size > 1) throw new TemplateError('template', `holds reasons in ${[...languages].join(', in ')}; every reason in one template holds the same languages`);
+  return parsed;
 }
 
 /** The struct name of each message the template signs by its digest (`eip712`), such as CoW's `Order`, once each. */
