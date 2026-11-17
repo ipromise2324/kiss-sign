@@ -87,7 +87,12 @@
   ],
   "effects": {
     "gives": [],
-    "gets": [],
+    "gets": [
+      {
+        "token": "card.vault",
+        "amount": "any"
+      }
+    ],
     "views": [
       {
         "to": {

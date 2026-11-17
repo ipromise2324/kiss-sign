@@ -2,7 +2,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
 import { checksumAddress } from '../safe/types.ts';
 import type { Language } from '../language.ts';
-import type { BundleCall, CallData, CallTree, Label, Labeled, SafeCall } from './expected.ts';
+import type { ArgNote, BundleCall, CallData, CallTree, Label, Labeled, SafeCall } from './expected.ts';
 
 /** One line of the 比對清單, which check.sh writes line for line the same for the same transaction, except `name`. */
 export type ChecklistLine =
@@ -55,6 +55,7 @@ const ZH = {
   raw: '沒有範本可以解碼',
   trailer: (max: number, bytes: number) => `模板允許這個呼叫最多 ${max} bytes，這裡 ${bytes} bytes，在範圍內`,
   hardwareWallet: '和硬體錢包比對',
+  sharePrice: { max: '每股價格上限', min: '每股價格下限' },
 };
 const EN: typeof ZH = {
   unregistered: 'not registered',
@@ -64,6 +65,7 @@ const EN: typeof ZH = {
   raw: 'no template to decode it',
   trailer: (max: number, bytes: number) => `extra bytes after the arguments: the template allows at most ${max}; this call has ${bytes}, within range`,
   hardwareWallet: 'compare with the hardware wallet',
+  sharePrice: { max: 'highest share price', min: 'lowest share price' },
 };
 const NAMES: Readonly<Record<Language, typeof ZH>> = { en: EN, 'zh-TW': ZH };
 type Names = typeof ZH;
@@ -83,6 +85,7 @@ function labelName(label: Label, w: Names): string {
 }
 
 const row = (id: string, key: string, value: string, name = ''): ChecklistLine => ({ kind: 'row', id, key, value, name });
+const noteText = (note: ArgNote | undefined, w: Names): string => (note === undefined ? '' : note.kind === 'equals' ? `= ${note.text}` : w.sharePrice[note.bound]);
 const toRow = (id: string, to: Labeled, w: Names): ChecklistLine => row(`${id}-to`, 'to', checksumAddress(to.address), labelName(to.label, w));
 
 function dataLines(id: string, data: CallData, w: Names): ChecklistLine[] {
@@ -91,7 +94,7 @@ function dataLines(id: string, data: CallData, w: Names): ChecklistLine[] {
   const named = new Map(data.addresses.map((a) => [checksumAddress(a.address), labelName(a.label, w)]));
   const lines = [
     row(`${id}-fn`, '函式', `${data.signature} ${data.selector}`),
-    ...data.args.map((arg, i) => row(`${id}-a${i + 1}`, `引數 ${i + 1}`, arg.text, named.get(arg.text) ?? (arg.amount === undefined ? '' : `= ${arg.amount}`))),
+    ...data.args.map((arg, i) => row(`${id}-a${i + 1}`, `引數 ${i + 1}`, arg.text, named.get(arg.text) ?? noteText(arg.note, w))),
   ];
   if (data.trailer !== undefined) {
     const { hex, allowance } = data.trailer;

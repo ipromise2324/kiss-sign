@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import type { EngineChecks } from '../src/floor/summary.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
-import { decideVerdict } from '../src/verify/verdict.ts';
+import { checkStates, decideVerdict } from '../src/verify/verdict.ts';
 import type { AllChecks } from '../src/verify/verdict.ts';
 
 const registry = loadRegistry(join(import.meta.dirname, '..'));
@@ -108,4 +108,31 @@ test('an unexplained token in the effects names the token address', () => {
   const verdict = verdictOf(observedWith({ kind: 'mismatch', findings: [{ kind: 'balance', asset: stray, expected: { kind: 'exactly', change: 0n }, actual: 1n }] }));
   assert.equal(verdict.kind, 'MISMATCH');
   assert.match(JSON.stringify(verdict), new RegExp(stray));
+});
+
+test("a mismatch's page states say which checks passed, which failed, which did not run and which the card does not need", () => {
+  const checks: AllChecks = { ...passing, assets: { kind: 'not-needed' }, fields: fieldMismatch, mutation: { kind: 'not-run', check: fieldMismatch }, simulation: { kind: 'unverifiable', reasons: ['the nonce was used'] } };
+  assert.deepEqual(checkStates(checks, registry), {
+    'template-approval': 'passed',
+    'static-floor': 'passed',
+    fields: 'failed',
+    'vault-asset': 'not-needed',
+    'contract-code': 'passed',
+    mutation: 'not-run',
+    simulation: 'unverifiable',
+    'simulated-floor': 'not-run',
+    effects: 'not-run',
+  });
+  const verdict = verdictOf(checks);
+  assert.deepEqual(verdict.kind === 'MISMATCH' ? verdict.causes.map((c) => c.check) : verdict.kind, ['fields']);
+});
+
+test('a balance finding reads in whole tokens beside its base units when the token decimals are known', () => {
+  const findings = { kind: 'mismatch', findings: [{ kind: 'balance', asset: USDC, expected: { kind: 'at-least', change: 0n }, actual: -1500000n }] };
+  const verdict = decideVerdict({ ...passing, ...observedWith(findings) }, registry, new Map([[USDC, 6]]));
+  assert.deepEqual(verdict.kind === 'MISMATCH' ? verdict.causes : [], [
+    { check: 'effects', details: [`usdc ${USDC} changed by -1.5 (-1500000 base units), the card explains at least 0`] },
+  ]);
+  const bare = verdictOf(observedWith(findings));
+  assert.deepEqual(bare.kind === 'MISMATCH' ? bare.causes[0]?.details : [], [`usdc ${USDC} changed by -1500000, the card explains at least 0`]);
 });

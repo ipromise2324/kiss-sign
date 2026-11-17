@@ -236,6 +236,14 @@ test('replay of the recorded deposit gives MATCH from the verdict file alone and
   assert.match(result!.stdout, /Same verdict as recorded/);
 });
 
+test('replay of a CoW order says the assets the order moves change later, and prints the same box verify does, with no call list', async () => {
+  const empty = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  const { code, stdout, stderr } = await run(['replay', join(ROOT, 'testdata', 'verify', 'cow-swap-approve.json')], empty, empty);
+  assert.equal(code, 0, stderr);
+  assert.match(stdout.replace(/\n│ */g, ' '), /This transaction signs only the digest of a message \(Order\)\. The assets that message moves change later, when someone acts on it, not in this transaction\./);
+  assert.doesNotMatch(stdout, /move no asset|moves an asset/);
+});
+
 test('replay refuses a verdict file whose card was edited', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
   const edited = { ...fixture, inputs: { ...fixture.inputs, card: { ...fixture.inputs.card, text: fixture.inputs.card.text.replace('1800000000180', '1800000000181') } } };
