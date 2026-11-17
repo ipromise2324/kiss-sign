@@ -779,7 +779,7 @@ function sequence(context: Context): Sequence {
   const last = callTo.at(-1) ?? 0;
   for (const effect of template.effects.gets) {
     const token = tokenOf(effect.token, context);
-    const text = w.youGet(token?.name);
+    const text = effect.amount.kind === 'any' ? w.youMayGet(token?.name) : w.youGet(token?.name);
     arrows.push({ kind: 'gets', from: last, text });
     narration.push(w.result(text));
   }
