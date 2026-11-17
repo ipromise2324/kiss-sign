@@ -67,7 +67,7 @@ The pictures below come from one real run: another Safe's deposit of 1,000,611.4
 ```sh
 git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
 pnpm install
-pnpm kiss-sign init --safe 0x… --language en   # or zh-TW for Traditional Chinese; see Language below
+pnpm kiss-sign init --safe 0x… --language en   # or zh-TW for Traditional Chinese; see Language
 pnpm kiss-sign key add alchemy
 pnpm kiss-sign key add etherscan   # to build or review templates
 pnpm kiss-sign key add github      # optional: raises GitHub's hourly limit to build or review templates
@@ -79,6 +79,14 @@ You need:
 - Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys. A GitHub token is optional: a fine-grained, read-only one for public repositories raises GitHub's hourly limit when you build or review templates.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
 - For the hardened tier, a second computer with [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), its `LANGUAGE` set to the language you gave `init`. It runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. Without it you are on the basic tier, kiss-sign alone. See [Two tiers](docs/design.md#two-tiers).
+
+**Language.** Choose English (`en`, the default) or Traditional Chinese (`zh-TW`) with `init` above, and change it later without giving the Safe again:
+
+```sh
+pnpm kiss-sign init --language zh-TW
+```
+
+It sets the signing commands' terminal text, `verify`'s page and its comparison list, and `pnpm history`. A check's details follow it when they have a shape the program knows, such as `expected ..., got ...`; others, such as a provider's error, stay in English. A template's reasons show in your language when the template has it, and otherwise in one it has. A report comes in the languages its AI wrote it in; every shipped one has both. On the second computer, set `LANGUAGE` in `check.sh`'s `config` to the same language: every row of the comparison list except the last column then matches byte for byte, and with two languages the rows differ and you stop. Addresses, hashes, verdict words such as `MATCH`, check keys and prompt endings such as `[y/N]` stay the same in every language, and so do verdicts and card hashes. The code and the docs are in English.
 
 ### 1. Tell your AI what you want
 
@@ -144,15 +152,6 @@ Some bytes inside a call are data, not a call, such as a Morpho Vault V2 cap's i
 ### 5. Sign
 
 Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or a vault, send a small amount first.
-
-**Language.** Choose English (`en`, the default) or Traditional Chinese (`zh-TW`) when you set up, and change it later without giving the Safe again:
-
-```sh
-pnpm kiss-sign init --safe 0x… --language zh-TW
-pnpm kiss-sign init --language en
-```
-
-It sets the signing commands' terminal text, `verify`'s page and its comparison list, and `pnpm history`. A check's details follow it when they have a shape the program knows, such as `expected ..., got ...`; others, such as a provider's error, stay in English. A template's reasons show in your language when the template has it, and otherwise in one it has. A report comes in the languages its AI wrote it in; every shipped one has both. On the second computer, set `LANGUAGE` in `check.sh`'s `config` to the same language: every row of the comparison list except the last column then matches byte for byte, and with two languages the rows differ and you stop. Addresses, hashes, verdict words such as `MATCH`, check keys and prompt endings such as `[y/N]` stay the same in every language, and so do verdicts and card hashes. The code and the docs are in English.
 
 ### Add your own operation
 
