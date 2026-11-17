@@ -462,10 +462,11 @@ test('--event goes only with --anchor event, and --anchor event needs it', () =>
 
 const cow: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'cow-swap-presign.json'));
 
-async function cowRun(options: { time?: boolean; messages?: PastTxsRecording['messages']; reader?: Reader } = {}) {
+async function cowRun(options: { time?: boolean; withinSeconds?: number; messages?: PastTxsRecording['messages']; reader?: Reader } = {}) {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cow', 'swap', 'template.json'), 'utf8'));
   const fields = raw.calls[0].args.orderUid.packed[0].rule.eip712.fields;
   if (options.time === true) fields.validTo = { free: { time: fields.validTo.free } };
+  if (options.withinSeconds !== undefined) fields.validTo = { withinSeconds: options.withinSeconds };
   const { query } = cow;
   return pastTxs(
     { template: parseTemplate(raw, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: pastTxsSampling(query) },
@@ -512,4 +513,20 @@ test('a time whose block the recording does not hold is counted as not recorded,
   const reader = replayReader(cow.exchanges.filter((e) => e.method !== 'eth_getBlockByHash'));
   const text = renderPastTxs(await cowRun({ time: true, reader }), registry);
   assert.match(text, /digest\.validTo {2}\[free\]\n {4}values: less the block's time: none; block time not recorded for \d+\n/);
+});
+
+test('an order expiring later than withinSeconds after its block is a misfit with that reason, and the fits spread within the bound', async () => {
+  const relative = (run: Awaited<ReturnType<typeof cowRun>>) =>
+    run.studies.flatMap((s) => (s.kind === 'fit' && s.sender.kind === 'safe' && s.time !== undefined ? [BigInt(s.values[s.paths.findIndex((p) => p.endsWith('digest.validTo'))] as string) - s.time] : []));
+  const all = relative(await cowRun({ time: true }));
+  const later = all.filter((seconds) => seconds > 1800n).length;
+  assert.ok(later > 0 && later < all.length, 'some recorded orders expire more than 30 minutes after their block, and some do not');
+  const bounded = await cowRun({ withinSeconds: 1800 });
+  const late = bounded.studies.filter((s) => s.kind === 'misfit' && s.sender.kind === 'safe' && s.reason.kind === 'late');
+  assert.equal(late.length, later);
+  const text = renderPastTxs(bounded, registry);
+  assert.match(text, new RegExp(`^ {2}${later} from \\d+ Safes?: call\\.setPreSignature\\.orderUid\\.digest\\.validTo: more than 1800 seconds after its block's time$`, 'm'));
+  const spread = spreadOf(relative(bounded));
+  assert.ok(spread !== undefined && spread.max <= 1800n && spread.count === all.length - later);
+  assert.ok(text.includes(`digest.validTo  [at most 1800 seconds after its block's time]\n    values: less the block's time, in seconds: ${spread.count} transactions, min ${spread.min}, `));
 });

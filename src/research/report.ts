@@ -687,6 +687,8 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
       return `constant ${code(rule.value.kind === 'string' ? JSON.stringify(Buffer.from(rule.value.value.slice(2), 'hex').toString('utf8')) : constText(rule.value))}`;
     case 'free':
       return `${FREE_CLAIMS[rule.claim]}; ${byAi(rule.reason)}`;
+    case 'within-seconds':
+      return `a time at most ${rule.seconds} seconds after the time of the block the transaction is judged on: the latest block for a pending transaction, the block it ran in for an executed one; a later time is a MISMATCH`;
     case 'equals':
       return `the same number as ${code(rule.path)}, which is ${ruleText(rule.rule, template, registry)}`;
     case 'owner-before':
