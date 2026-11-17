@@ -83,3 +83,78 @@ test('a push-deny word in the commit message is refused', () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /forbidden-word/);
 });
+
+function splitRepo(): { repo: string; home: string } {
+  const { repo, home } = setup();
+  mkdirSync(join(repo, 'bin'));
+  mkdirSync(join(repo, 'src'));
+  mkdirSync(join(repo, 'templates', 'x', 'op'), { recursive: true });
+  writeFileSync(join(repo, 'bin', 'kiss-sign'), "import '../src/check.ts';\n");
+  writeFileSync(join(repo, 'src', 'check.ts'), "import type { T } from './types.ts';\nexport const ok = 1;\n");
+  writeFileSync(join(repo, 'src', 'types.ts'), 'export type T = 1;\n');
+  writeFileSync(join(repo, 'src', 'research.ts'), 'export const r = 1;\n');
+  writeFileSync(join(repo, 'templates', 'x', 'op', 'report.generated.md'), 'first\n');
+  writeFileSync(join(repo, 'templates', 'x', 'op', 'report.generated.en.html'), '<p>first</p>\n');
+  commit(repo, 'templates/x/op/template.json', '{}\n');
+  git(repo, 'branch', '-M', 'main');
+  git(repo, 'checkout', '-q', '-b', 'pr');
+  return { repo, home };
+}
+
+function checkBranch(repo: string, home: string) {
+  const env: NodeJS.ProcessEnv = { ...process.env, HOME: home };
+  delete env.KISS_SIGN_HOME;
+  return spawnSync(process.execPath, [script, 'main..HEAD'], { cwd: repo, env, encoding: 'utf8' });
+}
+
+test('a branch that changes the verdict core and a template together is refused, naming both', () => {
+  const { repo, home } = splitRepo();
+  writeFileSync(join(repo, 'src', 'check.ts'), 'export const ok = 2;\n');
+  commit(repo, 'templates/x/op/template.json', '{"a":1}\n');
+  const result = checkBranch(repo, home);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /HEAD changes the verdict core and templates\/ or registry\/ together/);
+  assert.match(result.stderr, /verdict core:\n {2}src\/check\.ts\ntemplates\/ and registry\/:\n {2}templates\/x\/op\/template\.json/);
+});
+
+test('research code or a type-only import beside a template passes, also when main changed the core after the branch left it', () => {
+  const { repo, home } = splitRepo();
+  writeFileSync(join(repo, 'src', 'research.ts'), 'export const r = 2;\n');
+  writeFileSync(join(repo, 'src', 'types.ts'), 'export type T = 2;\n');
+  commit(repo, 'templates/x/op/template.json', '{"a":1}\n');
+  git(repo, 'checkout', '-q', 'main');
+  commit(repo, 'src/check.ts', 'export const ok = 3;\n');
+  git(repo, 'checkout', '-q', 'pr');
+  assert.equal(checkBranch(repo, home).status, 0);
+  git(repo, '-c', 'user.name=t', '-c', 'user.email=t@example.com', 'merge', '-q', '--no-edit', 'main');
+  assert.equal(checkBranch(repo, home).status, 0);
+});
+
+test('a verdict core change may render the existing generated reports again', () => {
+  const { repo, home } = splitRepo();
+  writeFileSync(join(repo, 'src', 'check.ts'), 'export const ok = 2;\n');
+  writeFileSync(join(repo, 'templates', 'x', 'op', 'report.generated.md'), 'again\n');
+  commit(repo, 'templates/x/op/report.generated.en.html', '<p>again</p>\n');
+  assert.equal(checkBranch(repo, home).status, 0);
+});
+
+test('a core change that adds a vault report beside it is refused, since that report lets verify accept the vault', () => {
+  const { repo, home } = splitRepo();
+  writeFileSync(join(repo, 'src', 'check.ts'), 'export const ok = 2;\n');
+  mkdirSync(join(repo, 'templates', 'x', 'op', 'vaults', 'v'), { recursive: true });
+  commit(repo, 'templates/x/op/vaults/v/report.generated.md', 'new\n');
+  const result = checkBranch(repo, home);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /templates\/x\/op\/vaults\/v\/report\.generated\.md/);
+});
+
+test('the hook refuses a push it cannot compare with origin/main', () => {
+  const { repo, home } = splitRepo();
+  commit(repo, 'templates/x/op/template.json', '{"a":1}\n');
+  const env: NodeJS.ProcessEnv = { ...process.env, HOME: home };
+  delete env.KISS_SIGN_HOME;
+  const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).stdout.trim();
+  const result = spawnSync(process.execPath, [script], { cwd: repo, env, encoding: 'utf8', input: `refs/heads/pr ${head} refs/heads/pr ${'0'.repeat(40)}\n` });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /git could not compare refs\/heads\/pr with origin\/main/);
+});
