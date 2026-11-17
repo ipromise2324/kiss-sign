@@ -1530,7 +1530,7 @@ export function programChangeLines(head: string, split: Split): string[] {
       : [`PROGRAM CHANGE  verdict core: ${head} changes ${split.core.length} file(s) the signing commands run, or the check that keeps them apart; merging it changes what verify checks for every signing:`, ...list(split.core)]),
     ...(split.other.length === 0
       ? []
-      : [`PROGRAM CHANGE  not the verdict: ${head} changes ${split.other.length} other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs; review them as code:`, ...list(split.other)]),
+      : [`PROGRAM CHANGE  not the verdict: ${head} changes ${split.other.length} other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs:`, ...list(split.other)]),
     ...(split.gate.length === 0
       ? []
       : [`PROGRAM CHANGE  gate: ${head} changes ${split.gate.length} file(s) of the program gate, the canaries of docs/canaries.txt, the files they import or read, or the code that enforces the rules; only the signer merges it:`, ...list(split.gate)]),
