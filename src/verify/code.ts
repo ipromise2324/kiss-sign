@@ -25,6 +25,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
   };
   const visit = (rule: Rule | undefined): void => {
     if (rule?.kind === 'contract') add(registry.entries.get(rule.name));
+    else if (rule?.kind === 'address-word') visit(rule.rule);
     else if (rule?.kind === 'const' && rule.value.kind === 'address') add(registry.byAddress.get(rule.value.value));
     else if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
     else if (rule?.kind === 'items') rule.items.forEach(visit);

@@ -151,6 +151,7 @@ const ZH = {
 
   zeroAddress: '無（零地址）',
   fixedAddress: '固定的地址',
+  asWord: '，放在 32 bytes 裡、前面補 12 個 0 byte',
   fixedTo: (value: string): string => `固定為 ${value}`,
   fixedValue: '固定值',
   differs: '每筆不同',
@@ -691,6 +692,7 @@ const EN: Words = {
 
   zeroAddress: 'none (zero address)',
   fixedAddress: 'a fixed address',
+  asWord: ', as a 32-byte word left-padded with 12 zero bytes',
   fixedTo: (value) => `fixed to ${value}`,
   fixedValue: 'a fixed value',
   differs: 'differs each time',
