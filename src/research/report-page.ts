@@ -1212,7 +1212,7 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
   const where = span !== null ? w.span(span[1] as string) : result.id.endsWith('/code.today') ? w.latestBlock : '';
-  const refused = result.finding.kind === 'refused' ? w.refusedWhy(result.finding.why) : '';
+  const refused = result.finding.kind === 'refused' ? w.refusedWhy(result.finding.why) : result.finding.kind === 'fn-not-in-abi' ? ` ${result.finding.signatures.join(', ')}` : '';
   const source = result.source === undefined ? undefined : sourceWord(result.about.entry, result.source.of, w, context.registry);
   return { title: [w.resultTitle(name, source, words.title, where)], why: [`${words.why}${refused}`] };
 }

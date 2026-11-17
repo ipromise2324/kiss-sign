@@ -2,13 +2,13 @@ import { join } from 'node:path';
 import { openMainnetReader } from '../src/chain/reader.ts';
 import { describeRefusal, proveAbi } from '../src/contracts/prove.ts';
 import { pinnedCompilers } from '../src/contracts/solc.ts';
-import { sourcifyHttps } from '../src/contracts/sourcify.ts';
+import { etherscanFromEnv } from '../src/contracts/etherscan.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 
 const [addressArg] = process.argv.slice(2);
-if (addressArg === undefined) throw new Error('usage: ALCHEMY_API_KEY=... node scripts/prove-abi.ts <address>');
+if (addressArg === undefined) throw new Error('usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/prove-abi.ts <address>');
 const address = parseAddress('address', addressArg);
 
 const entry = loadRegistry(join(import.meta.dirname, '..')).byAddress.get(address);
@@ -18,12 +18,13 @@ if (entry?.routes !== undefined) {
 }
 
 if (!(await ensureVendored(['solc']))) process.exit(1);
+const etherscan = etherscanFromEnv(process.env);
 const reader = openMainnetReader(process.env);
 const block = await reader.block('latest');
 if (block.kind === 'unverifiable') throw new Error(block.reason);
 
 const started = performance.now();
-const proof = await proveAbi(reader, address, block.value, { sourcify: sourcifyHttps, compilers: pinnedCompilers() }, entry);
+const proof = await proveAbi(reader, address, block.value, { etherscan, compilers: pinnedCompilers() }, entry);
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 
 if (proof.kind === 'refused') {
@@ -46,7 +47,8 @@ const lines = [
   `contract       ${proof.contractPath}:${proof.contractName}`,
   `functions      ${proof.abi.filter((entry) => entry.type === 'function').length}`,
   `codeHash       ${proof.codeHash}`,
-  `masked         ${proof.immutablesMasked} immutable spans, ${proof.librariesMasked} library spans${proof.metadataHashMasked ? ', the metadata hash (Sourcify holds a partial match)' : ''}`,
+  `masked         ${proof.immutablesMasked} immutable spans, ${proof.librariesMasked} library spans${proof.metadataHashMasked ? ', the metadata hash' : ''}`,
+  ...(proof.metadataHashMasked ? ['FINDING        the metadata hash differs: the verified source is not the deployed text, so its parameter names are not proven'] : []),
   `took           ${seconds}s`,
 ];
 console.log(lines.join('\n'));

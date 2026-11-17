@@ -105,7 +105,12 @@ const ZH = {
     'factory-other-answer': { title: '工廠的回答看不懂', why: '問登記的工廠是否建立了這個合約，它沒有回答 true、false 或一個地址（例如 revert），所以不能說這個合約屬於工廠的協議。' },
     'check-denied': { title: '工廠登記的一項檢查說不是', why: '工廠的 instanceCheck 列出的一個 view，問的不是工廠本身，而是這個合約、它指名的登記合約，或指名它的登記合約；這個 view 回答 false，或回了另一個地址。例如金庫回答 isAdapter 為 false，或轉接合約回答它是為別的金庫建的。' },
     'check-other-answer': { title: '工廠登記的一項檢查的回答看不懂', why: '工廠的 instanceCheck 列出的一個 view 沒有回答 true、false 或一個地址（例如 revert）。' },
-    refused: { title: 'ABI 證明被拒絕', why: '重新編譯 Sourcify 的原始碼，得不到鏈上的程式碼。' },
+    refused: { title: 'ABI 證明被拒絕', why: '重新編譯 Etherscan 上驗證的原始碼，得不到鏈上的程式碼。' },
+    'fn-not-in-abi': { title: '模板用的函式不在證明的 ABI 裡', why: '模板對這個合約呼叫或讀取的函式，不在重新編譯得到的 ABI 裡：' },
+    'metadata-differs': {
+      title: '原始碼不是部署時的那份文字',
+      why: '重新編譯後，除了 metadata hash 以外每個 byte 都跟鏈上一樣，所以函式選擇器和參數型別有證明；但 metadata hash 不同，表示 Etherscan 上的原始碼文字（註解、檔名或參數名稱）跟部署時的不一樣，參數名稱沒有證明。',
+    },
     'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
     'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
     'site-not-compared': { title: '沒辦法比對來源網站', why: 'DefiLlama 找不到這個協議，或網域無法判斷。' },
@@ -450,7 +455,7 @@ const ZH = {
   sourcesSome: (failed: number, passed: number, min: number): string =>
     `${failed} 個地址有結果要你看，見「待確認」。${passed === 0 ? '' : passed === 1 ? `另外那個地址至少在 ${min} 個地方確認。` : `其餘 ${passed} 個都至少在 ${min} 個地方確認。`}`,
   abiExplain: (notCalled: readonly string[], unprovable: readonly string[]): string =>
-    `Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。${
+    `Etherscan 上驗證的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。${
       notCalled.length === 0 ? '' : `${notCalled.join('、')} 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。`
     }${unprovable.length === 0 ? '' : `${unprovable.join('、')} 依函式選擇器把呼叫分給各自的實作，沒有一份程式碼能證明，不算在內；它的 routes 在「合約沒被換掉」比對。`}`,
   codeExplain: (one: boolean, reportOnly: readonly string[], today: readonly string[], routed: readonly string[]): string =>
@@ -646,7 +651,12 @@ const EN: Words = {
       title: "a check the factory declares cannot be read",
       why: "A view the factory's instanceCheck lists did not answer true, false or an address (for example, it reverted).",
     },
-    refused: { title: 'ABI proof refused', why: "Compiling Sourcify's source again does not give the code on chain." },
+    refused: { title: 'ABI proof refused', why: "Compiling the source verified on Etherscan again does not give the code on chain." },
+    'fn-not-in-abi': { title: 'a function the template uses is not in the proven ABI', why: 'The template calls or reads functions on this contract that the compiled ABI does not hold:' },
+    'metadata-differs': {
+      title: 'the source is not the deployed text',
+      why: "Compiled again, every byte equals the code on chain except the metadata hash, so the function selectors and parameter types are proven. The metadata hash differs, so the source text on Etherscan (comments, file names or parameter names) is not the deployed text, and the parameter names are not proven.",
+    },
     'judged-otherwise': { title: 'the test transaction is judged differently now', why: 'Running the recorded test transaction again with the current template gives another result than when it was recorded.' },
     'no-answer': { title: 'a read got no answer', why: 'The program got no answer even after retrying; it counts as UNVERIFIABLE.' },
     'site-not-compared': { title: 'the source site cannot be compared', why: 'DefiLlama does not know this protocol, or the domain cannot be determined.' },
@@ -1009,7 +1019,7 @@ const EN: Words = {
       passed === 0 ? '' : passed === 1 ? ` The other address is confirmed in at least ${min} places.` : ` The other ${passed} are all confirmed in at least ${min} places.`
     }`,
   abiExplain: (notCalled, unprovable) =>
-    `Sourcify's source, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts.${
+    `The source verified on Etherscan, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts.${
       notCalled.length === 0 ? '' : ` ${notCalled.join(', ')}: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under "Code unchanged".`
     }${unprovable.length === 0 ? '' : ` ${unprovable.join(', ')}: it routes each call by function selector to its own implementation, so no one code can be proved and it is not counted; its routes are compared under "Code unchanged".`}`,
   codeExplain: (one, reportOnly, today, routed) =>

@@ -169,11 +169,14 @@ test("each entry's code pin prints with its implementation, and a proof of other
   const spans = await checkSpans(replayReader([]), [usdc]);
   const unranged = loadReport(ROOT, reg, TARGET);
   assert.match(quick(recording.pages, new Map(), unranged.subject, undefined, undefined, spans, unranged.registry), new RegExp(`^\\| \`usdc\` \\| 0 \\| \`${usdc.code!.current.pin.hash}\` \\| \`0x43506849D7C04F9138D1A2050bbF3A0c054402dd\` \`${usdc.code!.current.pin.implementation!.hash}\` \\| pinned before ranges, not read \\|$`, 'm'));
-  const proof = (codeHash: Hex) =>
-    ({ kind: 'proven', proxy: { kind: 'none' }, proven: bundler3.address, codeHash, contractName: 'Bundler3', compiler: '0.8.28', immutablesMasked: 0, librariesMasked: 0, metadataHashMasked: false, block: { number: 1n } }) as unknown as AbiProof;
-  const row = (codeHash: Hex) => quick(recording.pages, new Map([[bundler3.address, proof(codeHash)]])).split('\n').find((l) => l.startsWith('| `bundler3` |') && l.includes('PROVEN'))!;
-  assert.match(row(bundler3.code!.current.pin.hash), /\| PASS \| 0 immutable/);
-  assert.match(row(`0x${'00'.repeat(32)}` as Hex), /\| FINDING \| 0 immutable/);
+  const bundle = { name: 'bundle', type: 'tuple[]', components: ['address to', 'bytes data', 'uint256 value', 'bool skipRevert', 'bytes32 callbackHash'].map((p) => ({ type: p.split(' ')[0], name: p.split(' ')[1] })) };
+  const multicall = { type: 'function', name: 'multicall', inputs: [bundle] };
+  const proof = (codeHash: Hex, abi: readonly object[] = [multicall]) =>
+    ({ kind: 'proven', proxy: { kind: 'none' }, proven: bundler3.address, codeHash, contractName: 'Bundler3', compiler: '0.8.28', abi, immutablesMasked: 0, librariesMasked: 0, metadataHashMasked: false, block: { number: 1n } }) as unknown as AbiProof;
+  const row = (codeHash: Hex, abi?: readonly object[]) => quick(recording.pages, new Map([[bundler3.address, proof(codeHash, abi)]])).split('\n').find((l) => l.startsWith('| `bundler3` |') && l.includes('PROVEN'))!;
+  assert.match(row(bundler3.code!.current.pin.hash), /\| PASS \| PASS, all 1 \| 0 immutable/);
+  assert.match(row(`0x${'00'.repeat(32)}` as Hex), /\| FINDING \| PASS, all 1 \| 0 immutable/);
+  assert.match(row(bundler3.code!.current.pin.hash, []), /\| PASS \| FINDING: not in the ABI: `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \| 0 immutable/);
 });
 
 /** A chain where every registry address has no code before block 100, `early` from 100, and 0x6002 from 250 on. */
