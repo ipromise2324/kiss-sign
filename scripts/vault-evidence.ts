@@ -8,15 +8,16 @@ import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
-import { loadRegistry } from '../src/registry.ts';
+import { loadRegistry, sizeOf } from '../src/registry.ts';
 import { alchemyCall, trimVaultRecording, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/vault-evidence.ts <registry vault name> [--record <name>]
+const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/vault-evidence.ts <registry name> [--record <name>]
 
-Reads the vault's totalAssets() about every 30 days over the last 12 months through Alchemy and drpc, and counts its
-share holders at the latest block: every address the Alchemy Transfers API shows receiving shares, with balances read
-through both providers that must add up to totalSupply(). It prints evidence, no verdict, and no holder address.
+Reads the size the entry or its factory declares, such as a vault's totalAssets(), about every 30 days over the last
+12 months through Alchemy and drpc, and, when the size counts holders, its share holders at the latest block: every
+address the Alchemy Transfers API shows receiving shares, with balances read through both providers that must add up to
+totalSupply(). It prints evidence, no verdict, and no holder address.
 
 The numbers come from the vault's own code. A vault that names a factory is read only after that factory answers, as
 pnpm prove-instance asks it, that it created the vault.`;
@@ -27,8 +28,8 @@ const root = join(import.meta.dirname, '..');
 const registry = loadRegistry(root);
 const [name] = positionals;
 const vault = name === undefined ? undefined : registry.entries.get(name);
-if (vault?.kind !== 'vault') {
-  console.error(`${name === undefined ? 'no vault named' : `${name} is not a vault in the registry`}\n\n${USAGE}`);
+if (vault === undefined || sizeOf(vault, registry) === undefined) {
+  console.error(`${name === undefined ? 'no entry named' : `${name} is not a registry entry that declares a size, or whose factory does`}\n\n${USAGE}`);
   process.exit(2);
 }
 

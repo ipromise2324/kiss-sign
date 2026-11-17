@@ -5,7 +5,7 @@ import { keccakCode, readRoutes } from '../contracts/code.ts';
 import { describeRefusal } from '../contracts/prove.ts';
 import { locate, unknownDelegation } from '../contracts/proxy.ts';
 import type { Proxy } from '../contracts/proxy.ts';
-import { MARKET_ENTRY_PARTS, isAttribute, pinAt } from '../registry.ts';
+import { MARKET_ENTRY_PARTS, pinAt } from '../registry.ts';
 import type { CodePin, Registry, RegistryEntry, Route } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
 import { cardRefs, namedEffectTokens } from '../template/template.ts';
@@ -45,7 +45,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
     const template = templates.get(op.template);
     if (template === undefined) continue;
     for (const { field, attribute } of cardRefs(template)) {
-      const target = attribute !== undefined && isAttribute(attribute) ? named(field)?.attributes[attribute] : undefined;
+      const target = attribute === undefined ? undefined : named(field)?.attributes[attribute];
       add(target === undefined ? undefined : registry.entries.get(target));
     }
     visit(template.nonce);

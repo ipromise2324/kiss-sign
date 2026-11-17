@@ -7,11 +7,11 @@ import { ConfigError, loadApproved, loadConfig, loadStoredConfig, saveApproved, 
 import type { Config } from '../config.ts';
 import { DEFAULT_LANGUAGE, LANGUAGES, isLanguage } from '../language.ts';
 import { KEYS, createKeyFile, keyFilePath, kissSignHome } from '../keys.ts';
-import { REGISTRY_DIR, REGISTRY_PATH, isEntryName, loadRegistry, parseRegistry } from '../registry.ts';
+import { ATTRIBUTES_PATH, MARKETS_PATH, REGISTRY_DIR, REGISTRY_PATH, isEntryName, loadRegistry, registryFromTexts } from '../registry.ts';
 import { checksumAddress, parseAddress } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template.ts';
 import { reportedVaultsIn, unreportedVault } from '../template/vault-reports.ts';
-import { commitSubject, dataDiffersFromOriginMain, fetchOriginMain, fileAt, originRepo } from '../verify/self-check.ts';
+import { commitSubject, dataDiffersFromOriginMain, fetchOriginMain, fileAt, optionalFileAt, originRepo } from '../verify/self-check.ts';
 import { keccakText } from '../verify/verify.ts';
 import { cardSummary } from './card-view.ts';
 import type { CardReads } from './card-view.ts';
@@ -199,7 +199,7 @@ export async function templateApprove(args: readonly string[], io: Io, w: Labels
     io.stderr(`kiss-sign: ${A.notMerged(`${TEMPLATES_DIR}/${id}/template.json`)}\n`);
     return FAILED;
   }
-  const template = parseTemplate(JSON.parse(json), parseRegistry(JSON.parse(fileAt(io.repoRoot, commit, REGISTRY_PATH))));
+  const template = parseTemplate(JSON.parse(json), registryFromTexts(fileAt(io.repoRoot, commit, REGISTRY_PATH), optionalFileAt(io.repoRoot, commit, MARKETS_PATH), optionalFileAt(io.repoRoot, commit, ATTRIBUTES_PATH)));
   if (template.id !== id) throw new UsageError(A.namesItself(`${TEMPLATES_DIR}/${id}/template.json`, template.id));
   const hash = keccakText(json);
   const p = paint(io.color === true);

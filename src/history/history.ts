@@ -16,7 +16,7 @@ import { checkFloor, standingSpenders } from '../floor/floor.ts';
 import type { SettingsChange } from '../floor/floor.ts';
 import type { StandingSpender } from '../floor/floor.ts';
 import { kissSignHome } from '../keys.ts';
-import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
+import { ATTRIBUTES_PATH, MARKETS_PATH, REGISTRY_PATH, registryFromTexts } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
@@ -82,6 +82,7 @@ type Context = {
   /** Allowances some template could keep, so a past transaction that leaves one is not refused by design. */
   readonly standing: readonly StandingSpender[];
   readonly markets: string | undefined;
+  readonly attributes: string | undefined;
   readonly refresh: boolean;
   readonly templateText: (id: string) => string | undefined;
 };
@@ -103,6 +104,7 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
     templates,
     registry: ctx.registry,
     ...(ctx.markets === undefined ? {} : { markets: ctx.markets }),
+    ...(ctx.attributes === undefined ? {} : { attributes: ctx.attributes }),
     addressBook: Object.fromEntries(
       [...ctx.history.book].filter(([name]) => named.has(name)).map(([name, { address }]) => [name, checksumAddress(address)]),
     ),
@@ -192,7 +194,8 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     }
     return text;
   };
-  const registry = mergeRegistry(fileAt(io.repoRoot, commit, REGISTRY_PATH), history.registryOverlay);
+  const attributes = optionalFileAt(io.repoRoot, commit, ATTRIBUTES_PATH);
+  const registry = mergeRegistry(fileAt(io.repoRoot, commit, REGISTRY_PATH), history.registryOverlay, attributes);
   const ctx: Context = {
     io,
     home,
@@ -200,8 +203,9 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     history,
     commit,
     registry,
-    standing: standingSpenders(parseRegistry(JSON.parse(registry))),
+    standing: standingSpenders(registryFromTexts(registry, undefined, attributes)),
     markets: optionalFileAt(io.repoRoot, commit, MARKETS_PATH),
+    attributes,
     refresh,
     templateText,
   };

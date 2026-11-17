@@ -6,7 +6,7 @@ import { pinOf, readCodeHistory, readRunningCode, samePin } from '../src/contrac
 import { describeRefusal } from '../src/contracts/prove.ts';
 import { mergeRegistry } from '../src/history/load.ts';
 import { kissSignHome } from '../src/keys.ts';
-import { REGISTRY_PATH, parseRegistry, unreachedSeeds } from '../src/registry.ts';
+import { REGISTRY_PATH, attributesText, registryFromTexts, unreachedSeeds } from '../src/registry.ts';
 import type { CodePin, CodePins, CodeSpan, ProxyDeclaration, Route } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
 
@@ -30,7 +30,8 @@ if (unknown.length > 0) {
   console.error(`not in ${path}: ${unknown.join(', ')}\n\n${USAGE}`);
   process.exit(1);
 }
-const parse = () => (flags.history ? parseRegistry(JSON.parse(mergeRegistry(readFileSync(repoPath, 'utf8'), file))) : parseRegistry(file));
+const attributes = attributesText(root);
+const parse = () => registryFromTexts(flags.history ? mergeRegistry(readFileSync(repoPath, 'utf8'), file, attributes) : JSON.stringify(file), undefined, attributes);
 const recorded = parse();
 
 const routeJson = ({ address, hash, selectors }: Route) => ({ address: checksumAddress(address), hash, selectors });

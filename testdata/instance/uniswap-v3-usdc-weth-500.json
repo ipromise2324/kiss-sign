@@ -1,0 +1,56 @@
+{
+  "entry": "uniswap-v3-usdc-weth-500",
+  "block": {
+    "number": "26433753",
+    "hash": "0x41eee3c0f3aec8f052309fb10ebfa38ea994705670b39f3407a063079241ee44"
+  },
+  "exchanges": [
+    {
+      "method": "eth_blockNumber",
+      "params": [],
+      "answers": {
+        "drpc": "0x19358d9",
+        "alchemy": "0x19358d9"
+      }
+    },
+    {
+      "method": "eth_getBlockByNumber",
+      "params": [
+        "0x19358d9",
+        false
+      ],
+      "answers": {
+        "drpc": {
+          "number": "0x19358d9",
+          "hash": "0x41eee3c0f3aec8f052309fb10ebfa38ea994705670b39f3407a063079241ee44",
+          "timestamp": "0x6afc18bb",
+          "gasLimit": "0x392a220",
+          "mixHash": "0xa73e9976a7f411175ad47c6373430c3e27761f623f32d2515dffb6b3619f6e5a"
+        },
+        "alchemy": {
+          "number": "0x19358d9",
+          "hash": "0x41eee3c0f3aec8f052309fb10ebfa38ea994705670b39f3407a063079241ee44",
+          "timestamp": "0x6afc18bb",
+          "gasLimit": "0x392a220",
+          "mixHash": "0xa73e9976a7f411175ad47c6373430c3e27761f623f32d2515dffb6b3619f6e5a"
+        }
+      }
+    },
+    {
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x1f98431c8ad98523631ae4a59f267346ea31f984",
+          "data": "0x1698ee82000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000c02aaa39b223fe8d0a0e5c4f27ead9083c756cc200000000000000000000000000000000000000000000000000000000000001f4"
+        },
+        {
+          "blockHash": "0x41eee3c0f3aec8f052309fb10ebfa38ea994705670b39f3407a063079241ee44"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x00000000000000000000000088e6a0c2ddd26feeb64f039a2c41296fcb3f5640",
+        "drpc": "0x00000000000000000000000088e6a0c2ddd26feeb64f039a2c41296fcb3f5640"
+      }
+    }
+  ]
+}
