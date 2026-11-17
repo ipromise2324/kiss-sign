@@ -166,7 +166,14 @@
     ],
     "defillama": "morpho-blue",
     "instanceCheck": "isVaultV2(address)",
-    "adapterCheck": "isAdapter(address)",
+    "size": {
+      "function": "totalAssets()",
+      "unit": {
+        "function": "asset()",
+        "attribute": "asset"
+      },
+      "holders": true
+    },
     "code": {
       "hash": "0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503",
       "from": 23375073
@@ -279,6 +286,14 @@
           "string": "fToken"
         }
       ]
+    },
+    "size": {
+      "function": "totalAssets()",
+      "unit": {
+        "function": "asset()",
+        "attribute": "asset"
+      },
+      "holders": true
     },
     "code": {
       "hash": "0x8489c155ce8c58e8fd4a6dc6799c1e5d23259b55f69ceaeb8d525db13da01e9a",
@@ -938,6 +953,14 @@
     "sourceHeading": "Morpho Vault V1",
     "defillama": "morpho-blue",
     "instanceCheck": "isMetaMorpho(address)",
+    "size": {
+      "function": "totalAssets()",
+      "unit": {
+        "function": "asset()",
+        "attribute": "asset"
+      },
+      "holders": true
+    },
     "code": {
       "hash": "0x948cb0a2bf347795e99af306e37423dacabb048db2c650b34cd800d1dffba283",
       "from": 18925584
@@ -950,6 +973,14 @@
     "sourceLabel": "MetaMorpho Factory V1.1",
     "defillama": "morpho-blue",
     "instanceCheck": "isMetaMorpho(address)",
+    "size": {
+      "function": "totalAssets()",
+      "unit": {
+        "function": "asset()",
+        "attribute": "asset"
+      },
+      "holders": true
+    },
     "code": {
       "hash": "0xc96dffc14441bb58cc55e7bdb1382f87dc718ffd44927f304177f235e94fa004",
       "from": 21439510
@@ -1217,8 +1248,27 @@
       }
     ],
     "defillama": "morpho-blue",
-    "instanceCheck": "isMorphoMarketV1AdapterV2(address)",
-    "parentCheck": "parentVault()",
+    "instanceCheck": [
+      "isMorphoMarketV1AdapterV2(address)",
+      {
+        "ask": {
+          "namedBy": "adapter"
+        },
+        "function": "isAdapter(address)",
+        "args": [
+          "instance"
+        ],
+        "answers": true
+      },
+      {
+        "ask": "instance",
+        "function": "parentVault()",
+        "args": [],
+        "answers": {
+          "namedBy": "adapter"
+        }
+      }
+    ],
     "code": {
       "hash": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4",
       "from": 23981459

@@ -9,7 +9,7 @@ import type { Exchange } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import type { Read, Reader } from '../src/chain/reader.ts';
 import type { BlockRef, CallResult } from '../src/chain/types.ts';
-import { loadRegistry, parseRegistry } from '../src/registry.ts';
+import { loadRegistry, parseRegistry, sizeOf } from '../src/registry.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Hex } from '../src/safe/types.ts';
 import { alchemyCall, factoryAnswer, formatVaultEvidence, gatherVaultEvidence, readStoredEvidence, vaultEvidenceText } from '../src/research/vault-evidence.ts';
@@ -24,7 +24,7 @@ const TOTAL_SUPPLY = '0x18160ddd';
 async function evidenceFrom(exchanges: readonly Exchange[]): Promise<string> {
   const transport = replayTransport(exchanges, REPLAY_ENDPOINTS);
   const reader = createReader(REPLAY_ENDPOINTS, transport, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
-  const evidence = await gatherVaultEvidence(reader, alchemyCall(transport, REPLAY_ENDPOINTS[0].url, () => {}, []), registry.entries.get(recorded.vault)!);
+  const evidence = await gatherVaultEvidence(reader, alchemyCall(transport, REPLAY_ENDPOINTS[0].url, () => {}, []), registry.entries.get(recorded.vault)!, sizeOf(registry.entries.get(recorded.vault)!, registry)!);
   assert.ok(!('kind' in evidence), 'the latest block is read');
   return formatVaultEvidence(evidence, registry);
 }
@@ -79,7 +79,7 @@ async function withFailingTransfers(failures: number): Promise<{ text: string; u
     (JSON.parse(body) as { method: string }).method === 'alchemy_getAssetTransfers' && left-- > 0 ? { status: 503, text: '' } : replay(url, body, signal);
   const unread: string[] = [];
   const reader = createReader(REPLAY_ENDPOINTS, replay, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [], note: (r) => unread.push(r) });
-  const evidence = await gatherVaultEvidence(reader, alchemyCall(flaky, REPLAY_ENDPOINTS[0].url, (r) => unread.push(r), [0, 0]), registry.entries.get(recorded.vault)!);
+  const evidence = await gatherVaultEvidence(reader, alchemyCall(flaky, REPLAY_ENDPOINTS[0].url, (r) => unread.push(r), [0, 0]), registry.entries.get(recorded.vault)!, sizeOf(registry.entries.get(recorded.vault)!, registry)!);
   assert.ok(!('kind' in evidence), 'the latest block is read');
   return { text: formatVaultEvidence(evidence, registry), unread };
 }
@@ -103,7 +103,7 @@ test('a Transfers API that refuses the request is noted, so --record refuses to 
     (JSON.parse(body) as { method: string }).method === 'alchemy_getAssetTransfers' ? { status: 200, text: '{"jsonrpc":"2.0","id":1,"error":{"code":-32600}}' } : replay(url, body, signal);
   const unread: string[] = [];
   const reader = createReader(REPLAY_ENDPOINTS, replay, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
-  const evidence = await gatherVaultEvidence(reader, alchemyCall(refusing, REPLAY_ENDPOINTS[0].url, (r) => unread.push(r), [0, 0]), registry.entries.get(recorded.vault)!);
+  const evidence = await gatherVaultEvidence(reader, alchemyCall(refusing, REPLAY_ENDPOINTS[0].url, (r) => unread.push(r), [0, 0]), registry.entries.get(recorded.vault)!, sizeOf(registry.entries.get(recorded.vault)!, registry)!);
   assert.ok(!('kind' in evidence), 'the latest block is read');
   assert.match(formatVaultEvidence(evidence, registry), /holders {6}UNVERIFIABLE the Alchemy Transfers API failed \(alchemy refused the request\)/);
   assert.deepEqual(unread, ['alchemy alchemy_getAssetTransfers: refused the request']);
@@ -118,6 +118,7 @@ test("a vault its factory computes the address of is read after a first line nam
       kind: 'factory',
       source: 'https://example.org/lending-factory',
       instanceCheck: { function: 'computeToken(address,string)', args: [{ attribute: 'asset' }, { string: 'fToken' }] },
+      size: { function: 'totalAssets()', unit: { function: 'asset()', attribute: 'asset' }, holders: true },
     },
     'fluid-fusdc': { address: FUSDC, kind: 'vault', source: 'https://example.org/fusdc', attributes: { asset: 'usdc', factory: 'fluid-lending-factory' } },
   });
@@ -134,7 +135,7 @@ test("a vault its factory computes the address of is read after a first line nam
   assert.equal(text.split('\n')[0], `admitted     fluid-lending-factory answered computeToken(usdc,"fToken") = ${FUSDC} at block 24000000`);
   const fusdc = fluid.entries.get('fluid-fusdc')!;
   assert.equal(factoryAnswer(text, fusdc, fluid), 'admitted');
-  assert.deepEqual(readStoredEvidence(text, fusdc, fluid).admitted, { factory: 'fluid-lending-factory', check: 'computeToken(usdc,"fToken")', answer: FUSDC, block: 24_000_000n });
+  assert.deepEqual(readStoredEvidence(text, fusdc, fluid).admitted, { factory: 'fluid-lending-factory', answers: [{ asker: 'fluid-lending-factory', check: 'computeToken(usdc,"fToken")', answer: FUSDC }], block: 24_000_000n });
   for (const answer of ['0x5C20B550819128074FD538Edf79791733ccEdd18', FUSDC.toLowerCase(), 'true']) {
     const other = text.replace(FUSDC, answer);
     assert.equal(factoryAnswer(other, fusdc, fluid), 'unread', `${answer} does not admit a vault whose factory computes its address`);
@@ -146,7 +147,8 @@ test('a factory that answers true admits only with true, and a stored line from 
   const vault = registry.entries.get('hyperithm-usdc-apex-v2-9e2f')!;
   const line = 'admitted     vault-v2-factory answered isVaultV2(address) = true at block 26404800';
   assert.equal(factoryAnswer(line, vault, registry), 'admitted');
-  assert.deepEqual(readStoredEvidence(line, vault, registry).admitted, { factory: 'vault-v2-factory', check: 'isVaultV2(address)', answer: 'true', block: 26_404_800n });
+  assert.deepEqual(readStoredEvidence(line, vault, registry).admitted, { factory: 'vault-v2-factory', answers: [{ asker: 'vault-v2-factory', check: 'isVaultV2(address)', answer: 'true' }], block: 26_404_800n });
+  assert.equal(factoryAnswer(`${line}\n${line}`, vault, registry), 'unread', 'a line more than the factory declares views is no admission');
   const computed = line.replace('= true', `= ${checksumAddress(vault.address)}`);
   assert.equal(factoryAnswer(computed, vault, registry), 'unread');
   assert.equal(readStoredEvidence(computed, vault, registry).admitted, undefined);

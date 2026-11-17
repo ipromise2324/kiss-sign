@@ -15,13 +15,13 @@ import { openMainnetReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import { kissSignHome } from '../keys.ts';
-import { isAttribute, isMarketEntryPart, loadRegistry } from '../registry.ts';
-import type { Attribute, Market, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import { isMarketEntryPart, loadRegistry } from '../registry.ts';
+import type { Market, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
 import type { CardField, CardRef, Computed, ComputedRead, Rule, Template, TokenRef } from '../template/template.ts';
-import { gatesVaults, isRegistryVault, reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
+import { gatesVaults, isInstanceOf, reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
 import { marketHead, marketTable } from './card-view.ts';
 import { paint, rows, section, table, text } from './format.ts';
 import type { Paint, Row } from './format.ts';
@@ -106,10 +106,10 @@ type Unit =
   | { readonly kind: 'unregistered'; readonly ref: string };
 
 /** The registry entry a chosen name, or the attribute or market part `attribute` names of it, is. */
-function entryOf(chosen: string, attribute: Attribute | MarketPart | undefined, registry: Registry): RegistryEntry | undefined {
+function entryOf(chosen: string, attribute: string | undefined, registry: Registry): RegistryEntry | undefined {
   if (attribute === undefined) return registry.entries.get(chosen);
   if (isMarketEntryPart(attribute)) return registry.markets.get(chosen)?.[attribute];
-  const name = isAttribute(attribute) ? registry.entries.get(chosen)?.attributes[attribute] : undefined;
+  const name = registry.entries.get(chosen)?.attributes[attribute];
   return name === undefined ? undefined : registry.entries.get(name);
 }
 
@@ -362,7 +362,7 @@ async function fill(template: Template, shared: Omit<Context, 'template'>): Prom
   for (const [name, field] of fields.filter(isChosen)) {
     const listed = optionsFor(field, ctx.sources);
     const gated = gatesVaults(template) && field.kind !== 'market';
-    const choices = gated ? listed.filter((choice) => !isRegistryVault(choice.name, ctx.sources.registry) || ctx.reported(template.id).has(choice.name)) : listed;
+    const choices = gated ? listed.filter((choice) => !isInstanceOf(template, choice.name, ctx.sources.registry) || ctx.reported(template.id).has(choice.name)) : listed;
     if (unit.kind === 'vault' && unit.field === name && choices.length === 0) throw new CardError(L.noReportedVault(name, template.id));
     if (choices.length === 0) {
       throw new CardError(field.kind === 'market' ? L.noMarket(name) : L.nothingAccepted(name, template.id));

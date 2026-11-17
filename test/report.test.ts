@@ -10,7 +10,7 @@ import type { Reader } from '../src/chain/reader.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import type { BlockRef, BlockTag } from '../src/chain/types.ts';
 import { keccakCode } from '../src/contracts/code.ts';
-import { REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
+import { REGISTRY_PATH, loadRegistry, parseRegistry, sizeOf } from '../src/registry.ts';
 import type { Registry, RegistryEntry } from '../src/registry.ts';
 import { parseCoinGeckoCoins, parseDefiLlamaProtocols, sourcePagesOf } from '../src/research/listings.ts';
 import { chainAt } from '../src/research/erc7730.ts';
@@ -259,7 +259,7 @@ test("the report asks an adapter's factory and the vault naming it, from its rec
   assert.match(committed, /^\| `acuto-usdc-v2-4a57-market-adapter` \| `acuto-usdc-v2-4a57` `isAdapter\(address\)` \| true \| 300 \|$/m);
   const removed = await readInstances(createReader(REPLAY_ENDPOINTS, answering(`0x${'00'.repeat(32)}` as Hex), options), subject, seen, { ...block, number: 400n });
   assert.deepEqual(compareReports(committed, render(removed)), [
-    'Factory answers › `acuto-usdc-v2-4a57-market-adapter` (2) › Answer: committed true, live REFUSED: acuto-usdc-v2-4a57 answered isAdapter(address) false for acuto-usdc-v2-4a57-market-adapter: it does not allocate through it',
+    'Factory answers › `acuto-usdc-v2-4a57-market-adapter` (2) › Answer: committed true, live REFUSED: acuto-usdc-v2-4a57 answered isAdapter(address) false for acuto-usdc-v2-4a57-market-adapter: it does not vouch for it',
   ]);
   assert.doesNotMatch(render(undefined), /isAdapter/, 'a recording that predates the answers prints them as not read');
   assert.equal(await readInstances(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
@@ -510,7 +510,7 @@ test('--compare reads each vault again at the blocks its evidence names, so a ch
   const reader = createReader(REPLAY_ENDPOINTS, transport, { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] });
   const alchemy = alchemyCall(transport, REPLAY_ENDPOINTS[0].url, () => {}, []);
   const read = async (vault: RegistryEntry, at: BlockTag) => {
-    const evidence = await gatherVaultEvidence(reader, alchemy, vault, at);
+    const evidence = await gatherVaultEvidence(reader, alchemy, vault, sizeOf(vault, registry)!, at);
     return 'kind' in evidence ? `UNVERIFIABLE ${evidence.reason}` : formatVaultEvidence(evidence, registry);
   };
   const { subject } = loadReport(ROOT, registry, { vault: VAULT });
