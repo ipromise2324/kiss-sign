@@ -1,4 +1,4 @@
-import { percentText } from '../card.ts';
+import { percentText, resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
 import { groupedTokens } from '../chain/decimals.ts';
 import { CSS, Html, SYMBOLS, h, icon } from '../research/report-html.ts';
@@ -12,7 +12,7 @@ import { HTML_LANG } from '../language.ts';
 import type { Language } from '../language.ts';
 import type { Expectations, Expected, KeptSeen } from '../simulate/effects.ts';
 import type { CallScan } from '../simulate/simulate.ts';
-import type { Template } from '../template/template.ts';
+import type { Rule, Template } from '../template/template.ts';
 import { CHECKLIST_CSS, checklist, checklistHtml, visible } from './checklist.ts';
 import { amountToken, signedMessages } from './expected.ts';
 import type { AmountToken, CallTree } from './expected.ts';
@@ -292,10 +292,29 @@ function keptSection(page: VerdictPage): Html {
 </section>`;
 }
 
+/** Each function a template on the card calls, by the address it calls and its selector. */
+function calledFunctions(page: VerdictPage): ReadonlyMap<string, string> {
+  const target = (rule: Rule, values: ResolvedCard['operations'][number]['values']): Address | undefined => {
+    if (rule.kind === 'safe') return page.card.safe;
+    if (rule.kind === 'contract') return page.registry.entries.get(rule.name)?.address;
+    if (rule.kind !== 'card') return undefined;
+    const resolved = resolveRef(rule.ref, values, page.registry);
+    return 'kind' in resolved && resolved.kind === 'address' ? resolved.address : undefined;
+  };
+  return new Map(
+    page.card.operations.flatMap((op) =>
+      (page.templates.get(op.template)?.calls ?? []).flatMap((call) => {
+        const to = target(call.to, op.values);
+        return call.data === 'empty' || to === undefined ? [] : [[`${to}|${call.data.fn.selector}`, call.data.fn.signature] as const];
+      }),
+    ),
+  );
+}
+
 function callsSection(page: VerdictPage): Html {
   const { calls } = page;
   const w = WORDS[page.language];
-  const functions = new Map([...page.templates.values()].flatMap((t) => t.calls.flatMap((c) => (c.data === 'empty' ? [] : [[c.data.fn.selector, c.data.fn.signature] as const]))));
+  const functions = calledFunctions(page);
   const body =
     calls.kind === 'unverifiable'
       ? h`<p class="intro">${w.callsUnread(calls.reasons)}</p>`
@@ -303,7 +322,7 @@ function callsSection(page: VerdictPage): Html {
         ? h`<p class="intro">${w.everyCallMoves}</p>`
         : h`<p class="intro">${w.movesNothingLead}</p>
   <dl class="props two">${calls.movesNothing.map(({ path, to, selector }) =>
-    prop(path, h`${to === page.card.safe ? w.thisSafe : nameOf(to, page)} ${mono(checksumAddress(to))} ${selector === undefined ? w.noData : functions.has(selector) ? h`${mono(`${functions.get(selector)} ${selector}`)}` : h`selector ${mono(selector)}`}`),
+    prop(path, h`${to === page.card.safe ? w.thisSafe : nameOf(to, page)} ${mono(checksumAddress(to))} ${selector === undefined ? w.noData : functions.has(`${to}|${selector}`) ? mono(`${functions.get(`${to}|${selector}`)} ${selector}`) : h`selector ${mono(selector)}`}`),
   )}</dl>`;
   return h`
 <section>

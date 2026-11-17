@@ -6,7 +6,7 @@ import { resolveCard } from '../src/card.ts';
 import type { Card } from '../src/card.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
-import type { Address } from '../src/safe/types.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { checklist, checklistHtml, checklistLineHtml } from '../src/verify/checklist.ts';
@@ -237,4 +237,29 @@ test('format characters, tag characters and variation selectors become U+FFFD to
   const hidden = [0xad, 0x34f, 0x115f, 0x180e, 0x2028, 0x206a, 0x3164, 0xfe0f, 0xffa0, 0xfffb, 0xe0041, 0xe0100].map((c) => String.fromCodePoint(c)).join('');
   const line = checklistLineHtml({ kind: 'row', id: 'C1-a1', key: '引數 1', value: `a${hidden}b`, name: '' });
   assert.match(line, new RegExp(`<span class="v">a${'\ufffd'.repeat(12)}b</span>`, 'u'));
+});
+
+test('a call that moves no asset is named by its function only when a template on the card calls that function on that address', () => {
+  const { tree, card, templates, decimals } = treeOf(CARD);
+  const usdc = registry.entries.get('usdc')!.address;
+  const other = '0x1111111111111111111111111111111111111111' as Address;
+  const page = verdictPage({
+    verdict: { kind: 'MATCH' },
+    states: PASSED,
+    nonce: tree.nonce,
+    card,
+    cardHash: `0x${'00'.repeat(32)}`,
+    registry,
+    templates,
+    decimals,
+    expected: { kind: 'expected', changes: new Map() },
+    calls: { kind: 'scanned', movesNothing: [{ path: 'multiSend[0]', to: usdc, selector: '0x095ea7b3' as Hex }, { path: 'multiSend[1]', to: other, selector: '0x095ea7b3' as Hex }] },
+    tree,
+    kept: [],
+    verdictFile: '/verdicts/x.json',
+    language: 'en',
+  });
+  const text = page.slice(page.indexOf('<h2>Calls that move no asset</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  assert.match(text, / multiSend\[0\] usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 approve\(address,uint256\) 0x095ea7b3 /);
+  assert.match(text, / multiSend\[1\] not registered 0x1111111111111111111111111111111111111111 selector 0x095ea7b3 /);
 });

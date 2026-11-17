@@ -160,7 +160,8 @@ export function judge(prepared: Prepared, tx: SafeTx, observation: Observation, 
   return decideVerdict(allChecks(prepared, tx, observation, read, chain), prepared.registry);
 }
 
-async function findingDecimals(reader: Reader, checks: AllChecks, at: BlockRef): Promise<FindingDecimals> {
+/** decimals() at `at` of each token a balance finding names, and 18 for ETH: the page and terminal show findings in whole tokens, the verdict keeps base units. */
+export async function findingDecimals(reader: Reader, checks: AllChecks, at: BlockRef): Promise<FindingDecimals> {
   const { simulation } = checks;
   const decimals = new Map<Asset, number>();
   if (simulation.kind !== 'observed' || simulation.effects.kind !== 'mismatch') return decimals;
@@ -263,6 +264,7 @@ export async function evaluateTx(
   readonly latest: BlockRef;
   readonly unread: readonly string[];
   readonly kept: readonly KeptSeen[];
+  readonly checks: AllChecks;
   readonly states: Readonly<Record<CheckName, CheckState>>;
 }> {
   const parsed = prepare(given);
@@ -305,9 +307,8 @@ export async function evaluateTx(
   const chain: FieldChain = !needsOwners ? {} : { owners: typeof at === 'string' ? { kind: 'unread', why: at } : await readOwners(reader, safe, at) };
   const kept = observation.kind === 'observed' ? keptSeen(observation.observed, prepared.card, prepared.templates, prepared.registry) : [];
   const checks = allChecks(prepared, tx, observation, read, chain);
-  const verdict = decideVerdict(checks, prepared.registry, await findingDecimals(reader, checks, latest.value));
   const states = checkStates(checks, prepared.registry);
-  return { evaluation: { verdict, hashes: hashSafeTx(tx), calls }, tx, inputs, prepared, latest: latest.value, unread, kept, states };
+  return { evaluation: { verdict: decideVerdict(checks, prepared.registry), hashes: hashSafeTx(tx), calls }, tx, inputs, prepared, latest: latest.value, unread, kept, checks, states };
 }
 
 /**

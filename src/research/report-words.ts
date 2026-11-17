@@ -178,6 +178,7 @@ const ZH = {
   narrateEmpty: (n: number, target: string, sendsEth: boolean): string =>
     `呼叫 ${n}：Safe ${sendsEth ? before('轉 ETH 給', target) : before('呼叫', target)}，${sendsEth ? '沒有資料' : '0 ETH、沒有資料'}。`,
   youGet: (token: string | undefined): string => `你得到 ${token ?? '代幣'}`,
+  youMayGet: (token: string | undefined): string => `你可能得到 ${token ?? '代幣'}`,
   increases: (contract: string, value: string): string => `${contract} 的 ${value} 增加`,
   result: (text: string): string => `結果：${text}。`,
   emptyHead: (target: string, sendsEth: boolean): string => (sendsEth ? before('轉 ETH 給', target) : `${before('呼叫', target)}，0 ETH、沒有資料`),
@@ -701,6 +702,7 @@ const EN: Words = {
   narrateCall: (n, target, fn) => `Call ${n}: the Safe calls ${fn} on ${target}.`,
   narrateEmpty: (n, target, sendsEth) => `Call ${n}: the Safe ${sendsEth ? `sends ETH to ${target}, no data` : `calls ${target}, 0 ETH, no data`}.`,
   youGet: (token) => `you get ${token ?? 'tokens'}`,
+  youMayGet: (token) => `you may get ${token ?? 'tokens'}`,
   increases: (contract, value) => `${value} of ${contract} increases`,
   result: (text) => `Result: ${text}.`,
   emptyHead: (target, sendsEth) => (sendsEth ? `Send ETH to ${target}` : `Call ${target}, 0 ETH, no data`),
