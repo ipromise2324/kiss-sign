@@ -202,6 +202,19 @@ test('a rerun reads the chain from the cache, and --refresh reads it again', asy
   assert.match(rowOf(refreshed.stdout, 249), /  (UNVERIFIABLE|ERROR)  /);
 });
 
+test('a nonce one of whose reads failed on the way is not cached, so the next run reads it again', async () => {
+  const at = setUp('morpho-safe', withCard);
+  const env = { ...ENV, KISS_SIGN_HOME: at.home };
+  const endpoints = mainnetEndpoints(env);
+  const replay = replayTransport(deposit.exchanges, endpoints);
+  const dropped: Transport = async (url, body, signal) => {
+    if (url === endpoints[1].url && body.includes('eth_getTransactionReceipt')) throw Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' });
+    return replay(url, body, signal);
+  };
+  assert.doesNotMatch(rowOf((await run(at, [], dropped)).stdout, 249), /  MATCH  /);
+  assert.match(rowOf((await run(at)).stdout, 249), /  MATCH  /);
+});
+
 test('--out writes the same rows as Markdown, and refuses a file inside the repository', async () => {
   const at = setUp('morpho-safe', withCard, { 338: 'a | b' });
   const out = join(at.base, 'history.md');
