@@ -724,7 +724,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
   for (const [name, field] of template.card) {
     const takes =
       field.kind === 'contract'
-        ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}, picked by number from the list below`
+        ? `a registry ${code(field.scope.registryKind)}${field.scope.protocol === undefined ? '' : ` of the DefiLlama protocol ${code(field.scope.protocol)}`}${field.scope.marketPart === undefined ? '' : ` that is the ${code(field.scope.marketPart)} of a market in ${code(MARKETS_PATH)}`}, picked by number from the list below`
         : field.kind === 'amount'
           ? field.computed === undefined
             ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}${field.max === undefined ? '' : `, or ${code('max')}, ${field.max.value}: ${byAi(field.max.why)}`}`
