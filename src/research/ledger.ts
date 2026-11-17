@@ -520,50 +520,30 @@ type Service = 'coingecko' | 'bounty' | 'factory' | 'deployer';
 const SERVICE_OWNERS: Readonly<Record<Service, string>> = { coingecko: 'coingecko.com', bounty: 'immunefi.com', factory: 'factory', deployer: 'deployer' };
 
 /**
- * The names a source's owner goes by: a URL's registrable domain, or its host when it has none; a GitHub page's
- * organization with each domain GitHub verified it controls; an SDK's by the repository npm's provenance names. Any
- * other source is a service or the chain, an owner of its own.
+ * Who controls a source: a URL's registrable domain, or its host when it has none; a GitHub page's organization, apart
+ * from any domain, since GitHub is not the protocol's web host; an SDK's the organization npm's provenance names, whose
+ * CI publishes it. Any other source is a service or the chain, an owner of its own.
  */
-function ownerNames(entry: RegistryEntry, source: ProgramSource, inputs: ReportInputs): string[] {
-  const { suffixes, sites } = inputs.listings;
-  const domainOf = (host: string) => ('unavailable' in suffixes ? undefined : registrableDomain(host, suffixes)) ?? host.toLowerCase();
-  const ofUrl = (url: string): string[] => {
+function ownerOf(entry: RegistryEntry, source: ProgramSource, inputs: ReportInputs): string {
+  const { suffixes } = inputs.listings;
+  const ofUrl = (url: string): string => {
     const parsed = new URL(url);
     const org = githubOrg(parsed);
-    if (org === undefined) return [domainOf(parsed.hostname)];
-    const verified = sites.orgs.get(org);
-    return [...new Set([`github.com/${org}`, ...(verified?.kind === 'domains' ? verified.domains.map(domainOf) : [])])];
+    if (org !== undefined) return `github.com/${org}`;
+    return ('unavailable' in suffixes ? undefined : registrableDomain(parsed.hostname, suffixes)) ?? parsed.hostname.toLowerCase();
   };
-  if (source in SERVICE_OWNERS) return [SERVICE_OWNERS[source as Service]];
+  if (source in SERVICE_OWNERS) return SERVICE_OWNERS[source as Service];
   if (source === 'sdk') {
     const read = entry.sdk === undefined ? undefined : inputs.pages.packages?.get(packageKey(entry.sdk));
-    return read?.kind === 'read' && read.provenance.kind === 'built' ? ofUrl(read.provenance.repository) : [`npmjs.com/package/${entry.sdk?.package ?? ''}`];
+    return read?.kind === 'read' && read.provenance.kind === 'built' ? ofUrl(read.provenance.repository) : `npmjs.com/package/${entry.sdk?.package ?? ''}`;
   }
   const url = source === 'page' ? entry.source : source === 'api' ? entry.apiSource?.url : entry.moreSources?.[Number(source.slice(5)) - 1]?.url;
-  return url === undefined ? [source] : ofUrl(url);
+  return url === undefined ? source : ofUrl(url);
 }
 
-/**
- * Gives each result with a source its owner: sources that share a name are one owner, named by the name most of them
- * share, so a page on `docs.example.org` and a GitHub organization verified for `example.org` are `example.org`.
- */
+/** Gives each result with a source the owner of that source. */
 function withOwners(entry: RegistryEntry, results: readonly Result[], inputs: ReportInputs): Result[] {
-  const sources = [...new Set(results.flatMap((r) => (r.source === undefined ? [] : [r.source.of])))];
-  const names = new Map(sources.map((source) => [source, ownerNames(entry, source, inputs)]));
-  const namesOf = (source: ProgramSource) => names.get(source) ?? [];
-  const groups: ProgramSource[][] = [];
-  for (const source of sources) {
-    const joined = groups.filter((group) => group.some((other) => namesOf(other).some((n) => namesOf(source).includes(n))));
-    groups.splice(0, groups.length, ...groups.filter((group) => !joined.includes(group)), [...joined.flat(), source]);
-  }
-  const ownerOf = new Map<ProgramSource, string>();
-  for (const group of groups) {
-    const all = group.flatMap(namesOf);
-    const count = (name: string) => all.filter((n) => n === name).length;
-    const owner = all.reduce((best, name) => (count(name) > count(best) ? name : best));
-    for (const source of group) ownerOf.set(source, owner);
-  }
-  return results.map((r) => (r.source === undefined ? r : { ...r, owner: ownerOf.get(r.source.of) ?? r.source.of }));
+  return results.map((r) => (r.source === undefined ? r : { ...r, owner: ownerOf(entry, r.source.of, inputs) }));
 }
 
 /**

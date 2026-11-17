@@ -310,6 +310,10 @@
       {
         "url": "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json",
         "label": "address"
+      },
+      {
+        "url": "https://docs.fluid.io/integrate/dex-swaps.html",
+        "label": "Liquidity Layer"
       }
     ],
     "defillama": "fluid-lending",
@@ -1085,6 +1089,10 @@
       {
         "url": "https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py",
         "label": "v1.4.1"
+      },
+      {
+        "url": "https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed",
+        "label": "SAFE_SINGLETON_ADDRESS"
       }
     ],
     "defillama": "safe",

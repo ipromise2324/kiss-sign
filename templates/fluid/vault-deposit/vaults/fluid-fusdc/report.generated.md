@@ -74,6 +74,7 @@ Each entry's `moreSources`: more official pages that list its address, each chec
 | `fluid-fusdc` | <https://docs.fluid.io/fluid-integration/lending/read/lending-tokens.html> | PASS | n/a | n/a | PASS |
 | `fluid-lending-factory` | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/LendingFactory.json> | PASS | PASS | PASS | PASS |
 | `fluid-liquidity` | <https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/deployments/mainnet/Liquidity.json> | PASS | PASS | PASS | PASS |
+| `fluid-liquidity` | <https://docs.fluid.io/integrate/dex-swaps.html> | PASS | n/a | n/a | PASS |
 
 More places that may name the address: the scope of every Immunefi program tied to the entry's protocol, which the program finds, and of the one the entry names; its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and which addresses npm's latest version binds to the same label; and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places; a program not tied to the protocol and the SDK's latest version never count.
 
@@ -82,7 +83,7 @@ More places that may name the address: the scope of every Immunefi program tied 
 | `usdc` | NOT LISTED | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
 | `fluid-fusdc` | NOT LISTED | n/a | n/a | n/a | FINDING |
 | `fluid-lending-factory` | NOT LISTED | n/a | n/a | n/a | PASS `0x0Ed35B1609Ec45c7079E80d11149a52717e4859A`, also `fluid-liquidity` |
-| `fluid-liquidity` | NOT LISTED | n/a | n/a | n/a | PASS `0x0Ed35B1609Ec45c7079E80d11149a52717e4859A`, also `fluid-lending-factory` |
+| `fluid-liquidity` | NOT LISTED | n/a | n/a | n/a | FINDING `0x0Ed35B1609Ec45c7079E80d11149a52717e4859A` |
 
 4 entries, 3 findings.
 
@@ -119,7 +120,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `fluid-liquidity` | PASS | 26435848 |
+| `fluid-liquidity` | PASS | 26436948 |
 
 ### Routes
 
@@ -180,37 +181,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `fluid-fusdc`
 
 ```text
-admitted     fluid-lending-factory answered computeToken(usdc,"fToken") = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33 at block 26435852
+admitted     fluid-lending-factory answered computeToken(usdc,"fToken") = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33 at block 26436951
 vault        fluid-fusdc 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33
-latest block 26435852 0x5c45dbbe32c96050b8a6ea12d4bd707ffd94b7f808a842799a16b1d017592cff
+latest block 26436951 0x3c3425cb3c8ff5a27a2bf91499f5ab2bc8e2d93cf5eb3b96866d4268a97c3823
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-17  block 26435852  141,897,391.954741 usdc
-  2026-10-18  block 26219852  136,110,114.793120 usdc
-  2026-09-18  block 26003852  154,571,767.741313 usdc
-  2026-08-19  block 25787852  151,213,326.544971 usdc
-  2026-07-20  block 25571852  139,561,884.792934 usdc
-  2026-06-20  block 25355852  114,153,249.726537 usdc
-  2026-05-20  block 25139852  201,548,882.241385 usdc
-  2026-04-20  block 24923852  159,906,513.950059 usdc
-  2026-03-21  block 24707852  248,434,770.106958 usdc
-  2026-02-19  block 24491852  241,951,577.572620 usdc
-  2026-01-20  block 24275852  319,097,752.440693 usdc
-  2025-12-21  block 24059852  296,707,560.433299 usdc
-  2025-11-21  block 23843852  289,542,424.605962 usdc
+  2026-11-17  block 26436951  141,979,963.171992 usdc
+  2026-10-18  block 26220951  136,112,470.579595 usdc
+  2026-09-18  block 26004951  154,602,869.805868 usdc
+  2026-08-19  block 25788951  151,226,487.482679 usdc
+  2026-07-20  block 25572951  140,377,325.639903 usdc
+  2026-06-20  block 25356951  114,170,806.119602 usdc
+  2026-05-21  block 25140951  202,662,215.208010 usdc
+  2026-04-21  block 24924951  159,702,358.371609 usdc
+  2026-03-21  block 24708951  249,911,532.122732 usdc
+  2026-02-19  block 24492951  225,474,164.480679 usdc
+  2026-01-20  block 24276951  318,963,517.994783 usdc
+  2025-12-21  block 24060951  297,445,155.599615 usdc
+  2025-11-21  block 23844951  289,134,742.699872 usdc
 
-holders      2173 addresses hold shares at block 26435852, of 11014 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 115505475095620
-top 10       hold 37.93% of the shares; each: 9.11%, 5.96%, 5.65%, 4.07%, 2.91%, 2.32%, 2.25%, 1.96%, 1.94%, 1.76%
+holders      2176 addresses hold shares at block 26436951, of 11016 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 115568445925576
+top 10       hold 37.93% of the shares; each: 9.10%, 5.96%, 5.64%, 4.08%, 2.91%, 2.32%, 2.25%, 1.96%, 1.94%, 1.76%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26435848 `0xe4d608f4758abf2ed22d931c35943754c8e91dd2b9b8a5ca7fbc2f40927c500f`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26436948 `0x844e902781170398d4ee20e5ba3ccaf98b1542af15284ef5ab665f9e97eaae81`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `fluid-lending` | `4167` | `parent#fluid` | 2024-02-25 | 594370172 | 425663766 |
+| `fluid-lending` | `4167` | `parent#fluid` | 2024-02-25 | 588806613 | 420829330 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

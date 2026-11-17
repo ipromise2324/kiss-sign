@@ -47,39 +47,6 @@
         }
       ]
     },
-    "https://raw.githubusercontent.com/safe-global/safe-cli/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "["
-        },
-        {
-          "text": "\"0x41675C099F32341bf84BFc5382aF534df5C7461a\", # v1.4.1"
-        },
-        {
-          "text": "\"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\", # v1.3.0"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/safe-global/safe-deployments/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "released true contractName Safe version 1.4.1"
-        },
-        {
-          "text": "deployments canonical address 0x41675C099F32341bf84BFc5382aF534df5C7461a codeHash 0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4"
-        }
-      ]
-    },
-    "https://docs.safe.global/reference-smart-account/owners/changeThreshold": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "changeThreshold"
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/safe-global/safe-deployments/refs/heads/main/src/assets/v1.3.0/gnosis_safe.json": {
       "kind": "served",
       "blocks": [
@@ -91,6 +58,20 @@
         },
         {
           "text": "deployments eip155 address 0x69f4D1788e39c87893C980c06EdF4b7f686e2938 codeHash 0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/safe-global/safe-cli/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "["
+        },
+        {
+          "text": "\"0x41675C099F32341bf84BFc5382aF534df5C7461a\", # v1.4.1"
+        },
+        {
+          "text": "\"0xd9Db270c1B5E3Bd161E8c8503c55cEABeE709552\", # v1.3.0"
         }
       ]
     },
@@ -240,6 +221,17 @@
         }
       ]
     },
+    "https://raw.githubusercontent.com/safe-global/safe-deployments/ca9cb0d2d5f5175fc8e41d579f356748d2bc1c62/src/assets/v1.4.1/safe.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "released true contractName Safe version 1.4.1"
+        },
+        {
+          "text": "deployments canonical address 0x41675C099F32341bf84BFc5382aF534df5C7461a codeHash 0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4"
+        }
+      ]
+    },
     "https://raw.githubusercontent.com/safe-global/safe-deployments/refs/heads/main/src/assets/v1.4.1/safe.json": {
       "kind": "served",
       "blocks": [
@@ -251,6 +243,27 @@
         },
         {
           "text": "deployments zksync address 0xC35F063962328aC65cED5D4c3fC5dEf8dec68dFa codeHash 0xfa4d4fc0fa9f1a061571a3f3f66502464edf1a519ab1ab93dc232addf4fbe30f"
+        }
+      ]
+    },
+    "https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "_16",
+          "heading": "Contracts"
+        },
+        {
+          "text": "const SAFE_SINGLETON_ADDRESS = '0x41675C099F32341bf84BFc5382aF534df5C7461a'",
+          "heading": "Contracts"
+        }
+      ]
+    },
+    "https://docs.safe.global/reference-smart-account/owners/changeThreshold": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "changeThreshold"
         }
       ]
     }
@@ -333,10 +346,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xbba688fbdb21ad2bb58bc320638b43d94e7d100f6f3ebaab0a4e4de6304b1c2e"
         }
       }
@@ -455,10 +468,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x1fe2df852ba3299d6534ef416eefa406e56ced995bca886ab7a553e6d0c5e1c4"
         }
       }
@@ -467,7 +480,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x41675c099f32341bf84bfc5382af534df5c7461a",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xcdd02af342f687b81730620f7ba3cec26dd9f226d818de1d8a2ab43c7064acff"
         }
@@ -481,7 +494,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x41675c099f32341bf84bfc5382af534df5c7461a",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xcdd02af342f687b81730620f7ba3cec26dd9f226d818de1d8a2ab43c7064acff"
         }
@@ -548,8 +561,8 @@
   ],
   "facts": {
     "block": {
-      "number": "26434375",
-      "hash": "0x7ebe47780b15111740bfa0807a898a3e3ec101606a7dc52e74eb69231d61f371"
+      "number": "26436943",
+      "hash": "0x47955b514685aac3ce79c93965f13d17dcc618a82667cb329acfa4754ed5dd66"
     },
     "defillama": [],
     "hacks": [],
