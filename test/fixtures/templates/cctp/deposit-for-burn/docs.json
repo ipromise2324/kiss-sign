@@ -1,0 +1,4 @@
+{
+  "approve(address,uint256)": { "contract": "usdc", "standard": "erc-20" },
+  "depositForBurn(uint256,uint32,bytes32,address,bytes32,uint256,uint32)": { "contract": "cctp-token-messenger-v2", "url": "https://developers.circle.com/cctp/evm-smart-contracts" }
+}
