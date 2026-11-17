@@ -95,7 +95,7 @@ More places that may name the address: the scope of every Immunefi program tied 
 | `usdc` | NOT LISTED | n/a | n/a | n/a | n/a: no confirmed entry shares `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
 | `fluid-fusdc` | NOT LISTED | n/a | n/a | n/a | FINDING |
 | `fluid-lending-factory` | NOT LISTED | n/a | n/a | n/a | PASS `0x0Ed35B1609Ec45c7079E80d11149a52717e4859A`, also `fluid-liquidity` |
-| `fluid-liquidity` | NOT LISTED | n/a | n/a | n/a | FINDING `0x0Ed35B1609Ec45c7079E80d11149a52717e4859A` |
+| `fluid-liquidity` | NOT LISTED | n/a | n/a | n/a | n/a: no confirmed entry shares `0x0Ed35B1609Ec45c7079E80d11149a52717e4859A` |
 
 4 entries; each finding is graded and listed under Findings at the top.
 

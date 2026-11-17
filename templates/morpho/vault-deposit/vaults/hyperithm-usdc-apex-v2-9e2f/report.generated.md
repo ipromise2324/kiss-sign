@@ -10,7 +10,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 
 | Result | Grade | Finding |
 | --- | --- | --- |
-| `hyperithm-usdc-apex-v2-9e2f/address` | key | address confirmed in 1 place, factory; it needs 2 |
+| `hyperithm-usdc-apex-v2-9e2f/address` | key | address confirmed in 1 place, [object Object]; it needs 2 |
 | `usdc/abi` | reference | the source is not the deployed text |
 | `bundler3/source.deployer` | reference | who deployed it is not proven |
 | `vault-v2-factory/source.deployer` | reference | who deployed it is not proven |
