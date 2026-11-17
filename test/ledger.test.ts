@@ -41,6 +41,7 @@ const GITHUB = `https://github.com/example/repo/blob/${'a'.repeat(40)}/addresses
 const API = { url: 'https://api.example.org/vault' as HttpsUrl, method: 'GET', path: ['address'] } as const;
 const APPROVE = (loadTemplate(ROOT, 'morpho/market-supply', loadRegistry(ROOT)).calls[0]?.data as Exclude<Template['calls'][number]['data'], 'empty'>).fn;
 const DOC = 'https://docs.example.org/approve' as HttpsUrl;
+const APPROVE_ABI = [{ type: 'function', name: 'approve', inputs: [{ name: 'spender', type: 'address' }, { name: 'value', type: 'uint256' }] }];
 const MORE = { url: GITHUB, label: 'Vault' };
 const ERC20 = STANDARDS.get('erc-20')!;
 const DECLARED = { kind: 'served', blocks: [{ text: 'function approve(address _spender, uint256 _value) public returns (bool success)' }] } as const;
@@ -120,7 +121,7 @@ const BASE: Setup = {
   commit: { kind: 'on-default', branch: 'main', status: 'behind' },
   api: { kind: 'answered', json: { address: ADDRESS } },
   doc: { kind: 'served', blocks: [{ text: 'function approve(address spender, uint256 value)' }] },
-  abi: { kind: 'proven', proxy: { kind: 'none' }, codeHash: PIN } as unknown as AbiProof,
+  abi: { kind: 'proven', proxy: { kind: 'none' }, codeHash: PIN, abi: APPROVE_ABI } as unknown as AbiProof,
   spans: [{ kind: 'pass', text: '' }],
   today: undefined,
   documented: true,
@@ -196,7 +197,7 @@ const adapterAsked = (factory: Said, vault: Said | readonly Said[] = 'yes', pare
   return { entry: ADAPTER, factory: ADAPTER_FACTORY, instances: { kind: 'asked', entry: ADAPTER, factory: ADAPTER_FACTORY, block: { number: 200n, hash: PIN }, answers } };
 };
 
-const proven = (codeHash: Hex): AbiProof => ({ kind: 'proven', proxy: { kind: 'none' }, codeHash }) as unknown as AbiProof;
+const proven = (codeHash: Hex): AbiProof => ({ kind: 'proven', proxy: { kind: 'none' }, codeHash, abi: APPROVE_ABI }) as unknown as AbiProof;
 const withAbi = (signatures: readonly string[]): AbiProof =>
   ({ ...proven(PIN), abi: signatures.map((text) => ({ type: 'function', name: parseFunctionSignature(text).name, inputs: parseFunctionSignature(text).params.map((p) => ({ name: p.name, type: canonicalType(p.type) })) })) }) as AbiProof;
 const refused = (refusal: object): AbiRefusal => ({ kind: 'refused', refusal }) as unknown as AbiRefusal;
@@ -563,9 +564,13 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
   assert.equal(resultOf(ledger, 'cbbtc/source.site').finding.kind, 'unlisted');
   assert.deepEqual(strip(ledger).map((s) => [s.line, s.state, `${s.passed}/${s.counted}`]), [
     ['sources', 'warn', '7/10'],
-    ['abi', 'ok', '6/6'],
+    ['abi', 'ok', '4/4'],
     ['code', 'ok', '10/10'],
     ['params', 'ok', '1/1'],
+  ]);
+  assert.deepEqual(['usdc/abi', 'morpho-blue/abi'].map((id) => [resultOf(ledger, id).finding.kind, stateOf(resultOf(ledger, id))]), [
+    ['metadata-differs', 'na'],
+    ['metadata-differs', 'na'],
   ]);
   const rows = addressRows(ledger);
   assert.deepEqual(rows.open.map((e) => e.name), ['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc', 'morpho-oracle-weeth-usdc-86']);
