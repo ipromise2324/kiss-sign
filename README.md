@@ -188,27 +188,27 @@ Whether an address is the protocol's real contract rests in the end on the repor
 
 **When a template is built**
 
-- **Each address is looked up in every place that lists it.** The page it came from must be on the protocol's own site, as DefiLlama, CoinGecko, Immunefi and GitHub list the protocol's sites. Then the program looks for the same address in:
+- **Each address is looked up in several places.** The page it came from is checked against the protocol's own sites, as DefiLlama, CoinGecko, Immunefi and GitHub list them. Then the program looks for the same address in:
   - the protocol's official pages,
   - the protocol's own API,
   - CoinGecko,
   - the factory that created it, asked on chain,
   - the protocol's bug bounty scope on Immunefi,
   - the protocol's SDK package on npm,
-  - its deployer, when that deployer also deployed another confirmed contract.
+  - its deployer, when that deployer also deployed another confirmed contract of the protocol.
 
-  It needs at least two. It also reads the newest version of each GitHub page and SDK it found the address in. The report flags an address found in fewer than two places, or a newest version that now lists another address under the same name, for you to judge.
+  It needs at least two. It also reads the newest version of each GitHub page and SDK it found the address in. The report flags an address found in fewer than two places, a page off the protocol's sites, or a newest version that now lists only another address under the same name, for you to judge.
 - **The ABI is proven by compiling.** Etherscan's verified source, compiled with a pinned `solc`, must give the code on chain.
-- **The protocol's facts are read.** Its TVL, listing date and past hacks, and for a vault its size and holders over a year.
+- **The protocol's facts are read.** Its TVL, listing date and past hacks, and for a vault its size over a year and its holders today.
 - **The code is recorded.** Each registry contract's code is pinned, so an upgrade after your review is caught at signing.
-- **Past transactions set the shape.** A year of the same operation by other senders decides which forms the template accepts, and how much rounding a balance needs.
-- **Open fields are tested.** The fields the template leaves open are changed and simulated. Nothing the template does not allow may happen.
+- **Past transactions set the shape.** Samples of the same operation by other senders over the past year show which forms real senders use, and the template accepts only those. They also show how much rounding a balance needs.
+- **Open fields are tested.** The fields the template leaves open are changed to a few other values each and simulated. Each change must revert or do nothing the template does not allow.
 
 **At every signing**
 
-- **kiss-sign checks itself.** It runs only as exactly your fork's `main`.
+- **kiss-sign checks itself.** It refuses a clone that is not exactly your fork's `main`.
 - **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
-- **The call is decoded and encoded again.** The bytes must be identical, so nothing is hidden.
+- **The call is decoded and encoded again.** The bytes must be identical, apart from a short trailer the template allows, so nothing is hidden.
 - **Dangerous calls are refused.** An unlimited approval (unless the registry allows one, as for Permit2), a `delegatecall` to anything but the official MultiSend, and any change to the Safe's modules, guard or implementation.
 - **The code is compared with the recorded code.** A contract upgraded since your review gets `MISMATCH`.
 - **The transaction is simulated on two providers.** Every balance change must match your card, apart from a rounding of at most 10 base units the template states.
