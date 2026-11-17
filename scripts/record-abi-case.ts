@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { openMainnetReader } from '../src/chain/reader.ts';
+import { httpsTransport } from '../src/chain/rpc.ts';
 import { abiCaseDeclaration, recordAbiCase } from '../src/contracts/abi-case.ts';
 import type { AbiCase } from '../src/contracts/abi-case.ts';
 import { describeRefusal } from '../src/contracts/prove.ts';
@@ -19,12 +20,13 @@ if (name === undefined || addressArg === undefined || !/^[a-z0-9-]+$/.test(name)
 const address = parseAddress('address', addressArg);
 
 if (!(await ensureVendored(['solc']))) process.exit(1);
-const live = openMainnetReader(process.env);
+const unread: string[] = [];
+const note = (read: string) => void unread.push(read);
+const live = openMainnetReader(process.env, httpsTransport(), { note });
 const block = await live.block(blockArg === undefined ? 'latest' : parseUint256('block', blockArg));
 if (block.kind === 'unverifiable') throw new Error(block.reason);
 
-const unread: string[] = [];
-const etherscan = retryingEtherscan(etherscanFromEnv(process.env), (read) => void unread.push(read));
+const etherscan = retryingEtherscan(etherscanFromEnv(process.env), note);
 const out = join(import.meta.dirname, '..', 'testdata', 'abi', `${name}.json`);
 const earlier = existsSync(out) ? (readRecording(out) as AbiCase) : undefined;
 const kept = earlier?.address === address ? abiCaseDeclaration(earlier) : {};

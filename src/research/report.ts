@@ -9,13 +9,13 @@ import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { ABI_CASES_DIR, loadAbiCases, replayAbiCase } from '../contracts/abi-case.ts';
 import type { AbiCase } from '../contracts/abi-case.ts';
 import { pinOf, readRunningCode, readRunningCodeAt, samePin } from '../contracts/code.ts';
-import { proveAdapterOf, proveInstance, proveParentOf } from '../contracts/instance.ts';
-import type { AdapterAnswer, InstanceProof, InstanceRefusal, ParentAnswer } from '../contracts/instance.ts';
+import { proveInstance } from '../contracts/instance.ts';
+import type { InstanceAnswers, InstanceUnasked } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
 import { AbiSignatureError, canonicalType, namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
-import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl } from '../registry.ts';
+import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
@@ -28,7 +28,7 @@ import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePage
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
-import type { PastTxs } from './past-txs.ts';
+import type { PastTxs, Sampling } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { pathText } from './api-source.ts';
 import { provenanceRepositories } from './npm-package.ts';
@@ -92,7 +92,7 @@ export type ReportInputs = {
   /** What `checkToday` read for `todayEntries`; undefined when none needs it or the recording predates it. */
   readonly today: { readonly block: BlockRef; readonly checks: ReadonlyMap<Address, TodayCheck> } | undefined;
   /** What `readInstances` asked for `instanceEntries`; undefined when none needs it or the recording predates it. */
-  readonly instances: { readonly block: BlockRef; readonly answers: ReadonlyMap<string, InstanceAnswers> } | undefined;
+  readonly instances: { readonly block: BlockRef; readonly answers: ReadonlyMap<string, InstanceAnswers | InstanceUnasked> } | undefined;
   /** What `pnpm erc7730` prints for the entries, and the facts it prints them from. */
   readonly erc7730: { readonly text: string; readonly reports: readonly EntryReport[] };
   /** A template's protocol facts; undefined for a vault, or when the recording predates them. */
@@ -254,7 +254,7 @@ function onlyVault(registry: Registry, template: Template, field: string, vault:
   const kept = [...registry.entries.values()].filter((entry) => !others.has(entry.name));
   const dangling = kept.flatMap((entry) => [...Object.values(entry.attributes), ...(entry.dependsOn ?? [])]).find((name) => others.has(name));
   if (dangling !== undefined) throw new ReportError(`${dangling} is another vault the field accepts, but a registry entry the report keeps names it`);
-  return { entries: new Map(kept.map((entry) => [entry.name, entry])), byAddress: new Map(kept.map((entry) => [entry.address, entry])), markets: registry.markets };
+  return { attributes: registry.attributes, entries: new Map(kept.map((entry) => [entry.name, entry])), byAddress: new Map(kept.map((entry) => [entry.address, entry])), markets: registry.markets };
 }
 
 /**
@@ -356,8 +356,8 @@ function cardCandidates(template: Template, registry: Registry): RegistryEntry[]
   );
 }
 
-export const vaultsOf = (subject: Subject, registry: Registry): RegistryEntry[] =>
-  subject.kind === 'vault' ? [subject.vault] : cardCandidates(subject.template, registry).filter((entry) => entry.kind === 'vault');
+/** The instance whose `pnpm vault-evidence` the report holds: a per-instance report's, or a `--vault` report's vault. */
+export const evidenceEntries = (subject: Subject): RegistryEntry[] => (subject.kind === 'vault' ? [subject.vault] : subject.vault === undefined ? [] : [subject.vault]);
 
 function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   const names = new Set<string>();
@@ -416,7 +416,7 @@ export function signedEntryNames(template: Template, registry: Registry): Set<st
  * and the factory of each of `instanceEntries`, whose `instanceCheck` it asks too.
  */
 function abiUsed(subject: Subject, registry: Registry): Set<string> {
-  const names = new Set(vaultsOf(subject, registry).flatMap((vault) => [vault.name, ...[vault.attributes.asset, vault.attributes.factory].filter((name) => name !== undefined)]));
+  const names = new Set(evidenceEntries(subject).flatMap((entry) => [entry.name, ...[sizeOf(entry, registry)?.unit?.attribute, 'factory'].flatMap((key) => (key === undefined ? [] : (entry.attributes[key] ?? [])))]));
   for (const entry of instanceEntries(subject, registry)) names.add(entry.attributes.factory as string);
   if (subject.kind === 'vault') return names;
   const { template } = subject;
@@ -451,31 +451,18 @@ export function provedEntries(subject: Subject, registry: Registry): RegistryEnt
   return entriesOf(subject, registry).filter((entry) => !unused.has(entry.name) && entry.routes === undefined);
 }
 
-/**
- * What an entry's registry factory answered about it, and for an adapter, what each registry vault naming it answered
- * and whether the adapter's own answer names that vault as the one it was made for.
- */
-export type InstanceAnswers = { readonly factory: InstanceProof | InstanceRefusal; readonly vaults: readonly AdapterAnswer[]; readonly parents: readonly ParentAnswer[] };
-
-/** The entries other than a vault that name a registry factory, which the report asks at its latest block (`readInstances`). */
+/** The entries that name a registry factory, other than one whose stored evidence holds its factory's answers: the report asks these at its latest block (`readInstances`). */
 export function instanceEntries(subject: Subject, registry: Registry): RegistryEntry[] {
-  return entriesOf(subject, registry).filter((entry) => entry.kind !== 'vault' && entry.attributes.factory !== undefined);
+  const stored = new Set(evidenceEntries(subject).map((entry) => entry.name));
+  return entriesOf(subject, registry).filter((entry) => !stored.has(entry.name) && entry.attributes.factory !== undefined);
 }
 
-/** Each of `instanceEntries` asked through its factory's `instanceCheck`, and an adapter through each vault naming it; undefined when there is none. */
+/** Every view of each of `instanceEntries`' factory's `instanceCheck`; undefined when there is none. */
 export async function readInstances(reader: Reader, subject: Subject, registry: Registry, block: BlockRef): Promise<ReportInputs['instances']> {
   const asked = instanceEntries(subject, registry);
   if (asked.length === 0) return undefined;
-  const answers = new Map<string, InstanceAnswers>();
-  for (const entry of asked) {
-    const factory = await proveInstance(reader, registry, entry.name, block);
-    const adapter = entry.kind === 'adapter';
-    answers.set(entry.name, {
-      factory,
-      vaults: adapter ? await proveAdapterOf(reader, registry, entry, block) : [],
-      parents: adapter ? await proveParentOf(reader, registry, entry, block) : [],
-    });
-  }
+  const answers = new Map<string, InstanceAnswers | InstanceUnasked>();
+  for (const entry of asked) answers.set(entry.name, await proveInstance(reader, registry, entry.name, block));
   return { block, answers };
 }
 
@@ -575,8 +562,15 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
     (ANCHOR_KINDS as readonly string[]).includes(query.anchor) &&
     block(query.fromBlock) &&
     block(query.toBlock) &&
+    block(query.head) &&
+    (query.head === undefined || (query.fromBlock === undefined && query.toBlock === undefined)) &&
     Number.isSafeInteger(query.maxTxs)
   );
+}
+
+export function pastTxsSampling(query: PastTxsRecording['query']): Sampling {
+  if (query.fromBlock !== undefined && query.toBlock !== undefined) return { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
+  return query.head === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, head: BigInt(query.head) };
 }
 
 /**
@@ -597,8 +591,7 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
         ...(query.from === undefined ? {} : { from: query.from as Address }),
         ...(query.to === undefined ? {} : { to: query.to as Address }),
       },
-      sampling:
-        query.fromBlock === undefined || query.toBlock === undefined ? DEFAULT_SPREAD : { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } },
+      sampling: pastTxsSampling(query),
     },
     { ask: replayAsk(recording.sources), reader, registry, exclude: undefined, maxTxs: query.maxTxs },
   );
@@ -1030,10 +1023,13 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, 
 
 const COMMAND_FLAGS = ['token', 'anchor', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
 
+/** A recording that keeps its head names itself with `--same-windows-as`, so the command searches its windows again. */
 function pastTxsCommand({ query, file }: PastTxsSummary): string {
+  const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
   const flag = (key: (typeof COMMAND_FLAGS)[number]) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
   const args = COMMAND_FLAGS.flatMap((key) => (query[key] === undefined ? [] : [`${flag(key)} ${String(query[key])}`]));
-  return `pnpm past-txs ${query.template} ${args.join(' ')} --record ${file.replace(/^.*\//, '').replace(/\.json$/, '')}`;
+  const windows = query.head === undefined ? [] : [`--same-windows-as ${name}`];
+  return `pnpm past-txs ${query.template} ${[...args, ...windows].join(' ')} --record ${name}`;
 }
 
 /** The characters `pnpm vault-evidence` prints. Its text is stored, not recomputed, so anything else is refused. */
@@ -1134,23 +1130,21 @@ function factoryAnswersSection(inputs: ReportInputs): string[] {
   const asked = instanceEntries(inputs.subject, inputs.registry);
   if (asked.length === 0) return [];
   const block = inputs.instances?.block.number ?? '';
-  const answer = (read: InstanceProof | InstanceRefusal | AdapterAnswer | ParentAnswer): string =>
-    read.kind === 'created' ? read.answered : read.kind === 'uses' ? 'true' : read.kind === 'made-for' ? checksumAddress(read.vault.address) : `REFUSED: ${read.why}`;
   const rows = asked.flatMap((entry) => {
-    const answers = inputs.instances?.answers.get(entry.name);
+    const proof = inputs.instances?.answers.get(entry.name);
     const factory = entry.attributes.factory as string;
-    if (answers === undefined) return [`| ${code(entry.name)} | ${code(factory)} | not read | ${block} |`];
-    const asked = answers.factory.kind === 'created' ? answers.factory.asked : (inputs.registry.entries.get(factory)?.instanceCheck?.fn.signature as string);
-    const factoryRow = `| ${code(entry.name)} | ${code(factory)} ${code(asked)} | ${answer(answers.factory)} | ${block} |`;
-    const vaultRows = answers.vaults.map((read) => `| ${code(entry.name)} | ${code(read.vault.name)} ${code(read.asked)} | ${answer(read)} | ${block} |`);
-    const parentRows = answers.parents.map((read) => `| ${code(entry.name)} | ${code(entry.name)} ${code(read.asked)}, for ${code(read.vault.name)} | ${answer(read)} | ${block} |`);
-    const none = entry.kind === 'adapter' && answers.vaults.length === 0 ? [`| ${code(entry.name)} | no registry vault names it as its ${code('adapter')} | not read | ${block} |`] : [];
-    return [factoryRow, ...vaultRows, ...parentRows, ...none];
+    if (proof === undefined) return [`| ${code(entry.name)} | ${code(factory)} | not read | ${block} |`];
+    if (proof.kind === 'unasked') return [`| ${code(entry.name)} | ${code(factory)} | REFUSED: ${proof.why} | ${block} |`];
+    return proof.answers.map((read) => {
+      const namedBy = read.namer !== undefined && read.asker?.name !== read.namer.name ? `, for ${code(read.namer.name)}` : '';
+      const asker = read.asker === undefined ? '' : `${code(read.asker.name)} `;
+      return `| ${code(entry.name)} | ${asker}${code(read.asked)}${namedBy} | ${read.kind === 'vouched' ? read.answered : `REFUSED: ${read.why}`} | ${block} |`;
+    });
   });
   return [
     '### Factory answers',
     '',
-    `Each entry other than a vault that names a registry ${code('factory')}: whether, through both providers at the report's latest block, that factory's ${code('instanceCheck')} answers that it created the entry, and for an adapter, whether each registry vault whose ${code('adapter')} attribute names it answers its own factory's ${code('adapterCheck')} true for it, and whether the adapter answers its factory's ${code('parentCheck')} with that vault's address. An entry's answers together are one place for its address, which counts only when every one passes.`,
+    `Each entry that names a registry ${code('factory')}, other than an instance whose stored evidence holds its factory's answers: what, through both providers at the report's latest block, every view of that factory's ${code('instanceCheck')} answered, each asked of the factory, the entry itself, or a registry entry it names or that names it. An entry's answers together are one place for its address, which counts only when every one passes.`,
     '',
     '| Entry | Asked | Answer | Block |',
     '| --- | --- | --- | --- |',
@@ -1311,7 +1305,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     for (const heading of ['Registry entries', 'Code pins', 'ABI proofs']) out.push(`## ${heading}`, '', 'The operation touches no registry entry.', '');
   } else out.push(...entrySections(entries, inputs));
 
-  const vaults = vaultsOf(subject, registry);
+  const vaults = evidenceEntries(subject);
   if (vaults.length > 0) {
     out.push('## Vaults', '', `For each vault, the stored output of ${code('pnpm vault-evidence')}, not recomputed by ${code('pnpm test')}; ${code('pnpm report --compare')} reads it again at the blocks it names.`, '');
     for (const vault of vaults) {

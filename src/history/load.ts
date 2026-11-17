@@ -4,7 +4,7 @@ import { parseAddressBook } from '../address-book.ts';
 import { parseCard } from '../card.ts';
 import type { Card } from '../card.ts';
 import { canonicalJson } from '../canonical.ts';
-import { parseRegistry } from '../registry.ts';
+import { registryFromTexts } from '../registry.ts';
 import { parseServiceTx } from '../safe/parse.ts';
 import { SAFE_VERSIONS, checksumAddress, parseHex } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
@@ -275,13 +275,13 @@ export function loadHistory(home: string, safe: Address): History {
 }
 
 /** The repository's registry with the history overlay's entries added, as text. A name in both is refused. */
-export function mergeRegistry(repoText: string, overlay: Readonly<Record<string, unknown>>): string {
+export function mergeRegistry(repoText: string, overlay: Readonly<Record<string, unknown>>, attributes: string | undefined): string {
   const base = JSON.parse(repoText) as Record<string, unknown>;
   const twin = Object.keys(overlay).find((name) => Object.hasOwn(base, name));
   if (twin !== undefined) throw new HistoryError(`history/registry.json: ${twin} is already in registry/contracts.json`);
   const merged = { ...base, ...overlay };
   try {
-    parseRegistry(merged);
+    registryFromTexts(JSON.stringify(merged), undefined, attributes);
   } catch (error) {
     throw new HistoryError(`history/registry.json: ${error instanceof Error ? error.message : String(error)}`);
   }

@@ -4,12 +4,13 @@ import { parseArgs } from 'node:util';
 import type { ResolvedCard } from '../card.ts';
 import { canonicalJson } from '../canonical.ts';
 import { mainnetEndpoints } from '../chain/providers.ts';
+import { unreadRefusal } from '../chain/https.ts';
 import { createReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
-import { REGISTRY_PATH, loadRegistry, marketsText } from '../registry.ts';
+import { REGISTRY_PATH, attributesText, loadRegistry, marketsText } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { SafeTx } from '../safe/types.ts';
@@ -81,6 +82,7 @@ function inputsFor(repoRoot: string, attack: AttackCase, tx: TxInput): VerifyInp
   });
   const cardText = canonicalJson(attack.card);
   const markets = marketsText(repoRoot);
+  const attributes = attributesText(repoRoot);
   return {
     commit: 'working tree',
     safe: checksumAddress(attack.safe),
@@ -89,6 +91,7 @@ function inputsFor(repoRoot: string, attack: AttackCase, tx: TxInput): VerifyInp
     templates,
     registry: readFileSync(join(repoRoot, REGISTRY_PATH), 'utf8'),
     ...(markets === undefined ? {} : { markets }),
+    ...(attributes === undefined ? {} : { attributes }),
     addressBook: Object.fromEntries([...attack.addressBook].map(([name, address]) => [name, checksumAddress(address)])),
   };
 }
@@ -151,7 +154,10 @@ async function record(io: Io, id: string): Promise<CaseResult> {
   if (service === undefined) throw new AttackCaseError(`${id}: expected one executed transaction at nonce ${attack.nonce}, the service listed ${String(listing?.count)}`);
   const endpoints = mainnetEndpoints(io.env);
   const recorder = recordingTransport(io.transport, endpoints);
-  const result = await judgeCase(io.repoRoot, attack, service, createReader(endpoints, recorder.transport));
+  const unread: string[] = [];
+  const result = await judgeCase(io.repoRoot, attack, service, createReader(endpoints, recorder.transport, { note: (read) => void unread.push(read) }));
+  const refusal = unreadRefusal(unread);
+  if (refusal !== undefined) throw new AttackCaseError(`${id}: ${refusal}`);
   const recording: Recording = { service, exchanges: recorder.exchanges() };
   const dir = join(io.repoRoot, ATTACKS_DIR, id);
   mkdirSync(dir, { recursive: true });
