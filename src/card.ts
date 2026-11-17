@@ -56,6 +56,9 @@ export class CardError extends Error {
 
 const UINT256_LIMIT = 1n << 256n;
 
+/** Whether `value` in the card field `name` is a 0 that bounds nothing or that nothing can meet, which `card new`, `card seal` and `verify` refuse. */
+export const isZeroFloor = (template: Template, name: string, value: bigint): boolean => value === 0n && floorFields(template).has(name);
+
 /** A card amount or nonce: a base-unit integer in plain decimal digits, below 2^256. */
 export function parseUint256(raw: string): bigint | undefined {
   const value = /^(0|[1-9][0-9]{0,77})$/.test(raw) ? BigInt(raw) : undefined;
@@ -183,10 +186,7 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
       if ('reason' in resolved) return refuse(resolved.reason, name, resolved.detail);
       values.set(name, resolved);
     }
-    const zero = [...floorFields(template)].find((name) => {
-      const value = values.get(name);
-      return value?.kind === 'amount' && value.value === 0n;
-    });
+    const zero = [...values].find(([name, value]) => value.kind === 'amount' && isZeroFloor(template, name, value.value))?.[0];
     if (zero !== undefined) return refuse('zero-floor', zero, `${zero} is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it`);
     const named = template.same.map((ref) => {
       const target = resolveRef(ref, values, context.registry);
