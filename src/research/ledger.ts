@@ -6,7 +6,7 @@ import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { checkSources, githubLine } from './listings.ts';
 import type { DeployerShare, Line, SitePlace } from './listings.ts';
-import { abiUnused, docSiteLine, entriesOf, evidenceEntries, functionOnPage, hasMarket, pinVerdict, todayEntries } from './report.ts';
+import { abiUnused, docSiteLine, entriesOf, evidenceEntries, functionOnPage, hasMarket, missingFromAbi, pinVerdict, todayEntries } from './report.ts';
 import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './vault-evidence.ts';
@@ -65,6 +65,10 @@ export type Finding =
   | { readonly kind: 'pin-not-run' }
   /** The ABI proof proved code other than the current pin. */
   | { readonly kind: 'proof-not-pin' }
+  /** A function the template calls or reads on the entry is not in the ABI its proof compiled. */
+  | { readonly kind: 'fn-not-in-abi'; readonly signatures: readonly string[] }
+  /** The proof masked the metadata hash: the verified source compiles to the code on chain, but is not the deployed text. */
+  | { readonly kind: 'metadata-differs' }
   /** The entry's registry factory answered that it did not create the entry. */
   | { readonly kind: 'not-created' }
   /** The entry's registry factory answered neither true nor false. */
@@ -133,6 +137,8 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'other-answer': 'bad',
   'pin-not-run': 'bad',
   'proof-not-pin': 'bad',
+  'fn-not-in-abi': 'bad',
+  'metadata-differs': 'na',
   'not-created': 'bad',
   'factory-other-answer': 'bad',
   'check-denied': 'bad',
@@ -176,6 +182,8 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'other-answer': 'other-address',
   'pin-not-run': undefined,
   'proof-not-pin': undefined,
+  'fn-not-in-abi': undefined,
+  'metadata-differs': undefined,
   'not-created': 'not-created',
   'factory-other-answer': 'unread',
   'check-denied': 'check-denied',
@@ -436,7 +444,7 @@ function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
   );
 }
 
-function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean): Finding {
+function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean, inputs: ReportInputs): Finding {
   if (unused) return { kind: 'not-called' };
   if (entry.routes !== undefined) return { kind: 'routed-proxy' };
   if (proof === undefined) return { kind: 'no-abi-case' };
@@ -445,7 +453,10 @@ function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefin
     return refusal.why === 'compiler-not-pinned' ? { kind: 'compiler-not-pinned', version: refusal.version } : { kind: 'refused', why: refusal.why };
   }
   const verdict = pinVerdict(entry, proof);
-  return verdict === 'PASS' ? { kind: 'agrees' } : verdict === 'FINDING' ? { kind: 'proof-not-pin' } : { kind: 'not-pinned' };
+  if (verdict !== 'PASS') return verdict === 'FINDING' ? { kind: 'proof-not-pin' } : { kind: 'not-pinned' };
+  const signatures = missingFromAbi(inputs.subject, inputs.registry, entry, proof);
+  if (signatures.length > 0) return { kind: 'fn-not-in-abi', signatures };
+  return proof.metadataHashMasked ? { kind: 'metadata-differs' } : { kind: 'agrees' };
 }
 
 const SPAN_FINDINGS: Readonly<Record<SpanCheck['kind'], Finding>> = {
@@ -548,7 +559,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
       ...factoryResults(entry, inputs),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
       ...marketResults(entry, inputs),
-      { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address), unused.has(entry.name)) },
+      { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address), unused.has(entry.name), inputs) },
       ...spanResults(entry, inputs.spans.get(entry.address)),
       ...todayResults(entry, inputs, today),
     ]),

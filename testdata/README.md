@@ -127,9 +127,9 @@ The last argument is a nonce (the executed transaction at that nonce) or a safeT
 - `block`: the block both providers agreed on, which every read names by hash.
 - `providers`: the providers that both gave exactly these answers. A disagreement stops the recording.
 - `reads`: each `getCode`, `getStorageAt` and `call` the proof made, with the agreed answer.
-- `sourcify`: Sourcify's answer (`/server/v2/contract/1/<address>?fields=compilation,stdJsonInput`) for the contract compiled.
+- `etherscan`: Etherscan's answer (`/v2/api?chainid=1&module=contract&action=getsourcecode&address=<address>`, the key left out) for the contract compiled. Its `ABI` is kept as answered and never read.
 
-The tests replay the reads, compile the Sourcify source with the pinned solc from `vendor/solc/`, and require the proof.
+The tests replay the reads, compile the Etherscan source with the pinned solc from `vendor/solc/`, and require the proof.
 
 Code that can DELEGATECALL and has neither EIP-1967 slot set also has its ZeppelinOS implementation slot read, so the fixtures of such contracts hold that read too.
 
@@ -138,7 +138,7 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 | `bundler3.json` | Morpho Bundler3 `0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245` | none | `Bundler3`, solc 0.8.28 |
 | `general-adapter-1.json` | Morpho GeneralAdapter1 `0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0` | none | `EthereumGeneralAdapter1`, solc 0.8.28, 58 immutable spans masked |
 | `morpho-token-eip1967.json` | MORPHO token `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | EIP-1967 | `MorphoTokenEthereum` at `0x4364fd2371b6318159366abFA51f190df5C24852`, solc 0.8.27 |
-| `morpho-vault-v2-apex.json` | Morpho Vault V2 Hyperithm USDC Apex `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | none | `VaultV2`, solc 0.8.28, 12 immutable spans masked. Sourcify's settings ask for an IPFS metadata hash, the code on chain carries none, so it is compiled without one |
+| `morpho-vault-v2-apex.json` | Morpho Vault V2 Hyperithm USDC Apex `0x093272C07700d3cA5301C3Bf9B3A392624179E2F` | none | `VaultV2`, solc 0.8.28, 12 immutable spans masked. Etherscan's settings ask for no metadata hash and the code on chain carries none, so every byte is compared |
 | `metamorpho-v1-0-steakhouse-usdt.json` | MetaMorpho V1.0 Steakhouse USDT `0xbEef047a543E45807105E51A8BBEFCc5950fcfBa` | none | `MetaMorpho`, solc 0.8.21, 32 immutable spans masked |
 | `metamorpho-v1-1-apex.json` | MetaMorpho V1.1 Hyperithm USDC Apex `0x777791C4d6DC2CE140D00D2828a7C93503c67777` | none | `MetaMorphoV1_1`, solc 0.8.26, 32 immutable spans masked |
 | `vault-bundles-v1.json` | Morpho VaultBundlesV1 `0x02912516d49dE997db75B9D7858faAE59209650B` | none | `VaultBundlesV1`, solc 0.8.34 |
@@ -146,8 +146,8 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 | `fluid-fusdt.json` | Fluid fUSDT `0x5C20B550819128074FD538Edf79791733ccEdd18` | none | `fToken`, solc 0.8.21, 38 immutable spans masked |
 | `fluid-token.json` | FLUID token `0x6f40d4A6237C257fff2dB00FA0510DeEECd303eb` | none | `InstaToken`, solc 0.7.3 |
 | `merkl-distributor.json` | Merkl Distributor `0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9Ae` | EIP-1967 | `Distributor` at `0x33CC998Fd4AF3b6be42BaC9a67fe97e9e275d2aE`, solc 0.8.25, 5 immutable spans masked |
-| `cctp-message-transmitter.json` | Circle CCTP V1 MessageTransmitter `0x0a992d191DEeC32aFe36203Ad87D7d289a738F81` | none | `MessageTransmitter`, solc 0.7.6, 7 immutable and 5 library spans masked. Sourcify holds a partial match: the IPFS metadata hash differs and is masked too |
-| `usdc.json` | USDC `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | ZeppelinOS | `FiatTokenV2_2` at `0x43506849D7C04F9138D1A2050bbF3A0c054402dd`, solc 0.6.12. A partial match like `cctp-message-transmitter.json` |
+| `cctp-message-transmitter.json` | Circle CCTP V1 MessageTransmitter `0x0a992d191DEeC32aFe36203Ad87D7d289a738F81` | none | `MessageTransmitter`, solc 0.7.6, 7 immutable and 5 library spans masked. Etherscan holds one flattened file, whose IPFS metadata hash differs and is masked too |
+| `usdc.json` | USDC `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | ZeppelinOS | `FiatTokenV2_2` at `0x43506849D7C04F9138D1A2050bbF3A0c054402dd`, solc 0.6.12. Its metadata hash differs and is masked, like `cctp-message-transmitter.json`'s |
 | `cbbtc.json` | cbBTC `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | ZeppelinOS | `FiatTokenV2_1` at `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72`, solc 0.6.12 |
 | `safe-proxy-1-3-0.json` | the Safe of `safe-tx/eth-transfer-null-data.json`, `0x9467dcFD4519287e3878C018c02f5670465a9003` | Safe proxy (1.3.0 factory) | `GnosisSafeL2` at `0x3E5c63644E683549055b9Be8653de26E0B4CD36E`, solc 0.7.6 |
 
@@ -155,6 +155,7 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 
 ```sh
 export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
+export ETHERSCAN_API_KEY=$(sed -n 's/^ETHERSCAN_API_KEY=//p' ~/.kiss-sign/.env)
 pnpm fetch-solc
 pnpm record-abi-case bundler3 0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245
 pnpm record-abi-case general-adapter-1 0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0

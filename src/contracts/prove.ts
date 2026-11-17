@@ -7,8 +7,8 @@ import { keccakCode, readRunningCode } from './code.ts';
 import type { CodeRefusal } from './code.ts';
 import type { Proxy } from './proxy.ts';
 import type { Compilers } from './solc.ts';
-import { parseSourcify } from './sourcify.ts';
-import type { SourcifyGet, VerifiedSource } from './sourcify.ts';
+import { parseEtherscan } from './etherscan.ts';
+import type { EtherscanGet, VerifiedSource } from './etherscan.ts';
 
 export type AbiEntry = Readonly<Record<string, unknown>> & { readonly type: string };
 
@@ -28,7 +28,7 @@ export type AbiProof = {
   readonly contractPath: string;
   readonly contractName: string;
   readonly abi: readonly AbiEntry[];
-  readonly source: 'sourcify';
+  readonly source: 'etherscan';
   readonly immutablesMasked: number;
   readonly librariesMasked: number;
   /** True when the metadata hash in the trailer differs: the source compiles to the same code but is not the deployed text. */
@@ -37,8 +37,8 @@ export type AbiProof = {
 
 export type Refusal =
   | CodeRefusal
-  | { readonly why: 'not-on-sourcify'; readonly at: Address }
-  | { readonly why: 'sourcify-unreadable'; readonly at: Address; readonly detail: string }
+  | { readonly why: 'not-on-etherscan'; readonly at: Address }
+  | { readonly why: 'etherscan-unreadable'; readonly at: Address; readonly detail: string }
   | { readonly why: 'unsupported-language'; readonly language: string }
   | { readonly why: 'compiler-not-pinned'; readonly version: string }
   | { readonly why: 'compiler-missing'; readonly path: string }
@@ -48,7 +48,7 @@ export type Refusal =
 
 export type AbiRefusal = { readonly kind: 'refused'; readonly address: Address; readonly block: BlockRef; readonly refusal: Refusal };
 
-export type ProveDeps = { readonly sourcify: SourcifyGet; readonly compilers: Compilers };
+export type ProveDeps = { readonly etherscan: EtherscanGet; readonly compilers: Compilers };
 
 export function describeRefusal(refusal: Refusal): string {
   switch (refusal.why) {
@@ -84,10 +84,10 @@ export function describeRefusal(refusal: Refusal): string {
       return `${refusal.call} answered something other than its canonical encoding`;
     case 'routes-inconsistent':
       return `the routes are inconsistent: ${refusal.detail}`;
-    case 'not-on-sourcify':
-      return `Sourcify has no verified source for ${refusal.at}`;
-    case 'sourcify-unreadable':
-      return `Sourcify's answer for ${refusal.at} is unreadable: ${refusal.detail}`;
+    case 'not-on-etherscan':
+      return `Etherscan has no verified source for ${refusal.at}`;
+    case 'etherscan-unreadable':
+      return `Etherscan's answer for ${refusal.at} is unreadable: ${refusal.detail}`;
     case 'unsupported-language':
       return `the source is ${refusal.language}; only Solidity is compiled`;
     case 'compiler-not-pinned':
@@ -146,7 +146,7 @@ function spans(raw: unknown, depth: 1 | 2): Span[] {
 const SOLC_ONLY_TRAILER = /a164736f6c6343[0-9a-f]{6}000a$/;
 
 /**
- * A trailer without a metadata hash binds no source text, so whichever `bytecodeHash` the verifier on Sourcify chose
+ * A trailer without a metadata hash binds no source text, so whichever `bytecodeHash` the verified settings on Etherscan name
  * changes only bytes the chain does not have. Compiling without the hash compares every byte on chain, trailer included.
  */
 function settingsFor(source: VerifiedSource, onChain: Hex): Readonly<Record<string, unknown>> {
@@ -209,7 +209,7 @@ const HASH_TRAILERS = [
 /**
  * Immutables are written by the constructor and libraries are linked at deployment, so their bytes are not in the
  * source. The metadata hash in a trailer hashes the source text, comments and file names included, so a source
- * Sourcify holds as a partial match differs from the code only there. Every other byte must be equal. Returns whether
+ * verified with other file names or comments differs from the code only there. Every other byte must be equal. Returns whether
  * the metadata hash differed.
  */
 function compare(compiled: Compiled, onChain: Hex, at: Address): boolean {
@@ -235,23 +235,23 @@ function compare(compiled: Compiled, onChain: Hex, at: Address): boolean {
 async function sourceOf(deps: ProveDeps, address: Address): Promise<VerifiedSource> {
   let lookup;
   try {
-    lookup = parseSourcify(address, await deps.sourcify(address));
+    lookup = parseEtherscan(await deps.etherscan(address));
   } catch (error) {
-    return refuse({ why: 'sourcify-unreadable', at: address, detail: `request failed: ${(error as Error).message}` });
+    return refuse({ why: 'etherscan-unreadable', at: address, detail: `request failed: ${(error as Error).message}` });
   }
   switch (lookup.kind) {
     case 'not-verified':
-      return refuse({ why: 'not-on-sourcify', at: address });
+      return refuse({ why: 'not-on-etherscan', at: address });
     case 'unsupported-language':
       return refuse({ why: 'unsupported-language', language: lookup.language });
     case 'unreadable':
-      return refuse({ why: 'sourcify-unreadable', at: address, detail: lookup.why });
+      return refuse({ why: 'etherscan-unreadable', at: address, detail: lookup.why });
   }
   return lookup.source;
 }
 
 /**
- * Proves the ABI of the code a call to `address` runs at `block`: Sourcify's source, compiled with a pinned solc, must
+ * Proves the ABI of the code a call to `address` runs at `block`: Etherscan's verified source, compiled with a pinned solc, must
  * give the code both providers read. Every failure is a refusal, never a guess.
  */
 export async function proveAbi(reader: Reader, address: Address, block: BlockRef, deps: ProveDeps, declared: ProxyDeclaration = {}): Promise<AbiProof | AbiRefusal> {
@@ -276,7 +276,7 @@ export async function proveAbi(reader: Reader, address: Address, block: BlockRef
       contractPath: source.contractPath,
       contractName: source.contractName,
       abi: compiled.abi,
-      source: 'sourcify',
+      source: 'etherscan',
       immutablesMasked: compiled.immutables.length,
       librariesMasked: compiled.libraries.length,
       metadataHashMasked,
