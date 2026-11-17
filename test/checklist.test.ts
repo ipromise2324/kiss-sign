@@ -12,6 +12,7 @@ import type { Template } from '../src/template/template.ts';
 import { LANGUAGES } from '../src/language.ts';
 import type { Language } from '../src/language.ts';
 import { checklist, checklistHtml, checklistLineHtml } from '../src/verify/checklist.ts';
+import { checkCommand, checkHints } from '../src/verify/check-command.ts';
 import { callTree } from '../src/verify/expected.ts';
 import { verdictPage } from '../src/verify/page.ts';
 import type { CheckName, CheckState } from '../src/verify/verdict.ts';
@@ -82,6 +83,7 @@ const PINNED: readonly { readonly fixture: string; readonly card: Card; readonly
 
 const namesAside = (block: string): string => `${block.replace(/<span class="nm">.*<\/span><\/div>$/gm, '</div>')}\n`;
 const checkSh = (language: Language, fixture: string): string => readFileSync(join(ROOT, 'testdata', 'checklist', language, `${fixture}.checklist.html`), 'utf8');
+const pinnedHints = (fixture: string): string => readFileSync(join(ROOT, 'testdata', 'checklist', 'hints', `${fixture}.txt`), 'utf8');
 
 for (const { fixture, card, book } of PINNED) {
   for (const language of LANGUAGES) {
@@ -91,6 +93,24 @@ for (const { fixture, card, book } of PINNED) {
     });
   }
 }
+
+for (const { fixture, card, book } of PINNED) {
+  test(`the --hints for ${fixture} are those kiss-sign-check runs check.sh with on it`, () => {
+    const { tree } = treeOf(card, fixture, book);
+    assert.equal(`${checkHints(tree) ?? ''}\n`, pinnedHints(fixture));
+  });
+}
+
+test('the check.sh command carries --hints only when a template reads bytes no ABI describes', () => {
+  const swap = PINNED.find((p) => p.fixture === 'uniswap-swap-approve-usdt-usdc');
+  const { tree: swapTree } = treeOf(swap?.card ?? CARD, swap?.fixture);
+  assert.equal(
+    checkCommand(swapTree),
+    "./check.sh 5 --hints 'v1 C4-a2.1=abi(bytes,bytes[]) C4-a2.1.2.1=abi((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128)) C4-a2.1.2.2=abi(address,uint256,bool) C4-a2.1.2.3=abi(address,address,uint256)'",
+  );
+  const { tree } = treeOf(CARD);
+  assert.equal(checkCommand(tree), `./check.sh ${tree.nonce}`);
+});
 
 test('a page in one language and check.sh in the other differ in every row with words, so the signer stops', () => {
   const { tree } = treeOf(CARD);
