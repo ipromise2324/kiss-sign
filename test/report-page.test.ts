@@ -5,6 +5,8 @@ import { before, test } from 'node:test';
 import type { AbiRefusal } from '../src/contracts/prove.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { MARKETS_PATH, REGISTRY_PATH, loadRegistry, parseRegistry } from '../src/registry.ts';
+import { weightOf } from '../src/research/grades.ts';
+import type { Grade } from '../src/research/grades.ts';
 import { forSigner, judge, stateOf, strip, worst } from '../src/research/ledger.ts';
 import type { EntryReport, FieldFact } from '../src/research/erc7730.ts';
 import type { State } from '../src/research/ledger.ts';
@@ -600,7 +602,42 @@ test('過去交易 leads with how many past transactions were exactly the templa
 });
 
 test('待確認 counts the program results apart from the AI judgments, in the rail and the heading', () => {
-  assert.deepEqual(depositPage.sections.find((s) => s.anchor === 'review')?.count, { kind: 'states', counts: [{ state: 'warn', n: 1 }, { state: 'ask', n: 3 }] });
+  assert.deepEqual(depositPage.sections.find((s) => s.anchor === 'review')?.count, { kind: 'states', counts: [{ state: 'warn', n: 1, grade: 'key' }, { state: 'ask', n: 3 }] });
+});
+
+test('待確認 lists key results before reference ones, each marked, and counts the two apart', () => {
+  const usdc = registry.entries.get('usdc') ?? assert.fail('usdc');
+  const { coingecko: _, ...unnamed } = usdc;
+  const entries = new Map([...inputs.registry.entries].map(([name, entry]) => [name, name === 'usdc' ? unnamed : entry]));
+  const of: HtmlInputs = {
+    ...inputs,
+    registry: { ...inputs.registry, entries, byAddress: new Map([...inputs.registry.byAddress].map(([a, entry]) => [a, entry.name === 'usdc' ? unnamed : entry])) },
+    abi: new Map([...inputs.abi].filter(([a]) => a !== usdc.address)),
+  };
+  const page = pageOf(of);
+  const rows = body(page, 'review').rows.filter((r) => r.id.startsWith('usdc/'));
+  assert.deepEqual(
+    rows.map((r) => [r.id, r.grade]),
+    [
+      ['usdc/address', 'key'],
+      ['usdc/abi', 'key'],
+      ['usdc/source.coingecko', 'reference'],
+    ],
+  );
+  const all = body(page, 'review').rows;
+  assert.ok(all.findIndex((r) => r.grade === 'reference') > all.findLastIndex((r) => r.grade === 'key'), 'every key row comes first');
+  const count = page.sections.find((s) => s.anchor === 'review')?.count;
+  assert.deepEqual(
+    count?.kind === 'states' ? count.counts.map((c) => [c.grade, c.n]) : [],
+    [
+      ['key', all.filter((r) => r.grade === 'key').length],
+      ['reference', 1],
+      [undefined, 1],
+    ],
+  );
+  const html = renderPage(page);
+  assert.match(html, /data-grade="reference" data-result="usdc\/source.coingecko">[\s\S]*?<span class="lbl">參考<\/span>/);
+  assert.match(html, /<span class="cnt" data-state="warn">[^]*?參考 1<\/span>/);
 });
 
 test('notes.json that leaves out a review the page needs is refused', () => {
@@ -638,7 +675,7 @@ for (const variant of VARIANTS) {
     const page = pageOf(of);
     const review = body(page, 'review');
     const ids = review.rows.map((r) => r.id);
-    assert.deepEqual(ids, forSigner(ledger).map((r) => r.id));
+    assert.deepEqual(ids, [...forSigner(ledger).filter((r) => weightOf(r) === 'key'), ...forSigner(ledger).filter((r) => weightOf(r) === 'reference')].map((r) => r.id));
     assert.ok(review.rows.every((r) => r.state === 'bad' || r.state === 'warn'));
     for (const item of page.header.strip.filter((s) => s.line !== 'providers')) {
       const rows = review.rows.filter((r) => ledger.results.find((x) => x.id === r.id)?.line === item.line);
@@ -647,7 +684,9 @@ for (const variant of VARIANTS) {
       else assert.equal(item.state, expected, item.name);
     }
     const rail = page.sections.find((s) => s.anchor === 'review')?.count;
-    assert.deepEqual(rail, { kind: 'states', counts: [...(ids.length > 0 ? [{ state: worst(forSigner(ledger)), n: ids.length }] : []), { state: 'ask', n: review.judgments.length }] });
+    const graded = (grade: Grade) => forSigner(ledger).filter((r) => weightOf(r) === grade);
+    const counts = (['key', 'reference'] as const).flatMap((grade) => (graded(grade).length > 0 ? [{ state: worst(graded(grade)), n: graded(grade).length, grade }] : []));
+    assert.deepEqual(rail, { kind: 'states', counts: [...counts, { state: 'ask', n: review.judgments.length }] });
     const reviewed = new Set(review.rows.flatMap((r) => (r.entry === undefined ? [] : [r.entry])));
     assert.deepEqual(new Set(body(page, 'addresses').open.map((r) => r.anchor)), reviewed);
     assert.equal(page.header.verdict.state, worst(ledger.results));

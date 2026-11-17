@@ -34,8 +34,9 @@ import type { PastTxsRecording } from './recording.ts';
 import { replayMessages } from './messages.ts';
 import { pathText } from './api-source.ts';
 import { provenanceRepositories } from './npm-package.ts';
-import { judge } from './ledger.ts';
-import type { Result } from './ledger.ts';
+import { gradedFindings, weightOf } from './grades.ts';
+import { MIN_CONFIRMATIONS, judge } from './ledger.ts';
+import type { FindingKind, Ledger, Result } from './ledger.ts';
 import { githubRef, isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
@@ -46,7 +47,7 @@ import { STANDARDS } from './standards.ts';
 import type { Standard } from './standards.ts';
 import type { AnchorKind } from './sources.ts';
 import { readRecording } from '../chain/bytecode.ts';
-import { toleranceSpan } from './report-words.ts';
+import { WORDS, toleranceSpan } from './report-words.ts';
 import type { Split } from '../verdict-core.ts';
 
 /** A template, with the one vault its report covers when it is reported per vault; or one registry vault alone. */
@@ -633,10 +634,56 @@ const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' 
 const newestVerdict = (line: Line | undefined): string =>
   line?.kind === 'finding' && line.others !== undefined ? `FINDING: lists ${line.others.map((a) => code(checksumAddress(a))).join(', ')} under the same label` : verdict(line);
 
+/** What a cell prints for a result with nothing to compare, which is no finding (`WEIGHT_OF`). */
+const NEUTRAL_WORDS: Readonly<Partial<Record<FindingKind, string>>> = {
+  'not-listed': VERDICTS.absent,
+  unlisted: 'n/a: nothing to compare',
+  'deployer-alone': 'n/a: no confirmed entry shares',
+};
+
+/** A check's cell, worded as the ledger weighs its result: a neutral one never prints as a finding. */
+const cellOf =
+  (results: ReadonlyMap<string, Result>, entry: RegistryEntry) =>
+  (key: string, line: Line | undefined, show: (line: Line | undefined) => string = verdict): string => {
+    const result = results.get(`${entry.name}/${key}`);
+    return result !== undefined && weightOf(result) === 'neutral' ? (NEUTRAL_WORDS[result.finding.kind] ?? show(line)) : show(line);
+  };
+
+/** The findings the signer's page never words, since none goes to 待確認, in the Markdown report's words. */
+const MARKDOWN_TITLES: Readonly<Partial<Record<FindingKind, string>>> = {
+  'no-coin': 'CoinGecko lists no coin at this address',
+  'no-provenance': "no build provenance ties the SDK's publisher to the protocol",
+  'creation-unproven': 'who deployed it is not proven',
+  'source-no-answer': 'a source got no answer (UNVERIFIABLE)',
+  'page-unread': 'the address was not read on the page',
+  'url-holds-address': "the page's URL holds the address, so it only echoes it",
+};
+
+/** Every finding, key first, each with its result id: the index of what the tables below mark. */
+function findingsSection(ledger: Ledger): string[] {
+  const findings = gradedFindings(ledger);
+  const count = (grade: 'key' | 'reference') => findings.filter((r) => weightOf(r) === grade).length;
+  const title = (r: Result) =>
+    r.finding.kind === 'few-confirmations'
+      ? `address confirmed in ${r.finding.by.length} ${r.finding.by.length === 1 ? 'place' : 'places'}${r.finding.by.length === 0 ? '' : `, ${r.finding.by.join(', ')}`}; it needs ${MIN_CONFIRMATIONS}`
+      : MARKDOWN_TITLES[r.finding.kind] ?? (WORDS.en.finding as Readonly<Partial<Record<FindingKind, { readonly title: string }>>>)[r.finding.kind]?.title ?? r.finding.kind;
+  return [
+    '## Findings',
+    '',
+    `${count('key')} key and ${count('reference')} reference ${findings.length === 1 ? 'finding' : 'findings'}.`,
+    '',
+    `Key: it bears on whether an address or its code is the protocol's real one and does what the template assumes. Reference: context to weigh that undermines neither. A place with nothing to compare, such as one that does not list the address, prints as NOT LISTED or n/a in its table and is no finding.`,
+    '',
+    ...(findings.length === 0
+      ? []
+      : ['| Result | Grade | Finding |', '| --- | --- | --- |', ...findings.map((r) => `| ${code(r.id)} | ${weightOf(r)} | ${title(r)} |`), '']),
+  ];
+}
+
 /** The deployer as the ledger counts it: PASS only through an entry confirmed in two other places, which it names. */
 function deployerCell(line: Line | undefined, result: Result | undefined): string {
   if (line === undefined || result === undefined) return verdict(line);
-  const word = line.kind === 'unverifiable' ? VERDICTS.unverifiable : result.finding.kind === 'agrees' ? VERDICTS.agrees : VERDICTS.finding;
+  const word = line.kind === 'unverifiable' ? VERDICTS.unverifiable : result.finding.kind === 'agrees' ? VERDICTS.agrees : (NEUTRAL_WORDS[result.finding.kind] ?? VERDICTS.finding);
   const shared = result.shared;
   return shared === undefined ? word : `${word} ${code(checksumAddress(shared.deployer))}${shared.siblings.length === 0 ? '' : `, also ${shared.siblings.map(code).join(', ')}`}`;
 }
@@ -1216,7 +1263,7 @@ function routesSection(entries: readonly RegistryEntry[]): string[] {
   ];
 }
 
-function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs): string[] {
+function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs, ledger: Ledger): string[] {
   const out: string[] = [];
   const unused = abiUnused(inputs.subject, inputs.registry);
   const checked = checkSources(entries, inputs.listings, inputs.pages);
@@ -1230,13 +1277,16 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
     '| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Newest version | Address on page |',
     '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   );
+  const results = new Map(ledger.results.map((r) => [r.id, r]));
   for (const { entry, lines } of checked) {
     const of = (check: Line['check']) => lines.find((l) => l.check === check && l.more === undefined);
+    const cell = cellOf(results, entry);
+    const page = of('page') === undefined ? 'url' : 'page';
     out.push(
-      `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${verdict(of('defillama'))} | ${verdict(of('coingecko'))} | ${verdict(of('github'))} | ${newestVerdict(of('tip'))} | ${verdict(of('page') ?? of('url'))} |`,
+      `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${cell('source.site', of('defillama'))} | ${cell('source.coingecko', of('coingecko'))} | ${cell('source.commit', of('github'))} | ${cell('source.tip', of('tip'), newestVerdict)} | ${cell(`source.${page}`, of(page))} |`,
     );
   }
-  const more = checked.flatMap(({ entry, lines }) => (entry.moreSources ?? []).map((page, i) => ({ entry, page, lines: lines.filter((l) => l.more === i + 1) })));
+  const more = checked.flatMap(({ entry, lines }) => (entry.moreSources ?? []).map((page, i) => ({ entry, page, n: i + 1, lines: lines.filter((l) => l.more === i + 1) })));
   if (more.length > 0) {
     out.push(
       '',
@@ -1244,13 +1294,14 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       '',
       '| Entry | Page | Site | GitHub commit | Newest version | Address on page |',
       '| --- | --- | --- | --- | --- | --- |',
-      ...more.map(({ entry, page, lines }) => {
+      ...more.map(({ entry, page, n, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
-        return `| ${code(entry.name)} | <${page.url}> | ${verdict(of('defillama'))} | ${verdict(of('github'))} | ${newestVerdict(of('tip'))} | ${verdict(of('page'))} |`;
+        const cell = cellOf(results, entry);
+        return `| ${code(entry.name)} | <${page.url}> | ${cell(`source.more.${n}.site`, of('defillama'))} | ${cell(`source.more.${n}.commit`, of('github'))} | ${cell(`source.more.${n}.tip`, of('tip'), newestVerdict)} | ${cell(`source.more.${n}.page`, of('page'))} |`;
       }),
     );
   }
-  const deployers = new Map(judge(inputs, []).results.flatMap((r) => (r.source?.of === 'deployer' && r.about.kind === 'entry' ? [[r.about.entry.name, r] as const] : [])));
+  const deployers = new Map(ledger.results.flatMap((r) => (r.source?.of === 'deployer' && r.about.kind === 'entry' ? [[r.about.entry.name, r] as const] : [])));
   const placed = checked.filter(({ lines }) => lines.some((l) => l.check === 'bounty' || l.check === 'sdk' || l.check === 'deployer'));
   if (placed.length > 0) {
     out.push(
@@ -1261,12 +1312,12 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       '| --- | --- | --- | --- | --- | --- |',
       ...placed.map(({ entry, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
-        return `| ${code(entry.name)} | ${verdict(of('bounty'))} | ${verdict(of('sdk'))} | ${verdict(of('sdk-site'))} | ${newestVerdict(of('sdk-latest'))} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
+        const cell = cellOf(results, entry);
+        return `| ${code(entry.name)} | ${cell('source.bounty', of('bounty'))} | ${cell('source.sdk', of('sdk'))} | ${cell('source.sdk.site', of('sdk-site'))} | ${cell('source.sdk.latest', of('sdk-latest'), newestVerdict)} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
       }),
     );
   }
-  const findings = checked.flatMap((r) => r.lines.filter((l) => l.kind === 'finding'));
-  out.push('', `${checked.length} entries, ${findings.length} findings.`, '');
+  out.push('', `${checked.length} entries; each finding is graded and listed under Findings at the top.`, '');
   const asked = checked.filter(({ entry }) => entry.apiSource !== undefined);
   if (asked.length > 0) {
     out.push(
@@ -1279,7 +1330,8 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       ...asked.map(({ entry, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
         const api = entry.apiSource as NonNullable<RegistryEntry['apiSource']>;
-        return `| ${code(entry.name)} | ${api.method} <${api.url}> | ${code(pathText(api.path))} | ${verdict(of('api'))} | ${verdict(of('api-site'))} |`;
+        const cell = cellOf(results, entry);
+        return `| ${code(entry.name)} | ${api.method} <${api.url}> | ${code(pathText(api.path))} | ${cell('source.api', of('api'))} | ${cell('source.api.site', of('api-site'))} |`;
       }),
       '',
     );
@@ -1328,11 +1380,13 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
     `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Etherscan gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
     '',
   ];
+  const ledger = judge(inputs, []);
+  out.push(...findingsSection(ledger));
   if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));
 
   if (entries.length === 0) {
     for (const heading of ['Registry entries', 'Code pins', 'ABI proofs']) out.push(`## ${heading}`, '', 'The operation touches no registry entry.', '');
-  } else out.push(...entrySections(entries, inputs));
+  } else out.push(...entrySections(entries, inputs, ledger));
 
   const vaults = evidenceEntries(subject);
   if (vaults.length > 0) {
