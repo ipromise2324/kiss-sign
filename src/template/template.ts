@@ -128,10 +128,11 @@ export type Rule =
   /** The same number as the transaction holds at an earlier template path, such as an approval its transfer spends. */
   | { readonly kind: 'equals'; readonly path: string; readonly rule: LeafRule }
   /**
-   * An ERC-4626 price bound in assets per share, scaled by 1e27, as Morpho's adapters take it. `max` must be at most, and
-   * `min` at least, `assets` × 1e27 / `shares`, so the transaction's bound is at least as strict as the card's amounts.
+   * An ERC-4626 price bound in assets per share, scaled by 10^`scale` (1e27 as Morpho's adapters take it). `max` must be
+   * at most, and `min` at least, `assets` × 10^`scale` / `shares`, so the transaction's bound is at least as strict as the
+   * card's amounts.
    */
-  | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity }
+  | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity; readonly scale: number }
   /** The owner listed just before the card's owner in the Safe's `getOwners()`, or the sentinel when it is first. */
   | { readonly kind: 'owner-before'; readonly ref: CardRef }
   /** A number at least the card amount `field`, such as the fewest tokens a swap may give. */
@@ -477,11 +478,17 @@ function quantity(path: string, raw: unknown, scope: Scope): Quantity {
   return { kind: 'path', path: name, rule };
 }
 
+const SHARE_PRICE_SCALE = { default: 27, min: 1, max: 36 } as const;
+
 function sharePrice(path: string, raw: unknown, type: AbiType, scope: Scope, bound: 'max' | 'min'): Rule {
   if (type.kind !== 'uint') throw new TemplateError(path, `a share price bound cannot bind a ${canonicalType(type)}`);
   const value = object(path, raw);
-  exactKeys(path, value, ['assets', 'shares']);
-  return { kind: 'share-price', bound, assets: quantity(`${path}.assets`, value.assets, scope), shares: quantity(`${path}.shares`, value.shares, scope) };
+  exactKeys(path, value, ['assets', 'shares'], ['scale']);
+  const scale = value.scale ?? SHARE_PRICE_SCALE.default;
+  if (typeof scale !== 'number' || !Number.isInteger(scale) || scale < SHARE_PRICE_SCALE.min || scale > SHARE_PRICE_SCALE.max) {
+    throw new TemplateError(`${path}.scale`, `the power of ten the price is scaled by, a whole number from ${SHARE_PRICE_SCALE.min} to ${SHARE_PRICE_SCALE.max}`);
+  }
+  return { kind: 'share-price', bound, assets: quantity(`${path}.assets`, value.assets, scope), shares: quantity(`${path}.shares`, value.shares, scope), scale };
 }
 
 function rule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
