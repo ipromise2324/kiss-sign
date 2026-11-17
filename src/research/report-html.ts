@@ -8,7 +8,7 @@ import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
 import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
-import { CSS, Html, SYMBOLS, h, icon } from '../html.ts';
+import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
 import { reportDir } from './report.ts';
