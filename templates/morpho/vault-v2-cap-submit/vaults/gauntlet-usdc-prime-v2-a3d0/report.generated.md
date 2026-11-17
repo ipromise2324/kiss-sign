@@ -149,9 +149,9 @@ Each entry other than a vault that names a registry `factory`: whether, through 
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26433218 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0` `isAdapter(address)` | true | 26433218 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0-market-adapter` `parentVault()`, for `gauntlet-usdc-prime-v2-a3d0` | 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0 | 26433218 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26433518 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0` `isAdapter(address)` | true | 26433518 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0-market-adapter` `parentVault()`, for `gauntlet-usdc-prime-v2-a3d0` | 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0 | 26433518 |
 
 ## Code pins
 
@@ -186,12 +186,12 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `morpho-blue` | PASS | 26433218 |
-| `adaptive-curve-irm` | PASS | 26433218 |
-| `morpho-oracle-cbbtc-usdc-86` | PASS | 26433218 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | PASS | 26433218 |
-| `morpho-oracle-usp-usdc` | PASS | 26433218 |
-| `morpho-oracle-weeth-usdc-86` | PASS | 26433218 |
+| `morpho-blue` | PASS | 26433518 |
+| `adaptive-curve-irm` | PASS | 26433518 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26433518 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | PASS | 26433518 |
+| `morpho-oracle-usp-usdc` | PASS | 26433518 |
+| `morpho-oracle-weeth-usdc-86` | PASS | 26433518 |
 
 ## ABI proofs
 
@@ -220,12 +220,33 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `gauntlet-usdc-prime-v2-a3d0`
 
 ```text
-UNVERIFIABLE block 26433225: alchemy and drpc disagree
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26433532
+vault        gauntlet-usdc-prime-v2-a3d0 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0
+latest block 26433532 0x1e7cf5313a258da5ee05af1bd0b9205ac42aca57b445a9e4616bf40c4f211d7a
+asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
+
+totalAssets() every 216000 blocks (about 30 days), read through both providers:
+  2026-11-17  block 26433532  98,088,723.387702 usdc
+  2026-10-18  block 26217532  124,570,399.895707 usdc
+  2026-09-18  block 26001532  92,968,042.057529 usdc
+  2026-08-19  block 25785532  72,847,551.201678 usdc
+  2026-07-19  block 25569532  72,410,766.151743 usdc
+  2026-06-19  block 25353532  81,385,059.465630 usdc
+  2026-05-20  block 25137532  99,450,680.868862 usdc
+  2026-04-20  block 24921532  84,490,448.587631 usdc
+  2026-03-21  block 24705532  65,279,447.649367 usdc
+  2026-02-19  block 24489532  77,244,713.003140 usdc
+  2026-01-20  block 24273532  101,796.443377 usdc
+  2025-12-21  block 24057532  100,355.027125 usdc
+  2025-11-20  block 23841532  100,072.546812 usdc
+
+holders      742 addresses hold shares at block 26433532, of 1805 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 94009242832379225738506397
+top 10       hold 46.58% of the shares; each: 11.47%, 8.10%, 7.54%, 3.87%, 3.50%, 2.71%, 2.57%, 2.42%, 2.32%, 2.09%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26433218 `0x1f8cc4e57a133094ba0d1ad3e96c9d2a88e7553602a6c542c992cd628e9d8eb5`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26433518 `0x9dee5ccad5307a176bd6ea8ae0b2e662311376c4b8362869b1dab7ae8c6028e3`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
