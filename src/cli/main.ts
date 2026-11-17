@@ -4,9 +4,11 @@ import { AddressBookError } from '../address-book.ts';
 import { CardError } from '../card.ts';
 import { MissingKeyError } from '../chain/providers.ts';
 import { httpsTransport } from '../chain/rpc.ts';
-import { ConfigError } from '../config.ts';
+import { ConfigError, loadStoredConfig } from '../config.ts';
 import { KEYS, KeyError, findKey, keyFilePath, keySpec, kissSignHome, removeKey, saveKey } from '../keys.ts';
 import type { KeySpec } from '../keys.ts';
+import { DEFAULT_LANGUAGE, isLanguage } from '../language.ts';
+import type { Language } from '../language.ts';
 import { RegistryError } from '../registry.ts';
 import { SafeTxParseError } from '../safe/types.ts';
 import { TemplateError } from '../template/template.ts';
@@ -16,6 +18,8 @@ import { cardNew } from './card-new.ts';
 import { colorWanted } from './format.ts';
 import { FAILED, OK, USAGE, UsageError } from './io.ts';
 import type { Io } from './io.ts';
+import { LABELS } from './labels.ts';
+import type { Labels } from './labels.ts';
 import { hiddenPrompt } from './prompt.ts';
 import { bookAdd, bookList, cardSeal, init, templateApprove } from './setup.ts';
 import { replay, verify } from './verify.ts';
@@ -72,7 +76,7 @@ function keyRemove(args: readonly string[], io: Io): number {
   return OK;
 }
 
-type Command = { readonly usage: string; readonly run: (args: readonly string[], io: Io) => number | Promise<number> };
+type Command = { readonly usage: string; readonly run: (args: readonly string[], io: Io, w: Labels) => number | Promise<number> };
 
 const COMMANDS: Readonly<Record<string, Command>> = {
   init: { usage: 'init --safe <address> [--language en|zh-TW]', run: init },
@@ -88,9 +92,24 @@ const COMMANDS: Readonly<Record<string, Command>> = {
   'key remove': { usage: 'key remove <name>', run: keyRemove },
 };
 
-const USAGE_TEXT = `Usage:\n${Object.values(COMMANDS)
+const usageText = (w: Labels): string => `${w.usage}\n${Object.values(COMMANDS)
   .map(({ usage }) => `  pnpm kiss-sign ${usage}\n`)
   .join('')}`;
+
+/**
+ * The language a command prints in: the one its `--language` names, else the config's, else English, so a command run
+ * before any config exists, or whose config cannot be read, prints English.
+ */
+function languageOf(argv: readonly string[], io: Io): Language {
+  const at = argv.indexOf('--language');
+  const flag = at === -1 ? argv.find((arg) => arg.startsWith('--language='))?.slice('--language='.length) : argv[at + 1];
+  if (isLanguage(flag)) return flag;
+  try {
+    return loadStoredConfig(kissSignHome(io.env))?.language ?? DEFAULT_LANGUAGE;
+  } catch {
+    return DEFAULT_LANGUAGE;
+  }
+}
 
 /** Errors whose message is written for the signer. */
 const FAILURES = [KeyError, CardError, ConfigError, VerifyError, AddressBookError, SafeTxParseError, TemplateError, RegistryError, MissingKeyError];
@@ -98,12 +117,13 @@ const FAILURES = [KeyError, CardError, ConfigError, VerifyError, AddressBookErro
 export async function main(argv: readonly string[], io: Io): Promise<number> {
   const name = [argv.slice(0, 2).join(' '), argv[0] ?? ''].find((words) => Object.hasOwn(COMMANDS, words));
   const command = name === undefined ? undefined : COMMANDS[name];
+  const w = LABELS[languageOf(argv, io)];
   if (name === undefined || command === undefined) {
-    io.stderr(USAGE_TEXT);
+    io.stderr(usageText(w));
     return USAGE;
   }
   try {
-    return await command.run(argv.slice(name.split(' ').length), io);
+    return await command.run(argv.slice(name.split(' ').length), io, w);
   } catch (error) {
     if (!(error instanceof Error)) throw error;
     const code = (error as NodeJS.ErrnoException).code;

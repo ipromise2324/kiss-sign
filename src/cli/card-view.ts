@@ -11,14 +11,14 @@ import { amountToken } from '../verify/expected.ts';
 import type { AmountToken } from '../verify/expected.ts';
 import { BOX_WIDTH, box, rows, table } from './format.ts';
 import type { Paint } from './format.ts';
-import { LABELS } from './labels.ts';
+import type { Labels } from './labels.ts';
 
-const L = LABELS.card;
+type CardWords = Labels['card'];
 
-export const marketHead = (market: Market): string => `${market.name}  ${L.lltv(lltvText(market), `${market.lltv}`)}`;
+export const marketHead = (market: Market, L: CardWords): string => `${market.name}  ${L.lltv(lltvText(market), `${market.lltv}`)}`;
 
 /** A market's id and each part's registry name and full address, aligned. */
-export function marketTable(market: Market, indent: number, width?: number): string[] {
+export function marketTable(market: Market, L: CardWords, indent: number, width?: number): string[] {
   return table([[L.id, market.id], ...MARKET_ENTRY_PARTS.map((part) => [part, market[part].name, checksumAddress(market[part].address)])], indent, width);
 }
 
@@ -38,7 +38,7 @@ function tokenOf(of: TokenRef, values: Values, registry: Registry): AmountToken 
   return chosen?.kind === 'market' ? { address: chosen.market[of.attribute].address, name: chosen.market[of.attribute].name } : undefined;
 }
 
-function amountLines(value: bigint, token: AmountToken | undefined, reads: CardReads | undefined): string[] {
+function amountLines(value: bigint, token: AmountToken | undefined, reads: CardReads | undefined, L: CardWords): string[] {
   const base = `${value}`;
   if (token === undefined) return [L.baseUnits(base)];
   const decimals = token.address === 'eth' ? 18 : reads?.decimals.get(token.address);
@@ -46,26 +46,26 @@ function amountLines(value: bigint, token: AmountToken | undefined, reads: CardR
   return [`${groupedTokens(value, decimals)} ${token.name}`, L.baseUnits(base)];
 }
 
-function valueLines(value: ResolvedValue, token: AmountToken | undefined, reads: CardReads | undefined): string[] {
+function valueLines(value: ResolvedValue, token: AmountToken | undefined, reads: CardReads | undefined, L: CardWords): string[] {
   switch (value.kind) {
     case 'contract':
       return [`${value.name}  ${checksumAddress(value.entry.address)}`];
     case 'address':
       return [`${value.name}${value.from === 'registry' ? '' : ` (${L.from[value.from]})`}  ${checksumAddress(value.address)}`];
     case 'amount':
-      return amountLines(value.value, token, reads);
+      return amountLines(value.value, token, reads, L);
     case 'nonce':
     case 'threshold':
       return [`${value.value}`];
     case 'percent':
       return [percentText(value.value), L.percentBase(`${value.value}`)];
     case 'market':
-      return [marketHead(value.market)];
+      return [marketHead(value.market, L)];
   }
 }
 
 /** The card the signer confirms, in one box: every full address, each amount in whole tokens and base units. */
-export function cardSummary(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry, reads: CardReads | undefined, p: Paint): string[] {
+export function cardSummary(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry, reads: CardReads | undefined, p: Paint, L: CardWords): string[] {
   const body = rows([[L.safe, checksumAddress(card.safe)]], 0, BOX_WIDTH);
   const several = card.operations.length > 1;
   let amounts = false;
@@ -77,8 +77,8 @@ export function cardSummary(card: ResolvedCard, templates: ReadonlyMap<string, T
       const token = field?.kind === 'amount' ? tokenOf(field.of, op.values, registry) : undefined;
       if (value.kind === 'amount') amounts = true;
       const style = reads === undefined ? undefined : reads.computed.has(`${i}:${name}`) ? p.computed : p.picked;
-      body.push(...rows([[name.padEnd(keyWidth), valueLines(value, token, reads), style]], 2, BOX_WIDTH));
-      if (value.kind === 'market') body.push(...marketTable(value.market, 4, BOX_WIDTH));
+      body.push(...rows([[name.padEnd(keyWidth), valueLines(value, token, reads, L), style]], 2, BOX_WIDTH));
+      if (value.kind === 'market') body.push(...marketTable(value.market, L, 4, BOX_WIDTH));
     }
   }
   const footer = reads?.provenance ?? (reads === undefined && amounts ? L.noDecimals : undefined);
