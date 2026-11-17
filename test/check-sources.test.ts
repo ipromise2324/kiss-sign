@@ -11,6 +11,7 @@ import { unreadRefusal } from '../src/chain/https.ts';
 import { findOnPage, gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
 import type { HttpGet, Page, SourcePages } from '../src/research/source-page.ts';
 import type { Address } from '../src/safe/types.ts';
+import { trimReportRecording } from '../src/research/report.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -319,6 +320,39 @@ test('a pinned GitHub file is read raw at its commit, and a commit behind or equ
   assert.match(text, /github {5}agrees {2}commit ca9cb0d2d5f5 of safe-global\/safe-deployments is on the default branch main \(GitHub compare: behind\)/);
   assert.match(text, /page {7}agrees {2}the page has the address 9 characters after "canonical"/);
   assert.match(await github({ status: 200, text: JSON.stringify({ status: 'identical' }) }), /github {5}agrees .*\(GitHub compare: identical\)/);
+});
+
+const TIP = 'https://raw.githubusercontent.com/safe-global/safe-deployments/refs/heads/main/src/assets/v1.3.0/multi_send.json';
+async function tipReport(tip: Served): Promise<string> {
+  const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'safe', source: PINNED, sourceLabel: 'canonical' } });
+  const get = getFrom({ [REPO_API]: { status: 200, text: JSON.stringify({ default_branch: 'main' }) }, [compareUrl]: { status: 200, text: JSON.stringify({ status: 'behind' }) }, [RAW]: deployments, [TIP]: tip });
+  const pages = await gatherSourcePages(entries.flatMap(pageUrlsOf), get);
+  const recorded = sourcePagesOf(JSON.parse(JSON.stringify(trimForRecording(entries, listings, pages, new Date('2026-11-17')))));
+  assert.equal(report(entries, listings, recorded), report(entries, listings, pages), 'the recording, read back, gives the same lines');
+  const forReport = trimReportRecording({ kind: 'vault', vault: entries[0]! }, entries, listings, pages, new Date('2026-11-17'), new Map(), {} as never, [], undefined, undefined);
+  assert.equal(report(entries, listings, sourcePagesOf(JSON.parse(JSON.stringify(forReport)))), report(entries, listings, pages), "the report's recording, read back, gives the same lines");
+  return report(entries, listings, pages);
+}
+
+test('the file a pinned GitHub source names is read again at the tip of its default branch, and another address under its label there is a finding naming both', async () => {
+  const at = `the file at the tip of main (${TIP})`;
+  assert.ok((await tipReport(deployments)).includes(`  tip        agrees  ${at} binds "canonical" to the address too`));
+  const moved = { status: 200, text: JSON.stringify({ contractName: 'MultiSend', deployments: { canonical: { address: OTHER }, eip155: { address: ADDR } } }) };
+  assert.ok((await tipReport(moved)).includes(`  tip        FINDING ${at} binds "canonical" to ${OTHER}, not the entry's address ${ADDR}`));
+  assert.ok((await tipReport({ status: 404, text: '404: Not Found' })).includes(`  tip        not listed ${at}: ${TIP} answered HTTP 404; the newest version lists nothing`));
+  assert.ok((await tipReport({ status: 200, text: JSON.stringify({ contractName: 'MultiSend', deployments: {} }) })).includes(`  tip        not listed ${at} binds "canonical" to no address`));
+});
+
+test('every Immunefi program tied to the protocol is read, whether or not the entry names one; one not tied confirms nothing', () => {
+  const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'safe', source: DOCS, sourceLabel: 'Bundler3' } });
+  const programs = (website: string, addresses: readonly string[]) => ({
+    ...listings,
+    sites: { ...listings.sites, programs: new Map([['p', { slug: 'p', website: new URL(website), github: undefined, addresses: new Set(addresses.map((a) => a.toLowerCase() as Address)) }]]) },
+  });
+  const bounty = (using: Listings) => report(entries, using, { pages: new Map(), commits: new Map() }).split('\n').find((line) => line.trimStart().startsWith('bounty'));
+  assert.equal(bounty(programs('https://safe.global', [ADDR])), `  bounty     agrees  Immunefi program p of the protocol has ${ADDR} in scope as an etherscan.io address`);
+  assert.equal(bounty(programs('https://safe.global', [OTHER])), '  bounty     not listed Immunefi program p of the protocol does not have the address in scope (1 Ethereum addresses there)');
+  assert.equal(bounty(programs('https://compound.finance', [ADDR])), '  bounty     not listed no Immunefi program lists a website or GitHub org of safe; programs not tied to the protocol that hold it: p');
 });
 
 test('a commit off the default branch, such as one only a fork holds, is a finding', async () => {

@@ -65,7 +65,7 @@ export function parseImmunefiPrograms(raw: unknown): Map<string, ImmunefiProgram
   if (!Array.isArray(raw)) throw new SiteListingError('Immunefi sent no program list');
   const programs = new Map<string, ImmunefiProgram>();
   for (const item of raw) {
-    if (!isRecord(item) || typeof item.slug !== 'string' || item.slug === '') continue;
+    if (!isRecord(item) || typeof item.slug !== 'string' || !/^[a-z0-9-]+$/.test(item.slug)) continue;
     programs.set(item.slug, { slug: item.slug, website: httpsUrl(item.websiteUrl), github: httpsUrl(item.githubUrl), addresses: new Set(etherscanAddresses(scopeText(item))) });
   }
   return programs;

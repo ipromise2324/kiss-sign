@@ -65,30 +65,32 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 `pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc vault-v2-factory morpho-market-v1-adapter-v2-factory kpk-usdc-prime-v2-9ee6 kpk-usdc-prime-v2-9ee6-market-adapter` prints what each check compared.
 
-| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
-| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `kpk-usdc-prime-v2-9ee6` | `0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6` | vault | <https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime> | PASS | PASS | n/a | PASS |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | `0x1d511811ACA9d8817a3e50F29CadFf6243A02902` | adapter | <https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime> | PASS | n/a | n/a | PASS |
+Newest version: for a source pinned to a GitHub commit on the default branch, which addresses the same file at the tip of that branch binds to the same label; it is the same place, so it never counts as one.
+
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Newest version | Address on page |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | n/a | PASS |
+| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `kpk-usdc-prime-v2-9ee6` | `0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6` | vault | <https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime> | PASS | PASS | n/a | n/a | PASS |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `0x1d511811ACA9d8817a3e50F29CadFf6243A02902` | adapter | <https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime> | PASS | n/a | n/a | n/a | PASS |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | Site | GitHub commit | Address on page |
-| --- | --- | --- | --- | --- |
-| `vault-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
-| `morpho-market-v1-adapter-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
+| Entry | Page | Site | GitHub commit | Newest version | Address on page |
+| --- | --- | --- | --- | --- | --- |
+| `vault-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
+| `morpho-market-v1-adapter-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
 
-More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+More places that may name the address: the scope of every Immunefi program tied to the entry's protocol, which the program finds, and of the one the entry names; its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and which addresses npm's latest version binds to the same label; and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places; a program not tied to the protocol and the SDK's latest version never count.
 
-| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
-| --- | --- | --- | --- | --- |
-| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
-| `vault-v2-factory` | n/a | n/a | n/a | FINDING |
-| `morpho-market-v1-adapter-v2-factory` | n/a | n/a | n/a | FINDING |
-| `kpk-usdc-prime-v2-9ee6` | n/a | n/a | n/a | FINDING |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | n/a | n/a | n/a | FINDING |
+| Entry | Bounty scope | SDK file | SDK publisher | SDK latest | Deployer |
+| --- | --- | --- | --- | --- | --- |
+| `usdc` | NOT LISTED | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `vault-v2-factory` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `morpho-market-v1-adapter-v2-factory` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `kpk-usdc-prime-v2-9ee6` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | NOT LISTED | n/a | n/a | n/a | FINDING |
 
 5 entries, 5 findings.
 
@@ -98,9 +100,9 @@ Each entry that names a registry `factory`, other than an instance whose stored 
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26432978 |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6` `isAdapter(address)` | true | 26432978 |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6-market-adapter` `parentVault()`, for `kpk-usdc-prime-v2-9ee6` | 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6 | 26432978 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26434490 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6` `isAdapter(address)` | true | 26434490 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6-market-adapter` `parentVault()`, for `kpk-usdc-prime-v2-9ee6` | 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6 | 26434490 |
 
 ## Code pins
 
@@ -123,7 +125,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | PASS | 26432978 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | PASS | 26434490 |
 
 ## ABI proofs
 
@@ -144,37 +146,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `kpk-usdc-prime-v2-9ee6`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432982
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26434495
 vault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6
-latest block 26432982 0x887eea35bcfbef33e8d22ef3bdcdb1d4e854fc191b5fd6ef23c01b83f1eda232
+latest block 26434495 0x652f48b70a7b22854162b7dfce6a2c68b4ae150e1fb8f36a5af817cd7076dd10
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-17  block 26432982  31,754,010.689985 usdc
-  2026-10-18  block 26216982  30,526,440.570867 usdc
-  2026-09-18  block 26000982  21,093,299.574080 usdc
-  2026-08-18  block 25784982  20,679,874.557351 usdc
-  2026-07-19  block 25568982  20,821,027.618122 usdc
-  2026-06-19  block 25352982  25,256,201.921010 usdc
-  2026-05-20  block 25136982  22,358,722.392987 usdc
-  2026-04-20  block 24920982  8,719,661.859811 usdc
-  2026-03-21  block 24704982  6,451,469.332030 usdc
-  2026-02-19  block 24488982  7,038,281.586990 usdc
-  2026-01-20  block 24272982  4,069,204.319944 usdc
-  2025-12-20  block 24056982  4,066,304.604814 usdc
-  2025-11-20  block 23840982  5,003,802.029860 usdc
+  2026-11-17  block 26434495  30,773,914.472656 usdc
+  2026-10-18  block 26218495  30,537,573.039096 usdc
+  2026-09-18  block 26002495  21,093,898.237626 usdc
+  2026-08-19  block 25786495  20,680,417.427308 usdc
+  2026-07-20  block 25570495  20,821,450.217456 usdc
+  2026-06-19  block 25354495  28,004,026.835738 usdc
+  2026-05-20  block 25138495  22,359,179.379150 usdc
+  2026-04-20  block 24922495  8,719,880.657978 usdc
+  2026-03-21  block 24706495  6,451,571.969542 usdc
+  2026-02-19  block 24490495  7,038,413.231327 usdc
+  2026-01-20  block 24274495  4,069,293.043474 usdc
+  2025-12-21  block 24058495  4,066,381.547174 usdc
+  2025-11-20  block 23842495  5,003,904.170206 usdc
 
-holders      97 addresses hold shares at block 26432982, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30480168096208931315743366
-top 10       hold 94.31% of the shares; each: 50.56%, 19.25%, 9.43%, 6.21%, 2.11%, 1.87%, 1.64%, 1.37%, 0.94%, 0.93%
+holders      98 addresses hold shares at block 26434495, of 205 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 29538619263680683343661883
+top 10       hold 94.07% of the shares; each: 48.92%, 19.86%, 9.73%, 6.41%, 2.18%, 1.93%, 1.69%, 1.41%, 0.98%, 0.95%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26432978 `0x3fa5af2012bb401554d9947b9b74307400564f65c132274bf0df8677442865fd`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26434490 `0x2ec1c73a8ebf7bd05fba7e04fb800886e213fa046622485d4813ebb7a089711a`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10056510399 | 4496318455 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9986815475 | 4464931135 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

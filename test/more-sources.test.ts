@@ -6,7 +6,7 @@ import type { HttpAnswer } from '../src/chain/https.ts';
 import type { Read, Reader } from '../src/chain/reader.ts';
 import type { BlockRef } from '../src/chain/types.ts';
 import { create2Address, createAddress, parseCreationHints, proveCreation } from '../src/research/deployer.ts';
-import { readPackage } from '../src/research/npm-package.ts';
+import { latestOf, readPackage } from '../src/research/npm-package.ts';
 import { parseImmunefiPrograms, verifiedDomains } from '../src/research/site-listings.ts';
 import { htmlBlocks } from '../src/research/source-page.ts';
 import { checksumAddress, parseAddress, parseHex } from '../src/safe/types.ts';
@@ -82,7 +82,7 @@ const statement = (repository: string, digest: string) =>
 function npm(change: { tarball?: Uint8Array; integrity?: string; attestations?: HttpAnswer } = {}) {
   const tarball = change.tarball ?? TARBALL;
   const answers: Record<string, HttpAnswer> = {
-    'https://registry.npmjs.org/@example%2fsdk/1.0.0': json({ dist: { tarball: 'https://registry.npmjs.org/@example/sdk/-/sdk-1.0.0.tgz', integrity: change.integrity ?? `sha512-${sha('sha512', TARBALL).toString('base64')}` } }),
+    'https://registry.npmjs.org/@example%2fsdk/1.0.0': json({ version: '1.0.0', dist: { tarball: 'https://registry.npmjs.org/@example/sdk/-/sdk-1.0.0.tgz', integrity: change.integrity ?? `sha512-${sha('sha512', TARBALL).toString('base64')}` } }),
     'https://registry.npmjs.org/@example/sdk/-/sdk-1.0.0.tgz': { status: 200, text: '', bytes: tarball },
     'https://registry.npmjs.org/-/npm/v1/attestations/@example%2fsdk@1.0.0':
       change.attestations ?? json({ attestations: [{ predicateType: 'https://slsa.dev/provenance/v1', bundle: { dsseEnvelope: { payload: statement('https://github.com/example/sdk', sha('sha512', TARBALL).toString('hex')) } } }] }),
@@ -112,6 +112,18 @@ test("an SDK whose tarball npm's integrity or provenance does not name, or with 
   assert.ok(missing.kind === 'read' && missing.file.kind === 'failed');
   const elsewhere = await readPackage(pinned, async (url) => (url.endsWith('/1.0.0') ? json({ dist: { tarball: 'https://evil.example/sdk.tgz', integrity: 'sha512-x' } }) : assert.fail(url)));
   assert.deepEqual(elsewhere, { kind: 'failed', why: 'npm names no tarball on https://registry.npmjs.org/ for @example/sdk@1.0.0' });
+});
+
+test("npm's latest tag is read as its own version: the manifest names it, and its provenance is asked for that version", async () => {
+  const answers = npm();
+  const latest = await readPackage(latestOf(pinned), async (url) =>
+    url === 'https://registry.npmjs.org/@example%2fsdk/latest'
+      ? answers('https://registry.npmjs.org/@example%2fsdk/1.0.0')
+      : answers(url),
+  );
+  assert.ok(latest.kind === 'read' && latest.version === '1.0.0' && latest.provenance.kind === 'built' && latest.provenance.sameTarball);
+  const unnamed = await readPackage(latestOf(pinned), async () => json({ dist: { tarball: 'https://registry.npmjs.org/@example/sdk/-/sdk-1.0.0.tgz', integrity: 'sha512-x' } }));
+  assert.deepEqual(unnamed, { kind: 'failed', why: 'npm names no version latest for @example/sdk' });
 });
 
 test('CREATE and CREATE2 give the addresses the chain does: CoW settlement made its vault relayer at nonce 1, and EIP-1014’s first example', () => {

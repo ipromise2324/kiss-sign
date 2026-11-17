@@ -339,25 +339,25 @@ test("a per-vault report shows the vault's stored evidence after the protocol, w
     vault.rows.map((r) => [r.label, plain(r.value)]),
     [
       ['工廠', 'vault-v2-factory 回答 isVaultV2(address) = true'],
-      ['現在的 totalAssets', '7,501,013.23 usdc'],
-      ['持有人', '170 個地址持有，曾經收過的 354 個'],
-      ['最大持有人', '51.77%'],
-      ['前 10 名', '90.10%'],
+      ['現在的 totalAssets', '6,849,805.81 usdc'],
+      ['持有人', '167 個地址持有，曾經收過的 355 個'],
+      ['最大持有人', '56.74%'],
+      ['前 10 名', '90.75%'],
     ],
   );
   assert.equal(vault.bars.length, 13);
-  assert.deepEqual(vault.bars[0], { date: '2025-11-16', words: '3,329.1 usdc', share: 3329_104017 / 12646299_801537 });
-  assert.deepEqual(vault.bars.at(-1)?.date, '2026-11-13');
-  assert.equal(vault.most, '12,646,299.8 usdc');
+  assert.deepEqual(vault.bars[0], { date: '2025-11-20', words: '3,337.55 usdc', share: 3337_556921 / 13799662_790530 });
+  assert.deepEqual(vault.bars.at(-1)?.date, '2026-11-17');
+  assert.equal(vault.most, '13,799,662.79 usdc');
   assert.ok(!JSON.stringify(vault).includes('$'), 'no USD value');
 });
 
 test('a month the providers disagree on reads 讀不到 and draws no bar', () => {
   const name = 'hyperithm-usdc-apex-v2-9e2f';
-  const text = (depositInputs.vaults.get(name) ?? assert.fail('stored evidence')).replace(/(2026-07-15 {2}block \d+ {2}).*/, '$1UNVERIFIABLE eth_call: alchemy and drpc disagree');
+  const text = (depositInputs.vaults.get(name) ?? assert.fail('stored evidence')).replace(/(2026-07-20 {2}block \d+ {2}).*/, '$1UNVERIFIABLE eth_call: alchemy and drpc disagree');
   const { vault } = body(buildPage({ ...depositInputs, vaults: new Map([[name, text]]) }, depositNotes, depositTitle, 'zh-TW'), 'vault');
-  assert.deepEqual(vault.bars.find((b) => b.date === '2026-07-15'), { date: '2026-07-15', words: '讀不到', share: undefined });
-  assert.equal(vault.most, '10,963,761.48 usdc');
+  assert.deepEqual(vault.bars.find((b) => b.date === '2026-07-20'), { date: '2026-07-20', words: '讀不到', share: undefined });
+  assert.equal(vault.most, '10,509,191.98 usdc');
 });
 
 test('the vault its factory alone confirms is the one 待確認; every address row names where its address was confirmed', () => {
@@ -382,6 +382,8 @@ test('the vault its factory alone confirms is the one 待確認; every address r
       ['app.morpho.org/ethereum/vault', 'na', 'unread', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
       ['CoinGecko', 'na', 'nothing-to-compare', undefined],
       ['工廠', 'ok', undefined, undefined],
+      ['Immunefi 漏洞賞金範圍', 'na', 'not-listed', undefined],
+      ['部署者', 'na', 'creation-unproven', undefined],
     ],
   );
   assert.deepEqual(vault.aiSources.map((s) => [s.text.tag, s.result]), [['ai', 'attention']]);
@@ -900,7 +902,7 @@ test('a vault its factory admits by computing its address renders in both report
   assert.equal(plain(factoryRow.value), `vault-v2-factory 回答 computeToken(usdc,"fToken") = ${checksumAddress(vault.address)}`);
   const addresses = body(page, 'addresses');
   const row = [...addresses.open, ...addresses.folded].find((r) => r.name === vault.name) ?? assert.fail('no address row');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, site: undefined });
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, site: undefined, newest: undefined });
   assert.ok(renderPage(page).includes('computeToken(usdc,&#34;fToken&#34;)'), 'the HTML report escapes the quoted constant');
 });
 
@@ -912,7 +914,7 @@ test("a vault its factory computed another address for renders in both reports, 
   const page = buildPage(of, notes, depositTitle, 'zh-TW');
   const addresses = body(page, 'addresses');
   const row = addresses.open.find((r) => r.name === vault.name) ?? assert.fail('the vault row is not open');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: 'not-created', site: undefined });
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: 'not-created', site: undefined, newest: undefined });
   const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
   assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個金庫`);

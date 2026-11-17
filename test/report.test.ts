@@ -571,7 +571,7 @@ test('--compare names the verdict core apart from the other program files a pull
     '  src/template/check.ts',
     '  scripts/report.ts',
     '  scripts/check-push.ts',
-    'PROGRAM CHANGE  not the verdict: origin/b changes 1 other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs; review them as code:',
+    'PROGRAM CHANGE  not the verdict: origin/b changes 1 other file(s) outside templates/, registry/ and testdata/, such as research tools and docs, which no signing runs:',
     '  docs/design.md',
     'PROGRAM CHANGE  gate: origin/b changes 2 file(s) of the program gate, the canaries of docs/canaries.txt, the files they import or read, or the code that enforces the rules; only the signer merges it:',
     '  scripts/report.ts',
