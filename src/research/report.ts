@@ -28,7 +28,7 @@ import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePage
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
-import type { PastTxs } from './past-txs.ts';
+import type { PastTxs, Sampling } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { pathText } from './api-source.ts';
 import { provenanceRepositories } from './npm-package.ts';
@@ -526,8 +526,15 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
     (ANCHOR_KINDS as readonly string[]).includes(query.anchor) &&
     block(query.fromBlock) &&
     block(query.toBlock) &&
+    block(query.head) &&
     Number.isSafeInteger(query.maxTxs)
   );
+}
+
+/** The windows a recording searched: its range, or the default spread placed by its head, or by its recorded head read when it keeps none. */
+export function pastTxsSampling(query: PastTxsRecording['query']): Sampling {
+  if (query.fromBlock !== undefined && query.toBlock !== undefined) return { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
+  return query.head === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, head: BigInt(query.head) };
 }
 
 /**
@@ -548,8 +555,7 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
         ...(query.from === undefined ? {} : { from: query.from as Address }),
         ...(query.to === undefined ? {} : { to: query.to as Address }),
       },
-      sampling:
-        query.fromBlock === undefined || query.toBlock === undefined ? DEFAULT_SPREAD : { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } },
+      sampling: pastTxsSampling(query),
     },
     { ask: replayAsk(recording.sources), reader, registry, exclude: undefined, maxTxs: query.maxTxs },
   );
@@ -975,7 +981,7 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, 
   return `${name} PROVEN | ${proxy} | ${contract}, solc ${code(proof.compiler)} | ${code(proof.codeHash)} | ${pinVerdict(entry, proof)} | ${masked} | ${proof.block.number} |`;
 }
 
-const COMMAND_FLAGS = ['token', 'anchor', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
+const COMMAND_FLAGS = ['token', 'anchor', 'from', 'to', 'fromBlock', 'toBlock', 'head', 'maxTxs'] as const;
 
 function pastTxsCommand({ query, file }: PastTxsSummary): string {
   const flag = (key: (typeof COMMAND_FLAGS)[number]) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;

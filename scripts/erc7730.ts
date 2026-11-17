@@ -4,6 +4,7 @@ import { parseArgs } from 'node:util';
 import { mainnetEndpoints, MissingKeyError } from '../src/chain/providers.ts';
 import { createReader } from '../src/chain/reader.ts';
 import { recordingTransport } from '../src/chain/recording.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { chainAt, formatReports, loadSnapshot, studyEntries, trimForRecording } from '../src/research/erc7730.ts';
@@ -36,6 +37,7 @@ if ('unavailable' in snapshot) {
 }
 
 let exchanges: () => unknown[] = () => [];
+const unread: string[] = [];
 async function openChain(): Promise<ChainAccess> {
   let endpoints;
   try {
@@ -46,7 +48,7 @@ async function openChain(): Promise<ChainAccess> {
   }
   const recording = recordingTransport(httpsTransport(), endpoints);
   exchanges = recording.exchanges;
-  return chainAt(createReader(endpoints, recording.transport));
+  return chainAt(createReader(endpoints, recording.transport, { note: (read) => void unread.push(read) }));
 }
 
 const entries = names.map((name) => registry.entries.get(name)!);
@@ -54,6 +56,11 @@ const reports = await studyEntries(entries, registry, snapshot, openChain);
 console.log(formatReports(snapshot, reports));
 
 if (flags.record !== undefined) {
+  const refusal = unreadRefusal(unread);
+  if (refusal !== undefined) {
+    console.error(refusal);
+    process.exit(1);
+  }
   const dir = join(root, 'testdata', 'erc7730');
   mkdirSync(dir, { recursive: true });
   const path = join(dir, `${flags.record}.json`);
