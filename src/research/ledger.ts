@@ -395,9 +395,9 @@ const OTHER_REFUSALS: Readonly<Record<RefusalCause, Finding>> = {
   unaskable: { kind: 'check-unread' },
 };
 
-/** A view's result id: `factory.admitted` for the first, else the view's function, and the entry it was asked for once per entry naming the instance. */
+/** A view's result id: `factory.admitted` for the first when it is asked once, else the view's place and function, and the entry naming the instance it was asked for. */
 const viewKey = (answer: Pick<ViewAnswer, 'index' | 'view' | 'namer'>): string =>
-  answer.index === 0 ? 'factory.admitted' : `factory.${answer.view.fn.name}${answer.namer === undefined ? '' : `.${answer.namer.name}`}`;
+  answer.index === 0 && answer.namer === undefined ? 'factory.admitted' : `factory.${answer.index}.${answer.view.fn.name}${answer.namer === undefined ? '' : `.${answer.namer.name}`}`;
 
 /**
  * The `factory` place: an instance's factory answers, stored by `pnpm vault-evidence`; another entry's, read by the

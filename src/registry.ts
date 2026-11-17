@@ -247,7 +247,7 @@ export function isEntryName(raw: string): boolean {
 export function parseAttributeTable(raw: unknown): AttributeTable {
   const table = new Map<string, ContractKind>();
   for (const [name, kind] of Object.entries(record('attributes', raw))) {
-    if (!ATTRIBUTE_NAME.test(name)) throw new RegistryError(`attributes.${name}`, 'not an attribute name: a lowercase letter, then up to 31 letters and digits');
+    if (!ATTRIBUTE_NAME.test(name) || name in Object.prototype) throw new RegistryError(`attributes.${name}`, 'not an attribute name: a lowercase letter, then up to 31 letters and digits');
     const named = CONTRACT_KINDS.find((k) => k === kind);
     if (named === undefined) throw new RegistryError(`attributes.${name}`, `not one of ${CONTRACT_KINDS.join(', ')}`);
     table.set(name, named);
@@ -386,8 +386,7 @@ function instanceViewOf(path: string, raw: unknown, table: AttributeTable): Inst
 }
 
 function instanceCheckOf(path: string, raw: unknown, table: AttributeTable): InstanceCheck {
-  if (!Array.isArray(raw)) return [instanceViewOf(path, raw, table)];
-  const [first, ...more] = raw.map((view: unknown, i) => instanceViewOf(`${path}[${i}]`, view, table));
+  const [first, ...more] = Array.isArray(raw) ? raw.map((view: unknown, i) => instanceViewOf(`${path}[${i}]`, view, table)) : [instanceViewOf(path, raw, table)];
   if (first === undefined) throw new RegistryError(path, 'not a non-empty list of views');
   const check: InstanceCheck = [first, ...more];
   if (check.every((view) => isInstance(view.ask))) throw new RegistryError(path, "asks only the instance, whose own word tells it from no lookalike");

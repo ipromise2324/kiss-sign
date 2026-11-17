@@ -266,6 +266,7 @@ test('instance views name declared attributes, ask more than the instance alone,
   const refused = (views: unknown, message: RegExp) => assert.throws(() => vaultV2(views as unknown[]), (e: unknown) => e instanceof RegistryError && message.test(e.message));
   refused([{ ...NAMED_BY_VAULT, ask: { namedBy: 'curator' } }], /adapter-factory\.instanceCheck\[0\]\.ask\.namedBy: not one of asset, factory, adapter/);
   refused([MADE_FOR_VAULT], /adapter-factory\.instanceCheck: asks only the instance, whose own word tells it from no lookalike/);
+  refused(MADE_FOR_VAULT as unknown as unknown[], /adapter-factory\.instanceCheck: asks only the instance, whose own word tells it from no lookalike/);
   refused([], /adapter-factory\.instanceCheck: not a non-empty list of views/);
   refused([{ ...MADE_FOR_VAULT, ask: 'vault' }], /instanceCheck\[0\]\.ask: not one of "factory", "instance"/);
   assert.throws(
@@ -286,6 +287,7 @@ test('any kind may carry any attribute the table declares, naming an entry of th
   assert.throws(() => parseRegistry(pool({ factory: 'usdc' }), {}, table), /pool\.attributes\.factory: "usdc" is not a factory in the registry/);
   assert.throws(() => parseRegistry(pool({}), {}, { Token0: 'token' }), /attributes\.Token0: not an attribute name/);
   assert.throws(() => parseRegistry(pool({}), {}, { token0: 'coin' }), /attributes\.token0: not one of token, vault/);
+  assert.throws(() => parseRegistry(pool({}), {}, { constructor: 'token' }), /attributes\.constructor: not an attribute name/);
 });
 
 test('a Uniswap v3 pool, declared only as data, is proven by its factory computing getPool(token0, token1, 500) in a recorded live answer', async () => {
@@ -301,4 +303,13 @@ test('a Uniswap v3 pool, declared only as data, is proven by its factory computi
   const asking3000 = { ...factory, instanceCheck: [{ ...view, args: [...view.args.slice(0, 2), { kind: 'uint', value: 3000n }] }] } as RegistryEntry;
   const swapped = { ...otherFee, entries: new Map([...otherFee.entries].map(([name, entry]) => [name, name === factory.name ? asking3000 : entry])) };
   assert.equal(outcomes(await proveInstance(replayReader(recorded.exchanges), swapped, recorded.entry, block))[0]?.[0], 'no-answer', 'another fee asks another call, which the recording does not answer');
+});
+
+test('a struct answer too short for its word, or a view expecting an attribute the instance lacks, vouches for nothing', async () => {
+  const struct = (data: string) => proveInstance(lendingFactoryAnswering(agreed(data)), fluid({ ...COMPUTE_TOKEN, word: 1 }), 'fluid-fusdc', AT);
+  assert.deepEqual(outcomes(await struct(addressWord(FUSDC))), [['other-answer', `fluid-lending-factory answered computeToken(usdc,"fToken") with ${addressWord(FUSDC)}, which has no word 1`]]);
+  assert.deepEqual(outcomes(await struct(`${addressWord(VAULT)}${addressWord(FUSDC).slice(2)}`)), [['fluid-lending-factory', 'computeToken(usdc,"fToken")', FUSDC]]);
+  const expectsAsset = fluid({ function: 'computeToken(address,string)', args: ['instance', { string: 'fToken' }], answers: { attribute: 'asset' } });
+  const reader = { call: async () => agreed(addressWord(FUSDC)) } as Partial<Reader> as Reader;
+  assert.deepEqual(outcomes(await proveInstance(reader, expectsAsset, 'bare', AT)), [['unaskable', "bare names no entry for computeToken(address,\"fToken\") to answer, as fluid-lending-factory's instanceCheck expects"]]);
 });

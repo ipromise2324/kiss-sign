@@ -302,10 +302,11 @@ export function factoryAnswer(text: string | undefined, vault: RegistryEntry, re
   if (text === undefined || factory === undefined) return 'unread';
   const first = text.split('\n')[0]!;
   if (admission(text.split('\n'), vault, registry) !== undefined) return 'admitted';
-  const refused = `REFUSED ${factory} answered `;
-  if (!first.startsWith(refused)) return 'unread';
-  const rest = first.slice(refused.length);
-  if (/^\S+ (false for \S+: it did not create it|= 0x[0-9a-fA-F]{40}, not \S+: its official contract is another);/.test(rest)) return 'not-created';
+  const refused = /^REFUSED (\S+) answered (.*)$/.exec(first);
+  const askers = new Set([factory, ...(expectedAnswers(registry, vault.name) ?? []).map((answer) => answer.asker)]);
+  if (refused === null || !askers.has(refused[1] as string)) return 'unread';
+  const rest = refused[2] as string;
+  if (/^\S+ (false for \S+: (it did not create it|it does not vouch for it)|= 0x[0-9a-fA-F]{40}, not \S+(: its official contract is another)?);/.test(rest)) return 'not-created';
   return /^\S+ with .*, not (true or false|an address);/.test(rest) ? 'other-answer' : 'unread';
 }
 
