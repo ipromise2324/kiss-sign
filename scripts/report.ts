@@ -232,10 +232,10 @@ const abiCases = new Map<string, unknown>();
 for (const entry of provedEntries(subject, registry)) {
   const deps = { sourcify: retryingSourcify(sourcifyHttps, note), compilers };
   if (flags.record && !recorded.has(entry.address)) {
-    const { proof, fixture } = await recordAbiCase(reader, entry.address, latest.value, latest.providers, deps);
+    const { proof, fixture } = await recordAbiCase(reader, entry.address, latest.value, latest.providers, deps, entry);
     abiCases.set(join(root, 'testdata', 'abi', `${entry.name.replace(/\./g, '-')}.json`), fixture);
     abi.set(entry.address, proof);
-  } else abi.set(entry.address, await proveAbi(reader, entry.address, latest.value, deps));
+  } else abi.set(entry.address, await proveAbi(reader, entry.address, latest.value, deps, entry));
 }
 
 const alchemy = alchemyCall(httpsTransport(), endpoints[0].url, note);

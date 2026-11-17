@@ -1,7 +1,10 @@
+import { keccak_256 } from '@noble/hashes/sha3.js';
+import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import type { Read, Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
+import type { ImplementationRead, ProxyDeclaration } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { fallbackDelegation } from './delegate.ts';
+import { fallbackDelegation, fallbackSelector } from './delegate.ts';
 import type { Unfollowable } from './delegate.ts';
 
 export const EIP1967_IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbcn;
@@ -49,7 +52,8 @@ export type Proxy =
   | { readonly kind: 'eip1967-beacon'; readonly beacon: Address; readonly implementation: Address }
   | { readonly kind: 'zeppelinos'; readonly implementation: Address }
   | { readonly kind: 'eip1167'; readonly implementation: Address }
-  | { readonly kind: 'safe'; readonly factory: SafeProxyName; readonly implementation: Address };
+  | { readonly kind: 'safe'; readonly factory: SafeProxyName; readonly implementation: Address }
+  | { readonly kind: 'declared'; readonly implementation: Address };
 
 export type ProxyRefusal =
   | { readonly why: 'unverifiable'; readonly read: string }
@@ -58,7 +62,10 @@ export type ProxyRefusal =
   | { readonly why: 'both-eip1967-slots-set' }
   | { readonly why: 'slot-without-delegatecall' }
   | { readonly why: 'unknown-delegator'; readonly at: Address; readonly pc: number }
-  | { readonly why: 'fallback-unfollowable'; readonly at: Address; readonly pc: number; readonly cause: Unfollowable };
+  | { readonly why: 'fallback-unfollowable'; readonly at: Address; readonly pc: number; readonly cause: Unfollowable }
+  | { readonly why: 'declared-without-delegation'; readonly at: Address }
+  | { readonly why: 'declared-read-failed'; readonly call: string; readonly at: Address }
+  | { readonly why: 'declared-probe-failed'; readonly implementation: Address };
 
 export type Located = { readonly kind: 'located'; readonly proxy: Proxy } | { readonly kind: 'refused'; readonly refusal: ProxyRefusal };
 
@@ -118,9 +125,9 @@ const refused = (refusal: ProxyRefusal): Located => ({ kind: 'refused', refusal 
  * the FLUID token's delegator does, or a constant. That code is neither proven nor pinned, so it is refused. A known
  * proxy may delegate only to the slot it was found by, named in `allowed`.
  */
-export function unknownDelegation(address: Address, code: Hex, allowed: readonly bigint[] = []): ProxyRefusal | undefined {
+export function unknownDelegation(address: Address, code: Hex, allowed: readonly bigint[] = [], sites: readonly number[] = []): ProxyRefusal | undefined {
   if (!mayDelegate(code)) return undefined;
-  const fallback = fallbackDelegation(code, allowed);
+  const fallback = fallbackDelegation(code, allowed, sites);
   switch (fallback.kind) {
     case 'fixed':
       return undefined;
@@ -138,6 +145,46 @@ function delegatingOnlyAs(address: Address, code: Hex, proxy: Proxy, routed: boo
 
 const NONE: Proxy = { kind: 'none' };
 
+/** A word no code deployed before block `at` can hold: it hashes that block's hash with the proxy and the implementation. */
+const probeWord = (at: BlockRef, proxy: Address, implementation: Address): Hex =>
+  `0x${bytesToHex(keccak_256(hexToBytes(`${at.hash.slice(2)}${proxy.slice(2)}${implementation.slice(2)}`)))}` as Hex;
+
+/** Returns `word` when it runs as `proxy`, by a DELEGATECALL or CALLCODE from it, and reverts otherwise. */
+const probeCode = (proxy: Address, word: Hex): Hex => `0x73${proxy.slice(2)}3014601e57600080fd5b7f${word.slice(2)}60005260206000f3` as Hex;
+
+/** Each step's view on the address the step before answered, from the proxy on; every answer must be one nonzero address word. */
+async function readDeclared(reader: Reader, address: Address, read: ImplementationRead, at: BlockRef): Promise<Address | ProxyRefusal> {
+  let target = address;
+  for (const step of read) {
+    const answer = await reader.call({ to: target, data: `${step.fn.selector}${step.args.map((arg) => arg.slice(2)).join('')}` as Hex }, at);
+    if (answer.kind === 'unverifiable') return { why: 'unverifiable', read: answer.reason };
+    const next = answer.value.kind === 'returned' && answer.value.data.length === 66 ? addressWord(answer.value.data) : undefined;
+    if (next == null || next === address) return { why: 'declared-read-failed', call: step.fn.signature, at: target };
+    target = next;
+  }
+  return target;
+}
+
+/**
+ * An `implementationRead` is the AI's, so its answer counts only when the walk finds exactly one delegation in the
+ * fallback that no known target covers, and a call to the fallback, with the answer's code replaced by `probeCode`,
+ * comes back with the probe's word: that delegation then ran the declared address's code as the proxy.
+ */
+async function declaredProxy(reader: Reader, address: Address, code: Hex, at: BlockRef, read: ImplementationRead): Promise<Located> {
+  const fallback = fallbackDelegation(code);
+  if (fallback.kind === 'unresolved') return refused({ why: 'fallback-unfollowable', at: address, pc: fallback.pc, cause: fallback.why });
+  if (fallback.kind === 'fixed') return refused({ why: 'declared-without-delegation', at: address });
+  const elsewhere = unknownDelegation(address, code, [], [fallback.pc]);
+  if (elsewhere !== undefined) return refused(elsewhere);
+  const implementation = await readDeclared(reader, address, read, at);
+  if (typeof implementation !== 'string') return refused(implementation);
+  const word = probeWord(at, address, implementation);
+  const probe = await reader.call({ to: address, data: fallbackSelector(code), override: { address: implementation, code: probeCode(address, word) } }, at);
+  if (probe.kind === 'unverifiable') return unverifiable(probe);
+  if (probe.value.kind !== 'returned' || probe.value.data !== word) return refused({ why: 'declared-probe-failed', implementation });
+  return { kind: 'located', proxy: { kind: 'declared', implementation } };
+}
+
 async function zeppelinosWhenNoEip1967(reader: Reader, address: Address, code: Hex, at: BlockRef, routed: boolean): Promise<Located> {
   if (!hasDelegatecall(code)) return delegatingOnlyAs(address, code, NONE, routed);
   const slot = await reader.getStorageAt(address, ZEPPELINOS_IMPLEMENTATION_SLOT, at);
@@ -153,9 +200,12 @@ async function zeppelinosWhenNoEip1967(reader: Reader, address: Address, code: H
  * Which code a call to `address` runs. A minimal proxy and a Safe proxy are known by their whole code. An EIP-1967
  * or ZeppelinOS slot counts only when the code can DELEGATECALL, since a slot is storage that any code may have written.
  * Code that hands a call matching none of its functions to anything but itself, the call's data or that slot is refused,
- * unless it is `routed`: its registry entry declares `routes`, whose pin names where each selector goes.
+ * unless its registry entry declares `routes`, whose pin names where each selector goes. An entry that declares
+ * `implementationRead` is found by that read alone.
  */
-export async function locate(reader: Reader, address: Address, code: Hex, at: BlockRef, routed = false): Promise<Located> {
+export async function locate(reader: Reader, address: Address, code: Hex, at: BlockRef, declared: ProxyDeclaration = {}): Promise<Located> {
+  if (declared.implementationRead !== undefined) return declaredProxy(reader, address, code, at, declared.implementationRead);
+  const routed = declared.routes !== undefined;
   const clone = minimalProxyTarget(code);
   if (clone !== undefined) return { kind: 'located', proxy: { kind: 'eip1167', implementation: clone } };
   const factory = safeProxyFactory(code);
