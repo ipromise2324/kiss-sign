@@ -230,6 +230,29 @@ test('交易後 says which way a token the Safe gives or gets more than nothing 
   assert.ok(values.includes('給出多於 0') && values.includes('收到多於 0'), values.join(' / '));
 });
 
+test('交易後 and the Markdown report show an atMost, a tolerance and a touched token, each tolerance with the template\'s reason as AI text', () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const { effects } = subject.template;
+  const why = { en: 'stETH rounds shares down', 'zh-TW': 'stETH 換算份額時無條件捨去' };
+  const tolerance = { less: 2n, more: 0n, why };
+  const gives = [...effects.gives.map((e) => ({ ...e, amount: { kind: 'at-most' as const, field: 'amount' } })), ...effects.gives.map((e) => ({ ...e, token: 'eth' as const, tolerance: { less: 0n, more: 1n, why } }))];
+  const gets = effects.gives.map((e) => ({ ...e, to: undefined, tolerance }));
+  const touches = [{ token: deposit.cardVault, tolerance: { less: 0n, more: 1n, why } }];
+  const template = { ...subject.template, effects: { ...effects, gives, gets, touches } };
+  const inputs = { ...depositInputs, subject: { ...subject, template } };
+  const page = buildPage(inputs, depositNotes, depositTitle, 'zh-TW');
+  const after = body(page, 'flow').flow.after;
+  const notes = after.map((row) => plain(row.note));
+  assert.ok(notes.some((n) => n.startsWith('給出的不能多於你填的')), notes.join(' / '));
+  assert.ok(notes.some((n) => n.endsWith('因為捨入，Safe 最後的餘額可以低最多 2 個最小單位')), notes.join(' / '));
+  assert.ok(after.some((row) => plain(row.label) === `Safe 的 ${deposit.cardVault}` && plain(row.value) === '只能因捨入變動' && row.ai?.ai === why['zh-TW']), JSON.stringify(after.map((r) => r.label)));
+  const markdown = renderReport(inputs, depositTitle);
+  assert.ok(markdown.includes("; the Safe's balance may end up to 2 base units lower than that, for rounding; written by the AI in the template: stETH rounds shares down; in Traditional Chinese: stETH 換算份額時無條件捨去 |"), markdown);
+  assert.ok(markdown.includes("| the Safe gives | ETH | the card's `amount`; the Safe's balance may end up to 1 base unit higher than that, for rounding;"), markdown.split('## Effects')[1]?.slice(0, 900));
+  assert.ok(markdown.includes(`| the Safe keeps | \`${deposit.cardVault}\``) && markdown.includes("| unchanged; the Safe's balance may end up to 1 base unit higher than that, for rounding; written by the AI"));
+  assert.ok(markdown.includes("at most the card's `amount`, and none gained"));
+});
+
 test('下一步 asks for each card field by its Chinese word with the key card new prints, and a typed amount of vault shares is 股份數', () => {
   const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
   const card = new Map([...subject.template.card].map(([name, field]) => [name, field.kind === 'amount' ? { ...field, computed: undefined } : field]));

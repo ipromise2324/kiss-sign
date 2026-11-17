@@ -415,6 +415,7 @@ export function brokenRule(
     case 'share-price':
     case 'owner-before':
     case 'at-least':
+    case 'at-most':
       return undefined;
   }
 }
