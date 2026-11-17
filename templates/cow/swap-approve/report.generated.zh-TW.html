@@ -338,7 +338,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="cb">
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">gpv2-settlement.</span>setPreSignature</span><span class="sel">0xec6cb13f</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol">github.com/cowprotocol/contracts</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
     <div class="arg" data-field="2.setPreSignature.orderUid">
-      <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken、buyToken 你選</span><span class="who">receiver、feeAmount、kind、partiallyFillable、sellTokenBalance、buyTokenBalance、owner 固定</span><span class="who you">sellAmount、buyAmount 你填</span><span class="who app">validTo、appData、validTo 不限</span></div>
+      <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken、buyToken 你選</span><span class="who">receiver、feeAmount、kind、partiallyFillable、sellTokenBalance、buyTokenBalance、owner 固定</span><span class="who you">sellAmount、buyAmount 你填</span><span class="who app">validTo、appData 不限</span></div>
       <div class="val"><div class="is">56 bytes，3 段接在一起</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單 uid，56 bytes：訂單雜湊、擁有者、到期時間接在一起。合約只把它記成「已預簽」，不檢查內容。</span></span></div></div>
       <div class="parts">
