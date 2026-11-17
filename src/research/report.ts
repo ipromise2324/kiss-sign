@@ -981,12 +981,15 @@ function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, 
   return `${name} PROVEN | ${proxy} | ${contract}, solc ${code(proof.compiler)} | ${code(proof.codeHash)} | ${pinVerdict(entry, proof)} | ${masked} | ${proof.block.number} |`;
 }
 
-const COMMAND_FLAGS = ['token', 'anchor', 'from', 'to', 'fromBlock', 'toBlock', 'head', 'maxTxs'] as const;
+const COMMAND_FLAGS = ['token', 'anchor', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
 
+/** A recording that keeps its head names itself with `--same-windows-as`, so the command searches its windows again. */
 function pastTxsCommand({ query, file }: PastTxsSummary): string {
+  const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
   const flag = (key: (typeof COMMAND_FLAGS)[number]) => `--${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
   const args = COMMAND_FLAGS.flatMap((key) => (query[key] === undefined ? [] : [`${flag(key)} ${String(query[key])}`]));
-  return `pnpm past-txs ${query.template} ${args.join(' ')} --record ${file.replace(/^.*\//, '').replace(/\.json$/, '')}`;
+  const windows = query.head === undefined ? [] : [`--same-windows-as ${name}`];
+  return `pnpm past-txs ${query.template} ${[...args, ...windows].join(' ')} --record ${name}`;
 }
 
 /** The characters `pnpm vault-evidence` prints. Its text is stored, not recomputed, so anything else is refused. */

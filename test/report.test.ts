@@ -543,7 +543,7 @@ test('--compare fetches each recorded past transaction again by hash, so one the
   assert.ok(differences.some((d) => d.startsWith(`\`${file}\``)), differences.join('\n'));
 });
 
-test('a recording that keeps its head block is studied again from it, and the command the report prints names it with --head', async () => {
+test('a recording that keeps its head block is studied again from it, and the command the report prints searches its windows again with --same-windows-as', async () => {
   const { subject } = scoped;
   const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock === undefined)!;
   const head = await replayReader(past.exchanges).blockNumber();
@@ -553,8 +553,9 @@ test('a recording that keeps its head block is studied again from it, and the co
   const after = await summarizePastTxs(ROOT, registry, file, kept);
   assert.equal(after.text, before.text);
   const command = (text: string) => text.split('\n').find((line) => line.includes(`--record ${file.replace(/^.*\//, '').replace(/\.json$/, '')}`));
-  assert.doesNotMatch(command(quick(undefined, undefined, subject, undefined, [before])) ?? '', /--head/);
-  assert.match(command(quick(undefined, undefined, subject, undefined, [after])) ?? '', new RegExp(` --head ${kept.query.head} --max-txs ${past.query.maxTxs} `));
+  const name = file.replace(/^.*\//, '').replace(/\.json$/, '');
+  assert.doesNotMatch(command(quick(undefined, undefined, subject, undefined, [before])) ?? '', /--same-windows-as/);
+  assert.match(command(quick(undefined, undefined, subject, undefined, [after])) ?? '', new RegExp(` --max-txs ${past.query.maxTxs} --same-windows-as ${name} --record ${name}`));
 });
 
 test('--compare names each file a pull request changes outside templates/, registry/ and testdata/', () => {

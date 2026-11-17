@@ -396,7 +396,7 @@ test('a read that still fails on the way after every retry is named, and --recor
   assert.equal(unreadRefusal(unread), '1 read(s) got no answer after every retry, so nothing is recorded; run the command again later:\n  drpc eth_getTransactionByHash: unreachable');
 });
 
-test('--head places the spread windows by that block without reading the chain head, so a run again searches the same windows', async () => {
+test('a recording\'s head places the spread windows without reading the chain head, so a run again searches the same windows', async () => {
   const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
   const head = await replayReader(windowed.exchanges).blockNumber();
   assert.equal(head.kind, 'agreed');
@@ -405,12 +405,20 @@ test('--head places the spread windows by that block without reading the chain h
   assert.equal(await report({ recorded: kept, reader: noHead }), await report({ recorded: windowed }));
 });
 
-test('--head goes with the spread windows only, not with a block range', () => {
-  const run = spawnSync(
-    process.execPath,
-    [join(SCRIPTS, 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--head', '24000000', '--from-block', '1', '--to-block', '2'],
-    { encoding: 'utf8' },
-  );
+const pastTxsRun = (...args: string[]) =>
+  spawnSync(process.execPath, [join(SCRIPTS, 'past-txs.ts'), 'morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', ...args], { encoding: 'utf8' });
+
+test('--same-windows-as goes with the spread windows only, not with a block range', () => {
+  const run = pastTxsRun('--same-windows-as', 'morpho-vault-deposit-windows', '--from-block', '1', '--to-block', '2');
   assert.equal(run.status, 64);
-  assert.match(run.stderr, /--head <n>/);
+  assert.match(run.stderr, /--same-windows-as <recording>/);
+});
+
+test('--same-windows-as refuses a recording that keeps no head block, and a name with no recording', () => {
+  const old = pastTxsRun('--same-windows-as', 'morpho-vault-deposit-windows');
+  assert.equal(old.status, 64);
+  assert.equal(old.stderr, '--same-windows-as morpho-vault-deposit-windows: the recording keeps no head block, so its windows cannot be searched again\n');
+  const missing = pastTxsRun('--same-windows-as', 'no-such-study');
+  assert.equal(missing.status, 64);
+  assert.equal(missing.stderr, '--same-windows-as no-such-study: no recording testdata/research/no-such-study.json\n');
 });
