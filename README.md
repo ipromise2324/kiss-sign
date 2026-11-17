@@ -123,7 +123,7 @@ On the second computer, `check.sh <nonce>` fetches the same transaction, compute
 
 Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or a vault, send a small amount first.
 
-kiss-sign is in English, or in Traditional Chinese after `pnpm kiss-sign init --language zh-TW`: the signing commands' terminal text, `verify`'s page and the report. A report comes in the languages its AI notes were written in; every shipped report has both, and a template your AI writes has yours. The comparison list's row labels stay in Traditional Chinese in both languages, as `check.sh`'s page writes them, so the two pages compare byte for byte. Verdicts and card hashes are the same in either language. The code and the docs are in English.
+kiss-sign is in English, or in Traditional Chinese after `pnpm kiss-sign init --language zh-TW`: the signing commands' terminal text (a check's details stay in English), `verify`'s page and the HTML report. A report comes in the languages its AI notes were written in; every shipped report has both, and a template your AI writes has yours. The comparison list's ids, keys and group titles stay exactly as `check.sh` writes them, its titles in Traditional Chinese, so every row except the last column compares byte for byte in either language. Verdicts and card hashes are the same in either language. The code and the docs are in English.
 
 ### Add your own operation
 
