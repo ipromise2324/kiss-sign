@@ -640,7 +640,7 @@ test('card new refuses a typed 0 where card seal would, says why in the signer\'
   assert.ok(english.stdout.replace(/\s+/g, ' ').includes(' min-buy cannot be 0: a share price bound or atLeast compares the transaction with it, and 0 there bounds nothing or nothing can meet it, so card seal would refuse the card. Type an amount above 0. '), english.stdout);
   const chinese = await swapping('zh-TW');
   assert.equal(chinese.asked[3], 'min-buy (整顆 usdt 的數量，6 位小數): ');
-  assert.ok(chinese.stdout.replace(/\s+/g, '').includes('min-buy不能是0：份額價格界線或atLeast拿它來比較交易，0在這裡不是什麼都不限，就是沒有交易能滿足，所以cardseal會拒絕這張卡片。請輸入大於0的數量。'), chinese.stdout);
+  assert.ok(chinese.stdout.replace(/\s+/g, '').includes('min-buy不能是0：份額價格界線或atLeast會拿交易跟它比較，0在這裡不是什麼都不限，就是沒有交易能滿足，所以cardseal會拒絕這張卡片。請輸入大於0的數量。'), chinese.stdout);
 });
 
 test('card new offers a transfer recipient only from the address book or the Safe', async () => {

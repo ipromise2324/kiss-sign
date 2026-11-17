@@ -264,7 +264,7 @@ const ZH: Labels = {
     nothingToRead: (field, chosen, what) => `${field}：${chosen} 沒有可讀的 ${what ?? '登記項目'}`,
     notComputable: (name, ref) => `${name}：計算的是 ${ref}，它不是登記表裡的合約，所以無法換算成整顆代幣`,
     comesToZero: (name) => `${name} 算出來是 0：這樣的界線不是什麼都不限，就是沒有交易能滿足`,
-    zeroFloorAgain: (name) => `${name} 不能是 0：份額價格界線或 atLeast 拿它來比較交易，0 在這裡不是什麼都不限，就是沒有交易能滿足，所以 card seal 會拒絕這張卡片。請輸入大於 0 的數量。`,
+    zeroFloorAgain: (name) => `${name} 不能是 0：份額價格界線或 atLeast 會拿交易跟它比較，0 在這裡不是什麼都不限，就是沒有交易能滿足，所以 card seal 會拒絕這張卡片。請輸入大於 0 的數量。`,
     comesTooLarge: (name) => `${name} 算出來達到 2^256 最小單位以上`,
   },
   verdict: {

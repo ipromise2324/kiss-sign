@@ -233,7 +233,6 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   });
 }
 
-/** Asks again, saying why, after each 0 that `card seal` would refuse in this field, so the signer does not learn it only there. */
 async function askedUntilNotZeroFloor(name: string, ctx: Context, asked: () => Promise<bigint>): Promise<string> {
   for (;;) {
     const value = await asked();
