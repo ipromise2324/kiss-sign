@@ -147,3 +147,19 @@ test('an owner change the card does not declare is refused by both floors', () =
   const receipt = executed({ kind: 'receipt', logs: [added] });
   assert.deepEqual(rules(checkSimulatedFloor(receipt, SAFE, allowed)), ['safe-state receipt']);
 });
+
+test('a card holding 0 as the fewest a swap may give is refused, whether a call argument or a signed order compares with it', () => {
+  const swaps = new Map(['uniswap/swap', 'cow/swap'].map((id) => [id, loadTemplate(ROOT, id, registry)]));
+  for (const template of swaps.keys()) {
+    const card = (minBuy: string): Card => ({ operations: [{ template, values: { 'sell-token': 'usdc', 'buy-token': 'usdt', 'sell-amount': '1000000', 'min-buy': minBuy } }] });
+    const resolve = (minBuy: string) => resolveCard(card(minBuy), { templates: swaps, registry, addressBook: new Map(), safe: SAFE });
+    assert.deepEqual(resolve('0'), {
+      kind: 'refused',
+      reason: 'zero-floor',
+      at: 'operations[0].values.min-buy',
+      field: 'min-buy',
+      detail: 'min-buy is 0, which bounds nothing: a computed amount, or one a share price bound or atLeast compares with, must be at least 1',
+    });
+    assert.equal(resolve('1').kind, 'resolved');
+  }
+});

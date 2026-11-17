@@ -315,6 +315,30 @@ test('replay says when only the call marks differ from the recorded ones', async
   assert.match(stderr, /the recorded verdict was MATCH; this program now gives the same verdict but different call marks or hashes/);
 });
 
+test('verify refuses a sealed card whose computed floor is 0 before it reads the chain, in the signer\'s language, and writes no verdict', async () => {
+  const card = { operations: [{ template: template.id, values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5000000', 'min-shares': '0' } }] };
+  const text = JSON.stringify(card);
+  const hash = `0x${bytesToHex(keccak_256(new TextEncoder().encode(text)))}`;
+  const expected: Record<Language, string> = {
+    en: 'kiss-sign: card refused at operations[0].values.min-shares: min-shares is 0, which bounds nothing: a computed amount, or one a share price bound or atLeast compares with, must be at least 1\n',
+    'zh-TW': 'kiss-sign: 卡片在 operations[0].values.min-shares 被拒絕：min-shares 是 0，這樣什麼都不限制：算出來的數量，或份額價格界線、atLeast 拿來比較的數量，至少要是 1\n',
+  };
+  for (const language of ['en', 'zh-TW'] as const) {
+    const { base, repo, home } = setUp(undefined, true, language);
+    write(join(repo, 'templates', template.id, 'template.json'), readFileSync(join(ROOT, 'templates', template.id, 'template.json'), 'utf8'));
+    write(join(repo, 'registry', 'contracts.json'), readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
+    git(repo, 'commit', '--quiet', '-am', 'the current template');
+    git(repo, 'push', '--quiet', join(base, 'origin.git'), 'main');
+    write(join(home, 'cards', `${hash}.json`), text);
+    const file = write(join(base, 'tx.json'), JSON.stringify(service));
+    const { code, stdout, stderr } = await run(['verify', '--card', hash, '--tx', file], repo, home);
+    assert.equal(code, 1);
+    assert.equal(stdout, '');
+    assert.equal(stderr, expected[language]);
+    assert.equal(readdirSync(home).includes('verdicts'), false);
+  }
+});
+
 test('verify refuses a card naming a vault with no report for the template at origin/main, and writes no verdict', async () => {
   const { base, repo, home } = setUp(undefined, false);
   const file = write(join(base, 'tx.json'), JSON.stringify(service));
