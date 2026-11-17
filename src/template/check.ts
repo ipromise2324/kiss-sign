@@ -11,6 +11,7 @@ import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { memberJson, parseMessage, typedDataDigest } from './eip712.ts';
 import type { MemberValue } from './eip712.ts';
+import { addressWord } from './template.ts';
 import type { CallNode, ConstValue, LeafRule, PackedPart, Quantity, Rule, SignedMessage, Template, TemplateCall } from './template.ts';
 
 /**
@@ -140,6 +141,12 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
       const entry = context.registry.entries.get(rule.name);
       if (entry === undefined) context.unverifiable.push(`the registry has no ${rule.name}`);
       return entry === undefined ? undefined : { kind: 'address', value: entry.address };
+    }
+    case 'address-word': {
+      const address = expectedOf(rule.rule, context);
+      if (address === undefined) return undefined;
+      if (address.kind !== 'address') throw new Error(`an addressWord rule resolves to a ${address.kind}`);
+      return { kind: 'fixed-bytes', value: addressWord(address.value) };
     }
     case 'card': {
       const target = resolveRef(rule.ref, context.values, context.registry);

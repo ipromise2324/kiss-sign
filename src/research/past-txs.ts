@@ -148,6 +148,8 @@ function describeRule(rule: LeafRule, sender: string): string {
       return sender;
     case 'contract':
       return `contract ${rule.name}`;
+    case 'address-word':
+      return `${describeRule(rule.rule, sender)} as a 32-byte word`;
     case 'const':
       return `const ${constText(rule.value)}`;
     case 'card':
@@ -229,7 +231,7 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
       const heldText =
         rule.kind === 'free' || rule.kind === 'equals' || rule.kind === 'share-price' || rule.kind === 'at-least'
           ? ''
-          : rule.kind === 'card'
+          : (rule.kind === 'address-word' ? rule.rule : rule).kind === 'card'
             ? `same as the other leaves bound to ${describeRule(rule, sender)} in ${holding.length} of ${fits.length}; `
             : `equalled ${describeRule(rule, sender)} in ${holding.length} of ${fits.length} (${plural(sendersOf(holding), who, many)}); `;
       lines.push(`    ${heldText}values: ${distribution(run, fits, i, registry, sender)}`);
