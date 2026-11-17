@@ -200,7 +200,7 @@ Whether an address is the protocol's real contract rests in the end on the repor
 - **The ABI is proven by compiling.** Etherscan's verified source, compiled with a pinned `solc`, must give the code on chain.
 - **The protocol's facts are read.** Its TVL, listing date and past hacks, and for a vault its size over a year and its holders today.
 - **The code is recorded.** Each registry contract's code is pinned, so an upgrade after your review is caught at signing.
-- **Past transactions show what is normal.** The CoW app sets an order to expire in 30 minutes, and in the past year almost every real order expired within a day, so the template can refuse an order that expires a year from now. The same history shows how much rounding a balance needs.
+- **Past transactions show what is normal.** Real transactions from the past year are decoded with the template, and the report shows which values each field took and how far balances moved from the stated amount. In real stETH transfers, for example, the receiver got 1 or 2 base units less than the amount in 20 of 28.
 - **Open fields are tested.** The fields the template leaves open are changed to a few other values each and simulated. Each change must revert or do nothing the template does not allow.
 
 **At every signing**
