@@ -1,5 +1,6 @@
 import type { Exchange } from '../chain/recording.ts';
 import type { ProviderName } from '../chain/providers.ts';
+import type { MessageExchange } from './messages.ts';
 import type { SourceExchange } from './sources.ts';
 
 /** One `past-txs --record` run: its query, every search answer, and every chain read with each provider's answer. */
@@ -11,12 +12,16 @@ export type PastTxsRecording = {
     readonly anchor: string;
     readonly from?: string;
     readonly to?: string;
+    /** The canonical signature of an `event` anchor. */
+    readonly event?: string;
     readonly fromBlock?: string;
     readonly toBlock?: string;
     readonly head?: string;
     readonly maxTxs: number;
   };
   readonly sources: readonly SourceExchange[];
+  /** Each signed message read from a template's `lookup`; absent in a recording from before messages. */
+  readonly messages?: readonly MessageExchange[];
   readonly providers: readonly ProviderName[];
   readonly exchanges: readonly Exchange[];
 };
@@ -38,7 +43,8 @@ export function scrubRecording(recording: PastTxsRecording, forbidden: readonly 
     const fields = answer as Record<string, unknown>;
     return { request, answer: { ...fields, ...('transfers' in fields ? { transfers: keep(fields.transfers) } : {}), ...('result' in fields ? { result: keep(fields.result) } : {}) } };
   });
-  const scrubbed = { ...recording, sources, exchanges: recording.exchanges.filter((e) => !mentions(e, needles)) };
+  const messages = recording.messages === undefined ? {} : { messages: recording.messages.filter((m) => !mentions(m, needles)) };
+  const scrubbed = { ...recording, sources, ...messages, exchanges: recording.exchanges.filter((e) => !mentions(e, needles)) };
   if (mentions(scrubbed, needles)) throw new Error('the recording still mentions the configured Safe or one of its transactions; nothing written');
   return scrubbed;
 }

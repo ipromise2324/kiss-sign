@@ -15,6 +15,14 @@ export const toleranceSpan = (less: bigint, more: bigint): string => {
   return `up to ${[less > 0n ? `${units(less)} lower` : '', more > 0n ? `${units(more)} higher` : ''].filter((t) => t !== '').join(' or ')}`;
 };
 
+function durationText(seconds: bigint, units: readonly [string, string, string], open: string, close: string): string {
+  const size = (s: bigint) => (s < 0n ? -s : s);
+  const unit = ([86400n, 3600n, 60n] as const).findIndex((u) => size(seconds) >= u);
+  if (unit === -1) return '';
+  const value = Number(seconds) / Number([86400n, 3600n, 60n][unit]);
+  return `${open}${Number.isInteger(value) ? value : value.toFixed(1)} ${units[unit]}${close}`;
+}
+
 const ZH = {
   /** Joins the items of a list the way prose does: `a、b` in Chinese, `a, b` in English. */
   sep: '、',
@@ -361,6 +369,7 @@ const ZH = {
   ],
   skipped: (n: number): string => `另外 ${n} 筆來自不是 Safe 的合約、執行失敗或讀不到，不列入。`,
   searchCount: (token: string, anchor: string, found: number, studied: number): string => `搜尋 ${token} 的${anchor}，找到 ${found} 筆，研究 ${studied} 筆`,
+  searchEtherscanOnly: (count: Span): Span[] => ['只有 Etherscan 搜尋事件，找到 ', count, ' 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。'],
   searchSame: (same: boolean, counts: Span): Span[] => [same ? 'Alchemy 和 Etherscan 找到的完全一樣' : 'Alchemy 和 Etherscan 找到的不一樣', '（', counts, '）。'],
   amountsLead: '每筆符合模板形狀的交易，都在它的上一個區塊上單獨重跑一次，讀它前後寄出方和收款方的餘額，跟交易寫的金額比較。只列出有宣告誤差，或餘額沒有剛好照金額變動的效果。',
   amountsTolerance: (less: bigint, more: bigint): string => (less === 0n && more === 0n ? '模板沒有宣告誤差，所以容許 0' : `模板宣告的誤差：最多少 ${less}、多 ${more} 個最小單位`),
@@ -373,6 +382,11 @@ const ZH = {
     `寄出方的餘額最多${[lower > 0n ? `少了 ${lower}` : '', higher > 0n ? `多了 ${higher}` : ''].filter((t) => t !== '').join('、')} 個最小單位，超過模板容許的誤差；這樣的交易拿來簽，會是 MISMATCH。`,
   amountsUnfounded: '模板宣告了誤差，但量到的交易都剛好照金額變動：這個誤差沒有證據。',
   amountsUnmeasured: (n: number): string => `另外 ${n} 筆量不到（單獨重跑失敗、跟實際執行的 log 不同，或讀不到）。`,
+  spreadLead: '模板留給 app 自由填的數字，在符合模板形狀的交易裡填了哪些值：最小、第 50、90、99 百分位和最大。模板宣告為時間的欄位，算的是它減掉交易所在區塊時間的秒數。這是證據，不是規則。',
+  spreadWho: (safe: boolean): string => (safe ? 'Safe' : 'EOA'),
+  spreadTime: (time: boolean): string => (time ? '減掉區塊時間後的秒數' : '填的值'),
+  spreadSeconds: (seconds: bigint): string => `${seconds} 秒${durationText(seconds, ['天', '小時', '分鐘'], '（約 ', '）')}`,
+  spreadUnrecorded: (n: number): string => `另外 ${n} 筆的區塊時間沒有記錄到。`,
   past: '過去交易',
   bySender: (kind: 'safe' | 'eoa', count: Span, n: number, senders: number): Span[] => [
     kind === 'safe' ? 'Safe ' : 'EOA ',
@@ -929,6 +943,7 @@ const EN: Words = {
   ],
   skipped: (n) => `${n} more came from contracts that are not Safes, failed, or could not be read, and are not counted.`,
   searchCount: (token, anchor, found, studied) => `Search of ${token} ${anchor}: ${found} found, ${studied} studied`,
+  searchEtherscanOnly: (count) => ['Only Etherscan searches an event, and found ', count, "; Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan."],
   searchSame: (same, counts) => [same ? 'Alchemy and Etherscan found exactly the same' : 'Alchemy and Etherscan found different transactions', ' (', counts, ').'],
   amountsLead:
     'Each transaction that fits the template was run again alone on its parent block, with the sender\'s and the receiver\'s balances read just before and after it, and compared with the amount it states. Shown only for an effect that declares a tolerance, or whose balances did not all move by exactly the stated amount.',
@@ -942,6 +957,12 @@ const EN: Words = {
     `A sender's balance ended up to ${[lower > 0n ? `${lower} base units lower` : '', higher > 0n ? `${higher} base units higher` : ''].filter((t) => t !== '').join(' and ')} than stated, beyond the template's tolerance; such a transaction to sign would be MISMATCH.`,
   amountsUnfounded: 'The template declares a tolerance, but every measured transaction moved exactly the stated amount: no evidence for it.',
   amountsUnmeasured: (n) => `${n} more could not be measured (the run alone failed, its logs differed from the executed one, or a read got no answer).`,
+  spreadLead:
+    'The values the fitting transactions set in each number the template leaves free: the smallest, the 50th, 90th and 99th percentile, and the largest. For a field the template declares a time, each is the value less the time of the block the transaction ran in, in seconds. This is evidence, not a rule.',
+  spreadWho: (safe) => (safe ? 'Safe' : 'EOA'),
+  spreadTime: (time) => (time ? 'seconds after the block time' : 'value set'),
+  spreadSeconds: (seconds) => `${seconds} s${durationText(seconds, ['d', 'h', 'min'], ' (about ', ')')}`,
+  spreadUnrecorded: (n) => `${n} more have no recorded block time.`,
   past: 'Past transactions',
   bySender: (kind, count, n, senders) => [
     kind === 'safe' ? 'Safe ' : 'EOA ',

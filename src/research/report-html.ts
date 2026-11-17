@@ -455,6 +455,14 @@ function pastBody(body: Extract<Body, { kind: 'past' }>, r: R): Html {
     <div class="warnline">${icon('bad', r.language)}<span>FINDING: ${a.finding}</span></div>`}${a.unmeasured === undefined ? '' : h`
     <div class="warnline">${decor('info')}<span>${a.unmeasured}</span></div>`}
   </div>`,
+  )}${body.spreads.length === 0 ? '' : h`
+  <p class="lead">${r.w.spreadLead}</p>`}${body.spreads.map(
+    (sp) => h`
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>${sp.field}</code></span><span>${sp.who}: ${sp.lead}</span></div>
+    <div class="pg"><span class="pc num">${r.w.txCount(sp.count)}</span><div><div class="pex">${sp.cells.map((c, i) => h`${i === 0 ? '' : r.w.sep}${c.label} <span class="num">${c.value}</span>`)}</div></div></div>${sp.unrecorded === undefined ? '' : h`
+    <div class="warnline">${decor('info')}<span>${sp.unrecorded}</span></div>`}
+  </div>`,
   )}
   <details class="fold">
   <summary>${decor('chev')}${r.w.otherWays}</summary>
