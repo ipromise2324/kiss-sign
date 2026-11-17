@@ -21,6 +21,7 @@ import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
+import type { MemberSource } from '../template/eip712.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
@@ -717,10 +718,16 @@ function rowsOf(rule: Rule, path: string, param: AbiParam | undefined, template:
       ];
     }
     case 'eip712': {
-      const { domain, struct, separator, lookup } = rule.message;
+      const { domain, struct, separator, lookup, answer } = rule.message;
       const contract = full(registry.entries.get(domain.verifyingContract) as RegistryEntry);
+      const where = struct.members.flatMap((member, i) => {
+        const source = answer.members[i] as MemberSource;
+        const own = source.path.length === 1 && source.path[0] === member.name;
+        return own && source.encoding === 'plain' ? [] : [`${code(member.name as string)} at ${code(pathText([...answer.path, ...source.path]))}${source.encoding === 'hex' ? ' in hex' : ''}`];
+      });
+      const held = answer.path.length === 0 ? '' : ` under ${code(pathText(answer.path))}`;
       return [
-        `| ${code(path)} | the EIP-712 digest of a ${code(struct.encoded)} message, domain name ${code(domain.name)}, version ${code(domain.version)}, chain 1, verifying contract ${contract} (domain separator ${code(separator)}); the message is read from ${lookup.replace('{arg}', '<argument>')} and must hash to this digest |`,
+        `| ${code(path)} | the EIP-712 digest of a ${code(struct.encoded)} message, domain name ${code(domain.name)}, version ${code(domain.version)}, chain 1, verifying contract ${contract} (domain separator ${code(separator)}); the message is read from ${lookup.replace('{arg}', '<argument>')}${held}${where.length === 0 ? '' : `, ${where.join(', ')}`} and must hash to this digest |`,
         ...argRows(struct.members, rule.message.fields, `${path}.`, template, registry),
       ];
     }
