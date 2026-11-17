@@ -1,4 +1,7 @@
 import { request } from 'node:https';
+import { keccak_256 } from '@noble/hashes/sha3.js';
+import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
+import { parseFunctionSignature } from '../decode/abi.ts';
 import { fallbackLookup } from '../chain/dns.ts';
 import { requestText, retried, transientStatus } from '../chain/https.ts';
 import type { NoteUnread } from '../chain/https.ts';
@@ -12,11 +15,15 @@ import { SafeTxParseError, parseAddress, parseHex } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
 /**
- * Which ERC-20 `Transfer` of `token` marks a transaction of the operation: `mint` (from the zero address, such as vault
- * shares on a deposit), `burn` (to the zero address, such as shares on a withdrawal), or `any` (a plain transfer).
+ * Which log of `token` marks a transaction of the operation: an ERC-20 `Transfer`, `mint` (from the zero address, such
+ * as vault shares on a deposit), `burn` (to the zero address, such as shares on a withdrawal) or `any` (a plain
+ * transfer), or with `event` another event the contract `token` names logs, such as CoW's `PreSignature`.
  */
-export type AnchorKind = 'mint' | 'burn' | 'any';
-export const ANCHOR_KINDS: readonly AnchorKind[] = ['mint', 'burn', 'any'];
+export type AnchorKind = 'mint' | 'burn' | 'any' | 'event';
+export const ANCHOR_KINDS: readonly AnchorKind[] = ['mint', 'burn', 'any', 'event'];
+
+/** An event by its canonical signature, such as `PreSignature(address,bytes,bool)`, and the topic it logs under. */
+export type AnchorEvent = { readonly signature: string; readonly topic: Hex };
 
 /**
  * With `any`, `from` keeps only transfers out of that address, such as a rewards distributor paying a claim, and `to`
@@ -29,10 +36,24 @@ export type Anchor = {
   readonly toBlock: bigint;
   readonly from?: Address;
   readonly to?: Address;
+  /** Present exactly when `kind` is `event`. */
+  readonly event?: AnchorEvent;
 };
 
 export const SOURCES = ['alchemy', 'etherscan'] as const;
 export type SourceName = (typeof SOURCES)[number];
+
+/** The event a signature such as `PreSignature(address indexed owner, bytes orderUid, bool signed)` names; throws on one that does not parse. */
+export function anchorEvent(signature: string): AnchorEvent {
+  const canonical = parseFunctionSignature(signature.replace(/\s+indexed\b/g, '')).signature;
+  return { signature: canonical, topic: `0x${bytesToHex(keccak_256(utf8ToBytes(canonical)))}` as Hex };
+}
+
+/**
+ * The sources that search an anchor. Only Etherscan searches an event: Alchemy's Transfers API lists only transfers,
+ * and its `eth_getLogs` reads at most 10 blocks at a time on the free plan.
+ */
+export const searchedBy = (anchor: Pick<Anchor, 'kind'>): readonly SourceName[] => (anchor.kind === 'event' ? ['etherscan'] : SOURCES);
 
 /** A request to a search source. It never holds a key, so a recording holds none. */
 export type SourceRequest =
@@ -107,7 +128,7 @@ async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
     address: anchor.token,
     fromBlock: anchor.fromBlock.toString(),
     toBlock: anchor.toBlock.toString(),
-    topic0: TRANSFER,
+    topic0: anchor.event?.topic ?? TRANSFER,
     ...(anchor.kind === 'mint' ? { topic0_1_opr: 'and', topic1: ZERO_WORD } : {}),
     ...(anchor.kind === 'burn' ? { topic0_2_opr: 'and', topic2: ZERO_WORD } : {}),
     ...(anchor.from !== undefined ? { topic0_1_opr: 'and', topic1: `0x${'00'.repeat(12)}${anchor.from.slice(2)}` } : {}),
@@ -125,14 +146,14 @@ async function searchEtherscan(anchor: Anchor, ask: Ask): Promise<Hit[]> {
   return (answer.result as unknown[]).map((log) => {
     if (!isRecord(log) || !Array.isArray(log.topics)) throw new ResearchError('etherscan sent a malformed log');
     const [, from, to] = log.topics as unknown[];
-    const address = (word: unknown) => (typeof word === 'string' ? `0x${word.slice(-40)}` : word);
+    const address = (word: unknown) => (typeof word === 'string' ? `0x${word.slice(-40)}` : word === undefined ? ZERO : word);
     return hitOf('etherscan', log.transactionHash, address(from), address(to));
   });
 }
 
 /** Both sources' anchor transfers. Either source failing stops the search, since one source is no cross-check. */
 export async function searchBoth(anchor: Anchor, ask: Ask): Promise<Hits> {
-  const [alchemy, etherscan] = await Promise.all([searchAlchemy(anchor, ask), searchEtherscan(anchor, ask)]);
+  const [alchemy, etherscan] = await Promise.all([searchedBy(anchor).includes('alchemy') ? searchAlchemy(anchor, ask) : [], searchEtherscan(anchor, ask)]);
   return { alchemy, etherscan };
 }
 
