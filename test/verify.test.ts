@@ -63,12 +63,12 @@ function setUp(approved: string | null = template.approved, reported = true, lan
 }
 
 /** Runs the CLI with every provider answer served from the recorded deposit, never from the network. */
-async function run(argv: string[], repo: string, home: string) {
+async function run(argv: string[], repo: string, home: string, watch = (env: Record<string, string>): Record<string, string> => env) {
   let stdout = '';
   let stderr = '';
   const env = { ...ENV, KISS_SIGN_HOME: home };
   const code = await main(argv, {
-    env,
+    env: watch(env),
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     platform: 'linux',
@@ -277,6 +277,28 @@ async function socketsOpenedBy(run: () => Promise<unknown>): Promise<string[]> {
   }
   return opened;
 }
+
+test('verify and replay never read GITHUB_TOKEN, from the environment or the key file', async () => {
+  const token = 'github_pat_planted0for0the0verify0test';
+  const { base, repo, home } = setUp();
+  write(join(home, '.env'), `GITHUB_TOKEN=${token}\n`);
+  const asked: PropertyKey[] = [];
+  const watch = (env: Record<string, string>) =>
+    new Proxy({ ...env, GITHUB_TOKEN: token }, {
+      get: (target, key) => (asked.push(key), Reflect.get(target, key)),
+      has: (target, key) => (asked.push(key), Reflect.has(target, key)),
+    });
+  const file = write(join(base, 'tx.json'), JSON.stringify(service));
+  const verified = await run(['verify', '--card', fixture.inputs.card.hash, '--tx', file], repo, home, watch);
+  assert.equal(verified.code, 0, verified.stderr);
+  const verdict = readdirSync(join(home, 'verdicts')).find((name) => name.endsWith('.json'))!;
+  const replayed = await run(['replay', join(home, 'verdicts', verdict)], repo, home, watch);
+  assert.equal(replayed.code, 0, replayed.stderr);
+  assert.ok(asked.includes('ALCHEMY_API_KEY'), 'the guard sees what verify reads');
+  assert.ok(!asked.includes('GITHUB_TOKEN'));
+  const written = readdirSync(join(home, 'verdicts')).map((name) => readFileSync(join(home, 'verdicts', name), 'utf8'));
+  for (const text of [verified.stdout, verified.stderr, replayed.stdout, replayed.stderr, ...written]) assert.ok(!text.includes(token));
+});
 
 test('the socket guard sees a real HTTPS request', async () => {
   const opened = await socketsOpenedBy(() => httpsTransport()('https://127.0.0.1:9/', '{}', new AbortController().signal).catch(() => undefined));

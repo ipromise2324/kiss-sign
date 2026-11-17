@@ -1,5 +1,6 @@
 import { parseArgs } from 'node:util';
-import { ensureVendored, fetchVendored, isVendoredKind, VENDORED } from '../src/vendor.ts';
+import { ensureVendored, fetchVendored, isVendoredKind, nodeVendorIoWith, VENDORED } from '../src/vendor.ts';
+import { readGithubToken } from '../src/research/github-token.ts';
 
 const USAGE = `usage: node scripts/fetch-vendored.ts [--missing] <${Object.keys(VENDORED).join('|')}>...
 
@@ -12,7 +13,8 @@ if (positionals.length === 0 || kinds.length !== positionals.length) {
   console.error(USAGE);
   process.exit(2);
 }
+const io = nodeVendorIoWith(readGithubToken(process.env));
 let ok = true;
-if (values.missing) ok = await ensureVendored(kinds);
-else for (const kind of kinds) ok = (await fetchVendored(kind)) && ok;
+if (values.missing) ok = await ensureVendored(kinds, io);
+else for (const kind of kinds) ok = (await fetchVendored(kind, io)) && ok;
 if (!ok) process.exit(1);
