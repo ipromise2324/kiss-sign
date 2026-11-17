@@ -12,6 +12,7 @@
     "test": "node scripts/fetch-vendored.ts --missing solc psl && node --test 'test/**/*.test.ts'",
     "typecheck": "tsc --noEmit",
     "check-push": "node scripts/check-push.ts",
+    "verdict-core": "node scripts/verdict-core.ts",
     "record-safe-tx": "node scripts/record-safe-tx.ts",
     "fetch-solc": "node scripts/fetch-vendored.ts solc",
     "fetch-psl": "node scripts/fetch-vendored.ts psl",
