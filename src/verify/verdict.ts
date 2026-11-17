@@ -25,11 +25,11 @@ export type CheckName = 'template-approval' | 'static-floor' | 'fields' | 'vault
  */
 export type CheckState = 'passed' | 'failed' | 'unverifiable' | 'not-run' | 'not-needed';
 
-/** `skip` decides nothing; a `not-run` cause still keeps the verdict from MATCH. */
+/** `skip` decides nothing. `not-run` is a check that could not run, which, like `unverifiable`, keeps the verdict from MATCH. */
 type Outcome =
   | { readonly kind: 'pass' }
   | { readonly kind: 'skip'; readonly state: 'not-run' | 'not-needed' }
-  | { readonly kind: 'fail' | 'unverifiable'; readonly details: readonly string[]; readonly notRun?: true };
+  | { readonly kind: 'fail' | 'unverifiable' | 'not-run'; readonly details: readonly string[] };
 
 /** decimals() of each asset a balance finding names, so it reads in whole tokens; one missing is shown in base units. */
 export type FindingDecimals = ReadonlyMap<Asset, number>;
@@ -89,7 +89,7 @@ const ROWS: readonly (readonly [CheckName, (checks: AllChecks, registry: Registr
     'mutation',
     ({ mutation }) => {
       if (mutation.kind === 'pass') return PASS;
-      if (mutation.kind === 'not-run') return { kind: 'unverifiable', details: ['not run, because the fields did not match'], notRun: true };
+      if (mutation.kind === 'not-run') return { kind: 'not-run', details: ['not run, because the fields did not match'] };
       return outcome('unverifiable', mutation.uncaught.map((u) => `a change to ${u.leaf.callPath} ${u.leaf.arg} gave ${u.mutated}, not a mismatch`));
     },
   ],
@@ -109,19 +109,20 @@ const ROWS: readonly (readonly [CheckName, (checks: AllChecks, registry: Registr
 
 const outcomes = (checks: AllChecks, registry: Registry, decimals: FindingDecimals) => ROWS.map(([check, judge]) => ({ check, result: judge(checks, registry, decimals) }));
 
+const countsAs = (result: Outcome): Outcome['kind'] => (result.kind === 'not-run' ? 'unverifiable' : result.kind);
+
 export function decideVerdict(checks: AllChecks, registry: Registry, decimals: FindingDecimals = new Map()): Verdict {
   const rows = outcomes(checks, registry, decimals);
   for (const kind of ['fail', 'unverifiable'] as const) {
-    const causes = rows.flatMap(({ check, result }) => (result.kind === kind ? [{ check, details: result.details }] : []));
+    const causes = rows.flatMap(({ check, result }) => ('details' in result && countsAs(result) === kind ? [{ check, details: result.details }] : []));
     if (causes.length > 0) return { kind: kind === 'fail' ? 'MISMATCH' : 'UNVERIFIABLE', causes };
   }
   return { kind: 'MATCH' };
 }
 
-const STATE: Readonly<Record<Exclude<Outcome['kind'], 'skip'>, CheckState>> = { pass: 'passed', fail: 'failed', unverifiable: 'unverifiable' };
+const STATE: Readonly<Record<Exclude<Outcome['kind'], 'skip'>, CheckState>> = { pass: 'passed', fail: 'failed', unverifiable: 'unverifiable', 'not-run': 'not-run' };
 
-/** Each check's state, for the page. */
 export function checkStates(checks: AllChecks, registry: Registry): Readonly<Record<CheckName, CheckState>> {
-  const stateOf = (result: Outcome): CheckState => (result.kind === 'skip' ? result.state : 'notRun' in result ? 'not-run' : STATE[result.kind]);
+  const stateOf = (result: Outcome): CheckState => (result.kind === 'skip' ? result.state : STATE[result.kind]);
   return Object.fromEntries(outcomes(checks, registry, new Map()).map(({ check, result }) => [check, stateOf(result)])) as Record<CheckName, CheckState>;
 }

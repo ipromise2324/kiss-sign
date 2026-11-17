@@ -29,8 +29,7 @@ const PASSED: Record<CheckName, CheckState> = {
   effects: 'passed',
 };
 
-/** A check's icon label on the page, and the note after its name when it has one. */
-function shownState(page: string, name: string): string | undefined {
+function iconLabelAndNote(page: string, name: string): string | undefined {
   const found = new RegExp(`aria-label="([^"]+)"><use href="#[a-z]+"/></svg>${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:<span class="n">(· [^<]+)</span>)?</li>`).exec(page);
   return found === null ? undefined : [found[1], found[2]].filter((part) => part !== undefined).join(' ');
 }
@@ -155,10 +154,10 @@ test('when the simulation could not run, the page does not show the checks that 
     verdictFile: '/verdicts/x.json',
     language: 'zh-TW',
   });
-  assert.equal(shownState(page, '模擬'), '注意 · 沒完成');
-  assert.equal(shownState(page, '模擬後的底線規則'), '沒資料可比 · 沒有執行');
-  assert.equal(shownState(page, 'Safe 的資產變化符合卡片'), '沒資料可比 · 沒有執行');
-  assert.equal(shownState(page, '每個欄位符合模板和卡片'), '通過');
+  assert.equal(iconLabelAndNote(page, '模擬'), '注意 · 沒完成');
+  assert.equal(iconLabelAndNote(page, '模擬後的底線規則'), '沒資料可比 · 沒有執行');
+  assert.equal(iconLabelAndNote(page, 'Safe 的資產變化符合卡片'), '沒資料可比 · 沒有執行');
+  assert.equal(iconLabelAndNote(page, '每個欄位符合模板和卡片'), '通過');
 });
 
 test("on a mismatch page a check that passed, one that failed, one that did not run and one the card does not need each look different", () => {
@@ -179,10 +178,10 @@ test("on a mismatch page a check that passed, one that failed, one that did not 
     verdictFile: '/verdicts/x.json',
     language: 'en',
   });
-  assert.equal(shownState(page, 'Template approved'), 'pass');
-  assert.equal(shownState(page, 'Every field fits the template and the card'), 'fail');
-  assert.equal(shownState(page, 'Changed fields are caught'), 'nothing to compare · not run');
-  assert.equal(shownState(page, 'Contract code unchanged'), 'nothing to compare · not needed for this card');
+  assert.equal(iconLabelAndNote(page, 'Template approved'), 'pass');
+  assert.equal(iconLabelAndNote(page, 'Every field fits the template and the card'), 'fail');
+  assert.equal(iconLabelAndNote(page, 'Changed fields are caught'), 'nothing to compare · not run');
+  assert.equal(iconLabelAndNote(page, 'Contract code unchanged'), 'nothing to compare · not needed for this card');
 });
 
 test('the card and the expected changes show each amount in whole tokens with its registry name, full address and exact base units', () => {
