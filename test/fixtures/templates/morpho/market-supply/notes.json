@@ -96,6 +96,28 @@
         "en": "Acceptable. To check again, open these two markets' pages in the Morpho app and compare the oracle address.",
         "zh-TW": "可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。"
       }
+    },
+    "weeth/source.site": {
+      "status": "concern",
+      "text": {
+        "en": "The page is on etherfi.gitbook.io, not ether.fi, the site DefiLlama lists. CoinGecko's ether-fi coin links its whitepaper on etherfi.gitbook.io, and the page lists weETH as 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee, the address CoinGecko lists for Wrapped eETH.",
+        "zh-TW": "頁面在 etherfi.gitbook.io，不是 DefiLlama 列的 ether.fi。CoinGecko 的 ether-fi 幣把白皮書連到 etherfi.gitbook.io，頁面上的 weETH 是 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee，跟 CoinGecko 列的 Wrapped eETH 地址一樣。"
+      },
+      "recommendation": {
+        "en": "Acceptable: CoinGecko lists the same address.",
+        "zh-TW": "可以接受：CoinGecko 列的是同一個地址。"
+      }
+    },
+    "morpho-oracle-weeth-usdc-86/address": {
+      "status": "concern",
+      "text": {
+        "en": "AI has no browser that runs JavaScript, so it did not open the market's page on the Morpho app. AI read Morpho Blue's `idToMarketParams` on chain (market id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e), and the oracle it answers is 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411. A different oracle means a different market.",
+        "zh-TW": "AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 `idToMarketParams`（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。"
+      },
+      "recommendation": {
+        "en": "Acceptable. To check again, open this market's page on the Morpho app and compare the oracle address.",
+        "zh-TW": "可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。"
+      }
     }
   },
   "entries": {
