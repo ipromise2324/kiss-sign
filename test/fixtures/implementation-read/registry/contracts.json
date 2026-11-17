@@ -1,0 +1,65 @@
+{
+  "steth": {
+    "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84",
+    "kind": "token",
+    "source": "https://docs.lido.fi/deployed-contracts/",
+    "sourceLabel": "stETH",
+    "defillama": "lido",
+    "coingecko": "staked-ether",
+    "implementationRead": [
+      {
+        "function": "implementation()"
+      }
+    ],
+    "code": {
+      "hash": "0xb9c1c929064cd21734c102a698e68bf617feefcfa5a9f62407c45401546736bf",
+      "implementation": {
+        "address": "0x028271E30a695c0527A0C50cA30603feD004cDb0",
+        "hash": "0xb74d1082863f9295e1691cb1c609062dbfd0e388ae52f0243017801b7556e488"
+      },
+      "from": 25603297,
+      "earlier": [
+        {
+          "from": 11473216,
+          "hash": "0xb9c1c929064cd21734c102a698e68bf617feefcfa5a9f62407c45401546736bf",
+          "implementation": {
+            "address": "0x20dC62D5904633cC6a5E34bEc87A048E80C92e97",
+            "hash": "0x49a0e2956b454f98b11be2e1dd5aa5dc315fd1784fcbb24d9d206edba21ad161"
+          }
+        },
+        {
+          "from": 13500147,
+          "hash": "0xb9c1c929064cd21734c102a698e68bf617feefcfa5a9f62407c45401546736bf",
+          "implementation": {
+            "address": "0xC7B5aF82B05Eb3b64F12241B04B2cF14469E39F7",
+            "hash": "0x536fcf0ad9039834257adf72a14725452a50dba84c4db2cb4925173187c3aef2"
+          }
+        },
+        {
+          "from": 14860268,
+          "hash": "0xb9c1c929064cd21734c102a698e68bf617feefcfa5a9f62407c45401546736bf",
+          "implementation": {
+            "address": "0x47EbaB13B806773ec2A2d16873e2dF770D130b50",
+            "hash": "0x459aeceece4624989dbe11c29d19f70dc060cd2f0aefe6840511b5c0b81c2961"
+          }
+        },
+        {
+          "from": 17266004,
+          "hash": "0xb9c1c929064cd21734c102a698e68bf617feefcfa5a9f62407c45401546736bf",
+          "implementation": {
+            "address": "0x17144556fd3424EDC8Fc8A4C940B2D04936d17eb",
+            "hash": "0x9da2a3dadf3a39f99886a2958f2c239bf663d39b766e2eb13e37d9c73500a9d0"
+          }
+        },
+        {
+          "from": 24083113,
+          "hash": "0xb9c1c929064cd21734c102a698e68bf617feefcfa5a9f62407c45401546736bf",
+          "implementation": {
+            "address": "0x6ca84080381E43938476814be61B779A8bB6a600",
+            "hash": "0x511ecf5357993f29e0653335fb0076dbe8e1590b8736168a3d3487c7fa2774e9"
+          }
+        }
+      ]
+    }
+  }
+}
