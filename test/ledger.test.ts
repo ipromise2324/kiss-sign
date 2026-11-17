@@ -9,7 +9,7 @@ import type { HttpsUrl, Registry, RegistryEntry } from '../src/registry.ts';
 import type { ApiAnswer } from '../src/research/api-source.ts';
 import { STATE_OF, addressRows, confidence, confirmations, forSigner, judge, sourcesOf, stateOf, strip } from '../src/research/ledger.ts';
 import type { FindingKind, Ledger, State } from '../src/research/ledger.ts';
-import type { CoinGeckoCoin, DefiLlamaProtocol } from '../src/research/listings.ts';
+import type { CoinGeckoCoin, DefiLlamaProtocol, SiteOwner } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import type { Creation, Creations } from '../src/research/deployer.ts';
 import type { PackageRead, PackageReads } from '../src/research/npm-package.ts';
@@ -87,6 +87,8 @@ type Setup = {
   readonly today: TodayCheck | undefined;
   readonly documented: boolean;
   readonly approveStandard: Standard | undefined;
+  /** Whose protocol the documentation page is compared with; the entry itself when undefined. */
+  readonly docOwner: SiteOwner | undefined;
   readonly fixtures: readonly FixtureJudgement[];
   readonly vaults: ReadonlyMap<string, string>;
   /** What the entry's factory, and for an adapter each vault naming it, answered; undefined when not read. */
@@ -114,6 +116,7 @@ const BASE: Setup = {
   today: undefined,
   documented: true,
   approveStandard: undefined,
+  docOwner: undefined,
   fixtures: [],
   vaults: new Map(),
   instances: undefined,
@@ -196,7 +199,7 @@ function ledgerOf(change: Partial<Setup>): Ledger {
       s.reachedThrough !== undefined
         ? { kind: 'vault', vault: s.reachedThrough }
         : s.documented
-          ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }] }
+          ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, owner: s.docOwner ?? s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }] }
           : { kind: 'vault', vault: s.entry },
     registry,
     listings: {
@@ -288,6 +291,7 @@ const ROWS: readonly Row[] = [
   { what: 'a documentation page not fetched', change: { doc: undefined }, id: 'vault/doc.0x095ea7b3.page', kind: 'page-not-fetched', state: 'warn' },
   { what: 'a documentation page without the name', change: { doc: { kind: 'served', blocks: [{ text: 'transfer' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'name-not-on-page', state: 'warn' },
   { what: 'a documentation page naming the function', change: {}, id: 'vault/doc.0x095ea7b3.page', kind: 'agrees', state: 'ok' },
+  { what: "a documentation page of a contract a factory deploys, on the factory's protocol's site though the contract names its curator's", change: { entry: { ...ENTRY, defillama: 'curator' }, docOwner: { defillama: 'proto' } }, id: 'vault/doc.0x095ea7b3.site', kind: 'agrees', state: 'ok' },
   { what: 'a documentation page with the name only in prose', change: { doc: { kind: 'served', blocks: [{ text: 'You approve these terms by using the Site' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'name-not-on-page', state: 'warn' },
   { what: 'a documentation page with the name before a numbered clause', change: { doc: { kind: 'served', blocks: [{ text: 'You approve (i) these Terms' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'name-not-on-page', state: 'warn' },
   { what: 'a documentation page with the name as a Markdown heading', change: { doc: { kind: 'served', blocks: [{ text: '### approve' }] } }, id: 'vault/doc.0x095ea7b3.page', kind: 'agrees', state: 'ok' },
