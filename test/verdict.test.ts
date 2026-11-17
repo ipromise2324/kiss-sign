@@ -1,3 +1,4 @@
+import { detailText } from '../src/verify/detail-text.ts';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -135,4 +136,8 @@ test('a balance finding reads in whole tokens beside its base units when the tok
   ]);
   const bare = verdictOf(observedWith(findings));
   assert.deepEqual(bare.kind === 'MISMATCH' ? bare.causes[0]?.details : [], [`usdc ${USDC} changed by -1500000, the card explains at least 0`]);
+  assert.deepEqual(
+    [verdict, bare].flatMap((v) => (v.kind === 'MISMATCH' ? v.causes[0]!.details : [])).map((detail) => detailText(detail, 'zh-TW')),
+    [`usdc ${USDC} 變動了 -1.5（-1500000 最小單位），卡片說明的是 至少 0`, `usdc ${USDC} 變動了 -1500000，卡片說明的是 至少 0`],
+  );
 });

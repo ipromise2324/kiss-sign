@@ -1,6 +1,6 @@
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -212,6 +212,32 @@ test('a computed card field reads one uint256 view with arguments bound to the c
   const nested = structuredClone(rawTemplate);
   computed(nested).read.args.assets = { to: 'card.vault', function: 'balanceOf(address account) returns (uint256 shares)', args: { account: 'safe' } };
   assert.doesNotThrow(() => parseTemplate(nested, registry));
+});
+
+test('a template\'s reasons are keyed by language, each holding the same languages', () => {
+  const margin = (t: any) => t.card['min-shares'].computed.margin;
+  const mixed = structuredClone(rawTemplate);
+  margin(mixed).why = { en: 'only English' };
+  assert.throws(() => parseTemplate(mixed, registry), (error: unknown) => error instanceof TemplateError && error.path === 'template' && /same languages/.test(error.message));
+  const unknown = structuredClone(rawTemplate);
+  margin(unknown).why = { fr: 'non' };
+  assert.throws(() => parseTemplate(unknown, registry), (error: unknown) => error instanceof TemplateError && error.path === 'card.min-shares.computed.margin.why');
+});
+
+test('every shipped template holds each reason in English and Traditional Chinese', () => {
+  const plain = (raw: unknown, path: string): string[] => {
+    if (Array.isArray(raw)) return raw.flatMap((item, i) => plain(item, `${path}[${i}]`));
+    if (typeof raw !== 'object' || raw === null) return [];
+    return Object.entries(raw).flatMap(([key, value]) => {
+      const at = `${path}.${key}`;
+      const isReason = ['why', 'merge', 'reason', 'proof', 'unread', 'route'].includes(key) || (key === 'free' && (typeof value === 'string' || 'en' in (value as object) || 'zh-TW' in (value as object)));
+      if (!isReason) return plain(value, at);
+      return typeof value === 'object' && value !== null && Object.keys(value).sort().join() === 'en,zh-TW' ? [] : [at];
+    });
+  };
+  for (const id of readdirSync(join(ROOT, 'templates')).flatMap((protocol) => readdirSync(join(ROOT, 'templates', protocol)).map((operation) => `${protocol}/${operation}`))) {
+    assert.deepEqual(plain(JSON.parse(readFileSync(join(ROOT, 'templates', id, 'template.json'), 'utf8')), id), []);
+  }
 });
 
 test('bytes, a string or an array is free only with a proof or unread claim, and constant bytes hold at most 19 bytes', () => {

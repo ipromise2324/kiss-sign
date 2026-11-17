@@ -26,7 +26,10 @@
           "const": "1461501637330902918203684832716283019655932542975"
         },
         "expiration": {
-          "free": "When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The router pulls only from the address that called it (its registry entry's standingAllowance), so how long the allowance lasts does not change who can use it; verify's page shows the expiration the transaction leaves."
+          "free": {
+            "en": "When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The router pulls only from the address that called it (its registry entry's standingAllowance), so how long the allowance lasts does not change who can use it; verify's page shows the expiration the transaction leaves.",
+            "zh-TW": "Permit2 停止承認給 router 的授權額度的時間，app 設在 30 天後。router 只從呼叫它的地址拉款（見它登記項目的 standingAllowance），所以授權維持多久不會改變誰能用它；verify 的頁面會顯示交易留下的到期時間。"
+          }
         }
       }
     }
