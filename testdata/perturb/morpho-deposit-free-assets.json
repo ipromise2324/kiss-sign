@@ -47,10 +47,7 @@
         },
         "trailer": {
           "maxBytes": 8,
-          "why": {
-            "en": "the Morpho app appends the same 4-byte timestamp and 4-byte origin tag as on multicall; approve reads only its two arguments",
-            "zh-TW": "Morpho app 會附上和 multicall 上相同的 4 bytes 時間戳記和 4 bytes 來源標記；approve 只讀它的兩個引數"
-          }
+          "why": "the Morpho app appends the same 4-byte timestamp and 4-byte origin tag as on multicall; approve reads only its two arguments"
         }
       },
       {
@@ -109,10 +106,7 @@
                           "card": "vault"
                         },
                         "assets": {
-                          "free": {
-                            "en": "test: the deposited assets left free",
-                            "zh-TW": "測試：存入的資產數量不受限制"
-                          }
+                          "free": "test: the deposited assets left free"
                         },
                         "maxSharePriceE27": {
                           "maxSharePrice": {
@@ -142,10 +136,7 @@
         },
         "trailer": {
           "maxBytes": 8,
-          "why": {
-            "en": "the Morpho app appends a 4-byte timestamp and a 4-byte origin tag, which multicall ignores (morpho-org/sdks, addTransactionMetadata)",
-            "zh-TW": "Morpho app 會在後面附上 4 bytes 的時間戳記和 4 bytes 的來源標記，multicall 不會讀它們（morpho-org/sdks，addTransactionMetadata）"
-          }
+          "why": "the Morpho app appends a 4-byte timestamp and a 4-byte origin tag, which multicall ignores (morpho-org/sdks, addTransactionMetadata)"
         }
       }
     ],
