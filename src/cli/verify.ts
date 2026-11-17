@@ -26,6 +26,8 @@ import { BOX_WIDTH, box, paint, rows, text, wrap } from './format.ts';
 import type { Paint, Row } from './format.ts';
 import { FAILED, OK, UsageError } from './io.ts';
 import type { Labels } from './labels.ts';
+import type { Language } from '../language.ts';
+import { detailText } from '../verify/detail-text.ts';
 import type { Io } from './io.ts';
 import { requireConfig, shellWord } from './setup.ts';
 import { recordingText } from '../chain/bytecode.ts';
@@ -39,19 +41,21 @@ type VerdictWords = Labels['verdict'];
 const frameOf = (kind: Verdict['kind'], p: Paint): ((text: string) => string) => (kind === 'MATCH' ? p.ok : kind === 'MISMATCH' ? p.bad : p.warn);
 
 /** Each check that caused a verdict other than MATCH, one row per detail. */
-const causeRows = (verdict: Verdict): Row[] => (verdict.kind === 'MATCH' ? [] : verdict.causes.flatMap((cause) => cause.details.map((detail): Row => [cause.check, detail])));
+const causeRows = (verdict: Verdict, language: Language): Row[] =>
+  verdict.kind === 'MATCH' ? [] : verdict.causes.flatMap((cause) => cause.details.map((detail): Row => [cause.check, detailText(detail, language)]));
 
 function signedMessageLines(prepared: Prepared, V: VerdictWords): string[] {
   const structs = signedMessages(prepared.card, prepared.templates);
   return structs.length === 0 ? [] : ['', ...wrap(V.later(structs.join(', ')), BOX_WIDTH)];
 }
 
-function printReplay({ verdict, hashes }: Evaluation, prepared: Prepared, io: Io, V: VerdictWords): void {
+function printReplay({ verdict, hashes }: Evaluation, prepared: Prepared, io: Io, w: Labels): void {
+  const V = w.verdict;
   const p = paint(io.color === true);
   const body =
     verdict.kind === 'MATCH'
       ? [...rows([['domain hash', hashes.domainHash], ['message hash', hashes.messageHash], ['safeTxHash', hashes.safeTxHash]], 0, BOX_WIDTH), ...signedMessageLines(prepared, V), '', ...wrap(V.notPermission, BOX_WIDTH)]
-      : [...rows(causeRows(verdict), 0, BOX_WIDTH), ...signedMessageLines(prepared, V), '', V.noHashes];
+      : [...rows(causeRows(verdict, w.language), 0, BOX_WIDTH), ...signedMessageLines(prepared, V), '', V.noHashes];
   io.stdout(text(box(V.replayTitle(verdict.kind), body, frameOf(verdict.kind, p))));
 }
 
@@ -130,7 +134,7 @@ export async function verify(args: readonly string[], io: Io, w: Labels): Promis
   const body =
     verdict.kind === 'MATCH'
       ? [...rows([[V.nonce, `${tx.nonce}`], ['safeTxHash', hashes.safeTxHash, p.heading], ...unreadRows], 0, BOX_WIDTH), ...signedMessageLines(prepared, V)]
-      : [...rows([[V.nonce, `${tx.nonce}`], ...causeRows(verdict), ...unreadRows], 0, BOX_WIDTH), ...signedMessageLines(prepared, V), '', V.noHashes];
+      : [...rows([[V.nonce, `${tx.nonce}`], ...causeRows(verdict, language), ...unreadRows], 0, BOX_WIDTH), ...signedMessageLines(prepared, V), '', V.noHashes];
   io.stdout(text(box(V.title[verdict.kind], body, frameOf(verdict.kind, p))));
   const page = path.replace(/\.json$/, '.html');
   const html = verdictPage({
@@ -171,7 +175,7 @@ export async function replay(args: readonly string[], io: Io, w: Labels): Promis
   if (path === undefined || extra.length > 0) throw new UsageError(V.replayUsage);
   const file = parseVerdictFile(JSON.parse(readFileSync(path, 'utf8')));
   const result = await evaluate(file.inputs, replayReader(file.exchanges));
-  printReplay(result, prepare(file.inputs), io, V);
+  printReplay(result, prepare(file.inputs), io, w);
   if (canonicalJson(result) !== canonicalJson(file.result)) {
     const sameVerdict = canonicalJson(result.verdict) === canonicalJson(file.result.verdict);
     io.stderr(`kiss-sign: ${V.replayDiffers(file.result.verdict.kind, sameVerdict)}\n`);

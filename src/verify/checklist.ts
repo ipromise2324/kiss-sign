@@ -1,6 +1,7 @@
 import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, hexToBytes, utf8ToBytes } from '@noble/hashes/utils.js';
 import { checksumAddress } from '../safe/types.ts';
+import { say } from '../language.ts';
 import type { Language } from '../language.ts';
 import type { ArgNote, BundleCall, CallData, CallTree, Label, Labeled, SafeCall } from './expected.ts';
 
@@ -48,6 +49,7 @@ export const checklistHtml = (lines: readonly ChecklistLine[]): string =>
  * group title stay as check.sh writes them, in Traditional Chinese, so the rows still compare byte for byte.
  */
 const ZH = {
+  language: 'zh-TW' as Language,
   unregistered: '未登記',
   safe: '本 Safe',
   zero: '零地址',
@@ -58,6 +60,7 @@ const ZH = {
   sharePrice: { max: '每股價格上限', min: '每股價格下限' },
 };
 const EN: typeof ZH = {
+  language: 'en',
   unregistered: 'not registered',
   safe: 'this Safe',
   zero: 'zero address',
@@ -99,7 +102,7 @@ function dataLines(id: string, data: CallData, w: Names): ChecklistLine[] {
   if (data.trailer !== undefined) {
     const { hex, allowance } = data.trailer;
     const fact = w.trailer(allowance.maxBytes, (hex.length - 2) / 2);
-    lines.push({ kind: 'row', id: `${id}-extra`, key: '引數後多出的 bytes', value: hex, name: fact, ai: allowance.why });
+    lines.push({ kind: 'row', id: `${id}-extra`, key: '引數後多出的 bytes', value: hex, name: fact, ai: say(allowance.why, w.language) });
   }
   const nested = data.nested;
   if (nested?.kind === 'multisend') lines.push(...nested.calls.flatMap((call) => safeCallLines(call, w)));

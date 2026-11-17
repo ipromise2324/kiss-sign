@@ -17,6 +17,7 @@ import { CHECKLIST_CSS, checklist, checklistHtml, visible } from './checklist.ts
 import { amountToken, signedMessages } from './expected.ts';
 import type { AmountToken, CallTree } from './expected.ts';
 import type { CheckName, CheckState, Verdict } from './verdict.ts';
+import { detailText } from './detail-text.ts';
 
 export type VerdictPage = {
   readonly verdict: Verdict;
@@ -356,7 +357,7 @@ function causesSection(verdict: Verdict, language: Language): Html {
   <h2>${w.causes}</h2>
   <div class="rows">${verdict.causes.map(
     (cause) => h`
-    <div class="row">${icon(verdict.kind === 'MISMATCH' ? 'bad' : 'warn', language)}<div><div class="t">${w.checks[cause.check]} <code>${cause.check}</code></div>${cause.details.map((detail) => h`<div class="meta">${detail}</div>`)}</div></div>`,
+    <div class="row">${icon(verdict.kind === 'MISMATCH' ? 'bad' : 'warn', language)}<div><div class="t">${w.checks[cause.check]} <code>${cause.check}</code></div>${cause.details.map((detail) => h`<div class="meta">${detailText(detail, language)}</div>`)}</div></div>`,
   )}
   </div>
 </section>`;

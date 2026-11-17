@@ -28,6 +28,8 @@ import type { Anchor } from './sources.ts';
 export type Loosened = { readonly shape: Template; readonly anyTrailer: Template; readonly rules: readonly LeafRule[] };
 
 const MAX_TRAILER = 64;
+/** The reason a loosened rule gives, which no one reads. */
+const STUDY = { en: 'study' };
 const ZERO = `0x${'00'.repeat(20)}` as Address;
 
 export function loosen(template: Template): Loosened {
@@ -44,17 +46,17 @@ export function loosen(template: Template): Loosened {
         return { kind: 'fields', fields: rule.fields.map((field) => looseRule(field, wideTrailer, record)) };
       case 'packed':
       case 'eip712':
-        return { kind: 'free', reason: 'study', claim: 'unread' };
+        return { kind: 'free', reason: STUDY, claim: 'unread' };
       default:
         if (record) rules.push(rule);
-        return { kind: 'free', reason: 'study', claim: 'scalar' };
+        return { kind: 'free', reason: STUDY, claim: 'scalar' };
     }
   };
   const looseCall = (node: CallNode, wideTrailer: boolean, record: boolean): CallNode => ({
     encoding: node.encoding,
     fn: node.fn,
     args: node.args.map((arg) => looseRule(arg, wideTrailer, record)),
-    trailer: wideTrailer && node.encoding === 'call' ? { maxBytes: MAX_TRAILER, why: 'study' } : node.trailer,
+    trailer: wideTrailer && node.encoding === 'call' ? { maxBytes: MAX_TRAILER, why: STUDY } : node.trailer,
   });
   const looseTop = (call: TemplateCall, wideTrailer: boolean, record: boolean): TemplateCall => {
     const to = looseRule(call.to, wideTrailer, record);
