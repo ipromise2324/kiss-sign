@@ -607,7 +607,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li><div><code>vault</code>: it lists the contracts you can pick, each with its full address. Pick <a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a>, address <span class="addr">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</span>
       <p class="then">The numbers in the list may differ from someone else&#39;s, so pick by name; you can also type the name <code>hyperithm-usdc-apex-v2-9e2f</code>.</p></div></li>
     <li><div><code>amount</code>: type the amount of usdc in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
-      <p class="then">It prints it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
+      <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
     <li><div>minimum to receive (<code>min-shares</code>): you do not type it. The protocol&#39;s app fills this value without asking its user, so the program computes it.
       <p class="then">It reads <code>previewDeposit</code> on chain, uses the answer only when both providers agree, prints the expected amount of hyperithm-usdc-apex-v2-9e2f, then takes 0.10% less (the protocol&#39;s default 0.03% plus a 0.07% margin), rounded down.</p>
       <p class="then">Source of the default: <a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24">github.com/morpho-org/sdks</a>. Check that the expected amount and the final number it prints are reasonable.</p></div></li>

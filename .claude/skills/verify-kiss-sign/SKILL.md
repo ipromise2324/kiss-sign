@@ -68,7 +68,7 @@ Prompts need a real terminal. `term.sh` gives each run its own tmux server (sock
 "$V/term.sh" save  "$KSV_RUN" "$KSV_EVIDENCE/card-new.txt"
 ```
 
-Stable prompt strings to wait on: `<field>: type its number (1-N): `, `amount (<token> <address>, <n> decimals): `, `Is this what you mean to do? [y/N] ` (card new and card seal), `Approve <id> as merged in that commit? [y/N] `, `Add this entry? [y/N] `. tmux drops trailing spaces, so end a prompt regex with ` *$`, not `: $`. Answers are literal text: a number, an exact name, or a whole-token amount such as `1,000,611.448606`.
+Stable prompt strings to wait on: `<field>: type its number (1-N): `, `amount (whole <token>, <n> decimals): ` (`, or max` before the `)` for a field that takes `max`), `Is this what you mean to do? [y/N] ` (card new and card seal), `Approve <id> as merged in that commit? [y/N] `, `Add this entry? [y/N] `. tmux drops trailing spaces, so end a prompt regex with ` *$`, not `: $`. Answers are literal text: a number, an exact name, or a whole-token amount such as `1,000,611.448606`.
 
 Commands that ask nothing (`verify`, `replay`, `key list`, `book list`, `pnpm report`) run directly with `KISS_SIGN_HOME` exported; no tmux needed.
 

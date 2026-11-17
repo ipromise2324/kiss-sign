@@ -1,4 +1,5 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
+import { colorWanted, markWords, paint } from '../src/cli/format.ts';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { unreadRefusal } from '../src/chain/https.ts';
@@ -51,7 +52,7 @@ const pages = {
   packages,
   ...('missing' in creations ? {} : { creations }),
 };
-console.log(formatResults(checkSources(entries, listings, pages)));
+console.log(markWords(formatResults(checkSources(entries, listings, pages)), paint(colorWanted(process.stdout.isTTY, process.env))));
 
 if (flags.record !== undefined) {
   const refusal = unreadRefusal(unread);

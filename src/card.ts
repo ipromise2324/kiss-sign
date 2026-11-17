@@ -237,10 +237,12 @@ export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedVal
 /** A percent in WAD base units as the signer typed it, such as `35.5%`. */
 export const percentText = (value: bigint): string => `${value / 10n ** 16n}${value % 10n ** 16n === 0n ? '' : `.${(value % 10n ** 16n).toString().padStart(16, '0').replace(/0+$/, '')}`}%`;
 
+/** A market's lltv as a fraction of 1, such as 0.86. */
+export const lltvText = (market: Market): string => `${market.lltv / 10n ** 18n}.${(market.lltv % 10n ** 18n).toString().padStart(18, '0')}`.replace(/\.?0+$/, '');
+
 export function marketLines(market: Market): string[] {
-  const lltv = `${market.lltv / 10n ** 18n}.${(market.lltv % 10n ** 18n).toString().padStart(18, '0')}`.replace(/\.?0+$/, '');
   return [
-    `${market.name} id ${market.id}, lltv ${lltv} (${market.lltv})`,
+    `${market.name} id ${market.id}, lltv ${lltvText(market)} (${market.lltv})`,
     ...MARKET_ENTRY_PARTS.map((part) => `${part} ${market[part].name} ${checksumAddress(market[part].address)}`),
   ];
 }

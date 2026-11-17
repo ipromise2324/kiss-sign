@@ -2,21 +2,25 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { loadAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
-import { CardError, marketLines, parseUint256 } from '../card.ts';
+import { CardError, parseUint256 } from '../card.ts';
 import type { CardOperation } from '../card.ts';
-import { readDecimals, wholeTokens } from '../chain/decimals.ts';
+import { groupedTokens, readDecimals } from '../chain/decimals.ts';
 import { openMainnetReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
 import { kissSignHome } from '../keys.ts';
 import { isAttribute, isMarketEntryPart, loadRegistry } from '../registry.ts';
-import type { Attribute, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import type { Attribute, Market, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
 import type { CardField, CardRef, Computed, ComputedRead, Template, TokenRef } from '../template/template.ts';
 import { gatesVaults, isRegistryVault, reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
+import { marketHead, marketTable } from './card-view.ts';
+import { paint, rows, section, table, text } from './format.ts';
+import type { Paint, Row } from './format.ts';
 import { FAILED, UsageError, terminal } from './io.ts';
+import { LABELS } from './labels.ts';
 import type { Io, Terminal } from './io.ts';
 import { stopUnlessDataIsMain, requireConfig, seal } from './setup.ts';
 
@@ -49,15 +53,36 @@ function choicesFor(field: Exclude<ChosenField, { kind: 'market' }>, { registry,
   }
 }
 
-/** A name the signer can pick, the address or market id listed with it, and the lines that show what it names. */
-type Option = { readonly name: string; readonly id: Hex | Address; readonly lines: readonly string[] };
+/** A name the signer can pick, with the address or market id it may also be picked by. */
+type Option = (Choice & { readonly id: Address }) | { readonly name: string; readonly id: Hex; readonly market: Market };
+
+const L = LABELS.card;
 
 function optionsFor(field: ChosenField, sources: Sources): readonly Option[] {
-  if (field.kind === 'market') return [...sources.registry.markets.values()].map((market) => ({ name: market.name, id: market.id, lines: marketLines(market) }));
-  return choicesFor(field, sources).map((c) => {
-    const factory = c.factory === undefined ? '' : `  (factory ${c.factory.name} ${checksumAddress(c.factory.address)})`;
-    return { name: c.name, id: c.address, lines: [`${c.name} ${checksumAddress(c.address)} (${c.from})${factory}`] };
-  });
+  if (field.kind === 'market') return [...sources.registry.markets.values()].map((market) => ({ name: market.name, id: market.id, market }));
+  return choicesFor(field, sources).map((c) => ({ ...c, id: c.address }));
+}
+
+/**
+ * The numbered list: names and full addresses in columns, each factory once below it, and a factory or source column
+ * only when the listed choices differ in it.
+ */
+function listLines(options: readonly Option[], p: Paint): string[] {
+  const markets = options.flatMap((o) => ('market' in o ? [o.market] : []));
+  if (markets.length > 0) return markets.flatMap((market, i) => [`${`${i + 1}.`.padStart(4)}  ${marketHead(market)}`, ...marketTable(market, 6)]);
+  const choices = options.flatMap((o) => ('market' in o ? [] : [o]));
+  const factories = [...new Map(choices.flatMap((c) => (c.factory === undefined ? [] : [[c.factory.address, c.factory] as const]))).values()];
+  const factoryColumn = factories.length > 1 || (factories.length === 1 && choices.some((c) => c.factory === undefined));
+  const sourceColumn = new Set(choices.map((c) => c.from)).size > 1;
+  const cells = choices.map((c, i) => [
+    `${i + 1}.`.padStart(4),
+    c.name,
+    ...(factoryColumn ? [c.factory?.name ?? ''] : []),
+    ...(sourceColumn ? [p.dim(L.from[c.from])] : []),
+    checksumAddress(c.address),
+  ]);
+  const made = factories.map((f): Row => [factoryColumn ? L.factory : L.createdBy, `${f.name}  ${checksumAddress(f.address)}`]);
+  return [...table(cells, 0), ...rows(made, 6)];
 }
 
 /** The choices a typed answer names: by its listed number, its exact name, or its full address or market id in any case. */
@@ -96,9 +121,13 @@ type Chain = {
   readonly decimals: (entry: RegistryEntry) => Promise<number>;
   /** One uint256 a view answers. */
   readonly call: (to: Address, data: Hex, what: string) => Promise<bigint>;
+  /** Each token's decimals read so far. */
+  readonly known: ReadonlyMap<Address, number>;
+  /** The block every read was made at and the providers that agreed, once anything was read. */
+  readonly provenance: () => string | undefined;
 };
 
-function openChain(reader: Reader | undefined, io: Io): Chain {
+function openChain(reader: Reader | undefined): Chain {
   let at: BlockRef | undefined;
   const agreedBlock = async (refuse: (why: string) => never): Promise<{ readonly reader: Reader; readonly at: BlockRef }> => {
     if (reader === undefined) throw new Error('no chain reader');
@@ -110,18 +139,18 @@ function openChain(reader: Reader | undefined, io: Io): Chain {
   };
   const known = new Map<Address, number>();
   return {
+    known,
+    provenance: () => (at === undefined || reader === undefined ? undefined : L.chainReads(at.number, reader.providers)),
     decimals: async (entry) => {
       const cached = known.get(entry.address);
       if (cached !== undefined) return cached;
-      const token = `${entry.name} ${checksumAddress(entry.address)}`;
       const refuse = (why: string): never => {
-        throw new CardError(`cannot read the decimals of ${token}: ${why}`);
+        throw new CardError(`cannot read the decimals of ${entry.name} ${checksumAddress(entry.address)}: ${why}`);
       };
       const { reader: r, at: ref } = await agreedBlock(refuse);
       const decimals = await readDecimals(r, entry.address, ref);
       if (typeof decimals !== 'number') return refuse(decimals.problem);
       known.set(entry.address, decimals);
-      io.stdout(`${token} has ${decimals} decimals: decimals() at block ${ref.number}, where ${r.providers.join(' and ')} agree\n`);
       return decimals;
     },
     call: async (to, data, what) => {
@@ -133,9 +162,7 @@ function openChain(reader: Reader | undefined, io: Io): Chain {
       if (read.kind === 'unverifiable') return refuse(read.reason);
       if (read.value.kind === 'reverted') return refuse('it reverted');
       if (read.value.data.length !== 66) return refuse(`it answered ${(read.value.data.length - 2) / 2} bytes, not one word`);
-      const value = BigInt(read.value.data);
-      io.stdout(`  ${what} = ${value}: at block ${ref.number}, where ${r.providers.join(' and ')} agree\n`);
-      return value;
+      return BigInt(read.value.data);
     },
   };
 }
@@ -162,21 +189,20 @@ async function answer(ask: Terminal['ask'], question: string): Promise<string> {
 /** A percent in plain digits, at most 100 with at most 16 decimals, in WAD base units: 100% is 10^18. */
 const PERCENT = /^(0|[1-9][0-9]{0,2})(?:\.([0-9]{1,16}))?$/;
 
-function percentValue(name: string, typed: string, ctx: Context): string {
+function percentValue(name: string, typed: string): string {
   const match = PERCENT.exec(typed);
   const shown = JSON.stringify(typed.slice(0, 80));
   if (match === null) throw new CardError(`${name}: ${shown} is not a percent such as 100 or 35.5, in plain digits with at most 16 decimals`);
   const [, whole = '', fraction = ''] = match;
   const value = BigInt(whole + fraction.padEnd(16, '0'));
   if (value > WAD) throw new CardError(`${name}: ${shown} is more than 100 percent`);
-  const line = `${name}: ${whole}${fraction === '' ? '' : `.${fraction}`}% = ${value} base units, 100% being ${WAD}`;
-  ctx.io.stdout(`  ${line}\n`);
-  ctx.amounts.push(line);
   return value.toString();
 }
 
 async function typedValue(name: string, field: TypedField, values: Readonly<Record<string, string>>, ctx: Context): Promise<string> {
-  if (field.kind === 'percent') return percentValue(name, await answer(ctx.ask, `${name} (a percent, 100 at most, such as 100 or 35.5): `), ctx);
+  const { io, p } = ctx;
+  io.stdout(text(section(p, name, L.type)));
+  if (field.kind === 'percent') return percentValue(name, await answer(ctx.ask, `${name} (a percent, 100 at most, such as 100 or 35.5): `));
   const unit = field.kind === 'amount' ? unitOf(field.of, values, ctx.sources.registry) : undefined;
   if (unit === undefined || unit.kind === 'unregistered') {
     const label = field.kind === 'threshold' ? 'how many owners must sign, a whole number from 1' : unit === undefined ? 'a Safe nonce' : `base units of ${unit.ref}, which is no registry contract, so its decimals are not read`;
@@ -185,23 +211,16 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
     if (parsed === undefined || (field.kind === 'threshold' && parsed === 0n)) throw new CardError(`${name}: ${JSON.stringify(typed.slice(0, 80))} is not a whole number in plain digits${field.kind === 'threshold' ? ' from 1' : ''}`);
     return typed;
   }
-  const token = unit.kind === 'eth' ? 'eth' : unit.entry.name;
+  const token = unit.kind === 'eth' ? 'ETH' : unit.entry.name;
   const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
-  const full = unit.kind === 'eth' ? 'eth' : `${token} ${checksumAddress(unit.entry.address)}`;
+  io.stdout(text(rows([[L.token, unit.kind === 'eth' ? L.eth : `${token}  ${checksumAddress(unit.entry.address)}  ${L.decimals(decimals)}`]], 4)));
   const max = field.kind === 'amount' ? field.max : undefined;
-  const typed = await answer(ctx.ask, `${name} (${full}, ${decimals} decimals${max === undefined ? '' : ', or max'}): `);
+  const typed = await answer(ctx.ask, `${name} (whole ${token}, ${decimals} decimals${max === undefined ? '' : ', or max'}): `);
   if (max !== undefined && typed === 'max') {
-    ctx.io.stdout(`  max, as the template says: ${max.why}\n`);
-    return listed(name, max.value, decimals, token, ctx);
+    io.stdout(text(rows([[L.max, max.why, p.dim]], 4)));
+    return max.value.toString();
   }
-  return listed(name, baseUnits(name, typed, decimals, token), decimals, token, ctx);
-}
-
-function listed(name: string, value: bigint, decimals: number, token: string, ctx: Context): string {
-  const line = `${name}: ${wholeTokens(value, decimals)} ${token} = ${value} base units`;
-  ctx.io.stdout(`  ${line}\n`);
-  ctx.amounts.push(line);
-  return value.toString();
+  return baseUnits(name, typed, decimals, token).toString();
 }
 
 const word = (value: bigint): string => value.toString(16).padStart(64, '0');
@@ -213,7 +232,10 @@ function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources
   return entry;
 }
 
-async function readValue(read: ComputedRead, values: Readonly<Record<string, string>>, ctx: Context): Promise<bigint> {
+/** One view call `card new` made: what it called, on which contract, and its answer. */
+type Step = { readonly call: string; readonly on: RegistryEntry; readonly value: bigint };
+
+async function readValue(read: ComputedRead, values: Readonly<Record<string, string>>, ctx: Context, steps: Step[]): Promise<bigint> {
   const words: string[] = [];
   const shown: string[] = [];
   for (const arg of read.args) {
@@ -221,7 +243,7 @@ async function readValue(read: ComputedRead, values: Readonly<Record<string, str
       words.push(word(BigInt(ctx.sources.safe)));
       shown.push('safe');
     } else if (arg.kind === 'read') {
-      const inner = await readValue(arg.read, values, ctx);
+      const inner = await readValue(arg.read, values, ctx, steps);
       words.push(word(inner));
       shown.push(String(inner));
     } else if (ctx.template.card.get(arg.ref.field)?.kind === 'amount') {
@@ -235,27 +257,42 @@ async function readValue(read: ComputedRead, values: Readonly<Record<string, str
     }
   }
   const to = entryAt(read.to, values, ctx.sources);
-  return ctx.chain.call(to.address, `${read.fn.selector}${words.join('')}` as Hex, `${read.fn.name}(${shown.join(', ')}) on ${to.name} ${checksumAddress(to.address)}`);
+  const call = `${read.fn.name}(${shown.join(', ')})`;
+  const value = await ctx.chain.call(to.address, `${read.fn.selector}${words.join('')}` as Hex, `${call} on ${to.name} ${checksumAddress(to.address)}`);
+  steps.push({ call, on: to, value });
+  return value;
 }
 
 const percent = (bps: number): string => `${(bps / 100).toFixed(2)}%`;
 
 async function computedValue(name: string, field: TypedField & { readonly kind: 'amount' }, computed: Computed, values: Readonly<Record<string, string>>, ctx: Context): Promise<string> {
+  const { io, p } = ctx;
   const unit = unitOf(field.of, values, ctx.sources.registry);
   if (unit.kind === 'unregistered') throw new CardError(`${name}: counts ${unit.ref}, which is no registry contract, so it cannot be computed in whole tokens`);
-  const token = unit.kind === 'eth' ? 'eth' : unit.entry.name;
+  const token = unit.kind === 'eth' ? 'ETH' : unit.entry.name;
   const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
-  ctx.io.stdout(`${name} is not asked: the protocol's app fills it in itself, so it is computed\n`);
-  const read = await readValue(computed.read, values, ctx);
+  io.stdout(text(section(p, name, L.computed)));
+  const steps: Step[] = [];
+  const read = await readValue(computed.read, values, ctx, steps);
   const total = BigInt(slippageBps(computed));
   const value = computed.bound === 'floor' ? (read * (10_000n - total)) / 10_000n : (read * (10_000n + total) + 9_999n) / 10_000n;
-  ctx.io.stdout(`  expected: ${wholeTokens(read, decimals)} ${token} = ${read} base units\n`);
-  const margin = computed.margin === undefined ? '' : ` plus a margin of ${percent(computed.margin.bps)}`;
-  ctx.io.stdout(`  slippage: ${percent(Number(total))}, ${computed.bound === 'floor' ? 'less' : 'more'} than expected: the protocol's default ${percent(computed.default.bps)} (${computed.default.source})${margin}\n`);
-  if (computed.margin !== undefined) ctx.io.stdout(`  margin, as the template says: ${computed.margin.why}\n`);
+  const reads = steps.map((step): Row => [L.read, [`${step.call} = ${step.value}`, `${L.on} ${step.on.name}  ${checksumAddress(step.on.address)}`]]);
+  const margin = computed.margin === undefined ? undefined : percent(computed.margin.bps);
+  io.stdout(
+    text(
+      rows([
+        ...reads,
+        [L.expected, `${groupedTokens(read, decimals)} ${token}`, p.computed],
+        [L.slippage, L.slippageText(percent(Number(total)), computed.bound, percent(computed.default.bps), margin)],
+        [L.result, `${groupedTokens(value, decimals)} ${token}`, p.computed],
+        [L.defaultSource, computed.default.source, p.dim],
+        ...(computed.margin === undefined ? [] : [[L.margin, computed.margin.why, p.dim] as const]),
+      ], 4),
+    ),
+  );
   if (value === 0n) throw new CardError(`${name} comes to 0, which would bound nothing or nothing could meet`);
   if (value >= UINT256_LIMIT) throw new CardError(`${name} comes to 2^256 base units or more`);
-  return listed(name, value, decimals, token, ctx);
+  return value.toString();
 }
 
 type Context = {
@@ -264,7 +301,7 @@ type Context = {
   readonly io: Io;
   readonly ask: Terminal['ask'];
   readonly chain: Chain;
-  readonly amounts: string[];
+  readonly p: Paint;
   /** The vaults with a report for a template reported per vault. */
   readonly reported: (template: string) => ReadonlySet<string>;
 };
@@ -290,11 +327,7 @@ async function fill(template: Template, shared: Omit<Context, 'template'>): Prom
     if (choices.length === 0) {
       throw new CardError(`${name}: ${field.kind === 'market' ? 'registry/markets.json holds no market' : `the registry and address book hold nothing ${template.id} accepts here`}`);
     }
-    ctx.io.stdout(`${name}:\n`);
-    for (const [i, { lines: [first, ...rest] }] of choices.entries()) {
-      ctx.io.stdout(`  ${i + 1}. ${first}\n`);
-      for (const line of rest) ctx.io.stdout(`       ${line}\n`);
-    }
+    ctx.io.stdout(text([...section(ctx.p, name, L.pick), ...listLines(choices, ctx.p)]));
     const range = `1-${choices.length}`;
     const typed = await answer(ctx.ask, `${name}: type its number (${range}): `);
     const [choice, ...others] = picked(typed, choices);
@@ -323,15 +356,14 @@ export async function cardNew(args: readonly string[], io: Io): Promise<number> 
     return loadTemplate(io.repoRoot, id, sources.registry);
   });
   const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport) : undefined;
-  const ctx = { sources, io, ask, chain: openChain(reader, io), amounts: [] as string[], reported: (id: string) => reportedVaultsIn(io.repoRoot, id) };
+  const chain = openChain(reader);
+  const ctx = { sources, io, ask, chain, p: paint(io.color === true), reported: (id: string) => reportedVaultsIn(io.repoRoot, id) };
   const operations: CardOperation[] = [];
   for (const [i, template] of templates.entries()) {
-    io.stdout(`operation ${i + 1}: ${template.id}\n`);
-    const before = ctx.amounts.length;
+    io.stdout(text(['', ctx.p.heading(L.operation(template.id, i + 1, templates.length))]));
     operations.push(await fill(template, ctx));
-    if (templates.length > 1) ctx.amounts.splice(before, Infinity, ...ctx.amounts.slice(before).map((line) => `operation ${i + 1} ${line}`));
   }
   io.stdout('\n');
-  if (ctx.amounts.length > 0) io.stdout(`amounts in whole tokens:\n${ctx.amounts.map((line) => `  ${line}\n`).join('')}\n`);
-  return seal({ operations }, io, confirm);
+  const computed = new Set(templates.flatMap((template, i) => [...template.card].filter(([, field]) => isComputed(field)).map(([name]) => `${i}:${name}`)));
+  return seal({ operations }, io, confirm, { decimals: chain.known, provenance: chain.provenance(), computed });
 }

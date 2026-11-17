@@ -1,3 +1,5 @@
+import { WIDTH, paint, wrap } from '../cli/format.ts';
+import type { Paint } from '../cli/format.ts';
 import type { Reason } from './reasons.ts';
 
 export type Row = {
@@ -44,15 +46,22 @@ function summary(rows: readonly Row[]): { key: string; nonces: number[] }[] {
   return [...groups].map(([key, nonces]) => ({ key, nonces })).sort((a, b) => order(a.key) - order(b.key) || b.nonces.length - a.nonces.length || (a.key < b.key ? -1 : 1));
 }
 
-export function renderText(report: Report): string {
-  const lines = [...header(report), '', 'nonce  date        verdict       intent'];
+const VERDICT_PAINT = { MATCH: 'ok', MISMATCH: 'bad', UNVERIFIABLE: 'warn', ERROR: 'warn', 'not run': 'dim' } as const;
+
+/** A long line wrapped at the terminal's width, each further line indented two more spaces. */
+const hanging = (line: string, indent: number): string[] =>
+  wrap(line, WIDTH - indent - 2).map((part, i) => `${' '.repeat(i === 0 ? indent : indent + 2)}${part}`);
+
+export function renderText(report: Report, p: Paint = paint(false)): string {
+  const lines = [...header(report).flatMap((line) => hanging(line, 0)), '', p.heading('nonce  date        verdict       intent')];
   for (const row of report.rows) {
-    lines.push(`${String(row.nonce).padStart(5)}  ${row.date.padEnd(10)}  ${row.verdict.padEnd(12)}  ${row.intent}`);
+    const verdict = p[VERDICT_PAINT[row.verdict]](row.verdict.padEnd(12));
+    lines.push(`${String(row.nonce).padStart(5)}  ${row.date.padEnd(10)}  ${verdict}  ${row.intent}`);
     const reason = reasonText(row);
-    if (reason !== '') lines.push(`${' '.repeat(33)}${reason}`);
-    if (row.card !== undefined) lines.push(`${' '.repeat(33)}card: ${row.card}`);
+    if (reason !== '') lines.push(...hanging(reason, 33));
+    if (row.card !== undefined) lines.push(...hanging(`card: ${row.card}`, 33));
   }
-  lines.push('', 'Summary');
+  lines.push('', p.heading('Summary'));
   for (const { key, nonces } of summary(report.rows)) lines.push(`  ${key.padEnd(28)} ${String(nonces.length).padStart(4)}  ${nonces.join(', ')}`);
   return `${lines.join('\n')}\n`;
 }
