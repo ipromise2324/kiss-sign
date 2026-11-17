@@ -531,7 +531,6 @@ function printableQuery(file: string, query: PastTxsRecording['query']): boolean
   );
 }
 
-/** The windows a recording searched: its range, or the default spread placed by its head, or by its recorded head read when it keeps none. */
 export function pastTxsSampling(query: PastTxsRecording['query']): Sampling {
   if (query.fromBlock !== undefined && query.toBlock !== undefined) return { kind: 'range', range: { fromBlock: BigInt(query.fromBlock), toBlock: BigInt(query.toBlock) } };
   return query.head === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, head: BigInt(query.head) };
