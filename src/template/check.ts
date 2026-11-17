@@ -9,7 +9,7 @@ import { unwrapSafeTx } from '../decode/multisend.ts';
 import type { InnerCall } from '../decode/multisend.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
-import { memberJson, parseMessage, typedDataDigest } from './eip712.ts';
+import { messageText, parseMessage, typedDataDigest } from './eip712.ts';
 import type { MemberValue } from './eip712.ts';
 import { addressWord } from './template.ts';
 import type { CallNode, ConstValue, LeafRule, PackedPart, Quantity, Rule, SignedMessage, Template, TemplateCall } from './template.ts';
@@ -19,6 +19,9 @@ import type { CallNode, ConstValue, LeafRule, PackedPart, Quantity, Rule, Signed
  * template's `lookup`. Each is data: only one that hashes to the digest counts.
  */
 export type Messages = readonly string[];
+
+/** A `lookup` URL to read, and the signed message its answer should hold. */
+export type Lookup = { readonly url: string; readonly message: SignedMessage };
 
 /** A member of the signed message whose digest sits at `digest` in `data`, as the message `body` holds it. */
 export type MessageLeaf = { readonly message: SignedMessage; readonly body: Readonly<Record<string, unknown>>; readonly values: readonly MemberValue[]; readonly member: number; readonly digest: Span };
@@ -79,8 +82,8 @@ type Context = {
   readonly root: Uint8Array;
   readonly seen: Map<Values, Map<LeafRule, bigint>>;
   readonly messages: Messages;
-  /** Each `lookup` URL whose message the check needed and no given text held. */
-  readonly lookups: string[];
+  /** Each `lookup` URL whose message the check needed and no given text held, with the message it should hold. */
+  readonly lookups: Lookup[];
   /** Each message that hashed to its digest, cut to the struct's members. */
   readonly signed: string[];
   readonly chain: FieldChain;
@@ -251,7 +254,7 @@ function checkMessage(message: SignedMessage, digest: Hex, span: Span, holder: U
   for (const text of context.messages) {
     const read = parseMessage(message.struct, text);
     if (typeof read === 'string' || typedDataDigest(message.separator, message.struct, read.values) !== digest) continue;
-    context.signed.push(JSON.stringify(Object.fromEntries(message.struct.members.map((member, i) => [member.name, memberJson(read.values[i] as MemberValue)]))));
+    context.signed.push(messageText(message.struct, read.values));
     message.struct.members.forEach((member, i) => {
       const value = read.values[i] as MemberValue;
       const leaf: MessageLeaf = { message, body: read.body, values: read.values, member: i, digest: span };
@@ -260,7 +263,7 @@ function checkMessage(message: SignedMessage, digest: Hex, span: Span, holder: U
     return;
   }
   const url = message.lookup.replace('{arg}', `0x${bytesToHex(holder)}`);
-  context.lookups.push(url);
+  context.lookups.push({ url, message });
   context.unverifiable.push(`${callPath} ${arg}: no ${message.struct.name} read from ${url} hashes to ${digest}`);
 }
 
@@ -371,10 +374,10 @@ function checkTopCall(call: TemplateCall, inner: InnerCall, context: Context, it
 }
 
 /**
- * `lookups`: each URL whose signed message the check needed and was not given. `signed`: each given message that hashed
- * to its digest, cut to the struct's members, the only part a verdict file needs to keep.
+ * `lookups`: each URL whose signed message the check needed and was not given, with that message. `signed`: each given
+ * message that hashed to its digest, cut to the struct's members, the only part a verdict file needs to keep.
  */
-export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[]; readonly lookups: readonly string[]; readonly signed: readonly string[] };
+export type Inspection = { readonly check: FieldCheck; readonly leaves: readonly Leaf[]; readonly lookups: readonly Lookup[]; readonly signed: readonly string[] };
 
 export type Values = ReadonlyMap<string, ResolvedValue>;
 
@@ -457,7 +460,7 @@ export function inspectTemplateFields(
   const findings: Finding[] = [];
   const unverifiable: string[] = [];
   const leaves: Leaf[] = [];
-  const lookups: string[] = [];
+  const lookups: Lookup[] = [];
   const signed: string[] = [];
   const done = (check: FieldCheck): Inspection => ({ check, leaves, lookups, signed });
   const seen = new Map<Values, Map<LeafRule, bigint>>();
