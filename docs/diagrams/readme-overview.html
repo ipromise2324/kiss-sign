@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Source of docs/readme/overview.png and overview-dark.png. Values come from a real run: another Safe's nonce 1566.
+<!-- Source of docs/readme/overview.png and overview-dark.png. Values are illustrative; no real vault is named.
      Logos are each project's own (GitHub organization avatars, Etherscan's brand asset, simple-icons; docs.svg, factory.svg, api.svg, bounty.svg, package.svg and deployer.svg drawn for this page). Font: Excalifont, OFL-1.1 (fonts/Excalifont-OFL.txt).
      Re-render with docs/diagrams/render.sh. -->
 <html lang="en">
@@ -32,7 +32,7 @@
   .person { width: 78px; flex: none; text-align: center; color: var(--you); font-size: 18px; }
   .person svg { width: 72px; height: 94px; overflow: visible; }
   .bubble { padding: 14px 22px; }
-  h1 { font-size: 27px; font-weight: 400; color: var(--you); }
+  h1 { font-size: 32px; font-weight: 400; color: var(--you); }
   .say p { color: var(--muted); margin-top: 4px; }
   h2 { font-size: 23px; font-weight: 400; margin: 0 0 14px; }
   h2 b { font-weight: 400; color: var(--muted); font-size: 18px; margin-left: 10px; }
@@ -107,7 +107,7 @@
       <div>You</div>
     </div>
     <div>
-      <div class="sk you bubble" id="bubble"><h1>“Deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault”</h1></div>
+      <div class="sk you bubble" id="bubble"><h1>“Deposit 1,000 USDC into Morpho's XXX vault”</h1></div>
       <p>You say what you want first. Everything else is checked against it.</p>
     </div>
   </div>
@@ -130,7 +130,7 @@
       <ul><li>the call flow<div class="flow mono">Safe ─▶ MultiSend
  ├ usdc.approve(general-adapter-1)
  └ bundler3.multicall
-    ├ pull 1,000,611.448606 USDC
+    ├ pull 1,000 USDC
     └ vault.deposit ─▶ shares to Safe</div></li><li>each field: fixed, yours, or bounded</li><li>where each address came from</li><li class="q">what still needs your eye</li></ul>
     </div>
     <div class="sk you merge" id="merge">
@@ -144,7 +144,7 @@
   <div class="row">
     <div class="sk you card" id="card">
       <div class="who">You fill a card first</div>
-      <div class="ticket mono"><div><span class="k">vault  </span><b>hyperithm-usdc-apex-v2-9e2f</b></div><div><span class="k">       </span>0x0932…9E2F</div><div><span class="k">amount </span><b>1,000,611.448606 USDC</b></div><div class="seal">sealed 0xfaad…a988</div></div>
+      <div class="ticket mono"><div><span class="k">vault  </span><b>xxx-usdc-vault</b></div><div><span class="k">       </span>0x…</div><div><span class="k">amount </span><b>1,000 USDC</b></div><div class="seal">sealed 0xfaad…a988</div></div>
     </div>
     <div class="computers">
       <div class="pc prog" id="pc1">
