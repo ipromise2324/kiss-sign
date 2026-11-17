@@ -93,9 +93,12 @@ export type NotesScope = {
   readonly fields: readonly string[];
   /** The results the signer must look at, in ledger order, every one required. */
   readonly reviews: readonly ResultId[];
-  /** The language the page is written in; every text must hold every language all the same. */
+  /** The language the page is written in, one of those the notes hold. */
   readonly language: Language;
 };
+
+/** The scope a text is parsed in: the report's, and the languages its notes hold. */
+type Scope = NotesScope & { readonly held: readonly Language[] };
 
 /** One argument, tuple part, array item or nested call's argument of a template call, with its HTML report field key. */
 export type ArgNode = {
@@ -172,7 +175,7 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
   };
 }
 
-type P<T> = (path: string, raw: unknown, scope: NotesScope) => T;
+type P<T> = (path: string, raw: unknown, scope: Scope) => T;
 type Opt<T> = { readonly optional: P<T>; readonly absent: T };
 type Shape = Readonly<Record<string, P<unknown> | Opt<unknown>>>;
 type Parsed<S extends Shape> = { readonly [K in keyof S]: S[K] extends Opt<infer T> ? T : S[K] extends P<infer T> ? T : never };
@@ -213,17 +216,23 @@ const LENGTH: Readonly<Record<Language, number>> = { 'zh-TW': 1, en: 3 };
 /** Chinese characters and full-width punctuation, which the English page must not show. */
 const CHINESE = /[\u2e80-\u9fff\u3000-\u303f\uff00-\uffef]/u;
 
-/** AI text, `{ "en": ..., "zh-TW": ... }`, each under its limit, the English with no Chinese; the page's language is returned. */
+/**
+ * AI text keyed by language, `{ "zh-TW": ... }` or `{ "en": ..., "zh-TW": ... }`, holding exactly the languages the notes
+ * hold, each under its limit, the English with no Chinese; the page's language is returned.
+ */
 const text =
   (max: number): P<string> =>
   (path, raw, scope) => {
-    if (!isRecord(raw)) return refuse(path, `not a JSON object with ${LANGUAGES.join(' and ')}`);
+    const held = scope.held.join(' and ');
+    if (!isRecord(raw)) return refuse(path, `not a JSON object with ${held}`);
     const extra = Object.keys(raw).find((key) => !(LANGUAGES as readonly string[]).includes(key));
-    if (extra !== undefined) refuse(path, `${shown(extra)} is not a language; use ${LANGUAGES.join(' and ')}`);
+    if (extra !== undefined) refuse(path, `${shown(extra)} is not a language; use ${LANGUAGES.join(' or ')}`);
+    const other = Object.keys(raw).find((key) => !(scope.held as readonly string[]).includes(key));
+    if (other !== undefined) refuse(path, `${other} is not in the title; every text holds the languages the title holds, ${held}`);
     const each = Object.fromEntries(
-      LANGUAGES.map((language) => {
+      scope.held.map((language) => {
         const value = own(raw, language);
-        if (value === undefined) return refuse(path, `${language} is missing`);
+        if (value === undefined) return refuse(path, `${language} is missing; every text holds the languages the title holds, ${held}`);
         const parsed = str(max * LENGTH[language])(`${path}.${language}`, value, scope);
         return [language, language === 'en' && CHINESE.test(parsed) ? refuse(`${path}.en`, 'holds Chinese characters or full-width punctuation') : parsed];
       }),
@@ -275,7 +284,7 @@ const obj =
 
 /** A JSON object keyed by names the scope allows, checked and returned in the scope's order. */
 const keyed =
-  <T>(allowed: (scope: NotesScope) => readonly string[], what: string, required: boolean, item: (key: string) => P<T>): P<ReadonlyMap<string, T>> =>
+  <T>(allowed: (scope: Scope) => readonly string[], what: string, required: boolean, item: (key: string) => P<T>): P<ReadonlyMap<string, T>> =>
   (path, raw, scope) => {
     if (!isRecord(raw)) return refuse(path, 'not a JSON object');
     const names = allowed(scope);
@@ -287,7 +296,7 @@ const keyed =
   };
 
 const where =
-  <T>(p: P<T>, check: (value: T, scope: NotesScope) => string | undefined): P<T> =>
+  <T>(p: P<T>, check: (value: T, scope: Scope) => string | undefined): P<T> =>
   (path, raw, scope) => {
     const value = p(path, raw, scope);
     const problem = check(value, scope);
@@ -333,5 +342,21 @@ const NOTES_SCHEMA = where(NOTES_FIELDS, (notes, scope) => {
 
 export type Notes = ReturnType<typeof NOTES_SCHEMA>;
 
-/** `notes.json` against its scope: every key in the schema, every name the scope requires present, and no other name. */
-export const parseNotes = (raw: unknown, scope: NotesScope): Notes => NOTES_SCHEMA(NOTES_FILE, raw, scope);
+/** The languages the notes are written in, in `LANGUAGES` order: those their `title` holds, which every text must hold. */
+export function notesLanguages(raw: unknown): readonly Language[] {
+  if (!isRecord(raw)) return refuse(NOTES_FILE, 'not a JSON object');
+  const title = own(raw, 'title');
+  if (title === undefined) return refuse(NOTES_FILE, 'title is missing');
+  const held = isRecord(title) ? LANGUAGES.filter((language) => own(title, language) !== undefined) : [];
+  return held.length > 0 ? held : refuse(`${NOTES_FILE}.title`, `not a JSON object with ${LANGUAGES.join(' or ')}, or both`);
+}
+
+/**
+ * `notes.json` against its scope: every key in the schema, every name the scope requires present, no other name, and
+ * every text in the languages the title holds, the page's among them.
+ */
+export function parseNotes(raw: unknown, scope: NotesScope): Notes {
+  const held = notesLanguages(raw);
+  if (!held.includes(scope.language)) refuse(`${NOTES_FILE}.title`, `holds no ${scope.language} text, so there is no ${scope.language} page to write`);
+  return NOTES_SCHEMA(NOTES_FILE, raw, { ...scope, held });
+}
