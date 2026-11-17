@@ -412,10 +412,30 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="past">
   <h2>過去交易</h2>
-  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">270</span> 筆：Safe <span class="num">0</span> 筆、EOA <span class="num">270</span> 筆（243 個地址，各自送模板的一個呼叫）；形狀一樣、但用的是 registry 外的代幣的有 <span class="num">27</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">26</span> 筆（14 個地址，各自送模板的一個呼叫）；形狀不同的有 <span class="num">9</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 usdc 轉帳時、usdt 轉帳時、0x5aFE3855358E112B5647B952709E6165e1c1eEEe 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x8189fd305ea3495b19403d6bff067b0901a06b897c4bf422df62d84a27e87d56">0x8189fd30…</a>、<a href="https://etherscan.io/tx/0x82073d9ac7dbd108455451200cd77f2c875ebe1b869123d3db4e263e1bd3f77b">0x82073d9a…</a>、<a href="https://etherscan.io/tx/0xb5df09915ecaa79b782593b73780789e4c4ccf901a2d989316080b646d61df4a">0xb5df0991…</a>。形狀一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xabf7c50321f74e4650324c7b1a2244cfacb12cdd2b6b32ca38ac7460c3d93f8b">0xabf7c503…</a>、<a href="https://etherscan.io/tx/0xcb5d47259afc42830693935191cb8cb3c92a82fab747f7bc12b7c6b032838e6c">0xcb5d4725…</a>、<a href="https://etherscan.io/tx/0x7b6ca7b10e25efb655994944e23a5d8ab8327465044f1eadb3d560e13d17fdcc">0x7b6ca7b1…</a>。</p>
+  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">270</span> 筆：Safe <span class="num">0</span> 筆、EOA <span class="num">270</span> 筆（243 個地址，各自送模板的一個呼叫）；形狀一樣、但用的是 registry 外的代幣的有 <span class="num">55</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">54</span> 筆（40 個地址，各自送模板的一個呼叫）；形狀不同的有 <span class="num">47</span> 筆，列在其他做法。這些交易全部成功執行：它們是從 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84 轉帳時、usdc 轉帳時、usdt 轉帳時、0x5aFE3855358E112B5647B952709E6165e1c1eEEe 轉帳時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。一模一樣的最近 3 筆：<a href="https://etherscan.io/tx/0x8189fd305ea3495b19403d6bff067b0901a06b897c4bf422df62d84a27e87d56">0x8189fd30…</a>、<a href="https://etherscan.io/tx/0x82073d9ac7dbd108455451200cd77f2c875ebe1b869123d3db4e263e1bd3f77b">0x82073d9a…</a>、<a href="https://etherscan.io/tx/0xb5df09915ecaa79b782593b73780789e4c4ccf901a2d989316080b646d61df4a">0xb5df0991…</a>。形狀一樣的最近 3 筆：<a href="https://etherscan.io/tx/0xf6200fe570c80b84f75d3ffa3d7b327c26d9e00391c268500cd5f2dfa89eb4aa">0xf6200fe5…</a>、<a href="https://etherscan.io/tx/0xd4e063fce5a3661f478243f4ae304116edceac25041d07491fc401ae2d2c6f33">0xd4e063fc…</a>、<a href="https://etherscan.io/tx/0xaf921d879084ea46d4ac97e070da376b339fa280e0a8366ebcef787cda0cec50">0xaf921d87…</a>。</p>
+  <p class="lead">每筆符合模板形狀的交易，都在它的上一個區塊上單獨重跑一次，讀它前後寄出方和收款方的餘額，跟交易寫的金額比較。只列出有宣告誤差，或餘額沒有剛好照金額變動的效果。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>gives card.amount of card.token to card.recipient</code></span><span>模板沒有宣告誤差，所以容許 0</span></div>
+    <div class="pg"><span class="pc num">28 筆</span><div><div>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84（Safe 0 筆、EOA 28 筆）：這個代幣不在 registry 裡，卡片不能選它，所以不算待確認</div>
+      <div class="pex">寄出方：<span class="num">剛好</span> 7 筆、<span class="num">多 1 個最小單位</span> 21 筆</div>
+      <div class="pex">收款方：<span class="num">少 2 個最小單位</span> 1 筆、<span class="num">少 1 個最小單位</span> 19 筆、<span class="num">剛好</span> 8 筆</div></div></div>
+  </div>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84 的轉帳，找到 5224 筆，研究 240 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/erc20-transfer-steth.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">5224 = 5224</span>）。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 transfer</span><span><span class="num">66</span> 筆用了這個操作的呼叫（39 個地址），<span class="num">0</span> 筆跟模板一模一樣，<span class="num">28</span> 筆形狀一樣、但用的是 registry 外的代幣。</span></div>
+    <div class="pg"><span class="pc num">28 筆</span><div><div>形狀一樣，但 <code>call.to</code> 用的是 registry 外的代幣<span class="f3">，來自 27 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x7419d343f8884bddfb5e2a6629faabf04e8cb317be1a59a7eb111ee4c3c4b319">0x7419d343…</a>、<a href="https://etherscan.io/tx/0x7052f4f3d450e8122da2226a332b5b13fb9e33c197ba79a0d9896cafd781ce0e">0x7052f4f3…</a>、<a href="https://etherscan.io/tx/0x0e95082bceaac3291825ae49351f1f27122b752235580f6516591186bc882161">0x0e95082b…</a></div></div></div>
+    <div class="pg"><span class="pc num">38 筆</span><div><div><code>call.encoding</code> 的值跟模板不同：模板要 <span class="addr">canonical transfer(address,uint256)</span>，交易是 <span class="addr">differs at byte 68</span><span class="f3">，來自 12 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x4b5994e40921cb5dece3f80a0e6f5ef0ac137fd3637c2e9730aa8d44bf647051">0x4b5994e4…</a>、<a href="https://etherscan.io/tx/0x49acd5da6ff4061a730087b52672babc318ceaf3477f872d0f268435eabbd1d9">0x49acd5da…</a>、<a href="https://etherscan.io/tx/0x18293035479a1aafd2a8062f2c765c2e340e45691487ee7412d797764aec8813">0x18293035…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 174 筆是別的操作，不列入：<code>0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84.0xa1903eab</code> 42 筆、<code>0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1.0xacf41e4d</code> 9 筆、<code>0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0.wrap</code> 7 筆、<code>0xEc6FC9be2d5e505b40A2DF8B0622cD25333823db.0xc94ba2ba</code> 5 筆，還有別的。</span></div>
   <h3>搜尋 usdc 的轉帳，找到 4505 筆，研究 240 筆</h3>
   <p class="lead">記錄在 <code>testdata/research/erc20-transfer-usdc.json</code>。Alchemy 和 Etherscan 找到的完全一樣（<span class="num">4505 = 4505</span>）。</p>
   <div class="pblock">
@@ -500,7 +520,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report erc20/transfer --record</code> 從 <code>templates/erc20/transfer/template.json</code>、<code>templates/erc20/transfer/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/erc20-transfer.json</code>、<code>testdata/abi</code>、<code>testdata/research/erc20-transfer-usdc.json</code>、<code>testdata/research/erc20-transfer-usdt.json</code>、<code>testdata/research/erc20-transfer.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/erc20/transfer/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report erc20/transfer --record</code> 從 <code>templates/erc20/transfer/template.json</code>、<code>templates/erc20/transfer/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/erc20-transfer.json</code>、<code>testdata/abi</code>、<code>testdata/research/erc20-transfer-steth.json</code>、<code>testdata/research/erc20-transfer-usdc.json</code>、<code>testdata/research/erc20-transfer-usdt.json</code>、<code>testdata/research/erc20-transfer.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/erc20/transfer/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>

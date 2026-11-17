@@ -232,7 +232,7 @@ What DefiLlama and the chain say about the protocols this template's calls go to
 
 ### `testdata/research/fluid-vault-deposit-fusdc.json`
 
-Recorded with `pnpm past-txs fluid/vault-deposit --token 0x9fb7b4477576fe5b32be4c1843afb1e55f251b33 --anchor mint --max-txs 240 --record fluid-vault-deposit-fusdc`, and studied again here with the template as it is now.
+Recorded with `pnpm past-txs fluid/vault-deposit --token 0x9fb7b4477576fe5b32be4c1843afb1e55f251b33 --anchor mint --max-txs 240 --same-windows-as fluid-vault-deposit-fusdc --record fluid-vault-deposit-fusdc`, and studied again here with the template as it is now.
 
 ```text
 past transactions for fluid/vault-deposit
