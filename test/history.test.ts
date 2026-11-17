@@ -92,13 +92,13 @@ async function run(at: { repo: string; home: string }, args: string[] = [], tran
   return { code, stdout, stderr };
 }
 
-/** The row a reader sees for one nonce: its line and the indented lines under it. */
+/** The row a reader sees for one nonce: its line and the indented lines under it, a wrapped line joined again. */
 const rowOf = (stdout: string, nonce: number): string => {
   const lines = stdout.split('\n');
   const start = lines.findIndex((line) => new RegExp(`^ *${nonce}  `).test(line));
   assert.ok(start >= 0, `no row for nonce ${nonce}`);
   const end = lines.findIndex((line, i) => i > start && !line.startsWith(' '.repeat(33)));
-  return lines.slice(start, end).join('\n');
+  return lines.slice(start, end).join('\n').replaceAll(/\n {35}/g, ' ');
 };
 
 const withCard = { 249: { ...DEPOSIT_CARD, origin: 'history', marks: MARKS } };
@@ -108,7 +108,7 @@ test('a deposit with its card is MATCH, and the card column says which values ca
   const { code, stdout } = await run(setUp('morpho-safe', withCard));
   assert.equal(code, 0);
   assert.match(rowOf(stdout, 249), /^  249  2026-\d\d-\d\d  MATCH         intent of nonce 249\n {33}card: amount: taken from the transaction; min-shares: taken from the transaction$/);
-  assert.match(stdout, /Templates are approved at their origin\/main hash \([0-9a-f]{40}\) for this run only, since history is not a signing: morpho\/vault-deposit 0x[0-9a-f]{64}\./);
+  assert.match(stdout.split('\n\n')[0]!.replaceAll('\n  ', ' '), /Templates are approved at their origin\/main hash \([0-9a-f]{40}\) for this run only, since history is not a signing: morpho\/vault-deposit 0x[0-9a-f]{64}\./);
 });
 
 test('a CoW pre-signature without a card has no template row of its own: its unlimited approval is refused by design', async () => {

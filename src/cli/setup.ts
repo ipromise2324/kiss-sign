@@ -1,8 +1,8 @@
 import { readFileSync, statSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { loadAddressBook, saveAddressBook } from '../address-book.ts';
-import { marketLines, parseCard, percentText, resolveCard, sealCard } from '../card.ts';
-import type { Card, ResolvedValue } from '../card.ts';
+import { parseCard, resolveCard, sealCard } from '../card.ts';
+import type { Card } from '../card.ts';
 import { ConfigError, loadApproved, loadConfig, loadStoredConfig, saveApproved, saveConfig } from '../config.ts';
 import type { Config } from '../config.ts';
 import { DEFAULT_LANGUAGE, LANGUAGES, LANGUAGE_NAMES, isLanguage } from '../language.ts';
@@ -13,7 +13,11 @@ import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template
 import { reportedVaultsIn, unreportedVault } from '../template/vault-reports.ts';
 import { commitSubject, dataDiffersFromOriginMain, fetchOriginMain, fileAt, originRepo } from '../verify/self-check.ts';
 import { keccakText } from '../verify/verify.ts';
+import { cardSummary } from './card-view.ts';
+import type { CardReads } from './card-view.ts';
+import { WIDTH, paint, rows, text, wrap } from './format.ts';
 import { FAILED, OK, UsageError, terminal } from './io.ts';
+import { LABELS } from './labels.ts';
 import type { Io, Terminal } from './io.ts';
 
 export function requireConfig(home: string): Config {
@@ -56,19 +60,22 @@ export async function init(args: readonly string[], io: Io): Promise<number> {
   const keyFile = keyFilePath(home);
   const created = createKeyFile(home);
   const mode = statSync(keyFile).mode & 0o777;
-  const width = Math.max(...KEYS.map(({ env }) => env.length)) + 2;
+  const I = LABELS.init;
+  const p = paint(io.color === true);
   const lines = [
-    `kiss-sign checks transactions of the Safe ${checksumAddress(safe)} on Ethereum mainnet (chain 1).`,
-    `It runs only what is on main of ${repo}, the repository this clone's origin names.`,
-    'Merging a pull request into that main is your confirmation.',
-    `Reports and the verify page are in ${LANGUAGE_NAMES[language]} (${language}); pnpm kiss-sign init --language ${LANGUAGES.join('|')} changes it.`,
+    p.heading(I.title),
+    ...rows([
+      [I.safe, [checksumAddress(safe), I.chain]],
+      [I.repository, [repo, I.trust]],
+      [I.language, [`${LANGUAGE_NAMES[language]} (${language}), for reports and the verify page`, `pnpm kiss-sign init --language ${LANGUAGES.join('|')} changes it`]],
+      [I.keyFile, [keyFile, created ? 'created, readable by you only' : 'it is already there and was left as it is']],
+    ]),
+    ...((mode & 0o077) === 0 ? [] : [p.warn(`Warning: other users can read ${keyFile} (mode ${mode.toString(8)}). Run chmod 600 ${shellWord(keyFile)}.`)]),
     '',
-    created ? `Created the key file ${keyFile}, readable by you only.` : `The key file ${keyFile} is already there and was left as it is.`,
-    ...((mode & 0o077) === 0 ? [] : [`Warning: other users can read ${keyFile} (mode ${mode.toString(8)}). Run chmod 600 ${shellWord(keyFile)}.`]),
-    'It takes these keys, each free:',
-    ...KEYS.flatMap((spec) => [`  ${spec.env.padEnd(width)}get it at ${spec.signup}`, `  ${' '.repeat(width)}needed by ${spec.usedBy}`]),
+    p.heading(I.keys),
+    ...rows(KEYS.map((spec) => [spec.env, [`${I.getIt} ${spec.signup}`, `${I.neededBy} ${spec.usedBy}`]])),
     '',
-    'Next:',
+    p.heading(I.next),
     '  1. Open the key file and paste each key after its = sign:',
     `       ${openCommand(io.platform, keyFile)}`,
     '     Or enter each key with the command below; what you type is not shown on screen:',
@@ -94,8 +101,14 @@ export async function bookAdd(args: readonly string[], io: Io): Promise<number> 
     io.stdout(`${name} is already ${checksumAddress(address)}.\n`);
     return OK;
   }
-  const replacing = old === undefined ? '' : ` (replacing ${checksumAddress(old)})`;
-  io.stdout(`${name} -> ${checksumAddress(address)}${replacing}\nCheck every character against a source outside this chat.\n`);
+  const B = LABELS.book;
+  const p = paint(io.color === true);
+  io.stdout(
+    text([
+      ...rows([[B.name, p.picked(name)], [B.address, p.picked(checksumAddress(address))], ...(old === undefined ? [] : [[B.replacing, checksumAddress(old)] as const])]),
+      B.check,
+    ]),
+  );
   if (!(await confirm('Add this entry? [y/N] '))) {
     io.stderr('Nothing added.\n');
     return FAILED;
@@ -108,20 +121,9 @@ export async function bookAdd(args: readonly string[], io: Io): Promise<number> 
 export function bookList(args: readonly string[], io: Io): number {
   if (args.length > 0) throw new UsageError('book list takes nothing more.');
   const book = loadAddressBook(kissSignHome(io.env));
-  if (book.size === 0) io.stdout('The address book is empty.\n');
-  for (const [name, address] of book) io.stdout(`${name} ${checksumAddress(address)}\n`);
+  if (book.size === 0) io.stdout(`${LABELS.book.empty}\n`);
+  else io.stdout(text(rows([...book].map(([name, address]) => [name, checksumAddress(address)]), 0)));
   return OK;
-}
-
-function show(value: ResolvedValue): string {
-  if (value.kind === 'amount' || value.kind === 'nonce' || value.kind === 'threshold') return `${value.value}`;
-  if (value.kind === 'percent') return `${percentText(value.value)} = ${value.value}`;
-  if (value.kind === 'contract') return `${value.name} ${checksumAddress(value.entry.address)} (registry)`;
-  if (value.kind === 'market') {
-    const [first, ...parts] = marketLines(value.market);
-    return [`${first} (markets table)`, ...parts].join('\n    ');
-  }
-  return `${value.name} ${checksumAddress(value.address)} (${value.from})`;
 }
 
 /**
@@ -149,7 +151,7 @@ export async function cardSeal(args: readonly string[], io: Io): Promise<number>
 }
 
 /** Resolves every name, shows the card with full addresses, and stores it under its hash once the signer says yes. */
-export async function seal(card: Card, io: Io, confirm: Terminal['confirm']): Promise<number> {
+export async function seal(card: Card, io: Io, confirm: Terminal['confirm'], reads?: CardReads): Promise<number> {
   const home = kissSignHome(io.env);
   const { safe } = requireConfig(home);
   const registry = loadRegistry(io.repoRoot);
@@ -164,16 +166,12 @@ export async function seal(card: Card, io: Io, confirm: Terminal['confirm']): Pr
     io.stderr(`kiss-sign: card refused: ${unreported}\n`);
     return FAILED;
   }
-  io.stdout(`Safe ${checksumAddress(safe)}\n`);
-  for (const [i, op] of resolution.card.operations.entries()) {
-    io.stdout(`operation ${i + 1}: ${op.template}\n`);
-    for (const [name, value] of op.values) io.stdout(`  ${name}: ${show(value)}\n`);
-  }
-  if (!(await confirm('Is this what you mean to do? [y/N] '))) {
+  io.stdout(text(cardSummary(resolution.card, templates, registry, reads, paint(io.color === true))));
+  if (!(await confirm(LABELS.card.confirm))) {
     io.stderr('Nothing sealed.\n');
     return FAILED;
   }
-  io.stdout(`Sealed card ${sealCard(home, card)}\n`);
+  io.stdout(`${LABELS.card.sealed(sealCard(home, card))}\n`);
   return OK;
 }
 
@@ -190,28 +188,33 @@ export async function templateApprove(args: readonly string[], io: Io): Promise<
     return FAILED;
   }
   const { commit } = origin;
-  let text: string;
+  let json: string;
   try {
-    text = fileAt(io.repoRoot, commit, `${TEMPLATES_DIR}/${id}/template.json`);
+    json = fileAt(io.repoRoot, commit, `${TEMPLATES_DIR}/${id}/template.json`);
   } catch {
     io.stderr(`kiss-sign: origin/main has no ${TEMPLATES_DIR}/${id}/template.json; a template counts only once it is merged.\n`);
     return FAILED;
   }
-  const template = parseTemplate(JSON.parse(text), parseRegistry(JSON.parse(fileAt(io.repoRoot, commit, REGISTRY_PATH))));
+  const template = parseTemplate(JSON.parse(json), parseRegistry(JSON.parse(fileAt(io.repoRoot, commit, REGISTRY_PATH))));
   if (template.id !== id) throw new UsageError(`${TEMPLATES_DIR}/${id}/template.json names itself ${template.id}.`);
-  const hash = keccakText(text);
+  const hash = keccakText(json);
+  const A = LABELS.approve;
+  const p = paint(io.color === true);
   io.stdout(
-    [
-      `Template: ${id}`,
-      `From main of ${repo}, commit ${commit}:`,
-      // JSON escapes any control character the subject carries, so it cannot steer the terminal.
-      `  ${JSON.stringify(commitSubject(io.repoRoot, commit))}`,
-      `Fingerprint of ${TEMPLATES_DIR}/${id}/template.json at that commit:`,
-      `  ${hash}`,
-      'verify uses this fingerprint to refuse any other version of this template until you approve it again.',
-      'There is nothing to compare by hand. Answer y only if this is the merged change you reviewed.',
+    text([
+      p.heading(A.title(id)),
+      ...rows([
+        [A.repository, `${repo}, main`],
+        [A.commit, commit],
+        // JSON escapes any control character the subject carries, so it cannot steer the terminal.
+        [A.subject, JSON.stringify(commitSubject(io.repoRoot, commit))],
+        [A.file, `${TEMPLATES_DIR}/${id}/template.json`],
+        [A.fingerprint, hash, p.heading],
+      ]),
+      ...wrap(A.why, WIDTH).map(p.dim),
       '',
-    ].join('\n'),
+      A.nothingByHand,
+    ]),
   );
   if (!(await confirm(`Approve ${id} as merged in that commit? [y/N] `))) {
     io.stderr('Nothing approved.\n');

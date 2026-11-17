@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { colorWanted, markWords, paint } from '../src/cli/format.ts';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -56,6 +57,10 @@ import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.t
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
+
+const colors = paint(colorWanted(process.stdout.isTTY, process.env));
+/** A line of `--compare`, its FINDING, DIFFERS and NOTE words coloured at a terminal. */
+const say = (line: string): void => console.log(markWords(line, colors));
 
 const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
        node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) (--offline | --render)
@@ -135,15 +140,15 @@ if (flags.compare) {
   try {
     changed = git('diff', '--name-only', `origin/main...${head}`).toString().split('\n').filter((f) => f !== '');
   } catch {
-    console.log(`PROGRAM CHANGE?  git could not compare ${head} with origin/main; check by hand which files the pull request changes`);
+    say(`PROGRAM CHANGE?  git could not compare ${head} with origin/main; check by hand which files the pull request changes`);
   }
   const program = changed === undefined ? [] : programChanges(changed);
   if (program.length > 0) {
-    console.log(`PROGRAM CHANGE  ${head} changes ${program.length} file(s) outside templates/, registry/ and testdata/; review it as a program change, not a template:`);
+    say(`PROGRAM CHANGE  ${head} changes ${program.length} file(s) outside templates/, registry/ and testdata/; review it as a program change, not a template:`);
     for (const file of program) console.log(`  ${file}`);
   }
-  for (const file of notesChanges(changed ?? [])) console.log(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
-  if (flags.data === undefined) console.log('NOTE  this runs the code checked out here; to check a pull request, run --compare from main with --data <its branch>');
+  for (const file of notesChanges(changed ?? [])) say(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
+  if (flags.data === undefined) say('NOTE  this runs the code checked out here; to check a pull request, run --compare from main with --data <its branch>');
 }
 
 const root = flags.data === undefined ? codeRoot : dataAt(flags.data);
@@ -283,7 +288,7 @@ async function compareHtml(): Promise<boolean> {
     const path = generatedHtmlPath(target, language);
     const committed = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined;
     const difference = refused ?? htmlDifference(generatedHtmlFile(language), committed, written?.get(language));
-    console.log(
+    say(
       difference === undefined
         ? `${path}: equals, byte for byte, what this code writes from the recordings and notes.json`
         : `DIFFERS  ${path} is not what this code writes from the recordings and notes.json; ${difference}`,
@@ -291,15 +296,15 @@ async function compareHtml(): Promise<boolean> {
     return difference;
   });
   const old = join(dirname(join(root, generatedHtmlPath(target, 'en'))), OLD_HTML_FILE);
-  if (existsSync(old)) console.log(`DIFFERS  ${OLD_HTML_FILE} is still committed beside the reports in each language that replace it`);
+  if (existsSync(old)) say(`DIFFERS  ${OLD_HTML_FILE} is still committed beside the reports in each language that replace it`);
   return differences.every((d) => d === undefined) && !existsSync(old);
 }
 
 if (flags.compare) {
-  if (unread.length > 0) console.log([`NOTE  ${unread.length} read(s) got no answer after every retry; a fact that differs below may differ only for that:`, ...unread.map((read) => `  ${read}`)].join('\n'));
+  if (unread.length > 0) say([`NOTE  ${unread.length} read(s) got no answer after every retry; a fact that differs below may differ only for that:`, ...unread.map((read) => `  ${read}`)].join('\n'));
   const differences = compareReports(readFileSync(committedPath, 'utf8'), text);
-  for (const line of differences) console.log(`DIFFERS  ${line}`);
-  console.log(
+  for (const line of differences) say(`DIFFERS  ${line}`);
+  say(
     differences.length === 0
       ? `${generatedPath(target)}: every fact read live equals the committed report (not compared: the date the listings were read, DefiLlama's TVL and the block each ABI proof was read at; past transactions were not searched again)`
       : `${generatedPath(target)}: ${differences.length} fact(s) differ from what was read live`,

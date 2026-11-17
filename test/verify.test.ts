@@ -102,7 +102,15 @@ test('the Morpho deposit verifies to MATCH, prints its safeTxHash, and writes a 
   assert.equal(verdicts.length, 1);
   assert.equal(pages.length, 1);
   const page = verdicts[0]!.replace(/\.json$/, '.html');
-  assert.equal(stdout, `MATCH\n  safeTxHash  ${chain.transactionHash}\nVerdict file: ${verdicts[0]}\nkiss-sign verify page, nonce ${service.nonce}, MATCH, with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\nOpen it with: xdg-open ${page}\n`);
+  const quoted = (text: string) => text.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+  assert.match(
+    stdout,
+    new RegExp(
+      `^┌─ MATCH · the transaction fits your card ─+\\n│ nonce +${service.nonce}\\n│ safeTxHash  ${chain.transactionHash}\\n└─+\\n` +
+        `The page shows: the domain hash, the message hash and the checklist to compare with check\\.sh\\n  ${quoted(page)}\\nThe verdict file:\\n  ${quoted(verdicts[0]!)}\\n` +
+        `Open the page with:\\n  xdg-open ${quoted(page)}\\n$`,
+    ),
+  );
   const [domain, message, safeTxHash] = ['tx-domain', 'tx-message', 'tx-safeTxHash'].map((id) => rowValue(pages[0]!, id));
   assert.equal(domain, chain.domainSeparator);
   assert.equal(safeTxHash, chain.transactionHash);
@@ -135,7 +143,7 @@ test('the verdict file verify writes replays to the same verdict', async () => {
   const { repo, home, verdicts } = await verifyTx(service);
   const replayed = await run(['replay', verdicts[0]!], repo, home);
   assert.equal(replayed.code, 0, replayed.stderr);
-  assert.match(replayed.stdout, /^MATCH\n[\s\S]*Same verdict as recorded\.\n$/);
+  assert.match(replayed.stdout, /^┌─ MATCH · replay of a recorded verdict ─+\n[\s\S]*\n└─+\nSame verdict as recorded\.\n$/);
   assert.doesNotMatch(replayed.stdout, /比對清單|呼叫/);
 });
 
@@ -154,13 +162,13 @@ function receiverChanged(): Record<string, unknown> {
 test('a copy with its receiver changed is MISMATCH, names the check and the field, and shows no hashes', async () => {
   const { code, stdout, pages, verdicts } = await verifyTx(receiverChanged());
   assert.equal(code, 1);
-  assert.match(stdout, /^MISMATCH\n/);
+  assert.match(stdout, /^┌─ MISMATCH · the transaction does not fit your card ─+\n/);
   const file = JSON.parse(readFileSync(verdicts[0]!, 'utf8')) as VerdictFile;
   for (const hash of Object.values(file.result.hashes)) {
     assert.doesNotMatch(stdout, new RegExp(hash.slice(2)));
     assert.doesNotMatch(pages[0]!, new RegExp(hash.slice(2)));
   }
-  assert.match(stdout, /fields: multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}/);
+  assert.match(stdout.replaceAll(/\n│ {9,}/g, ' '), /│ fields +multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}\n/);
   assert.doesNotMatch(stdout, /domain hash|message hash|safeTxHash/);
   assert.match(pages[0]!, /<html lang="en">/);
   assert.match(pages[0]!, /MISMATCH: the transaction does not fit your card\. Do not sign/);
@@ -180,19 +188,19 @@ test('replay of a recorded MISMATCH reproduces it, says so, and exits 0', async 
   assert.equal(code, 1);
   const replayed = await run(['replay', verdicts[0]!], repo, home);
   assert.equal(replayed.code, 0, replayed.stderr);
-  assert.match(replayed.stdout, /^MISMATCH\n[\s\S]*No hashes are shown\. Do not sign this transaction\.\nSame verdict as recorded\.\n$/);
+  assert.match(replayed.stdout, /^┌─ MISMATCH · replay of a recorded verdict ─+\n[\s\S]*│ No hashes are shown\. Do not sign this transaction\.\n└─+\nSame verdict as recorded\.\n$/);
 });
 
 test('a template that differs from its approved hash is MISMATCH', async () => {
   const { code, stdout } = await verifyTx(service, `0x${'00'.repeat(32)}`);
   assert.equal(code, 1);
-  assert.match(stdout, /^MISMATCH\n  template-approval: morpho\/vault-deposit hashes to 0x[0-9a-f]{64}, the approved hash is 0x0{64}\n/);
+  assert.match(stdout.replaceAll(/\n│ {9,}/g, ' '), /^┌─ MISMATCH [^\n]*\n│ nonce +\d+\n│ template-approval  morpho\/vault-deposit hashes to 0x[0-9a-f]{64}, the approved hash is 0x0{64}\n/);
 });
 
 test('a template never approved is UNVERIFIABLE', async () => {
   const { code, stdout } = await verifyTx(service, null);
   assert.equal(code, 1);
-  assert.match(stdout, /^UNVERIFIABLE\n  template-approval: morpho\/vault-deposit was never approved/);
+  assert.match(stdout, /^┌─ UNVERIFIABLE [^\n]*\n│ nonce +\d+\n│ template-approval  morpho\/vault-deposit was never approved/);
 });
 
 /** Every socket connection attempted while `run` runs, refused before it reaches the network. */
@@ -243,7 +251,7 @@ test('replay reports a recorded verdict this program does not reproduce', async 
   const path = write(join(dir, 'claimed.json'), recordingText(claimed));
   const { code, stdout, stderr } = await run(['replay', path], dir, dir);
   assert.equal(code, 1);
-  assert.match(stdout, /^MATCH\n/);
+  assert.match(stdout, /^┌─ MATCH · replay of a recorded verdict ─+\n/);
   assert.match(stderr, /the recorded verdict was MISMATCH; this program now gives another result/);
 });
 

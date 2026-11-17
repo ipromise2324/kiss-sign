@@ -13,6 +13,7 @@ import { TemplateError } from '../template/template.ts';
 import { httpsMessage } from '../verify/messages.ts';
 import { VerifyError } from '../verify/verify.ts';
 import { cardNew } from './card-new.ts';
+import { colorWanted } from './format.ts';
 import { FAILED, OK, USAGE, UsageError } from './io.ts';
 import type { Io } from './io.ts';
 import { hiddenPrompt } from './prompt.ts';
@@ -123,6 +124,7 @@ export function nodeIo(): Io {
     env: process.env,
     stdout: (text) => void process.stdout.write(text),
     stderr: (text) => void process.stderr.write(text),
+    color: colorWanted(process.stdout.isTTY, process.env),
     platform: process.platform,
     readSecret: process.stdin.isTTY ? (question) => hiddenPrompt(question, process.stdin, process.stderr) : undefined,
     ask: process.stdin.isTTY ? askLine : undefined,

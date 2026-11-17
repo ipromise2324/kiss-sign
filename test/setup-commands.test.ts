@@ -114,10 +114,13 @@ test('init records the Safe on chain 1 and the repository origin names, and prin
   assert.deepEqual(JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')), { chainId: 1, safe: SAFE, repo: 'github.com/signer/kiss-sign', language: 'en' });
   assert.ok(
     result.stdout.startsWith(
-      `kiss-sign checks transactions of the Safe ${SAFE} on Ethereum mainnet (chain 1).\n` +
-        "It runs only what is on main of github.com/signer/kiss-sign, the repository this clone's origin names.\n" +
-        'Merging a pull request into that main is your confirmation.\n' +
-        'Reports and the verify page are in English (en); pnpm kiss-sign init --language en|zh-TW changes it.\n',
+      'kiss-sign is set up\n' +
+        `  Safe        ${SAFE}\n` +
+        '              Ethereum mainnet (chain 1)\n' +
+        '  repository  github.com/signer/kiss-sign\n' +
+        "              main of this clone's origin; merging a pull request into it is your confirmation\n" +
+        '  language    English (en), for reports and the verify page\n' +
+        '              pnpm kiss-sign init --language en|zh-TW changes it\n',
     ),
     result.stdout,
   );
@@ -128,7 +131,7 @@ test('init records the report language, keeps it when run again without --langua
   const language = () => JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')).language;
   const chinese = await run(['init', '--safe', SAFE, '--language', 'zh-TW'], home, undefined, fork);
   assert.equal(chinese.code, 0, chinese.stderr);
-  assert.match(chinese.stdout, /Reports and the verify page are in Traditional Chinese \(zh-TW\)/);
+  assert.match(chinese.stdout, /language +Traditional Chinese \(zh-TW\), for reports and the verify page/);
   assert.equal(language(), 'zh-TW');
   assert.equal((await run(['init', '--safe', SAFE], home, undefined, fork)).code, 0);
   assert.equal(language(), 'zh-TW');
@@ -196,7 +199,7 @@ test('init creates a key file readable by its owner only, with an empty line per
   const first = await run(['init', '--safe', SAFE], home, undefined, fork);
   const keyFile = join(home, '.env');
   assert.equal(first.code, 0);
-  assert.match(first.stdout, new RegExp(`Created the key file ${keyFile}, readable by you only`));
+  assert.match(first.stdout, new RegExp(`key file +${keyFile}\\n +created, readable by you only\\n`));
   assert.match(first.stdout, /ALCHEMY_API_KEY +get it at https:\/\/dashboard\.alchemy\.com\/\n +needed by pnpm kiss-sign verify, pnpm kiss-sign card new/);
   assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs, pnpm check-sources and pnpm report/);
   assert.match(first.stdout, new RegExp(`\\n {7}\\$\\{EDITOR:-nano\\} ${keyFile}\\n`));
@@ -239,8 +242,8 @@ test('book add shows the full address, adds it on yes, and book list prints it',
   assert.equal(existsSync(join(home, 'address-book.json')), false);
   const added = await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   assert.equal(added.code, 0);
-  assert.match(added.stdout, new RegExp(`alice -> ${RECIPIENT}`));
-  assert.equal((await run(['book', 'list'], home)).stdout, `alice ${RECIPIENT}\n`);
+  assert.ok(added.stdout.startsWith(`  name     alice\n  address  ${RECIPIENT}\nCheck every character`), added.stdout);
+  assert.equal((await run(['book', 'list'], home)).stdout, `alice  ${RECIPIENT}\n`);
 });
 
 test('card seal prints every name with its full address and stores the card under its hash on yes', async () => {
@@ -250,7 +253,7 @@ test('card seal prints every name with its full address and stores the card unde
   writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5', 'min-shares': '4' } }] }));
   const sealed = await run(['card', 'seal', card], home, ['y']);
   assert.equal(sealed.code, 0, sealed.stderr);
-  assert.match(sealed.stdout, /vault: steakhouse-prime-usdc-v2-0f51 0xbeef088055857739C12CD3765F20b7679Def0f51/);
+  assert.match(sealed.stdout, /│   vault +steakhouse-prime-usdc-v2-0f51  0xbeef088055857739C12CD3765F20b7679Def0f51\n│   amount +5 base units of usdc\n│   min-shares +4 base units of steakhouse-prime-usdc-v2-0f51\n│\n│ card seal reads no decimals, so amounts are in base units only\n/);
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
   assert.ok(hash !== undefined && existsSync(join(home, 'cards', `${hash}.json`)));
 });
@@ -320,7 +323,7 @@ const mainnet = (views?: Views) => decimalsChain({ [USDC]: 6, [STEAKHOUSE]: 18 }
 
 /** The number the prompt lists a name under. */
 const numberOf = (name: string) => (stdout: string) => {
-  const found = new RegExp(`(\\d+)\\. ${name} 0x`).exec(stdout)?.[1];
+  const found = new RegExp(`(\\d+)\\.\\s+${name}\\s`).exec(stdout)?.[1];
   assert.ok(found !== undefined, `${name} is listed`);
   return found;
 };
@@ -339,16 +342,18 @@ test('card new lists a vault with the factory that created it, takes amounts in 
   configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
-  assert.match(made.stdout, new RegExp(`  \\d+\\. steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} \\(registry\\)  \\(factory vault-v2-factory ${VAULT_V2_FACTORY}\\)\n`));
-  assert.equal(made.asked[1], `amount (usdc ${USDC}, 6 decimals): `);
-  assert.ok(made.stdout.includes(`usdc ${USDC} has 6 decimals: decimals() at block ${HEAD}, where alchemy and drpc agree\n`));
-  assert.ok(made.stdout.includes('  amount: 5 usdc = 5000000 base units\n'));
-  assert.ok(made.stdout.includes("min-shares is not asked: the protocol's app fills it in itself, so it is computed\n"));
-  assert.ok(made.stdout.includes(`  previewDeposit(5000000) on steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} = 4900000000000000000: at block ${HEAD}, where alchemy and drpc agree\n`));
-  assert.ok(made.stdout.includes('  expected: 4.9 steakhouse-prime-usdc-v2-0f51 = 4900000000000000000 base units\n'));
-  assert.match(made.stdout, /  slippage: 0\.10%, less than expected: the protocol's default 0\.03% \(https:\/\/github\.com\/morpho-org\/sdks\/blob\/[0-9a-f]{40}\/packages\/blue-sdk\/src\/constants\.ts#L24\) plus a margin of 0\.07%\n/);
-  assert.ok(made.stdout.includes('amounts in whole tokens:\n  amount: 5 usdc = 5000000 base units\n  min-shares: 4.8951 steakhouse-prime-usdc-v2-0f51 = 4895100000000000000 base units\n\n'));
-  assert.match(made.stdout, new RegExp(`vault: steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} \\(registry\\)\\n  amount: 5000000\\n`));
+  assert.match(made.stdout, new RegExp(`\\n +\\d+\\. +steakhouse-prime-usdc-v2-0f51 +${STEAKHOUSE}\\n`));
+  assert.match(made.stdout, new RegExp(`\\n +created by +vault-v2-factory +${VAULT_V2_FACTORY}\\n`));
+  assert.equal(made.asked[1], 'amount (whole usdc, 6 decimals): ');
+  assert.ok(made.stdout.includes(`\n    token  usdc  ${USDC}  6 decimals\n`), made.stdout);
+  assert.ok(made.stdout.includes("\nmin-shares  computed, not asked: the protocol's app fills it in itself\n"));
+  assert.match(made.stdout, new RegExp(`\\n    read +previewDeposit\\(5000000\\)\\n +on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n`));
+  assert.match(made.stdout, /\n    expected +4\.9 steakhouse-prime-usdc-v2-0f51\n    slippage +0\.10% less than expected: the protocol's default 0\.03% plus a margin of 0\.07%\n    value +4\.8951 steakhouse-prime-usdc-v2-0f51\n    default from +https:\/\/github\.com\/morpho-org\/sdks\/blob\/[0-9a-f]{40}\/packages\/blue-sdk\/src\/constants\.ts#L24\n/);
+  assert.match(
+    made.stdout,
+    new RegExp(`│   vault +steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n│   amount +5 usdc\\n│ +5000000 base units\\n│   min-shares +4\\.8951 steakhouse-prime-usdc-v2-0f51\\n│ +4895100000000000000 base units\\n│\\n│ chain reads at block ${HEAD}, where alchemy and drpc agree\\n`),
+  );
+  assert.equal(made.stdout.match(/5000000 base units/g)?.length, 1, 'the amount is shown in base units once, in the card');
   assert.equal(made.asked.length, 3);
   assert.equal(made.asked[2], 'Is this what you mean to do? [y/N] ');
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(made.stdout)?.[1];
@@ -360,10 +365,10 @@ test('card new reads a computed field\'s inner read first, here the Safe\'s shar
   configure(home);
   const made = await run(['card', 'new', 'morpho/vault-withdraw-all'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), 'y'], { ...mainnet(), repoRoot: withdrawClone() });
   assert.equal(made.code, 0, made.stderr);
-  const balance = made.stdout.indexOf(`  balanceOf(safe) on steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} = 2000000000000000000:`);
-  const redeem = made.stdout.indexOf(`  previewRedeem(2000000000000000000) on steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE} = 2000000:`);
+  const balance = made.stdout.indexOf(`balanceOf(safe) = 2000000000000000000\n                  on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\n`);
+  const redeem = made.stdout.indexOf(`previewRedeem(2000000000000000000)\n                  on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\n`);
   assert.ok(balance !== -1 && redeem > balance, made.stdout);
-  assert.ok(made.stdout.includes('  min-assets: 1.998 usdc = 1998000 base units\n'));
+  assert.match(made.stdout, /\n    expected +2 usdc\n[\s\S]*\n    value +1\.998 usdc\n[\s\S]*│   min-assets +1\.998 usdc\n│ +1998000 base units\n/);
 });
 
 test('card new rounds a ceiling up, as a withdrawal\'s max-shares', async () => {
@@ -372,8 +377,8 @@ test('card new rounds a ceiling up, as a withdrawal\'s max-shares', async () => 
   const chain = mainnet((_p, to, selector, arg) => (selector === PREVIEW_WITHDRAW && to.toLowerCase() === STEAKHOUSE.toLowerCase() ? arg * 1999n : undefined));
   const made = await run(['card', 'new', 'morpho/vault-withdraw'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '0.000001', 'y'], { ...chain, repoRoot: withdrawClone() });
   assert.equal(made.code, 0, made.stderr);
-  assert.ok(made.stdout.includes('  slippage: 0.10%, more than expected'));
-  assert.ok(made.stdout.includes('  max-shares: 0.000000000000002001 steakhouse-prime-usdc-v2-0f51 = 2001 base units\n'), made.stdout);
+  assert.match(made.stdout, /\n    slippage +0\.10% more than expected/);
+  assert.match(made.stdout, /│   max-shares +0\.000000000000002001 steakhouse-prime-usdc-v2-0f51\n│ +2001 base units\n/, made.stdout);
 });
 
 for (const [what, views, message] of [
@@ -397,7 +402,7 @@ test('card new takes commas between thousands, as the protocol\'s app shows an a
   configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '1,000,611.448606', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
-  assert.ok(made.stdout.includes('  amount: 1000611.448606 usdc = 1000611448606 base units\n'));
+  assert.match(made.stdout, /│   amount +1,000,611\.448606 usdc\n│ +1000611448606 base units\n/);
 });
 
 test('card new and card seal stop before asking anything when templates or registry here are behind main on GitHub', async () => {
@@ -439,10 +444,8 @@ test('card new reads each token\'s decimals once across operations', async () =>
   const vault = numberOf('steakhouse-prime-usdc-v2-0f51');
   const made = await run(['card', 'new', 'morpho/vault-deposit', 'morpho/vault-withdraw'], home, [vault, '1.25', vault, '0.000001', 'y'], { ...chain, repoRoot: withdrawClone() });
   assert.equal(made.code, 0, made.stderr);
-  assert.ok(made.stdout.includes('  amount: 1.25 usdc = 1250000 base units\n'));
-  assert.ok(made.stdout.includes('  amount: 0.000001 usdc = 1 base units\n'));
-  assert.ok(made.stdout.includes('operation 1 amount: 1.25 usdc = 1250000 base units\n'));
-  assert.ok(made.stdout.includes('operation 2 amount: 0.000001 usdc = 1 base units\n'));
+  assert.ok(made.stdout.includes('\nOperation 1 of 2: morpho/vault-deposit\n') && made.stdout.includes('\nOperation 2 of 2: morpho/vault-withdraw\n'), made.stdout);
+  assert.match(made.stdout, /│ 1\. morpho\/vault-deposit\n[^]*?│   amount +1\.25 usdc\n│ +1250000 base units\n[^]*│ 2\. morpho\/vault-withdraw\n[^]*?│   amount +0\.000001 usdc\n│ +1 base units\n/);
   assert.deepEqual(chain.calls.toSorted(), [STEAKHOUSE, STEAKHOUSE, USDC, USDC].map((a) => a.toLowerCase()).toSorted());
 });
 
@@ -453,7 +456,7 @@ test('card new asks for a choice by its number, and takes its exact listed name 
     const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [pick, '5', 'y'], mainnet());
     assert.equal(made.code, 0, made.stderr);
     assert.match(made.asked[0]!, /^vault: type its number \(1-\d+\): $/);
-    assert.match(made.stdout, new RegExp(`  vault: steakhouse-prime-usdc-v2-0f51 ${STEAKHOUSE}`));
+    assert.match(made.stdout, new RegExp(`│   vault +steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}`));
   }
 });
 
@@ -472,8 +475,8 @@ test('card new counts eth in 18 decimals without reading the chain', async () =>
   await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   const made = await run(['card', 'new', 'eth/transfer'], home, [numberOf('alice'), '0.5', 'y'], { ...noChain, env: {} });
   assert.equal(made.code, 0, made.stderr);
-  assert.equal(made.asked[1], 'amount (eth, 18 decimals): ');
-  assert.ok(made.stdout.includes('  amount: 0.5 eth = 500000000000000000 base units\n'));
+  assert.equal(made.asked[1], 'amount (whole eth, 18 decimals): ');
+  assert.match(made.stdout, /│   amount +0\.5 ETH\n│ +500000000000000000 base units\n/);
 });
 
 test('card new offers a transfer recipient only from the address book or the Safe', async () => {
@@ -482,9 +485,8 @@ test('card new offers a transfer recipient only from the address book or the Saf
   await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   const made = await run(['card', 'new', 'erc20/transfer'], home, [numberOf('usdc'), numberOf('alice'), '1', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
-  assert.match(made.stdout, new RegExp(`recipient:\\n  1\\. safe ${SAFE} \\(safe\\)\\n  2\\. alice ${RECIPIENT} \\(address-book\\)\\n`));
-  assert.match(made.stdout, new RegExp(`recipient: alice ${RECIPIENT} \\(address-book\\)`));
-  assert.match(made.stdout, /amount: 1000000\n/);
+  assert.match(made.stdout, new RegExp(`\\nrecipient  pick one by number\\n  1\\.  safe   this Safe     ${SAFE}\\n  2\\.  alice  address book  ${RECIPIENT}\\n`));
+  assert.match(made.stdout, new RegExp(`│   amount +1 usdc\\n│ +1000000 base units\\n│   recipient +alice \\(address book\\)  ${RECIPIENT}\\n`));
 });
 
 test('card new asks for base units when the token is no registry contract, so it has no decimals to read', async () => {
@@ -500,7 +502,7 @@ test('card new asks for base units when the token is no registry contract, so it
   const made = await run(['card', 'new', 'test/any-token'], home, [numberOf('alice'), '2', '5', 'y'], { ...decimalsChain({}), repoRoot });
   assert.equal(made.code, 0, made.stderr);
   assert.equal(made.asked[2], 'amount (base units of card.token, which is no registry contract, so its decimals are not read): ');
-  assert.match(made.stdout, /amount: 5\n/);
+  assert.match(made.stdout, /│   amount +5 base units\n/);
 });
 
 function withdrawClone(): string {
@@ -523,7 +525,7 @@ test('card new lists only the vaults with a report for a template reported per v
   configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, ['smokehouse-usdc-v1-f5bc'], mainnet());
   assert.equal(made.code, 1);
-  const listed = [...made.stdout.matchAll(/^ {2}\d+\. ([a-z0-9.-]+) 0x/gm)].map((m) => m[1]);
+  const listed = [...made.stdout.matchAll(/^ *\d+\.\s+([a-z0-9.-]+)\s/gm)].map((m) => m[1]);
   assert.deepEqual(listed, ['steakhouse-prime-usdc-v2-0f51', 'hyperithm-usdc-apex-v2-9e2f']);
   assert.match(made.stderr, /vault: "smokehouse-usdc-v1-f5bc" is none of the listed choices/);
 });
@@ -534,11 +536,11 @@ test('card new takes a Vault V2 cap as max or in whole tokens and a relative cap
   const id = '0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64';
   const made = await run(['card', 'new', 'morpho/vault-v2-cap-submit'], home, ['flowmark-fgenesis-v2-6439', id, 'max', '35.5', 'y'], decimalsChain({ [USDC]: 6 }));
   assert.equal(made.code, 0, made.stderr);
-  assert.equal(made.asked[2], `absolute-cap (usdc ${USDC}, 6 decimals, or max): `);
+  assert.equal(made.asked[2], 'absolute-cap (whole usdc, 6 decimals, or max): ');
   assert.equal(made.asked[3], 'relative-cap (a percent, 100 at most, such as 100 or 35.5): ');
-  assert.ok(made.stdout.includes('  max, as the template says: Vault V2 stores an absolute cap in 128 bits'), made.stdout);
-  assert.ok(made.stdout.includes('  absolute-cap: 340282366920938463463374607431768.211455 usdc = 340282366920938463463374607431768211455 base units\n'), made.stdout);
-  assert.ok(made.stdout.includes('  relative-cap: 35.5% = 355000000000000000 base units, 100% being 1000000000000000000\n'), made.stdout);
+  assert.ok(made.stdout.includes('\n    max  Vault V2 stores an absolute cap in 128 bits'), made.stdout);
+  assert.match(made.stdout, /│   absolute-cap +340,282,366,920,938,463,463,374,607,431,768\.211455 usdc\n│ +340282366920938463463374607431768211455 base units\n/, made.stdout);
+  assert.match(made.stdout, /│   relative-cap +35\.5%\n│ +355000000000000000 base units, 100% being 10\^18\n/, made.stdout);
   assert.match(made.stdout, /Sealed card 0x[0-9a-f]{64}/);
   const other = freshHome();
   configure(other);
@@ -621,7 +623,7 @@ test('card new does not offer a vault with no report for the template through an
   configure(home);
   const made = await run(['card', 'new', 'test/any-token'], home, ['smokehouse-usdc-v1-f5bc'], { ...decimalsChain({}), repoRoot });
   assert.equal(made.code, 1);
-  const listed = [...made.stdout.matchAll(/^ {2}\d+\. ([a-z0-9.-]+) 0x/gm)].map((m) => m[1]);
+  const listed = [...made.stdout.matchAll(/^ *\d+\.\s+([a-z0-9.-]+)\s/gm)].map((m) => m[1]);
   assert.ok(listed.includes('steakhouse-prime-usdc-v2-0f51') && listed.includes('usdc'), listed.join());
   assert.ok(!listed.includes('smokehouse-usdc-v1-f5bc'), 'a vault with no report is not listed');
   assert.match(made.stderr, /token: "smokehouse-usdc-v1-f5bc" is none of the listed choices/);
@@ -639,7 +641,7 @@ test('card new lists only the entries of the protocol a contract field names, an
   configure(home);
   const made = await run(['card', 'new', 'test/fluid-only'], home, ['steakhouse-prime-usdc-v2-0f51'], { ...mainnet(), repoRoot });
   assert.equal(made.code, 1);
-  assert.match(made.stdout, /vault:\n  1\. fluid-fusdc 0x\w{40} \(registry\)  \(factory fluid-lending-factory 0x\w{40}\)\n  2\. fluid-fusdt 0x\w{40} \(registry\)  \(factory fluid-lending-factory 0x\w{40}\)\n/);
+  assert.match(made.stdout, /\nvault  pick one by number\n  1\.  fluid-fusdc  0x\w{40}\n  2\.  fluid-fusdt  0x\w{40}\n      created by  fluid-lending-factory  0x\w{40}\n/);
   assert.match(made.stderr, /vault: "steakhouse-prime-usdc-v2-0f51" is none of the listed choices/);
 });
 
@@ -672,15 +674,16 @@ test('card new lists each market with its id, its lltv and every part, takes the
   assert.equal(made.code, 0, made.stderr);
   assert.equal(made.asked[0], 'market: type its number (1-1): ');
   const parts = [
-    `lending morpho-blue ${added['morpho-blue'].address}`,
-    `loanToken usdc ${USDC}`,
-    `collateralToken cbbtc ${added.cbbtc.address}`,
-    `oracle morpho-oracle-cbbtc-usdc-86 ${added['morpho-oracle-cbbtc-usdc-86'].address}`,
-    `irm adaptive-curve-irm ${added['adaptive-curve-irm'].address}`,
+    `id               ${id}`,
+    `lending          morpho-blue                  ${added['morpho-blue'].address}`,
+    `loanToken        usdc                         ${USDC}`,
+    `collateralToken  cbbtc                        ${added.cbbtc.address}`,
+    `oracle           morpho-oracle-cbbtc-usdc-86  ${added['morpho-oracle-cbbtc-usdc-86'].address}`,
+    `irm              adaptive-curve-irm           ${added['adaptive-curve-irm'].address}`,
   ];
-  assert.ok(made.stdout.includes(`market:\n  1. usdc-cbbtc-86 id ${id}, lltv 0.86 (860000000000000000)\n${parts.map((line) => `       ${line}\n`).join('')}`), made.stdout);
-  assert.equal(made.asked[1], `amount (usdc ${USDC}, 6 decimals): `);
-  assert.ok(made.stdout.includes(`  market: usdc-cbbtc-86 id ${id}, lltv 0.86 (860000000000000000) (markets table)\n${parts.map((line) => `    ${line}\n`).join('')}  amount: 2500000\n`), made.stdout);
+  assert.ok(made.stdout.includes(`\nmarket  pick one by number\n  1.  usdc-cbbtc-86  lltv 0.86 (860000000000000000)\n${parts.map((line) => `      ${line}\n`).join('')}`), made.stdout);
+  assert.equal(made.asked[1], 'amount (whole usdc, 6 decimals): ');
+  assert.ok(made.stdout.includes(`│   market  usdc-cbbtc-86  lltv 0.86 (860000000000000000)\n${parts.map((line) => `│     ${line}\n`).join('')}│   amount  2.5 usdc\n│           2500000 base units\n`), made.stdout);
   assert.match(made.stdout, /Sealed card 0x[0-9a-f]{64}/);
 });
 
@@ -710,7 +713,8 @@ test('card new takes the largest amount below 2^256 base units', async () => {
   configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), MAX_USDC, 'y'], mainnet(() => 10n ** 30n));
   assert.equal(made.code, 0, made.stderr);
-  assert.ok(made.stdout.includes(`  amount: ${MAX_USDC} usdc = ${2n ** 256n - 1n} base units\n`));
+  const [, whole, base] = /│   amount +([\d,.]+) usdc (\d+) base units\n/.exec(made.stdout.replaceAll(/\n│ {14,}/g, ' ')) ?? [];
+  assert.deepEqual([whole?.replaceAll(',', ''), base], [MAX_USDC, `${2n ** 256n - 1n}`]);
 });
 
 for (const [what, answers, message] of [
