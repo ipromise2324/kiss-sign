@@ -7,7 +7,7 @@ import { describeRefusal } from '../src/contracts/prove.ts';
 import { mergeRegistry } from '../src/history/load.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { REGISTRY_PATH, parseRegistry, unreachedSeeds } from '../src/registry.ts';
-import type { CodePin, CodePins, CodeSpan, Route } from '../src/registry.ts';
+import type { CodePin, CodePins, CodeSpan, ProxyDeclaration, Route } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/pin-code.ts [<registry name>...] [--history]
@@ -62,9 +62,10 @@ for (const name of names.length > 0 ? names : Object.keys(file)) {
   const address = parseAddress(`${name}.address`, entry.address);
   const where = `${name} ${checksumAddress(address)}`;
   const was = recorded.entries.get(name)?.code;
-  const routing = recorded.entries.get(name)?.routes;
+  const declared: ProxyDeclaration = recorded.entries.get(name) ?? {};
+  const routing = declared.routes;
   const ranged = typeof entry.code === 'object' && entry.code !== null && 'from' in entry.code;
-  const head = await readRunningCode(reader, address, block.value, routing);
+  const head = await readRunningCode(reader, address, block.value, declared);
   if (head.kind === 'refused') {
     console.log(`REFUSED ${where}: ${describeRefusal(head.refusal)}`);
     refused = true;
@@ -81,7 +82,7 @@ for (const name of names.length > 0 ? names : Object.keys(file)) {
     console.log(`${where} ${pinText(was.current.pin)} from block ${was.current.from} (unchanged)`);
     continue;
   }
-  const history = await readCodeHistory(reader, address, block.value.number, headPin, routing);
+  const history = await readCodeHistory(reader, address, block.value.number, headPin, declared);
   if (history.kind === 'refused') {
     console.log(`REFUSED ${where}: ${describeRefusal(history.refusal)}`);
     refused = true;

@@ -8,7 +8,7 @@ import type { Proxy } from '../contracts/proxy.ts';
 import { MARKET_ENTRY_PARTS, isAttribute, pinAt } from '../registry.ts';
 import type { CodePin, Registry, RegistryEntry, Route } from '../registry.ts';
 import type { SafeTx } from '../safe/types.ts';
-import { cardRefs } from '../template/template.ts';
+import { cardRefs, namedEffectTokens } from '../template/template.ts';
 import type { Rule, Template } from '../template/template.ts';
 import type { ChainCheck } from './verdict.ts';
 
@@ -25,6 +25,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
   };
   const visit = (rule: Rule | undefined): void => {
     if (rule?.kind === 'contract') add(registry.entries.get(rule.name));
+    else if (rule?.kind === 'address-word') visit(rule.rule);
     else if (rule?.kind === 'const' && rule.value.kind === 'address') add(registry.byAddress.get(rule.value.value));
     else if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
     else if (rule?.kind === 'items') rule.items.forEach(visit);
@@ -57,6 +58,7 @@ export function codeClaims(tx: SafeTx, card: ResolvedCard, templates: ReadonlyMa
       if (view.to.kind === 'contract') add(registry.entries.get(view.to.name));
       view.args.forEach(visit);
     }
+    for (const name of namedEffectTokens(template.effects)) add(registry.entries.get(name));
     for (const kept of template.effects.approves) add(registry.entries.get(kept.spender));
   }
   for (const entry of [...touched.values()]) entry.dependsOn?.forEach((name) => add(registry.entries.get(name)));
@@ -81,7 +83,7 @@ async function compare(reader: Reader, entry: RegistryEntry, at: BlockRef, time:
   if (own.kind === 'unverifiable') return unverifiable(own.reason);
   const hash = keccakCode(own.value);
   if (hash !== pin.hash) return mismatch(`${where} has code hash ${hash} ${block}, the registry pins ${pin.hash}`);
-  const located = await locate(reader, entry.address, own.value, at, entry.routes !== undefined);
+  const located = await locate(reader, entry.address, own.value, at, entry);
   if (located.kind === 'refused') {
     const detail = `${where} ${block}: ${describeRefusal(located.refusal)}`;
     return located.refusal.why === 'unverifiable' ? unverifiable(detail) : mismatch(detail);

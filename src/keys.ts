@@ -12,6 +12,14 @@ export const KEYS = [
     usedBy: 'pnpm kiss-sign verify, pnpm kiss-sign card new, and the pnpm research scripts',
   },
   { name: 'etherscan', label: 'Etherscan', env: 'ETHERSCAN_API_KEY', signup: 'https://etherscan.io/myapikey', usedBy: 'pnpm past-txs, pnpm check-sources and pnpm report' },
+  {
+    name: 'github',
+    label: 'GitHub',
+    env: 'GITHUB_TOKEN',
+    signup: 'https://github.com/settings/personal-access-tokens/new',
+    usedBy: 'pnpm check-sources, pnpm report, pnpm pin-solc and pnpm fetch-erc7730, only to raise the GitHub API rate limit',
+    optional: 'a fine-grained token with access to public repositories only, read-only',
+  },
 ] as const;
 
 export type KeySpec = (typeof KEYS)[number];
@@ -87,7 +95,7 @@ function writeAtomically(home: string, lines: readonly string[]): void {
 /** Writes a key file with one empty line per key, readable by the owner only. False when a file is already there, which is left as it is. */
 export function createKeyFile(home: string): boolean {
   mkdirSync(home, { recursive: true, mode: 0o700 });
-  const text = KEYS.map((spec) => `# ${spec.label}, a free key from ${spec.signup}, for ${spec.usedBy}.\n${spec.env}=\n`).join('');
+  const text = KEYS.map((spec) => `# ${'optional' in spec ? `${spec.label}, optional, ${spec.optional}` : `${spec.label}, a free key`} from ${spec.signup}, for ${spec.usedBy}.\n${spec.env}=\n`).join('');
   let fd: number;
   try {
     fd = openSync(keyFilePath(home), 'wx', 0o600);
@@ -105,7 +113,7 @@ export function createKeyFile(home: string): boolean {
 
 export function saveKey(home: string, spec: KeySpec, value: string): void {
   if (!KEY_SHAPE.test(value)) {
-    throw new KeyError(`An ${spec.label} key is 8 to 256 letters, digits, '.', '-' or '_', and what you typed is not. No key saved.`);
+    throw new KeyError(`The ${spec.label} key is 8 to 256 letters, digits, '.', '-' or '_', and what you typed is not. No key saved.`);
   }
   const lines = readLines(keyFilePath(home));
   const line = `${spec.env}=${value}`;

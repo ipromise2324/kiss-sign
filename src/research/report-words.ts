@@ -9,6 +9,12 @@ import type { OutsideKind } from './study.ts';
 const before = (prefix: string, word: string): string => (/^[A-Za-z0-9]/.test(word) ? `${prefix} ${word}` : `${prefix}${word}`);
 const plural = (n: number, one: string, many: string): string => (n === 1 ? one : many);
 
+/** How far a tolerance lets a balance end from the card's amount, such as `up to 2 base units lower or 1 base unit higher`. */
+export const toleranceSpan = (less: bigint, more: bigint): string => {
+  const units = (n: bigint): string => `${n} base unit${n === 1n ? '' : 's'}`;
+  return `up to ${[less > 0n ? `${units(less)} lower` : '', more > 0n ? `${units(more)} higher` : ''].filter((t) => t !== '').join(' or ')}`;
+};
+
 const ZH = {
   /** Joins the items of a list the way prose does: `a、b` in Chinese, `a, b` in English. */
   sep: '、',
@@ -154,6 +160,7 @@ const ZH = {
 
   zeroAddress: '無（零地址）',
   fixedAddress: '固定的地址',
+  asWord: '，放在 32 bytes 裡、前面補 12 個 0 byte',
   fixedTo: (value: string): string => `固定為 ${value}`,
   fixedValue: '固定值',
   differs: '每筆不同',
@@ -165,6 +172,7 @@ const ZH = {
   priceMin: '價格下限',
   priceHow: '依你填的數量算出，交易裡的要一樣嚴或更嚴',
   atLeastHow: '比這個少就 MISMATCH',
+  atMostHow: '比這個多就 MISMATCH',
   argsOf: (fn: Span): Span[] => [fn, ' 的參數'],
   packed: (bytes: number, parts: number): string => `${bytes} bytes，${parts} 段接在一起`,
   eip712: (struct: Span): Span[] => [struct, ' 的 EIP-712 雜湊'],
@@ -197,6 +205,11 @@ const ZH = {
   getsAny: '收到 0 或更多',
   riseOrStay: '可以增加或不變，不能減少',
   getsAtLeast: (field: string): string => before('收到的不能少於你填的', field),
+  givesAtMost: (field: string): string => `${before('給出的不能多於你填的', field)}，Safe 的餘額也不能增加`,
+  tolerance: (less: bigint, more: bigint): string =>
+    `因為捨入，Safe 最後的餘額可以${[less > 0n ? `低最多 ${less}` : '', more > 0n ? `高最多 ${more}` : ''].filter((t) => t !== '').join(' 或')} 個最小單位`,
+  touched: '只能因捨入變動',
+  listSep: '；',
   wholeBalance: '全部餘額，交易後一個都不剩',
   directionOnly: '程式只查方向，不查數量',
   toWhom: (to: string): string => before('，給', to),
@@ -414,8 +427,9 @@ const ZH = {
   compareHashes: (verify: Span): Span[] => ['硬體錢包上的 domain hash 和 message hash，跟 ', verify, ' 網頁上的逐字比對，一樣才簽。'],
   onlyCalls: (n: number): string => `交易只有這 ${n} 個呼叫，MultiSend 也一個個解開`,
   everyArgument: '每個參數符合上面的規則，重新編碼要一模一樣',
-  gives: (token: string, amount: { readonly kind: 'card'; readonly field: string } | { readonly kind: 'all' | 'positive' }): string =>
-    `模擬後 Safe 給出的 ${token} ${amount.kind === 'card' ? before('剛好是你填的', amount.field) : amount.kind === 'all' ? '是全部餘額' : '多於 0'}`,
+  gives: (token: string, amount: { readonly kind: 'card' | 'at-most'; readonly field: string } | { readonly kind: 'all' | 'positive' }): string =>
+    `模擬後 Safe 給出的 ${token} ${amount.kind === 'card' ? before('剛好是你填的', amount.field) : amount.kind === 'at-most' ? before('不多於你填的', amount.field) : amount.kind === 'all' ? '是全部餘額' : '多於 0'}`,
+  toleranceLine: (token: string, tolerance: string): string => `模擬後 Safe 的 ${token}：${tolerance}`,
   gets: (token: string, atLeast: string | undefined): Span[] => [`模擬後 Safe 收到 ${token}`, ...(atLeast === undefined ? [] : [before('，不少於你填的', atLeast)])],
   getsAnyAmount: (token: string): string => `模擬後 Safe 的 ${token} 可以增加或不變，不能減少`,
   noBalanceChange: '模擬後 Safe 的餘額一點都不能變',
@@ -707,6 +721,7 @@ const EN: Words = {
 
   zeroAddress: 'none (zero address)',
   fixedAddress: 'a fixed address',
+  asWord: ', as a 32-byte word left-padded with 12 zero bytes',
   fixedTo: (value) => `fixed to ${value}`,
   fixedValue: 'a fixed value',
   differs: 'differs each time',
@@ -718,6 +733,7 @@ const EN: Words = {
   priceMin: 'price floor',
   priceHow: "computed from the amount you type; the transaction's must be as strict or stricter",
   atLeastHow: 'less than this is a MISMATCH',
+  atMostHow: 'more than this is a MISMATCH',
   argsOf: (fn) => ['the arguments of ', fn],
   packed: (bytes, parts) => `${bytes} bytes, ${parts} parts joined`,
   eip712: (struct) => ['the EIP-712 hash of ', struct],
@@ -749,6 +765,10 @@ const EN: Words = {
   getsAny: 'receives 0 or more',
   riseOrStay: 'may rise or stay the same, never fall',
   getsAtLeast: (field) => `receives no less than the ${field} you type`,
+  givesAtMost: (field) => `gives no more than the ${field} you type, and gains none`,
+  tolerance: (less, more) => `the Safe's balance may end ${toleranceSpan(less, more)}, for rounding`,
+  touched: 'changes only by rounding',
+  listSep: '; ',
   wholeBalance: 'the whole balance; none is left after the transaction',
   directionOnly: 'the program checks only the direction, not the amount',
   toWhom: (to) => `, to the ${to}`,
@@ -971,7 +991,8 @@ const EN: Words = {
   onlyCalls: (n) => `The transaction has only ${n === 1 ? 'this call' : `these ${n} calls`}, counting each call inside a MultiSend`,
   everyArgument: 'Every argument follows the rules above, and encoding them again gives exactly the same bytes',
   gives: (token, amount) =>
-    `After simulation, the ${token} the Safe gives is ${amount.kind === 'card' ? `exactly the ${amount.field} you type` : amount.kind === 'all' ? 'its whole balance' : 'more than 0'}`,
+    `After simulation, the ${token} the Safe gives is ${amount.kind === 'card' ? `exactly the ${amount.field} you type` : amount.kind === 'at-most' ? `at most the ${amount.field} you type` : amount.kind === 'all' ? 'its whole balance' : 'more than 0'}`,
+  toleranceLine: (token, tolerance) => `After simulation, the Safe's ${token}: ${tolerance}`,
   gets: (token, atLeast) => [`After simulation, the Safe receives ${token}`, ...(atLeast === undefined ? [] : [`, no less than the ${atLeast} you type`])],
   getsAnyAmount: (token) => `After simulation, the Safe's ${token} may rise or stay the same, never fall`,
   noBalanceChange: 'After simulation, no balance of the Safe may change at all',

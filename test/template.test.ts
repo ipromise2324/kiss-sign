@@ -185,17 +185,28 @@ test('an address anywhere in the type tree is never free, and a constant address
   assert.doesNotThrow(() => parseTemplate(zero, registry));
 });
 
-test('a computed card field reads one uint256 view with arguments bound to the card or the Safe, and a slippage in basis points', () => {
+test('a computed card field reads a view with every argument bound as a view\'s is, picks one unsigned number, and adds a slippage in basis points', () => {
   const computed = (t: any) => t.card['min-shares'].computed;
   const at = 'card.min-shares.computed';
+  const balance = { read: { to: { card: 'vault' }, function: 'balanceOf(address account) returns (uint256 shares)', args: { account: { safe: true } } } };
   const cases: [(t: any) => void, string, RegExp][] = [
-    [(t) => (computed(t).read.args.assets = 'card.min-shares'), `${at}.read.args.assets`, /computed after this one or is this one/],
-    [(t) => (computed(t).read.args.assets = 'card.vault'), `${at}.read.args.assets`, /is not an amount/],
-    [(t) => (computed(t).read.args.assets = 'safe'), `${at}.read.args.assets`, /the Safe is an address/],
-    [(t) => (computed(t).read.args.assets = '5'), `${at}.read.args.assets`, /must be "safe", card.<field> or a read/],
-    [(t) => (computed(t).read.function = 'previewDeposit(uint256 assets) returns (uint256 shares, uint256 more)'), `${at}.read.function`, /exactly one uint256/],
-    [(t) => (computed(t).read.function = 'convertToShares(bytes32 assets) returns (uint256 shares)'), `${at}.read.args.assets`, /neither address nor uint256/],
-    [(t) => (computed(t).read.to = 'card.amount'), `${at}.read.to`, /must name a contract or market field/],
+    [(t) => (computed(t).read.args.assets = { card: 'min-shares' }), `${at}.read.args.assets`, /computed after this one or is this one/],
+    [(t) => (computed(t).read.args.assets = { card: 'vault' }), `${at}.read.args.assets`, /a card rule cannot bind a uint256/],
+    [(t) => (computed(t).read.args.assets = { safe: true }), `${at}.read.args.assets`, /a safe rule cannot bind a uint256/],
+    [(t) => (computed(t).read.args.assets = { free: 'any' }), `${at}.read.args.assets`, /a view's argument is bound by card, safe, contract or const, not free/],
+    [(t) => (computed(t).read.args.assets = 'amount'), `${at}.read.args.assets`, /not a JSON object/],
+    [(t) => (computed(t).read.function = 'previewDeposit(uint128 assets) returns (uint256 shares)', (computed(t).read.args.assets = balance)), `${at}.read.args.assets.read`, /answers a uint256, which a uint128 parameter cannot hold/],
+    [(t) => (computed(t).read.function = 'previewDeposit(uint256 assets) returns (uint256 shares, uint256 more)'), `${at}.read.output`, /names none of the 2 values the function returns/],
+    [(t) => (computed(t).read.output = 'assets'), `${at}.read.output`, /"assets" is not a named return value or tuple component/],
+    [(t) => (computed(t).read.function = 'asset(uint256 assets) returns (address token)'), `${at}.read.output`, /picks a value of type address; a computed amount is an unsigned integer/],
+    [(t) => (computed(t).read.function = 'quote(uint256 assets) returns (int256 shares)'), `${at}.read.output`, /picks a value of type int256/],
+    [(t) => (computed(t).read.function = 'previewDeposit(uint128 assets) returns (uint256 shares)'), `${at}.read.args.assets`, /card\.amount is a number passed whole, so only to a uint256, not a uint128/],
+    [(t) => (computed(t).read.args.assets = { ...balance, card: 'amount' }), `${at}.read.args.assets.card`, /unexpected field/],
+    [(t) => (computed(t).read.to = { card: 'amount' }), `${at}.read.to`, /a card rule cannot bind a address/],
+    [(t) => (computed(t).read.to = { safe: true }), `${at}.read.to`, /must name a registry contract, or a contract or market field/],
+    [(t) => (computed(t).read.to = { contract: 'no-such-contract' }), `${at}.read.to.contract`, /not in the contract registry/],
+    [(t) => (computed(t).read.to = 'vault'), `${at}.read.to`, /not a JSON object/],
+    [(t) => (computed(t).read.to = 'safe'), `${at}.read.to`, /must name a registry contract, or a contract or market field/],
     [(t) => (computed(t).margin.why = 'ok\u001b[8m'), `${at}.margin.why`, /control or bidirectional character/],
     [(t) => (computed(t).bound = 'down'), `${at}.bound`, /not one of floor, ceiling/],
     [(t) => (computed(t).default.bps = 3.5), `${at}.default.bps`, /whole number of basis points/],
@@ -210,8 +221,25 @@ test('a computed card field reads one uint256 view with arguments bound to the c
     assert.throws(() => parseTemplate(broken, registry), (error: unknown) => error instanceof TemplateError && error.path === path && problem.test(error.message), path);
   }
   const nested = structuredClone(rawTemplate);
-  computed(nested).read.args.assets = { to: 'card.vault', function: 'balanceOf(address account) returns (uint256 shares)', args: { account: 'safe' } };
+  computed(nested).read.args.assets = balance;
   assert.doesNotThrow(() => parseTemplate(nested, registry));
+  const older = structuredClone(rawTemplate);
+  computed(older).read = { to: 'card.vault', function: 'previewRedeem(uint256 shares) returns (uint256 assets)', args: { shares: { to: 'card.vault', function: 'balanceOf(address account) returns (uint256 shares)', args: { account: 'safe' } } } };
+  const newer = structuredClone(rawTemplate);
+  computed(newer).read = { to: { card: 'vault' }, function: 'previewRedeem(uint256 shares) returns (uint256 assets)', args: { shares: { read: { to: { card: 'vault' }, function: 'balanceOf(address account) returns (uint256 shares)', args: { account: { safe: true } } } } } };
+  assert.deepEqual(parseTemplate(older, registry), parseTemplate(newer, registry), 'a template written before reads took rules reads the same');
+  const curve = structuredClone(rawTemplate);
+  computed(curve).read = {
+    to: { contract: 'bundler3' },
+    function: 'get_dy(int128 i, int128 j, uint256 dx) returns (uint256 dy)',
+    args: { i: { const: '0' }, j: { const: '-1' }, dx: { card: 'amount' } },
+  };
+  assert.doesNotThrow(() => parseTemplate(curve, registry));
+  const tuple = structuredClone(rawTemplate);
+  computed(tuple).read.function = 'quote(uint256 assets) returns (address token, (uint128 fee, uint64 shares) best)';
+  computed(tuple).read.output = 'best.shares';
+  const field = parseTemplate(tuple, registry).card.get('min-shares');
+  assert.deepEqual(field?.kind === 'amount' ? field.computed?.read.output : undefined, [1, 1]);
 });
 
 test('a template\'s reasons are keyed by language, each holding the same languages', () => {
@@ -292,6 +320,19 @@ test('a share price bound or equals names a card amount or an earlier uint argum
   assert.equal(parseTemplate(earlier, registry).id, 'morpho/vault-deposit');
 });
 
+test('a share price scale is a whole power of ten from 1 to 36, 27 when absent, or the template fails to load', () => {
+  const at = 'calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice';
+  const scaled = (scale: unknown) => {
+    const raw = structuredClone(rawTemplate);
+    raw.calls[1].args.bundle.items[1].fields.data.call.args.maxSharePriceE27.maxSharePrice.scale = scale;
+    return () => parseTemplate(raw, registry);
+  };
+  for (const scale of [1, 18, 36]) assert.doesNotThrow(scaled(scale), String(scale));
+  for (const scale of [0, 37, 270, 27.5, '18', -1]) {
+    assert.throws(scaled(scale), (error: unknown) => error instanceof TemplateError && error.path === `${at}.scale` && /from 1 to 36/.test(error.message), String(scale));
+  }
+});
+
 test('the template parses its card fields and effects', () => {
   const [vault, amount, minShares] = [...template.card];
   assert.deepEqual(vault, ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue', marketPart: undefined } }]);
@@ -301,14 +342,15 @@ test('the template parses its card fields and effects', () => {
   assert.ok(field.kind === 'amount' && field.computed !== undefined);
   assert.deepEqual(field.of, { field: 'vault', attribute: undefined });
   assert.equal(field.computed.read.fn.signature, 'previewDeposit(uint256)');
-  assert.deepEqual(field.computed.read.args, [{ kind: 'card', ref: { field: 'amount', attribute: undefined } }]);
+  assert.deepEqual(field.computed.read.args, [{ kind: 'bound', rule: { kind: 'card', ref: { field: 'amount', attribute: undefined } } }]);
   assert.equal(field.computed.bound, 'floor');
   assert.deepEqual(template.effects, {
-    gives: [{ token: { field: 'vault', attribute: 'asset' }, amount: { kind: 'card', field: 'amount' }, to: undefined }],
-    gets: [{ token: { field: 'vault', attribute: undefined }, amount: { kind: 'positive' }, to: undefined }],
+    gives: [{ token: { field: 'vault', attribute: 'asset' }, amount: { kind: 'card', field: 'amount' }, to: undefined, tolerance: undefined }],
+    gets: [{ token: { field: 'vault', attribute: undefined }, amount: { kind: 'positive' }, to: undefined, tolerance: undefined }],
     views: [],
     safe: undefined,
     approves: [],
+    touches: [],
   });
 });
 

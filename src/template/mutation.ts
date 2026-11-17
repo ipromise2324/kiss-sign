@@ -56,18 +56,29 @@ function mutateBytes(type: AbiType, current: Uint8Array): Uint8Array | undefined
 
 const MAX_UINT = (1n << 256n) - 1n;
 
+/** The type a leaf is changed as: an address held in a word changes as the address, to another recipient. */
+const mutatedType = (leaf: Leaf): AbiType => (leaf.rule.kind === 'address-word' ? { kind: 'address' } : leaf.type);
+
 type Mutated = { readonly tx: SafeTx; readonly messages: Messages };
 
-/** Another value of the member's type, or for an `atLeast` bound 0, its loosest; undefined when none differs. */
+/** The loosest value of an `atLeast` (0) or `atMost` (its type's largest) bound, which a stricter value still matches. */
+function loosestCardBound(leaf: Leaf): bigint | undefined {
+  if (leaf.rule.kind === 'at-least') return 0n;
+  if (leaf.rule.kind !== 'at-most') return undefined;
+  return (1n << BigInt(leaf.type.kind === 'uint' ? leaf.type.bits : 256)) - 1n;
+}
+
+/** Another value of the member's type, or for an `atLeast` or `atMost` bound its loosest; undefined when none differs. */
 function otherMember(leaf: Leaf, value: MemberValue): MemberValue | undefined {
-  if (leaf.rule.kind === 'at-least') return value.kind === 'uint' && value.value !== 0n ? { kind: 'uint', value: 0n } : undefined;
+  const loosest = loosestCardBound(leaf);
+  if (loosest !== undefined) return value.kind === 'uint' && value.value !== loosest ? { kind: 'uint', value: loosest } : undefined;
   if (value.kind === 'string') return { kind: 'string', value: `${value.value}78` as Hex };
   if (value.kind === 'uint' || value.kind === 'int') {
     if (leaf.type.kind !== 'uint' && leaf.type.kind !== 'int') return undefined;
     return { kind: value.kind, value: nextInt(leaf.type, value.value) };
   }
   if (value.kind === 'bool') return { kind: 'bool', value: !value.value };
-  const bytes = mutateBytes(leaf.type, hexToBytes((value.value as Hex).slice(2)));
+  const bytes = mutateBytes(mutatedType(leaf), hexToBytes((value.value as Hex).slice(2)));
   return bytes === undefined ? undefined : ({ kind: value.kind, value: `0x${bytesToHex(bytes)}` } as MemberValue);
 }
 
@@ -90,11 +101,12 @@ function mutate(tx: SafeTx, leaf: Leaf, messages: Messages): Mutated | undefined
 }
 
 function mutateTx(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
-  if (leaf.rule.kind === 'at-least' && leaf.bytes !== undefined) {
+  const loosest = loosestCardBound(leaf);
+  if (loosest !== undefined && leaf.bytes !== undefined) {
     const data = hexToBytes(tx.data.slice(2));
     const [start, end] = leaf.bytes;
-    if (BigInt(`0x${bytesToHex(data.subarray(start, end))}`) === 0n) return undefined;
-    data.fill(0, start, end);
+    if (BigInt(`0x${bytesToHex(data.subarray(start, end))}`) === loosest) return undefined;
+    data.set(uintWord(loosest).subarray(32 - (end - start)), start);
     return { ...tx, data: `0x${bytesToHex(data)}` as Hex };
   }
   if (leaf.rule.kind === 'share-price' && leaf.bytes !== undefined) {
@@ -106,13 +118,17 @@ function mutateTx(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
   }
   if (leaf.bytes === undefined) {
     if (leaf.arg === 'to') return { ...tx, to: `0x${bytesToHex(mutateBytes(leaf.type, hexToBytes(tx.to.slice(2))) as Uint8Array)}` as Address };
-    if (leaf.arg === 'value') return { ...tx, value: nextInt({ kind: 'uint', bits: 256 }, tx.value) };
+    if (leaf.arg === 'value') {
+      const loosestValue = loosestCardBound(leaf);
+      if (loosestValue === undefined) return { ...tx, value: nextInt({ kind: 'uint', bits: 256 }, tx.value) };
+      return tx.value === loosestValue ? undefined : { ...tx, value: loosestValue };
+    }
     if (leaf.arg === 'nonce') return { ...tx, nonce: nextInt({ kind: 'uint', bits: 256 }, tx.nonce) };
     return undefined;
   }
   const data = hexToBytes(tx.data.slice(2));
   const [start, end] = leaf.bytes;
-  const changed = mutateBytes(leaf.type, data.subarray(start, end));
+  const changed = mutateBytes(mutatedType(leaf), data.subarray(start, end));
   if (changed === undefined) return undefined;
   data.set(changed, end - changed.length);
   return { ...tx, data: `0x${bytesToHex(data)}` as Hex };

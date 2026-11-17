@@ -21,6 +21,7 @@ import {
   ReportError,
   compareReports,
   entriesOf,
+  signedEntryNames,
   erc7730Text,
   generatedPath,
   loadReport,
@@ -37,6 +38,7 @@ import {
 } from '../src/research/report.ts';
 import type { ReportInputs, ReportRecording, Subject } from '../src/research/report.ts';
 import type { Page } from '../src/research/source-page.ts';
+import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/vault-evidence.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
@@ -96,6 +98,22 @@ test('morpho/vault-deposit: rules name registry entries with full addresses, and
   assert.match(text, /\| `steakhouse-prime-usdc-v2-0f51` \| `0xbeef088055857739C12CD3765F20b7679Def0f51` \| asset `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`; factory `vault-v2-factory`/);
   assert.match(text, /\| `multicall\(\(address,bytes,uint256,bool,bytes32\)\[\]\)` \| `bundler3` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/Bundler3\.sol> \| FINDING \| PASS \| PASS \|/);
   assert.match(text, /\| `erc4626Deposit\(address,uint256,uint256,address\)` \| `general-adapter-1` \| <https:\/\/github\.com\/morpho-org\/bundler3\/blob\/[0-9a-f]{40}\/src\/adapters\/GeneralAdapter1\.sol> \| FINDING \| PASS \| PASS \|/);
+});
+
+test('the report says what a computed field reads: the registry contract it calls, each argument, and the number it picks', () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8'));
+  raw.card['min-shares'].computed.read = {
+    to: { contract: 'fluid-fusdc' },
+    function: 'quote(int128 i, uint256 dx, address who) returns (uint256 low, (uint256 shares, uint128 fee) best)',
+    args: { i: { const: '-1' }, dx: { card: 'amount' }, who: { safe: true } },
+    output: 'best.shares',
+  };
+  const subject: Subject = { ...scoped.subject, template: parseTemplate(raw, registry) } as Subject;
+  const text = quick(recording.pages, new Map(), subject);
+  assert.match(text, /\| `min-shares` \| nothing: computed by `card new` in base units of the card's `vault`, `quote\(int128,uint256,address\)` on registry `fluid-fusdc` `0x[0-9a-fA-F]{40}` of constant `-1`, the card's `amount`, the Safe, its `best\.shares`, less 10 bps/);
+  const named = (s: Subject) => entriesOf(s, registry).map((entry) => entry.name);
+  assert.ok(!named(scoped.subject).includes('fluid-fusdc') && named(subject).includes('fluid-fusdc'), 'the contract the read calls is an entry the report checks');
+  assert.ok(subject.kind === 'template' && !signedEntryNames(subject.template, registry).has('fluid-fusdc'), 'verify, which never makes the read, claims no code pin for it');
 });
 
 test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
@@ -445,13 +463,43 @@ test('docs.json may name the ERC-20 standard for a function it defines on a toke
   assert.match(text, /^`approve\(address,uint256\)` on `usdt`: the ERC-20 standard defines this function, as `function approve\(address _spender, uint256 _value\)`; this does not show that the contract follows the standard\.$/m);
 });
 
-test("each ERC-20 declaration the program holds names the function's canonical signature", () => {
+test("each declaration the program holds names the function's canonical signature, or for a YAML entry its name", () => {
   for (const standard of STANDARDS.values()) {
     for (const [signature, declaration] of standard.declarations) {
-      const [, name, params] = /^function (\w+)\((.*)\)$/.exec(declaration)!;
-      assert.equal(`${name}(${params!.split(', ').map((p) => p.split(' ')[0]).join(',')})`, signature);
+      const yaml = /^- name: (\w+)$/.exec(declaration);
+      if (yaml !== null) assert.equal(yaml[1], signature.slice(0, signature.indexOf('(')), declaration);
+      else assert.equal(parseFunctionSignature(declaration.replace(/^function /, '')).signature, signature, declaration);
     }
   }
+});
+
+test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH itself, each checked against its own page and org', () => {
+  const fluid = loadTemplate(ROOT, 'fluid/vault-deposit', registry);
+  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', 'vaults', 'fluid-fusdt', 'docs.json'), 'utf8')) as Record<string, unknown>;
+  const named = (standard: string, contract = 'fluid-fusdt') => parseDocs({ ...valid, 'deposit(uint256,address)': { contract, standard } }, fluid, registry);
+  const docs = named('erc-4626');
+  const deposit = docs.find((d) => d.fn.signature === 'deposit(uint256,address)')!;
+  assert.equal(deposit.url, 'https://github.com/ethereum/ERCs/blob/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-4626.md');
+  assert.throws(() => named('weth9'), /contract fluid-fusdt is not WETH9, which is the one contract at 0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2/);
+  assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { contract: 'usdt', standard: 'erc-4626' } }, fluid, registry), /contract usdt is a token; ERC-4626 applies to vault entries/);
+  assert.throws(() => parseDocs({ ...valid, 'approve(address,uint256)': { contract: 'usdt', standard: 'weth9' } }, fluid, registry), /contract usdt is not WETH9/);
+
+  const raw = 'https://raw.githubusercontent.com/ethereum/ERCs/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-4626.md';
+  const commits = { ...recording.commits, 'ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2': { kind: 'on-default', branch: 'master', status: 'identical' } } as const;
+  const onPage = (blocks: Extract<Page, { kind: 'served' }>['blocks']) => {
+    const text = quick({ ...recording.pages, [raw]: { kind: 'served', blocks } as Page }, new Map(), { kind: 'template', template: fluid, docs, vault: undefined }, new Map(), [], new Map(), registry, commits);
+    return cellsOf(text.split('\n').find((l) => l.startsWith('| `deposit(uint256,address)` |'))!).map((c) => c.trim());
+  };
+  assert.deepEqual(onPage([{ text: '#### deposit' }, { text: '- name: deposit', heading: 'deposit' }]), [
+    '`deposit(uint256,address)`',
+    '`fluid-fusdt`',
+    `ERC-4626 standard page <${deposit.url}>`,
+    'PASS',
+    'PASS',
+    'PASS',
+  ]);
+  assert.equal(onPage([{ text: '#### deposit' }, { text: 'deposit(uint256 assets, address receiver)' }]).at(-1), 'FINDING');
+  assert.equal(onPage([{ text: '- name: deposits' }]).at(-1), 'FINDING', 'a declaration is not found inside a longer name');
 });
 
 const VAULT = 'steakhouse-high-yield-usdc-v2-a757';

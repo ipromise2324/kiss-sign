@@ -11,6 +11,7 @@ import type { Registry } from '../registry.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { memberJson, parseMessage, typedDataDigest } from './eip712.ts';
 import type { MemberValue } from './eip712.ts';
+import { addressWord } from './template.ts';
 import type { CallNode, ConstValue, LeafRule, PackedPart, Quantity, Rule, SignedMessage, Template, TemplateCall } from './template.ts';
 
 /**
@@ -85,7 +86,6 @@ type Context = {
   readonly chain: FieldChain;
 };
 
-const RAY = 10n ** 27n;
 const MAX_UINT = (1n << 256n) - 1n;
 
 function remember(rule: LeafRule, actual: ConstValue, context: Context): void {
@@ -107,9 +107,10 @@ function checkSharePrice(rule: Extract<Rule, { kind: 'share-price' }>, price: bi
     return undefined;
   }
   if (rule.shares.kind === 'path' && shares === MAX_UINT) return 'a stated share count, not the whole balance (2^256-1), to bound the price against';
-  const limit = shares === 0n ? 'any' : `${(assets * RAY) / shares}`;
-  if (rule.bound === 'max') return price * shares <= assets * RAY ? undefined : `at most ${limit}: ${assets} assets for ${shares} shares, scaled by 1e27`;
-  return price * shares >= assets * RAY ? undefined : `at least ${limit}: ${assets} assets for ${shares} shares, scaled by 1e27`;
+  const scale = 10n ** BigInt(rule.scale);
+  const limit = shares === 0n ? 'any' : `${(assets * scale) / shares}`;
+  if (rule.bound === 'max') return price * shares <= assets * scale ? undefined : `at most ${limit}: ${assets} assets for ${shares} shares, scaled by 1e${rule.scale}`;
+  return price * shares >= assets * scale ? undefined : `at least ${limit}: ${assets} assets for ${shares} shares, scaled by 1e${rule.scale}`;
 }
 
 function render(value: ConstValue): string {
@@ -140,6 +141,12 @@ function expectedOf(rule: Rule, context: Context): ConstValue | undefined {
       const entry = context.registry.entries.get(rule.name);
       if (entry === undefined) context.unverifiable.push(`the registry has no ${rule.name}`);
       return entry === undefined ? undefined : { kind: 'address', value: entry.address };
+    }
+    case 'address-word': {
+      const address = expectedOf(rule.rule, context);
+      if (address === undefined) return undefined;
+      if (address.kind !== 'address') throw new Error(`an addressWord rule resolves to a ${address.kind}`);
+      return { kind: 'fixed-bytes', value: addressWord(address.value) };
     }
     case 'card': {
       const target = resolveRef(rule.ref, context.values, context.registry);
@@ -185,10 +192,13 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
   context.leaves.push({ callPath, arg, bytes, rule, type, ...(message === undefined ? {} : { message }) });
   remember(rule, actual, context);
   if (rule.kind === 'free') return;
-  if (rule.kind === 'at-least') {
+  if (rule.kind === 'at-least' || rule.kind === 'at-most') {
     const card = context.values.get(rule.field);
+    const least = rule.kind === 'at-least';
     if (card?.kind !== 'amount') context.unverifiable.push(`no card amount ${rule.field}`);
-    else if (actual.kind !== 'uint' || actual.value < card.value) context.findings.push({ callPath, arg, bytes, expected: `at least ${card.value}`, actual: render(actual) });
+    else if (actual.kind !== 'uint' || (least ? actual.value < card.value : actual.value > card.value)) {
+      context.findings.push({ callPath, arg, bytes, expected: `at ${least ? 'least' : 'most'} ${card.value}`, actual: render(actual) });
+    }
     return;
   }
   if (rule.kind === 'owner-before') {

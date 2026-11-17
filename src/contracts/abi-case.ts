@@ -1,8 +1,10 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ProviderName } from '../chain/providers.ts';
-import type { Read, Reader } from '../chain/reader.ts';
+import type { CallRequest, Read, Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
+import { implementationReadJson, parseImplementationRead } from '../registry.ts';
+import type { ProxyDeclaration } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { proveAbi } from './prove.ts';
 import type { AbiProof, AbiRefusal, ProveDeps } from './prove.ts';
@@ -18,6 +20,8 @@ export type AbiCase = {
   readonly providers: readonly [ProviderName, ProviderName];
   readonly reads: readonly RecordedRead[];
   readonly sourcify: Readonly<Record<string, SourcifyAnswer>>;
+  /** The registry entry's `implementationRead` the proof followed, as written there. */
+  readonly implementationRead?: unknown;
 };
 
 export const ABI_CASES_DIR = join('testdata', 'abi');
@@ -25,6 +29,14 @@ export const ABI_CASES_DIR = join('testdata', 'abi');
 export const abiCaseBlock = (fixture: AbiCase): BlockRef => ({ number: BigInt(fixture.block.number), hash: fixture.block.hash });
 
 const NOT_RECORDED = 'not recorded';
+
+const callArgs = (request: CallRequest): unknown[] =>
+  request.override === undefined ? [request.to, request.data] : [request.to, request.data, request.override.address, request.override.code];
+
+/** The declaration a case was recorded with, parsed as the registry parses it. */
+export const abiCaseDeclaration = (fixture: AbiCase): ProxyDeclaration =>
+  fixture.implementationRead === undefined ? {} : { implementationRead: parseImplementationRead(`${fixture.address}.implementationRead`, fixture.implementationRead) };
+
 const unverifiable = <T>(reason: string): Read<T> => ({
   kind: 'unverifiable',
   reason,
@@ -54,7 +66,7 @@ export function abiCaseReader(fixture: AbiCase, extra: readonly RecordedRead[] =
     getTransactionCount: () => Promise.resolve(unverifiable(NOT_RECORDED)),
     getCode: (address, at) => answer(at, 'getCode', [address]),
     getStorageAt: (address, slot, at) => answer(at, 'getStorageAt', [address, `0x${slot.toString(16)}`]),
-    call: (request, at) => answer(at, 'call', [request.to, request.data]),
+    call: (request, at) => answer(at, 'call', callArgs(request)),
     ...overrides,
   };
 }
@@ -64,12 +76,22 @@ export const abiCaseSourcify =
   async (address: Address): Promise<SourcifyAnswer> =>
     answers[address] ?? { status: 404, body: { error: 'not found' } };
 
-/** Proves the ABI again from a recording alone: the recorded code and Sourcify source, compiled with the pinned solc. */
-export const replayAbiCase = (fixture: AbiCase, compilers: ProveDeps['compilers']): Promise<AbiProof | AbiRefusal> =>
-  proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers });
+/**
+ * Proves the ABI again from a recording alone: the recorded code and Sourcify source, compiled with the pinned solc.
+ * `declared` is the registry entry's declaration when there is an entry, so a case recorded under another one fails.
+ */
+export const replayAbiCase = (fixture: AbiCase, compilers: ProveDeps['compilers'], declared: ProxyDeclaration = abiCaseDeclaration(fixture)): Promise<AbiProof | AbiRefusal> =>
+  proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }, declared);
 
 /** Proves the ABI live and keeps every read and Sourcify answer it used. A read the providers disagree on throws. */
-export async function recordAbiCase(live: Reader, address: Address, block: BlockRef, providers: readonly [ProviderName, ProviderName], deps: ProveDeps): Promise<{ proof: AbiProof | AbiRefusal; fixture: AbiCase }> {
+export async function recordAbiCase(
+  live: Reader,
+  address: Address,
+  block: BlockRef,
+  providers: readonly [ProviderName, ProviderName],
+  deps: ProveDeps,
+  declared: ProxyDeclaration = {},
+): Promise<{ proof: AbiProof | AbiRefusal; fixture: AbiCase }> {
   const reads: RecordedRead[] = [];
   const hex = (n: bigint) => `0x${n.toString(16)}`;
   const kept = async <T>(method: string, args: unknown[], read: Promise<Read<T>>): Promise<Read<T>> => {
@@ -82,18 +104,25 @@ export async function recordAbiCase(live: Reader, address: Address, block: Block
     ...live,
     getCode: (at, ref) => kept('getCode', [at], live.getCode(at, ref)),
     getStorageAt: (at, slot, ref) => kept('getStorageAt', [at, hex(slot)], live.getStorageAt(at, slot, ref)),
-    call: (request, ref) => kept('call', [request.to, request.data], live.call(request, ref)),
+    call: (request, ref) => kept('call', callArgs(request), live.call(request, ref)),
   };
   const sourcify: Record<string, SourcifyAnswer> = {};
-  const proof = await proveAbi(recorder, address, block, {
-    compilers: deps.compilers,
-    sourcify: async (at) => {
-      const answer = await deps.sourcify(at);
-      sourcify[at] = answer;
-      return answer;
+  const proof = await proveAbi(
+    recorder,
+    address,
+    block,
+    {
+      compilers: deps.compilers,
+      sourcify: async (at) => {
+        const answer = await deps.sourcify(at);
+        sourcify[at] = answer;
+        return answer;
+      },
     },
-  });
-  return { proof, fixture: { address, block: { number: block.number.toString(), hash: block.hash }, providers, reads, sourcify } };
+    declared,
+  );
+  const read = declared.implementationRead === undefined ? {} : { implementationRead: implementationReadJson(declared.implementationRead) };
+  return { proof, fixture: { address, block: { number: block.number.toString(), hash: block.hash }, providers, reads, sourcify, ...read } };
 }
 
 /** Every recorded case under `testdata/abi/`, by the address it proves; of two for one address, the later block. */

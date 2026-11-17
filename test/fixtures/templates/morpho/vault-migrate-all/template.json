@@ -8,14 +8,16 @@
       "of": "from.asset",
       "computed": {
         "read": {
-          "to": "card.from",
+          "to": { "card": "from" },
           "function": "previewRedeem(uint256 shares) returns (uint256 assets)",
           "args": {
             "shares": {
-              "to": "card.from",
-              "function": "balanceOf(address account) returns (uint256 shares)",
-              "args": {
-                "account": "safe"
+              "read": {
+                "to": { "card": "from" },
+                "function": "balanceOf(address account) returns (uint256 shares)",
+                "args": {
+                  "account": { "safe": true }
+                }
               }
             }
           }
@@ -36,10 +38,10 @@
       "of": "to",
       "computed": {
         "read": {
-          "to": "card.to",
+          "to": { "card": "to" },
           "function": "previewDeposit(uint256 assets) returns (uint256 shares)",
           "args": {
-            "assets": "card.min-assets"
+            "assets": { "card": "min-assets" }
           }
         },
         "bound": "floor",

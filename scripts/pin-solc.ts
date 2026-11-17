@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { addSolcPin, nodePinSolcIo, resolveSolcPin } from '../src/contracts/pin-solc.ts';
 import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
+import { readGithubToken } from '../src/research/github-token.ts';
 
 const args = process.argv.slice(2);
 if (args.length !== 1) {
@@ -10,7 +11,7 @@ if (args.length !== 1) {
 }
 const [version] = args as [string];
 
-const resolution = await resolveSolcPin(version, nodePinSolcIo);
+const resolution = await resolveSolcPin(version, nodePinSolcIo(readGithubToken(process.env)));
 for (const read of resolution.reads) console.log(`read ${read}`);
 if (resolution.kind === 'refused') {
   console.log(`REFUSED solc ${version}: ${resolution.why}`);

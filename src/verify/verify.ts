@@ -3,7 +3,7 @@ import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { parseAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
 import { parseCard, resolveCard } from '../card.ts';
-import type { ResolvedCard } from '../card.ts';
+import type { Refused, ResolvedCard } from '../card.ts';
 import { readDecimals } from '../chain/decimals.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Reader } from '../chain/reader.ts';
@@ -74,6 +74,15 @@ export class VerifyError extends Error {
   override name = 'VerifyError';
 }
 
+/** The sealed card resolves no longer, such as one holding 0 where a bound needs at least 1. */
+export class CardRefusedError extends VerifyError {
+  readonly refusal: Refused;
+  constructor(refusal: Refused) {
+    super(`the card is refused at ${refusal.at}: ${refusal.detail}`);
+    this.refusal = refusal;
+  }
+}
+
 export const keccakText = (text: string): Hex => `0x${bytesToHex(keccak_256(utf8ToBytes(text)))}` as Hex;
 
 /** The next slot after the block a pending transaction is simulated on. */
@@ -136,7 +145,7 @@ export function prepare(inputs: VerifyInputs): Prepared {
   });
   const addressBook = guard('the address book', () => parseAddressBook(inputs.addressBook));
   const resolution = resolveCard(card, { templates, registry, addressBook, safe });
-  if (resolution.kind === 'refused') throw new VerifyError(`the card is refused at ${resolution.at}: ${resolution.detail}`);
+  if (resolution.kind === 'refused') throw new CardRefusedError(resolution);
   if (inputs.messages !== undefined && !inputs.messages.every((m) => typeof m === 'string')) throw new VerifyError('the signed messages are not texts');
   return { registry, safe, card: resolution.card, templates, approvals, addressBook, messages: inputs.messages ?? [] };
 }

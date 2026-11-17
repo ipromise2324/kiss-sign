@@ -6,6 +6,7 @@ import { ERC7730_ARCHIVE, ERC7730_REGISTRY_PIN } from './research/erc7730.ts';
 import { PUBLIC_SUFFIX_PIN } from './research/public-suffix.ts';
 import { checkCommit, httpsGet } from './research/source-page.ts';
 import type { HttpGet } from './research/source-page.ts';
+import type { GithubToken } from './research/github-token.ts';
 
 type PinnedFile = { readonly name: string; readonly file: string; readonly url: string; readonly sha256: string };
 type GitHubCommit = { readonly owner: string; readonly repo: string; readonly commit: string };
@@ -53,9 +54,12 @@ export type VendorIo = {
 export const nodeVendorIo: VendorIo = {
   root: join(import.meta.dirname, '..', 'vendor'),
   download: (url) => fetch(url, { redirect: 'error' }),
-  get: httpsGet,
+  get: httpsGet(),
   log: (line) => console.error(line),
 };
+
+/** `nodeVendorIo`, its GitHub reads sending the token. */
+export const nodeVendorIoWith = (githubToken: GithubToken | undefined): VendorIo => ({ ...nodeVendorIo, get: httpsGet(githubToken) });
 
 const sha256 = (bytes: Uint8Array): string => createHash('sha256').update(bytes).digest('hex');
 const matchesPin = (path: string, pin: PinnedFile): boolean => existsSync(path) && sha256(readFileSync(path)) === pin.sha256;

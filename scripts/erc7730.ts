@@ -8,7 +8,8 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { chainAt, formatReports, loadSnapshot, studyEntries, trimForRecording } from '../src/research/erc7730.ts';
 import type { ChainAccess, Erc7730Recording } from '../src/research/erc7730.ts';
-import { ensureVendored } from '../src/vendor.ts';
+import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
+import { readGithubToken } from '../src/research/github-token.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
 
 const USAGE = `usage: [ALCHEMY_API_KEY=...] node scripts/erc7730.ts <registry name>... [--record <name>]
@@ -27,7 +28,7 @@ if (names.length === 0 || unknown.length > 0) {
   console.error(`${unknown.length > 0 ? `not in the registry: ${unknown.join(', ')}\n\n` : ''}${USAGE}`);
   process.exit(2);
 }
-if (!(await ensureVendored(['erc7730']))) process.exit(1);
+if (!(await ensureVendored(['erc7730'], nodeVendorIoWith(readGithubToken(process.env))))) process.exit(1);
 const snapshot = loadSnapshot();
 if ('unavailable' in snapshot) {
   console.error(snapshot.unavailable);

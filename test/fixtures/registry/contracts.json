@@ -80,6 +80,20 @@
       "from": 16730025
     }
   },
+  "cctp-token-messenger-v2": {
+    "address": "0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d",
+    "kind": "bridge",
+    "source": "https://developers.circle.com/cctp/evm-smart-contracts",
+    "defillama": "circle-cctp",
+    "code": {
+      "hash": "0xd2c8d48075d832fb7d07f6db5545a1bee37fdf886325c441a8dd1cef4c9dae99",
+      "implementation": {
+        "address": "0x555E272506C06e7E559d57418563742AFE363ec8",
+        "hash": "0x6c864e374854e06fd5d42b3e9de53ef9ad4d863b83a8c5dd1cf6e2a67fd2b535"
+      },
+      "from": 21819733
+    }
+  },
   "blue-bundles-v1": {
     "address": "0x38B0C12AB81976e9417D4ebfe2A34DB6DF22e6AD",
     "kind": "router",

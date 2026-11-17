@@ -7,6 +7,7 @@ import type { AbiParam } from '../decode/abi.ts';
 import { namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiValue } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
+import { say } from '../language.ts';
 import type { Language } from '../language.ts';
 import { MARKET_PARAMS, parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
@@ -14,8 +15,8 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { refNames, slippageBps, viewTargetNames } from '../template/template.ts';
-import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
+import { addressWord, isNamedToken, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
+import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
@@ -119,7 +120,7 @@ export type ArgRow = {
 export type CallHead = { readonly kind: 'fn'; readonly contract: string; readonly fn: string; readonly selector: Hex; readonly doc: DocLine } | { readonly kind: 'no-data'; readonly text: string };
 export type CallBlock = { readonly n: number; readonly head: CallHead; readonly sends: Inline | undefined; readonly args: readonly ArgRow[] };
 
-export type AfterRow = { readonly label: Inline; readonly value: Inline; readonly note: Inline; readonly gains: boolean };
+export type AfterRow = { readonly label: Inline; readonly value: Inline; readonly note: Inline; readonly gains: boolean; readonly ai?: AiText };
 
 export type Lifeline = { readonly name: string; readonly role: string };
 export type Arrow =
@@ -379,6 +380,7 @@ const shortUrl = (url: HttpsUrl): string => {
 
 type Context = {
   readonly w: Words;
+  readonly language: Language;
   readonly inputs: HtmlInputs;
   readonly template: Template;
   readonly registry: Registry;
@@ -398,8 +400,12 @@ function decimalsOf(context: Context, token: Address): number | undefined {
   return read?.kind === 'read' ? read.value : undefined;
 }
 
-function tokenOf(ref: TokenRef, context: Context): { readonly address: Address | 'eth'; readonly name: string } | undefined {
+function tokenOf(ref: EffectToken, context: Context): { readonly address: Address | 'eth'; readonly name: string } | undefined {
   if (ref === 'eth') return { address: 'eth', name: 'ETH' };
+  if (isNamedToken(ref)) {
+    const entry = context.registry.entries.get(ref.contract);
+    return entry === undefined ? undefined : { address: entry.address, name: entry.name };
+  }
   if (context.card === undefined) {
     const names = refNames(ref, context.template, context.registry);
     const entry = names.length === 1 ? context.registry.entries.get(names[0] as string) : undefined;
@@ -410,8 +416,12 @@ function tokenOf(ref: TokenRef, context: Context): { readonly address: Address |
   return { address: target.address, name: context.registry.byAddress.get(target.address)?.name ?? checksumAddress(target.address) };
 }
 
+/** An effect's token by name: the registry name it resolves to, or the card field the signer picks it with. */
+const effectTokenName = (token: EffectToken, context: Context): string =>
+  tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : isNamedToken(token) ? token.contract : context.w.picked(refWord(context.template, token, context.w)));
+
 /** An amount of `token` in whole tokens, from the recorded decimals; base units when they were not read. */
-function amountWords(amount: bigint, ref: TokenRef, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
+function amountWords(amount: bigint, ref: EffectToken, context: Context): { readonly words: Inline; readonly qualifier: Inline | undefined } {
   const { w } = context;
   const token = tokenOf(ref, context);
   if (token === undefined) return { words: [{ num: amount.toString() }, w.baseUnits], qualifier: undefined };
@@ -451,6 +461,8 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
     }
     case 'owner-before':
       return { who: 'fixed', field: undefined };
+    case 'address-word':
+      return whoOf(rule.rule, template);
     case 'safe':
     case 'contract':
     case 'const':
@@ -462,6 +474,7 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
     case 'share-price':
       return { who: 'you-type', field: rule.assets.kind === 'card' ? rule.assets.field : undefined };
     case 'at-least':
+    case 'at-most':
       return { who: 'you-type', field: rule.field };
     case 'call':
     case 'items':
@@ -573,6 +586,10 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     }
     case 'card':
       return cardWords(rule.ref, node.key, context);
+    case 'address-word': {
+      const inner = leafWords({ ...node, rule: rule.rule }, context);
+      return { words: [...inner.words, w.asWord], qualifier: inner.qualifier };
+    }
     case 'free':
       return { words: [w.differs], qualifier: [w.free[rule.claim]] };
     case 'equals':
@@ -583,6 +600,8 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
       return { words: [rule.bound === 'max' ? w.priceMax : w.priceMin], qualifier: [w.priceHow] };
     case 'at-least':
       return { words: [w.atLeastTyped(fieldWord(context.template, rule.field, w))], qualifier: [w.atLeastHow] };
+    case 'at-most':
+      return { words: [w.atMostTyped(fieldWord(context.template, rule.field, w))], qualifier: [w.atMostHow] };
     case 'call':
       return rule.call.encoding === 'params'
         ? { words: w.argsOf({ code: rule.call.fn.name }), qualifier: undefined }
@@ -603,12 +622,16 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
 function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
   if (['call', 'items', 'fields', 'packed'].includes(node.rule.kind)) return undefined;
   if (node.rule.kind === 'const') return { cast: constCast(node.rule.value), example: undefined };
-  if (node.rule.kind === 'contract') return { cast: checksumAddress((context.registry.entries.get(node.rule.name) as RegistryEntry).address), example: undefined };
-  const only = node.rule.kind === 'card' ? onlyEntry(node.rule.ref, context) : undefined;
-  if (only !== undefined) return { cast: checksumAddress(only.address), example: undefined };
+  const word = node.rule.kind === 'address-word';
+  const rule = node.rule.kind === 'address-word' ? node.rule.rule : node.rule;
+  const cast = (address: Address): string => (word ? addressWord(address) : checksumAddress(address));
+  if (rule.kind === 'contract') return { cast: cast((context.registry.entries.get(rule.name) as RegistryEntry).address), example: undefined };
+  const only = rule.kind === 'card' ? onlyEntry(rule.ref, context) : undefined;
+  if (only !== undefined) return { cast: cast(only.address), example: undefined };
   const example = context.values.get(node.key);
   if (example === undefined) return undefined;
-  const fromSafe = example.kind === 'address' && example.value === context.inputs.example?.tx.safe;
+  const address = example.kind === 'address' ? example.value : word && example.kind === 'fixed-bytes' ? wordAddress(example.value) : undefined;
+  const fromSafe = address !== undefined && address === context.inputs.example?.tx.safe;
   return { cast: castValue(example), example: fromSafe ? 'other-safe' : 'example' };
 }
 
@@ -816,6 +839,7 @@ function afterRows(context: Context): AfterRow[] {
     if (effect.amount.kind === 'positive') return [gives ? w.givesMore : w.getsMore];
     if (effect.amount.kind === 'any') return [w.getsAny];
     if (effect.amount.kind === 'at-least') return [w.atLeastTyped(field(effect.amount.field))];
+    if (effect.amount.kind === 'at-most') return [w.atMostTyped(field(effect.amount.field))];
     const value = context.card?.get(effect.amount.field);
     if (value?.kind !== 'amount') return [w.typed(field(effect.amount.field))];
     const { words } = amountWords(value.value, effect.token, context);
@@ -828,17 +852,22 @@ function afterRows(context: Context): AfterRow[] {
         ? w.exactlyTyped(field(effect.amount.field))
         : effect.amount.kind === 'at-least'
           ? w.getsAtLeast(field(effect.amount.field))
-          : effect.amount.kind === 'all'
-            ? w.wholeBalance
-            : effect.amount.kind === 'any'
-              ? w.riseOrStay
-              : w.directionOnly;
-    return effect.to === undefined ? [amount] : [amount, w.toWhom(refWord(template, effect.to, w))];
+          : effect.amount.kind === 'at-most'
+            ? w.givesAtMost(field(effect.amount.field))
+            : effect.amount.kind === 'all'
+              ? w.wholeBalance
+              : effect.amount.kind === 'any'
+                ? w.riseOrStay
+                : w.directionOnly;
+    const slack = effect.tolerance === undefined ? [] : [w.listSep, w.tolerance(effect.tolerance.less, effect.tolerance.more)];
+    return [amount, ...(effect.to === undefined ? [] : [w.toWhom(refWord(template, effect.to, w))]), ...slack];
   };
-  const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : w.picked(refWord(template, token, w)));
+  const reason = (tolerance: Tolerance | undefined): { readonly ai?: AiText } => (tolerance === undefined ? {} : { ai: research(say(tolerance.why, context.language), [], 'ai') });
+  const name = (token: EffectToken) => effectTokenName(token, context);
   const rows: AfterRow[] = [
-    ...template.effects.gives.map((e) => ({ label: [w.safeOf(name(e.token))], value: amountOf(e, true), note: note(e), gains: false })),
-    ...template.effects.gets.map((e) => ({ label: [w.safeOf(name(e.token))], value: amountOf(e, false), note: note(e), gains: true })),
+    ...template.effects.gives.map((e) => ({ label: [w.safeOf(name(e.token))], value: amountOf(e, true), note: note(e), gains: false, ...reason(e.tolerance) })),
+    ...template.effects.gets.map((e) => ({ label: [w.safeOf(name(e.token))], value: amountOf(e, false), note: note(e), gains: true, ...reason(e.tolerance) })),
+    ...template.effects.touches.map((t) => ({ label: [w.safeOf(name({ contract: t.token }))], value: [w.touched], note: [w.tolerance(t.tolerance.less, t.tolerance.more)], gains: false, ...reason(t.tolerance) })),
   ];
   const settings = template.effects.safe;
   if (settings !== undefined) {
@@ -1210,6 +1239,8 @@ function ruleWords(rule: Rule, context: Context): Inline {
     }
     case 'owner-before':
       return [w.ownerBeforeShort(refWord(context.template, rule.ref, w))];
+    case 'address-word':
+      return [...ruleWords(rule.rule, context), w.asWord];
     case 'free':
       return [w.any];
     case 'equals':
@@ -1218,6 +1249,8 @@ function ruleWords(rule: Rule, context: Context): Inline {
       return [rule.bound === 'max' ? w.priceMax : w.priceMin];
     case 'at-least':
       return [w.atLeastTyped(fieldWord(context.template, rule.field, w))];
+    case 'at-most':
+      return [w.atMostTyped(fieldWord(context.template, rule.field, w))];
     case 'call':
       return w.callsThen({ code: rule.call.fn.name });
     case 'keccak':
@@ -1667,14 +1700,19 @@ function nextSection(context: Context): Section {
     { say: [w.hardened], command: './check.sh <nonce>', then: [w.hardenedThen({ code: 'verify' })], hashes: false },
     { say: w.compareHashes({ code: 'verify' }), command: undefined, then: [], hashes: true },
   ];
-  const tokenName = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : w.picked(refWord(template, token, w)));
+  const tokenName = (token: EffectToken) => effectTokenName(token, context);
   const field = (name: string): string => fieldWord(template, name, w);
   const automatic: Inline[] = [
     [w.onlyCalls(template.calls.length)],
     [w.everyArgument],
-    ...template.effects.gives.map((e): Inline => [w.gives(tokenName(e.token), e.amount.kind === 'card' ? { kind: 'card', field: field(e.amount.field) } : { kind: e.amount.kind === 'all' ? 'all' : 'positive' })]),
+    ...template.effects.gives.map((e): Inline => [
+      w.gives(tokenName(e.token), e.amount.kind === 'card' || e.amount.kind === 'at-most' ? { kind: e.amount.kind, field: field(e.amount.field) } : { kind: e.amount.kind === 'all' ? 'all' : 'positive' }),
+    ]),
     ...template.effects.gets.map((e): Inline => (e.amount.kind === 'any' ? [w.getsAnyAmount(tokenName(e.token))] : w.gets(tokenName(e.token), e.amount.kind === 'at-least' ? field(e.amount.field) : undefined))),
-    ...(template.effects.gives.length + template.effects.gets.length === 0 ? [[w.noBalanceChange]] : []),
+    ...[...template.effects.gives, ...template.effects.gets, ...template.effects.touches.map((t) => ({ ...t, token: { contract: t.token } }))].flatMap((e): Inline[] =>
+      e.tolerance === undefined ? [] : [[w.toleranceLine(tokenName(e.token), w.tolerance(e.tolerance.less, e.tolerance.more))]],
+    ),
+    ...(template.effects.gives.length + template.effects.gets.length + template.effects.touches.length === 0 ? [[w.noBalanceChange]] : []),
     ...(template.nonce === undefined ? [] : [[w.nonceIs, ...ruleWords(template.nonce, context)]]),
     ...(template.effects.safe === undefined ? [] : [[w.safeSettings]]),
     template.effects.approves.length === 0
@@ -1758,6 +1796,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
   const w = WORDS[language];
   const context: Context = {
     w,
+    language,
     inputs,
     template,
     registry,

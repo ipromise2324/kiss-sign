@@ -63,12 +63,12 @@ function setUp(approved: string | null = template.approved, reported = true, lan
 }
 
 /** Runs the CLI with every provider answer served from the recorded deposit, never from the network. */
-async function run(argv: string[], repo: string, home: string) {
+async function run(argv: string[], repo: string, home: string, watch = (env: Record<string, string>): Record<string, string> => env) {
   let stdout = '';
   let stderr = '';
   const env = { ...ENV, KISS_SIGN_HOME: home };
   const code = await main(argv, {
-    env,
+    env: watch(env),
     stdout: (text) => void (stdout += text),
     stderr: (text) => void (stderr += text),
     platform: 'linux',
@@ -145,6 +145,38 @@ test('the verdict file verify writes replays to the same verdict', async () => {
   assert.equal(replayed.code, 0, replayed.stderr);
   assert.match(replayed.stdout, /^┌─ MATCH · replay of a recorded verdict ─+\n[\s\S]*\n└─+\nSame verdict as recorded\.\n$/);
   assert.doesNotMatch(replayed.stdout, /比對清單|呼叫/);
+});
+
+test('a verdict whose template holds the older computed read form, "to": "card.<field>", still replays to the same verdict', async () => {
+  const older = JSON.parse(template.text);
+  older.card['min-shares'] = {
+    kind: 'amount',
+    of: 'vault',
+    computed: {
+      read: { to: 'card.vault', function: 'previewDeposit(uint256 assets) returns (uint256 shares)', args: { assets: 'card.amount' } },
+      bound: 'floor',
+      default: { bps: 3, source: 'https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24' },
+    },
+  };
+  const text = `${JSON.stringify(older, null, 2)}\n`;
+  const fingerprint = `0x${bytesToHex(keccak_256(new TextEncoder().encode(text)))}`;
+  const card = JSON.parse(fixture.inputs.card.text);
+  card.operations[0].values['min-shares'] = '1';
+  const cardText = JSON.stringify(card);
+  const cardHash = `0x${bytesToHex(keccak_256(new TextEncoder().encode(cardText)))}`;
+  const { base, repo, home } = setUp(fingerprint);
+  write(join(repo, 'templates', template.id, 'template.json'), text);
+  git(repo, 'commit', '--quiet', '-am', 'a template written before reads took rules');
+  git(repo, 'push', '--quiet', join(base, 'origin.git'), 'main');
+  write(join(home, 'cards', `${cardHash}.json`), cardText);
+  const verified = await run(['verify', '--card', cardHash, '--tx', write(join(base, 'tx.json'), JSON.stringify(service))], repo, home);
+  assert.equal(verified.code, 0, verified.stdout + verified.stderr);
+  const [verdict] = readdirSync(join(home, 'verdicts')).filter((name) => name.endsWith('.json'));
+  const path = join(home, 'verdicts', verdict!);
+  assert.ok(readFileSync(path, 'utf8').includes('\\"to\\": \\"card.vault\\"'), 'the verdict file holds the older form');
+  const replayed = await run(['replay', path], repo, home);
+  assert.equal(replayed.code, 0, replayed.stderr);
+  assert.match(replayed.stdout, /\nSame verdict as recorded\.\n$/);
 });
 
 /** The deposit as the Safe web app's JSON, with its receiver changed from the Safe to 0x1111…. */
@@ -246,6 +278,28 @@ async function socketsOpenedBy(run: () => Promise<unknown>): Promise<string[]> {
   return opened;
 }
 
+test('verify and replay never read GITHUB_TOKEN, from the environment or the key file', async () => {
+  const token = 'github_pat_planted0for0the0verify0test';
+  const { base, repo, home } = setUp();
+  write(join(home, '.env'), `GITHUB_TOKEN=${token}\n`);
+  const asked: PropertyKey[] = [];
+  const watch = (env: Record<string, string>) =>
+    new Proxy({ ...env, GITHUB_TOKEN: token }, {
+      get: (target, key) => (asked.push(key), Reflect.get(target, key)),
+      has: (target, key) => (asked.push(key), Reflect.has(target, key)),
+    });
+  const file = write(join(base, 'tx.json'), JSON.stringify(service));
+  const verified = await run(['verify', '--card', fixture.inputs.card.hash, '--tx', file], repo, home, watch);
+  assert.equal(verified.code, 0, verified.stderr);
+  const verdict = readdirSync(join(home, 'verdicts')).find((name) => name.endsWith('.json'))!;
+  const replayed = await run(['replay', join(home, 'verdicts', verdict)], repo, home, watch);
+  assert.equal(replayed.code, 0, replayed.stderr);
+  assert.ok(asked.includes('ALCHEMY_API_KEY'), 'the guard sees what verify reads');
+  assert.ok(!asked.includes('GITHUB_TOKEN'));
+  const written = readdirSync(join(home, 'verdicts')).map((name) => readFileSync(join(home, 'verdicts', name), 'utf8'));
+  for (const text of [verified.stdout, verified.stderr, replayed.stdout, replayed.stderr, ...written]) assert.ok(!text.includes(token));
+});
+
 test('the socket guard sees a real HTTPS request', async () => {
   const opened = await socketsOpenedBy(() => httpsTransport()('https://127.0.0.1:9/', '{}', new AbortController().signal).catch(() => undefined));
   assert.ok(opened.length > 0);
@@ -313,6 +367,30 @@ test('replay says when only the call marks differ from the recorded ones', async
   const { code, stderr } = await run(['replay', path], dir, dir);
   assert.equal(code, 1);
   assert.match(stderr, /the recorded verdict was MATCH; this program now gives the same verdict but different call marks or hashes/);
+});
+
+test('verify refuses a sealed card whose computed floor is 0 before it reads the chain, in the signer\'s language, and writes no verdict', async () => {
+  const card = { operations: [{ template: template.id, values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5000000', 'min-shares': '0' } }] };
+  const text = JSON.stringify(card);
+  const hash = `0x${bytesToHex(keccak_256(new TextEncoder().encode(text)))}`;
+  const expected: Record<Language, string> = {
+    en: 'kiss-sign: card refused at operations[0].values.min-shares: min-shares is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it\n',
+    'zh-TW': 'kiss-sign: 卡片在 operations[0].values.min-shares 被拒絕：min-shares 是 0；算出來的數量，或份額價格界線、atLeast 拿來比較的數量，至少要是 1，因為 0 在這裡不是什麼都不限，就是沒有交易能滿足\n',
+  };
+  for (const language of ['en', 'zh-TW'] as const) {
+    const { base, repo, home } = setUp(undefined, true, language);
+    write(join(repo, 'templates', template.id, 'template.json'), readFileSync(join(ROOT, 'templates', template.id, 'template.json'), 'utf8'));
+    write(join(repo, 'registry', 'contracts.json'), readFileSync(join(ROOT, 'registry', 'contracts.json'), 'utf8'));
+    git(repo, 'commit', '--quiet', '-am', 'the current template');
+    git(repo, 'push', '--quiet', join(base, 'origin.git'), 'main');
+    write(join(home, 'cards', `${hash}.json`), text);
+    const file = write(join(base, 'tx.json'), JSON.stringify(service));
+    const { code, stdout, stderr } = await run(['verify', '--card', hash, '--tx', file], repo, home);
+    assert.equal(code, 1);
+    assert.equal(stdout, '');
+    assert.equal(stderr, expected[language]);
+    assert.equal(readdirSync(home).includes('verdicts'), false);
+  }
 });
 
 test('verify refuses a card naming a vault with no report for the template at origin/main, and writes no verdict', async () => {
