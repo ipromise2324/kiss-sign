@@ -3,7 +3,8 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import type { AdapterAnswer, AdapterCause, InstanceProof, RefusalCause } from '../src/contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
-import { parseFunctionSignature } from '../src/decode/abi.ts';
+import { canonicalType, parseFunctionSignature } from '../src/decode/abi.ts';
+import type { AbiFunction } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { HttpsUrl, Registry, RegistryEntry } from '../src/registry.ts';
 import type { ApiAnswer } from '../src/research/api-source.ts';
@@ -99,6 +100,8 @@ type Setup = {
   readonly creations: Creations | undefined;
   /** Another entry of the protocol the entry depends on, confirmed by its own page and coin when `confirmed`. */
   readonly sibling: { readonly confirmed: boolean } | undefined;
+  /** A view the template's `facts` read on the entry. */
+  readonly read: AbiFunction | undefined;
 };
 
 const BASE: Setup = {
@@ -125,6 +128,7 @@ const BASE: Setup = {
   packages: new Map(),
   creations: undefined,
   sibling: undefined,
+  read: undefined,
 };
 
 const SIBLING: RegistryEntry = { ...ENTRY, name: 'sibling', address: OTHER, source: 'https://docs.example.org/sibling' as HttpsUrl, coingecko: 'sibling-coin' };
@@ -171,6 +175,8 @@ const vaultRefusal = (cause: AdapterCause): AdapterAnswer => ({ vault: ADAPTED, 
 const adapterAsked = (factory: InstanceAnswers['factory'], vaults: readonly AdapterAnswer[]): Partial<Setup> => ({ entry: ADAPTER, instances: { factory, vaults } });
 
 const proven = (codeHash: Hex): AbiProof => ({ kind: 'proven', proxy: { kind: 'none' }, codeHash }) as unknown as AbiProof;
+const withAbi = (signatures: readonly string[]): AbiProof =>
+  ({ ...proven(PIN), abi: signatures.map((text) => ({ type: 'function', name: parseFunctionSignature(text).name, inputs: parseFunctionSignature(text).params.map((p) => ({ name: p.name, type: canonicalType(p.type) })) })) }) as AbiProof;
 const refused = (refusal: object): AbiRefusal => ({ kind: 'refused', refusal }) as unknown as AbiRefusal;
 const judged = (mutations: object, perturbation: PerturbationReport): FixtureJudgement => ({
   name: 'safe-tx-1',
@@ -192,7 +198,7 @@ function ledgerOf(change: Partial<Setup>): Ledger {
   const all = [s.entry, ...(s.reachedThrough === undefined ? [] : [s.reachedThrough]), ...(s.factory === undefined ? [] : [s.factory]), ...(s.sibling === undefined ? [] : [SIBLING])];
   const siblingConfirmed = s.sibling?.confirmed === true;
   const registry: Registry = { entries: new Map(all.map((e) => [e.name, e])), byAddress: new Map(all.map((e) => [e.address, e])), markets: new Map() };
-  const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [], safe: undefined, approves: [], touches: [] }, facts: [] } as Template;
+  const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [], safe: undefined, approves: [], touches: [] }, facts: s.read === undefined ? [] : [{ to: s.entry.name, fn: s.read, args: [], returns: [] } as never] } as Template;
   const inputs = {
     subject:
       s.reachedThrough !== undefined
@@ -249,6 +255,9 @@ const ROWS: readonly Row[] = [
   { what: "a second page's GitHub org DefiLlama does not name", change: { entry: { ...ENTRY, moreSources: [MORE] }, protocol: { ...BASE.protocol!, github: ['someone'] } }, id: 'vault/source.more.1.site', kind: 'site-differs', state: 'bad' },
   { what: 'a code pin the chain did not run', change: { spans: [{ kind: 'finding', text: '' }] }, id: 'vault/code.1', kind: 'pin-not-run', state: 'bad' },
   { what: 'a proof of code other than the pin', change: { abi: proven(`0x${'22'.repeat(32)}` as Hex) }, id: 'vault/abi', kind: 'proof-not-pin', state: 'bad' },
+  { what: "a view the template reads that the proof's ABI lacks", change: { read: APPROVE, abi: withAbi(['transfer(address to,uint256 value)']) }, id: 'vault/abi', kind: 'fn-not-in-abi', state: 'bad' },
+  { what: "a view the template reads that the proof's ABI holds", change: { read: APPROVE, abi: withAbi(['approve(address spender,uint256 value)']) }, id: 'vault/abi', kind: 'agrees', state: 'ok' },
+  { what: 'a proof that masked the metadata hash', change: { abi: { ...proven(PIN), metadataHashMasked: true } }, id: 'vault/abi', kind: 'metadata-differs', state: 'warn' },
   { what: 'a proof refused for a reason other than its compiler', change: { abi: refused({ why: 'bytecode-mismatch' }) }, id: 'vault/abi', kind: 'refused', state: 'bad' },
   { what: 'a vault its factory created', change: evidence(ADMITTED), id: 'vault/factory.admitted', kind: 'agrees', state: 'ok' },
   { what: 'a vault its factory answered it did not create', change: evidence("REFUSED vault-factory answered isVault(address) false for vault: it did not create it; the vault's code is not read"), id: 'vault/factory.admitted', kind: 'not-created', state: 'bad' },
@@ -315,7 +324,7 @@ const ROWS: readonly Row[] = [
   { what: 'an entry reached only through dependsOn that runs other code at the latest block', change: { reachedThrough: DEPENDENT, ...today('finding') }, id: 'vault/code.today', kind: 'pin-not-run', state: 'bad' },
   { what: "an entry reached only through dependsOn whose code at the latest block got no answer", change: { reachedThrough: DEPENDENT, ...today('unverifiable') }, id: 'vault/code.today', kind: 'no-answer', state: 'warn' },
   { what: 'an entry reached only through dependsOn with no read at the latest block', change: { reachedThrough: DEPENDENT }, id: 'vault/code.today', kind: 'no-chain-result', state: 'warn' },
-  { what: "a vault's adapter, whose address only goes into an argument, with its proof refused", change: { reachedThrough: ADAPTED, abi: refused({ why: 'not-on-sourcify' }) }, id: 'vault/abi', kind: 'not-called', state: 'na' },
+  { what: "a vault's adapter, whose address only goes into an argument, with its proof refused", change: { reachedThrough: ADAPTED, abi: refused({ why: 'not-on-etherscan' }) }, id: 'vault/abi', kind: 'not-called', state: 'na' },
   { what: 'a selector-routed proxy a call targets', change: { entry: ROUTED }, id: 'vault/abi', kind: 'routed-proxy', state: 'na' },
   { what: 'a selector-routed proxy that runs its pin and routes at the latest block', change: { entry: ROUTED, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
   { what: 'a bounty program with the address in scope', change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS]) }, id: 'vault/source.bounty', kind: 'agrees', state: 'ok' },

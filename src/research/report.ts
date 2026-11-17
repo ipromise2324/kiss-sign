@@ -13,7 +13,7 @@ import { proveAdapterOf, proveInstance } from '../contracts/instance.ts';
 import type { AdapterAnswer, InstanceProof, InstanceRefusal } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import type { Compilers } from '../contracts/solc.ts';
-import { canonicalType, paramName } from '../decode/abi.ts';
+import { canonicalType, namedSignatureOfAbiEntry, paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam } from '../decode/abi.ts';
 import { MARKETS_PATH, MARKET_ENTRY_PARTS, REGISTRY_PATH, pageUrlsOf, parseHttpsUrl } from '../registry.ts';
 import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting } from '../registry.ts';
@@ -147,6 +147,41 @@ export function templateFunctions(template: Template): AbiFunction[] {
   };
   for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data);
   return [...found.values()];
+}
+
+/**
+ * Each function the template calls or reads on a registry entry, by entry name: each call whose target the template
+ * binds, each call to the Safe itself on every registry singleton, each effect view, each `facts` view and each
+ * computed field's read. A proven ABI must hold each of them by its canonical signature.
+ */
+export function functionsOn(template: Template, registry: Registry): Map<string, AbiFunction[]> {
+  const on = new Map<string, Map<string, AbiFunction>>();
+  const add = (names: readonly string[], fn: AbiFunction): void => {
+    for (const name of names) on.set(name, (on.get(name) ?? new Map()).set(fn.signature, fn));
+  };
+  const called = new Map(templateFunctions(template).map((fn) => [fn.signature, fn]));
+  for (const [signature, names] of callTargets(template, registry)) {
+    const fn = called.get(signature);
+    if (fn !== undefined) add(names, fn);
+  }
+  const singletons = [...registry.entries.values()].filter((entry) => entry.kind === 'singleton').map((entry) => entry.name);
+  for (const call of template.calls) if (call.to.kind === 'safe' && call.data !== 'empty') add(singletons, call.data.fn);
+  for (const view of template.effects.views) add(viewTargetNames(view.to, template, registry), view.fn);
+  for (const fact of template.facts) add([fact.to], fact.fn);
+  const read = (r: ComputedRead): void => {
+    add(viewTargetNames(r.to, template, registry), r.fn);
+    for (const arg of r.args) if (arg.kind === 'read') read(arg.read);
+  };
+  for (const field of template.card.values()) if (field.kind === 'amount' && field.computed !== undefined) read(field.computed.read);
+  return new Map([...on].map(([name, fns]) => [name, [...fns.values()]]));
+}
+
+/** The signatures of the functions the subject's template calls or reads on `entry` that its proven ABI does not hold. */
+export function missingFromAbi(subject: Subject, registry: Registry, entry: RegistryEntry, proof: AbiProof): string[] {
+  const fns = subject.kind === 'template' ? (functionsOn(subject.template, registry).get(entry.name) ?? []) : [];
+  if (fns.length === 0) return [];
+  const proven = new Set(proof.abi.filter((item) => item.type === 'function').map((item) => parseFunctionSignature(namedSignatureOfAbiEntry(item)).signature));
+  return fns.map((fn) => fn.signature).filter((signature) => !proven.has(signature));
 }
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -955,16 +990,20 @@ export function pinVerdict(entry: RegistryEntry, proof: AbiProof): string {
   return matches ? 'PASS' : 'FINDING';
 }
 
-function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean): string {
+function abiRow(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean, subject: Subject, registry: Registry): string {
   const name = `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} |`;
-  if (unused) return `${name} not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | |`;
-  if (entry.routes !== undefined) return `${name} not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above | | | | | | |`;
-  if (proof === undefined) return `${name} not read | | | | | | |`;
-  if (proof.kind === 'refused') return `${name} REFUSED: ${code(proof.refusal.why)}${proof.refusal.why === 'compiler-not-pinned' ? ` solc ${code(proof.refusal.version)}` : ''} | | | | | | ${proof.block.number} |`;
+  if (unused) return `${name} not proved: no call targets it and nothing the program reads is decoded with its ABI; its code pin is above | | | | | | | |`;
+  if (entry.routes !== undefined) return `${name} not provable: a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned above | | | | | | | |`;
+  if (proof === undefined) return `${name} not read | | | | | | | |`;
+  if (proof.kind === 'refused') return `${name} REFUSED: ${code(proof.refusal.why)}${proof.refusal.why === 'compiler-not-pinned' ? ` solc ${code(proof.refusal.version)}` : ''} | | | | | | | ${proof.block.number} |`;
   const proxy = proof.proxy.kind === 'none' ? 'none' : `${proof.proxy.kind}, implementation ${code(checksumAddress(proof.proven))}`;
   const contract = /^[A-Za-z_$][A-Za-z0-9_$]{0,63}$/.test(proof.contractName) ? code(proof.contractName) : 'a name that is not a Solidity identifier';
-  const masked = `${proof.immutablesMasked} immutable, ${proof.librariesMasked} library spans masked${proof.metadataHashMasked ? '; metadata hash differs' : ''}`;
-  return `${name} PROVEN | ${proxy} | ${contract}, solc ${code(proof.compiler)} | ${code(proof.codeHash)} | ${pinVerdict(entry, proof)} | ${masked} | ${proof.block.number} |`;
+  const metadata = proof.metadataHashMasked ? '; FINDING: the metadata hash differs, so the verified source is not the deployed text and its parameter names are not proven' : '';
+  const masked = `${proof.immutablesMasked} immutable, ${proof.librariesMasked} library spans masked${metadata}`;
+  const fns = subject.kind === 'template' ? (functionsOn(subject.template, registry).get(entry.name) ?? []) : [];
+  const missing = missingFromAbi(subject, registry, entry, proof);
+  const called = fns.length === 0 ? 'none' : missing.length === 0 ? `PASS, all ${fns.length}` : `FINDING: not in the ABI: ${missing.map(code).join(', ')}`;
+  return `${name} PROVEN | ${proxy} | ${contract}, solc ${code(proof.compiler)} | ${code(proof.codeHash)} | ${pinVerdict(entry, proof)} | ${called} | ${masked} | ${proof.block.number} |`;
 }
 
 const COMMAND_FLAGS = ['token', 'anchor', 'from', 'to', 'fromBlock', 'toBlock', 'maxTxs'] as const;
@@ -1223,11 +1262,11 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
   out.push(
     '## ABI proofs',
     '',
-    `${code('pnpm prove-abi')}: Sourcify's source, compiled with a pinned solc, against the code both providers return. Equals pin: whether the proved code, and the implementation behind a proxy, are the last span of the registry's code pin, which every signing of a new transaction requires.`,
+    `${code('pnpm prove-abi')}: Etherscan's verified source, compiled with a pinned solc, against the code both providers return; Etherscan's own ABI is not read. Equals pin: whether the proved code, and the implementation behind a proxy, are the last span of the registry's code pin, which every signing of a new transaction requires. Template functions: whether every function the template calls or reads on the entry, by canonical signature, is in the compiled ABI.`,
     '',
-    '| Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
-    ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address), unused.has(entry.name))),
+    '| Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Template functions | Masked | Block |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    ...entries.map((entry) => abiRow(entry, inputs.abi.get(entry.address), unused.has(entry.name), inputs.subject, inputs.registry)),
     '',
   );
   return out;
@@ -1240,7 +1279,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   const out: string[] = [
     `# Generated evidence: ${name}`,
     '',
-    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Sourcify gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
+    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Etherscan gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
     '',
   ];
   if (subject.kind === 'template') out.push(...templateSections(subject.template, subject.docs, inputs));

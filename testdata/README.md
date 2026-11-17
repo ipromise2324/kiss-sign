@@ -127,9 +127,9 @@ The last argument is a nonce (the executed transaction at that nonce) or a safeT
 - `block`: the block both providers agreed on, which every read names by hash.
 - `providers`: the providers that both gave exactly these answers. A disagreement stops the recording.
 - `reads`: each `getCode`, `getStorageAt` and `call` the proof made, with the agreed answer.
-- `sourcify`: Sourcify's answer (`/server/v2/contract/1/<address>?fields=compilation,stdJsonInput`) for the contract compiled.
+- `etherscan`: Etherscan's answer (`/v2/api?chainid=1&module=contract&action=getsourcecode&address=<address>`, the key left out) for the contract compiled. Its `ABI` is kept as answered and never read.
 
-The tests replay the reads, compile the Sourcify source with the pinned solc from `vendor/solc/`, and require the proof.
+The tests replay the reads, compile the Etherscan source with the pinned solc from `vendor/solc/`, and require the proof.
 
 Code that can DELEGATECALL and has neither EIP-1967 slot set also has its ZeppelinOS implementation slot read, so the fixtures of such contracts hold that read too.
 
