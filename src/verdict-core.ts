@@ -123,7 +123,7 @@ export function mixedRefusal(base: string, head: string, split: Split): string |
   const refusals = [
     ...(split.core.length > 0 && split.data.length > 0
       ? [
-          `${head} changes the verdict core and templates/ or registry/ together, ${counted}. Put the program change in a pull request of its own, reviewed as code and merged first, then the template in another.`,
+          `${head} changes the verdict core and templates/ or registry/ together, ${counted}. Put the program change in a pull request of its own, merged first behind the program gate, then the template in another.`,
           'verdict core:',
           ...listed(split.core),
           'templates/ and registry/:',
