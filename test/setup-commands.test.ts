@@ -406,6 +406,29 @@ test('a zh-TW home shows the template\'s margin reason in Traditional Chinese an
   assert.equal(hash(chinese.stdout, '已密封卡片'), hash(english.stdout, 'Sealed card'));
 });
 
+/** A copy of main whose morpho/vault-deposit holds each reason as `reason` makes it from the shipped `{ en, zh-TW }`. */
+function reasonsClone(reason: (both: Record<string, string>) => unknown): string {
+  const dir = dataClone();
+  const path = join(dir, 'templates', 'morpho', 'vault-deposit', 'template.json');
+  const template = JSON.parse(readFileSync(path, 'utf8'));
+  const margin = template.card['min-shares'].computed.margin;
+  margin.why = reason(margin.why);
+  for (const call of template.calls) call.trailer.why = reason(call.trailer.why);
+  writeFileSync(path, JSON.stringify(template, null, 2));
+  return publish(dir);
+}
+
+test('a reason the template holds only in another language is shown in that language, and a plain string reads as English', async () => {
+  const en = freshHome();
+  configure(en);
+  const zhOnly = await run(['card', 'new', 'morpho/vault-deposit'], en, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'n'], { ...mainnet(), repoRoot: reasonsClone((both) => ({ 'zh-TW': both['zh-TW'] })) });
+  assert.match(zhOnly.stdout, /\n    margin +Morpho app 在組交易時會自己讀一次預覽/);
+  const zh = freshHome();
+  configure(zh, 'zh-TW');
+  const plain = await run(['card', 'new', 'morpho/vault-deposit'], zh, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'n'], { ...mainnet(), repoRoot: reasonsClone((both) => both.en) });
+  assert.match(plain.stdout, /\n    緩衝 +The Morpho app reads its own preview/);
+});
+
 test('card new reads a computed field\'s inner read first, here the Safe\'s share balance for a withdrawal of all', async () => {
   const home = freshHome();
   configure(home);

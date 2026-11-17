@@ -1,5 +1,5 @@
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
-import { say } from '../language.ts';
+import { LANGUAGES, LANGUAGE_NAMES } from '../language.ts';
 import type { Prose } from '../language.ts';
 import { join } from 'node:path';
 import type { Reader } from '../chain/reader.ts';
@@ -498,8 +498,9 @@ const inline = (text: string): string =>
     .replace(/[\\`*_[\]<>|~#!&]/g, (c) => `\\${c}`)
     // GitHub links an @mention and renders $math$ even after a backslash or as an entity, but not across a tag.
     .replace(/[@$]/g, (c) => `<span>${c}</span>`);
-/** The generated report is in English, so a template's reason reads in English, else in the language the template holds. */
-const byAi = (prose: Prose): string => `written by the AI in the template: ${inline(say(prose, 'en'))}`;
+/** A template's reason in each language it holds, so the signer reviews every text `card new` or `verify` may show. */
+const byAi = (prose: Prose): string =>
+  `written by the AI in the template: ${LANGUAGES.flatMap((language, i) => (prose[language] === undefined ? [] : [`${i === 0 ? '' : `in ${LANGUAGE_NAMES[language]}: `}${inline(prose[language])}`])).join('; ')}`;
 /** Names, addresses, hashes, selectors and file paths, each parsed into a charset that holds no backtick or `|`. */
 const code = (text: string): string => `\`${text}\``;
 const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(checksumAddress(entry.address))}`;

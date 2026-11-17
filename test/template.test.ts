@@ -16,7 +16,6 @@ import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import type { FieldCheck, Finding } from '../src/template/check.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
-import { say } from '../src/language.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -215,7 +214,7 @@ test('a computed card field reads one uint256 view with arguments bound to the c
   assert.doesNotThrow(() => parseTemplate(nested, registry));
 });
 
-test('a template\'s reasons are keyed by language, each holding the same languages; a plain string reads as English', () => {
+test('a template\'s reasons are keyed by language, each holding the same languages', () => {
   const margin = (t: any) => t.card['min-shares'].computed.margin;
   const mixed = structuredClone(rawTemplate);
   margin(mixed).why = { en: 'only English' };
@@ -223,17 +222,6 @@ test('a template\'s reasons are keyed by language, each holding the same languag
   const unknown = structuredClone(rawTemplate);
   margin(unknown).why = { fr: 'non' };
   assert.throws(() => parseTemplate(unknown, registry), (error: unknown) => error instanceof TemplateError && error.path === 'card.min-shares.computed.margin.why');
-  const zhOnly = structuredClone(rawTemplate);
-  const keep = (prose: Record<string, string>) => ({ 'zh-TW': prose['zh-TW'] as string });
-  margin(zhOnly).why = keep(margin(zhOnly).why);
-  for (const call of zhOnly.calls) call.trailer.why = keep(call.trailer.why);
-  const why = (parseTemplate(zhOnly, registry).card.get('min-shares') as any).computed.margin.why;
-  assert.deepEqual(why, keep(margin(rawTemplate).why));
-  assert.equal(say(why, 'en'), margin(rawTemplate).why['zh-TW'], 'an English signer reads the language the template holds');
-  const legacy = structuredClone(rawTemplate);
-  margin(legacy).why = 'an older template\'s reason';
-  for (const call of legacy.calls) call.trailer.why = 'an older template\'s reason';
-  assert.deepEqual((parseTemplate(legacy, registry).card.get('min-shares') as any).computed.margin.why, { en: "an older template's reason" });
 });
 
 test('every shipped template holds each reason in English and Traditional Chinese', () => {
