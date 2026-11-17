@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { WIDTH, box, colorWanted, paint, rows, table, wrap } from '../src/cli/format.ts';
+import { WIDTH, box, colorWanted, paint, rows, table, visible, wrap } from '../src/cli/format.ts';
 
 const ADDRESS = '0x093272C07700d3cA5301C3Bf9B3A392624179E2F';
 const ANSI = /\x1b\[[0-9;]*m/g;
@@ -28,6 +28,8 @@ test('a long value wraps at spaces within 100 columns and never splits an addres
   assert.ok(lines.every((line) => line.length <= WIDTH), lines.join('\n'));
   assert.ok(lines.some((line) => line.includes(ADDRESS)));
   assert.deepEqual(wrap('a b', 1), ['a', 'b']);
+  assert.deepEqual(wrap('aaaa   bbbb', 6), ['aaaa  ', 'bbbb'], 'a break keeps the spaces before it but one, as English output always has');
+  assert.deepEqual(wrap('地址（0xA0b8）。下一行', 8), ['地址', '（0xA0b8）。', '下一行'], 'opening punctuation stays with what follows it, closing with what precedes it');
   assert.deepEqual(wrap('  multiSend[1] to usdc 0xA0b8', 20), ['  multiSend[1] to', '  usdc 0xA0b8'], 'a leading indent stays on every line');
 });
 
@@ -36,4 +38,19 @@ test('a table row too wide for 100 columns puts its address on a line of its own
   const lines = table([['1.', wide, ADDRESS]], 2);
   assert.deepEqual(lines, [`  1.  ${wide}`, `      ${ADDRESS}`]);
   assert.deepEqual(table([['1.', 'usdc', ADDRESS]], 2), [`  1.  usdc  ${ADDRESS}`]);
+});
+
+test('Chinese text counts two columns a character: rows and tables align by display width, wrap within 100 columns, and never split an address', () => {
+  assert.equal(visible('卡片 usdc'), 9);
+  assert.deepEqual(rows([['Safe', ADDRESS], ['儲存庫', 'x']], 2), [`  Safe    ${ADDRESS}`, '  儲存庫  x']);
+  const cells = table([['1.', '金庫', ADDRESS], ['2.', 'usdc-vault', ADDRESS]], 2);
+  assert.deepEqual(cells.map((line) => visible(line.slice(0, line.indexOf('0x')))), [18, 18]);
+  const sentence = `${'這筆交易只簽了一則訊息的摘要，'.repeat(8)}地址 ${ADDRESS} ${'不在這筆交易裡。'.repeat(6)}`;
+  const lines = rows([['滑價', sentence]], 4);
+  assert.ok(lines.length > 2);
+  assert.ok(lines.every((line) => visible(line) <= WIDTH), lines.join('\n'));
+  assert.ok(lines.some((line) => line.includes(ADDRESS)));
+  const values = lines.map((line) => line.replace(/^ {4}(滑價)? */, ''));
+  assert.ok(values.every((value) => !/^[，。、：]/.test(value)), 'a line never starts with closing punctuation');
+  assert.equal(values.join('').replaceAll(' ', ''), sentence.replaceAll(' ', ''));
 });
