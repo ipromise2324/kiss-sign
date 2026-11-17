@@ -201,7 +201,7 @@ When a template is built:
 At every signing:
 
 - **The program checks itself first.** Your clone must be exactly your fork's `main`: that commit, every file of it unchanged, and no other file except ignored ones such as `node_modules/` and `vendor/`.
-- **No card with a 0 that bounds nothing.** `card seal` and `verify` refuse a card holding 0 in a computed field, or in an amount field a share-price bound or a minimum compares with, such as the minimum shares: 0 there bounds nothing, or nothing can meet it.
+- **No card with a 0 that bounds nothing.** `card new` asks again when you type such a 0, and `card seal` and `verify` refuse a card holding 0 in a computed field, or in an amount field a share-price bound or a minimum compares with, such as the minimum shares: 0 there bounds nothing, or nothing can meet it.
 - **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
 - **Decode, then re-encode byte for byte.** No hidden bytes beyond what the template allows and explains.
 - **Floor rules for every template.** No unlimited (max-value) approval, except where a reviewed registry entry declares a standing allowance, as Uniswap's Permit2 does. No `delegatecall` except to the official MultiSend. No change to the Safe's modules, guard, fallback handler or implementation. An owner or threshold change passes only exactly as the card declares it, one per transaction. No gas refund.
