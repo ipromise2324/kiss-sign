@@ -144,6 +144,10 @@
     "cowprotocol": {
       "kind": "domains",
       "domains": []
+    },
+    "etherfi-protocol": {
+      "kind": "domains",
+      "domains": []
     }
   },
   "coingecko": [
@@ -282,16 +286,14 @@
         }
       ]
     },
-    "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts": {
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
       "kind": "served",
       "blocks": [
         {
-          "text": "weETH",
-          "heading": "Tokens"
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
         },
         {
-          "text": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
-          "heading": "Tokens"
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
         }
       ]
     },
@@ -319,6 +321,11 @@
       "kind": "on-default",
       "branch": "main",
       "status": "behind"
+    },
+    "etherfi-protocol/smart-contracts@15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88": {
+      "kind": "on-default",
+      "branch": "master",
+      "status": "identical"
     }
   },
   "packages": {
@@ -645,10 +652,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -1333,10 +1340,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
         }
       }
@@ -1425,7 +1432,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
         }
@@ -1439,7 +1446,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
         }
@@ -1552,10 +1559,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9"
         }
       }
@@ -1564,7 +1571,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x05f05488468ae2b3bc996615c54e16a0db1b39d39bdc13c0a139f4a945147f5d"
         }
@@ -1578,7 +1585,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x9008d19f58aabd9ed0d60971565aa8510560ab41",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x05f05488468ae2b3bc996615c54e16a0db1b39d39bdc13c0a139f4a945147f5d"
         }
@@ -2575,8 +2582,8 @@
   ],
   "facts": {
     "block": {
-      "number": "26432315",
-      "hash": "0xfff3b7b3d9d7a3c36de51780384a6f2136010599a673bbd526f46336c6c3cb69"
+      "number": "26432632",
+      "hash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
     },
     "defillama": [
       {
@@ -2602,7 +2609,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xfff3b7b3d9d7a3c36de51780384a6f2136010599a673bbd526f46336c6c3cb69"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2618,7 +2625,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xfff3b7b3d9d7a3c36de51780384a6f2136010599a673bbd526f46336c6c3cb69"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2634,7 +2641,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xfff3b7b3d9d7a3c36de51780384a6f2136010599a673bbd526f46336c6c3cb69"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2650,7 +2657,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xfff3b7b3d9d7a3c36de51780384a6f2136010599a673bbd526f46336c6c3cb69"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2666,7 +2673,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xfff3b7b3d9d7a3c36de51780384a6f2136010599a673bbd526f46336c6c3cb69"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2682,7 +2689,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xfff3b7b3d9d7a3c36de51780384a6f2136010599a673bbd526f46336c6c3cb69"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {

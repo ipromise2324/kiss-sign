@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { openMainnetReader } from '../src/chain/reader.ts';
-import { proveAdapterOf, proveInstance } from '../src/contracts/instance.ts';
+import { proveAdapterOf, proveInstance, proveParentOf } from '../src/contracts/instance.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 
@@ -33,5 +33,10 @@ if (proof.entry.kind === 'adapter') {
     const vault = `vault      ${answer.vault.name} ${checksumAddress(answer.vault.address)}`;
     console.log(answer.kind === 'uses' ? `${vault}\nanswered   ${answer.asked} = true\nproviders  ${answer.providers.join(', ')}` : `${vault}\nREFUSED    ${answer.why}`);
   }
-  if (answers.length === 0 || answers.some((answer) => answer.kind === 'refused')) process.exit(1);
+  const parents = await proveParentOf(reader, registry, proof.entry, block.value);
+  for (const parent of parents) {
+    const vault = `made for   ${parent.vault.name} ${checksumAddress(parent.vault.address)}`;
+    console.log(parent.kind === 'made-for' ? `${vault}\nanswered   ${parent.asked} = ${checksumAddress(parent.vault.address)}\nproviders  ${parent.providers.join(', ')}` : `${vault}\nREFUSED    ${parent.why}`);
+  }
+  if (answers.length === 0 || [...answers, ...parents].some((answer) => answer.kind === 'refused')) process.exit(1);
 }

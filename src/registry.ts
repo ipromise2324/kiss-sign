@@ -71,6 +71,8 @@ export type RegistryEntry = {
   readonly instanceCheck?: InstanceCheck;
   /** A factory's: a view every contract it creates answers true for an adapter it allocates through, such as `isAdapter(address)`. */
   readonly adapterCheck?: AbiFunction;
+  /** A factory's: a view with no parameters every contract it creates answers with the contract it was made for, such as `parentVault()`. */
+  readonly parentCheck?: AbiFunction;
   /** The DefiLlama protocol slug this contract belongs to, such as `morpho-blue`; `pnpm check-sources` compares its listing with `source`. */
   readonly defillama?: string;
   /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
@@ -245,6 +247,12 @@ function oneParamFunction(path: string, raw: unknown, type: 'address' | 'bytes4'
   const fn = signatureOf(path, raw);
   const [param, ...more] = fn.params;
   if (param === undefined || more.length > 0 || canonicalType(param.type) !== type) throw new RegistryError(path, `must take exactly one ${type}`);
+  return fn;
+}
+
+function noParamFunction(path: string, raw: unknown): AbiFunction {
+  const fn = signatureOf(path, raw);
+  if (fn.params.length > 0) throw new RegistryError(path, 'must take no parameters');
   return fn;
 }
 
@@ -533,7 +541,7 @@ function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'implementationRead', 'dependsOn', 'code', 'instanceCheck', 'adapterCheck', 'standingAllowance', 'ignoresTrailer']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'implementationRead', 'dependsOn', 'code', 'instanceCheck', 'adapterCheck', 'parentCheck', 'standingAllowance', 'ignoresTrailer']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const routes = value.routes === undefined ? undefined : routingOf(`${path}.routes`, value.routes);
   const implementationRead = value.implementationRead === undefined ? undefined : parseImplementationRead(`${path}.implementationRead`, value.implementationRead);
@@ -593,13 +601,14 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     ...(value.ignoresTrailer === undefined ? {} : { ignoresTrailer: nonEmpty(`${path}.ignoresTrailer`, value.ignoresTrailer) }),
   };
   if (kind !== 'factory') {
-    for (const key of ['instanceCheck', 'adapterCheck'] as const) if (value[key] !== undefined) throw new RegistryError(`${path}.${key}`, `a ${kind} has no ${key}`);
+    for (const key of ['instanceCheck', 'adapterCheck', 'parentCheck'] as const) if (value[key] !== undefined) throw new RegistryError(`${path}.${key}`, `a ${kind} has no ${key}`);
     return entry;
   }
   return {
     ...entry,
     instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck),
     ...(value.adapterCheck === undefined ? {} : { adapterCheck: oneParamFunction(`${path}.adapterCheck`, value.adapterCheck, 'address') }),
+    ...(value.parentCheck === undefined ? {} : { parentCheck: noParamFunction(`${path}.parentCheck`, value.parentCheck) }),
   };
 }
 

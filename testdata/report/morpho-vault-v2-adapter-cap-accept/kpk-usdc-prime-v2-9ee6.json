@@ -225,7 +225,7 @@
     }
   },
   "vaults": {
-    "kpk-usdc-prime-v2-9ee6": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26431930\nvault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6\nlatest block 26431930 0x647a07ee01212ee383415218a2e0de5f94b907c7e22b8913fc25460f39b8d0ad\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-17  block 26431930  31,718,098.159796 usdc\n  2026-10-18  block 26215930  30,525,883.518319 usdc\n  2026-09-17  block 25999930  21,092,875.538459 usdc\n  2026-08-18  block 25783930  20,679,525.162593 usdc\n  2026-07-19  block 25567930  20,839,780.535671 usdc\n  2026-06-19  block 25351930  25,588,088.190784 usdc\n  2026-05-20  block 25135930  22,358,411.189080 usdc\n  2026-04-20  block 24919930  8,719,501.889129 usdc\n  2026-03-21  block 24703930  6,451,395.925555 usdc\n  2026-02-19  block 24487930  7,038,193.333320 usdc\n  2026-01-19  block 24271930  4,069,143.727200 usdc\n  2025-12-20  block 24055930  4,066,250.641614 usdc\n  2025-11-20  block 23839930  5,003,728.740546 usdc\n\nholders      97 addresses hold shares at block 26431930, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30446249021253081338652958\ntop 10       hold 94.31% of the shares; each: 50.61%, 19.27%, 9.44%, 6.22%, 2.11%, 1.87%, 1.64%, 1.26%, 0.95%, 0.93%"
+    "kpk-usdc-prime-v2-9ee6": "admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432975\nvault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6\nlatest block 26432975 0x4625775d4902ba4236f8b0375a96c7dbf4a18a57021cf63580e733ea1a8b7bdb\nasset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names\n\ntotalAssets() every 216000 blocks (about 30 days), read through both providers:\n  2026-11-17  block 26432975  31,754,006.876243 usdc\n  2026-10-18  block 26216975  30,526,436.889577 usdc\n  2026-09-18  block 26000975  21,093,296.753737 usdc\n  2026-08-18  block 25784975  20,679,872.266732 usdc\n  2026-07-19  block 25568975  20,821,025.685388 usdc\n  2026-06-19  block 25352975  25,256,199.354531 usdc\n  2026-05-20  block 25136975  22,358,720.324870 usdc\n  2026-04-20  block 24920975  8,719,660.783712 usdc\n  2026-03-21  block 24704975  6,451,468.865772 usdc\n  2026-02-19  block 24488975  7,038,281.004985 usdc\n  2026-01-20  block 24272975  4,069,203.911280 usdc\n  2025-12-20  block 24056975  4,066,304.248585 usdc\n  2025-11-20  block 23840975  5,003,801.550322 usdc\n\nholders      97 addresses hold shares at block 26432975, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30480168096208931315743366\ntop 10       hold 94.31% of the shares; each: 50.56%, 19.25%, 9.43%, 6.21%, 2.11%, 1.87%, 1.64%, 1.37%, 0.94%, 0.93%"
   },
   "erc7730": {
     "commit": "3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4",
@@ -520,7 +520,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xdd7b3b09771c71445350f2a5a6857d46d1ec95f75ebea95a94406e693fc62c6b"
         }
@@ -534,7 +534,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xdd7b3b09771c71445350f2a5a6857d46d1ec95f75ebea95a94406e693fc62c6b"
         }
@@ -718,7 +718,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x238bea3d03150d94fad95e9857867679db35265d0a90ff82346383c1b55a2822"
         }
@@ -732,7 +732,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x238bea3d03150d94fad95e9857867679db35265d0a90ff82346383c1b55a2822"
         }
@@ -765,10 +765,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -817,7 +817,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xc483608123b3773b2c32ea3f3ca07ac1d6340a2ea36810fb20db8536b0e9a3a7"
         }
@@ -831,7 +831,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xc483608123b3773b2c32ea3f3ca07ac1d6340a2ea36810fb20db8536b0e9a3a7"
         }
@@ -864,10 +864,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea"
         }
       }
@@ -916,7 +916,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x492e02d4c523b15786bca175e9ab276979e13919f381de9fbab2f21ce39035bc"
         }
@@ -930,7 +930,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x492e02d4c523b15786bca175e9ab276979e13919f381de9fbab2f21ce39035bc"
         }
@@ -963,10 +963,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c"
         }
       }
@@ -1367,7 +1367,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x8dd9f4bc5f85205dec1a7cc429946363c0265f98e95701f8af11f92f173275f5"
         }
@@ -1381,7 +1381,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x8dd9f4bc5f85205dec1a7cc429946363c0265f98e95701f8af11f92f173275f5"
         }
@@ -1436,7 +1436,7 @@
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
         {
-          "blockHash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
         }
       ],
       "answers": {
@@ -1452,9 +1452,9 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
         }
       ],
       "answers": {
@@ -1466,9 +1466,9 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x1d511811aca9d8817a3e50f29cadff6243a02902",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
         }
       ],
       "answers": {
@@ -1484,7 +1484,7 @@
           "data": "0xd6aebf940000000000000000000000001d511811aca9d8817a3e50f29cadff6243a02902"
         },
         {
-          "blockHash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
         }
       ],
       "answers": {
@@ -1500,27 +1500,43 @@
           "data": "0x68c18beb0000000000000000000000001d511811aca9d8817a3e50f29cadff6243a02902"
         },
         {
-          "blockHash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
         }
       ],
       "answers": {
         "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000001",
         "drpc": "0x0000000000000000000000000000000000000000000000000000000000000001"
       }
+    },
+    {
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x1d511811aca9d8817a3e50f29cadff6243a02902",
+          "data": "0x0fe36536"
+        },
+        {
+          "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000004ef53d2caa51c447fdfeeedee8f07fd1962c9ee6",
+        "drpc": "0x0000000000000000000000004ef53d2caa51c447fdfeeedee8f07fd1962c9ee6"
+      }
     }
   ],
   "today": {
-    "number": "26431926",
-    "hash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+    "number": "26432971",
+    "hash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
   },
   "instances": {
-    "number": "26431926",
-    "hash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+    "number": "26432971",
+    "hash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
   },
   "facts": {
     "block": {
-      "number": "26431926",
-      "hash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+      "number": "26432971",
+      "hash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
     },
     "defillama": [
       {
@@ -1528,9 +1544,9 @@
         "id": "4025",
         "parentProtocol": "parent#morpho",
         "listedAt": 1705261273,
-        "tvl": 10045513425.070372,
+        "tvl": 10056510399.169086,
         "chainTvls": {
-          "Ethereum": 4490230208.082663
+          "Ethereum": 4496318454.530387
         }
       }
     ],
@@ -1544,7 +1560,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+            "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
           }
         ],
         "answers": {
@@ -1560,7 +1576,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042"
+            "blockHash": "0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248"
           }
         ],
         "answers": {

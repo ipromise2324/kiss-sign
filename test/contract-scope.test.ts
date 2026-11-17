@@ -50,7 +50,7 @@ function resolve(slug: string, vault: string) {
 
 test('a vault with a factory belongs to its factory\'s protocol, not to the curator its own slug names', () => {
   assert.equal(resolve('morpho-blue', 'steakhouse-prime-usdc-v2-0f51'), 'resolved');
-  assert.deepEqual(scopeEntries({ registryKind: 'vault', protocol: 'morpho-blue' }, registry).map((e) => e.name), ['steakhouse-prime-usdc-v2-0f51']);
+  assert.deepEqual(scopeEntries({ registryKind: 'vault', protocol: 'morpho-blue', marketPart: undefined }, registry).map((e) => e.name), ['steakhouse-prime-usdc-v2-0f51']);
   assert.deepEqual(resolve('fluid-lending', 'steakhouse-prime-usdc-v2-0f51'), {
     reason: 'wrong-protocol',
     detail: 'steakhouse-prime-usdc-v2-0f51 is a vault of morpho-blue (its factory vault-v2-factory), not of fluid-lending',

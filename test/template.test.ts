@@ -335,7 +335,7 @@ test('a share price scale is a whole power of ten from 1 to 36, 27 when absent, 
 
 test('the template parses its card fields and effects', () => {
   const [vault, amount, minShares] = [...template.card];
-  assert.deepEqual(vault, ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue' } }]);
+  assert.deepEqual(vault, ['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: 'morpho-blue', marketPart: undefined } }]);
   assert.deepEqual(amount, ['amount', { kind: 'amount', of: { field: 'vault', attribute: 'asset' }, computed: undefined, max: undefined }]);
   const [name, field] = minShares ?? assert.fail('min-shares');
   assert.equal(name, 'min-shares');

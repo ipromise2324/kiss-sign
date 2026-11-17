@@ -100,7 +100,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `0xDF62f57Ea333a842Db200d4892c90F98204fa22F` | adapter | <https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime> | PASS | n/a | n/a | FINDING |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
 | `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts> | FINDING | PASS | n/a | PASS |
+| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS |
 | `morpho-oracle-weeth-usdc-86` | `0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411` | oracle | <https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth> | PASS | n/a | n/a | FINDING |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
@@ -130,7 +130,7 @@ More places that may name the address: the Immunefi program the entry names (its
 | `weeth` | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
 | `morpho-oracle-weeth-usdc-86` | n/a | n/a | n/a | FINDING |
 
-13 entries, 18 findings.
+13 entries, 17 findings.
 
 ### Official APIs
 
@@ -145,12 +145,13 @@ Each entry's `apiSource`: the protocol's own API, asked with the request the reg
 
 ### Factory answers
 
-Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it. An entry's answers together are one place for its address, which counts only when every one passes.
+Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it, and whether the adapter answers its factory's `parentCheck` with that vault's address. An entry's answers together are one place for its address, which counts only when every one passes.
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26432022 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0` `isAdapter(address)` | true | 26432022 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26433518 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0` `isAdapter(address)` | true | 26433518 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0-market-adapter` `parentVault()`, for `gauntlet-usdc-prime-v2-a3d0` | 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0 | 26433518 |
 
 ## Code pins
 
@@ -185,12 +186,12 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `morpho-blue` | PASS | 26432022 |
-| `adaptive-curve-irm` | PASS | 26432022 |
-| `morpho-oracle-cbbtc-usdc-86` | PASS | 26432022 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | PASS | 26432022 |
-| `morpho-oracle-usp-usdc` | PASS | 26432022 |
-| `morpho-oracle-weeth-usdc-86` | PASS | 26432022 |
+| `morpho-blue` | PASS | 26433518 |
+| `adaptive-curve-irm` | PASS | 26433518 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26433518 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | PASS | 26433518 |
+| `morpho-oracle-usp-usdc` | PASS | 26433518 |
+| `morpho-oracle-weeth-usdc-86` | PASS | 26433518 |
 
 ## ABI proofs
 
@@ -219,37 +220,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `gauntlet-usdc-prime-v2-a3d0`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432029
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26433532
 vault        gauntlet-usdc-prime-v2-a3d0 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0
-latest block 26432029 0x1b595c2dfad92d2ea46db81f23c69fcf417acf1a644fb85d5ba0f104d1034674
+latest block 26433532 0x1e7cf5313a258da5ee05af1bd0b9205ac42aca57b445a9e4616bf40c4f211d7a
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-17  block 26432029  98,085,363.164260 usdc
-  2026-10-18  block 26216029  124,467,394.413084 usdc
-  2026-09-17  block 26000029  96,379,529.758179 usdc
-  2026-08-18  block 25784029  72,626,174.493135 usdc
-  2026-07-19  block 25568029  72,411,901.665182 usdc
-  2026-06-19  block 25352029  83,283,345.364196 usdc
-  2026-05-20  block 25136029  99,272,221.915580 usdc
-  2026-04-20  block 24920029  84,043,712.056463 usdc
-  2026-03-21  block 24704029  65,280,808.444230 usdc
-  2026-02-19  block 24488029  78,294,063.812186 usdc
-  2026-01-19  block 24272029  101,794.468275 usdc
-  2025-12-20  block 24056029  100,353.131285 usdc
-  2025-11-20  block 23840029  100,070.520248 usdc
+  2026-11-17  block 26433532  98,088,723.387702 usdc
+  2026-10-18  block 26217532  124,570,399.895707 usdc
+  2026-09-18  block 26001532  92,968,042.057529 usdc
+  2026-08-19  block 25785532  72,847,551.201678 usdc
+  2026-07-19  block 25569532  72,410,766.151743 usdc
+  2026-06-19  block 25353532  81,385,059.465630 usdc
+  2026-05-20  block 25137532  99,450,680.868862 usdc
+  2026-04-20  block 24921532  84,490,448.587631 usdc
+  2026-03-21  block 24705532  65,279,447.649367 usdc
+  2026-02-19  block 24489532  77,244,713.003140 usdc
+  2026-01-20  block 24273532  101,796.443377 usdc
+  2025-12-21  block 24057532  100,355.027125 usdc
+  2025-11-20  block 23841532  100,072.546812 usdc
 
-holders      742 addresses hold shares at block 26432029, of 1804 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 94008402134977909564518242
-top 10       hold 46.58% of the shares; each: 11.47%, 8.10%, 7.53%, 3.87%, 3.50%, 2.71%, 2.57%, 2.42%, 2.32%, 2.09%
+holders      742 addresses hold shares at block 26433532, of 1805 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 94009242832379225738506397
+top 10       hold 46.58% of the shares; each: 11.47%, 8.10%, 7.54%, 3.87%, 3.50%, 2.71%, 2.57%, 2.42%, 2.32%, 2.09%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26432022 `0xa16fef925510d4e5b1ef4cd10058ae27c834a9ea92aa44053be1e39257fff530`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26433518 `0x9dee5ccad5307a176bd6ea8ae0b2e662311376c4b8362869b1dab7ae8c6028e3`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10045513425 | 4490230208 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10052494848 | 4495957292 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

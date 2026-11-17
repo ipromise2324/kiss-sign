@@ -99,7 +99,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
 | `acuto-usdc-v2-4a57` | `0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57` | vault | <https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto> | PASS | FINDING | n/a | FINDING |
 | `acuto-usdc-v2-4a57-market-adapter` | `0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5` | adapter | <https://app.morpho.org/ethereum/vault/0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57/acuto> | PASS | n/a | n/a | FINDING |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts> | FINDING | PASS | n/a | PASS |
+| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS |
 | `morpho-oracle-weeth-usdc-86` | `0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411` | oracle | <https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth> | PASS | n/a | n/a | FINDING |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
@@ -129,7 +129,7 @@ More places that may name the address: the Immunefi program the entry names (its
 | `weeth` | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
 | `morpho-oracle-weeth-usdc-86` | n/a | n/a | n/a | FINDING |
 
-13 entries, 19 findings.
+13 entries, 18 findings.
 
 ### Official APIs
 
@@ -144,12 +144,13 @@ Each entry's `apiSource`: the protocol's own API, asked with the request the reg
 
 ### Factory answers
 
-Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it. An entry's answers together are one place for its address, which counts only when every one passes.
+Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it, and whether the adapter answers its factory's `parentCheck` with that vault's address. An entry's answers together are one place for its address, which counts only when every one passes.
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |
-| `acuto-usdc-v2-4a57-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26432046 |
-| `acuto-usdc-v2-4a57-market-adapter` | `acuto-usdc-v2-4a57` `isAdapter(address)` | true | 26432046 |
+| `acuto-usdc-v2-4a57-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26433243 |
+| `acuto-usdc-v2-4a57-market-adapter` | `acuto-usdc-v2-4a57` `isAdapter(address)` | true | 26433243 |
+| `acuto-usdc-v2-4a57-market-adapter` | `acuto-usdc-v2-4a57-market-adapter` `parentVault()`, for `acuto-usdc-v2-4a57` | 0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57 | 26433243 |
 
 ## Code pins
 
@@ -184,12 +185,12 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `morpho-blue` | PASS | 26432046 |
-| `adaptive-curve-irm` | PASS | 26432046 |
-| `morpho-oracle-cbbtc-usdc-86` | PASS | 26432046 |
-| `morpho-oracle-usp-usdc` | PASS | 26432046 |
-| `acuto-usdc-v2-4a57-market-adapter` | PASS | 26432046 |
-| `morpho-oracle-weeth-usdc-86` | PASS | 26432046 |
+| `morpho-blue` | PASS | 26433243 |
+| `adaptive-curve-irm` | PASS | 26433243 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26433243 |
+| `morpho-oracle-usp-usdc` | PASS | 26433243 |
+| `acuto-usdc-v2-4a57-market-adapter` | PASS | 26433243 |
+| `morpho-oracle-weeth-usdc-86` | PASS | 26433243 |
 
 ## ABI proofs
 
@@ -218,37 +219,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `acuto-usdc-v2-4a57`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432053
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26433250
 vault        acuto-usdc-v2-4a57 0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57
-latest block 26432053 0x3a9e4dd998e6ce558a4e773670d7b947a5a53c3fe3df3554bf9a428a1d050dea
+latest block 26433250 0x6c417a2f134b38bcd5af101e9ee91f51424c40eacd149a96ef7db3c82c125aea
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-17  block 26432053  758,944.643780 usdc
-  2026-10-18  block 26216053  954,046.089101 usdc
-  2026-09-17  block 26000053  1,175,968.459964 usdc
-  2026-08-18  block 25784053  3,054,720.382681 usdc
-  2026-07-19  block 25568053  1,493,680.127964 usdc
-  2026-06-19  block 25352053  2,652,139.171433 usdc
-  2026-05-20  block 25136053  3,702,104.705713 usdc
-  2026-04-20  block 24920053  4,863,673.335033 usdc
-  2026-03-21  block 24704053  7,070,355.731615 usdc
-  2026-02-19  block 24488053  no code at the vault yet
-  2026-01-19  block 24272053  no code at the vault yet
-  2025-12-20  block 24056053  no code at the vault yet
-  2025-11-20  block 23840053  no code at the vault yet
+  2026-11-17  block 26433250  758,979.188765 usdc
+  2026-10-18  block 26217250  954,085.837507 usdc
+  2026-09-18  block 26001250  1,176,022.748566 usdc
+  2026-08-18  block 25785250  3,049,864.068137 usdc
+  2026-07-19  block 25569250  1,503,760.655180 usdc
+  2026-06-19  block 25353250  2,652,229.328020 usdc
+  2026-05-20  block 25137250  3,501,088.909910 usdc
+  2026-04-20  block 24921250  4,863,956.180458 usdc
+  2026-03-21  block 24705250  6,955,171.358356 usdc
+  2026-02-19  block 24489250  no code at the vault yet
+  2026-01-20  block 24273250  no code at the vault yet
+  2025-12-20  block 24057250  no code at the vault yet
+  2025-11-20  block 23841250  no code at the vault yet
 
-holders      68 addresses hold shares at block 26432053, of 558 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 356591030181867814915626
+holders      68 addresses hold shares at block 26433250, of 558 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 356591030181867814915626
 top 10       hold 96.50% of the shares; each: 30.36%, 28.00%, 14.04%, 7.00%, 5.50%, 5.45%, 2.26%, 1.46%, 1.37%, 1.05%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26432046 `0x898ece3db8cde96d2b26bae432935e95a1f3a888d5cfeb87bd142920db8e3599`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26433243 `0xbeadbda69291f784ef7e6946f7fc13b3896fff7550afd9638d207a5afa7cbac6`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10045513425 | 4490230208 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10052494848 | 4495957292 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

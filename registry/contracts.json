@@ -1218,6 +1218,7 @@
     ],
     "defillama": "morpho-blue",
     "instanceCheck": "isMorphoMarketV1AdapterV2(address)",
+    "parentCheck": "parentVault()",
     "code": {
       "hash": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4",
       "from": 23981459
@@ -1471,8 +1472,8 @@
   "weeth": {
     "address": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
     "kind": "token",
-    "source": "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts",
-    "sourceLabel": "weETH",
+    "source": "https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol",
+    "sourceLabel": "WEETH",
     "defillama": "ether.fi-stake",
     "coingecko": "wrapped-eeth",
     "code": {
