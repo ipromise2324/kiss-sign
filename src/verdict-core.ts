@@ -42,9 +42,13 @@ export const coreOnDisk = (root: string): string[] => verdictCore((path) => (exi
 export const coreListText = (paths: readonly string[]): string =>
   `# The verdict core: every file the signing commands (bin/kiss-sign) can run. Written by pnpm verdict-core from the import graph; pnpm test fails when it is out of date.\n${paths.join('\n')}\n`;
 
-const isProgramSide = (core: ReadonlySet<string>, path: string): boolean => core.has(path) || underAny(SPLIT_GUARDS, path);
+/** Paths compare without letter case, since the signer's macOS clone writes `.Githooks/x` into `.githooks/`. */
+const isProgramSide = (core: ReadonlySet<string>, path: string): boolean => core.has(path.toLowerCase()) || underAny(SPLIT_GUARDS, path);
 
-const underAny = (paths: readonly string[], path: string): boolean => paths.some((entry) => (entry.endsWith('/') ? path.startsWith(entry) : path === entry));
+const underAny = (paths: readonly string[], path: string): boolean => {
+  const key = path.toLowerCase();
+  return paths.some((entry) => (entry.endsWith('/') ? key.startsWith(entry.toLowerCase()) : key === entry.toLowerCase()));
+};
 
 /** One test the verdict must keep passing: the file it lives in, what it guards, and every path under `testdata/` or `test/` it reads, a directory ending in `/`. */
 export type Canary = { readonly file: string; readonly guards: string; readonly reads: readonly string[] };
@@ -73,8 +77,8 @@ export function parseCanaryList(text: string): Canary[] {
   return canaries;
 }
 
-/** The code that enforces the rules, beside the canaries, their list, the files they import and the paths they read. A dependency or a pnpm script is code no canary reads, so the package files count too. */
-export const GATE_CODE = [...SPLIT_GUARDS, CANARY_LIST, 'test/canaries/', 'test/canaries.test.ts', '.claude/skills/kiss-sign/', ...PACKAGE_FILES];
+/** The code that enforces the rules, beside the canaries, their list, the files they import and the paths they read. A dependency, a pnpm script or a looser typecheck is code no canary reads, so the package files and tsconfig.json count too. */
+export const GATE_CODE = [...SPLIT_GUARDS, CANARY_LIST, 'test/canaries/', 'test/canaries.test.ts', '.claude/skills/kiss-sign/', 'tsconfig.json', '.npmrc', ...PACKAGE_FILES];
 
 /**
  * Whether a path belongs to the program gate as the repository read through `read` declares it: the gate code, every canary,
@@ -95,13 +99,13 @@ export type Change = { readonly path: string; readonly modified: boolean };
  * A change to a template or the registry. A report `pnpm report` renders from recordings may be rendered again beside a core change,
  * but adding or deleting one is data, since a vault's report.generated.md decides which vaults `card seal` and `verify` accept.
  */
-const isTemplateData = ({ path, modified }: Change): boolean => (path.startsWith('templates/') || path.startsWith('registry/')) && !(modified && GENERATED.test(path));
+const isTemplateData = ({ path, modified }: Change): boolean => underAny(['templates/', 'registry/'], path) && !(modified && GENERATED.test(path));
 
 /** A branch's changes: `core` holds the verdict core and the guards that keep it apart, `gate` every file of the program gate, in any directory. */
 export type Split = { readonly core: string[]; readonly other: string[]; readonly data: string[]; readonly gate: string[] };
 
 export function splitChanges(changed: readonly Change[], core: ReadonlySet<string>, isGate: (path: string) => boolean): Split {
-  const outside = changed.map(({ path }) => path).filter((path) => !['templates/', 'registry/', 'testdata/'].some((dir) => path.startsWith(dir)));
+  const outside = changed.map(({ path }) => path).filter((path) => !underAny(['templates/', 'registry/', 'testdata/'], path));
   return {
     core: outside.filter((path) => isProgramSide(core, path)),
     other: outside.filter((path) => !isProgramSide(core, path)),
@@ -149,14 +153,12 @@ const gitText = (cwd: string, args: string[]): string | undefined => {
 /** What `head` changes since it left `base`, split into verdict core, other program files, template data and the program gate, or undefined when git cannot tell; the core and the gate are read at both ends, so a file the branch adds to either or takes out of it counts. */
 export function branchSplit(cwd: string, base: string, head: string): Split | undefined {
   const forkPoint = gitText(cwd, ['merge-base', base, head])?.trim();
-  const changed = gitText(cwd, ['diff', '--name-status', '--no-renames', `${base}...${head}`]);
+  const changed = gitText(cwd, ['diff', '-z', '--name-status', '--no-renames', `${base}...${head}`]);
   if (!forkPoint || changed === undefined) return undefined;
   const readAt = (rev: string): Read => (path) => gitText(cwd, ['show', `${rev}:${path}`]);
   const core = new Set([...verdictCore(readAt(forkPoint)), ...verdictCore(readAt(head))]);
   const gates = [gateAt(readAt(forkPoint)), gateAt(readAt(head))];
-  const changes = changed
-    .split('\n')
-    .filter((line) => line !== '')
-    .map((line) => ({ path: line.slice(line.indexOf('\t') + 1), modified: line.startsWith('M') }));
+  const fields = changed.split('\0');
+  const changes = Array.from({ length: Math.floor(fields.length / 2) }, (_, i) => ({ path: fields[2 * i + 1]!, modified: fields[2 * i] === 'M' }));
   return splitChanges(changes, core, (path) => gates.some((isGate) => isGate(path)));
 }

@@ -107,10 +107,10 @@ One report covers one concrete operation, the template and one vault. A vault wi
 A program pull request changes no file under `templates/` or `registry/` and no file of the program gate. You merge it yourself; the signer does not read code. Merge only after all of these, in order:
 
 1. Push the branch and open the pull request to the signer's fork.
-2. In the signer's clone with its checkout exactly `origin/main` (`git fetch origin`, then `git status` shows main up to date and nothing changed), run `pnpm program-gate origin/<branch>`. It runs main's gate on the branch: the typecheck, every canary of `docs/canaries.txt` and every other test. Require its last line to start with `ELIGIBLE`. `NOT ELIGIBLE` names why: fix the branch, or, when it names the gate, a template or the registry, hand that pull request to the signer instead.
+2. In the signer's clone with its checkout exactly `origin/main` (`git fetch origin`, then `git status` shows main up to date and nothing changed), run `pnpm program-gate origin/<branch>`. It runs main's gate on the branch: the typecheck, every canary of `docs/canaries.txt` and every other test. The branch must hold the current `origin/main`; merge it in first, never rebase. Require its last line to start with `ELIGIBLE`; it names the commit it judged. `NOT ELIGIBLE` names why: fix the branch, or, when it names the gate, a template or the registry, hand that pull request to the signer instead.
 3. Require the pull request's `program-gate` CI job to pass too. It runs the same command from main's workflow on a fresh machine.
 4. Spawn a fresh subagent as the reviewer. Give it `git diff origin/main...origin/<branch>`, `docs/design.md`, and the program-gate output, not your summary or your reasons. Ask whether the change weakens any check `verify` runs, lets any transaction reach `MATCH` that main would refuse, or edits a test so it stops catching something. Merge only when it answers that it finds no security regression; otherwise fix what it names and start again at step 2.
-5. Merge with a merge commit: `gh pr merge <number> --merge`. Never squash, rebase or force-push.
+5. Merge exactly the commit the gate and the reviewer judged, with a merge commit: `gh pr merge <number> --merge --match-head-commit <sha>`, the sha from the `ELIGIBLE` line. A push after that starts again at step 2. Never squash, rebase or force-push.
 
 A template, registry or program gate pull request you never merge, even when every check passes.
 

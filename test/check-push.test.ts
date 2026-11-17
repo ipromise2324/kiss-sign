@@ -197,3 +197,15 @@ test('a gate change alone, or a core change beside a new fixture no canary reads
   commit(core.repo, 'testdata/y/new.json', '{}\n');
   assert.equal(checkBranch(core.repo, core.home).status, 0);
 });
+
+test('a gate or template path git would quote, or one that differs only in letter case, is still refused beside a core change', () => {
+  for (const path of ['test/canaries/ü.canary.ts', 'Test/Canaries/x.canary.ts', 'templates/é/op/template.json', '.Githooks/post-merge']) {
+    const { repo, home } = splitRepo();
+    writeFileSync(join(repo, 'src', 'check.ts'), 'export const ok = 2;\n');
+    mkdirSync(join(repo, path, '..'), { recursive: true });
+    commit(repo, path, 'x\n');
+    const result = checkBranch(repo, home);
+    assert.equal(result.status, 1, path);
+    assert.ok(result.stderr.toLowerCase().includes(`  ${path.toLowerCase()}`), `${path}: ${result.stderr}`);
+  }
+});

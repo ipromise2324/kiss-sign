@@ -31,6 +31,13 @@ reads testdata/safe-tx/eth-transfer-null-data.json
 reads testdata/safe-tx/morpho-vault-deposit.json
 reads testdata/simulate/morpho-vault-deposit.json
 
+canary test/canaries/allowance.canary.ts
+guards No allowance from the Safe ends higher than it started unless the card declares it: an approval raised and not spent in the same transaction is MISMATCH, a Permit2 allowance may fall or be voided but not rise or last longer, and a Permit2 approval of 2^160-1 is refused by the static floor, the simulated floor and the effects.
+reads testdata/safe-tx/permit2-unlimited-approval.json
+reads testdata/safe-tx/uniswap-v4-add-liquidity-permit2.json
+reads testdata/simulate/permit2-unlimited-approval.json
+reads testdata/simulate/uniswap-v4-add-liquidity-permit2.json
+
 canary test/canaries/perturb.canary.ts
 guards Every free field of each recorded transaction, changed, reverts, is refused, or changes nothing its claim forbids; a deposit whose assets were left free, a free field that adds an approveHash, and a proof field whose change still executes fail.
 reads testdata/perturb/
