@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { main } from '../src/cli/main.ts';
 import type { Io } from '../src/cli/main.ts';
+import { readGithubToken } from '../src/research/github-token.ts';
 
 const KEY = 'planted-key-123';
 
@@ -86,6 +87,18 @@ test('a .env in the working directory is never read', async () => {
   }
 });
 
+test('key add github saves a fine-grained token without showing it, and the research scripts read it, the environment first', async () => {
+  const home = freshHome();
+  const token = `github_pat_${'A1b2'.repeat(20)}`;
+  const added = await run(['key', 'add', 'github'], { KISS_SIGN_HOME: home }, token);
+  assert.equal(added.code, 0);
+  assert.ok(!added.all.includes(token));
+  assert.equal(readFileSync(join(home, '.env'), 'utf8'), `GITHUB_TOKEN=${token}\n`);
+  assert.equal(readGithubToken({ KISS_SIGN_HOME: home }), token);
+  assert.equal(readGithubToken({ KISS_SIGN_HOME: home, GITHUB_TOKEN: KEY }), KEY);
+  assert.equal(readGithubToken({ KISS_SIGN_HOME: freshHome() }), undefined);
+});
+
 test('key remove takes out only that key', async () => {
   const home = freshHome();
   await run(['key', 'add', 'alchemy'], { KISS_SIGN_HOME: home }, KEY);
@@ -100,5 +113,5 @@ test('key remove takes out only that key', async () => {
 test('an unknown command prints usage', async () => {
   const result = await run(['frobnicate'], {});
   assert.equal(result.code, 64);
-  assert.match(result.stderr, /\n  pnpm kiss-sign key add <alchemy\|etherscan>\n/);
+  assert.match(result.stderr, /\n  pnpm kiss-sign key add <alchemy\|etherscan\|github>\n/);
 });
