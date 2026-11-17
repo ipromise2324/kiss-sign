@@ -56,7 +56,8 @@ const tip = (label: string, body: string): Html => {
   return h`<span class="tip" tabindex="0" aria-label="${label}" aria-describedby="t${tips}">${decor('info')}<span class="bub" id="t${tips}" role="tooltip">${body}</span></span>`;
 };
 
-const stateCounts = (count: Extract<RailCount, { kind: 'states' }>, r: R): Html => h`${count.counts.map((c) => h` <span class="cnt" data-state="${c.state}">${icon(c.state, r.language)}${c.n}</span>`)}`;
+const stateCounts = (count: Extract<RailCount, { kind: 'states' }>, r: R): Html =>
+  h`${count.counts.map((c) => h` <span class="cnt" data-state="${c.state}">${icon(c.state, r.language)}${c.grade === undefined ? '' : `${r.w.grade[c.grade]} `}${c.n}</span>`)}`;
 
 const railCount = (count: RailCount | undefined, r: R): Html => (count === undefined ? h`` : count.kind === 'text' ? h` <span class="cnt">${count.text}</span>` : stateCounts(count, r));
 
@@ -337,9 +338,9 @@ function reviewBody(body: Extract<Body, { kind: 'review' }>, r: R): Html {
   <p class="lead">${empty ? r.w.nothingToReview : r.w.reviewLead}</p>
   <div class="rows">${body.rows.map(
     (row) => h`
-    <div class="row" data-state="${row.state}" data-result="${row.id}">
+    <div class="row" data-state="${row.state}" data-grade="${row.grade}" data-result="${row.id}">
       ${icon(row.state, r.language)}
-      <div><div class="t">${text(row.title)}</div>
+      <div><div class="t"><span class="lbl">${r.w.grade[row.grade]}</span> ${text(row.title)}</div>
         <div class="meta">${text(row.why)}${row.entry === undefined ? '' : h`<a href="#${row.entry}">${r.w.seeSource}</a>`}</div>
         <div class="rec"><span class="lbl">${r.w.reviewed[row.review.status]}</span>${ai(row.review.text, r)}</div>
         <div class="rec"><span class="lbl">${r.w.advice}</span>${ai(row.review.recommendation, r)}</div></div>
