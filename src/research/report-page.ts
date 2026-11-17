@@ -484,7 +484,10 @@ function chipsOf(node: ArgNode, template: Template, w: Words): Chip[] {
   const distinct = [...new Map(found.map((leaf) => [`${leaf.who}/${leaf.field ?? ''}`, leaf])).values()];
   if (distinct.length <= 1) return distinct.map((leaf) => ({ who: leaf.who, label: chipLabel(template, leaf.who, leaf.field, w) }));
   const byWho = new Map<Who, string[]>();
-  for (const leaf of found) byWho.set(leaf.who, [...(byWho.get(leaf.who) ?? []), leaf.node.name]);
+  for (const leaf of found) {
+    const names = byWho.get(leaf.who) ?? [];
+    if (!names.includes(leaf.node.name)) byWho.set(leaf.who, [...names, leaf.node.name]);
+  }
   return [...byWho].map(([who, names]) => ({ who, label: w.chipParts(names, w.who[who]) }));
 }
 
