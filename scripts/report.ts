@@ -142,16 +142,13 @@ function dataAt(ref: string): string {
 if (flags.compare) {
   const head = flags.data ?? 'HEAD';
   const split = branchSplit(codeRoot, 'origin/main', head);
-  if (split === undefined) say(`PROGRAM CHANGE?  git could not compare ${head} with origin/main; check by hand which files the pull request changes`);
-  else {
-    const refusal = mixedRefusal(head, split);
-    if (refusal !== undefined) {
-      console.error(`REFUSED  ${refusal}`);
-      process.exit(1);
-    }
-    for (const line of programChangeLines(head, split)) say(line);
-    for (const file of notesChanges(split.data)) say(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
+  const refusal = split === undefined ? `git could not compare ${head} with origin/main; fetch both and run this again` : mixedRefusal('origin/main', head, split);
+  if (split === undefined || refusal !== undefined) {
+    console.error(`REFUSED  ${refusal}`);
+    process.exit(1);
   }
+  for (const line of programChangeLines(head, split)) say(line);
+  for (const file of notesChanges(split.data)) say(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
   if (flags.data === undefined) say('NOTE  this runs the code checked out here; to check a pull request, run --compare from main with --data <its branch>');
 }
 

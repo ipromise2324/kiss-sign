@@ -41,19 +41,26 @@ function git(...args: string[]): string {
   return execFileSync('git', args, { encoding: 'utf8', maxBuffer: 1 << 30 });
 }
 
-type Branch = { readonly base: string; readonly head: string };
+type Branch = { readonly base: string; readonly head: string; readonly name: string };
 
 function outgoing(rangeArg: string | undefined): { readonly commits: string[]; readonly branches: Branch[] } {
   const revList = (...args: string[]) => git('rev-list', ...args).split('\n').filter(Boolean);
   if (rangeArg !== undefined) {
     const [, base, head] = /^(.+?)\.\.\.?(.*)$/.exec(rangeArg) ?? [];
-    return { commits: revList(rangeArg), branches: base === undefined ? [] : [{ base, head: head || 'HEAD' }] };
+    if (!base) {
+      console.error(`check-push takes a range such as origin/main..HEAD, not ${rangeArg}.`);
+      process.exit(2);
+    }
+    return { commits: revList(rangeArg), branches: [{ base, head: head || 'HEAD', name: head || 'HEAD' }] };
   }
   const pushed = readFileSync(0, 'utf8')
     .split('\n')
-    .map((line) => line.trim().split(/\s+/)[1])
-    .filter((sha): sha is string => sha !== undefined && !ZERO_SHA.test(sha));
-  return { commits: pushed.flatMap((sha) => revList(sha, '--not', '--remotes')), branches: pushed.map((head) => ({ base: 'origin/main', head })) };
+    .map((line) => line.trim().split(/\s+/))
+    .flatMap(([name, sha]) => (name !== undefined && sha !== undefined && !ZERO_SHA.test(sha) ? [{ name, sha }] : []));
+  return {
+    commits: pushed.flatMap(({ sha }) => revList(sha, '--not', '--remotes')),
+    branches: pushed.map(({ name, sha }) => ({ base: 'origin/main', head: sha, name })),
+  };
 }
 
 const needles = homes().flatMap(needlesIn);
@@ -65,10 +72,10 @@ for (const commit of commits) {
     if (text.includes(needle.text.toLowerCase())) findings.push(`${commit.slice(0, 12)} contains ${needle.label}`);
   }
 }
-for (const { base, head } of branches) {
+for (const { base, head, name } of branches) {
   const split = branchSplit(process.cwd(), base, head);
-  const refusal = split && mixedRefusal(head, split);
-  if (refusal) findings.push(refusal);
+  const refusal = split === undefined ? `git could not compare ${name} with ${base}, so it cannot tell whether ${name} changes the verdict core beside a template; fetch ${base} and run this again` : mixedRefusal(base, name, split);
+  if (refusal !== undefined) findings.push(refusal);
 }
 
 if (findings.length > 0) {

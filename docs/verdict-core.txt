@@ -2,6 +2,7 @@
 bin/kiss-sign
 package.json
 pnpm-lock.yaml
+pnpm-workspace.yaml
 src/address-book.ts
 src/canonical.ts
 src/card.ts
