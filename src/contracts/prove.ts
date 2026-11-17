@@ -1,6 +1,7 @@
 import type { ProviderName } from '../chain/providers.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
+import type { ProxyDeclaration } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { keccakCode, readRunningCode } from './code.ts';
 import type { CodeRefusal } from './code.ts';
@@ -65,6 +66,12 @@ export function describeRefusal(refusal: Refusal): string {
       return `${refusal.at} hands a call it has no function for, at byte ${refusal.pc} of its code, to code the program neither proves nor pins`;
     case 'fallback-unfollowable':
       return `the program cannot follow what ${refusal.at} does with a call it has no function for (${refusal.cause} at byte ${refusal.pc}), so whether it delegates elsewhere is unknown`;
+    case 'declared-without-delegation':
+      return `${refusal.at} runs a call it has no function for without handing it to other code, so its implementationRead names no code it runs`;
+    case 'declared-read-failed':
+      return `${refusal.call} on ${refusal.at}, a view of the entry's implementationRead, did not answer one nonzero address other than the proxy's own`;
+    case 'declared-probe-failed':
+      return `a call the proxy has no function for did not run the code at ${refusal.implementation}, which its implementationRead answers, as the proxy`;
     case 'no-code':
       return `${refusal.at} has no code`;
     case 'chained-proxy':
@@ -247,9 +254,9 @@ async function sourceOf(deps: ProveDeps, address: Address): Promise<VerifiedSour
  * Proves the ABI of the code a call to `address` runs at `block`: Sourcify's source, compiled with a pinned solc, must
  * give the code both providers read. Every failure is a refusal, never a guess.
  */
-export async function proveAbi(reader: Reader, address: Address, block: BlockRef, deps: ProveDeps): Promise<AbiProof | AbiRefusal> {
+export async function proveAbi(reader: Reader, address: Address, block: BlockRef, deps: ProveDeps, declared: ProxyDeclaration = {}): Promise<AbiProof | AbiRefusal> {
   try {
-    const read = await readRunningCode(reader, address, block);
+    const read = await readRunningCode(reader, address, block, declared);
     if (read.kind === 'refused') return refuse(read.refusal);
     const { own, proxy, runs: code } = read.code;
     const proven = proxy.kind === 'none' ? address : proxy.implementation;

@@ -171,7 +171,7 @@ test('dependsOn names 1 to 8 other registry entries, none of which depends on an
 });
 
 test('the pin of a selector-routed proxy holds each implementation its seeds reach, sorted by address, with its code hash and selectors as listed', async () => {
-  const read = await readRunningCode(chain(() => TODAY), PROXY, AT, LIQUIDITY.routes);
+  const read = await readRunningCode(chain(() => TODAY), PROXY, AT, LIQUIDITY);
   assert.equal(read.kind, 'read');
   assert.deepEqual(read.kind === 'read' ? read.code.routes : undefined, [
     { address: A, hash: hash('0x600a'), selectors: [S2, S1] },
@@ -182,7 +182,7 @@ test('the pin of a selector-routed proxy holds each implementation its seeds rea
 });
 
 const refusedRead = async (state: Proxied, tweaks?: Tweaks): Promise<string> => {
-  const read = await readRunningCode(chain(() => state, tweaks), PROXY, AT, LIQUIDITY.routes);
+  const read = await readRunningCode(chain(() => state, tweaks), PROXY, AT, LIQUIDITY);
   return read.kind === 'refused' ? describeRefusal(read.refusal) : assert.fail('the routes were read');
 };
 
@@ -204,7 +204,7 @@ test('routes that do not agree with themselves, an implementation with no code, 
 test('pin-code finds the block an implementation was added to the routes, so each route change starts a span', async () => {
   const before: Proxied = { codes: TODAY.codes, implementationOf: { [S1]: A, [S2]: A }, selectorsOf: { [A]: [S2, S1] } };
   const state = (block: bigint): Proxied => (block < 100n ? { codes: {}, implementationOf: {}, selectorsOf: {} } : block < 250n ? before : TODAY);
-  const history = await readCodeHistory(chain(state), PROXY, HEAD, LIQUIDITY.code!.current.pin, LIQUIDITY.routes);
+  const history = await readCodeHistory(chain(state), PROXY, HEAD, LIQUIDITY.code!.current.pin, LIQUIDITY);
   const pin = (routes: unknown) => ({ hash: hash(PROXY_CODE), implementation: { address: DUMMY, hash: hash('0x6001') }, routes });
   assert.deepEqual(history, {
     kind: 'read',
