@@ -187,7 +187,7 @@ What DefiLlama and the chain say about the protocols this template's calls go to
 
 ### `testdata/research/uniswap-swap-morpho.json`
 
-Recorded with `pnpm past-txs uniswap/swap --token 0x58d97b57bb95320f9a05dc918aef65434969c2b2 --anchor any --to 0x000000000004444c5dc75cb358380d2e3de08a90 --max-txs 240 --record uniswap-swap-morpho`, and studied again here with the template as it is now.
+Recorded with `pnpm past-txs uniswap/swap --token 0x58d97b57bb95320f9a05dc918aef65434969c2b2 --anchor any --to 0x000000000004444c5dc75cb358380d2e3de08a90 --max-txs 240 --same-windows-as uniswap-swap-morpho --record uniswap-swap-morpho`, and studied again here with the template as it is now.
 
 ```text
 past transactions for uniswap/swap

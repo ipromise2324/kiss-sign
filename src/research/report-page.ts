@@ -17,6 +17,8 @@ import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
 import { addressWord, isNamedToken, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
+import { distributionOf, effectText } from './amounts.ts';
+import type { Difference } from './amounts.ts';
 import type { FieldFact } from './erc7730.ts';
 import { latestOf, packageKey } from './npm-package.ts';
 import { tipUrlOf } from './source-page.ts';
@@ -25,6 +27,7 @@ import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSi
 import type { Confidence, FindingKind, Ledger, Phrase, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
+import { amountsOf } from './past-txs.ts';
 import { factsScope } from './protocol-facts.ts';
 import { functionNames, isOtherOperation, misfitText } from './study.ts';
 import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
@@ -79,7 +82,7 @@ export type Body =
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
   | { readonly kind: 'wallet'; readonly view: WalletView }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
-  | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly recordings: readonly PastRecording[] }
+  | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly amounts: readonly PastAmounts[]; readonly recordings: readonly PastRecording[] }
   | { readonly kind: 'next'; readonly steps: readonly NextStep[]; readonly automatic: readonly Inline[] };
 
 export type NextStep = { readonly say: Inline; readonly command: string | undefined; readonly then: readonly Inline[]; readonly hashes: boolean };
@@ -222,6 +225,16 @@ export type AddressRow = {
 export type PastGroup = { readonly count: number; readonly senders: number; readonly calls: Inline | undefined; readonly reason: Inline; readonly examples: readonly Span[] };
 /** The transactions of one kind of sender that used the operation's calls: how many, how many had the template's shape, and why the rest did not. */
 export type PastBlock = { readonly title: string; readonly lead: Inline; readonly groups: readonly PastGroup[] };
+/** One party's differences from a stated amount: each number of base units with how many transactions ended there. */
+export type PastAmountRow = { readonly party: string; readonly cells: readonly { readonly by: string; readonly n: string }[] };
+/** One measured effect of one recording, shown beside its tolerance, with the finding when the evidence and the tolerance disagree. */
+export type PastAmounts = {
+  readonly effect: string;
+  readonly tolerance: string;
+  readonly tokens: readonly { readonly count: number; readonly lead: string; readonly rows: readonly PastAmountRow[] }[];
+  readonly finding: string | undefined;
+  readonly unmeasured: string | undefined;
+};
 export type PastRecording = { readonly file: string; readonly count: string; readonly search: Inline; readonly blocks: readonly PastBlock[]; readonly others: readonly Inline[] };
 
 /** Everything the HTML report reads beyond the Markdown report's inputs. */
@@ -1587,8 +1600,27 @@ function pastSection(context: Context): Section {
       others,
     };
   });
+  const amounts = context.inputs.pastTxs.flatMap(({ run }): PastAmounts[] => {
+    const { effects, unmeasured } = amountsOf(run, registry);
+    const missed = [...unmeasured.values()].reduce((n, hashes) => n + hashes.length, 0);
+    const row = (party: 'sender' | 'receiver', differences: readonly Difference[]): PastAmountRow => ({
+      party: w.amountsParty(party),
+      cells: [...distributionOf(differences).counts].sort((a, b) => (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0)).map(([by, n]) => ({ by: w.amountsBy(by), n: w.amountsCount(n) })),
+    });
+    return effects.map(({ effect, tokens, finding }) => ({
+      effect: effectText(effect),
+      tolerance: w.amountsTolerance(effect.tolerance?.less ?? 0n, effect.tolerance?.more ?? 0n),
+      tokens: tokens.map((t) => ({
+        count: t.sender.length,
+        lead: w.amountsToken(nameOf(t.token), t.safes, t.eoas, t.inRegistry),
+        rows: [row('sender', t.sender), ...(t.receiver.length === 0 ? [] : [row('receiver', t.receiver)])],
+      })),
+      finding: finding === undefined ? undefined : finding.kind === 'beyond' ? w.amountsBeyond(finding.lower, finding.higher) : w.amountsUnfounded,
+      unmeasured: missed === 0 ? undefined : w.amountsUnmeasured(missed),
+    }));
+  });
   const conclusion = context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion);
-  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, recordings } };
+  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, amounts, recordings } };
 }
 
 function sameShape(context: Context): Inline {
