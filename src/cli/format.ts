@@ -48,6 +48,8 @@ const padTo = (text: string, width: number): string => text + ' '.repeat(Math.ma
 
 /** Breaks at spaces only, so an address, hash or URL is never split; a word longer than the width keeps a line of its own. */
 export function wrap(text: string, width: number): string[] {
+  const indent = /^ */.exec(text)?.[0] ?? '';
+  if (indent !== '') return wrap(text.slice(indent.length), Math.max(1, width - indent.length)).map((line) => `${indent}${line}`);
   const lines: string[] = [];
   let line = '';
   for (const word of text.split(' ')) {

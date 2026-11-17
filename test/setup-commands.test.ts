@@ -253,7 +253,7 @@ test('card seal prints every name with its full address and stores the card unde
   writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', amount: '5', 'min-shares': '4' } }] }));
   const sealed = await run(['card', 'seal', card], home, ['y']);
   assert.equal(sealed.code, 0, sealed.stderr);
-  assert.match(sealed.stdout, /│   vault +steakhouse-prime-usdc-v2-0f51  0xbeef088055857739C12CD3765F20b7679Def0f51\n│   amount +5 base units of usdc\n│   min-shares +4 base units of steakhouse-prime-usdc-v2-0f51\n│\n│ card seal reads no decimals, so amounts are in base units only\n/);
+  assert.match(sealed.stdout, /│   vault +steakhouse-prime-usdc-v2-0f51  0xbeef088055857739C12CD3765F20b7679Def0f51\n│   amount +5 base units of usdc\n│   min-shares +4 base units of steakhouse-prime-usdc-v2-0f51\n│\n│ card seal reads no decimals, so token amounts other than ETH are in base units only\n/);
   const hash = /Sealed card (0x[0-9a-f]{64})/.exec(sealed.stdout)?.[1];
   assert.ok(hash !== undefined && existsSync(join(home, 'cards', `${hash}.json`)));
 });
@@ -347,7 +347,7 @@ test('card new lists a vault with the factory that created it, takes amounts in 
   assert.equal(made.asked[1], 'amount (whole usdc, 6 decimals): ');
   assert.ok(made.stdout.includes(`\n    token  usdc  ${USDC}  6 decimals\n`), made.stdout);
   assert.ok(made.stdout.includes("\nmin-shares  computed, not asked: the protocol's app fills it in itself\n"));
-  assert.match(made.stdout, new RegExp(`\\n    read +previewDeposit\\(5000000\\)\\n +on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n`));
+  assert.match(made.stdout, new RegExp(`\\n    read +previewDeposit\\(5000000\\) = 4900000000000000000\\n +on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\\n`));
   assert.match(made.stdout, /\n    expected +4\.9 steakhouse-prime-usdc-v2-0f51\n    slippage +0\.10% less than expected: the protocol's default 0\.03% plus a margin of 0\.07%\n    value +4\.8951 steakhouse-prime-usdc-v2-0f51\n    default from +https:\/\/github\.com\/morpho-org\/sdks\/blob\/[0-9a-f]{40}\/packages\/blue-sdk\/src\/constants\.ts#L24\n/);
   assert.match(
     made.stdout,
@@ -366,7 +366,7 @@ test('card new reads a computed field\'s inner read first, here the Safe\'s shar
   const made = await run(['card', 'new', 'morpho/vault-withdraw-all'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), 'y'], { ...mainnet(), repoRoot: withdrawClone() });
   assert.equal(made.code, 0, made.stderr);
   const balance = made.stdout.indexOf(`balanceOf(safe) = 2000000000000000000\n                  on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\n`);
-  const redeem = made.stdout.indexOf(`previewRedeem(2000000000000000000)\n                  on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\n`);
+  const redeem = made.stdout.indexOf(`previewRedeem(2000000000000000000) = 2000000\n                  on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\n`);
   assert.ok(balance !== -1 && redeem > balance, made.stdout);
   assert.match(made.stdout, /\n    expected +2 usdc\n[\s\S]*\n    value +1\.998 usdc\n[\s\S]*│   min-assets +1\.998 usdc\n│ +1998000 base units\n/);
 });
@@ -475,7 +475,7 @@ test('card new counts eth in 18 decimals without reading the chain', async () =>
   await run(['book', 'add', 'alice', RECIPIENT], home, ['y']);
   const made = await run(['card', 'new', 'eth/transfer'], home, [numberOf('alice'), '0.5', 'y'], { ...noChain, env: {} });
   assert.equal(made.code, 0, made.stderr);
-  assert.equal(made.asked[1], 'amount (whole eth, 18 decimals): ');
+  assert.equal(made.asked[1], 'amount (whole ETH, 18 decimals): ');
   assert.match(made.stdout, /│   amount +0\.5 ETH\n│ +500000000000000000 base units\n/);
 });
 

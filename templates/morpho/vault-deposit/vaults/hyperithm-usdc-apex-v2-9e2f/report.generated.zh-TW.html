@@ -607,7 +607,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li><div>金庫（<code>vault</code>）：它列出可選的合約，每個附完整地址。選 <a href="#a-hyperithm-usdc-apex-v2-9e2f">hyperithm-usdc-apex-v2-9e2f</a>，地址是 <span class="addr">0x093272C07700d3cA5301C3Bf9B3A392624179E2F</span>
       <p class="then">列表的編號可能跟別人的不同，照名字選；也可以直接打名字 <code>hyperithm-usdc-apex-v2-9e2f</code> 。</p></div></li>
     <li><div>金額（<code>amount</code>）：打 usdc 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
-      <p class="then">它印出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
+      <p class="then">它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
     <li><div>最少收到的數量（<code>min-shares</code>）：不用填。協議的 app 自己會填這個值，不會問使用者，所以程式自己算。
       <p class="then">它在鏈上讀 <code>previewDeposit</code>，兩個節點答案一樣才用，印出預期的 hyperithm-usdc-apex-v2-9e2f 數量，再少 0.10%（協議預設的 0.03%，再加 0.07% 餘裕），無條件捨去。</p>
       <p class="then">預設值的來源：<a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24">github.com/morpho-org/sdks</a>。核對印出的預期數量跟最後的數字合理。</p></div></li>
