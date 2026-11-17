@@ -145,9 +145,9 @@ First the hashes. They must be identical on both pages and on your hardware wall
 
 ![The hash rows of both pages side by side: safeTxHash, domain hash and message hash, the same on kiss-sign verify and on check.sh](docs/readme/compare-hashes.png)
 
-Then every call, row by row. Every column must be identical except the names on the right, which each side writes from its own list, such as `usdc` and `USDC`:
+Then every call, row by row, down to the calls inside a batch: both sides split Bundler3's `multicall` into the token transfer and the vault deposit it runs. Every column must be identical except the names on the right, which each side writes from its own list:
 
-![The rows of the USDC approve call on both pages side by side: the same to, function and arguments, with different names in the last column](docs/readme/compare-call.png)
+![Some rows of call #3 on both pages side by side: the Bundler3 multicall, then its two inner calls, erc20TransferFrom of 1000611448606 and erc4626Deposit into the Hyperithm vault for the Safe, the same on both sides, with different names in the last column](docs/readme/compare-multicall.png)
 
 `--hints` tell `check.sh` how to read bytes that hold data rather than a call, such as a Vault V2 cap id. They carry positions and types only and never change a row, so a wrong hint cannot make the rows match. See [Hints from kiss-sign](https://github.com/ipromise2324/kiss-sign-check#hints-from-kiss-sign).
 
