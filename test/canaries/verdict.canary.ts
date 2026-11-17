@@ -1,14 +1,14 @@
-import { detailText } from '../src/verify/detail-text.ts';
+import { detailText } from '../../src/verify/detail-text.ts';
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import type { EngineChecks } from '../src/floor/summary.ts';
-import { loadRegistry } from '../src/registry.ts';
-import type { Address, Hex } from '../src/safe/types.ts';
-import { checkStates, decideVerdict } from '../src/verify/verdict.ts';
-import type { AllChecks } from '../src/verify/verdict.ts';
+import type { EngineChecks } from '../../src/floor/summary.ts';
+import { loadRegistry } from '../../src/registry.ts';
+import type { Address, Hex } from '../../src/safe/types.ts';
+import { checkStates, decideVerdict } from '../../src/verify/verdict.ts';
+import type { AllChecks } from '../../src/verify/verdict.ts';
 
-const registry = loadRegistry(join(import.meta.dirname, '..'));
+const registry = loadRegistry(join(import.meta.dirname, '..', '..'));
 const HASH = `0x${'aa'.repeat(32)}` as Hex;
 const OTHER_HASH = `0x${'bb'.repeat(32)}` as Hex;
 const USDC = registry.entries.get('usdc')!.address;

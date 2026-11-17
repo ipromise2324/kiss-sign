@@ -243,7 +243,7 @@ The last four have no template and no card, so they record no verdict; the tests
 
 ## Perturbation tests
 
-`perturb/<name>.json` holds every request `pnpm perturb` sent to Alchemy and drpc, with each one's answer, for one test transaction: the unchanged run and each copy with one free field changed. `test/perturb.test.ts` replays them. `morpho-deposit-free-assets` uses a copy of `morpho/vault-deposit` whose `erc4626Deposit.assets` is free, kept in the recording, so the test can show a field the harness must fail.
+`perturb/<name>.json` holds every request `pnpm perturb` sent to Alchemy and drpc, with each one's answer, for one test transaction: the unchanged run and each copy with one free field changed. `test/canaries/perturb.canary.ts` replays them. `morpho-deposit-free-assets` uses a copy of `morpho/vault-deposit` whose `erc4626Deposit.assets` is free, kept in the recording, so the test can show a field the harness must fail.
 
 ```sh
 export ALCHEMY_API_KEY=$(sed -n 's/^ALCHEMY_API_KEY=//p' ~/.kiss-sign/.env)
