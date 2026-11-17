@@ -13,7 +13,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/readme/overview-dark.png">
-  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI runs kiss-sign's checks on the addresses, ABIs, past transactions, the protocol's state and the code it runs, one step at a time, writes a report, and you review and merge it. At every signing, you fill a card, kiss-sign verify checks the transaction against it on your computer, check.sh decodes the same transaction on a second computer, and you compare the hashes on your hardware wallet before signing.">
+  <img src="docs/readme/overview.png" alt="kiss-sign at a glance. You say what you want. Once per operation, your AI runs kiss-sign's checks: each address's page, API and SDK build must be on one of the protocol's sites, as DefiLlama and the protocol's CoinGecko coin list them, joined by its Immunefi program's and its GitHub-verified organization's when they match those, and each address must show up in at least two places among the official pages, the protocol's API, CoinGecko, the factory, the bug bounty's scope, the npm SDK and the deployer of an entry confirmed elsewhere. It then checks the ABIs, past transactions, the protocol's state and the code it runs, and writes a report, which you review and merge. At every signing, you fill a card, kiss-sign verify checks the transaction against it on your computer, check.sh decodes the same transaction on a second computer, and you compare the hashes on your hardware wallet before signing.">
 </picture>
 
 ## Contents

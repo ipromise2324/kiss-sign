@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Source of docs/readme/overview.png and overview-dark.png. Values come from a real run: another Safe's nonce 1566.
-     Logos are each project's own (GitHub organization avatars, Etherscan's brand asset, simple-icons; docs.svg and factory.svg drawn for this page). Font: Excalifont, OFL-1.1 (fonts/Excalifont-OFL.txt).
+     Logos are each project's own (GitHub organization avatars, Etherscan's brand asset, simple-icons; docs.svg, factory.svg, api.svg, bounty.svg, package.svg and deployer.svg drawn for this page). Font: Excalifont, OFL-1.1 (fonts/Excalifont-OFL.txt).
      Re-render with docs/diagrams/render.sh. -->
 <html lang="en">
 <head>
@@ -48,7 +48,11 @@
   .lg.plain { padding-left: 8px; }
   :root.dark .lg img.mono-logo { filter: invert(1); background: transparent; }
 
-  .chain .steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 30px; margin-top: 6px; }
+  .chain .steps { display: grid; grid-template-columns: minmax(0, 2.15fr) repeat(4, minmax(0, 1fr)); gap: 30px; margin-top: 6px; }
+  .step .sub { margin-top: 8px; }
+  .step .sub + .sub { border-top: 1.5px dashed var(--chip); padding-top: 8px; }
+  .step .sub .q { font-size: 17px; }
+  .step .sub .q .n { font-size: 17px; }
   .step { padding: 12px 12px 14px; display: grid; align-content: start; gap: 4px; }
   .step .t { font-size: 21px; line-height: 1.2; }
   .step .n { color: var(--ai); margin-right: 6px; }
@@ -109,7 +113,7 @@
   <div class="chain ai" id="chain">
     <div class="who">Your AI runs kiss-sign's checks, one step at a time</div>
     <div class="steps">
-      <div class="sk step" id="s1"><div class="t"><span class="n">1</span>Find each address</div><div class="note">on the protocol's own site?</div><div class="logos"><span class="lg"><img class="mono-logo" src="logos/docs.svg" alt="">docs</span><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/factory.svg" alt="">factory</span></div></div>
+      <div class="sk step" id="s1"><div class="t"><span class="n">1</span>Find each address</div><div class="sub"><div class="q"><span class="n">a</span>Is its page on the protocol's own site?</div><div class="note">its domain, by the Public Suffix List, or its GitHub org; so is the API's domain and the SDK build's org. The sites come from:</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama + parent</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko coin</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">Immunefi, if it matches</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub-verified org</span></div></div><div class="sub"><div class="q"><span class="n">b</span>Is it in at least two places?</div><div class="note">each page with the address next to its name</div><div class="logos"><span class="lg"><img class="mono-logo" src="logos/docs.svg" alt="">official pages</span><span class="lg"><img class="mono-logo" src="logos/api.svg" alt="">protocol API</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/factory.svg" alt="">factory</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">bounty scope</span><span class="lg"><img class="mono-logo" src="logos/package.svg" alt="">npm SDK</span><span class="lg"><img class="mono-logo" src="logos/deployer.svg" alt="">deployer of a confirmed entry</span></div></div></div>
       <div class="sk step" id="s2"><div class="t"><span class="n">2</span>Prove each ABI</div><div class="note">compiles to the code on chain?</div><div class="logos"><span class="lg"><img src="logos/sourcify.jpg" alt="">Sourcify</span><span class="lg"><img class="mono-logo" src="logos/solidity.svg" alt="">solc</span></div></div>
       <div class="sk step" id="s3"><div class="t"><span class="n">3</span>See how others did it</div><div class="note">past transactions, field by field</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span></div></div>
       <div class="sk step" id="s4"><div class="t"><span class="n">4</span>Check the protocol now</div><div class="note">TVL, hacks, vault size, holders</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div>
