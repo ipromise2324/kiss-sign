@@ -28,6 +28,7 @@ test('a long value wraps at spaces within 100 columns and never splits an addres
   assert.ok(lines.every((line) => line.length <= WIDTH), lines.join('\n'));
   assert.ok(lines.some((line) => line.includes(ADDRESS)));
   assert.deepEqual(wrap('a b', 1), ['a', 'b']);
+  assert.deepEqual(wrap('  multiSend[1] to usdc 0xA0b8', 20), ['  multiSend[1] to', '  usdc 0xA0b8'], 'a leading indent stays on every line');
 });
 
 test('a table row too wide for 100 columns puts its address on a line of its own', () => {

@@ -510,9 +510,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li><div>token (<code>sell-token</code>): it lists each token you can pick, with its full address. Pick the one you want; both its name and its full address must be right.</div></li>
     <li><div>token (<code>buy-token</code>): it lists each token you can pick, with its full address. Pick the one you want; both its name and its full address must be right.</div></li>
     <li><div>amount (<code>sell-amount</code>): type the amount of the token (sell-token) you pick in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
-      <p class="then">It prints it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
+      <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
     <li><div>amount (<code>min-buy</code>): type the amount of the token (buy-token) you pick in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
-      <p class="then">It prints it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
+      <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
     <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
       <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
     <li><div>Propose the transaction in the Safe web app (the first time you use this template, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>

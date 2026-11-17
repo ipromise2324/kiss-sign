@@ -211,7 +211,7 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
     if (parsed === undefined || (field.kind === 'threshold' && parsed === 0n)) throw new CardError(`${name}: ${JSON.stringify(typed.slice(0, 80))} is not a whole number in plain digits${field.kind === 'threshold' ? ' from 1' : ''}`);
     return typed;
   }
-  const token = unit.kind === 'eth' ? 'eth' : unit.entry.name;
+  const token = unit.kind === 'eth' ? 'ETH' : unit.entry.name;
   const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
   io.stdout(text(rows([[L.token, unit.kind === 'eth' ? L.eth : `${token}  ${checksumAddress(unit.entry.address)}  ${L.decimals(decimals)}`]], 4)));
   const max = field.kind === 'amount' ? field.max : undefined;
@@ -269,14 +269,14 @@ async function computedValue(name: string, field: TypedField & { readonly kind: 
   const { io, p } = ctx;
   const unit = unitOf(field.of, values, ctx.sources.registry);
   if (unit.kind === 'unregistered') throw new CardError(`${name}: counts ${unit.ref}, which is no registry contract, so it cannot be computed in whole tokens`);
-  const token = unit.kind === 'eth' ? 'eth' : unit.entry.name;
+  const token = unit.kind === 'eth' ? 'ETH' : unit.entry.name;
   const decimals = unit.kind === 'eth' ? 18 : await ctx.chain.decimals(unit.entry);
   io.stdout(text(section(p, name, L.computed)));
   const steps: Step[] = [];
   const read = await readValue(computed.read, values, ctx, steps);
   const total = BigInt(slippageBps(computed));
   const value = computed.bound === 'floor' ? (read * (10_000n - total)) / 10_000n : (read * (10_000n + total) + 9_999n) / 10_000n;
-  const reads = steps.map((step, i): Row => [L.read, [i === steps.length - 1 ? step.call : `${step.call} = ${step.value}`, `${L.on} ${step.on.name}  ${checksumAddress(step.on.address)}`]]);
+  const reads = steps.map((step): Row => [L.read, [`${step.call} = ${step.value}`, `${L.on} ${step.on.name}  ${checksumAddress(step.on.address)}`]]);
   const margin = computed.margin === undefined ? undefined : percent(computed.margin.bps);
   io.stdout(
     text(
