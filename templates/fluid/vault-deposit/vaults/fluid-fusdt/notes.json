@@ -27,14 +27,14 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "The only Safe transaction that does not fit calls only `deposit`, with no `approve` in the same transaction; its allowance was given earlier. Done that way, this template gives MISMATCH.",
-    "zh-TW": "唯一不合的 Safe 交易只呼叫 `deposit`，同一筆沒有 `approve`，授權是更早給的；這種做法用這個模板會 MISMATCH。"
+    "en": "Two Safe transactions do not fit. One calls only `deposit`, with no `approve` in the same transaction; its allowance was given earlier. The other deposits into three vaults in one transaction, fUSDC and fUSDT among them. Done either way, this template gives MISMATCH.",
+    "zh-TW": "有兩筆 Safe 交易不合。一筆只呼叫 `deposit`，同一筆沒有 `approve`，授權是更早給的；另一筆在同一筆交易裡存進三個金庫，其中包括 fUSDC 和 fUSDT。這兩種做法用這個模板都會 MISMATCH。"
   },
   "judgments": [
     {
       "text": {
-        "en": "fUSDT held about 205 million USDT a year ago, about 222 million in 2025-12, and about 124 million now; in 2026-06 it fell as low as about 113 million. 1,435 addresses hold it, the top 10 hold 34.83%, and the largest holder 5.22%.",
-        "zh-TW": "fUSDT 一年前約 2.05 億 USDT，2025-12 到約 2.22 億，現在約 1.24 億，2026-06 曾降到約 1.13 億。1,435 個地址持有，前 10 名占 34.83%，最大持有人 5.22%。"
+        "en": "fUSDT held about 205 million USDT a year ago, about 223 million in 2025-12, and about 118 million now; in 2026-06 it fell as low as about 112 million. 1,436 addresses hold it, the top 10 hold 33.19%, and the largest holder 5.49%.",
+        "zh-TW": "fUSDT 一年前約 2.05 億 USDT，2025-12 到約 2.23 億，現在約 1.18 億，2026-06 曾降到約 1.12 億。1,436 個地址持有，前 10 名占 33.19%，最大持有人 5.49%。"
       },
       "recommendation": {
         "en": "This pool has existed for more than a year. Fluid's withdrawal limits may delay a large withdrawal, so before you deposit, plan when you will withdraw.",
