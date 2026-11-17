@@ -9,7 +9,7 @@ import type { AbiValue } from '../decode/codec.ts';
 import { unwrapSafeTx } from '../decode/multisend.ts';
 import { say } from '../language.ts';
 import type { Language } from '../language.ts';
-import { MARKET_PARAMS, parseHttpsUrl } from '../registry.ts';
+import { MARKET_PARAMS, parseHttpsUrl, sizeOf } from '../registry.ts';
 import type { HttpsUrl, Market, Registry, RegistryEntry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
@@ -306,11 +306,11 @@ const placeLinks = (entry: RegistryEntry, places: readonly SitePlace[], w: Words
     ? [{ word: 'DefiLlama', href: entry.defillama === undefined ? undefined : parseHttpsUrl(PLACE_PAGES.defillama.page(entry.defillama)) }]
     : places.map((place) => ({ word: PLACE_PAGES[place.kind].word(w), href: parseHttpsUrl(PLACE_PAGES[place.kind].page(place.id)) }));
 
-const sourceWord = (entry: RegistryEntry, source: ProgramSource, w: Words): string =>
+const sourceWord = (entry: RegistryEntry, source: ProgramSource, w: Words, registry: Registry): string =>
   source === 'sdk' && entry.sdk !== undefined
     ? `npm ${entry.sdk.package}@${entry.sdk.version}`
-    : source === 'factory' && entry.kind === 'adapter'
-      ? w.adapterFactory
+    : source === 'factory' && (registry.entries.get(entry.attributes.factory ?? '')?.instanceCheck?.length ?? 0) > 1
+      ? w.factoryChecks
       : (pageLabels(entry).get(source) ?? w.source[source as Exclude<ProgramSource, 'page' | `more.${number}` | 'sdk'>]);
 
 /** The newest version a source's newest result read: the default branch of a pinned GitHub page, or npm's latest version of the SDK. */
@@ -324,17 +324,17 @@ function newestWhere(entry: RegistryEntry, source: ProgramSource, inputs: Report
 }
 
 /** An address row's line for a source: the deployer names its address and the confirmed entries it also deployed. */
-function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerShare | undefined, w: Words): string {
-  if (source !== 'deployer' || shared === undefined) return sourceWord(entry, source, w);
+function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerShare | undefined, w: Words, registry: Registry): string {
+  if (source !== 'deployer' || shared === undefined) return sourceWord(entry, source, w, registry);
   return w.deployer(checksumAddress(shared.deployer), shared.siblings);
 }
 
 /** What a confirmation is called in the line that counts them: the `source` page is the official page, any other as `sourceWord` names it. */
-const confirmationWord = (entry: RegistryEntry, source: ProgramSource, w: Words): string => (source === 'page' ? w.officialPage : sourceWord(entry, source, w));
+const confirmationWord = (entry: RegistryEntry, source: ProgramSource, w: Words, registry: Registry): string => (source === 'page' ? w.officialPage : sourceWord(entry, source, w, registry));
 
-const confirmedWords = (entry: RegistryEntry, by: readonly ProgramSource[], w: Words): string =>
+const confirmedWords = (entry: RegistryEntry, by: readonly ProgramSource[], w: Words, registry: Registry): string =>
   w.confirmed(
-    by.map((source) => confirmationWord(entry, source, w)),
+    by.map((source) => confirmationWord(entry, source, w, registry)),
     by.length >= MIN_CONFIRMATIONS,
   );
 
@@ -1164,21 +1164,24 @@ function vaultSection(context: Context): Section[] {
   );
   const latest = evidence.points.at(-1);
   const { factory } = vault.attributes;
+  const size = sizeOf(vault, context.registry);
   const rows: VaultBlock['rows'] = [
     {
       label: w.factory,
       value:
         evidence.admitted !== undefined
-          ? w.answers(evidence.admitted.factory, { code: evidence.admitted.check }, `${evidence.admitted.answer}`)
+          ? evidence.admitted.answers.flatMap((answer, i) => [...(i === 0 ? [] : ['; ']), ...w.answers(answer.asker, { code: answer.check }, answer.answer)])
           : [factory === undefined ? w.noFactory : w.noFactoryAnswer(factory)],
       note: evidence.admitted === undefined ? [] : [w.block(`${evidence.admitted.block}`)],
     },
     {
-      label: w.totalAssetsNow,
+      label: w.sizeNow(size?.fn.name ?? w.notRead),
       value: latest === undefined ? [w.notRead] : [{ num: latest.assets.kind === 'amount' ? amount(latest.assets.amount) : point(latest.assets.kind) }],
       note: latest === undefined ? [] : [w.atBlock(latest.date ?? w.dateUnknown, `${latest.block}`)],
     },
-    ...(evidence.holders === undefined
+    ...(size?.holders !== true
+      ? []
+      : evidence.holders === undefined
       ? [{ label: w.holders, value: [w.notRead], note: [] }]
       : [
           { label: w.holders, value: w.holderCount({ num: `${evidence.holders.holders}` }, { num: `${evidence.holders.candidates}` }), note: [] },
@@ -1205,12 +1208,12 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
     return { title: w.docTitle(name, page, { code: found?.fn.name ?? (doc[1] as string) }, words.title), why: [why] };
   }
   if (result.finding.kind === 'few-confirmations') {
-    return { title: [w.addressConfirmed(name, confirmedWords(result.about.entry, result.finding.by, w))], why: [w.fewConfirmationsWhy(MIN_CONFIRMATIONS)] };
+    return { title: [w.addressConfirmed(name, confirmedWords(result.about.entry, result.finding.by, w, context.registry))], why: [w.fewConfirmationsWhy(MIN_CONFIRMATIONS)] };
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
   const where = span !== null ? w.span(span[1] as string) : result.id.endsWith('/code.today') ? w.latestBlock : '';
   const refused = result.finding.kind === 'refused' ? w.refusedWhy(result.finding.why) : '';
-  const source = result.source === undefined ? undefined : sourceWord(result.about.entry, result.source.of, w);
+  const source = result.source === undefined ? undefined : sourceWord(result.about.entry, result.source.of, w, context.registry);
   return { title: [w.resultTitle(name, source, words.title, where)], why: [`${words.why}${refused}`] };
 }
 
@@ -1371,7 +1374,7 @@ function addressSection(context: Context): Section[] {
     const note = notes.entries?.get(entry.name);
     const sources = sourcesOf(ledger, entry).map(
       (line): SourceLine => ({
-        label: rowWord(entry, line.source, line.shared, w),
+        label: rowWord(entry, line.source, line.shared, w, context.registry),
         href: line.link,
         state: line.state,
         phrase: line.phrase,
@@ -1388,7 +1391,7 @@ function addressSection(context: Context): Section[] {
       reviewed: reviews.length === 0 ? undefined : reviews.some((r) => r.status === 'concern') ? 'concern' : 'confirmed',
       address: checksumAddress(entry.address),
       sources,
-      confirmed: confirmedWords(entry, confirmations(ledger, entry), w),
+      confirmed: confirmedWords(entry, confirmations(ledger, entry), w, context.registry),
       codeLines: codeLines(ledger, entry, signedEntryNames(context.template, context.registry), w),
       aiSources: (note?.sources ?? []).map((s) => ({ text: research(s.text, [s.url], 'ai'), result: s.result })),
     };

@@ -47,7 +47,7 @@ import {
   summarizePastTxs,
   trimReportRecording,
   vaultsAt,
-  vaultsOf,
+  evidenceEntries,
 } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
 import { NOTES_FILE, notesChanges, NotesError } from '../src/research/notes.ts';
@@ -242,7 +242,7 @@ for (const entry of provedEntries(subject, registry)) {
 }
 
 const alchemy = alchemyCall(httpsTransport(), endpoints[0].url, note);
-const vaults = await vaultsAt(flags.compare ? readFileSync(committedPath, 'utf8') : '', vaultsOf(subject, registry), async (vault, at) => {
+const vaults = await vaultsAt(flags.compare ? readFileSync(committedPath, 'utf8') : '', evidenceEntries(subject), async (vault, at) => {
   console.error(`reading ${vault.name} at ${at === 'latest' ? 'the latest block' : `block ${at}`}`);
   return (await vaultEvidenceText(reader, alchemy, registry, vault, at)).text;
 });

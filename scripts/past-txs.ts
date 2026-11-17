@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
 import { mainnetEndpoints } from '../src/chain/providers.ts';
@@ -12,14 +12,16 @@ import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs
 import { ANCHOR_KINDS, liveAsk, recordingAsk } from '../src/research/sources.ts';
 import type { AnchorKind } from '../src/research/sources.ts';
 import { scrubRecording } from '../src/research/recording.ts';
+import type { PastTxsRecording } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
-import { recordingText } from '../src/chain/bytecode.ts';
+import { readRecording, recordingText } from '../src/chain/bytecode.ts';
+import { unreadRefusal } from '../src/chain/https.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/past-txs.ts <protocol>/<operation>
   --token <registry name | address> --anchor mint|burn|any [--from <registry name | address>] [--to <registry name | address>]
   [--max-txs <n>] [--record <name>]
-  [--from-block <n> --to-block <n>]
+  [--from-block <n> --to-block <n> | --same-windows-as <recording>]
 
 Finds executed transactions of one operation through an anchor: an ERC-20 Transfer of --token.
   deposit into a vault:   --token <vault> --anchor mint   (shares minted to the depositor)
@@ -29,7 +31,9 @@ Finds executed transactions of one operation through an anchor: an ERC-20 Transf
   supply to a market:     --token <loan token> --anchor any --to <lending>    (the loan token moving into Morpho Blue)
 It searches 12 windows of up to 7200 blocks spread over the last year, placed by the head block, and studies at most
 --max-txs (at least 12) transactions shared evenly between them. A window with more transfers than one page of a
-source is halved until they fit, and the report names the blocks left out. --from-block and --to-block replace the windows with one range.
+source is halved until they fit, and the report names the blocks left out. --same-windows-as places the windows by the head
+block testdata/research/<recording>.json keeps instead of today's, so a run again searches the same windows.
+--from-block and --to-block replace the windows with one range.
 Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window; each transaction says which found it.
 Senders are counted by type: a proven Safe (Safe proxy code and an official singleton), a contract that is not a proven
 Safe, and an EOA making one of the template's calls directly.
@@ -44,6 +48,7 @@ const { values: flags, positionals } = parseArgs({
     anchor: { type: 'string' },
     'from-block': { type: 'string' },
     'to-block': { type: 'string' },
+    'same-windows-as': { type: 'string' },
     from: { type: 'string' },
     to: { type: 'string' },
     'max-txs': { type: 'string', default: '240' },
@@ -57,7 +62,7 @@ const [fromBlock, toBlock] = [block(flags['from-block']), block(flags['to-block'
 const range = fromBlock !== undefined && toBlock !== undefined && fromBlock <= toBlock ? { fromBlock, toBlock } : undefined;
 const byHand = flags['from-block'] !== undefined || flags['to-block'] !== undefined;
 const maxTxs = Number(flags['max-txs']);
-if (templateId === undefined || positionals.length !== 1 || flags.token === undefined || kind === undefined || (byHand && range === undefined) || !(Number.isInteger(maxTxs) && maxTxs >= 1)) {
+if (templateId === undefined || positionals.length !== 1 || flags.token === undefined || kind === undefined || (byHand && range === undefined) || (flags['same-windows-as'] !== undefined && byHand) || !(Number.isInteger(maxTxs) && maxTxs >= 1)) {
   console.error(USAGE);
   process.exit(64);
 }
@@ -72,6 +77,22 @@ for (const flag of ['from', 'to'] as const) {
   }
 }
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
+const head = flags['same-windows-as'] === undefined ? undefined : recordedHead(flags['same-windows-as']);
+
+/** The head block a `--record` run kept, so a run again searches its windows; no one types a head block. */
+function recordedHead(name: string): bigint {
+  const path = join(ROOT, 'testdata', 'research', `${name}.json`);
+  if (!/^[a-z0-9-]+$/.test(name) || !existsSync(path)) {
+    console.error(`--same-windows-as ${name}: no recording testdata/research/${name}.json`);
+    process.exit(64);
+  }
+  const kept = (readRecording(path) as PastTxsRecording).query.head;
+  if (kept === undefined || !/^[0-9]+$/.test(kept)) {
+    console.error(`--same-windows-as ${name}: the recording keeps no head block, so its windows cannot be searched again`);
+    process.exit(64);
+  }
+  return BigInt(kept);
+}
 
 const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, templateId, registry);
@@ -83,15 +104,18 @@ if (exclude === undefined) console.error(`no Safe configured in ${kissSignHome(p
 
 const endpoints = mainnetEndpoints(process.env);
 const chain = recordingTransport(httpsTransport(), endpoints);
-const sources = recordingAsk(liveAsk(process.env));
+const unread: string[] = [];
+const note = (read: string) => void unread.push(read);
+const sources = recordingAsk(liveAsk(process.env, note));
+const reader = createReader(endpoints, chain.transport, { note });
 const query = {
   template,
   anchor: { token, kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }) },
-  sampling: range === undefined ? DEFAULT_SPREAD : ({ kind: 'range', range } as const),
+  sampling: range !== undefined ? ({ kind: 'range', range } as const) : head === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, head },
 };
 const run = await pastTxs(query, {
   ask: sources.ask,
-  reader: createReader(endpoints, chain.transport),
+  reader,
   registry,
   exclude,
   maxTxs,
@@ -99,6 +123,11 @@ const run = await pastTxs(query, {
 process.stdout.write(renderPastTxs(run, registry));
 
 if (flags.record !== undefined) {
+  const refusal = unreadRefusal(unread);
+  if (refusal !== undefined) {
+    console.error(refusal);
+    process.exit(1);
+  }
   const providers = endpoints.map((e) => e.provider);
   const fixture = scrubRecording(
     {
@@ -109,6 +138,7 @@ if (flags.record !== undefined) {
         ...(from === undefined ? {} : { from }),
         ...(to === undefined ? {} : { to }),
         ...(range === undefined ? {} : { fromBlock: range.fromBlock.toString(), toBlock: range.toBlock.toString() }),
+        ...(run.head === undefined ? {} : { head: run.head.toString() }),
         maxTxs,
       },
       sources: sources.exchanges(),
