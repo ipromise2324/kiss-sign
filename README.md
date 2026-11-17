@@ -137,7 +137,14 @@ On the second computer, `check.sh <nonce>` fetches the same transaction from Saf
 
 Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or a vault, send a small amount first.
 
-kiss-sign is in English, or in Traditional Chinese after `pnpm kiss-sign init --language zh-TW`: the signing commands' terminal text, a check's details and the template's reasons included (a detail of a shape the program does not know, such as a provider's error, stays in English), `verify`'s page, its comparison list, and the HTML report. A report, and a template's reasons, come in the languages the AI wrote them in, and show in another of those when yours is missing; every shipped template and report has both, and one your AI writes has yours. `check.sh` follows the `LANGUAGE` in its own `config`. Give both computers the same language: the comparison list's words then match, and every row except the last column compares byte for byte. With two languages the rows differ and you stop. Verdicts and card hashes are the same in either language. The code and the docs are in English.
+**Language.** Choose English (`en`, the default) or Traditional Chinese (`zh-TW`) when you set up, and change it later without giving the Safe again:
+
+```sh
+pnpm kiss-sign init --safe 0x… --language zh-TW
+pnpm kiss-sign init --language en
+```
+
+It sets the signing commands' terminal text, `verify`'s page and its comparison list, and `pnpm history`. A check's details follow it when they have a shape the program knows, such as `expected ..., got ...`; others, such as a provider's error, stay in English. A template's reasons show in your language when the template has it, and otherwise in one it has. A report comes in the languages its AI wrote it in; every shipped one has both. On the second computer, set `LANGUAGE` in `check.sh`'s `config` to the same language: every row of the comparison list except the last column then matches byte for byte, and with two languages the rows differ and you stop. Addresses, hashes, verdict words such as `MATCH`, check keys and prompt endings such as `[y/N]` stay the same in every language, and so do verdicts and card hashes. The code and the docs are in English.
 
 ### Add your own operation
 
