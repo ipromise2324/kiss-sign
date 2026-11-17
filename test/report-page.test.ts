@@ -22,7 +22,7 @@ import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
-import { loadTemplate } from '../src/template/template.ts';
+import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
@@ -887,4 +887,23 @@ test("a vault its factory computed another address for renders in both reports, 
   const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
   assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個金庫`);
+});
+
+test('an address held as a 32-byte word reads as its address rule, left-padded, in both languages, and a fixed one prints the padded word', () => {
+  const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cctp', 'deposit-for-burn', 'template.json'), 'utf8'));
+  const pageOfBurn = (language: 'en' | 'zh-TW', mintRecipient?: unknown): ArgRow => {
+    if (mintRecipient !== undefined) raw.calls[1].args.mintRecipient = mintRecipient;
+    const burn = parseTemplate(raw, registry);
+    const of = { ...inputs, subject: { ...subject, template: burn, docs: parseDocs(readDocs(ROOT, burn.id), burn, registry) }, example: undefined, fixtures: [] };
+    return arg(buildPage(of, { ...notesFor(of), flow: [] }, title, language), '2.depositForBurn.mintRecipient');
+  };
+  const zh = pageOfBurn('zh-TW');
+  assert.equal(plain(zh.words), '你選的收款人，放在 32 bytes 裡、前面補 12 個 0 byte');
+  assert.equal(zh.value, undefined);
+  assert.equal(plain(pageOfBurn('en').words), 'the recipient you pick, as a 32-byte word left-padded with 12 zero bytes');
+  const messenger = registry.entries.get('cctp-token-messenger-v2') ?? assert.fail('the messenger');
+  const fixed = pageOfBurn('en', { addressWord: { contract: 'cctp-token-messenger-v2' } });
+  assert.deepEqual(fixed.value, { cast: `0x${'00'.repeat(12)}${messenger.address.slice(2)}`, example: undefined });
+  assert.equal(plain(fixed.words), 'cctp-token-messenger-v2, as a 32-byte word left-padded with 12 zero bytes');
 });

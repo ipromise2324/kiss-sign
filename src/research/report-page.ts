@@ -14,7 +14,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { refNames, slippageBps, viewTargetNames } from '../template/template.ts';
+import { addressWord, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
@@ -451,6 +451,8 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
     }
     case 'owner-before':
       return { who: 'fixed', field: undefined };
+    case 'address-word':
+      return whoOf(rule.rule, template);
     case 'safe':
     case 'contract':
     case 'const':
@@ -573,6 +575,10 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     }
     case 'card':
       return cardWords(rule.ref, node.key, context);
+    case 'address-word': {
+      const inner = leafWords({ ...node, rule: rule.rule }, context);
+      return { words: [...inner.words, w.asWord], qualifier: inner.qualifier };
+    }
     case 'free':
       return { words: [w.differs], qualifier: [w.free[rule.claim]] };
     case 'equals':
@@ -603,12 +609,16 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
 function valueOf(node: ArgNode, context: Context): ArgRow['value'] {
   if (['call', 'items', 'fields', 'packed'].includes(node.rule.kind)) return undefined;
   if (node.rule.kind === 'const') return { cast: constCast(node.rule.value), example: undefined };
-  if (node.rule.kind === 'contract') return { cast: checksumAddress((context.registry.entries.get(node.rule.name) as RegistryEntry).address), example: undefined };
-  const only = node.rule.kind === 'card' ? onlyEntry(node.rule.ref, context) : undefined;
-  if (only !== undefined) return { cast: checksumAddress(only.address), example: undefined };
+  const word = node.rule.kind === 'address-word';
+  const rule = node.rule.kind === 'address-word' ? node.rule.rule : node.rule;
+  const cast = (address: Address): string => (word ? addressWord(address) : checksumAddress(address));
+  if (rule.kind === 'contract') return { cast: cast((context.registry.entries.get(rule.name) as RegistryEntry).address), example: undefined };
+  const only = rule.kind === 'card' ? onlyEntry(rule.ref, context) : undefined;
+  if (only !== undefined) return { cast: cast(only.address), example: undefined };
   const example = context.values.get(node.key);
   if (example === undefined) return undefined;
-  const fromSafe = example.kind === 'address' && example.value === context.inputs.example?.tx.safe;
+  const address = example.kind === 'address' ? example.value : word && example.kind === 'fixed-bytes' ? wordAddress(example.value) : undefined;
+  const fromSafe = address !== undefined && address === context.inputs.example?.tx.safe;
   return { cast: castValue(example), example: fromSafe ? 'other-safe' : 'example' };
 }
 
@@ -1210,6 +1220,8 @@ function ruleWords(rule: Rule, context: Context): Inline {
     }
     case 'owner-before':
       return [w.ownerBeforeShort(refWord(context.template, rule.ref, w))];
+    case 'address-word':
+      return [...ruleWords(rule.rule, context), w.asWord];
     case 'free':
       return [w.any];
     case 'equals':
