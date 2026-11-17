@@ -43,6 +43,18 @@ export type AdapterAnswer = { readonly vault: RegistryEntry; readonly asked: str
   | { readonly kind: 'refused'; readonly cause: AdapterCause; readonly why: string }
 );
 
+/** Why an adapter's answer vouched for nothing: as `AdapterCause`, but `other-parent` when it names another vault. */
+export type ParentCause = Exclude<AdapterCause, 'not-used'> | 'other-parent';
+
+/**
+ * What an adapter answered, through both providers, to its factory's `parentCheck`, compared with one registry vault
+ * whose `adapter` attribute names it: `made-for` when the answer is that vault's address.
+ */
+export type ParentAnswer = { readonly vault: RegistryEntry; readonly asked: string; readonly block: BlockRef } & (
+  | { readonly kind: 'made-for'; readonly providers: readonly [ProviderName, ProviderName] }
+  | { readonly kind: 'refused'; readonly cause: ParentCause; readonly why: string }
+);
+
 const TRUE = `0x${'00'.repeat(31)}01`;
 const FALSE = `0x${'00'.repeat(32)}`;
 const ADDRESS_WORD = /^0x0{24}([0-9a-f]{40})$/;
@@ -117,4 +129,25 @@ export async function proveAdapterOf(reader: Reader, registry: Registry, adapter
     else answers.push(refuse('other-answer', `${vault.name} answered ${asked} with ${answer}, not true or false`));
   }
   return answers;
+}
+
+/** Asks the adapter, through its factory's `parentCheck`, which contract it was made for, and compares the answer with each registry vault naming it. */
+export async function proveParentOf(reader: Reader, registry: Registry, adapter: RegistryEntry, block: BlockRef): Promise<ParentAnswer[]> {
+  const vaults = vaultsNaming(registry, adapter.name);
+  if (vaults.length === 0) return [];
+  const factoryName = adapter.attributes.factory;
+  const check = factoryName === undefined ? undefined : registry.entries.get(factoryName)?.parentCheck;
+  const asked = check === undefined ? 'parentCheck' : check.signature;
+  const refuseAll = (cause: ParentCause, why: string): ParentAnswer[] => vaults.map((vault) => ({ vault, asked, block, kind: 'refused', cause, why }));
+  if (check === undefined) return refuseAll('unaskable', factoryName === undefined ? `${adapter.name} names no factory` : `${factoryName} has no parentCheck`);
+  const read = await reader.call({ to: adapter.address, data: check.selector }, block);
+  if (read.kind === 'unverifiable') return refuseAll('no-answer', read.reason);
+  const answer = read.value.kind === 'returned' ? read.value.data.toLowerCase() : 'a revert';
+  const parent = ADDRESS_WORD.exec(answer)?.[1];
+  if (parent === undefined) return refuseAll('other-answer', `${adapter.name} answered ${asked} with ${answer}, not an address`);
+  return vaults.map((vault): ParentAnswer =>
+    `0x${parent}` === vault.address
+      ? { vault, asked, block, kind: 'made-for', providers: read.providers }
+      : { vault, asked, block, kind: 'refused', cause: 'other-parent', why: `${adapter.name} answered ${asked} = ${checksumAddress(`0x${parent}` as Address)}, not ${vault.name}: it was made for another vault` },
+  );
 }

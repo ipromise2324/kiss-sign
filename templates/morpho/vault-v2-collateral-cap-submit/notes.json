@@ -50,19 +50,7 @@
       }
     }
   ],
-  "reviews": {
-    "weeth/source.site": {
-      "status": "concern",
-      "text": {
-        "en": "The page is on etherfi.gitbook.io, not ether.fi, the site DefiLlama lists. CoinGecko's ether-fi coin links its whitepaper on etherfi.gitbook.io, and the page lists weETH as 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee, the address CoinGecko lists for Wrapped eETH.",
-        "zh-TW": "頁面在 etherfi.gitbook.io，不是 DefiLlama 列的 ether.fi。CoinGecko 的 ether-fi 幣把白皮書連到 etherfi.gitbook.io，頁面上的 weETH 是 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee，跟 CoinGecko 列的 Wrapped eETH 地址一樣。"
-      },
-      "recommendation": {
-        "en": "Acceptable: CoinGecko lists the same address.",
-        "zh-TW": "可以接受：CoinGecko 列的是同一個地址。"
-      }
-    }
-  },
+  "reviews": {},
   "entries": {
     "usdc": {
       "role": {

@@ -1,1 +1,11 @@
-{}
+{
+  "usdc-lseth-86": {
+    "lending": "morpho-blue",
+    "loanToken": "usdc",
+    "collateralToken": "lseth",
+    "oracle": "morpho-oracle-lseth-usdc-86",
+    "irm": "adaptive-curve-irm",
+    "lltv": "860000000000000000",
+    "id": "0xfb7d54e0ce71efc8fffd3f4e1db0afa9265882da5cc76604b62adfac64501e80"
+  }
+}

@@ -1,4 +1,4 @@
-import type { AdapterCause, RefusalCause } from '../contracts/instance.ts';
+import type { AdapterCause, ParentCause, RefusalCause } from '../contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../contracts/prove.ts';
 import { MARKET_ENTRY_PARTS, parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
@@ -42,6 +42,7 @@ export type Phrase =
   | 'nothing-to-compare'
   | 'not-created'
   | 'not-adapter'
+  | 'not-parent'
   | 'not-on-page'
   | 'not-listed'
   | 'other-file'
@@ -70,6 +71,10 @@ export type Finding =
   | { readonly kind: 'not-adapter' }
   /** A registry vault naming the adapter answered its factory's `adapterCheck` neither true nor false. */
   | { readonly kind: 'adapter-other-answer' }
+  /** The adapter answered its factory's `parentCheck` with another address than the registry vault naming it. */
+  | { readonly kind: 'not-parent' }
+  /** The adapter answered its factory's `parentCheck` with something other than one address. */
+  | { readonly kind: 'parent-other-answer' }
   | { readonly kind: 'refused'; readonly why: string }
   /** The address is confirmed in fewer than two places; `by` names those that did. */
   | { readonly kind: 'few-confirmations'; readonly by: readonly ProgramSource[] }
@@ -107,6 +112,8 @@ export type Finding =
   | { readonly kind: 'factory-unread' }
   /** No report recording holds a vault's answer for the adapter, or no registry vault whose factory has an `adapterCheck` names it. */
   | { readonly kind: 'adapter-unread' }
+  /** No report recording holds the adapter's `parentCheck` answer, or its factory declares no `parentCheck`. */
+  | { readonly kind: 'parent-unread' }
   /** No code pin: signing would answer UNVERIFIABLE. */
   | { readonly kind: 'not-pinned' }
   /** DefiLlama lists no website or GitHub org to compare the site with, and another result vouches for the site. */
@@ -132,6 +139,8 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'factory-other-answer': 'bad',
   'not-adapter': 'bad',
   'adapter-other-answer': 'bad',
+  'not-parent': 'bad',
+  'parent-other-answer': 'bad',
   refused: 'bad',
   'judged-otherwise': 'bad',
   'few-confirmations': 'warn',
@@ -153,6 +162,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'no-chain-result': 'warn',
   'factory-unread': 'warn',
   'adapter-unread': 'warn',
+  'parent-unread': 'warn',
   'not-pinned': 'warn',
   unlisted: 'na',
   'no-second-source': 'warn',
@@ -174,6 +184,8 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'factory-other-answer': 'unread',
   'not-adapter': 'not-adapter',
   'adapter-other-answer': 'unread',
+  'not-parent': 'not-parent',
+  'parent-other-answer': 'unread',
   refused: undefined,
   'judged-otherwise': undefined,
   'few-confirmations': undefined,
@@ -195,6 +207,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'no-chain-result': undefined,
   'factory-unread': 'unread',
   'adapter-unread': 'unread',
+  'parent-unread': 'unread',
   'not-pinned': undefined,
   unlisted: 'nothing-to-compare',
   'no-second-source': 'nothing-to-compare',
@@ -394,6 +407,13 @@ const ADAPTER_FINDINGS: Readonly<Record<AdapterCause, Finding>> = {
   unaskable: { kind: 'adapter-unread' },
 };
 
+const PARENT_FINDINGS: Readonly<Record<ParentCause, Finding>> = {
+  'other-parent': { kind: 'not-parent' },
+  'other-answer': { kind: 'parent-other-answer' },
+  'no-answer': { kind: 'no-answer' },
+  unaskable: { kind: 'parent-unread' },
+};
+
 /**
  * The `factory` place: a vault's factory answer, stored by `pnpm vault-evidence`; another entry's, read by the report,
  * with, for an adapter, each registry vault naming it, since an `instanceCheck` answer does not say whose adapter it is.
@@ -406,7 +426,14 @@ function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
   const admitted = result('factory.admitted', answers === undefined ? { kind: 'factory-unread' } : answers.factory.kind === 'created' ? { kind: 'agrees' } : REFUSAL_FINDINGS[answers.factory.cause]);
   if (entry.kind !== 'adapter') return [admitted];
   if (answers === undefined || answers.vaults.length === 0) return [admitted, result('vault.adapter', { kind: 'adapter-unread' })];
-  return [admitted, ...answers.vaults.map((answer) => result(`vault.${answer.vault.name}.adapter`, answer.kind === 'uses' ? { kind: 'agrees' } : ADAPTER_FINDINGS[answer.cause]))];
+  return [
+    admitted,
+    ...answers.vaults.map((answer) => result(`vault.${answer.vault.name}.adapter`, answer.kind === 'uses' ? { kind: 'agrees' } : ADAPTER_FINDINGS[answer.cause])),
+    ...answers.vaults.map(({ vault }) => {
+      const parent = answers.parents.find((answer) => answer.vault.name === vault.name);
+      return result(`vault.${vault.name}.parent`, parent === undefined ? { kind: 'parent-unread' } : parent.kind === 'made-for' ? { kind: 'agrees' } : PARENT_FINDINGS[parent.cause]);
+    }),
+  ];
 }
 
 function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean): Finding {
