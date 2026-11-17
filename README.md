@@ -175,50 +175,11 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 
 ## If something is compromised
 
-kiss-sign does not try to stop a prompt-injected AI. Instead, no single part is trusted alone. To make you sign something you did not mean, an attacker has to beat several of these at once.
-
-| If this is compromised | Where it is stopped | If that also fails |
-|---|---|---|
-| **The Safe web app or your browser**, as at Bybit | `verify` recomputes the hashes and checks the transaction against your card. `check.sh` decodes it on its own. | You compare the hashes on the hardware wallet. |
-| **The Safe Transaction Service** | Both programs recompute every hash from the transaction's fields. | A different transaction gives a different hash on your device. |
-| **One RPC provider** | Alchemy and drpc must agree, or the verdict is `UNVERIFIABLE`. | Two providers that collude could hide a side effect. `check.sh` does not simulate and still shows the calls. |
-| **The AI writing a template** (prompt injection) | Every address check is PASS or FINDING in the report, AI text is marked, and `--compare` reads the facts again before you merge. | If you merge a wrong template, `verify` can say `MATCH`. `check.sh` labels addresses missing from your own list, and a small first amount limits the damage. |
-| **An AI or malware on your work computer** | `verify` refuses a clone that differs from your fork's `main`, but code that also rewrites that check gets past it. | The second computer runs no kiss-sign and still decodes what you sign. Without it, nothing stops this. |
-| **A program change the AI merges** | The [program gate](docs/design.md#the-program-gate), run with `main`'s code, and a second AI's review. | The gate proves only what its tests cover, and an AI that skips it is stopped only by its skill. See [Who owns the program](docs/design.md#who-owns-the-program). |
-| **Your GitHub account** | Branch protection, if you turned it on. It does not stop your AI, which holds merge rights. | The second computer, as above. |
-| **A registry contract upgraded** | Code pins: a contract whose code changed since your review gets `MISMATCH`. | Contracts outside the registry, such as the markets and oracles behind a vault, and admin settings are not pinned. |
-| **The second computer** | It only decodes. `verify` still checks the transaction against your card. | You are back to the basic tier. |
-| **An ERC-7730 descriptor** | Never used for the verdict, only listed in the report. | Nothing depends on it. |
-
-An owner or threshold change moves no asset, so no small amount can test it. It rests on the template's review, the owners you confirm on the card, and the second computer.
-
-Whether an address is the protocol's real contract rests in the end on the report and your review. Your fork of this public repository is public too: the vaults you add are visible, though your Safe's address is not. Every other limit is in [Known limits](docs/design.md#known-limits).
+TODO
 
 ## What kiss-sign checks
 
-**When a template is built**
-
-- **Each address must show up in at least two places**, such as the protocol's official pages, its API, CoinGecko, the factory that created it, its bug bounty or its SDK. A page must be on the protocol's own site. Anything weaker is flagged in the report for you to judge.
-- **The ABI is proven by compiling.** Etherscan's verified source, compiled with a pinned `solc`, must give the code on chain.
-- **The protocol's facts are read.** Its TVL, listing date and past hacks, and for a vault its size over a year and its holders today.
-- **The code is recorded.** Each registry contract's code is pinned, so an upgrade after your review is caught at signing.
-- **Past transactions show what is normal.** Real transactions from the past year are decoded with the template, and the report shows which values each field took and how far balances moved from the stated amount. In real stETH transfers, for example, the receiver got 1 or 2 base units less than the amount in 20 of 28.
-- **Open fields are tested.** The fields the template leaves open are changed to a few other values each and simulated. Each change must revert or do nothing the template does not allow.
-
-**At every signing**
-
-- **kiss-sign checks itself.** It refuses a clone that is not exactly your fork's `main`.
-- **Every hash is recomputed.** Nothing from the Safe web app or its API is trusted.
-- **The call is decoded and encoded again.** The bytes must be identical, apart from a short trailer the template allows, so nothing is hidden.
-- **Dangerous calls are refused.** An unlimited approval (unless the registry allows one, as for Permit2), a `delegatecall` to anything but the official MultiSend, and any change to the Safe's modules, guard or implementation.
-- **The code is compared with the recorded code.** A contract upgraded since your review gets `MISMATCH`.
-- **The transaction is simulated on two providers.** Every balance change must match your card, apart from a rounding of at most 10 base units the template states.
-- **A minimum of 0 is refused.** It would protect nothing.
-- **`MATCH` only when every check reports a pass.**
-
-The exceptions are in [Known limits](docs/design.md#known-limits).
-
-Your Safe's address stays in `~/.kiss-sign/` and never enters the repository; a pre-push hook refuses a push that contains it or an API key. [docs/design.md](docs/design.md) is the source of truth for every check.
+TODO
 
 ## Scope
 
