@@ -111,7 +111,7 @@ test('the same function called on a contract other than the one the template nam
 test('a deposit into the vault whose mint found it, when the registry does not hold that vault, has the template\'s shape outside the registry', async () => {
   const vault = recording.query.token as Address;
   const kept = [...registry.entries.values()].filter((entry) => entry.address !== vault);
-  const text = await report({ registry: { entries: new Map(kept.map((e) => [e.name, e])), byAddress: new Map(kept.map((e) => [e.address, e])), markets: registry.markets } });
+  const text = await report({ registry: { attributes: registry.attributes, entries: new Map(kept.map((e) => [e.name, e])), byAddress: new Map(kept.map((e) => [e.address, e])), markets: registry.markets } });
   assert.match(text, /^fit the template's shape: 2 transactions from 1 Safe; misfits: 1 from 1 Safe\n {2}exactly the template: 0 from 0 Safes; outside the registry: 2 from 1 Safe \(a vault outside the registry at \S+\.erc4626Deposit\.vault in 2\)$/m);
 });
 

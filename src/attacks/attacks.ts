@@ -9,7 +9,7 @@ import type { Reader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
-import { REGISTRY_PATH, loadRegistry, marketsText } from '../registry.ts';
+import { REGISTRY_PATH, attributesText, loadRegistry, marketsText } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { SafeTx } from '../safe/types.ts';
@@ -81,6 +81,7 @@ function inputsFor(repoRoot: string, attack: AttackCase, tx: TxInput): VerifyInp
   });
   const cardText = canonicalJson(attack.card);
   const markets = marketsText(repoRoot);
+  const attributes = attributesText(repoRoot);
   return {
     commit: 'working tree',
     safe: checksumAddress(attack.safe),
@@ -89,6 +90,7 @@ function inputsFor(repoRoot: string, attack: AttackCase, tx: TxInput): VerifyInp
     templates,
     registry: readFileSync(join(repoRoot, REGISTRY_PATH), 'utf8'),
     ...(markets === undefined ? {} : { markets }),
+    ...(attributes === undefined ? {} : { attributes }),
     addressBook: Object.fromEntries([...attack.addressBook].map(([name, address]) => [name, checksumAddress(address)])),
   };
 }

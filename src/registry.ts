@@ -10,23 +10,17 @@ import { samePageKey, sourceHoldsAddress } from './research/source-page.ts';
 import { SafeTxParseError, parseAddress, parseHex } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
 
-export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm', 'allowance', 'singleton'] as const;
+export const CONTRACT_KINDS = ['token', 'vault', 'router', 'multisend', 'adapter', 'factory', 'distributor', 'bridge', 'lending', 'oracle', 'irm', 'allowance', 'singleton', 'pool'] as const;
 export type ContractKind = (typeof CONTRACT_KINDS)[number];
 
-/**
- * What a registry entry may say about itself, each naming another registry entry, and which kinds may say it. A vault's
- * `adapter` is the one adapter it allocates to Morpho Blue markets through, such as a Vault V2's Morpho Market V1
- * adapter, which keys the vault's market caps.
- */
-export const ATTRIBUTES = {
-  asset: { of: ['vault'], names: 'token' },
-  factory: { of: ['vault', 'adapter'], names: 'factory' },
-  adapter: { of: ['vault'], names: 'adapter' },
-} as const satisfies Record<
-  string,
-  { of: readonly ContractKind[]; names: ContractKind }
->;
-export type Attribute = keyof typeof ATTRIBUTES;
+/** What a registry entry may say about itself, from `registry/attributes.json`: each attribute and the kind of entry it names. */
+export type AttributeTable = ReadonlyMap<string, ContractKind>;
+
+/** The attributes the program knew before `registry/attributes.json`, which a verdict file from before it relies on. */
+export const ATTRIBUTES_BEFORE_TABLE = { asset: 'token', factory: 'factory', adapter: 'adapter' } as const satisfies Record<string, ContractKind>;
+
+/** A lowercase-led word of letters and digits, such as `asset` or `token0`: a card reference reads it after a `.`. */
+const ATTRIBUTE_NAME = /^[a-z][A-Za-z0-9]{0,31}$/;
 
 declare const httpsUrlBrand: unique symbol;
 /**
@@ -67,12 +61,12 @@ export type RegistryEntry = {
   readonly sourceHeading?: string;
   /** More official pages that list the address, each checked as `source` is. */
   readonly moreSources?: readonly SourcePage[];
-  readonly attributes: { readonly [A in Attribute]?: string };
+  /** Each attribute the entry carries and the registry entry it names, of the kind the attribute table declares. */
+  readonly attributes: { readonly [attribute: string]: string };
+  /** A factory's: the views that admit each entry whose `factory` attribute names it, all of which must pass. */
   readonly instanceCheck?: InstanceCheck;
-  /** A factory's: a view every contract it creates answers true for an adapter it allocates through, such as `isAdapter(address)`. */
-  readonly adapterCheck?: AbiFunction;
-  /** A factory's: a view with no parameters every contract it creates answers with the contract it was made for, such as `parentVault()`. */
-  readonly parentCheck?: AbiFunction;
+  /** What `pnpm vault-evidence` reads of the entry, or of each instance of a factory that has none of its own. */
+  readonly size?: SizeView;
   /** The DefiLlama protocol slug this contract belongs to, such as `morpho-blue`; `pnpm check-sources` compares its listing with `source`. */
   readonly defillama?: string;
   /** The CoinGecko coin id of a token or vault share, such as `usd-coin`; `pnpm check-sources` checks CoinGecko lists that coin at `address`. */
@@ -104,16 +98,44 @@ export type AllowanceRoute = (typeof ALLOWANCE_ROUTES)[number];
 export type StandingAllowance = { readonly via: AllowanceRoute; readonly why: string };
 
 /**
- * A factory's view that vouches for a contract it created: one that answers true for that contract's address, such as
- * `isMetaMorpho(address)`, or one that computes the address of the factory's official contract from `args`, such as
- * `computeToken(address,string)`, and must answer the contract's own.
+ * A contract an instance view asks, or an address it binds or expects, seen from the instance: its factory, the instance
+ * itself, the entry an attribute of the instance names, or each registry entry whose attribute names the instance.
  */
-export type InstanceCheck =
-  | { readonly kind: 'answers-true'; readonly fn: AbiFunction }
-  | { readonly kind: 'computes-address'; readonly fn: AbiFunction; readonly args: readonly InstanceArg[] };
+export type Party =
+  | { readonly kind: 'factory' }
+  | { readonly kind: 'instance' }
+  | { readonly kind: 'attribute'; readonly attribute: string }
+  | { readonly kind: 'named-by'; readonly attribute: string };
 
-/** One argument of a `computes-address` check: the address of the entry the checked contract's attribute names, or a constant string. */
-export type InstanceArg = { readonly kind: 'attribute'; readonly attribute: Attribute } | { readonly kind: 'string'; readonly value: string };
+/** One argument of an instance view: a party's address, or a constant of the parameter's type. */
+export type InstanceArg =
+  | { readonly kind: 'party'; readonly party: Party }
+  | { readonly kind: 'uint' | 'int'; readonly value: bigint }
+  | { readonly kind: 'address'; readonly value: Address }
+  | { readonly kind: 'bytes32'; readonly value: Hex }
+  | { readonly kind: 'string'; readonly value: string };
+
+/**
+ * One party vouching for an instance: `ask` is called with `args` and must answer true, or the address of the party
+ * `answers` names, in its word `word` when it answers a static struct, else in its one word.
+ */
+export type InstanceView = {
+  readonly ask: Party;
+  readonly fn: AbiFunction;
+  readonly args: readonly InstanceArg[];
+  readonly answers: { readonly kind: 'true' } | { readonly kind: 'party'; readonly party: Party };
+  readonly word: number | undefined;
+};
+
+/** A factory's views that admit an instance, in order, at least one. */
+export type InstanceCheck = readonly [InstanceView, ...InstanceView[]];
+
+/**
+ * What `pnpm vault-evidence` reads of an instance: `fn`, a number it answers each month; `unit`, a view it answers with
+ * the token that number counts, which must be the entry `attribute` names; `holders`, whether its own ERC-20 shares'
+ * holders are counted.
+ */
+export type SizeView = { readonly fn: AbiFunction; readonly unit: { readonly fn: AbiFunction; readonly attribute: string } | undefined; readonly holders: boolean };
 
 /**
  * A proxy's two views, `implementationOf(bytes4)`, answering one address word, and `selectorsOf(address)`, answering a
@@ -184,6 +206,7 @@ export type MarketPart = (typeof MARKET_PARTS)[number];
 export type Market = { readonly name: string; readonly id: Hex; readonly lltv: bigint } & { readonly [P in MarketEntryPart]: RegistryEntry };
 
 export type Registry = {
+  readonly attributes: AttributeTable;
   readonly entries: ReadonlyMap<string, RegistryEntry>;
   readonly byAddress: ReadonlyMap<Address, RegistryEntry>;
   readonly markets: ReadonlyMap<string, Market>;
@@ -192,6 +215,7 @@ export type Registry = {
 export const REGISTRY_DIR = 'registry';
 export const REGISTRY_PATH = join(REGISTRY_DIR, 'contracts.json');
 export const MARKETS_PATH = join(REGISTRY_DIR, 'markets.json');
+export const ATTRIBUTES_PATH = join(REGISTRY_DIR, 'attributes.json');
 
 /** Lowercase words joined by `-` or `.`, such as `multisend-call-only-1.4.1`. `safe` names the Safe itself, `eth` native ETH. */
 export const NAME = /^[a-z0-9]+([.-][a-z0-9]+)*$/;
@@ -219,8 +243,32 @@ export function isEntryName(raw: string): boolean {
   return NAME.test(raw) && !(RESERVED_NAMES as readonly string[]).includes(raw);
 }
 
-export function isAttribute(raw: string): raw is Attribute {
-  return Object.hasOwn(ATTRIBUTES, raw);
+/** `registry/attributes.json`: each attribute's name and the kind of entry it names. */
+export function parseAttributeTable(raw: unknown): AttributeTable {
+  const table = new Map<string, ContractKind>();
+  for (const [name, kind] of Object.entries(record('attributes', raw))) {
+    if (!ATTRIBUTE_NAME.test(name)) throw new RegistryError(`attributes.${name}`, 'not an attribute name: a lowercase letter, then up to 31 letters and digits');
+    const named = CONTRACT_KINDS.find((k) => k === kind);
+    if (named === undefined) throw new RegistryError(`attributes.${name}`, `not one of ${CONTRACT_KINDS.join(', ')}`);
+    table.set(name, named);
+  }
+  return table;
+}
+
+/** The entry the instance view's party names, seen from `instance`; a `named-by` party names several, and is resolved by the caller. */
+export function partyEntry(party: Exclude<Party, { kind: 'named-by' }>, instance: RegistryEntry, registry: Registry): RegistryEntry | undefined {
+  if (party.kind === 'instance') return instance;
+  const name = instance.attributes[party.kind === 'factory' ? 'factory' : party.attribute];
+  return name === undefined ? undefined : registry.entries.get(name);
+}
+
+/** Each registry entry whose attribute `attribute` names `name`, in registry order. */
+export const entriesNaming = (registry: Registry, attribute: string, name: string): RegistryEntry[] => [...registry.entries.values()].filter((entry) => entry.attributes[attribute] === name);
+
+/** The `size` the entry declares, or else its factory's. */
+export function sizeOf(entry: RegistryEntry, registry: Registry): SizeView | undefined {
+  const factory = entry.attributes.factory;
+  return entry.size ?? (factory === undefined ? undefined : registry.entries.get(factory)?.size);
 }
 
 function record(path: string, raw: unknown): Record<string, unknown> {
@@ -257,32 +305,104 @@ function noParamFunction(path: string, raw: unknown): AbiFunction {
 }
 
 const INSTANCE_STRING = /^[A-Za-z0-9_.-]{1,32}$/;
+const DECIMAL = /^-?(0|[1-9][0-9]{0,77})$/;
+const MAX_ANSWER_WORD = 63;
 
-function instanceArg(path: string, raw: unknown, type: string): InstanceArg {
-  const value = record(path, raw);
-  const [key, ...more] = Object.keys(value);
-  if (key === undefined || more.length > 0 || (key !== 'attribute' && key !== 'string')) throw new RegistryError(path, 'not one of {"attribute": ...} or {"string": ...}');
-  const bound = value[key];
-  if (key === 'attribute') {
-    if (type !== 'address') throw new RegistryError(path, `an attribute binds only an address parameter, and this one is ${type}`);
-    if (typeof bound !== 'string' || !isAttribute(bound)) throw new RegistryError(`${path}.attribute`, `not one of ${Object.keys(ATTRIBUTES).join(', ')}`);
-    return { kind: 'attribute', attribute: bound };
+const PARTY_FORMS = '"factory", "instance", {"attribute": ...}, {"namedBy": ...}';
+
+function partyOf(path: string, raw: unknown, table: AttributeTable): Party {
+  if (raw === 'factory' || raw === 'instance') return { kind: raw };
+  const declared = (key: string, name: unknown): string => {
+    if (typeof name !== 'string' || !table.has(name)) throw new RegistryError(`${path}.${key}`, `not one of ${[...table.keys()].join(', ')}`);
+    return name;
+  };
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw)) {
+    const value = raw as Record<string, unknown>;
+    const [key, ...more] = Object.keys(value);
+    if (more.length === 0 && key === 'attribute') return { kind: 'attribute', attribute: declared(key, value[key]) };
+    if (more.length === 0 && key === 'namedBy') return { kind: 'named-by', attribute: declared(key, value[key]) };
   }
-  if (type !== 'string') throw new RegistryError(path, `a string binds only a string parameter, and this one is ${type}`);
-  if (typeof bound !== 'string' || !INSTANCE_STRING.test(bound)) throw new RegistryError(`${path}.string`, 'not 1 to 32 letters, digits, _, . or -');
-  return { kind: 'string', value: bound };
+  throw new RegistryError(path, `not one of ${PARTY_FORMS}`);
 }
 
-function instanceCheckOf(path: string, raw: unknown): InstanceCheck {
-  if (typeof raw === 'string') return { kind: 'answers-true', fn: oneParamFunction(path, raw, 'address') };
+const CONSTANT_KEYS = ['uint', 'int', 'address', 'bytes32', 'string'] as const;
+
+function constantOf(path: string, key: (typeof CONSTANT_KEYS)[number], bound: unknown, type: string): InstanceArg {
+  const sized = key === 'uint' || key === 'int';
+  if (!(sized ? new RegExp(`^${key}\\d+$`) : new RegExp(`^${key}$`)).test(type)) throw new RegistryError(path, `a constant ${key} binds only ${sized ? `${key}<bits>` : key} parameters, and this one is ${type}`);
+  if (key === 'string') {
+    if (typeof bound !== 'string' || !INSTANCE_STRING.test(bound)) throw new RegistryError(`${path}.string`, 'not 1 to 32 letters, digits, _, . or -');
+    return { kind: 'string', value: bound };
+  }
+  if (key === 'address') return { kind: 'address', value: parsed(() => parseAddress(`${path}.address`, bound)) };
+  if (key === 'bytes32') return { kind: 'bytes32', value: hash32(`${path}.bytes32`, bound) };
+  const bits = BigInt(type.slice(key.length));
+  const value = typeof bound === 'string' && DECIMAL.test(bound) ? BigInt(bound) : undefined;
+  const [low, high] = key === 'uint' ? [0n, (1n << bits) - 1n] : [-(1n << (bits - 1n)), (1n << (bits - 1n)) - 1n];
+  if (value === undefined || value < low || value > high) throw new RegistryError(`${path}.${key}`, `not a decimal integer string in the range of ${type}`);
+  return { kind: key, value };
+}
+
+function instanceArg(path: string, raw: unknown, type: string, table: AttributeTable): InstanceArg {
+  const keys = typeof raw === 'object' && raw !== null && !Array.isArray(raw) ? Object.keys(raw) : [];
+  const constant = keys.length === 1 ? CONSTANT_KEYS.find((k) => k === keys[0]) : undefined;
+  if (constant !== undefined) return constantOf(path, constant, (raw as Record<string, unknown>)[constant], type);
+  const party = raw === 'factory' || raw === 'instance' || (keys.length === 1 && (keys[0] === 'attribute' || keys[0] === 'namedBy'));
+  if (!party) throw new RegistryError(path, `not one of ${PARTY_FORMS} or a constant, ${CONSTANT_KEYS.map((k) => `{"${k}": ...}`).join(', ')}`);
+  if (type !== 'address') throw new RegistryError(path, `a party binds only an address parameter, and this one is ${type}`);
+  return { kind: 'party', party: partyOf(path, raw, table) };
+}
+
+const isInstance = (party: Party): boolean => party.kind === 'instance';
+const boundParties = (view: InstanceView): Party[] => view.args.flatMap((arg) => (arg.kind === 'party' ? [arg.party] : []));
+
+/**
+ * One view of an `instanceCheck`. A bare signature with one `address` parameter asks the factory with the instance's
+ * address and expects true; an object without `ask` asks the factory, and without `answers` expects the instance.
+ */
+function instanceViewOf(path: string, raw: unknown, table: AttributeTable): InstanceView {
+  if (typeof raw === 'string') {
+    return { ask: { kind: 'factory' }, fn: oneParamFunction(path, raw, 'address'), args: [{ kind: 'party', party: { kind: 'instance' } }], answers: { kind: 'true' }, word: undefined };
+  }
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw new RegistryError(path, 'not a function signature or a {"function", "args"} object');
   const value = raw as Record<string, unknown>;
-  onlyKeys(path, value, ['function', 'args']);
+  onlyKeys(path, value, ['ask', 'function', 'args', 'answers', 'word']);
   const fn = signatureOf(`${path}.function`, value.function);
   if (!Array.isArray(value.args) || value.args.length !== fn.params.length) throw new RegistryError(`${path}.args`, `not a list of one argument for each of the ${fn.params.length} parameters`);
-  const args = fn.params.map((param, i) => instanceArg(`${path}.args[${i}]`, (value.args as unknown[])[i], canonicalType(param.type)));
-  if (!args.some((arg) => arg.kind === 'attribute')) throw new RegistryError(`${path}.args`, 'binds no attribute of the contract, so the address it computes is the same for every contract');
-  return { kind: 'computes-address', fn, args };
+  const args = fn.params.map((param, i) => instanceArg(`${path}.args[${i}]`, (value.args as unknown[])[i], canonicalType(param.type), table));
+  const ask = value.ask === undefined ? { kind: 'factory' as const } : partyOf(`${path}.ask`, value.ask, table);
+  const answers = value.answers === undefined ? { kind: 'party' as const, party: { kind: 'instance' as const } } : value.answers === true ? { kind: 'true' as const } : { kind: 'party' as const, party: partyOf(`${path}.answers`, value.answers, table) };
+  if (value.word !== undefined && (typeof value.word !== 'number' || !Number.isSafeInteger(value.word) || value.word < 0 || value.word > MAX_ANSWER_WORD)) {
+    throw new RegistryError(`${path}.word`, `not a word index from 0 to ${MAX_ANSWER_WORD}`);
+  }
+  const view: InstanceView = { ask, fn, args, answers, word: value.word as number | undefined };
+  const parties = [ask, ...boundParties(view), ...(answers.kind === 'party' ? [answers.party] : [])];
+  if (!parties.some(isInstance)) throw new RegistryError(path, 'names the instance nowhere, so it answers the same for every contract');
+  if (new Set(parties.flatMap((party) => (party.kind === 'named-by' ? [party.attribute] : []))).size > 1) throw new RegistryError(path, 'names the instance by two attributes, and is asked once per entry naming it by one');
+  if (answers.kind === 'party' && isInstance(answers.party) && !boundParties(view).some((party) => party.kind === 'attribute' || party.kind === 'named-by')) {
+    throw new RegistryError(`${path}.args`, 'binds no attribute of the contract, so the address it computes is the same for every contract');
+  }
+  return view;
+}
+
+function instanceCheckOf(path: string, raw: unknown, table: AttributeTable): InstanceCheck {
+  if (!Array.isArray(raw)) return [instanceViewOf(path, raw, table)];
+  const [first, ...more] = raw.map((view: unknown, i) => instanceViewOf(`${path}[${i}]`, view, table));
+  if (first === undefined) throw new RegistryError(path, 'not a non-empty list of views');
+  const check: InstanceCheck = [first, ...more];
+  if (check.every((view) => isInstance(view.ask))) throw new RegistryError(path, "asks only the instance, whose own word tells it from no lookalike");
+  return check;
+}
+
+function sizeViewOf(path: string, raw: unknown, table: AttributeTable): SizeView {
+  const value = record(path, raw);
+  onlyKeys(path, value, ['function', 'unit', 'holders']);
+  if (value.holders !== undefined && typeof value.holders !== 'boolean') throw new RegistryError(`${path}.holders`, 'not true or false');
+  if (value.unit === undefined) return { fn: noParamFunction(`${path}.function`, value.function), unit: undefined, holders: value.holders === true };
+  const unit = record(`${path}.unit`, value.unit);
+  onlyKeys(`${path}.unit`, unit, ['function', 'attribute']);
+  if (typeof unit.attribute !== 'string' || table.get(unit.attribute) !== 'token') throw new RegistryError(`${path}.unit.attribute`, 'not an attribute that names a token');
+  return { fn: noParamFunction(`${path}.function`, value.function), unit: { fn: noParamFunction(`${path}.unit.function`, unit.function), attribute: unit.attribute }, holders: value.holders === true };
 }
 
 const SELECTOR = /^0x[0-9a-f]{8}$/;
@@ -538,10 +658,10 @@ function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
   return { via, why: nonEmpty(`${path}.why`, value.why) };
 }
 
-function entryOf(name: string, raw: unknown): RegistryEntry {
+function entryOf(name: string, raw: unknown, table: AttributeTable): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'implementationRead', 'dependsOn', 'code', 'instanceCheck', 'adapterCheck', 'parentCheck', 'standingAllowance', 'ignoresTrailer']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'implementationRead', 'dependsOn', 'code', 'instanceCheck', 'size', 'standingAllowance', 'ignoresTrailer']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const routes = value.routes === undefined ? undefined : routingOf(`${path}.routes`, value.routes);
   const implementationRead = value.implementationRead === undefined ? undefined : parseImplementationRead(`${path}.implementationRead`, value.implementationRead);
@@ -557,14 +677,10 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
   const source = parseHttpsUrl(value.source);
   if (source === undefined) throw new RegistryError(`${path}.source`, 'not an https URL');
   for (const key of ['sourceLabel', 'sourceHeading'] as const) if (value[key] !== undefined) pageText(`${path}.${key}`, value[key]);
-  const attributes: { [A in Attribute]?: string } = {};
+  const attributes: { [attribute: string]: string } = {};
   if (value.attributes !== undefined) {
-    const raws = record(`${path}.attributes`, value.attributes);
-    for (const [key, target] of Object.entries(raws)) {
-      if (!isAttribute(key)) throw new RegistryError(`${path}.attributes.${key}`, 'unknown attribute');
-      if (!(ATTRIBUTES[key].of as readonly ContractKind[]).includes(kind)) {
-        throw new RegistryError(`${path}.attributes.${key}`, `a ${kind} has no ${key}`);
-      }
+    for (const [key, target] of Object.entries(record(`${path}.attributes`, value.attributes))) {
+      if (!table.has(key)) throw new RegistryError(`${path}.attributes.${key}`, `not an attribute ${ATTRIBUTES_PATH} declares`);
       if (typeof target !== 'string') throw new RegistryError(`${path}.attributes.${key}`, 'not a registry name');
       attributes[key] = target;
     }
@@ -599,17 +715,13 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     ...(code === undefined ? {} : { code }),
     ...(value.standingAllowance === undefined ? {} : { standingAllowance: standingAllowanceOf(`${path}.standingAllowance`, value.standingAllowance) }),
     ...(value.ignoresTrailer === undefined ? {} : { ignoresTrailer: nonEmpty(`${path}.ignoresTrailer`, value.ignoresTrailer) }),
+    ...(value.size === undefined ? {} : { size: sizeViewOf(`${path}.size`, value.size, table) }),
   };
   if (kind !== 'factory') {
-    for (const key of ['instanceCheck', 'adapterCheck', 'parentCheck'] as const) if (value[key] !== undefined) throw new RegistryError(`${path}.${key}`, `a ${kind} has no ${key}`);
+    if (value.instanceCheck !== undefined) throw new RegistryError(`${path}.instanceCheck`, `a ${kind} has no instanceCheck`);
     return entry;
   }
-  return {
-    ...entry,
-    instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck),
-    ...(value.adapterCheck === undefined ? {} : { adapterCheck: oneParamFunction(`${path}.adapterCheck`, value.adapterCheck, 'address') }),
-    ...(value.parentCheck === undefined ? {} : { parentCheck: noParamFunction(`${path}.parentCheck`, value.parentCheck) }),
-  };
+  return { ...entry, instanceCheck: instanceCheckOf(`${path}.instanceCheck`, value.instanceCheck, table) };
 }
 
 function dependsOnOf(path: string, raw: unknown, own: string): string[] {
@@ -662,24 +774,26 @@ function marketsOf(raw: unknown, entries: ReadonlyMap<string, RegistryEntry>): M
   return markets;
 }
 
-/** The registry's contracts, and its markets from `rawMarkets`, the markets table, which may be absent. */
-export function parseRegistry(raw: unknown, rawMarkets: unknown = {}): Registry {
+/**
+ * The registry's contracts, its markets from `rawMarkets`, the markets table, which may be absent, and the attributes
+ * its entries may carry from `rawAttributes`, the attributes table, which is `ATTRIBUTES_BEFORE_TABLE` when absent.
+ */
+export function parseRegistry(raw: unknown, rawMarkets: unknown = {}, rawAttributes: unknown = ATTRIBUTES_BEFORE_TABLE): Registry {
+  const attributes = parseAttributeTable(rawAttributes);
   const entries = new Map<string, RegistryEntry>();
   const byAddress = new Map<Address, RegistryEntry>();
   for (const [name, rawEntry] of Object.entries(record('registry', raw))) {
     if (!isEntryName(name)) throw new RegistryError(name, 'not a registry name');
-    const entry = entryOf(name, rawEntry);
+    const entry = entryOf(name, rawEntry, attributes);
     const twin = byAddress.get(entry.address);
     if (twin !== undefined) throw new RegistryError(`${name}.address`, `same address as ${twin.name}`);
     entries.set(name, entry);
     byAddress.set(entry.address, entry);
   }
   for (const entry of entries.values()) {
-    for (const [key, target] of Object.entries(entry.attributes) as [Attribute, string][]) {
-      const named = entries.get(target);
-      if (named?.kind !== ATTRIBUTES[key].names) {
-        throw new RegistryError(`${entry.name}.attributes.${key}`, `${JSON.stringify(target)} is not a ${ATTRIBUTES[key].names} in the registry`);
-      }
+    for (const [key, target] of Object.entries(entry.attributes)) {
+      const kind = attributes.get(key) as ContractKind;
+      if (entries.get(target)?.kind !== kind) throw new RegistryError(`${entry.name}.attributes.${key}`, `${JSON.stringify(target)} is not ${/^[aeiou]/.test(kind) ? 'an' : 'a'} ${kind} in the registry`);
     }
     entry.dependsOn?.forEach((target, i) => {
       const named = entries.get(target);
@@ -687,16 +801,22 @@ export function parseRegistry(raw: unknown, rawMarkets: unknown = {}): Registry 
       if (named.dependsOn !== undefined) throw new RegistryError(`${entry.name}.dependsOn[${i}]`, `${target} depends on other entries itself; a dependency is one step deep`);
     });
   }
-  return { entries, byAddress, markets: marketsOf(rawMarkets, entries) };
+  return { attributes, entries, byAddress, markets: marketsOf(rawMarkets, entries) };
 }
 
+const optionalText = (repoRoot: string, path: string): string | undefined => (existsSync(join(repoRoot, path)) ? readFileSync(join(repoRoot, path), 'utf8') : undefined);
+
 /** The markets table's text, or undefined when the repository has none. */
-export function marketsText(repoRoot: string): string | undefined {
-  const path = join(repoRoot, MARKETS_PATH);
-  return existsSync(path) ? readFileSync(path, 'utf8') : undefined;
+export const marketsText = (repoRoot: string): string | undefined => optionalText(repoRoot, MARKETS_PATH);
+
+/** The attributes table's text, or undefined when the repository has none. */
+export const attributesText = (repoRoot: string): string | undefined => optionalText(repoRoot, ATTRIBUTES_PATH);
+
+/** The registry from its three files' texts; an absent table is parsed as `parseRegistry` takes it. */
+export function registryFromTexts(contracts: string, markets: string | undefined, attributes: string | undefined): Registry {
+  return parseRegistry(JSON.parse(contracts), markets === undefined ? {} : JSON.parse(markets), attributes === undefined ? ATTRIBUTES_BEFORE_TABLE : JSON.parse(attributes));
 }
 
 export function loadRegistry(repoRoot: string): Registry {
-  const markets = marketsText(repoRoot);
-  return parseRegistry(JSON.parse(readFileSync(join(repoRoot, REGISTRY_PATH), 'utf8')), markets === undefined ? {} : JSON.parse(markets));
+  return registryFromTexts(readFileSync(join(repoRoot, REGISTRY_PATH), 'utf8'), marketsText(repoRoot), attributesText(repoRoot));
 }

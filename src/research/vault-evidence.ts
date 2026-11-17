@@ -3,14 +3,16 @@ import { retried, transientError, transientStatus } from '../chain/https.ts';
 import type { NoteUnread } from '../chain/https.ts';
 import { aggregate } from '../chain/multicall.ts';
 import type { Reader } from '../chain/reader.ts';
-import { proveInstance } from '../contracts/instance.ts';
+import { admitted, expectedAnswers, proveInstance } from '../contracts/instance.ts';
 import { trimBlockAnswers } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Transport } from '../chain/rpc.ts';
 import type { BlockRef, BlockTag } from '../chain/types.ts';
 import { parseFunctionSignature } from '../decode/abi.ts';
+import type { AbiFunction } from '../decode/abi.ts';
 import { encodeCall } from '../decode/codec.ts';
-import type { Registry, RegistryEntry } from '../registry.ts';
+import { sizeOf } from '../registry.ts';
+import type { Registry, RegistryEntry, SizeView } from '../registry.ts';
 import { SafeTxParseError, checksumAddress, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 
@@ -69,12 +71,14 @@ export type HolderCount = {
   readonly largestBalances: readonly bigint[];
 };
 
+/** What `size` declares, read: `asset` is the token its `unit` view answers, and `holders` is absent when it counts none. */
 export type VaultEvidence = {
   readonly vault: RegistryEntry;
+  readonly size: SizeView;
   readonly latest: BlockRef;
-  readonly asset: Reading<{ readonly address: Address; readonly decimals: number }>;
+  readonly asset: Reading<{ readonly address: Address; readonly decimals: number }> | undefined;
   readonly points: readonly AssetsPoint[];
-  readonly holders: Reading<HolderCount>;
+  readonly holders: Reading<HolderCount> | undefined;
 };
 
 const SECONDS_PER_SLOT = 12n;
@@ -83,9 +87,7 @@ export const MONTHS = 12;
 const MAX_TRANSFER_PAGES = 300;
 const BALANCES_PER_CALL = 500;
 
-const TOTAL_ASSETS = '0x01e1d114' as Hex;
 const TOTAL_SUPPLY = '0x18160ddd' as Hex;
-const ASSET = '0x38d52e0f' as Hex;
 const DECIMALS = '0x313ce567' as Hex;
 const BALANCE_OF = parseFunctionSignature('balanceOf(address)');
 
@@ -102,10 +104,10 @@ async function word(reader: Reader, to: Address, data: Hex, at: BlockRef, label:
   return { kind: 'read', value: BigInt(read.value.data) };
 }
 
-async function assetOf(reader: Reader, vault: Address, at: BlockRef): Promise<VaultEvidence['asset']> {
-  const asset = await word(reader, vault, ASSET, at, 'asset()');
+async function assetOf(reader: Reader, vault: Address, unit: AbiFunction, at: BlockRef): Promise<Reading<{ readonly address: Address; readonly decimals: number }>> {
+  const asset = await word(reader, vault, unit.selector, at, unit.signature);
   if (asset.kind === 'unverifiable') return asset;
-  if (asset.value >> 160n !== 0n) return unverifiable('asset() answered a word that is no address');
+  if (asset.value >> 160n !== 0n) return unverifiable(`${unit.signature} answered a word that is no address`);
   const address = parseAddress('asset', `0x${asset.value.toString(16).padStart(40, '0')}`);
   const decimals = await word(reader, address, DECIMALS, at, 'decimals()');
   if (decimals.kind === 'unverifiable') return decimals;
@@ -113,16 +115,16 @@ async function assetOf(reader: Reader, vault: Address, at: BlockRef): Promise<Va
   return { kind: 'read', value: { address, decimals: Number(decimals.value) } };
 }
 
-async function pointAt(reader: Reader, vault: Address, number: bigint): Promise<AssetsPoint> {
+async function pointAt(reader: Reader, vault: Address, size: AbiFunction, number: bigint): Promise<AssetsPoint> {
   const block = await reader.block(number);
   if (block.kind === 'unverifiable') return { block: number, time: unverifiable(block.reason), totalAssets: unverifiable(block.reason) };
   const header = await reader.header(block.value);
   const time: Reading<bigint> = header.kind === 'agreed' ? { kind: 'read', value: header.value.time } : unverifiable(header.reason);
-  const read = await reader.call({ to: vault, data: TOTAL_ASSETS }, block.value);
+  const read = await reader.call({ to: vault, data: size.selector }, block.value);
   if (read.kind === 'unverifiable') return { block: number, time, totalAssets: unverifiable(read.reason) };
   if (read.value.kind === 'reverted') return { block: number, time, totalAssets: { kind: 'read', value: { kind: 'reverted' } } };
   if (read.value.data.length === 2) return { block: number, time, totalAssets: { kind: 'read', value: { kind: 'no-code' } } };
-  if (read.value.data.length !== 66) return { block: number, time, totalAssets: unverifiable('totalAssets() answered more or less than one word') };
+  if (read.value.data.length !== 66) return { block: number, time, totalAssets: unverifiable(`${size.signature} answered more or less than one word`) };
   return { block: number, time, totalAssets: { kind: 'read', value: { kind: 'assets', amount: BigInt(read.value.data) } } };
 }
 
@@ -202,6 +204,7 @@ export async function gatherVaultEvidence(
   reader: Reader,
   alchemy: AlchemyCall,
   vault: RegistryEntry,
+  size: SizeView,
   at: BlockTag = 'latest',
 ): Promise<VaultEvidence | { readonly kind: 'unverifiable'; readonly reason: string }> {
   const latest = await reader.block(at);
@@ -210,14 +213,15 @@ export async function gatherVaultEvidence(
   for (let month = 0; month <= MONTHS; month++) {
     const number = latest.value.number - BigInt(month) * BLOCKS_PER_MONTH;
     if (number < 0n) break;
-    points.push(await pointAt(reader, vault.address, number));
+    points.push(await pointAt(reader, vault.address, size.fn, number));
   }
   return {
     vault,
+    size,
     latest: latest.value,
-    asset: await assetOf(reader, vault.address, latest.value),
+    asset: size.unit === undefined ? undefined : await assetOf(reader, vault.address, size.unit.fn, latest.value),
     points,
-    holders: await holderCount(reader, alchemy, vault.address, latest.value),
+    holders: size.holders ? await holderCount(reader, alchemy, vault.address, latest.value) : undefined,
   };
 }
 
@@ -230,29 +234,34 @@ function units(amount: bigint, decimals: number): string {
 const percent = (part: bigint, whole: bigint): string => (whole === 0n ? 'n/a' : `${(Number((part * 1_000_000n) / whole) / 10_000).toFixed(2)}%`);
 
 export function formatVaultEvidence(evidence: VaultEvidence, registry: Registry): string {
-  const { vault, latest, asset, points, holders } = evidence;
+  const { vault, size, latest, asset, points, holders } = evidence;
   const out = [`vault        ${vault.name} ${checksumAddress(vault.address)}`, `latest block ${latest.number} ${latest.hash}`];
   let decimals: number | undefined;
   let symbol = '';
-  if (asset.kind === 'read') {
-    decimals = asset.value.decimals;
-    const named = registry.byAddress.get(asset.value.address);
-    symbol = named === undefined ? '' : ` ${named.name}`;
-    const registered = vault.attributes.asset === undefined ? '' : named?.name === vault.attributes.asset ? ', the asset the registry names' : `; the registry names ${vault.attributes.asset}`;
-    out.push(`asset()      ${named?.name ?? 'not in the registry'} ${checksumAddress(asset.value.address)}, ${decimals} decimals${registered}`);
-  } else {
-    out.push(`asset()      UNVERIFIABLE ${asset.reason}`);
+  if (size.unit !== undefined && asset !== undefined) {
+    const label = `${size.unit.fn.signature.padEnd(12)} `;
+    const attribute = size.unit.attribute;
+    if (asset.kind === 'read') {
+      decimals = asset.value.decimals;
+      const named = registry.byAddress.get(asset.value.address);
+      symbol = named === undefined ? '' : ` ${named.name}`;
+      const registered = vault.attributes[attribute] === undefined ? '' : named?.name === vault.attributes[attribute] ? `, the ${attribute} the registry names` : `; the registry names ${vault.attributes[attribute]}`;
+      out.push(`${label}${named?.name ?? 'not in the registry'} ${checksumAddress(asset.value.address)}, ${decimals} decimals${registered}`);
+    } else {
+      out.push(`${label}UNVERIFIABLE ${asset.reason}`);
+    }
   }
-  out.push('', `totalAssets() every ${BLOCKS_PER_MONTH} blocks (about 30 days), read through both providers:`);
+  out.push('', `${size.fn.signature} every ${BLOCKS_PER_MONTH} blocks (about 30 days), read through both providers:`);
   for (const point of points) {
     const date = point.time.kind === 'read' ? new Date(Number(point.time.value) * 1000).toISOString().slice(0, 10) : 'date unknown';
     const at = `  ${date}  block ${point.block}`;
     const value = point.totalAssets;
     if (value.kind === 'unverifiable') out.push(`${at}  UNVERIFIABLE ${value.reason}`);
     else if (value.value.kind === 'no-code') out.push(`${at}  no code at the vault yet`);
-    else if (value.value.kind === 'reverted') out.push(`${at}  totalAssets() reverted`);
+    else if (value.value.kind === 'reverted') out.push(`${at}  ${size.fn.signature} reverted`);
     else out.push(`${at}  ${decimals === undefined ? `${value.value.amount} base units` : `${units(value.value.amount, decimals)}${symbol}`}`);
   }
+  if (holders === undefined) return out.join('\n');
   out.push('');
   if (holders.kind === 'unverifiable') {
     out.push(`holders      UNVERIFIABLE ${holders.reason}`);
@@ -271,12 +280,16 @@ const ADMITTED = 'admitted     ';
 
 const ADMITTED_LINE = new RegExp(`^${ADMITTED}(\\S+) answered (\\S+) = (true|0x[0-9a-fA-F]{40}) at block (\\d+)$`);
 
-function admission(first: string, vault: RegistryEntry, registry: Registry): StoredEvidence['admitted'] {
-  const line = ADMITTED_LINE.exec(first);
+/** The stored `admitted` lines, when they are exactly the answers the registry expects of the vault's factory's views, at one block. */
+function admission(lines: readonly string[], vault: RegistryEntry, registry: Registry): StoredEvidence['admitted'] {
   const factory = vault.attributes.factory;
-  if (line === null || factory === undefined || line[1] !== factory) return undefined;
-  const answer = registry.entries.get(factory)?.instanceCheck?.kind === 'computes-address' ? checksumAddress(vault.address) : 'true';
-  return line[3] === answer ? { factory, check: line[2] as string, answer, block: BigInt(line[4] as string) } : undefined;
+  const expected = expectedAnswers(registry, vault.name);
+  if (factory === undefined || expected === undefined) return undefined;
+  const read = lines.slice(0, expected.length).map((line) => ADMITTED_LINE.exec(line));
+  const blocks = new Set(read.map((line) => line?.[4]));
+  const matches = read.every((line, i) => line !== null && line[1] === expected[i]?.asker && line[2] === expected[i]?.asked && line[3] === expected[i]?.answered);
+  if (!matches || blocks.size !== 1 || ADMITTED_LINE.test(lines[expected.length] ?? '')) return undefined;
+  return { factory, answers: expected.map(({ asker, asked, answered }) => ({ asker, check: asked, answer: answered })), block: BigInt([...blocks][0] as string) };
 }
 
 /**
@@ -288,7 +301,7 @@ export function factoryAnswer(text: string | undefined, vault: RegistryEntry, re
   const factory = vault.attributes.factory;
   if (text === undefined || factory === undefined) return 'unread';
   const first = text.split('\n')[0]!;
-  if (admission(first, vault, registry) !== undefined) return 'admitted';
+  if (admission(text.split('\n'), vault, registry) !== undefined) return 'admitted';
   const refused = `REFUSED ${factory} answered `;
   if (!first.startsWith(refused)) return 'unread';
   const rest = first.slice(refused.length);
@@ -308,17 +321,21 @@ export async function vaultEvidenceText(
   vault: RegistryEntry,
   at: BlockTag = 'latest',
 ): Promise<{ readonly read: boolean; readonly text: string }> {
+  const size = sizeOf(vault, registry);
+  if (size === undefined) return { read: false, text: `REFUSED ${vault.name} declares no size, nor does a factory it names; nothing to read` };
   const block = await reader.block(at);
   if (block.kind === 'unverifiable') return { read: false, text: `UNVERIFIABLE ${block.reason}` };
   const lines: string[] = [];
   if (vault.attributes.factory === undefined) {
     lines.push(`NOTE ${vault.name} names no factory, so no factory vouches for the code these numbers come from`);
   } else {
-    const admitted = await proveInstance(reader, registry, vault.name, block.value);
-    if (admitted.kind === 'refused') return { read: false, text: `REFUSED ${admitted.why}; the vault's code is not read` };
-    lines.push(`${ADMITTED}${admitted.factory.name} answered ${admitted.asked} = ${admitted.answered} at block ${block.value.number}`);
+    const proof = await proveInstance(reader, registry, vault.name, block.value);
+    if (proof.kind === 'unasked') return { read: false, text: `REFUSED ${proof.why}; the vault's code is not read` };
+    const refused = proof.answers.find((answer) => answer.kind === 'refused');
+    if (!admitted(proof) && refused?.kind === 'refused') return { read: false, text: `REFUSED ${refused.why}; the vault's code is not read` };
+    for (const answer of proof.answers) if (answer.kind === 'vouched') lines.push(`${ADMITTED}${answer.asker?.name} answered ${answer.asked} = ${answer.answered} at block ${block.value.number}`);
   }
-  const evidence = await gatherVaultEvidence(reader, alchemy, vault, block.value.number);
+  const evidence = await gatherVaultEvidence(reader, alchemy, vault, size, block.value.number);
   if ('kind' in evidence) return { read: false, text: [...lines, `UNVERIFIABLE ${evidence.reason}`].join('\n') };
   return { read: true, text: [...lines, formatVaultEvidence(evidence, registry)].join('\n') };
 }
@@ -332,8 +349,8 @@ export type StoredPoint = {
 
 /** Stored `pnpm vault-evidence` output read back into its facts; a fact its text does not hold is undefined. */
 export type StoredEvidence = {
-  /** `answer` is `true` or the vault's checksum address. */
-  readonly admitted: { readonly factory: string; readonly check: string; readonly answer: string; readonly block: bigint } | undefined;
+  /** Each view's answer in order, `answer` being `true` or the expected checksum address. */
+  readonly admitted: { readonly factory: string; readonly answers: readonly { readonly asker: string; readonly check: string; readonly answer: string }[]; readonly block: bigint } | undefined;
   /** `name` is undefined for an asset outside the registry. */
   readonly asset: { readonly name: string | undefined; readonly decimals: number } | undefined;
   /** Oldest first. */
@@ -354,7 +371,9 @@ function storedAmount(text: string, decimals: number | undefined): bigint | unde
 /** What `vaultEvidenceText` printed for `vault`: its factory's admission on the first line, then `formatVaultEvidence`'s. */
 export function readStoredEvidence(text: string, vault: RegistryEntry, registry: Registry): StoredEvidence {
   const lines = text.split('\n');
-  const asset = /^asset\(\) {6}(.+?) 0x[0-9a-fA-F]{40}, (\d+) decimals/.exec(lines.find((l) => l.startsWith('asset()')) ?? '');
+  const size = sizeOf(vault, registry);
+  const unit = size?.unit === undefined ? undefined : `${size.unit.fn.signature.padEnd(12)} `;
+  const asset = unit === undefined ? null : /^(.+?) 0x[0-9a-fA-F]{40}, (\d+) decimals/.exec(lines.find((l) => l.startsWith(unit))?.slice(unit.length) ?? '');
   const decimals = asset === null ? undefined : Number(asset[2]);
   const points = lines.flatMap((line): StoredPoint[] => {
     const point = /^ {2}(\d{4}-\d{2}-\d{2}|date unknown) {2}block (\d+) {2}(.+)$/.exec(line);
@@ -362,13 +381,13 @@ export function readStoredEvidence(text: string, vault: RegistryEntry, registry:
     const [, date, block, value = ''] = point;
     const amount = storedAmount(value, decimals);
     const assets: StoredPoint['assets'] =
-      amount !== undefined ? { kind: 'amount', amount } : value === 'no code at the vault yet' ? { kind: 'no-code' } : value === 'totalAssets() reverted' ? { kind: 'reverted' } : { kind: 'unread' };
+      amount !== undefined ? { kind: 'amount', amount } : value === 'no code at the vault yet' ? { kind: 'no-code' } : value === `${size?.fn.signature} reverted` ? { kind: 'reverted' } : { kind: 'unread' };
     return [{ date: date === 'date unknown' ? undefined : date, block: BigInt(block as string), assets }];
   });
   const holders = /^holders {6}(\d+) addresses hold shares at block \d+, of (\d+) that ever received them/.exec(lines.find((l) => l.startsWith('holders')) ?? '');
   const top = /^top 10 {7}hold (\S+) of the shares; each: (.*)$/.exec(lines.find((l) => l.startsWith('top 10')) ?? '');
   return {
-    admitted: admission(lines[0] ?? '', vault, registry),
+    admitted: admission(lines, vault, registry),
     asset: asset === null ? undefined : { name: asset[1] === 'not in the registry' ? undefined : asset[1], decimals: decimals as number },
     points: [...points].reverse(),
     holders:

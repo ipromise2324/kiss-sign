@@ -144,7 +144,7 @@ Each entry's `apiSource`: the protocol's own API, asked with the request the reg
 
 ### Factory answers
 
-Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it, and whether the adapter answers its factory's `parentCheck` with that vault's address. An entry's answers together are one place for its address, which counts only when every one passes.
+Each entry that names a registry `factory`, other than an instance whose stored evidence holds its factory's answers: what, through both providers at the report's latest block, every view of that factory's `instanceCheck` answered, each asked of the factory, the entry itself, or a registry entry it names or that names it. An entry's answers together are one place for its address, which counts only when every one passes.
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |

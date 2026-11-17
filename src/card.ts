@@ -4,7 +4,7 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { AddressBook } from './address-book.ts';
 import { canonicalJson } from './canonical.ts';
-import { MARKET_ENTRY_PARTS, isAttribute, isMarketEntryPart } from './registry.ts';
+import { MARKET_ENTRY_PARTS, isMarketEntryPart } from './registry.ts';
 import type { Market, Registry, RegistryEntry } from './registry.ts';
 import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
@@ -223,7 +223,7 @@ export function resolveRef(ref: CardRef, values: ReadonlyMap<string, ResolvedVal
       return { kind: 'address', name: value.name, address: value.address };
     case 'contract': {
       if (attribute === undefined) return { kind: 'address', name: value.name, address: value.entry.address };
-      const name = isAttribute(attribute) ? value.entry.attributes[attribute] : undefined;
+      const name = value.entry.attributes[attribute];
       const target = name === undefined ? undefined : registry.entries.get(name);
       return target === undefined ? { problem: `the registry has no ${attribute} for ${value.name}` } : { kind: 'address', name: target.name, address: target.address };
     }

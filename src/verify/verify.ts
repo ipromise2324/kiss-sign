@@ -11,7 +11,7 @@ import type { BlockHeader, BlockRef } from '../chain/types.ts';
 import { selectorOf } from '../decode/abi.ts';
 import { checkFloor } from '../floor/floor.ts';
 import { checkObservation, floorAllowed, settingsChange } from '../floor/summary.ts';
-import { parseRegistry } from '../registry.ts';
+import { registryFromTexts } from '../registry.ts';
 import type { Registry } from '../registry.ts';
 import { hashSafeTx } from '../safe/hash.ts';
 import { parseSafeWebAppTx, parseServiceTx } from '../safe/parse.ts';
@@ -49,6 +49,8 @@ export type VerifyInputs = {
   readonly registry: string;
   /** The markets table, absent when the commit has none, as in a verdict file from before markets. */
   readonly markets?: string;
+  /** The attributes table, absent when the commit has none, as in a verdict file from before it. */
+  readonly attributes?: string;
   /** Only the entries the card names. */
   readonly addressBook: Readonly<Record<string, string>>;
   /** Each signed message read from a template's `lookup`, as text; absent in a verdict file from before messages. */
@@ -132,7 +134,7 @@ export type Prepared = {
 };
 
 export function prepare(inputs: VerifyInputs): Prepared {
-  const registry = guard('the registry', () => parseRegistry(JSON.parse(inputs.registry), inputs.markets === undefined ? {} : JSON.parse(inputs.markets)));
+  const registry = guard('the registry', () => registryFromTexts(inputs.registry, inputs.markets, inputs.attributes));
   const safe = guard('the configured Safe', () => parseAddress('safe', inputs.safe));
   if (keccakText(inputs.card.text) !== inputs.card.hash) throw new VerifyError(`the card does not hash to ${inputs.card.hash}`);
   const card = guard('the card', () => parseCard(JSON.parse(inputs.card.text)));
@@ -359,6 +361,7 @@ export function parseVerdictFile(raw: unknown): VerdictFile {
   const { inputs, exchanges, result } = unpacked;
   if (!isRecord(inputs) || !isText(inputs.commit) || !isText(inputs.safe) || !isText(inputs.registry)) return refuse('inputs');
   if (inputs.markets !== undefined && !isText(inputs.markets)) return refuse('inputs.markets');
+  if (inputs.attributes !== undefined && !isText(inputs.attributes)) return refuse('inputs.attributes');
   if (!isRecord(inputs.tx) || (inputs.tx.format !== 'service' && inputs.tx.format !== 'web-app')) return refuse('inputs.tx');
   if (!isRecord(inputs.card) || !isText(inputs.card.hash) || !isText(inputs.card.text)) return refuse('inputs.card');
   if (!isRecord(inputs.addressBook)) return refuse('inputs.addressBook');
