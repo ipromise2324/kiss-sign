@@ -163,8 +163,10 @@ function judged(
 ): { readonly kind: 'vouched'; readonly answered: string } | { readonly kind: 'refused'; readonly cause: RefusalCause; readonly why: string } {
   const { asked, to } = asking;
   const byFactory = to.name === factory.name;
-  const answer = data === undefined ? 'a revert' : view.word === undefined ? data : data.length >= 2 + 64 * (view.word + 1) ? `0x${data.slice(2 + 64 * view.word, 2 + 64 * (view.word + 1))}` : data;
   const refuse = (cause: RefusalCause, why: string) => ({ kind: 'refused', cause, why }) as const;
+  if (view.word !== undefined && data !== undefined && data.length < 2 + 64 * (view.word + 1)) return refuse('other-answer', `${to.name} answered ${asked} with ${data}, which has no word ${view.word}`);
+  if (view.answers.kind === 'party' && expected === undefined) return refuse('unaskable', `${instance.name} names no entry for ${asked} to answer, as ${factory.name}'s instanceCheck expects`);
+  const answer = data === undefined ? 'a revert' : view.word === undefined ? data : `0x${data.slice(2 + 64 * view.word, 2 + 64 * (view.word + 1))}`;
   if (view.answers.kind === 'true') {
     if (answer === FALSE) return refuse('denied', `${to.name} answered ${asked} false for ${instance.name}: ${byFactory ? 'it did not create it' : 'it does not vouch for it'}`);
     if (answer !== TRUE) return refuse('other-answer', `${to.name} answered ${asked} with ${answer}, not true or false`);
@@ -180,8 +182,8 @@ function judged(
 }
 
 /**
- * Whether the views reach past the factory and the instance, such as a vault asked about its adapter: such answers rest
- * on another entry's word, so they never make the instance confirmed elsewhere for a shared deployer.
+ * Whether a view asks or expects another entry than the factory and the instance, such as a vault asked about its
+ * adapter: such answers rest on that entry's word, so they never make the instance confirmed elsewhere for a shared deployer.
  */
 export const restsOnOthers = (factory: RegistryEntry | undefined): boolean =>
-  (factory?.instanceCheck ?? []).some((view) => partiesOf(view).some((party) => party.kind === 'attribute' || party.kind === 'named-by'));
+  (factory?.instanceCheck ?? []).some((view) => [view.ask, ...(view.answers.kind === 'party' ? [view.answers.party] : [])].some((party) => party.kind === 'attribute' || party.kind === 'named-by'));
