@@ -18,6 +18,8 @@ import type { FixtureJudgement } from '../template/perturb.ts';
 import { addressWord, isNamedToken, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import type { FieldFact } from './erc7730.ts';
+import { latestOf, packageKey } from './npm-package.ts';
+import { tipUrlOf } from './source-page.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, Phrase, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
@@ -186,8 +188,10 @@ export type PlaceLink = { readonly word: string; readonly href: HttpsUrl | undef
 
 /** A page's or the API's site, compared with the sites the places that list the entry's protocol `slug` name. */
 export type SiteResult = RowResult & { readonly slug: string | undefined; readonly places: readonly PlaceLink[] };
-/** A program source: whether it showed the address, and for a page or the API its site, a second result. */
-export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined };
+/** What the newest version of a pinned page or SDK binds to the same label; `where` is its branch or npm version. */
+export type NewestResult = RowResult & { readonly where: string };
+/** A program source: whether it showed the address, for a page or the API its site, and for a pinned page or SDK its newest version. */
+export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined; readonly newest: NewestResult | undefined };
 /** A function's documentation page from docs.json, linked, with the worst of its results; a standard's page carries its caveat. */
 export type DocLine = RowResult & { readonly label: string; readonly href: HttpsUrl; readonly note: string | undefined };
 export type AiSourceResult = 'pass' | 'attention' | 'fail';
@@ -308,6 +312,16 @@ const sourceWord = (entry: RegistryEntry, source: ProgramSource, w: Words): stri
     : source === 'factory' && entry.kind === 'adapter'
       ? w.adapterFactory
       : (pageLabels(entry).get(source) ?? w.source[source as Exclude<ProgramSource, 'page' | `more.${number}` | 'sdk'>]);
+
+/** The newest version a source's newest result read: the default branch of a pinned GitHub page, or npm's latest version of the SDK. */
+function newestWhere(entry: RegistryEntry, source: ProgramSource, inputs: ReportInputs): string {
+  if (source === 'sdk' && entry.sdk !== undefined) {
+    const read = inputs.pages.packages?.get(packageKey(latestOf(entry.sdk)));
+    return read?.kind === 'read' ? `npm ${read.version}` : 'npm latest';
+  }
+  const url = source === 'page' ? entry.source : entry.moreSources?.[Number(source.slice(5)) - 1]?.url;
+  return (url === undefined ? undefined : tipUrlOf(url, inputs.pages.commits)?.branch) ?? '';
+}
 
 /** An address row's line for a source: the deployer names its address and the confirmed entries it also deployed. */
 function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerShare | undefined, w: Words): string {
@@ -1362,6 +1376,7 @@ function addressSection(context: Context): Section[] {
         state: line.state,
         phrase: line.phrase,
         site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, places: placeLinks(entry, line.site.places, w) },
+        newest: line.newest === undefined ? undefined : { state: line.newest.state, phrase: line.newest.phrase, where: newestWhere(entry, line.source, context.inputs) },
       }),
     );
     return {

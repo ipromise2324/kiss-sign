@@ -256,37 +256,70 @@ const standsAlone = (text: string, label: string): boolean => squash(text.replac
  * counts only written in lowercase or in its EIP-55 checksum.
  */
 export function findOnPage(blocks: readonly PageBlock[], address: Address, label: string, heading?: string): PageMatch {
-  const wellCased = new Set([address, checksumAddress(address)]);
   let seen = false;
   let seenWellCased = false;
   let best: Extract<PageMatch, { kind: 'next-to' }> | undefined;
   blocks.forEach((block, i) => {
-    const previous = blocks[i - 1]?.text;
-    const text = previous !== undefined && standsAlone(previous, label) ? `${previous} ${block.text}` : block.text;
-    const found = [...text.matchAll(ADDRESS_TEXT)].map((m) => ({ text: m[0], start: m.index, end: m.index + 42 }));
+    const text = blockText(blocks, i, label);
+    const found = spotsIn(text);
     const ours = found.filter((f) => f.text.toLowerCase() === address);
     if (ours.length === 0) return;
     seen = true;
-    const usable = ours.filter((f) => wellCased.has(f.text as Address));
+    const usable = ours.filter((f) => wellCased(f.text));
     if (usable.length === 0) return;
     seenWellCased = true;
-    if (heading !== undefined && wordSpans(block.heading ?? '', heading).length === 0) return;
-    const others = found.filter((f) => f.text.toLowerCase() !== address);
-    const opensWithText = /[\p{L}\p{N}]/u.test(text.slice(0, (found[0] as { start: number }).start));
+    if (!underHeading(block, heading)) return;
     for (const spot of usable) {
-      for (const name of wordSpans(text, label)) {
-        const labelFirst = name.end <= spot.start;
-        if (others.length > 0 && labelFirst !== opensWithText) continue;
-        const [from, to] = labelFirst ? [name.end, spot.start] : [spot.end, name.start];
-        if (to < from || to - from > MAX_LABEL_ADDRESS_GAP) continue;
-        if (others.some((o) => o.start < to && o.end > from)) continue;
-        if (best === undefined || to - from < best.gap) best = { kind: 'next-to', gap: to - from, labelFirst };
-      }
+      const near = nearestLabel(text, found, spot, label);
+      if (near !== undefined && (best === undefined || near.gap < best.gap)) best = { kind: 'next-to', ...near };
     }
   });
   if (best !== undefined) return best;
   if (!seen) return { kind: 'absent' };
   return seenWellCased ? { kind: 'apart' } : { kind: 'miscased' };
+}
+
+/** Every address `label` binds on the page, by the rule `findOnPage` states, whatever address the entry holds; lowercase, in page order. */
+export function labelBindings(blocks: readonly PageBlock[], label: string, heading?: string): Address[] {
+  const bound = new Set<Address>();
+  blocks.forEach((block, i) => {
+    if (!underHeading(block, heading)) return;
+    const text = blockText(blocks, i, label);
+    const found = spotsIn(text);
+    for (const spot of found) if (wellCased(spot.text) && nearestLabel(text, found, spot, label) !== undefined) bound.add(spot.text.toLowerCase() as Address);
+  });
+  return [...bound];
+}
+
+type Spot = Span & { readonly text: string };
+
+/** A block's text, after the block before it when that one holds the label alone. */
+function blockText(blocks: readonly PageBlock[], i: number, label: string): string {
+  const previous = blocks[i - 1]?.text;
+  const text = (blocks[i] as PageBlock).text;
+  return previous !== undefined && standsAlone(previous, label) ? `${previous} ${text}` : text;
+}
+
+const spotsIn = (text: string): Spot[] => [...text.matchAll(ADDRESS_TEXT)].map((m) => ({ text: m[0], start: m.index, end: m.index + 42 }));
+
+const wellCased = (text: string): boolean => text === text.toLowerCase() || text === checksumAddress(text.toLowerCase() as Address);
+
+const underHeading = (block: PageBlock, heading: string | undefined): boolean => heading === undefined || wordSpans(block.heading ?? '', heading).length > 0;
+
+/** The closest `label` in `text` that binds to the address at `spot`, with no other address between them. */
+function nearestLabel(text: string, found: readonly Spot[], spot: Spot, label: string): { gap: number; labelFirst: boolean } | undefined {
+  const others = found.filter((f) => f.text.toLowerCase() !== spot.text.toLowerCase());
+  const opensWithText = /[\p{L}\p{N}]/u.test(text.slice(0, (found[0] as Spot).start));
+  let best: { gap: number; labelFirst: boolean } | undefined;
+  for (const name of wordSpans(text, label)) {
+    const labelFirst = name.end <= spot.start;
+    if (others.length > 0 && labelFirst !== opensWithText) continue;
+    const [from, to] = labelFirst ? [name.end, spot.start] : [spot.end, name.start];
+    if (to < from || to - from > MAX_LABEL_ADDRESS_GAP) continue;
+    if (others.some((o) => o.start < to && o.end > from)) continue;
+    if (best === undefined || to - from < best.gap) best = { gap: to - from, labelFirst };
+  }
+  return best;
 }
 
 const header = (answer: HttpAnswer, name: string): string => {
@@ -382,6 +415,31 @@ export async function gatherSourcePages(sources: readonly string[], get: HttpGet
     if (!pages.has(pageUrl)) pages.set(pageUrl, await fetchPage(pageUrl, get));
   }
   return { pages, commits, ...(apis === undefined ? {} : { apis }) };
+}
+
+/**
+ * The raw URL of a pinned github.com page's file at the tip of its repository's default branch, when GitHub's compare
+ * put the commit on that branch; the commit's own page is read as the source, this one as its newest version.
+ */
+export function tipUrlOf(source: string, commits: SourcePages['commits']): { readonly url: string; readonly branch: string } | undefined {
+  const url = new URL(source);
+  if (!isGitHubPage(url)) return undefined;
+  const ref = githubRef(url);
+  if (ref.kind !== 'pinned') return undefined;
+  const check = commits.get(commitKey(ref));
+  if (check?.kind !== 'on-default') return undefined;
+  const branch = check.branch.split('/').map(encodeURIComponent).join('/');
+  return { url: `https://raw.githubusercontent.com/${ref.owner}/${ref.repo}/refs/heads/${branch}/${ref.path}`, branch: check.branch };
+}
+
+/** `pages` with the newest version of each pinned github.com page among `sources` read too. */
+export async function gatherTips(sources: readonly string[], pages: SourcePages, get: HttpGet): Promise<SourcePages> {
+  const read = new Map(pages.pages);
+  for (const source of new Set(sources)) {
+    const tip = tipUrlOf(source, pages.commits);
+    if (tip !== undefined && !read.has(tip.url)) read.set(tip.url, await fetchPage(tip.url, get));
+  }
+  return { ...pages, pages: read };
 }
 
 /** `get`, asking again after each pause while it gets no answer, and noting each read that never got one. */

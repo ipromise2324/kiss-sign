@@ -16,13 +16,19 @@ export type Provenance = { readonly kind: 'none' } | { readonly kind: 'built'; r
  * as a 404; `unread` is no answer.
  */
 export type PackageRead =
-  | { readonly kind: 'read'; readonly sha256: Hex; readonly integrity: boolean; readonly provenance: Provenance; readonly file: Page }
+  | { readonly kind: 'read'; readonly version: string; readonly sha256: Hex; readonly integrity: boolean; readonly provenance: Provenance; readonly file: Page }
   | { readonly kind: 'failed'; readonly why: string }
   | { readonly kind: 'unread'; readonly why: string };
 
 export type PackageReads = ReadonlyMap<string, PackageRead>;
 
 export const packageKey = (sdk: SdkPackage): string => `${sdk.package}@${sdk.version}`;
+
+/** npm's tag for the version it installs by default, which `readPackage` reads in place of a version to find the newest one. */
+export const LATEST = 'latest';
+export const latestOf = (sdk: SdkPackage): SdkPackage => ({ ...sdk, version: LATEST });
+
+const VERSION = /^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.+-]+)?$/;
 
 const REGISTRY = 'https://registry.npmjs.org/';
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
@@ -89,12 +95,14 @@ export async function readPackage(sdk: SdkPackage, get: HttpGet): Promise<Packag
   const integrity = isRecord(dist) ? dist.integrity : undefined;
   if (typeof tarball !== 'string' || !tarball.startsWith(REGISTRY)) return { kind: 'failed', why: `npm names no tarball on ${REGISTRY} for ${packageKey(sdk)}` };
   if (typeof integrity !== 'string' || !integrity.startsWith('sha512-')) return { kind: 'failed', why: `npm gives no sha512 integrity for ${packageKey(sdk)}` };
+  const version = isRecord(body) ? body.version : undefined;
+  if (typeof version !== 'string' || !VERSION.test(version) || (sdk.version !== LATEST && version !== sdk.version)) return { kind: 'failed', why: `npm names no version ${sdk.version} for ${sdk.package}` };
   const tar = await fetched(tarball, get);
   if (tar.kind !== 'answer') return tar;
   if (tar.answer.status !== 200 || tar.answer.bytes === undefined) return { kind: 'failed', why: `npm answered HTTP ${tar.answer.status} for the tarball of ${packageKey(sdk)}` };
   const bytes = tar.answer.bytes;
   const sha512 = createHash('sha512').update(bytes).digest();
-  const attested = await fetched(`${REGISTRY}-/npm/v1/attestations/${escapedName(sdk.package)}@${sdk.version}`, get);
+  const attested = await fetched(`${REGISTRY}-/npm/v1/attestations/${escapedName(sdk.package)}@${version}`, get);
   if (attested.kind === 'unread') return attested;
   const provenance = attested.kind === 'answer' && attested.answer.status === 200 ? provenanceOf(json(attested), sha512.toString('hex')) : { kind: 'none' as const };
   let text: string | undefined;
@@ -106,6 +114,7 @@ export async function readPackage(sdk: SdkPackage, get: HttpGet): Promise<Packag
   }
   return {
     kind: 'read',
+    version,
     sha256: `0x${createHash('sha256').update(bytes).digest('hex')}` as Hex,
     integrity: integrity === `sha512-${sha512.toString('base64')}`,
     provenance,
@@ -113,10 +122,13 @@ export async function readPackage(sdk: SdkPackage, get: HttpGet): Promise<Packag
   };
 }
 
-/** Each entry's SDK package, read once per version. */
+/** Each entry's SDK package, read once per version, and the version npm's `latest` tag names, as its newest version. */
 export async function gatherPackages(entries: readonly RegistryEntry[], get: HttpGet): Promise<Map<string, PackageRead>> {
   const reads = new Map<string, PackageRead>();
-  for (const { sdk } of entries) if (sdk !== undefined && !reads.has(packageKey(sdk))) reads.set(packageKey(sdk), await readPackage(sdk, get));
+  for (const { sdk } of entries) {
+    if (sdk === undefined) continue;
+    for (const read of [sdk, latestOf(sdk)]) if (!reads.has(packageKey(read))) reads.set(packageKey(read), await readPackage(read, get));
+  }
   return reads;
 }
 
