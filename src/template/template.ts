@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { AbiSignatureError, canonicalType, paramName, parseFunctionSignature, parseViewSignature } from '../decode/abi.ts';
 import type { AbiFunction, AbiParam, AbiType } from '../decode/abi.ts';
-import { ATTRIBUTES, CONTRACT_KINDS, MARKET_ENTRIES, MARKET_ENTRY_PARTS, MARKET_PARAMS, MARKET_PARTS, MARKETS_PATH, isAttribute, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
-import type { AllowanceRoute, Attribute, ContractKind, HttpsUrl, MarketEntryPart, MarketPart, Registry, RegistryEntry } from '../registry.ts';
+import { ATTRIBUTES_PATH, CONTRACT_KINDS, MARKET_ENTRIES, MARKET_ENTRY_PARTS, MARKET_PARAMS, MARKET_PARTS, MARKETS_PATH, isEntryName, isMarketEntryPart, parseHttpsUrl } from '../registry.ts';
+import type { AllowanceRoute, ContractKind, HttpsUrl, MarketEntryPart, MarketPart, Registry, RegistryEntry } from '../registry.ts';
 import { SafeTxParseError, parseAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { domainSeparator, isMemberType } from './eip712.ts';
@@ -78,7 +78,7 @@ export type CardField =
  * `vault`, `vault.asset` or `market.loanToken`: a card field, an attribute of the registry entry that field names, or a
  * part of the market it names.
  */
-export type CardRef = { readonly field: string; readonly attribute: Attribute | MarketPart | undefined };
+export type CardRef = { readonly field: string; readonly attribute: string | MarketPart | undefined };
 
 /** Native ETH, which no contract holds, or a token a card field names. */
 export type TokenRef = 'eth' | CardRef;
@@ -355,6 +355,8 @@ export type Template = {
     readonly touches: readonly Touch[];
   };
   readonly facts: readonly Fact[];
+  /** The contract card field the template is reported per, as declared; `reportUnit` gives the default. */
+  readonly instanceField: string | undefined;
 };
 
 export const TEMPLATES_DIR = 'templates';
@@ -428,7 +430,7 @@ type Scope = { readonly card: CardFields; readonly registry: Registry; readonly 
 
 type CardFields = ReadonlyMap<string, CardField>;
 
-function cardRef(path: string, raw: string, card: CardFields): CardRef {
+function cardRef(path: string, raw: string, card: CardFields, registry: Registry): CardRef {
   const [field, attribute, extra] = raw.split('.');
   const target = field === undefined ? undefined : card.get(field);
   if (field === undefined || target === undefined || extra !== undefined) throw new TemplateError(path, `${JSON.stringify(raw)} is not a card field`);
@@ -438,10 +440,9 @@ function cardRef(path: string, raw: string, card: CardFields): CardRef {
     if (part === undefined) throw new TemplateError(path, `${JSON.stringify(attribute)} is not one of ${MARKET_PARTS.join(', ')}`);
     return { field, attribute: part };
   }
-  if (!isAttribute(attribute)) throw new TemplateError(path, `${JSON.stringify(attribute)} is not a registry attribute`);
-  if (target.kind !== 'contract' || !(ATTRIBUTES[attribute].of as readonly ContractKind[]).includes(target.scope.registryKind)) {
-    throw new TemplateError(path, `card field ${field} has no ${attribute}`);
-  }
+  if (!registry.attributes.has(attribute)) throw new TemplateError(path, `${JSON.stringify(attribute)} is not an attribute ${ATTRIBUTES_PATH} declares`);
+  if (target.kind !== 'contract') throw new TemplateError(path, `card field ${field} has no ${attribute}`);
+  if (!scopeEntries(target.scope, registry).some((entry) => entry.attributes[attribute] !== undefined)) throw new TemplateError(path, `card field ${field} has no ${attribute}: no entry it accepts carries one`);
   return { field, attribute };
 }
 
@@ -460,8 +461,8 @@ const binds = (ref: Exclude<RefType, 'market'>, type: AbiType): boolean =>
 /** Morpho Blue's `MarketParams`, which a whole card market binds part by part. */
 const isMarketParams = (type: AbiType): boolean => canonicalType(type) === '(address,address,address,address,uint256)';
 
-function cardToken(path: string, raw: string, card: CardFields): CardRef {
-  const ref = cardRef(path, raw, card);
+function cardToken(path: string, raw: string, card: CardFields, registry: Registry): CardRef {
+  const ref = cardRef(path, raw, card, registry);
   if (refType(ref, card) !== 'address') throw new TemplateError(path, 'must name a token');
   return ref;
 }
@@ -642,7 +643,7 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
   };
   switch (key) {
     case 'card': {
-      const ref = cardRef(at, text(at, body), scope.card);
+      const ref = cardRef(at, text(at, body), scope.card, scope.registry);
       const resolves = refType(ref, scope.card);
       if (resolves === 'market') {
         if (!isMarketParams(type)) throw new TemplateError(path, `a whole market binds only a (address,address,address,address,uint256) tuple, not a ${canonicalType(type)}`);
@@ -867,7 +868,7 @@ function cardField(path: string, raw: unknown, registry: Registry): (fields: Car
       const of = text(`${path}.of`, value.of);
       if (value.computed !== undefined && value.max !== undefined) throw new TemplateError(`${path}.max`, 'a computed field is never typed, so it has no max');
       const max = value.max === undefined ? undefined : amountMax(`${path}.max`, value.max);
-      return (fields) => ({ kind: 'amount', of: of === 'eth' ? 'eth' : cardToken(`${path}.of`, of, fields), computed: undefined, max });
+      return (fields) => ({ kind: 'amount', of: of === 'eth' ? 'eth' : cardToken(`${path}.of`, of, fields, registry), computed: undefined, max });
     }
     case 'percent':
       exactKeys(path, value, ['kind']);
@@ -1055,7 +1056,7 @@ function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'
   exactKeys(path, value, ['token', 'amount'], side === 'gives' ? ['to', 'tolerance'] : ['tolerance']);
   const token = text(`${path}.token`, value.token);
   const field = cardFieldName(token);
-  const ref: EffectToken = token === 'eth' ? 'eth' : field === undefined ? { contract: registryToken(`${path}.token`, token, scope.registry) } : cardToken(`${path}.token`, field, scope.card);
+  const ref: EffectToken = token === 'eth' ? 'eth' : field === undefined ? { contract: registryToken(`${path}.token`, token, scope.registry) } : cardToken(`${path}.token`, field, scope.card, scope.registry);
   let to: CardRef | undefined;
   if (value.to !== undefined) {
     const name = cardFieldName(text(`${path}.to`, value.to)) ?? '';
@@ -1100,7 +1101,7 @@ function keptApproval(path: string, raw: unknown, scope: Scope): KeptApproval {
   exactKeys(path, value, ['token', 'spender', 'amount'], ['via']);
   const field = cardFieldName(text(`${path}.token`, value.token));
   if (field === undefined) throw new TemplateError(`${path}.token`, 'must be card.<field>');
-  const token = cardToken(`${path}.token`, field, scope.card);
+  const token = cardToken(`${path}.token`, field, scope.card, scope.registry);
   const spender = text(`${path}.spender`, value.spender);
   const entry = scope.registry.entries.get(spender);
   if (entry === undefined) throw new TemplateError(`${path}.spender`, `${JSON.stringify(spender)} is not in the contract registry`);
@@ -1234,7 +1235,7 @@ function fact(path: string, raw: unknown, scope: Scope, protocols: ReadonlyMap<s
     if (token === 'eth') return { value: index, unit: 'eth' as const };
     const ref = cardFieldName(token);
     if (ref === undefined) throw new TemplateError(at, 'must be eth or card.<field>');
-    const unit = cardToken(at, ref, scope.card);
+    const unit = cardToken(at, ref, scope.card, scope.registry);
     if (unit.field !== field) throw new TemplateError(at, `must be a token of card field ${field}, which the fact reads for`);
     return { value: index, unit };
   });
@@ -1266,7 +1267,7 @@ export function refNames(ref: CardRef, template: Template, registry: Registry): 
   if (field?.kind !== 'contract') return [];
   const candidates = scopeEntries(field.scope, registry);
   if (attribute === undefined) return candidates.map((e) => e.name);
-  return isAttribute(attribute) ? [...new Set(candidates.flatMap((e) => e.attributes[attribute] ?? []))] : [];
+  return [...new Set(candidates.flatMap((e) => e.attributes[attribute] ?? []))];
 }
 
 /** The registry names a rule binds an address to: a named contract, or the entries a card field can name; undefined for any other rule. */
@@ -1332,7 +1333,7 @@ export function calledProtocols(template: Template, registry: Registry): Readonl
 
 export function parseTemplate(raw: unknown, registry: Registry): Template {
   const value = object('template', raw);
-  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same', 'facts']);
+  exactKeys('template', value, ['id', 'card', 'calls', 'effects'], ['nonce', 'same', 'facts', 'instanceField']);
   const id = text('id', value.id);
   if (!ID.test(id)) throw new TemplateError('id', 'not <protocol>/<operation>');
   const pending = Object.entries(object('card', value.card)).map(([name, field]) => {
@@ -1349,7 +1350,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     if (isComputed && field?.kind === 'amount') fields.set(name, { ...field, computed: computed(`card.${name}.computed`, object(`card.${name}`, rawCard[name]).computed, name, scope, order) });
   }
   const nonce = value.nonce === undefined ? undefined : rule('nonce', value.nonce, { kind: 'uint', bits: 256 }, scope);
-  const same = value.same === undefined ? [] : array('same', value.same).map((ref, i) => cardToken(`same[${i}]`, text(`same[${i}]`, ref), fields));
+  const same = value.same === undefined ? [] : array('same', value.same).map((ref, i) => cardToken(`same[${i}]`, text(`same[${i}]`, ref), fields, registry));
   if (value.same !== undefined && same.length < 2) throw new TemplateError('same', 'names fewer than two card references');
   const rawCalls = array('calls', value.calls);
   const calls = rawCalls.map((call, i) => templateCall(`calls[${i}]`, call, scope, i === rawCalls.length - 1));
@@ -1378,6 +1379,7 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
       touches: effects.touches === undefined ? [] : array('effects.touches', effects.touches).map((t, i) => touched(touch(`effects.touches[${i}]`, t, scope, moved))),
     },
     facts: [],
+    instanceField: value.instanceField === undefined ? undefined : instanceField(text('instanceField', value.instanceField), fields),
   };
   const unbounded = [...template.effects.gives, ...template.effects.gets].some((effect) => effect.amount.kind === 'positive' || effect.amount.kind === 'any');
   if (unbounded && routes(template)) throw new TemplateError('effects', 'a template with a route claim must bound each token the Safe gives or gets by a card amount, atLeast, atMost or all, since a route may change the price');
@@ -1386,6 +1388,11 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   const languages = proseLanguages(parsed, new Set());
   if (languages.size > 1) throw new TemplateError('template', `holds reasons in ${[...languages].join(', in ')}; every reason in one template holds the same languages`);
   return parsed;
+}
+
+function instanceField(name: string, card: CardFields): string {
+  if (card.get(name)?.kind !== 'contract') throw new TemplateError('instanceField', `${JSON.stringify(name.slice(0, 80))} is not a contract card field`);
+  return name;
 }
 
 /** The struct name of each message the template signs by its digest (`eip712`), such as CoW's `Order`, once each. */
