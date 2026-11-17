@@ -181,10 +181,10 @@ async function writeGenerated(): Promise<void> {
   writeFileSync(mdPath, renderReport(inputs, title));
   const written = [generatedPath(target)];
   const html = await generatedHtml(root, inputs, title);
-  if (html !== undefined && 'template' in target) {
-    const dir = join(root, reportDir(target));
-    for (const file of writeHtmlPages(dir, html)) console.error(`removed ${file}, a page in no language ${NOTES_FILE} holds`);
-    written.push(...[...html.keys()].map((language) => generatedHtmlPath(target, language)));
+  if ('template' in target) {
+    const pages = html ?? new Map<Language, string>();
+    for (const file of writeHtmlPages(join(root, reportDir(target)), pages)) console.error(`removed ${file}, a page in no language ${NOTES_FILE} holds`);
+    written.push(...[...pages.keys()].map((language) => generatedHtmlPath(target, language)));
   }
   console.error(`wrote ${written.join(' and ')}`);
 }

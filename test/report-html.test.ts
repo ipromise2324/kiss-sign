@@ -7,7 +7,7 @@ import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { STANDARDS } from '../src/research/standards.ts';
 import { NOTES_FILE, notesChanges, notesLanguages, notesPath, readNotes } from '../src/research/notes.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { LANGUAGES } from '../src/language.ts';
+import { LANGUAGES, isLanguage } from '../src/language.ts';
 import type { Language } from '../src/language.ts';
 import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, htmlDifferences, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
@@ -136,12 +136,18 @@ function withoutAi(html: string): { readonly rest: string; readonly cut: readonl
   return { rest, cut };
 }
 
+/** Whether a notes.json value is one AI text: an object keyed by languages alone. */
+const isText = (raw: object): boolean => Object.keys(raw).length > 0 && Object.keys(raw).every(isLanguage);
+/** The first report whose notes hold both languages, which a test that edits a text in each language needs. */
+const bilingual = (where: (dir: string) => boolean = () => true): string =>
+  [...withNotes.keys()].find((dir) => notesLanguages(notesOf(dir)).length === LANGUAGES.length && where(dir)) ?? assert.fail('a report whose notes hold both languages');
+
 /** Every piece of text in notes.json a page in `language` prints: its language's text, never a URL or an enum value. */
 function noteTexts(raw: unknown, language: Language): string[] {
   if (Array.isArray(raw)) return raw.flatMap((item) => noteTexts(item, language));
   if (typeof raw !== 'object' || raw === null) return [];
   const text = (raw as Record<string, unknown>)[language];
-  if (typeof text === 'string' && LANGUAGES.every((l) => l in raw)) return [text];
+  if (typeof text === 'string' && isText(raw)) return [text];
   return Object.entries(raw).flatMap(([key, value]) => (key === 'from' || key === 'to' ? [] : noteTexts(value, language)));
 }
 
@@ -204,7 +210,7 @@ test('every text the AI wrote is inside an element with its dashed AI tag, and n
 const both = (text: string) => ({ en: text, 'zh-TW': text });
 
 test('AI text is HTML-escaped', async () => {
-  const id = [...withNotes.keys()][0] as string;
+  const id = bilingual();
   const { inputs, title } = pages.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as Record<string, unknown>;
@@ -223,7 +229,7 @@ test('AI text is HTML-escaped', async () => {
 });
 
 test('a code span in AI text prints as <code> in prose and as a boxed monospace span in the diagram, escaped', async () => {
-  const id = [...withNotes.keys()].find((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0) ?? assert.fail('a report whose notes draw a flow line');
+  const id = bilingual((path) => ((notesOf(path) as { flow?: unknown[] }).flow ?? []).length > 0);
   const { inputs, title } = pages.get(id) ?? assert.fail(id);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
   const raw = notesOf(id) as { flow: { text: unknown }[] } & Record<string, unknown>;
@@ -359,7 +365,7 @@ const onlyIn = (raw: unknown, language: Language): unknown =>
   Array.isArray(raw)
     ? raw.map((item) => onlyIn(item, language))
     : typeof raw === 'object' && raw !== null
-      ? LANGUAGES.every((l) => l in raw)
+      ? isText(raw)
         ? { [language]: (raw as Record<string, unknown>)[language] }
         : Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, onlyIn(value, language)]))
       : raw;
@@ -367,7 +373,7 @@ const onlyIn = (raw: unknown, language: Language): unknown =>
 const ONLY_IN: Readonly<Record<Language, string>> = { en: 'This report exists only in English.', 'zh-TW': '這份報告只有繁體中文版。' };
 
 test('notes in one language give a page in that language alone, which says, in that language, that no other exists', async () => {
-  const id = [...withNotes.keys()][0] as string;
+  const id = bilingual();
   const { inputs, title, html } = pages.get(id) ?? assert.fail(id);
   for (const page of html.values()) assert.ok(!Object.values(ONLY_IN).some((line) => page.includes(line)), `${id}: a report in both languages says it exists in one`);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail(id);
