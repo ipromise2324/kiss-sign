@@ -79,7 +79,7 @@ More places that may name the address: the scope of every Immunefi program tied 
 | `cbbtc` | NOT LISTED | n/a | n/a | n/a | FINDING |
 | `permit2` | NOT LISTED | PASS | PASS | PASS | FINDING `0xD32Ff78579352cA78f416120A9f68b65c410871b` |
 | `usp` | NOT LISTED | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
-| `weeth` | NOT LISTED | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
+| `weeth` | PASS | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
 
 7 entries, 8 findings.
 
@@ -110,7 +110,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `permit2` | PASS | 26434396 |
+| `permit2` | PASS | 26435407 |
 
 ## ABI proofs
 
@@ -128,7 +128,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26434396 `0x16424002065b4643538ade91aa582637eaf5d103b336d8c434235db678e3b7fd`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26435407 `0xf3491a5dddaa804add39c119f5cf8c0d86cab857697b6915e0fa60e5c38fad32`; a read they do not agree on prints as not read.
 
 No call of this template goes to a contract other than a token.
 
