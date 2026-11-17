@@ -62,7 +62,7 @@ pnpm kiss-sign key add alchemy
 pnpm kiss-sign key add etherscan   # to build or review templates
 ```
 
-You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check).
+You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), with `LANGUAGE` in its `config` set to the language you give `init` (`en` unless you chose `zh-TW`).
 
 kiss-sign has two tiers. The basic tier is kiss-sign alone, on your computer. The hardened tier adds `check.sh` on a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. See [Two tiers](docs/design.md#two-tiers).
 
@@ -115,7 +115,7 @@ Propose the transaction in the Safe web app as usual. Then, on your computer:
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` and `jq`, nothing else. On `MATCH`, both pages show the same comparison list, headed Checklist on `verify`'s English page and 比對清單 on `check.sh`'s. Compare them row by row: every row must be equal, except the last column, where each side writes its own names and notes. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. Some bytes inside a call are not a call themselves, such as a Uniswap swap's inputs, a CoW order's UID or the market data in a Morpho Vault V2 cap's id. `check.sh` shows each raw with one warning and the rows still match; what those bytes say, such as a swap's recipient and minimum out, rests on `verify` alone.
+On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` and `jq`, nothing else. On `MATCH`, both pages show the same comparison list, headed Checklist in English and 比對清單 in Traditional Chinese. Compare them row by row: every row must be equal, except the last column, where each side writes its own names and notes. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. Some bytes inside a call are not a call themselves, such as a Uniswap swap's inputs, a CoW order's UID or the market data in a Morpho Vault V2 cap's id. `check.sh` shows each raw with one warning and the rows still match; what those bytes say, such as a swap's recipient and minimum out, rests on `verify` alone.
 
 ![The verify page (MATCH, every check passed) and the check.sh page side by side, with the same hashes and the same calls row by row](docs/readme/side-by-side.png)
 
@@ -123,7 +123,7 @@ On the second computer, `check.sh <nonce>` fetches the same transaction, compute
 
 Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or a vault, send a small amount first.
 
-kiss-sign is in English, or in Traditional Chinese after `pnpm kiss-sign init --language zh-TW`: the signing commands' terminal text (a check's details stay in English), `verify`'s page and the HTML report. A report comes in the languages its AI notes were written in; every shipped report has both, and a template your AI writes has yours. The comparison list's ids, keys and group titles stay exactly as `check.sh` writes them, its titles in Traditional Chinese, so every row except the last column compares byte for byte in either language. Verdicts and card hashes are the same in either language. The code and the docs are in English.
+kiss-sign is in English, or in Traditional Chinese after `pnpm kiss-sign init --language zh-TW`: the signing commands' terminal text (a check's details stay in English), `verify`'s page, its comparison list, and the HTML report. A report comes in the languages its AI notes were written in; every shipped report has both, and a template your AI writes has yours. `check.sh` follows the `LANGUAGE` in its own `config`. Give both computers the same language: the comparison list's words then match, and every row except the last column compares byte for byte. With two languages the rows differ and you stop. Verdicts and card hashes are the same in either language. The code and the docs are in English.
 
 ### Add your own operation
 
