@@ -8,7 +8,7 @@ import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDef
 import type { Listings } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
-import { findOnPage, gatherSourcePages, gatherTips, retryingGet } from '../src/research/source-page.ts';
+import { findOnPage, gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
 import type { HttpGet, Page, SourcePages } from '../src/research/source-page.ts';
 import type { Address } from '../src/safe/types.ts';
 import { trimReportRecording } from '../src/research/report.ts';
@@ -326,7 +326,7 @@ const TIP = 'https://raw.githubusercontent.com/safe-global/safe-deployments/refs
 async function tipReport(tip: Served): Promise<string> {
   const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'safe', source: PINNED, sourceLabel: 'canonical' } });
   const get = getFrom({ [REPO_API]: { status: 200, text: JSON.stringify({ default_branch: 'main' }) }, [compareUrl]: { status: 200, text: JSON.stringify({ status: 'behind' }) }, [RAW]: deployments, [TIP]: tip });
-  const pages = await gatherTips(entries.flatMap(pageUrlsOf), await gatherSourcePages(entries.flatMap(pageUrlsOf), get), get);
+  const pages = await gatherSourcePages(entries.flatMap(pageUrlsOf), get);
   const recorded = sourcePagesOf(JSON.parse(JSON.stringify(trimForRecording(entries, listings, pages, new Date('2026-11-17')))));
   assert.equal(report(entries, listings, recorded), report(entries, listings, pages), 'the recording, read back, gives the same lines');
   const forReport = trimReportRecording({ kind: 'vault', vault: entries[0]! }, entries, listings, pages, new Date('2026-11-17'), new Map(), {} as never, [], undefined, undefined);

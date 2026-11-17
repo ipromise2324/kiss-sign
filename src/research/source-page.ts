@@ -401,6 +401,7 @@ export async function checkCommit(ref: Extract<GitHubSourceRef, { kind: 'pinned'
   return status === 'behind' || status === 'identical' ? { kind: 'on-default', branch, status } : { kind: 'off-default', branch, status };
 }
 
+/** Each source page, each pinned github.com page's commit check, and, for a commit on the default branch, that file at the branch's tip. */
 export async function gatherSourcePages(sources: readonly string[], get: HttpGet, apis?: ApiAnswers): Promise<SourcePages> {
   const pages = new Map<string, Page>();
   const commits = new Map<string, CommitCheck>();
@@ -413,6 +414,8 @@ export async function gatherSourcePages(sources: readonly string[], get: HttpGet
     }
     const pageUrl = pageUrlOf(source);
     if (!pages.has(pageUrl)) pages.set(pageUrl, await fetchPage(pageUrl, get));
+    const tip = tipUrlOf(source, commits);
+    if (tip !== undefined && !pages.has(tip.url)) pages.set(tip.url, await fetchPage(tip.url, get));
   }
   return { pages, commits, ...(apis === undefined ? {} : { apis }) };
 }
@@ -430,16 +433,6 @@ export function tipUrlOf(source: string, commits: SourcePages['commits']): { rea
   if (check?.kind !== 'on-default') return undefined;
   const branch = check.branch.split('/').map(encodeURIComponent).join('/');
   return { url: `https://raw.githubusercontent.com/${ref.owner}/${ref.repo}/refs/heads/${branch}/${ref.path}`, branch: check.branch };
-}
-
-/** `pages` with the newest version of each pinned github.com page among `sources` read too. */
-export async function gatherTips(sources: readonly string[], pages: SourcePages, get: HttpGet): Promise<SourcePages> {
-  const read = new Map(pages.pages);
-  for (const source of new Set(sources)) {
-    const tip = tipUrlOf(source, pages.commits);
-    if (tip !== undefined && !read.has(tip.url)) read.set(tip.url, await fetchPage(tip.url, get));
-  }
-  return { ...pages, pages: read };
 }
 
 /** `get`, asking again after each pause while it gets no answer, and noting each read that never got one. */

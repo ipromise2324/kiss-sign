@@ -7,7 +7,7 @@ import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
 import { checkSources, formatResults, listingsFor, liveListingReads, trimForRecording } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { gatherSourcePages, gatherTips, httpsGet, retryingGet } from '../src/research/source-page.ts';
+import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
 import { ensureVendored } from '../src/vendor.ts';
 import { openMainnetReader } from '../src/chain/reader.ts';
@@ -51,7 +51,7 @@ const apis = await gatherApiAnswers(entries, retryingSend(httpsApi, note));
 const creations = await liveCreations(entries, process.env, note, () => openMainnetReader(process.env, httpsTransport(), { note }));
 if ('missing' in creations) console.error(`NOTE  who deployed each entry is not checked: ${creations.missing}`);
 const pages = {
-  ...(await gatherTips(entries.flatMap(pageUrlsOf), await gatherSourcePages(entries.flatMap(pageUrlsOf), get, apis), get)),
+  ...(await gatherSourcePages(entries.flatMap(pageUrlsOf), get, apis)),
   packages,
   ...('missing' in creations ? {} : { creations }),
 };

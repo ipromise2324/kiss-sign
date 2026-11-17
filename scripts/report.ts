@@ -54,7 +54,7 @@ import { NOTES_FILE, notesChanges, NotesError } from '../src/research/notes.ts';
 import { branchSplit, mixedRefusal } from '../src/verdict-core.ts';
 import type { Language } from '../src/language.ts';
 import { generatedHtml, generatedHtmlPath, htmlDifferences, writeHtmlPages } from '../src/research/report-html.ts';
-import { gatherSourcePages, gatherTips, httpsGet, retryingGet } from '../src/research/source-page.ts';
+import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
@@ -221,7 +221,7 @@ const listings = await listingsFor(entries, suffixes, liveListingReads(note, git
 const creations = await liveCreations(entries, process.env, note, () => reader);
 if ('missing' in creations) throw new MissingKeyError(keySpec('etherscan') as KeySpec);
 const pages = {
-  ...(await gatherTips(entries.flatMap(pageUrlsOf), await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs], get, await gatherApiAnswers(entries, retryingSend(httpsApi, note))), get)),
+  ...(await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs], get, await gatherApiAnswers(entries, retryingSend(httpsApi, note)))),
   packages,
   creations,
 };
