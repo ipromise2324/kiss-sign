@@ -52,7 +52,10 @@
               },
               "data": {
                 "free": {
-                  "unread": "TokenLib.pullOrWrapNative reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom"
+                  "unread": {
+                    "en": "TokenLib.pullOrWrapNative reads the permit data only for kind 1 (ERC-2612) or 2 (Permit2); kind is bound to 0, which pulls the amount with transferFrom",
+                    "zh-TW": "TokenLib.pullOrWrapNative 只有在 kind 是 1（ERC-2612）或 2（Permit2）時才讀 permit 資料；kind 綁定為 0，也就是用 transferFrom 拉取數量"
+                  }
                 }
               }
             }
@@ -64,12 +67,18 @@
             "const": "0x0000000000000000000000000000000000000000"
           },
           "deadline": {
-            "free": "a time after which the call reverts; it limits when the supply can run, not what it does"
+            "free": {
+              "en": "a time after which the call reverts; it limits when the supply can run, not what it does",
+              "zh-TW": "超過這個時間呼叫就會 revert；它限制的是供應什麼時候能執行，不是它做什麼"
+            }
           }
         },
         "trailer": {
           "maxBytes": 12,
-          "why": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); blueBundlesV1Supply reads only its arguments"
+          "why": {
+            "en": "the Morpho app appends a 4-byte timestamp and one or two 4-byte origin tags (morpho-org/sdks, addTransactionMetadata); blueBundlesV1Supply reads only its arguments",
+            "zh-TW": "Morpho app 會在後面附上 4 bytes 的時間戳記和一到兩個 4 bytes 的來源標記（morpho-org/sdks，addTransactionMetadata）；blueBundlesV1Supply 只讀它的引數"
+          }
         }
       }
     ],

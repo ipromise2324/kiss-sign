@@ -1,4 +1,6 @@
 import { existsSync } from 'node:fs';
+import { say } from '../language.ts';
+import type { Language } from '../language.ts';
 import { join } from 'node:path';
 import { loadAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
@@ -217,7 +219,7 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   const max = field.kind === 'amount' ? field.max : undefined;
   const typed = await answer(ctx.ask, L.askAmount(name, token, decimals, max !== undefined));
   if (max !== undefined && typed === 'max') {
-    io.stdout(text(rows([[L.max, max.why, p.dim]], 4)));
+    io.stdout(text(rows([[L.max, say(max.why, ctx.language), p.dim]], 4)));
     return max.value.toString();
   }
   return baseUnits(name, typed, decimals, token, L).toString();
@@ -286,7 +288,7 @@ async function computedValue(name: string, field: TypedField & { readonly kind: 
         [L.slippage, L.slippageText(percent(Number(total)), computed.bound, percent(computed.default.bps), margin)],
         [L.result, `${groupedTokens(value, decimals)} ${token}`, p.computed],
         [L.defaultSource, computed.default.source, p.dim],
-        ...(computed.margin === undefined ? [] : [[L.margin, computed.margin.why, p.dim] as const]),
+        ...(computed.margin === undefined ? [] : [[L.margin, say(computed.margin.why, ctx.language), p.dim] as const]),
       ], 4),
     ),
   );
@@ -303,6 +305,8 @@ type Context = {
   readonly chain: Chain;
   readonly p: Paint;
   readonly L: CardWords;
+  /** The language a template's reason is shown in, when the template holds it. */
+  readonly language: Language;
   /** The vaults with a report for a template reported per vault. */
   readonly reported: (template: string) => ReadonlySet<string>;
 };
@@ -360,7 +364,7 @@ export async function cardNew(args: readonly string[], io: Io, w: Labels): Promi
   });
   const reader = templates.some(readsChain) ? openMainnetReader(io.env, io.transport) : undefined;
   const chain = openChain(reader, L);
-  const ctx = { sources, io, ask, chain, p: paint(io.color === true), L, reported: (id: string) => reportedVaultsIn(io.repoRoot, id) };
+  const ctx = { sources, io, ask, chain, p: paint(io.color === true), L, language: w.language, reported: (id: string) => reportedVaultsIn(io.repoRoot, id) };
   const operations: CardOperation[] = [];
   for (const [i, template] of templates.entries()) {
     io.stdout(text(['', ctx.p.heading(L.operation(template.id, i + 1, templates.length))]));

@@ -1,4 +1,6 @@
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { say } from '../language.ts';
+import type { Prose } from '../language.ts';
 import { join } from 'node:path';
 import type { Reader } from '../chain/reader.ts';
 import { replayReader, trimBlockAnswers } from '../chain/recording.ts';
@@ -496,7 +498,8 @@ const inline = (text: string): string =>
     .replace(/[\\`*_[\]<>|~#!&]/g, (c) => `\\${c}`)
     // GitHub links an @mention and renders $math$ even after a backslash or as an entity, but not across a tag.
     .replace(/[@$]/g, (c) => `<span>${c}</span>`);
-const byAi = (text: string): string => `written by the AI in the template: ${inline(text)}`;
+/** The generated report is in English, so a template's reason reads in English, else in the language the template holds. */
+const byAi = (prose: Prose): string => `written by the AI in the template: ${inline(say(prose, 'en'))}`;
 /** Names, addresses, hashes, selectors and file paths, each parsed into a charset that holds no backtick or `|`. */
 const code = (text: string): string => `\`${text}\``;
 const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(checksumAddress(entry.address))}`;
@@ -715,7 +718,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     else out.push(...callRows(call.data, '', template, registry));
     if (call.merge !== undefined) out.push('', `Several operations on one card share this call; ${byAi(call.merge)}`);
     const reads = call.to.kind === 'contract' && call.data !== 'empty' && call.data.trailer !== undefined ? registry.entries.get(call.to.name)?.ignoresTrailer : undefined;
-    if (reads !== undefined) out.push('', `The registry entry of ${code(call.to.kind === 'contract' ? call.to.name : '')} declares it never reads calldata past a call's arguments, so this call's trailer may be longer than 19 bytes; ${byAi(reads)}`);
+    if (reads !== undefined) out.push('', `The registry entry of ${code(call.to.kind === 'contract' ? call.to.name : '')} declares it never reads calldata past a call's arguments, so this call's trailer may be longer than 19 bytes; ${byAi({ en: reads })}`);
     out.push('');
   });
 
@@ -743,7 +746,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
     const bound =
       open.amount.kind === 'card'
         ? `at no more than the card's ${code(open.amount.field)}`
-        : `at any amount, unlimited included, as the registry entry declares a standing allowance: ${byAi(spender.standingAllowance?.why ?? '')}`;
+        : `at any amount, unlimited included, as the registry entry declares a standing allowance: ${byAi({ en: spender.standingAllowance?.why ?? '' })}`;
     out.push('', `The Safe's allowance of ${tokenText(open.token, template, registry)}${route} to registry ${full(spender)} may end higher than it started, ${bound}; every other allowance may not rise.`);
   }
   if (template.effects.views.length > 0) {

@@ -48,10 +48,16 @@
                             "const": "1461501637330902918203684832716283019655932542975"
                           },
                           "expiration": {
-                            "free": "When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The Safe's owners signed it with the rest of the permit, so another value fails the signature and the swap reverts; verify's page shows the expiration the transaction leaves."
+                            "free": {
+                              "en": "When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The Safe's owners signed it with the rest of the permit, so another value fails the signature and the swap reverts; verify's page shows the expiration the transaction leaves.",
+                              "zh-TW": "Permit2 停止承認給 router 的授權額度的時間，app 設在 30 天後。Safe 的 owners 把它和 permit 的其他欄位一起簽了，所以換成別的值，簽章就不成立，swap 會 revert；verify 的頁面會顯示交易留下的到期時間。"
+                            }
                           },
                           "nonce": {
-                            "free": "Permit2's nonce for this token and the router, which Permit2 requires to be the next one and which the owners signed; another value reverts."
+                            "free": {
+                              "en": "Permit2's nonce for this token and the router, which Permit2 requires to be the next one and which the owners signed; another value reverts.",
+                              "zh-TW": "Permit2 對這個代幣和 router 的 nonce，Permit2 要求它是下一個，owners 也簽了它；換成別的值會 revert。"
+                            }
                           }
                         }
                       },
@@ -59,13 +65,19 @@
                         "contract": "universal-router-2.1.2"
                       },
                       "sigDeadline": {
-                        "free": "When the signed permit stops being usable, 30 minutes after the app asked for it. It is part of what the owners signed, so another value fails the signature and the swap reverts."
+                        "free": {
+                          "en": "When the signed permit stops being usable, 30 minutes after the app asked for it. It is part of what the owners signed, so another value fails the signature and the swap reverts.",
+                          "zh-TW": "簽好的 permit 失效的時間，在 app 請求簽署後 30 分鐘。它是 owners 簽的內容之一，所以換成別的值，簽章就不成立，swap 會 revert。"
+                        }
                       }
                     }
                   },
                   "signature": {
                     "free": {
-                      "proof": "The Safe owners' signature of the permit, which Permit2 checks through the Safe's isValidSignature (EIP-1271) against the permit's own fields; other bytes fail it and the swap reverts."
+                      "proof": {
+                        "en": "The Safe owners' signature of the permit, which Permit2 checks through the Safe's isValidSignature (EIP-1271) against the permit's own fields; other bytes fail it and the swap reverts.",
+                        "zh-TW": "Safe owners 對 permit 的簽章，Permit2 透過 Safe 的 isValidSignature（EIP-1271）拿 permit 自己的欄位來檢查；換成別的 bytes 就檢查不過，swap 會 revert。"
+                      }
                     }
                   }
                 }
@@ -98,12 +110,18 @@
                                         },
                                         "fee": {
                                           "free": {
-                                            "route": "The fee of the Uniswap v4 pool the app's router picks for the two tokens. A pool is the two tokens, this fee, the tick spacing and the hooks, here none; another fee names another pool of the same two tokens, or none, which reverts. Anyone can open a v4 pool, so the price is guarded by the card's minimum, not by the pool: the Safe gets at least min-buy or the swap reverts."
+                                            "route": {
+                                              "en": "The fee of the Uniswap v4 pool the app's router picks for the two tokens. A pool is the two tokens, this fee, the tick spacing and the hooks, here none; another fee names another pool of the same two tokens, or none, which reverts. Anyone can open a v4 pool, so the price is guarded by the card's minimum, not by the pool: the Safe gets at least min-buy or the swap reverts.",
+                                              "zh-TW": "app 的 router 為這兩個代幣挑的 Uniswap v4 池子的手續費。一個池子由兩個代幣、這個手續費、tick spacing 和 hooks（這裡沒有）決定；換一個手續費，指的就是同兩個代幣的另一個池子，或根本不存在的池子，那會 revert。任何人都能開 v4 池子，所以價格靠卡片的最低值把關，不是靠池子：Safe 至少拿到 min-buy，否則 swap 會 revert。"
+                                            }
                                           }
                                         },
                                         "tickSpacing": {
                                           "free": {
-                                            "route": "The tick spacing of the same pool, which the app picks with the fee; another value names another pool or none, as for the fee."
+                                            "route": {
+                                              "en": "The tick spacing of the same pool, which the app picks with the fee; another value names another pool or none, as for the fee.",
+                                              "zh-TW": "同一個池子的 tick spacing，app 和手續費一起挑；換成別的值，指的就是另一個池子或不存在的池子，和手續費一樣。"
+                                            }
                                           }
                                         },
                                         "hooks": {
@@ -117,7 +135,10 @@
                                   ]
                                 },
                                 "minHopPriceX36": {
-                                  "free": "Per-pool price floors the app may add, one per hop or none. The router only reverts when a hop's price falls below one, so any value can only stop the swap; the card's minimum is checked on amountOutMinimum whatever they say."
+                                  "free": {
+                                    "en": "Per-pool price floors the app may add, one per hop or none. The router only reverts when a hop's price falls below one, so any value can only stop the swap; the card's minimum is checked on amountOutMinimum whatever they say.",
+                                    "zh-TW": "app 可能加上的每個池子的價格下限，每一跳一個，或者沒有。只有某一跳的價格低於下限時 router 才會 revert，所以任何值都只能讓 swap 停下來；不管它們寫什麼，卡片的最低值都會在 amountOutMinimum 上檢查。"
+                                  }
                                 },
                                 "amountIn": {
                                   "card": "sell-amount"
@@ -170,12 +191,18 @@
           ]
         },
         "deadline": {
-          "free": "The time after which the router refuses the swap, which the app sets when it builds the transaction. A later deadline only lets the transaction run later; the Safe still gives exactly the card's amount and gets at least the card's minimum."
+          "free": {
+            "en": "The time after which the router refuses the swap, which the app sets when it builds the transaction. A later deadline only lets the transaction run later; the Safe still gives exactly the card's amount and gets at least the card's minimum.",
+            "zh-TW": "超過這個時間 router 就拒絕這筆 swap，app 在組交易時設定。較晚的期限只會讓交易可以晚一點執行；Safe 給出的仍然剛好是卡片上的數量，拿到的也至少是卡片上的最低值。"
+          }
         }
       },
       "trailer": {
         "maxBytes": 46,
-        "why": "The Uniswap app appends a tag that starts with the ASCII bytes unix and holds a timestamp: 22 bytes on a call of its own and 46 inside a MultiSend in the Safe transactions studied. execute reads only its three arguments, as the router's registry entry says (ignoresTrailer)."
+        "why": {
+          "en": "The Uniswap app appends a tag that starts with the ASCII bytes unix and holds a timestamp: 22 bytes on a call of its own and 46 inside a MultiSend in the Safe transactions studied. execute reads only its three arguments, as the router's registry entry says (ignoresTrailer).",
+          "zh-TW": "Uniswap app 會在後面附上一個以 ASCII bytes unix 開頭、帶有時間戳記的標記：在研究過的 Safe 交易裡，單獨呼叫時是 22 bytes，在 MultiSend 裡是 46 bytes。execute 只讀它的三個引數，和 router 的登記項目寫的一樣（ignoresTrailer）。"
+        }
       }
     }
   ],
