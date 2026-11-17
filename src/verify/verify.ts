@@ -18,7 +18,7 @@ import { parseSafeWebAppTx, parseServiceTx } from '../safe/parse.ts';
 import { parseAddress, parseHex, parseSafeVersion } from '../safe/types.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { endsNeeded, expectedChanges, keptSeen, viewCalls } from '../simulate/effects.ts';
-import type { KeptSeen } from '../simulate/effects.ts';
+import type { Asset, KeptSeen } from '../simulate/effects.ts';
 import { observeExecuted, withSimulatedSafeState, withSimulatedViews } from '../simulate/executed.ts';
 import { ownersOf } from '../simulate/safe-state.ts';
 import { scanCalls, simulateSafeTx } from '../simulate/simulate.ts';
@@ -31,8 +31,8 @@ import type { Rule, Template } from '../template/template.ts';
 import { assetClaims, checkAssets } from './assets.ts';
 import { checkCode, codeClaims } from './code.ts';
 import { amountTokens } from './expected.ts';
-import { decideVerdict } from './verdict.ts';
-import type { ChainCheck, TemplateApproval, Verdict } from './verdict.ts';
+import { checkStates, decideVerdict } from './verdict.ts';
+import type { AllChecks, ChainCheck, CheckName, CheckState, FindingDecimals, TemplateApproval, Verdict } from './verdict.ts';
 import { RecordingError, unpackRecording } from '../chain/bytecode.ts';
 
 /** The Safe transaction as given: Transaction Service JSON, which carries its safeTxHash, or the Safe web app's JSON. */
@@ -141,16 +141,12 @@ export function prepare(inputs: VerifyInputs): Prepared {
   return { registry, safe, card: resolution.card, templates, approvals, addressBook, messages: inputs.messages ?? [] };
 }
 
+type ChainReads = { readonly assets: ChainCheck; readonly code: ChainCheck };
+
 /** Every check on the transaction, given what a simulation or its receipt showed it doing. */
-export function judge(
-  prepared: Prepared,
-  tx: SafeTx,
-  observation: Observation,
-  read: { readonly assets: ChainCheck; readonly code: ChainCheck },
-  chain: FieldChain = {},
-): Verdict {
+function allChecks(prepared: Prepared, tx: SafeTx, observation: Observation, read: ChainReads, chain: FieldChain): AllChecks {
   const { registry, safe, card, templates, approvals, messages } = prepared;
-  const checks = {
+  return {
     staticFloor: checkFloor(tx, floorAllowed(card, templates, registry)),
     fields: checkTemplateFields(tx, card, templates, registry, messages, chain),
     ...read,
@@ -158,7 +154,23 @@ export function judge(
     simulation: checkObservation(observation, safe, card, templates, registry),
     approvals,
   };
-  return decideVerdict(checks, registry);
+}
+
+export function judge(prepared: Prepared, tx: SafeTx, observation: Observation, read: ChainReads, chain: FieldChain = {}): Verdict {
+  return decideVerdict(allChecks(prepared, tx, observation, read, chain), prepared.registry);
+}
+
+/** decimals() at `at` of each token a balance finding names, and 18 for ETH, so each finding reads in whole tokens. */
+async function findingDecimals(reader: Reader, checks: AllChecks, at: BlockRef): Promise<FindingDecimals> {
+  const { simulation } = checks;
+  const decimals = new Map<Asset, number>();
+  if (simulation.kind !== 'observed' || simulation.effects.kind !== 'mismatch') return decimals;
+  for (const finding of simulation.effects.findings) {
+    if (finding.kind !== 'balance' || decimals.has(finding.asset)) continue;
+    const answer = finding.asset === 'eth' ? 18 : await readDecimals(reader, finding.asset, at);
+    if (typeof answer === 'number') decimals.set(finding.asset, answer);
+  }
+  return decimals;
 }
 
 async function ranOn(reader: Reader, executed: Hex | undefined, latest: BlockRef): Promise<BlockRef | string> {
@@ -229,7 +241,7 @@ async function withMessages(
   for (const url of new Set(lookups)) {
     const answer = await readMessage(url);
     if ('text' in answer) read.push(answer.text);
-    else unread.push(`${url}: ${answer.why}`);
+    else unread.push(answer.why.includes(url) ? answer.why : `${url}: ${answer.why}`);
   }
   const messages = [...new Set(inspect([...prepared.messages, ...read]).signed)];
   return { inputs: { ...inputs, messages }, prepared: { ...prepared, messages }, unread };
@@ -252,6 +264,7 @@ export async function evaluateTx(
   readonly latest: BlockRef;
   readonly unread: readonly string[];
   readonly kept: readonly KeptSeen[];
+  readonly states: Readonly<Record<CheckName, CheckState>>;
 }> {
   const parsed = prepare(given);
   const { safe } = parsed;
@@ -283,7 +296,7 @@ export async function evaluateTx(
   const needsOwners = usesOwnerBefore(prepared.card, prepared.templates);
   const at = claims.length > 0 || pinned.length > 0 || needsOwners ? await ranOn(reader, executed, latest.value) : latest.value;
   const readAt = async <T>(subjects: readonly T[], check: (at: BlockRef) => Promise<ChainCheck>): Promise<ChainCheck> => {
-    if (subjects.length === 0) return { kind: 'pass' };
+    if (subjects.length === 0) return { kind: 'not-needed' };
     return typeof at === 'string' ? { kind: 'unverifiable', reasons: [at] } : check(at);
   };
   const read = {
@@ -292,7 +305,10 @@ export async function evaluateTx(
   };
   const chain: FieldChain = !needsOwners ? {} : { owners: typeof at === 'string' ? { kind: 'unread', why: at } : await readOwners(reader, safe, at) };
   const kept = observation.kind === 'observed' ? keptSeen(observation.observed, prepared.card, prepared.templates, prepared.registry) : [];
-  return { evaluation: { verdict: judge(prepared, tx, observation, read, chain), hashes: hashSafeTx(tx), calls }, tx, inputs, prepared, latest: latest.value, unread, kept };
+  const checks = allChecks(prepared, tx, observation, read, chain);
+  const verdict = decideVerdict(checks, prepared.registry, await findingDecimals(reader, checks, latest.value));
+  const states = checkStates(checks, prepared.registry);
+  return { evaluation: { verdict, hashes: hashSafeTx(tx), calls }, tx, inputs, prepared, latest: latest.value, unread, kept, states };
 }
 
 /**

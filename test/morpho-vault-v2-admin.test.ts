@@ -175,7 +175,9 @@ for (const { name, given } of RECORDED) {
 
 test("a reallocation that mints the vault's fee shares to the Safe matches; a loss of those shares or another token moving is a mismatch", async () => {
   const given = card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1000000' });
-  const { tx, executed } = await recordedObservations('vault-v2-reallocate-back', given);
+  const { tx, executed: observed } = await recordedObservations('vault-v2-reallocate-back', given);
+  assert.equal(observed.kind, 'executed');
+  const executed = observed as Extract<Observed, { kind: 'executed' }>;
   const vault = registry.entries.get(VAULT)?.address as Address;
   const usdc = registry.entries.get('usdc')?.address as Address;
   assert.ok((executed.tokens.get(vault) ?? 0n) > 0n, 'the recorded reallocation mints fee shares to the Safe');

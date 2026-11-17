@@ -270,3 +270,12 @@ test('verify reads the order from the template lookup and keeps only what hashes
   assert.deepEqual(Object.keys(JSON.parse(inputs.messages![0]!)), message('cow/swap-approve').struct.members.map((m) => m.name));
   assert.equal(inputs.messages!.length, 1);
 });
+
+test('an order the lookup does not serve is named once, by the URL the reader already gives', async () => {
+  const url = `https://api.cow.fi/mainnet/api/v1/orders/${order('cow-swap-approve-usdt').uid}`;
+  const { evaluation, unread } = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async (asked) => ({ why: `${asked} answered HTTP 404` }));
+  assert.equal(evaluation.verdict.kind, 'UNVERIFIABLE');
+  assert.deepEqual(unread, [`${url} answered HTTP 404`]);
+  const host = await evaluateTx({ ...VERDICT.inputs, messages: [] }, replayReader(VERDICT.exchanges), async () => ({ why: 'api.cow.fi unreachable or timed out' }));
+  assert.deepEqual(host.unread, [`${url}: api.cow.fi unreachable or timed out`]);
+});

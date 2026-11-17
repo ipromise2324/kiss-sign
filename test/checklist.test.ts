@@ -12,10 +12,28 @@ import type { Template } from '../src/template/template.ts';
 import { checklist, checklistHtml, checklistLineHtml } from '../src/verify/checklist.ts';
 import { callTree } from '../src/verify/expected.ts';
 import { verdictPage } from '../src/verify/page.ts';
+import type { CheckName, CheckState } from '../src/verify/verdict.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
+const PASSED: Record<CheckName, CheckState> = {
+  'template-approval': 'passed',
+  'static-floor': 'passed',
+  fields: 'passed',
+  'vault-asset': 'passed',
+  'contract-code': 'passed',
+  mutation: 'passed',
+  simulation: 'passed',
+  'simulated-floor': 'passed',
+  effects: 'passed',
+};
+
+/** A check's icon label on the page, and the note after its name when it has one. */
+function shownState(page: string, name: string): string | undefined {
+  const found = new RegExp(`aria-label="([^"]+)"><use href="#[a-z]+"/></svg>${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:<span class="n">(· [^<]+)</span>)?</li>`).exec(page);
+  return found === null ? undefined : [found[1], found[2]].filter((part) => part !== undefined).join(' ');
+}
 const FIXTURE = 'morpho-deposit-approve-trailer-other-safe';
 const CARD: Card = {
   operations: [{ template: 'morpho/vault-deposit', values: { vault: 'hyperithm-usdc-apex-v1-7777', amount: '10001000000', 'min-shares': '9482917730630123475126' } }],
@@ -55,6 +73,7 @@ test('the -extra row names the template\'s allowance as a program fact and its r
   const { tree, card, templates, decimals } = treeOf(CARD);
   const page = verdictPage({
     verdict: { kind: 'MATCH' },
+    states: PASSED,
     nonce: tree.nonce,
     card,
     cardHash: `0x${'00'.repeat(32)}`,
@@ -98,6 +117,7 @@ test('the verify page holds no script, loads nothing, and shows text from a caus
   const { tree, card, templates, decimals } = treeOf(CARD);
   const page = verdictPage({
     verdict: { kind: 'MISMATCH', causes: [{ check: 'effects', details: ['<script>alert(1)</script> "><img src=x onerror=alert(1)> \u202eevil'] }] },
+    states: { ...PASSED, effects: 'failed' },
     nonce: tree.nonce,
     card,
     cardHash: `0x${'00'.repeat(32)}`,
@@ -121,6 +141,7 @@ test('when the simulation could not run, the page does not show the checks that 
   const { tree, card, templates, decimals } = treeOf(CARD);
   const page = verdictPage({
     verdict: { kind: 'UNVERIFIABLE', causes: [{ check: 'simulation', details: ['no agreed block'] }] },
+    states: { ...PASSED, simulation: 'unverifiable', 'simulated-floor': 'not-run', effects: 'not-run' },
     nonce: tree.nonce,
     card,
     cardHash: `0x${'00'.repeat(32)}`,
@@ -134,11 +155,34 @@ test('when the simulation could not run, the page does not show the checks that 
     verdictFile: '/verdicts/x.json',
     language: 'zh-TW',
   });
-  const state = (name: string) => new RegExp(`aria-label="([^"]+)"><use href="#[a-z]+"/></svg>${name}</li>`).exec(page)?.[1];
-  assert.equal(state('模擬'), '注意');
-  assert.equal(state('模擬後的底線規則'), '沒資料可比');
-  assert.equal(state('Safe 的資產變化符合卡片'), '沒資料可比');
-  assert.equal(state('每個欄位符合模板和卡片'), '通過');
+  assert.equal(shownState(page, '模擬'), '注意 · 沒完成');
+  assert.equal(shownState(page, '模擬後的底線規則'), '沒資料可比 · 沒有執行');
+  assert.equal(shownState(page, 'Safe 的資產變化符合卡片'), '沒資料可比 · 沒有執行');
+  assert.equal(shownState(page, '每個欄位符合模板和卡片'), '通過');
+});
+
+test("on a mismatch page a check that passed, one that failed, one that did not run and one the card does not need each look different", () => {
+  const { tree, card, templates, decimals } = treeOf(CARD);
+  const page = verdictPage({
+    verdict: { kind: 'MISMATCH', causes: [{ check: 'fields', details: ['call.transfer to: expected 0x1, got 0x2'] }] },
+    states: { ...PASSED, fields: 'failed', mutation: 'not-run', 'contract-code': 'not-needed' },
+    nonce: tree.nonce,
+    card,
+    cardHash: `0x${'00'.repeat(32)}`,
+    registry,
+    templates,
+    decimals,
+    expected: { kind: 'expected', changes: new Map() },
+    calls: { kind: 'scanned', movesNothing: [] },
+    tree: undefined,
+    kept: [],
+    verdictFile: '/verdicts/x.json',
+    language: 'en',
+  });
+  assert.equal(shownState(page, 'Template approved'), 'pass');
+  assert.equal(shownState(page, 'Every field fits the template and the card'), 'fail');
+  assert.equal(shownState(page, 'Changed fields are caught'), 'nothing to compare · not run');
+  assert.equal(shownState(page, 'Contract code unchanged'), 'nothing to compare · not needed for this card');
 });
 
 test('the card and the expected changes show each amount in whole tokens with its registry name, full address and exact base units', () => {
@@ -147,6 +191,7 @@ test('the card and the expected changes show each amount in whole tokens with it
   const vault = '0x777791c4d6dc2ce140d00d2828a7c93503c67777' as Address;
   const page = verdictPage({
     verdict: { kind: 'MATCH' },
+    states: PASSED,
     nonce: tree.nonce,
     card,
     cardHash: `0x${'00'.repeat(32)}`,
@@ -162,7 +207,7 @@ test('the card and the expected changes show each amount in whole tokens with it
   });
   const text = page.slice(page.indexOf('<h2>卡片</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
   assert.match(text, / amount 10,001 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 10001000000 最小單位，6 位小數 /);
-  assert.match(text, / min-shares 約 9,482.91773 hyperithm-usdc-apex-v1-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 9482917730630123475126 最小單位，18 位小數 /);
+  assert.match(text, / min-shares 9,482.917730630123475126 hyperithm-usdc-apex-v1-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 9482917730630123475126 最小單位，18 位小數 /);
   assert.match(text, / 給出 剛好 10,001 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 10001000000 最小單位，6 位小數 /);
   assert.match(text, / 收到 多於 0 hyperithm-usdc-apex-v1-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 不移動資產的呼叫 /);
 });
@@ -171,6 +216,7 @@ test('an amount whose token decimals() was not read shows its base units and say
   const { tree, card, templates } = treeOf(CARD);
   const page = verdictPage({
     verdict: { kind: 'MATCH' },
+    states: PASSED,
     nonce: tree.nonce,
     card,
     cardHash: `0x${'00'.repeat(32)}`,

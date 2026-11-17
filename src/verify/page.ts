@@ -1,6 +1,6 @@
 import { percentText } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
-import { SHOWN_PLACES, groupedTokens } from '../chain/decimals.ts';
+import { groupedTokens } from '../chain/decimals.ts';
 import { CSS, Html, SYMBOLS, h, icon } from '../research/report-html.ts';
 import type { State } from '../research/ledger.ts';
 import { settingsChange } from '../floor/summary.ts';
@@ -14,12 +14,13 @@ import type { Expectations, Expected, KeptSeen } from '../simulate/effects.ts';
 import type { CallScan } from '../simulate/simulate.ts';
 import type { Template } from '../template/template.ts';
 import { CHECKLIST_CSS, checklist, checklistHtml, visible } from './checklist.ts';
-import { amountToken } from './expected.ts';
+import { amountToken, signedMessages } from './expected.ts';
 import type { AmountToken, CallTree } from './expected.ts';
-import type { CheckName, Verdict } from './verdict.ts';
+import type { CheckName, CheckState, Verdict } from './verdict.ts';
 
 export type VerdictPage = {
   readonly verdict: Verdict;
+  readonly states: Readonly<Record<CheckName, CheckState>>;
   readonly nonce: bigint;
   readonly card: ResolvedCard;
   readonly cardHash: string;
@@ -50,12 +51,12 @@ const ZH = {
     'simulated-floor': '模擬後的底線規則',
     effects: 'Safe 的資產變化符合卡片',
   } satisfies Record<CheckName, string>,
+  stateNote: { passed: '', failed: '', unverifiable: '沒完成', 'not-run': '沒有執行', 'not-needed': '卡片用不到' } satisfies Record<CheckState, string>,
   banner: { MATCH: 'MATCH：交易符合你的卡片', MISMATCH: 'MISMATCH：交易和你的卡片不符，不要簽', UNVERIFIABLE: 'UNVERIFIABLE：有檢查無法完成，不要簽' } satisfies Record<Verdict['kind'], string>,
   unregistered: '未登記',
   baseUnits: (amount: string) => `${amount} 最小單位`,
   baseUnitsOf: '的 ',
   decimalsUnread: 'decimals() 沒讀到',
-  about: '約 ',
   decimalsNote: (base: string, decimals: number) => `${base}，${decimals} 位小數`,
   addressBook: '（地址簿）',
   card: '卡片',
@@ -73,6 +74,7 @@ const ZH = {
   effectsLead: '卡片說 Safe 的每種資產該怎麼變，淨變化是收到減給出。「Safe 的資產變化符合卡片」這項檢查拿它和模擬或收據比對。',
   none: '無',
   noEffects: '卡片沒有說 Safe 的資產會變',
+  later: (structs: string) => `這筆交易只簽了一則訊息（${structs}）的摘要。訊息要動的資產，要等之後有人執行它時才會變，不在這筆交易裡；下面只列這筆交易本身的變化。`,
   unixSecond: (seconds: bigint) => `第 ${seconds} 秒（UNIX 時間）`,
   unlimited: '無上限的 ',
   until: (date: string) => `，到 ${date} 為止（Permit2 的到期時間）`,
@@ -91,6 +93,7 @@ const ZH = {
   calls: '不移動資產的呼叫',
   checklist: '比對清單',
   noHashes: '不顯示任何 hash。不要簽這筆交易。',
+  checklistLeadEnglish: '',
   checklistLead: (command: Html) => h`每一列和獨立電腦上 ${command} 頁面的同一列比對：列號、欄位和值都要一模一樣。最右一欄是各自的名字，不用比。safeTxHash、domain hash 和 message hash 也要和硬體錢包逐字比對。`,
   causes: '原因',
   sub: 'kiss-sign 在工作電腦上對照你的卡片檢查這筆交易。',
@@ -98,6 +101,7 @@ const ZH = {
 };
 
 const EN: typeof ZH = {
+  stateNote: { passed: '', failed: '', unverifiable: 'could not finish', 'not-run': 'not run', 'not-needed': 'not needed for this card' },
   checks: {
     'template-approval': 'Template approved',
     'static-floor': 'Floor rules on the transaction itself',
@@ -118,7 +122,6 @@ const EN: typeof ZH = {
   baseUnits: (amount: string) => `${amount} base units`,
   baseUnitsOf: ' of ',
   decimalsUnread: 'decimals() not read',
-  about: 'about ',
   decimalsNote: (base: string, decimals: number) => `${base}, ${decimals} decimals`,
   addressBook: ' (address book)',
   card: 'Card',
@@ -136,6 +139,8 @@ const EN: typeof ZH = {
   effectsLead: 'How the card says each asset of the Safe should change; the net change is what it gets minus what it gives. The check "The Safe\'s asset changes fit the card" compares this with the simulation or the receipt.',
   none: 'None',
   noEffects: 'The card says no asset of the Safe changes',
+  later: (structs: string) =>
+    `This transaction signs only the digest of a message (${structs}). The assets that message moves change later, when someone acts on it, not in this transaction; the rows below cover this transaction alone.`,
   unixSecond: (seconds: bigint) => `second ${seconds} (UNIX time)`,
   unlimited: 'unlimited ',
   until: (date: string) => `, until ${date} (the Permit2 expiration)`,
@@ -154,8 +159,10 @@ const EN: typeof ZH = {
   calls: 'Calls that move no asset',
   checklist: 'Checklist',
   noHashes: 'No hash is shown. Do not sign this transaction.',
+  checklistLeadEnglish:
+    "The row ids, the field names and the group titles stay in Traditional Chinese, exactly as check.sh writes them, so the two pages compare byte for byte; only the last column is in English.",
   checklistLead: (command: Html) =>
-    h`Compare each row with the same row of the ${command} page on the independent computer: the row id, the field and the value must be exactly the same. The rows use check.sh's own words. The last column is each page's own names; do not compare it. Also compare the safeTxHash, domain hash and message hash character by character with the hardware wallet.`,
+    h`Compare each row with the same row of the ${command} page on the independent computer: the row id, the field and the value must be exactly the same. The last column is each page's own names; do not compare it. Also compare the safeTxHash, domain hash and message hash character by character with the hardware wallet.`,
   causes: 'Causes',
   sub: 'kiss-sign checked this transaction against your card on your work computer.',
   footer: (file: Html) =>
@@ -166,22 +173,10 @@ const WORDS: Readonly<Record<Language, typeof ZH>> = { en: EN, 'zh-TW': ZH };
 type Words = typeof ZH;
 
 const CHECKS = Object.keys(ZH.checks) as CheckName[];
-/** Checks that read the simulation, and so did not run when it is unverifiable, though they report no cause then. */
-const ON_SIMULATION: readonly CheckName[] = ['simulated-floor', 'effects'];
 
 const BANNER: Readonly<Record<Verdict['kind'], State>> = { MATCH: 'ok', MISMATCH: 'bad', UNVERIFIABLE: 'warn' };
 
-/**
- * A check's state as the verdict shows it. A MISMATCH names only the checks that failed, so the others are not
- * known to have passed; an UNVERIFIABLE has no failed check, so every check it does not name passed.
- */
-function stateOf(verdict: Verdict, check: CheckName): State {
-  if (verdict.kind === 'MATCH') return 'ok';
-  const named = verdict.causes.some((cause) => cause.check === check);
-  if (verdict.kind === 'MISMATCH') return named ? 'bad' : 'na';
-  if (named) return 'warn';
-  return ON_SIMULATION.includes(check) && verdict.causes.some((cause) => cause.check === 'simulation') ? 'na' : 'ok';
-}
+const ICON: Readonly<Record<CheckState, State>> = { passed: 'ok', failed: 'bad', unverifiable: 'warn', 'not-run': 'na', 'not-needed': 'na' };
 
 const mono = (text: string): Html => h`<span class="addr">${text}</span>`;
 const prop = (label: string, value: Html | string): Html => h`<div><dt>${label}</dt><dd>${value}</dd></div>`;
@@ -200,9 +195,7 @@ function tokenAmount(value: bigint, token: AmountToken | undefined, page: Verdic
   if (value === 0n) return h`<span class="num">0</span> ${named}`;
   const decimals = token.address === 'eth' ? 18 : page.decimals.get(token.address);
   if (decimals === undefined) return h`<span class="num">${base}</span>${w.baseUnitsOf}${named}<span class="sub2">${w.decimalsUnread}</span>`;
-  const shown = groupedTokens(value, decimals, SHOWN_PLACES);
-  const cut = shown !== groupedTokens(value, decimals);
-  return h`${cut ? w.about : ''}<span class="num">${shown}</span> ${named}<span class="sub2">${w.decimalsNote(base, decimals)}</span>`;
+  return h`<span class="num">${groupedTokens(value, decimals)}</span> ${named}<span class="sub2">${w.decimalsNote(base, decimals)}</span>`;
 }
 
 function cardValue(value: ResolvedValue, token: AmountToken | undefined, page: VerdictPage): Html {
@@ -266,10 +259,12 @@ function effectsSection(page: VerdictPage): Html {
     if (change.add !== undefined) rows.push(prop(w.addSigner, mono(checksumAddress(change.add))));
     rows.push(prop(w.threshold, change.threshold === undefined ? w.unchanged : h`${w.becomes}<span class="num">${`${change.threshold}`}</span>`));
   }
+  const structs = signedMessages(page.card, page.templates);
   return h`
 <section>
   <h2>${w.effects}</h2>
-  <p class="lead">${w.effectsLead}</p>
+  <p class="lead">${w.effectsLead}</p>${structs.length === 0 ? '' : h`
+  <p class="lead">${w.later(structs.join(', '))}</p>`}
   <dl class="props two">${rows.length === 0 ? prop(w.none, w.noEffects) : rows}</dl>
 </section>`;
 }
@@ -300,6 +295,7 @@ function keptSection(page: VerdictPage): Html {
 function callsSection(page: VerdictPage): Html {
   const { calls } = page;
   const w = WORDS[page.language];
+  const functions = new Map([...page.templates.values()].flatMap((t) => t.calls.flatMap((c) => (c.data === 'empty' ? [] : [[c.data.fn.selector, c.data.fn.signature] as const]))));
   const body =
     calls.kind === 'unverifiable'
       ? h`<p class="intro">${w.callsUnread(calls.reasons)}</p>`
@@ -307,7 +303,7 @@ function callsSection(page: VerdictPage): Html {
         ? h`<p class="intro">${w.everyCallMoves}</p>`
         : h`<p class="intro">${w.movesNothingLead}</p>
   <dl class="props two">${calls.movesNothing.map(({ path, to, selector }) =>
-    prop(path, h`${to === page.card.safe ? w.thisSafe : nameOf(to, page)} ${mono(checksumAddress(to))} ${selector === undefined ? w.noData : h`selector ${mono(selector)}`}`),
+    prop(path, h`${to === page.card.safe ? w.thisSafe : nameOf(to, page)} ${mono(checksumAddress(to))} ${selector === undefined ? w.noData : functions.has(selector) ? h`${mono(`${functions.get(selector)} ${selector}`)}` : h`selector ${mono(selector)}`}`),
   )}</dl>`;
   return h`
 <section>
@@ -327,7 +323,8 @@ function checklistSection(page: VerdictPage): Html {
   return h`
 <section>
   <h2>${w.checklist}</h2>
-  <p class="lead">${w.checklistLead(h`<code>./check.sh ${`${page.nonce}`}</code>`)}</p>
+  <p class="lead">${w.checklistLead(h`<code>./check.sh ${`${page.nonce}`}</code>`)}</p>${w.checklistLeadEnglish === '' ? '' : h`
+  <p class="lead">${w.checklistLeadEnglish}</p>`}
 ${new Html(checklistHtml(checklist(page.tree, page.language)))}
 </section>`;
 }
@@ -362,8 +359,11 @@ export function verdictPage(page: VerdictPage): string {
     <p class="sub">${w.sub}</p>
   </div>
   <div class="banner ${banner}">${icon(banner, page.language)}${w.banner[page.verdict.kind]}</div>
-  <ul class="checks">${CHECKS.map((check) => h`
-    <li>${icon(stateOf(page.verdict, check), page.language)}${w.checks[check]}</li>`)}
+  <ul class="checks">${CHECKS.map((check) => {
+    const state = page.states[check];
+    return h`
+    <li>${icon(ICON[state], page.language)}${w.checks[check]}${w.stateNote[state] === '' ? '' : h`<span class="n">· ${w.stateNote[state]}</span>`}</li>`;
+  })}
   </ul>
 </header>
 ${causesSection(page.verdict, page.language)}

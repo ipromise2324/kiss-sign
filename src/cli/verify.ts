@@ -9,19 +9,17 @@ import { createReader } from '../chain/reader.ts';
 import { recordingTransport, replayReader } from '../chain/recording.ts';
 import { loadApproved } from '../config.ts';
 import { kissSignHome } from '../keys.ts';
-import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
-import type { Registry } from '../registry.ts';
+import { MARKETS_PATH, REGISTRY_PATH } from '../registry.ts';
 import { checksumAddress, parseHex } from '../safe/types.ts';
-import { describeCallScan } from '../simulate/simulate.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fileAt, optionalFileAt, pathsAt, selfCheck } from '../verify/self-check.ts';
 import { reportedVaults, unreportedVault } from '../template/vault-reports.ts';
-import { callTree } from '../verify/expected.ts';
+import { callTree, signedMessages } from '../verify/expected.ts';
 import type { CallTree } from '../verify/expected.ts';
 import { verdictPage } from '../verify/page.ts';
 import { expectedChanges } from '../simulate/effects.ts';
 import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile, prepare, readTokenDecimals } from '../verify/verify.ts';
-import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
+import type { Evaluation, Prepared, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
 import type { Verdict } from '../verify/verdict.ts';
 import { BOX_WIDTH, box, paint, rows, text, wrap } from './format.ts';
 import type { Paint, Row } from './format.ts';
@@ -42,13 +40,18 @@ const frameOf = (kind: Verdict['kind'], p: Paint): ((text: string) => string) =>
 /** Each check that caused a verdict other than MATCH, one row per detail. */
 const causeRows = (verdict: Verdict): Row[] => (verdict.kind === 'MATCH' ? [] : verdict.causes.flatMap((cause) => cause.details.map((detail): Row => [cause.check, detail])));
 
-function printReplay({ verdict, hashes, calls }: Evaluation, registry: Registry, io: Io): void {
+/** The line saying the assets a signed message moves change later, when any template on the card signs one by its digest. */
+function laterLines(prepared: Prepared): string[] {
+  const structs = signedMessages(prepared.card, prepared.templates);
+  return structs.length === 0 ? [] : ['', ...wrap(V.later(structs.join(', ')), BOX_WIDTH)];
+}
+
+function printReplay({ verdict, hashes }: Evaluation, prepared: Prepared, io: Io): void {
   const p = paint(io.color === true);
-  const scan = describeCallScan(calls, registry).flatMap((line) => wrap(line, BOX_WIDTH));
   const body =
     verdict.kind === 'MATCH'
-      ? [...scan, '', ...rows([['domain hash', hashes.domainHash], ['message hash', hashes.messageHash], ['safeTxHash', hashes.safeTxHash]], 0, BOX_WIDTH), '', ...wrap(V.notPermission, BOX_WIDTH)]
-      : [...rows(causeRows(verdict), 0, BOX_WIDTH), ...scan, '', V.noHashes];
+      ? [...rows([['domain hash', hashes.domainHash], ['message hash', hashes.messageHash], ['safeTxHash', hashes.safeTxHash]], 0, BOX_WIDTH), ...laterLines(prepared), '', ...wrap(V.notPermission, BOX_WIDTH)]
+      : [...rows(causeRows(verdict), 0, BOX_WIDTH), ...laterLines(prepared), '', V.noHashes];
   io.stdout(text(box(V.replayTitle(verdict.kind), body, frameOf(verdict.kind, p))));
 }
 
@@ -110,8 +113,7 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const endpoints = mainnetEndpoints(io.env);
   const recorder = recordingTransport(io.transport, endpoints);
   const reader = createReader(endpoints, recorder.transport);
-  const { evaluation: result, tx, inputs: used, prepared, latest, unread, kept } = await evaluateTx(inputs, reader, io.readMessage);
-  for (const why of unread) io.stderr(`kiss-sign: a signed message could not be read: ${why}\n`);
+  const { evaluation: result, tx, inputs: used, prepared, latest, unread, kept, states } = await evaluateTx(inputs, reader, io.readMessage);
   const decimals = await readTokenDecimals(reader, prepared, latest);
   const file: VerdictFile = { format: VERDICT_FORMAT, inputs: used, exchanges: recorder.exchanges(), result };
   const dir = verdictsDir(home);
@@ -122,14 +124,16 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   const { verdict, hashes } = result;
   const p = paint(io.color === true);
   const tree: CallTree | undefined = verdict.kind === 'MATCH' ? callTree(tx, { ...prepared, decimals }) : undefined;
+  const unreadRows = unread.map((why): Row => [V.unread, why]);
   const body =
     verdict.kind === 'MATCH'
-      ? rows([[V.nonce, `${tx.nonce}`], ['safeTxHash', hashes.safeTxHash, p.heading]], 0, BOX_WIDTH)
-      : [...rows([[V.nonce, `${tx.nonce}`], ...causeRows(verdict)], 0, BOX_WIDTH), '', V.noHashes];
+      ? [...rows([[V.nonce, `${tx.nonce}`], ['safeTxHash', hashes.safeTxHash, p.heading], ...unreadRows], 0, BOX_WIDTH), ...laterLines(prepared)]
+      : [...rows([[V.nonce, `${tx.nonce}`], ...causeRows(verdict), ...unreadRows], 0, BOX_WIDTH), ...laterLines(prepared), '', V.noHashes];
   io.stdout(text(box(V.title[verdict.kind], body, frameOf(verdict.kind, p))));
   const page = path.replace(/\.json$/, '.html');
   const html = verdictPage({
     verdict,
+    states,
     nonce: tx.nonce,
     card: prepared.card,
     cardHash: values.card,
@@ -164,7 +168,7 @@ export async function replay(args: readonly string[], io: Io): Promise<number> {
   if (path === undefined || extra.length > 0) throw new UsageError('replay takes the path of one verdict file.');
   const file = parseVerdictFile(JSON.parse(readFileSync(path, 'utf8')));
   const result = await evaluate(file.inputs, replayReader(file.exchanges));
-  printReplay(result, parseRegistry(JSON.parse(file.inputs.registry)), io);
+  printReplay(result, prepare(file.inputs), io);
   if (canonicalJson(result) !== canonicalJson(file.result)) {
     const what = canonicalJson(result.verdict) === canonicalJson(file.result.verdict) ? 'the same verdict but different call marks or hashes' : 'another result';
     io.stderr(`kiss-sign: the recorded verdict was ${file.result.verdict.kind}; this program now gives ${what}.\n`);

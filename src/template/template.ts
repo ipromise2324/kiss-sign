@@ -1169,6 +1169,28 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   return { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
 }
 
+/** The struct name of each message the template signs by its digest (`eip712`), such as CoW's `Order`, once each. */
+export function signedStructs(template: Pick<Template, 'calls'>): string[] {
+  const visit = (rule: Rule): string[] => {
+    switch (rule.kind) {
+      case 'eip712':
+        return [rule.message.struct.name];
+      case 'call':
+      case 'keccak':
+        return rule.call.args.flatMap(visit);
+      case 'items':
+        return rule.items.flatMap(visit);
+      case 'fields':
+        return rule.fields.flatMap(visit);
+      case 'packed':
+        return rule.parts.flatMap((part) => visit(part.rule));
+      default:
+        return [];
+    }
+  };
+  return [...new Set(template.calls.flatMap((call) => (call.data === 'empty' ? [] : call.data.args.flatMap(visit))))];
+}
+
 /** Whether any argument is free with a `route` claim, which lets a changed value pick another pool. */
 function routes(template: Template): boolean {
   const visit = (rule: Rule): boolean =>
