@@ -60,9 +60,10 @@ pnpm install
 pnpm kiss-sign init --safe 0x…
 pnpm kiss-sign key add alchemy
 pnpm kiss-sign key add etherscan   # to build or review templates
+pnpm kiss-sign key add github      # optional: raises GitHub's hourly limit to build or review templates
 ```
 
-You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), with `LANGUAGE` in its `config` set to the language you give `init` (`en` unless you chose `zh-TW`).
+You need Node 22.21 or later, pnpm, free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys, and a hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash. A GitHub token is optional: it raises GitHub's API limit from 60 requests an hour to 5,000, which building or reviewing a template can reach. Make a fine-grained, read-only one with access to public repositories only. kiss-sign's signing commands never read it. The second computer needs [kiss-sign-check](https://github.com/ipromise2324/kiss-sign-check), with `LANGUAGE` in its `config` set to the language you give `init` (`en` unless you chose `zh-TW`).
 
 kiss-sign has two tiers. The basic tier is kiss-sign alone, on your computer. The hardened tier adds `check.sh` on a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. See [Two tiers](docs/design.md#two-tiers).
 
