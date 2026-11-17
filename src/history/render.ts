@@ -1,5 +1,6 @@
-import { WIDTH, paint, wrap } from '../cli/format.ts';
+import { WIDTH, padTo, paint, wrap } from '../cli/format.ts';
 import type { Paint } from '../cli/format.ts';
+import type { Labels } from '../cli/labels.ts';
 import type { Reason } from './reasons.ts';
 
 export type Row = {
@@ -21,19 +22,16 @@ export type Report = {
   readonly rows: readonly Row[];
 };
 
-const reasonText = (row: Row): string =>
-  [row.reason === undefined ? '' : `${row.reason.key}: ${row.reason.detail}`, row.note === undefined ? '' : `note: ${row.note}`]
+type HistoryWords = Labels['history'];
+
+const reasonText = (row: Row, H: HistoryWords): string =>
+  [row.reason === undefined ? '' : `${row.reason.key}: ${row.reason.detail}`, row.note === undefined ? '' : `${H.note}: ${row.note}`]
     .filter((part) => part !== '')
     .join('; ');
 
-function header(report: Report): string[] {
-  const used = report.templates.length === 0 ? 'none used' : report.templates.map((t) => `${t.id} ${t.hash}`).join(', ');
-  return [
-    `Safe history: ${report.rows.length} executed transactions, run through the verify checks.`,
-    `Templates are approved at their origin/main hash (${report.commit}) for this run only, since history is not a signing: ${used}.`,
-    `Cards come from history/cards and are hashed as sealed cards; values the signer did not confirm are marked.`,
-    `Registry: registry/contracts.json at that commit${report.overlay === 0 ? '' : `, plus ${report.overlay} local entries from history/registry.json`}.`,
-  ];
+function header(report: Report, H: HistoryWords): string[] {
+  const used = report.templates.length === 0 ? H.noneUsed : report.templates.map((t) => `${t.id} ${t.hash}`).join(', ');
+  return [H.count(report.rows.length), H.approved(report.commit, used), H.cards, H.registry(report.overlay)];
 }
 
 function summary(rows: readonly Row[]): { key: string; nonces: number[] }[] {
@@ -52,29 +50,31 @@ const VERDICT_PAINT = { MATCH: 'ok', MISMATCH: 'bad', UNVERIFIABLE: 'warn', ERRO
 const hanging = (line: string, indent: number): string[] =>
   wrap(line, WIDTH - indent - 2).map((part, i) => `${' '.repeat(i === 0 ? indent : indent + 2)}${part}`);
 
-export function renderText(report: Report, p: Paint = paint(false)): string {
-  const lines = [...header(report).flatMap((line) => hanging(line, 0)), '', p.heading('nonce  date        verdict       intent')];
+export function renderText(report: Report, H: HistoryWords, p: Paint = paint(false)): string {
+  const { date, verdict, intent } = H.columns;
+  const lines = [...header(report, H).flatMap((line) => hanging(line, 0)), '', p.heading(['nonce', padTo(date, 10), padTo(verdict, 12), intent].join('  '))];
   for (const row of report.rows) {
     const verdict = p[VERDICT_PAINT[row.verdict]](row.verdict.padEnd(12));
     lines.push(`${String(row.nonce).padStart(5)}  ${row.date.padEnd(10)}  ${verdict}  ${row.intent}`);
-    const reason = reasonText(row);
+    const reason = reasonText(row, H);
     if (reason !== '') lines.push(...hanging(reason, 33));
-    if (row.card !== undefined) lines.push(...hanging(`card: ${row.card}`, 33));
+    if (row.card !== undefined) lines.push(...hanging(`${H.columns.card}: ${row.card}`, 33));
   }
-  lines.push('', p.heading('Summary'));
+  lines.push('', p.heading(H.summary));
   for (const { key, nonces } of summary(report.rows)) lines.push(`  ${key.padEnd(28)} ${String(nonces.length).padStart(4)}  ${nonces.join(', ')}`);
   return `${lines.join('\n')}\n`;
 }
 
 const cell = (text: string): string => text.replace(/\\/g, '\\\\').replace(/\|/g, '\\|').replace(/\n/g, ' ');
 
-export function renderMarkdown(report: Report): string {
-  const lines = ['# Safe history coverage', '', ...header(report).map((line) => `${line}  `), ''];
-  lines.push('| nonce | date | intent | verdict | reason | card |', '| ---: | --- | --- | --- | --- | --- |');
+export function renderMarkdown(report: Report, H: HistoryWords): string {
+  const c = H.columns;
+  const lines = [`# ${H.title}`, '', ...header(report, H).map((line) => `${line}  `), ''];
+  lines.push(`| nonce | ${c.date} | ${c.intent} | ${c.verdict} | ${c.reason} | ${c.card} |`, '| ---: | --- | --- | --- | --- | --- |');
   for (const row of report.rows) {
-    lines.push(`| ${row.nonce} | ${row.date} | ${cell(row.intent)} | ${row.verdict} | ${cell(reasonText(row))} | ${cell(row.card ?? '')} |`);
+    lines.push(`| ${row.nonce} | ${row.date} | ${cell(row.intent)} | ${row.verdict} | ${cell(reasonText(row, H))} | ${cell(row.card ?? '')} |`);
   }
-  lines.push('', '## Summary', '', '| result | count | nonces |', '| --- | ---: | --- |');
+  lines.push('', `## ${H.summary}`, '', `| ${c.result} | ${c.count} | nonces |`, '| --- | ---: | --- |');
   for (const { key, nonces } of summary(report.rows)) lines.push(`| ${cell(key)} | ${nonces.length} | ${nonces.join(', ')} |`);
   return `${lines.join('\n')}\n`;
 }
