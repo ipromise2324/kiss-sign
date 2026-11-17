@@ -94,7 +94,7 @@ const ZH = {
   calls: '不移動資產的呼叫',
   checklist: '比對清單',
   noHashes: '不顯示任何 hash。不要簽這筆交易。',
-  checklistLeadEnglish: '',
+  checklistLanguage: '各列是繁體中文。獨立電腦上 check.sh 的 config 也要設 LANGUAGE=zh-TW，不然各列會不同。',
   checklistLead: (command: Html) => h`每一列和獨立電腦上 ${command} 頁面的同一列比對：列號、欄位和值都要一模一樣。最右一欄是各自的名字，不用比。safeTxHash、domain hash 和 message hash 也要和硬體錢包逐字比對。`,
   causes: '原因',
   sub: 'kiss-sign 在工作電腦上對照你的卡片檢查這筆交易。',
@@ -160,8 +160,7 @@ const EN: typeof ZH = {
   calls: 'Calls that move no asset',
   checklist: 'Checklist',
   noHashes: 'No hash is shown. Do not sign this transaction.',
-  checklistLeadEnglish:
-    "The row ids, the field names and the group titles stay in Traditional Chinese, exactly as check.sh writes them, so the two pages compare byte for byte; only the last column is in English.",
+  checklistLanguage: "The rows are in English. check.sh's config on the independent computer must say LANGUAGE=en too, or the rows differ.",
   checklistLead: (command: Html) =>
     h`Compare each row with the same row of the ${command} page on the independent computer: the row id, the field and the value must be exactly the same. The last column is each page's own names; do not compare it. Also compare the safeTxHash, domain hash and message hash character by character with the hardware wallet.`,
   causes: 'Causes',
@@ -343,9 +342,9 @@ function checklistSection(page: VerdictPage): Html {
   return h`
 <section>
   <h2>${w.checklist}</h2>
-  <p class="lead">${w.checklistLead(h`<code>./check.sh ${`${page.nonce}`}</code>`)}</p>${w.checklistLeadEnglish === '' ? '' : h`
-  <p class="lead">${w.checklistLeadEnglish}</p>`}
-${new Html(checklistHtml(checklist(page.tree, page.language)))}
+  <p class="lead">${w.checklistLead(h`<code>./check.sh ${`${page.nonce}`}</code>`)}</p>
+  <p class="lead">${w.checklistLanguage}</p>
+${new Html(checklistHtml(checklist(page.tree, page.language), page.language))}
 </section>`;
 }
 
