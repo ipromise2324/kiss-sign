@@ -133,7 +133,7 @@ Everything is expressible as one inline stylesheet plus a block of inline SVG `<
 
 Two voices share the page and never blur: what the program read and checked (plain text, solid tags), and what the AI researched (marked by a dashed outline). The program's facts always come first.
 
-The page is written in English and in Traditional Chinese, the same layout in each; every word below is given in Traditional Chinese, and the English page uses the same word in English (你填 is "you type", 待確認 is "To review").
+The page is written in each language its `notes.json` holds, English, Traditional Chinese or both, the same layout in each; every word below is given in Traditional Chinese, and the English page uses the same word in English (你填 is "you type", 待確認 is "To review"). A page whose notes hold its language alone says so in one Ink 3 14px line under the summary (這份報告只有繁體中文版。, "This report exists only in English.").
 
 **Key Characteristics:**
 - Near-black ground, three ink greys, three state colours, no brand accent.

@@ -42,22 +42,59 @@ export function colorWanted(isTTY: boolean | undefined, env: Readonly<Record<str
 
 const ANSI = /\x1b\[[0-9;]*m/g;
 
-export const visible = (text: string): number => text.replace(ANSI, '').length;
+/** East Asian Wide and Fullwidth characters, such as Chinese characters and their punctuation, take two terminal columns. */
+const WIDE = /[\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA000-\uA4CF\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6\u{20000}-\u{3FFFD}]/u;
 
-const padTo = (text: string, width: number): string => text + ' '.repeat(Math.max(0, width - visible(text)));
+/** The columns a text takes at a terminal, colour codes taking none. */
+export function visible(text: string): number {
+  let width = 0;
+  for (const char of text.replace(ANSI, '')) width += WIDE.test(char) ? 2 : 1;
+  return width;
+}
 
-/** Breaks at spaces only, so an address, hash or URL is never split; a word longer than the width keeps a line of its own. */
+export const padTo = (text: string, width: number): string => text + ' '.repeat(Math.max(0, width - visible(text)));
+
+/** Punctuation that never starts a line, and punctuation that never ends one. */
+const CLOSING = /^[、。，：；！？）」』】〉》]$/u;
+const OPENING = /^[（「『【〈《]$/u;
+
+/**
+ * The pieces a line may break between, each with the spaces before it: a run of characters without a space or a wide
+ * character, or one wide character, closing punctuation joined to the piece before it and opening punctuation to the
+ * one after. An address, hash or URL is one piece.
+ */
+function pieces(text: string): { gap: string; word: string }[] {
+  const out: { gap: string; word: string }[] = [];
+  let gap = '';
+  for (const char of text) {
+    if (char === ' ') {
+      gap += char;
+      continue;
+    }
+    const last = out.at(-1);
+    const wide = WIDE.test(char);
+    const lastChar = last === undefined ? '' : [...last.word].at(-1) ?? '';
+    const joins = last !== undefined && gap === '' && (OPENING.test(lastChar) || CLOSING.test(char) || (!wide && !WIDE.test(lastChar)));
+    if (joins) last.word += char;
+    else out.push({ gap, word: char });
+    gap = '';
+  }
+  if (gap !== '') out.push({ gap, word: '' });
+  return out;
+}
+
+/** Breaks at spaces and between wide characters only, so an address, hash or URL is never split; a piece longer than the width keeps a line of its own. */
 export function wrap(text: string, width: number): string[] {
   const indent = /^ */.exec(text)?.[0] ?? '';
   if (indent !== '') return wrap(text.slice(indent.length), Math.max(1, width - indent.length)).map((line) => `${indent}${line}`);
   const lines: string[] = [];
   let line = '';
-  for (const word of text.split(' ')) {
-    if (line !== '' && visible(line) + 1 + visible(word) > width) {
-      lines.push(line);
+  for (const { gap, word } of pieces(text)) {
+    if (line !== '' && visible(line) + gap.length + visible(word) > width) {
+      lines.push(`${line}${gap.slice(1)}`);
       line = word;
     } else {
-      line = line === '' ? word : `${line} ${word}`;
+      line = line === '' ? word : `${line}${gap}${word}`;
     }
   }
   return [...lines, line];

@@ -1,10 +1,11 @@
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { HTML_LANG, LANGUAGES } from '../language.ts';
 import type { Language } from '../language.ts';
 import { loadRegistry } from '../registry.ts';
 import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
-import { NOTES_FILE, codeSpans, readNotes } from './notes.ts';
+import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
 import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
 import { WORDS } from './report-words.ts';
@@ -94,7 +95,8 @@ function header(page: Page, r: R): Html {
   return h`<header>
   <h1>${ai(head.title, r)}</h1>
   <span class="opid">${page.id}</span>
-  <p class="sub">${ai(head.summary, r)}</p>
+  <p class="sub">${ai(head.summary, r)}</p>${head.onlyIn === undefined ? '' : h`
+  <p class="srcline">${head.onlyIn}</p>`}
   <ul class="checks">${head.strip.map(
     (item) => h`
     <li data-state="${item.state}" data-line="${item.line}">${icon(item.state, r.language)}${item.name}${item.count === undefined ? '' : h` <span class="n num">${item.count}</span>`}
@@ -592,7 +594,7 @@ export async function generatedHtml(repoRoot: string, inputs: ReportInputs, titl
   const { template } = subject;
   // The test transactions check the template, whichever vault they name; the example must name the report's own vault.
   const html = { ...inputs, fixtures: await judgeFixtures(repoRoot, template, loadRegistry(repoRoot)), example: firstRecordedTx(repoRoot, template, registry) };
-  return new Map(LANGUAGES.map((language) => [language, renderPage(buildPage(html, raw, title, language))]));
+  return new Map(notesLanguages(raw).map((language) => [language, renderPage(buildPage(html, raw, title, language))]));
 }
 
 /** Up to 160 characters of a line from where it first differs, quoted so no control character reaches the terminal. */
@@ -602,11 +604,38 @@ const quoted = (line: string | undefined, at: number): string => {
   return JSON.stringify(`${start > 0 ? '…' : ''}${line.slice(start, start + 160)}${start + 160 < line.length ? '…' : ''}`);
 };
 
+/**
+ * Writes each page into the report's folder `dir` and removes every page the program wrote there that `pages` does not
+ * hold: one in a language the notes no longer hold, and the old one-language page. Returns the files removed.
+ */
+export function writeHtmlPages(dir: string, pages: ReadonlyMap<Language, string>): string[] {
+  for (const [language, page] of pages) writeFileSync(join(dir, generatedHtmlFile(language)), page);
+  const stale = [...LANGUAGES.filter((language) => !pages.has(language)).map(generatedHtmlFile), OLD_HTML_FILE].filter((file) => existsSync(join(dir, file)));
+  for (const file of stale) rmSync(join(dir, file));
+  return stale;
+}
+
+/**
+ * Each page committed in the report's folder `dir` against the pages the program writes, `undefined` with no notes:
+ * per file, where it differs, a page in a language the notes do not hold and a missing one included, or undefined
+ * where they agree. A language with neither a committed nor a written page is left out.
+ */
+export function htmlDifferences(dir: string, pages: ReadonlyMap<Language, string> | undefined): { readonly file: string; readonly difference: string | undefined }[] {
+  const pageFiles = LANGUAGES.flatMap((language) => {
+    const file = generatedHtmlFile(language);
+    const committed = existsSync(join(dir, file)) ? readFileSync(join(dir, file), 'utf8') : undefined;
+    const written = pages?.get(language);
+    return committed === undefined && written === undefined ? [] : [{ file, difference: htmlDifference(file, committed, written) }];
+  });
+  const old = existsSync(join(dir, OLD_HTML_FILE)) ? [{ file: OLD_HTML_FILE, difference: `${OLD_HTML_FILE} is still committed beside the pages in each language that replace it` }] : [];
+  return [...pageFiles, ...old];
+}
+
 /** Where the committed `file` differs from what the program writes, byte for byte, or undefined when it does not. */
 export function htmlDifference(file: string, committed: string | undefined, written: string | undefined): string | undefined {
   if (committed === written) return undefined;
-  if (committed === undefined) return `there is ${NOTES_FILE} but no committed ${file}`;
-  if (written === undefined) return `${file} is committed but there is no ${NOTES_FILE} to write it from`;
+  if (committed === undefined) return `${NOTES_FILE} holds text in its language but there is no committed ${file}`;
+  if (written === undefined) return `${file} is committed but no ${NOTES_FILE} holds text in its language to write it from`;
   const [was, now] = [committed.split('\n'), written.split('\n')];
   const at = was.findIndex((line, i) => line !== now[i]);
   const line = at === -1 ? was.length : at;
