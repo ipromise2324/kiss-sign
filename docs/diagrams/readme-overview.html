@@ -127,11 +127,7 @@
   <div class="then">
     <div class="sk ai report" id="report">
       <div class="who">A report in a pull request</div>
-      <ul><li>the call flow<div class="flow mono">Safe ─▶ MultiSend
- ├ usdc.approve(general-adapter-1)
- └ bundler3.multicall
-    ├ pull 1,000 USDC
-    └ vault.deposit ─▶ shares to Safe</div></li><li>each field: fixed, yours, or bounded</li><li>where each address came from</li><li class="q">what still needs your eye</li></ul>
+      <ul><li>the call flow<div class="flow mono">approve ─▶ erc4626Deposit</div></li><li>each field: fixed, yours, or bounded</li><li>where each address came from</li><li class="q">what still needs your eye</li></ul>
     </div>
     <div class="sk you merge" id="merge">
       <div class="who">You</div>
