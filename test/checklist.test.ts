@@ -123,6 +123,7 @@ test('the -extra row names the template\'s allowance as a program fact and its r
     extra ?? '',
     /<span class="v">0x[0-9a-f]{16}<\/span><span class="nm">模板允許這個呼叫最多 12 bytes，這裡 8 bytes，在範圍內 <span class="aiw" data-ai><span class="byai">AI<\/span><span>the Morpho app appends [^<]*<\/span><\/span><\/span><\/div>$/,
   );
+  assert.match(page, /<p class="lead">各列是繁體中文。獨立電腦上 check\.sh 的 config 也要設 LANGUAGE=zh-TW，不然各列會不同。<\/p>\n<!-- 比對清單 -->/);
   assert.match(page, new RegExp(`<title>kiss-sign verify · nonce ${tree.nonce} · MATCH</title>`));
   assert.match(page, new RegExp(`<h1><span class="prog">kiss-sign verify</span> · nonce ${tree.nonce} · MATCH</h1>`));
 });
@@ -294,6 +295,7 @@ test('a call that moves no asset is named by its function only when a template o
     verdictFile: '/verdicts/x.json',
     language: 'en',
   });
+  assert.match(page, /<p class="lead">The rows are in English\. check\.sh&#39;s config on the independent computer must say LANGUAGE=en too, or the rows differ\.<\/p>\n<!-- 比對清單 -->/);
   const text = page.slice(page.indexOf('<h2>Calls that move no asset</h2>')).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
   assert.match(text, / multiSend\[0\] usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 approve\(address,uint256\) 0x095ea7b3 /);
   assert.match(text, / multiSend\[1\] not registered 0x1111111111111111111111111111111111111111 selector 0x095ea7b3 /);

@@ -9,7 +9,7 @@ The signer checks a Safe transaction against the sealed card: `verify` first che
 - `verify-self-check` refuses a checkout that is not exactly origin/main, writing no verdict.
 - `verify-tx-file` reads `--tx` as Transaction Service JSON or the Safe web app's JSON.
 - `verify-tx-hash` fetches `--safe-tx-hash` from the Safe Transaction Service.
-- `verify-language` writes the page in the config's `language`: English by default, Traditional Chinese after `init --language zh-TW` (`KSV_LANGUAGE=zh-TW` for `new-run.sh`). The 比對清單's keys, group titles and folded values follow the page's language, word for word as `check.sh` writes them with the same `LANGUAGE` in its config; row ids are the same in both.
+- `verify-language` writes the page in the config's `language`: English by default, Traditional Chinese after `init --language zh-TW` (`KSV_LANGUAGE=zh-TW` for `new-run.sh`). The 比對清單's keys, group titles, empty-data value and folded values follow the page's language, word for word as `check.sh` writes them with the same `LANGUAGE` in its config; row ids are the same in both.
 
 ## How to get to it (user POV)
 
