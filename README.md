@@ -86,7 +86,7 @@ You need:
 
 In Claude Code, from the clone, say it in one sentence: "deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault". If no template covers it yet, the AI builds one with the [kiss-sign skill](.claude/skills/kiss-sign/SKILL.md) and opens a pull request with a generated report.
 
-![An illustration of step 1: in Claude Code, inside the kiss-sign clone, you type the deposit in one sentence. The AI answers that morpho/vault-deposit fits but the vault has no report yet, that it found the address, proved the ABI, read the vault's size and holders, studied a year of past deposits and pinned the code, and that it opened a pull request; next you read the report, run --compare, merge, git pull, and run card new in your own terminal](docs/readme/intent.png)
+![Claude Code opened in the kiss-sign clone, with the intent typed at its prompt: I want to deposit 1,000,611.448606 USDC into Morpho's Hyperithm USDC Apex vault](docs/readme/intent.png)
 
 ### 2. Review the report and merge
 
