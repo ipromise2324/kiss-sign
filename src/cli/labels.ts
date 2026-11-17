@@ -8,6 +8,7 @@ import type { Verdict } from '../verify/verdict.ts';
  * A prompt ends the same way in every language, such as `(1-3): ` or `[y/N] `, so a script waits for the same text.
  */
 const EN = {
+  language: 'en' as Language,
   usage: 'Usage:',
   confirmAtTerminal: (command: string) => `${command} asks you to confirm at a terminal, so run it in your own terminal with nothing piped into it.`,
   card: {
@@ -173,6 +174,7 @@ const EN = {
     count: (n: number) => `Safe history: ${n} executed transactions, run through the verify checks.`,
     approved: (commit: string, used: string) => `Templates are approved at their origin/main hash (${commit}) for this run only, since history is not a signing: ${used}.`,
     noneUsed: 'none used',
+    notRun: 'not run',
     cards: 'Cards come from history/cards and are hashed as sealed cards; values the signer did not confirm are marked.',
     registry: (overlay: number) => `Registry: registry/contracts.json at that commit${overlay === 0 ? '' : `, plus ${overlay} local entries from history/registry.json`}.`,
     columns: { date: 'date', verdict: 'verdict', intent: 'intent', reason: 'reason', card: 'card', result: 'result', count: 'count' },
@@ -189,6 +191,7 @@ const EN = {
 export type Labels = typeof EN;
 
 const ZH: Labels = {
+  language: 'zh-TW',
   usage: '用法：',
   confirmAtTerminal: (command: string) => `${command} 要你在終端機上確認，所以請在你自己的終端機執行，不要用管線把輸入接給它。`,
   card: {
@@ -228,8 +231,8 @@ const ZH: Labels = {
     askBaseUnits: (name, ref) => `${name} (${ref} 的最小單位；它不是登記表裡的合約，所以不讀它的 decimals): `,
     askAmount: (name, token, decimals, max) => `${name} (整顆 ${token} 的數量，${decimals} 位小數${max ? '，或 max' : ''}): `,
     confirm: '這是你要做的事嗎？[y/N] ',
-    sealed: (hash) => `已封存卡片 ${hash}`,
-    nothingSealed: '沒有封存任何東西。',
+    sealed: (hash) => `已密封卡片 ${hash}`,
+    nothingSealed: '沒有密封任何東西。',
     refusedAt: (at, detail) => `卡片在 ${at} 被拒絕：${detail}`,
     refused: (why) => `卡片被拒絕：${why}`,
     newUsage: 'card new 要接一個以上的模板 id，例如 morpho/vault-deposit。',
@@ -274,7 +277,7 @@ const ZH: Labels = {
     file: '判決檔：',
     open: '用這個指令開啟頁面：',
     same: '和記錄的判決相同。',
-    usage: 'verify 需要 --card <封存卡片的 hash>。',
+    usage: 'verify 需要 --card <密封卡片的 hash>。',
     oneTx: 'verify 需要 --tx <file> 或 --safe-tx-hash <hash>，只能給一個。',
     hashLength: '--safe-tx-hash 要接 32 位元組的 hash。',
     replayUsage: 'replay 要接一個判決檔的路徑。',
@@ -351,7 +354,8 @@ const ZH: Labels = {
     count: (n) => `Safe 歷史：${n} 筆已執行的交易，用 verify 的檢查跑過。`,
     approved: (commit, used) => `模板只在這次執行中，以 origin/main（${commit}）的 hash 視為已核准，因為看歷史不是簽署：${used}。`,
     noneUsed: '沒有用到',
-    cards: '卡片來自 history/cards，和封存的卡片一樣算 hash；簽署人沒有確認過的值會標出來。',
+    notRun: '未執行',
+    cards: '卡片來自 history/cards，和密封的卡片一樣算 hash；簽署人沒有確認過的值會標出來。',
     registry: (overlay) => `登記表：那個 commit 的 registry/contracts.json${overlay === 0 ? '' : `，加上 history/registry.json 的 ${overlay} 個本機項目`}。`,
     columns: { date: '日期', verdict: '判決', intent: '意圖', reason: '原因', card: '卡片', result: '結果', count: '筆數' },
     note: '備註',

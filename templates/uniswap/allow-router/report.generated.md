@@ -31,7 +31,7 @@ Written by `pnpm report uniswap/allow-router --record` from `templates/uniswap/a
 | `approve.token` | the card's `token`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` |
 | `approve.spender` | registry `universal-router-2.1.2` `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` |
 | `approve.amount` | constant `1461501637330902918203684832716283019655932542975` |
-| `approve.expiration` | free; written by the AI in the template: When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The router pulls only from the address that called it (its registry entry's standingAllowance), so how long the allowance lasts does not change who can use it; verify's page shows the expiration the transaction leaves. |
+| `approve.expiration` | free; written by the AI in the template: When Permit2 stops honouring the router's allowance, which the app sets 30 days ahead. The router pulls only from the address that called it (its registry entry's standingAllowance), so how long the allowance lasts does not change who can use it; verify's page shows the expiration the transaction leaves.; in Traditional Chinese: Permit2 停止承認給 router 的授權額度的時間，app 設在 30 天後。router 只從呼叫它的地址拉款（見它登記項目的 standingAllowance），所以授權維持多久不會改變誰能用它；verify 的頁面會顯示交易留下的到期時間。 |
 
 ## Effects
 

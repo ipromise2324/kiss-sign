@@ -34,10 +34,13 @@ function header(report: Report, H: HistoryWords): string[] {
   return [H.count(report.rows.length), H.approved(report.commit, used), H.cards, H.registry(report.overlay)];
 }
 
-function summary(rows: readonly Row[]): { key: string; nonces: number[] }[] {
+/** The verdict column: a verdict word as it is, `not run` in the report's language. */
+const verdictWord = (row: Row, H: HistoryWords): string => (row.verdict === 'not run' ? H.notRun : row.verdict);
+
+function summary(rows: readonly Row[], H: HistoryWords): { key: string; nonces: number[] }[] {
   const groups = new Map<string, number[]>();
   for (const row of rows) {
-    const key = row.reason?.key ?? row.verdict;
+    const key = row.reason?.key ?? verdictWord(row, H);
     groups.set(key, [...(groups.get(key) ?? []), row.nonce]);
   }
   const order = (key: string) => (key === 'MATCH' ? 0 : 1);
@@ -54,14 +57,14 @@ export function renderText(report: Report, H: HistoryWords, p: Paint = paint(fal
   const { date, verdict, intent } = H.columns;
   const lines = [...header(report, H).flatMap((line) => hanging(line, 0)), '', p.heading(['nonce', padTo(date, 10), padTo(verdict, 12), intent].join('  '))];
   for (const row of report.rows) {
-    const verdict = p[VERDICT_PAINT[row.verdict]](row.verdict.padEnd(12));
+    const verdict = p[VERDICT_PAINT[row.verdict]](padTo(verdictWord(row, H), 12));
     lines.push(`${String(row.nonce).padStart(5)}  ${row.date.padEnd(10)}  ${verdict}  ${row.intent}`);
     const reason = reasonText(row, H);
     if (reason !== '') lines.push(...hanging(reason, 33));
     if (row.card !== undefined) lines.push(...hanging(`${H.columns.card}: ${row.card}`, 33));
   }
   lines.push('', p.heading(H.summary));
-  for (const { key, nonces } of summary(report.rows)) lines.push(`  ${key.padEnd(28)} ${String(nonces.length).padStart(4)}  ${nonces.join(', ')}`);
+  for (const { key, nonces } of summary(report.rows, H)) lines.push(`  ${key.padEnd(28)} ${String(nonces.length).padStart(4)}  ${nonces.join(', ')}`);
   return `${lines.join('\n')}\n`;
 }
 
@@ -72,9 +75,9 @@ export function renderMarkdown(report: Report, H: HistoryWords): string {
   const lines = [`# ${H.title}`, '', ...header(report, H).map((line) => `${line}  `), ''];
   lines.push(`| nonce | ${c.date} | ${c.intent} | ${c.verdict} | ${c.reason} | ${c.card} |`, '| ---: | --- | --- | --- | --- | --- |');
   for (const row of report.rows) {
-    lines.push(`| ${row.nonce} | ${row.date} | ${cell(row.intent)} | ${row.verdict} | ${cell(reasonText(row, H))} | ${cell(row.card ?? '')} |`);
+    lines.push(`| ${row.nonce} | ${row.date} | ${cell(row.intent)} | ${verdictWord(row, H)} | ${cell(reasonText(row, H))} | ${cell(row.card ?? '')} |`);
   }
   lines.push('', `## ${H.summary}`, '', `| ${c.result} | ${c.count} | nonces |`, '| --- | ---: | --- |');
-  for (const { key, nonces } of summary(report.rows)) lines.push(`| ${cell(key)} | ${nonces.length} | ${nonces.join(', ')} |`);
+  for (const { key, nonces } of summary(report.rows, H)) lines.push(`| ${cell(key)} | ${nonces.length} | ${nonces.join(', ')} |`);
   return `${lines.join('\n')}\n`;
 }

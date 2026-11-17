@@ -1,4 +1,5 @@
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
+import { detailText } from '../src/verify/detail-text.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -45,7 +46,15 @@ const multiSend = (...entries: Entry[]): SafeTx => ({
 });
 
 const rules = (result: FloorResult): string[] => (result.kind === 'pass' ? [] : result.findings.map((f) => `${f.rule} ${f.callPath}`));
-const details = (result: FloorResult): string[] => (result.kind === 'pass' ? [] : result.findings.map((f) => f.detail));
+/** Each finding's detail, which a Traditional Chinese signer reads translated as the verdict shows it. */
+const details = (result: FloorResult): string[] => {
+  const findings = result.kind === 'pass' ? [] : result.findings;
+  for (const f of findings) {
+    const shown = `${f.rule} at ${f.callPath}: ${f.detail}`;
+    assert.notEqual(detailText(shown, 'zh-TW'), shown, `reads in Traditional Chinese: ${shown}`);
+  }
+  return findings.map((f) => f.detail);
+};
 
 test('the Morpho deposit passes the static floor', () => {
   assert.deepEqual(checkFloor(deposit), { kind: 'pass' });
