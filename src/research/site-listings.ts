@@ -59,14 +59,14 @@ const ETHERSCAN_ADDRESS = /https?:\/\/(?:www\.)?etherscan\.io\/address\/(0x[0-9a
 /** Each address an `etherscan.io/address/` link in `text` names, lowercased. */
 const etherscanAddresses = (text: string): Address[] => [...text.matchAll(ETHERSCAN_ADDRESS)].map((m) => parseAddress('scope', (m[1] as string).toLowerCase()));
 
-/** The scope text a program's addresses are read from: each asset's URL, then the program's text on its assets. */
-function scopeText(program: Record<string, unknown>): string {
-  const assets = Array.isArray(program.assets) ? program.assets.filter(isRecord).map((asset) => String(asset.url ?? '')) : [];
-  return [...assets, typeof program.assetsBodyV2 === 'string' ? program.assetsBodyV2 : ''].join('\n');
-}
-
 /** Immunefi's asset type for a website or app in scope. */
 export const IMMUNEFI_WEBSITE_ASSET = 'websites_and_applications';
+
+/** The scope text a program's addresses are read from: each contract asset's URL, then the program's text on its assets. */
+function scopeText(program: Record<string, unknown>): string {
+  const assets = Array.isArray(program.assets) ? program.assets.filter(isRecord).filter((asset) => asset.type !== IMMUNEFI_WEBSITE_ASSET).map((asset) => String(asset.url ?? '')) : [];
+  return [...assets, typeof program.assetsBodyV2 === 'string' ? program.assetsBodyV2 : ''].join('\n');
+}
 
 const scopeSites = (program: Record<string, unknown>): URL[] =>
   Array.isArray(program.assets) ? program.assets.filter((asset) => isRecord(asset) && asset.type === IMMUNEFI_WEBSITE_ASSET).map((asset) => httpsUrl(asset.url)).filter((url) => url !== undefined) : [];

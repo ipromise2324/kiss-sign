@@ -191,7 +191,7 @@ function protocolSites(entry: SiteOwner, protocol: DefiLlamaProtocol, listings: 
   }
   const program = entry.immunefi === undefined ? undefined : programTie(entry.immunefi, listings.sites.programs, domains.map, orgs.map, domainOf);
   if (program?.kind === 'unread') unread.push(`Immunefi's program list (${program.why})`);
-  if (program?.kind === 'tied') {
+  if (program?.kind === 'tied' && program.by === 'site') {
     const place: SitePlace = { kind: 'immunefi', id: program.program.slug };
     domains.add(domainOf(program.program.website), place);
     if (program.program.github !== undefined) orgs.add(githubOrg(program.program.github), place);
@@ -199,12 +199,17 @@ function protocolSites(entry: SiteOwner, protocol: DefiLlamaProtocol, listings: 
   return { domains: domains.map, orgs: orgs.map, unread };
 }
 
-type ProgramTie = { readonly kind: 'tied' | 'untied'; readonly program: ImmunefiProgram } | { readonly kind: 'unlisted' } | SiteUnread;
+type ProgramTie =
+  | { readonly kind: 'tied'; readonly by: 'site' | 'scope'; readonly program: ImmunefiProgram }
+  | { readonly kind: 'untied'; readonly program: ImmunefiProgram }
+  | { readonly kind: 'unlisted' }
+  | SiteUnread;
 
 /**
  * The entry names its Immunefi program, so the program is the protocol's only when its website, its GitHub organization
  * or a website its scope lists is already a site DefiLlama or the protocol coin lists; otherwise an entry could name
- * another protocol's program.
+ * another protocol's program. A scope lists sites the program pays to have attacked, not sites it owns, so a program
+ * tied only by its scope lends the protocol none of its own sites.
  */
 function programTie(
   slug: string,
@@ -216,9 +221,10 @@ function programTie(
   if ('kind' in programs) return programs;
   const program = programs.get(slug);
   if (program === undefined) return { kind: 'unlisted' };
-  const websites = [program.website, ...program.scopeSites].map(domainOf);
+  const listed = (url: URL | undefined) => domains.has(domainOf(url) ?? '');
   const org = program.github === undefined ? undefined : githubOrg(program.github);
-  return { kind: websites.some((site) => site !== undefined && domains.has(site)) || (org !== undefined && orgs.has(org)) ? 'tied' : 'untied', program };
+  if (listed(program.website) || (org !== undefined && orgs.has(org))) return { kind: 'tied', by: 'site', program };
+  return program.scopeSites.some(listed) ? { kind: 'tied', by: 'scope', program } : { kind: 'untied', program };
 }
 
 const PLACE_WORDS: Readonly<Record<SitePlace['kind'], string>> = { defillama: 'DefiLlama', coingecko: 'CoinGecko coin', immunefi: 'Immunefi program', github: 'GitHub verified domain of' };
@@ -263,7 +269,7 @@ export function sourceSiteLine(source: string, owner: SiteOwner, listings: Listi
     places = [...(sites.orgs.get(ours) ?? []), ...(tied ? [{ kind: 'github', id: ours } as const] : [])];
   } else {
     ours = registrableDomain(host, suffixes);
-    if (ours === undefined) return finding(`${what} host ${host} has no registrable domain under the Public Suffix List; not compared`);
+    if (ours === undefined) return finding(`${what} host ${host} has no registrable domain under the Public Suffix List, or is a shared host; not compared`);
     compared = sites.domains;
     places = sites.domains.get(ours) ?? [];
   }

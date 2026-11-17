@@ -13,33 +13,21 @@ export const PUBLIC_SUFFIX_PIN = {
 
 export const PUBLIC_SUFFIX_DIR = join(import.meta.dirname, '..', '..', 'vendor', 'publicsuffix');
 
-/** Hosts on which unrelated owners each hold a page, by subdomain or by path, that the list leaves out: it names only hosts whose subdomains are separate sites. */
-const UNLISTED_SHARED = [
-  'medium.com',
-  'mirror.xyz',
-  'substack.com',
-  'github.com',
-  'gitlab.com',
-  'linktr.ee',
-  'x.com',
-  'twitter.com',
-  't.me',
-  'discord.gg',
-  'discord.com',
-  'youtube.com',
-  'notion.so',
-  'docs.google.com',
-  'sites.google.com',
-  'play.google.com',
-  'apps.apple.com',
-  'immunefi.com',
-];
+/** Hosts that give each owner a subdomain, as the list's private section does, that the list leaves out. */
+const UNLISTED_SHARED = ['medium.com', 'mirror.xyz', 'substack.com'];
+
+/**
+ * Platforms that give each owner a path, such as `github.com/<org>` or `linktr.ee/<name>`, which the list cannot name:
+ * the platform and every subdomain of it, such as `www.youtube.com` or `apps.apple.com`, are the platform's host, never
+ * an owner's site.
+ */
+const PATH_SHARED = ['github.com', 'gitlab.com', 'linktr.ee', 'x.com', 'twitter.com', 't.me', 'discord.gg', 'discord.com', 'youtube.com', 'notion.so', 'google.com', 'apple.com', 'snapshot.org', 'immunefi.com'];
 
 export type PublicSuffixList = { readonly rules: ReadonlySet<string> };
 export type SuffixListUnavailable = { readonly unavailable: string };
 
 export function parsePublicSuffixList(text: string): PublicSuffixList {
-  const rules = new Set<string>(UNLISTED_SHARED);
+  const rules = new Set<string>([...UNLISTED_SHARED, ...PATH_SHARED, ...PATH_SHARED.map((host) => `*.${host}`)]);
   for (const line of text.split('\n')) {
     const rule = line.trim().split(/\s/)[0];
     if (rule === undefined || rule === '' || rule.startsWith('//')) continue;
