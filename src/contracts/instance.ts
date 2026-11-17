@@ -23,7 +23,25 @@ export type InstanceProof = {
   readonly providers: readonly [ProviderName, ProviderName];
 };
 
-export type InstanceRefusal = { readonly kind: 'refused'; readonly why: string };
+/**
+ * Why the factory vouched for nothing: it answered false or another contract (`not-created`), answered neither true,
+ * false nor an address (`other-answer`), the providers gave no agreed answer (`no-answer`), or the registry gives
+ * nothing to ask (`unaskable`).
+ */
+export type RefusalCause = 'not-created' | 'other-answer' | 'no-answer' | 'unaskable';
+export type InstanceRefusal = { readonly kind: 'refused'; readonly cause: RefusalCause; readonly why: string };
+
+/** Why a vault vouched for nothing: as `RefusalCause`, but `not-used` when it answered false. */
+export type AdapterCause = Exclude<RefusalCause, 'not-created'> | 'not-used';
+
+/**
+ * What a registry vault whose `adapter` attribute names an adapter answered, through both providers, to its factory's
+ * `adapterCheck` for that adapter.
+ */
+export type AdapterAnswer = { readonly vault: RegistryEntry; readonly asked: string; readonly block: BlockRef } & (
+  | { readonly kind: 'uses'; readonly providers: readonly [ProviderName, ProviderName] }
+  | { readonly kind: 'refused'; readonly cause: AdapterCause; readonly why: string }
+);
 
 const TRUE = `0x${'00'.repeat(31)}01`;
 const FALSE = `0x${'00'.repeat(32)}`;
@@ -48,28 +66,55 @@ function question(check: InstanceCheck, entry: RegistryEntry, registry: Registry
 }
 
 export async function proveInstance(reader: Reader, registry: Registry, name: string, block: BlockRef): Promise<InstanceProof | InstanceRefusal> {
-  const refuse = (why: string): InstanceRefusal => ({ kind: 'refused', why });
+  const refuse = (cause: RefusalCause, why: string): InstanceRefusal => ({ kind: 'refused', cause, why });
   const entry = registry.entries.get(name);
-  if (entry === undefined) return refuse(`${name} is not in the registry`);
+  if (entry === undefined) return refuse('unaskable', `${name} is not in the registry`);
   const factoryName = entry.attributes.factory;
-  if (factoryName === undefined) return refuse(`${name} names no factory`);
+  if (factoryName === undefined) return refuse('unaskable', `${name} names no factory`);
   const factory = registry.entries.get(factoryName) as RegistryEntry;
   const check = factory.instanceCheck;
-  if (check === undefined) return refuse(`${factoryName} has no instanceCheck`);
+  if (check === undefined) return refuse('unaskable', `${factoryName} has no instanceCheck`);
   const asking = question(check, entry, registry);
-  if ('missing' in asking) return refuse(`${name} has no ${asking.missing} attribute, which ${factoryName}'s instanceCheck ${check.fn.signature} binds`);
+  if ('missing' in asking) return refuse('unaskable', `${name} has no ${asking.missing} attribute, which ${factoryName}'s instanceCheck ${check.fn.signature} binds`);
   const { asked, data } = asking;
   const read = await reader.call({ to: factory.address, data }, block);
-  if (read.kind === 'unverifiable') return refuse(read.reason);
+  if (read.kind === 'unverifiable') return refuse('no-answer', read.reason);
   const answer = read.value.kind === 'returned' ? read.value.data.toLowerCase() : 'a revert';
   const created = (answered: string): InstanceProof => ({ kind: 'created', entry, factory, asked, answered, block, providers: read.providers });
   if (check.kind === 'answers-true') {
-    if (answer === FALSE) return refuse(`${factoryName} answered ${asked} false for ${name}: it did not create it`);
-    if (answer !== TRUE) return refuse(`${factoryName} answered ${asked} with ${answer}, not true or false`);
+    if (answer === FALSE) return refuse('not-created', `${factoryName} answered ${asked} false for ${name}: it did not create it`);
+    if (answer !== TRUE) return refuse('other-answer', `${factoryName} answered ${asked} with ${answer}, not true or false`);
     return created('true');
   }
   const address = ADDRESS_WORD.exec(answer)?.[1];
-  if (address === undefined) return refuse(`${factoryName} answered ${asked} with ${answer}, not an address`);
-  if (`0x${address}` !== entry.address) return refuse(`${factoryName} answered ${asked} = ${checksumAddress(`0x${address}` as Address)}, not ${name}: its official contract is another`);
+  if (address === undefined) return refuse('other-answer', `${factoryName} answered ${asked} with ${answer}, not an address`);
+  if (`0x${address}` !== entry.address) return refuse('not-created', `${factoryName} answered ${asked} = ${checksumAddress(`0x${address}` as Address)}, not ${name}: its official contract is another`);
   return created(checksumAddress(entry.address));
+}
+
+export const vaultsNaming = (registry: Registry, adapter: string): RegistryEntry[] => [...registry.entries.values()].filter((entry) => entry.kind === 'vault' && entry.attributes.adapter === adapter);
+
+/** Asks each registry vault whose `adapter` attribute names the adapter, through its factory's `adapterCheck`, whether it allocates through it. */
+export async function proveAdapterOf(reader: Reader, registry: Registry, adapter: RegistryEntry, block: BlockRef): Promise<AdapterAnswer[]> {
+  const answers: AdapterAnswer[] = [];
+  for (const vault of vaultsNaming(registry, adapter.name)) {
+    const factoryName = vault.attributes.factory;
+    const check = factoryName === undefined ? undefined : registry.entries.get(factoryName)?.adapterCheck;
+    const asked = check === undefined ? 'adapterCheck' : check.signature;
+    const refuse = (cause: AdapterCause, why: string): AdapterAnswer => ({ vault, asked, block, kind: 'refused', cause, why });
+    if (check === undefined) {
+      answers.push(refuse('unaskable', factoryName === undefined ? `${vault.name} names no factory` : `${factoryName} has no adapterCheck`));
+      continue;
+    }
+    const read = await reader.call({ to: vault.address, data: `${check.selector}${adapter.address.slice(2).padStart(64, '0')}` as Hex }, block);
+    if (read.kind === 'unverifiable') {
+      answers.push(refuse('no-answer', read.reason));
+      continue;
+    }
+    const answer = read.value.kind === 'returned' ? read.value.data.toLowerCase() : 'a revert';
+    if (answer === TRUE) answers.push({ vault, asked, block, kind: 'uses', providers: read.providers });
+    else if (answer === FALSE) answers.push(refuse('not-used', `${vault.name} answered ${asked} false for ${adapter.name}: it does not allocate through it`));
+    else answers.push(refuse('other-answer', `${vault.name} answered ${asked} with ${answer}, not true or false`));
+  }
+  return answers;
 }

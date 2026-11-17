@@ -2,8 +2,8 @@
   "verdict": {
     "status": "safe",
     "text": {
-      "en": "OK to use. CoinGecko and the factory both confirm this vault. To review holds the adapter and oracles that only the Morpho API lists, which AI checked on chain.",
-      "zh-TW": "可以用。CoinGecko 和工廠都確認這個 vault；待確認是只有 Morpho API 列出的轉接合約和 oracle，AI 在鏈上查過。"
+      "en": "OK to use. CoinGecko and the factory both confirm this vault. To review holds the oracles that only the Morpho API lists, which AI checked on chain.",
+      "zh-TW": "可以用。CoinGecko 和工廠都確認這個 vault；待確認是只有 Morpho API 列出的 oracle，AI 在鏈上查過。"
     }
   },
   "judgments": [
@@ -28,19 +28,7 @@
       }
     }
   ],
-  "reviews": {
-    "gauntlet-usdc-prime-v2-a3d0-market-adapter/address": {
-      "status": "confirmed",
-      "text": {
-        "en": "The program's only check is the Morpho API: asked for this vault's adapters, it answers 0xDF62f57Ea333a842Db200d4892c90F98204fa22F, and only this one. AI also checked two things on chain: the vault's `isAdapter` answers true for this address and `adaptersLength` is 1; and running pnpm prove-instance, MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 answers `isMorphoMarketV1AdapterV2` = true, and both providers agree.",
-        "zh-TW": "程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0xDF62f57Ea333a842Db200d4892c90F98204fa22F，也只有這一個。AI 另外在鏈上確認兩件事：vault 的 `isAdapter` 對這個地址回答 true，`adaptersLength` 是 1；跑 pnpm prove-instance，MorphoMarketV1AdapterV2Factory 0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1 回答 `isMorphoMarketV1AdapterV2` = true，兩個節點一致。"
-      },
-      "recommendation": {
-        "en": "Acceptable. The cap id uses this very address; a wrong one would only set a cap on an id the vault does not use.",
-        "zh-TW": "可以接受；上限的 id 用的就是這個地址，填錯只會設到一個 vault 不用的 id。"
-      }
-    }
-  },
+  "reviews": {},
   "entries": {
     "gauntlet-usdc-prime-v2-a3d0": {
       "role": {
