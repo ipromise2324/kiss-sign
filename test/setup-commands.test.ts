@@ -308,6 +308,7 @@ test('card seal refuses a name in neither the registry nor the address book', as
 
 const STEAKHOUSE = '0xbeef088055857739C12CD3765F20b7679Def0f51';
 const USDC = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+const USDT = '0xdAC17F958D2ee523a2206206994597C13D831ec7';
 const VAULT_V2_FACTORY = '0xA1D94F746dEfa1928926b84fB2596c06926C0405';
 const HEAD = 21_000_000;
 const HEAD_HASH = `0x${'ab'.repeat(32)}`;
@@ -622,6 +623,24 @@ test('--language=zh-TW sets the language of a first init, and a config that cann
   const broken = freshHome();
   writeFileSync(join(broken, 'config.json'), '{"chainId": 1, "language": "zh-TW"}');
   assert.equal((await run(['book', 'list', 'extra'], broken)).stderr, 'kiss-sign: book list takes nothing more.\n');
+});
+
+test('card new refuses a typed 0 where card seal would, says why in the signer\'s language, and asks again', async () => {
+  const swapping = async (language: string) => {
+    const home = freshHome();
+    configure(home, language);
+    const made = await run(['card', 'new', 'cow/swap'], home, [numberOf('usdc'), numberOf('usdt'), '1', '0', '0.5', 'y'], decimalsChain({ [USDC]: 6, [USDT]: 6 }));
+    assert.equal(made.code, 0, made.stderr);
+    assert.equal(made.asked[3], made.asked[4]);
+    assert.match(made.stdout, /│   min-buy +0\.5 usdt\n│ +500000 /);
+    return made;
+  };
+  const english = await swapping('en');
+  assert.equal(english.asked[3], 'min-buy (whole usdt, 6 decimals): ');
+  assert.ok(english.stdout.replace(/\s+/g, ' ').includes(' min-buy cannot be 0: a share price bound or atLeast compares the transaction with it, and 0 there bounds nothing or nothing can meet it, so card seal would refuse the card. Type an amount above 0. '), english.stdout);
+  const chinese = await swapping('zh-TW');
+  assert.equal(chinese.asked[3], 'min-buy (整顆 usdt 的數量，6 位小數): ');
+  assert.ok(chinese.stdout.replace(/\s+/g, '').includes('min-buy不能是0：份額價格界線或atLeast拿它來比較交易，0在這裡不是什麼都不限，就是沒有交易能滿足，所以cardseal會拒絕這張卡片。請輸入大於0的數量。'), chinese.stdout);
 });
 
 test('card new offers a transfer recipient only from the address book or the Safe', async () => {
