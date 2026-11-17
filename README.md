@@ -88,7 +88,7 @@ The report shows what the transaction will do and where every fact came from. Te
 
 ![An address the report confirmed in three places: the official page, whose site DefiLlama lists for the protocol, CoinGecko, and the factory](docs/readme/report-address.png)
 
-Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under 待確認 (to confirm), with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
+Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under To review (待確認 in the Traditional Chinese report), with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
 
 ![An address confirmed in only one place, flagged with low confidence](docs/readme/report-address-flagged.png)
 
@@ -105,7 +105,7 @@ Approval records the template's hash, so a new vault for an approved template ne
 
 In your own terminal, pick the vault from a list with full addresses and type the amount. Values the protocol's app fills in by itself, such as the minimum shares, are computed from an on-chain read, the app's default slippage and a small margin the template states (0.10% in all for a Morpho deposit). The card is sealed under its hash before you see any transaction.
 
-![pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by name, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
+![pnpm kiss-sign card new morpho/vault-deposit: the vault is picked by number from a list with full addresses, the amount typed in whole tokens, the minimum shares computed from previewDeposit at a block where Alchemy and drpc agree, and the card sealed](docs/readme/card-new.png)
 
 ### 4. Verify on your computer, and check on a second one
 
@@ -115,7 +115,7 @@ Propose the transaction in the Safe web app as usual. Then, on your computer:
 pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>
 ```
 
-On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` and `jq`, nothing else. On `MATCH`, both pages show the same comparison list. Compare them row by row: every row must be equal, except the name column, where each side names addresses from its own list. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. Some bytes inside a call are not a call themselves, such as a Uniswap swap's inputs, a CoW order's UID or the market data in a Morpho Vault V2 cap's id. `check.sh` shows each raw with one warning and the rows still match; what those bytes say, such as a swap's recipient and minimum out, rests on `verify` alone.
+On the second computer, `check.sh <nonce>` fetches the same transaction, computes its hashes and decodes it with Foundry's `cast` and `jq`, nothing else. On `MATCH`, both pages show the same comparison list, headed Checklist on `verify`'s English page and 比對清單 on `check.sh`'s. Compare them row by row: every row must be equal, except the last column, where each side writes its own names and notes. If any other row differs, stop. `check.sh` only decodes: it does not compare the transaction with your card, and a call nested in bytes it has no signature for stays undecoded, so read its calls against what you meant to do. Some bytes inside a call are not a call themselves, such as a Uniswap swap's inputs, a CoW order's UID or the market data in a Morpho Vault V2 cap's id. `check.sh` shows each raw with one warning and the rows still match; what those bytes say, such as a swap's recipient and minimum out, rests on `verify` alone.
 
 ![The verify page (MATCH, every check passed) and the check.sh page side by side, with the same hashes and the same calls row by row](docs/readme/side-by-side.png)
 
