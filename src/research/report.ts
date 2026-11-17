@@ -20,7 +20,7 @@ import type { CodePin, HttpsUrl, Registry, RegistryEntry, Route, SelectorRouting
 import { wholeTokens } from '../chain/decimals.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
+import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
@@ -177,6 +177,7 @@ export function parseDocs(raw: unknown, template: Template, registry: Registry):
     const standard = typeof value.standard === 'string' ? STANDARDS.get(value.standard) : undefined;
     if (keys === 'contract,standard') {
       if (standard === undefined) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.standard is not one of ${[...STANDARDS.keys()].join(', ')}`);
+      if (standard.only !== undefined && contract.address !== standard.only) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract ${contract.name} is not ${standard.name}, which is the one contract at ${standard.only}`);
       if (!standard.kinds.includes(contract.kind)) throw new ReportError(`${DOCS_FILE}: ${fn.signature}.contract ${contract.name} is a ${contract.kind}; ${standard.name} applies to ${standard.kinds.join(' and ')} entries`);
       if (!standard.declarations.has(fn.signature)) throw new ReportError(`${DOCS_FILE}: ${standard.name} does not define ${fn.signature}`);
     }
@@ -287,6 +288,15 @@ function namedInRules(template: Template): Set<string> {
   return names;
 }
 
+/** The registry contracts a computed field's reads call or pass, which `card new` reads and only the report checks. */
+function namedInReads(template: Template): string[] {
+  const read = ({ to, args }: ComputedRead): string[] => [
+    ...(to.kind === 'contract' ? [to.name] : []),
+    ...args.flatMap((arg) => (arg.kind === 'read' ? read(arg.read) : ruleLeaves(arg.rule).flatMap((rule) => (rule.kind === 'contract' ? [rule.name] : [])))),
+  ];
+  return [...template.card.values()].flatMap((field) => (field.kind === 'amount' && field.computed !== undefined ? read(field.computed.read) : []));
+}
+
 export const hasMarket = (template: Template): boolean => [...template.card.values()].some((field) => field.kind === 'market');
 
 /** Every registry entry a card field can name: a contract of the field's kind, or a part of any market. */
@@ -302,7 +312,7 @@ export const vaultsOf = (subject: Subject, registry: Registry): RegistryEntry[] 
 
 function directlyTouched(subject: Subject, registry: Registry): Set<string> {
   const names = new Set<string>();
-  const roots = subject.kind === 'vault' ? [subject.vault] : [...[...namedInRules(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
+  const roots = subject.kind === 'vault' ? [subject.vault] : [...[...namedInRules(subject.template), ...namedInReads(subject.template)].map((n) => registry.entries.get(n) as RegistryEntry), ...cardCandidates(subject.template, registry)];
   const named = (entry: RegistryEntry): void => {
     if (names.has(entry.name)) return;
     names.add(entry.name);
@@ -365,7 +375,7 @@ function abiUsed(subject: Subject, registry: Registry): Set<string> {
   if (callsSafeWithData(template)) for (const entry of registry.entries.values()) if (entry.kind === 'singleton') names.add(entry.name);
   for (const entry of entriesOf(subject, registry)) if (entry.kind === 'token' || entry.kind === 'vault') names.add(entry.name);
   const token = (ref: TokenRef): string[] => (ref === 'eth' ? [] : refNames(ref, template, registry));
-  const read = (r: ComputedRead): string[] => [...refNames(r.to, template, registry), ...r.args.flatMap((arg) => (arg.kind === 'read' ? read(arg.read) : []))];
+  const read = (r: ComputedRead): string[] => [...viewTargetNames(r.to, template, registry), ...r.args.flatMap((arg) => (arg.kind === 'read' ? read(arg.read) : []))];
   [
     ...callTargetEntries(template, registry).map((entry) => entry.name),
     ...template.effects.views.flatMap((view) => viewTargetNames(view.to, template, registry)),
@@ -423,7 +433,7 @@ const escaped = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\
 export const declarationOf = (standard: Standard, fn: AbiFunction): string => standard.declarations.get(fn.signature) as string;
 
 export function functionOnPage(doc: DocLink): RegExp {
-  if (doc.standard !== undefined) return new RegExp(escaped(declarationOf(doc.standard, doc.fn)));
+  if (doc.standard !== undefined) return new RegExp(`${escaped(declarationOf(doc.standard, doc.fn))}(?![A-Za-z0-9_])`);
   const name = escaped(doc.fn.name);
   const called = `(?<![A-Za-z0-9_$])${name}\\(`;
   const inBackticks = `\`${name}\``;
@@ -562,14 +572,16 @@ function deployerCell(line: Line | undefined, result: Result | undefined): strin
   return shared === undefined ? word : `${word} ${code(checksumAddress(shared.deployer))}${shared.siblings.length === 0 ? '' : `, also ${shared.siblings.map(code).join(', ')}`}`;
 }
 
-function readText(read: ComputedRead): string {
-  const args = read.args.map((arg) => (arg.kind === 'safe' ? 'the Safe' : arg.kind === 'card' ? refText(arg.ref) : readText(arg.read)));
-  return `${code(read.fn.signature)} on ${refText(read.to)}${args.length === 0 ? '' : ` of ${args.join(', ')}`}`;
+function readText(read: ComputedRead, template: Template, registry: Registry): string {
+  const args = read.args.map((arg, i) => (arg.kind === 'read' ? readText(arg.read, template, registry) : argumentText(arg.rule, read.fn.params[i] as AbiParam, template, registry)));
+  const to = read.to.kind === 'contract' ? `registry ${full(registry.entries.get(read.to.name) as RegistryEntry)}` : refText(read.to.ref);
+  const output = read.returns.length === 1 && read.output.length === 1 ? '' : `, its ${code(computedOutput(read).name)}`;
+  return `${code(read.fn.signature)} on ${to}${args.length === 0 ? '' : ` of ${args.join(', ')}`}${output}`;
 }
 
-function computedText(computed: Computed): string {
+function computedText(computed: Computed, template: Template, registry: Registry): string {
   const margin = computed.margin === undefined ? '' : `, plus a margin of ${computed.margin.bps} bps, ${byAi(computed.margin.why)}`;
-  return `${readText(computed.read)}, ${computed.bound === 'floor' ? 'less' : 'plus'} ${slippageBps(computed)} bps and rounded ${computed.bound === 'floor' ? 'down' : 'up'}: the protocol's default of ${computed.default.bps} bps, from ${computed.default.source}${margin}`;
+  return `${readText(computed.read, template, registry)}, ${computed.bound === 'floor' ? 'less' : 'plus'} ${slippageBps(computed)} bps and rounded ${computed.bound === 'floor' ? 'down' : 'up'}: the protocol's default of ${computed.default.bps} bps, from ${computed.default.source}${margin}`;
 }
 
 function refText(ref: CardRef): string {
@@ -611,7 +623,7 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'owner-before':
       return `the owner listed just before ${refText(rule.ref)} in the Safe's ${code('getOwners()')}, read on chain, or the sentinel ${code('0x0000000000000000000000000000000000000001')} when it is first`;
     case 'share-price':
-      return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e27 / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
+      return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e${rule.scale} / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
     case 'at-least':
     case 'at-most':
       return `at ${rule.kind === 'at-least' ? 'least' : 'most'} the card's ${code(rule.field)}`;
@@ -732,7 +744,7 @@ function templateSections(template: Template, docs: readonly DocLink[], inputs: 
         : field.kind === 'amount'
           ? field.computed === undefined
             ? `an integer in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}${field.max === undefined ? '' : `, or ${code('max')}, ${field.max.value}: ${byAi(field.max.why)}`}`
-            : `nothing: computed by ${code('card new')} in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}, ${computedText(field.computed)}`
+            : `nothing: computed by ${code('card new')} in base units of ${field.of === 'eth' ? 'ETH' : refText(field.of)}, ${computedText(field.computed, template, registry)}`
           : field.kind === 'percent'
             ? `a percent, at most 100, held in WAD base units (100% is ${WAD})`
           : field.kind === 'nonce'

@@ -9,6 +9,8 @@ const P = `0x${'d'.repeat(64)}`;
 
 const CASES: readonly (readonly [string, string])[] = [
   ['multiSend[0].approve value: expected 1000611448606, got 1000611448607', 'multiSend[0].approve value：應為 1000611448606，實際 1000611448607'],
+  ['multiSend[1].erc4626Deposit maxSharePriceE27: expected at most 7: 7 assets for 1 shares, scaled by 1e27, got 8', 'multiSend[1].erc4626Deposit maxSharePriceE27：應為 最多 7：7 資產換 1 份額，乘上 1e27，實際 8'],
+  ['call.deposit minSharePrice: expected at least 2: 2 assets for 1 shares, scaled by 1e18, got 1', 'call.deposit minSharePrice：應為 至少 2：2 資產換 1 份額，乘上 1e18，實際 1'],
   ['call.execute amountOutMinimum: expected at least 5, got 4', 'call.execute amountOutMinimum：應為 至少 5，實際 4'],
   [`multiSend[0].removeOwner prevOwner: expected the owner before alice ${A}, who is not an owner of the Safe, got ${B}`, `multiSend[0].removeOwner prevOwner：應為 alice ${A} 的前一位 owner，但 alice ${A} 不是這個 Safe 的 owner，實際 ${B}`],
   ['multiSend[1] call: expected approve(address,uint256), got missing', 'multiSend[1] call：應為 approve(address,uint256)，實際 缺少'],

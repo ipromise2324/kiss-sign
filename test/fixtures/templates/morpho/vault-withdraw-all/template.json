@@ -10,14 +10,22 @@
       "of": "vault.asset",
       "computed": {
         "read": {
-          "to": "card.vault",
+          "to": {
+            "card": "vault"
+          },
           "function": "previewRedeem(uint256 shares) returns (uint256 assets)",
           "args": {
             "shares": {
-              "to": "card.vault",
-              "function": "balanceOf(address account) returns (uint256 shares)",
-              "args": {
-                "account": "safe"
+              "read": {
+                "to": {
+                  "card": "vault"
+                },
+                "function": "balanceOf(address account) returns (uint256 shares)",
+                "args": {
+                  "account": {
+                    "safe": true
+                  }
+                }
               }
             }
           }
