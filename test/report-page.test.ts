@@ -364,7 +364,7 @@ test('the vault its factory alone confirms is the one 待確認; every address r
   assert.deepEqual(vault.aiSources.map((s) => [s.text.tag, s.result]), [['ai', 'attention']]);
 });
 
-test("a Vault V2's market adapter is confirmed by the protocol API and, as one place, by its factory with the vault that names it", { timeout: 600_000 }, async () => {
+test("a Vault V2's market adapter is confirmed by the protocol API and, as one place, by its factory, the vault that names it and its own answer", { timeout: 600_000 }, async () => {
   const revoke = { template: 'morpho/vault-v2-revoke', cardVault: 'acuto-usdc-v2-4a57' };
   const replayed = await replayInputs(ROOT, registry, revoke, await warmCompilers(reportCases(ROOT, registry, [revoke])), loadPublicSuffixList());
   const revokeTemplate = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
@@ -373,9 +373,9 @@ test("a Vault V2's market adapter is confirmed by the protocol API and, as one p
   assert.ok(!body(page, 'review').rows.some((r) => r.id.startsWith('acuto-usdc-v2-4a57-market-adapter/')), 'the adapter is not for the signer');
   const { open, folded } = body(page, 'addresses');
   const adapter = [...open, ...folded].find((r) => r.name === 'acuto-usdc-v2-4a57-market-adapter') ?? assert.fail('the adapter row');
-  assert.equal(adapter.confirmed, '在 2 個地方確認：協議 API、工廠與用它的金庫');
+  assert.equal(adapter.confirmed, '在 2 個地方確認：協議 API、工廠、它的金庫和它自己的回答');
   assert.deepEqual(
-    adapter.sources.filter((s) => s.label === '工廠與用它的金庫').map((s) => s.state),
+    adapter.sources.filter((s) => s.label === '工廠、它的金庫和它自己的回答').map((s) => s.state),
     ['ok'],
   );
 });

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { Read, Reader } from '../src/chain/reader.ts';
 import type { BlockRef, CallResult } from '../src/chain/types.ts';
-import { proveAdapterOf, proveInstance } from '../src/contracts/instance.ts';
+import { proveAdapterOf, proveInstance, proveParentOf } from '../src/contracts/instance.ts';
 import { RegistryError, parseRegistry } from '../src/registry.ts';
 import type { Hex } from '../src/safe/types.ts';
 
@@ -173,10 +173,16 @@ const VAULT_V2 = '0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57';
 const ADAPTER = '0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5';
 const IS_ADAPTER = '0x68c18beb';
 
-const vaultV2 = (adapterCheck: unknown = 'isAdapter(address)') =>
+const vaultV2 = (adapterCheck: unknown = 'isAdapter(address)', parentCheck: unknown = 'parentVault()') =>
   parseRegistry({
     'vault-v2-factory': { address: VAULT_FACTORY, kind: 'factory', source: 'https://example.org/vault-factory', instanceCheck: 'isVaultV2(address)', ...(adapterCheck === null ? {} : { adapterCheck }) },
-    'adapter-factory': { address: FACTORY, kind: 'factory', source: 'https://example.org/adapter-factory', instanceCheck: 'isMorphoMarketV1AdapterV2(address)' },
+    'adapter-factory': {
+      address: FACTORY,
+      kind: 'factory',
+      source: 'https://example.org/adapter-factory',
+      instanceCheck: 'isMorphoMarketV1AdapterV2(address)',
+      ...(parentCheck === null ? {} : { parentCheck }),
+    },
     'market-adapter': { address: ADAPTER, kind: 'adapter', source: 'https://example.org/adapter', attributes: { factory: 'adapter-factory' } },
     vault: { address: VAULT_V2, kind: 'vault', source: 'https://example.org/vault', attributes: { factory: 'vault-v2-factory', adapter: 'market-adapter' } },
   });
@@ -224,4 +230,51 @@ test('only a factory may declare an adapterCheck, which takes one address', () =
     /usdc.adapterCheck: a token has no adapterCheck/,
   );
   assert.equal(vaultV2().entries.get('vault-v2-factory')?.adapterCheck?.signature, 'isAdapter(address)');
+});
+
+const PARENT_VAULT = '0x0fe36536';
+
+/** Answers only `parentVault()` on the adapter, with `word`. */
+function adapterAnswering(word: Read<CallResult>): Reader {
+  return {
+    call: async (request, at) => {
+      assert.equal(at, AT);
+      assert.equal(request.to, ADAPTER.toLowerCase());
+      assert.equal(request.data, PARENT_VAULT);
+      return word;
+    },
+  } as Partial<Reader> as Reader;
+}
+
+const parentOf = (registry: ReturnType<typeof vaultV2>, reader: Reader) => proveParentOf(reader, registry, registry.entries.get('market-adapter')!, AT);
+
+test("an adapter is asked through its factory's parentCheck which vault it was made for, which must be the vault naming it", async () => {
+  const madeFor = await parentOf(vaultV2(), adapterAnswering(agreed(addressWord(VAULT_V2))));
+  assert.deepEqual(
+    madeFor.map((a) => [a.vault.name, a.asked, a.kind]),
+    [['vault', 'parentVault()', 'made-for']],
+  );
+  const refusals = async (word: Read<CallResult>) => (await parentOf(vaultV2(), adapterAnswering(word))).map((a) => (a.kind === 'refused' ? [a.cause, a.why] : a.kind));
+  assert.deepEqual(await refusals(agreed(addressWord(VAULT_FACTORY))), [['other-parent', `market-adapter answered parentVault() = ${VAULT_FACTORY}, not vault: it was made for another vault`]]);
+  assert.deepEqual(await refusals({ kind: 'agreed', value: { kind: 'reverted' }, providers: ['alchemy', 'drpc'] }), [['other-answer', 'market-adapter answered parentVault() with a revert, not an address']]);
+  assert.deepEqual(
+    await refusals({ kind: 'unverifiable', reason: 'eth_call: alchemy and drpc disagree', answers: [{ provider: 'alchemy', kind: 'malformed' }, { provider: 'drpc', kind: 'malformed' }] }),
+    [['no-answer', 'eth_call: alchemy and drpc disagree']],
+  );
+});
+
+test("an adapter whose factory declares no parentCheck is not asked, and one no vault names gets no answer", async () => {
+  const unasked = await parentOf(vaultV2(undefined, null), {} as Reader);
+  assert.deepEqual(unasked.map((a) => (a.kind === 'refused' ? [a.cause, a.why] : a.kind)), [['unaskable', 'adapter-factory has no parentCheck']]);
+  const registry = vaultV2();
+  assert.deepEqual(await proveParentOf({} as Reader, registry, registry.entries.get('adapter-factory')!, AT), []);
+});
+
+test('only a factory may declare a parentCheck, which takes no parameters', () => {
+  assert.throws(() => vaultV2(undefined, 'parentVault(address)'), (e: unknown) => e instanceof RegistryError && /adapter-factory\.parentCheck: must take no parameters/.test(e.message));
+  assert.throws(
+    () => parseRegistry({ usdc: { address: FACTORY, kind: 'token', source: 'https://example.org/usdc', parentCheck: 'parentVault()' } }),
+    /usdc.parentCheck: a token has no parentCheck/,
+  );
+  assert.equal(vaultV2().entries.get('adapter-factory')?.parentCheck?.signature, 'parentVault()');
 });

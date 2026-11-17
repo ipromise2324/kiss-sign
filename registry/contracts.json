@@ -1218,6 +1218,7 @@
     ],
     "defillama": "morpho-blue",
     "instanceCheck": "isMorphoMarketV1AdapterV2(address)",
+    "parentCheck": "parentVault()",
     "code": {
       "hash": "0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4",
       "from": 23981459
