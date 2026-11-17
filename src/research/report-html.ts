@@ -7,7 +7,7 @@ import { firstRecordedTx, judgeFixtures } from '../template/perturb.ts';
 import type { State } from './ledger.ts';
 import { NOTES_FILE, codeSpans, notesLanguages, readNotes } from './notes.ts';
 import { buildPage } from './report-page.ts';
-import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
+import type { AddressRow, AiText, ArgRow, Arrow, Body, CallBlock, Chip, DocLine, Flow, Inline, NewestResult, Page, ProtocolBlock, RailCount, Section, Sequence, SiteResult, SourceLine, VaultBlock } from './report-page.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
 import { reportDir } from './report.ts';
@@ -418,10 +418,16 @@ function siteLine(site: SiteResult, r: R): Html {
   }${open}${places}${close}</span></span>`;
 }
 
+function newestLine(newest: NewestResult, r: R): Html {
+  return h`<span class="site" data-state="${newest.state}">${icon(newest.state, r.language)}<span>${
+    newest.state === 'ok' ? r.w.newestOk(newest.where) : r.w.newestNot(newest.where, newest.phrase === undefined ? '' : r.w.phrase[newest.phrase])
+  }</span></span>`;
+}
+
 function sourceLine(line: SourceLine, r: R): Html {
   return h`<div class="src"><span data-state="${line.state}">${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}<span class="res">${icon(line.state, r.language)}${
     line.phrase === undefined ? '' : r.w.phrase[line.phrase]
-  }</span></span>${line.site === undefined ? '' : siteLine(line.site, r)}</div>`;
+  }</span></span>${line.site === undefined ? '' : siteLine(line.site, r)}${line.newest === undefined ? '' : newestLine(line.newest, r)}</div>`;
 }
 
 function addressRow(row: AddressRow, r: R): Html {

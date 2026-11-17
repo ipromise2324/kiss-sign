@@ -4,7 +4,7 @@ import { requestText, retried, transientError, transientStatus } from '../chain/
 import type { NoteUnread } from '../chain/https.ts';
 import { COINGECKO_KINDS, pageUrlsOf } from '../registry.ts';
 import type { RegistryEntry, SdkPackage, SourcePage } from '../registry.ts';
-import { packageKey } from './npm-package.ts';
+import { latestOf, packageKey } from './npm-package.ts';
 import { sharedDeployer } from './deployer.ts';
 import type { Creation, CreationVia, Creations } from './deployer.ts';
 import type { PackageRead } from './npm-package.ts';
@@ -17,7 +17,7 @@ import { SiteListingError, githubOrg, httpsUrl, parseCoinLinks, parseImmunefiPro
 import type { CoinLinks, ImmunefiProgram, OrgDomains, SiteListings, SiteUnread } from './site-listings.ts';
 import type { PublicSuffixList, SuffixListUnavailable } from './public-suffix.ts';
 import type { GithubToken } from './github-token.ts';
-import { MAX_LABEL_ADDRESS_GAP, commitKey, fetchPage, findOnPage, githubRef, httpsGet, isGitHubPage, pageUrlOf, retryingGet, sourceHoldsAddress } from './source-page.ts';
+import { MAX_LABEL_ADDRESS_GAP, commitKey, fetchPage, findOnPage, githubRef, httpsGet, isGitHubPage, labelBindings, pageUrlOf, retryingGet, sourceHoldsAddress, tipUrlOf } from './source-page.ts';
 import type { CommitCheck, HttpGet, Page, PageBlock, SourcePages } from './source-page.ts';
 
 /** A protocol DefiLlama lists, with the CoinGecko coin it names (`gecko_id`) and the parent protocol it belongs to, such as Fluid for `fluid-lending`. */
@@ -52,21 +52,27 @@ export type SitePlace = { readonly kind: 'defillama' | 'coingecko' | 'immunefi' 
  * provenance for an SDK's version.
  */
 export type FindingCause = 'differs' | 'unexplained' | 'unlisted' | 'not-served' | 'not-fetched' | 'unattested';
-/** `api` is the address the entry's `apiSource` answers; `api-site` its URL's site against the DefiLlama protocol, as `defillama` compares the source's. */
-type CheckName = 'defillama' | 'coingecko' | 'url' | 'github' | 'page' | 'api' | 'api-site' | 'bounty' | 'sdk' | 'sdk-site' | 'deployer';
+/**
+ * `api` is the address the entry's `apiSource` answers; `api-site` its URL's site against the DefiLlama protocol, as
+ * `defillama` compares the source's. `tip` and `sdk-latest` are the addresses the newest version of a pinned GitHub page
+ * or SDK binds to the same label.
+ */
+type CheckName = 'defillama' | 'coingecko' | 'url' | 'github' | 'tip' | 'page' | 'api' | 'api-site' | 'bounty' | 'sdk' | 'sdk-site' | 'sdk-latest' | 'deployer';
 
 /** Who deployed an entry, and the other entries of its protocol the run checks that the same sender deployed. */
 export type DeployerShare = { readonly deployer: Address; readonly siblings: readonly string[] };
 /**
  * What `check-sources` saw for one entry. A `finding` is for the signer to judge; `agrees` is evidence for the report;
- * `unverifiable` means a read got no answer, which is no disagreement and is read again. `more` numbers, from 1, the
+ * `unverifiable` means a read got no answer, which is no disagreement and is read again; `absent` that a place the
+ * program reads does not list the address, which is neither evidence nor a disagreement. `more` numbers, from 1, the
  * entry's `moreSources` page a `page`, `defillama` or `github` line is about; absent, the line is about `source`.
  */
 export type Line = (
   | { readonly kind: 'agrees'; readonly check: CheckName; readonly text: string }
   | { readonly kind: 'unverifiable'; readonly check: CheckName; readonly text: string }
+  | { readonly kind: 'absent'; readonly check: CheckName; readonly text: string }
   | { readonly kind: 'finding'; readonly check: CheckName; readonly text: string; readonly cause: FindingCause }
-) & { readonly more?: number; readonly places?: readonly SitePlace[]; readonly shared?: DeployerShare };
+) & { readonly more?: number; readonly places?: readonly SitePlace[]; readonly shared?: DeployerShare; readonly program?: string };
 /** `sites` holds the site of each page that lists the address, the `source` first. */
 export type EntryResult = { readonly entry: RegistryEntry; readonly sites: readonly string[]; readonly lines: readonly Line[] };
 
@@ -338,23 +344,89 @@ function apiLine(entry: RegistryEntry, api: NonNullable<RegistryEntry['apiSource
   }
 }
 
-/** The Immunefi program the entry names must hold its address in scope. */
-function bountyLine(entry: RegistryEntry, program: string, listings: Listings): Line {
+/** The entry's protocol on DefiLlama with its sites, or why they are not known. */
+function protocolOf(entry: RegistryEntry, listings: Listings): { readonly protocol: DefiLlamaProtocol; readonly suffixes: PublicSuffixList } | undefined {
   const listed = (entry.defillama === undefined ? undefined : listings.protocols.get(entry.defillama)) ?? [];
   const [protocol] = listed;
   const { suffixes } = listings;
-  if (protocol === undefined || listed.length > 1 || 'unavailable' in suffixes) return { kind: 'finding', check: 'bounty', text: `the protocol's sites are not known, so Immunefi program ${program} is not tied to it`, cause: 'unexplained' };
+  return protocol === undefined || listed.length > 1 || 'unavailable' in suffixes ? undefined : { protocol, suffixes };
+}
+
+/** The Immunefi programs tied to the entry's protocol, as `programTie` ties one, and the programs not tied to it that hold its address. */
+function bountyPrograms(entry: RegistryEntry, listings: Listings, programs: ReadonlyMap<string, ImmunefiProgram>): { readonly tied: ImmunefiProgram[]; readonly others: ImmunefiProgram[] } {
+  const known = protocolOf(entry, listings);
+  if (known === undefined) return { tied: [], others: [...programs.values()].filter((p) => p.addresses.has(entry.address)) };
+  const { protocol, suffixes } = known;
   const domainOf = (url: URL | undefined) => (url === undefined ? undefined : registrableDomain(url.hostname, suffixes));
-  const sites = protocolSites({ defillama: protocol.slug }, protocol, listings, suffixes);
-  const tie = programTie(program, listings.sites.programs, sites.domains, sites.orgs, domainOf);
-  if (tie.kind === 'unread') return { kind: 'unverifiable', check: 'bounty', text: `Immunefi's program list: ${tie.why}` };
-  if (tie.kind === 'unlisted') return { kind: 'finding', check: 'bounty', text: `Immunefi lists no program ${program}`, cause: 'not-fetched' };
-  if (tie.kind === 'untied') {
-    return { kind: 'finding', check: 'bounty', text: `Immunefi program ${program} lists neither a website nor a GitHub org DefiLlama or the protocol coin lists for ${entry.defillama}`, cause: 'differs' };
+  const sites = protocolSites(entry, protocol, listings, suffixes);
+  const tied = [...programs.keys()].filter((slug) => programTie(slug, programs, sites.domains, sites.orgs, domainOf).kind === 'tied');
+  return { tied: tied.map((slug) => programs.get(slug) as ImmunefiProgram), others: [...programs.values()].filter((p) => !tied.includes(p.slug) && p.addresses.has(entry.address)) };
+}
+
+const slugs = (programs: readonly ImmunefiProgram[]) => programs.map((p) => p.slug).join(', ');
+
+/**
+ * Every Immunefi program tied to the entry's protocol, the one it names among them, must be read for its address in
+ * scope; the program finds them, so the entry cannot leave one out. A program not tied to the protocol confirms nothing.
+ */
+function bountyLine(entry: RegistryEntry, listings: Listings): Line {
+  const notListed = (text: string): Line => ({ kind: 'absent', check: 'bounty', text });
+  const { programs } = listings.sites;
+  if ('kind' in programs) return { kind: 'unverifiable', check: 'bounty', text: `Immunefi's program list: ${programs.why}` };
+  const named = entry.immunefi;
+  if (named !== undefined && protocolOf(entry, listings) === undefined) return { kind: 'finding', check: 'bounty', text: `the protocol's sites are not known, so Immunefi program ${named} is not tied to it`, cause: 'unexplained' };
+  if (named !== undefined && !programs.has(named)) return { kind: 'finding', check: 'bounty', text: `Immunefi lists no program ${named}`, cause: 'not-fetched' };
+  const { tied, others } = bountyPrograms(entry, listings, programs);
+  if (named !== undefined && !tied.some((p) => p.slug === named)) {
+    return { kind: 'finding', check: 'bounty', text: `Immunefi program ${named} lists neither a website nor a GitHub org DefiLlama or the protocol coin lists for ${entry.defillama}`, cause: 'differs' };
   }
-  const found = tie.program;
-  if (found.addresses.has(entry.address)) return { kind: 'agrees', check: 'bounty', text: `Immunefi program ${program} has ${checksumAddress(entry.address)} in scope as an etherscan.io address` };
-  return { kind: 'finding', check: 'bounty', text: `Immunefi program ${program} does not have the address in scope (${found.addresses.size} Ethereum addresses there)`, cause: 'not-served' };
+  const holding = tied.filter((p) => p.addresses.has(entry.address));
+  const untied = others.length === 0 ? '' : `; programs not tied to the protocol that hold it: ${slugs(others)}`;
+  if (holding.length > 0) {
+    const [first] = holding as [ImmunefiProgram, ...ImmunefiProgram[]];
+    return { kind: 'agrees', check: 'bounty', text: `Immunefi program ${slugs(holding)} of the protocol has ${checksumAddress(entry.address)} in scope as an etherscan.io address${untied}`, program: first.slug };
+  }
+  const [first] = tied;
+  if (first === undefined) return notListed(`no Immunefi program lists a website or GitHub org of ${entry.defillama ?? 'the protocol'}${untied}`);
+  const count = tied.reduce((n, p) => n + p.addresses.size, 0);
+  return { ...notListed(`Immunefi program ${slugs(tied)} of the protocol does not have the address in scope (${count} Ethereum addresses there)${untied}`), program: first.slug };
+}
+
+/** The addresses the newest version binds to the label, against the entry's: `where` names that version. */
+function newestLine(check: 'tip' | 'sdk-latest', page: Page, where: string, source: { readonly label: string; readonly heading?: string | undefined }, address: Address): Line {
+  if (page.kind === 'unread') return { kind: 'unverifiable', check, text: page.why };
+  if (page.kind === 'failed') return { kind: 'absent', check, text: `${where}: ${page.why}; the newest version lists nothing` };
+  const named = `"${source.label}"${source.heading === undefined ? '' : ` under a heading naming "${source.heading}"`}`;
+  const bound = labelBindings(page.blocks, source.label, source.heading);
+  if (bound.includes(address)) return { kind: 'agrees', check, text: `${where} binds ${named} to the address too` };
+  if (bound.length === 0) return { kind: 'absent', check, text: `${where} binds ${named} to no address` };
+  return { kind: 'finding', check, text: `${where} binds ${named} to ${bound.map(checksumAddress).join(', ')}, not the entry's address ${checksumAddress(address)}`, cause: 'differs' };
+}
+
+/** A pinned GitHub page's file at the tip of its default branch; none for a page not pinned to a commit on that branch. */
+function tipLine(source: { readonly url: string; readonly label: string | undefined; readonly heading?: string | undefined }, address: Address, pages: SourcePages): Line[] {
+  const tip = tipUrlOf(source.url, pages.commits);
+  if (tip === undefined || source.label === undefined) return [];
+  const page = pages.pages.get(tip.url) ?? { kind: 'failed', why: `${tip.url} was not fetched` };
+  return [newestLine('tip', page, `the file at the tip of ${tip.branch} (${tip.url})`, { label: source.label, heading: source.heading }, address)];
+}
+
+/** The version npm's `latest` tag names, when its provenance ties it to the protocol as the pinned version's must. */
+function sdkLatestLine(entry: RegistryEntry, sdk: SdkPackage, read: PackageRead | undefined, listings: Listings): Line {
+  const key = packageKey(latestOf(sdk));
+  if (read === undefined) return { kind: 'finding', check: 'sdk-latest', text: `${key} was not read`, cause: 'not-fetched' };
+  if (read.kind === 'unread') return { kind: 'unverifiable', check: 'sdk-latest', text: read.why };
+  if (read.kind === 'failed') return { kind: 'finding', check: 'sdk-latest', text: read.why, cause: 'not-fetched' };
+  const at = `${sdk.package}@${read.version}, npm's latest`;
+  if (read.version === sdk.version) return { kind: 'agrees', check: 'sdk-latest', text: `the pinned version ${sdk.version} is npm's latest` };
+  const unattested = (why: string): Line => ({ kind: 'finding', check: 'sdk-latest', text: `${why}, so ${at} is not compared`, cause: 'unattested' });
+  if (!read.integrity) return unattested(`the tarball of ${at} does not match the sha512 npm gives as its integrity`);
+  const { provenance } = read;
+  if (provenance.kind === 'none') return unattested(`npm holds no provenance for ${at}`);
+  if (!provenance.sameTarball) return unattested(`npm's provenance for ${at} names another tarball`);
+  const site = sourceSiteLine(provenance.repository, entry, listings, `SDK build ${provenance.repository}`);
+  if (site.kind !== 'agrees') return unattested(`${site.text}`);
+  return newestLine('sdk-latest', read.file, `${at}, file ${sdk.file}`, { label: sdk.label }, entry.address);
 }
 
 /**
@@ -413,21 +485,23 @@ export function checkSources(entries: readonly RegistryEntry[], listings: Listin
       lines: [
         sourceSiteLine(entry.source, entry, listings),
         ...(hasCoin(entry) ? [coingeckoLine(entry, listings.coinsByAddress)] : []),
-        ...(isGitHubPage(source) ? [githubLine(source, pages.commits)] : []),
+        ...(isGitHubPage(source) ? [githubLine(source, pages.commits), ...tipLine({ url: entry.source, label: entry.sourceLabel, heading: entry.sourceHeading }, entry.address, pages)] : []),
         echoes
           ? { kind: 'finding', check: 'url', text: 'the source URL holds the address, and a page echoes its own URL; the page is not read', cause: 'unexplained' }
           : pageLine({ url: entry.source, label: entry.sourceLabel, ...(entry.sourceHeading === undefined ? {} : { heading: entry.sourceHeading }) }, entry.address, pages.pages),
         ...(entry.apiSource === undefined
           ? []
           : [apiLine(entry, entry.apiSource, pages.apis), { ...sourceSiteLine(entry.apiSource.url, entry, listings, 'API'), check: 'api-site' as const }]),
-        ...(entry.immunefi === undefined ? [] : [bountyLine(entry, entry.immunefi, listings)]),
-        ...(entry.sdk === undefined ? [] : sdkLines(entry, entry.sdk, pages.packages?.get(packageKey(entry.sdk)), listings)),
+        bountyLine(entry, listings),
+        ...(entry.sdk === undefined
+          ? []
+          : [...sdkLines(entry, entry.sdk, pages.packages?.get(packageKey(entry.sdk)), listings), sdkLatestLine(entry, entry.sdk, pages.packages?.get(packageKey(latestOf(entry.sdk))), listings)]),
         ...(pages.creations === undefined ? [] : [deployerLine(entry, entries, pages.creations)]),
         ...(entry.moreSources ?? []).flatMap((page, i): Line[] => {
           const url = new URL(page.url);
           return [
             sourceSiteLine(page.url, entry, listings, `source ${i + 1}`),
-            ...(isGitHubPage(url) ? [githubLine(url, pages.commits)] : []),
+            ...(isGitHubPage(url) ? [githubLine(url, pages.commits), ...tipLine(page, entry.address, pages)] : []),
             pageLine(page, entry.address, pages.pages),
           ].map((line) => ({ ...line, more: i + 1 }));
         }),
@@ -436,7 +510,7 @@ export function checkSources(entries: readonly RegistryEntry[], listings: Listin
   });
 }
 
-const LINE_WORDS: Readonly<Record<Line['kind'], string>> = { agrees: 'agrees  ', finding: 'FINDING ', unverifiable: 'UNVERIFIABLE ' };
+const LINE_WORDS: Readonly<Record<Line['kind'], string>> = { agrees: 'agrees  ', absent: 'not listed ', finding: 'FINDING ', unverifiable: 'UNVERIFIABLE ' };
 
 export function formatResults(results: readonly EntryResult[]): string {
   const out: string[] = [];
@@ -522,7 +596,7 @@ export type ListingsRecording = {
   readonly defillamaParents?: { readonly parentProtocols: readonly RecordedParent[] };
   /** Each protocol coin's homepages and GitHub repositories, by CoinGecko id, as CoinGecko's answer holds them. */
   readonly coinLinks?: Readonly<Record<string, unknown>>;
-  /** The Immunefi programs the entries name, cut to their website, GitHub organization and scope's etherscan.io links. */
+  /** The Immunefi programs the entries name, those tied to their protocols and those holding their addresses, cut to their website, GitHub organization and scope's etherscan.io links. */
   readonly immunefi?: unknown;
   /** The domains GitHub verified each organization a page is on controls. */
   readonly orgs?: Readonly<Record<string, OrgDomains>>;
@@ -590,6 +664,37 @@ export function trimPage(page: Page, reads: readonly PageRead[], words: readonly
   return reads.every((read) => answer(trimmed.blocks, read) === answer(blocks, read)) ? trimmed : page;
 }
 
+/** What a label read binds on a page: the label, under `heading` when it names one. */
+export type BindingRead = { readonly label: string; readonly heading?: string };
+
+/**
+ * Keeps only the blocks where some of `reads` binds an address, each with the block before it. It returns the page
+ * whole unless every read binds the same addresses on what it keeps.
+ */
+export function trimBindings(page: Page, reads: readonly BindingRead[]): Page {
+  if (page.kind !== 'served') return page;
+  const { blocks } = page;
+  const answer = (on: readonly PageBlock[], read: BindingRead) => JSON.stringify(labelBindings(on, read.label, read.heading));
+  const kept = new Set<number>();
+  for (const read of reads) {
+    blocks.forEach((_, i) => {
+      if (labelBindings(blocks.slice(Math.max(0, i - 1), i + 1), read.label, read.heading).length === 0) return;
+      kept.add(i);
+      if (i > 0) kept.add(i - 1);
+    });
+  }
+  const trimmed: Page = { kind: 'served', blocks: blocks.filter((_, i) => kept.has(i)) };
+  return reads.every((read) => answer(trimmed.blocks, read) === answer(blocks, read)) ? trimmed : page;
+}
+
+/** What the newest-version checks of `entries` read on the tip page fetched from `url`. */
+const tipReadsOn = (entries: readonly RegistryEntry[], commits: SourcePages['commits'], url: string): BindingRead[] =>
+  entries.flatMap((entry) =>
+    [{ url: entry.source, label: entry.sourceLabel, heading: entry.sourceHeading }, ...(entry.moreSources ?? [])].flatMap(({ url: page, label, heading }) =>
+      label !== undefined && tipUrlOf(page, commits)?.url === url ? [{ label, ...(heading === undefined ? {} : { heading }) }] : [],
+    ),
+  );
+
 /** What the checks of `entries` read on the page fetched from `url`. */
 export const readsOn = (entries: readonly RegistryEntry[], url: string): PageRead[] =>
   entries.flatMap((entry) => pageReadsOf(entry).filter(([at]) => at === url).map(([, read]) => read));
@@ -602,7 +707,7 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
   const href = (url: URL | undefined) => (url === undefined ? {} : { url: url.href });
   const gecko = (id: string | undefined) => (id === undefined ? {} : { gecko_id: id });
   const { coins, programs, orgs } = listings.sites;
-  const programNames = new Set(entries.flatMap((e) => (e.immunefi === undefined ? [] : [e.immunefi])));
+  const programNames = 'kind' in programs ? new Set<string>() : new Set(entries.flatMap((e) => [...(e.immunefi === undefined ? [] : [e.immunefi]), ...Object.values(bountyPrograms(e, listings, programs)).flat().map((p) => p.slug)]));
   return {
     fetched: fetched.toISOString().slice(0, 10),
     defillama: protocols.map(({ slug, name, url, github, gecko: id, parent }) => ({ slug, name, ...href(url), github, ...gecko(id), ...(parent === undefined ? {} : { parentProtocol: parent.id }) })),
@@ -614,13 +719,16 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
             [...coins].map(([id, coin]) => [id, coin.kind === 'unread' ? { unread: coin.why } : { links: { homepage: coin.homepages.map((u) => u.href), repos_url: { github: coin.github.map((u) => u.href) } } }]),
           ),
         }),
-    ...(programNames.size === 0 ? {} : { immunefi: programsRecord(programs, programNames) }),
+    ...(entries.some((e) => e.defillama !== undefined || e.immunefi !== undefined) ? { immunefi: programsRecord(programs, programNames) } : {}),
     ...(orgs.size === 0 ? {} : { orgs: Object.fromEntries(orgs) }),
     coingecko: [...addresses]
       .flatMap((address) => listings.coinsByAddress.get(address) ?? [])
       .map(({ id, symbol, name, ethereum }) => ({ id, symbol, name, platforms: { ethereum } })),
     pages: Object.fromEntries(
-      [...pages.pages].map(([url, page]) => [url, trimPage(page, readsOn(entries, url))]),
+      [...pages.pages].map(([url, page]) => {
+        const tips = tipReadsOn(entries, pages.commits, url);
+        return [url, tips.length > 0 ? trimBindings(page, tips) : trimPage(page, readsOn(entries, url))];
+      }),
     ),
     commits: Object.fromEntries(pages.commits),
     ...(pages.apis === undefined || pages.apis.size === 0 ? {} : { apis: pruneAnswers(entries, pages.apis) }),
@@ -631,7 +739,7 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
   };
 }
 
-/** The programs the entries name, as Immunefi's list holds them, cut to their sites and their scope's etherscan.io links. */
+/** The programs `names` names, as Immunefi's list holds them, cut to their sites and their scope's etherscan.io links. */
 function programsRecord(programs: SiteListings['programs'], names: ReadonlySet<string>): unknown {
   if ('kind' in programs) return { unread: programs.why };
   return [...names].flatMap((name) => {
@@ -646,7 +754,8 @@ function programsRecord(programs: SiteListings['programs'], names: ReadonlySet<s
 function trimPackage(entries: readonly RegistryEntry[], key: string, read: PackageRead): PackageRead {
   if (read.kind !== 'read') return read;
   const reads = entries.flatMap(({ sdk, address }) => (sdk !== undefined && packageKey(sdk) === key ? [{ address, label: sdk.label }] : []));
-  return { ...read, file: trimPage(read.file, reads) };
+  const latest = entries.flatMap(({ sdk }) => (sdk !== undefined && packageKey(latestOf(sdk)) === key ? [{ label: sdk.label }] : []));
+  return { ...read, file: latest.length > 0 ? trimBindings(read.file, latest) : trimPage(read.file, reads) };
 }
 
 /**
@@ -678,7 +787,7 @@ async function siteListingsFor(entries: readonly RegistryEntry[], protocols: Lis
   const ids = new Set(entries.flatMap((e) => (protocols.get(e.defillama ?? '') ?? []).flatMap((p) => p.gecko ?? p.parent?.gecko ?? [])));
   const coins = new Map<string, CoinLinks | SiteUnread>();
   for (const id of ids) coins.set(id, await reads.list(coinPage(id)).then(parseCoinLinks, unread));
-  const programs = entries.some((e) => e.immunefi !== undefined) ? await reads.list(IMMUNEFI_PROGRAMS).then(parseImmunefiPrograms, unread) : new Map<string, ImmunefiProgram>();
+  const programs = entries.some((e) => e.defillama !== undefined || e.immunefi !== undefined) ? await reads.list(IMMUNEFI_PROGRAMS).then(parseImmunefiPrograms, unread) : new Map<string, ImmunefiProgram>();
   const orgs = new Map<string, OrgDomains>();
   for (const url of pageUrls) {
     const org = githubOrg(new URL(url));

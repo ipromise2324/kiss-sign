@@ -382,6 +382,7 @@ test('the vault its factory alone confirms is the one 待確認; every address r
       ['app.morpho.org/ethereum/vault', 'na', 'unread', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
       ['CoinGecko', 'na', 'nothing-to-compare', undefined],
       ['工廠', 'ok', undefined, undefined],
+      ['Immunefi 漏洞賞金範圍', 'na', 'not-listed', undefined],
     ],
   );
   assert.deepEqual(vault.aiSources.map((s) => [s.text.tag, s.result]), [['ai', 'attention']]);
@@ -892,7 +893,7 @@ test('a vault its factory admits by computing its address renders in both report
   assert.equal(plain(factoryRow.value), `vault-v2-factory 回答 computeToken(usdc,"fToken") = ${checksumAddress(vault.address)}`);
   const addresses = body(page, 'addresses');
   const row = [...addresses.open, ...addresses.folded].find((r) => r.name === vault.name) ?? assert.fail('no address row');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, site: undefined });
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, site: undefined, newest: undefined });
   assert.ok(renderPage(page).includes('computeToken(usdc,&#34;fToken&#34;)'), 'the HTML report escapes the quoted constant');
 });
 
@@ -904,7 +905,7 @@ test("a vault its factory computed another address for renders in both reports, 
   const page = buildPage(of, notes, depositTitle, 'zh-TW');
   const addresses = body(page, 'addresses');
   const row = addresses.open.find((r) => r.name === vault.name) ?? assert.fail('the vault row is not open');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: 'not-created', site: undefined });
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: 'not-created', site: undefined, newest: undefined });
   const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
   assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個金庫`);

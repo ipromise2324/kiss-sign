@@ -569,8 +569,10 @@ const byAi = (prose: Prose): string =>
 /** Names, addresses, hashes, selectors and file paths, each parsed into a charset that holds no backtick or `|`. */
 const code = (text: string): string => `\`${text}\``;
 const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(checksumAddress(entry.address))}`;
-const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
+const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', absent: 'NOT LISTED', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
 const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : VERDICTS[line.kind]);
+/** A newest version that binds the label to other addresses names them, since no other line of the report does. */
+const newestVerdict = (line: Line | undefined): string => (line?.kind === 'finding' && line.cause === 'differs' ? `FINDING: ${line.text}` : verdict(line));
 
 /** The deployer as the ledger counts it: PASS only through an entry confirmed in two other places, which it names. */
 function deployerCell(line: Line | undefined, result: Result | undefined): string {
@@ -1151,13 +1153,15 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
     '',
     `${code('pnpm check-sources')} on every entry the operation can touch. ${code(`pnpm check-sources ${entries.map((e) => e.name).join(' ')}`)} prints what each check compared.`,
     '',
-    '| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |',
-    '| --- | --- | --- | --- | --- | --- | --- | --- |',
+    `Newest version: for a source pinned to a GitHub commit on the default branch, which addresses the same file at the tip of that branch binds to the same label; it is the same place, so it never counts as one.`,
+    '',
+    '| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Newest version | Address on page |',
+    '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
   );
   for (const { entry, lines } of checked) {
     const of = (check: Line['check']) => lines.find((l) => l.check === check && l.more === undefined);
     out.push(
-      `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${verdict(of('defillama'))} | ${verdict(of('coingecko'))} | ${verdict(of('github'))} | ${verdict(of('page') ?? of('url'))} |`,
+      `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${verdict(of('defillama'))} | ${verdict(of('coingecko'))} | ${verdict(of('github'))} | ${newestVerdict(of('tip'))} | ${verdict(of('page') ?? of('url'))} |`,
     );
   }
   const more = checked.flatMap(({ entry, lines }) => (entry.moreSources ?? []).map((page, i) => ({ entry, page, lines: lines.filter((l) => l.more === i + 1) })));
@@ -1166,11 +1170,11 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
       '',
       `Each entry's ${code('moreSources')}: more official pages that list its address, each checked as the source is.`,
       '',
-      '| Entry | Page | Site | GitHub commit | Address on page |',
-      '| --- | --- | --- | --- | --- |',
+      '| Entry | Page | Site | GitHub commit | Newest version | Address on page |',
+      '| --- | --- | --- | --- | --- | --- |',
       ...more.map(({ entry, page, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
-        return `| ${code(entry.name)} | <${page.url}> | ${verdict(of('defillama'))} | ${verdict(of('github'))} | ${verdict(of('page'))} |`;
+        return `| ${code(entry.name)} | <${page.url}> | ${verdict(of('defillama'))} | ${verdict(of('github'))} | ${newestVerdict(of('tip'))} | ${verdict(of('page'))} |`;
       }),
     );
   }
@@ -1179,13 +1183,13 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs):
   if (placed.length > 0) {
     out.push(
       '',
-      `More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.`,
+      `More places that may name the address: the scope of every Immunefi program tied to the entry's protocol, which the program finds, and of the one the entry names; its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and which addresses npm's latest version binds to the same label; and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places; a program not tied to the protocol and the SDK's latest version never count.`,
       '',
-      '| Entry | Bounty scope | SDK file | SDK publisher | Deployer |',
-      '| --- | --- | --- | --- | --- |',
+      '| Entry | Bounty scope | SDK file | SDK publisher | SDK latest | Deployer |',
+      '| --- | --- | --- | --- | --- | --- |',
       ...placed.map(({ entry, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
-        return `| ${code(entry.name)} | ${verdict(of('bounty'))} | ${verdict(of('sdk'))} | ${verdict(of('sdk-site'))} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
+        return `| ${code(entry.name)} | ${verdict(of('bounty'))} | ${verdict(of('sdk'))} | ${verdict(of('sdk-site'))} | ${newestVerdict(of('sdk-latest'))} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
       }),
     );
   }

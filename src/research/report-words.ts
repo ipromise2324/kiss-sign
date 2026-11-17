@@ -114,6 +114,7 @@ const ZH = {
       title: '沒有第二個來源',
       why: 'DefiLlama、CoinGecko 的幣資料、Immunefi 和 GitHub 的驗證網域都沒有列出這個網站，CoinGecko 也沒有在這個地址列登記的幣，沒有別的來源能證明這個網站屬於這個協議。',
     },
+    'newer-differs': { title: '最新版列的是別的地址', why: '同一個 GitHub 檔案在預設分支最新的版本、或同一個 SDK 在 npm 最新的版本，同一個標籤旁邊列的是另一個地址。協議可能換了合約，或釘選的版本已經過時。' },
     'package-differs': { title: 'SDK 套件不是釘選的那一份', why: '下載的 npm 套件 sha256 跟登記釘選的不同，或跟 npm 給的 integrity 不符。' },
     'unexplained-coin': { title: 'CoinGecko 在這個地址列了幣，登記沒有給 id', why: '登記沒有寫 coingecko id，所以程式沒有比對 CoinGecko 在這個地址列的幣是不是這個合約。' },
     'commit-unconfirmed': { title: 'GitHub commit 沒確認', why: 'GitHub 頁面沒有釘在預設分支上的 commit。' },
@@ -526,6 +527,8 @@ const ZH = {
   noDescriptor: '沒有描述檔，只顯示原始資料',
   siteOk: (slug: string | undefined): string => `網站屬於 ${slug}`,
   siteNot: (phrase: string): string => `網站：${phrase}`,
+  newestOk: (where: string): string => `最新版（${where}）也列這個地址`,
+  newestNot: (where: string, phrase: string): string => `最新版（${where}）：${phrase}`,
   compared: ['（', ' 對照）'] as readonly [string, string],
   aiChecked: 'AI 補查',
   foldedAddresses: (n: number): string => (n === 1 ? '另外 1 個地址沒有要你看的結果' : `另外 ${n} 個地址都沒有要你看的結果`),
@@ -659,6 +662,10 @@ const EN: Words = {
     'no-second-source': {
       title: 'no second source',
       why: "Neither DefiLlama, CoinGecko's coin data, Immunefi nor GitHub's verified domains list this site, and CoinGecko lists no registered coin at this address, so no other source shows that this site belongs to the protocol.",
+    },
+    'newer-differs': {
+      title: 'the newest version lists another address',
+      why: "The same GitHub file at the tip of its default branch, or the same SDK in npm's latest version, lists another address next to the same label. The protocol may have moved the contract, or the pinned version is out of date.",
     },
     'package-differs': { title: 'the SDK package is not the pinned one', why: "The downloaded npm package's sha256 differs from the registered pin, or does not match the integrity npm gives." },
     'unexplained-coin': {
@@ -1092,6 +1099,8 @@ const EN: Words = {
   noDescriptor: 'no descriptor; the wallet shows only raw data',
   siteOk: (slug) => `site belongs to ${slug}`,
   siteNot: (phrase) => `site: ${phrase}`,
+  newestOk: (where) => `newest version (${where}) lists it too`,
+  newestNot: (where, phrase) => `newest version (${where}): ${phrase}`,
   compared: [' (compared with ', ')'],
   aiChecked: 'AI also checked',
   foldedAddresses: (n) => (n === 1 ? '1 more address has no result for you to review' : `${n} more addresses have no result for you to review`),
