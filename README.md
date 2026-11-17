@@ -192,7 +192,7 @@ Each check answers one way a signing can go wrong. The exceptions are in [Known 
 
 | What could go wrong | What kiss-sign does |
 |---|---|
-| The AI uses a fake contract address | Finds the address on the protocol's own site and in at least one more place, such as CoinGecko or the factory that created it. If it finds fewer, the report flags it. |
+| The AI uses a fake contract address | Looks for the address in at least two places, such as a page on the protocol's own site, CoinGecko, or the factory that created it. If it finds fewer, the report flags it. |
 | The ABI used to read a call is wrong | Compiles the contract's verified source and checks that it gives the code on chain. |
 | The protocol or vault is new, small or was hacked | Shows its TVL, its age, its past hacks, and for a vault its size and holders over a year. |
 | The template accepts more than people really send | Studies a year of the same operation by other senders and accepts only the forms they use. |
