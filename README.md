@@ -155,7 +155,7 @@ A template is data: it picks from checks the program already has and gives a rea
 
 When no check fits, the AI first adds one to the program in a pull request of its own. It merges that one itself, once the program's tests pass and a second AI finds no security problem; you do not read program code. A change to those tests comes to you, like a template. What this leaves open is in [Who owns the program](docs/design.md#who-owns-the-program).
 
-Before you merge a template, run its checks again from your own `main` (this needs the Alchemy and Etherscan keys):
+The report in a pull request was made on the AI's computer, so you cannot tell from it alone that its facts are true. Before you merge, read them again live with your own `main`'s code, which the pull request cannot change; any fact that differs from the report is printed (this needs the Alchemy and Etherscan keys):
 
 ```sh
 git pull
