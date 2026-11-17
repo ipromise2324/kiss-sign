@@ -54,9 +54,10 @@ import { NOTES_FILE, notesChanges, NotesError } from '../src/research/notes.ts';
 import type { Language } from '../src/language.ts';
 import { generatedHtml, generatedHtmlPath, htmlDifferences, writeHtmlPages } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
+import { readGithubToken } from '../src/research/github-token.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
-import { ensureVendored } from '../src/vendor.ts';
+import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 
 const colors = paint(colorWanted(process.stdout.isTTY, process.env));
@@ -202,6 +203,7 @@ if (flags.compare && !existsSync(committedPath)) {
 }
 const entries = entriesOf(subject, registry);
 const endpoints = mainnetEndpoints(process.env);
+const githubToken = readGithubToken(process.env);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
 const reader = createReader(endpoints, httpsTransport(), { note });
@@ -216,12 +218,13 @@ const listing = (target: { readonly hostname: string; readonly path: string }): 
   return answer;
 };
 const docs = subject.kind === 'template' ? subject.docs.map((d) => d.url) : [];
-const packages = await gatherPackages(entries, retryingGet(httpsGet, note));
-const listings = await listingsFor(entries, suffixes, liveListingReads(note, listing), [...entries.flatMap(pageUrlsOf), ...docs, ...provenanceRepositories(packages)]);
+const get = retryingGet(httpsGet(githubToken), note);
+const packages = await gatherPackages(entries, get);
+const listings = await listingsFor(entries, suffixes, liveListingReads(note, githubToken, listing), [...entries.flatMap(pageUrlsOf), ...docs, ...provenanceRepositories(packages)]);
 const creations = await liveCreations(entries, process.env, note, () => reader);
 if ('missing' in creations) throw new MissingKeyError(keySpec('etherscan') as KeySpec);
 const pages = {
-  ...(await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs], retryingGet(httpsGet, note), await gatherApiAnswers(entries, retryingSend(httpsApi, note)))),
+  ...(await gatherSourcePages([...entries.flatMap(pageUrlsOf), ...docs], get, await gatherApiAnswers(entries, retryingSend(httpsApi, note)))),
   packages,
   creations,
 };
@@ -244,7 +247,7 @@ const vaults = await vaultsAt(flags.compare ? readFileSync(committedPath, 'utf8'
   return (await vaultEvidenceText(reader, alchemy, registry, vault, at)).text;
 });
 
-if (!(await ensureVendored(['erc7730']))) process.exit(1);
+if (!(await ensureVendored(['erc7730'], nodeVendorIoWith(githubToken)))) process.exit(1);
 const snapshot = loadSnapshot();
 if ('unavailable' in snapshot) {
   console.error(snapshot.unavailable);
