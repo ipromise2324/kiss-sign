@@ -36,6 +36,7 @@ export type CardRefusal =
   | 'ambiguous-name'
   | 'wrong-contract-kind'
   | 'wrong-protocol'
+  | 'not-in-markets'
   | 'not-an-amount'
   | 'not-a-nonce'
   | 'not-a-percent'
