@@ -79,9 +79,32 @@ export type CardRef = { readonly field: string; readonly attribute: Attribute | 
 /** Native ETH, which no contract holds, or a token a card field names. */
 export type TokenRef = 'eth' | CardRef;
 
-/** A view call `card new` makes on the contract `to` names, returning one uint256. */
-export type ComputedRead = { readonly to: CardRef; readonly fn: AbiFunction; readonly args: readonly ComputedArg[] };
-export type ComputedArg = { readonly kind: 'card'; readonly ref: CardRef } | { readonly kind: 'safe' } | { readonly kind: 'read'; readonly read: ComputedRead };
+/**
+ * A view call `card new` makes on the contract `to` names, every argument bound, and the unsigned number of its answer
+ * `output` picks: positions into `returns`, then into a tuple's components.
+ */
+export type ComputedRead = {
+  readonly to: ViewTarget;
+  readonly fn: AbiFunction;
+  readonly args: readonly ComputedArg[];
+  readonly returns: readonly AbiParam[];
+  readonly output: readonly number[];
+};
+/** An argument bound as a view's is, or the number another read gives. */
+export type ComputedArg = { readonly kind: 'bound'; readonly rule: Rule } | { readonly kind: 'read'; readonly read: ComputedRead };
+
+/** The return value `output` picks, with its dotted name, such as `supplyShares`. */
+export function computedOutput(read: Pick<ComputedRead, 'returns' | 'output'>): { readonly param: AbiParam; readonly name: string } {
+  let params = read.returns;
+  const names: string[] = [];
+  let param: AbiParam | undefined;
+  for (const i of read.output) {
+    param = params[i] as AbiParam;
+    names.push(paramName(param, i));
+    params = param.type.kind === 'tuple' ? param.type.components : [];
+  }
+  return { param: param as AbiParam, name: names.join('.') };
+}
 
 /**
  * A card amount the protocol's app fills in by itself: `read` less (`floor`, rounded down) or plus (`ceiling`, rounded
@@ -128,10 +151,11 @@ export type Rule =
   /** The same number as the transaction holds at an earlier template path, such as an approval its transfer spends. */
   | { readonly kind: 'equals'; readonly path: string; readonly rule: LeafRule }
   /**
-   * An ERC-4626 price bound in assets per share, scaled by 1e27, as Morpho's adapters take it. `max` must be at most, and
-   * `min` at least, `assets` × 1e27 / `shares`, so the transaction's bound is at least as strict as the card's amounts.
+   * An ERC-4626 price bound in assets per share, scaled by 10^`scale` (1e27 as Morpho's adapters take it). `max` must be
+   * at most, and `min` at least, `assets` × 10^`scale` / `shares`, so the transaction's bound is at least as strict as the
+   * card's amounts.
    */
-  | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity }
+  | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity; readonly scale: number }
   /** The owner listed just before the card's owner in the Safe's `getOwners()`, or the sentinel when it is first. */
   | { readonly kind: 'owner-before'; readonly ref: CardRef }
   /** A number at least (`at-least`) or at most (`at-most`) the card amount `field`, such as a swap's fewest tokens out or most tokens in. */
@@ -509,11 +533,17 @@ function quantity(path: string, raw: unknown, scope: Scope): Quantity {
   return { kind: 'path', path: name, rule };
 }
 
+const SHARE_PRICE_SCALE = { default: 27, min: 1, max: 36 } as const;
+
 function sharePrice(path: string, raw: unknown, type: AbiType, scope: Scope, bound: 'max' | 'min'): Rule {
   if (type.kind !== 'uint') throw new TemplateError(path, `a share price bound cannot bind a ${canonicalType(type)}`);
   const value = object(path, raw);
-  exactKeys(path, value, ['assets', 'shares']);
-  return { kind: 'share-price', bound, assets: quantity(`${path}.assets`, value.assets, scope), shares: quantity(`${path}.shares`, value.shares, scope) };
+  exactKeys(path, value, ['assets', 'shares'], ['scale']);
+  const scale = value.scale ?? SHARE_PRICE_SCALE.default;
+  if (typeof scale !== 'number' || !Number.isInteger(scale) || scale < SHARE_PRICE_SCALE.min || scale > SHARE_PRICE_SCALE.max) {
+    throw new TemplateError(`${path}.scale`, `the power of ten the price is scaled by, a whole number from ${SHARE_PRICE_SCALE.min} to ${SHARE_PRICE_SCALE.max}`);
+  }
+  return { kind: 'share-price', bound, assets: quantity(`${path}.assets`, value.assets, scope), shares: quantity(`${path}.shares`, value.shares, scope), scale };
 }
 
 function rule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
@@ -883,39 +913,85 @@ function bps(path: string, raw: unknown): number {
  */
 type Readable = (field: string) => boolean;
 
-function computedArg(path: string, raw: unknown, type: AbiType, scope: Scope, readable: Readable): ComputedArg {
-  const isUint256 = type.kind === 'uint' && type.bits === 256;
-  if (type.kind !== 'address' && !isUint256) throw new TemplateError(path, `${canonicalType(type)} is neither address nor uint256`);
-  if (raw === 'safe') {
-    if (type.kind !== 'address') throw new TemplateError(path, 'the Safe is an address, not a uint256');
-    return { kind: 'safe' };
+/**
+ * The older form of a computed read's `to` and arguments, which a template written before reads took rules may still hold
+ * and a verdict file of that time does: `"card.<field>"` is `{ "card": "<field>" }`, `"safe"` is `{ "safe": true }`, and a
+ * read written without `read` around it is `{ "read": ... }`. Nothing else is read as the older form.
+ */
+function olderReadForm(raw: unknown): unknown {
+  if (raw === 'safe') return { safe: true };
+  const field = typeof raw === 'string' ? cardFieldName(raw) : undefined;
+  if (field !== undefined) return { card: field };
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw) && 'to' in raw && !('read' in raw)) return { read: raw };
+  return raw;
+}
+
+function computedArg(path: string, raw: unknown, { name, type }: AbiParam, scope: Scope, readable: Readable): ComputedArg {
+  const value = object(path, olderReadForm(raw));
+  if (value.read !== undefined) {
+    exactKeys(path, value, ['read']);
+    const read = computedRead(`${path}.read`, value.read, scope, readable);
+    const answer = computedOutput(read).param.type as Extract<AbiType, { kind: 'uint' }>;
+    if (type.kind !== 'uint' || type.bits < answer.bits) throw new TemplateError(`${path}.read`, `answers a uint${answer.bits}, which a ${canonicalType(type)} parameter cannot hold`);
+    return { kind: 'read', read };
   }
-  if (typeof raw === 'string') {
-    const name = cardFieldName(raw);
-    if (name === undefined) throw new TemplateError(path, 'must be "safe", card.<field> or a read');
-    const ref = cardRef(path, name, scope.card);
-    if (!readable(ref.field)) throw new TemplateError(path, `card field ${ref.field} is computed after this one or is this one`);
-    const fits = type.kind === 'address' ? isContractRef(ref, scope.card) : scope.card.get(ref.field)?.kind === 'amount' && ref.attribute === undefined;
-    if (!fits) throw new TemplateError(path, `card.${name} is not ${type.kind === 'address' ? 'a contract or market field, or one of its parts' : 'an amount'}`);
-    return { kind: 'card', ref };
+  const bound = rule(path, value, type, scope);
+  boundArgument(path, bound);
+  wholeCardNumbers(path, bound, type);
+  for (const leaf of ruleLeaves(bound)) if (leaf.kind === 'card') readableRef(path, leaf.ref, readable);
+  return { kind: 'bound', rule: recipientWord(path, name, type, bound) };
+}
+
+/** A card number, never range-checked against its parameter, is passed to a read only as a whole uint256. */
+function wholeCardNumbers(path: string, bound: Rule, type: AbiType): void {
+  if (bound.kind === 'card' && (type.kind === 'uint' || type.kind === 'int') && !(type.kind === 'uint' && type.bits === 256)) {
+    throw new TemplateError(path, `card.${bound.ref.field}${bound.ref.attribute === undefined ? '' : `.${bound.ref.attribute}`} is a number passed whole, so only to a uint256, not a ${canonicalType(type)}`);
   }
-  if (!isUint256) throw new TemplateError(path, 'a read returns a uint256, not an address');
-  return { kind: 'read', read: computedRead(path, raw, scope, readable) };
+  if (bound.kind === 'fields' && type.kind === 'tuple') bound.fields.forEach((field, i) => wholeCardNumbers(path, field, (type.components[i] as AbiParam).type));
+  if (bound.kind === 'items' && (type.kind === 'array' || type.kind === 'fixed-array')) bound.items.forEach((item) => wholeCardNumbers(path, item, type.item));
+  if (bound.kind === 'call' || bound.kind === 'keccak') bound.call.args.forEach((arg, i) => wholeCardNumbers(path, arg, (bound.call.fn.params[i] as AbiParam).type));
+}
+
+function readableRef(path: string, ref: CardRef, readable: Readable): void {
+  if (!readable(ref.field)) throw new TemplateError(path, `card field ${ref.field} is computed after this one or is this one`);
+}
+
+/** Positions of the unsigned number `raw` names in `returns`, by a dotted path of names; none is needed for one value. */
+function outputPath(path: string, raw: unknown, returns: readonly AbiParam[]): number[] {
+  if (raw === undefined && returns.length !== 1) throw new TemplateError(path, `names none of the ${returns.length} values the function returns`);
+  const output = raw === undefined ? [0] : [];
+  let params = returns;
+  for (const step of raw === undefined ? [] : text(path, raw).split('.')) {
+    const i = params.findIndex((param) => param.name === step);
+    if (i === -1) throw new TemplateError(path, `${JSON.stringify(step)} is not a named return value or tuple component`);
+    output.push(i);
+    const { type } = params[i] as AbiParam;
+    params = type.kind === 'tuple' ? type.components : [];
+  }
+  const { type } = computedOutput({ returns, output }).param;
+  if (type.kind !== 'uint') throw new TemplateError(path, `picks a value of type ${canonicalType(type)}; a computed amount is an unsigned integer`);
+  return output;
 }
 
 function computedRead(path: string, raw: unknown, scope: Scope, readable: Readable): ComputedRead {
   const value = object(path, raw);
-  exactKeys(path, value, ['to', 'function', 'args']);
-  const to = cardFieldName(text(`${path}.to`, value.to));
-  if (to === undefined) throw new TemplateError(`${path}.to`, 'must be card.<field>');
-  const ref = cardRef(`${path}.to`, to, scope.card);
-  if (!isContractRef(ref, scope.card)) throw new TemplateError(`${path}.to`, 'must name a contract or market field, or one of its parts');
+  exactKeys(path, value, ['to', 'function', 'args'], ['output']);
+  const target = parseRule(`${path}.to`, typeof value.to === 'string' ? olderReadForm(value.to) : value.to, { kind: 'address' }, scope);
+  let to: ViewTarget;
+  if (target.kind === 'contract') to = { kind: 'contract', name: target.name };
+  else if (target.kind === 'card' && isContractRef(target.ref, scope.card)) to = { kind: 'card', ref: target.ref };
+  else throw new TemplateError(`${path}.to`, 'must name a registry contract, or a contract or market field or one of its parts');
+  if (to.kind === 'card') readableRef(`${path}.to`, to.ref, readable);
   const { fn, returns } = viewSignature(`${path}.function`, value.function);
-  const [only] = returns;
-  if (returns.length !== 1 || only?.type.kind !== 'uint' || only.type.bits !== 256) throw new TemplateError(`${path}.function`, 'must return exactly one uint256');
   const args = object(`${path}.args`, value.args);
   exactKeys(`${path}.args`, args, fn.params.map((param, i) => paramName(param, i)));
-  return { to: ref, fn, args: fn.params.map((param, i) => computedArg(`${path}.args.${paramName(param, i)}`, args[paramName(param, i)], param.type, scope, readable)) };
+  return {
+    to,
+    fn,
+    args: fn.params.map((param, i) => computedArg(`${path}.args.${paramName(param, i)}`, args[paramName(param, i)], param, scope, readable)),
+    returns,
+    output: outputPath(`${path}.output`, value.output, returns),
+  };
 }
 
 /** A computed amount field, `computed` of card field `name`; `order` lists the card's fields with whether each is computed. */
@@ -927,7 +1003,7 @@ function computed(path: string, raw: unknown, name: string, scope: Scope, order:
     const i = order.findIndex(([f]) => f === field);
     return i !== at && (i < at || !(order[i]?.[1] ?? false));
   };
-  const read = computedRead(`${path}.read`, value.read, scope, readable);
+  const read = computedRead(`${path}.read`, value.read, { ...scope, uintLeaves: new Map(), view: true }, readable);
   if (value.bound !== 'floor' && value.bound !== 'ceiling') throw new TemplateError(`${path}.bound`, 'not one of floor, ceiling');
   const fallback = object(`${path}.default`, value.default);
   exactKeys(`${path}.default`, fallback, ['bps', 'source']);
@@ -1116,7 +1192,7 @@ function safeSettings(path: string, raw: unknown, scope: Scope): SafeSettingsEff
   return { add, remove, threshold };
 }
 
-function ruleLeaves(rule: Rule): Rule[] {
+export function ruleLeaves(rule: Rule): Rule[] {
   if (rule.kind === 'fields') return rule.fields.flatMap(ruleLeaves);
   if (rule.kind === 'items') return rule.items.flatMap(ruleLeaves);
   if (rule.kind === 'call' || rule.kind === 'keccak') return rule.call.args.flatMap(ruleLeaves);

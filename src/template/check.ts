@@ -86,7 +86,6 @@ type Context = {
   readonly chain: FieldChain;
 };
 
-const RAY = 10n ** 27n;
 const MAX_UINT = (1n << 256n) - 1n;
 
 function remember(rule: LeafRule, actual: ConstValue, context: Context): void {
@@ -108,9 +107,10 @@ function checkSharePrice(rule: Extract<Rule, { kind: 'share-price' }>, price: bi
     return undefined;
   }
   if (rule.shares.kind === 'path' && shares === MAX_UINT) return 'a stated share count, not the whole balance (2^256-1), to bound the price against';
-  const limit = shares === 0n ? 'any' : `${(assets * RAY) / shares}`;
-  if (rule.bound === 'max') return price * shares <= assets * RAY ? undefined : `at most ${limit}: ${assets} assets for ${shares} shares, scaled by 1e27`;
-  return price * shares >= assets * RAY ? undefined : `at least ${limit}: ${assets} assets for ${shares} shares, scaled by 1e27`;
+  const scale = 10n ** BigInt(rule.scale);
+  const limit = shares === 0n ? 'any' : `${(assets * scale) / shares}`;
+  if (rule.bound === 'max') return price * shares <= assets * scale ? undefined : `at most ${limit}: ${assets} assets for ${shares} shares, scaled by 1e${rule.scale}`;
+  return price * shares >= assets * scale ? undefined : `at least ${limit}: ${assets} assets for ${shares} shares, scaled by 1e${rule.scale}`;
 }
 
 function render(value: ConstValue): string {
