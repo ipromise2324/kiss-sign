@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -288,7 +288,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>OK to use. KPK&#39;s docs, CoinGecko and the factory all confirm this vault.</span><span class="byai">AI research: OK to use</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">13</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
 
@@ -537,26 +537,26 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></span></h2>
+  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">The AI checked each item first and gives its advice.</p>
   <div class="rows">
-    <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t">morpho-oracle-cbbtc-usdc-86: address confirmed in only 1 place: protocol API</div>
+      <div><div class="t"><span class="lbl">key</span> morpho-oracle-cbbtc-usdc-86: address confirmed in only 1 place: protocol API</div>
         <div class="meta">At least 2 places must list the same address: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-cbbtc-usdc-86">see source</a></div>
         <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app. AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64), and the oracle it answers is 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
         <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div></div>
     </div>
-    <div class="row" data-state="warn" data-result="morpho-oracle-usp-usdc/address">
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t">morpho-oracle-usp-usdc: address confirmed in only 1 place: protocol API</div>
+      <div><div class="t"><span class="lbl">key</span> morpho-oracle-usp-usdc: address confirmed in only 1 place: protocol API</div>
         <div class="meta">At least 2 places must list the same address: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-usp-usdc">see source</a></div>
         <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain: for both markets, usdc-usp-915 and usdc-usp-86, the oracle it answers is 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d. The market id is the hash of the five parameters, so a different oracle means a different market.</span><span class="byai">AI research</span></span></div>
         <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open these two markets&#39; pages on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div></div>
     </div>
-    <div class="row" data-state="warn" data-result="morpho-oracle-weeth-usdc-86/address">
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
       <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
-      <div><div class="t">morpho-oracle-weeth-usdc-86: address confirmed in only 1 place: protocol API</div>
+      <div><div class="t"><span class="lbl">key</span> morpho-oracle-weeth-usdc-86: address confirmed in only 1 place: protocol API</div>
         <div class="meta">At least 2 places must list the same address: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.<a href="#a-morpho-oracle-weeth-usdc-86">see source</a></div>
         <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>AI has no browser that runs JavaScript, so it did not open the market&#39;s page on the Morpho app. AI read Morpho Blue&#39;s <code>idToMarketParams</code> on chain (market id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e), and the oracle it answers is 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411. A different oracle means a different market.</span><span class="byai">AI research</span></span></div>
         <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. To check again, open this market&#39;s page on the Morpho app and compare the oracle address.</span><span class="byai">AI research</span></span></div></div>
