@@ -261,7 +261,7 @@ function namedInRules(template: Template): Set<string> {
   const names = new Set<string>();
   const visit = (rule: Rule | undefined): void => {
     if (rule?.kind === 'contract') names.add(rule.name);
-    if (rule?.kind === 'equals') visit(rule.rule);
+    if (rule?.kind === 'equals' || rule?.kind === 'address-word') visit(rule.rule);
     if (rule?.kind === 'share-price') for (const q of [rule.assets, rule.shares]) if (q.kind === 'path') visit(q.rule);
     if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
     if (rule?.kind === 'items') rule.items.forEach(visit);
@@ -597,6 +597,8 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
       return 'the Safe';
     case 'contract':
       return `registry ${full(registry.entries.get(rule.name) as RegistryEntry)}`;
+    case 'address-word':
+      return `${ruleText(rule.rule, template, registry)}, as a 32-byte word: the address left-padded with 12 zero bytes, and any other 32 bytes refused`;
     case 'const':
       return `constant ${code(rule.value.kind === 'string' ? JSON.stringify(Buffer.from(rule.value.value.slice(2), 'hex').toString('utf8')) : constText(rule.value))}`;
     case 'free':
