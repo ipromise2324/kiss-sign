@@ -23,6 +23,8 @@ import type { FieldFact } from './erc7730.ts';
 import { latestOf, packageKey } from './npm-package.ts';
 import { tipUrlOf } from './source-page.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
+import { weightOf } from './grades.ts';
+import type { Grade } from './grades.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesPath, notesScope, parseNotes } from './notes.ts';
@@ -63,7 +65,9 @@ export type AiText = { readonly ai: string; readonly sources: readonly HttpsUrl[
 
 const research = (text: string, sources: readonly HttpsUrl[] = [], tag: AiTag = 'research'): AiText => ({ ai: text, sources, tag });
 
-export type RailCount = { readonly kind: 'text'; readonly text: string } | { readonly kind: 'states'; readonly counts: readonly { readonly state: State | 'ask'; readonly n: number }[] };
+export type RailCount =
+  | { readonly kind: 'text'; readonly text: string }
+  | { readonly kind: 'states'; readonly counts: readonly { readonly state: State | 'ask'; readonly n: number; readonly grade?: Grade }[] };
 
 export type Page = {
   readonly language: Language;
@@ -170,6 +174,7 @@ export type VaultBlock = {
 export type ReviewRow = {
   readonly id: ResultId;
   readonly state: State;
+  readonly grade: Grade;
   readonly title: Inline;
   readonly why: Inline;
   readonly entry: Anchor | undefined;
@@ -1250,20 +1255,26 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
 
 function reviewSection(context: Context): Section {
   const { notes, ledger } = context;
-  const rows = forSigner(ledger).map((result): ReviewRow => {
+  const graded = (grade: Grade) => forSigner(ledger).filter((r) => weightOf(r) === grade);
+  const grades = ['key', 'reference'] as const;
+  const rows = grades.flatMap((grade) => graded(grade).map((result): ReviewRow => {
     const review = notes.reviews.get(result.id) as Notes['reviews'] extends ReadonlyMap<string, infer R> ? R : never;
     const { title, why } = reviewTitle(result, context);
     return {
       id: result.id,
       state: stateOf(result),
+      grade,
       title,
       why,
       entry: result.about.kind === 'entry' ? entryAnchor(result.about.entry.name) : undefined,
       review: { status: review.status, text: research(review.text), recommendation: research(review.recommendation) },
     };
-  });
+  }));
   const judgments = notes.judgments.map((j) => ({ text: research(j.text, j.sources), recommendation: research(j.recommendation) }));
-  const counts = [...(rows.length === 0 ? [] : [{ state: worst(forSigner(ledger)), n: rows.length }]), ...(judgments.length === 0 ? [] : [{ state: 'ask' as const, n: judgments.length }])];
+  const counts = [
+    ...grades.flatMap((grade) => (graded(grade).length === 0 ? [] : [{ state: worst(graded(grade)), n: graded(grade).length, grade }])),
+    ...(judgments.length === 0 ? [] : [{ state: 'ask' as const, n: judgments.length }]),
+  ];
   const count: RailCount = { kind: 'states', counts: counts.length === 0 ? [{ state: 'ok', n: 0 }] : counts };
   return { anchor: anchor('review'), label: context.w.review, count, body: { kind: 'review', rows, judgments } };
 }
