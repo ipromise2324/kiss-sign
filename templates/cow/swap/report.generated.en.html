@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">6</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#review">To review <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -275,20 +275,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <span class="opid">cow/swap</span>
   <p class="sub"><span class="aiw" data-ai><span>The Safe calls <code>setPreSignature</code> on CoW&#39;s settlement contract to pre-sign a sell order. A solver then fills it within 30 minutes. The transaction holds only the order&#39;s hash. verify reads the full order back from CoW&#39;s API, computes the same hash, then compares the tokens, amounts and recipient one by one. The token to sell must first have an allowance for CoW&#39;s vault relayer.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
-    <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">6 / 6</span>
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 6 addresses are confirmed in at least 2 places: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the bug bounty scope, the SDK package or a shared deployer lists the same address.</span></span></li>
-    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">6 / 6</span>
+    <li data-state="bad" data-line="sources"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>Address sources <span class="n num">6 / 7</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">1 address has results for you to review; see &#34;To review&#34;. The other 6 are all confirmed in at least 2 places.</span></span></li>
+    <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify&#39;s source, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts.</span></span></li>
-    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">6 / 6</span>
+    <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped.</span></span></li>
     <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>Parameter checks <span class="n num">no tests</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The only values that may be anything are in the signed order, locked by its hash, and they are not perturbed. The template has no argument that takes any value: each is bound to the card or to a fixed value, so nothing needs a perturbation test and none is recorded. At each signing, verify changes every bound argument one by one and checks that each becomes a MISMATCH.</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result.</span></span></li>
   </ul>
-  <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>The hash locks the order&#39;s contents. Note that verify depends on the CoW API to read the order back.</span><span class="byai">AI research: be careful</span></span></div>
+  <div class="verdict" data-state="bad"><span class="lbl">Advice</span><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span class="aiw" data-ai><span>The hash locks the order&#39;s contents. Note that verify depends on the CoW API to read the order back.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">6</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-cowswap">cowswap</a></li><li><a href="#review">To review <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
 
@@ -382,13 +382,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div><dt><span class="num">2023-02-07</span></dt><dd><span class="num">$180.00 K</span><span class="sub2"><span class="aiw" data-ai><span>The Barter solver&#39;s contract had an arbitrary-call bug, and about 166,000 USD in fees that had built up in the settlement contract was taken. Users&#39; funds were not affected. <a class="aisrc" href="https://cow.fi/learn/cow-swap-solver-exploit-post-mortem">source</a></span><span class="byai">AI research</span></span></span></dd></div>
       </dl></dd></div>
   </dl>
-  <p class="srcline">On 2026-11-16 the program read <a href="https://defillama.com/protocol/cowswap">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
+  <p class="srcline">On 2026-11-17 the program read <a href="https://defillama.com/protocol/cowswap">DefiLlama</a>, <a href="https://defillama.com/hacks">DefiLlama hacks</a> and the chain. What is tagged AI research, the AI looked up.</p>
 </section>
 
 <section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>To review <span class="c"> <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>1</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">The AI checked each item first and gives its advice.</p>
   <div class="rows">
+    <div class="row" data-state="bad" data-result="weeth/source.site">
+      <svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>
+      <div><div class="t">weeth: etherfi.gitbook.io/etherfi/developers, site differs from the one DefiLlama lists</div>
+        <div class="meta">This page&#39;s domain or GitHub organization is not one DefiLlama lists for this protocol.<a href="#a-weeth">see source</a></div>
+        <div class="rec"><span class="lbl">AI has concerns</span><span class="aiw" data-ai><span>The page is on etherfi.gitbook.io, not ether.fi, the site DefiLlama lists. CoinGecko&#39;s ether-fi coin links its whitepaper on etherfi.gitbook.io, and the page lists weETH as 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee, the address CoinGecko lists for Wrapped eETH.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable: CoinGecko lists the same address.</span><span class="byai">AI research</span></span></div></div>
+    </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>verify must read the full order back from CoW&#39;s order API (api.cow.fi). When the API cannot be read, the result is UNVERIFIABLE. The API&#39;s answer is treated only as data, and it does not count if its hash does not match.</span><span class="byai">AI research</span></span></div>
@@ -416,8 +423,15 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>Addresses <span class="c">6</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the registered factory (for an adapter, with the vault that uses it) lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h2>Addresses <span class="c">7</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the registered factory (for an adapter, with the vault that uses it) lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
   <div class="rows">
+    <div class="ad" id="a-weeth" data-state="bad">
+      <svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg>
+      <div><span class="nm">weeth</span><span class="role"><span class="conf">low confidence</span><span class="reviewed">AI has concerns</span></span></div>
+      <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts">etherfi.gitbook.io/etherfi/developers</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span><span class="site" data-state="bad"><svg class="i bad" role="img" aria-label="fail"><use href="#bad"/></svg><span>site: another site (compared with <a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a>, <a href="https://www.coingecko.com/en/coins/ether-fi">CoinGecko</a>)</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">deployer 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res"><svg class="i mute" role="img" aria-label="nothing to compare"><use href="#na"/></svg>no confirmed contract shares it</span></span></div></div>
+        <div class="confirmed">Confirmed in 2 places: official page, CoinGecko</div></div>
+    </div>
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>6 more addresses have no result for you to review</summary>
     <div class="ad" id="a-usdc" data-state="ok">
@@ -509,7 +523,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">Written by <code>pnpm report cow/swap --record</code> from <code>templates/cow/swap/template.json</code>, <code>templates/cow/swap/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/cow-swap.json</code>, <code>testdata/abi</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/cow/swap/notes.json</code>; the data was read on 2026-11-16. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<footer class="foot">Written by <code>pnpm report cow/swap --record</code> from <code>templates/cow/swap/template.json</code>, <code>templates/cow/swap/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/cow-swap.json</code>, <code>testdata/abi</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/cow/swap/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>
 </div>
