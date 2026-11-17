@@ -227,7 +227,7 @@ export type PastAmountRow = { readonly party: string; readonly cells: readonly {
 export type PastAmounts = {
   readonly effect: string;
   readonly tolerance: string;
-  readonly tokens: readonly { readonly lead: string; readonly rows: readonly PastAmountRow[] }[];
+  readonly tokens: readonly { readonly count: number; readonly lead: string; readonly rows: readonly PastAmountRow[] }[];
   readonly finding: string | undefined;
   readonly unmeasured: string | undefined;
 };
@@ -1593,7 +1593,8 @@ function pastSection(context: Context): Section {
       effect: effectText(effect),
       tolerance: w.amountsTolerance(effect.tolerance?.less ?? 0n, effect.tolerance?.more ?? 0n),
       tokens: tokens.map((t) => ({
-        lead: w.amountsToken(nameOf(t.token), t.sender.length, t.safes, t.eoas, t.inRegistry),
+        count: t.sender.length,
+        lead: w.amountsToken(nameOf(t.token), t.safes, t.eoas, t.inRegistry),
         rows: [row('sender', t.sender), ...(t.receiver.length === 0 ? [] : [row('receiver', t.receiver)])],
       })),
       finding: finding === undefined ? undefined : finding.kind === 'beyond' ? w.amountsBeyond(finding.lower, finding.higher) : w.amountsUnfounded,
