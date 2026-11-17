@@ -284,7 +284,7 @@ test("the report asks an adapter's factory and the vault naming it, from its rec
   assert.deepEqual(compareReports(committed, render(removed)), [
     'Factory answers › `acuto-usdc-v2-4a57-market-adapter` (2) › Answer: committed true, live REFUSED: acuto-usdc-v2-4a57 answered isAdapter(address) false for acuto-usdc-v2-4a57-market-adapter: it does not vouch for it',
     ...denied.rows,
-    ...denied.count(65, 18),
+    ...denied.count(66, 17),
   ]);
   assert.doesNotMatch(render(undefined), /isAdapter/, 'a recording that predates the answers prints them as not read');
   assert.equal(await readInstances(replayReader([]), scoped.subject, scoped.registry, block), undefined, 'a report with no such entry reads nothing');
