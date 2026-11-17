@@ -186,9 +186,8 @@ function requiredKey(name: 'alchemy' | 'etherscan', env: Env): string {
 }
 
 /**
- * The live sources, with keys from the environment or `$KISS_SIGN_HOME/.env`. A request that fails on the way or gets a
- * busy answer is sent again a few times, then noted. A failure names the source only, never a URL, since both URLs
- * carry a key.
+ * The live sources, with keys from the environment or `$KISS_SIGN_HOME/.env`. A failure names the source only, never a
+ * URL, since both URLs carry a key.
  */
 export function liveAsk(env: Env, note: NoteUnread, transport: Transport = httpsTransport()): Ask {
   const alchemyUrl = mainnetEndpoints(env)[0].url;

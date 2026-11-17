@@ -80,8 +80,7 @@ test('pnpm attacks prints, per case, the card with full addresses, the decoded c
   for (const line of verdicts) assert.match(line, /: (MISMATCH|UNVERIFIABLE|no verdict, verify stopped: .*)$/);
 });
 
-/** `attacks --record <id>` in a copy of the repository, with the case's recorded answers served through `transport`. */
-async function record(id: string, transport: (served: Transport, drpc: string) => Transport): Promise<{ code: number | Error; before: string; after: string }> {
+async function recordInRepoCopy(id: string, transport: (served: Transport, drpc: string) => Transport): Promise<{ code: number | Error; before: string; after: string }> {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-attacks-'));
   try {
     for (const dir of ['templates', 'registry', join('testdata', 'attacks')]) cpSync(join(ROOT, dir), join(root, dir), { recursive: true });
@@ -110,7 +109,7 @@ async function record(id: string, transport: (served: Transport, drpc: string) =
 }
 
 test('attacks --record refuses, naming the read and leaving the recording as it was, when a read still fails on the way after every retry', async () => {
-  const { code, before, after } = await record('wazirx', (served, drpc) => async (url, body, signal) => {
+  const { code, before, after } = await recordInRepoCopy('wazirx', (served, drpc) => async (url, body, signal) => {
     if (url === drpc && body.includes('eth_getTransactionReceipt')) throw Object.assign(new Error('read ECONNRESET'), { code: 'ECONNRESET' });
     return served(url, body, signal);
   });

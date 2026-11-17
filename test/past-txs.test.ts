@@ -371,8 +371,7 @@ test("a Safe's transaction that makes none of the template's calls is another op
   assert.doesNotMatch(text, /^misfits, by reason:\n {2}1 from 1 Safe: calls /m);
 });
 
-/** The recorded answers, except that `fails` requests of `hash` to drpc fail on the way, as a dropped connection does. */
-function dropping(hash: string, fails: number): Transport {
+function replayDroppingDrpc(hash: string, fails: number): Transport {
   const replay = replayTransport(recording.exchanges, REPLAY_ENDPOINTS);
   let left = fails;
   return async (url, body, signal) => {
@@ -383,14 +382,14 @@ function dropping(hash: string, fails: number): Transport {
 
 test('a read that fails on the way is asked again, so a dropped connection that heals changes nothing', async () => {
   const unread: string[] = [];
-  const reader = createReader(REPLAY_ENDPOINTS, dropping(FIT, 2), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
+  const reader = createReader(REPLAY_ENDPOINTS, replayDroppingDrpc(FIT, 2), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
   assert.equal(await report({ reader }), await report());
   assert.deepEqual(unread, []);
 });
 
 test('a read that still fails on the way after every retry is named, and --record refuses to keep the study', async () => {
   const unread: string[] = [];
-  const reader = createReader(REPLAY_ENDPOINTS, dropping(FIT, Infinity), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
+  const reader = createReader(REPLAY_ENDPOINTS, replayDroppingDrpc(FIT, Infinity), { retryPausesMs: [0, 0], note: (read) => void unread.push(read) });
   const text = await report({ reader });
   assert.match(text, new RegExp(`^ {2}1 unreadable, eth_getTransactionByHash: drpc failed \\(unreachable\\): ${FIT}$`, 'm'));
   assert.deepEqual(unread, ['drpc eth_getTransactionByHash: unreachable']);

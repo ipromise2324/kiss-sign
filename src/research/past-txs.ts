@@ -12,9 +12,9 @@ import type { OutsideKind, Sender, TxStudy } from './study.ts';
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
 
 /**
- * `spread`: `count` windows of up to `blocks` blocks each, evenly spaced over the year before the head block and placed
- * by it alone: `head` when given, else the chain's. A window whose transfers do not fit one page of a source is halved
- * until they do. `range`: one window the caller chose, refused when it holds more than a page.
+ * `spread`: `count` windows of up to `blocks` blocks each, evenly spaced over the last year and placed by the head
+ * block alone. A window whose transfers do not fit one page of a source is halved until they do. `range`: one window
+ * the caller chose, refused when it holds more than a page.
  */
 export type Sampling =
   | { readonly kind: 'spread'; readonly count: number; readonly blocks: bigint; readonly head?: bigint }
@@ -52,7 +52,6 @@ export type WindowRun = { readonly asked: BlockRange; readonly range: BlockRange
 
 export type PastTxs = {
   readonly query: PastTxsQuery;
-  /** The block a spread's windows were placed by; none for a range. */
   readonly head: bigint | undefined;
   readonly windows: readonly WindowRun[];
   readonly perWindow: number;
