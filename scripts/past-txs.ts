@@ -9,8 +9,10 @@ import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
-import { ANCHOR_KINDS, liveAsk, recordingAsk } from '../src/research/sources.ts';
-import type { AnchorKind } from '../src/research/sources.ts';
+import { ANCHOR_KINDS, anchorEvent, liveAsk, recordingAsk } from '../src/research/sources.ts';
+import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
+import { liveMessages, recordingMessages } from '../src/research/messages.ts';
+import { httpsMessage } from '../src/verify/messages.ts';
 import { scrubRecording } from '../src/research/recording.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
@@ -20,6 +22,7 @@ import { unreadRefusal } from '../src/chain/https.ts';
 
 const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/past-txs.ts <protocol>/<operation>
   --token <registry name | address> --anchor mint|burn|any [--from <registry name | address>] [--to <registry name | address>]
+  --token <registry name | address> --anchor event --event '<event signature>'
   [--max-txs <n>] [--record <name>]
   [--from-block <n> --to-block <n> | --same-windows-as <recording>]
 
@@ -29,12 +32,16 @@ Finds executed transactions of one operation through an anchor: an ERC-20 Transf
   transfer a token:       --token <token> --anchor any    (any transfer of the token)
   claim a reward:         --token <token> --anchor any --from <distributor>   (the distributor paying it out)
   supply to a market:     --token <loan token> --anchor any --to <lending>    (the loan token moving into Morpho Blue)
+  move no token:          --token <contract> --anchor event --event 'PreSignature(address,bytes,bool)'   (the contract logging the event)
 It searches 12 windows of up to 7200 blocks spread over the last year, placed by the head block, and studies at most
 --max-txs (at least 12) transactions shared evenly between them. A window with more transfers than one page of a
 source is halved until they fit, and the report names the blocks left out. --same-windows-as places the windows by the head
 block testdata/research/<recording>.json keeps instead of today's, so a run again searches the same windows.
 --from-block and --to-block replace the windows with one range.
-Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window; each transaction says which found it.
+Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer; each transaction says
+which found it. Only Etherscan searches an event: Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan.
+A signed message the template names by its digest, such as a CoW order, is read from the template's lookup.
+For each free number the template leaves, it prints the spread of values, less the block's time for a declared time.
 Senders are counted by type: a proven Safe (Safe proxy code and an official singleton), a contract that is not a proven
 Safe, and an EOA making one of the template's calls directly.
 The Safe in $KISS_SIGN_HOME/config.json is left out of every count, example and recording.`;
@@ -51,6 +58,7 @@ const { values: flags, positionals } = parseArgs({
     'same-windows-as': { type: 'string' },
     from: { type: 'string' },
     to: { type: 'string' },
+    event: { type: 'string' },
     'max-txs': { type: 'string', default: '240' },
     record: { type: 'string' },
   },
@@ -75,6 +83,17 @@ for (const flag of ['from', 'to'] as const) {
     console.error(`--${flag} goes with --anchor any`);
     process.exit(64);
   }
+}
+if ((kind === 'event') !== (flags.event !== undefined)) {
+  console.error('--event goes with --anchor event, and --anchor event needs --event');
+  process.exit(64);
+}
+let event: AnchorEvent | undefined;
+try {
+  event = flags.event === undefined ? undefined : anchorEvent(flags.event);
+} catch (error) {
+  console.error(`--event: ${(error as Error).message}`);
+  process.exit(64);
 }
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
 const head = flags['same-windows-as'] === undefined ? undefined : await recordedHead(flags['same-windows-as']);
@@ -114,16 +133,18 @@ const chain = recordingTransport(httpsTransport(), endpoints);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
 const sources = recordingAsk(liveAsk(process.env, note));
+const messages = recordingMessages(liveMessages(httpsMessage, note));
 const reader = createReader(endpoints, chain.transport, { note });
 const query = {
   template,
-  anchor: { token, kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }) },
+  anchor: { token, kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }), ...(event === undefined ? {} : { event }) },
   sampling: range !== undefined ? ({ kind: 'range', range } as const) : head === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, head },
 };
 const run = await pastTxs(query, {
   ask: sources.ask,
   reader,
   registry,
+  readMessage: messages.read,
   exclude,
   maxTxs,
 });
@@ -144,11 +165,13 @@ if (flags.record !== undefined) {
         anchor: kind,
         ...(from === undefined ? {} : { from }),
         ...(to === undefined ? {} : { to }),
+        ...(event === undefined ? {} : { event: event.signature }),
         ...(range === undefined ? {} : { fromBlock: range.fromBlock.toString(), toBlock: range.toBlock.toString() }),
         ...(run.head === undefined ? {} : { head: run.head.toString() }),
         maxTxs,
       },
       sources: sources.exchanges(),
+      messages: messages.exchanges(),
       providers,
       exchanges: chain.exchanges().filter((e) => providers.every((p) => p in e.answers)),
     },

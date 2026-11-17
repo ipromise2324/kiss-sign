@@ -27,7 +27,8 @@ import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSi
 import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
-import { amountsOf } from './past-txs.ts';
+import { PERCENTILES, amountsOf, freeNumbers } from './past-txs.ts';
+import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
 import { functionNames, isOtherOperation, misfitText } from './study.ts';
 import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
@@ -82,7 +83,7 @@ export type Body =
   | { readonly kind: 'review'; readonly rows: readonly ReviewRow[]; readonly judgments: readonly Judgment[] }
   | { readonly kind: 'wallet'; readonly view: WalletView }
   | { readonly kind: 'addresses'; readonly open: readonly AddressRow[]; readonly folded: readonly AddressRow[] }
-  | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly amounts: readonly PastAmounts[]; readonly recordings: readonly PastRecording[] }
+  | { readonly kind: 'past'; readonly same: Inline; readonly conclusion: AiText | undefined; readonly amounts: readonly PastAmounts[]; readonly spreads: readonly PastSpread[]; readonly recordings: readonly PastRecording[] }
   | { readonly kind: 'next'; readonly steps: readonly NextStep[]; readonly automatic: readonly Inline[] };
 
 export type NextStep = { readonly say: Inline; readonly command: string | undefined; readonly then: readonly Inline[]; readonly hashes: boolean };
@@ -99,7 +100,7 @@ export type Header = {
 
 export type StripItem = { readonly line: StripLine | 'providers'; readonly name: string; readonly state: State; readonly count: string | undefined; readonly explain: string };
 
-export type Who = 'you-type' | 'you-pick' | 'fixed' | 'free';
+export type Who = 'you-type' | 'you-pick' | 'fixed' | 'free' | 'bounded';
 export type KeyItem = { readonly who: Who; readonly label: string; readonly means: string };
 export type Chip = { readonly who: Who; readonly label: string };
 
@@ -234,6 +235,15 @@ export type PastAmounts = {
   readonly tokens: readonly { readonly count: number; readonly lead: string; readonly rows: readonly PastAmountRow[] }[];
   readonly finding: string | undefined;
   readonly unmeasured: string | undefined;
+};
+/** One free number of one recording and sender type: the smallest value, the percentiles and the largest, each with its label. */
+export type PastSpread = {
+  readonly field: string;
+  readonly who: string;
+  readonly lead: string;
+  readonly count: number;
+  readonly cells: readonly { readonly label: string; readonly value: string }[];
+  readonly unrecorded: string | undefined;
 };
 export type PastRecording = { readonly file: string; readonly count: string; readonly search: Inline; readonly blocks: readonly PastBlock[]; readonly others: readonly Inline[] };
 
@@ -499,6 +509,8 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
       return { who: 'fixed', field: undefined };
     case 'free':
       return { who: 'free', field: undefined };
+    case 'within-seconds':
+      return { who: 'bounded', field: undefined };
     case 'equals':
       return whoOf(rule.rule, template);
     case 'share-price':
@@ -516,7 +528,7 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
 }
 
 const chipLabel = (template: Template, who: Who, field: string | undefined, w: Words): string =>
-  who === 'free' ? w.appFills : field === undefined || who === 'fixed' ? w.who[who] : w.chip(w.who[who], fieldWord(template, field, w));
+  who === 'free' ? w.appFills : who === 'bounded' ? w.appBounded : field === undefined || who === 'fixed' ? w.who[who] : w.chip(w.who[who], fieldWord(template, field, w));
 
 function leaves(node: ArgNode, template: Template): { readonly node: ArgNode; readonly who: Who; readonly field: string | undefined }[] {
   if (node.rule.kind === 'call') return [];
@@ -622,6 +634,8 @@ function leafWords(node: ArgNode, context: Context): { readonly words: Inline; r
     }
     case 'free':
       return { words: [w.differs], qualifier: [w.free[rule.claim]] };
+    case 'within-seconds':
+      return { words: [w.within(rule.seconds)], qualifier: [w.withinHow] };
     case 'equals':
       return { words: w.sameAs({ code: rule.path }), qualifier: undefined };
     case 'owner-before':
@@ -1003,6 +1017,7 @@ function keyItems(used: ReadonlySet<Who>, template: Template, w: Words): KeyItem
     ...(used.has('fixed') ? [{ who: 'fixed' as const, label: w.who.fixed, means: w.whoMeans.fixed }] : []),
     ...(used.has('free') ? [...freeRules(template).claims].map((claim) => ({ who: 'free' as const, label: w.appFills, means: w.freeKey[claim] })) : []),
     ...(used.has('free') && freeRules(template).member ? [{ who: 'free' as const, label: w.appFills, means: w.whoMeans.member }] : []),
+    ...(used.has('bounded') ? [{ who: 'bounded' as const, label: w.appBounded, means: w.whoMeans.bounded }] : []),
   ];
 }
 
@@ -1043,7 +1058,7 @@ function flowSection(context: Context): Section {
 
 /** Who gives the values, in words, such as `you type, you pick and the app fills`. */
 const chosenWords = (used: ReadonlySet<Who>, w: Words): string =>
-  w.and((['you-type', 'you-pick', 'free'] as const).filter((who) => used.has(who)).map((who) => w.chosen[who]));
+  w.and((['you-type', 'you-pick', 'free'] as const).filter((who) => used.has(who) || (who === 'free' && used.has('bounded'))).map((who) => w.chosen[who]));
 
 type ProtocolNote = NonNullable<ReturnType<Notes['protocols']['get']>>;
 
@@ -1276,6 +1291,8 @@ function ruleWords(rule: Rule, context: Context): Inline {
       return [...ruleWords(rule.rule, context), w.asWord];
     case 'free':
       return [w.any];
+    case 'within-seconds':
+      return [w.within(rule.seconds)];
     case 'equals':
       return w.sameAs({ code: rule.path });
     case 'share-price':
@@ -1427,7 +1444,9 @@ function addressSection(context: Context): Section[] {
 }
 
 /** A search anchor in words: a mint or burn of a vault's shares is a deposit or a withdrawal, of any other token only a mint or burn. */
-function anchorWords(anchor: string, token: RegistryEntry | undefined, w: Words): string {
+function anchorWords(query: PastTxsRecording['query'], token: RegistryEntry | undefined, w: Words): string {
+  const { anchor } = query;
+  if (anchor === 'event') return query.event?.split('(')[0] ?? anchor;
   const vault = token?.kind === 'vault';
   if (anchor === 'mint') return vault ? w.anchor.mintVault : w.anchor.mint;
   if (anchor === 'burn') return vault ? w.anchor.burnVault : w.anchor.burn;
@@ -1486,6 +1505,8 @@ function misfitWords(reason: MisfitReason, template: string, registry: Registry,
       return w.misfit.notSender({ code: reason.at });
     case 'differs':
       return w.misfit.differs({ code: reason.at }, { code: reason.other });
+    case 'late':
+      return w.misfit.late({ code: reason.at }, reason.seconds);
     case 'trailer':
       return w.misfit.trailer({ code: reason.at });
     case 'foreign-delegatecall':
@@ -1597,8 +1618,8 @@ function pastSection(context: Context): Section {
     const same = [...run.found.values()].every((s) => s.length === 2);
     return {
       file,
-      count: w.searchCount(nameOf(query.token), anchorWords(query.anchor, registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length),
-      search: w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
+      count: w.searchCount(nameOf(query.token), anchorWords(query, registry.byAddress.get(query.token.toLowerCase() as Address), w), run.found.size, run.studies.length),
+      search: query.anchor === 'event' ? w.searchEtherscanOnly({ num: `${etherscan}` }) : w.searchSame(same, { num: `${alchemy} ${same ? '=' : '≠'} ${etherscan}` }),
       blocks,
       others,
     };
@@ -1622,8 +1643,22 @@ function pastSection(context: Context): Section {
       unmeasured: missed === 0 ? undefined : w.amountsUnmeasured(missed),
     }));
   });
+  const spreads = context.inputs.pastTxs.flatMap(({ run }): PastSpread[] => {
+    const fits = run.studies.filter((s): s is Fit => s.kind === 'fit');
+    const groups = [
+      { safe: true, fits: fits.filter((f) => f.sender.kind === 'safe'), rules: run.shapes.whole.loosened.rules },
+      ...run.shapes.calls.map((shape, call) => ({ safe: false, fits: fits.filter((f) => f.sender.kind === 'eoa' && f.sender.call === call), rules: shape.loosened.rules })),
+    ];
+    return groups.flatMap(({ safe, fits: of, rules }) =>
+      freeNumbers(of, rules).map(({ path, time, spread, unrecorded }): PastSpread => {
+        const value = (n: bigint) => (time ? w.spreadSeconds(n) : `${n}`);
+        const cells = spread === undefined ? [] : [['min', spread.min] as const, ...PERCENTILES.map((p, i) => [`p${p}`, spread.percentiles[i] as bigint] as const), ['max', spread.max] as const];
+        return { field: path, who: w.spreadWho(safe), lead: w.spreadTime(time), count: spread?.count ?? 0, cells: cells.map(([label, n]) => ({ label, value: value(n) })), unrecorded: unrecorded === 0 ? undefined : w.spreadUnrecorded(unrecorded) };
+      }),
+    );
+  });
   const conclusion = context.notes.pastTxsConclusion === undefined ? undefined : research(context.notes.pastTxsConclusion);
-  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, amounts, recordings } };
+  return { anchor: anchor('past'), label: w.past, count: undefined, body: { kind: 'past', same: sameShape(context), conclusion, amounts, spreads, recordings } };
 }
 
 function sameShape(context: Context): Inline {
@@ -1656,7 +1691,7 @@ function sameShape(context: Context): Inline {
     ...new Set(
       context.inputs.pastTxs.map(({ query }) => {
         const token = registry.byAddress.get(query.token.toLowerCase() as Address);
-        return w.searched(token?.name ?? checksumAddress(query.token as Address), anchorWords(query.anchor, token, w));
+        return w.searched(token?.name ?? checksumAddress(query.token as Address), anchorWords(query, token, w));
       }),
     ),
   ];

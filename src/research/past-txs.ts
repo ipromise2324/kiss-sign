@@ -6,9 +6,10 @@ import type { Address, Hex } from '../safe/types.ts';
 import type { LeafRule, Quantity, Template } from '../template/template.ts';
 import { effectText, distributionOf, measure, shown, statedEffects, toleranceFinding } from './amounts.ts';
 import type { Difference, Measurement, StatedEffect } from './amounts.ts';
-import { ResearchError, SOURCES, TooManyTransfers, searchBoth } from './sources.ts';
+import { ResearchError, SOURCES, TooManyTransfers, searchBoth, searchedBy } from './sources.ts';
 import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
-import { brokenRule, constText, functionNames, isOtherOperation, misfitText, shapesOf, studyTx } from './study.ts';
+import type { ReadMessage } from './messages.ts';
+import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, shapesOf, studyTx } from './study.ts';
 import type { OutsideKind, Sender, TxStudy } from './study.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
@@ -42,6 +43,7 @@ export type PastTxsDeps = {
   readonly ask: Ask;
   readonly reader: Reader;
   readonly registry: Registry;
+  readonly readMessage: ReadMessage;
   readonly exclude: Address | undefined;
   /** The most transactions studied in a run, shared evenly between the windows; below one per window none is studied. */
   readonly maxTxs: number;
@@ -134,7 +136,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     searched.push({ asked, range, found: [...window.found.keys()], sample: spacedSample([...window.found.keys()], perWindow) });
   }
   const shapes = shapesOf(query.template);
-  const context = { shapes, registry: deps.registry, exclude: deps.exclude, anchor: { kind: query.anchor.kind, token: query.anchor.token.toLowerCase() as Address } };
+  const context = { shapes, registry: deps.registry, readMessage: deps.readMessage, exclude: deps.exclude, anchor: { kind: query.anchor.kind, token: query.anchor.token.toLowerCase() as Address } };
   const all = await inPool(searched.flatMap((w) => w.sample), 4, (hash) => studyTx(deps.reader, hash, context).then((study) => ({ hash, study })));
   const studies: Kept[] = [];
   for (const { hash, study } of all) {
@@ -151,6 +153,40 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
   const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
   return { query, head, windows, perWindow, found, studies, shapes, excluded, effects, measurements };
+}
+
+export const PERCENTILES = [50, 90, 99] as const;
+
+export type Spread = { readonly count: number; readonly min: bigint; readonly percentiles: readonly bigint[]; readonly max: bigint };
+
+export function spreadOf(values: readonly bigint[]): Spread | undefined {
+  const sorted = [...values].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
+  const n = sorted.length;
+  if (n === 0) return undefined;
+  const nearestRank = (rank: number) => sorted[Math.max(rank, 1) - 1] as bigint;
+  return { count: n, min: nearestRank(1), percentiles: PERCENTILES.map((p) => nearestRank(Math.ceil((p * n) / 100))), max: nearestRank(n) };
+}
+
+/**
+ * One free or `withinSeconds` `uint` or `int` field over the fitting transactions of one sender type: its values, or
+ * for a time, each less its block's time; `unrecorded` counts transactions whose block time was not read.
+ */
+export type FreeNumber = { readonly path: string; readonly time: boolean; readonly spread: Spread | undefined; readonly unrecorded: number };
+
+export function freeNumbers(fits: readonly Fit[], rules: readonly LeafRule[]): FreeNumber[] {
+  const first = fits[0];
+  if (first === undefined) return [];
+  return rules.flatMap((rule, i): FreeNumber[] => {
+    const type = first.types[i];
+    if ((rule.kind !== 'free' && rule.kind !== 'within-seconds') || (type?.kind !== 'uint' && type?.kind !== 'int')) return [];
+    const time = isTime(rule);
+    const values = fits.flatMap((fit) => {
+      const value = BigInt(fit.values[i] as string);
+      if (!time) return [value];
+      return fit.time === undefined ? [] : [value - fit.time];
+    });
+    return [{ path: first.paths[i] as string, time, spread: spreadOf(values), unrecorded: fits.length - values.length }];
+  });
 }
 
 async function chainHead(reader: Reader): Promise<bigint> {
@@ -175,6 +211,8 @@ function describeRule(rule: LeafRule, sender: string): string {
       return `card ${rule.ref.field}${rule.ref.attribute === undefined ? '' : `.${rule.ref.attribute}`}`;
     case 'free':
       return 'free';
+    case 'within-seconds':
+      return `at most ${rule.seconds} seconds after its block's time`;
     case 'equals':
       return `same as ${rule.path}`;
     case 'owner-before':
@@ -189,7 +227,7 @@ function describeRule(rule: LeafRule, sender: string): string {
   }
 }
 
-type Fit = Extract<Kept, { kind: 'fit' }>;
+export type Fit = Extract<Kept, { kind: 'fit' }>;
 type Misfit = Extract<Kept, { kind: 'misfit' }>;
 
 function label(value: string, type: AbiType, fit: Fit, registry: Registry, anchorToken: Address, sender: string): string | undefined {
@@ -244,17 +282,19 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
   }
   if (fits.length > 0) {
     lines.push(`fields, over the ${plural(fits.length, 'fitting transaction')}:`);
+    const numbers = freeNumbers(fits, rules);
     const paths = fits[0]?.paths ?? [];
     rules.forEach((rule, i) => {
       const holding = fits.filter((fit) => brokenRule(rule, i, rules, fit.paths, fit.values, fit.sender) === undefined);
       lines.push(`  ${paths[i]}  [${describeRule(rule, sender)}]`);
       const heldText =
-        rule.kind === 'free' || rule.kind === 'equals' || rule.kind === 'share-price' || rule.kind === 'at-least' || rule.kind === 'at-most'
+        rule.kind === 'free' || rule.kind === 'within-seconds' || rule.kind === 'equals' || rule.kind === 'share-price' || rule.kind === 'at-least' || rule.kind === 'at-most'
           ? ''
           : (rule.kind === 'address-word' ? rule.rule : rule).kind === 'card'
             ? `same as the other leaves bound to ${describeRule(rule, sender)} in ${holding.length} of ${fits.length}; `
             : `equalled ${describeRule(rule, sender)} in ${holding.length} of ${fits.length} (${plural(sendersOf(holding), who, many)}); `;
-      lines.push(`    ${heldText}values: ${distribution(run, fits, i, registry, sender)}`);
+      const number = numbers.find((n) => n.path === paths[i]);
+      lines.push(`    ${heldText}values: ${number === undefined ? distribution(run, fits, i, registry, sender) : spreadText(number)}`);
     });
   }
   if (misfits.length > 0) {
@@ -272,6 +312,13 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
   }
   const exactFirst = [...fits.filter((fit) => fit.outside.length === 0), ...fits.filter((fit) => fit.outside.length > 0)];
   if (fits.length > 0) lines.push(`examples that fit: ${exactFirst.slice(0, 3).map((f) => mark(f.hash)).join(', ')}`);
+}
+
+function spreadText({ time, spread, unrecorded }: FreeNumber): string {
+  const missing = unrecorded === 0 ? '' : `; block time not recorded for ${unrecorded}`;
+  if (spread === undefined) return `${time ? "less the block's time: " : ''}none${missing}`;
+  const percentiles = PERCENTILES.map((p, i) => `p${p} ${spread.percentiles[i]}`).join(', ');
+  return `${time ? "less the block's time, in seconds: " : ''}${plural(spread.count, 'transaction')}, min ${spread.min}, ${percentiles}, max ${spread.max}${missing}`;
 }
 
 /** One token an effect moved in the measured transactions: each party's differences, and the sender types they came from. */
@@ -362,9 +409,10 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   const tokenName = registry.byAddress.get(anchor.token)?.name;
   const named = (address: Address): string => registry.byAddress.get(address)?.name ?? checksumAddress(address);
   const moved = `moved${anchor.from === undefined ? '' : ` out of ${named(anchor.from)}`}${anchor.to === undefined ? '' : ` into ${named(anchor.to)}`}`;
-  const direction = { mint: 'minted (from the zero address)', burn: 'burned (to the zero address)', any: moved }[anchor.kind];
+  const of = `${tokenName === undefined ? '' : `${tokenName} `}${checksumAddress(anchor.token)}`;
   lines.push(`past transactions for ${template.id}`);
-  lines.push(`anchor: Transfer of ${tokenName === undefined ? '' : `${tokenName} `}${checksumAddress(anchor.token)} ${direction}`);
+  if (anchor.kind === 'event') lines.push(`anchor: ${anchor.event?.signature} logged by ${of}`);
+  else lines.push(`anchor: Transfer of ${of} ${{ mint: 'minted (from the zero address)', burn: 'burned (to the zero address)', any: moved }[anchor.kind]}`);
   if (sampling.kind === 'spread') {
     lines.push(`windows: ${sampling.count} of up to ${sampling.blocks} blocks, one every ${YEAR / BigInt(sampling.count)} blocks over the last year; at most ${run.perWindow} studied per window`);
   } else lines.push('windows: one block range given by hand');
@@ -376,14 +424,17 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   const bySource = (source: SourceName) => [...run.found].filter(([, s]) => s.includes(source)).length;
   const only = (source: SourceName) => [...run.found].filter(([, s]) => s.length === 1 && s[0] === source).map(([hash]) => hash);
   const both = [...run.found].filter(([, s]) => s.length === SOURCES.length).length;
-  lines.push(`sources: alchemy found ${bySource('alchemy')}, etherscan found ${bySource('etherscan')}; both ${both}, only alchemy ${only('alchemy').length}, only etherscan ${only('etherscan').length}`);
-  for (const source of SOURCES) {
-    const hashes = only(source);
-    if (hashes.length > 0) lines.push(`  only ${source}: ${hashes.join(', ')}`);
-  }
+  const searched = searchedBy(anchor);
+  if (searched.length === SOURCES.length) {
+    lines.push(`sources: alchemy found ${bySource('alchemy')}, etherscan found ${bySource('etherscan')}; both ${both}, only alchemy ${only('alchemy').length}, only etherscan ${only('etherscan').length}`);
+    for (const source of SOURCES) {
+      const hashes = only(source);
+      if (hashes.length > 0) lines.push(`  only ${source}: ${hashes.join(', ')}`);
+    }
+  } else lines.push(`sources: etherscan found ${bySource('etherscan')}; alchemy does not search an event (its eth_getLogs reads at most 10 blocks at a time on the free plan)`);
   const mark = (hash: Hex): string => {
     const sources = run.found.get(hash) ?? [];
-    return sources.length === SOURCES.length ? hash : `${hash} [only ${sources[0]}]`;
+    return sources.length === searched.length ? hash : `${hash} [only ${sources[0]}]`;
   };
 
   const n = run.studies.length;

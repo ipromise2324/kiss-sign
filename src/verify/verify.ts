@@ -25,7 +25,7 @@ import { scanCalls, simulateSafeTx } from '../simulate/simulate.ts';
 import type { CallScan, Observation } from '../simulate/simulate.ts';
 import { checkTemplateFields, inspectTemplateFields } from '../template/check.ts';
 import { messageFromAnswer } from '../template/eip712.ts';
-import type { FieldChain, Messages, OwnersRead } from '../template/check.ts';
+import type { BlockTimeRead, FieldChain, Messages, OwnersRead } from '../template/check.ts';
 import { checkMutations } from '../template/mutation.ts';
 import { parseTemplate } from '../template/template.ts';
 import type { Rule, Template } from '../template/template.ts';
@@ -209,6 +209,12 @@ async function simulatedOn(reader: Reader, executed: Hex | undefined, latest: Bl
   return typeof own === 'string' ? own : { parent, time: own.time };
 }
 
+/** The block a `withinSeconds` rule counts from: the latest block for a pending transaction, the block it ran in for an executed one. */
+function judgedOn(on: { parent: BlockHeader; time: bigint } | string, executed: Hex | undefined): BlockTimeRead {
+  if (typeof on === 'string') return { kind: 'unread', why: on };
+  return executed === undefined ? { kind: 'read', number: on.parent.number, time: on.parent.time } : { kind: 'read', number: on.parent.number + 1n, time: on.time };
+}
+
 /** Whether a template on the card binds a field to the owner before a card owner, which needs the Safe's owner list. */
 function usesOwnerBefore(card: ResolvedCard, templates: ReadonlyMap<string, Template>): boolean {
   const visit = (rule: Rule): boolean =>
@@ -325,7 +331,8 @@ export async function evaluateTx(
     assets: await readAt(claims, (block) => checkAssets(reader, claims, block)),
     code: await readAt(pinned, (block) => checkCode(reader, pinned, block, executed === undefined ? 'pending' : 'executed')),
   };
-  const chain: FieldChain = !needsOwners ? {} : { owners: typeof at === 'string' ? { kind: 'unread', why: at } : await readOwners(reader, safe, at) };
+  const owners: OwnersRead | undefined = !needsOwners ? undefined : typeof at === 'string' ? { kind: 'unread', why: at } : await readOwners(reader, safe, at);
+  const chain: FieldChain = { ...(owners === undefined ? {} : { owners }), blockTime: judgedOn(on, executed) };
   const kept = observation.kind === 'observed' ? keptSeen(observation.observed, prepared.card, prepared.templates, prepared.registry) : [];
   const checks = allChecks(prepared, tx, observation, read, chain);
   const states = checkStates(checks, prepared.registry);
