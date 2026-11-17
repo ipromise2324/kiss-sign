@@ -1628,7 +1628,7 @@ function promptStep(name: string, field: CardField, context: Context): NextStep 
     case 'contract': {
       const only = onlyName({ field: name, attribute: undefined }, context);
       if (only !== undefined) return step([...cardNewPrompt, ...w.pickOnly(link(only), { mono: checksumAddress(only.address) })], [w.byName({ code: only.name })]);
-      return step([...cardNewPrompt, w.pickKind(w.kind[field.scope.registryKind])]);
+      return step([...cardNewPrompt, w.pickKind(w.kind[field.scope.registryKind], field.scope.marketPart === undefined ? undefined : w.part[field.scope.marketPart])]);
     }
     case 'market':
       return step([...cardNewPrompt, w.pickMarket]);

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import type { AdapterAnswer, AdapterCause, InstanceProof, RefusalCause } from '../src/contracts/instance.ts';
+import type { AdapterAnswer, AdapterCause, InstanceProof, ParentAnswer, ParentCause, RefusalCause } from '../src/contracts/instance.ts';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { canonicalType, parseFunctionSignature } from '../src/decode/abi.ts';
 import type { AbiFunction } from '../src/decode/abi.ts';
@@ -172,7 +172,12 @@ const CREATED = { kind: 'created', asked: 'isVaultAdapter(address)', answered: '
 const factoryRefusal = (cause: RefusalCause): InstanceAnswers['factory'] => ({ kind: 'refused', cause, why: '' });
 const USES: AdapterAnswer = { vault: ADAPTED, asked: 'isAdapter(address)', block: { number: 200n, hash: PIN }, kind: 'uses', providers: ['alchemy', 'drpc'] };
 const vaultRefusal = (cause: AdapterCause): AdapterAnswer => ({ vault: ADAPTED, asked: 'isAdapter(address)', block: { number: 200n, hash: PIN }, kind: 'refused', cause, why: '' });
-const adapterAsked = (factory: InstanceAnswers['factory'], vaults: readonly AdapterAnswer[]): Partial<Setup> => ({ entry: ADAPTER, instances: { factory, vaults } });
+const MADE_FOR: ParentAnswer = { vault: ADAPTED, asked: 'parentVault()', block: { number: 200n, hash: PIN }, kind: 'made-for', providers: ['alchemy', 'drpc'] };
+const parentRefusal = (cause: ParentCause): ParentAnswer => ({ vault: ADAPTED, asked: 'parentVault()', block: { number: 200n, hash: PIN }, kind: 'refused', cause, why: '' });
+const adapterAsked = (factory: InstanceAnswers['factory'], vaults: readonly AdapterAnswer[], parents: readonly ParentAnswer[] = vaults.map(({ vault }) => ({ ...MADE_FOR, vault }))): Partial<Setup> => ({
+  entry: ADAPTER,
+  instances: { factory, vaults, parents },
+});
 
 const proven = (codeHash: Hex): AbiProof => ({ kind: 'proven', proxy: { kind: 'none' }, codeHash }) as unknown as AbiProof;
 const withAbi = (signatures: readonly string[]): AbiProof =>
@@ -278,6 +283,11 @@ const ROWS: readonly Row[] = [
   { what: 'an adapter the vault naming it answered neither true nor false for', change: adapterAsked(CREATED, [vaultRefusal('other-answer')]), id: 'vault/vault.adapted.adapter', kind: 'adapter-other-answer', state: 'bad' },
   { what: "an adapter whose vault's factory has no adapterCheck", change: adapterAsked(CREATED, [vaultRefusal('unaskable')]), id: 'vault/vault.adapted.adapter', kind: 'adapter-unread', state: 'warn' },
   { what: 'an adapter no registry vault names', change: adapterAsked(CREATED, []), id: 'vault/vault.adapter', kind: 'adapter-unread', state: 'warn' },
+  { what: 'an adapter made for the vault naming it', change: adapterAsked(CREATED, [USES]), id: 'vault/vault.adapted.parent', kind: 'agrees', state: 'ok' },
+  { what: 'an adapter made for another vault', change: adapterAsked(CREATED, [USES], [parentRefusal('other-parent')]), id: 'vault/vault.adapted.parent', kind: 'not-parent', state: 'bad' },
+  { what: 'an adapter that answered no address for its parent', change: adapterAsked(CREATED, [USES], [parentRefusal('other-answer')]), id: 'vault/vault.adapted.parent', kind: 'parent-other-answer', state: 'bad' },
+  { what: "an adapter whose factory has no parentCheck", change: adapterAsked(CREATED, [USES], [parentRefusal('unaskable')]), id: 'vault/vault.adapted.parent', kind: 'parent-unread', state: 'warn' },
+  { what: 'an adapter in a recording that predates the parent answer', change: adapterAsked(CREATED, [USES], []), id: 'vault/vault.adapted.parent', kind: 'parent-unread', state: 'warn' },
   { what: 'an adapter in a recording that predates the answers', change: { entry: ADAPTER }, id: 'vault/factory.admitted', kind: 'factory-unread', state: 'warn' },
   { what: 'a card the template now refuses', change: { fixtures: [{ name: 'safe-tx-1', outcome: { kind: 'card-refused', why: 'wrong-kind' } }] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
   { what: 'fields that no longer match', change: { fixtures: [judged({ kind: 'not-run', check: { kind: 'mismatch' } }, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'judged-otherwise', state: 'bad' },
@@ -406,7 +416,7 @@ test('the address needs two confirmations: a page by its label, the API, CoinGec
   assert.deepEqual(by({ protocol: { ...BASE.protocol!, url: undefined }, coins: [] }), [['page'], 'few-confirmations']);
 });
 
-test("an adapter's factory and the vault naming it are one place, counted only when every answer passes", () => {
+test("an adapter's factory, the vault naming it and the adapter's own answer are one place, counted only when every answer passes", () => {
   const by = (change: Partial<Setup>) => {
     const ledger = ledgerOf({ coins: [], ...change });
     return [confirmations(ledger, ADAPTER), resultOf(ledger, 'vault/address').finding.kind];
@@ -415,6 +425,7 @@ test("an adapter's factory and the vault naming it are one place, counted only w
   assert.deepEqual(by(adapterAsked(CREATED, [USES, { ...USES, vault: { ...ADAPTED, name: 'second' } }])), [['page', 'factory'], 'agrees'], 'two vaults naming it are still one place');
   assert.deepEqual(by(adapterAsked(CREATED, [USES, vaultRefusal('not-used')])), [['page'], 'few-confirmations']);
   assert.deepEqual(by(adapterAsked(CREATED, [])), [['page'], 'few-confirmations'], 'the factory alone does not say whose adapter it is');
+  assert.deepEqual(by(adapterAsked(CREATED, [USES], [parentRefusal('other-parent')])), [['page'], 'few-confirmations'], "another vault's official adapter is no confirmation");
   assert.deepEqual(by(adapterAsked(factoryRefusal('not-created'), [USES])), [['page'], 'few-confirmations'], 'the vault alone does not say it is an official adapter');
   assert.deepEqual(by({ entry: ADAPTER }), [['page'], 'few-confirmations']);
 });
@@ -518,7 +529,7 @@ test('待確認 lists red before amber, and an entry with no result for the sign
   assert.deepEqual(forSigner(ledgerOf({})), []);
 });
 
-test('morpho/market-supply from its recordings: the three oracles confirmed in one place each and weETH\'s site for the signer, the rest folded', { timeout: 600_000 }, async () => {
+test('morpho/market-supply from its recordings: the three oracles confirmed in one place each for the signer, the rest folded', { timeout: 600_000 }, async () => {
   const registry = loadRegistry(ROOT);
   const target = { template: 'morpho/market-supply' };
   const compilers = await warmCompilers(reportCases(ROOT, registry, [target]));
@@ -526,7 +537,6 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail('a template report');
   const ledger = judge(inputs, await judgeFixtures(ROOT, template, registry));
   assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding]), [
-    ['weeth/source.site', { kind: 'site-differs' }],
     ['morpho-oracle-cbbtc-usdc-86/address', { kind: 'few-confirmations', by: ['api'] }],
     ['morpho-oracle-usp-usdc/address', { kind: 'few-confirmations', by: ['api'] }],
     ['morpho-oracle-weeth-usdc-86/address', { kind: 'few-confirmations', by: ['api'] }],
@@ -536,14 +546,14 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
   assert.equal(stateOf(resultOf(ledger, 'fixture.morpho-market-supply')), 'ok');
   assert.equal(resultOf(ledger, 'cbbtc/source.site').finding.kind, 'unlisted');
   assert.deepEqual(strip(ledger).map((s) => [s.line, s.state, `${s.passed}/${s.counted}`]), [
-    ['sources', 'bad', '6/10'],
+    ['sources', 'warn', '7/10'],
     ['abi', 'ok', '6/6'],
     ['code', 'ok', '10/10'],
     ['params', 'ok', '1/1'],
   ]);
   const rows = addressRows(ledger);
-  assert.deepEqual(rows.open.map((e) => e.name), ['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc', 'weeth', 'morpho-oracle-weeth-usdc-86']);
-  assert.equal(rows.folded.length, 6);
+  assert.deepEqual(rows.open.map((e) => e.name), ['morpho-oracle-cbbtc-usdc-86', 'morpho-oracle-usp-usdc', 'morpho-oracle-weeth-usdc-86']);
+  assert.equal(rows.folded.length, 7);
   assert.deepEqual(
     ledger.entries.map((e) => [e.name, confidence(ledger, e)]),
     [
@@ -554,7 +564,7 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
       ['morpho-oracle-cbbtc-usdc-86', 'low'],
       ['usp', 'high'],
       ['morpho-oracle-usp-usdc', 'low'],
-      ['weeth', 'low'],
+      ['weeth', 'high'],
       ['morpho-oracle-weeth-usdc-86', 'low'],
       ['blue-bundles-v1', 'high'],
     ],

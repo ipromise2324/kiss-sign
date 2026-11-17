@@ -7,7 +7,7 @@ Written by `pnpm report morpho/vault-v2-collateral-cap-submit --vault-of kpk-usd
 | Field | The signer gives |
 | --- | --- |
 | `vault` | a registry `vault` of the DefiLlama protocol `morpho-blue`, picked by number from the list below |
-| `collateral` | a registry `token`, picked by number from the list below |
+| `collateral` | a registry `token` that is the `collateralToken` of a market in `registry/markets.json`, picked by number from the list below |
 | `absolute-cap` | an integer in base units of the `asset` of the card's `vault`, or `max`, 340282366920938463463374607431768211455: written by the AI in the template: Vault V2 stores an absolute cap in 128 bits (increaseAbsoluteCap, newAbsoluteCap.toUint128()), so 2^128-1 is the largest cap it holds; curators set it for a collateral they cap only by its relative cap.; in Traditional Chinese: Vault V2 用 128 bits 存絕對上限（increaseAbsoluteCap，newAbsoluteCap.toUint128()），所以 2^128-1 是它能存的最大上限；curator 只想用相對上限限制某個抵押代幣時就設這個值。 |
 | `relative-cap` | a percent, at most 100, held in WAD base units (100% is 1000000000000000000) |
 
@@ -21,9 +21,6 @@ Written by `pnpm report morpho/vault-v2-collateral-cap-submit --vault-of kpk-usd
 
 | Name | Address | Attributes |
 | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` |  |
-| `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` |  |
-| `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` |  |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` |  |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` |  |
 | `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` |  |
@@ -42,13 +39,13 @@ Written by `pnpm report morpho/vault-v2-collateral-cap-submit --vault-of kpk-usd
 | `multicall.data[0] → submit.data → increaseAbsoluteCap` | calls `increaseAbsoluteCap(bytes,uint256)`, selector `0xf6f98fd5`; no bytes after the arguments |
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → capId` | holds the parameters `capId(string,address)`, ABI-encoded with no selector; no bytes after them |
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → capId.kind` | constant `"collateralToken"` |
-| `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → capId.collateralToken` | the card's `collateral`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` |
+| `multicall.data[0] → submit.data → increaseAbsoluteCap.idData → capId.collateralToken` | the card's `collateral`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` |
 | `multicall.data[0] → submit.data → increaseAbsoluteCap.newAbsoluteCap` | the card's `absolute-cap` |
 | `multicall.data[1] → submit` | calls `submit(bytes)`, selector `0xef7fa71b`; no bytes after the arguments |
 | `multicall.data[1] → submit.data → increaseRelativeCap` | calls `increaseRelativeCap(bytes,uint256)`, selector `0x2438525b`; no bytes after the arguments |
 | `multicall.data[1] → submit.data → increaseRelativeCap.idData → capId` | holds the parameters `capId(string,address)`, ABI-encoded with no selector; no bytes after them |
 | `multicall.data[1] → submit.data → increaseRelativeCap.idData → capId.kind` | constant `"collateralToken"` |
-| `multicall.data[1] → submit.data → increaseRelativeCap.idData → capId.collateralToken` | the card's `collateral`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` |
+| `multicall.data[1] → submit.data → increaseRelativeCap.idData → capId.collateralToken` | the card's `collateral`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` |
 | `multicall.data[1] → submit.data → increaseRelativeCap.newRelativeCap` | the card's `relative-cap` |
 
 ## Effects
@@ -59,8 +56,8 @@ The program calls each of these views just before and just after the transaction
 
 | Contract | Function | Arguments | Change |
 | --- | --- | --- | --- |
-| the card's `vault`: one of `kpk-usdc-prime-v2-9ee6` `0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6` | `executableAt(bytes)`, selector `0x8639fb07`, returns `(uint256 executableAt)` | `data` `increaseAbsoluteCap(bytes,uint256)` with (`idData` `capId(string,address)` with (`kind` constant `"collateralToken"`; `collateralToken` the card's `collateral`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee`); `newAbsoluteCap` the card's `absolute-cap`) | `executableAt` increases |
-| the card's `vault`: one of `kpk-usdc-prime-v2-9ee6` `0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6` | `executableAt(bytes)`, selector `0x8639fb07`, returns `(uint256 executableAt)` | `data` `increaseRelativeCap(bytes,uint256)` with (`idData` `capId(string,address)` with (`kind` constant `"collateralToken"`; `collateralToken` the card's `collateral`: one of `usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`, `usdt` `0xdAC17F958D2ee523a2206206994597C13D831ec7`, `morpho` `0x58D97B57BB95320F9a05dC918Aef65434969c2B2`, `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee`); `newRelativeCap` the card's `relative-cap`) | `executableAt` increases |
+| the card's `vault`: one of `kpk-usdc-prime-v2-9ee6` `0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6` | `executableAt(bytes)`, selector `0x8639fb07`, returns `(uint256 executableAt)` | `data` `increaseAbsoluteCap(bytes,uint256)` with (`idData` `capId(string,address)` with (`kind` constant `"collateralToken"`; `collateralToken` the card's `collateral`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee`); `newAbsoluteCap` the card's `absolute-cap`) | `executableAt` increases |
+| the card's `vault`: one of `kpk-usdc-prime-v2-9ee6` `0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6` | `executableAt(bytes)`, selector `0x8639fb07`, returns `(uint256 executableAt)` | `data` `increaseRelativeCap(bytes,uint256)` with (`idData` `capId(string,address)` with (`kind` constant `"collateralToken"`; `collateralToken` the card's `collateral`: one of `cbbtc` `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf`, `usp` `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6`, `weeth` `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee`); `newRelativeCap` the card's `relative-cap`) | `executableAt` increases |
 
 ## Official documentation
 
@@ -75,20 +72,18 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 ## Registry entries
 
-`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc usdt vault-v2-factory morpho cbbtc morpho-market-v1-adapter-v2-factory usp kpk-usdc-prime-v2-9ee6 kpk-usdc-prime-v2-9ee6-market-adapter weeth` prints what each check compared.
+`pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc vault-v2-factory cbbtc morpho-market-v1-adapter-v2-factory usp kpk-usdc-prime-v2-9ee6 kpk-usdc-prime-v2-9ee6-market-adapter weeth` prints what each check compared.
 
 | Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
-| `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | token | <https://tether.to/en/supported-protocols/> | PASS | PASS | n/a | PASS |
 | `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | token | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | PASS | n/a | PASS |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS |
 | `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
 | `kpk-usdc-prime-v2-9ee6` | `0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6` | vault | <https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime> | PASS | PASS | n/a | PASS |
 | `kpk-usdc-prime-v2-9ee6-market-adapter` | `0x1d511811ACA9d8817a3e50F29CadFf6243A02902` | adapter | <https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime> | PASS | n/a | n/a | PASS |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts> | FINDING | PASS | n/a | PASS |
+| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
@@ -102,9 +97,7 @@ More places that may name the address: the Immunefi program the entry names (its
 | Entry | Bounty scope | SDK file | SDK publisher | Deployer |
 | --- | --- | --- | --- | --- |
 | `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
-| `usdt` | n/a | n/a | n/a | FINDING `0x36928500Bc1dCd7af6a2B4008875CC336b927D57` |
 | `vault-v2-factory` | n/a | n/a | n/a | FINDING |
-| `morpho` | n/a | n/a | n/a | FINDING `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5` |
 | `cbbtc` | n/a | n/a | n/a | FINDING |
 | `morpho-market-v1-adapter-v2-factory` | n/a | n/a | n/a | FINDING |
 | `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
@@ -112,16 +105,17 @@ More places that may name the address: the Immunefi program the entry names (its
 | `kpk-usdc-prime-v2-9ee6-market-adapter` | n/a | n/a | n/a | FINDING |
 | `weeth` | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
 
-10 entries, 12 findings.
+8 entries, 9 findings.
 
 ### Factory answers
 
-Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it. An entry's answers together are one place for its address, which counts only when every one passes.
+Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it, and whether the adapter answers its factory's `parentCheck` with that vault's address. An entry's answers together are one place for its address, which counts only when every one passes.
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26432010 |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6` `isAdapter(address)` | true | 26432010 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26432961 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6` `isAdapter(address)` | true | 26432961 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6-market-adapter` `parentVault()`, for `kpk-usdc-prime-v2-9ee6` | 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6 | 26432961 |
 
 ## Code pins
 
@@ -133,9 +127,7 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 | `usdc` | 10743414 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xB7277a6e95992041568D9391D09d0122023778A2` `0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3` | PASS |
 | `usdc` | 12317814 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0xa2327a938Febf5FEC13baCFb16Ae10EcBc4cbDCF` `0x10d68f9bb2ba9f5e9163cadc4a3446be0c6b2ab8b1b65079e79dcd94a6dc329c` | PASS |
 | `usdc` | 18963716 | `0xd80d4b7c890cb9d6a4893e6b52bc34b56b25335cb13716e0d1d31383e6b41505` | `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS |
-| `usdt` | 4634748 | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | none | PASS |
 | `vault-v2-factory` | 23375073 | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | none | PASS |
-| `morpho` | 21157386 | `0x9d47be5e1fade278a449fcd67e4fc7b69ce5c451c36ad7c4f380280d127f5532` | `0x4364fd2371b6318159366abFA51f190df5C24852` `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS |
 | `cbbtc` | 20570548 | `0x91149353e08445ba77a52bf7e4cef919054027f4ad42812b4314bbaf2abd8b71` | `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS |
 | `morpho-market-v1-adapter-v2-factory` | 23981459 | `0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4` | none | PASS |
 | `usp` | 23195672 | `0x4c64cb2303edec6193910f660f82375d5bff982c070f14e1944c7a568ed5bb2e` | `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS |
@@ -153,7 +145,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | PASS | 26432010 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | PASS | 26432961 |
 
 ## ABI proofs
 
@@ -162,9 +154,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 | Entry | Address | Result | Proxy | Contract and compiler | Code hash | Equals pin | Masked | Block |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | PROVEN | zeppelinos, implementation `0x43506849D7C04F9138D1A2050bbF3A0c054402dd` | `FiatTokenV2_2`, solc `0.6.12+commit.27d51765` | `0xcdfb7d322961af3acae7a8f7ee8b69c205b36f576cc5b077f170c7eb8ecbe3ea` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26386376 |
-| `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | PROVEN | none | `TetherToken`, solc `0.4.18+commit.9cf6e910` | `0xb44fb4e949d0f78f87f79ee46428f23a2a5713ce6fc6e0beb3dda78c2ac1ea55` | PASS | 0 immutable, 0 library spans masked; metadata hash differs | 26399489 |
 | `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | PROVEN | none | `VaultV2Factory`, solc `0.8.28+commit.7893614a` | `0xba55eb73d42937607d7e3c77f68353c2517c4fad4df02f0c9bbd2e4248475503` | PASS | 0 immutable, 0 library spans masked | 26399583 |
-| `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | PROVEN | eip1967, implementation `0x4364fd2371b6318159366abFA51f190df5C24852` | `MorphoTokenEthereum`, solc `0.8.27+commit.40a35a09` | `0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9` | PASS | 2 immutable, 0 library spans masked | 26383745 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | PROVEN | zeppelinos, implementation `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72` | `FiatTokenV2_1`, solc `0.6.12+commit.27d51765` | `0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547` | PASS | 0 immutable, 0 library spans masked | 26391177 |
 | `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | PROVEN | none | `MorphoMarketV1AdapterV2Factory`, solc `0.8.28+commit.7893614a` | `0x0add593bff158a5b8cdfe1060056a9d886cd1d447da031e05eb0e6fa9e4fd5b4` | PASS | 4 immutable, 0 library spans masked | 26431746 |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | PROVEN | eip1967, implementation `0x9E40B6be5aFFC984F36cf118C778f0A83be20370` | `ERC20IssuanceUpgradeable_Blacklist_v1`, solc `0.8.23+commit.f704f362` | `0x54c3c512b546d3b2daedf369c9de88d722a0ce1d9ee444bd0ec4e5d4b9221da7` | PASS | 0 immutable, 0 library spans masked | 26429052 |
@@ -179,37 +169,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `kpk-usdc-prime-v2-9ee6`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432017
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432967
 vault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6
-latest block 26432017 0x9eb69aba8ef2e9d8089df39bae0325ac7b012508bf5acfc3863e8e492b88e903
+latest block 26432967 0x98300de1369146a480f2fdd081b55e6ae3b0d7672ffc163ed5dc83154b97c6d8
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-17  block 26432017  31,718,145.496791 usdc
-  2026-10-18  block 26216017  30,525,929.755693 usdc
-  2026-09-17  block 26000017  21,092,909.423785 usdc
-  2026-08-18  block 25784017  20,679,555.491720 usdc
-  2026-07-19  block 25568017  20,839,804.554875 usdc
-  2026-06-19  block 25352017  25,588,120.941148 usdc
-  2026-05-20  block 25136017  22,358,437.252244 usdc
-  2026-04-20  block 24920017  8,719,515.851846 usdc
-  2026-03-21  block 24704017  6,451,401.983516 usdc
-  2026-02-19  block 24488017  7,038,200.595116 usdc
-  2026-01-19  block 24272017  4,069,148.483248 usdc
-  2025-12-20  block 24056017  4,066,255.070047 usdc
-  2025-11-20  block 23840017  5,003,734.791448 usdc
+  2026-11-17  block 26432967  31,754,002.517668 usdc
+  2026-10-18  block 26216967  30,526,432.682391 usdc
+  2026-09-18  block 26000967  21,093,293.512158 usdc
+  2026-08-18  block 25784967  20,679,869.648893 usdc
+  2026-07-19  block 25568967  20,821,023.476539 usdc
+  2026-06-19  block 25352967  25,256,196.421413 usdc
+  2026-05-20  block 25136967  22,358,717.961301 usdc
+  2026-04-20  block 24920967  8,719,659.553925 usdc
+  2026-03-21  block 24704967  6,451,468.332903 usdc
+  2026-02-19  block 24488967  7,038,280.339260 usdc
+  2026-01-20  block 24272967  4,069,203.444257 usdc
+  2025-12-20  block 24056967  4,066,303.841463 usdc
+  2025-11-20  block 23840967  5,003,801.002276 usdc
 
-holders      97 addresses hold shares at block 26432017, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30446249021253081338652958
-top 10       hold 94.31% of the shares; each: 50.61%, 19.27%, 9.44%, 6.22%, 2.11%, 1.87%, 1.64%, 1.26%, 0.95%, 0.93%
+holders      97 addresses hold shares at block 26432967, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30480168096208931315743366
+top 10       hold 94.31% of the shares; each: 50.56%, 19.25%, 9.43%, 6.21%, 2.11%, 1.87%, 1.64%, 1.37%, 0.94%, 0.93%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26432010 `0xb58349ef224576d0e77b2a6670d06a64a642e104db44e668769602bcb29ecbe8`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26432961 `0x8ee811b3b4d6d26689271c535a0e35703b8c9529c23113be48335ddfd803ef6d`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10045513425 | 4490230208 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10056510399 | 4496318455 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |
@@ -224,8 +214,6 @@ What DefiLlama and the chain say about the protocols this template's calls go to
 | Token | Address | decimals() |
 | --- | --- | --- |
 | `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | 6 |
-| `usdt` | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | 6 |
-| `morpho` | `0x58D97B57BB95320F9a05dC918Aef65434969c2B2` | 18 |
 | `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | 8 |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | 18 |
 | `kpk-usdc-prime-v2-9ee6` | `0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6` | 18 |
@@ -237,7 +225,7 @@ No `pnpm past-txs --record` recording names this template.
 
 ## ERC-7730
 
-`pnpm erc7730 usdc usdt vault-v2-factory morpho cbbtc morpho-market-v1-adapter-v2-factory usp kpk-usdc-prime-v2-9ee6 kpk-usdc-prime-v2-9ee6-market-adapter weeth`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
+`pnpm erc7730 usdc vault-v2-factory cbbtc morpho-market-v1-adapter-v2-factory usp kpk-usdc-prime-v2-9ee6 kpk-usdc-prime-v2-9ee6-market-adapter weeth`: each entry's calldata descriptors in the pinned ERC-7730 registry, and each ERC-8176 attestation checked. A second opinion on field meanings, never a rule.
 
 ```text
 ERC-7730 registry github.com/ethereum/clear-signing-erc7730-registry at commit 3bebbd05cbc2d2d2bf9c41a8edbf5e5cc88e4eb4
@@ -247,25 +235,7 @@ usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 
-usdt 0xdAC17F958D2ee523a2206206994597C13D831ec7 (token)
-  descriptor   registry/tether/calldata-usdt.json
-  applies      by exact address (context.contract.deployments lists it on chain 1)
-  index        index.calldata.json names this file
-  file         sha256 f8512038c6944e78050035acb5a43e9cbc92dd2cc103d527c7fe2dd769c337af of the file's bytes
-  hash         descriptorHash 0xdb0767deb92cae703b52894b7610c5ee1b1abaf5ee4ccedb2c36be881c0ab713: keccak256 of the RFC 8785 JSON of the descriptor with includes resolved (ERC-8176)
-  function     0xa9059cbb transfer(address,uint256)
-    field      #._value tokenAmount
-    field      #._to addressName
-  function     0x095ea7b3 approve(address,uint256)
-    field      #._spender addressName
-    field      #._value tokenAmount
-  attestations none: no file in a sigs/ folder names this descriptor or attests its descriptorHash
-
 vault-v2-factory 0xA1D94F746dEfa1928926b84fB2596c06926C0405 (factory)
-  descriptor   none: no calldata descriptor lists this address on chain 1
-  index        index.calldata.json has no entry for this address
-
-morpho 0x58D97B57BB95320F9a05dC918Aef65434969c2B2 (token)
   descriptor   none: no calldata descriptor lists this address on chain 1
   index        index.calldata.json has no entry for this address
 
