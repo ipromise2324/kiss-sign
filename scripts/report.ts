@@ -18,7 +18,7 @@ import { loadAbiCases, recordAbiCase } from '../src/contracts/abi-case.ts';
 import { proveAbi } from '../src/contracts/prove.ts';
 import type { AbiProof, AbiRefusal } from '../src/contracts/prove.ts';
 import { cachedCompilers } from '../src/contracts/solc.ts';
-import { retryingSourcify, sourcifyHttps } from '../src/contracts/sourcify.ts';
+import { etherscanFromEnv, retryingEtherscan } from '../src/contracts/etherscan.ts';
 import { loadRegistry, pageUrlsOf } from '../src/registry.ts';
 import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-source.ts';
 import { fetchListing, listingsFor, liveListingReads } from '../src/research/listings.ts';
@@ -232,8 +232,8 @@ const pages = {
 const recorded = loadAbiCases(root);
 const abi = new Map<Address, AbiProof | AbiRefusal>();
 const abiCases = new Map<string, unknown>();
+const deps = { etherscan: retryingEtherscan(etherscanFromEnv(process.env), note), compilers };
 for (const entry of provedEntries(subject, registry)) {
-  const deps = { sourcify: retryingSourcify(sourcifyHttps, note), compilers };
   if (flags.record && !recorded.has(entry.address)) {
     const { proof, fixture } = await recordAbiCase(reader, entry.address, latest.value, latest.providers, deps, entry);
     abiCases.set(join(root, 'testdata', 'abi', `${entry.name.replace(/\./g, '-')}.json`), fixture);
