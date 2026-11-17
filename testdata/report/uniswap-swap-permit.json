@@ -149,6 +149,24 @@
       "slug": "etherfi",
       "websiteUrl": null,
       "githubUrl": null,
+      "assets": [
+        {
+          "type": "websites_and_applications",
+          "url": "https://www.ether.fi/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://app.ether.fi/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://immunefi.com/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://immunefi.com/"
+        }
+      ],
       "assetsBodyV2": "https://etherscan.io/address/0xf76f1bea29b5f63409a9d9797540a8e7934b52ea\nhttps://etherscan.io/address/0xf4e147db314947fc1275a8cbb6cde48c510cd8cf\nhttps://etherscan.io/address/0xeb39db7a020db2ac0890d51f9d5b817e7ef2b1a3\nhttps://etherscan.io/address/0x86016539796e660d4cd333459378763faffa6eee\nhttps://etherscan.io/address/0x55963de88267aa3d1d995c359e8068d0df34bebb\nhttps://etherscan.io/address/0x3e0ccbce6c3bec4826397005c877be66c39d9912\nhttps://etherscan.io/address/0x319a33b9a3080c17a825e3a539c49a60bbb2e793\nhttps://etherscan.io/address/0x16b4ae4d4c96793524084a22e6f4c160cad08975\nhttps://etherscan.io/address/0x1b7a4c3797236a1c37f8741c0be35c2c72736fff\nhttps://etherscan.io/address/0x9ffdf407cde9a93c47611799da23924af3ef764f\nhttps://etherscan.io/address/0x9f26d4c958fd811a1f59b01b86be7dffc9d20761\nhttps://etherscan.io/address/0x6599861e55abd28b91dd9d86a826ec0cc8d72c2c\nhttps://etherscan.io/address/0x7b5ae07e2af1c861bcc4736d23f5f66a61e0ca5e\nhttps://etherscan.io/address/0xcd2eb13d6831d4602d80e5db9230a57596cdca63\nhttps://etherscan.io/address/0x2093bbb221f1d8c7c932c32ee28be6dee4a37a6a\nhttps://etherscan.io/address/0x25e821b7197b146f7713c3b89b6a4d83516b912d\nhttps://etherscan.io/address/0x00c452affee3a17d9cecc1bcd2b8d5c7635c4cb9\nhttps://etherscan.io/address/0xd789870bea40d056a4d26055d0befcc8755da146\nhttps://etherscan.io/address/0xea1a6307d9b18f8d1cbf1c3dd6aad8416c06a221\nhttps://etherscan.io/address/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee\nhttps://etherscan.io/address/0xdadef1ffbfeaab4f68a9fd181395f68b4e4e7ae0\nhttps://etherscan.io/address/0x57aaf0004c716388b21795431cd7d5f9d3bb6a41\nhttps://etherscan.io/address/0x9a8c5046a290664bf42d065d33512fe403484534\nhttps://etherscan.io/address/0x308861a430be4cce5502d0a12724771fc6daf216\nhttps://etherscan.io/address/0xd5edf7730abad812247f6f54d7bd31a52554e35e\nhttps://etherscan.io/address/0x8b71140ad2e5d1e7018d2a7f8a288bd3cd38916f\nhttps://etherscan.io/address/0x7d5706f6ef3f89b3951e23e557cdfbc3239d4e2c\nhttps://etherscan.io/address/0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb\nhttps://etherscan.io/address/0x3c55986cfee455e2533f4d29006634ecf9b7c03f\nhttps://etherscan.io/address/0x0ef8fa4760db8f5cd4d993f3e3416f30f942d705\nhttps://etherscan.io/address/0x35fa164735182de50811e8e2e824cfb9b6118ac2\nhttps://etherscan.io/address/0x6329004e903b7f420245e7af3f355186f2432466\nhttps://etherscan.io/address/0x52bbf281fbcfa7cf3e9101a52af5dcb32754e3c0\nhttps://etherscan.io/address/0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2"
     }
   ],
@@ -269,60 +287,6 @@
         }
       ]
     },
-    "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "| [Universal Router 2.1.1](https://github.com/Uniswap/universal-router/blob/dev/contracts/UniversalRouter.sol) | [`0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca`](https://etherscan.io/address/0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca) |",
-          "heading": "Ethereum: 1"
-        },
-        {
-          "text": "| [Universal Router 2.1.2](https://github.com/Uniswap/universal-router/blob/dev/contracts/UniversalRouter.sol) | [`0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85`](https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85) |",
-          "heading": "Ethereum: 1"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/Uniswap/universal-router/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "UniversalRouterV1 0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B UnsupportedProtocol 0x76D631990d505E4e5b432EEDB852A60897824D68 UniversalRouterV1_2_V2Support 0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD UniversalRouterV2 0x66a9893cc07d91d95644aedd05d03f95e1dba8af UniversalRouterV2_1_1 0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA UniversalRouterV2_1_2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85"
-        }
-      ]
-    },
-    "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "USP",
-          "heading": "©️Token & Workflow Contracts"
-        },
-        {
-          "text": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
-          "heading": "©️Token & Workflow Contracts"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
-        },
-        {
-          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
-        }
-      ]
-    },
-    "https://developers.uniswap.org/llms.mdx/docs/protocols/universal-router/concepts/commands": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "Most integrations run through one of these `execute` overloads:",
-          "heading": "Execution Entry Points"
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/coinbase/agentkit/refs/heads/main/typescript/agentkit/src/action-providers/erc20/constants.ts": {
       "kind": "served",
       "blocks": [
@@ -355,11 +319,56 @@
         }
       ]
     },
+    "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "| [Universal Router 2.1.1](https://github.com/Uniswap/universal-router/blob/dev/contracts/UniversalRouter.sol) | [`0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca`](https://etherscan.io/address/0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca) |",
+          "heading": "Ethereum: 1"
+        },
+        {
+          "text": "| [Universal Router 2.1.2](https://github.com/Uniswap/universal-router/blob/dev/contracts/UniversalRouter.sol) | [`0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85`](https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85) |",
+          "heading": "Ethereum: 1"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/Uniswap/universal-router/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "UniversalRouterV1 0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B UnsupportedProtocol 0x76D631990d505E4e5b432EEDB852A60897824D68 UniversalRouterV1_2_V2Support 0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD UniversalRouterV2 0x66a9893cc07d91d95644aedd05d03f95e1dba8af UniversalRouterV2_1_1 0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA UniversalRouterV2_1_2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85"
+        }
+      ]
+    },
     "https://raw.githubusercontent.com/Uniswap/universal-router/refs/heads/main/deploy-addresses/mainnet.json": {
       "kind": "served",
       "blocks": [
         {
           "text": "UniversalRouterV1 0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B UnsupportedProtocol 0x76D631990d505E4e5b432EEDB852A60897824D68 UniversalRouterV1_2_V2Support 0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD UniversalRouterV2 0x66a9893cc07d91d95644aedd05d03f95e1dba8af UniversalRouterV2_1_1 0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA UniversalRouterV2_1_2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85"
+        }
+      ]
+    },
+    "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "USP",
+          "heading": "©️Token & Workflow Contracts"
+        },
+        {
+          "text": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
+          "heading": "©️Token & Workflow Contracts"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
+        },
+        {
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
         }
       ]
     },
@@ -383,6 +392,15 @@
         },
         {
           "text": "address public constant PRIORITY_WITHDRAWAL_QUEUE = 0x35e7D6feF6f72aDd3c3e39dEc6d9CCc29e3345FA;"
+        }
+      ]
+    },
+    "https://developers.uniswap.org/llms.mdx/docs/protocols/universal-router/concepts/commands": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Most integrations run through one of these `execute` overloads:",
+          "heading": "Execution Entry Points"
         }
       ]
     }
@@ -755,10 +773,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         }
       }
@@ -1582,10 +1600,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
         }
       }
@@ -1776,14 +1794,14 @@
         false
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "number": "0x18cba70",
           "hash": "0x4696930129929a1d47dfd8d104beeed783af945177c72780c5e6d1c942c410be",
           "timestamp": "0x6aac5fa3",
           "gasLimit": "0x3938700",
           "mixHash": "0x654e9594556a487dfa0b0ae9604904310908d293b647e12eead228f6ec430df8"
         },
-        "alchemy": {
+        "drpc": {
           "number": "0x18cba70",
           "hash": "0x4696930129929a1d47dfd8d104beeed783af945177c72780c5e6d1c942c410be",
           "timestamp": "0x6aac5fa3",
@@ -1801,10 +1819,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x55e6b334152096d60367d7ab24241948b31e8d0e66adc8b81cba049a19f9d2ac"
         }
       }
@@ -2079,10 +2097,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xb43b3e05d90da5c1b662af7a56ee3532d52d6e80f6208693f568e12816099145"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xb43b3e05d90da5c1b662af7a56ee3532d52d6e80f6208693f568e12816099145"
         }
       }
@@ -2810,8 +2828,8 @@
   ],
   "facts": {
     "block": {
-      "number": "26434421",
-      "hash": "0xa5a94a882138fdb0636ee5d1b2bc450eb065fd998f3f5d505e8f2e31dd85d0d0"
+      "number": "26435425",
+      "hash": "0x4e9766ddefadf5990e4264e35beb2c694afe0439c2f0222fd8dc0aae8efa2f8e"
     },
     "defillama": [
       {
@@ -2819,9 +2837,9 @@
         "id": "5690",
         "parentProtocol": "parent#uniswap",
         "listedAt": 1738172667,
-        "tvl": 1020182067.9649925,
+        "tvl": 1022666282.4899027,
         "chainTvls": {
-          "Ethereum": 647785790.3017787
+          "Ethereum": 650170020.6906071
         }
       }
     ],
@@ -2835,7 +2853,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5a94a882138fdb0636ee5d1b2bc450eb065fd998f3f5d505e8f2e31dd85d0d0"
+            "blockHash": "0x4e9766ddefadf5990e4264e35beb2c694afe0439c2f0222fd8dc0aae8efa2f8e"
           }
         ],
         "answers": {
@@ -2851,7 +2869,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5a94a882138fdb0636ee5d1b2bc450eb065fd998f3f5d505e8f2e31dd85d0d0"
+            "blockHash": "0x4e9766ddefadf5990e4264e35beb2c694afe0439c2f0222fd8dc0aae8efa2f8e"
           }
         ],
         "answers": {
@@ -2867,7 +2885,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5a94a882138fdb0636ee5d1b2bc450eb065fd998f3f5d505e8f2e31dd85d0d0"
+            "blockHash": "0x4e9766ddefadf5990e4264e35beb2c694afe0439c2f0222fd8dc0aae8efa2f8e"
           }
         ],
         "answers": {
@@ -2883,7 +2901,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5a94a882138fdb0636ee5d1b2bc450eb065fd998f3f5d505e8f2e31dd85d0d0"
+            "blockHash": "0x4e9766ddefadf5990e4264e35beb2c694afe0439c2f0222fd8dc0aae8efa2f8e"
           }
         ],
         "answers": {
@@ -2899,7 +2917,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5a94a882138fdb0636ee5d1b2bc450eb065fd998f3f5d505e8f2e31dd85d0d0"
+            "blockHash": "0x4e9766ddefadf5990e4264e35beb2c694afe0439c2f0222fd8dc0aae8efa2f8e"
           }
         ],
         "answers": {
@@ -2915,7 +2933,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5a94a882138fdb0636ee5d1b2bc450eb065fd998f3f5d505e8f2e31dd85d0d0"
+            "blockHash": "0x4e9766ddefadf5990e4264e35beb2c694afe0439c2f0222fd8dc0aae8efa2f8e"
           }
         ],
         "answers": {

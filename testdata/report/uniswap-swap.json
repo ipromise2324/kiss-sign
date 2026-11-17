@@ -149,6 +149,24 @@
       "slug": "etherfi",
       "websiteUrl": null,
       "githubUrl": null,
+      "assets": [
+        {
+          "type": "websites_and_applications",
+          "url": "https://www.ether.fi/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://app.ether.fi/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://immunefi.com/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://immunefi.com/"
+        }
+      ],
       "assetsBodyV2": "https://etherscan.io/address/0xf76f1bea29b5f63409a9d9797540a8e7934b52ea\nhttps://etherscan.io/address/0xf4e147db314947fc1275a8cbb6cde48c510cd8cf\nhttps://etherscan.io/address/0xeb39db7a020db2ac0890d51f9d5b817e7ef2b1a3\nhttps://etherscan.io/address/0x86016539796e660d4cd333459378763faffa6eee\nhttps://etherscan.io/address/0x55963de88267aa3d1d995c359e8068d0df34bebb\nhttps://etherscan.io/address/0x3e0ccbce6c3bec4826397005c877be66c39d9912\nhttps://etherscan.io/address/0x319a33b9a3080c17a825e3a539c49a60bbb2e793\nhttps://etherscan.io/address/0x16b4ae4d4c96793524084a22e6f4c160cad08975\nhttps://etherscan.io/address/0x1b7a4c3797236a1c37f8741c0be35c2c72736fff\nhttps://etherscan.io/address/0x9ffdf407cde9a93c47611799da23924af3ef764f\nhttps://etherscan.io/address/0x9f26d4c958fd811a1f59b01b86be7dffc9d20761\nhttps://etherscan.io/address/0x6599861e55abd28b91dd9d86a826ec0cc8d72c2c\nhttps://etherscan.io/address/0x7b5ae07e2af1c861bcc4736d23f5f66a61e0ca5e\nhttps://etherscan.io/address/0xcd2eb13d6831d4602d80e5db9230a57596cdca63\nhttps://etherscan.io/address/0x2093bbb221f1d8c7c932c32ee28be6dee4a37a6a\nhttps://etherscan.io/address/0x25e821b7197b146f7713c3b89b6a4d83516b912d\nhttps://etherscan.io/address/0x00c452affee3a17d9cecc1bcd2b8d5c7635c4cb9\nhttps://etherscan.io/address/0xd789870bea40d056a4d26055d0befcc8755da146\nhttps://etherscan.io/address/0xea1a6307d9b18f8d1cbf1c3dd6aad8416c06a221\nhttps://etherscan.io/address/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee\nhttps://etherscan.io/address/0xdadef1ffbfeaab4f68a9fd181395f68b4e4e7ae0\nhttps://etherscan.io/address/0x57aaf0004c716388b21795431cd7d5f9d3bb6a41\nhttps://etherscan.io/address/0x9a8c5046a290664bf42d065d33512fe403484534\nhttps://etherscan.io/address/0x308861a430be4cce5502d0a12724771fc6daf216\nhttps://etherscan.io/address/0xd5edf7730abad812247f6f54d7bd31a52554e35e\nhttps://etherscan.io/address/0x8b71140ad2e5d1e7018d2a7f8a288bd3cd38916f\nhttps://etherscan.io/address/0x7d5706f6ef3f89b3951e23e557cdfbc3239d4e2c\nhttps://etherscan.io/address/0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb\nhttps://etherscan.io/address/0x3c55986cfee455e2533f4d29006634ecf9b7c03f\nhttps://etherscan.io/address/0x0ef8fa4760db8f5cd4d993f3e3416f30f942d705\nhttps://etherscan.io/address/0x35fa164735182de50811e8e2e824cfb9b6118ac2\nhttps://etherscan.io/address/0x6329004e903b7f420245e7af3f355186f2432466\nhttps://etherscan.io/address/0x52bbf281fbcfa7cf3e9101a52af5dcb32754e3c0\nhttps://etherscan.io/address/0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2"
     }
   ],
@@ -269,60 +287,6 @@
         }
       ]
     },
-    "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "| [Universal Router 2.1.1](https://github.com/Uniswap/universal-router/blob/dev/contracts/UniversalRouter.sol) | [`0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca`](https://etherscan.io/address/0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca) |",
-          "heading": "Ethereum: 1"
-        },
-        {
-          "text": "| [Universal Router 2.1.2](https://github.com/Uniswap/universal-router/blob/dev/contracts/UniversalRouter.sol) | [`0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85`](https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85) |",
-          "heading": "Ethereum: 1"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/Uniswap/universal-router/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "UniversalRouterV1 0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B UnsupportedProtocol 0x76D631990d505E4e5b432EEDB852A60897824D68 UniversalRouterV1_2_V2Support 0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD UniversalRouterV2 0x66a9893cc07d91d95644aedd05d03f95e1dba8af UniversalRouterV2_1_1 0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA UniversalRouterV2_1_2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85"
-        }
-      ]
-    },
-    "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "USP",
-          "heading": "©️Token & Workflow Contracts"
-        },
-        {
-          "text": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
-          "heading": "©️Token & Workflow Contracts"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
-        },
-        {
-          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
-        }
-      ]
-    },
-    "https://developers.uniswap.org/llms.mdx/docs/protocols/universal-router/concepts/commands": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "Most integrations run through one of these `execute` overloads:",
-          "heading": "Execution Entry Points"
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/coinbase/agentkit/refs/heads/main/typescript/agentkit/src/action-providers/erc20/constants.ts": {
       "kind": "served",
       "blocks": [
@@ -355,11 +319,56 @@
         }
       ]
     },
+    "https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "| [Universal Router 2.1.1](https://github.com/Uniswap/universal-router/blob/dev/contracts/UniversalRouter.sol) | [`0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca`](https://etherscan.io/address/0x4c82d1fbfe28c977cbb58d8c7ff8fcf9f70a2cca) |",
+          "heading": "Ethereum: 1"
+        },
+        {
+          "text": "| [Universal Router 2.1.2](https://github.com/Uniswap/universal-router/blob/dev/contracts/UniversalRouter.sol) | [`0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85`](https://etherscan.io/address/0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85) |",
+          "heading": "Ethereum: 1"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/Uniswap/universal-router/3be05ae044039af7610414da0ac36e4944eea566/deploy-addresses/mainnet.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "UniversalRouterV1 0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B UnsupportedProtocol 0x76D631990d505E4e5b432EEDB852A60897824D68 UniversalRouterV1_2_V2Support 0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD UniversalRouterV2 0x66a9893cc07d91d95644aedd05d03f95e1dba8af UniversalRouterV2_1_1 0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA UniversalRouterV2_1_2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85"
+        }
+      ]
+    },
     "https://raw.githubusercontent.com/Uniswap/universal-router/refs/heads/main/deploy-addresses/mainnet.json": {
       "kind": "served",
       "blocks": [
         {
           "text": "UniversalRouterV1 0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B UnsupportedProtocol 0x76D631990d505E4e5b432EEDB852A60897824D68 UniversalRouterV1_2_V2Support 0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD UniversalRouterV2 0x66a9893cc07d91d95644aedd05d03f95e1dba8af UniversalRouterV2_1_1 0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA UniversalRouterV2_1_2 0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85"
+        }
+      ]
+    },
+    "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "USP",
+          "heading": "©️Token & Workflow Contracts"
+        },
+        {
+          "text": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
+          "heading": "©️Token & Workflow Contracts"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
+        },
+        {
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
         }
       ]
     },
@@ -383,6 +392,15 @@
         },
         {
           "text": "address public constant PRIORITY_WITHDRAWAL_QUEUE = 0x35e7D6feF6f72aDd3c3e39dEc6d9CCc29e3345FA;"
+        }
+      ]
+    },
+    "https://developers.uniswap.org/llms.mdx/docs/protocols/universal-router/concepts/commands": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "Most integrations run through one of these `execute` overloads:",
+          "heading": "Execution Entry Points"
         }
       ]
     }
@@ -708,7 +726,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xb2f6986457f5a24ff088a0beb5567c8c1fe2da02687c78e743507ee7c982b977"
         }
@@ -722,14 +740,14 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xb2f6986457f5a24ff088a0beb5567c8c1fe2da02687c78e743507ee7c982b977"
         }
       ],
       "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
     },
     {
@@ -755,10 +773,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         }
       }
@@ -847,7 +865,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x839eb93509922839c22e22219a33fda7d48380bfd372c218e8f203681543dd64"
         }
@@ -861,7 +879,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x839eb93509922839c22e22219a33fda7d48380bfd372c218e8f203681543dd64"
         }
@@ -894,10 +912,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -946,7 +964,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xdd7b3b09771c71445350f2a5a6857d46d1ec95f75ebea95a94406e693fc62c6b"
         }
@@ -960,7 +978,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xdd7b3b09771c71445350f2a5a6857d46d1ec95f75ebea95a94406e693fc62c6b"
         }
@@ -1144,7 +1162,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x238bea3d03150d94fad95e9857867679db35265d0a90ff82346383c1b55a2822"
         }
@@ -1158,7 +1176,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x238bea3d03150d94fad95e9857867679db35265d0a90ff82346383c1b55a2822"
         }
@@ -1191,10 +1209,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -1441,7 +1459,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x1420761dbff0321c42a4bda163af2d7500d723b0139a72267c009d0eedfa9e6f"
         }
@@ -1455,7 +1473,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x1420761dbff0321c42a4bda163af2d7500d723b0139a72267c009d0eedfa9e6f"
         }
@@ -1549,20 +1567,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
@@ -1571,6 +1575,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000004364fd2371b6318159366abfa51f190df5c24852",
         "drpc": "0x0000000000000000000000004364fd2371b6318159366abfa51f190df5c24852"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
     },
     {
@@ -1674,7 +1692,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
         }
@@ -1688,7 +1706,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x846191af87a90c537530f072d88e28aebfbe99f1d81d77cc8ac0c3f158314d8e"
         }
@@ -1813,7 +1831,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x4696930129929a1d47dfd8d104beeed783af945177c72780c5e6d1c942c410be"
         }
@@ -1827,7 +1845,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x23617e59a5925b2a4bf75d73ff6711cd0b29de85",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x4696930129929a1d47dfd8d104beeed783af945177c72780c5e6d1c942c410be"
         }
@@ -2204,10 +2222,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         }
       }
@@ -2341,20 +2359,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0xd47f8c1343e502bf04423fc529674de1017c4b8e1dfb69104472d5dc0316ebfe"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xd47f8c1343e502bf04423fc529674de1017c4b8e1dfb69104472d5dc0316ebfe"
@@ -2366,6 +2370,20 @@
       }
     },
     {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xd47f8c1343e502bf04423fc529674de1017c4b8e1dfb69104472d5dc0316ebfe"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
       "method": "eth_getCode",
       "params": [
         "0x353e98f34b6e5a8d9d1876bf6df01284d05837cb",
@@ -2374,10 +2392,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xaf80b4e5c85a0e16d8f3fdbe108c24ef3d85f780a05cd926d255b0d97bf4bba1"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xaf80b4e5c85a0e16d8f3fdbe108c24ef3d85f780a05cd926d255b0d97bf4bba1"
         }
       }
@@ -2426,20 +2444,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0xe5e34addc65c097c90e7a50c3168d8d79b64c22bdcaf7720237f05dd93c29b90"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xe5e34addc65c097c90e7a50c3168d8d79b64c22bdcaf7720237f05dd93c29b90"
@@ -2451,6 +2455,20 @@
       }
     },
     {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xe5e34addc65c097c90e7a50c3168d8d79b64c22bdcaf7720237f05dd93c29b90"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
       "method": "eth_getCode",
       "params": [
         "0xe629ee84c1bd9ea9c677d2d5391919fcf5e7d5d9",
@@ -2459,10 +2477,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         }
       }
@@ -2544,10 +2562,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
         }
       }
@@ -2810,8 +2828,8 @@
   ],
   "facts": {
     "block": {
-      "number": "26434403",
-      "hash": "0xa5c18e70519bbcbd6f16dbbbaa4b38960e8f219c080beeee2ea10bc0eacb3794"
+      "number": "26435415",
+      "hash": "0x011f2977a4d2aa3a35f009dc0641038bca91c4bdebcd7f72e0c29f9537813043"
     },
     "defillama": [
       {
@@ -2819,9 +2837,9 @@
         "id": "5690",
         "parentProtocol": "parent#uniswap",
         "listedAt": 1738172667,
-        "tvl": 1020182067.9649925,
+        "tvl": 1022666282.4899027,
         "chainTvls": {
-          "Ethereum": 647785790.3017787
+          "Ethereum": 650170020.6906071
         }
       }
     ],
@@ -2835,7 +2853,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5c18e70519bbcbd6f16dbbbaa4b38960e8f219c080beeee2ea10bc0eacb3794"
+            "blockHash": "0x011f2977a4d2aa3a35f009dc0641038bca91c4bdebcd7f72e0c29f9537813043"
           }
         ],
         "answers": {
@@ -2851,7 +2869,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5c18e70519bbcbd6f16dbbbaa4b38960e8f219c080beeee2ea10bc0eacb3794"
+            "blockHash": "0x011f2977a4d2aa3a35f009dc0641038bca91c4bdebcd7f72e0c29f9537813043"
           }
         ],
         "answers": {
@@ -2867,7 +2885,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5c18e70519bbcbd6f16dbbbaa4b38960e8f219c080beeee2ea10bc0eacb3794"
+            "blockHash": "0x011f2977a4d2aa3a35f009dc0641038bca91c4bdebcd7f72e0c29f9537813043"
           }
         ],
         "answers": {
@@ -2883,7 +2901,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5c18e70519bbcbd6f16dbbbaa4b38960e8f219c080beeee2ea10bc0eacb3794"
+            "blockHash": "0x011f2977a4d2aa3a35f009dc0641038bca91c4bdebcd7f72e0c29f9537813043"
           }
         ],
         "answers": {
@@ -2899,7 +2917,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5c18e70519bbcbd6f16dbbbaa4b38960e8f219c080beeee2ea10bc0eacb3794"
+            "blockHash": "0x011f2977a4d2aa3a35f009dc0641038bca91c4bdebcd7f72e0c29f9537813043"
           }
         ],
         "answers": {
@@ -2915,7 +2933,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xa5c18e70519bbcbd6f16dbbbaa4b38960e8f219c080beeee2ea10bc0eacb3794"
+            "blockHash": "0x011f2977a4d2aa3a35f009dc0641038bca91c4bdebcd7f72e0c29f9537813043"
           }
         ],
         "answers": {

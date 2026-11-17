@@ -139,12 +139,64 @@
       "slug": "cowprotocol",
       "websiteUrl": "https://cow.fi/",
       "githubUrl": "http://github.com/cowprotocol",
+      "assets": [
+        {
+          "type": "websites_and_applications",
+          "url": "https://github.com/cowprotocol/cow-sdk"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://github.com/cowprotocol/cowswap/tree/main/libs/widget-lib"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://github.com/cowprotocol/cowswap/tree/main/libs/widget-react"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://github.com/cowprotocol/cowswap/tree/main/libs/iframe-transport"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://github.com/cowprotocol/cowswap/tree/main/apps/cowswap-frontend"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://github.com/cowprotocol/cowswap/tree/main/apps/cow-fi"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://swap.cow.fi/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://cow.fi/"
+        }
+      ],
       "assetsBodyV2": "https://etherscan.io/address/0x9008d19f58aabd9ed0d60971565aa8510560ab41\nhttps://etherscan.io/address/0x9e7ae8bdba9aa346739792d219a808884996db67\nhttps://etherscan.io/address/0xc92e8bdf79f0507f65a392b0ab4667716bfe0110\nhttps://etherscan.io/address/0x2c4c28ddbdac9c5e7055b4c863b72ea0149d8afe"
     },
     {
       "slug": "etherfi",
       "websiteUrl": null,
       "githubUrl": null,
+      "assets": [
+        {
+          "type": "websites_and_applications",
+          "url": "https://www.ether.fi/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://app.ether.fi/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://immunefi.com/"
+        },
+        {
+          "type": "websites_and_applications",
+          "url": "https://immunefi.com/"
+        }
+      ],
       "assetsBodyV2": "https://etherscan.io/address/0xf76f1bea29b5f63409a9d9797540a8e7934b52ea\nhttps://etherscan.io/address/0xf4e147db314947fc1275a8cbb6cde48c510cd8cf\nhttps://etherscan.io/address/0xeb39db7a020db2ac0890d51f9d5b817e7ef2b1a3\nhttps://etherscan.io/address/0x86016539796e660d4cd333459378763faffa6eee\nhttps://etherscan.io/address/0x55963de88267aa3d1d995c359e8068d0df34bebb\nhttps://etherscan.io/address/0x3e0ccbce6c3bec4826397005c877be66c39d9912\nhttps://etherscan.io/address/0x319a33b9a3080c17a825e3a539c49a60bbb2e793\nhttps://etherscan.io/address/0x16b4ae4d4c96793524084a22e6f4c160cad08975\nhttps://etherscan.io/address/0x1b7a4c3797236a1c37f8741c0be35c2c72736fff\nhttps://etherscan.io/address/0x9ffdf407cde9a93c47611799da23924af3ef764f\nhttps://etherscan.io/address/0x9f26d4c958fd811a1f59b01b86be7dffc9d20761\nhttps://etherscan.io/address/0x6599861e55abd28b91dd9d86a826ec0cc8d72c2c\nhttps://etherscan.io/address/0x7b5ae07e2af1c861bcc4736d23f5f66a61e0ca5e\nhttps://etherscan.io/address/0xcd2eb13d6831d4602d80e5db9230a57596cdca63\nhttps://etherscan.io/address/0x2093bbb221f1d8c7c932c32ee28be6dee4a37a6a\nhttps://etherscan.io/address/0x25e821b7197b146f7713c3b89b6a4d83516b912d\nhttps://etherscan.io/address/0x00c452affee3a17d9cecc1bcd2b8d5c7635c4cb9\nhttps://etherscan.io/address/0xd789870bea40d056a4d26055d0befcc8755da146\nhttps://etherscan.io/address/0xea1a6307d9b18f8d1cbf1c3dd6aad8416c06a221\nhttps://etherscan.io/address/0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee\nhttps://etherscan.io/address/0xdadef1ffbfeaab4f68a9fd181395f68b4e4e7ae0\nhttps://etherscan.io/address/0x57aaf0004c716388b21795431cd7d5f9d3bb6a41\nhttps://etherscan.io/address/0x9a8c5046a290664bf42d065d33512fe403484534\nhttps://etherscan.io/address/0x308861a430be4cce5502d0a12724771fc6daf216\nhttps://etherscan.io/address/0xd5edf7730abad812247f6f54d7bd31a52554e35e\nhttps://etherscan.io/address/0x8b71140ad2e5d1e7018d2a7f8a288bd3cd38916f\nhttps://etherscan.io/address/0x7d5706f6ef3f89b3951e23e557cdfbc3239d4e2c\nhttps://etherscan.io/address/0xfe0c30065b384f05761f15d0cc899d4f9f9cc0eb\nhttps://etherscan.io/address/0x3c55986cfee455e2533f4d29006634ecf9b7c03f\nhttps://etherscan.io/address/0x0ef8fa4760db8f5cd4d993f3e3416f30f942d705\nhttps://etherscan.io/address/0x35fa164735182de50811e8e2e824cfb9b6118ac2\nhttps://etherscan.io/address/0x6329004e903b7f420245e7af3f355186f2432466\nhttps://etherscan.io/address/0x52bbf281fbcfa7cf3e9101a52af5dcb32754e3c0\nhttps://etherscan.io/address/0xcfc6d9bd7411962bfe7145451a7ef71a24b6a7a2"
     }
   ],
@@ -269,81 +321,6 @@
         }
       ]
     },
-    "https://raw.githubusercontent.com/cowprotocol/contracts/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "GPv2AllowListAuthentication 11155111 address 0x2c4c28DDBdAc9C5E7055b4C863b72eA0149D8aFE transactionHash 0x73c54c75b3f382304f3adf33e3876c8999fb10df786d4a902733369251033cd1"
-        },
-        {
-          "text": "GPv2Settlement 1 address 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 transactionHash 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3"
-        },
-        {
-          "text": "GPv2Settlement 11155111 address 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 transactionHash 0x6bba22a00ffcff6bca79aced546e18d2a5a4f4e484a4e4dbafab13daf42f718d"
-        },
-        {
-          "text": "GPv2VaultRelayer 1 address 0xC92E8bdf79f0507f65a392b0ab4667716BFE0110 transactionHash 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/cowprotocol/cow-sdk/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "export const COMPOSABLE_COW = '0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74'"
-        },
-        {
-          "text": "const VAULT_RELAYER = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110'"
-        },
-        {
-          "text": "const VAULT_RELAYER_STAGING = '0xC7242d167563352E2BCA4d71C043fbe542DB8FB2'"
-        },
-        {
-          "text": "const SETTLEMENT_CONTRACT = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'"
-        }
-      ]
-    },
-    "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "USP",
-          "heading": "©️Token & Workflow Contracts"
-        },
-        {
-          "text": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
-          "heading": "©️Token & Workflow Contracts"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
-        },
-        {
-          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/ethereum/ERCs/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "function approve(address _spender, uint256 _value) public returns (bool success)",
-          "heading": "approve"
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/cowprotocol/contracts/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol": {
-      "kind": "served",
-      "blocks": [
-        {
-          "text": "function setPreSignature(bytes calldata orderUid, bool signed) external {"
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/coinbase/agentkit/refs/heads/main/typescript/agentkit/src/action-providers/erc20/constants.ts": {
       "kind": "served",
       "blocks": [
@@ -373,6 +350,23 @@
         },
         {
           "text": "WETH: \"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2\","
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/cowprotocol/contracts/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/networks.json": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "GPv2AllowListAuthentication 11155111 address 0x2c4c28DDBdAc9C5E7055b4C863b72eA0149D8aFE transactionHash 0x73c54c75b3f382304f3adf33e3876c8999fb10df786d4a902733369251033cd1"
+        },
+        {
+          "text": "GPv2Settlement 1 address 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 transactionHash 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3"
+        },
+        {
+          "text": "GPv2Settlement 11155111 address 0x9008D19f58AAbD9eD0D60971565AA8510560ab41 transactionHash 0x6bba22a00ffcff6bca79aced546e18d2a5a4f4e484a4e4dbafab13daf42f718d"
+        },
+        {
+          "text": "GPv2VaultRelayer 1 address 0xC92E8bdf79f0507f65a392b0ab4667716BFE0110 transactionHash 0xf49f90aa5a268c40001d1227b76bb4dd8247f18361fcad9fffd4a7a44f1320d3"
         }
       ]
     },
@@ -450,6 +444,23 @@
         }
       ]
     },
+    "https://raw.githubusercontent.com/cowprotocol/cow-sdk/229ab19e1af1b958a571e6f0bd9c8341624f80f4/packages/config/src/chains/const/contracts.ts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "export const COMPOSABLE_COW = '0xfdaFc9d1902f4e0b84f65F49f244b32b31013b74'"
+        },
+        {
+          "text": "const VAULT_RELAYER = '0xC92E8bdf79f0507f65a392b0ab4667716BFE0110'"
+        },
+        {
+          "text": "const VAULT_RELAYER_STAGING = '0xC7242d167563352E2BCA4d71C043fbe542DB8FB2'"
+        },
+        {
+          "text": "const SETTLEMENT_CONTRACT = '0x9008D19f58AAbD9eD0D60971565AA8510560ab41'"
+        }
+      ]
+    },
     "https://raw.githubusercontent.com/cowprotocol/cow-sdk/refs/heads/main/packages/config/src/chains/const/contracts.ts": {
       "kind": "served",
       "blocks": [
@@ -470,6 +481,30 @@
         },
         {
           "text": "/**"
+        }
+      ]
+    },
+    "https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "USP",
+          "heading": "©️Token & Workflow Contracts"
+        },
+        {
+          "text": "0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6",
+          "heading": "©️Token & Workflow Contracts"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
+        },
+        {
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
         }
       ]
     },
@@ -495,6 +530,31 @@
           "text": "address public constant PRIORITY_WITHDRAWAL_QUEUE = 0x35e7D6feF6f72aDd3c3e39dEc6d9CCc29e3345FA;"
         }
       ]
+    },
+    "https://raw.githubusercontent.com/ethereum/ERCs/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "function approve(address _spender, uint256 _value) public returns (bool success)",
+          "heading": "approve"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/ethereum/ERCs/refs/heads/master/ERCS/erc-20.md": {
+      "kind": "served",
+      "blocks": []
+    },
+    "https://raw.githubusercontent.com/cowprotocol/contracts/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol": {
+      "kind": "served",
+      "blocks": [
+        {
+          "text": "function setPreSignature(bytes calldata orderUid, bool signed) external {"
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/cowprotocol/contracts/refs/heads/main/src/contracts/mixins/GPv2Signing.sol": {
+      "kind": "served",
+      "blocks": []
     }
   },
   "commits": {
@@ -852,7 +912,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x839eb93509922839c22e22219a33fda7d48380bfd372c218e8f203681543dd64"
         }
@@ -866,7 +926,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0x839eb93509922839c22e22219a33fda7d48380bfd372c218e8f203681543dd64"
         }
@@ -899,10 +959,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x6585b3e681cfbce2d13afdb0454af969e56e1bcc874f5445defd939a81d578d3"
         }
       }
@@ -951,7 +1011,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xdd7b3b09771c71445350f2a5a6857d46d1ec95f75ebea95a94406e693fc62c6b"
         }
@@ -965,7 +1025,7 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xdd7b3b09771c71445350f2a5a6857d46d1ec95f75ebea95a94406e693fc62c6b"
         }
@@ -1554,20 +1614,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
@@ -1579,6 +1625,20 @@
       }
     },
     {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x58d97b57bb95320f9a05dc918aef65434969c2b2",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x94c8e4c16c5f87b1c92d56b440dec9edd0a686f60c2ca131966074df4e3ca3ab"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
       "method": "eth_getCode",
       "params": [
         "0x4364fd2371b6318159366abfa51f190df5c24852",
@@ -1587,10 +1647,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x2231be7c3de6c47c5b90c97b36153a287c56d0d6f1a3f619612560d037e5c7a9"
         }
       }
@@ -1726,10 +1786,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xe0aec0f6e7056bff3d64782ea95ddf88ec9beb40b65b0c854a698b248a6ca547"
         }
       }
@@ -1806,10 +1866,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x744d58584e38d214eb190629f131d5cf8b8703bd68e04452f9692177c37c4bc9"
         }
       }
@@ -2002,20 +2062,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0x22690b78c74e46c01e383ad1f6792e1c7ea4cf2ba794e52151517a1f15daaccc"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x22690b78c74e46c01e383ad1f6792e1c7ea4cf2ba794e52151517a1f15daaccc"
@@ -2024,6 +2070,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000009e40b6be5affc984f36cf118c778f0a83be20370",
         "drpc": "0x0000000000000000000000009e40b6be5affc984f36cf118c778f0a83be20370"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0x098697ba3fee4ea76294c5d6a466a4e3b3e95fe6",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x22690b78c74e46c01e383ad1f6792e1c7ea4cf2ba794e52151517a1f15daaccc"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
     },
     {
@@ -2127,20 +2187,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0x2f5020f6d79f13f76e678e0592a34687b5524ce27a0ed2d539044b1fba2e7fec"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x2f5020f6d79f13f76e678e0592a34687b5524ce27a0ed2d539044b1fba2e7fec"
@@ -2149,6 +2195,20 @@
       "answers": {
         "alchemy": "0x000000000000000000000000dd78355bcf9a9435bfcdd9c1482c0e72e7b08f79",
         "drpc": "0x000000000000000000000000dd78355bcf9a9435bfcdd9c1482c0e72e7b08f79"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x2f5020f6d79f13f76e678e0592a34687b5524ce27a0ed2d539044b1fba2e7fec"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
     },
     {
@@ -2337,20 +2397,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0x10c8317a3e4bd635b886d4ec9d1a411a5b4eaba44a6909e2ad8f4cc083ffb9c6"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x10c8317a3e4bd635b886d4ec9d1a411a5b4eaba44a6909e2ad8f4cc083ffb9c6"
@@ -2359,6 +2405,20 @@
       "answers": {
         "alchemy": "0x000000000000000000000000dd78355bcf9a9435bfcdd9c1482c0e72e7b08f79",
         "drpc": "0x000000000000000000000000dd78355bcf9a9435bfcdd9c1482c0e72e7b08f79"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x10c8317a3e4bd635b886d4ec9d1a411a5b4eaba44a6909e2ad8f4cc083ffb9c6"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
     },
     {
@@ -2625,10 +2685,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
         }
       }
@@ -2762,20 +2822,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
-        "drpc": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
@@ -2784,6 +2830,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+        "drpc": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3"
       }
     },
     {
@@ -2847,20 +2907,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0x272d8a10ac62e0aabbf19b916dc1cd7d9dcc604744987aba8b83ce3b8686b5f4"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0x272d8a10ac62e0aabbf19b916dc1cd7d9dcc604744987aba8b83ce3b8686b5f4"
@@ -2872,6 +2918,20 @@
       }
     },
     {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0x272d8a10ac62e0aabbf19b916dc1cd7d9dcc604744987aba8b83ce3b8686b5f4"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
       "method": "eth_getCode",
       "params": [
         "0x2d10683e941275d502173053927ad6066e6afd6b",
@@ -2880,10 +2940,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0xb703f3fafa59bfdfe0e3b934ecc03fa59a5c2967afa0d60446971c86d20f46c7"
         }
       }
@@ -2893,7 +2953,7 @@
       "params": [
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         {
-          "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+          "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
         }
       ],
       "answers": {
@@ -2911,7 +2971,7 @@
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+          "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
         }
       ],
       "answers": {
@@ -2925,7 +2985,7 @@
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+          "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
         }
       ],
       "answers": {
@@ -2935,13 +2995,13 @@
     }
   ],
   "today": {
-    "number": "26434358",
-    "hash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+    "number": "26435390",
+    "hash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
   },
   "facts": {
     "block": {
-      "number": "26434358",
-      "hash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+      "number": "26435390",
+      "hash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
     },
     "defillama": [
       {
@@ -2967,7 +3027,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+            "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
           }
         ],
         "answers": {
@@ -2983,7 +3043,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+            "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
           }
         ],
         "answers": {
@@ -2999,7 +3059,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+            "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
           }
         ],
         "answers": {
@@ -3015,7 +3075,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+            "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
           }
         ],
         "answers": {
@@ -3031,7 +3091,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+            "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
           }
         ],
         "answers": {
@@ -3047,7 +3107,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x7c57454b6ab697388172a891d717c5c247505a22f0bcd6c8e968feb1aa0bf6e8"
+            "blockHash": "0xd1608914c3ab76010d36ac039131bc0d50d9c3944157d9708075f98574c38cb9"
           }
         ],
         "answers": {

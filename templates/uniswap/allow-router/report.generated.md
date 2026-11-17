@@ -82,7 +82,7 @@ More places that may name the address: the scope of every Immunefi program tied 
 | `permit2` | NOT LISTED | PASS | PASS | PASS | FINDING `0xD32Ff78579352cA78f416120A9f68b65c410871b` |
 | `universal-router-2.1.2` | NOT LISTED | PASS | PASS | PASS | FINDING `0x2179a60856E37dfeAacA0ab043B931fE224b27B6` |
 | `usp` | NOT LISTED | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
-| `weeth` | NOT LISTED | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
+| `weeth` | PASS | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
 
 8 entries, 9 findings.
 
@@ -114,7 +114,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `universal-router-2.1.2` | PASS | 26434381 |
+| `universal-router-2.1.2` | PASS | 26435398 |
 
 ## ABI proofs
 
@@ -133,11 +133,11 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26434381 `0x55d51dd86de12dcc05721fa273838ad0fbf8180b686caf7a0980042736ccf487`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26435398 `0xa8d6e88418dce17f62cc721fe8c735bafddfe8e434791b67ef2fbf07901eaf4e`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `uniswap-v4` | `5690` | `parent#uniswap` | 2025-01-29 | 1020182068 | 647785790 |
+| `uniswap-v4` | `5690` | `parent#uniswap` | 2025-01-29 | 1022666282 | 650170021 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |
