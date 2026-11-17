@@ -87,48 +87,50 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 
 `pnpm check-sources` on every entry the operation can touch. `pnpm check-sources usdc vault-v2-factory cbbtc morpho-blue adaptive-curve-irm morpho-market-v1-adapter-v2-factory morpho-oracle-cbbtc-usdc-86 gauntlet-usdc-prime-v2-a3d0 gauntlet-usdc-prime-v2-a3d0-market-adapter usp morpho-oracle-usp-usdc weeth morpho-oracle-weeth-usdc-86` prints what each check compared.
 
-| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Address on page |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | PASS |
-| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS |
-| `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | lending | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | irm | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | PASS |
-| `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | oracle | <https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc> | PASS | n/a | n/a | FINDING |
-| `gauntlet-usdc-prime-v2-a3d0` | `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | vault | <https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime> | PASS | PASS | n/a | FINDING |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `0xDF62f57Ea333a842Db200d4892c90F98204fa22F` | adapter | <https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime> | PASS | n/a | n/a | FINDING |
-| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
-| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | FINDING |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS |
-| `morpho-oracle-weeth-usdc-86` | `0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411` | oracle | <https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth> | PASS | n/a | n/a | FINDING |
+Newest version: for a source pinned to a GitHub commit on the default branch, which addresses the same file at the tip of that branch binds to the same label; it is the same place, so it never counts as one.
+
+| Entry | Address | Kind | Source | Site | CoinGecko coin | GitHub commit | Newest version | Address on page |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `usdc` | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | token | <https://developers.circle.com/stablecoins/usdc-contract-addresses> | PASS | PASS | n/a | n/a | PASS |
+| `vault-v2-factory` | `0xA1D94F746dEfa1928926b84fB2596c06926C0405` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `cbbtc` | `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | token | <https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/constants.ts> | FINDING | PASS | PASS | PASS | PASS |
+| `morpho-blue` | `0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb` | lending | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `adaptive-curve-irm` | `0x870aC11D48B15DB9a138Cf899d20F13F79Ba00BC` | irm | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `morpho-market-v1-adapter-v2-factory` | `0x32BB1c0D48D8b1B3363e86eeB9A0300BAd61ccc1` | factory | <https://docs.morpho.org/developers/contracts/addresses/> | PASS | n/a | n/a | n/a | PASS |
+| `morpho-oracle-cbbtc-usdc-86` | `0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a` | oracle | <https://app.morpho.org/ethereum/variable/0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64/usdc-cbbtc> | PASS | n/a | n/a | n/a | FINDING |
+| `gauntlet-usdc-prime-v2-a3d0` | `0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0` | vault | <https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime> | PASS | PASS | n/a | n/a | FINDING |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `0xDF62f57Ea333a842Db200d4892c90F98204fa22F` | adapter | <https://app.morpho.org/ethereum/vault/0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0/gauntlet-usdc-prime> | PASS | n/a | n/a | n/a | FINDING |
+| `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | n/a | PASS |
+| `morpho-oracle-usp-usdc` | `0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d` | oracle | <https://app.morpho.org/ethereum/variable/0x5d41b8d23ccf6d9e9f7e2b1b357d92bba6ef0367d6ef8ceda965f73e52108461/usdc-usp> | PASS | n/a | n/a | n/a | FINDING |
+| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS | PASS |
+| `morpho-oracle-weeth-usdc-86` | `0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411` | oracle | <https://app.morpho.org/ethereum/variable/0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e/usdc-weeth> | PASS | n/a | n/a | n/a | FINDING |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
-| Entry | Page | Site | GitHub commit | Address on page |
-| --- | --- | --- | --- | --- |
-| `vault-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
-| `morpho-blue` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
-| `adaptive-curve-irm` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
-| `morpho-market-v1-adapter-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS |
+| Entry | Page | Site | GitHub commit | Newest version | Address on page |
+| --- | --- | --- | --- | --- | --- |
+| `vault-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
+| `morpho-blue` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
+| `adaptive-curve-irm` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
+| `morpho-market-v1-adapter-v2-factory` | <https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/morpho-ts/src/addresses.ts> | PASS | PASS | PASS | PASS |
 
-More places that may name the address: the Immunefi program the entry names (its scope), its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places.
+More places that may name the address: the scope of every Immunefi program tied to the entry's protocol, which the program finds, and of the one the entry names; its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and which addresses npm's latest version binds to the same label; and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places; a program not tied to the protocol and the SDK's latest version never count.
 
-| Entry | Bounty scope | SDK file | SDK publisher | Deployer |
-| --- | --- | --- | --- | --- |
-| `usdc` | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
-| `vault-v2-factory` | n/a | n/a | n/a | FINDING |
-| `cbbtc` | n/a | n/a | n/a | FINDING |
-| `morpho-blue` | n/a | n/a | n/a | PASS `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5`, also `adaptive-curve-irm` |
-| `adaptive-curve-irm` | n/a | n/a | n/a | PASS `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5`, also `morpho-blue` |
-| `morpho-market-v1-adapter-v2-factory` | n/a | n/a | n/a | FINDING |
-| `morpho-oracle-cbbtc-usdc-86` | n/a | n/a | n/a | FINDING |
-| `gauntlet-usdc-prime-v2-a3d0` | n/a | n/a | n/a | FINDING |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | n/a | n/a | n/a | FINDING |
-| `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
-| `morpho-oracle-usp-usdc` | n/a | n/a | n/a | FINDING |
-| `weeth` | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
-| `morpho-oracle-weeth-usdc-86` | n/a | n/a | n/a | FINDING |
+| Entry | Bounty scope | SDK file | SDK publisher | SDK latest | Deployer |
+| --- | --- | --- | --- | --- | --- |
+| `usdc` | NOT LISTED | n/a | n/a | n/a | FINDING `0x95Ba4cF87D6723ad9C0Db21737D862bE80e93911` |
+| `vault-v2-factory` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `cbbtc` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `morpho-blue` | NOT LISTED | n/a | n/a | n/a | PASS `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5`, also `adaptive-curve-irm` |
+| `adaptive-curve-irm` | NOT LISTED | n/a | n/a | n/a | PASS `0x937Ce2d6c488b361825D2DB5e8A70e26d48afEd5`, also `morpho-blue` |
+| `morpho-market-v1-adapter-v2-factory` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `morpho-oracle-cbbtc-usdc-86` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `gauntlet-usdc-prime-v2-a3d0` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `usp` | NOT LISTED | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
+| `morpho-oracle-usp-usdc` | NOT LISTED | n/a | n/a | n/a | FINDING |
+| `weeth` | NOT LISTED | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
+| `morpho-oracle-weeth-usdc-86` | NOT LISTED | n/a | n/a | n/a | FINDING |
 
 13 entries, 17 findings.
 
@@ -149,9 +151,9 @@ Each entry that names a registry `factory`, other than an instance whose stored 
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26433518 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0` `isAdapter(address)` | true | 26433518 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0-market-adapter` `parentVault()`, for `gauntlet-usdc-prime-v2-a3d0` | 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0 | 26433518 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26434530 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0` `isAdapter(address)` | true | 26434530 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | `gauntlet-usdc-prime-v2-a3d0-market-adapter` `parentVault()`, for `gauntlet-usdc-prime-v2-a3d0` | 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0 | 26434530 |
 
 ## Code pins
 
@@ -186,12 +188,12 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `morpho-blue` | PASS | 26433518 |
-| `adaptive-curve-irm` | PASS | 26433518 |
-| `morpho-oracle-cbbtc-usdc-86` | PASS | 26433518 |
-| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | PASS | 26433518 |
-| `morpho-oracle-usp-usdc` | PASS | 26433518 |
-| `morpho-oracle-weeth-usdc-86` | PASS | 26433518 |
+| `morpho-blue` | PASS | 26434530 |
+| `adaptive-curve-irm` | PASS | 26434530 |
+| `morpho-oracle-cbbtc-usdc-86` | PASS | 26434530 |
+| `gauntlet-usdc-prime-v2-a3d0-market-adapter` | PASS | 26434530 |
+| `morpho-oracle-usp-usdc` | PASS | 26434530 |
+| `morpho-oracle-weeth-usdc-86` | PASS | 26434530 |
 
 ## ABI proofs
 
@@ -220,37 +222,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `gauntlet-usdc-prime-v2-a3d0`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26433532
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26434538
 vault        gauntlet-usdc-prime-v2-a3d0 0x8c106EEDAd96553e64287A5A6839c3Cc78afA3D0
-latest block 26433532 0x1e7cf5313a258da5ee05af1bd0b9205ac42aca57b445a9e4616bf40c4f211d7a
+latest block 26434538 0x2fe420d48423ebd6c219ca432eb57517d879f3da78ad0b84339730582058a594
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-17  block 26433532  98,088,723.387702 usdc
-  2026-10-18  block 26217532  124,570,399.895707 usdc
-  2026-09-18  block 26001532  92,968,042.057529 usdc
-  2026-08-19  block 25785532  72,847,551.201678 usdc
-  2026-07-19  block 25569532  72,410,766.151743 usdc
-  2026-06-19  block 25353532  81,385,059.465630 usdc
-  2026-05-20  block 25137532  99,450,680.868862 usdc
-  2026-04-20  block 24921532  84,490,448.587631 usdc
-  2026-03-21  block 24705532  65,279,447.649367 usdc
-  2026-02-19  block 24489532  77,244,713.003140 usdc
-  2026-01-20  block 24273532  101,796.443377 usdc
-  2025-12-21  block 24057532  100,355.027125 usdc
-  2025-11-20  block 23841532  100,072.546812 usdc
+  2026-11-17  block 26434538  98,062,267.264155 usdc
+  2026-10-18  block 26218538  120,567,398.393672 usdc
+  2026-09-18  block 26002538  93,956,315.231111 usdc
+  2026-08-19  block 25786538  73,497,229.549956 usdc
+  2026-07-20  block 25570538  72,411,460.733852 usdc
+  2026-06-19  block 25354538  81,386,214.566502 usdc
+  2026-05-20  block 25138538  100,192,268.600628 usdc
+  2026-04-20  block 24922538  107,354,992.147564 usdc
+  2026-03-21  block 24706538  65,280,237.603123 usdc
+  2026-02-19  block 24490538  77,003,805.151217 usdc
+  2026-01-20  block 24274538  101,797.767385 usdc
+  2025-12-21  block 24058538  100,356.291021 usdc
+  2025-11-20  block 23842538  100,073.885893 usdc
 
-holders      742 addresses hold shares at block 26433532, of 1805 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 94009242832379225738506397
-top 10       hold 46.58% of the shares; each: 11.47%, 8.10%, 7.54%, 3.87%, 3.50%, 2.71%, 2.57%, 2.42%, 2.32%, 2.09%
+holders      742 addresses hold shares at block 26434538, of 1806 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 93982296465834380246098275
+top 10       hold 46.59% of the shares; each: 11.47%, 8.10%, 7.54%, 3.87%, 3.50%, 2.71%, 2.57%, 2.42%, 2.32%, 2.09%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26433518 `0x9dee5ccad5307a176bd6ea8ae0b2e662311376c4b8362869b1dab7ae8c6028e3`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26434530 `0xdf22f7f14e76d0e00c8b9c956cfc8b2861a62f4189d158769efd6218964834e7`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10052494848 | 4495957292 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 9986815475 | 4464931135 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

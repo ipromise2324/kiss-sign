@@ -10,6 +10,7 @@ import { abiUnused, docSiteLine, entriesOf, evidenceEntries, functionOnPage, has
 import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './vault-evidence.ts';
+import type { Address } from '../safe/types.ts';
 
 /** ok passed; warn evidence missing (amber); bad a real disagreement (red); na nothing to compare (grey). */
 export type State = 'ok' | 'warn' | 'bad' | 'na';
@@ -25,10 +26,11 @@ export type StripLine = (typeof STRIP_LINES)[number];
 export type ProgramSource = 'page' | `more.${number}` | 'api' | 'coingecko' | 'factory' | 'bounty' | 'sdk' | 'deployer';
 
 /**
- * Where an address row shows a result: under its source, either as whether the source showed the address, or as the
- * source's site compared with what DefiLlama lists. A site confirms no address: DefiLlama lists none.
+ * Where an address row shows a result: under its source, either as whether the source showed the address, as the
+ * source's site compared with what DefiLlama lists, or as what the newest version of a pinned page or SDK binds to the
+ * same label. A site confirms no address: DefiLlama lists none. The newest version is the same place, so it never counts.
  */
-export type RowPart = { readonly of: ProgramSource; readonly part: 'address' | 'site' };
+export type RowPart = { readonly of: ProgramSource; readonly part: 'address' | 'site' | 'newest' };
 
 const sourceRank = (source: ProgramSource): number => {
   const more = /^more\.(\d+)$/.exec(source);
@@ -80,6 +82,8 @@ export type Finding =
   | { readonly kind: 'few-confirmations'; readonly by: readonly ProgramSource[] }
   /** A bounty program's scope, or an SDK file next to its label, does not hold the address: no confirmation. */
   | { readonly kind: 'not-listed' }
+  /** The newest version of a pinned GitHub page or SDK binds the same label only to other addresses. */
+  | { readonly kind: 'newer-differs' }
   /** The SDK tarball's hash is not the pinned one, or not the one npm gives. */
   | { readonly kind: 'package-differs' }
   /** npm holds no provenance for the SDK version, so nothing ties its publisher to the protocol. */
@@ -143,6 +147,7 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'judged-otherwise': 'bad',
   'few-confirmations': 'warn',
   'not-listed': 'na',
+  'newer-differs': 'bad',
   'package-differs': 'bad',
   'no-provenance': 'na',
   'creation-unproven': 'na',
@@ -187,6 +192,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'judged-otherwise': undefined,
   'few-confirmations': undefined,
   'not-listed': 'not-listed',
+  'newer-differs': 'other-address',
   'package-differs': 'other-file',
   'no-provenance': 'no-provenance',
   'creation-unproven': 'creation-unproven',
@@ -230,6 +236,8 @@ export type Result = {
   readonly places?: readonly SitePlace[];
   /** For the deployer, who it is and which other entries share it. */
   readonly shared?: DeployerShare;
+  /** For a newest version, the addresses it binds the label to instead of the entry's. */
+  readonly others?: readonly Address[];
 };
 
 export type Ledger = { readonly entries: readonly RegistryEntry[]; readonly results: readonly Result[] };
@@ -243,6 +251,7 @@ const LINE_KEYS: Readonly<Record<Line['check'], string>> = {
   page: 'source.page',
   url: 'source.url',
   github: 'source.commit',
+  tip: 'source.tip',
   defillama: 'source.site',
   'api-site': 'source.api.site',
   api: 'source.api',
@@ -250,13 +259,15 @@ const LINE_KEYS: Readonly<Record<Line['check'], string>> = {
   bounty: 'source.bounty',
   sdk: 'source.sdk',
   'sdk-site': 'source.sdk.site',
+  'sdk-latest': 'source.sdk.latest',
   deployer: 'source.deployer',
 };
-const LINE_ORDER: readonly Line['check'][] = ['page', 'url', 'api', 'defillama', 'api-site', 'github', 'coingecko', 'bounty', 'sdk', 'sdk-site', 'deployer'];
+const LINE_ORDER: readonly Line['check'][] = ['page', 'url', 'api', 'defillama', 'api-site', 'github', 'tip', 'coingecko', 'bounty', 'sdk', 'sdk-site', 'sdk-latest', 'deployer'];
 const LINE_SOURCE: Readonly<Record<Line['check'], ProgramSource>> = {
   page: 'page',
   url: 'page',
   github: 'page',
+  tip: 'page',
   api: 'api',
   coingecko: 'coingecko',
   defillama: 'page',
@@ -264,19 +275,22 @@ const LINE_SOURCE: Readonly<Record<Line['check'], ProgramSource>> = {
   bounty: 'bounty',
   sdk: 'sdk',
   'sdk-site': 'sdk',
+  'sdk-latest': 'sdk',
   deployer: 'deployer',
 };
+const NEWEST_CHECKS: ReadonlySet<Line['check']> = new Set(['tip', 'sdk-latest']);
 const SITE_CHECKS: ReadonlySet<Line['check']> = new Set(['defillama', 'api-site', 'sdk-site']);
 
 const coingeckoUrl = (id: string | undefined) => (id === undefined ? undefined : parseHttpsUrl(`https://www.coingecko.com/en/coins/${id}`));
 const defillamaUrl = (slug: string | undefined) => (slug === undefined ? undefined : parseHttpsUrl(`https://defillama.com/protocol/${slug}`));
 
-function linkOf(entry: RegistryEntry, { of, part }: RowPart, shared: DeployerShare | undefined): HttpsUrl | undefined {
+function linkOf(entry: RegistryEntry, { of, part }: RowPart, line: Pick<Line, 'shared' | 'program'>): HttpsUrl | undefined {
+  const { shared, program } = line;
   if (part === 'site') return defillamaUrl(entry.defillama);
   if (of.startsWith('more.')) return entry.moreSources?.[Number(of.slice(5)) - 1]?.url;
   if (of === 'page') return entry.source;
   if (of === 'api') return entry.apiSource?.url;
-  if (of === 'bounty') return entry.immunefi === undefined ? undefined : parseHttpsUrl(`https://immunefi.com/bug-bounty/${entry.immunefi}/`);
+  if (of === 'bounty') return program === undefined ? undefined : parseHttpsUrl(`https://immunefi.com/bug-bounty/${program}/`);
   if (of === 'sdk') return entry.sdk === undefined ? undefined : parseHttpsUrl(`https://www.npmjs.com/package/${entry.sdk.package}/v/${entry.sdk.version}`);
   if (of === 'deployer') return shared === undefined ? undefined : parseHttpsUrl(`https://etherscan.io/address/${shared.deployer}`);
   return of === 'coingecko' ? coingeckoUrl(entry.coingecko) : undefined;
@@ -284,7 +298,7 @@ function linkOf(entry: RegistryEntry, { of, part }: RowPart, shared: DeployerSha
 
 function siteFinding(line: Line): Finding {
   if (line.kind === 'agrees') return { kind: 'agrees' };
-  if (line.kind === 'unverifiable') return { kind: 'no-answer' };
+  if (line.kind === 'unverifiable' || line.kind === 'absent') return { kind: 'no-answer' };
   if (line.cause === 'differs') return { kind: 'site-differs' };
   if (line.cause === 'unlisted') return { kind: 'unlisted' };
   if (line.cause === 'unattested') return { kind: 'no-provenance' };
@@ -293,7 +307,8 @@ function siteFinding(line: Line): Finding {
 
 function lineFinding(entry: RegistryEntry, line: Line): Finding {
   if (line.kind === 'agrees') return { kind: 'agrees' };
-  if (line.kind === 'unverifiable') return ['page', 'api', 'bounty', 'sdk', 'deployer'].includes(line.check) ? { kind: 'source-no-answer' } : { kind: 'no-answer' };
+  if (line.kind === 'absent') return { kind: 'not-listed' };
+  if (line.kind === 'unverifiable') return ['page', 'tip', 'api', 'bounty', 'sdk', 'sdk-latest', 'deployer'].includes(line.check) ? { kind: 'source-no-answer' } : { kind: 'no-answer' };
   switch (line.check) {
     case 'page':
       if (line.cause === 'not-served' || line.cause === 'not-fetched') return { kind: 'page-unread', why: line.cause };
@@ -312,6 +327,11 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
       return line.cause === 'differs' ? { kind: 'package-differs' } : line.cause === 'not-fetched' ? { kind: 'page-unread', why: 'not-fetched' } : { kind: 'not-listed' };
     case 'deployer':
       return line.cause === 'unlisted' ? { kind: 'deployer-alone' } : { kind: 'creation-unproven' };
+    case 'tip':
+    case 'sdk-latest':
+      if (line.cause === 'differs') return { kind: 'newer-differs' };
+      if (line.cause === 'unexplained') return { kind: 'package-differs' };
+      return line.cause === 'unattested' ? { kind: 'no-provenance' } : { kind: 'page-unread', why: 'not-fetched' };
     case 'defillama':
     case 'api-site':
     case 'sdk-site':
@@ -319,7 +339,7 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
   }
 }
 
-const MORE_KEYS: Readonly<Partial<Record<Line['check'], string>>> = { page: 'page', github: 'commit', defillama: 'site' };
+const MORE_KEYS: Readonly<Partial<Record<Line['check'], string>>> = { page: 'page', github: 'commit', tip: 'tip', defillama: 'site' };
 
 function sourceResults(entry: RegistryEntry, lines: readonly Line[]): Result[] {
   const about = { kind: 'entry', entry } as const;
@@ -328,17 +348,18 @@ function sourceResults(entry: RegistryEntry, lines: readonly Line[]): Result[] {
     .sort((a, b) => order(a) - order(b))
     .map((line): Result => {
       const more = line.more === undefined ? undefined : (`more.${line.more}` as const);
-      const source: RowPart = { of: more ?? LINE_SOURCE[line.check], part: SITE_CHECKS.has(line.check) ? 'site' : 'address' };
+      const source: RowPart = { of: more ?? LINE_SOURCE[line.check], part: SITE_CHECKS.has(line.check) ? 'site' : NEWEST_CHECKS.has(line.check) ? 'newest' : 'address' };
       const id = more === undefined ? LINE_KEYS[line.check] : `source.${more}.${MORE_KEYS[line.check]}`;
       return {
         id: `${entry.name}/${id}`,
         line: 'sources',
         about,
         source,
-        link: linkOf(entry, source, line.shared),
+        link: linkOf(entry, source, line),
         finding: lineFinding(entry, line),
         ...(line.places === undefined ? {} : { places: line.places }),
         ...(line.shared === undefined ? {} : { shared: line.shared }),
+        ...(line.others === undefined ? {} : { others: line.others }),
       };
     });
 }
@@ -489,10 +510,11 @@ function deployerCounts(result: Result, confirmedElsewhere: ReadonlySet<string>)
 
 /**
  * The sources whose every result passed, each one place that showed the entry's address for its role; a site shows
- * none. An SDK counts only with its publisher too, since anyone can publish a package that names an address.
+ * none. An SDK counts only with its publisher too, since anyone can publish a package that names an address. The
+ * newest version of a page or SDK is the same place, so it neither counts nor keeps one from counting.
  */
 function confirmingSources(results: readonly Result[]): ProgramSource[] {
-  const showing = results.filter((r) => r.source?.part === 'address' || r.source?.of === 'sdk');
+  const showing = results.filter((r) => r.source?.part === 'address' || (r.source?.of === 'sdk' && r.source.part === 'site'));
   const sources = [...new Set(showing.map((r) => (r.source as RowPart).of))];
   return sources.filter((source) => showing.every((r) => r.source?.of !== source || STATE_OF[r.finding.kind] === 'ok')).sort((a, b) => sourceRank(a) - sourceRank(b));
 }
@@ -611,7 +633,12 @@ export type Judged = {
 };
 
 /** A program source: whether it showed the entry's address, and for a page or the API, whether its site is the protocol's. */
-export type SourceLine = Judged & { readonly source: ProgramSource; readonly site: Judged | undefined; readonly shared: DeployerShare | undefined };
+export type SourceLine = Judged & {
+  readonly source: ProgramSource;
+  readonly site: Judged | undefined;
+  readonly newest: (Judged & { readonly others: readonly Address[] }) | undefined;
+  readonly shared: DeployerShare | undefined;
+};
 
 function judged(results: readonly Result[]): Judged {
   const state = worst(results);
@@ -625,9 +652,15 @@ export function sourcesOf(ledger: Ledger, entry: RegistryEntry): SourceLine[] {
   const sources = [...new Set(results.flatMap((r) => (r.source === undefined ? [] : [r.source.of])))].sort((a, b) => sourceRank(a) - sourceRank(b));
   return sources.map((source) => {
     const of = (part: RowPart['part']) => results.filter((r) => r.source?.of === source && r.source.part === part);
-    const site = of('site');
+    const [site, newest] = [of('site'), of('newest')];
     if (of('address').length === 0) throw new Error(`${entry.name}: source ${source} has a site result but none for its address`);
-    return { ...judged(of('address')), source, site: site.length === 0 ? undefined : judged(site), shared: of('address').find((r) => r.shared !== undefined)?.shared };
+    return {
+      ...judged(of('address')),
+      source,
+      site: site.length === 0 ? undefined : judged(site),
+      newest: newest.length === 0 ? undefined : { ...judged(newest), others: newest.flatMap((r) => r.others ?? []) },
+      shared: of('address').find((r) => r.shared !== undefined)?.shared,
+    };
   });
 }
 
