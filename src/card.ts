@@ -190,7 +190,7 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
       const value = values.get(name);
       return value?.kind === 'amount' && value.value === 0n;
     });
-    if (zero !== undefined) return refuse('zero-floor', zero, `${zero} is 0, which bounds nothing: a computed amount, or one a share price bound or atLeast compares with, must be at least 1`);
+    if (zero !== undefined) return refuse('zero-floor', zero, `${zero} is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it`);
     const named = template.same.map((ref) => {
       const target = resolveRef(ref, values, context.registry);
       const label = ref.attribute === undefined ? ref.field : `${ref.field}.${ref.attribute}`;

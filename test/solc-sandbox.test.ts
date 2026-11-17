@@ -89,6 +89,7 @@ import('x').catch(function (e) {
   host.stderr.write(JSON.stringify(seen));
   host.stdout.write('x');
 });`;
+  const key = process.env.ALCHEMY_API_KEY;
   process.env.ALCHEMY_API_KEY = 'a-key-the-compiler-must-not-see';
   let message = '';
   try {
@@ -96,7 +97,8 @@ import('x').catch(function (e) {
   } catch (error) {
     message = (error as Error).message;
   } finally {
-    delete process.env.ALCHEMY_API_KEY;
+    if (key === undefined) delete process.env.ALCHEMY_API_KEY;
+    else process.env.ALCHEMY_API_KEY = key;
   }
   const seen = JSON.parse(/gave no answer \(exit 0\): (\{.*\})$/.exec(message)?.[1] ?? 'null') as Record<string, unknown> & { env: string[] };
   assert.equal(seen.pid, 'number', 'the dynamic import still reaches the process the build runs in');
@@ -105,6 +107,15 @@ import('x').catch(function (e) {
   assert.deepEqual(readdirSync(dir), []);
 });
 
-test('a build that never finishes is stopped and refused', () => {
+test('a build that never finishes is killed and refused, even one that reaches its process and ignores SIGTERM', () => {
   assert.throws(() => instantiate('0.0.0-loop', 'for (;;) {}', 2_000).compile('{}'), /^Error: solc 0\.0\.0-loop did not finish within 2 s$/);
+  const stubborn = `
+Module._solidity_compile = 1;
+Module.cwrap = function () { return function () { return 'ok'; }; };
+import('x').catch(function (e) {
+  var host = e.constructor.constructor('return process')();
+  host.on('SIGTERM', function () {});
+  for (;;) {}
+});`;
+  assert.throws(() => instantiate('0.0.0-stubborn', stubborn, 2_000).compile('{}'), /^Error: solc 0\.0\.0-stubborn did not finish within 2 s$/);
 });

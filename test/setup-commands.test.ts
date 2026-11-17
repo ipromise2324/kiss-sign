@@ -684,12 +684,12 @@ test('card seal refuses a hand-written card whose computed floor is 0, in the si
   assert.equal(english.code, 1);
   assert.equal(
     english.stderr,
-    'kiss-sign: card refused at operations[0].values.min-shares: min-shares is 0, which bounds nothing: a computed amount, or one a share price bound or atLeast compares with, must be at least 1\n',
+    'kiss-sign: card refused at operations[0].values.min-shares: min-shares is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it\n',
   );
   const chinese = await sealing('zh-TW', { amount: '5000000', 'min-shares': '0' });
-  assert.equal(chinese.stderr, 'kiss-sign: 卡片在 operations[0].values.min-shares 被拒絕：min-shares 是 0，這樣什麼都不限制：算出來的數量，或份額價格界線、atLeast 拿來比較的數量，至少要是 1\n');
+  assert.equal(chinese.stderr, 'kiss-sign: 卡片在 operations[0].values.min-shares 被拒絕：min-shares 是 0；算出來的數量，或份額價格界線、atLeast 拿來比較的數量，至少要是 1，因為 0 在這裡不是什麼都不限，就是沒有交易能滿足\n');
   const amount = await sealing('en', { amount: '0', 'min-shares': '1' });
-  assert.match(amount.stderr, /card refused at operations\[0\]\.values\.amount: amount is 0, which bounds nothing/);
+  assert.match(amount.stderr, /card refused at operations\[0\]\.values\.amount: amount is 0; a computed amount/);
 });
 
 test('card seal does not count a report reached through a symlinked folder, which git would not list', async () => {

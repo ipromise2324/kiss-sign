@@ -37,6 +37,7 @@ export function instantiate(version: string, source: string, timeoutMs: number =
         env: {},
         encoding: 'utf8',
         timeout: timeoutMs,
+        killSignal: 'SIGKILL',
         maxBuffer: 1 << 30,
       });
       if ((run.error as NodeJS.ErrnoException | undefined)?.code === 'ETIMEDOUT') throw new Error(`solc ${version} did not finish within ${timeoutMs / 1000} s`);
