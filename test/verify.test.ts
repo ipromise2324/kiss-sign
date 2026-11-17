@@ -320,8 +320,8 @@ test('verify refuses a sealed card whose computed floor is 0 before it reads the
   const text = JSON.stringify(card);
   const hash = `0x${bytesToHex(keccak_256(new TextEncoder().encode(text)))}`;
   const expected: Record<Language, string> = {
-    en: 'kiss-sign: card refused at operations[0].values.min-shares: min-shares is 0, which bounds nothing: a computed amount, or one a share price bound or atLeast compares with, must be at least 1\n',
-    'zh-TW': 'kiss-sign: 卡片在 operations[0].values.min-shares 被拒絕：min-shares 是 0，這樣什麼都不限制：算出來的數量，或份額價格界線、atLeast 拿來比較的數量，至少要是 1\n',
+    en: 'kiss-sign: card refused at operations[0].values.min-shares: min-shares is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it\n',
+    'zh-TW': 'kiss-sign: 卡片在 operations[0].values.min-shares 被拒絕：min-shares 是 0；算出來的數量，或份額價格界線、atLeast 拿來比較的數量，至少要是 1，因為 0 在這裡不是什麼都不限，就是沒有交易能滿足\n',
   };
   for (const language of ['en', 'zh-TW'] as const) {
     const { base, repo, home } = setUp(undefined, true, language);

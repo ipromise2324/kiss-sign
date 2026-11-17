@@ -158,7 +158,7 @@ test('a card holding 0 as the fewest a swap may give is refused, whether a call 
       reason: 'zero-floor',
       at: 'operations[0].values.min-buy',
       field: 'min-buy',
-      detail: 'min-buy is 0, which bounds nothing: a computed amount, or one a share price bound or atLeast compares with, must be at least 1',
+      detail: 'min-buy is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it',
     });
     assert.equal(resolve('1').kind, 'resolved');
   }
