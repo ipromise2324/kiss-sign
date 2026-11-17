@@ -2319,9 +2319,45 @@
         "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
+    },
+    {
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x32bb1c0d48d8b1b3363e86eeb9a0300bad61ccc1",
+          "data": "0xd6aebf940000000000000000000000009b42102feb9ba61d9793e49239eda0d0c3cb5bd5"
+        },
+        {
+          "blockHash": "0xe0fcb0ecfbc56c8b1dcc1a88e6edcff31f2a0ac2b6b7dfba79266f70c49d22fe"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      }
+    },
+    {
+      "method": "eth_call",
+      "params": [
+        {
+          "to": "0x153bd1abe60104bd46aa05a27fa12d1346d64a57",
+          "data": "0x68c18beb0000000000000000000000009b42102feb9ba61d9793e49239eda0d0c3cb5bd5"
+        },
+        {
+          "blockHash": "0xe0fcb0ecfbc56c8b1dcc1a88e6edcff31f2a0ac2b6b7dfba79266f70c49d22fe"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000001",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      }
     }
   ],
   "today": {
+    "number": "26429879",
+    "hash": "0xe0fcb0ecfbc56c8b1dcc1a88e6edcff31f2a0ac2b6b7dfba79266f70c49d22fe"
+  },
+  "instances": {
     "number": "26429879",
     "hash": "0xe0fcb0ecfbc56c8b1dcc1a88e6edcff31f2a0ac2b6b7dfba79266f70c49d22fe"
   },

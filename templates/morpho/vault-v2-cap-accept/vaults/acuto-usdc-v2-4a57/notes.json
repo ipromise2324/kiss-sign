@@ -39,17 +39,6 @@
         "en": "Use this only if you are this vault's curator or allocator. First compare the address on the Morpho app's curator page.",
         "zh-TW": "只在你就是這個 vault 的 curator 或 allocator 時用；先在 Morpho app 的 curator 頁比對地址。"
       }
-    },
-    "acuto-usdc-v2-4a57-market-adapter/address": {
-      "status": "confirmed",
-      "text": {
-        "en": "The program's only check is the Morpho API: asked for this vault's adapters, it answers 0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5. AI also checked on chain: the vault's `isAdapter` answers true and `adaptersLength` is 1. In pnpm prove-instance, MorphoMarketV1AdapterV2Factory answers `isMorphoMarketV1AdapterV2` = true, and both providers agree.",
-        "zh-TW": "程式只有 Morpho API 確認：問這個 vault 的 adapters，回答 0x9b42102feb9Ba61d9793E49239eDA0d0C3cb5bD5。AI 另外在鏈上確認：vault 的 `isAdapter` 回答 true、`adaptersLength` 是 1；pnpm prove-instance 時 MorphoMarketV1AdapterV2Factory 回答 `isMorphoMarketV1AdapterV2` = true，兩個節點一致。"
-      },
-      "recommendation": {
-        "en": "Acceptable. The cap id and moving funds both use this address; a wrong one would only revert or set a cap on an id the vault does not use.",
-        "zh-TW": "可以接受；上限的 id 和搬錢都用這個地址，填錯只會 revert 或設到一個 vault 不用的 id。"
-      }
     }
   },
   "entries": {
