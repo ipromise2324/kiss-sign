@@ -104,7 +104,7 @@ More places that may name the address: the scope of every Immunefi program tied 
 | `cbbtc` | NOT LISTED | n/a | n/a | n/a | FINDING |
 | `gpv2-settlement` | PASS | PASS | PASS | PASS | FINDING `0x7EAbac82dA8ea6Ac980d619Cb562a9924d1E3bAa` |
 | `usp` | NOT LISTED | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
-| `weeth` | NOT LISTED | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
+| `weeth` | PASS | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
 
 7 entries, 8 findings.
 
@@ -145,7 +145,7 @@ Every span of each entry's registry code pin, oldest first: a span holds from it
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26434350 `0x00d5fcb7b5d4fb50426eff17c33798e96eecbcf63f0d5ce9472e69fec4d6c4cd`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26435382 `0xc6af96c5e88d6306d3a21d68010613ee697ca12610a904a4aad9f386eefbaf7a`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |

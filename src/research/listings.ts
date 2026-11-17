@@ -13,7 +13,7 @@ import type { Address } from '../safe/types.ts';
 import { apiKey, pathText, pruneAnswers, walkPath } from './api-source.ts';
 import type { ApiAnswer } from './api-source.ts';
 import { registrableDomain } from './public-suffix.ts';
-import { SiteListingError, githubOrg, httpsUrl, parseCoinLinks, parseImmunefiPrograms, verifiedDomains } from './site-listings.ts';
+import { IMMUNEFI_WEBSITE_ASSET, SiteListingError, githubOrg, httpsUrl, parseCoinLinks, parseImmunefiPrograms, verifiedDomains } from './site-listings.ts';
 import type { CoinLinks, ImmunefiProgram, OrgDomains, SiteListings, SiteUnread } from './site-listings.ts';
 import type { PublicSuffixList, SuffixListUnavailable } from './public-suffix.ts';
 import type { GithubToken } from './github-token.ts';
@@ -191,7 +191,7 @@ function protocolSites(entry: SiteOwner, protocol: DefiLlamaProtocol, listings: 
   }
   const program = entry.immunefi === undefined ? undefined : programTie(entry.immunefi, listings.sites.programs, domains.map, orgs.map, domainOf);
   if (program?.kind === 'unread') unread.push(`Immunefi's program list (${program.why})`);
-  if (program?.kind === 'tied') {
+  if (program?.kind === 'tied' && program.by === 'site') {
     const place: SitePlace = { kind: 'immunefi', id: program.program.slug };
     domains.add(domainOf(program.program.website), place);
     if (program.program.github !== undefined) orgs.add(githubOrg(program.program.github), place);
@@ -199,11 +199,17 @@ function protocolSites(entry: SiteOwner, protocol: DefiLlamaProtocol, listings: 
   return { domains: domains.map, orgs: orgs.map, unread };
 }
 
-type ProgramTie = { readonly kind: 'tied' | 'untied'; readonly program: ImmunefiProgram } | { readonly kind: 'unlisted' } | SiteUnread;
+type ProgramTie =
+  | { readonly kind: 'tied'; readonly by: 'site' | 'scope'; readonly program: ImmunefiProgram }
+  | { readonly kind: 'untied'; readonly program: ImmunefiProgram }
+  | { readonly kind: 'unlisted' }
+  | SiteUnread;
 
 /**
- * The entry names its Immunefi program, so the program is the protocol's only when its website or GitHub organization
- * is already a site DefiLlama or the protocol coin lists; otherwise an entry could name another protocol's program.
+ * The entry names its Immunefi program, so the program is the protocol's only when its website, its GitHub organization
+ * or a website its scope lists is already a site DefiLlama or the protocol coin lists; otherwise an entry could name
+ * another protocol's program. A scope lists sites the program pays to have attacked, not sites it owns, so a program
+ * tied only by its scope lends the protocol none of its own sites.
  */
 function programTie(
   slug: string,
@@ -215,9 +221,10 @@ function programTie(
   if ('kind' in programs) return programs;
   const program = programs.get(slug);
   if (program === undefined) return { kind: 'unlisted' };
-  const website = domainOf(program.website);
+  const listed = (url: URL | undefined) => domains.has(domainOf(url) ?? '');
   const org = program.github === undefined ? undefined : githubOrg(program.github);
-  return { kind: (website !== undefined && domains.has(website)) || (org !== undefined && orgs.has(org)) ? 'tied' : 'untied', program };
+  if (listed(program.website) || (org !== undefined && orgs.has(org))) return { kind: 'tied', by: 'site', program };
+  return program.scopeSites.some(listed) ? { kind: 'tied', by: 'scope', program } : { kind: 'untied', program };
 }
 
 const PLACE_WORDS: Readonly<Record<SitePlace['kind'], string>> = { defillama: 'DefiLlama', coingecko: 'CoinGecko coin', immunefi: 'Immunefi program', github: 'GitHub verified domain of' };
@@ -262,7 +269,7 @@ export function sourceSiteLine(source: string, owner: SiteOwner, listings: Listi
     places = [...(sites.orgs.get(ours) ?? []), ...(tied ? [{ kind: 'github', id: ours } as const] : [])];
   } else {
     ours = registrableDomain(host, suffixes);
-    if (ours === undefined) return finding(`${what} host ${host} has no registrable domain under the Public Suffix List; not compared`);
+    if (ours === undefined) return finding(`${what} host ${host} has no registrable domain under the Public Suffix List, or is a shared host; not compared`);
     compared = sites.domains;
     places = sites.domains.get(ours) ?? [];
   }
@@ -390,7 +397,7 @@ function bountyLine(entry: RegistryEntry, listings: Listings): Line {
   if (named !== undefined && !programs.has(named)) return { kind: 'finding', check: 'bounty', text: `Immunefi lists no program ${named}`, cause: 'not-fetched' };
   const { tied, others } = bountyPrograms(entry, listings, programs);
   if (named !== undefined && !tied.some((p) => p.slug === named)) {
-    return { kind: 'finding', check: 'bounty', text: `Immunefi program ${named} lists neither a website nor a GitHub org DefiLlama or the protocol coin lists for ${entry.defillama}`, cause: 'differs' };
+    return { kind: 'finding', check: 'bounty', text: `Immunefi program ${named} lists neither a website, a website in scope nor a GitHub org DefiLlama or the protocol coin lists for ${entry.defillama}`, cause: 'differs' };
   }
   const holding = tied.filter((p) => p.addresses.has(entry.address));
   const untied = others.length === 0 ? '' : `; programs not tied to the protocol that hold it: ${slugs(others)}`;
@@ -399,7 +406,7 @@ function bountyLine(entry: RegistryEntry, listings: Listings): Line {
     return { kind: 'agrees', check: 'bounty', text: `Immunefi program ${slugs(holding)} of the protocol has ${checksumAddress(entry.address)} in scope as an etherscan.io address${untied}`, program: first.slug };
   }
   const [first] = tied;
-  if (first === undefined) return notListed(`no Immunefi program lists a website or GitHub org of ${entry.defillama ?? 'the protocol'}${untied}`);
+  if (first === undefined) return notListed(`no Immunefi program lists a website, a website in scope or a GitHub org of ${entry.defillama ?? 'the protocol'}${untied}`);
   const count = tied.reduce((n, p) => n + p.addresses.size, 0);
   return { ...notListed(`Immunefi program ${slugs(tied)} of the protocol does not have the address in scope (${count} Ethereum addresses there)${untied}`), program: first.slug };
 }
@@ -608,7 +615,7 @@ export type ListingsRecording = {
   readonly defillamaParents?: { readonly parentProtocols: readonly RecordedParent[] };
   /** Each protocol coin's homepages and GitHub repositories, by CoinGecko id, as CoinGecko's answer holds them. */
   readonly coinLinks?: Readonly<Record<string, unknown>>;
-  /** The Immunefi programs the entries name, those tied to their protocols and those holding their addresses, cut to their website, GitHub organization and scope's etherscan.io links. */
+  /** The Immunefi programs the entries name, those tied to their protocols and those holding their addresses, cut to their website, GitHub organization, scope's websites and etherscan.io links. */
   readonly immunefi?: unknown;
   /** The domains GitHub verified each organization a page is on controls. */
   readonly orgs?: Readonly<Record<string, OrgDomains>>;
@@ -757,14 +764,15 @@ export function trimForRecording(entries: readonly RegistryEntry[], listings: Li
   };
 }
 
-/** The programs `names` names, as Immunefi's list holds them, cut to their sites and their scope's etherscan.io links. */
+/** The programs `names` names, as Immunefi's list holds them, cut to their sites, their scope's websites and its etherscan.io links. */
 function programsRecord(programs: SiteListings['programs'], names: ReadonlySet<string>): unknown {
   if ('kind' in programs) return { unread: programs.why };
   return [...names].flatMap((name) => {
     const program = programs.get(name);
     if (program === undefined) return [];
     const links = [...program.addresses].map((address) => `https://etherscan.io/address/${address}`).join('\n');
-    return [{ slug: program.slug, websiteUrl: program.website?.href ?? null, githubUrl: program.github?.href ?? null, assetsBodyV2: links }];
+    const assets = program.scopeSites.map((url) => ({ type: IMMUNEFI_WEBSITE_ASSET, url: url.href }));
+    return [{ slug: program.slug, websiteUrl: program.website?.href ?? null, githubUrl: program.github?.href ?? null, ...(assets.length === 0 ? {} : { assets }), assetsBodyV2: links }];
   });
 }
 
