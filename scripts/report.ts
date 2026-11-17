@@ -42,6 +42,7 @@ import {
   renderReport,
   replayInputs,
   replayReport,
+  reportDir,
   reportRecordingPath,
   summarizePastTxs,
   trimReportRecording,
@@ -49,10 +50,9 @@ import {
   vaultsOf,
 } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
-import { notesChanges, NotesError } from '../src/research/notes.ts';
-import { LANGUAGES } from '../src/language.ts';
+import { NOTES_FILE, notesChanges, NotesError } from '../src/research/notes.ts';
 import type { Language } from '../src/language.ts';
-import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference } from '../src/research/report-html.ts';
+import { generatedHtml, generatedHtmlPath, htmlDifferences, writeHtmlPages } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
@@ -83,17 +83,19 @@ still without an answer prints as UNVERIFIABLE, never as FINDING, and --record t
 
 --record also writes the live answers to testdata/report/, records an ABI case for each entry testdata/abi/ lacks, and
 writes the committed report from those recordings alone: templates/<protocol>/<operation>/report.generated.md, or
-registry/reports/<vault>.generated.md, and for a template with notes.json, the signer's report in each language beside it:
-report.generated.en.html in English and report.generated.zh-TW.html in Traditional Chinese. --offline
-prints the Markdown text from the recordings, reading nothing live; --render writes every report file from them. Both
-remove a report.generated.html the program wrote before it wrote one file per language.
+registry/reports/<vault>.generated.md, and for a template with notes.json, the signer's report beside it in each
+language the notes hold: report.generated.en.html in English, report.generated.zh-TW.html in Traditional Chinese.
+--offline prints the Markdown text from the recordings, reading nothing live; --render writes every report file from
+them. Both remove a page in a language the notes no longer hold, and a report.generated.html the program wrote before
+it wrote one file per language.
 --compare reads the listings, pages, official APIs, ABI proofs, code spans, the code it reads at the latest block and ERC-7730 attestations live, reads each vault again at the blocks
 the committed report names, reads the protocol facts and decimals again at the block the recording names, fetches each
 recorded past transaction again by hash, and prints each fact that differs from the committed report, setting aside
 DefiLlama's TVL; it exits 1 on any. It does not search for past transactions again. For a template with
-notes.json it also writes each language's HTML report again from the recordings and notes with this code and requires
-each committed file to equal it byte for byte. It first prints every file the pull request changes outside templates/,
-registry/ and testdata/ against origin/main, and AI TEXT for each notes.json it changes.
+notes.json it also writes the HTML report again in each language the notes hold from the recordings and notes with
+this code, requires each committed file to equal it byte for byte, and flags a page missing or committed in another
+language. It first prints every file the pull request changes outside templates/, registry/ and testdata/ against
+origin/main, and AI TEXT for each notes.json it changes.
 
 --data <git ref> takes templates/, registry/ and testdata/ from that ref, such as a fetched pull request branch, and
 runs the code checked out here. Run --compare from main with --data, so the pull request's own code cannot change what
@@ -180,16 +182,10 @@ async function writeGenerated(): Promise<void> {
   writeFileSync(mdPath, renderReport(inputs, title));
   const written = [generatedPath(target)];
   const html = await generatedHtml(root, inputs, title);
-  if (html !== undefined && 'template' in target) {
-    for (const [language, page] of html) {
-      writeFileSync(join(root, generatedHtmlPath(target, language)), page);
-      written.push(generatedHtmlPath(target, language));
-    }
-    const old = join(dirname(join(root, generatedHtmlPath(target, 'en'))), OLD_HTML_FILE);
-    if (existsSync(old)) {
-      rmSync(old);
-      console.error(`removed ${OLD_HTML_FILE}, which ${generatedHtmlFile('en')} and ${generatedHtmlFile('zh-TW')} replace`);
-    }
+  if ('template' in target) {
+    const pages = html ?? new Map<Language, string>();
+    for (const file of writeHtmlPages(join(root, reportDir(target)), pages)) console.error(`removed ${file}, a page in no language ${NOTES_FILE} holds`);
+    written.push(...[...pages.keys()].map((language) => generatedHtmlPath(target, language)));
   }
   console.error(`wrote ${written.join(' and ')}`);
 }
@@ -286,20 +282,17 @@ async function compareHtml(): Promise<boolean> {
     if (!(e instanceof NotesError)) throw e;
     refused = `the program refuses notes.json: ${e.message}`;
   }
-  const differences = LANGUAGES.map((language) => {
-    const path = generatedHtmlPath(target, language);
-    const committed = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined;
-    const difference = refused ?? htmlDifference(generatedHtmlFile(language), committed, written?.get(language));
-    say(
-      difference === undefined
-        ? `${path}: equals, byte for byte, what this code writes from the recordings and notes.json`
-        : `DIFFERS  ${path} is not what this code writes from the recordings and notes.json; ${difference}`,
-    );
+  const dir = reportDir(target);
+  if (refused !== undefined) {
+    say(`DIFFERS  ${dir}: ${refused}`);
+    return false;
+  }
+  const differences = htmlDifferences(join(root, dir), written).map(({ file, difference }) => {
+    const path = join(dir, file);
+    say(difference === undefined ? `${path}: equals, byte for byte, what this code writes from the recordings and notes.json` : `DIFFERS  ${path} is not what this code writes from the recordings and notes.json; ${difference}`);
     return difference;
   });
-  const old = join(dirname(join(root, generatedHtmlPath(target, 'en'))), OLD_HTML_FILE);
-  if (existsSync(old)) say(`DIFFERS  ${OLD_HTML_FILE} is still committed beside the reports in each language that replace it`);
-  return differences.every((d) => d === undefined) && !existsSync(old);
+  return differences.every((d) => d === undefined);
 }
 
 if (flags.compare) {

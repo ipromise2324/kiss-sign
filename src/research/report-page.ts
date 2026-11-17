@@ -20,7 +20,7 @@ import type { FieldFact } from './erc7730.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, Phrase, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
-import { NOTES_FILE, argumentTree, notesPath, notesScope, parseNotes } from './notes.ts';
+import { NOTES_FILE, argumentTree, notesLanguages, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { factsScope } from './protocol-facts.ts';
 import { functionNames, isOtherOperation, misfitText } from './study.ts';
@@ -84,6 +84,8 @@ export type NextStep = { readonly say: Inline; readonly command: string | undefi
 export type Header = {
   readonly title: AiText;
   readonly summary: AiText;
+  /** Said when the notes hold this page's language alone: no page in another language exists. */
+  readonly onlyIn: string | undefined;
   readonly strip: readonly StripItem[];
   /** The program's worst state over every result, never the AI's status, beside the AI's one line. */
   readonly verdict: { readonly state: State; readonly text: AiText };
@@ -1773,6 +1775,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     header: {
       title: research(notes.title),
       summary: research(notes.summary),
+      onlyIn: notesLanguages(rawNotes).length === 1 ? w.onlyIn : undefined,
       strip: stripItems(ledger, template, signedEntryNames(template, registry), w),
       verdict: { state: worst(ledger.results), text: research(notes.verdict.text, [], notes.verdict.status === 'safe' ? 'safe' : 'caution') },
     },
