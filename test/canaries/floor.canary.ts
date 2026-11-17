@@ -1,26 +1,26 @@
 import { bytesToHex, concatBytes, hexToBytes } from '@noble/hashes/utils.js';
-import { detailText } from '../src/verify/detail-text.ts';
+import { detailText } from '../../src/verify/detail-text.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
-import { selectorOf } from '../src/decode/abi.ts';
-import { encodeCall, uintWord } from '../src/decode/codec.ts';
-import { MULTISEND, unwrapSafeTx } from '../src/decode/multisend.ts';
-import type { Unwrapped } from '../src/decode/multisend.ts';
-import { checkFloor } from '../src/floor/floor.ts';
-import type { FloorAllowed, FloorResult, SettingsChange } from '../src/floor/floor.ts';
-import { checkSimulatedFloor } from '../src/floor/simulated.ts';
-import { parseServiceTx } from '../src/safe/parse.ts';
-import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
-import type { Observed } from '../src/simulate/effects.ts';
-import { APPROVAL, topic, wordOf } from '../src/simulate/events.ts';
-import type { SafeState } from '../src/simulate/safe-state.ts';
+import { selectorOf } from '../../src/decode/abi.ts';
+import { encodeCall, uintWord } from '../../src/decode/codec.ts';
+import { MULTISEND, unwrapSafeTx } from '../../src/decode/multisend.ts';
+import type { Unwrapped } from '../../src/decode/multisend.ts';
+import { checkFloor } from '../../src/floor/floor.ts';
+import type { FloorAllowed, FloorResult, SettingsChange } from '../../src/floor/floor.ts';
+import { checkSimulatedFloor } from '../../src/floor/simulated.ts';
+import { parseServiceTx } from '../../src/safe/parse.ts';
+import type { Address, Hex, SafeTx } from '../../src/safe/types.ts';
+import type { Observed } from '../../src/simulate/effects.ts';
+import { APPROVAL, topic, wordOf } from '../../src/simulate/events.ts';
+import type { SafeState } from '../../src/simulate/safe-state.ts';
 
 /** A card that declares an owner change, which lets the four owner and threshold functions past the static floor. */
 const DECLARES_CHANGE: FloorAllowed = { change: { add: '0x00000000000000000000000000000000000000aa' as Address, remove: undefined, threshold: undefined } };
 
-const ROOT = join(import.meta.dirname, '..');
+const ROOT = join(import.meta.dirname, '..', '..');
 const fixture = JSON.parse(readFileSync(join(ROOT, 'testdata', 'safe-tx', 'morpho-vault-deposit.json'), 'utf8'));
 const deposit = parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
 const SAFE = deposit.safe;

@@ -1,0 +1,46 @@
+name: program-gate
+
+# pull_request_target runs this file and the code of main, not the pull request's, so a branch cannot change the gate that judges it.
+# The branch's code still runs inside the canaries and the tests: no secret is used, the token is read-only, and no cache is saved.
+on:
+  pull_request_target:
+    branches: [main]
+    paths-ignore:
+      - 'templates/**'
+      - 'registry/**'
+      - 'testdata/**'
+
+permissions:
+  contents: read
+
+jobs:
+  program-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: vendor/solc
+          key: solc-${{ hashFiles('src/contracts/solc-pins.ts') }}
+      - run: pnpm fetch-solc
+      - run: pnpm fetch-psl
+      - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .cache/solc-test
+          key: solc-test-${{ hashFiles('src/contracts/solc-pins.ts', 'testdata/abi/**', 'registry/**', 'templates/**') }}
+          restore-keys: solc-test-
+      - run: git fetch --no-tags origin "refs/pull/${PR_NUMBER}/head:refs/remotes/pull/head"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+      - run: node scripts/program-gate.ts pull/head
+        env:
+          SOLC_TEST_CACHE: '1'
