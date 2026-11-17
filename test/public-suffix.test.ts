@@ -24,6 +24,7 @@ test('a host that is itself a public suffix, or an IP address, has no registrabl
   assert.equal(registrableDomain('attacker.eth.limo', list), undefined);
   assert.equal(registrableDomain('gitlab.io', list), undefined);
   assert.equal(registrableDomain('192.168.1.1', list), undefined);
+  for (const shared of ['github.com', 'linktr.ee', 'x.com', 'docs.google.com', 'immunefi.com']) assert.equal(registrableDomain(shared, list), undefined, shared);
 });
 
 test('a missing or altered list is unavailable and says why', () => {

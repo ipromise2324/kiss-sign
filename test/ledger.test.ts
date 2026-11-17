@@ -14,7 +14,7 @@ import type { CoinGeckoCoin, DefiLlamaProtocol, SiteOwner } from '../src/researc
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import type { Creation, Creations } from '../src/research/deployer.ts';
 import type { PackageRead, PackageReads } from '../src/research/npm-package.ts';
-import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
+import { NO_SITE_LISTINGS, parseImmunefiPrograms } from '../src/research/site-listings.ts';
 import type { SiteListings } from '../src/research/site-listings.ts';
 import { replayInputs } from '../src/research/report.ts';
 import type { ReportInputs, SpanCheck, TodayCheck } from '../src/research/report.ts';
@@ -158,9 +158,17 @@ const latestRead = (bound: Address): Partial<Setup> => {
   const read: PackageRead = { kind: 'read', version: '1.1.0', sha256: PIN, integrity: true, provenance: BUILT, file: { kind: 'served', blocks: [{ text: `VAULT = "${bound}"` }] } };
   return { entry: { ...ENTRY, sdk: SDK }, packages: new Map([...pinned, [LATEST_KEY, read]]) };
 };
-const program = (addresses: readonly Address[], github?: string, website = 'https://example.org'): SiteListings => ({
+const program = (addresses: readonly Address[], github?: string, website: string | null = 'https://example.org', scope: readonly string[] = []): SiteListings => ({
   ...NO_SITE_LISTINGS,
-  programs: new Map([['proto', { slug: 'proto', website: new URL(website), github: github === undefined ? undefined : new URL(github), addresses: new Set(addresses) }]]),
+  programs: parseImmunefiPrograms([
+    {
+      slug: 'proto',
+      websiteUrl: website,
+      githubUrl: github ?? null,
+      assets: scope.map((url) => ({ type: 'websites_and_applications', url })),
+      assetsBodyV2: addresses.map((a) => `https://etherscan.io/address/${a}`).join('\n'),
+    },
+  ]),
 });
 const coinLinks = (homepages: readonly string[], github: readonly string[]): SiteListings => ({
   ...NO_SITE_LISTINGS,
@@ -414,6 +422,17 @@ test('an SDK whose publisher nothing ties to the protocol confirms nothing, thou
   assert.deepEqual(confirmations(ledger, { ...ENTRY, sdk: SDK }), ['page']);
   assert.equal(resultOf(ledger, 'vault/address').finding.kind, 'few-confirmations');
   assert.deepEqual(confirmations(ledgerOf({ ...packageRead(), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
+});
+
+test('a bounty program is tied through a website its scope lists, and never through a shared host such as linktr.ee or github.com', () => {
+  assert.deepEqual(confirmations(ledgerOf({ sites: program([ADDRESS], undefined, null, ['https://app.example.org/']), coins: [] }), ENTRY), ['page', 'bounty']);
+  const shared = ledgerOf({
+    protocol: { ...BASE.protocol!, url: new URL('https://linktr.ee/proto'), github: [] },
+    sites: program([ADDRESS], undefined, 'https://linktr.ee/other', ['https://github.com/other']),
+    coins: [],
+  });
+  assert.equal(resultOf(shared, 'vault/source.bounty').finding.kind, 'not-listed');
+  assert.ok(!confirmations(shared, ENTRY).includes('bounty'), 'a program on the same shared host confirms nothing');
 });
 
 test('every finding kind has a row', () => {

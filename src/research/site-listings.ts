@@ -8,8 +8,17 @@ export type SiteUnread = { readonly kind: 'unread'; readonly why: string };
 /** The homepages and GitHub repositories CoinGecko lists for a coin. */
 export type CoinLinks = { readonly kind: 'links'; readonly homepages: readonly URL[]; readonly github: readonly URL[] };
 
-/** One Immunefi program: its website, its GitHub organization's URL, and each Ethereum address an `etherscan.io/address/` link in its scope names. */
-export type ImmunefiProgram = { readonly slug: string; readonly website: URL | undefined; readonly github: URL | undefined; readonly addresses: ReadonlySet<Address> };
+/**
+ * One Immunefi program: its website, its GitHub organization's URL, each website or app its scope lists as an asset,
+ * and each Ethereum address an `etherscan.io/address/` link in its scope names.
+ */
+export type ImmunefiProgram = {
+  readonly slug: string;
+  readonly website: URL | undefined;
+  readonly github: URL | undefined;
+  readonly scopeSites: readonly URL[];
+  readonly addresses: ReadonlySet<Address>;
+};
 
 /** The domains GitHub's page for an organization says GitHub verified it controls; empty for an organization GitHub has not verified. */
 export type OrgDomains = { readonly kind: 'domains'; readonly domains: readonly string[] } | { readonly kind: 'failed'; readonly why: string } | SiteUnread;
@@ -56,6 +65,12 @@ function scopeText(program: Record<string, unknown>): string {
   return [...assets, typeof program.assetsBodyV2 === 'string' ? program.assetsBodyV2 : ''].join('\n');
 }
 
+/** Immunefi's asset type for a website or app in scope. */
+export const IMMUNEFI_WEBSITE_ASSET = 'websites_and_applications';
+
+const scopeSites = (program: Record<string, unknown>): URL[] =>
+  Array.isArray(program.assets) ? program.assets.filter((asset) => isRecord(asset) && asset.type === IMMUNEFI_WEBSITE_ASSET).map((asset) => httpsUrl(asset.url)).filter((url) => url !== undefined) : [];
+
 export class SiteListingError extends Error {
   override name = 'SiteListingError';
 }
@@ -66,7 +81,7 @@ export function parseImmunefiPrograms(raw: unknown): Map<string, ImmunefiProgram
   const programs = new Map<string, ImmunefiProgram>();
   for (const item of raw) {
     if (!isRecord(item) || typeof item.slug !== 'string' || !/^[a-z0-9-]+$/.test(item.slug)) continue;
-    programs.set(item.slug, { slug: item.slug, website: httpsUrl(item.websiteUrl), github: httpsUrl(item.githubUrl), addresses: new Set(etherscanAddresses(scopeText(item))) });
+    programs.set(item.slug, { slug: item.slug, website: httpsUrl(item.websiteUrl), github: httpsUrl(item.githubUrl), scopeSites: scopeSites(item), addresses: new Set(etherscanAddresses(scopeText(item))) });
   }
   return programs;
 }

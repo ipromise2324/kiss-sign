@@ -7,6 +7,7 @@ import type { RegistryEntry } from '../src/registry.ts';
 import { checkSources, formatResults, listingsFor, parseCoinGeckoCoins, parseDefiLlamaProtocols, recordedListingReads, sourcePagesOf, trimForRecording, trimPage } from '../src/research/listings.ts';
 import type { Listings } from '../src/research/listings.ts';
 import { parsePublicSuffixList } from '../src/research/public-suffix.ts';
+import { parseImmunefiPrograms } from '../src/research/site-listings.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { findOnPage, gatherSourcePages, retryingGet } from '../src/research/source-page.ts';
 import type { HttpGet, Page, SourcePages } from '../src/research/source-page.ts';
@@ -345,14 +346,32 @@ test('the file a pinned GitHub source names is read again at the tip of its defa
 
 test('every Immunefi program tied to the protocol is read, whether or not the entry names one; one not tied confirms nothing', () => {
   const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'safe', source: DOCS, sourceLabel: 'Bundler3' } });
-  const programs = (website: string, addresses: readonly string[]) => ({
+  const programs = (website: string | null, addresses: readonly string[], scope: readonly string[] = []) => ({
     ...listings,
-    sites: { ...listings.sites, programs: new Map([['p', { slug: 'p', website: new URL(website), github: undefined, addresses: new Set(addresses.map((a) => a.toLowerCase() as Address)) }]]) },
+    sites: {
+      ...listings.sites,
+      programs: parseImmunefiPrograms([
+        { slug: 'p', websiteUrl: website, assets: scope.map((url) => ({ type: 'websites_and_applications', url })), assetsBodyV2: addresses.map((a) => `https://etherscan.io/address/${a}`).join('\n') },
+      ]),
+    },
   });
   const bounty = (using: Listings) => report(entries, using, { pages: new Map(), commits: new Map() }).split('\n').find((line) => line.trimStart().startsWith('bounty'));
   assert.equal(bounty(programs('https://safe.global', [ADDR])), `  bounty     agrees  Immunefi program p of the protocol has ${ADDR} in scope as an etherscan.io address`);
   assert.equal(bounty(programs('https://safe.global', [OTHER])), '  bounty     not listed Immunefi program p of the protocol does not have the address in scope (1 Ethereum addresses there)');
-  assert.equal(bounty(programs('https://compound.finance', [ADDR])), '  bounty     not listed no Immunefi program lists a website or GitHub org of safe; programs not tied to the protocol that hold it: p');
+  assert.equal(bounty(programs('https://compound.finance', [ADDR])), '  bounty     not listed no Immunefi program lists a website, a website in scope or a GitHub org of safe; programs not tied to the protocol that hold it: p');
+  assert.equal(bounty(programs(null, [ADDR], ['https://app.safe.global/'])), `  bounty     agrees  Immunefi program p of the protocol has ${ADDR} in scope as an etherscan.io address`, 'a website in scope ties it');
+});
+
+test('a protocol whose only listed site is on a shared host, such as linktr.ee, has no Immunefi program tied to it through that host', () => {
+  const onShared = listingsOf([{ slug: 'p', name: 'P', url: 'https://linktr.ee/p' }], recording.coingecko);
+  const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'p', source: DOCS, sourceLabel: 'Bundler3' } });
+  const bounty = (website: string, scope: readonly string[]) => {
+    const programs = parseImmunefiPrograms([{ slug: 'other', websiteUrl: website, assets: scope.map((url) => ({ type: 'websites_and_applications', url })), assetsBodyV2: `https://etherscan.io/address/${ADDR}` }]);
+    return report(entries, { ...onShared, sites: { ...onShared.sites, programs } }, { pages: new Map(), commits: new Map() }).split('\n').find((line) => line.trimStart().startsWith('bounty'));
+  };
+  const untied = '  bounty     not listed no Immunefi program lists a website, a website in scope or a GitHub org of p; programs not tied to the protocol that hold it: other';
+  assert.equal(bounty('https://linktr.ee/other', []), untied);
+  assert.equal(bounty('https://other.org', ['https://linktr.ee/other']), untied);
 });
 
 test('a commit off the default branch, such as one only a fork holds, is a finding', async () => {
