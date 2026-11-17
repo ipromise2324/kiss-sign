@@ -658,3 +658,16 @@ test("a per-vault report shows that vault alone: no other vault, no asset or fac
   assert.deepEqual(anchored, ['testdata/research/morpho-vault-deposit-windows.json', 'testdata/research/morpho-vault-deposit.json']);
   assert.match(text, /^Written by `pnpm report morpho\/vault-deposit --vault-of steakhouse-prime-usdc-v2-0f51 --record` /m);
 });
+
+test("a signed message's answer is shown on its digest's row: where the message sits, and each member read elsewhere or in hex", () => {
+  const cow = loadReport(ROOT, registry, { template: 'cow/swap' });
+  assert.equal(cow.subject.kind, 'template');
+  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'cow/swap', 'template.json'), 'utf8'));
+  const rule = raw.calls.at(-1).args.orderUid.packed[0].rule.eip712;
+  const plain = quick(recording.pages, new Map(), cow.subject, new Map(), [], new Map(), cow.registry);
+  assert.match(plain, /the message is read from https:\/\/api\.cow\.fi\/mainnet\/api\/v1\/orders\/<argument> and must hash to this digest/);
+  rule.answer = { path: ['data', 'order'], members: { sellAmount: { path: ['amounts', 'sell'], encoding: 'hex' } } };
+  const subject = { ...(cow.subject as Extract<Subject, { kind: 'template' }>), template: parseTemplate(raw, cow.registry) };
+  const nested = quick(recording.pages, new Map(), subject, new Map(), [], new Map(), cow.registry);
+  assert.match(nested, /the message is read from https:\/\/api\.cow\.fi\/mainnet\/api\/v1\/orders\/<argument> under `data\.order`, `sellAmount` at `data\.order\.amounts\.sell` in hex and must hash to this digest/);
+});

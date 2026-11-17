@@ -14,6 +14,7 @@ import { checksumAddress, parseHex } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fileAt, optionalFileAt, pathsAt, selfCheck } from '../verify/self-check.ts';
 import { reportedVaults, unreportedVault } from '../template/vault-reports.ts';
+import { checkCommand } from '../verify/check-command.ts';
 import { callTree, signedMessages } from '../verify/expected.ts';
 import type { CallTree } from '../verify/expected.ts';
 import { verdictPage } from '../verify/page.ts';
@@ -172,6 +173,7 @@ export async function verify(args: readonly string[], io: Io, w: Labels): Promis
       `  ${path}`,
       V.open,
       `  ${io.platform === 'darwin' ? 'open' : 'xdg-open'} ${shellWord(page)}`,
+      ...(tree === undefined ? [] : [V.check, `  ${checkCommand(tree)}`]),
     ]),
   );
   return result.verdict.kind === 'MATCH' ? OK : FAILED;
