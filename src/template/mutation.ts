@@ -56,6 +56,9 @@ function mutateBytes(type: AbiType, current: Uint8Array): Uint8Array | undefined
 
 const MAX_UINT = (1n << 256n) - 1n;
 
+/** The type a leaf is changed as: an address held in a word changes as the address, to another recipient. */
+const mutatedType = (leaf: Leaf): AbiType => (leaf.rule.kind === 'address-word' ? { kind: 'address' } : leaf.type);
+
 type Mutated = { readonly tx: SafeTx; readonly messages: Messages };
 
 /** Another value of the member's type, or for an `atLeast` bound 0, its loosest; undefined when none differs. */
@@ -67,7 +70,7 @@ function otherMember(leaf: Leaf, value: MemberValue): MemberValue | undefined {
     return { kind: value.kind, value: nextInt(leaf.type, value.value) };
   }
   if (value.kind === 'bool') return { kind: 'bool', value: !value.value };
-  const bytes = mutateBytes(leaf.type, hexToBytes((value.value as Hex).slice(2)));
+  const bytes = mutateBytes(mutatedType(leaf), hexToBytes((value.value as Hex).slice(2)));
   return bytes === undefined ? undefined : ({ kind: value.kind, value: `0x${bytesToHex(bytes)}` } as MemberValue);
 }
 
@@ -112,7 +115,7 @@ function mutateTx(tx: SafeTx, leaf: Leaf): SafeTx | undefined {
   }
   const data = hexToBytes(tx.data.slice(2));
   const [start, end] = leaf.bytes;
-  const changed = mutateBytes(leaf.type, data.subarray(start, end));
+  const changed = mutateBytes(mutatedType(leaf), data.subarray(start, end));
   if (changed === undefined) return undefined;
   data.set(changed, end - changed.length);
   return { ...tx, data: `0x${bytesToHex(data)}` as Hex };
