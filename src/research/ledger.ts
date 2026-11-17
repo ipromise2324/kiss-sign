@@ -525,7 +525,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
       ...todayResults(entry, inputs, today),
     ]),
   }));
-  const confirmedElsewhere = new Set(byEntry.filter(({ results }) => confirmingSources(results.filter((r) => r.source?.of !== 'deployer')).length >= MIN_CONFIRMATIONS).map(({ entry }) => entry.name));
+  const confirmedElsewhere = new Set(byEntry.filter(({ entry, results }) => confirmingSources(results.filter((r) => r.source?.of !== 'deployer' && !(entry.kind === 'adapter' && r.source?.of === 'factory'))).length >= MIN_CONFIRMATIONS).map(({ entry }) => entry.name));
   const results = byEntry.flatMap(({ entry, results: own }) => withAddressResult(entry, own.map((r) => deployerCounts(r, confirmedElsewhere))));
   const judged = fixtures.map(
     (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),

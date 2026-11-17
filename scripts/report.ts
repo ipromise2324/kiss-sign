@@ -88,7 +88,7 @@ language the notes hold: report.generated.en.html in English, report.generated.z
 --offline prints the Markdown text from the recordings, reading nothing live; --render writes every report file from
 them. Both remove a page in a language the notes no longer hold, and a report.generated.html the program wrote before
 it wrote one file per language.
---compare reads the listings, pages, official APIs, ABI proofs, code spans, the code it reads at the latest block and ERC-7730 attestations live, reads each vault again at the blocks
+--compare reads the listings, pages, official APIs, ABI proofs, code spans, the code it reads at the latest block, the factory and adapter answers and ERC-7730 attestations live, reads each vault again at the blocks
 the committed report names, reads the protocol facts and decimals again at the block the recording names, fetches each
 recorded past transaction again by hash, and prints each fact that differs from the committed report, setting aside
 DefiLlama's TVL; it exits 1 on any. It does not search for past transactions again. For a template with
