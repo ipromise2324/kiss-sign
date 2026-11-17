@@ -186,6 +186,8 @@ const ZH = {
   all: '全部',
   givesMore: '給出多於 0',
   getsMore: '收到多於 0',
+  getsAny: '收到 0 或更多',
+  riseOrStay: '可以增加或不變，不能減少',
   getsAtLeast: (field: string): string => before('收到的不能少於你填的', field),
   wholeBalance: '全部餘額，交易後一個都不剩',
   directionOnly: '程式只查方向，不查數量',
@@ -407,6 +409,7 @@ const ZH = {
   gives: (token: string, amount: { readonly kind: 'card'; readonly field: string } | { readonly kind: 'all' | 'positive' }): string =>
     `模擬後 Safe 給出的 ${token} ${amount.kind === 'card' ? before('剛好是你填的', amount.field) : amount.kind === 'all' ? '是全部餘額' : '多於 0'}`,
   gets: (token: string, atLeast: string | undefined): Span[] => [`模擬後 Safe 收到 ${token}`, ...(atLeast === undefined ? [] : [before('，不少於你填的', atLeast)])],
+  getsAnyAmount: (token: string): string => `模擬後 Safe 的 ${token} 可以增加或不變，不能減少`,
   noBalanceChange: '模擬後 Safe 的餘額一點都不能變',
   nonceIs: 'Safe 交易的 nonce 是',
   safeSettings: '模擬前後讀 Safe 的簽署人和門檻：只變卡片上寫的那一項；模組、guard、fallback handler、singleton 都不能變',
@@ -706,6 +709,8 @@ const EN: Words = {
   all: 'all',
   givesMore: 'gives more than 0',
   getsMore: 'receives more than 0',
+  getsAny: 'receives 0 or more',
+  riseOrStay: 'may rise or stay the same, never fall',
   getsAtLeast: (field) => `receives no less than the ${field} you type`,
   wholeBalance: 'the whole balance; none is left after the transaction',
   directionOnly: 'the program checks only the direction, not the amount',
@@ -931,6 +936,7 @@ const EN: Words = {
   gives: (token, amount) =>
     `After simulation, the ${token} the Safe gives is ${amount.kind === 'card' ? `exactly the ${amount.field} you type` : amount.kind === 'all' ? 'its whole balance' : 'more than 0'}`,
   gets: (token, atLeast) => [`After simulation, the Safe receives ${token}`, ...(atLeast === undefined ? [] : [`, no less than the ${atLeast} you type`])],
+  getsAnyAmount: (token) => `After simulation, the Safe's ${token} may rise or stay the same, never fall`,
   noBalanceChange: 'After simulation, no balance of the Safe may change at all',
   nonceIs: "The Safe transaction's nonce is ",
   safeSettings: "The Safe's signers and threshold are read before and after simulation: only what the card names may change; the modules, guard, fallback handler and singleton may not",

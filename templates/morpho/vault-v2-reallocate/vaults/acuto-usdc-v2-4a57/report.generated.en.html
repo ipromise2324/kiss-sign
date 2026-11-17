@@ -273,7 +273,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>Move funds between two markets of a Morpho Vault V2 (allocator)</span><span class="byai">AI research</span></span></h1>
   <span class="opid">morpho/vault-v2-reallocate · acuto-usdc-v2-4a57</span>
-  <p class="sub"><span class="aiw" data-ai><span>As allocator, the Safe calls the vault&#39;s <code>multicall</code>: it withdraws the amount you type from the source market you pick and puts it into the target market you pick. Funds move only between the vault&#39;s markets; it moves none of the Safe&#39;s assets.</span><span class="byai">AI research</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>As allocator, the Safe calls the vault&#39;s <code>multicall</code>: it withdraws the amount you type from the source market you pick and puts it into the target market you pick. Funds move only between the vault&#39;s markets. The only asset of the Safe that may change is the vault&#39;s own shares: <code>allocate</code> first accrues the vault&#39;s interest, which mints fee shares to the fee recipient, so a Safe that is that recipient gets some.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
     <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>Address sources <span class="n num">7 / 11</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">4 addresses have results for you to review; see &#34;To review&#34;. The other 7 are all confirmed in at least 2 places.</span></span></li>
@@ -296,18 +296,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>Flow <span class="c">1 call</span></h2>
   <p class="lead">Solid lines are the Safe&#39;s calls, dashed lines what a contract does inside, green lines what you get.</p>
   <div class="diagram">
-  <svg viewBox="0 0 660 136" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 660 176" role="img" aria-labelledby="dt dd">
     <title id="dt">Transaction flow</title>
-    <desc id="dd">Call 1: the Safe calls multicall on acuto-usdc-v2-4a57.</desc>
+    <desc id="dd">Call 1: the Safe calls multicall on acuto-usdc-v2-4a57. Result: you get acuto-usdc-v2-4a57.</desc>
     <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
-    <line class="life" x1="90" y1="58" x2="90" y2="128"/>
+    <line class="life" x1="90" y1="58" x2="90" y2="168"/>
     <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">your Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">sender</text>
-    <line class="life" x1="280" y1="58" x2="280" y2="128"/>
+    <line class="life" x1="280" y1="58" x2="280" y2="168"/>
     <rect class="node" x="193" y="14" width="174" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">acuto-usdc-v2-4a57</text><text class="nodes" x="280" y="50" text-anchor="middle">vault</text>
-    <line class="life" x1="470" y1="58" x2="470" y2="128"/>
+    <line class="life" x1="470" y1="58" x2="470" y2="168"/>
     <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">morpho-blue</text><text class="nodes" x="470" y="50" text-anchor="middle">lending contract</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">multicall</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <text class="capg" x="104" y="142">you get acuto-usdc-v2-4a57</text>
+    <line class="gain" x1="280" y1="152" x2="93" y2="152" marker-end="url(#m-gets)"/>
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways</div>
@@ -430,6 +432,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
   <h3>After the transaction</h3>
   <dl class="props">
+    <div><dt>Safe&#39;s acuto-usdc-v2-4a57</dt><dd class="pos">receives 0 or more</dd><dd class="src">may rise or stay the same, never fall</dd></div>
     <div><dt><code>supplyShares</code></dt><dd class="">decreases</dd><dd class="src">morpho-blue.position, read before and after the transaction</dd></div>
     <div><dt><code>supplyShares</code></dt><dd class="">increases</dd><dd class="src">morpho-blue.position, read before and after the transaction</dd></div>
   </dl>
@@ -681,7 +684,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <ul>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>The transaction has only this call, counting each call inside a MultiSend</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>Every argument follows the rules above, and encoding them again gives exactly the same bytes</span></li>
-      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, no balance of the Safe may change at all</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>After simulation, the Safe&#39;s acuto-usdc-v2-4a57 may rise or stay the same, never fall</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>No allowance is higher after the transaction</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span><code>morpho-blue.position</code>: supplyShares decreases</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span><code>morpho-blue.position</code>: supplyShares increases</span></li>

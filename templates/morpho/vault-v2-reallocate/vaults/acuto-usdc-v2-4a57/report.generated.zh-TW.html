@@ -273,7 +273,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <header>
   <h1><span class="aiw" data-ai><span>在 Morpho Vault V2 的兩個市場之間搬錢（allocator）</span><span class="byai">AI 研究</span></span></h1>
   <span class="opid">morpho/vault-v2-reallocate · acuto-usdc-v2-4a57</span>
-  <p class="sub"><span class="aiw" data-ai><span>Safe 以 allocator 身分呼叫 vault 的 <code>multicall</code>：從你選的來源市場撤出你填的數量，放進你選的目標市場。錢只在 vault 的市場之間移動，不動 Safe 的任何資產。</span><span class="byai">AI 研究</span></span></p>
+  <p class="sub"><span class="aiw" data-ai><span>Safe 以 allocator 身分呼叫 vault 的 <code>multicall</code>：從你選的來源市場撤出你填的數量，放進你選的目標市場。錢只在 vault 的市場之間移動。Safe 的資產只有 vault 自己的份額可能變：<code>allocate</code> 會先結算 vault 的利息，把手續費份額鑄給收費地址，Safe 是收費地址就會收到一些。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
     <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">7 / 11</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">4 個地址有結果要你看，見「待確認」。其餘 7 個都至少在 2 個地方確認。</span></span></li>
@@ -296,18 +296,20 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>流程 <span class="c">1 個呼叫</span></h2>
   <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
   <div class="diagram">
-  <svg viewBox="0 0 660 136" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 660 176" role="img" aria-labelledby="dt dd">
     <title id="dt">交易流程</title>
-    <desc id="dd">呼叫 1：Safe 呼叫 acuto-usdc-v2-4a57 的 multicall。</desc>
+    <desc id="dd">呼叫 1：Safe 呼叫 acuto-usdc-v2-4a57 的 multicall。結果：你得到 acuto-usdc-v2-4a57。</desc>
     <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
-    <line class="life" x1="90" y1="58" x2="90" y2="128"/>
+    <line class="life" x1="90" y1="58" x2="90" y2="168"/>
     <rect class="node" x="24" y="14" width="132" height="44" rx="6"/><text class="nodet" x="90" y="34" text-anchor="middle">你的 Safe</text><text class="nodes" x="90" y="50" text-anchor="middle">發起</text>
-    <line class="life" x1="280" y1="58" x2="280" y2="128"/>
+    <line class="life" x1="280" y1="58" x2="280" y2="168"/>
     <rect class="node" x="193" y="14" width="174" height="44" rx="6"/><text class="nodet" x="280" y="34" text-anchor="middle">acuto-usdc-v2-4a57</text><text class="nodes" x="280" y="50" text-anchor="middle">金庫</text>
-    <line class="life" x1="470" y1="58" x2="470" y2="128"/>
+    <line class="life" x1="470" y1="58" x2="470" y2="168"/>
     <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">morpho-blue</text><text class="nodes" x="470" y="50" text-anchor="middle">借貸合約</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">multicall</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
+    <text class="capg" x="104" y="142">你得到 acuto-usdc-v2-4a57</text>
+    <line class="gain" x1="280" y1="152" x2="93" y2="152" marker-end="url(#m-gets)"/>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
@@ -430,6 +432,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
   <h3>交易後</h3>
   <dl class="props">
+    <div><dt>Safe 的 acuto-usdc-v2-4a57</dt><dd class="pos">收到 0 或更多</dd><dd class="src">可以增加或不變，不能減少</dd></div>
     <div><dt><code>supplyShares</code></dt><dd class="">減少</dd><dd class="src">morpho-blue.position，交易前後各讀一次</dd></div>
     <div><dt><code>supplyShares</code></dt><dd class="">增加</dd><dd class="src">morpho-blue.position，交易前後各讀一次</dd></div>
   </dl>
@@ -681,7 +684,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <ul>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>交易只有這 1 個呼叫，MultiSend 也一個個解開</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>每個參數符合上面的規則，重新編碼要一模一樣</span></li>
-      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 的餘額一點都不能變</span></li>
+      <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>模擬後 Safe 的 acuto-usdc-v2-4a57 可以增加或不變，不能減少</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>沒有任何授權在交易後變高</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span><code>morpho-blue.position</code>：supplyShares 減少</span></li>
       <li><svg class="i" aria-hidden="true"><use href="#info"/></svg><span><code>morpho-blue.position</code>：supplyShares 增加</span></li>

@@ -807,6 +807,7 @@ function afterRows(context: Context): AfterRow[] {
   const amountOf = (effect: Template['effects']['gives'][number], gives: boolean): Inline => {
     if (effect.amount.kind === 'all') return [w.all];
     if (effect.amount.kind === 'positive') return [gives ? w.givesMore : w.getsMore];
+    if (effect.amount.kind === 'any') return [w.getsAny];
     if (effect.amount.kind === 'at-least') return [w.atLeastTyped(field(effect.amount.field))];
     const value = context.card?.get(effect.amount.field);
     if (value?.kind !== 'amount') return [w.typed(field(effect.amount.field))];
@@ -822,7 +823,9 @@ function afterRows(context: Context): AfterRow[] {
           ? w.getsAtLeast(field(effect.amount.field))
           : effect.amount.kind === 'all'
             ? w.wholeBalance
-            : w.directionOnly;
+            : effect.amount.kind === 'any'
+              ? w.riseOrStay
+              : w.directionOnly;
     return effect.to === undefined ? [amount] : [amount, w.toWhom(refWord(template, effect.to, w))];
   };
   const name = (token: TokenRef) => tokenOf(token, context)?.name ?? (token === 'eth' ? 'ETH' : w.picked(refWord(template, token, w)));
@@ -1663,7 +1666,7 @@ function nextSection(context: Context): Section {
     [w.onlyCalls(template.calls.length)],
     [w.everyArgument],
     ...template.effects.gives.map((e): Inline => [w.gives(tokenName(e.token), e.amount.kind === 'card' ? { kind: 'card', field: field(e.amount.field) } : { kind: e.amount.kind === 'all' ? 'all' : 'positive' })]),
-    ...template.effects.gets.map((e): Inline => w.gets(tokenName(e.token), e.amount.kind === 'at-least' ? field(e.amount.field) : undefined)),
+    ...template.effects.gets.map((e): Inline => (e.amount.kind === 'any' ? [w.getsAnyAmount(tokenName(e.token))] : w.gets(tokenName(e.token), e.amount.kind === 'at-least' ? field(e.amount.field) : undefined))),
     ...(template.effects.gives.length + template.effects.gets.length === 0 ? [[w.noBalanceChange]] : []),
     ...(template.nonce === undefined ? [] : [[w.nonceIs, ...ruleWords(template.nonce, context)]]),
     ...(template.effects.safe === undefined ? [] : [[w.safeSettings]]),
