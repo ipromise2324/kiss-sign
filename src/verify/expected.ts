@@ -149,7 +149,11 @@ function callsIn(rule: Rule | undefined, value: AbiValue, values: Values, walk: 
   return [];
 }
 
+/** check.sh shows bytes under 4 bytes long, or of 20 or 32, as they are, so it reads no layout there. */
+const readByCheck = (bytes: Uint8Array): boolean => bytes.length >= 4 && bytes.length !== 20 && bytes.length !== 32;
+
 function layoutsIn(rule: Rule | undefined, value: AbiValue, at: readonly number[], root: Uint8Array): Layout[] {
+  if (value.kind === 'bytes' && !readByCheck(value.value)) return [];
   if (rule?.kind === 'packed' && value.kind === 'bytes') return [{ at, kind: 'packed', types: rule.parts.map((part) => canonicalType(part.type)) }];
   if (rule?.kind === 'call' && rule.call.encoding === 'params' && value.kind === 'bytes') {
     const here: Layout = { at, kind: 'abi', types: rule.call.fn.params.map((param) => canonicalType(param.type)) };
