@@ -608,7 +608,7 @@ function ruleText(rule: Rule, template: Template, registry: Registry): string {
     case 'owner-before':
       return `the owner listed just before ${refText(rule.ref)} in the Safe's ${code('getOwners()')}, read on chain, or the sentinel ${code('0x0000000000000000000000000000000000000001')} when it is first`;
     case 'share-price':
-      return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e27 / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
+      return `${rule.bound === 'max' ? 'at most' : 'at least'} assets × 1e${rule.scale} / shares, with assets ${quantityText(rule.assets)} and shares ${quantityText(rule.shares)}`;
     case 'at-least':
       return `at least the card's ${code(rule.field)}`;
     case 'call':
