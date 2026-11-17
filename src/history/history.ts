@@ -8,6 +8,7 @@ import { recordingTransport, replayReader } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
 import { OK, UsageError } from '../cli/io.ts';
 import type { Io } from '../cli/io.ts';
+import { paint } from '../cli/format.ts';
 import { requireConfig } from '../cli/setup.ts';
 import { checkFloor, standingSpenders } from '../floor/floor.ts';
 import type { SettingsChange } from '../floor/floor.ts';
@@ -209,7 +210,7 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     overlay: Object.keys(history.registryOverlay).length,
     rows,
   };
-  io.stdout(renderText(report));
+  io.stdout(renderText(report, paint(io.color === true)));
   if (out !== undefined) {
     writePrivate(out, renderMarkdown(report));
     io.stdout(`Wrote ${out}\n`);

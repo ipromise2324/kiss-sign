@@ -8,7 +8,7 @@ import { replayReader } from '../src/chain/recording.ts';
 import type { Exchange } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
-import type { Hex, SafeTx } from '../src/safe/types.ts';
+import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { describeFinding, judgeEffects, viewCalls } from '../src/simulate/effects.ts';
 import type { EffectVerdict } from '../src/simulate/effects.ts';
 import { observeExecuted, withSimulatedViews } from '../src/simulate/executed.ts';
@@ -127,8 +127,9 @@ test('template load refuses a keccak outside a view, a long constant string, and
 type Fixture = { transactionHash: Hex; executed: { number: string; hash: Hex }; parent: { number: string; hash: Hex }; exchanges: Exchange[] };
 const fixture = (name: string): Fixture => JSON.parse(readFileSync(join(ROOT, 'testdata', 'simulate', `${name}.json`), 'utf8'));
 
-/** The recorded transaction, simulated on its parent block and observed from its receipt, judged against the card. */
-async function recordedVerdicts(name: string, given: Card): Promise<{ simulated: EffectVerdict; executed: EffectVerdict }> {
+type Observed = Extract<Observation, { kind: 'observed' }>['observed'];
+
+async function recordedObservations(name: string, given: Card): Promise<{ tx: SafeTx; simulated: Observed; executed: Observed }> {
   const recorded = fixture(name);
   const tx = safeTx(name);
   const reader = replayReader(recorded.exchanges);
@@ -141,11 +142,17 @@ async function recordedVerdicts(name: string, given: Card): Promise<{ simulated:
   const views = viewCalls(resolved(tx, given), templates as ReadonlyMap<string, Template>, registry);
   const simulated = await simulateSafeTx(reader, { tx, parent, time: executed.time, watch: [], ends: [], views });
   const fromReceipt = withSimulatedViews(await observeExecuted(reader, recorded.transactionHash, tx, [], views), simulated, views);
-  const judged = (observation: Observation): EffectVerdict => {
+  const observed = (observation: Observation): Observed => {
     assert.equal(observation.kind, 'observed', observation.kind === 'unverifiable' ? observation.reasons.join('; ') : '');
-    return judgeEffects((observation as Extract<Observation, { kind: 'observed' }>).observed, resolved(tx, given), templates, registry);
+    return (observation as Extract<Observation, { kind: 'observed' }>).observed;
   };
-  return { simulated: judged(simulated), executed: judged(fromReceipt) };
+  return { tx, simulated: observed(simulated), executed: observed(fromReceipt) };
+}
+
+async function recordedVerdicts(name: string, given: Card): Promise<{ simulated: EffectVerdict; executed: EffectVerdict }> {
+  const { tx, simulated, executed } = await recordedObservations(name, given);
+  const judged = (observed: Observed): EffectVerdict => judgeEffects(observed, resolved(tx, given), templates, registry);
+  return { simulated: judged(simulated), executed: judged(executed) };
 }
 
 const RECORDED = [
@@ -155,13 +162,31 @@ const RECORDED = [
   { name: 'vault-v2-cap-decrease', given: card('morpho/vault-v2-cap-decrease', caps('usdc-usp-915', '0', '0')) },
   { name: 'vault-v2-revoke', given: card('morpho/vault-v2-revoke', caps('usdc-usp-915', '1000000', '10000000000000000')) },
   { name: 'vault-v2-reallocate', given: card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-915', to: 'usdc-usp-86', amount: '1' }) },
+  { name: 'vault-v2-reallocate-back', given: card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1000000' }) },
 ];
 
 for (const { name, given } of RECORDED) {
-  test(`${name}: the vault's views change as the card says and no asset of the Safe moves, simulated and from its receipt`, async () => {
+  test(`${name}: the vault's views change as the card says and the Safe's assets move only as the card allows, simulated and from its receipt`, async () => {
     assert.deepEqual(await recordedVerdicts(name, given), { simulated: { kind: 'match' }, executed: { kind: 'match' } });
   });
 }
+
+test("a reallocation that mints the vault's fee shares to the Safe matches; a loss of those shares or another token moving is a mismatch", async () => {
+  const given = card('morpho/vault-v2-reallocate', { vault: VAULT, from: 'usdc-usp-86', to: 'usdc-usp-915', amount: '1000000' });
+  const { tx, executed: observed } = await recordedObservations('vault-v2-reallocate-back', given);
+  assert.equal(observed.kind, 'executed');
+  const executed = observed as Extract<Observed, { kind: 'executed' }>;
+  const vault = registry.entries.get(VAULT)?.address as Address;
+  const usdc = registry.entries.get('usdc')?.address as Address;
+  assert.ok((executed.tokens.get(vault) ?? 0n) > 0n, 'the recorded reallocation mints fee shares to the Safe');
+  const findings = (tokens: [Address, bigint][]): string[] => {
+    const verdict = judgeEffects({ ...executed, tokens: new Map(tokens) }, resolved(tx, given), templates, registry);
+    return verdict.kind === 'mismatch' ? verdict.findings.map((f) => describeFinding(f, registry)) : [verdict.kind];
+  };
+  assert.deepEqual(findings([[vault, 0n]]), ['match']);
+  assert.match(findings([[vault, -1n]]).join('\n'), /^acuto-usdc-v2-4a57 0x[0-9a-f]{40} changed by -1, the card explains at least 0$/);
+  assert.match(findings([...executed.tokens, [usdc, 5n]]).join('\n'), /^usdc 0x[0-9a-f]{40} changed by \+5, the card explains 0$/);
+});
 
 test('a decrease the card states as another cap is a mismatch naming the cap the card wants', async () => {
   const { executed } = await recordedVerdicts('vault-v2-cap-decrease', card('morpho/vault-v2-cap-decrease', caps('usdc-usp-915', '7', '0')));

@@ -4,26 +4,47 @@
       "after": 2,
       "from": "general-adapter-1",
       "to": "usdc",
-      "text": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
+      "text": {
+        "en": "Pulls the amount you type of the asset token from the Safe with `transferFrom`",
+        "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
+      }
     }
   ],
   "verdict": {
     "status": "safe",
-    "text": "可以用。Steakhouse 文件頁和 CoinGecko 都列出這個地址，第一次先送小額。"
+    "text": {
+      "en": "OK to use. Steakhouse's docs page and CoinGecko both list this address. Send a small amount the first time.",
+      "zh-TW": "可以用。Steakhouse 文件頁和 CoinGecko 都列出這個地址，第一次先送小額。"
+    }
   },
-  "pastTxsConclusion": "那個 Safe 另 1 筆存款走較新的 VaultBundlesV1。EOA 多半改用 permit 簽名存，Safe 不能用 permit。",
+  "pastTxsConclusion": {
+    "en": "That Safe's 1 other deposit goes through the newer VaultBundlesV1. EOAs mostly deposit with a permit signature instead; a Safe cannot use permit.",
+    "zh-TW": "那個 Safe 另 1 筆存款走較新的 VaultBundlesV1。EOA 多半改用 permit 簽名存，Safe 不能用 permit。"
+  },
   "judgments": [
     {
-      "text": "這個 vault 一年內從幾乎是零升到約 1.32 億 USDC，2026-04 到 2026-05 一個月內從約 830 萬升到約 6,320 萬；前 10 名持有人占 54.06%。",
-      "recommendation": "規模在一年內才長起來，先送小額。"
+      "text": {
+        "en": "Within a year this vault grew from almost zero to about 132 million USDC. In one month, from 2026-04 to 2026-05, it went from about 8.3 million to about 63.2 million. The top 10 holders hold 54.06%.",
+        "zh-TW": "這個 vault 一年內從幾乎是零升到約 1.32 億 USDC，2026-04 到 2026-05 一個月內從約 830 萬升到約 6,320 萬；前 10 名持有人占 54.06%。"
+      },
+      "recommendation": {
+        "en": "Its size grew only within the past year; send a small amount first.",
+        "zh-TW": "規模在一年內才長起來，先送小額。"
+      }
     }
   ],
   "entries": {
     "steakhouse-prime-usdc-v2-0f51": {
-      "role": "Steakhouse 管理的 USDC vault（V2，Prime Instant）"
+      "role": {
+        "en": "USDC vault (V2, Prime Instant) managed by Steakhouse",
+        "zh-TW": "Steakhouse 管理的 USDC vault（V2，Prime Instant）"
+      }
     },
     "vault-v2-factory": {
-      "role": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+      "role": {
+        "en": "The Morpho Vault V2 factory. It answers `isVaultV2` = true: it created this vault",
+        "zh-TW": "Morpho Vault V2 工廠，它回答 `isVaultV2` = true，這個 vault 是它建立的"
+      }
     }
   }
 }

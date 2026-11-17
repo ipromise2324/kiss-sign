@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import { colorWanted, markWords, paint } from '../src/cli/format.ts';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -48,12 +49,18 @@ import {
 } from '../src/research/report.ts';
 import type { Target } from '../src/research/report.ts';
 import { notesChanges, NotesError } from '../src/research/notes.ts';
-import { generatedHtml, generatedHtmlPath, htmlDifference } from '../src/research/report-html.ts';
+import { LANGUAGES } from '../src/language.ts';
+import type { Language } from '../src/language.ts';
+import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
+
+const colors = paint(colorWanted(process.stdout.isTTY, process.env));
+/** A line of `--compare`, its FINDING, DIFFERS and NOTE words coloured at a terminal. */
+const say = (line: string): void => console.log(markWords(line, colors));
 
 const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
        node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) (--offline | --render)
@@ -75,14 +82,16 @@ still without an answer prints as UNVERIFIABLE, never as FINDING, and --record t
 
 --record also writes the live answers to testdata/report/, records an ABI case for each entry testdata/abi/ lacks, and
 writes the committed report from those recordings alone: templates/<protocol>/<operation>/report.generated.md, or
-registry/reports/<vault>.generated.md, and for a template with notes.json, report.generated.html beside it. --offline
-prints the Markdown text from the recordings, reading nothing live; --render writes both files from them.
+registry/reports/<vault>.generated.md, and for a template with notes.json, the signer's report in each language beside it:
+report.generated.en.html in English and report.generated.zh-TW.html in Traditional Chinese. --offline
+prints the Markdown text from the recordings, reading nothing live; --render writes every report file from them. Both
+remove a report.generated.html the program wrote before it wrote one file per language.
 --compare reads the listings, pages, official APIs, ABI proofs, code spans, the code it reads at the latest block and ERC-7730 attestations live, reads each vault again at the blocks
 the committed report names, reads the protocol facts and decimals again at the block the recording names, fetches each
 recorded past transaction again by hash, and prints each fact that differs from the committed report, setting aside
 DefiLlama's TVL; it exits 1 on any. It does not search for past transactions again. For a template with
-notes.json it also writes report.generated.html again from the recordings and notes with this code and requires the
-committed file to equal it byte for byte. It first prints every file the pull request changes outside templates/,
+notes.json it also writes each language's HTML report again from the recordings and notes with this code and requires
+each committed file to equal it byte for byte. It first prints every file the pull request changes outside templates/,
 registry/ and testdata/ against origin/main, and AI TEXT for each notes.json it changes.
 
 --data <git ref> takes templates/, registry/ and testdata/ from that ref, such as a fetched pull request branch, and
@@ -131,15 +140,15 @@ if (flags.compare) {
   try {
     changed = git('diff', '--name-only', `origin/main...${head}`).toString().split('\n').filter((f) => f !== '');
   } catch {
-    console.log(`PROGRAM CHANGE?  git could not compare ${head} with origin/main; check by hand which files the pull request changes`);
+    say(`PROGRAM CHANGE?  git could not compare ${head} with origin/main; check by hand which files the pull request changes`);
   }
   const program = changed === undefined ? [] : programChanges(changed);
   if (program.length > 0) {
-    console.log(`PROGRAM CHANGE  ${head} changes ${program.length} file(s) outside templates/, registry/ and testdata/; review it as a program change, not a template:`);
+    say(`PROGRAM CHANGE  ${head} changes ${program.length} file(s) outside templates/, registry/ and testdata/; review it as a program change, not a template:`);
     for (const file of program) console.log(`  ${file}`);
   }
-  for (const file of notesChanges(changed ?? [])) console.log(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
-  if (flags.data === undefined) console.log('NOTE  this runs the code checked out here; to check a pull request, run --compare from main with --data <its branch>');
+  for (const file of notesChanges(changed ?? [])) say(`AI TEXT  ${head} changes ${file}, text the AI wrote that no program checks; read it before merging`);
+  if (flags.data === undefined) say('NOTE  this runs the code checked out here; to check a pull request, run --compare from main with --data <its branch>');
 }
 
 const root = flags.data === undefined ? codeRoot : dataAt(flags.data);
@@ -171,8 +180,15 @@ async function writeGenerated(): Promise<void> {
   const written = [generatedPath(target)];
   const html = await generatedHtml(root, inputs, title);
   if (html !== undefined && 'template' in target) {
-    writeFileSync(join(root, generatedHtmlPath(target)), html);
-    written.push(generatedHtmlPath(target));
+    for (const [language, page] of html) {
+      writeFileSync(join(root, generatedHtmlPath(target, language)), page);
+      written.push(generatedHtmlPath(target, language));
+    }
+    const old = join(dirname(join(root, generatedHtmlPath(target, 'en'))), OLD_HTML_FILE);
+    if (existsSync(old)) {
+      rmSync(old);
+      console.error(`removed ${OLD_HTML_FILE}, which ${generatedHtmlFile('en')} and ${generatedHtmlFile('zh-TW')} replace`);
+    }
   }
   console.error(`wrote ${written.join(' and ')}`);
 }
@@ -256,32 +272,39 @@ const live = { subject, registry, listings, pages, fetched: fetched.toISOString(
 const command = `pnpm report ${reportArgs(subject)}`;
 const text = renderReport(live, { command, sources: ['live reads at the time it ran', ...pastTxs.map((p) => p.file)] });
 
-/** The committed HTML report against what the code checked out here writes from the recordings and notes.json. */
+/** Each committed HTML report against what the code checked out here writes from the recordings and notes.json. */
 async function compareHtml(): Promise<boolean> {
   if (!('template' in target)) return true;
-  const path = generatedHtmlPath(target);
-  const committed = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined;
-  let difference: string | undefined;
+  let written: ReadonlyMap<Language, string> | undefined;
+  let refused: string | undefined;
   try {
     const { inputs, title } = await replayInputs(root, fullRegistry, target, compilers, suffixes);
-    difference = htmlDifference(committed, await generatedHtml(root, inputs, title));
+    written = await generatedHtml(root, inputs, title);
   } catch (e) {
     if (!(e instanceof NotesError)) throw e;
-    difference = `the program refuses notes.json: ${e.message}`;
+    refused = `the program refuses notes.json: ${e.message}`;
   }
-  console.log(
-    difference === undefined
-      ? `${path}: equals, byte for byte, what this code writes from the recordings and notes.json`
-      : `DIFFERS  ${path} is not what this code writes from the recordings and notes.json; ${difference}`,
-  );
-  return difference === undefined;
+  const differences = LANGUAGES.map((language) => {
+    const path = generatedHtmlPath(target, language);
+    const committed = existsSync(join(root, path)) ? readFileSync(join(root, path), 'utf8') : undefined;
+    const difference = refused ?? htmlDifference(generatedHtmlFile(language), committed, written?.get(language));
+    say(
+      difference === undefined
+        ? `${path}: equals, byte for byte, what this code writes from the recordings and notes.json`
+        : `DIFFERS  ${path} is not what this code writes from the recordings and notes.json; ${difference}`,
+    );
+    return difference;
+  });
+  const old = join(dirname(join(root, generatedHtmlPath(target, 'en'))), OLD_HTML_FILE);
+  if (existsSync(old)) say(`DIFFERS  ${OLD_HTML_FILE} is still committed beside the reports in each language that replace it`);
+  return differences.every((d) => d === undefined) && !existsSync(old);
 }
 
 if (flags.compare) {
-  if (unread.length > 0) console.log([`NOTE  ${unread.length} read(s) got no answer after every retry; a fact that differs below may differ only for that:`, ...unread.map((read) => `  ${read}`)].join('\n'));
+  if (unread.length > 0) say([`NOTE  ${unread.length} read(s) got no answer after every retry; a fact that differs below may differ only for that:`, ...unread.map((read) => `  ${read}`)].join('\n'));
   const differences = compareReports(readFileSync(committedPath, 'utf8'), text);
-  for (const line of differences) console.log(`DIFFERS  ${line}`);
-  console.log(
+  for (const line of differences) say(`DIFFERS  ${line}`);
+  say(
     differences.length === 0
       ? `${generatedPath(target)}: every fact read live equals the committed report (not compared: the date the listings were read, DefiLlama's TVL and the block each ABI proof was read at; past transactions were not searched again)`
       : `${generatedPath(target)}: ${differences.length} fact(s) differ from what was read live`,

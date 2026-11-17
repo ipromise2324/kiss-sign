@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Usage: new-run.sh <run> <safe address> [--clone]
+# Usage: [KSV_LANGUAGE=en|zh-TW] new-run.sh <run> <safe address> [--clone]
 #
 # Makes an isolated verification run under ${KSV_ROOT:-${TMPDIR:-/tmp}/kiss-sign-verify}/<run>/:
-#   home/      a fresh KISS_SIGN_HOME, initialised with `init --safe <safe>`, holding only the two API keys
+#   home/      a fresh KISS_SIGN_HOME, initialised with `init --safe <safe> --language ${KSV_LANGUAGE:-en}`, holding only the two API keys
 #   evidence/  proof artifacts; cleanup.sh keeps it (override with KSV_EVIDENCE)
 #   clone/     with --clone: a plain git clone of origin's main with pnpm install, the only checkout `verify` accepts
 # Without --clone, init runs from the checkout this script lives in.
@@ -34,7 +34,7 @@ elif [[ -n $mode ]]; then
   echo "unknown option $mode" >&2; exit 2
 fi
 
-(cd "$checkout" && KISS_SIGN_HOME="$dir/home" bin/kiss-sign init --safe "$safe" >/dev/null)
+(cd "$checkout" && KISS_SIGN_HOME="$dir/home" bin/kiss-sign init --safe "$safe" --language "${KSV_LANGUAGE:-en}" >/dev/null)
 grep -E '^(ALCHEMY|ETHERSCAN)_API_KEY=' "$HOME/.kiss-sign/.env" > "$dir/home/.env" || true
 chmod 600 "$dir/home/.env"
 (cd "$checkout" && KISS_SIGN_HOME="$dir/home" bin/kiss-sign key list) >&2

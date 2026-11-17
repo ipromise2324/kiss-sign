@@ -1,6 +1,6 @@
 # HTML report
 
-Each template has a generated report the signer reads before merging: `report.generated.md` and, for a template with `notes.json`, `report.generated.html` in Traditional Chinese (header with check strip, 流程 diagram, protocol, vault, 待確認, 錢包顯示, 地址, 過去交易, 下一步). `pnpm report <id> [--vault-of <vault>] --render` writes both files from the committed recordings, reading nothing live; `pnpm test` fails when they differ from what the recordings give.
+Each template has a generated report the signer reads before merging: `report.generated.md` and, for a template with `notes.json`, the same page in two languages, `report.generated.en.html` (English) and `report.generated.zh-TW.html` (Traditional Chinese): header with check strip, Flow (流程) diagram, protocol, vault, To review (待確認), Wallet display (錢包顯示), Addresses (地址), Past transactions (過去交易), Next steps (下一步). The signer reads the one their config's `language` names. `pnpm report <id> [--vault-of <vault>] --render` writes both files from the committed recordings, reading nothing live; `pnpm test` fails when they differ from what the recordings give.
 
 ## Sub-features
 
@@ -8,11 +8,12 @@ Each template has a generated report the signer reads before merging: `report.ge
 - `report-offline` prints the Markdown to stdout (`--offline`).
 - `report-per-vault` requires `--vault-of` for a template reported per vault and refuses without it, naming the vaults.
 - `report-page` renders the HTML page with no script and nothing loaded from outside.
+- `report-language` writes both language files; every text in `notes.json` holds `en` and `zh-TW`, and `--render` refuses a text missing either.
 
 ## How to get to it (user POV)
 
-- `pnpm report <protocol>/<operation> --vault-of <vault> --render`, then open `templates/<protocol>/<operation>/vaults/<vault>/report.generated.html`.
-- For a template not yet rebuilt (`src/template/vault-reports.ts`), `pnpm report <protocol>/<operation> --render` and `templates/<protocol>/<operation>/report.generated.html` (only with `notes.json`).
+- `pnpm report <protocol>/<operation> --vault-of <vault> --render`, then open `templates/<protocol>/<operation>/vaults/<vault>/report.generated.en.html` (or `.zh-TW.html`).
+- For a template not yet rebuilt (`src/template/vault-reports.ts`), `pnpm report <protocol>/<operation> --render` and `templates/<protocol>/<operation>/report.generated.en.html` and `.zh-TW.html` (only with `notes.json`).
 - On GitHub, the signer reads `report.generated.md` in the pull request.
 
 ## Driving it with term.sh and screenshot.sh
@@ -22,9 +23,9 @@ Preconditions:
 - Any checkout (the branch under test, or the run's clone). No key needed for `--render`/`--offline`.
 - First run downloads the pinned solc builds and the Public Suffix List into `vendor/` (about 45 s); later runs are quicker.
 
-- **Render.** `cd "$KSV_CHECKOUT" && pnpm -s report morpho/vault-deposit --vault-of hyperithm-usdc-apex-v2-9e2f --render > "$KSV_EVIDENCE/report-render.txt" 2>&1; echo "exit=$?" >> "$KSV_EVIDENCE/report-render.txt"`. The last line before `exit=0` is `wrote templates/morpho/vault-deposit/vaults/hyperithm-usdc-apex-v2-9e2f/report.generated.md and .../report.generated.html`.
+- **Render.** `cd "$KSV_CHECKOUT" && pnpm -s report morpho/vault-deposit --vault-of hyperithm-usdc-apex-v2-9e2f --render > "$KSV_EVIDENCE/report-render.txt" 2>&1; echo "exit=$?" >> "$KSV_EVIDENCE/report-render.txt"`. The last line before `exit=0` is `wrote templates/morpho/vault-deposit/vaults/hyperithm-usdc-apex-v2-9e2f/report.generated.md and .../report.generated.en.html and .../report.generated.zh-TW.html`.
 - **Byte check.** `git status --short` in the same checkout prints nothing on main. On a branch that changes the renderer, `git diff --stat templates/` shows what the change does to committed reports.
-- **Page.** `"$V/screenshot.sh" "$KSV_CHECKOUT/templates/morpho/vault-deposit/vaults/hyperithm-usdc-apex-v2-9e2f/report.generated.html" "$KSV_EVIDENCE/report.png" 1280 9000` and open the PNG. It shows the contents rail (流程, morpho-blue, 金庫, 待確認, 錢包顯示, 地址, 過去交易, 下一步), the title `存入 Morpho vault` with `AI 研究` tags, the check strip (地址來源, 原始碼驗證, 合約沒被換掉, 參數保護, 雙節點比對), the 流程 diagram (你的 Safe, usdc, bundler3, general-adapter-1), and per-argument rows.
+- **Page.** `"$V/screenshot.sh" "$KSV_CHECKOUT/templates/morpho/vault-deposit/vaults/hyperithm-usdc-apex-v2-9e2f/report.generated.zh-TW.html" "$KSV_EVIDENCE/report.png" 1280 9000` and open the PNG. It shows the contents rail (流程, morpho-blue, 金庫, 待確認, 錢包顯示, 地址, 過去交易, 下一步), the title `存入 Morpho vault` with `AI 研究` tags, the check strip (地址來源, 原始碼驗證, 合約沒被換掉, 參數保護, 雙節點比對); the `.en.html` page shows the same in English (Flow, To review, Address sources, Two providers), the 流程 diagram (你的 Safe, usdc, bundler3, general-adapter-1), and per-argument rows.
 - **Refusal.** `pnpm -s report morpho/vault-deposit --render` without `--vault-of` refuses and names `hyperithm-usdc-apex-v2-9e2f` and `steakhouse-prime-usdc-v2-0f51`.
 
 ## Gotchas

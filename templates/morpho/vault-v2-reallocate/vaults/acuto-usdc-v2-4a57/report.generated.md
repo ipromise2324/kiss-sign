@@ -66,7 +66,9 @@ Must name one address: the `asset` of the card's `vault`, the `loanToken` of the
 
 ## Effects
 
-The Safe gives and gets nothing: any change to its balances is a `MISMATCH`.
+| Side | Token | Amount |
+| --- | --- | --- |
+| the Safe gets | the card's `vault`: one of `acuto-usdc-v2-4a57` `0x153Bd1abE60104Bd46aa05a27fA12D1346D64A57` | any amount, none included |
 
 The program calls each of these views just before and just after the transaction, and requires each named value to change as the row says:
 

@@ -188,11 +188,13 @@ export type TemplateCall = { readonly to: Rule; readonly value: Rule; readonly d
 
 /**
  * `all`, only on what the Safe gives, means its whole balance: the Safe holds none of the token afterwards. `at-least`,
- * only on what the Safe gets, means at least the card amount `field`.
+ * only on what the Safe gets, means at least the card amount `field`; `any`, only on what the Safe gets, any amount, none
+ * included.
  */
 export type EffectAmount =
   | { readonly kind: 'card'; readonly field: string }
   | { readonly kind: 'positive' }
+  | { readonly kind: 'any' }
   | { readonly kind: 'all' }
   | { readonly kind: 'at-least'; readonly field: string };
 /** `to`, on what the Safe gives, names the receiver; the Safe giving to itself changes nothing. */
@@ -878,9 +880,10 @@ function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'
   const amount = text(`${path}.amount`, value.amount);
   if (amount === 'positive') return { token: ref, amount: { kind: 'positive' }, to };
   if (amount === 'all' && side === 'gives') return { token: ref, amount: { kind: 'all' }, to };
+  if (amount === 'any' && side === 'gets') return { token: ref, amount: { kind: 'any' }, to };
   const amountField = cardFieldName(amount) ?? '';
   if (scope.card.get(amountField)?.kind !== 'amount') {
-    throw new TemplateError(`${path}.amount`, side === 'gives' ? 'must be "positive", "all" or card.<amount field>' : 'must be "positive", card.<amount field> or {"atLeast": card.<amount field>}');
+    throw new TemplateError(`${path}.amount`, side === 'gives' ? 'must be "positive", "all" or card.<amount field>' : 'must be "positive", "any", card.<amount field> or {"atLeast": card.<amount field>}');
   }
   return { token: ref, amount: { kind: 'card', field: amountField }, to };
 }
@@ -1160,10 +1163,32 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     },
     facts: [],
   };
-  const unbounded = [...template.effects.gives, ...template.effects.gets].some((effect) => effect.amount.kind === 'positive');
+  const unbounded = [...template.effects.gives, ...template.effects.gets].some((effect) => effect.amount.kind === 'positive' || effect.amount.kind === 'any');
   if (unbounded && routes(template)) throw new TemplateError('effects', 'a template with a route claim must bound each token the Safe gives or gets by a card amount, atLeast or all, since a route may change the price');
   const protocols = calledProtocols(template, registry);
   return { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
+}
+
+/** The struct name of each message the template signs by its digest (`eip712`), such as CoW's `Order`, once each. */
+export function signedStructs(template: Pick<Template, 'calls'>): string[] {
+  const visit = (rule: Rule): string[] => {
+    switch (rule.kind) {
+      case 'eip712':
+        return [rule.message.struct.name];
+      case 'call':
+      case 'keccak':
+        return rule.call.args.flatMap(visit);
+      case 'items':
+        return rule.items.flatMap(visit);
+      case 'fields':
+        return rule.fields.flatMap(visit);
+      case 'packed':
+        return rule.parts.flatMap((part) => visit(part.rule));
+      default:
+        return [];
+    }
+  };
+  return [...new Set(template.calls.flatMap((call) => (call.data === 'empty' ? [] : call.data.args.flatMap(visit))))];
 }
 
 /** Whether any argument is free with a `route` claim, which lets a changed value pick another pool. */
