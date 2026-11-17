@@ -16,14 +16,14 @@ import { checkFloor, standingSpenders } from '../floor/floor.ts';
 import type { SettingsChange } from '../floor/floor.ts';
 import type { StandingSpender } from '../floor/floor.ts';
 import { kissSignHome } from '../keys.ts';
-import { MARKETS_PATH, REGISTRY_PATH, parseRegistry } from '../registry.ts';
+import { ATTRIBUTES_PATH, MARKETS_PATH, REGISTRY_PATH, registryFromTexts } from '../registry.ts';
 import { checksumAddress } from '../safe/types.ts';
 import type { Address } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fetchOriginMain, fileAt, localOriginMain, optionalFileAt } from '../verify/self-check.ts';
 import type { GithubRepo } from '../verify/self-check.ts';
 import { VerifyError, evaluateTx, keccakText } from '../verify/verify.ts';
-import type { VerifyInputs } from '../verify/verify.ts';
+import type { MessageReader, VerifyInputs } from '../verify/verify.ts';
 import { HistoryError, cacheDir, historyDir, loadHistory, mergeRegistry, txsPath } from './load.ts';
 import type { History, HistoryCard, HistoryTx } from './load.ts';
 import { reasonFor, spentReason } from './reasons.ts';
@@ -82,6 +82,7 @@ type Context = {
   /** Allowances some template could keep, so a past transaction that leaves one is not refused by design. */
   readonly standing: readonly StandingSpender[];
   readonly markets: string | undefined;
+  readonly attributes: string | undefined;
   readonly refresh: boolean;
   readonly templateText: (id: string) => string | undefined;
 };
@@ -103,6 +104,7 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
     templates,
     registry: ctx.registry,
     ...(ctx.markets === undefined ? {} : { markets: ctx.markets }),
+    ...(ctx.attributes === undefined ? {} : { attributes: ctx.attributes }),
     addressBook: Object.fromEntries(
       [...ctx.history.book].filter(([name]) => named.has(name)).map(([name, { address }]) => [name, checksumAddress(address)]),
     ),
@@ -112,19 +114,25 @@ async function evaluateCard(ctx: Context, entry: HistoryTx, card: HistoryCard): 
   const cached = ctx.refresh ? undefined : readCache(path, safeTxHash);
   let reader: Reader;
   let recorded: (() => Exchange[]) | undefined;
+  let unanswered = false;
   if (cached !== undefined) {
     reader = replayReader(cached.exchanges);
     if (cached.messages !== undefined) inputs = { ...inputs, messages: cached.messages };
   } else {
     const endpoints = mainnetEndpoints(ctx.io.env);
     const recorder = recordingTransport(ctx.io.transport, endpoints);
-    reader = createReader(endpoints, recorder.transport);
+    reader = createReader(endpoints, recorder.transport, { note: () => void (unanswered = true) });
     recorded = recorder.exchanges;
   }
   try {
-    const { evaluation, inputs: used } = await evaluateTx(inputs, reader, recorded === undefined ? undefined : ctx.io.readMessage);
+    const readMessage: MessageReader = async (url) => {
+      const answer = await ctx.io.readMessage(url);
+      if ('noAnswer' in answer && answer.noAnswer === true) unanswered = true;
+      return answer;
+    };
+    const { evaluation, inputs: used } = await evaluateTx(inputs, reader, recorded === undefined ? undefined : readMessage);
     const { verdict } = evaluation;
-    if (recorded !== undefined) {
+    if (recorded !== undefined && !unanswered) {
       mkdirSync(cacheDir(ctx.home), { recursive: true, mode: 0o700 });
       writePrivate(path, recordingText({ safeTxHash, exchanges: recorded(), messages: used.messages ?? [] }));
     }
@@ -186,7 +194,8 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     }
     return text;
   };
-  const registry = mergeRegistry(fileAt(io.repoRoot, commit, REGISTRY_PATH), history.registryOverlay);
+  const attributes = optionalFileAt(io.repoRoot, commit, ATTRIBUTES_PATH);
+  const registry = mergeRegistry(fileAt(io.repoRoot, commit, REGISTRY_PATH), history.registryOverlay, attributes);
   const ctx: Context = {
     io,
     home,
@@ -194,8 +203,9 @@ async function run(io: Io, out: string | undefined, refresh: boolean): Promise<n
     history,
     commit,
     registry,
-    standing: standingSpenders(parseRegistry(JSON.parse(registry))),
+    standing: standingSpenders(registryFromTexts(registry, undefined, attributes)),
     markets: optionalFileAt(io.repoRoot, commit, MARKETS_PATH),
+    attributes,
     refresh,
     templateText,
   };
