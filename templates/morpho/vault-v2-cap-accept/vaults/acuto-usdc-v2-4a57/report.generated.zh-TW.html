@@ -671,10 +671,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">列表的編號可能跟別人的不同，照名字選；也可以直接打名字 <code>acuto-usdc-v2-4a57</code> 。</p></div></li>
     <li><div>市場（<code>market</code>）：它列出每個市場的 id、lltv 和每個組成的完整地址。選你要的市場，id 要對。</div></li>
     <li><div>金額（<code>absolute-cap</code>）：打 usdc 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
-      <p class="then">它印出整顆和 base units 兩種寫法，核對數字是你要的。</p>
+      <p class="then">它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。</p>
       <p class="then">也可以打 <code>max</code>，等於 340282366920938463463374607431768211455 base units；card new 會印出模板寫的理由。</p></div></li>
     <li><div>百分比（<code>relative-cap</code>）：打百分比，最多 100，例如 <code>100</code> 或 <code>35.5</code> 。
-      <p class="then">它印出百分比和 base units（100% 是 10^18），核對數字是你要的。</p></div></li>
+      <p class="then">它在問 [y/N] 之前顯示的卡片列出百分比和 base units（100% 是 10^18），核對數字是你要的。</p></div></li>
     <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
       <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
     <li><div>在 Safe web app 提出交易（第一次用這個模板或這個金庫，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>

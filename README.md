@@ -126,7 +126,7 @@ The diagram shows the flow. This is what each step actually does, and what it is
 
   *Stops:* the attacks that take over the Safe itself, such as the upgrades behind the Bybit and WazirX hacks.
 - **Simulation on two providers.** The transaction runs through the Safe's `execTransaction` with `eth_simulateV1` on Alchemy and drpc. Every change to the Safe's balances and allowances must be one the card explains, and both providers must agree. *Stops:* hidden side effects and a lying provider.
-- **Hashes on the hardware wallet.** On `MATCH`, kiss-sign prints the domain hash and message hash, and you compare them on the wallet's screen. *Stops:* a tampered Safe web app or browser swapping the transaction at the last step.
+- **Hashes on the hardware wallet.** On `MATCH`, kiss-sign's verify page shows the domain hash and message hash, and you compare them on the wallet's screen. *Stops:* a tampered Safe web app or browser swapping the transaction at the last step.
 - **In the hardened tier, an independent check.** A second computer with no AI and no kiss-sign fetches the transaction, computes its hashes and decodes it. *Stops:* kiss-sign itself, wrong or changed, showing you one transaction while the hash commits to another.
 
 ## What you confirm each time

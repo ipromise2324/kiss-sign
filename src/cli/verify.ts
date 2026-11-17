@@ -22,7 +22,11 @@ import { verdictPage } from '../verify/page.ts';
 import { expectedChanges } from '../simulate/effects.ts';
 import { VERDICT_FORMAT, VerifyError, evaluate, evaluateTx, parseVerdictFile, prepare, readTokenDecimals } from '../verify/verify.ts';
 import type { Evaluation, TxInput, VerdictFile, VerifyInputs } from '../verify/verify.ts';
+import type { Verdict } from '../verify/verdict.ts';
+import { BOX_WIDTH, box, paint, rows, text, wrap } from './format.ts';
+import type { Paint, Row } from './format.ts';
 import { FAILED, OK, UsageError } from './io.ts';
+import { LABELS } from './labels.ts';
 import type { Io } from './io.ts';
 import { requireConfig, shellWord } from './setup.ts';
 import { recordingText } from '../chain/bytecode.ts';
@@ -31,16 +35,21 @@ const SERVICE = 'https://api.safe.global/tx-service/eth/api/v1';
 
 export const verdictsDir = (home: string): string => join(home, 'verdicts');
 
+const V = LABELS.verdict;
+
+const frameOf = (kind: Verdict['kind'], p: Paint): ((text: string) => string) => (kind === 'MATCH' ? p.ok : kind === 'MISMATCH' ? p.bad : p.warn);
+
+/** Each check that caused a verdict other than MATCH, one row per detail. */
+const causeRows = (verdict: Verdict): Row[] => (verdict.kind === 'MATCH' ? [] : verdict.causes.flatMap((cause) => cause.details.map((detail): Row => [cause.check, detail])));
+
 function printReplay({ verdict, hashes, calls }: Evaluation, registry: Registry, io: Io): void {
-  io.stdout(`${verdict.kind}\n`);
-  if (verdict.kind !== 'MATCH') for (const cause of verdict.causes) for (const detail of cause.details) io.stdout(`  ${cause.check}: ${detail}\n`);
-  for (const line of describeCallScan(calls, registry)) io.stdout(`${line}\n`);
-  if (verdict.kind === 'MATCH') {
-    io.stdout(`  domain hash   ${hashes.domainHash}\n  message hash  ${hashes.messageHash}\n  safeTxHash    ${hashes.safeTxHash}\n`);
-    io.stdout('This is a replay of a recorded verdict, not permission to sign. Run pnpm kiss-sign verify before signing.\n');
-    return;
-  }
-  io.stdout('No hashes are shown. Do not sign this transaction.\n');
+  const p = paint(io.color === true);
+  const scan = describeCallScan(calls, registry).flatMap((line) => wrap(line, BOX_WIDTH));
+  const body =
+    verdict.kind === 'MATCH'
+      ? [...scan, '', ...rows([['domain hash', hashes.domainHash], ['message hash', hashes.messageHash], ['safeTxHash', hashes.safeTxHash]], 0, BOX_WIDTH), '', ...wrap(V.notPermission, BOX_WIDTH)]
+      : [...rows(causeRows(verdict), 0, BOX_WIDTH), ...scan, '', V.noHashes];
+  io.stdout(text(box(V.replayTitle(verdict.kind), body, frameOf(verdict.kind, p))));
 }
 
 async function txInput(file: string | undefined, safeTxHash: string | undefined, io: Io): Promise<TxInput> {
@@ -111,15 +120,13 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   writeFileSync(`${path}.tmp`, recordingText(file, 2), { mode: 0o600 });
   renameSync(`${path}.tmp`, path);
   const { verdict, hashes } = result;
-  io.stdout(`${verdict.kind}\n`);
-  if (verdict.kind !== 'MATCH') for (const cause of verdict.causes) for (const detail of cause.details) io.stdout(`  ${cause.check}: ${detail}\n`);
-  let tree: CallTree | undefined;
-  if (verdict.kind === 'MATCH') {
-    tree = callTree(tx, { ...prepared, decimals });
-    io.stdout(`  safeTxHash  ${hashes.safeTxHash}\n`);
-  } else {
-    io.stdout('No hashes are shown. Do not sign this transaction.\n');
-  }
+  const p = paint(io.color === true);
+  const tree: CallTree | undefined = verdict.kind === 'MATCH' ? callTree(tx, { ...prepared, decimals }) : undefined;
+  const body =
+    verdict.kind === 'MATCH'
+      ? rows([[V.nonce, `${tx.nonce}`], ['safeTxHash', hashes.safeTxHash, p.heading]], 0, BOX_WIDTH)
+      : [...rows([[V.nonce, `${tx.nonce}`], ...causeRows(verdict)], 0, BOX_WIDTH), '', V.noHashes];
+  io.stdout(text(box(V.title[verdict.kind], body, frameOf(verdict.kind, p))));
   const page = path.replace(/\.json$/, '.html');
   const html = verdictPage({
     verdict,
@@ -138,13 +145,16 @@ export async function verify(args: readonly string[], io: Io): Promise<number> {
   });
   writeFileSync(`${page}.tmp`, html, { mode: 0o600 });
   renameSync(`${page}.tmp`, page);
-  io.stdout(`Verdict file: ${path}\n`);
   io.stdout(
-    verdict.kind === 'MATCH'
-      ? `kiss-sign verify page, nonce ${tx.nonce}, MATCH, with the domain hash, the message hash and the 比對清單 to compare with check.sh: ${page}\n`
-      : `kiss-sign verify page, nonce ${tx.nonce}, ${verdict.kind}, with every check: ${page}\n`,
+    text([
+      `${V.page}: ${verdict.kind === 'MATCH' ? V.pageMatch : V.pageOther}`,
+      `  ${page}`,
+      `${V.file}:`,
+      `  ${path}`,
+      `${V.open}:`,
+      `  ${io.platform === 'darwin' ? 'open' : 'xdg-open'} ${shellWord(page)}`,
+    ]),
   );
-  io.stdout(`Open it with: ${io.platform === 'darwin' ? 'open' : 'xdg-open'} ${shellWord(page)}\n`);
   return result.verdict.kind === 'MATCH' ? OK : FAILED;
 }
 
@@ -160,6 +170,6 @@ export async function replay(args: readonly string[], io: Io): Promise<number> {
     io.stderr(`kiss-sign: the recorded verdict was ${file.result.verdict.kind}; this program now gives ${what}.\n`);
     return FAILED;
   }
-  io.stdout('Same verdict as recorded.\n');
+  io.stdout(`${V.same}\n`);
   return OK;
 }

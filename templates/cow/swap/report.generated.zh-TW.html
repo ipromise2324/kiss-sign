@@ -485,9 +485,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li><div>代幣（<code>sell-token</code>）：它列出可選的代幣，每個附完整地址。選你要的那個，名字和完整地址都要對。</div></li>
     <li><div>代幣（<code>buy-token</code>）：它列出可選的代幣，每個附完整地址。選你要的那個，名字和完整地址都要對。</div></li>
     <li><div>金額（<code>sell-amount</code>）：打 你選的代幣（sell-token） 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
-      <p class="then">它印出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
+      <p class="then">它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
     <li><div>金額（<code>min-buy</code>）：打 你選的代幣（buy-token） 的數量，用整顆幣，例如 <code>1250.5</code> ；可以有千位逗號，例如 <code>1,000,611.448606</code> 。
-      <p class="then">它印出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
+      <p class="then">它在問 [y/N] 之前顯示的卡片列出整顆和 base units 兩種寫法，核對數字是你要的。</p></div></li>
     <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
       <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
     <li><div>在 Safe web app 提出交易（第一次用這個模板，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>

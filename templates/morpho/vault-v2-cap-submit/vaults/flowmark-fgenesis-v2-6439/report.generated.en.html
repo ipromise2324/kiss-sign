@@ -683,10 +683,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">The numbers in the list may differ from someone else&#39;s, so pick by name; you can also type the name <code>flowmark-fgenesis-v2-6439</code>.</p></div></li>
     <li><div><code>market</code>: it lists each market with its id, its lltv and the full address of each part. Pick the market you want; its id must be right.</div></li>
     <li><div>amount (<code>absolute-cap</code>): type the amount of usdc in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
-      <p class="then">It prints it both in whole tokens and in base units; check that the number is what you want.</p>
+      <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p>
       <p class="then">You can also type <code>max</code>, which is 340282366920938463463374607431768211455 base units; card new prints the template&#39;s reason.</p></div></li>
     <li><div>percent (<code>relative-cap</code>): type a percent, at most 100, such as <code>100</code> or <code>35.5</code>.
-      <p class="then">It prints the percent and the base units (100% is 10^18); check that the number is what you want.</p></div></li>
+      <p class="then">The card it shows before asking [y/N] gives the percent and the base units (100% is 10^18); check that the number is what you want.</p></div></li>
     <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
       <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
     <li><div>Propose the transaction in the Safe web app (the first time you use this template or this vault, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>

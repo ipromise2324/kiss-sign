@@ -599,7 +599,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li><div><code>vault</code>: it lists the contracts you can pick, each with its full address. Pick <a href="#a-steakhouse-prime-usdc-v2-0f51">steakhouse-prime-usdc-v2-0f51</a>, address <span class="addr">0xbeef088055857739C12CD3765F20b7679Def0f51</span>
       <p class="then">The numbers in the list may differ from someone else&#39;s, so pick by name; you can also type the name <code>steakhouse-prime-usdc-v2-0f51</code>.</p></div></li>
     <li><div><code>amount</code>: type the amount of usdc in whole tokens, such as <code>1250.5</code>; thousands commas are allowed, such as <code>1,000,611.448606</code>.
-      <p class="then">It prints it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
+      <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
     <li><div>minimum to receive (<code>min-shares</code>): you do not type it. The protocol&#39;s app fills this value without asking its user, so the program computes it.
       <p class="then">It reads <code>previewDeposit</code> on chain, uses the answer only when both providers agree, prints the expected amount of steakhouse-prime-usdc-v2-0f51, then takes 0.10% less (the protocol&#39;s default 0.03% plus a 0.07% margin), rounded down.</p>
       <p class="then">Source of the default: <a href="https://github.com/morpho-org/sdks/blob/56f1ed62827a7aab39d979c0143d1fbf970c37ca/packages/blue-sdk/src/constants.ts#L24">github.com/morpho-org/sdks</a>. Check that the expected amount and the final number it prints are reasonable.</p></div></li>
