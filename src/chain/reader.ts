@@ -31,13 +31,16 @@ export type Reader = {
   getBalance(address: Address, at: BlockRef): Promise<Read<bigint>>;
   /** The account's nonce; for a contract, how many contracts it has created by CREATE, plus one. */
   getTransactionCount(address: Address, at: BlockRef): Promise<Read<bigint>>;
-  call(request: { readonly to: Address; readonly data: Hex }, at: BlockRef): Promise<Read<CallResult>>;
+  /** `eth_call`; with `override`, the code at that address is replaced for this call alone. */
+  call(request: CallRequest, at: BlockRef): Promise<Read<CallResult>>;
   getStorageAt(address: Address, slot: bigint, at: BlockRef): Promise<Read<Hex>>;
   getTransactionReceipt(hash: Hex): Promise<Read<Receipt | null>>;
   getTransaction(hash: Hex): Promise<Read<Transaction | null>>;
   /** `eth_simulateV1` of one block on top of `at`, with `traceTransfers` on and validation off. */
   simulateV1(request: SimulationRequest, at: BlockRef): Promise<Read<readonly SimulatedCall[]>>;
 };
+
+export type CallRequest = { readonly to: Address; readonly data: Hex; readonly override?: { readonly address: Address; readonly code: Hex } };
 
 export type ReaderOptions = {
   readonly timeoutMs?: number;
@@ -244,7 +247,11 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
           parse: (answer): CallResult =>
             answer.kind === 'reverted' ? { kind: 'reverted' } : { kind: 'returned', data: parseData(answer.value) },
         },
-        [{ to: request.to, data: request.data }, pinned(at)],
+        [
+          { to: request.to, data: request.data },
+          pinned(at),
+          ...(request.override === undefined ? [] : [{ [request.override.address]: { code: request.override.code } }]),
+        ],
       ),
     header: (at) =>
       read(

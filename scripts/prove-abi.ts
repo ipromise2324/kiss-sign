@@ -11,9 +11,9 @@ const [addressArg] = process.argv.slice(2);
 if (addressArg === undefined) throw new Error('usage: ALCHEMY_API_KEY=... node scripts/prove-abi.ts <address>');
 const address = parseAddress('address', addressArg);
 
-const routed = loadRegistry(join(import.meta.dirname, '..')).byAddress.get(address);
-if (routed?.routes !== undefined) {
-  console.log(`NOT PROVABLE ${checksumAddress(address)}: ${routed.name} is a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned, see pnpm pin-code ${routed.name}`);
+const entry = loadRegistry(join(import.meta.dirname, '..')).byAddress.get(address);
+if (entry?.routes !== undefined) {
+  console.log(`NOT PROVABLE ${checksumAddress(address)}: ${entry.name} is a selector-routed proxy, whose calls run in the implementations its routes reach; its routes are pinned, see pnpm pin-code ${entry.name}`);
   process.exit(1);
 }
 
@@ -23,7 +23,7 @@ const block = await reader.block('latest');
 if (block.kind === 'unverifiable') throw new Error(block.reason);
 
 const started = performance.now();
-const proof = await proveAbi(reader, address, block.value, { sourcify: sourcifyHttps, compilers: pinnedCompilers() });
+const proof = await proveAbi(reader, address, block.value, { sourcify: sourcifyHttps, compilers: pinnedCompilers() }, entry);
 const seconds = ((performance.now() - started) / 1000).toFixed(1);
 
 if (proof.kind === 'refused') {
