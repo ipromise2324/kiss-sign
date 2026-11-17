@@ -2,7 +2,7 @@ import { readFileSync, statSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 import { loadAddressBook, saveAddressBook } from '../address-book.ts';
 import { parseCard, resolveCard, sealCard } from '../card.ts';
-import type { Card } from '../card.ts';
+import type { Card, Refused } from '../card.ts';
 import { ConfigError, loadApproved, loadConfig, loadStoredConfig, saveApproved, saveConfig } from '../config.ts';
 import type { Config } from '../config.ts';
 import { DEFAULT_LANGUAGE, LANGUAGES, isLanguage } from '../language.ts';
@@ -148,6 +148,10 @@ export async function cardSeal(args: readonly string[], io: Io, w: Labels): Prom
   return seal(parseCard(JSON.parse(readFileSync(path, 'utf8'))), io, w, confirm);
 }
 
+/** A card refusal in the signer's language where the reason has its own words, else with the detail as stored. */
+export const refusalText = (refusal: Refused, L: Labels['card']): string =>
+  L.refusedAt(refusal.at, refusal.reason === 'zero-floor' ? L.zeroFloor(refusal.field) : refusal.detail);
+
 /** Resolves every name, shows the card with full addresses, and stores it under its hash once the signer says yes. */
 export async function seal(card: Card, io: Io, w: Labels, confirm: Terminal['confirm'], reads?: CardReads): Promise<number> {
   const L = w.card;
@@ -157,7 +161,7 @@ export async function seal(card: Card, io: Io, w: Labels, confirm: Terminal['con
   const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(io.repoRoot, op.template, registry)]));
   const resolution = resolveCard(card, { templates, registry, addressBook: loadAddressBook(home), safe });
   if (resolution.kind === 'refused') {
-    io.stderr(`kiss-sign: ${L.refusedAt(resolution.at, resolution.detail)}\n`);
+    io.stderr(`kiss-sign: ${refusalText(resolution, L)}\n`);
     return FAILED;
   }
   const unreported = unreportedVault(resolution.card, templates, registry, (id) => reportedVaultsIn(io.repoRoot, id));

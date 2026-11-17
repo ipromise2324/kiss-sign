@@ -1261,31 +1261,62 @@ function routes(template: Template): boolean {
   return template.calls.some((call) => visit(call.to) || visit(call.value) || (call.data !== 'empty' && call.data.args.some(visit)));
 }
 
+/** A rule and every rule nested in it. */
+function rulesUnder(rule: Rule | undefined): Rule[] {
+  if (rule === undefined) return [];
+  const nested = (): readonly Rule[] => {
+    switch (rule.kind) {
+      case 'call':
+      case 'keccak':
+        return rule.call.args;
+      case 'address-word':
+        return [rule.rule];
+      case 'items':
+        return rule.items;
+      case 'fields':
+        return rule.fields;
+      case 'packed':
+        return rule.parts.map((part) => part.rule);
+      case 'eip712':
+        return rule.message.fields;
+      default:
+        return [];
+    }
+  };
+  return [rule, ...nested().flatMap(rulesUnder)];
+}
+
+/** Every rule of the template's nonce and calls, nested ones included. */
+const callRules = (template: Template): Rule[] =>
+  [template.nonce, ...template.calls.flatMap((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)])].flatMap(rulesUnder);
+
+/** The card amount fields a share price bound or an `atLeast` compares with: card fields only, never a path. */
+function comparedFields(rule: Rule): string[] {
+  if (rule.kind === 'share-price') return [rule.assets, rule.shares].flatMap((q) => (q.kind === 'card' ? [q.field] : []));
+  return rule.kind === 'at-least' ? [rule.field] : [];
+}
+
+/**
+ * The card amount fields that bound the transaction from one side, where 0 bounds nothing: each computed field, and
+ * each a share price bound or an `atLeast`, of a call or of what the Safe gets, compares with.
+ */
+export function floorFields(template: Template): ReadonlySet<string> {
+  return new Set([
+    ...[...template.card].flatMap(([name, field]) => (field.kind === 'amount' && field.computed !== undefined ? [name] : [])),
+    ...[...callRules(template), ...template.effects.views.flatMap(({ args }) => args.flatMap(rulesUnder))].flatMap(comparedFields),
+    ...template.effects.gets.flatMap(({ amount }) => (amount.kind === 'at-least' ? [amount.field] : [])),
+  ]);
+}
+
 /** Every card reference the template makes. */
 export function cardRefs(template: Template): CardRef[] {
   const refs: CardRef[] = [...template.same];
-  const visit = (rule: Rule | undefined): void => {
-    if (rule?.kind === 'card' || rule?.kind === 'owner-before') refs.push(rule.ref);
-    else if (rule?.kind === 'address-word') visit(rule.rule);
-    else if (rule?.kind === 'share-price') {
-      for (const q of [rule.assets, rule.shares]) if (q.kind === 'card') refs.push({ field: q.field, attribute: undefined });
-    }
-    else if (rule?.kind === 'at-least') refs.push({ field: rule.field, attribute: undefined });
-    else if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
-    else if (rule?.kind === 'items') rule.items.forEach(visit);
-    else if (rule?.kind === 'fields') rule.fields.forEach(visit);
-    else if (rule?.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
-    else if (rule?.kind === 'eip712') rule.message.fields.forEach(visit);
-  };
-  visit(template.nonce);
-  for (const call of template.calls) {
-    visit(call.to);
-    visit(call.value);
-    if (call.data !== 'empty') call.data.args.forEach(visit);
-  }
+  const refsOf = (rule: Rule): CardRef[] =>
+    rule.kind === 'card' || rule.kind === 'owner-before' ? [rule.ref] : comparedFields(rule).map((field) => ({ field, attribute: undefined }));
+  refs.push(...callRules(template).flatMap(refsOf));
   for (const { to, args } of template.effects.views) {
     if (to.kind === 'card') refs.push(to.ref);
-    args.forEach(visit);
+    refs.push(...args.flatMap(rulesUnder).flatMap(refsOf));
   }
   for (const field of template.card.values()) if (field.kind === 'amount' && field.of !== 'eth') refs.push(field.of);
   const settings = template.effects.safe;

@@ -194,6 +194,7 @@ test('a card naming no market, or a contract instead of one, is refused', () => 
     kind: 'refused',
     reason: 'unknown-name',
     at: 'operations[0].values.market',
+    field: 'market',
     detail: '"usdc-wbtc-86" is not a market in registry/markets.json',
   });
   assert.equal((resolve(supplyCard('usdc')) as Extract<Resolution, { kind: 'refused' }>).detail, '"usdc" is not a market in registry/markets.json');

@@ -41,7 +41,10 @@ export type Verdict =
   | { readonly kind: 'MISMATCH' | 'UNVERIFIABLE'; readonly causes: readonly Cause[] };
 
 const PASS: Outcome = { kind: 'pass' };
-const outcome = (kind: 'fail' | 'unverifiable', details: readonly string[]): Outcome => (details.length === 0 ? PASS : { kind, details });
+const NO_DETAIL = { fail: 'failed and gave no detail', unverifiable: 'could not finish and gave no detail' } as const;
+
+/** A check passes only through its own pass value: a failure or an unfinished check with no detail still counts. */
+const outcome = (kind: 'fail' | 'unverifiable', details: readonly string[]): Outcome => ({ kind, details: details.length === 0 ? [NO_DETAIL[kind]] : details });
 
 const chain = (check: ChainCheck): Outcome =>
   check.kind === 'pass'
@@ -52,6 +55,7 @@ const chain = (check: ChainCheck): Outcome =>
         ? outcome('fail', check.findings)
         : outcome('unverifiable', check.reasons);
 
+/** Only the simulated floor and the effects skip this way, when the simulation, which then counts, observed nothing. */
 const NOT_RUN: Outcome = { kind: 'skip', state: 'not-run' };
 
 const floor = (result: FloorResult): Outcome =>
@@ -62,10 +66,9 @@ function approval(approvals: readonly TemplateApproval[]): Outcome {
   if (changed.length > 0) {
     return outcome('fail', changed.map((a) => `${a.template} hashes to ${a.hash}, the approved hash is ${a.approved}`));
   }
-  return outcome(
-    'unverifiable',
-    approvals.filter((a) => a.approved === undefined).map((a) => `${a.template} was never approved; run pnpm kiss-sign template approve ${a.template}`),
-  );
+  const unapproved = approvals.filter((a) => a.approved === undefined);
+  if (unapproved.length === 0) return PASS;
+  return outcome('unverifiable', unapproved.map((a) => `${a.template} was never approved; run pnpm kiss-sign template approve ${a.template}`));
 }
 
 /**
@@ -93,7 +96,7 @@ const ROWS: readonly (readonly [CheckName, (checks: AllChecks, registry: Registr
       return outcome('unverifiable', mutation.uncaught.map((u) => `a change to ${u.leaf.callPath} ${u.leaf.arg} gave ${u.mutated}, not a mismatch`));
     },
   ],
-  ['simulation', ({ simulation }) => (simulation.kind === 'unverifiable' ? outcome('unverifiable', simulation.reasons) : PASS)],
+  ['simulation', ({ simulation }) => (simulation.kind === 'observed' ? PASS : outcome('unverifiable', simulation.reasons))],
   ['simulated-floor', ({ simulation }) => (simulation.kind === 'observed' ? floor(simulation.floor) : NOT_RUN)],
   [
     'effects',
