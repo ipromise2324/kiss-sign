@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -275,8 +275,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <span class="opid">morpho/vault-v2-cap-submit · kpk-usdc-prime-v2-9ee6</span>
   <p class="sub"><span class="aiw" data-ai><span>Safe 以 curator 身分呼叫 vault 的 <code>multicall</code>，裡面兩個 <code>submit</code>：一個排隊把你選的市場的絕對上限提高到你填的數量，一個把相對上限提高到你填的百分比。這筆交易只排隊，不改上限；等 vault 的 timelock 過了，任何人都能執行它。不動 Safe 的任何資產。</span><span class="byai">AI 研究</span></span></p>
   <ul class="checks">
-    <li data-state="bad" data-line="sources"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>地址來源 <span class="n num">9 / 13</span>
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">4 個地址有結果要你看，見「待確認」。其餘 9 個都至少在 2 個地方確認。</span></span></li>
+    <li data-state="warn" data-line="sources"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>地址來源 <span class="n num">10 / 13</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">3 個地址有結果要你看，見「待確認」。其餘 10 個都至少在 2 個地方確認。</span></span></li>
     <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>原始碼驗證 <span class="n num">7 / 7</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">Sourcify 的原始碼用固定版本的編譯器重新編譯，跟鏈上的程式碼一模一樣，所以解碼交易用的函式定義確實屬於這些合約。morpho-blue、adaptive-curve-irm、morpho-oracle-cbbtc-usdc-86、morpho-oracle-usp-usdc、kpk-usdc-prime-v2-9ee6-market-adapter、morpho-oracle-weeth-usdc-86 沒有呼叫直接打到，也不用它的函式定義解碼，所以沒有證明，不算在內；它跑的程式碼在「合約沒被換掉」比對。</span></span></li>
     <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>合約沒被換掉 <span class="n num">13 / 13</span>
@@ -286,9 +286,9 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
   </ul>
-  <div class="verdict" data-state="bad"><span class="lbl">建議</span><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg><span class="aiw" data-ai><span>可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。</span><span class="byai">AI 研究：可以用</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。</span><span class="byai">AI 研究：可以用</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -474,7 +474,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>morpho-blue</h2>
   <p class="intro"><span class="aiw" data-ai><span>Morpho Vault V2 把存款分配到多個 Morpho Blue 市場。curator 設定每個市場能放多少（上限），allocator 在上限內搬錢。提高上限要先 <code>submit</code>，等 timelock 過了才能執行。</span><span class="byai">AI 研究</span></span></p>
   <dl class="props two">
-    <div><dt>TVL</dt><dd><span><span class="num">$10.03 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.49 B</span></span></dd></div>
+    <div><dt>TVL</dt><dd><span><span class="num">$10.06 B</span></span><span class="sub2">Ethereum 上 <span class="num">$4.50 B</span></span></dd></div>
     <div><dt>上線</dt><dd><span><span class="num">2024-01-14</span></span><span class="sub2">DefiLlama 開始列的日期</span></dd></div>
     <div><dt>proxy</dt><dd><span>不是 proxy</span><span class="sub2"><a href="#a-kpk-usdc-prime-v2-9ee6">kpk-usdc-prime-v2-9ee6</a>，從 code pin 讀到</span></dd></div>
     <div><dt>稽核</dt><dd><span class="aiw" data-ai><span>Vault V2 的 GitHub 列了 10 份稽核（Spearbit、Zellic、Blackthorn、ChainSecurity、Certora 和一場競賽）。 <a class="aisrc" href="https://github.com/morpho-org/vault-v2/tree/main/audits">來源</a></span><span class="byai">AI 研究</span></span></dd></div>
@@ -487,66 +487,59 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>金庫</h2>
   <p class="lead"><a href="#a-kpk-usdc-prime-v2-9ee6">kpk-usdc-prime-v2-9ee6</a>：程式記錄的 <code>pnpm vault-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
   <dl class="props">
-    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26431914</dd></div>
-    <div><dt>現在的 totalAssets</dt><dd><span class="num">31,718,089.45 usdc</span></dd><dd class="src">2026-11-17，區塊 26431914</dd></div>
+    <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26432993</dd></div>
+    <div><dt>現在的 totalAssets</dt><dd><span class="num">31,754,016.68 usdc</span></dd><dd class="src">2026-11-17，區塊 26432993</dd></div>
     <div><dt>持有人</dt><dd><span class="num">97</span> 個地址持有，曾經收過的 <span class="num">204</span> 個</dd><dd class="src"></dd></div>
-    <div><dt>最大持有人</dt><dd><span class="num">50.61%</span></dd><dd class="src">占全部股份</dd></div>
+    <div><dt>最大持有人</dt><dd><span class="num">50.56%</span></dd><dd class="src">占全部股份</dd></div>
     <div><dt>前 10 名</dt><dd><span class="num">94.31%</span></dd><dd class="src">占全部股份</dd></div>
   </dl>
   <h3>每月的 totalAssets</h3>
   <div class="diagram">
   <svg viewBox="0 0 660 194" role="img" aria-labelledby="vt vd">
     <title id="vt">每月的 totalAssets</title>
-    <desc id="vd">13 個月，2025-11-20 到 2026-11-17，最高 31,718,089.45 usdc</desc>
-    <text class="tick" x="16" y="18">最高 31,718,089.45 usdc</text>
+    <desc id="vd">13 個月，2025-11-20 到 2026-11-17，最高 31,754,016.68 usdc</desc>
+    <text class="tick" x="16" y="18">最高 31,754,016.68 usdc</text>
     <line class="axis" x1="16" y1="150" x2="644" y2="150"/>
-    <rect class="bar" x="25.7" y="132" width="29.0" height="18"><title>2025-11-20：5,003,727.64 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
-    <rect class="bar" x="74.0" y="135" width="29.0" height="15"><title>2025-12-20：4,066,249.82 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
-    <rect class="bar" x="122.3" y="135" width="29.0" height="15"><title>2026-01-19：4,069,142.85 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
-    <rect class="bar" x="170.6" y="124" width="29.0" height="26"><title>2026-02-19：7,038,191.91 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
-    <rect class="bar" x="218.9" y="126" width="29.0" height="24"><title>2026-03-21：6,451,394.81 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
-    <rect class="bar" x="267.2" y="118" width="29.0" height="32"><title>2026-04-20：8,719,500.1 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
-    <rect class="bar" x="315.5" y="68" width="29.0" height="82"><title>2026-05-20：22,358,406.5 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
-    <rect class="bar" x="363.8" y="56" width="29.0" height="94"><title>2026-06-19：25,588,082 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
-    <rect class="bar" x="412.1" y="74" width="29.0" height="76"><title>2026-07-19：20,839,776.11 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
-    <rect class="bar" x="460.4" y="74" width="29.0" height="76"><title>2026-08-18：20,679,519.53 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
-    <rect class="bar" x="508.7" y="73" width="29.0" height="77"><title>2026-09-17：21,092,869.42 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
-    <rect class="bar" x="557.0" y="38" width="29.0" height="112"><title>2026-10-18：30,525,875.11 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
-    <rect class="bar last" x="605.4" y="34" width="29.0" height="116"><title>2026-11-17：31,718,089.45 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
+    <rect class="bar" x="25.7" y="132" width="29.0" height="18"><title>2025-11-20：5,003,802.78 usdc</title></rect><text class="tick" x="40.2" y="168" text-anchor="middle">11月</text><text class="tick" x="40.2" y="184" text-anchor="middle">2025</text>
+    <rect class="bar" x="74.0" y="135" width="29.0" height="15"><title>2025-12-20：4,066,305.16 usdc</title></rect><text class="tick" x="88.5" y="168" text-anchor="middle">12月</text>
+    <rect class="bar" x="122.3" y="135" width="29.0" height="15"><title>2026-01-20：4,069,204.96 usdc</title></rect><text class="tick" x="136.8" y="168" text-anchor="middle">1月</text><text class="tick" x="136.8" y="184" text-anchor="middle">2026</text>
+    <rect class="bar" x="170.6" y="124" width="29.0" height="26"><title>2026-02-19：7,038,282.5 usdc</title></rect><text class="tick" x="185.1" y="168" text-anchor="middle">2月</text>
+    <rect class="bar" x="218.9" y="126" width="29.0" height="24"><title>2026-03-21：6,451,470.06 usdc</title></rect><text class="tick" x="233.4" y="168" text-anchor="middle">3月</text>
+    <rect class="bar" x="267.2" y="118" width="29.0" height="32"><title>2026-04-20：8,719,663.52 usdc</title></rect><text class="tick" x="281.7" y="168" text-anchor="middle">4月</text>
+    <rect class="bar" x="315.5" y="68" width="29.0" height="82"><title>2026-05-20：22,358,725.64 usdc</title></rect><text class="tick" x="330.0" y="168" text-anchor="middle">5月</text>
+    <rect class="bar" x="363.8" y="58" width="29.0" height="92"><title>2026-06-19：25,256,205.95 usdc</title></rect><text class="tick" x="378.3" y="168" text-anchor="middle">6月</text>
+    <rect class="bar" x="412.1" y="74" width="29.0" height="76"><title>2026-07-19：20,821,030.65 usdc</title></rect><text class="tick" x="426.6" y="168" text-anchor="middle">7月</text>
+    <rect class="bar" x="460.4" y="74" width="29.0" height="76"><title>2026-08-18：20,679,878.36 usdc</title></rect><text class="tick" x="474.9" y="168" text-anchor="middle">8月</text>
+    <rect class="bar" x="508.7" y="73" width="29.0" height="77"><title>2026-09-18：21,093,304 usdc</title></rect><text class="tick" x="523.2" y="168" text-anchor="middle">9月</text>
+    <rect class="bar" x="557.0" y="38" width="29.0" height="112"><title>2026-10-18：30,526,446.35 usdc</title></rect><text class="tick" x="571.5" y="168" text-anchor="middle">10月</text>
+    <rect class="bar last" x="605.4" y="34" width="29.0" height="116"><title>2026-11-17：31,754,016.68 usdc</title></rect><text class="tick" x="619.8" y="168" text-anchor="middle">11月</text>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
   <details class="fold">
     <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>13 個月的數字</summary>
     <dl class="props">
-      <div><dt class="num">2025-11-20</dt><dd class="num">5,003,727.64 usdc</dd></div>
-      <div><dt class="num">2025-12-20</dt><dd class="num">4,066,249.82 usdc</dd></div>
-      <div><dt class="num">2026-01-19</dt><dd class="num">4,069,142.85 usdc</dd></div>
-      <div><dt class="num">2026-02-19</dt><dd class="num">7,038,191.91 usdc</dd></div>
-      <div><dt class="num">2026-03-21</dt><dd class="num">6,451,394.81 usdc</dd></div>
-      <div><dt class="num">2026-04-20</dt><dd class="num">8,719,500.1 usdc</dd></div>
-      <div><dt class="num">2026-05-20</dt><dd class="num">22,358,406.5 usdc</dd></div>
-      <div><dt class="num">2026-06-19</dt><dd class="num">25,588,082 usdc</dd></div>
-      <div><dt class="num">2026-07-19</dt><dd class="num">20,839,776.11 usdc</dd></div>
-      <div><dt class="num">2026-08-18</dt><dd class="num">20,679,519.53 usdc</dd></div>
-      <div><dt class="num">2026-09-17</dt><dd class="num">21,092,869.42 usdc</dd></div>
-      <div><dt class="num">2026-10-18</dt><dd class="num">30,525,875.11 usdc</dd></div>
-      <div><dt class="num">2026-11-17</dt><dd class="num">31,718,089.45 usdc</dd></div>
+      <div><dt class="num">2025-11-20</dt><dd class="num">5,003,802.78 usdc</dd></div>
+      <div><dt class="num">2025-12-20</dt><dd class="num">4,066,305.16 usdc</dd></div>
+      <div><dt class="num">2026-01-20</dt><dd class="num">4,069,204.96 usdc</dd></div>
+      <div><dt class="num">2026-02-19</dt><dd class="num">7,038,282.5 usdc</dd></div>
+      <div><dt class="num">2026-03-21</dt><dd class="num">6,451,470.06 usdc</dd></div>
+      <div><dt class="num">2026-04-20</dt><dd class="num">8,719,663.52 usdc</dd></div>
+      <div><dt class="num">2026-05-20</dt><dd class="num">22,358,725.64 usdc</dd></div>
+      <div><dt class="num">2026-06-19</dt><dd class="num">25,256,205.95 usdc</dd></div>
+      <div><dt class="num">2026-07-19</dt><dd class="num">20,821,030.65 usdc</dd></div>
+      <div><dt class="num">2026-08-18</dt><dd class="num">20,679,878.36 usdc</dd></div>
+      <div><dt class="num">2026-09-18</dt><dd class="num">21,093,304 usdc</dd></div>
+      <div><dt class="num">2026-10-18</dt><dd class="num">30,526,446.35 usdc</dd></div>
+      <div><dt class="num">2026-11-17</dt><dd class="num">31,754,016.68 usdc</dd></div>
     </dl>
   </details>
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
-    <div class="row" data-state="bad" data-result="weeth/source.site">
-      <svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>
-      <div><div class="t">weeth：etherfi.gitbook.io/etherfi/developers，網站跟 DefiLlama 列的不同</div>
-        <div class="meta">這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。<a href="#a-weeth">看來源</a></div>
-        <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>頁面在 etherfi.gitbook.io，不是 DefiLlama 列的 ether.fi。CoinGecko 的 ether-fi 幣把白皮書連到 etherfi.gitbook.io，頁面上的 weETH 是 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee，跟 CoinGecko 列的 Wrapped eETH 地址一樣。</span><span class="byai">AI 研究</span></span></div>
-        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受：CoinGecko 列的是同一個地址。</span><span class="byai">AI 研究</span></span></div></div>
-    </div>
     <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t">morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
@@ -618,13 +611,6 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="confirmed">只在 1 個地方確認：協議 API</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
-    <div class="ad" id="a-weeth" data-state="bad">
-      <svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg>
-      <div><span class="nm">weeth</span><span class="role"><span class="aiw" data-ai><span>weETH 市場的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
-      <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts">etherfi.gitbook.io/etherfi/developers</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="bad"><svg class="i bad" role="img" aria-label="不通過"><use href="#bad"/></svg><span>網站：是另一個網站（<a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/ether-fi">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">部署者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒有已確認的合約同一個部署者</span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
-    </div>
     <div class="ad" id="a-morpho-oracle-weeth-usdc-86" data-state="warn">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><span class="nm">morpho-oracle-weeth-usdc-86</span><span class="role"><span class="aiw" data-ai><span>weETH 市場用來給 weETH 定價的 oracle</span><span class="byai">AI 研究</span></span><span class="conf">低信心</span><span class="reviewed">AI 有疑慮</span></span></div>
@@ -634,7 +620,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
     </div>
     <details class="fold">
-      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 9 個地址都沒有要你看的結果</summary>
+      <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 10 個地址都沒有要你看的結果</summary>
     <div class="ad" id="a-usdc" data-state="ok">
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">usdc</span><span class="role"><span class="aiw" data-ai><span>vault 的資產，也是市場借出的代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
@@ -698,9 +684,16 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
       <div><span class="nm">kpk-usdc-prime-v2-9ee6-market-adapter</span><span class="role"><span class="aiw" data-ai><span>vault 的 Morpho Blue 市場轉接合約，轉接合約和市場上限的 id 用它的地址</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
       <div class="body"><span class="addr">0x1d511811ACA9d8817a3e50F29CadFf6243A02902</span>
-        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime">docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 kpk（<a href="https://defillama.com/protocol/kpk">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/kpk">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok">工廠與用它的金庫<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
-        <div class="confirmed">在 2 個地方確認：官方頁、工廠與用它的金庫</div>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime">docs.kpk.io/vaults/vaults/morpho/ethereum/usdc-prime</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 kpk（<a href="https://defillama.com/protocol/kpk">DefiLlama</a>、<a href="https://www.coingecko.com/en/coins/kpk">CoinGecko</a> 對照）</span></span></div><div class="src"><span data-state="ok">工廠、它的金庫和它自己的回答<span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na">部署者<span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>證明不了是誰部署</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、工廠、它的金庫和它自己的回答</div>
         <div class="confirmed">沒有呼叫直接打到這個合約，所以沒有 ABI 證明。每次簽名，卡片用到它時，程式確認它的程式碼還是 code pin 記錄的那份。</div></div>
+    </div>
+    <div class="ad" id="a-weeth" data-state="ok">
+      <svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>
+      <div><span class="nm">weeth</span><span class="role"><span class="aiw" data-ai><span>weETH 市場的抵押代幣</span><span class="byai">AI 研究</span></span><span class="conf">高信心</span></span></div>
+      <div class="body"><span class="addr">0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee</span>
+        <div class="srcs"><div class="src"><span data-state="ok"><a href="https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol">github.com/etherfi-protocol/smart-contracts</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span><span class="site" data-state="ok"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span>網站屬於 ether.fi-stake（<a href="https://defillama.com/protocol/ether.fi-stake">DefiLlama</a> 對照）</span></span></div><div class="src"><span data-state="ok"><a href="https://www.coingecko.com/en/coins/wrapped-eeth">CoinGecko</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></span></div><div class="src"><span data-state="na"><a href="https://etherscan.io/address/0xf8a86ea1ac39ec529814c377bd484387d395421e">部署者 0xf8a86ea1Ac39EC529814c377Bd484387D395421e</a><span class="res"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>沒有已確認的合約同一個部署者</span></span></div></div>
+        <div class="confirmed">在 2 個地方確認：官方頁、CoinGecko</div></div>
     </div>
     </details>
   </div>

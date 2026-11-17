@@ -148,6 +148,10 @@
       "domains": [
         "uniswap.org"
       ]
+    },
+    "etherfi-protocol": {
+      "kind": "domains",
+      "domains": []
     }
   },
   "coingecko": [
@@ -285,16 +289,14 @@
         }
       ]
     },
-    "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts": {
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
       "kind": "served",
       "blocks": [
         {
-          "text": "weETH",
-          "heading": "Tokens"
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
         },
         {
-          "text": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
-          "heading": "Tokens"
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
         }
       ]
     },
@@ -317,6 +319,11 @@
     "uniswap/universal-router@3be05ae044039af7610414da0ac36e4944eea566": {
       "kind": "on-default",
       "branch": "main",
+      "status": "identical"
+    },
+    "etherfi-protocol/smart-contracts@15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88": {
+      "kind": "on-default",
+      "branch": "master",
       "status": "identical"
     }
   },
@@ -504,10 +511,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         }
       }
@@ -2559,8 +2566,8 @@
   ],
   "facts": {
     "block": {
-      "number": "26432329",
-      "hash": "0x5e560638265bec3ee99079840b5e911c6c74540225512e972508933cc2f5e483"
+      "number": "26432659",
+      "hash": "0xba5617262481320bdf28dcfd0c95554cc8c8700e9643681d6bdcafc2aa561324"
     },
     "defillama": [
       {
@@ -2584,7 +2591,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x5e560638265bec3ee99079840b5e911c6c74540225512e972508933cc2f5e483"
+            "blockHash": "0xba5617262481320bdf28dcfd0c95554cc8c8700e9643681d6bdcafc2aa561324"
           }
         ],
         "answers": {
@@ -2600,7 +2607,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x5e560638265bec3ee99079840b5e911c6c74540225512e972508933cc2f5e483"
+            "blockHash": "0xba5617262481320bdf28dcfd0c95554cc8c8700e9643681d6bdcafc2aa561324"
           }
         ],
         "answers": {
@@ -2616,7 +2623,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x5e560638265bec3ee99079840b5e911c6c74540225512e972508933cc2f5e483"
+            "blockHash": "0xba5617262481320bdf28dcfd0c95554cc8c8700e9643681d6bdcafc2aa561324"
           }
         ],
         "answers": {
@@ -2632,7 +2639,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x5e560638265bec3ee99079840b5e911c6c74540225512e972508933cc2f5e483"
+            "blockHash": "0xba5617262481320bdf28dcfd0c95554cc8c8700e9643681d6bdcafc2aa561324"
           }
         ],
         "answers": {
@@ -2648,7 +2655,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x5e560638265bec3ee99079840b5e911c6c74540225512e972508933cc2f5e483"
+            "blockHash": "0xba5617262481320bdf28dcfd0c95554cc8c8700e9643681d6bdcafc2aa561324"
           }
         ],
         "answers": {
@@ -2664,7 +2671,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x5e560638265bec3ee99079840b5e911c6c74540225512e972508933cc2f5e483"
+            "blockHash": "0xba5617262481320bdf28dcfd0c95554cc8c8700e9643681d6bdcafc2aa561324"
           }
         ],
         "answers": {
