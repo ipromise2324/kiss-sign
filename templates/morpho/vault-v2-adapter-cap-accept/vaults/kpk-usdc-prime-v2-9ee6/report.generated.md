@@ -93,12 +93,13 @@ More places that may name the address: the Immunefi program the entry names (its
 
 ### Factory answers
 
-Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it. An entry's answers together are one place for its address, which counts only when every one passes.
+Each entry other than a vault that names a registry `factory`: whether, through both providers at the report's latest block, that factory's `instanceCheck` answers that it created the entry, and for an adapter, whether each registry vault whose `adapter` attribute names it answers its own factory's `adapterCheck` true for it, and whether the adapter answers its factory's `parentCheck` with that vault's address. An entry's answers together are one place for its address, which counts only when every one passes.
 
 | Entry | Asked | Answer | Block |
 | --- | --- | --- | --- |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26431926 |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6` `isAdapter(address)` | true | 26431926 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `morpho-market-v1-adapter-v2-factory` `isMorphoMarketV1AdapterV2(address)` | true | 26432971 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6` `isAdapter(address)` | true | 26432971 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | `kpk-usdc-prime-v2-9ee6-market-adapter` `parentVault()`, for `kpk-usdc-prime-v2-9ee6` | 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6 | 26432971 |
 
 ## Code pins
 
@@ -121,7 +122,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `kpk-usdc-prime-v2-9ee6-market-adapter` | PASS | 26431926 |
+| `kpk-usdc-prime-v2-9ee6-market-adapter` | PASS | 26432971 |
 
 ## ABI proofs
 
@@ -142,37 +143,37 @@ For each vault, the stored output of `pnpm vault-evidence`, not recomputed by `p
 ### `kpk-usdc-prime-v2-9ee6`
 
 ```text
-admitted     vault-v2-factory answered isVaultV2(address) = true at block 26431930
+admitted     vault-v2-factory answered isVaultV2(address) = true at block 26432975
 vault        kpk-usdc-prime-v2-9ee6 0x4Ef53d2cAa51C447fdFEEedee8F07FD1962C9ee6
-latest block 26431930 0x647a07ee01212ee383415218a2e0de5f94b907c7e22b8913fc25460f39b8d0ad
+latest block 26432975 0x4625775d4902ba4236f8b0375a96c7dbf4a18a57021cf63580e733ea1a8b7bdb
 asset()      usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48, 6 decimals, the asset the registry names
 
 totalAssets() every 216000 blocks (about 30 days), read through both providers:
-  2026-11-17  block 26431930  31,718,098.159796 usdc
-  2026-10-18  block 26215930  30,525,883.518319 usdc
-  2026-09-17  block 25999930  21,092,875.538459 usdc
-  2026-08-18  block 25783930  20,679,525.162593 usdc
-  2026-07-19  block 25567930  20,839,780.535671 usdc
-  2026-06-19  block 25351930  25,588,088.190784 usdc
-  2026-05-20  block 25135930  22,358,411.189080 usdc
-  2026-04-20  block 24919930  8,719,501.889129 usdc
-  2026-03-21  block 24703930  6,451,395.925555 usdc
-  2026-02-19  block 24487930  7,038,193.333320 usdc
-  2026-01-19  block 24271930  4,069,143.727200 usdc
-  2025-12-20  block 24055930  4,066,250.641614 usdc
-  2025-11-20  block 23839930  5,003,728.740546 usdc
+  2026-11-17  block 26432975  31,754,006.876243 usdc
+  2026-10-18  block 26216975  30,526,436.889577 usdc
+  2026-09-18  block 26000975  21,093,296.753737 usdc
+  2026-08-18  block 25784975  20,679,872.266732 usdc
+  2026-07-19  block 25568975  20,821,025.685388 usdc
+  2026-06-19  block 25352975  25,256,199.354531 usdc
+  2026-05-20  block 25136975  22,358,720.324870 usdc
+  2026-04-20  block 24920975  8,719,660.783712 usdc
+  2026-03-21  block 24704975  6,451,468.865772 usdc
+  2026-02-19  block 24488975  7,038,281.004985 usdc
+  2026-01-20  block 24272975  4,069,203.911280 usdc
+  2025-12-20  block 24056975  4,066,304.248585 usdc
+  2025-11-20  block 23840975  5,003,801.550322 usdc
 
-holders      97 addresses hold shares at block 26431930, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30446249021253081338652958
-top 10       hold 94.31% of the shares; each: 50.61%, 19.27%, 9.44%, 6.22%, 2.11%, 1.87%, 1.64%, 1.26%, 0.95%, 0.93%
+holders      97 addresses hold shares at block 26432975, of 204 that ever received them (Alchemy Transfers API); their balances, read through both providers, add up to totalSupply() 30480168096208931315743366
+top 10       hold 94.31% of the shares; each: 50.56%, 19.25%, 9.43%, 6.21%, 2.11%, 1.87%, 1.64%, 1.37%, 0.94%, 0.93%
 ```
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26431926 `0x55b1bdebe195de44e06e4a335fb60097f8a469cef1a5c5217734f43218467042`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26432971 `0xb34edca2142216cceb394371a33570a82a63679fe582565bfc541919cfa59248`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |
-| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10045513425 | 4490230208 |
+| `morpho-blue` | `4025` | `parent#morpho` | 2024-01-14 | 10056510399 | 4496318455 |
 
 | Protocol | Hack date | Amount (USD) |
 | --- | --- | --- |

@@ -60,7 +60,7 @@ Each page comes from `docs.json`, whose contract must be the one the template ca
 | `permit2` | `0x000000000022D473030F116dDEE9F6B43aC78BA3` | allowance | <https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments> | PASS | n/a | n/a | PASS |
 | `universal-router-2.1.2` | `0x23617e59A5925b2A4Bf75d73ff6711cD0b29De85` | router | <https://developers.uniswap.org/llms.mdx/docs/protocols/v4/deployments> | PASS | n/a | n/a | PASS |
 | `usp` | `0x098697bA3Fee4eA76294C5d6A466a4e3b3E95FE6` | token | <https://docs.piku.co/piku/piku-platform/token-and-workflow-contracts> | PASS | PASS | n/a | PASS |
-| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts> | FINDING | PASS | n/a | PASS |
+| `weeth` | `0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee` | token | <https://github.com/etherfi-protocol/smart-contracts/blob/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol> | PASS | PASS | PASS | PASS |
 
 Each entry's `moreSources`: more official pages that list its address, each checked as the source is.
 
@@ -82,7 +82,7 @@ More places that may name the address: the Immunefi program the entry names (its
 | `usp` | n/a | n/a | n/a | FINDING `0xB8eaa4f956C6324435f4088cAe9cDa974C358508` |
 | `weeth` | n/a | n/a | n/a | FINDING `0xf8a86ea1Ac39EC529814c377Bd484387D395421e` |
 
-8 entries, 10 findings.
+8 entries, 9 findings.
 
 ## Code pins
 
@@ -112,7 +112,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 | Entry | Today | Block |
 | --- | --- | --- |
-| `universal-router-2.1.2` | PASS | 26432353 |
+| `universal-router-2.1.2` | PASS | 26432659 |
 
 ## ABI proofs
 
@@ -131,7 +131,7 @@ No ABI proof compares these entries' code with the chain: no call or answer is d
 
 ## Protocol facts
 
-What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26432353 `0xc65f6474136bfefd89482f2d8b70cb265b97234ae0246b49f9e04fb38d66d23c`; a read they do not agree on prints as not read.
+What DefiLlama and the chain say about the protocols this template's calls go to, other than a token's issuer, and the size of what each card field can name. They decide nothing, and `verify` never reads them. TVL is DefiLlama's estimate. DefiLlama's hacks list holds only what someone reported, and a hack counts here only when DefiLlama files it under the protocol's DefiLlama id or its parent's. Each view and `decimals()` is read through both providers at block 26432659 `0xba5617262481320bdf28dcfd0c95554cc8c8700e9643681d6bdcafc2aa561324`; a read they do not agree on prints as not read.
 
 | Protocol | DefiLlama id | Parent | Listed from | TVL (USD, DefiLlama) | Ethereum TVL (USD, DefiLlama) |
 | --- | --- | --- | --- | --- | --- |

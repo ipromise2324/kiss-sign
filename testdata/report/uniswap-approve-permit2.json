@@ -149,6 +149,10 @@
         "uniswap.org"
       ]
     },
+    "etherfi-protocol": {
+      "kind": "domains",
+      "domains": []
+    },
     "ethereum": {
       "kind": "domains",
       "domains": [
@@ -294,16 +298,14 @@
         }
       ]
     },
-    "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts": {
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
       "kind": "served",
       "blocks": [
         {
-          "text": "weETH",
-          "heading": "Tokens"
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
         },
         {
-          "text": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
-          "heading": "Tokens"
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
         }
       ]
     },
@@ -327,6 +329,11 @@
       "kind": "on-default",
       "branch": "main",
       "status": "behind"
+    },
+    "etherfi-protocol/smart-contracts@15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88": {
+      "kind": "on-default",
+      "branch": "master",
+      "status": "identical"
     },
     "ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2": {
       "kind": "on-default",
@@ -2105,20 +2112,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0xd47f8c1343e502bf04423fc529674de1017c4b8e1dfb69104472d5dc0316ebfe"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb",
-        "drpc": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xd47f8c1343e502bf04423fc529674de1017c4b8e1dfb69104472d5dc0316ebfe"
@@ -2127,6 +2120,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xd47f8c1343e502bf04423fc529674de1017c4b8e1dfb69104472d5dc0316ebfe"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb",
+        "drpc": "0x000000000000000000000000353e98f34b6e5a8d9d1876bf6df01284d05837cb"
       }
     },
     {
@@ -2190,20 +2197,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0xe5e34addc65c097c90e7a50c3168d8d79b64c22bdcaf7720237f05dd93c29b90"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x000000000000000000000000e629ee84c1bd9ea9c677d2d5391919fcf5e7d5d9",
-        "drpc": "0x000000000000000000000000e629ee84c1bd9ea9c677d2d5391919fcf5e7d5d9"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xe5e34addc65c097c90e7a50c3168d8d79b64c22bdcaf7720237f05dd93c29b90"
@@ -2215,6 +2208,20 @@
       }
     },
     {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xe5e34addc65c097c90e7a50c3168d8d79b64c22bdcaf7720237f05dd93c29b90"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x000000000000000000000000e629ee84c1bd9ea9c677d2d5391919fcf5e7d5d9",
+        "drpc": "0x000000000000000000000000e629ee84c1bd9ea9c677d2d5391919fcf5e7d5d9"
+      }
+    },
+    {
       "method": "eth_getCode",
       "params": [
         "0xe629ee84c1bd9ea9c677d2d5391919fcf5e7d5d9",
@@ -2223,10 +2230,10 @@
         }
       ],
       "answers": {
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         },
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         }
       }
@@ -2275,20 +2282,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
-        {
-          "blockHash": "0xc493e87a59afadb22f072dd6cad120a8369d159b59b8dbc3128fb7c466af80ea"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
           "blockHash": "0xc493e87a59afadb22f072dd6cad120a8369d159b59b8dbc3128fb7c466af80ea"
@@ -2297,6 +2290,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000002d10683e941275d502173053927ad6066e6afd6b",
         "drpc": "0x0000000000000000000000002d10683e941275d502173053927ad6066e6afd6b"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
+        {
+          "blockHash": "0xc493e87a59afadb22f072dd6cad120a8369d159b59b8dbc3128fb7c466af80ea"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
       }
     },
     {
@@ -2445,20 +2452,6 @@
       "method": "eth_getStorageAt",
       "params": [
         "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
-        {
-          "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
-        }
-      ],
-      "answers": {
-        "alchemy": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
-        "drpc": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3"
-      }
-    },
-    {
-      "method": "eth_getStorageAt",
-      "params": [
-        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
           "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
@@ -2467,6 +2460,20 @@
       "answers": {
         "alchemy": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "drpc": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "method": "eth_getStorageAt",
+      "params": [
+        "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
+        {
+          "blockHash": "0xb736bbe982da66f968164d6502c6e8197c0228a4bb9435b0fdc4e858f64057d1"
+        }
+      ],
+      "answers": {
+        "alchemy": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3",
+        "drpc": "0x000000000000000000000000a6ca0607190d03cf16fe6f2865cf40c3d160ccf3"
       }
     },
     {
@@ -2576,7 +2583,7 @@
       "params": [
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         {
-          "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+          "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
         }
       ],
       "answers": {
@@ -2594,7 +2601,7 @@
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+          "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
         }
       ],
       "answers": {
@@ -2608,7 +2615,7 @@
         "0x000000000022d473030f116ddee9f6b43ac78ba3",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+          "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
         }
       ],
       "answers": {
@@ -2618,13 +2625,13 @@
     }
   ],
   "today": {
-    "number": "26432361",
-    "hash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+    "number": "26432918",
+    "hash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
   },
   "facts": {
     "block": {
-      "number": "26432361",
-      "hash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+      "number": "26432918",
+      "hash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
     },
     "defillama": [],
     "hacks": [],
@@ -2637,7 +2644,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
           }
         ],
         "answers": {
@@ -2653,7 +2660,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
           }
         ],
         "answers": {
@@ -2669,7 +2676,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
           }
         ],
         "answers": {
@@ -2685,7 +2692,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
           }
         ],
         "answers": {
@@ -2701,7 +2708,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
           }
         ],
         "answers": {
@@ -2717,7 +2724,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0x24c1a80a5f625a7d0ef68950d453d53340a8f1fda94e56ccd62e75111b9ac462"
+            "blockHash": "0xf6f0ef823968b4ebd89e6a74a493914c2d30b81a52205548578b1315a9b8e01e"
           }
         ],
         "answers": {

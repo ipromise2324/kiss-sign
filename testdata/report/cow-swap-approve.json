@@ -145,6 +145,10 @@
       "kind": "domains",
       "domains": []
     },
+    "etherfi-protocol": {
+      "kind": "domains",
+      "domains": []
+    },
     "ethereum": {
       "kind": "domains",
       "domains": [
@@ -300,16 +304,14 @@
         }
       ]
     },
-    "https://etherfi.gitbook.io/etherfi/developers/contracts-and-integrations/deployed-contracts": {
+    "https://raw.githubusercontent.com/etherfi-protocol/smart-contracts/15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88/script/deploys/Deployed.s.sol": {
       "kind": "served",
       "blocks": [
         {
-          "text": "weETH",
-          "heading": "Tokens"
+          "text": "address public constant EETH = 0x35fA164735182de50811E8e2E824cFb9B6118ac2;"
         },
         {
-          "text": "0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee",
-          "heading": "Tokens"
+          "text": "address public constant WEETH = 0xCd5fE23C85820F7B72D0926FC9b05b43E359b7ee;"
         }
       ]
     },
@@ -346,6 +348,11 @@
       "kind": "on-default",
       "branch": "main",
       "status": "behind"
+    },
+    "etherfi-protocol/smart-contracts@15ff96d4d5e8e6a19a472cd40a7bcb858c9e7a88": {
+      "kind": "on-default",
+      "branch": "master",
+      "status": "identical"
     },
     "ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2": {
       "kind": "on-default",
@@ -554,10 +561,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x767fcf585fbd2983505154555f183b121c91e5dd4d56608f2d6448fb82a1fdfa"
         }
       }
@@ -2079,10 +2086,10 @@
         }
       ],
       "answers": {
-        "drpc": {
+        "alchemy": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         },
-        "alchemy": {
+        "drpc": {
           "keccak256": "0x772dd1f6fee4934a63703e7e8adfdb8f4588e1eaa5442aa63d336e92c72cc52a"
         }
       }
@@ -2687,7 +2694,7 @@
       "params": [
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         {
-          "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+          "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
         }
       ],
       "answers": {
@@ -2705,7 +2712,7 @@
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50",
         {
-          "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+          "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
         }
       ],
       "answers": {
@@ -2719,7 +2726,7 @@
         "0xc92e8bdf79f0507f65a392b0ab4667716bfe0110",
         "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc",
         {
-          "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+          "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
         }
       ],
       "answers": {
@@ -2729,13 +2736,13 @@
     }
   ],
   "today": {
-    "number": "26432322",
-    "hash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+    "number": "26432632",
+    "hash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
   },
   "facts": {
     "block": {
-      "number": "26432322",
-      "hash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+      "number": "26432632",
+      "hash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
     },
     "defillama": [
       {
@@ -2761,7 +2768,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2777,7 +2784,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2793,7 +2800,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2809,7 +2816,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2825,7 +2832,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
@@ -2841,7 +2848,7 @@
             "data": "0x313ce567"
           },
           {
-            "blockHash": "0xd041fac436e6d78481f49812306b52447b0af8d5a9753fd9f61062d4fe8e1d0d"
+            "blockHash": "0xa424827bd71441f0422617d3a9094196c85bac62255f839761cb9a9e8d986e5f"
           }
         ],
         "answers": {
