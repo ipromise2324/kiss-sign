@@ -10,5 +10,5 @@ import type { MessageReader } from './verify.ts';
  */
 export const httpsMessage: MessageReader = async (url) => {
   const answer = await readApi({ url: url as HttpsUrl, method: 'GET', path: [] } satisfies ApiSource, retryingSend(httpsApi, () => undefined));
-  return answer.kind === 'answered' ? { text: JSON.stringify(answer.json) } : { why: answer.why };
+  return answer.kind === 'answered' ? { text: JSON.stringify(answer.json) } : { why: answer.why, noAnswer: answer.kind === 'unread' };
 };

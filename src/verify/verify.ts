@@ -58,7 +58,8 @@ export type VerifyInputs = {
 };
 
 /** Reads the text at a `lookup` URL, or says why it could not. */
-export type MessageReader = (url: string) => Promise<{ readonly text: string } | { readonly why: string }>;
+/** `noAnswer`: the server gave no answer after every retry, as opposed to an answer that is not the order. */
+export type MessageReader = (url: string) => Promise<{ readonly text: string } | { readonly why: string; readonly noAnswer?: boolean }>;
 
 /** `calls` is information for the signer, not a check: which of the Safe's calls move none of its assets. */
 export type Evaluation = { readonly verdict: Verdict; readonly hashes: SafeTxHashes; readonly calls: CallScan };
