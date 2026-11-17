@@ -150,16 +150,16 @@ export function templateFunctions(template: Template): AbiFunction[] {
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
-/**
- * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`, or `{ contract,
- * standard }` for a function a standard in `STANDARDS` defines for that contract's kind. Nothing else. The contract
- * must be one the template calls the function on, when the template binds that target.
- */
 function publisherOf(contract: RegistryEntry, registry: Registry): SiteOwner {
   const factory = contract.attributes.factory;
   return (factory === undefined ? undefined : registry.entries.get(factory)) ?? contract;
 }
 
+/**
+ * `docs.json`: each function the template calls, by canonical signature, to `{ contract, url }`, or `{ contract,
+ * standard }` for a function a standard in `STANDARDS` defines for that contract's kind. Nothing else. The contract
+ * must be one the template calls the function on, when the template binds that target.
+ */
 export function parseDocs(raw: unknown, template: Template, registry: Registry): DocLink[] {
   if (!isRecord(raw)) throw new ReportError(`${DOCS_FILE}: not a JSON object`);
   const fns = templateFunctions(template);
