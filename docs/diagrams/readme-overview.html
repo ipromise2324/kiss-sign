@@ -1,0 +1,218 @@
+<!doctype html>
+<!-- Source of docs/readme/overview.png and overview-dark.png. Values are illustrative; no real vault is named.
+     Logos are each project's own (GitHub organization avatars, Etherscan's brand asset, simple-icons; docs.svg, factory.svg, api.svg, bounty.svg, package.svg and deployer.svg drawn for this page). Font: Excalifont, OFL-1.1 (fonts/Excalifont-OFL.txt).
+     Re-render with docs/diagrams/render.sh. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="render-width" content="1280">
+<title>kiss-sign at a glance</title>
+<style>
+  @font-face { font-family: Excalifont; src: url(fonts/Excalifont-Latin.woff2) format("woff2"); }
+  :root {
+    --bg: #ffffff; --ink: #1e1e1e; --muted: #5c5f66; --line: #1e1e1e;
+    --you: #1971c2; --ai: #c2410c; --prog: #2b8a3e; --ind: #7048e8; --chip: #f1f3f5;
+    --dev: #343a40; --screen: #10151b;
+  }
+  :root.dark {
+    --bg: #121212; --ink: #e9ecef; --muted: #a6adb5; --line: #ced4da;
+    --you: #74b0f2; --ai: #ff9f6e; --prog: #69db7c; --ind: #b197fc; --chip: #23272c;
+    --dev: #495057; --screen: #05080c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { background: var(--bg); overflow: hidden; }
+  body { width: 1280px; background: var(--bg); color: var(--ink); font: 20px/1.35 Excalifont, "Comic Sans MS", cursive; padding: 28px 40px 40px; position: relative; }
+  .mono { font: 14px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  svg.sketch { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+
+  .legend { display: flex; gap: 30px; justify-content: center; margin-top: 34px; font-size: 17px; }
+  .legend span { display: flex; align-items: center; gap: 8px; color: var(--c); }
+  .legend i { width: 22px; height: 12px; border: 2px solid var(--c); border-radius: 2px; }
+  .say { display: flex; align-items: center; gap: 34px; margin: 4px 0 26px; }
+  .person { width: 78px; flex: none; text-align: center; color: var(--you); font-size: 18px; }
+  .person svg { width: 72px; height: 94px; overflow: visible; }
+  .bubble { padding: 14px 22px; }
+  h1 { font-size: 32px; font-weight: 400; color: var(--you); }
+  .say p { color: var(--muted); margin-top: 4px; }
+  h2 { font-size: 23px; font-weight: 400; margin: 0 0 14px; }
+  h2 b { font-weight: 400; color: var(--muted); font-size: 18px; margin-left: 10px; }
+
+  .row { display: flex; align-items: center; justify-content: space-between; }
+  .sk { position: relative; padding: 14px 16px; }
+  .who { font-size: 18px; color: var(--c); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+  .who img { width: 22px; height: 22px; border-radius: 5px; }
+  .you { --c: var(--you); } .ai { --c: var(--ai); } .prog { --c: var(--prog); } .ind { --c: var(--ind); }
+
+  .lg { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font-size: 16px; background: var(--chip); border-radius: 8px; padding: 1px 8px 1px 4px; }
+  .lg img { width: 20px; height: 20px; border-radius: 4px; background: #fff; object-fit: contain; }
+  .lg.plain { padding-left: 8px; }
+  :root.dark .lg img.mono-logo { filter: invert(1); background: transparent; }
+
+  .chain .steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 28px; margin-top: 6px; }
+  .step { padding: 12px 12px 14px; display: grid; align-content: start; gap: 4px; }
+  .step .t { font-size: 21px; line-height: 1.2; }
+  .step .n { color: var(--ai); margin-right: 6px; }
+  .step .logos { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+  .then { display: flex; align-items: center; gap: 60px; margin: 64px 0 0 0; padding-left: 380px; }
+  .note { color: var(--muted); font-size: 15px; }
+
+  .report { width: 440px; }
+  .report ul { list-style: none; display: grid; grid-template-columns: 1fr; gap: 5px; font-size: 18px; }
+  .report li::before { content: "✓ "; color: var(--prog); }
+  .report li.q::before { content: "? "; color: var(--ai); }
+
+  .merge { width: 220px; font-size: 18px; }
+
+  .card { width: 330px; }
+  .card .mono { font-size: 13px; }
+  .ticket { display: grid; gap: 2px; white-space: pre; }
+  .ticket .k { color: var(--muted); }
+  .ticket .seal { color: var(--muted); margin-top: 4px; }
+
+  .computers { display: grid; gap: 22px; }
+  .pc { display: grid; justify-items: center; }
+  .pc .scr { width: 430px; padding: 12px 14px 14px; }
+  .pc .base { width: 480px; height: 14px; padding: 0; }
+  .pc .line { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 4px; }
+  .verdict { margin-left: auto; font: 700 15px ui-monospace, Menlo, monospace; color: var(--c); white-space: nowrap; }
+
+  .wallet { width: 196px; display: grid; justify-items: center; }
+  .dev { width: 184px; background: var(--dev); border-radius: 16px; padding: 10px; }
+  .dev .s { background: var(--screen); color: #e9ecef; border-radius: 6px; padding: 8px 9px; font: 13px/1.45 ui-monospace, Menlo, monospace; }
+  .dev .s i { font-style: normal; color: #8b949e; font-size: 11.5px; display: block; }
+  .dev .b { display: flex; justify-content: space-between; padding: 8px 22px 0; }
+  .dev .b span { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #868e96; }
+  .devs { position: relative; }
+  .dev.ghost { position: absolute; opacity: .45; padding: 0; }
+  .dev.g1 { width: 104px; height: 128px; left: -34px; top: 4px; transform: rotate(-9deg); border-radius: 12px; }
+  .dev.g2 { width: 120px; height: 76px; right: -26px; top: 44px; transform: rotate(8deg); border-radius: 20px; }
+  .devs > .dev:last-child { position: relative; }
+  .dev.ghost::before { content: ''; position: absolute; left: 9px; right: 9px; top: 9px; bottom: 34%; background: var(--screen); border-radius: 4px; }
+  .wallet p { margin-top: 8px; color: var(--you); font-size: 17px; text-align: center; }
+
+  .gap { height: 34px; }
+</style>
+<script>if (location.search.includes('dark')) document.documentElement.classList.add('dark');</script>
+</head>
+<body>
+  <div class="say">
+    <div class="person you" id="person">
+      <svg viewBox="0 0 64 84" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M32 6c9 0 15 6 14.5 14.5S40 35 31.5 34.5 17.5 28 18 19.5 23.5 6 32 6z"/>
+        <path d="M26.5 20.5h.2M37 20.2h.2"/>
+        <path d="M28 26.5c2.5 2 6 2 8.5-.2"/>
+        <path d="M31.8 35c.4 12 .2 22-.3 32M31.5 44c-7 3-12 7-15 12M32 44c7 2.5 12 6.5 15.5 11.5M31.2 66c-4 6-7 10-9.5 15M31.6 66.5c3.5 5.5 6 10 8 14.5"/>
+      </svg>
+      <div>You</div>
+    </div>
+    <div>
+      <div class="sk you bubble" id="bubble"><h1>“Deposit 1,000 USDC into Morpho's XXX vault”</h1></div>
+      <p>You say what you want first. Everything else is checked against it.</p>
+    </div>
+  </div>
+
+  <h2>The first time: your AI builds a template <b>once per operation, and once per vault</b></h2>
+  <div class="chain ai" id="chain">
+    <div class="who">Your AI runs kiss-sign's checks, one step at a time</div>
+    <div class="steps">
+      <div class="sk step" id="s1"><div class="t"><span class="n">1</span>Find official sites</div><div class="note">which domains are its own?</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">Immunefi</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub</span></div></div>
+      <div class="sk step" id="s2"><div class="t"><span class="n">2</span>Find each address</div><div class="note">in at least two places?</div><div class="logos"><span class="lg"><img class="mono-logo" src="logos/docs.svg" alt="">official site</span><span class="lg"><img class="mono-logo" src="logos/api.svg" alt="">API</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/factory.svg" alt="">factory</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">bounty</span><span class="lg"><img class="mono-logo" src="logos/package.svg" alt="">npm</span><span class="lg"><img class="mono-logo" src="logos/deployer.svg" alt="">deployer</span></div></div>
+      <div class="sk step" id="s3"><div class="t"><span class="n">3</span>Prove each ABI</div><div class="note">compiles to the code on chain?</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img class="mono-logo" src="logos/solidity.svg" alt="">solc</span></div></div>
+      <div class="sk step" id="s4"><div class="t"><span class="n">4</span>See how others did it</div><div class="note">what real senders send decides what the card asks</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span></div></div>
+      <div class="sk step" id="s5"><div class="t"><span class="n">5</span>Check the protocol now</div><div class="note">TVL, hacks, vault size, holders</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div>
+      <div class="sk step" id="s6"><div class="t"><span class="n">6</span>Pin the code it runs</div><div class="note">so an upgrade after your review is caught</div><div class="logos"><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div>
+    </div>
+  </div>
+  <div class="then">
+    <div class="sk ai report" id="report">
+      <div class="who">A report in a pull request</div>
+      <ul><li>the call flow</li><li>each field: fixed, yours, or bounded</li><li>where each address came from</li><li class="q">what still needs your eye</li></ul>
+    </div>
+    <div class="sk you merge" id="merge">
+      <div class="who">You</div>
+      read it, merge it, approve it
+    </div>
+  </div>
+
+  <div class="gap"></div>
+  <h2>Every signing</h2>
+  <div class="row">
+    <div class="sk you card" id="card">
+      <div class="who">You fill a card first</div>
+      <div class="ticket mono"><div><span class="k">vault  </span><b>xxx-usdc-vault</b></div><div><span class="k">       </span>0x…</div><div><span class="k">amount </span><b>1,000 USDC</b></div><div class="seal">sealed 0xfaad…a988</div></div>
+    </div>
+    <div class="computers">
+      <div class="pc prog" id="pc1">
+        <div class="sk scr"><div class="who">Your computer: kiss-sign verify<span class="verdict">MATCH</span></div>
+          <div class="line"><span class="note">simulates it on</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="note">and</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span><span class="note">and checks the result against your card</span></div></div>
+        <div class="sk base"></div>
+      </div>
+      <div class="pc ind" id="pc2">
+        <div class="sk scr"><div class="who">A second computer, no AI: check.sh<span class="verdict">same rows</span></div>
+          <div class="line"><span class="note">fetches it from</span><span class="lg"><img src="logos/safe.jpg" alt="">Safe's API</span><span class="note">and decodes it with</span><span class="lg"><img src="logos/sourcify.jpg" alt="">Sourcify's ABI</span><span class="note">and</span><span class="lg"><img src="logos/foundry.png" alt="">Foundry's cast</span></div></div>
+        <div class="sk base"></div>
+      </div>
+    </div>
+    <div class="wallet" id="wallet">
+      <div class="devs"><div class="dev ghost g1"></div><div class="dev ghost g2"></div><div class="dev"><div class="s"><i>Domain hash</i>0xad49…7a5b<i>Message hash</i>0x691e…8c15</div><div class="b"><span></span><span></span></div></div></div>
+      <p>Any hardware wallet that shows the hashes: you compare them, then sign</p>
+    </div>
+  </div>
+
+  <div class="legend"><span class="you"><i></i>you</span><span class="ai"><i></i>your AI</span><span class="prog"><i></i>kiss-sign, on your computer</span><span class="ind"><i></i>check.sh, on a second computer</span></div>
+
+<script>
+Promise.all([document.fonts.ready, new Promise((ok) => (document.readyState === 'complete' ? ok() : addEventListener('load', ok)))]).then(() => {
+  let seed = 7;
+  const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647 - 0.5);
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.classList.add('sketch');
+  svg.setAttribute('width', document.body.scrollWidth);
+  svg.setAttribute('height', document.body.scrollHeight);
+  document.body.appendChild(svg);
+  const root = getComputedStyle(document.documentElement);
+  const colorOf = (el) => getComputedStyle(el).getPropertyValue('--c').trim() || root.getPropertyValue('--line').trim();
+  const draw = (d, stroke, w) => {
+    const p = document.createElementNS(ns, 'path');
+    Object.entries({ d, fill: 'none', stroke, 'stroke-width': w, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }).forEach(([k, v]) => p.setAttribute(k, v));
+    svg.appendChild(p);
+  };
+  const stroke = (x1, y1, x2, y2, j = 1.6) =>
+    `M${x1 + rnd() * j} ${y1 + rnd() * j} Q${(x1 + x2) / 2 + rnd() * j * 2} ${(y1 + y2) / 2 + rnd() * j * 2} ${x2 + rnd() * j} ${y2 + rnd() * j}`;
+  document.querySelectorAll('.sk').forEach((el) => {
+    const r = el.getBoundingClientRect(), c = colorOf(el);
+    const [x, y, w, h] = [r.left + scrollX, r.top + scrollY, r.width, r.height];
+    for (const width of [1.9, 1.1])
+      draw([stroke(x, y, x + w, y), stroke(x + w, y, x + w, y + h), stroke(x + w, y + h, x, y + h), stroke(x, y + h, x, y)].join(' '), c, width);
+  });
+  const ink = root.getPropertyValue('--muted').trim();
+  {
+    const b = document.getElementById('bubble').getBoundingClientRect(), c = colorOf(document.getElementById('bubble'));
+    const x = b.left + scrollX, y = b.top + scrollY + b.height / 2;
+    draw(`M${x} ${y - 9} L${x} ${y + 7}`, root.getPropertyValue('--bg').trim(), 6);
+    for (const width of [1.9, 1.1]) draw(`M${x + rnd()} ${y - 12 + rnd()} L${x - 24 + rnd() * 2} ${y + 4 + rnd() * 2} L${x + rnd()} ${y + 10 + rnd()}`, c, width);
+  }
+  const arrow = (a, b) => {
+    const ra = document.getElementById(a).getBoundingClientRect(), rb = document.getElementById(b).getBoundingClientRect();
+    const [x1, y1, x2, y2] = [ra.right + 8, ra.top + ra.height / 2 + scrollY, rb.left - 8, rb.top + rb.height / 2 + scrollY];
+    const cx = (x1 + x2) / 2;
+    draw(`M${x1} ${y1} C${cx + rnd() * 6} ${y1 + rnd() * 3}, ${cx + rnd() * 6} ${y2 + rnd() * 3}, ${x2} ${y2}`, ink, 1.9);
+    const dy = (y2 - y1) * 0.08, s = 11;
+    draw(`M${x2 - s} ${y2 - s * 0.6 - dy + rnd()} L${x2} ${y2} L${x2 - s} ${y2 + s * 0.6 - dy + rnd()}`, ink, 1.9);
+  };
+  [['s1', 's2'], ['s2', 's3'], ['s3', 's4'], ['s4', 's5'], ['s5', 's6'], ['report', 'merge']].forEach(([a, b]) => arrow(a, b));
+  {
+    const steps = document.querySelector('.steps').getBoundingClientRect(), rb = document.getElementById('report').getBoundingClientRect();
+    const y = steps.bottom + 14 + scrollY, l = steps.left + 24 + scrollX, r = steps.right - 24 + scrollX, mid = (l + r) / 2;
+    draw(`M${l} ${y - 8} Q${l} ${y} ${l + 10} ${y} L${mid - 10} ${y + rnd()} Q${mid} ${y} ${mid} ${y + 8} Q${mid} ${y} ${mid + 10} ${y} L${r - 10} ${y + rnd()} Q${r} ${y} ${r} ${y - 8}`, ink, 1.9);
+    const x2 = rb.left + rb.width / 2 + scrollX, y2 = rb.top - 6 + scrollY;
+    draw(`M${mid} ${y + 10} C${mid} ${y + 30}, ${x2} ${y2 - 24}, ${x2} ${y2}`, ink, 1.9);
+    draw(`M${x2 - 7} ${y2 - 10 + rnd()} L${x2} ${y2} L${x2 + 7} ${y2 - 10 + rnd()}`, ink, 1.9);
+  }
+  [ ['card', 'pc1'], ['card', 'pc2'], ['pc1', 'wallet'], ['pc2', 'wallet']].forEach(([a, b]) => arrow(a, b));
+  document.body.dataset.height = Math.ceil(document.body.scrollHeight);
+});
+</script>
+</body>
+</html>
