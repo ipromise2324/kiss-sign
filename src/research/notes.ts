@@ -69,12 +69,56 @@ export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, o
   return merged;
 }
 
-/** The notes a report reads, as JSON: the template's, merged with the vault's for a per-vault report; undefined without the template's. */
+/** Whether a notes value is one AI text: an object keyed by languages alone. */
+const isText = (raw: unknown): raw is Record<string, unknown> => isRecord(raw) && Object.keys(raw).length > 0 && Object.keys(raw).every((key) => (LANGUAGES as readonly string[]).includes(key));
+
+/** The languages every text of one notes file holds, in `LANGUAGES` order, undefined with no text; a file whose texts differ is refused. */
+function fileLanguages(raw: unknown, path: string): readonly Language[] | undefined {
+  const sets = new Set<string>();
+  const walk = (value: unknown): void => {
+    if (isText(value)) sets.add(LANGUAGES.filter((language) => own(value, language) !== undefined).join(' and '));
+    else if (Array.isArray(value)) value.forEach(walk);
+    else if (isRecord(value)) Object.values(value).forEach(walk);
+  };
+  walk(raw);
+  if (sets.size > 1) refuse(path, `holds texts in ${[...sets].join(', in ')}; every text in one file holds the same languages`);
+  const [only] = sets;
+  return only === undefined ? undefined : LANGUAGES.filter((language) => only.split(' and ').includes(language));
+}
+
+/** The notes with every text cut to `keep`. */
+const keepLanguages = (raw: unknown, keep: readonly Language[]): unknown =>
+  isText(raw)
+    ? Object.fromEntries(keep.map((language) => [language, own(raw, language)]))
+    : Array.isArray(raw)
+      ? raw.map((value) => keepLanguages(value, keep))
+      : isRecord(raw)
+        ? Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, keepLanguages(value, keep)]))
+        : raw;
+
+/**
+ * The template's notes and a vault's, each cut to the languages both hold, so a vault's notes in the signer's one
+ * language join a template's in both. Refused when they share none.
+ */
+export function joinLanguages(shared: unknown, vault: unknown, sharedPath: string, vaultPath: string): readonly [unknown, unknown] {
+  const [ours, theirs] = [fileLanguages(shared, sharedPath), fileLanguages(vault, vaultPath)];
+  if (ours === undefined || theirs === undefined) return [shared, vault];
+  const both = ours.filter((language) => theirs.includes(language));
+  if (both.length === 0) refuse(vaultPath, `holds ${theirs.join(' and ')} and ${sharedPath} holds ${ours.join(' and ')}; a vault's report is written in a language both hold`);
+  return [keepLanguages(shared, both), keepLanguages(vault, both)];
+}
+
+/**
+ * The notes a report reads, as JSON: the template's, merged with the vault's for a per-vault report, both in the
+ * languages both hold; undefined without the template's.
+ */
 export function readNotes(repoRoot: string, template: string, vault?: RegistryEntry): unknown {
-  const shared = readJson(join(repoRoot, notesPath(template)));
+  const sharedPath = notesPath(template);
+  const shared = readJson(join(repoRoot, sharedPath));
   if (vault === undefined) return shared;
   const path = notesPath(template, vault.name);
-  return mergeNotes(shared, readJson(join(repoRoot, path)), path, new Set([vault.name, ...Object.values(vault.attributes), ...(vault.dependsOn ?? [])]));
+  const [ours, theirs] = joinLanguages(shared, readJson(join(repoRoot, path)), sharedPath, path);
+  return mergeNotes(ours, theirs, path, new Set([vault.name, ...Object.values(vault.attributes), ...(vault.dependsOn ?? [])]));
 }
 
 /** What notes.json may name and must name, derived from the template, the report's inputs and its ledger. */

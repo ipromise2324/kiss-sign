@@ -8,7 +8,7 @@ Each template has a generated report the signer reads before merging: `report.ge
 - `report-offline` prints the Markdown to stdout (`--offline`).
 - `report-per-vault` requires `--vault-of` for a template reported per vault and refuses without it, naming the vaults.
 - `report-page` renders the HTML page with no script and nothing loaded from outside.
-- `report-language` writes `report.generated.<language>.html` for each language `notes.json` holds and only those, and removes a page in a language it no longer holds; every text holds the languages the `title` holds, and `--render` refuses a text with any other. A page whose notes hold one language says so under the summary (這份報告只有繁體中文版。 or This report exists only in English.).
+- `report-language` writes `report.generated.<language>.html` for each language `notes.json` holds and only those, and removes a page in a language it no longer holds; every text of one notes file holds the same languages, and a per-vault report is written in the languages both its template's and its vault's notes hold. A page whose notes hold one language says so under the summary (這份報告只有繁體中文版。 or This report exists only in English.).
 
 ## How to get to it (user POV)
 
