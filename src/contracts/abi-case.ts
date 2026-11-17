@@ -8,18 +8,18 @@ import type { ProxyDeclaration } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { proveAbi } from './prove.ts';
 import type { AbiProof, AbiRefusal, ProveDeps } from './prove.ts';
-import type { SourcifyAnswer } from './sourcify.ts';
+import type { EtherscanAnswer } from './etherscan.ts';
 import { readRecording } from '../chain/bytecode.ts';
 
 export type RecordedRead = { readonly method: string; readonly args: readonly unknown[]; readonly value: unknown };
 
-/** One ABI proof's inputs: the chain reads both providers agreed on at one block, and Sourcify's answers. */
+/** One ABI proof's inputs: the chain reads both providers agreed on at one block, and Etherscan's answers. */
 export type AbiCase = {
   readonly address: Address;
   readonly block: { readonly number: string; readonly hash: Hex };
   readonly providers: readonly [ProviderName, ProviderName];
   readonly reads: readonly RecordedRead[];
-  readonly sourcify: Readonly<Record<string, SourcifyAnswer>>;
+  readonly etherscan: Readonly<Record<string, EtherscanAnswer>>;
   /** The registry entry's `implementationRead` the proof followed, as written there. */
   readonly implementationRead?: unknown;
 };
@@ -71,19 +71,19 @@ export function abiCaseReader(fixture: AbiCase, extra: readonly RecordedRead[] =
   };
 }
 
-export const abiCaseSourcify =
-  (answers: Readonly<Record<string, SourcifyAnswer>>) =>
-  async (address: Address): Promise<SourcifyAnswer> =>
-    answers[address] ?? { status: 404, body: { error: 'not found' } };
+export const abiCaseEtherscan =
+  (answers: Readonly<Record<string, EtherscanAnswer>>) =>
+  async (address: Address): Promise<EtherscanAnswer> =>
+    answers[address] ?? { status: 200, body: { status: '1', message: 'OK', result: [{ SourceCode: '', ABI: 'Contract source code not verified' }] } };
 
 /**
- * Proves the ABI again from a recording alone: the recorded code and Sourcify source, compiled with the pinned solc.
+ * Proves the ABI again from a recording alone: the recorded code and Etherscan source, compiled with the pinned solc.
  * `declared` is the registry entry's declaration when there is an entry, so a case recorded under another one fails.
  */
 export const replayAbiCase = (fixture: AbiCase, compilers: ProveDeps['compilers'], declared: ProxyDeclaration = abiCaseDeclaration(fixture)): Promise<AbiProof | AbiRefusal> =>
-  proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { sourcify: abiCaseSourcify(fixture.sourcify), compilers }, declared);
+  proveAbi(abiCaseReader(fixture), fixture.address, abiCaseBlock(fixture), { etherscan: abiCaseEtherscan(fixture.etherscan), compilers }, declared);
 
-/** Proves the ABI live and keeps every read and Sourcify answer it used. A read the providers disagree on throws. */
+/** Proves the ABI live and keeps every read and Etherscan answer it used. A read the providers disagree on throws. */
 export async function recordAbiCase(
   live: Reader,
   address: Address,
@@ -106,23 +106,23 @@ export async function recordAbiCase(
     getStorageAt: (at, slot, ref) => kept('getStorageAt', [at, hex(slot)], live.getStorageAt(at, slot, ref)),
     call: (request, ref) => kept('call', callArgs(request), live.call(request, ref)),
   };
-  const sourcify: Record<string, SourcifyAnswer> = {};
+  const etherscan: Record<string, EtherscanAnswer> = {};
   const proof = await proveAbi(
     recorder,
     address,
     block,
     {
       compilers: deps.compilers,
-      sourcify: async (at) => {
-        const answer = await deps.sourcify(at);
-        sourcify[at] = answer;
+      etherscan: async (at) => {
+        const answer = await deps.etherscan(at);
+        etherscan[at] = answer;
         return answer;
       },
     },
     declared,
   );
   const read = declared.implementationRead === undefined ? {} : { implementationRead: implementationReadJson(declared.implementationRead) };
-  return { proof, fixture: { address, block: { number: block.number.toString(), hash: block.hash }, providers, reads, sourcify, ...read } };
+  return { proof, fixture: { address, block: { number: block.number.toString(), hash: block.hash }, providers, reads, etherscan, ...read } };
 }
 
 /** Every recorded case under `testdata/abi/`, by the address it proves; of two for one address, the later block. */
