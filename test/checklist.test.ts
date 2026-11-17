@@ -247,6 +247,32 @@ test('the card and the expected changes show each amount in whole tokens with it
   assert.match(text, / 收到 多於 0 hyperithm-usdc-apex-v1-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 不移動資產的呼叫 /);
 });
 
+test('a range of expected changes shows both ends in whole tokens, as what the Safe gives or gets', () => {
+  const { tree, card, templates, decimals } = treeOf(CARD);
+  const usdc = '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as Address;
+  const vault = '0x777791c4d6dc2ce140d00d2828a7c93503c67777' as Address;
+  const page = (language: 'en' | 'zh-TW') =>
+    verdictPage({
+      verdict: { kind: 'MATCH' },
+      states: PASSED,
+      nonce: tree.nonce,
+      card,
+      cardHash: `0x${'00'.repeat(32)}`,
+      registry,
+      templates,
+      decimals: new Map([...decimals, [vault, 18]]),
+      expected: { kind: 'expected', changes: new Map([[usdc, { kind: 'between', low: -10001000000n, high: 0n }], [vault, { kind: 'between', low: 998n, high: 1000n }]]) },
+      calls: { kind: 'scanned', movesNothing: [] },
+      tree,
+      kept: [],
+      verdictFile: '/verdicts/x.json',
+      language,
+    });
+  const text = (language: 'en' | 'zh-TW') => page(language).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+  assert.match(text('zh-TW'), / 給出 介於 0 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 和 10,001 usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48 10001000000 最小單位，6 位小數 之間 /);
+  assert.match(text('en'), / Gets between 0\.000000000000000998 hyperithm-usdc-apex-v1-7777 0x777791C4d6DC2CE140D00D2828a7C93503c67777 998 base units, 18 decimals and 0\.000000000000001 /);
+});
+
 test('an amount whose token decimals() was not read shows its base units and says so', () => {
   const { tree, card, templates } = treeOf(CARD);
   const page = verdictPage({

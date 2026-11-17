@@ -192,10 +192,13 @@ function compareLeaf(rule: Rule, type: AbiType, actual: ConstValue, bytes: Span 
   context.leaves.push({ callPath, arg, bytes, rule, type, ...(message === undefined ? {} : { message }) });
   remember(rule, actual, context);
   if (rule.kind === 'free') return;
-  if (rule.kind === 'at-least') {
+  if (rule.kind === 'at-least' || rule.kind === 'at-most') {
     const card = context.values.get(rule.field);
+    const least = rule.kind === 'at-least';
     if (card?.kind !== 'amount') context.unverifiable.push(`no card amount ${rule.field}`);
-    else if (actual.kind !== 'uint' || actual.value < card.value) context.findings.push({ callPath, arg, bytes, expected: `at least ${card.value}`, actual: render(actual) });
+    else if (actual.kind !== 'uint' || (least ? actual.value < card.value : actual.value > card.value)) {
+      context.findings.push({ callPath, arg, bytes, expected: `at ${least ? 'least' : 'most'} ${card.value}`, actual: render(actual) });
+    }
     return;
   }
   if (rule.kind === 'owner-before') {
