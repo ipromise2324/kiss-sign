@@ -279,7 +279,7 @@ function flowBody(flow: Flow, r: R): Html {
   <p class="lead">${r.w.noAssets}</p>`
       : h`
   <dl class="props">${flow.after.map((row) => h`
-    <div><dt>${text(row.label)}</dt><dd class="${row.gains ? 'pos' : ''}">${text(row.value)}</dd><dd class="src">${text(row.note)}</dd></div>`)}
+    <div><dt>${text(row.label)}</dt><dd class="${row.gains ? 'pos' : ''}">${text(row.value)}</dd><dd class="src">${text(row.note)}${row.ai === undefined ? '' : h` ${ai(row.ai, r)}`}</dd></div>`)}
   </dl>`
   }`;
 }
