@@ -402,7 +402,7 @@ function newestLine(newest: NewestResult, r: R): Html {
 
 function sourceLine(line: SourceLine, r: R): Html {
   return h`<div class="src"><span data-state="${line.state}">${line.href === undefined ? line.label : h`<a href="${line.href}">${line.label}</a>`}<span class="res">${icon(line.state, r.language)}${
-    line.phrase === undefined ? '' : r.w.phrase[line.phrase]
+    line.others.length > 0 ? r.w.labelOther(line.others) : line.phrase === undefined ? '' : r.w.phrase[line.phrase]
   }</span></span>${line.site === undefined ? '' : siteLine(line.site, r)}${line.newest === undefined ? '' : newestLine(line.newest, r)}</div>`;
 }
 

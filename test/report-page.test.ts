@@ -941,7 +941,7 @@ test('a vault its factory admits by computing its address renders in both report
   assert.equal(plain(factoryRow.value), `vault-v2-factory 回答 computeToken(usdc,"fToken") = ${checksumAddress(vault.address)}`);
   const addresses = body(page, 'addresses');
   const row = [...addresses.open, ...addresses.folded].find((r) => r.name === vault.name) ?? assert.fail('no address row');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, site: undefined, newest: undefined });
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'ok', phrase: undefined, others: [], site: undefined, newest: undefined });
   assert.ok(renderPage(page).includes('computeToken(usdc,&#34;fToken&#34;)'), 'the HTML report escapes the quoted constant');
 });
 
@@ -953,7 +953,7 @@ test("a vault its factory computed another address for renders in both reports, 
   const page = buildPage(of, notes, depositTitle, 'zh-TW');
   const addresses = body(page, 'addresses');
   const row = addresses.open.find((r) => r.name === vault.name) ?? assert.fail('the vault row is not open');
-  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: 'not-created', site: undefined, newest: undefined });
+  assert.deepEqual(row.sources.find((line) => line.label === '工廠'), { label: '工廠', href: undefined, state: 'bad', phrase: 'not-created', others: [], site: undefined, newest: undefined });
   const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
   assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個金庫`);
@@ -1001,4 +1001,30 @@ test('a withinSeconds field says in plain words, in both languages and in the Ma
   assert.deepEqual(en.row.chips.map((c) => c.label), ['app fills, up to a limit']);
   const markdown = renderReport(bounded, title);
   assert.ok(markdown.includes('a time at most 604800 seconds after the time of the block the transaction is judged on: the latest block for a pending transaction, the block it ran in for an executed one; a later time is a MISMATCH'));
+});
+
+test('a source page whose label binds another address shows that address in full, red, on its source line and in 待確認, in both languages', () => {
+  const usdc = depositInputs.registry.entries.get('usdc') ?? assert.fail('usdc');
+  const other = '0x5C20B550819128074FD538Edf79791733ccEdd18';
+  const served = { kind: 'served', blocks: [{ text: `Ethereum ${other.toLowerCase()}`, heading: 'Mainnet' }] } as const;
+  const pages = new Map([...depositInputs.pages.pages].map(([url, page]) => [url, url === pageUrlOf(usdc.source) ? served : page] as const));
+  const of = { ...depositInputs, pages: { ...depositInputs.pages, pages } } as HtmlInputs;
+  const subject = of.subject.kind === 'template' ? of.subject : assert.fail('a template report');
+  const given = (depositNotes as { readonly reviews: Record<string, unknown> }).reviews;
+  const reviews = notesScope(of, judge(of, of.fixtures), subject.template, 'zh-TW').reviews.map((id) => [id, given[id] ?? { status: 'concern', text: both(`review ${id}`), recommendation: both('look') }]);
+  const notes = { ...(depositNotes as object), reviews: Object.fromEntries(reviews) };
+  const page = buildPage(of, notes, depositTitle, 'zh-TW');
+  const addresses = body(page, 'addresses');
+  const row = addresses.open.find((r) => r.name === 'usdc') ?? assert.fail('the usdc row is not open');
+  const line = row.sources.find((l) => l.href === usdc.source) ?? assert.fail('no source line');
+  assert.deepEqual([line.state, line.others], ['bad', [other]]);
+  const review = body(page, 'review').rows.find((r) => r.id === 'usdc/source.page') ?? assert.fail('no review row for the page');
+  assert.equal(review.state, 'bad');
+  assert.equal(review.grade, 'key');
+  const zh = renderPage(page);
+  assert.ok(zh.includes(`標籤旁列的是 ${other}`), 'the source line names the other address');
+  assert.ok(zh.includes(`不是這個地址： ${other}`), '待確認 names the other address');
+  const en = renderPage(buildPage(of, notes, depositTitle, 'en'));
+  assert.ok(en.includes(`lists ${other} under the label`));
+  assert.ok(en.includes(`next to the label the registry names: ${other}`));
 });
