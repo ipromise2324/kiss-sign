@@ -343,7 +343,7 @@ test('card new lists a vault with the factory that created it, takes amounts in 
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], mainnet());
   assert.equal(made.code, 0, made.stderr);
   assert.match(made.stdout, new RegExp(`\\n +\\d+\\. +steakhouse-prime-usdc-v2-0f51 +${STEAKHOUSE}\\n`));
-  assert.match(made.stdout, new RegExp(`\\n +created by +vault-v2-factory +${VAULT_V2_FACTORY}\\n`));
+  assert.match(made.stdout, new RegExp(`\\n +both created by +vault-v2-factory +${VAULT_V2_FACTORY}\\n`));
   assert.equal(made.asked[1], 'amount (whole usdc, 6 decimals): ');
   assert.ok(made.stdout.includes(`\n    token  usdc  ${USDC}  6 decimals\n`), made.stdout);
   assert.ok(made.stdout.includes("\nmin-shares  computed, not asked: the protocol's app fills it in itself\n"));
@@ -641,7 +641,7 @@ test('card new lists only the entries of the protocol a contract field names, an
   configure(home);
   const made = await run(['card', 'new', 'test/fluid-only'], home, ['steakhouse-prime-usdc-v2-0f51'], { ...mainnet(), repoRoot });
   assert.equal(made.code, 1);
-  assert.match(made.stdout, /\nvault  pick one by number\n  1\.  fluid-fusdc  0x\w{40}\n  2\.  fluid-fusdt  0x\w{40}\n      created by  fluid-lending-factory  0x\w{40}\n/);
+  assert.match(made.stdout, /\nvault  pick one by number\n  1\.  fluid-fusdc  0x\w{40}\n  2\.  fluid-fusdt  0x\w{40}\n      both created by  fluid-lending-factory  0x\w{40}\n/);
   assert.match(made.stderr, /vault: "steakhouse-prime-usdc-v2-0f51" is none of the listed choices/);
 });
 

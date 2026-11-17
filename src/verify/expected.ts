@@ -1,6 +1,6 @@
 import { bytesToHex } from '@noble/hashes/utils.js';
 import type { AddressBook } from '../address-book.ts';
-import { resolveRef } from '../card.ts';
+import { percentText, resolveRef } from '../card.ts';
 import type { ResolvedCard } from '../card.ts';
 import { wholeTokens } from '../chain/decimals.ts';
 import { castValue } from '../decode/cast.ts';
@@ -11,6 +11,7 @@ import { hashSafeTx } from '../safe/hash.ts';
 import type { Address, Hex, SafeTx, SafeTxHashes } from '../safe/types.ts';
 import { decodeTemplateCall, expectedCalls } from '../template/check.ts';
 import type { ExpectedCall, Values } from '../template/check.ts';
+import { signedStructs } from '../template/template.ts';
 import type { CallNode, Rule, Template, TokenRef, TrailerAllowance } from '../template/template.ts';
 
 /** What kiss-sign knows an address as: the Safe, the zero address, a registry entry or an address-book entry. */
@@ -22,8 +23,14 @@ export type Label =
 
 export type Labeled = { readonly address: Address; readonly label: Label };
 
-/** One argument as `cast decode-calldata` prints it, and an amount of a token the card names in whole tokens, such as `244.093807 usdc`. */
-export type ShownArg = { readonly text: string; readonly amount: string | undefined };
+/**
+ * What the last column says of an argument the card bounds: its value in whole tokens, such as `244.093807 usdc`, or as a
+ * percent, such as `5%`; or that it is a share price bound, whose value counts no token.
+ */
+export type ArgNote = { readonly kind: 'equals'; readonly text: string } | { readonly kind: 'share-price'; readonly bound: 'max' | 'min' };
+
+/** One argument as `cast decode-calldata` prints it, and what the last column says of it. */
+export type ShownArg = { readonly text: string; readonly note: ArgNote | undefined };
 
 export type Decoded = {
   readonly kind: 'decoded';
@@ -88,6 +95,11 @@ export function amountToken(of: TokenRef, values: Values, registry: Registry): A
   return 'kind' in target && target.kind === 'address' ? { address: target.address, name: target.name } : undefined;
 }
 
+/** The struct name of each message a template on the card signs by its digest, such as `Order`, once each. */
+export function signedMessages(card: ResolvedCard, templates: ReadonlyMap<string, Template>): string[] {
+  return [...new Set(card.operations.flatMap((op) => signedStructs(templates.get(op.template) ?? { calls: [] })))];
+}
+
 /** The tokens whose amounts the card names, other than ETH. */
 export function amountTokens(card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Address[] {
   const tokens = new Set<Address>();
@@ -100,13 +112,16 @@ export function amountTokens(card: ResolvedCard, templates: ReadonlyMap<string, 
   return [...tokens];
 }
 
-function wholeTokenAmount(rule: Rule | undefined, value: AbiValue, values: Values, walk: Walk): string | undefined {
-  if (rule?.kind !== 'card' || rule.ref.attribute !== undefined || value.kind !== 'uint') return undefined;
-  const field = walk.templateOf.get(values)?.card.get(rule.ref.field);
+function argNote(rule: Rule | undefined, value: AbiValue, values: Values, walk: Walk): ArgNote | undefined {
+  if (value.kind !== 'uint') return undefined;
+  if (rule?.kind === 'share-price') return { kind: 'share-price', bound: rule.bound };
+  const name = rule?.kind === 'at-least' ? rule.field : rule?.kind === 'card' && rule.ref.attribute === undefined ? rule.ref.field : undefined;
+  const field = name === undefined ? undefined : walk.templateOf.get(values)?.card.get(name);
+  if (field?.kind === 'percent') return { kind: 'equals', text: percentText(value.value) };
   const token = field?.kind === 'amount' ? amountToken(field.of, values, walk.registry) : undefined;
   if (token === undefined) return undefined;
   const decimals = token.address === 'eth' ? 18 : walk.decimals.get(token.address);
-  return decimals === undefined ? undefined : `${wholeTokens(value.value, decimals)} ${token.name}`;
+  return decimals === undefined ? undefined : { kind: 'equals', text: `${wholeTokens(value.value, decimals)} ${token.name}` };
 }
 
 function addressesIn(value: AbiValue): Address[] {
@@ -149,7 +164,7 @@ function callData(node: CallNode | 'empty' | undefined, region: Region, values: 
   if (node === undefined || node === 'empty') return { kind: 'raw', hex: hex(bytes) };
   const decoded = decodeTemplateCall(node, region);
   if (decoded.kind !== 'decoded') return { kind: 'raw', hex: hex(bytes) };
-  const args = decoded.args.map((value, i) => ({ text: castValue(value), amount: wholeTokenAmount(node.args[i], value, values, walk) }));
+  const args = decoded.args.map((value, i) => ({ text: castValue(value), note: argNote(node.args[i], value, values, walk) }));
   const found = [...new Set(decoded.args.flatMap(addressesIn))].sort();
   let nested: Nested | undefined;
   if (node.fn.signature === BUNDLER3_MULTICALL) {
@@ -214,7 +229,7 @@ export function callTree(tx: SafeTx, context: TreeContext): CallTree {
     kind: 'decoded',
     signature: outer.fn.signature,
     selector: outer.fn.selector,
-    args: [{ text: packed === undefined ? '' : castValue(packed), amount: undefined }],
+    args: [{ text: packed === undefined ? '' : castValue(packed), note: undefined }],
     trailer: undefined,
     addresses: [],
     nested: { kind: 'multisend', calls },
