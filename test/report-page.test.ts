@@ -22,7 +22,7 @@ import type { ReportTitle, TodayCheck } from '../src/research/report.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
-import { loadTemplate } from '../src/template/template.ts';
+import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
@@ -228,6 +228,29 @@ test('交易後 says which way a token the Safe gives or gets more than nothing 
   const page = buildPage({ ...depositInputs, subject: { ...subject, template } }, depositNotes, depositTitle, 'zh-TW');
   const values = body(page, 'flow').flow.after.map((row) => plain(row.value));
   assert.ok(values.includes('給出多於 0') && values.includes('收到多於 0'), values.join(' / '));
+});
+
+test('交易後 and the Markdown report show an atMost, a tolerance and a touched token, each tolerance with the template\'s reason as AI text', () => {
+  const subject = depositInputs.subject.kind === 'template' ? depositInputs.subject : assert.fail('a template report');
+  const { effects } = subject.template;
+  const why = { en: 'stETH rounds shares down', 'zh-TW': 'stETH 換算份額時無條件捨去' };
+  const tolerance = { less: 2n, more: 0n, why };
+  const gives = [...effects.gives.map((e) => ({ ...e, amount: { kind: 'at-most' as const, field: 'amount' } })), ...effects.gives.map((e) => ({ ...e, token: 'eth' as const, tolerance: { less: 0n, more: 1n, why } }))];
+  const gets = effects.gives.map((e) => ({ ...e, to: undefined, tolerance }));
+  const touches = [{ token: deposit.cardVault, tolerance: { less: 0n, more: 1n, why } }];
+  const template = { ...subject.template, effects: { ...effects, gives, gets, touches } };
+  const inputs = { ...depositInputs, subject: { ...subject, template } };
+  const page = buildPage(inputs, depositNotes, depositTitle, 'zh-TW');
+  const after = body(page, 'flow').flow.after;
+  const notes = after.map((row) => plain(row.note));
+  assert.ok(notes.some((n) => n.startsWith('給出的不能多於你填的')), notes.join(' / '));
+  assert.ok(notes.some((n) => n.endsWith('因為捨入，Safe 最後的餘額可以低最多 2 個最小單位')), notes.join(' / '));
+  assert.ok(after.some((row) => plain(row.label) === `Safe 的 ${deposit.cardVault}` && plain(row.value) === '只能因捨入變動' && row.ai?.ai === why['zh-TW']), JSON.stringify(after.map((r) => r.label)));
+  const markdown = renderReport(inputs, depositTitle);
+  assert.ok(markdown.includes("; the Safe's balance may end up to 2 base units lower than that, for rounding; written by the AI in the template: stETH rounds shares down; in Traditional Chinese: stETH 換算份額時無條件捨去 |"), markdown);
+  assert.ok(markdown.includes("| the Safe gives | ETH | the card's `amount`; the Safe's balance may end up to 1 base unit higher than that, for rounding;"), markdown.split('## Effects')[1]?.slice(0, 900));
+  assert.ok(markdown.includes(`| the Safe keeps | \`${deposit.cardVault}\``) && markdown.includes("| unchanged; the Safe's balance may end up to 1 base unit higher than that, for rounding; written by the AI"));
+  assert.ok(markdown.includes("at most the card's `amount`, and none gained"));
 });
 
 test('下一步 asks for each card field by its Chinese word with the key card new prints, and a typed amount of vault shares is 股份數', () => {
@@ -885,4 +908,23 @@ test("a vault its factory computed another address for renders in both reports, 
   const review = body(page, 'review').rows.find((r) => r.id === `${vault.name}/factory.admitted`) ?? assert.fail('no review row');
   assert.equal(review.state, 'bad');
   assert.equal(plain(body(page, 'vault').vault.rows.find((r) => r.label === '工廠')?.value ?? []), `沒有記錄到 vault-v2-factory 回答它建立了這個金庫`);
+});
+
+test('an address held as a 32-byte word reads as its address rule, left-padded, in both languages, and a fixed one prints the padded word', () => {
+  const subject = inputs.subject.kind === 'template' ? inputs.subject : assert.fail('a template report');
+  const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cctp', 'deposit-for-burn', 'template.json'), 'utf8'));
+  const pageOfBurn = (language: 'en' | 'zh-TW', mintRecipient?: unknown): ArgRow => {
+    if (mintRecipient !== undefined) raw.calls[1].args.mintRecipient = mintRecipient;
+    const burn = parseTemplate(raw, registry);
+    const of = { ...inputs, subject: { ...subject, template: burn, docs: parseDocs(readDocs(ROOT, burn.id), burn, registry) }, example: undefined, fixtures: [] };
+    return arg(buildPage(of, { ...notesFor(of), flow: [] }, title, language), '2.depositForBurn.mintRecipient');
+  };
+  const zh = pageOfBurn('zh-TW');
+  assert.equal(plain(zh.words), '你選的收款人，放在 32 bytes 裡、前面補 12 個 0 byte');
+  assert.equal(zh.value, undefined);
+  assert.equal(plain(pageOfBurn('en').words), 'the recipient you pick, as a 32-byte word left-padded with 12 zero bytes');
+  const messenger = registry.entries.get('cctp-token-messenger-v2') ?? assert.fail('the messenger');
+  const fixed = pageOfBurn('en', { addressWord: { contract: 'cctp-token-messenger-v2' } });
+  assert.deepEqual(fixed.value, { cast: `0x${'00'.repeat(12)}${messenger.address.slice(2)}`, example: undefined });
+  assert.equal(plain(fixed.words), 'cctp-token-messenger-v2, as a 32-byte word left-padded with 12 zero bytes');
 });

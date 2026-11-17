@@ -36,11 +36,12 @@ const DECODE: Readonly<Record<string, string>> = { malformed: '格式錯誤', 'n
 const DECODE_KIND = `(${Object.keys(DECODE).join('|')})`;
 
 const EXPECTED: readonly Shape[] = [
-  shape('at (most|least) (\\S+): (\\d+) assets for (\\d+) shares, scaled by 1e27', (bound, limit, assets, shares) =>
-    `${bound === 'most' ? '最多' : '至少'} ${limit === 'any' ? '任意值' : limit}：${assets} 資產換 ${shares} 份額，乘上 1e27`,
+  shape('at (most|least) (\\S+): (\\d+) assets for (\\d+) shares, scaled by 1e(\\d+)', (bound, limit, assets, shares, scale) =>
+    `${bound === 'most' ? '最多' : '至少'} ${limit === 'any' ? '任意值' : limit}：${assets} 資產換 ${shares} 份額，乘上 1e${scale}`,
   ),
   shape('a stated share count, not the whole balance \\(2\\^256-1\\), to bound the price against', () => '明確的份額數量，而不是整個餘額（2^256-1），用來限制價格'),
   shape('at least (\\S+)', (v) => `至少 ${v}`),
+  shape('at most (\\S+)', (v) => `最多 ${v}`),
   shape('(\\S+), as at (\\S+)', (v, path) => `${v}，和 ${path} 的值相同`),
   shape(`the owner before (\\S+) (${ADDRESS}), who is not an owner of the Safe`, (name, address) => `${name} ${address} 的前一位 owner，但 ${name} ${address} 不是這個 Safe 的 owner`),
   shape('a uint', () => '一個 uint'),
@@ -97,6 +98,15 @@ const REFUSAL: readonly Shape[] = [
   shape(`(${ADDRESS}) hands a call it has no function for, at byte (\\d+) of its code, to code the program neither proves nor pins`, (address, pc) =>
     `${address} 把沒有對應函式的呼叫（在它程式碼的第 ${pc} 位元組）交給程式既沒證明也沒釘選的程式碼`,
   ),
+  shape(`(${ADDRESS}) runs a call it has no function for without handing it to other code, so its implementationRead names no code it runs`, (address) =>
+    `${address} 自己執行沒有對應函式的呼叫，沒有交給別的程式碼，所以它的 implementationRead 指不到它會執行的程式碼`,
+  ),
+  shape(`(\\S+) on (${ADDRESS}), a view of the entry's implementationRead, did not answer one nonzero address other than the proxy's own`, (call, address) =>
+    `${address} 的 ${call}（登記項目 implementationRead 的一個 view）沒有回答一個不是零、也不是 proxy 自己的地址`,
+  ),
+  shape(`a call the proxy has no function for did not run the code at (${ADDRESS}), which its implementationRead answers, as the proxy`, (address) =>
+    `proxy 沒有對應函式的呼叫，沒有以 proxy 的身分執行 implementationRead 回答的 ${address} 的程式碼`,
+  ),
   shape('Multicall3 has no code at this block, so the routes cannot be read', () => 'Multicall3 在這個區塊沒有程式碼，所以讀不到轉送路徑'),
   shape('a Multicall3 batch of route reads reverted', () => '讀轉送路徑的 Multicall3 批次 revert 了'),
 ];
@@ -113,6 +123,7 @@ const AMOUNT: readonly Shape[] = [
 ];
 
 const WANT: readonly Shape[] = [
+  shape('between (.+) and (.+)', (low, high) => `介於 ${translate(AMOUNT, low)} 和 ${translate(AMOUNT, high)} 之間`),
   shape('at least (.+)', (amount) => `至少 ${translate(AMOUNT, amount)}`),
   shape('more than (.+)', (amount) => `多於 ${translate(AMOUNT, amount)}`),
   shape('less than (.+)', (amount) => `少於 ${translate(AMOUNT, amount)}`),
@@ -158,6 +169,8 @@ const DETAIL: readonly Shape[] = [
   shape(`(${NAMED})'s routed implementation (${ADDRESS}) lists the pinned selectors in another order ${BLOCK}`, (entry, address, block) => `${entry} 轉送到的實作 ${address} 在區塊 ${block} 列出釘選 selector 的順序不同`),
   shape(`(${NAMED}) ${BLOCK}: (.+)`, (entry, block, refusal) => `${entry} 在區塊 ${block}：${translate(REFUSAL, refusal)}`),
   shape('not run, because the fields did not match', () => '未執行，因為欄位不符'),
+  shape('failed and gave no detail', () => '失敗，但沒有說明原因'),
+  shape('could not finish and gave no detail', () => '無法完成，但沒有說明原因'),
   shape(`a change to (\\S+) (\\S+) gave (${Object.keys(UNCAUGHT).join('|')}), not a mismatch`, (path, arg, outcome) => `把 ${path} ${arg} 改成別的值，${UNCAUGHT[outcome]}，而不是不符`),
   shape('(.+) still held (\\d+) after the transaction, the card gives all of it', (asset, left) => `交易後 ${translate(ASSET, asset)} 還剩 ${left}，但卡片要全部給出`),
   shape(`approval raised and not spent in the same transaction: (.+) to (${ADDRESS}), (\\d+) before, (\\d+) after`, (token, spender, before, after) =>

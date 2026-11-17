@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { main } from '../src/cli/main.ts';
+import { parseFunctionSignature } from '../src/decode/abi.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -205,10 +206,14 @@ test('init creates a key file readable by its owner only, with an empty line per
   assert.match(first.stdout, /ALCHEMY_API_KEY +get it at https:\/\/dashboard\.alchemy\.com\/\n +needed by pnpm kiss-sign verify, pnpm kiss-sign card new/);
   assert.match(first.stdout, /ETHERSCAN_API_KEY +get it at https:\/\/etherscan\.io\/myapikey\n +needed by pnpm past-txs, pnpm check-sources and pnpm report/);
   assert.match(first.stdout, new RegExp(`\\n {7}\\$\\{EDITOR:-nano\\} ${keyFile}\\n`));
-  assert.match(first.stdout, /\n {5}Or enter each key with the command below; what you type is not shown on screen:\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add etherscan\n/);
+  assert.match(first.stdout, /\n {5}Or enter each key with the command below; what you type is not shown on screen:\n {7}pnpm kiss-sign key add alchemy\n {7}pnpm kiss-sign key add etherscan\n {7}pnpm kiss-sign key add github\n/);
   assert.equal(statSync(keyFile).mode & 0o777, 0o600);
   const lines = readFileSync(keyFile, 'utf8').split('\n').filter((line) => !line.startsWith('#') && line !== '');
-  assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'ETHERSCAN_API_KEY=']);
+  assert.deepEqual(lines, ['ALCHEMY_API_KEY=', 'ETHERSCAN_API_KEY=', 'GITHUB_TOKEN=']);
+  assert.match(
+    readFileSync(keyFile, 'utf8'),
+    /# GitHub, optional, a fine-grained token with access to public repositories only, read-only from \S+, for pnpm check-sources, pnpm report, pnpm pin-solc and pnpm fetch-erc7730, only to raise the GitHub API rate limit\.\nGITHUB_TOKEN=\n/,
+  );
 
   writeFileSync(keyFile, 'ALCHEMY_API_KEY=kept-by-the-signer\n');
   const again = await run(['init', '--safe', SAFE], home, undefined, fork);
@@ -339,7 +344,7 @@ function decimalsChain(alchemy: Record<string, number | 'revert'>, drpc: Record<
     if (data !== '0x313ce567') {
       const answer = views(provider, to, data.slice(0, 10), BigInt(`0x${data.slice(10) || '0'}`));
       assert.ok(answer !== undefined, `${data.slice(0, 10)} on ${to} is not stubbed`);
-      return answer === 'revert' ? reverted : reply(`0x${answer.toString(16).padStart(64, '0')}`);
+      return answer === 'revert' ? reverted : reply(`0x${answer.toString(16).padStart(Math.max(1, Math.ceil(answer.toString(16).length / 64)) * 64, '0')}`);
     }
     calls.push(to.toLowerCase());
     const key = Object.keys(alchemy).find((address) => address.toLowerCase() === to.toLowerCase());
@@ -438,6 +443,50 @@ test('card new reads a computed field\'s inner read first, here the Safe\'s shar
   const redeem = made.stdout.indexOf(`previewRedeem(2000000000000000000) = 2000000\n                  on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\n`);
   assert.ok(balance !== -1 && redeem > balance, made.stdout);
   assert.match(made.stdout, /\n    expected +2 usdc\n[\s\S]*\n    value +1\.998 usdc\n[\s\S]*│   min-assets +1\.998 usdc\n│ +1998000 base units\n/);
+});
+
+/** A copy of main whose morpho/vault-deposit reads min-shares from a quote on a fixed registry contract, with constant arguments and a tuple answer. */
+function quoteClone(): string {
+  const dir = dataClone();
+  const path = join(dir, 'templates', 'morpho', 'vault-deposit', 'template.json');
+  const template = JSON.parse(readFileSync(path, 'utf8'));
+  template.card['min-shares'].computed.read = {
+    to: { contract: 'steakhouse-prime-usdc-v2-0f51' },
+    function: QUOTE.signature,
+    args: { i: { const: '-1' }, dx: { card: 'amount' }, who: { safe: true } },
+    output: 'best.shares',
+  };
+  writeFileSync(path, JSON.stringify(template, null, 2));
+  return publish(dir);
+}
+
+const QUOTE = { signature: 'quote(int128 i, uint256 dx, address who) returns (uint256 low, (uint256 shares, uint128 fee) best)', selector: parseFunctionSignature('quote(int128,uint256,address)').selector };
+const WORD = 1n << 256n;
+
+/** The quote answers three words, low, shares and fee, when it is asked for -1, 5000000 and the Safe; `words` cuts the answer short. */
+const quoteViews = (words: number): Views => (_provider, to, selector, arg) => {
+  if (to.toLowerCase() !== STEAKHOUSE.toLowerCase() || selector !== QUOTE.selector) return undefined;
+  assert.equal(arg, ((WORD - 1n) * WORD + 5_000_000n) * WORD + BigInt(SAFE), 'i is -1 in two\'s complement, dx the amount, who the Safe');
+  const answer = [1n, 4_900_000_000_000_000_000n, 7n].slice(0, words);
+  return answer.reduce((all, word) => all * WORD + word, 0n);
+};
+
+test('card new reads a computed field from a fixed registry contract with constant arguments, and picks one number from a tuple answer', async () => {
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], { ...mainnet(quoteViews(3)), repoRoot: quoteClone() });
+  assert.equal(made.code, 0, made.stderr);
+  assert.ok(made.stdout.includes(`\n    read          quote(-1, 5000000, safe) = 4900000000000000000\n                  on steakhouse-prime-usdc-v2-0f51  ${STEAKHOUSE}\n`), made.stdout);
+  assert.match(made.stdout, /│   min-shares +4\.8951 steakhouse-prime-usdc-v2-0f51\n│ +4895100000000000000 base units\n/);
+});
+
+test('card new refuses a read whose answer is not the encoding of what the function returns, and seals nothing', async () => {
+  const home = freshHome();
+  configure(home);
+  const result = await run(['card', 'new', 'morpho/vault-deposit'], home, [numberOf('steakhouse-prime-usdc-v2-0f51'), '5', 'y'], { ...mainnet(quoteViews(2)), repoRoot: quoteClone() });
+  assert.equal(result.code, 1);
+  assert.match(result.stderr, /cannot read quote\(-1, 5000000, safe\) on steakhouse-prime-usdc-v2-0f51 0xbeef\S+: its answer is not the encoding of \(uint256,\(uint256,uint128\)\)/);
+  assert.equal(existsSync(join(home, 'cards')), false);
 });
 
 test('card new rounds a ceiling up, as a withdrawal\'s max-shares', async () => {
@@ -667,6 +716,29 @@ test('card seal refuses a vault with no report for the template, before it asks 
   assert.equal(result.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for morpho/vault-deposit; build one first\n');
   assert.deepEqual(result.asked, []);
   assert.equal(existsSync(join(home, 'cards')), false);
+});
+
+test('card seal refuses a hand-written card whose computed floor is 0, in the signer\'s language, before it asks anything', async () => {
+  const sealing = async (language: string, values: Record<string, string>) => {
+    const home = freshHome();
+    configure(home, language);
+    const card = join(home, 'card.json');
+    writeFileSync(card, JSON.stringify({ operations: [{ template: 'morpho/vault-deposit', values: { vault: 'steakhouse-prime-usdc-v2-0f51', ...values } }] }));
+    const result = await run(['card', 'seal', card], home, ['y']);
+    assert.deepEqual(result.asked, []);
+    assert.equal(existsSync(join(home, 'cards')), false);
+    return result;
+  };
+  const english = await sealing('en', { amount: '5000000', 'min-shares': '0' });
+  assert.equal(english.code, 1);
+  assert.equal(
+    english.stderr,
+    'kiss-sign: card refused at operations[0].values.min-shares: min-shares is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it\n',
+  );
+  const chinese = await sealing('zh-TW', { amount: '5000000', 'min-shares': '0' });
+  assert.equal(chinese.stderr, 'kiss-sign: 卡片在 operations[0].values.min-shares 被拒絕：min-shares 是 0；算出來的數量，或份額價格界線、atLeast 拿來比較的數量，至少要是 1，因為 0 在這裡不是什麼都不限，就是沒有交易能滿足\n');
+  const amount = await sealing('en', { amount: '0', 'min-shares': '1' });
+  assert.match(amount.stderr, /card refused at operations\[0\]\.values\.amount: amount is 0; a computed amount/);
 });
 
 test('card seal does not count a report reached through a symlinked folder, which git would not list', async () => {

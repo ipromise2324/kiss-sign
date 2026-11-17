@@ -83,9 +83,32 @@ export type CardRef = { readonly field: string; readonly attribute: Attribute | 
 /** Native ETH, which no contract holds, or a token a card field names. */
 export type TokenRef = 'eth' | CardRef;
 
-/** A view call `card new` makes on the contract `to` names, returning one uint256. */
-export type ComputedRead = { readonly to: CardRef; readonly fn: AbiFunction; readonly args: readonly ComputedArg[] };
-export type ComputedArg = { readonly kind: 'card'; readonly ref: CardRef } | { readonly kind: 'safe' } | { readonly kind: 'read'; readonly read: ComputedRead };
+/**
+ * A view call `card new` makes on the contract `to` names, every argument bound, and the unsigned number of its answer
+ * `output` picks: positions into `returns`, then into a tuple's components.
+ */
+export type ComputedRead = {
+  readonly to: ViewTarget;
+  readonly fn: AbiFunction;
+  readonly args: readonly ComputedArg[];
+  readonly returns: readonly AbiParam[];
+  readonly output: readonly number[];
+};
+/** An argument bound as a view's is, or the number another read gives. */
+export type ComputedArg = { readonly kind: 'bound'; readonly rule: Rule } | { readonly kind: 'read'; readonly read: ComputedRead };
+
+/** The return value `output` picks, with its dotted name, such as `supplyShares`. */
+export function computedOutput(read: Pick<ComputedRead, 'returns' | 'output'>): { readonly param: AbiParam; readonly name: string } {
+  let params = read.returns;
+  const names: string[] = [];
+  let param: AbiParam | undefined;
+  for (const i of read.output) {
+    param = params[i] as AbiParam;
+    names.push(paramName(param, i));
+    params = param.type.kind === 'tuple' ? param.type.components : [];
+  }
+  return { param: param as AbiParam, name: names.join('.') };
+}
 
 /**
  * A card amount the protocol's app fills in by itself: `read` less (`floor`, rounded down) or plus (`ceiling`, rounded
@@ -125,19 +148,22 @@ export type Rule =
   | { readonly kind: 'card'; readonly ref: CardRef }
   | { readonly kind: 'safe' }
   | { readonly kind: 'contract'; readonly name: string }
+  /** A `bytes32` that holds the address `rule` binds, left-padded with 12 zero bytes, as bridges hold a recipient. */
+  | { readonly kind: 'address-word'; readonly rule: AddressRule }
   | { readonly kind: 'const'; readonly value: ConstValue }
   | { readonly kind: 'free'; readonly reason: Prose; readonly claim: FreeClaim }
   /** The same number as the transaction holds at an earlier template path, such as an approval its transfer spends. */
   | { readonly kind: 'equals'; readonly path: string; readonly rule: LeafRule }
   /**
-   * An ERC-4626 price bound in assets per share, scaled by 1e27, as Morpho's adapters take it. `max` must be at most, and
-   * `min` at least, `assets` × 1e27 / `shares`, so the transaction's bound is at least as strict as the card's amounts.
+   * An ERC-4626 price bound in assets per share, scaled by 10^`scale` (1e27 as Morpho's adapters take it). `max` must be
+   * at most, and `min` at least, `assets` × 10^`scale` / `shares`, so the transaction's bound is at least as strict as the
+   * card's amounts.
    */
-  | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity }
+  | { readonly kind: 'share-price'; readonly bound: 'max' | 'min'; readonly assets: Quantity; readonly shares: Quantity; readonly scale: number }
   /** The owner listed just before the card's owner in the Safe's `getOwners()`, or the sentinel when it is first. */
   | { readonly kind: 'owner-before'; readonly ref: CardRef }
-  /** A number at least the card amount `field`, such as the fewest tokens a swap may give. */
-  | { readonly kind: 'at-least'; readonly field: string }
+  /** A number at least (`at-least`) or at most (`at-most`) the card amount `field`, such as a swap's fewest tokens out or most tokens in. */
+  | { readonly kind: 'at-least' | 'at-most'; readonly field: string }
   | { readonly kind: 'call'; readonly call: CallNode }
   /** A view's bytes32 argument: keccak256 of the call or `encoded` parameters, every argument of which is bound. */
   | { readonly kind: 'keccak'; readonly call: CallNode }
@@ -149,6 +175,18 @@ export type Rule =
   | { readonly kind: 'items'; readonly items: readonly Rule[] }
   /** A tuple's components, by position. */
   | { readonly kind: 'fields'; readonly fields: readonly Rule[] };
+
+/** A rule that binds an address, which `addressWord` may hold as a 32-byte word. */
+export type AddressRule = Extract<Rule, { readonly kind: 'card' | 'safe' | 'contract' }>;
+
+const WORD_PADDING = `0x${'00'.repeat(12)}`;
+
+/** `address` as a 32-byte word, left-padded with 12 zero bytes, as `addressWord` binds it. */
+export const addressWord = (address: Address): Hex => `${WORD_PADDING}${address.slice(2)}` as Hex;
+
+/** The address a 32-byte word holds, or undefined when its first 12 bytes are not all zero. */
+export const wordAddress = (word: string): Address | undefined =>
+  word.length === 66 && word.startsWith(WORD_PADDING) ? (`0x${word.slice(26).toLowerCase()}` as Address) : undefined;
 
 export type Quantity = { readonly kind: 'card'; readonly field: string } | { readonly kind: 'path'; readonly path: string; readonly rule: LeafRule };
 
@@ -193,18 +231,49 @@ export type CallNode = {
 export type TemplateCall = { readonly to: Rule; readonly value: Rule; readonly data: CallNode | 'empty'; readonly merge: Prose | undefined };
 
 /**
- * `all`, only on what the Safe gives, means its whole balance: the Safe holds none of the token afterwards. `at-least`,
- * only on what the Safe gets, means at least the card amount `field`; `any`, only on what the Safe gets, any amount, none
- * included.
+ * `all`, only on what the Safe gives, means its whole balance: the Safe holds none of the token afterwards. `at-most`,
+ * only on what the Safe gives, means no more than the card amount `field` and none gained; `at-least`, only on what the
+ * Safe gets, at least that amount; `any`, only on what the Safe gets, any amount, none included.
  */
 export type EffectAmount =
   | { readonly kind: 'card'; readonly field: string }
   | { readonly kind: 'positive' }
   | { readonly kind: 'any' }
   | { readonly kind: 'all' }
-  | { readonly kind: 'at-least'; readonly field: string };
-/** `to`, on what the Safe gives, names the receiver; the Safe giving to itself changes nothing. */
-export type Effect = { readonly token: TokenRef; readonly amount: EffectAmount; readonly to: CardRef | undefined };
+  | { readonly kind: 'at-least' | 'at-most'; readonly field: string };
+
+/** A token an effect names: one a card field names, `eth`, or a registry token by name, such as stETH. */
+export type EffectToken = TokenRef | { readonly contract: string };
+
+/** Whether an effect names its token by registry name, rather than as `eth` or through a card field. */
+export const isNamedToken = (token: EffectToken): token is { readonly contract: string } => typeof token === 'object' && 'contract' in token;
+
+/**
+ * How far the Safe's balance of a token may end below (`less`) or above (`more`) what the card explains, in base units,
+ * for rounding the protocol documents; 0 in a direction the template does not name.
+ */
+export type Tolerance = { readonly less: bigint; readonly more: bigint; readonly why: Prose };
+
+/** The most base units a tolerance allows in one direction: rounding loses a unit or two per conversion. */
+const MAX_TOLERANCE = 10;
+
+/**
+ * `to`, on what the Safe gives, names the receiver; the Safe giving to itself changes nothing. `tolerance`, only on an
+ * exact card amount, lets the balance end a few base units off it.
+ */
+export type Effect = { readonly token: EffectToken; readonly amount: EffectAmount; readonly to: CardRef | undefined; readonly tolerance: Tolerance | undefined };
+
+/** Every registry token the template's effects name by name, in `gives`, `gets` or `touches`. */
+export const namedEffectTokens = ({ gives, gets, touches }: Pick<Template['effects'], 'gives' | 'gets' | 'touches'>): string[] => [
+  ...new Set([...[...gives, ...gets].flatMap(({ token }) => (isNamedToken(token) ? [token.contract] : [])), ...touches.map((t) => t.token)]),
+];
+
+/** The registry names an effect's token can be: `eth` none, a named token itself, a card field the entries it can name. */
+export const effectTokenNames = (token: EffectToken, template: Template, registry: Registry): string[] =>
+  token === 'eth' ? [] : isNamedToken(token) ? [token.contract] : refNames(token, template, registry);
+
+/** A registry token the operation touches without moving it on purpose, whose balance may change within `tolerance`. */
+export type Touch = { readonly token: string; readonly tolerance: Tolerance };
 
 /**
  * An allowance from the Safe the transaction may leave open: of `token` to the registry contract `spender`, through an
@@ -283,6 +352,7 @@ export type Template = {
     readonly views: readonly ViewEffect[];
     readonly safe: SafeSettingsEffect | undefined;
     readonly approves: readonly KeptApproval[];
+    readonly touches: readonly Touch[];
   };
   readonly facts: readonly Fact[];
 };
@@ -467,11 +537,17 @@ function quantity(path: string, raw: unknown, scope: Scope): Quantity {
   return { kind: 'path', path: name, rule };
 }
 
+const SHARE_PRICE_SCALE = { default: 27, min: 1, max: 36 } as const;
+
 function sharePrice(path: string, raw: unknown, type: AbiType, scope: Scope, bound: 'max' | 'min'): Rule {
   if (type.kind !== 'uint') throw new TemplateError(path, `a share price bound cannot bind a ${canonicalType(type)}`);
   const value = object(path, raw);
-  exactKeys(path, value, ['assets', 'shares']);
-  return { kind: 'share-price', bound, assets: quantity(`${path}.assets`, value.assets, scope), shares: quantity(`${path}.shares`, value.shares, scope) };
+  exactKeys(path, value, ['assets', 'shares'], ['scale']);
+  const scale = value.scale ?? SHARE_PRICE_SCALE.default;
+  if (typeof scale !== 'number' || !Number.isInteger(scale) || scale < SHARE_PRICE_SCALE.min || scale > SHARE_PRICE_SCALE.max) {
+    throw new TemplateError(`${path}.scale`, `the power of ten the price is scaled by, a whole number from ${SHARE_PRICE_SCALE.min} to ${SHARE_PRICE_SCALE.max}`);
+  }
+  return { kind: 'share-price', bound, assets: quantity(`${path}.assets`, value.assets, scope), shares: quantity(`${path}.shares`, value.shares, scope), scale };
 }
 
 function rule(path: string, raw: unknown, type: AbiType, scope: Scope): Rule {
@@ -507,7 +583,7 @@ function packed(path: string, raw: unknown, scope: Scope): Rule {
     names.add(name);
     const type = abiType(`${at}.type`, value.type);
     if (!PACKABLE.includes(type.kind)) throw new TemplateError(`${at}.type`, `${canonicalType(type)} is not a fixed-size part`);
-    return { name, type, size: packedSize(type), rule: rule(`${path}.${name}`, value.rule, type, scope) };
+    return { name, type, size: packedSize(type), rule: recipientWord(`${path}.${name}`, name, type, rule(`${path}.${name}`, value.rule, type, scope)) };
   });
   if (parts.length === 0) throw new TemplateError(path, 'no parts');
   return { kind: 'packed', parts };
@@ -556,7 +632,7 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
   const keys = Object.keys(value);
   const key = keys[0];
   if (keys.length !== 1 || key === undefined) {
-    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, ownerBefore, const, free, equals, atLeast, maxSharePrice, minSharePrice, call, encoded, keccak, items, fields, packed, eip712');
+    throw new TemplateError(path, 'a rule has exactly one of card, safe, contract, addressWord, ownerBefore, const, free, equals, atLeast, atMost, maxSharePrice, minSharePrice, call, encoded, keccak, items, fields, packed, eip712');
   }
   const body = value[key];
   const at = `${path}.${key}`;
@@ -585,6 +661,12 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       needs(['address']);
       return { kind: 'contract', name };
     }
+    case 'addressWord': {
+      if (type.kind !== 'fixed-bytes' || type.size !== 32) throw cannotBind();
+      const inner = parseRule(at, body, { kind: 'address' }, scope);
+      if (inner.kind !== 'card' && inner.kind !== 'safe' && inner.kind !== 'contract') throw new TemplateError(at, 'holds one card, safe or contract rule');
+      return { kind: 'address-word', rule: inner };
+    }
     case 'ownerBefore': {
       needs(['address']);
       return { kind: 'owner-before', ref: ownerRef(at, body, scope.card) };
@@ -603,11 +685,12 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
       if (scope.inMessage && freed.kind === 'free' && freed.claim !== 'scalar') throw new TemplateError(at, 'a member of a signed message is free only as a number, a bool or bytesN');
       return freed;
     }
-    case 'atLeast': {
+    case 'atLeast':
+    case 'atMost': {
       needs(['uint']);
       const field = cardFieldName(text(at, body));
       if (field === undefined || scope.card.get(field)?.kind !== 'amount') throw new TemplateError(at, `${JSON.stringify(body)} is not card.<amount field>`);
-      return { kind: 'at-least', field };
+      return { kind: key === 'atLeast' ? 'at-least' : 'at-most', field };
     }
     case 'packed':
       needs(['bytes']);
@@ -659,11 +742,25 @@ function parseRule(path: string, raw: unknown, type: AbiType, scope: Scope): Rul
 function params(path: string, raw: unknown, list: readonly AbiParam[], scope: Scope): Rule[] {
   if (Array.isArray(raw)) {
     if (raw.length !== list.length) throw new TemplateError(path, `${list.length} rules needed, ${raw.length} given`);
-    return list.map((param, i) => rule(`${path}[${i}]`, raw[i], param.type, scope));
+    return list.map((param, i) => recipientWord(`${path}[${i}]`, param.name, param.type, rule(`${path}[${i}]`, raw[i], param.type, scope)));
   }
   const value = object(path, raw);
   exactKeys(path, value, list.map(paramName));
-  return list.map((param, i) => rule(`${path}.${paramName(param, i)}`, value[paramName(param, i)], param.type, scope));
+  return list.map((param, i) => {
+    const at = `${path}.${paramName(param, i)}`;
+    return recipientWord(at, param.name, param.type, rule(at, value[paramName(param, i)], param.type, scope));
+  });
+}
+
+const RECIPIENT_NAME = /^_?to$|recipient$|receiver$|beneficiary$/i;
+
+/** A `bytes32` named as a recipient holds an address as a word, so it is never free or a constant other than zero. */
+function recipientWord(path: string, name: string | undefined, type: AbiType, parsed: Rule): Rule {
+  if (name === undefined || type.kind !== 'fixed-bytes' || type.size !== 32 || !RECIPIENT_NAME.test(name)) return parsed;
+  if (parsed.kind === 'free' || (parsed.kind === 'const' && BigInt(parsed.value.value as Hex) !== 0n)) {
+    throw new TemplateError(path, `${name} names a recipient, whose address a bytes32 holds as a word; bind it with {"addressWord": {"card": ...}}, {"addressWord": {"safe": true}} or {"addressWord": {"contract": ...}}`);
+  }
+  return parsed;
 }
 
 function signature(path: string, raw: unknown): AbiFunction {
@@ -824,39 +921,85 @@ function bps(path: string, raw: unknown): number {
  */
 type Readable = (field: string) => boolean;
 
-function computedArg(path: string, raw: unknown, type: AbiType, scope: Scope, readable: Readable): ComputedArg {
-  const isUint256 = type.kind === 'uint' && type.bits === 256;
-  if (type.kind !== 'address' && !isUint256) throw new TemplateError(path, `${canonicalType(type)} is neither address nor uint256`);
-  if (raw === 'safe') {
-    if (type.kind !== 'address') throw new TemplateError(path, 'the Safe is an address, not a uint256');
-    return { kind: 'safe' };
+/**
+ * The older form of a computed read's `to` and arguments, which a template written before reads took rules may still hold
+ * and a verdict file of that time does: `"card.<field>"` is `{ "card": "<field>" }`, `"safe"` is `{ "safe": true }`, and a
+ * read written without `read` around it is `{ "read": ... }`. Nothing else is read as the older form.
+ */
+function olderReadForm(raw: unknown): unknown {
+  if (raw === 'safe') return { safe: true };
+  const field = typeof raw === 'string' ? cardFieldName(raw) : undefined;
+  if (field !== undefined) return { card: field };
+  if (typeof raw === 'object' && raw !== null && !Array.isArray(raw) && 'to' in raw && !('read' in raw)) return { read: raw };
+  return raw;
+}
+
+function computedArg(path: string, raw: unknown, { name, type }: AbiParam, scope: Scope, readable: Readable): ComputedArg {
+  const value = object(path, olderReadForm(raw));
+  if (value.read !== undefined) {
+    exactKeys(path, value, ['read']);
+    const read = computedRead(`${path}.read`, value.read, scope, readable);
+    const answer = computedOutput(read).param.type as Extract<AbiType, { kind: 'uint' }>;
+    if (type.kind !== 'uint' || type.bits < answer.bits) throw new TemplateError(`${path}.read`, `answers a uint${answer.bits}, which a ${canonicalType(type)} parameter cannot hold`);
+    return { kind: 'read', read };
   }
-  if (typeof raw === 'string') {
-    const name = cardFieldName(raw);
-    if (name === undefined) throw new TemplateError(path, 'must be "safe", card.<field> or a read');
-    const ref = cardRef(path, name, scope.card);
-    if (!readable(ref.field)) throw new TemplateError(path, `card field ${ref.field} is computed after this one or is this one`);
-    const fits = type.kind === 'address' ? isContractRef(ref, scope.card) : scope.card.get(ref.field)?.kind === 'amount' && ref.attribute === undefined;
-    if (!fits) throw new TemplateError(path, `card.${name} is not ${type.kind === 'address' ? 'a contract or market field, or one of its parts' : 'an amount'}`);
-    return { kind: 'card', ref };
+  const bound = rule(path, value, type, scope);
+  boundArgument(path, bound);
+  wholeCardNumbers(path, bound, type);
+  for (const leaf of ruleLeaves(bound)) if (leaf.kind === 'card') readableRef(path, leaf.ref, readable);
+  return { kind: 'bound', rule: recipientWord(path, name, type, bound) };
+}
+
+/** A card number, never range-checked against its parameter, is passed to a read only as a whole uint256. */
+function wholeCardNumbers(path: string, bound: Rule, type: AbiType): void {
+  if (bound.kind === 'card' && (type.kind === 'uint' || type.kind === 'int') && !(type.kind === 'uint' && type.bits === 256)) {
+    throw new TemplateError(path, `card.${bound.ref.field}${bound.ref.attribute === undefined ? '' : `.${bound.ref.attribute}`} is a number passed whole, so only to a uint256, not a ${canonicalType(type)}`);
   }
-  if (!isUint256) throw new TemplateError(path, 'a read returns a uint256, not an address');
-  return { kind: 'read', read: computedRead(path, raw, scope, readable) };
+  if (bound.kind === 'fields' && type.kind === 'tuple') bound.fields.forEach((field, i) => wholeCardNumbers(path, field, (type.components[i] as AbiParam).type));
+  if (bound.kind === 'items' && (type.kind === 'array' || type.kind === 'fixed-array')) bound.items.forEach((item) => wholeCardNumbers(path, item, type.item));
+  if (bound.kind === 'call' || bound.kind === 'keccak') bound.call.args.forEach((arg, i) => wholeCardNumbers(path, arg, (bound.call.fn.params[i] as AbiParam).type));
+}
+
+function readableRef(path: string, ref: CardRef, readable: Readable): void {
+  if (!readable(ref.field)) throw new TemplateError(path, `card field ${ref.field} is computed after this one or is this one`);
+}
+
+/** Positions of the unsigned number `raw` names in `returns`, by a dotted path of names; none is needed for one value. */
+function outputPath(path: string, raw: unknown, returns: readonly AbiParam[]): number[] {
+  if (raw === undefined && returns.length !== 1) throw new TemplateError(path, `names none of the ${returns.length} values the function returns`);
+  const output = raw === undefined ? [0] : [];
+  let params = returns;
+  for (const step of raw === undefined ? [] : text(path, raw).split('.')) {
+    const i = params.findIndex((param) => param.name === step);
+    if (i === -1) throw new TemplateError(path, `${JSON.stringify(step)} is not a named return value or tuple component`);
+    output.push(i);
+    const { type } = params[i] as AbiParam;
+    params = type.kind === 'tuple' ? type.components : [];
+  }
+  const { type } = computedOutput({ returns, output }).param;
+  if (type.kind !== 'uint') throw new TemplateError(path, `picks a value of type ${canonicalType(type)}; a computed amount is an unsigned integer`);
+  return output;
 }
 
 function computedRead(path: string, raw: unknown, scope: Scope, readable: Readable): ComputedRead {
   const value = object(path, raw);
-  exactKeys(path, value, ['to', 'function', 'args']);
-  const to = cardFieldName(text(`${path}.to`, value.to));
-  if (to === undefined) throw new TemplateError(`${path}.to`, 'must be card.<field>');
-  const ref = cardRef(`${path}.to`, to, scope.card);
-  if (!isContractRef(ref, scope.card)) throw new TemplateError(`${path}.to`, 'must name a contract or market field, or one of its parts');
+  exactKeys(path, value, ['to', 'function', 'args'], ['output']);
+  const target = parseRule(`${path}.to`, typeof value.to === 'string' ? olderReadForm(value.to) : value.to, { kind: 'address' }, scope);
+  let to: ViewTarget;
+  if (target.kind === 'contract') to = { kind: 'contract', name: target.name };
+  else if (target.kind === 'card' && isContractRef(target.ref, scope.card)) to = { kind: 'card', ref: target.ref };
+  else throw new TemplateError(`${path}.to`, 'must name a registry contract, or a contract or market field or one of its parts');
+  if (to.kind === 'card') readableRef(`${path}.to`, to.ref, readable);
   const { fn, returns } = viewSignature(`${path}.function`, value.function);
-  const [only] = returns;
-  if (returns.length !== 1 || only?.type.kind !== 'uint' || only.type.bits !== 256) throw new TemplateError(`${path}.function`, 'must return exactly one uint256');
   const args = object(`${path}.args`, value.args);
   exactKeys(`${path}.args`, args, fn.params.map((param, i) => paramName(param, i)));
-  return { to: ref, fn, args: fn.params.map((param, i) => computedArg(`${path}.args.${paramName(param, i)}`, args[paramName(param, i)], param.type, scope, readable)) };
+  return {
+    to,
+    fn,
+    args: fn.params.map((param, i) => computedArg(`${path}.args.${paramName(param, i)}`, args[paramName(param, i)], param, scope, readable)),
+    returns,
+    output: outputPath(`${path}.output`, value.output, returns),
+  };
 }
 
 /** A computed amount field, `computed` of card field `name`; `order` lists the card's fields with whether each is computed. */
@@ -868,7 +1011,7 @@ function computed(path: string, raw: unknown, name: string, scope: Scope, order:
     const i = order.findIndex(([f]) => f === field);
     return i !== at && (i < at || !(order[i]?.[1] ?? false));
   };
-  const read = computedRead(`${path}.read`, value.read, scope, readable);
+  const read = computedRead(`${path}.read`, value.read, { ...scope, uintLeaves: new Map(), view: true }, readable);
   if (value.bound !== 'floor' && value.bound !== 'ceiling') throw new TemplateError(`${path}.bound`, 'not one of floor, ceiling');
   const fallback = object(`${path}.default`, value.default);
   exactKeys(`${path}.default`, fallback, ['bps', 'source']);
@@ -886,35 +1029,70 @@ function computed(path: string, raw: unknown, name: string, scope: Scope, order:
 /** `card.<field>` with the prefix removed, or undefined when `raw` lacks it. */
 const cardFieldName = (raw: string): string | undefined => (raw.startsWith('card.') ? raw.slice(5) : undefined);
 
+function tolerance(path: string, raw: unknown): Tolerance {
+  const value = object(path, raw);
+  exactKeys(path, value, ['why'], ['less', 'more']);
+  if (value.less === undefined && value.more === undefined) throw new TemplateError(path, 'names neither less nor more');
+  const units = (side: 'less' | 'more'): bigint => {
+    const n = value[side];
+    if (n === undefined) return 0n;
+    if (typeof n !== 'number' || !Number.isInteger(n) || n < 1 || n > MAX_TOLERANCE) throw new TemplateError(`${path}.${side}`, `not a whole number of base units from 1 to ${MAX_TOLERANCE}`);
+    return BigInt(n);
+  };
+  return { less: units('less'), more: units('more'), why: prose(`${path}.why`, value.why) };
+}
+
+/** A registry token by name: an entry of kind `token` or `vault`, which holds balances. */
+function registryToken(path: string, name: string, registry: Registry): string {
+  const entry = registry.entries.get(name);
+  if (entry === undefined) throw new TemplateError(path, `${JSON.stringify(name)} is not in the contract registry`);
+  if (entry.kind !== 'token' && entry.kind !== 'vault') throw new TemplateError(path, `${name} is a ${entry.kind}, not a token or a vault`);
+  return name;
+}
+
 function effect(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'): Effect {
   const value = object(path, raw);
-  exactKeys(path, value, ['token', 'amount'], side === 'gives' ? ['to'] : []);
+  exactKeys(path, value, ['token', 'amount'], side === 'gives' ? ['to', 'tolerance'] : ['tolerance']);
   const token = text(`${path}.token`, value.token);
   const field = cardFieldName(token);
-  if (token !== 'eth' && field === undefined) throw new TemplateError(`${path}.token`, 'must be eth or card.<field>');
-  const ref = field === undefined ? 'eth' : cardToken(`${path}.token`, field, scope.card);
+  const ref: EffectToken = token === 'eth' ? 'eth' : field === undefined ? { contract: registryToken(`${path}.token`, token, scope.registry) } : cardToken(`${path}.token`, field, scope.card);
   let to: CardRef | undefined;
   if (value.to !== undefined) {
     const name = cardFieldName(text(`${path}.to`, value.to)) ?? '';
     if (!['address', 'recipient'].includes(scope.card.get(name)?.kind ?? '')) throw new TemplateError(`${path}.to`, 'must be card.<address field>');
     to = { field: name, attribute: undefined };
   }
-  if (side === 'gets' && typeof value.amount === 'object' && value.amount !== null) {
-    const bound = object(`${path}.amount`, value.amount);
-    exactKeys(`${path}.amount`, bound, ['atLeast']);
-    const field = cardFieldName(text(`${path}.amount.atLeast`, bound.atLeast)) ?? '';
-    if (scope.card.get(field)?.kind !== 'amount') throw new TemplateError(`${path}.amount.atLeast`, 'must be card.<amount field>');
-    return { token: ref, amount: { kind: 'at-least', field }, to };
+  const amount = effectAmount(`${path}.amount`, value.amount, scope, side);
+  if (value.tolerance !== undefined && (amount.kind !== 'card' || ref === 'eth')) throw new TemplateError(`${path}.tolerance`, 'only an exact card amount of a token takes a tolerance');
+  return { token: ref, amount, to, tolerance: value.tolerance === undefined ? undefined : tolerance(`${path}.tolerance`, value.tolerance) };
+}
+
+function effectAmount(path: string, raw: unknown, scope: Scope, side: 'gives' | 'gets'): EffectAmount {
+  const bound = side === 'gives' ? 'atMost' : 'atLeast';
+  if (typeof raw === 'object' && raw !== null) {
+    const value = object(path, raw);
+    exactKeys(path, value, [bound]);
+    const field = cardFieldName(text(`${path}.${bound}`, value[bound])) ?? '';
+    if (scope.card.get(field)?.kind !== 'amount') throw new TemplateError(`${path}.${bound}`, 'must be card.<amount field>');
+    return { kind: side === 'gives' ? 'at-most' : 'at-least', field };
   }
-  const amount = text(`${path}.amount`, value.amount);
-  if (amount === 'positive') return { token: ref, amount: { kind: 'positive' }, to };
-  if (amount === 'all' && side === 'gives') return { token: ref, amount: { kind: 'all' }, to };
-  if (amount === 'any' && side === 'gets') return { token: ref, amount: { kind: 'any' }, to };
-  const amountField = cardFieldName(amount) ?? '';
-  if (scope.card.get(amountField)?.kind !== 'amount') {
-    throw new TemplateError(`${path}.amount`, side === 'gives' ? 'must be "positive", "all" or card.<amount field>' : 'must be "positive", "any", card.<amount field> or {"atLeast": card.<amount field>}');
+  const amount = text(path, raw);
+  if (amount === 'positive') return { kind: 'positive' };
+  if (amount === 'all' && side === 'gives') return { kind: 'all' };
+  if (amount === 'any' && side === 'gets') return { kind: 'any' };
+  const field = cardFieldName(amount) ?? '';
+  if (scope.card.get(field)?.kind !== 'amount') {
+    throw new TemplateError(path, side === 'gives' ? 'must be "positive", "all", card.<amount field> or {"atMost": card.<amount field>}' : 'must be "positive", "any", card.<amount field> or {"atLeast": card.<amount field>}');
   }
-  return { token: ref, amount: { kind: 'card', field: amountField }, to };
+  return { kind: 'card', field };
+}
+
+function touch(path: string, raw: unknown, scope: Scope, moved: ReadonlySet<string>): Touch {
+  const value = object(path, raw);
+  exactKeys(path, value, ['token', 'tolerance']);
+  const token = registryToken(`${path}.token`, text(`${path}.token`, value.token), scope.registry);
+  if (moved.has(token)) throw new TemplateError(`${path}.token`, `${token} is named in gives, gets or touches already`);
+  return { token, tolerance: tolerance(`${path}.tolerance`, value.tolerance) };
 }
 
 function keptApproval(path: string, raw: unknown, scope: Scope): KeptApproval {
@@ -1022,7 +1200,7 @@ function safeSettings(path: string, raw: unknown, scope: Scope): SafeSettingsEff
   return { add, remove, threshold };
 }
 
-function ruleLeaves(rule: Rule): Rule[] {
+export function ruleLeaves(rule: Rule): Rule[] {
   if (rule.kind === 'fields') return rule.fields.flatMap(ruleLeaves);
   if (rule.kind === 'items') return rule.items.flatMap(ruleLeaves);
   if (rule.kind === 'call' || rule.kind === 'keccak') return rule.call.args.flatMap(ruleLeaves);
@@ -1093,6 +1271,7 @@ export function refNames(ref: CardRef, template: Template, registry: Registry): 
 
 /** The registry names a rule binds an address to: a named contract, or the entries a card field can name; undefined for any other rule. */
 export function targetNames(rule: Rule, template: Template, registry: Registry): string[] | undefined {
+  if (rule.kind === 'address-word') return targetNames(rule.rule, template, registry);
   if (rule.kind === 'contract') return [rule.name];
   const names = rule.kind === 'card' ? refNames(rule.ref, template, registry) : [];
   return names.length > 0 ? names : undefined;
@@ -1176,7 +1355,14 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
   const calls = rawCalls.map((call, i) => templateCall(`calls[${i}]`, call, scope, i === rawCalls.length - 1));
   if (calls.length === 0) throw new TemplateError('calls', 'empty');
   const effects = object('effects', value.effects);
-  exactKeys('effects', effects, ['gives', 'gets'], ['views', 'safe', 'approves']);
+  exactKeys('effects', effects, ['gives', 'gets'], ['views', 'safe', 'approves', 'touches']);
+  const gives = array('effects.gives', effects.gives).map((e, i) => effect(`effects.gives[${i}]`, e, scope, 'gives'));
+  const gets = array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets'));
+  const moved = new Set(namedEffectTokens({ gives, gets, touches: [] }));
+  const touched = (t: Touch): Touch => {
+    moved.add(t.token);
+    return t;
+  };
   const template: Template = {
     id,
     card: fields,
@@ -1184,16 +1370,17 @@ export function parseTemplate(raw: unknown, registry: Registry): Template {
     same,
     calls,
     effects: {
-      gives: array('effects.gives', effects.gives).map((e, i) => effect(`effects.gives[${i}]`, e, scope, 'gives')),
-      gets: array('effects.gets', effects.gets).map((e, i) => effect(`effects.gets[${i}]`, e, scope, 'gets')),
+      gives,
+      gets,
       views: effects.views === undefined ? [] : array('effects.views', effects.views).map((v, i) => view(`effects.views[${i}]`, v, scope)),
       safe: effects.safe === undefined ? undefined : safeSettings('effects.safe', effects.safe, scope),
       approves: effects.approves === undefined ? [] : array('effects.approves', effects.approves).map((a, i) => keptApproval(`effects.approves[${i}]`, a, scope)),
+      touches: effects.touches === undefined ? [] : array('effects.touches', effects.touches).map((t, i) => touched(touch(`effects.touches[${i}]`, t, scope, moved))),
     },
     facts: [],
   };
   const unbounded = [...template.effects.gives, ...template.effects.gets].some((effect) => effect.amount.kind === 'positive' || effect.amount.kind === 'any');
-  if (unbounded && routes(template)) throw new TemplateError('effects', 'a template with a route claim must bound each token the Safe gives or gets by a card amount, atLeast or all, since a route may change the price');
+  if (unbounded && routes(template)) throw new TemplateError('effects', 'a template with a route claim must bound each token the Safe gives or gets by a card amount, atLeast, atMost or all, since a route may change the price');
   const protocols = calledProtocols(template, registry);
   const parsed = { ...template, facts: value.facts === undefined ? [] : array('facts', value.facts).map((f, i) => fact(`facts[${i}]`, f, scope, protocols)) };
   const languages = proseLanguages(parsed, new Set());
@@ -1234,37 +1421,71 @@ function routes(template: Template): boolean {
   return template.calls.some((call) => visit(call.to) || visit(call.value) || (call.data !== 'empty' && call.data.args.some(visit)));
 }
 
+/** A rule and every rule nested in it. */
+function rulesUnder(rule: Rule | undefined): Rule[] {
+  if (rule === undefined) return [];
+  const nested = (): readonly Rule[] => {
+    switch (rule.kind) {
+      case 'call':
+      case 'keccak':
+        return rule.call.args;
+      case 'address-word':
+        return [rule.rule];
+      case 'items':
+        return rule.items;
+      case 'fields':
+        return rule.fields;
+      case 'packed':
+        return rule.parts.map((part) => part.rule);
+      case 'eip712':
+        return rule.message.fields;
+      default:
+        return [];
+    }
+  };
+  return [rule, ...nested().flatMap(rulesUnder)];
+}
+
+/** Every rule of the template's nonce and calls, nested ones included. */
+const callRules = (template: Template): Rule[] =>
+  [template.nonce, ...template.calls.flatMap((call) => [call.to, call.value, ...(call.data === 'empty' ? [] : call.data.args)])].flatMap(rulesUnder);
+
+/** The card amount fields a share price bound or an `atLeast` compares with: card fields only, never a path. */
+function comparedFields(rule: Rule): string[] {
+  if (rule.kind === 'share-price') return [rule.assets, rule.shares].flatMap((q) => (q.kind === 'card' ? [q.field] : []));
+  return rule.kind === 'at-least' ? [rule.field] : [];
+}
+
+/**
+ * The card amount fields that bound the transaction from one side, where 0 bounds nothing: each computed field, and
+ * each a share price bound or an `atLeast`, of a call or of what the Safe gets, compares with.
+ */
+export function floorFields(template: Template): ReadonlySet<string> {
+  return new Set([
+    ...[...template.card].flatMap(([name, field]) => (field.kind === 'amount' && field.computed !== undefined ? [name] : [])),
+    ...[...callRules(template), ...template.effects.views.flatMap(({ args }) => args.flatMap(rulesUnder))].flatMap(comparedFields),
+    ...template.effects.gets.flatMap(({ amount }) => (amount.kind === 'at-least' ? [amount.field] : [])),
+  ]);
+}
+
 /** Every card reference the template makes. */
 export function cardRefs(template: Template): CardRef[] {
   const refs: CardRef[] = [...template.same];
-  const visit = (rule: Rule | undefined): void => {
-    if (rule?.kind === 'card' || rule?.kind === 'owner-before') refs.push(rule.ref);
-    else if (rule?.kind === 'share-price') {
-      for (const q of [rule.assets, rule.shares]) if (q.kind === 'card') refs.push({ field: q.field, attribute: undefined });
-    }
-    else if (rule?.kind === 'at-least') refs.push({ field: rule.field, attribute: undefined });
-    else if (rule?.kind === 'call' || rule?.kind === 'keccak') rule.call.args.forEach(visit);
-    else if (rule?.kind === 'items') rule.items.forEach(visit);
-    else if (rule?.kind === 'fields') rule.fields.forEach(visit);
-    else if (rule?.kind === 'packed') rule.parts.forEach((part) => visit(part.rule));
-    else if (rule?.kind === 'eip712') rule.message.fields.forEach(visit);
-  };
-  visit(template.nonce);
-  for (const call of template.calls) {
-    visit(call.to);
-    visit(call.value);
-    if (call.data !== 'empty') call.data.args.forEach(visit);
-  }
+  const refsOf = (rule: Rule): CardRef[] =>
+    rule.kind === 'card' || rule.kind === 'owner-before'
+      ? [rule.ref]
+      : [...comparedFields(rule), ...(rule.kind === 'at-most' ? [rule.field] : [])].map((field) => ({ field, attribute: undefined }));
+  refs.push(...callRules(template).flatMap(refsOf));
   for (const { to, args } of template.effects.views) {
     if (to.kind === 'card') refs.push(to.ref);
-    args.forEach(visit);
+    refs.push(...args.flatMap(rulesUnder).flatMap(refsOf));
   }
   for (const field of template.card.values()) if (field.kind === 'amount' && field.of !== 'eth') refs.push(field.of);
   const settings = template.effects.safe;
   for (const ref of [settings?.add, settings?.remove, settings?.threshold]) if (ref !== undefined) refs.push(ref);
   for (const { token } of template.effects.approves) refs.push(token);
   for (const { token, to } of [...template.effects.gives, ...template.effects.gets]) {
-    if (token !== 'eth') refs.push(token);
+    if (token !== 'eth' && !isNamedToken(token)) refs.push(token);
     if (to !== undefined) refs.push(to);
   }
   for (const { token } of template.effects.approves) refs.push(token);

@@ -8,8 +8,8 @@ import { MARKET_ENTRY_PARTS, isAttribute, isMarketEntryPart } from './registry.t
 import type { Market, Registry, RegistryEntry } from './registry.ts';
 import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
-import { WAD, contractRefusal } from './template/template.ts';
-import type { CardRef, Template } from './template/template.ts';
+import { WAD, contractRefusal, floorFields } from './template/template.ts';
+import type { CardField, CardRef, Template } from './template/template.ts';
 
 /** What the signer confirms at each signing: which templates, and each one's values. Addresses appear only as names. */
 export type Card = { readonly operations: readonly CardOperation[] };
@@ -41,12 +41,14 @@ export type CardRefusal =
   | 'not-a-nonce'
   | 'not-a-percent'
   | 'not-a-threshold'
+  | 'zero-floor'
   | 'not-the-same'
   | 'two-settings-changes';
 
 export type Resolution =
   | { readonly kind: 'resolved'; readonly card: ResolvedCard }
-  | { readonly kind: 'refused'; readonly reason: CardRefusal; readonly at: string; readonly detail: string };
+  | { readonly kind: 'refused'; readonly reason: CardRefusal; readonly at: string; readonly field: string; readonly detail: string };
+export type Refused = Extract<Resolution, { readonly kind: 'refused' }>;
 
 export class CardError extends Error {
   override name = 'CardError';
@@ -91,7 +93,7 @@ export type CardContext = {
   readonly safe: Address;
 };
 
-function resolveAddress(name: string, context: CardContext): ResolvedValue | CardRefusal {
+function resolveAddress(name: string, context: Omit<CardContext, 'templates'>): ResolvedValue | CardRefusal {
   if (name === 'safe') return { kind: 'address', name, address: context.safe, from: 'safe' };
   const contract = context.registry.entries.get(name);
   const booked = context.addressBook.get(name);
@@ -101,19 +103,72 @@ function resolveAddress(name: string, context: CardContext): ResolvedValue | Car
   return 'unknown-name';
 }
 
+/** What one card value names, using only the registry, the address book, and the Safe, or why it names nothing. */
+export function resolveValue(field: CardField, raw: string, context: Omit<CardContext, 'templates'>): ResolvedValue | { readonly reason: CardRefusal; readonly detail: string } {
+  const refuse = (reason: CardRefusal, detail: string) => ({ reason, detail });
+  switch (field.kind) {
+    case 'amount':
+    case 'nonce': {
+      const value = parseUint256(raw);
+      if (value === undefined) return field.kind === 'amount' ? refuse('not-an-amount', 'not a base-unit integer') : refuse('not-a-nonce', 'not a nonce');
+      return { kind: field.kind, value };
+    }
+    case 'percent': {
+      const value = parseUint256(raw);
+      if (value === undefined || value > WAD) return refuse('not-a-percent', `not a percent in WAD base units, ${WAD} at most`);
+      return { kind: 'percent', value };
+    }
+    case 'contract': {
+      const entry = context.registry.entries.get(raw);
+      if (entry === undefined) return refuse('unknown-name', `${JSON.stringify(raw)} is not in the contract registry`);
+      const refused = contractRefusal(field.scope, entry, context.registry);
+      if (refused !== undefined) return refuse(refused.reason, refused.detail);
+      return { kind: 'contract', name: raw, entry };
+    }
+    case 'address': {
+      const resolved = resolveAddress(raw, context);
+      if (typeof resolved !== 'string') return resolved;
+      const where = resolved === 'unknown-name' ? 'is in neither the registry nor the address book' : 'is in both the registry and the address book';
+      return refuse(resolved, `${JSON.stringify(raw)} ${where}`);
+    }
+    case 'market': {
+      const market = context.registry.markets.get(raw);
+      if (market === undefined) return refuse('unknown-name', `${JSON.stringify(raw)} is not a market in registry/markets.json`);
+      return { kind: 'market', market };
+    }
+    case 'threshold': {
+      const value = parseUint256(raw);
+      if (value === undefined || value === 0n) return refuse('not-a-threshold', 'not a whole number from 1');
+      return { kind: 'threshold', value };
+    }
+    case 'owner': {
+      const booked = context.addressBook.get(raw);
+      if (booked === undefined) return refuse('unknown-name', `${JSON.stringify(raw)} is not in the address book; add the owner with pnpm kiss-sign book add`);
+      return { kind: 'address', name: raw, address: booked, from: 'address-book' };
+    }
+    case 'recipient': {
+      const booked = context.addressBook.get(raw);
+      if (raw === 'safe') return { kind: 'address', name: raw, address: context.safe, from: 'safe' };
+      if (booked !== undefined) return { kind: 'address', name: raw, address: booked, from: 'address-book' };
+      return refuse('unknown-name', `${JSON.stringify(raw)} is not in the address book; a recipient other than the Safe must be added with pnpm kiss-sign book add`);
+    }
+  }
+}
+
 /** Turns each card value into what it names, using only the registry, the address book, and the Safe. */
 export function resolveCard(card: Card, context: CardContext): Resolution {
   const operations: ResolvedOperation[] = [];
   const settings = card.operations.filter((op) => context.templates.get(op.template)?.effects.safe !== undefined);
   if (settings.length > 1) {
     const at = card.operations.indexOf(settings[1] as CardOperation);
-    return { kind: 'refused', reason: 'two-settings-changes', at: `operations[${at}]`, detail: "a card changes the Safe's owners or threshold in at most one operation; make each change its own transaction" };
+    return { kind: 'refused', reason: 'two-settings-changes', at: `operations[${at}]`, field: '', detail: "a card changes the Safe's owners or threshold in at most one operation; make each change its own transaction" };
   }
   for (const [i, op] of card.operations.entries()) {
     const refuse = (reason: CardRefusal, field: string, detail: string): Resolution => ({
       kind: 'refused',
       reason,
       at: `operations[${i}]${field === '' ? '' : `.values.${field}`}`,
+      field,
       detail,
     });
     const template = context.templates.get(op.template);
@@ -124,66 +179,15 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
     for (const [name, field] of template.card) {
       const raw = op.values[name];
       if (raw === undefined) return refuse('missing-value', name, `${template.id} needs ${name}`);
-      switch (field.kind) {
-        case 'amount':
-        case 'nonce': {
-          const value = parseUint256(raw);
-          if (value === undefined) {
-            return field.kind === 'amount' ? refuse('not-an-amount', name, 'not a base-unit integer') : refuse('not-a-nonce', name, 'not a nonce');
-          }
-          values.set(name, { kind: field.kind, value });
-          break;
-        }
-        case 'percent': {
-          const value = parseUint256(raw);
-          if (value === undefined || value > WAD) return refuse('not-a-percent', name, `not a percent in WAD base units, ${WAD} at most`);
-          values.set(name, { kind: 'percent', value });
-          break;
-        }
-        case 'contract': {
-          const entry = context.registry.entries.get(raw);
-          if (entry === undefined) return refuse('unknown-name', name, `${JSON.stringify(raw)} is not in the contract registry`);
-          const refused = contractRefusal(field.scope, entry, context.registry);
-          if (refused !== undefined) return refuse(refused.reason, name, refused.detail);
-          values.set(name, { kind: 'contract', name: raw, entry });
-          break;
-        }
-        case 'address': {
-          const resolved = resolveAddress(raw, context);
-          if (typeof resolved === 'string') {
-            const where = resolved === 'unknown-name' ? 'is in neither the registry nor the address book' : 'is in both the registry and the address book';
-            return refuse(resolved, name, `${JSON.stringify(raw)} ${where}`);
-          }
-          values.set(name, resolved);
-          break;
-        }
-        case 'market': {
-          const market = context.registry.markets.get(raw);
-          if (market === undefined) return refuse('unknown-name', name, `${JSON.stringify(raw)} is not a market in registry/markets.json`);
-          values.set(name, { kind: 'market', market });
-          break;
-        }
-        case 'threshold': {
-          const value = parseUint256(raw);
-          if (value === undefined || value === 0n) return refuse('not-a-threshold', name, 'not a whole number from 1');
-          values.set(name, { kind: 'threshold', value });
-          break;
-        }
-        case 'owner': {
-          const booked = context.addressBook.get(raw);
-          if (booked === undefined) return refuse('unknown-name', name, `${JSON.stringify(raw)} is not in the address book; add the owner with pnpm kiss-sign book add`);
-          values.set(name, { kind: 'address', name: raw, address: booked, from: 'address-book' });
-          break;
-        }
-        case 'recipient': {
-          const booked = context.addressBook.get(raw);
-          if (raw === 'safe') values.set(name, { kind: 'address', name: raw, address: context.safe, from: 'safe' });
-          else if (booked !== undefined) values.set(name, { kind: 'address', name: raw, address: booked, from: 'address-book' });
-          else return refuse('unknown-name', name, `${JSON.stringify(raw)} is not in the address book; a recipient other than the Safe must be added with pnpm kiss-sign book add`);
-          break;
-        }
-      }
+      const resolved = resolveValue(field, raw, context);
+      if ('reason' in resolved) return refuse(resolved.reason, name, resolved.detail);
+      values.set(name, resolved);
     }
+    const zero = [...floorFields(template)].find((name) => {
+      const value = values.get(name);
+      return value?.kind === 'amount' && value.value === 0n;
+    });
+    if (zero !== undefined) return refuse('zero-floor', zero, `${zero} is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it`);
     const named = template.same.map((ref) => {
       const target = resolveRef(ref, values, context.registry);
       const label = ref.attribute === undefined ? ref.field : `${ref.field}.${ref.attribute}`;

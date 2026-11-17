@@ -1,12 +1,16 @@
+import { hexToBytes } from '@noble/hashes/utils.js';
 import { existsSync } from 'node:fs';
 import { say } from '../language.ts';
 import type { Language } from '../language.ts';
 import { join } from 'node:path';
 import { loadAddressBook } from '../address-book.ts';
 import type { AddressBook } from '../address-book.ts';
-import { CardError, parseUint256 } from '../card.ts';
-import type { CardOperation } from '../card.ts';
+import { CardError, parseUint256, resolveRef, resolveValue } from '../card.ts';
+import type { CardOperation, ResolvedValue } from '../card.ts';
 import { groupedTokens, readDecimals } from '../chain/decimals.ts';
+import { canonicalType } from '../decode/abi.ts';
+import { decodeValues } from '../decode/codec.ts';
+import type { AbiValue } from '../decode/codec.ts';
 import { openMainnetReader } from '../chain/reader.ts';
 import type { Reader } from '../chain/reader.ts';
 import type { BlockRef } from '../chain/types.ts';
@@ -16,7 +20,7 @@ import type { Attribute, Market, MarketPart, Registry, RegistryEntry } from '../
 import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
-import type { CardField, CardRef, Computed, ComputedRead, Template, TokenRef } from '../template/template.ts';
+import type { CardField, CardRef, Computed, ComputedRead, Rule, Template, TokenRef } from '../template/template.ts';
 import { gatesVaults, isRegistryVault, reportUnit, reportedVaultsIn, severalVaults } from '../template/vault-reports.ts';
 import { marketHead, marketTable } from './card-view.ts';
 import { paint, rows, section, table, text } from './format.ts';
@@ -25,6 +29,7 @@ import { FAILED, UsageError, terminal } from './io.ts';
 import type { Labels } from './labels.ts';
 import type { Io, Terminal } from './io.ts';
 import { stopUnlessDataIsMain, requireConfig, seal } from './setup.ts';
+import { bindView } from '../simulate/effects.ts';
 
 /** A name a field may hold; a registry entry carries the factory that created it, so two vaults of one display name stay apart. */
 type Choice = { readonly name: string; readonly address: Address; readonly from: 'registry' | 'address-book' | 'safe'; readonly factory?: RegistryEntry };
@@ -121,8 +126,8 @@ const UINT256_LIMIT = 1n << 256n;
 /** Every chain read of one card, through both providers at the one block they agree on. */
 type Chain = {
   readonly decimals: (entry: RegistryEntry) => Promise<number>;
-  /** One uint256 a view answers. */
-  readonly call: (to: RegistryEntry, data: Hex, call: string) => Promise<bigint>;
+  /** What a view answers. */
+  readonly call: (to: RegistryEntry, data: Hex, call: string) => Promise<Hex>;
   /** Each token's decimals read so far. */
   readonly known: ReadonlyMap<Address, number>;
   /** The block every read was made at and the providers that agreed, once anything was read. */
@@ -163,8 +168,7 @@ function openChain(reader: Reader | undefined, L: CardWords): Chain {
       const read = await r.call({ to: to.address, data }, ref);
       if (read.kind === 'unverifiable') return refuse(read.reason);
       if (read.value.kind === 'reverted') return refuse(L.reverted);
-      if (read.value.data.length !== 66) return refuse(L.notOneWord((read.value.data.length - 2) / 2));
-      return BigInt(read.value.data);
+      return read.value.data;
     },
   };
 }
@@ -225,8 +229,6 @@ async function typedValue(name: string, field: TypedField, values: Readonly<Reco
   return baseUnits(name, typed, decimals, token, L).toString();
 }
 
-const word = (value: bigint): string => value.toString(16).padStart(64, '0');
-
 function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources: Sources, L: CardWords): RegistryEntry {
   const chosen = values[ref.field] as string;
   const entry = entryOf(chosen, ref.attribute, sources.registry);
@@ -238,31 +240,63 @@ function entryAt(ref: CardRef, values: Readonly<Record<string, string>>, sources
 type Step = { readonly call: string; readonly on: RegistryEntry; readonly value: bigint };
 
 async function readValue(read: ComputedRead, values: Readonly<Record<string, string>>, ctx: Context, steps: Step[]): Promise<bigint> {
-  const words: string[] = [];
-  const shown: string[] = [];
-  for (const arg of read.args) {
-    if (arg.kind === 'safe') {
-      words.push(word(BigInt(ctx.sources.safe)));
-      shown.push('safe');
-    } else if (arg.kind === 'read') {
-      const inner = await readValue(arg.read, values, ctx, steps);
-      words.push(word(inner));
-      shown.push(String(inner));
-    } else if (ctx.template.card.get(arg.ref.field)?.kind === 'amount') {
-      const amount = BigInt(values[arg.ref.field] as string);
-      words.push(word(amount));
-      shown.push(String(amount));
-    } else {
-      const entry = entryAt(arg.ref, values, ctx.sources, ctx.L);
-      words.push(word(BigInt(entry.address)));
-      shown.push(entry.name);
-    }
-  }
-  const to = entryAt(read.to, values, ctx.sources, ctx.L);
-  const call = `${read.fn.name}(${shown.join(', ')})`;
-  const value = await ctx.chain.call(to, `${read.fn.selector}${words.join('')}` as Hex, call);
+  const args: Rule[] = [];
+  for (const arg of read.args) args.push(arg.kind === 'bound' ? arg.rule : { kind: 'const', value: { kind: 'uint', value: await readValue(arg.read, values, ctx, steps) } });
+  const { registry, safe } = ctx.sources;
+  const resolved = resolvedValues(values, ctx);
+  const call = `${read.fn.name}(${args.map((arg) => shown(arg, resolved, registry)).join(', ')})`;
+  const to = read.to.kind === 'contract' ? (registry.entries.get(read.to.name) as RegistryEntry) : entryAt(read.to.ref, values, ctx.sources, ctx.L);
+  const refuse = (why: string): never => {
+    throw new CardError(ctx.L.noRead(call, to.name, checksumAddress(to.address), why));
+  };
+  const bound = bindView({ ...read, args }, { safe, values: resolved, registry });
+  if ('problem' in bound) return refuse(bound.problem);
+  const answer = decodeValues(read.returns.map((param) => param.type), hexToBytes((await ctx.chain.call(to, bound.call.data, call)).slice(2)));
+  if (answer === undefined) return refuse(ctx.L.notReturns(`(${read.returns.map((param) => canonicalType(param.type)).join(',')})`));
+  const [first, ...rest] = read.output;
+  const picked = rest.reduce((value, i) => (value as Extract<AbiValue, { kind: 'tuple' }>).fields[i] as AbiValue, answer[first as number] as AbiValue);
+  const value = (picked as Extract<AbiValue, { kind: 'uint' | 'int' }>).value;
   steps.push({ call, on: to, value });
   return value;
+}
+
+/** An argument as the signer reads it: a name where the value has one, such as `safe` or a registry entry. */
+function shown(rule: Rule, values: ReadonlyMap<string, ResolvedValue>, registry: Registry): string {
+  switch (rule.kind) {
+    case 'safe':
+      return 'safe';
+    case 'contract':
+      return rule.name;
+    case 'const':
+      return String(rule.value.value);
+    case 'card': {
+      const target = resolveRef(rule.ref, values, registry);
+      return 'problem' in target ? `card.${rule.ref.field}` : target.kind === 'address' ? target.name : target.kind === 'market' ? target.market.name : String(target.value);
+    }
+    case 'fields':
+      return `(${rule.fields.map((field) => shown(field, values, registry)).join(', ')})`;
+    case 'items':
+      return `[${rule.items.map((item) => shown(item, values, registry)).join(', ')}]`;
+    case 'call':
+    case 'keccak': {
+      const inner = `${rule.call.fn.name}(${rule.call.args.map((arg) => shown(arg, values, registry)).join(', ')})`;
+      return rule.kind === 'keccak' ? `keccak256(${inner})` : inner;
+    }
+    default:
+      return rule.kind;
+  }
+}
+
+/** The values chosen and typed so far, as a sealed card resolves them. */
+function resolvedValues(values: Readonly<Record<string, string>>, ctx: Context): Map<string, ResolvedValue> {
+  const context = { registry: ctx.sources.registry, addressBook: ctx.sources.book, safe: ctx.sources.safe };
+  return new Map(
+    Object.entries(values).map(([name, raw]) => {
+      const resolved = resolveValue(ctx.template.card.get(name) as CardField, raw, context);
+      if ('reason' in resolved) throw new CardError(`${name}: ${resolved.detail}`);
+      return [name, resolved];
+    }),
+  );
 }
 
 const percent = (bps: number): string => `${(bps / 100).toFixed(2)}%`;

@@ -15,10 +15,14 @@
       "of": "vault",
       "computed": {
         "read": {
-          "to": "card.vault",
+          "to": {
+            "card": "vault"
+          },
           "function": "previewDeposit(uint256 assets) returns (uint256 shares)",
           "args": {
-            "assets": "card.amount"
+            "assets": {
+              "card": "amount"
+            }
           }
         },
         "bound": "floor",

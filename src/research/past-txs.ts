@@ -148,6 +148,8 @@ function describeRule(rule: LeafRule, sender: string): string {
       return sender;
     case 'contract':
       return `contract ${rule.name}`;
+    case 'address-word':
+      return `${describeRule(rule.rule, sender)} as a 32-byte word`;
     case 'const':
       return `const ${constText(rule.value)}`;
     case 'card':
@@ -159,7 +161,8 @@ function describeRule(rule: LeafRule, sender: string): string {
     case 'owner-before':
       return `the owner before card ${rule.ref.field}`;
     case 'at-least':
-      return `at least card ${rule.field}`;
+    case 'at-most':
+      return `${rule.kind === 'at-least' ? 'at least' : 'at most'} card ${rule.field}`;
     case 'share-price': {
       const name = (q: Quantity): string => (q.kind === 'card' ? `card ${q.field}` : q.path);
       return `${rule.bound} share price, against ${name(rule.assets)} per ${name(rule.shares)}`;
@@ -227,9 +230,9 @@ function renderGroup(lines: string[], group: Group, run: PastTxs, registry: Regi
       const holding = fits.filter((fit) => brokenRule(rule, i, rules, fit.paths, fit.values, fit.sender) === undefined);
       lines.push(`  ${paths[i]}  [${describeRule(rule, sender)}]`);
       const heldText =
-        rule.kind === 'free' || rule.kind === 'equals' || rule.kind === 'share-price' || rule.kind === 'at-least'
+        rule.kind === 'free' || rule.kind === 'equals' || rule.kind === 'share-price' || rule.kind === 'at-least' || rule.kind === 'at-most'
           ? ''
-          : rule.kind === 'card'
+          : (rule.kind === 'address-word' ? rule.rule : rule).kind === 'card'
             ? `same as the other leaves bound to ${describeRule(rule, sender)} in ${holding.length} of ${fits.length}; `
             : `equalled ${describeRule(rule, sender)} in ${holding.length} of ${fits.length} (${plural(sendersOf(holding), who, many)}); `;
       lines.push(`    ${heldText}values: ${distribution(run, fits, i, registry, sender)}`);

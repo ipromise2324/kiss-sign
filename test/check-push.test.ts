@@ -65,6 +65,17 @@ test('an API key value is refused without printing the key', () => {
   assert.ok(!result.stderr.includes(keyValue));
 });
 
+test('a GitHub token from the key file is refused without printing it', () => {
+  const { repo, home } = setup();
+  const token = 'github_pat_planted0value0for0the0push0check';
+  writeFileSync(join(home, '.kiss-sign', '.env'), `GITHUB_TOKEN=${token}\n`);
+  commit(repo, 'a.txt', `token ${token}\n`);
+  const result = check(repo, home);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /GITHUB_TOKEN/);
+  assert.ok(!result.stderr.includes(token));
+});
+
 test('a push-deny word in the commit message is refused', () => {
   const { repo, home } = setup();
   commit(repo, 'a.txt', 'fine\n', 'mention Forbidden-Word here');

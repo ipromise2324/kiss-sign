@@ -7,7 +7,7 @@ import type { BlockRef } from '../chain/types.ts';
 import type { AbiFunction, AbiType } from '../decode/abi.ts';
 import { decodeValues, encodeCall } from '../decode/codec.ts';
 import type { AbiValue } from '../decode/codec.ts';
-import type { CodePin, CodePins, CodeSpan, Route, SelectorRouting } from '../registry.ts';
+import type { CodePin, CodePins, CodeSpan, ProxyDeclaration, Route, SelectorRouting } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { locate, minimalProxyTarget, safeProxyFactory, unknownDelegation } from './proxy.ts';
 import type { Proxy, ProxyRefusal } from './proxy.ts';
@@ -124,11 +124,12 @@ export async function readRoutes(reader: Reader, proxy: Address, routing: Select
   return { kind: 'read', routes };
 }
 
-export async function readRunningCode(reader: Reader, address: Address, at: BlockRef, routing?: SelectorRouting): Promise<CodeRead> {
+/** `declared` is how the entry at `address` says its proxy names the code it runs, when it says so. */
+export async function readRunningCode(reader: Reader, address: Address, at: BlockRef, declared: ProxyDeclaration = {}): Promise<CodeRead> {
   const refused = (refusal: CodeRefusal): CodeRead => ({ kind: 'refused', refusal });
   const own = await codeAt(reader, address, at);
   if (typeof own !== 'string') return refused(own);
-  const located = await locate(reader, address, own, at, routing !== undefined);
+  const located = await locate(reader, address, own, at, declared);
   if (located.kind === 'refused') return refused(located.refusal);
   const { proxy } = located;
   let runs = own;
@@ -140,8 +141,8 @@ export async function readRunningCode(reader: Reader, address: Address, at: Bloc
     if (delegation !== undefined) return refused(delegation);
     runs = code;
   }
-  if (routing === undefined) return { kind: 'read', code: { own, proxy, runs } };
-  const routes = await readRoutes(reader, address, routing, at);
+  if (declared.routes === undefined) return { kind: 'read', code: { own, proxy, runs } };
+  const routes = await readRoutes(reader, address, declared.routes, at);
   return routes.kind === 'refused' ? routes : { kind: 'read', code: { own, proxy, runs, routes: routes.routes } };
 }
 
@@ -166,24 +167,24 @@ export type CodeHistory =
   | { readonly kind: 'refused'; readonly refusal: CodeRefusal };
 
 /** The code a call to `address` runs at block `number`, read at the block hash both providers agree on. */
-export async function readRunningCodeAt(reader: Reader, address: Address, number: bigint, routing?: SelectorRouting): Promise<CodeRead> {
+export async function readRunningCodeAt(reader: Reader, address: Address, number: bigint, declared: ProxyDeclaration = {}): Promise<CodeRead> {
   const block = await reader.block(number);
-  return block.kind === 'unverifiable' ? { kind: 'refused', refusal: { why: 'unverifiable', read: block.reason } } : readRunningCode(reader, address, block.value, routing);
+  return block.kind === 'unverifiable' ? { kind: 'refused', refusal: { why: 'unverifiable', read: block.reason } } : readRunningCode(reader, address, block.value, declared);
 }
 
 /**
  * Walks back from block `head`, where `address` runs `headPin`, through every change of the code a call to it runs, and
- * of its routes when `routing` is given.
+ * of its routes when `declared` holds them.
  * For each pin it searches, by halving the blocks from 0 to the latest block known to hold it, for the first block of
  * the run that ends there, then reads the block before that run and repeats until that block holds no pin. Each read
  * goes through both providers at an agreed block hash; one they disagree on refuses the whole history.
  */
-export async function readCodeHistory(reader: Reader, address: Address, head: bigint, headPin: CodePin, routing?: SelectorRouting): Promise<CodeHistory> {
+export async function readCodeHistory(reader: Reader, address: Address, head: bigint, headPin: CodePin, declared: ProxyDeclaration = {}): Promise<CodeHistory> {
   const reads = new Map<bigint, CodeRead>();
   const readAt = async (number: bigint): Promise<CodeRead> => {
     let read = reads.get(number);
     if (read === undefined) {
-      read = await readRunningCodeAt(reader, address, number, routing);
+      read = await readRunningCodeAt(reader, address, number, declared);
       reads.set(number, read);
     }
     return read;

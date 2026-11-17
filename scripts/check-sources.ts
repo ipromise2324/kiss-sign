@@ -8,6 +8,7 @@ import { gatherApiAnswers, httpsApi, retryingSend } from '../src/research/api-so
 import { checkSources, formatResults, listingsFor, liveListingReads, trimForRecording } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
+import { readGithubToken } from '../src/research/github-token.ts';
 import { ensureVendored } from '../src/vendor.ts';
 import { openMainnetReader } from '../src/chain/reader.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
@@ -42,13 +43,15 @@ const entries = names.length === 0 ? [...registry.entries.values()] : names.map(
 if (!(await ensureVendored(['psl']))) process.exit(1);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
-const packages = await gatherPackages(entries, retryingGet(httpsGet, note));
-const listings = await listingsFor(entries, loadPublicSuffixList(), liveListingReads(note), [...entries.flatMap(pageUrlsOf), ...provenanceRepositories(packages)]);
+const githubToken = readGithubToken(process.env);
+const get = retryingGet(httpsGet(githubToken), note);
+const packages = await gatherPackages(entries, get);
+const listings = await listingsFor(entries, loadPublicSuffixList(), liveListingReads(note, githubToken), [...entries.flatMap(pageUrlsOf), ...provenanceRepositories(packages)]);
 const apis = await gatherApiAnswers(entries, retryingSend(httpsApi, note));
 const creations = await liveCreations(entries, process.env, note, () => openMainnetReader(process.env, httpsTransport(), { note }));
 if ('missing' in creations) console.error(`NOTE  who deployed each entry is not checked: ${creations.missing}`);
 const pages = {
-  ...(await gatherSourcePages(entries.flatMap(pageUrlsOf), retryingGet(httpsGet, note), apis)),
+  ...(await gatherSourcePages(entries.flatMap(pageUrlsOf), get, apis)),
   packages,
   ...('missing' in creations ? {} : { creations }),
 };
