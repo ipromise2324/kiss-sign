@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -288,7 +288,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-acuto-usdc-v2-4a57">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -531,33 +531,33 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 4</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>3</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
-    <div class="row" data-state="warn" data-result="morpho-oracle-cbbtc-usdc-86/address">
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
+      <div><div class="t"><span class="lbl">重要</span> morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
         <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
-    <div class="row" data-state="warn" data-result="morpho-oracle-usp-usdc/address">
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">morpho-oracle-usp-usdc：地址只在 1 個地方確認：協議 API</div>
+      <div><div class="t"><span class="lbl">重要</span> morpho-oracle-usp-usdc：地址只在 1 個地方確認：協議 API</div>
         <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
-    <div class="row" data-state="warn" data-result="acuto-usdc-v2-4a57/address">
+    <div class="row" data-state="warn" data-grade="key" data-result="acuto-usdc-v2-4a57/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">acuto-usdc-v2-4a57：地址只在 1 個地方確認：工廠</div>
+      <div><div class="t"><span class="lbl">重要</span> acuto-usdc-v2-4a57：地址只在 1 個地方確認：工廠</div>
         <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-acuto-usdc-v2-4a57">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>程式只有工廠確認：VaultV2Factory 回答 <code>isVaultV2</code> = true。AI 問 Morpho API 這個地址，名稱是 Acuto、沒有上架、curator 是 0x6788c8ad65E85CCa7224a0B46D061EF7D81F9Da5；AI 沒找到不靠網址帶地址就列出它的頁面。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>只在你就是這個 vault 的 curator 或 allocator 時用；先在 Morpho app 的 curator 頁比對地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
-    <div class="row" data-state="warn" data-result="morpho-oracle-weeth-usdc-86/address">
+    <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
-      <div><div class="t">morpho-oracle-weeth-usdc-86：地址只在 1 個地方確認：協議 API</div>
+      <div><div class="t"><span class="lbl">重要</span> morpho-oracle-weeth-usdc-86：地址只在 1 個地方確認：協議 API</div>
         <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
