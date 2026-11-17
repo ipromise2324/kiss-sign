@@ -637,9 +637,9 @@ const code = (text: string): string => `\`${text}\``;
 const full = (entry: RegistryEntry): string => `${code(entry.name)} ${code(checksumAddress(entry.address))}`;
 const VERDICTS: Readonly<Record<Line['kind'], string>> = { agrees: 'PASS', absent: 'NOT LISTED', finding: 'FINDING', unverifiable: 'UNVERIFIABLE' };
 const verdict = (line: Line | undefined): string => (line === undefined ? 'n/a' : VERDICTS[line.kind]);
-/** A newest version that binds the label to other addresses names them, since no other line of the report does. */
-const newestVerdict = (line: Line | undefined): string =>
-  line?.kind === 'finding' && line.others !== undefined ? `FINDING: lists ${line.others.map((a) => code(checksumAddress(a))).join(', ')} under the same label` : verdict(line);
+/** A source or newest version that binds the label to other addresses names them, since no other line of the report does. */
+const othersVerdict = (line: Line | undefined): string =>
+  line?.kind === 'finding' && line.others !== undefined ? `FINDING: lists ${line.others.map((a) => code(checksumAddress(a))).join(', ')} under the label` : verdict(line);
 
 /** What a cell prints for a result with nothing to compare, which is no finding (`WEIGHT_OF`). */
 const NEUTRAL_WORDS: Readonly<Partial<Record<FindingKind, string>>> = {
@@ -1292,7 +1292,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs, 
     const cell = cellOf(results, entry);
     const page = of('page') === undefined ? 'url' : 'page';
     out.push(
-      `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${cell('source.site', of('defillama'))} | ${cell('source.coingecko', of('coingecko'))} | ${cell('source.commit', of('github'))} | ${cell('source.tip', of('tip'), newestVerdict)} | ${cell(`source.${page}`, of(page))} |`,
+      `| ${code(entry.name)} | ${code(checksumAddress(entry.address))} | ${entry.kind} | <${entry.source}> | ${cell('source.site', of('defillama'))} | ${cell('source.coingecko', of('coingecko'))} | ${cell('source.commit', of('github'))} | ${cell('source.tip', of('tip'), othersVerdict)} | ${cell(`source.${page}`, of(page), othersVerdict)} |`,
     );
   }
   const more = checked.flatMap(({ entry, lines }) => (entry.moreSources ?? []).map((page, i) => ({ entry, page, n: i + 1, lines: lines.filter((l) => l.more === i + 1) })));
@@ -1306,7 +1306,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs, 
       ...more.map(({ entry, page, n, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
         const cell = cellOf(results, entry);
-        return `| ${code(entry.name)} | <${page.url}> | ${cell(`source.more.${n}.site`, of('defillama'))} | ${cell(`source.more.${n}.commit`, of('github'))} | ${cell(`source.more.${n}.tip`, of('tip'), newestVerdict)} | ${cell(`source.more.${n}.page`, of('page'))} |`;
+        return `| ${code(entry.name)} | <${page.url}> | ${cell(`source.more.${n}.site`, of('defillama'))} | ${cell(`source.more.${n}.commit`, of('github'))} | ${cell(`source.more.${n}.tip`, of('tip'), othersVerdict)} | ${cell(`source.more.${n}.page`, of('page'), othersVerdict)} |`;
       }),
     );
   }
@@ -1322,7 +1322,7 @@ function entrySections(entries: readonly RegistryEntry[], inputs: ReportInputs, 
       ...placed.map(({ entry, lines }) => {
         const of = (check: Line['check']) => lines.find((l) => l.check === check);
         const cell = cellOf(results, entry);
-        return `| ${code(entry.name)} | ${cell('source.bounty', of('bounty'))} | ${cell('source.sdk', of('sdk'))} | ${cell('source.sdk.site', of('sdk-site'))} | ${cell('source.sdk.latest', of('sdk-latest'), newestVerdict)} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
+        return `| ${code(entry.name)} | ${cell('source.bounty', of('bounty'))} | ${cell('source.sdk', of('sdk'), othersVerdict)} | ${cell('source.sdk.site', of('sdk-site'))} | ${cell('source.sdk.latest', of('sdk-latest'), othersVerdict)} | ${deployerCell(of('deployer'), deployers.get(entry.name))} |`;
       }),
     );
   }
