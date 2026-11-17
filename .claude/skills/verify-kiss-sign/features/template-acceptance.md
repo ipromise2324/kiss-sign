@@ -67,7 +67,7 @@ The Vault V2 fixtures all come from Acuto's vault, the only vault whose Safes se
 
 ## Gotchas
 
-- Proven on 2026-11-17 for every template above on `main` at ce6229a, from a fresh clone, except `morpho/vault-v2-reallocate` on `vault-v2-reallocate-back`, which `main` judged `MISMATCH` (the fee shares) until the `any` effect; its steps 4 to 7 were proven with the branch's code through `replay` as SKILL.md explains.
+- Proven on 2026-11-17 for every template above on `main` at ce6229a, from a fresh clone, except `morpho/vault-v2-reallocate` on `vault-v2-reallocate-back`, which `main` judged `MISMATCH` (the fee shares) until the `any` effect; the branch `acceptance-fixes` proved its whole journey on 2026-11-17 with the branch served as `main` from a local bare repository (the clone's `origin` set to `git@github.com:ipromise2324/kiss-sign.git`, `core.sshCommand` running `git-upload-pack` on that repository, as `test/verify.test.ts` does), so `template approve`, `card new` and `verify` ran unchanged, and `replay` from the branch checkout gave the same verdicts.
 
 - `MISMATCH` must come from the `fields` row naming the changed value. The changed transaction is simulated as pending on a nonce long used, so its simulation is `UNVERIFIABLE`; a bad change (one that did not apply) would show only that and must fail the journey. `change-tx.mjs` refuses a change that matches nothing.
 - Choices come before amounts: `erc20/transfer` asks `token`, then `recipient`, then `amount`, and `eth/transfer` asks `recipient` then `amount`, whatever order the template file lists them.
