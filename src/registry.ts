@@ -81,6 +81,8 @@ export type RegistryEntry = {
   readonly sdk?: SdkPackage;
   /** How a proxy that sends each selector to its own implementation answers its routes; its code pin then holds them. */
   readonly routes?: SelectorRouting;
+  /** The views that answer a proxy's one implementation, where no slot the program knows holds it. */
+  readonly implementationRead?: ImplementationRead;
   /** Entries a call to this one reaches though no call targets them, touched whenever this one is. */
   readonly dependsOn?: readonly string[];
   /** The code a call to this address ran at each block `pnpm pin-code` found; verify requires the code of the block it reads. */
@@ -116,6 +118,16 @@ export type InstanceArg = { readonly kind: 'attribute'; readonly attribute: Attr
  * `bytes4[]`, and the seeds research chose so every implementation is reached: no view lists the implementations.
  */
 export type SelectorRouting = { readonly implementationOf: AbiFunction; readonly selectorsOf: AbiFunction; readonly seeds: readonly Hex[] };
+
+/**
+ * A view of one step of an `implementationRead`, with its arguments as 32-byte words: the first step is called on the
+ * entry, each next one on the address the step before answered, and the last answer is the implementation.
+ */
+type ReadStep = { readonly fn: AbiFunction; readonly args: readonly Hex[] };
+export type ImplementationRead = readonly ReadStep[];
+
+/** How an entry's proxy names the code it runs, when the program does not find it on its own. */
+export type ProxyDeclaration = Pick<RegistryEntry, 'routes' | 'implementationRead'>;
 
 /** An implementation the seeds reach, its code hash, and the selectors it serves in the order `selectorsOf` answered. */
 export type Route = { readonly address: Address; readonly hash: Hex; readonly selectors: readonly Hex[] };
@@ -291,6 +303,35 @@ function routingOf(path: string, raw: unknown): SelectorRouting {
 }
 
 export const unreachedSeeds = (routing: SelectorRouting, routes: readonly Route[]): Hex[] => routing.seeds.filter((seed) => !routes.some((route) => route.selectors.includes(seed)));
+
+const MAX_READ_STEPS = 3;
+const READ_PARAM_TYPES = ['address', 'bytes32', 'uint256'];
+const WORD = /^0x[0-9a-f]{64}$/;
+
+export function parseImplementationRead(path: string, raw: unknown): ImplementationRead {
+  if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_READ_STEPS) throw new RegistryError(path, `not a list of 1 to ${MAX_READ_STEPS} views`);
+  return raw.map((rawStep: unknown, i): ReadStep => {
+    const at = `${path}[${i}]`;
+    const step = record(at, rawStep);
+    onlyKeys(at, step, ['function', 'args']);
+    const fn = signatureOf(`${at}.function`, step.function);
+    const types = fn.params.map((param) => canonicalType(param.type));
+    if (!types.every((type) => READ_PARAM_TYPES.includes(type))) throw new RegistryError(`${at}.function`, `may take only ${READ_PARAM_TYPES.join(', ')}`);
+    const args = step.args ?? [];
+    if (!Array.isArray(args) || args.length !== types.length) throw new RegistryError(`${at}.args`, `not ${types.length} arguments`);
+    return {
+      fn,
+      args: args.map((arg: unknown, j): Hex => {
+        if (typeof arg !== 'string' || !WORD.test(arg)) throw new RegistryError(`${at}.args[${j}]`, 'not a lowercase 32-byte word');
+        if (types[j] === 'address' && !/^0x0{24}/.test(arg)) throw new RegistryError(`${at}.args[${j}]`, 'not an address word');
+        return arg as Hex;
+      }),
+    };
+  });
+}
+
+/** The JSON an `implementationRead` is written in, as the registry holds it. */
+export const implementationReadJson = (read: ImplementationRead) => read.map((step) => ({ function: step.fn.signature, ...(step.args.length === 0 ? {} : { args: step.args }) }));
 
 const MAX_DEPENDS_ON = 8;
 
@@ -492,10 +533,16 @@ function standingAllowanceOf(path: string, raw: unknown): StandingAllowance {
 function entryOf(name: string, raw: unknown): RegistryEntry {
   const path = name;
   const value = record(path, raw);
-  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'dependsOn', 'code', 'instanceCheck', 'adapterCheck', 'standingAllowance', 'ignoresTrailer']);
+  onlyKeys(path, value, ['address', 'kind', 'source', 'apiSource', 'sourceLabel', 'sourceHeading', 'moreSources', 'defillama', 'coingecko', 'immunefi', 'sdk', 'attributes', 'routes', 'implementationRead', 'dependsOn', 'code', 'instanceCheck', 'adapterCheck', 'standingAllowance', 'ignoresTrailer']);
   const address = parsed(() => parseAddress(`${path}.address`, value.address));
   const routes = value.routes === undefined ? undefined : routingOf(`${path}.routes`, value.routes);
+  const implementationRead = value.implementationRead === undefined ? undefined : parseImplementationRead(`${path}.implementationRead`, value.implementationRead);
+  if (routes !== undefined && implementationRead !== undefined) throw new RegistryError(`${path}.implementationRead`, 'beside routes, which name the code each selector runs');
   const code = value.code === undefined ? undefined : codePinsOf(`${path}.code`, value.code, routes);
+  if (implementationRead !== undefined && code !== undefined) {
+    const bare = [...code.earlier, code.current].findIndex((span) => span.pin.implementation === undefined);
+    if (bare !== -1) throw new RegistryError(bare === code.earlier.length ? `${path}.code` : `${path}.code.earlier[${bare}]`, 'names no implementation, though the entry declares implementationRead');
+  }
   const dependsOn = value.dependsOn === undefined ? undefined : dependsOnOf(`${path}.dependsOn`, value.dependsOn, name);
   const kind = CONTRACT_KINDS.find((k) => k === value.kind);
   if (kind === undefined) throw new RegistryError(`${path}.kind`, `not one of ${CONTRACT_KINDS.join(', ')}`);
@@ -539,6 +586,7 @@ function entryOf(name: string, raw: unknown): RegistryEntry {
     ...(value.immunefi === undefined ? {} : { immunefi: value.immunefi }),
     ...(value.sdk === undefined ? {} : { sdk: sdkOf(`${path}.sdk`, value.sdk) }),
     ...(routes === undefined ? {} : { routes }),
+    ...(implementationRead === undefined ? {} : { implementationRead }),
     ...(dependsOn === undefined ? {} : { dependsOn }),
     ...(code === undefined ? {} : { code }),
     ...(value.standingAllowance === undefined ? {} : { standingAllowance: standingAllowanceOf(`${path}.standingAllowance`, value.standingAllowance) }),

@@ -285,6 +285,7 @@ function walk(
   code: Code,
   selector: bigint,
   allowed: readonly bigint[],
+  sites: readonly number[],
   memoryFromState: boolean,
 ): { readonly delegates: number | undefined; readonly memoryFromState: boolean } {
   const { bytes, jumpdests } = code;
@@ -409,7 +410,7 @@ function walk(
       if (op === CALL || op === CALLCODE || op === DELEGATECALL || op === STATICCALL) {
         const operands = take(op === CALL || op === CALLCODE ? 7 : 6);
         if (operands === undefined) break;
-        if ((op === DELEGATECALL || op === CALLCODE) && !covered(operands[1] as Word)) return { delegates: at, memoryFromState: memory };
+        if ((op === DELEGATECALL || op === CALLCODE) && !covered(operands[1] as Word) && !sites.includes(at)) return { delegates: at, memoryFromState: memory };
         if (valueOf(operands[operands.length - 1] as Word) !== 0n) memory = true;
         if (!push(STATE)) break;
         continue;
@@ -420,20 +421,28 @@ function walk(
   return { delegates: undefined, memoryFromState: memory };
 }
 
-/**
- * Follows a call whose selector the code never pushes, alone or in the top bytes of a word, so it matches no function
- * and takes the fallback (or the receive function, or a revert). `allowed` names the storage slots a known proxy keeps
- * its implementation in. Memory starts as holding nothing state chose; when a walk finds it can, the walk runs again
- * with memory counted as state's from the start.
- */
-export function fallbackDelegation(code: Hex, allowed: readonly bigint[] = []): Fallback {
-  const parsed = parse(code);
+function unpushedSelector(parsed: Code): bigint {
   let selector = SELECTOR;
   while (parsed.selectorsTaken.has(selector)) selector -= 1n;
+  return selector;
+}
+
+/** The selector the walk follows: one the code never pushes, alone or in the top bytes of a word. */
+export const fallbackSelector = (code: Hex): Hex => `0x${unpushedSelector(parse(code)).toString(16).padStart(8, '0')}` as Hex;
+
+/**
+ * Follows a call with `fallbackSelector`, so it matches no function and takes the fallback (or the receive function,
+ * or a revert). `allowed` names the storage slots a known proxy keeps its implementation in, and `sites` the byte
+ * offsets of delegations another check has accounted for. Memory starts as holding nothing state chose; when a walk
+ * finds it can, the walk runs again with memory counted as state's from the start.
+ */
+export function fallbackDelegation(code: Hex, allowed: readonly bigint[] = [], sites: readonly number[] = []): Fallback {
+  const parsed = parse(code);
+  const selector = unpushedSelector(parsed);
   try {
     let memoryFromState = false;
     for (;;) {
-      const run = walk(parsed, selector, allowed, memoryFromState);
+      const run = walk(parsed, selector, allowed, sites, memoryFromState);
       if (run.delegates !== undefined) return { kind: 'delegates', pc: run.delegates };
       if (run.memoryFromState === memoryFromState) return { kind: 'fixed' };
       memoryFromState = run.memoryFromState;
