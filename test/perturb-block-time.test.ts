@@ -1,13 +1,15 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { parseCard, resolveCard } from '../src/card.ts';
+import { headerHash } from '../src/chain/header-hash.ts';
 import { replayReader } from '../src/chain/recording.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
 import { inspectTemplateFields } from '../src/template/check.ts';
-import { judgeFixtures } from '../src/template/perturb.ts';
+import { judgeFixtures, replayPerturbRecording } from '../src/template/perturb.ts';
 import type { FixtureJudgement } from '../src/template/perturb.ts';
 import { parseTemplate } from '../src/template/template.ts';
 
@@ -65,4 +67,86 @@ test('a recorded fixture whose withinSeconds field is one second past its bound 
   const { mutations, perturbation } = late as Extract<FixtureJudgement['outcome'], { kind: 'judged' }>;
   assert.equal(mutations.kind, 'not-run');
   assert.deepEqual(perturbation, { kind: 'not-run', cause: 'fields', reason: "the transaction's fields give mismatch" });
+});
+
+type Block = Record<string, unknown> & { hash: string; timestamp: string };
+type Recorded = { executed: { hash: string }; parent: { hash: string }; exchanges: { method: string; params: unknown[]; answers: Record<string, Block> }[] };
+
+/** Replays `recording`, as edited, from a copy of the repository whose only perturb recording it is. */
+function replayEdited(edit: (raw: Recorded) => void) {
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-perturb-'));
+  process.on('exit', () => rmSync(root, { recursive: true, force: true }));
+  for (const dir of ['templates', 'registry']) symlinkSync(join(ROOT, dir), join(root, dir));
+  mkdirSync(join(root, 'testdata', 'perturb'), { recursive: true });
+  symlinkSync(join(ROOT, 'testdata', 'safe-tx'), join(root, 'testdata', 'safe-tx'));
+  const raw = structuredClone(recording) as Recorded;
+  edit(raw);
+  writeFileSync(join(root, 'testdata', 'perturb', `${NAME}.json`), JSON.stringify(raw));
+  return replayPerturbRecording(root, NAME, registry);
+}
+
+const executedBlocks = (raw: Recorded): Block[] =>
+  raw.exchanges.filter((e) => e.method === 'eth_getBlockByHash' && e.params[0] === raw.executed.hash).flatMap((e) => Object.values(e.answers));
+const later = (block: Block) => `0x${(BigInt(block.timestamp) + 1n).toString(16)}`;
+
+test('a perturb recording replays from a copy of the repository as it was recorded', async () => {
+  assert.equal((await replayEdited(() => {})).kind, 'pass');
+});
+
+test("a perturb recording whose executed block's time was edited is refused: the header no longer hashes to its hash", async () => {
+  await assert.rejects(
+    replayEdited((raw) => {
+      for (const block of executedBlocks(raw)) block.timestamp = later(block);
+    }),
+    new RegExp(`perturb/${NAME}\\.json: \\w+'s block ${recording.executed.number} does not hash to its hash ${recording.executed.hash}`),
+  );
+});
+
+test('a perturb recording whose executed block was rebuilt, with a later time and its new hash, is refused: the Safe Transaction Service gives another time', async () => {
+  await assert.rejects(
+    replayEdited((raw) => {
+      const [block] = executedBlocks(raw);
+      const forged = { ...block!, timestamp: later(block!) };
+      forged.hash = headerHash(forged);
+      for (const e of raw.exchanges) {
+        if (e.params[0] === raw.executed.hash) e.params[0] = forged.hash;
+        for (const [provider, answer] of Object.entries(e.answers)) if (answer?.hash === raw.executed.hash) e.answers[provider] = forged;
+      }
+      raw.executed.hash = forged.hash;
+    }),
+    /has time \d+; the Safe Transaction Service says the transaction ran in block \d+ at time \d+/,
+  );
+});
+
+test('a perturb recording whose parent block was rebuilt, with another gas limit and its new hash, is refused: the executed block names another parent', async () => {
+  await assert.rejects(
+    replayEdited((raw) => {
+      const block = raw.exchanges.flatMap((e) => Object.values(e.answers)).find((answer) => answer?.hash === raw.parent.hash)!;
+      const forged = { ...block, gasLimit: `0x${(BigInt(block.gasLimit as string) + 1n).toString(16)}` };
+      forged.hash = headerHash(forged);
+      for (const e of raw.exchanges) {
+        e.params = JSON.parse(JSON.stringify(e.params).replaceAll(raw.parent.hash, forged.hash));
+        for (const [provider, answer] of Object.entries(e.answers)) if (answer?.hash === raw.parent.hash) e.answers[provider] = forged;
+      }
+      raw.parent.hash = forged.hash;
+    }),
+    new RegExp(`block ${recording.executed.number} does not name the recorded parent 0x[0-9a-f]{64}`),
+  );
+});
+
+test('a perturb recording that holds another block at its parent height is refused, even where the replay does not read it', async () => {
+  let forgedHash = '';
+  await assert.rejects(
+    replayEdited((raw) => {
+      for (const e of raw.exchanges.filter((e) => e.method === 'eth_getBlockByNumber')) {
+        for (const [provider, answer] of Object.entries(e.answers)) {
+          if (answer?.hash !== raw.parent.hash) continue;
+          const forged = { ...answer, gasLimit: `0x${(BigInt(answer.gasLimit as string) + 1n).toString(16)}` };
+          forged.hash = forgedHash = headerHash(forged);
+          e.answers[provider] = forged;
+        }
+      }
+    }),
+    (error: Error) => error.message.endsWith(`block ${recording.parent.number} is recorded with hash ${recording.parent.hash}, not ${forgedHash}`),
+  );
 });

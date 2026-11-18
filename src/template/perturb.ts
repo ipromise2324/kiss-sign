@@ -6,7 +6,9 @@ import type { Card, ResolvedCard } from '../card.ts';
 import { replayReader } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
 import type { Read, Reader } from '../chain/reader.ts';
+import { parseBlockHeader } from '../chain/types.ts';
 import type { BlockHeader, EventLog } from '../chain/types.ts';
+import { headerHash } from '../chain/header-hash.ts';
 import { uintWord } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
 import { parseServiceTx } from '../safe/parse.ts';
@@ -205,9 +207,42 @@ const agreed = <T>(read: Read<T>, what: string): T => {
 const readPerturbRecording = (repoRoot: string, name: string): PerturbRecording =>
   readRecording(join(repoRoot, PERTURB_DIR, `${name}.json`)) as PerturbRecording;
 
-function recordedTx(repoRoot: string, recording: PerturbRecording): SafeTx {
+/** The block the Safe Transaction Service says the transaction ran in: its `blockNumber` and its `executionDate` in seconds. */
+export type ServiceExecution = { readonly number: bigint; readonly time: bigint };
+
+export function serviceExecution(service: { readonly blockNumber?: unknown; readonly executionDate?: unknown }): ServiceExecution {
+  const ms = typeof service.executionDate === 'string' ? Date.parse(service.executionDate) : Number.NaN;
+  if (!Number.isSafeInteger(service.blockNumber) || !Number.isSafeInteger(ms) || ms % 1000 !== 0) throw new Error('the Safe Transaction Service record has no whole blockNumber and executionDate');
+  return { number: BigInt(service.blockNumber as number), time: BigInt(ms / 1000) };
+}
+
+function recordedTx(repoRoot: string, recording: PerturbRecording): { readonly tx: SafeTx; readonly execution: ServiceExecution } {
   const fixture = JSON.parse(readFileSync(join(repoRoot, 'testdata', 'safe-tx', `${recording.safeTx}.json`), 'utf8'));
-  return parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
+  return { tx: parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version }), execution: serviceExecution(fixture.service) };
+}
+
+const BLOCK_METHODS = new Set(['eth_getBlockByNumber', 'eth_getBlockByHash']);
+
+/**
+ * Refuses a recording whose block headers are not what they claim: each block answer must hash to its own `hash` and,
+ * at the height of the executed or parent block, be that block; the executed block must name the recorded parent as
+ * its parent, and its number and time must be those the Safe Transaction Service gave for the transaction.
+ */
+export function checkRecordedBlocks(file: string, recording: Pick<PerturbRecording, 'executed' | 'parent' | 'exchanges'>, execution: ServiceExecution): void {
+  for (const exchange of recording.exchanges.filter((e) => BLOCK_METHODS.has(e.method))) {
+    for (const [provider, answer] of Object.entries(exchange.answers)) {
+      if (answer === null) continue;
+      const block = parseBlockHeader(answer);
+      if (headerHash(answer) !== block.hash) throw new Error(`${file}: ${provider}'s block ${block.number} does not hash to its hash ${block.hash}`);
+      const recorded = [recording.executed, recording.parent].find((at) => BigInt(at.number) === block.number);
+      if (recorded !== undefined && recorded.hash !== block.hash) throw new Error(`${file}: block ${block.number} is recorded with hash ${recorded.hash}, not ${block.hash}`);
+      if (block.hash !== recording.executed.hash) continue;
+      if ((answer as { parentHash?: unknown }).parentHash !== recording.parent.hash) throw new Error(`${file}: block ${block.number} does not name the recorded parent ${recording.parent.hash}`);
+      if (block.number !== execution.number || block.time !== execution.time) {
+        throw new Error(`${file}: block ${block.number} has time ${block.time}; the Safe Transaction Service says the transaction ran in block ${execution.number} at time ${execution.time}`);
+      }
+    }
+  }
 }
 
 /** The field checks' chain for a transaction judged on the block it ran in: that block's time, as `verify` counts it. */
@@ -215,9 +250,11 @@ export const executedOn = (executed: BlockHeader): FieldChain => ({ blockTime: {
 
 type Replayed = { readonly reader: Reader; readonly parent: BlockHeader; readonly executed: BlockHeader };
 
-async function replayed(name: string, recording: PerturbRecording): Promise<Replayed> {
+async function replayed(name: string, recording: PerturbRecording, execution: ServiceExecution): Promise<Replayed> {
+  const file = `${PERTURB_DIR}/${name}.json`;
+  checkRecordedBlocks(file, recording, execution);
   const reader = replayReader(recording.exchanges);
-  const header = async (at: PerturbRecording['parent']) => agreed(await reader.header({ number: BigInt(at.number), hash: at.hash }), `${PERTURB_DIR}/${name}.json block ${at.number}`);
+  const header = async (at: PerturbRecording['parent']) => agreed(await reader.header({ number: BigInt(at.number), hash: at.hash }), `${file} block ${at.number}`);
   return { reader, parent: await header(recording.parent), executed: await header(recording.executed) };
 }
 
@@ -240,7 +277,7 @@ function replay({ reader, parent, executed }: Replayed, tx: SafeTx, card: Resolv
  */
 export async function replayPerturbRecording(repoRoot: string, name: string, registry: Registry): Promise<PerturbationReport> {
   const recording = readPerturbRecording(repoRoot, name);
-  const tx = recordedTx(repoRoot, recording);
+  const { tx, execution } = recordedTx(repoRoot, recording);
   const card = parseCard(recording.card);
   const templates = new Map(card.operations.map((op) => [op.template, loadTemplate(repoRoot, op.template, registry)]));
   if (recording.template !== undefined) {
@@ -249,7 +286,7 @@ export async function replayPerturbRecording(repoRoot: string, name: string, reg
   }
   const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
   if (resolution.kind === 'refused') throw new Error(`${PERTURB_DIR}/${name}.json: card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
-  return replay(await replayed(name, recording), tx, resolution.card, templates, registry);
+  return replay(await replayed(name, recording, execution), tx, resolution.card, templates, registry);
 }
 
 /** A recorded transaction of one template, judged again offline with the template as it is now. */
@@ -281,13 +318,13 @@ export async function judgeFixtures(repoRoot: string, template: Template, regist
   const templates = new Map([[template.id, template]]);
   const judged: FixtureJudgement[] = [];
   for (const { name, recording, card } of recordingsOf(repoRoot, template)) {
-    const tx = recordedTx(repoRoot, recording);
+    const { tx, execution } = recordedTx(repoRoot, recording);
     const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
     if (resolution.kind === 'refused') {
       judged.push({ name: recording.safeTx, outcome: { kind: 'card-refused', why: `${resolution.reason} at ${resolution.at}: ${resolution.detail}` } });
       continue;
     }
-    const at = await replayed(name, recording);
+    const at = await replayed(name, recording, execution);
     const mutations = checkMutations(tx, resolution.card, templates, registry, [], executedOn(at.executed));
     const perturbation = await replay(at, tx, resolution.card, templates, registry);
     judged.push({ name: recording.safeTx, outcome: { kind: 'judged', mutations, perturbation } });
@@ -298,7 +335,7 @@ export async function judgeFixtures(repoRoot: string, template: Template, regist
 /** The template's first recorded test transaction, of `recordingsOf`, whose card resolves against `registry`, with its card. */
 export function firstRecordedTx(repoRoot: string, template: Template, registry: Registry): { readonly name: string; readonly tx: SafeTx; readonly card: ResolvedCard } | undefined {
   for (const { recording, card } of recordingsOf(repoRoot, template)) {
-    const tx = recordedTx(repoRoot, recording);
+    const { tx } = recordedTx(repoRoot, recording);
     const resolution = resolveCard(card, { templates: new Map([[template.id, template]]), registry, addressBook: new Map(), safe: tx.safe });
     if (resolution.kind === 'resolved') return { name: recording.safeTx, tx, card: resolution.card };
   }
