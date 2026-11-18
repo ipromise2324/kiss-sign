@@ -150,7 +150,7 @@ test('a trace nested deeper than the EVM allows is no trace, and a recording can
   for (let i = 0; i < 1100; i++) frame = { type: 'CALL', from: SAFE, to: USDC, input: '0x', calls: [frame] };
   assert.throws(() => trimTrace(frame), (e: unknown) => e instanceof TraceError && /deeper than the 1024 nested calls/.test(e.message));
   const deep = Array.from({ length: 1026 }, (_, depth) => call(depth, 'CALL', SAFE, USDC));
-  assert.throws(() => parseRecordedTrace({ hash: `0x${'ab'.repeat(32)}`, calls: deep }, 'traces[0]'), TraceError);
+  assert.throws(() => parseRecordedTrace({ hash: `0x${'ab'.repeat(32)}`, calls: deep }, 'traces[0]'), /traces\[0\]\.calls\[1025\]\.depth: deeper than the 1024 nested calls/);
 });
 
 test("a traced transaction whose trace does not hold the template's calls in order is UNVERIFIABLE with why, not left out", () => {
