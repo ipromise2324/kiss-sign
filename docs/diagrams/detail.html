@@ -60,7 +60,7 @@
   <svg viewBox="0 0 256 256" aria-hidden="true"><g fill="#1b1f27"><path d="M57.98 58.02 L173.98 174.02 L198.02 149.98 L82.02 33.98 Z"/><path d="M173.98 33.98 L57.98 149.98 L82.02 174.02 L198.02 58.02 Z"/><rect x="40" y="194" width="176" height="22"/></g></svg>
   <div>
     <h1>kiss-sign<em>Keep it simple, stupid, and sign.</em></h1>
-    <p>Who acts at each step, what it checks, which services it reads, and what it trusts. The AI researches and writes templates; the program checks the research for you to judge, and alone decides the verdict at signing.</p>
+    <p>Who acts at each step, what it checks, which services it reads, and what it trusts. The AI researches and writes templates; the program checks the addresses, code and evidence for you to judge, and alone decides the verdict at signing.</p>
   </div>
 </header>
 <div class="legend">Who acts:
@@ -132,7 +132,7 @@
         <li><code>docs.json</code>: one official page per function</li>
         <li><code>notes.json</code>: the AI's text, labelled as AI research</li>
         <li>The report</li>
-        <li>Never merges a template or registry pull request</li>
+        <li>Never merges a template, registry or program gate pull request</li>
       </ul></div>
     <div class="arrow">→</div>
     <div class="box signer"><div class="head"><span>Signer</span><span>step 8</span></div>
@@ -163,7 +163,7 @@
         <li>Keys go in <code>$KISS_SIGN_HOME/.env</code>, never in the chat</li>
       </ul></div>
     <div class="arrow">→</div>
-    <div class="box signer"><div class="head"><span>Signer · first use</span><span>step 8</span></div>
+    <div class="box signer"><div class="head"><span>Signer · first use, and on change</span><span>step 8</span></div>
       <h3><i>10</i>Approve the template</h3>
       <ul>
         <li><code>template approve</code> fetches your fork's main</li>
@@ -202,13 +202,13 @@
       <ul>
         <li>The template's hash is the one you approved</li>
         <li>Decode, re-encode byte for byte</li>
-        <li>Floors: no <code>delegatecall</code> but MultiSend; no unlimited approval but a registry standing allowance; no Safe setting change but a declared owner or threshold change; zero fee fields</li>
+        <li>Floors: no <code>delegatecall</code> except to MultiSend; no unlimited approval except a registry standing allowance; no Safe setting change except a declared owner or threshold change; zero fee fields</li>
         <li>Every field against the template and the card</li>
         <li>Each vault's <code>asset()</code> is its registry token</li>
         <li>Every registry contract runs its pinned code</li>
         <li>Mutations: each changed copy must give <code>MISMATCH</code>, or the verdict is <code>UNVERIFIABLE</code></li>
       </ul>
-      <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Signed-message API, e.g. CoW, hashed</span></div></div>
+      <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Signed-message API, e.g. CoW: must hash to the digest</span></div></div>
     <div class="arrow">→</div>
     <div class="box program"><div class="head"><span>Program · verify</span><span>step 12</span></div>
       <h3><i>16</i>Simulate</h3>
@@ -244,9 +244,9 @@
 </section>
 
 <div class="trust">
-  <div><b>Two providers</b>Every chain read goes to two providers: Alchemy and drpc, or Alchemy Transfers and Etherscan to find past transactions. If they disagree, the verdict is <code>UNVERIFIABLE</code>. Only a past transaction's call trace, read in research, comes from drpc alone.</div>
+  <div><b>Two providers</b>Every chain read goes to Alchemy and drpc; if they disagree, the result is <code>UNVERIFIABLE</code>. Past transactions are found through Alchemy Transfers and Etherscan (an event search, Etherscan alone); their call traces come from drpc alone.</div>
   <div><b>Pinned downloads</b>solc, the Public Suffix List and the ERC-7730 archive load on first use, refused unless the sha256 is pinned. Signing reads none.</div>
-  <div><b>Doubt fails closed</b>An AI fooled during signing can at worst cause <code>MISMATCH</code> or <code>UNVERIFIABLE</code>, while the program is your <code>main</code>. A program rewritten on your computer, a template wrong when you merged it, or an AI-merged program change no canary catches is not caught.</div>
+  <div><b>Doubt fails closed</b>An AI fooled during signing can at worst cause <code>MISMATCH</code> or <code>UNVERIFIABLE</code>, while the program is your <code>main</code>. A program rewritten on your computer, a template wrong when you merged it, or an AI-merged program change no canary catches is not caught by kiss-sign's own checks; in the hardened tier the independent check still shows what is signed.</div>
 </div>
 <script>document.body.dataset.height = Math.ceil(document.documentElement.getBoundingClientRect().height);</script>
 </body>
