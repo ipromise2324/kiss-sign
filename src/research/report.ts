@@ -22,7 +22,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import type { MemberSource } from '../template/eip712.ts';
-import { GENERATED_FILE, reportUnit, reportedVaultsIn, severalVaults, vaultReportDir } from '../template/vault-reports.ts';
+import { GENERATED_FILE, reportUnit, reportedInstancesIn, severalInstances, vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
@@ -137,7 +137,7 @@ export function templateTargets(repoRoot: string, registry: Registry): { readonl
     .sort()
     .flatMap((protocol) => readdirSync(join(dir, protocol)).sort().map((operation) => `${protocol}/${operation}`))
     .flatMap((template) =>
-      reportUnit(loadTemplate(repoRoot, template, registry)).kind === 'vault' ? [...reportedVaultsIn(repoRoot, template)].sort().map((cardVault) => ({ template, cardVault })) : [{ template }],
+      reportUnit(loadTemplate(repoRoot, template, registry)).kind === 'instance' ? [...reportedInstancesIn(repoRoot, template).keys()].sort().map((cardVault) => ({ template, cardVault })) : [{ template }],
     );
 }
 
@@ -277,15 +277,15 @@ export function loadReport(repoRoot: string, registry: Registry, target: Target)
   }
   const template = loadTemplate(repoRoot, target.template, registry);
   const unit = reportUnit(template);
-  if (unit.kind === 'several-vaults') throw new ReportError(severalVaults(template.id));
+  if (unit.kind === 'several-instances') throw new ReportError(severalInstances(template.id));
   if (unit.kind === 'template' && target.cardVault !== undefined) throw new ReportError(`${template.id} has one report, not one per vault; leave out the vault`);
-  if (unit.kind === 'vault' && target.cardVault === undefined) {
-    const reported = [...reportedVaultsIn(repoRoot, template.id)].sort();
+  if (unit.kind === 'instance' && target.cardVault === undefined) {
+    const reported = [...reportedInstancesIn(repoRoot, template.id).keys()].sort();
     throw new ReportError(`${template.id} is reported per vault; name the vault (${reported.length === 0 ? 'no vault has a report yet' : `reports exist for ${reported.join(', ')}`})`);
   }
   let seen = registry;
   let vault: RegistryEntry | undefined;
-  if (unit.kind === 'vault') {
+  if (unit.kind === 'instance') {
     const field = template.card.get(unit.field);
     vault = registry.entries.get(target.cardVault as string);
     if (vault === undefined || field?.kind !== 'contract' || !inScope(field.scope, vault, registry)) throw new ReportError(`${target.cardVault} is not a vault the card's ${unit.field} of ${template.id} accepts`);
