@@ -679,9 +679,9 @@ function withdrawClone(): string {
 }
 
 /** A report for `vault` under the template, as `pnpm report --vault-of` writes it; the gate reads only that the file is there. */
-function reportVault(repoRoot: string, template: string, vault: string): void {
-  mkdirSync(join(repoRoot, 'templates', template, 'vaults', vault), { recursive: true });
-  writeFileSync(join(repoRoot, 'templates', template, 'vaults', vault, 'report.generated.md'), '# report\n');
+function reportVault(repoRoot: string, template: string, vault: string, folder = 'vaults'): void {
+  mkdirSync(join(repoRoot, 'templates', template, folder, vault), { recursive: true });
+  writeFileSync(join(repoRoot, 'templates', template, folder, vault, 'report.generated.md'), '# report\n');
 }
 
 test('card new lists only the vaults with a report for a template reported per vault', async () => {
@@ -721,7 +721,7 @@ test('card new refuses a template reported per vault when no vault has a report'
   configure(home);
   const made = await run(['card', 'new', 'morpho/vault-deposit'], home, ['1'], { ...mainnet(), repoRoot });
   assert.equal(made.code, 1);
-  assert.match(made.stderr, /vault: no vault has a report for morpho\/vault-deposit; build one first/);
+  assert.match(made.stderr, /vault: no vault the card can name has a report for morpho\/vault-deposit; build one first/);
   assert.deepEqual(made.asked, []);
 });
 
@@ -801,6 +801,28 @@ test('card seal refuses a vault named through an address field unless the templa
   reportVault(repoRoot, 'test/any-token', 'smokehouse-usdc-v1-f5bc');
   const sealed = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
   assert.equal(sealed.code, 0, sealed.stderr);
+});
+
+test('card new and card seal find a report under instances/ as under vaults/, and refuse an instance with a report in both', async () => {
+  const repoRoot = anyTokenClone();
+  reportVault(repoRoot, 'test/any-token', 'steakhouse-prime-usdc-v2-0f51', 'instances');
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'test/any-token'], home, ['smokehouse-usdc-v1-f5bc'], { ...decimalsChain({}), repoRoot });
+  const listed = [...made.stdout.matchAll(/^ *\d+\.\s+([a-z0-9.-]+)\s/gm)].map((m) => m[1]);
+  assert.ok(listed.includes('steakhouse-prime-usdc-v2-0f51') && !listed.includes('smokehouse-usdc-v1-f5bc'), listed.join());
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'test/any-token', values: { token: 'steakhouse-prime-usdc-v2-0f51', amount: '5', recipient: 'safe' } }] }));
+  const sealed = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(sealed.code, 0, sealed.stderr);
+  reportVault(repoRoot, 'test/any-token', 'steakhouse-prime-usdc-v2-0f51', 'vaults');
+  const both = 'test/any-token in both instances/ and vaults/; keep one';
+  const refused = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(refused.stderr, `kiss-sign: card refused: steakhouse-prime-usdc-v2-0f51 has a report for ${both}\n`);
+  const offered = await run(['card', 'new', 'test/any-token'], home, ['1'], { ...decimalsChain({}), repoRoot });
+  assert.equal(offered.code, 1);
+  assert.ok(offered.stderr.includes(`steakhouse-prime-usdc-v2-0f51 has a report for ${both}`), offered.stderr);
+  assert.deepEqual(offered.asked, []);
 });
 
 test('card new does not offer a vault with no report for the template through an address field', async () => {

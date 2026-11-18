@@ -15,7 +15,7 @@ import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '
 import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
-import { NOT_YET_REBUILT, reportedVaults } from '../src/template/vault-reports.ts';
+import { NOT_YET_REBUILT, reportedInstances } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
@@ -391,5 +391,5 @@ test('notes in one language give a page in that language alone, which says, in t
 test('a vault whose report is in one language only still has a report, so card new, card seal and verify accept it', () => {
   const dir = 'templates/morpho/vault-deposit/vaults';
   for (const language of LANGUAGES)
-    assert.deepEqual(reportedVaults('morpho/vault-deposit', [`${dir}/v/notes.json`, `${dir}/v/report.generated.md`, `${dir}/v/${generatedHtmlFile(language)}`]), new Set(['v']));
+    assert.deepEqual([...reportedInstances('morpho/vault-deposit', [`${dir}/v/notes.json`, `${dir}/v/report.generated.md`, `${dir}/v/${generatedHtmlFile(language)}`]).keys()], ['v']);
 });

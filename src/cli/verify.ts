@@ -13,7 +13,7 @@ import { ATTRIBUTES_PATH, MARKETS_PATH, REGISTRY_PATH } from '../registry.ts';
 import { checksumAddress, parseHex } from '../safe/types.ts';
 import { TEMPLATES_DIR } from '../template/template.ts';
 import { fileAt, optionalFileAt, pathsAt, selfCheck } from '../verify/self-check.ts';
-import { reportedVaults, unreportedVault } from '../template/vault-reports.ts';
+import { reportedInstances, unreportedInstance } from '../template/vault-reports.ts';
 import { checkCommand } from '../verify/check-command.ts';
 import { callTree, signedMessages } from '../verify/expected.ts';
 import type { CallTree } from '../verify/expected.ts';
@@ -120,7 +120,7 @@ export async function verify(args: readonly string[], io: Io, w: Labels): Promis
     io.stderr(`kiss-sign: ${refusalText(error.refusal, w.card)}\n`);
     return FAILED;
   }
-  const unreported = unreportedVault(parsed.card, parsed.templates, parsed.registry, (id) => reportedVaults(id, pathsAt(io.repoRoot, check.commit, `${TEMPLATES_DIR}/${id}`)));
+  const unreported = unreportedInstance(parsed.card, parsed.templates, parsed.registry, (id) => reportedInstances(id, pathsAt(io.repoRoot, check.commit, `${TEMPLATES_DIR}/${id}`)));
   if (unreported !== undefined) {
     io.stderr(`kiss-sign: ${V.refused(unreported)}\n`);
     return FAILED;
