@@ -334,7 +334,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span class="k0">Who decides</span>
     <span><span class="who you">you type</span>typed at each signing</span>
     <span><span class="who you">you pick</span>picked at each signing</span>
-    <span><span class="who">computed</span>card new reads the chain at each signing; you check it</span>
+    <span><span class="who">computed</span>read from the chain by card new at each signing; you check it</span>
     <span><span class="who">fixed</span>any change is a MISMATCH</span>
   </div>
   <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below. Values that you type, you pick and the program computes, marked &#34;example&#34;, come from <code>morpho-vault-deposit-v2</code>, the first test transaction of hyperithm-usdc-apex-v2-9e2f: amount <span class="num">1,000,611.448606</span> usdc, minimum to receive about <span class="num">973,551.731159</span> hyperithm-usdc-apex-v2-9e2f (<span class="num">973551731159989631767877</span> base units).</p>
@@ -393,7 +393,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Which vault to deposit into. This is the vault you pick on the card.</span></span></div></div></div>
         <div class="part"><div class="pn">assets<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="raw">1000611448606<span class="ex">example</span></div><div class="is"><span class="num">1,000,611.448606</span> usdc <span class="f3">6 decimals</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount of tokens deposited into the vault, equal to the deposit amount.</span></span></div></div></div>
-        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who">computed: minimum to receive</span></div></div><div><div class="raw">1027794842924031<span class="ex">example</span></div><div class="is">price ceiling <span class="f3">computed from the amount you type; the transaction&#39;s must be as strict or stricter</span></div>
+        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who">computed: minimum to receive</span></div></div><div><div class="raw">1027794842924031<span class="ex">example</span></div><div class="is">price ceiling <span class="f3">computed from the card&#39;s amount and shares; the transaction&#39;s must be as strict or stricter</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than &#34;amount ÷ minimum shares&#34;, so by the share count the vault itself reports, you get at least the minimum shares.</span></span></div></div></div>
         <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">fixed</span></div></div><div><div class="raw">0xdb6e9e7390e9ACC34619E56eFa48ade01cFF6F12<span class="ex">example: another Safe</span></div><div class="is">your Safe</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The address that receives the shares, fixed to the Safe.</span></span></div></div></div>

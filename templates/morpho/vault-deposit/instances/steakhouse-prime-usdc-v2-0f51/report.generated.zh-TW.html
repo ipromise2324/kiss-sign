@@ -393,7 +393,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進哪一個 vault。這就是你在卡片上選的 vault。</span></span></div></div></div>
         <div class="part"><div class="pn">assets<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">你填的金額</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進 vault 的代幣數量，等於存款金額。</span></span></div></div></div>
-        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who">程式算：最少收到的數量</span></div></div><div><div class="is">價格上限 <span class="f3">依你填的數量算出，交易裡的要一樣嚴或更嚴</span></div>
+        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who">程式算：最少收到的數量</span></div></div><div><div class="is">價格上限 <span class="f3">依卡片的金額和股份數算出，交易裡的要一樣嚴或更嚴</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，依 vault 自己回報的股份數，你至少拿到最少股份。</span></span></div></div></div>
         <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">固定</span></div></div><div><div class="is">你的 Safe</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>收股份的地址，固定是 Safe。</span></span></div></div></div>
