@@ -39,6 +39,109 @@ function changedOnDisk(dir: string, rev: string): string[] {
   return [...tree.filter(({ path }) => !existsSync(join(dir, path))).map(({ path }) => path), ...present.filter(({ blob }, i) => hashes[i] !== blob).map(({ path }) => path)].sort();
 }
 
+/** One call of `test`, `it`, `describe` or `suite` whose title is a literal; `skipped` when the call or anything inside it names `skip` or `todo`. */
+type TestCall = { readonly title: string; readonly skipped: boolean };
+type Token = { readonly kind: 'name' | 'string' | 'punct'; readonly text: string };
+
+const REGEX_AFTER = new Set(['return', 'typeof', 'case', 'do', 'else', 'in', 'of', 'new', 'delete', 'void', 'throw', 'instanceof', 'yield', 'await']);
+
+/** The tokens of a TypeScript source that matter for finding test calls, with comments dropped and each string, template and regular expression one token. */
+function tokens(source: string): Token[] {
+  const out: Token[] = [];
+  let i = 0;
+  const quoted = (quote: string) => {
+    const start = i++;
+    while (i < source.length && source[i] !== quote) i += source[i] === '\\' ? 2 : 1;
+    i++;
+    return source.slice(start, i);
+  };
+  const template = () => {
+    const start = i++;
+    while (i < source.length && source[i] !== '`') {
+      if (source[i] === '\\') i += 2;
+      else if (source.startsWith('${', i)) {
+        i += 2;
+        const before = out.length;
+        for (let depth = 0; i < source.length && !(depth === 0 && source[i] === '}'); ) {
+          const count = out.length;
+          step();
+          const text = out.length > count ? out.at(-1)!.text : '';
+          depth += text === '{' ? 1 : text === '}' ? -1 : 0;
+        }
+        out.splice(before);
+        i++;
+      } else i++;
+    }
+    i++;
+    return source.slice(start, i);
+  };
+  const regex = () => {
+    let inClass = false;
+    for (i++; i < source.length && (inClass || source[i] !== '/') && source[i] !== '\n'; i++) {
+      if (source[i] === '\\') i++;
+      else if (source[i] === '[') inClass = true;
+      else if (source[i] === ']') inClass = false;
+    }
+    for (i++; /[a-z]/.test(source[i] ?? ''); ) i++;
+  };
+  function step(): void {
+    const c = source[i]!;
+    const last = out.at(-1);
+    if (/\s/.test(c)) i++;
+    else if (source.startsWith('//', i)) i = source.includes('\n', i) ? source.indexOf('\n', i) : source.length;
+    else if (source.startsWith('/*', i)) i = source.includes('*/', i + 2) ? source.indexOf('*/', i + 2) + 2 : source.length;
+    else if (c === "'" || c === '"') out.push({ kind: 'string', text: quoted(c) });
+    else if (c === '`') out.push({ kind: 'string', text: template() });
+    else if (c === '/' && (last === undefined || (last.kind === 'punct' && !')]}'.includes(last.text)) || (last.kind === 'name' && REGEX_AFTER.has(last.text)))) regex();
+    else if (/[\w$]/.test(c)) {
+      const start = i;
+      while (/[\w$]/.test(source[i] ?? '')) i++;
+      out.push({ kind: 'name', text: source.slice(start, i) });
+    } else out.push({ kind: 'punct', text: source[i++]! });
+  }
+  while (i < source.length) step();
+  return out;
+}
+
+/** Every test call in a source, read as text: nothing of the branch runs. */
+function testCalls(source: string): TestCall[] {
+  const all = tokens(source);
+  return all.flatMap((token, at) => {
+    if (token.kind !== 'name' || !['test', 'it', 'describe', 'suite'].includes(token.text) || all[at - 1]?.text === '.') return [];
+    let open = at + 1;
+    if (all[open]?.text === '.' && all[open + 1]?.kind === 'name') open += 2;
+    const title = all[open + 1];
+    if (all[open]?.text !== '(' || title?.kind !== 'string') return [];
+    let end = open;
+    for (let depth = 0; end < all.length; end++) {
+      depth += all[end]!.text === '(' ? 1 : all[end]!.text === ')' ? -1 : 0;
+      if (depth === 0) break;
+    }
+    const skipped = all.slice(at + 1, end).some(({ kind, text }) => kind === 'name' && (text === 'skip' || text === 'todo'));
+    return [{ title: title.text.slice(1, -1), skipped }];
+  });
+}
+
+/** The test files under test/ at a commit, each with its test calls, read from git's objects. */
+function testsAt(rev: string): Map<string, TestCall[]> {
+  const files = git(root, 'ls-tree', '-r', '-z', '--name-only', rev, '--', 'test/').split('\0').filter((path) => path.endsWith('.test.ts'));
+  return new Map(files.map((path) => [path, testCalls(git(root, 'show', `${rev}:${path}`))]));
+}
+
+/** Each test origin/main runs that the branch no longer runs in the same file as often, as `file: removed|skipped: title`. */
+function droppedTests(base: string, branch: string): string[] {
+  const after = testsAt(branch);
+  return [...testsAt(base)].flatMap(([path, calls]) => {
+    const later = after.get(path) ?? [];
+    const running = (list: readonly TestCall[], title: string) => list.filter((call) => call.title === title && !call.skipped).length;
+    return [...new Set(calls.map(({ title }) => title))].flatMap((title) => {
+      const missing = running(calls, title) - running(later, title);
+      const how = later.some((call) => call.title === title && call.skipped) ? 'skipped' : 'removed';
+      return Array.from({ length: Math.max(0, missing) }, () => `${path}: ${how}: ${title}`);
+    });
+  });
+}
+
 const head = git(root, 'rev-parse', 'HEAD').trim();
 const main = (() => {
   try {
@@ -75,11 +178,13 @@ for (const line of listed(verdict)) say(line);
 say(split.other.length === 0 ? 'other program files changed: none' : `other program files changed (${split.other.length}):`);
 for (const line of listed(split.other)) say(line);
 
+const dropped = verdict.length === 0 ? [] : droppedTests(main, sha);
 const refusals = [
   ...(split.data.length > 0 ? [`it changes templates/ or registry/, which only the signer merges: ${split.data.join(', ')}`] : []),
   ...(split.gate.length > 0 ? [`it changes the program gate (${CANARY_LIST} and the code that enforces it), which only the signer merges: ${split.gate.join(', ')}`] : []),
+  ...(dropped.length > 0 ? [`it changes the verdict core and drops tests origin/main runs; rename, move or remove a test in a pull request that leaves the core alone:`, ...listed(dropped)] : []),
 ];
-if (refusals.length > 0) notEligible(refusals, 3);
+if (refusals.length > 0) notEligible(refusals, dropped.length > 0 ? 1 : 3);
 
 const canaries = parseCanaryList(readFileSync(join(root, CANARY_LIST), 'utf8'));
 const work = mkdtempSync(join(tmpdir(), 'kiss-sign-program-gate-'));

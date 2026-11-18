@@ -119,3 +119,36 @@ test('a branch that does not hold origin/main is NOT ELIGIBLE, since main may ha
   assert.equal(result.status, 1);
   assert.match(result.stdout, /^NOT ELIGIBLE {2}the AI may not merge behind:\n {2}behind does not hold origin\/main \([0-9a-f]{7}\), so it would be judged by canaries and tests main has since changed; merge origin\/main into it and run this again\n$/);
 });
+
+test('a core change that drops a test main runs is NOT ELIGIBLE, exit 1, naming each test, before any of its code runs', () => {
+  const repo = gateRepo();
+  const core = { 'src/check.ts': 'export const ok: number = 1;\n// changed\n' };
+  const withA = (body: string) => ({ ...core, 'test/a.test.ts': `import { test } from 'node:test';\n\n${body}\n` });
+  const dropped = {
+    deleted: withA("test('b', () => {});"),
+    renamed: withA("test('a, renamed', () => {});"),
+    commented: withA("/* test('a', () => {}); */\ntest(`b ${'/'}`, () => {});"),
+    'test-skip': withA("test.skip('a', () => {});"),
+    'skip-option': withA("test('a', { skip: true }, () => {});"),
+    'todo-option': withA("test('a', { todo: 'later' }, () => {});"),
+    'skip-inside': withA("test('a', (t) => { t.skip(); });"),
+  };
+  for (const [name, files] of Object.entries(dropped)) branch(repo, name, files);
+  for (const [name, how] of [['deleted', 'removed'], ['renamed', 'removed'], ['commented', 'removed'], ['test-skip', 'skipped'], ['skip-option', 'skipped'], ['todo-option', 'skipped'], ['skip-inside', 'skipped']] as const) {
+    const result = gate(repo, name);
+    assert.equal(result.status, 1, `${name}: ${result.stdout}${result.stderr}`);
+    assert.match(result.stdout, new RegExp(`\\nNOT ELIGIBLE {2}the AI may not merge ${name}:\\n {2}it changes the verdict core and drops tests origin/main runs; rename, move or remove a test in a pull request that leaves the core alone:\\n {4}test/a\\.test\\.ts: ${how}: a\\n$`));
+    assert.doesNotMatch(result.stdout, /typecheck|canary test/, name);
+  }
+});
+
+test('a core change that keeps every test of main, its quotes changed and tests added, is judged on its run, and a branch that leaves the core alone may drop a test', () => {
+  const repo = gateRepo();
+  branch(repo, 'kept', { 'src/check.ts': 'export const ok: number = 1;\n// changed\n', 'test/a.test.ts': "import { test } from 'node:test';\n\n// test('gone', () => {});\ntest(\"a\", () => {});\ntest('b', () => {});\n" });
+  branch(repo, 'tests-only', { 'test/a.test.ts': "import { test } from 'node:test';\n\ntest('b', () => {});\n" });
+  const kept = gate(repo, 'kept');
+  assert.equal(kept.status, 0, kept.stdout + kept.stderr);
+  assert.match(kept.stdout, /\ntests: pass, 2 passed, 0 failed, the canaries apart\n/);
+  const testsOnly = gate(repo, 'tests-only');
+  assert.equal(testsOnly.status, 0, testsOnly.stdout + testsOnly.stderr);
+});
