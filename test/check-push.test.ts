@@ -148,11 +148,11 @@ test('a verdict core change may render the existing generated reports again', ()
 test('a core change that adds a vault report beside it is refused, since that report lets verify accept the vault', () => {
   const { repo, home } = splitRepo();
   writeFileSync(join(repo, 'src', 'check.ts'), 'export const ok = 2;\n');
-  mkdirSync(join(repo, 'templates', 'x', 'op', 'vaults', 'v'), { recursive: true });
-  commit(repo, 'templates/x/op/vaults/v/report.generated.md', 'new\n');
+  mkdirSync(join(repo, 'templates', 'x', 'op', 'instances', 'v'), { recursive: true });
+  commit(repo, 'templates/x/op/instances/v/report.generated.md', 'new\n');
   const result = checkBranch(repo, home);
   assert.equal(result.status, 1);
-  assert.match(result.stderr, /templates\/x\/op\/vaults\/v\/report\.generated\.md/);
+  assert.match(result.stderr, /templates\/x\/op\/instances\/v\/report\.generated\.md/);
 });
 
 test('the hook refuses a push it cannot compare with origin/main', () => {

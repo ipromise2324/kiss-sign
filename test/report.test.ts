@@ -747,20 +747,16 @@ test('--instance-of writes a new instance\'s report to instances/, and its notes
   assert.match(text, /the stored output of `pnpm instance-evidence`/);
 });
 
-test('an instance whose committed files are in vaults/ is read and written there, and one in both folders is refused', () => {
+test('an instance whose committed report is in instances/ is read and written there', () => {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-instances-'));
   try {
     const target = { template: 'fluid/vault-deposit', instance: 'fluid-fusdt' };
-    const earlier = join(TEMPLATES_DIR, 'fluid/vault-deposit', 'vaults', 'fluid-fusdt');
-    const later = join(TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt');
-    mkdirSync(join(root, earlier), { recursive: true });
-    mkdirSync(join(root, later), { recursive: true });
-    assert.equal(generatedPath(root, target), join(later, GENERATED_FILE), 'a folder with no report yet is not where the report sits');
-    writeFileSync(join(root, earlier, GENERATED_FILE), '# report\n');
-    assert.equal(generatedPath(root, target), join(earlier, GENERATED_FILE));
-    assert.equal(notesPath(root, target.template, target.instance), join(earlier, 'notes.json'));
-    writeFileSync(join(root, later, GENERATED_FILE), '# report\n');
-    assert.throws(() => reportDir(root, target), (e: unknown) => e instanceof ReportError && e.message === 'fluid-fusdt has a report for fluid/vault-deposit in both instances/ and vaults/; keep one');
+    const folder = join(TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt');
+    mkdirSync(join(root, folder), { recursive: true });
+    writeFileSync(join(root, folder, GENERATED_FILE), '# report\n');
+    assert.equal(reportDir(root, target), folder);
+    assert.equal(generatedPath(root, target), join(folder, GENERATED_FILE));
+    assert.equal(notesPath(root, target.template, target.instance), join(folder, 'notes.json'));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
