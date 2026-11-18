@@ -217,13 +217,13 @@ On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so y
 
 ### Contracts that change
 
-The report reviews each contract's code once, and the registry records it. A contract can change after that.
+A contract you reviewed can be upgraded or reconfigured into one that harms you.
 
 | Attack | Stopped by |
 |---|---|
-| A registry contract is upgraded after your review | `verify` compares its code with the recorded code, through both providers: `MISMATCH` |
-| An admin changes a setting, such as a vault's curator or fees, or a contract behind it changes, such as a market's oracle | Nothing: only the code of registry contracts is recorded |
-| A contract is upgraded after you run `verify` and before the transaction runs | Nothing |
+| It takes your funds in the transaction you sign | The simulation: your balances do not move as the card says, `MISMATCH` |
+| It acts normally now and harms you later, such as by blocking withdrawals | For a registry contract whose code changed since your review, the recorded code: `MISMATCH`. For a changed setting, or a contract behind it such as a market's oracle, nothing |
+| It changes after you run `verify` and before the transaction runs | Nothing |
 
 ## What kiss-sign checks
 
