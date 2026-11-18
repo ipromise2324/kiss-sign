@@ -104,6 +104,16 @@ test('past-txs --record writes the study when every read is answered, and nothin
     if (request.source === 'alchemy') transfers.push({ method: 'alchemy_getAssetTransfers', params: [request.params], answers: { alchemy: answer } });
     else http[new URL(`https://api.etherscan.io/v2/api?${new URLSearchParams(request.query)}`).href] = { status: 200, text: JSON.stringify(answer) };
   }
+  const year = { fromBlock: 23752801n, toBlock: 26380800n };
+  for (const { request } of recording.sources.slice(0, 2)) {
+    if (request.source === 'alchemy') {
+      const params = { ...request.params, fromBlock: `0x${year.fromBlock.toString(16)}`, toBlock: `0x${year.toBlock.toString(16)}` };
+      transfers.push({ method: 'alchemy_getAssetTransfers', params: [params], answers: { alchemy: { transfers: [], pageKey: 'more' } } });
+    } else {
+      const query = { ...request.query, fromBlock: `${year.fromBlock}`, toBlock: `${year.toBlock}` };
+      http[new URL(`https://api.etherscan.io/v2/api?${new URLSearchParams(query)}`).href] = { status: 200, text: JSON.stringify({ status: '1', message: 'OK', result: Array.from({ length: 1000 }, () => ({})) }) };
+    }
+  }
   const args = ['morpho/vault-deposit', '--token', 'steakhouse-prime-usdc-v2-0f51', '--anchor', 'mint', '--max-txs', '24', '--same-windows-as', name, '--record', 'offline'];
   const seed = [`${name}.json`];
   assertRecorded(runOffline('past-txs.ts', args, 'research', { exchanges: [...recording.exchanges, ...transfers], http }, seed), 'offline.json');
