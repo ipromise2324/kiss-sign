@@ -112,11 +112,13 @@ The earlier instance's report already holds the shared part.
 
 ## Add a registry entry
 
-A report covers every registry entry its card can name, so a new entry, such as a token, changes every report that can name it: a template's, such as `erc20/transfer` and `uniswap/approve-permit2` for a token, and an instance's, when another card field or a market of a per-instance template can name it.
+A report covers every registry entry the operation can touch: those its template and `docs.json` name, those a card field or market can name, their attributes and dependencies, and the Safe singleton for a template that calls the Safe with data.
+So a new entry, such as a token, changes every report that can touch it: a template's, such as `erc20/transfer` and `uniswap/approve-permit2` for a token, and an instance's, when another card field or a market of a per-instance template can name it.
+When unsure which, record and compare them all.
 
-1. Research the entry, and each entry it names as an attribute, as [addresses.md](addresses.md) says, its observations in each affected report's `notes.json` before any check.
+1. Research the entry, and each entry it names as an attribute, as [addresses.md](addresses.md) says, its observations in each affected template's `notes.json` before any check: shared observations, reviews and `protocols` notes always go in the template's file, since an instance's `notes.json` holds only its own entries and reviews.
 2. For each affected report, run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for an instance's.
-3. Reconcile each affected report's notes with its new results: `--render` requires a review for exactly the current set of results under To review, so write the new ones and revise or remove any that no longer match, and add `protocols` notes for a new protocol the report's protocol facts cover, with as many incidents as its hacks ([Notes and reviews](notes-and-reviews.md)); then run `--render`.
+3. Reconcile each affected report's reviews with its new results: `--render` requires a review for exactly the current set of results under To review, so write the new ones and revise or remove any that no longer match, and add `protocols` notes for a new protocol the report's protocol facts cover, with as many incidents as its hacks ([Notes and reviews](notes-and-reviews.md)); then run `--render`.
 4. Check and open one pull request, and tell the signer, as steps 10 and 11 of [Build a template](#build-a-template) say, with a `--compare` run for each affected report.
 
 ## Merge a program change
