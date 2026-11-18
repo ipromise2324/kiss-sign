@@ -42,7 +42,7 @@ export function setUp(approved: string | null = template.approved, reported = tr
   git(base, 'clone', '--quiet', origin, repo);
   write(join(repo, 'templates', template.id, 'template.json'), template.text);
   write(join(repo, 'registry', 'contracts.json'), fixture.inputs.registry);
-  if (reported) write(join(repo, 'templates', template.id, 'vaults', VAULT, 'report.generated.md'), '# report\n');
+  if (reported) write(join(repo, 'templates', template.id, 'instances', VAULT, 'report.generated.md'), '# report\n');
   git(repo, 'add', '-A');
   git(repo, 'commit', '--quiet', '-m', 'templates');
   git(repo, 'push', '--quiet', 'origin', 'main');

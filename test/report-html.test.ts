@@ -389,7 +389,7 @@ test('notes in one language give a page in that language alone, which says, in t
 });
 
 test('a vault whose report is in one language only still has a report, so card new, card seal and verify accept it', () => {
-  const dir = 'templates/morpho/vault-deposit/vaults';
+  const dir = 'templates/morpho/vault-deposit/instances';
   for (const language of LANGUAGES)
     assert.deepEqual([...reportedInstances('morpho/vault-deposit', [`${dir}/v/notes.json`, `${dir}/v/report.generated.md`, `${dir}/v/${generatedHtmlFile(language)}`]).keys()], ['v']);
 });
