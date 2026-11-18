@@ -8,8 +8,9 @@ import type { AbiFunction } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { HttpsUrl, InstanceView, Registry, RegistryEntry } from '../src/registry.ts';
 import type { ApiAnswer } from '../src/research/api-source.ts';
-import { STATE_OF, addressRows, confidence, confirmations, forSigner, judge, sourcesOf, stateOf, strip } from '../src/research/ledger.ts';
+import { STATE_OF, addressRows, confidence, confirmations, flowResults, forSigner, judge, sourcesOf, stateOf, strip } from '../src/research/ledger.ts';
 import type { FindingKind, Ledger, Place, State } from '../src/research/ledger.ts';
+import type { FlowComparison } from '../src/research/trace.ts';
 import type { CoinGeckoCoin, DefiLlamaProtocol, SiteOwner } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import type { Creation, Creations } from '../src/research/deployer.ts';
@@ -292,9 +293,16 @@ const ledgerOf = (change: Partial<Setup>): Ledger => {
 
 const resultOf = (ledger: Ledger, id: string) => ledger.results.find((r) => r.id === id) ?? assert.fail(`no result ${id}: ${ledger.results.map((r) => r.id).join(', ')}`);
 
-type Row = { readonly what: string; readonly change: Partial<Setup>; readonly id: string; readonly kind: FindingKind; readonly state: State };
+/** `traced`, for a call traces' result, is the comparison of the flow lines with the traces, which `judge` does not read. */
+type Row = { readonly what: string; readonly change: Partial<Setup>; readonly traced?: FlowComparison; readonly id: string; readonly kind: FindingKind; readonly state: State };
+
+const UNCOVERED = { call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 1, others: [] } as const;
 
 const ROWS: readonly Row[] = [
+  { what: 'a flow line every traced transaction shows', change: {}, traced: { lines: [{ seen: 2, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'agrees', state: 'ok' },
+  { what: 'a flow line no traced transaction shows', change: {}, traced: { lines: [{ seen: 0, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'line-not-seen', state: 'bad' },
+  { what: 'a flow line only some traced transactions show', change: {}, traced: { lines: [{ seen: 1, of: 2 }], uncovered: [] }, id: 'flow.1', kind: 'line-partly-seen', state: 'warn' },
+  { what: 'a money call in a trace no line covers', change: {}, traced: { lines: [], uncovered: [UNCOVERED] }, id: 'trace.2.morpho-blue.usdc.transferFrom', kind: 'money-uncovered', state: 'warn' },
   { what: 'the address next to its label', change: {}, id: 'vault/source.page', kind: 'agrees', state: 'ok' },
   { what: 'a source domain DefiLlama lists another site for', change: { protocol: { ...BASE.protocol!, url: new URL('https://other.org') } }, id: 'vault/source.site', kind: 'site-differs', state: 'bad' },
   { what: 'a GitHub org DefiLlama does not name', change: { entry: { ...ENTRY, source: GITHUB }, protocol: { ...BASE.protocol!, github: ['someone'] } }, id: 'vault/source.site', kind: 'site-differs', state: 'bad' },
@@ -422,7 +430,7 @@ const ROWS: readonly Row[] = [
 
 for (const row of ROWS) {
   test(`${row.what}: ${row.id} is ${row.kind}, ${row.state}`, () => {
-    const result = resultOf(ledgerOf(row.change), row.id);
+    const result = resultOf(row.traced === undefined ? ledgerOf(row.change) : { entries: [], results: flowResults(row.traced) }, row.id);
     assert.equal(result.finding.kind, row.kind);
     assert.equal(stateOf(result), row.state);
   });
@@ -472,11 +480,8 @@ test('a bounty program is tied through a website its scope lists, and never thro
   assert.ok(!named(confirmations(shared, ENTRY)).includes('bounty'), 'a program on the same shared host confirms nothing');
 });
 
-/** The kinds only the call traces give, which test/trace.test.ts covers. */
-const TRACE_KINDS: readonly string[] = ['line-not-seen', 'line-partly-seen', 'money-uncovered'];
-
-test('every finding kind but the call traces\' has a row', () => {
-  assert.deepEqual(new Set(ROWS.map((row) => row.kind)), new Set(Object.keys(STATE_OF).filter((kind) => !TRACE_KINDS.includes(kind))));
+test('every finding kind has a row', () => {
+  assert.deepEqual(new Set(ROWS.map((row) => row.kind)), new Set(Object.keys(STATE_OF)));
 });
 
 test('only an entry no ABI proof compares with the chain has a result for its code at the latest block', () => {

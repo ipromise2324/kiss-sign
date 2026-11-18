@@ -35,7 +35,9 @@ export type RecordedTrace = { readonly hash: Hex; readonly calls: readonly Trace
 
 export const TOKEN_CALLS = { '0xa9059cbb': 'transfer', '0x23b872dd': 'transferFrom', '0x095ea7b3': 'approve' } as const;
 export type TokenCall = (typeof TOKEN_CALLS)[keyof typeof TOKEN_CALLS];
-const ADDRESS_ARGS: Readonly<Record<TokenCall, number>> = { transfer: 1, transferFrom: 2, approve: 1 };
+const PERMIT = '0xd505accf';
+/** How many leading address arguments a recorded call keeps: a token call's, and an ERC-2612 `permit`'s owner and spender, which set an allowance. */
+const ADDRESS_ARGS: Readonly<Record<string, number>> = { '0xa9059cbb': 1, '0x23b872dd': 2, '0x095ea7b3': 1, [PERMIT]: 2 };
 const tokenCall = (selector: Hex | undefined): TokenCall | undefined => (selector === undefined ? undefined : (TOKEN_CALLS as Readonly<Record<string, TokenCall>>)[selector]);
 
 const TRANSFER = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
@@ -67,12 +69,9 @@ export function trimTrace(frame: unknown): TraceCall[] {
     if (!/^0x([0-9a-f]{2})*$/.test(input)) throw new TraceError(`${path}.input: not hex data`);
     const selector = input.length >= 10 ? (input.slice(0, 10) as Hex) : undefined;
     const value = raw.value === undefined ? undefined : quantity(`${path}.value`, raw.value);
-    const kind = tokenCall(selector);
-    const words = kind === undefined ? undefined : input.slice(10);
-    const args =
-      kind === undefined || words === undefined || words.length < ADDRESS_ARGS[kind] * 64
-        ? undefined
-        : Array.from({ length: ADDRESS_ARGS[kind] }, (_, i) => `0x${words.slice(i * 64 + 24, (i + 1) * 64)}` as Address);
+    const kept = selector === undefined ? undefined : ADDRESS_ARGS[selector];
+    const words = input.slice(10);
+    const args = kept === undefined || words.length < kept * 64 ? undefined : Array.from({ length: kept }, (_, i) => `0x${words.slice(i * 64 + 24, (i + 1) * 64)}` as Address);
     const created = (type === 'CREATE' || type === 'CREATE2') && raw.error !== undefined && raw.to === undefined;
     calls.push({
       depth,
@@ -220,8 +219,7 @@ const topicAddress = (topic: Hex | undefined): Address | undefined => (topic ===
 
 function callMovement(call: TraceCall): Movement | undefined {
   const kind = tokenCall(call.selector);
-  if (kind === undefined || call.type !== 'CALL' || call.args === undefined) return undefined;
-  if (kind === undefined || call.to === undefined) return undefined;
+  if (kind === undefined || call.type !== 'CALL' || call.args === undefined || call.to === undefined) return undefined;
   if (kind === 'transferFrom') return { event: 'Transfer', token: call.to, from: call.args[0] as Address, to: call.args[1] as Address };
   return { event: kind === 'transfer' ? 'Transfer' : 'Approval', token: call.to, from: call.from, to: call.args[0] as Address };
 }
@@ -236,8 +234,9 @@ function logMovement(log: Receipt['logs'][number]): Movement | undefined {
 
 /**
  * Why the token steps of a trace and the receipt disagree, or undefined when they agree: each `transfer`,
- * `transferFrom` or `approve` call has its log, and each `Transfer` log of a registry token between two addresses other
- * than zero has its call.
+ * `transferFrom` or `approve` call has its log, each `Transfer` log of a registry token between two addresses other
+ * than zero has its call, and each `Approval` log of a registry token has the `approve` that logged it, or else the
+ * `transferFrom` that spent the allowance or the `permit` that set it, since many tokens log an `Approval` for those too.
  */
 export function tokenStepsDisagree(calls: readonly TraceCall[], receipt: Receipt, registryTokens: ReadonlySet<Address>): string | undefined {
   const logged = new Map<string, number>();
@@ -255,6 +254,21 @@ export function tokenStepsDisagree(calls: readonly TraceCall[], receipt: Receipt
     const left = called.get(key(m)) ?? 0;
     if (left === 0) return `the receipt logs a transfer of ${m.token} from ${m.from} to ${m.to} with no call in the trace`;
     called.set(key(m), left - 1);
+  }
+  const spent = new Map<string, number>();
+  const count = (k: string) => spent.set(k, (spent.get(k) ?? 0) + 1);
+  for (const call of calls) {
+    if (call.type !== 'CALL' || call.to === undefined || call.args === undefined) continue;
+    if ((call.selector as string) === '0x23b872dd') count(`spend ${call.to} ${call.args[0]} ${call.from}`);
+    if ((call.selector as string) === PERMIT) count(`permit ${call.to} ${call.args[0]} ${call.args[1]}`);
+  }
+  for (const log of receipt.logs) {
+    const m = logMovement(log);
+    if (m === undefined || m.event !== 'Approval' || !registryTokens.has(m.token)) continue;
+    const by = [key(m), `spend ${m.token} ${m.from} ${m.to}`, `permit ${m.token} ${m.from} ${m.to}`].find((k) => ((k === key(m) ? called : spent).get(k) ?? 0) > 0);
+    if (by === undefined) return `the receipt logs an approval of ${m.token} from ${m.from} to ${m.to} with no approve, transferFrom or permit in the trace`;
+    const from = by === key(m) ? called : spent;
+    from.set(by, (from.get(by) as number) - 1);
   }
   return undefined;
 }
