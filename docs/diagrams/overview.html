@@ -85,13 +85,13 @@
         <li><b>Official addresses</b> <span class="note">and what the protocol says about them</span> <span class="chip">Official site</span><span class="chip">GitHub</span><span class="chip">Protocol API, if any</span></li>
         <li><b>Contract name and creator</b> <span class="chip">Etherscan</span></li>
         <li><b>Protocol health</b> <span class="note">hacks, audits, upgrades</span> <span class="chip">DefiLlama hacks</span></li>
-        <li><b>Past transactions</b> <span class="note">the program finds and counts them, and records each one's call trace (who calls whom); the AI reads the counts</span> <span class="chip">Alchemy</span><span class="chip">Etherscan</span><span class="chip">drpc trace</span></li>
+        <li><b>Past transactions</b> <span class="note">the program finds and counts them, and traces each one that is exactly the template (who calls whom); the AI reads the counts</span> <span class="chip">Alchemy</span><span class="chip">Etherscan</span><span class="chip">drpc trace</span></li>
       </ul></li>
     <li class="step program"><div class="title">Prove <span class="who">Program</span></div>
       <ul class="sub">
         <li><b>Sources match public listings</b> <span class="note">findings go to the report</span> <span class="chip">DefiLlama</span><span class="chip">CoinGecko</span><span class="chip">Source page</span></li>
         <li><b>Code pins</b> <span class="note">each address's code, and since when it ran</span> <span class="chip">Alchemy</span><span class="chip">drpc</span></li>
-        <li><b>ABI matches the chain</b> <span class="chip">Etherscan</span> → <span class="chip">pinned solc</span> = <span class="note">bytecode</span></li>
+        <li><b>ABI matches the chain</b> <span class="chip">Etherscan</span> → <span class="chip">pinned solc</span> = <span class="note">bytecode, but for masked positions</span></li>
         <li><b>Vault history</b> <span class="chip">Alchemy</span><span class="chip">drpc</span></li>
         <li><b>ERC-7730 descriptors</b> <span class="note">and who attested them</span> <span class="chip">ERC-7730 registry</span></li>
       </ul></li>
@@ -100,7 +100,7 @@
     <li class="step ai"><div class="title">Open a pull request <span class="who">AI agent</span></div>
       <div class="desc">The template, its test transactions, the AI's notes, and the report. It never merges a template, registry or program gate pull request.</div></li>
     <li class="step signer"><div class="title">Review and merge <span class="who">You</span></div>
-      <div class="desc">Read the report, run <code>pnpm report … --compare</code> to read it all again live, then merge. Merging is your approval. <span class="chip">GitHub</span></div></li>
+      <div class="desc">Read the report, run <code>pnpm report … --compare</code> to check its facts again live, then merge. Merging is your approval. <span class="chip">GitHub</span></div></li>
   </ol>
 </section>
 
@@ -110,9 +110,9 @@
   <h2>Every signing<small>in your own terminal</small></h2>
   <ol>
     <li class="step signer"><div class="title">Approve the template <span class="who">You</span></div>
-      <div class="desc">First use, and again whenever it changes: <code>template approve</code> shows the template and its commit, and records its hash.</div></li>
+      <div class="desc">First use, and again whenever it changes: <code>template approve</code> shows the template's file, its commit and its hash, and records the hash.</div></li>
     <li class="step signer"><div class="title">Fill the card <span class="who">You</span></div>
-      <div class="desc">Pick each vault, market or recipient from a numbered list with full addresses. Type amounts in whole tokens, with decimals the program reads. The first time a template or vault is used, the card names a small amount. <span class="chip">Alchemy</span><span class="chip">drpc</span></div></li>
+      <div class="desc">Pick each vault, market or recipient from a numbered list with full addresses. Type amounts in whole tokens, with decimals the program reads. The first time a template or vault is used, start with a small amount, as the report advises. <span class="chip">Alchemy</span><span class="chip">drpc</span></div></li>
     <li class="step signer"><div class="title">Seal the card <span class="who">You</span></div>
       <div class="desc">Hashed and stored before you see the transaction.</div></li>
     <li class="step signer"><div class="title">Propose on Safe <span class="who">You</span></div>

@@ -17,8 +17,8 @@ Every command below but `pnpm test` and `pnpm typecheck` prints its usage, flags
 ### Setup
 
 - `pnpm kiss-sign <command>`: runs `bin/kiss-sign` from this clone, the signing program.
-- `pnpm kiss-sign init`: writes `$KISS_SIGN_HOME/config.json` (the Safe, the trusted fork, the language) and an empty `.env`.
-- `pnpm kiss-sign key add|list|remove`: enters, lists or removes an API key in `$KISS_SIGN_HOME/.env` at a hidden prompt.
+- `pnpm kiss-sign init`: writes `$KISS_SIGN_HOME/config.json` (the Safe, the trusted fork, the language) and, when there is none, a `.env` with an empty line per key.
+- `pnpm kiss-sign key add|list|remove`: enters an API key into `$KISS_SIGN_HOME/.env` at a hidden prompt, says which keys are set, or removes one.
 - `pnpm kiss-sign book add|list`: adds or prints address-book entries.
 - `pnpm fetch-solc`, `pnpm fetch-psl`, `pnpm fetch-erc7730`: download the pinned solc builds, Public Suffix List and ERC-7730 archive into `vendor/`; the commands that need them run them on demand.
 - `pnpm pin-solc <version>`: pins a solc build after soliditylang and GitHub agree on its sha256.
