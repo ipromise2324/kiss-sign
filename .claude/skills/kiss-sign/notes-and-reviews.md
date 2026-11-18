@@ -68,7 +68,7 @@ The result stays as it is, your review sits under it, and a `FINDING` stays visi
 A per-instance report reads two files.
 
 - The template's `notes.json` holds what every instance's report shares: `title`, `summary`, `protocols`, `fields`, the `flow` lines that name no instance or asset, and the shared contracts' `entries`, `judgments` and `reviews`, among them every entry each instance with a report depends on or names as the same attribute, such as Fluid's Liquidity and LendingFactory, written once.
-- The instance's own `notes.json`, in `templates/<protocol>/<operation>/instances/<instance>/` (or `vaults/<instance>/` while its committed files are there; never make a second folder for one instance), holds only `verdict`, `flow`, `judgments`, `reviews`, `entries` and `pastTxsConclusion` about that instance, the entries only it names as attributes or depends on included, such as its asset.
+- The instance's own `notes.json`, in `templates/<protocol>/<operation>/instances/<instance>/`, holds only `verdict`, `flow`, `judgments`, `reviews`, `entries` and `pastTxsConclusion` about that instance, the entries only it names as attributes or depends on included, such as its asset.
   A `flow` line that names the instance or its asset goes here, since another instance's report cannot name it.
 - Its `docs.json` sits beside it, written before `--record`, when a function's page is specific to this report, such as one that names the instance, its asset or another contract only this report covers.
 - The program refuses a `reviews` key or `entries` name for any other contract, or for a test transaction, and a key or name both files define; the `flow` lines and the judgments of both each count toward four.
