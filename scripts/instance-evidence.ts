@@ -11,16 +11,32 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry, sizeOf } from '../src/registry.ts';
 import { alchemyCall, trimVaultRecording, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/instance-evidence.ts <registry name> [--record <name>]
+const USAGE = 'usage: pnpm instance-evidence <registry name> [--record <name>]';
+const HELP = `${USAGE}
 
-Reads the size the entry or its factory declares, such as a vault's totalAssets(), about every 30 days over the last
-12 months through Alchemy and drpc, and, when the size counts holders, its share holders at the latest block: every
-address the Alchemy Transfers API shows receiving shares, with balances read through both providers that must add up to
-totalSupply(). It prints evidence, no verdict, and no holder address.
+First asks the entry's factory, as pnpm prove-instance does, whether it vouches for the entry,
+printing one admitted line per answer, and reads nothing of an entry it does not admit; an entry
+with no factory gets a note instead. It then reads the size the entry or its factory declares,
+such as a vault's totalAssets() in the token its asset() answers, about every 30 days over the last
+12 months through both providers; a month they disagree on is UNVERIFIABLE. For a size that counts
+holders it counts the share holders at the latest block: recipients from the Alchemy Transfers API,
+balances through Multicall3 on both providers, which must add up to totalSupply(). It prints the
+holder count and the top 10 holders' share, no address and no verdict. An entry with no size, of
+its own or its factory's, is refused.
 
-The numbers come from the vault's own code. A vault that names a factory is read only after that factory answers, as
-pnpm prove-instance asks it, that it created the vault.`;
+Options:
+  --record <name>   Write testdata/vault-evidence/<name>.json; refused, writing nothing, when a
+                    read got no answer or the recording names the configured Safe. <name> takes
+                    lowercase letters, digits and -.
+
+Writes: testdata/vault-evidence/<name>.json with --record, otherwise nothing.
+Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2, Vault
+history); docs/design/data-shapes.md, "Registry attributes and instance checks".`;
+
+exitOnHelp(HELP);
 
 const { values: flags, positionals } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');

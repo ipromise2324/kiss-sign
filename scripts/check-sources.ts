@@ -14,19 +14,40 @@ import { openMainnetReader } from '../src/chain/reader.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { liveCreations } from '../src/research/deployer.ts';
 import { gatherPackages, provenanceRepositories } from '../src/research/npm-package.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = `usage: node scripts/check-sources.ts [<registry name>...] [--record <name>]
+const USAGE = 'usage: pnpm check-sources [<registry name>...] [--record <name>]';
+const HELP = `${USAGE}
 
-Compares each registry entry's source domain (by the Public Suffix List in vendor/publicsuffix/) with its DefiLlama
-protocol's website, or its GitHub org with the protocol's orgs, and checks that CoinGecko lists each token's or vault
-share's own coin id at its address. It reads each source page as served, without running its scripts, and looks for
-the address next to the entry's sourceLabel. A GitHub source must name a commit on the repository's default branch, and
-a source URL must not hold the address. For an entry with an apiSource it asks the protocol's API, POSTing only the
-JSON body the registry holds, and requires the entry's address at the registry's path in the JSON answer, and compares
-the API's domain with the protocol's website as it does the source's. It then lists the sites each protocol's sources use. With no names it checks
-every entry. Every disagreement prints as FINDING. A read with no answer (no connection, a timeout, a server error or a
-rate limit) is asked again after each pause; one still without an answer prints as UNVERIFIABLE, and --record then
-writes nothing.`;
+Checks where each registry entry's address is published and prints each comparison. It compares
+the site of the entry's source with the protocol its defillama slug names (registrable domain by
+the Public Suffix List, or a github.com source's org); DefiLlama's parent protocol, CoinGecko's
+coin links, the Immunefi program the entry names and GitHub's verified domains add sites, and only
+DefiLlama's can make one differ. It requires the address next to sourceLabel (under sourceHeading)
+on the source page as served without scripts, and the same for each of moreSources; a github.com
+page must be pinned to a commit on the default branch. It checks CoinGecko's coin at each token's
+and vault's address, an apiSource's JSON answer, the scope of the Immunefi programs tied to the
+protocol, an sdk tarball's file and provenance, and what the same label binds in the newest version
+of each pinned place. With ALCHEMY_API_KEY and ETHERSCAN_API_KEY it also proves each entry's
+creation and names other entries of the protocol the same sender deployed. It ends with the sites
+each protocol's sources use. With no names it checks every entry. Each disagreement, missing
+listing, or missing Public Suffix List prints as FINDING for the signer to judge; nothing fails. A
+read with no answer is asked again after each pause and prints as UNVERIFIABLE if it never answers.
+It downloads a missing or changed Public Suffix List first, as pnpm fetch-psl does.
+
+Options:
+  --record <name>   Write testdata/sources/<name>.json; refused, writing nothing, when a read got
+                    no answer. <name> takes lowercase letters, digits and -.
+
+Writes: testdata/sources/<name>.json with --record, otherwise nothing.
+Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, optional, from the environment or $KISS_SIGN_HOME/.env;
+without them the deployer check is skipped with a NOTE. GITHUB_TOKEN, optional, sent only to
+api.github.com; it raises GitHub's limit from 60 to 5,000 requests an hour and changes no answer.
+Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2, Check
+the sources against public listings through How the places count);
+docs/design/engine-and-chain.md, "Research services".`;
+
+exitOnHelp(HELP);
 
 const { values: flags, positionals: names } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
