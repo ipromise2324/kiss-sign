@@ -83,8 +83,8 @@ const INIT_HELP = `Sets up $KISS_SIGN_HOME (default ~/.kiss-sign) for one Safe o
 config.json with chain 1, the Safe, the language and, as repo, the GitHub repository
 (github.com/<owner>/<name>, lowercase) that this clone's origin names after any
 url.<base>.insteadOf rewrite: the signer's own fork, whose main verify trusts.
-It refuses an origin that is not one GitHub https or ssh URL, and a home already set up for
-another Safe or another repository. Run again with the same Safe, it adds repo to a config that
+It refuses an origin with a URL that is not a GitHub https or ssh URL, or whose URLs name more
+than one repository, and a home already set up for another Safe or another repository. Run again with the same Safe, it adds repo to a config that
 lacks one, and keeps the recorded language unless --language changes it.
 It also writes $KISS_SIGN_HOME/.env when there is none, mode 0600, with an empty line per key,
 each under a comment naming the commands that need it. It never overwrites an existing .env and
@@ -168,23 +168,24 @@ registry/ differs from origin/main.
 Each address is picked by number, exact name, full address or market id from the lists it
 prints: registry entries of the right kind, address-book entries or the Safe, or the markets.
 Amounts are typed in whole tokens, such as 5, 1.25 or 1,000,611.448606, or max where the field
-declares one. A percent, such as 100 or 35.5, is at most 100 with at most 16 decimals. Decimals
+declares one; a token outside the registry is typed in base units. A percent, such as 100 or 35.5, is at most 100 with at most 16 decimals. Decimals
 are read through both providers at one block they agree on. A computed field is read, not asked.
 It ends with the card in one box, each amount in whole tokens and base units, and the block and
 providers of every chain read. Output is plain text when stdout is not a terminal or NO_COLOR is
 set.
 
 Writes: $KISS_SIGN_HOME/cards/<hash>.json, after your yes.
-Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env, when a template counts a
-registry token.
+Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env, when a template has an amount
+of a token or a computed amount.
 Rules: docs/design/flow.md, "Every signing" (steps 9 and 10); docs/design/data-shapes.md, "Intent
 card"; docs/design/program-ownership.md, "The program checks itself first".
 `;
 
 const CARD_SEAL_HELP = `Seals a card written as a file. It runs the same check against GitHub's main as card new, resolves
 every name, and refuses 0 in a computed amount field or in one a share price bound or atLeast
-compares with, and a vault, named in any field, with no report for its template (unless the
-template is not yet rebuilt), reading the report folders from the clone. It prints the card in
+compares with, and an instance, named in any field, with no report for its template (an entry of
+the kind the template is reported per, a vault unless its instanceField names another kind),
+reading the report folders from the clone. It prints the card in
 one box with full addresses and each amount in base units, since it reads no decimals. After
 your yes at a terminal it stores the card and prints its hash.
 
@@ -197,9 +198,10 @@ const VERIFY_HELP = `Checks a Safe transaction against a sealed card and prints 
 safeTxHash, or MISMATCH or UNVERIFIABLE with the checks that caused it.
 It first runs the self-check: every origin URL must be the config's repo, and the checkout must
 be exactly its main. It refuses, writing no verdict, a card holding 0 where card seal refuses it
-or naming a vault with no report for its template at that commit. It reads each signed message
+or naming an instance with no report for its template at that commit. It reads each signed message
 the transaction holds only by its digest, such as a CoW order, from the template's lookup, then
-runs every check. An executed transaction is judged by its receipt; any other is simulated on
+runs every check. An executed transaction is judged by its receipt, and also simulated alone on
+its parent block when the card reads views or changes a Safe setting; any other is simulated on
 the latest block.
 It writes a verdict file and an HTML page in the config's language, with no script and nothing
 loaded from outside, showing the verdict, each check, the card, the asset changes it expects, the
