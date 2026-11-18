@@ -367,7 +367,9 @@ test('a sampled transaction the configured Safe sent, whose search entry names n
   assert.ok((written.excluded ?? []).length > 0 && (written.excluded ?? []).every(isWithheld));
   const text = JSON.stringify(written).toLowerCase();
   assert.ok(!text.includes(safe.slice(2)));
-  for (const hash of [...live.excluded, ...[...live.found.keys()].filter((h) => !live.studies.some((s) => s.hash === h))]) assert.ok(!text.includes(hash.toLowerCase()), `${hash} is recorded`);
+  const unstudied = [...live.excluded, ...[...live.found.keys()].filter((h) => !live.studies.some((s) => s.hash === h))].filter((h) => !isWithheld(h));
+  assert.ok(unstudied.length > 0);
+  for (const hash of unstudied) assert.ok(!text.includes(hash.toLowerCase()), `${hash} is recorded`);
   assert.equal(renderPastTxs(await run(replayAsk(written.sources), undefined, new Set(written.excluded), written.exchanges), registry), renderPastTxs(live, registry));
 });
 

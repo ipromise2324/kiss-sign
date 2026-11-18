@@ -45,8 +45,8 @@ const mentions = (value: unknown, needles: readonly string[]): boolean => {
  * What a recording writes in place of a found transaction's hash it did not study: a number no real hash holds, the
  * same for every answer that found that transaction, so a replay finds and samples the same.
  */
-const withheld = (n: number): Hex => `0x${'00'.repeat(28)}${n.toString(16).padStart(8, '0')}` as Hex;
-export const isWithheld = (hash: Hex): boolean => /^0x0{56}[0-9a-f]{8}$/.test(hash);
+const withheld = (n: number): Hex => `0x${'ee'.repeat(28)}${n.toString(16).padStart(8, '0')}` as Hex;
+export const isWithheld = (hash: Hex): boolean => /^0x(ee){28}[0-9a-f]{8}$/.test(hash);
 
 type Studied = Pick<PastTxs, 'studies' | 'otherEmitter' | 'excluded'>;
 
