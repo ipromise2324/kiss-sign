@@ -26,7 +26,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
   `function` is the function `from` calls on `to`, canonical, such as `deposit(uint256,address)`; the program compares each line with the call traces `pnpm past-txs --record` keeps and draws it solid only when every traced transaction shows it.
   Before you write a line, find that call in a past transaction's internal calls (Etherscan's trace of one transaction `pnpm past-txs` found) and in the contract's source; `sources` holds both, the source pinned to a commit and the transaction's Etherscan page.
   Name no call the template binds itself, such as a Bundler3 bundle item: the diagram draws those from the template, and the program refuses the line.
-  Spend the four lines on the steps that move money inside the call, since every `transfer`, `transferFrom`, `approve` or ETH transfer no line or template call explains is a finding to review.
+  Spend the four lines on the steps that move money inside the call: every `transfer`, `transferFrom`, `approve` or ETH transfer that is not a call the template binds or a line names, nor made directly by one, is a result for the signer that you review.
 - `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list.
 - `judgments`: at most four, each with a `recommendation`.
 - `reviews`: below.
