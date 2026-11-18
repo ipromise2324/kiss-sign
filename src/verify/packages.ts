@@ -7,7 +7,14 @@ import { PACKAGE_PINS } from './package-pins.ts';
 import type { PackagePin } from './package-pins.ts';
 
 /** A package `pnpm-lock.yaml` names: its name, its version as the lockfile writes it, and its tarball's sha512. */
-export type LockedPackage = { readonly name: string; readonly version: string; readonly integrity: string; readonly dependencies: readonly LockedPackage[] };
+export type LockedPackage = {
+  readonly name: string;
+  readonly version: string;
+  readonly integrity: string;
+  /** pnpm installs it only on the systems it names, such as one CPU. */
+  readonly optional: boolean;
+  readonly dependencies: readonly LockedPackage[];
+};
 
 export class LockfileError extends Error {}
 
@@ -16,7 +23,7 @@ type YamlMap = Map<string, YamlMap | string>;
 const LINE = /^((?: {2})*)('[^']*'|"[^"]*"|[^\s'"][^:]*):(?: (.+))?$/;
 const unquote = (key: string): string => (/^(['"]).*\1$/.test(key) ? key.slice(1, -1) : key);
 
-/** The block mappings of each YAML document, as pnpm writes its lockfile: `key:` or `key: value` lines indented by two spaces. A flow value stays its text. */
+/** The block mappings of each YAML document, as pnpm writes its lockfile: `key:` or `key: value` lines indented by two spaces. A flow value stays its text, and a list item a key `- <item>`. */
 function lockDocuments(text: string): YamlMap[] {
   const documents: YamlMap[] = [];
   let stack: YamlMap[] = [];
@@ -27,6 +34,11 @@ function lockDocuments(text: string): YamlMap[] {
       if (line === '---') continue;
     }
     if (line.trim() === '') continue;
+    const item = /^((?: {2})*)- (\S.*)$/.exec(line);
+    if (item !== null && item[1]!.length / 2 === stack.length - 1) {
+      stack.at(-1)!.set(`- ${item[2]}`, item[2]!);
+      continue;
+    }
     const match = LINE.exec(line);
     const depth = match === null ? -1 : match[1]!.length / 2;
     if (match === null || depth >= stack.length) throw new LockfileError(`pnpm-lock.yaml line ${index + 1} is not one this program reads`);
@@ -71,7 +83,7 @@ export function lockedPackages(text: string): LockedPackage[] {
     const snapshot = snapshots?.get(key);
     if (snapshot === undefined || (typeof snapshot === 'string' && snapshot !== '{}')) throw new LockfileError(`pnpm-lock.yaml has no snapshot of ${key}`);
     const dependencies: LockedPackage[] = [];
-    made.set(key, { name, version, integrity, dependencies });
+    made.set(key, { name, version, integrity, optional: typeof snapshot !== 'string' && stringAt(snapshot, 'optional') === 'true', dependencies });
     const named = typeof snapshot === 'string' ? [] : ['dependencies', 'optionalDependencies'].flatMap((field) => [...(mapAt(snapshot, field) ?? [])]);
     for (const [child, at] of named) {
       if (typeof at !== 'string') throw new LockfileError(`pnpm-lock.yaml: ${key} names ${child} with no version`);
@@ -113,9 +125,21 @@ function differences(dir: string, pin: PackagePin): string[] {
 }
 
 /**
+ * Each `node_modules` folder in the folders that hold the program's code, `bin/` and `src/`. Node looks for a package
+ * there before the root `node_modules`, from the folder of the file that imports it.
+ */
+function nestedModuleFolders(root: string): string[] {
+  return ['bin', 'src'].flatMap((top) =>
+    readdirSync(join(root, top), { recursive: true, withFileTypes: true })
+      .filter((entry) => entry.name === 'node_modules')
+      .map((entry) => `a node_modules folder below the root: ${relative(root, join(entry.parentPath, entry.name)).split(sep).join('/')}`),
+  );
+}
+
+/**
  * Each way the packages Node would load for the clone at `root` differ from their pins: each package the lockfile's
  * `dependencies` reach, found as Node resolves it from `bin/kiss-sign` or from the package that depends on it, must hold
- * exactly the files `pins` gives for its tarball's sha512. Reads only `node:` modules and the pins, so it can run before
+ * exactly the files `pins` gives for its tarball's sha512, and no other `node_modules` folder may sit nearer the code. Reads only `node:` modules and the pins, so it can run before
  * any package is loaded.
  */
 export function packageProblems(root: string, pins: Readonly<Record<string, PackagePin>> = PACKAGE_PINS): string[] {
@@ -126,7 +150,7 @@ export function packageProblems(root: string, pins: Readonly<Record<string, Pack
     if (error instanceof LockfileError || (error as NodeJS.ErrnoException).code === 'ENOENT') return [error instanceof LockfileError ? error.message : 'there is no pnpm-lock.yaml'];
     throw error;
   }
-  const problems: string[] = [];
+  const problems = nestedModuleFolders(root);
   const checked = new Set<string>();
   const check = (pkg: LockedPackage, from: string): void => {
     const key = `${pkg.name}@${pkg.version}`;
@@ -137,16 +161,20 @@ export function packageProblems(root: string, pins: Readonly<Record<string, Pack
       found = undefined;
     }
     if (found === undefined) {
-      problems.push(`${key}: not installed`);
+      if (!pkg.optional) problems.push(`${key}: not installed`);
       return;
     }
-    const dir = realpathSync(dirname(found));
-    if (checked.has(dir)) return;
-    checked.add(dir);
-    const pin = pins[pkg.integrity];
-    if (pin === undefined) problems.push(`${key}: no pin for its tarball ${pkg.integrity}; run node scripts/pin-packages.ts ${pkg.name}@${pkg.version.replace(/\(.*$/, '')}`);
-    else problems.push(...differences(dir, pin).map((problem) => `${key}: ${problem}`));
-    for (const dependency of pkg.dependencies) check(dependency, join(dir, 'package.json'));
+    try {
+      const dir = realpathSync(dirname(found));
+      if (checked.has(dir)) return;
+      checked.add(dir);
+      const pin = pins[pkg.integrity];
+      if (pin === undefined) problems.push(`${key}: no pin for its tarball ${pkg.integrity}; run node scripts/pin-packages.ts ${pkg.name}@${pkg.version.replace(/\(.*$/, '')}`);
+      else problems.push(...differences(dir, pin).map((problem) => `${key}: ${problem}`));
+      for (const dependency of pkg.dependencies) check(dependency, join(dir, 'package.json'));
+    } catch (error) {
+      problems.push(`${key}: cannot read ${(error as NodeJS.ErrnoException).path ?? found}`);
+    }
   };
   for (const pkg of roots) check(pkg, join(root, 'bin', 'kiss-sign'));
   return problems;

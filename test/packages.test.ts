@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { appendFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -69,8 +69,24 @@ test('a package that is not installed, or whose tarball has no pin, is named', (
 test('a lockfile the check cannot read is refused', () => {
   const { root } = copyOfProgram();
   const lines = readFileSync(join(root, 'pnpm-lock.yaml'), 'utf8').split('\n').length;
-  appendFileSync(join(root, 'pnpm-lock.yaml'), '  - a list item\n');
+  appendFileSync(join(root, 'pnpm-lock.yaml'), 'not a key\n');
   assert.deepEqual(packageProblems(root), [`pnpm-lock.yaml line ${lines} is not one this program reads`]);
   rmSync(join(root, 'pnpm-lock.yaml'));
   assert.deepEqual(packageProblems(root), ['there is no pnpm-lock.yaml']);
+});
+
+test('a node_modules folder under src, which Node would search before the root one, is refused before it loads', () => {
+  const { root, home, noble } = copyOfProgram();
+  cpSync(noble, join(root, 'src', 'safe', 'node_modules', '@noble', 'hashes'), { recursive: true });
+  const result = run(root, home);
+  assert.equal(result.status, 1);
+  assert.ok(result.stderr.endsWith('\n  a node_modules folder below the root: src/safe/node_modules\n'), result.stderr);
+});
+
+test('a symlink inside a package is named, and a list in the lockfile is read', () => {
+  const { root, noble } = copyOfProgram();
+  symlinkSync(join(noble, 'sha3.js'), join(noble, 'link.js'));
+  const lock = join(root, 'pnpm-lock.yaml');
+  writeFileSync(lock, readFileSync(lock, 'utf8').replace("  '@noble/hashes@2.4.0': {}\n", "  '@noble/hashes@2.4.0':\n    transitivePeerDependencies:\n      - left-pad\n"));
+  assert.deepEqual(packageProblems(root), [`${NOBLE}: not a file: link.js`]);
 });
