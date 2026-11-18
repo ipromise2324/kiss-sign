@@ -221,7 +221,7 @@ A contract you reviewed can change into one that harms you.
 
 | Attack | Stopped by |
 |---|---|
-| A contract turns harmful before you sign | The simulation, if it takes your funds in this transaction: your balances do not move as the card says, `MISMATCH`. The recorded code, if a registry contract's code changed since your review: `MISMATCH`. A changed setting, or a contract behind it such as a market's oracle, is not checked |
+| A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings, and contracts behind it such as a market's oracle, are not checked |
 | The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 
 ## What kiss-sign checks
