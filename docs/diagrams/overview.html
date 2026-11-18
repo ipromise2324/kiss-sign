@@ -52,7 +52,7 @@
   <svg viewBox="0 0 256 256" aria-hidden="true"><g fill="#1b1f27"><path d="M57.98 58.02 L173.98 174.02 L198.02 149.98 L82.02 33.98 Z"/><path d="M173.98 33.98 L57.98 149.98 L82.02 174.02 L198.02 58.02 Z"/><rect x="40" y="194" width="176" height="22"/></g></svg>
   <div>
     <h1>kiss-sign<em>Keep it simple, stupid, and sign.</em></h1>
-    <p>An AI writes templates. A fixed program runs them and decides. You sign only on <code>MATCH</code>.</p>
+    <p>An AI writes templates. A fixed program runs them and decides the verdict. You sign only on <code>MATCH</code>.</p>
   </div>
 </header>
 <div class="legend">Who acts:
@@ -95,10 +95,10 @@
         <li><b>Vault history</b> <span class="chip">Alchemy</span><span class="chip">drpc</span></li>
         <li><b>ERC-7730 descriptors</b> <span class="note">and who attested them</span> <span class="chip">ERC-7730 registry</span></li>
       </ul></li>
-    <li class="step ai"><div class="title">Open a pull request <span class="who">AI agent</span></div>
-      <div class="desc">The template, its test transactions, and the AI's notes. It never merges.</div></li>
     <li class="step program"><div class="title">Write the report <span class="who">Program</span></div>
       <div class="desc">From the recordings, never by the AI: a Markdown report and, with the AI's notes, an HTML report with a confidence level per address.</div></li>
+    <li class="step ai"><div class="title">Open a pull request <span class="who">AI agent</span></div>
+      <div class="desc">The template, its test transactions, the AI's notes, and the report. It never merges a template or registry pull request.</div></li>
     <li class="step signer"><div class="title">Review and merge <span class="who">You</span></div>
       <div class="desc">Read the report, run <code>pnpm report … --compare</code> to read it all again live, then merge. Merging is your approval. <span class="chip">GitHub</span></div></li>
   </ol>
@@ -120,15 +120,16 @@
     <li class="step program"><div class="title">Verify <span class="who">Program</span></div>
       <ul class="sub">
         <li><b>Self-check</b> <span class="note">the clone is exactly your fork's <code>main</code></span></li>
+        <li><b>Approval</b> <span class="note">the template's hash is the one you approved</span></li>
         <li><b>Decode</b> <span class="note">byte for byte, every field against the template and the card</span></li>
-        <li><b>Mutations</b> <span class="note">each changed copy must give <code>MISMATCH</code></span></li>
+        <li><b>Mutations</b> <span class="note">each changed copy must give <code>MISMATCH</code>, or the verdict is <code>UNVERIFIABLE</code></span></li>
         <li><b>Code pins</b> <span class="note">every registry contract runs its pinned code</span></li>
         <li><b>Simulate</b> <span class="note">balances, allowances and views must match the card</span> <span class="chip">Alchemy</span><span class="chip">drpc</span></li>
       </ul></li>
     <li class="step program"><div class="title">Verdict <span class="who">Program</span></div>
       <div class="verdict"><span class="m">MATCH</span> · <span class="x">MISMATCH</span> · <span class="u">UNVERIFIABLE</span></div></li>
     <li class="step signer"><div class="title">Independent check <span class="who">You · hardened tier</span></div>
-      <div class="desc">On a second computer with no AI and no kiss-sign, <code>check.sh &lt;nonce&gt;</code> computes the hashes and decodes each call. Compare the hashes with the wallet and the calls with your sealed card. <span class="chip">Safe Transaction Service</span></div></li>
+      <div class="desc">On a second computer with no AI and no kiss-sign, <code>check.sh &lt;nonce&gt;</code> computes the hashes and decodes each call. Compare its hashes with the wallet, its 比對清單 row by row with <code>verify</code>'s page, and the calls with what you meant. <span class="chip">Safe Transaction Service</span><span class="chip">Sourcify</span></div></li>
     <li class="step signer"><div class="title">Sign on the wallet <span class="who">You</span></div>
       <div class="desc">Only on <code>MATCH</code>: compare both hashes on the device's screen. <span class="chip">Hardware wallet</span></div></li>
   </ol>
