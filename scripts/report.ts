@@ -61,49 +61,63 @@ import { alchemyCall, vaultEvidenceText } from '../src/research/instance-evidenc
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
 const colors = paint(colorWanted(process.stdout.isTTY, process.env));
 /** A line of `--compare`, its FINDING, DIFFERS and NOTE words coloured at a terminal. */
 const say = (line: string): void => console.log(markWords(line, colors));
 
-const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/report.ts <protocol>/<operation> [--instance-of <instance>] [--record | --compare [--data <git ref>]]
-       node scripts/report.ts <protocol>/<operation> [--instance-of <instance>] (--offline | --render)
+const USAGE = `usage: pnpm report <protocol>/<operation> [--instance-of <instance>] [--record]
+       pnpm report <protocol>/<operation> [--instance-of <instance>] --compare [--data <git ref>]
+       pnpm report <protocol>/<operation> [--instance-of <instance>] (--offline | --render)`;
+const HELP = `${USAGE}
 
-Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
-docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
-the operation can touch (pnpm prove-abi but for one whose ABI it does not use, such as a market's oracle, or one with routes, whose code it reads at the latest block instead), each span of its code pin checked on the chain, pnpm instance-evidence for every vault its card
-can name, the protocol facts (DefiLlama's TVL, listing date and hacks for each protocol a call goes to, each facts view
-for every value its card field can name, and each token's decimals()), the past-txs recordings of the template studied
-again with each recorded transaction fetched again by hash through both providers, and pnpm erc7730 for every such
-entry.
+Prints the generated report of a template, read live: the card's choices and each field's rule,
+the effects, each function's official page, pnpm check-sources and the code pin's spans for every
+registry entry the operation can touch, pnpm prove-abi for each whose ABI it uses (the code it runs
+at the latest block for the others), pnpm instance-evidence for the instance, the protocol facts,
+the past-txs recordings of the template studied again, and pnpm erc7730 for every such entry.
+A template whose card has an instance field, a vault today, is reported per instance: --instance-of
+names it, and the report reads the registry as if it were the only one the card can name. Without
+--instance-of such a template is refused, naming the instances that have a report.
+A read with no answer is asked again after each pause; one still without an answer prints as
+UNVERIFIABLE, never as FINDING, and --record then writes nothing.
+The report prints no text from a page, a token, a descriptor or an API answer, and prints the
+template's reasons escaped and labelled as written by the AI. pnpm test fails when a committed
+report, or an HTML page, differs from what its recordings and notes.json give.
 
-A template whose card names a vault is reported per instance: --instance-of names the vault, and the report reads the
-registry as if that vault were the only one the card can name. Its files sit in templates/<protocol>/<operation>/instances/<instance>/,
-or in vaults/<instance>/ beside it while that instance's committed files are there, and its recording in
-testdata/report/<protocol>-<operation>/<instance>.json.
+Options:
+  --instance-of <instance>  report the template for this one instance (--vault and --vault-of were
+                            removed and are refused)
+  --record                  also write the answers, an ABI case for each entry testdata/abi/ lacks,
+                            and the report files from the recordings alone
+  --offline                 print the Markdown report from the recordings, reading nothing live
+  --render                  write the report files from the recordings, reading nothing live
+  --compare                 read every fact live again, print each that differs from the committed
+                            report and exit 1 on any (see Rules); it first refuses, exiting 1, a
+                            branch that changes the verdict core beside templates/ or registry/,
+                            and prints PROGRAM CHANGE for the program files it changes and AI TEXT
+                            for each notes.json it changes against origin/main
+  --data <git ref>          with --compare: take templates/, registry/ and testdata/ from that ref
+                            and run the code checked out; the signer runs it from main as
+                            --compare --data origin/<branch> before merging
+Use at most one of --record, --offline, --render and --compare.
+--record and --render remove a page in a language the notes no longer hold, and a
+report.generated.html the program wrote before it wrote one file per language.
 
-A read with no answer (no connection, a timeout, a server error or a rate limit) is asked again after each pause; one
-still without an answer prints as UNVERIFIABLE, never as FINDING, and --record then writes nothing.
+Writes: with --record, testdata/report/<protocol>-<operation>.json (or <protocol>-<operation>/
+<instance>.json), testdata/abi/<entry>.json, and in the report's folder report.generated.md and,
+for a template with notes.json, report.generated.en.html and report.generated.zh-TW.html in each
+language the notes hold; --render writes the same report files; otherwise nothing. The folder is
+templates/<protocol>/<operation>/, or instances/<instance>/ (vaults/<instance>/ while that
+instance's files are there) under it.
+Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY for a live read (not --offline or --render), from the
+environment or $KISS_SIGN_HOME/.env. GITHUB_TOKEN is optional: sent only to api.github.com, it
+raises GitHub's limit from 60 to 5,000 requests an hour and changes no answer.
+Rules: docs/design/flow.md, "First time an operation is done: build its template", step 6 "Report";
+docs/design/program-ownership.md, "The verdict core".`;
 
---record also writes the live answers to testdata/report/, records an ABI case for each entry testdata/abi/ lacks, and
-writes the committed report from those recordings alone: report.generated.md in the report's folder, and for a
-template with notes.json, the signer's report beside it in each language the notes hold: report.generated.en.html in
-English, report.generated.zh-TW.html in Traditional Chinese.
---offline prints the Markdown text from the recordings, reading nothing live; --render writes every report file from
-them. Both remove a page in a language the notes no longer hold, and a report.generated.html the program wrote before
-it wrote one file per language.
---compare reads the listings, pages, official APIs, ABI proofs, code spans, the code it reads at the latest block, the factory and adapter answers and ERC-7730 attestations live, reads each vault again at the blocks
-the committed report names, reads the protocol facts and decimals again at the block the recording names, fetches each
-recorded past transaction again by hash, and prints each fact that differs from the committed report, setting aside
-DefiLlama's TVL; it exits 1 on any. It does not search for past transactions again. For a template with
-notes.json it also writes the HTML report again in each language the notes hold from the recordings and notes with
-this code, requires each committed file to equal it byte for byte, and flags a page missing or committed in another
-language. It first prints every file the pull request changes outside templates/, registry/ and testdata/ against
-origin/main, and AI TEXT for each notes.json it changes.
-
---data <git ref> takes templates/, registry/ and testdata/ from that ref, such as a fetched pull request branch, and
-runs the code checked out here. Run --compare from main with --data, so the pull request's own code cannot change what
---compare checks.`;
+exitOnHelp(HELP);
 
 const { values: flags, positionals } = parseArgs({
   options: {
@@ -130,7 +144,7 @@ if (
   [flags.record, flags.offline, flags.render, flags.compare].filter(Boolean).length > 1 ||
   (flags.data !== undefined && !flags.compare)
 ) {
-  console.error(USAGE);
+  console.error(HELP);
   process.exit(2);
 }
 const target: TemplateTarget = { template: id, instance: flags['instance-of'] };
