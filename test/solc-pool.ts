@@ -10,7 +10,7 @@ import { cachedCompilers, pinnedCompilers } from '../src/contracts/solc.ts';
 import type { Compilers } from '../src/contracts/solc.ts';
 import type { Registry } from '../src/registry.ts';
 import { entriesOf, loadReport } from '../src/research/report.ts';
-import type { Target } from '../src/research/report.ts';
+import type { TemplateTarget } from '../src/research/report.ts';
 
 /** Test-only: no command under src/, scripts/ or bin/ reads it, which test/solc-pool.test.ts checks. */
 export const SOLC_TEST_CACHE_DIR = join(import.meta.dirname, '..', '.cache', 'solc-test');
@@ -75,7 +75,7 @@ function compileInWorker(job: Job): Promise<string | undefined> {
 }
 
 /** The recorded ABI cases a replay of these reports proves again, as `replayReport` picks them. */
-export function reportCases(root: string, registry: Registry, targets: readonly Target[]): AbiCase[] {
+export function reportCases(root: string, registry: Registry, targets: readonly TemplateTarget[]): AbiCase[] {
   const cases = loadAbiCases(root);
   const entries = new Set(
     targets.flatMap((target) => {
