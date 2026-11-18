@@ -39,7 +39,7 @@ function changedOnDisk(dir: string, rev: string): string[] {
   return [...tree.filter(({ path }) => !existsSync(join(dir, path))).map(({ path }) => path), ...present.filter(({ blob }, i) => hashes[i] !== blob).map(({ path }) => path)].sort();
 }
 
-/** One call of `test`, `it`, `describe` or `suite` whose title is a literal; `skipped` when the call or anything inside it names `skip` or `todo`. */
+/** One call of `test`, `it`, `describe` or `suite` whose title is a literal, and whether it is skipped. */
 type TestCall = { readonly title: string; readonly skipped: boolean };
 type Token = { readonly kind: 'name' | 'string' | 'punct'; readonly text: string };
 
@@ -51,7 +51,7 @@ function tokens(source: string): Token[] {
   let i = 0;
   const quoted = (quote: string) => {
     const start = i++;
-    while (i < source.length && source[i] !== quote) i += source[i] === '\\' ? 2 : 1;
+    while (i < source.length && source[i] !== quote && source[i] !== '\n') i += source[i] === '\\' ? 2 : 1;
     i++;
     return source.slice(start, i);
   };
@@ -97,29 +97,45 @@ function tokens(source: string): Token[] {
       const start = i;
       while (/[\w$]/.test(source[i] ?? '')) i++;
       out.push({ kind: 'name', text: source.slice(start, i) });
-    } else out.push({ kind: 'punct', text: source[i++]! });
+    } else if (c === '!' && /[\w$)\]]/.test(source[i - 1] ?? '')) out.push({ kind: 'name', text: source[i++]! });
+    else out.push({ kind: 'punct', text: source[i++]! });
   }
   while (i < source.length) step();
   return out;
 }
 
-/** Every test call in a source, read as text: nothing of the branch runs. */
+const TEST_NAMES = ['test', 'it', 'describe', 'suite'];
+const SKIPS = ['skip', 'todo'];
+
+/**
+ * Every test call in a source, read as text: nothing of the branch runs. A call is skipped when it is `.skip` or `.todo`, names `skip`
+ * or `todo` as an option key, calls `t.skip()` or `t.todo()` in its own body, or sits inside a skipped call.
+ */
 function testCalls(source: string): TestCall[] {
   const all = tokens(source);
-  return all.flatMap((token, at) => {
-    if (token.kind !== 'name' || !['test', 'it', 'describe', 'suite'].includes(token.text) || all[at - 1]?.text === '.') return [];
-    let open = at + 1;
-    if (all[open]?.text === '.' && all[open + 1]?.kind === 'name') open += 2;
+  const calls = all.flatMap((token, at) => {
+    if (token.kind !== 'name' || !TEST_NAMES.includes(token.text) || all[at - 1]?.text === '.') return [];
+    const member = all[at + 1]?.text === '.' && all[at + 2]?.kind === 'name' ? all[at + 2]!.text : undefined;
+    const open = member === undefined ? at + 1 : at + 3;
     const title = all[open + 1];
     if (all[open]?.text !== '(' || title?.kind !== 'string') return [];
     let end = open;
-    for (let depth = 0; end < all.length; end++) {
-      depth += all[end]!.text === '(' ? 1 : all[end]!.text === ')' ? -1 : 0;
-      if (depth === 0) break;
+    let own = SKIPS.includes(member ?? '');
+    for (let parens = 0, braces = 0; end < all.length; end++) {
+      const { kind, text } = all[end]!;
+      parens += text === '(' ? 1 : text === ')' ? -1 : 0;
+      braces += text === '{' ? 1 : text === '}' ? -1 : 0;
+      if (parens === 0) break;
+      const before = all[end - 1]?.text;
+      const owner = all[end - 2];
+      const option = (before === '{' || before === ',') && [':', ',', '}'].includes(all[end + 1]?.text ?? '');
+      const selfCall = before === '.' && all[end + 1]?.text === '(' && owner?.kind === 'name' && !TEST_NAMES.includes(owner.text);
+      if (kind === 'name' && SKIPS.includes(text) && parens === 1 && braces <= 1 && (option || selfCall)) own = true;
     }
-    const skipped = all.slice(at + 1, end).some(({ kind, text }) => kind === 'name' && (text === 'skip' || text === 'todo'));
-    return [{ title: title.text.slice(1, -1), skipped }];
+    const literal = title.text.slice(1, -1);
+    return [{ title: title.text[0] === '`' ? literal : literal.replace(/\\(['"])/g, '$1'), own, start: at, end }];
   });
+  return calls.map(({ title, own, start, end }) => ({ title, skipped: own || calls.some((outer) => outer.own && outer.start < start && end <= outer.end) }));
 }
 
 /** The test files under test/ at a commit, each with its test calls, read from git's objects. */
@@ -178,13 +194,16 @@ for (const line of listed(verdict)) say(line);
 say(split.other.length === 0 ? 'other program files changed: none' : `other program files changed (${split.other.length}):`);
 for (const line of listed(split.other)) say(line);
 
-const dropped = verdict.length === 0 ? [] : droppedTests(main, sha);
+const dropped = droppedTests(main, sha);
+const refused = verdict.length > 0 && dropped.length > 0;
 const refusals = [
   ...(split.data.length > 0 ? [`it changes templates/ or registry/, which only the signer merges: ${split.data.join(', ')}`] : []),
   ...(split.gate.length > 0 ? [`it changes the program gate (${CANARY_LIST} and the code that enforces it), which only the signer merges: ${split.gate.join(', ')}`] : []),
-  ...(dropped.length > 0 ? [`it changes the verdict core and drops tests origin/main runs; rename, move or remove a test in a pull request that leaves the core alone:`, ...listed(dropped)] : []),
+  ...(refused ? ['it changes the verdict core and drops tests origin/main runs; rename, move or remove a test in a pull request that leaves the core alone, which the signer merges:'] : []),
+  ...(dropped.length > 0 && !refused ? ['it drops tests origin/main runs, which only the signer merges:'] : []),
+  ...listed(dropped),
 ];
-if (refusals.length > 0) notEligible(refusals, dropped.length > 0 ? 1 : 3);
+if (refusals.length > 0) notEligible(refusals, refused ? 1 : 3);
 
 const canaries = parseCanaryList(readFileSync(join(root, CANARY_LIST), 'utf8'));
 const work = mkdtempSync(join(tmpdir(), 'kiss-sign-program-gate-'));

@@ -132,23 +132,31 @@ test('a core change that drops a test main runs is NOT ELIGIBLE, exit 1, naming 
     'skip-option': withA("test('a', { skip: true }, () => {});"),
     'todo-option': withA("test('a', { todo: 'later' }, () => {});"),
     'skip-inside': withA("test('a', (t) => { t.skip(); });"),
+    'describe-skip': withA("describe.skip('d', () => {\n  test('a', () => {});\n});"),
+    moved: { ...core, 'test/a.test.ts': "import { test } from 'node:test';\n", 'test/b.test.ts': "import { test } from 'node:test';\n\ntest('a', () => {});\n" },
   };
   for (const [name, files] of Object.entries(dropped)) branch(repo, name, files);
-  for (const [name, how] of [['deleted', 'removed'], ['renamed', 'removed'], ['commented', 'removed'], ['test-skip', 'skipped'], ['skip-option', 'skipped'], ['todo-option', 'skipped'], ['skip-inside', 'skipped']] as const) {
+  for (const [name, how] of [['deleted', 'removed'], ['renamed', 'removed'], ['commented', 'removed'], ['test-skip', 'skipped'], ['skip-option', 'skipped'], ['todo-option', 'skipped'], ['skip-inside', 'skipped'], ['describe-skip', 'skipped'], ['moved', 'removed']] as const) {
     const result = gate(repo, name);
     assert.equal(result.status, 1, `${name}: ${result.stdout}${result.stderr}`);
-    assert.match(result.stdout, new RegExp(`\\nNOT ELIGIBLE {2}the AI may not merge ${name}:\\n {2}it changes the verdict core and drops tests origin/main runs; rename, move or remove a test in a pull request that leaves the core alone:\\n {4}test/a\\.test\\.ts: ${how}: a\\n$`));
+    assert.match(result.stdout, new RegExp(`\\nNOT ELIGIBLE {2}the AI may not merge ${name}:\\n {2}it changes the verdict core and drops tests origin/main runs; rename, move or remove a test in a pull request that leaves the core alone, which the signer merges:\\n {4}test/a\\.test\\.ts: ${how}: a\\n$`));
     assert.doesNotMatch(result.stdout, /typecheck|canary test/, name);
   }
 });
 
-test('a core change that keeps every test of main, its quotes changed and tests added, is judged on its run, and a branch that leaves the core alone may drop a test', () => {
+test('a core change that keeps every test of main, its quotes changed and tests added, is judged on its run', () => {
   const repo = gateRepo();
-  branch(repo, 'kept', { 'src/check.ts': 'export const ok: number = 1;\n// changed\n', 'test/a.test.ts': "import { test } from 'node:test';\n\n// test('gone', () => {});\ntest(\"a\", () => {});\ntest('b', () => {});\n" });
-  branch(repo, 'tests-only', { 'test/a.test.ts': "import { test } from 'node:test';\n\ntest('b', () => {});\n" });
+  branch(repo, 'kept', { 'src/check.ts': 'export const ok: number = 1;\n// changed\n', 'test/a.test.ts': "import { describe, test } from 'node:test';\n\nconst n: number | undefined = Number('2');\nconst half = n! / 2 + '/';\ntest(\"a\", () => {});\ndescribe('d', () => {\n  test('b', () => {});\n  test.skip(`c ${half}`, () => {});\n});\n" });
   const kept = gate(repo, 'kept');
   assert.equal(kept.status, 0, kept.stdout + kept.stderr);
   assert.match(kept.stdout, /\ntests: pass, 2 passed, 0 failed, the canaries apart\n/);
-  const testsOnly = gate(repo, 'tests-only');
-  assert.equal(testsOnly.status, 0, testsOnly.stdout + testsOnly.stderr);
+});
+
+test('a branch that leaves the core alone and drops a test is NOT ELIGIBLE, exit 3 for the signer to merge, so two pull requests cannot do what one may not', () => {
+  const repo = gateRepo();
+  branch(repo, 'tests-only', { 'test/a.test.ts': "import { describe } from 'node:test';\n\ndescribe.skip('d', () => {\n  it('a', () => {});\n});\n" });
+  const result = gate(repo, 'tests-only');
+  assert.equal(result.status, 3, result.stdout + result.stderr);
+  assert.match(result.stdout, /\nNOT ELIGIBLE {2}the AI may not merge tests-only:\n {2}it drops tests origin\/main runs, which only the signer merges:\n {4}test\/a\.test\.ts: skipped: a\n$/);
+  assert.doesNotMatch(result.stdout, /typecheck|canary test/);
 });
