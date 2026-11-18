@@ -113,17 +113,17 @@ The report was made on the AI's computer. Before you merge, read its facts again
 
 ```sh
 git fetch origin <branch>
-pnpm report <protocol>/<operation> [--instance-of <vault>] --compare --data origin/<branch>
+pnpm report <protocol>/<operation> [--instance-of <instance>] --compare --data origin/<branch>
 ```
 
-This review happens once per operation, and once per vault. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
+This review happens once per operation, and once per instance, such as each vault. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
 ```sh
 git pull
 pnpm kiss-sign template approve morpho/vault-deposit
 ```
 
-Approval records the template's hash, so a new vault for an approved template needs only its report reviewed and merged.
+Approval records the template's hash, so a new instance for an approved template, such as another vault, needs only its report reviewed and merged.
 
 ### 3. Fill a card
 
@@ -161,7 +161,7 @@ Then every call, row by row, down to the calls inside a batch: both sides split 
 
 ### 5. Sign
 
-Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or a vault, send a small amount first.
+Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or an instance, send a small amount first.
 
 ## Threat model
 
