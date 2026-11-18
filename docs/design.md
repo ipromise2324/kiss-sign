@@ -37,6 +37,21 @@ The last column is what must hold before the action, and who or what enforces it
 | Fill and seal a card | The signer | `card new` refuses without a terminal. `card new` and `card seal` stop when the clone's templates or registry differ from GitHub's `main`. `card seal` stores the card only after the signer's yes. |
 | Sign | The signer, on the hardware wallet | `verify` prints `MATCH` for the sealed card, its self-check having passed on the signer's `main`. The signer compares every character of the domain hash and the message hash with `verify`'s page and, in the hardened tier, checks the independent computer's page row by row. |
 
+### Security invariants
+
+The design states each of these in full where it links.
+
+1. The verdict is never the AI's judgment: the AI writes templates and the program runs them ([Who does what](#who-does-what)).
+2. `MATCH` needs every check to report its own pass or not to be needed for the card; a failed check gives `MISMATCH`, and an unfinished one `UNVERIFIABLE` ([Every signing](design/flow.md#every-signing), step 12).
+3. No address on a card is typed by the AI: each is a registry name, an address-book name or the Safe ([Intent card](design/data-shapes.md#intent-card)).
+4. No template can loosen the floors ([Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)).
+5. Every registry contract a transaction touches runs the code its registry pin names ([Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)).
+6. `verify` runs only the exact `main` of the signer's own fork, and a template counts only after its pull request is merged ([The program checks itself first](design/program-ownership.md#the-program-checks-itself-first)).
+7. The AI never merges a template, registry or program gate pull request, and never fills or seals a card ([Who does what](#who-does-what)).
+8. A program pull request never changes a template or the registry, and one that changes the verdict core never changes the program gate ([Who owns the program](design/program-ownership.md#who-owns-the-program)).
+9. Except for the templates not yet rebuilt, a card naming an instance with no report for its template is refused ([No report, no signing](design/flow.md#first-time-an-operation-is-done-build-its-template), step 6).
+10. The Safe's address and the API keys are never published ([The Safe's address is never published](design/engine-and-chain.md#the-safes-address-is-never-published)).
+
 ### The program offers checks, the AI picks them
 
 The same split holds for a protocol no one has tested.
