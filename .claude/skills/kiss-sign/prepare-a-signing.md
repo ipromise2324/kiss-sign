@@ -16,6 +16,8 @@ The signer runs every command from the clone as `pnpm kiss-sign <command>`, afte
    It ends with the card in one box and asks the seal question; on the signer's yes it stores the card and prints its hash, which `verify --card` takes, before the signer sees the Safe transaction.
 3. After the transaction is proposed in the Safe web app: `pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>`.
 
+The first time a template or an instance is used, the card names a small amount; the full amount gets a new card once the small transaction has settled as expected ([Every signing](../../../docs/design/flow.md#every-signing), step 13, Small amount first).
+
 The Next steps (下一步) section at the bottom of the signer's HTML report lists every step and prompt.
 
 ## A recipient not in the address book
