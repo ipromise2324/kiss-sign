@@ -69,7 +69,7 @@ Look in `templates/` for the operation, such as `templates/erc20/transfer/`, `te
   A card value of the instance kind needs a report through whatever field names it, and a template whose card has two contract fields of the instance kind has no per-instance report, so every card for it is refused.
   The rules and the templates not yet rebuilt, listed in `src/template/vault-reports.ts`, are in step 6 of [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template), the bold items One report, one operation and No report, no signing.
   `card new` lists only instances with a report, and `card seal` and `verify` refuse any other.
-- The template exists and is not reported per instance, but a contract the signer names is not in `registry/contracts.json`: [Add a registry entry](#add-a-registry-entry).
+- A contract the signer names is not in `registry/contracts.json` and is not a new instance: [Add a registry entry](#add-a-registry-entry).
 - A recipient that is not a contract goes in the signer's address book, never the registry: [Prepare a signing](#prepare-a-signing).
 - The template exists, every contract the signer names is in `registry/contracts.json`, and each instance has its report: [Prepare a signing](#prepare-a-signing).
 - The operation needs a capability the program lacks: research it anyway, then change the program as [Program changes](build-template.md#program-changes) says, merged as [Merge a program change](merge-a-program-change.md) says, before the template's pull request.
@@ -104,18 +104,19 @@ The earlier instance's report already holds the shared part.
    Prove its factory when the entry has a `factory` attribute, and read its evidence ([An instance a template is reported per](addresses.md#contracts-that-need-more)).
 3. Run `pnpm past-txs <protocol>/<operation>` anchored on the instance with the transfer or event the operation itself makes, such as `--token <vault> --anchor mint` for a vault deposit ([Study past transactions](build-template.md#study-past-transactions)), with no block range and `--record <name>`, and note the counts by sender type.
    The instance's report includes only the recordings whose `--token` is the instance itself, so anchor on it, never on its asset.
-4. Run `pnpm report <protocol>/<operation> --instance-of <instance> --record`.
-5. Complete the instance's own `notes.json`, and write its `docs.json` when a function's page names the instance or its asset ([An instance's notes](notes-and-reviews.md#an-instances-notes)), then run `pnpm report <protocol>/<operation> --instance-of <instance> --render`.
+4. Before recording, write the instance's own `docs.json` when a function's page is specific to this report, such as a page that names the instance, its asset or another contract only this report covers: `--record` reads and checks those pages.
+   Then run `pnpm report <protocol>/<operation> --instance-of <instance> --record`.
+5. Complete the instance's own `notes.json` ([An instance's notes](notes-and-reviews.md#an-instances-notes)), then run `pnpm report <protocol>/<operation> --instance-of <instance> --render`.
    Change no template text and no other instance's notes; the template's hash does not change, so the signer approves nothing again.
 6. Open a pull request with the registry change, the instance's folder, its recordings and the past-transactions recording ([Open the pull request](build-template.md#open-the-pull-request)), and tell the signer ([Tell the signer](build-template.md#tell-the-signer)).
 
 ## Add a registry entry
 
-A template not reported per instance covers every registry entry a card field can name, so a new entry, such as a token, changes the report of every template that can name it, such as `erc20/transfer` and `uniswap/approve-permit2` for a token.
+A report covers every registry entry its card can name, so a new entry, such as a token, changes every report that can name it: a template's, such as `erc20/transfer` and `uniswap/approve-permit2` for a token, and an instance's, when another card field or a market of a per-instance template can name it.
 
-1. Research the entry, and each entry it names as an attribute, as [addresses.md](addresses.md) says, its observations in each affected template's `notes.json` before any check.
-2. For each affected template, run `pnpm report <protocol>/<operation> --record`.
-3. Reconcile each affected template's notes with its new results: `--render` requires a review for exactly the current set of results under To review, so write the new ones and revise or remove any that no longer match, and add `protocols` notes for a new protocol, with as many incidents as its hacks ([Notes and reviews](notes-and-reviews.md)); then run `--render`.
+1. Research the entry, and each entry it names as an attribute, as [addresses.md](addresses.md) says, its observations in each affected report's `notes.json` before any check.
+2. For each affected report, run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for an instance's.
+3. Reconcile each affected report's notes with its new results: `--render` requires a review for exactly the current set of results under To review, so write the new ones and revise or remove any that no longer match, and add `protocols` notes for a new protocol the report's protocol facts cover, with as many incidents as its hacks ([Notes and reviews](notes-and-reviews.md)); then run `--render`.
 4. Check and open one pull request, and tell the signer, as steps 10 and 11 of [Build a template](#build-a-template) say, with a `--compare` run for each affected report.
 
 ## Merge a program change
