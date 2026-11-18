@@ -25,7 +25,7 @@ import { exitOnHelp } from '../src/script-help.ts';
 const USAGE = `usage: pnpm past-txs <protocol>/<operation>
   --token <registry name | address> --anchor mint|burn|any [--from <registry name | address>]
   [--to <registry name | address>]
-  --token <registry name | address> --anchor event --event '<event signature>'
+  [--token <registry name | address>] --anchor event --event '<event signature>'
   [--max-txs <n>] [--record <name>]
   [--from-block <n> --to-block <n> | --same-windows-as <recording>]
 
@@ -40,12 +40,16 @@ Finds executed transactions of one operation through an anchor: an ERC-20 Transf
   move no token:          --token <contract> --anchor event
                           --event 'PreSignature(address,bytes,bool)'
                           (the contract logging the event)
-It searches 12 windows of up to 7200 blocks spread over the last year, placed by the head block,
-and studies at most --max-txs (at least 12) transactions shared evenly between them. A window with
-more transfers than one page of a source is halved until they fit, and the report names the
-blocks left out. --same-windows-as places the windows by the head block
+  change a Safe itself:   --anchor event --event 'AddedOwner(address)'
+                          (any contract logging it; studied only where the sending Safe did)
+It first asks each source for the whole last year, placed by the head block; when every answer
+fits in one page it studies at most --max-txs of those transactions, spread evenly by block.
+Otherwise it searches 12 windows of up to 7200 blocks spread over the year, and studies at most
+--max-txs (at least 12) transactions shared evenly between them. A window with more transfers
+than one page of a source is halved until they fit, and the report names the blocks left out.
+--same-windows-as places the year and the windows by the head block
 testdata/research/<recording>.json keeps instead of today's, so a run again searches the same
-windows. --from-block and --to-block replace the windows with one range.
+blocks. --from-block and --to-block replace the year and the windows with one range.
 Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer;
 each transaction says which found it. Only Etherscan searches an event: Alchemy's eth_getLogs
 reads at most 10 blocks at a time on the free plan.
@@ -67,7 +71,8 @@ approvals against the receipt both providers agree on; --record keeps each trace
 call's depth, type, from, to, selector, value and a token call's address arguments.
 
 Options:
-  --token <name | address>       The anchor token, or the contract that logs --event.
+  --token <name | address>       The anchor token, or the contract that logs --event; left out for
+                                 an event each Safe logs about itself.
   --anchor mint|burn|any|event   Which Transfer marks a transaction, or the event.
   --from, --to <name | address>  With --anchor any: only transfers out of, or into, the address.
   --event '<signature>'          With --anchor event: the event signature.
@@ -108,7 +113,7 @@ const [fromBlock, toBlock] = [block(flags['from-block']), block(flags['to-block'
 const range = fromBlock !== undefined && toBlock !== undefined && fromBlock <= toBlock ? { fromBlock, toBlock } : undefined;
 const byHand = flags['from-block'] !== undefined || flags['to-block'] !== undefined;
 const maxTxs = Number(flags['max-txs']);
-if (templateId === undefined || positionals.length !== 1 || flags.token === undefined || kind === undefined || (byHand && range === undefined) || (flags['same-windows-as'] !== undefined && byHand) || !(Number.isInteger(maxTxs) && maxTxs >= 1)) {
+if (templateId === undefined || positionals.length !== 1 || (flags.token === undefined && kind !== 'event') || kind === undefined || (byHand && range === undefined) || (flags['same-windows-as'] !== undefined && byHand) || !(Number.isInteger(maxTxs) && maxTxs >= 1)) {
   console.error(USAGE);
   process.exit(64);
 }
@@ -160,7 +165,7 @@ async function recordedHead(name: string): Promise<bigint> {
 
 const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, templateId, registry);
-const token = registry.entries.get(flags.token)?.address ?? parseAddress('--token', flags.token);
+const token = flags.token === undefined ? undefined : (registry.entries.get(flags.token)?.address ?? parseAddress('--token', flags.token));
 const from = flags.from === undefined ? undefined : (registry.entries.get(flags.from)?.address ?? parseAddress('--from', flags.from));
 const to = flags.to === undefined ? undefined : (registry.entries.get(flags.to)?.address ?? parseAddress('--to', flags.to));
 const exclude = loadStoredConfig(kissSignHome(process.env))?.safe;
@@ -176,7 +181,7 @@ const reader = createReader(endpoints, chain.transport, { note });
 const traces = drpcTraces(endpoints[1], httpsTransport(), note);
 const query = {
   template,
-  anchor: { token, kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }), ...(event === undefined ? {} : { event }) },
+  anchor: { ...(token === undefined ? {} : { token }), kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }), ...(event === undefined ? {} : { event }) },
   sampling: range !== undefined ? ({ kind: 'range', range } as const) : head === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, head },
 };
 const run = await pastTxs(query, {
@@ -201,13 +206,14 @@ if (flags.record !== undefined) {
     {
       query: {
         template: templateId,
-        token,
+        ...(token === undefined ? {} : { token }),
         anchor: kind,
         ...(from === undefined ? {} : { from }),
         ...(to === undefined ? {} : { to }),
         ...(event === undefined ? {} : { event: event.signature }),
         ...(range === undefined ? {} : { fromBlock: range.fromBlock.toString(), toBlock: range.toBlock.toString() }),
         ...(run.head === undefined ? {} : { head: run.head.toString() }),
+        ...(run.year === undefined ? {} : { wholeYear: true as const }),
         maxTxs,
       },
       sources: sources.exchanges(),

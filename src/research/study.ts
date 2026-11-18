@@ -491,7 +491,7 @@ function boundEntry(
   const names = targetNames(rule, template, registry);
   const holds = (address: Address) => names?.some((name) => registry.entries.get(name)?.address === address) ?? false;
   if (names === undefined || holds(value)) return undefined;
-  if (rule.kind !== 'card' || (holds(anchor.token) && !anchorHeld)) return { kind: 'entry', at, expected: names, actual: value };
+  if (rule.kind !== 'card' || (anchor.token !== undefined && holds(anchor.token) && !anchorHeld)) return { kind: 'entry', at, expected: names, actual: value };
   if (value !== anchor.token) return { at, kind: 'address' };
   const kinds = new Set(names.map((name) => registry.entries.get(name)?.kind));
   if (kinds.size === 1 && kinds.has('token')) return { at, kind: 'token' };

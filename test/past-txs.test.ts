@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { test } from 'node:test';
+import { after, test } from 'node:test';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { createReader } from '../src/chain/reader.ts';
 import type { Reader } from '../src/chain/reader.ts';
@@ -13,7 +14,8 @@ import type { Registry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
 import { scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
-import { pastTxsSampling } from '../src/research/report.ts';
+import { pastTxsRecordings, pastTxsSampling } from '../src/research/report.ts';
+import type { Subject } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { anchorEvent, recordingAsk, replayAsk, searchBoth } from '../src/research/sources.ts';
 import type { Anchor, AnchorKind, Ask, SourceExchange, SourceRequest } from '../src/research/sources.ts';
@@ -142,7 +144,7 @@ test('a window with more transfers than one page is halved, and the report names
   };
   const { query } = windowed;
   const run = await pastTxs(
-    { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: DEFAULT_SPREAD },
+    { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
     { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
   );
   const text = renderPastTxs(run, registry);
@@ -171,7 +173,7 @@ test('a recording keeps only what the search reads, so a busy token\'s halved wi
     const { query } = windowed;
     const study = (ask: Ask) =>
       pastTxs(
-        { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: DEFAULT_SPREAD },
+        { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
         { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
       );
     const recorder = recordingAsk(live);
@@ -203,6 +205,89 @@ test('by default the windows are spread over the last year from the head block, 
   const ends = windows.map((w) => w[1] as number);
   assert.deepEqual(ends.slice(1).map((end, i) => end - (ends[i] as number)), new Array(11).fill(219000));
   assert.match(text, /^ {2}blocks 26373601 to 26380800: 45 found, 2 studied$/m);
+});
+
+test('a whole year holding more than one page of a source falls back to the windows, and the report says so', async () => {
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+  const replay = replayAsk(windowed.sources);
+  const fromBlockOf = (r: SourceRequest) => (r.source === 'alchemy' ? BigInt(r.params.fromBlock as string) : BigInt(r.query.fromBlock as string));
+  const yearStart = 26380800n - 2628000n + 1n;
+  const asked: bigint[] = [];
+  const ask = async (request: SourceRequest) => {
+    asked.push(fromBlockOf(request));
+    if (fromBlockOf(request) !== yearStart) return replay(request);
+    return request.source === 'alchemy' ? { transfers: [], pageKey: 'more' } : { status: '1', message: 'OK', result: [] };
+  };
+  const { query } = windowed;
+  const run = await pastTxs(
+    { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: { ...DEFAULT_SPREAD, wholeYear: true } },
+    { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
+  );
+  const text = renderPastTxs(run, registry);
+  assert.match(text, /^whole year: blocks 23752801 to 26380800 hold more than one page of a source, so the windows are searched\nwindows: 12 of up to 7200 blocks/m);
+  assert.equal(asked.filter((block) => block === yearStart).length, 2);
+  assert.equal(text.replace(/^whole year: .*\n/m, ''), await report({ recorded: windowed }));
+});
+
+const recordedRun = (recorded: PastTxsRecording, sources: readonly SourceExchange[] = recorded.sources) => {
+  const { query } = recorded;
+  return pastTxs(
+    {
+      template: loadTemplate(ROOT, query.template, registry),
+      anchor: { ...(query.token === undefined ? {} : { token: query.token as Address }), kind: 'event', event: anchorEvent(query.event as string) },
+      sampling: pastTxsSampling(query),
+    },
+    { ask: replayAsk(sources), reader: replayReader(recorded.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
+  );
+};
+
+test('a year whose every answer fits one page is searched whole in one request, and sampled evenly by block', async () => {
+  const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
+  assert.equal(year.query.wholeYear, true);
+  assert.deepEqual(year.sources.map(({ request }) => (request.source === 'etherscan' ? [request.query.fromBlock, request.query.toBlock] : [])), [['23810401', '26438400']]);
+  const run = await recordedRun(year);
+  const text = renderPastTxs(run, registry);
+  assert.match(text, /^whole year: blocks 23810401 to 26438400, every source's answer in one page, so the search covers the year with no gap; at most 12 studied, spread evenly by block\n {2}blocks 23810401 to 26438400: 16 found, 12 studied\nsources: /m);
+  assert.doesNotMatch(text, /^windows:/m);
+  const logs = (year.sources[0]?.answer as { result: { transactionHash: string; blockNumber: string }[] }).result;
+  const firstBlock = new Map<string, number>();
+  for (const log of logs) if (!firstBlock.has(log.transactionHash)) firstBlock.set(log.transactionHash, Number(log.blockNumber));
+  const byBlock = [...firstBlock.keys()].sort((a, b) => (firstBlock.get(a) as number) - (firstBlock.get(b) as number));
+  assert.deepEqual(new Set(run.studies.map((s) => s.hash)), new Set(Array.from({ length: 12 }, (_, i) => byBlock[Math.floor((i * 16) / 12)])));
+});
+
+test('the report takes a recording that asked the whole year first, or searched an event with no token, and refuses a transfer anchor with no token', () => {
+  const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-past-txs-'));
+  after(() => rmSync(root, { recursive: true, force: true }));
+  mkdirSync(join(root, 'testdata', 'research'), { recursive: true });
+  const write = (name: string, query: PastTxsRecording['query']) => writeFileSync(join(root, 'testdata', 'research', `${name}.json`), JSON.stringify({ query, sources: [], providers: [], exchanges: [] }));
+  const { token: _, ...anyContract } = year.query;
+  const { event: __, ...anyTransfer } = anyContract;
+  write('whole-year', year.query);
+  write('any-contract', anyContract);
+  const subject = { template: { id: year.query.template }, vault: undefined } as unknown as Subject;
+  assert.deepEqual(pastTxsRecordings(root, subject).map((r) => r.file), ['testdata/research/any-contract.json', 'testdata/research/whole-year.json']);
+  write('any-transfer', { ...anyTransfer, anchor: 'any' });
+  assert.throws(() => pastTxsRecordings(root, subject), /any-transfer\.json: its name or query holds a value `pnpm past-txs --record` never writes/);
+});
+
+test('an event searched over every contract is studied only where the sending Safe logged it itself', async () => {
+  const anyContract: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'any-contract.json'));
+  assert.equal(anyContract.query.token, undefined);
+  const fit = '0xbbacd35d8517f742df5e20dea15c4504782846b81d3ced4fdb36334dd088aeb4';
+  const text = renderPastTxs(await recordedRun(anyContract), registry);
+  assert.match(text, /^anchor: AddedOwner\(address\) logged by any contract, studied only where the sender logged it itself$/m);
+  assert.match(text, /^not studied, the event logged only by another contract than the sender: 1, e\.g\. 0x2b854e652f87b788a5220cfac9ad5cdc7488e497c65b4a1c4b249df5fb8582e0$/m);
+  assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 1 from 1 Safe$/m);
+  assert.match(text, new RegExp(`^examples that fit: ${fit}$`, 'm'));
+  const otherLogger = anyContract.sources.map(({ request, answer }) => {
+    const { result } = answer as { result: { transactionHash: string; address: string }[] };
+    return { request, answer: { ...(answer as object), result: result.map((log) => (log.transactionHash === fit ? { ...log, address: `0x${'5a'.repeat(20)}` } : log)) } };
+  });
+  const moved = renderPastTxs(await recordedRun(anyContract, otherLogger), registry);
+  assert.match(moved, new RegExp(`^not studied, the event logged only by another contract than the sender: 2, e\\.g\\. .*${fit}`, 'm'));
+  assert.match(moved, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 1 from 1 Safe$/m);
 });
 
 test('the configured Safe is left out of every count and example, and never printed', async () => {
@@ -449,6 +534,22 @@ test('an event anchor is searched by Etherscan alone, under the topic of its can
   assert.deepEqual(asked.map((r) => r.source), ['etherscan']);
   assert.equal(asked[0]?.source === 'etherscan' ? asked[0].query.topic0 : undefined, event.topic);
   assert.deepEqual(hits, { alchemy: [], etherscan: [{ hash: `0x${'ab'.repeat(32)}`, from: `0x${'11'.repeat(20)}`, to: `0x${'00'.repeat(20)}` }] });
+});
+
+test('an event with no --token is searched by its topic alone over every contract, keeping the contract that logged each', async () => {
+  const asked: SourceRequest[] = [];
+  const emitter = `0x${'5a'.repeat(20)}`;
+  const ask: Ask = async (request) => {
+    asked.push(request);
+    return { status: '1', message: 'OK', result: [{ address: emitter, blockNumber: '0x10', transactionHash: `0x${'ab'.repeat(32)}`, topics: [`0x${'00'.repeat(32)}`], data: '0x' }] };
+  };
+  const event = anchorEvent('AddedOwner(address)');
+  const recorder = recordingAsk(ask);
+  const hits = await searchBoth({ kind: 'event', event, fromBlock: 1n, toBlock: 2n }, recorder.ask);
+  assert.equal(asked.length, 1);
+  assert.ok(asked[0]?.source === 'etherscan' && !('address' in asked[0].query) && asked[0].query.topic0 === event.topic);
+  assert.deepEqual(hits.etherscan, [{ hash: `0x${'ab'.repeat(32)}`, from: `0x${'00'.repeat(20)}`, to: `0x${'00'.repeat(20)}`, block: 16n, emitter }]);
+  assert.deepEqual(await searchBoth({ kind: 'event', event, fromBlock: 1n, toBlock: 2n }, replayAsk(recorder.exchanges())), hits);
 });
 
 test('--event goes only with --anchor event, and --anchor event needs it', () => {

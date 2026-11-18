@@ -9,7 +9,8 @@ export type PastTxsRecording = {
   /** Without `fromBlock` and `toBlock`, the run used the default spread of windows. */
   readonly query: {
     readonly template: string;
-    readonly token: string;
+    /** Absent only for an event each Safe logs about itself. */
+    readonly token?: string;
     readonly anchor: string;
     readonly from?: string;
     readonly to?: string;
@@ -18,6 +19,8 @@ export type PastTxsRecording = {
     readonly fromBlock?: string;
     readonly toBlock?: string;
     readonly head?: string;
+    /** The run asked the whole year first; absent in a recording made before it did. */
+    readonly wholeYear?: true;
     readonly maxTxs: number;
   };
   readonly sources: readonly SourceExchange[];
