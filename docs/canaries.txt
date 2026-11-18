@@ -32,7 +32,7 @@ reads testdata/safe-tx/morpho-vault-deposit.json
 reads testdata/simulate/morpho-vault-deposit.json
 
 canary test/canaries/assets.canary.ts
-guards What the Safe holds is judged whether or not an effect names it: a token found only by a Transfer log naming the Safe, in the receipt or in the simulation, and ETH, changed when the card explains no change, are MISMATCH; a vault whose asset() is not the token the registry names is MISMATCH, and one the providers disagree on UNVERIFIABLE.
+guards What the Safe holds is judged whether or not an effect names it: a token found only by a Transfer log naming the Safe, and ETH the Safe gives, changed when the card explains no change, are MISMATCH, by the receipt and in the simulation; a vault whose asset() is not the token the registry names is MISMATCH, whichever of the card's vaults it is, and one the providers disagree on UNVERIFIABLE.
 reads testdata/safe-tx/eth-transfer-null-data.json
 reads testdata/safe-tx/morpho-vault-deposit.json
 reads testdata/simulate/eth-transfer-null-data.json

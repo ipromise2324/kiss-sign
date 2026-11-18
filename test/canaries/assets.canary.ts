@@ -96,27 +96,41 @@ test('a token found only by a Transfer log naming the Safe is judged when the de
   ]);
 });
 
-test('ETH the Safe gives is judged though no effect names ETH: the recorded ETH transfer, with effects that explain no change, is a mismatch on ETH', async () => {
-  const simulated = recording('simulate', 'eth-transfer-null-data');
+test('ETH the Safe gives is judged though no effect names ETH: the recorded ETH transfer, by its receipt and simulated, with effects that explain no change, is a mismatch on ETH', async () => {
+  const recorded = recording('simulate', 'eth-transfer-null-data');
   const tx = recordedTx('eth-transfer-null-data');
-  const observed = observedOf(await observeExecuted(replayReader(simulated.exchanges), simulated.transactionHash as Hex, tx, []));
-  const judge = (effects: object) => judged(observed, 'eth/transfer', effects, { amount: `${tx.value}`, recipient: 'payee' }, { payee: tx.to }, tx.safe);
-  assert.deepEqual(judge(templateText('eth/transfer').effects), ['match']);
-  assert.deepEqual(judge(NO_EFFECTS), [`ETH changed by -${tx.value}, the card explains 0`]);
+  const reader = replayReader(recorded.exchanges);
+  const header = async (at: { number: string; hash: Hex }) => {
+    const read = await reader.header({ number: BigInt(at.number), hash: at.hash });
+    assert.equal(read.kind, 'agreed');
+    return (read as Extract<typeof read, { kind: 'agreed' }>).value;
+  };
+  const [parent, executed] = [await header(recorded.parent), await header(recorded.executed)];
+  const byReceipt = observedOf(await observeExecuted(reader, recorded.transactionHash as Hex, tx, []));
+  const simulated = observedOf(await simulateSafeTx(reader, { tx, parent, time: executed.time, watch: [], ends: [] }));
+  for (const observed of [byReceipt, simulated]) {
+    const judge = (effects: object) => judged(observed, 'eth/transfer', effects, { amount: `${tx.value}`, recipient: 'payee' }, { payee: tx.to }, tx.safe);
+    assert.deepEqual(judge(templateText('eth/transfer').effects), ['match']);
+    assert.deepEqual(judge(NO_EFFECTS), [`ETH changed by -${tx.value}, the card explains 0`]);
+  }
 });
 
 test('a vault whose asset() is not the token the registry names is MISMATCH, and one the providers disagree on UNVERIFIABLE', async () => {
   assert.deepEqual((await evaluate(migration.inputs, replayReader(migration.exchanges))).verdict, { kind: 'MATCH' });
-  const entries = JSON.parse(migration.inputs.registry);
-  entries['smokehouse-usdc'].attributes.asset = 'usdt';
-  entries['steakhouse-high-yield-usdc'].attributes.asset = 'usdt';
-  const otherAsset = await evaluate({ ...migration.inputs, registry: JSON.stringify(entries) }, replayReader(migration.exchanges));
-  assert.equal(otherAsset.verdict.kind, 'MISMATCH');
-  assert.deepEqual(otherAsset.verdict.causes.map((c) => c.check), ['vault-asset']);
-  assert.match(
-    JSON.stringify(otherAsset.verdict),
-    /smokehouse-usdc 0xbeefff209270748ddd194831b3fa287a5386f5bc holds 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 by its asset\(\) at block \d+, the registry says usdt 0xdac17f958d2ee523a2206206994597c13d831ec7/,
-  );
+  const vaultAssetFindings = async (recorded: VerdictFile, vaults: string[]) => {
+    const entries = JSON.parse(recorded.inputs.registry);
+    for (const vault of vaults) entries[vault].attributes.asset = 'usdt';
+    const { verdict } = await evaluate({ ...recorded.inputs, registry: JSON.stringify(entries) }, replayReader(recorded.exchanges));
+    assert.equal(verdict.kind, 'MISMATCH');
+    return verdict.causes.filter((c) => c.check === 'vault-asset').flatMap((c) => c.details.map((d) => d.replace(/at block \d+/, 'at block N')));
+  };
+  const finding = (vault: string, address: string) =>
+    `${vault} ${address} holds 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 by its asset() at block N, the registry says usdt 0xdac17f958d2ee523a2206206994597c13d831ec7`;
+  assert.deepEqual(await vaultAssetFindings(deposit, ['steakhouse-prime-usdc']), [finding('steakhouse-prime-usdc', '0xbeef088055857739c12cd3765f20b7679def0f51')]);
+  assert.deepEqual(await vaultAssetFindings(migration, ['smokehouse-usdc', 'steakhouse-high-yield-usdc']), [
+    finding('smokehouse-usdc', '0xbeefff209270748ddd194831b3fa287a5386f5bc'),
+    finding('steakhouse-high-yield-usdc', '0xbeeff2c5bf38f90e3482a8b19f12e5a6d2fca757'),
+  ]);
   const ASSET_CALL = '0x38d52e0f';
   const exchanges = migration.exchanges.map((e) =>
     JSON.stringify(e.params).includes(ASSET_CALL) ? { ...e, answers: { ...e.answers, drpc: `0x${'0'.repeat(24)}${'11'.repeat(20)}` } } : e,
