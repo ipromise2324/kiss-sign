@@ -246,7 +246,9 @@ You alone are responsible for every transaction you sign. The authors and contri
 
 ## Donate
 
-If kiss-sign is useful to you, you can support it on Ethereum mainnet:
+If kiss-sign is useful to you, you can support it here.
+
+**Ethereum mainnet only:**
 
 ```
 0x085e5A79318931FA87050B8B677f2dc0Df303D67
