@@ -20,11 +20,16 @@ type Run = { status: number | null; stdout: string; stderr: string; written: str
 
 /**
  * Runs `script` from a copy of the program whose `testdata/<output>` holds only the `seed` files, every other folder of
- * `testdata/` the repository's own, with every network answer taken from `network`, and lists what it wrote there.
+ * `testdata/` the repository's own, with every network answer taken from `network` and `$KISS_SIGN_HOME/config.json`
+ * holding `config` when given, and lists what it wrote there.
  */
-function runOffline(script: string, args: readonly string[], output: string, network: Network, seed: readonly string[] = []): Run {
+function runOffline(script: string, args: readonly string[], output: string, network: Network, seed: readonly string[] = [], config?: object): Run {
   const sandbox = mkdtempSync(join(tmpdir(), 'kiss-sign-offline-'));
   try {
+    if (config !== undefined) {
+      mkdirSync(join(sandbox, 'home'));
+      writeFileSync(join(sandbox, 'home', 'config.json'), JSON.stringify(config));
+    }
     const copied = ['src', 'scripts', 'registry'];
     for (const name of readdirSync(ROOT)) if (!['.git', 'testdata', ...copied].includes(name)) symlinkSync(join(ROOT, name), join(sandbox, name));
     for (const name of copied) cpSync(join(ROOT, name), join(sandbox, name), { recursive: true });
@@ -147,4 +152,11 @@ test('record-safe-proxy writes the recording when every read is answered, and no
   const args = ['offline', recording.transaction];
   assertRecorded(runOffline('record-safe-proxy.ts', args, 'safe-proxy', recording), 'offline.json');
   assertStopped(runOffline('record-safe-proxy.ts', args, 'safe-proxy', { exchanges: withheld(recording.exchanges, 'eth_getCode') }), /drpc failed \(unreachable\)/);
+});
+
+test('record-safe-tx refuses the configured Safe before it reads anything and writes nothing', () => {
+  const safe = '0xAF177c57e369bBD30F47745DbAAF1D225f4B74D0';
+  const run = runOffline('record-safe-tx.ts', ['offline', safe, '381'], 'safe-tx', { exchanges: [] }, [], { chainId: 1, safe: safe.toLowerCase() });
+  assertStopped(run, /<safe> is the configured Safe; nothing written/);
+  assert.doesNotMatch(run.stderr, /offline: /);
 });
