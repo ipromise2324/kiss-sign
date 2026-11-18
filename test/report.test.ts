@@ -45,7 +45,7 @@ import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/re
 import type { AbiProof } from '../src/contracts/prove.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
-import { reportedVaultsIn } from '../src/template/vault-reports.ts';
+import { reportedInstancesIn } from '../src/template/vault-reports.ts';
 import { PREDATE_REPORT } from './predate-report.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 import { NO_SITE_LISTINGS } from '../src/research/site-listings.ts';
@@ -436,7 +436,7 @@ function notGeneratedProblems(design: string, folders: readonly string[], hasRep
 test('every template folder holds report.generated.md, or design.md lists it among the templates that predate the report', () => {
   const design = readFileSync(join(ROOT, 'docs', 'design.md'), 'utf8');
   const folders = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
-  const hasReport = (id: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE)) || reportedVaultsIn(ROOT, id).size > 0;
+  const hasReport = (id: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE)) || reportedInstancesIn(ROOT, id).size > 0;
   assert.deepEqual(notGeneratedProblems(design, folders, hasReport), []);
   const added = design.replace(/(- \*\*Report not generated yet:\*\* )/, '$1`aave/supply`, ');
   assert.deepEqual(notGeneratedProblems(added, [...folders, 'aave/supply'], (id) => id !== 'aave/supply' && hasReport(id)), [
