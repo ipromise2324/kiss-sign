@@ -175,7 +175,7 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
   if (endpoints[0].company === endpoints[1].company) throw new Error('the two providers must be run by different companies');
   const timeoutMs = options.timeoutMs ?? 20_000;
   const pauses = options.retryPausesMs ?? [250, 750];
-  const rateLimitPauses = options.rateLimitPausesMs ?? [1000, 2000, 4000, 8000, 16000];
+  const rateLimitPauses = options.rateLimitPausesMs ?? [1000, 2000, 4000, 8000, 16000, 32000, 60000];
   const { start, max } = options.openRequests ?? { start: 8, max: 32 };
   const gates = new Map(endpoints.map((endpoint) => [endpoint.url, gate(start, max)]));
 
