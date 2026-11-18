@@ -234,9 +234,7 @@ Safe multisig transactions on Ethereum mainnet. Not EOAs, Safe off-chain message
 
 ## Contributing
 
-There is no maintainer: no one upstream reviews or merges a pull request, and this repository is only a source of updates you may pull into your fork. Change your own fork as above, and open an issue for a bug you find. `pnpm test` downloads the pinned `solc` compilers and the Public Suffix List once, then runs offline. For a program change, change `docs/design.md` first.
-
-Report security problems as an issue too.
+Issues, security problems included, and pull requests are welcome. A change to the program starts with [docs/design.md](docs/design.md), the source of truth.
 
 ## Disclaimer
 
