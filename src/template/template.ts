@@ -1339,30 +1339,47 @@ export const viewTargetNames = (to: ViewTarget, template: Template, registry: Re
 
 
 /**
- * For each function, by signature, the registry names the template calls it on: a call's `to`, or for a call nested in
- * a tuple, such as a Bundler3 bundle item, the tuple's one address field. Absent when no call site binds its target.
+ * One function the template calls: `call` is its top-level call's index, `nested` whether it is a call inside that
+ * call's arguments, such as a Bundler3 bundle item, and `names` the registry names its target can be: a call's `to`, or
+ * for a call nested in a tuple, the tuple's one address field. Undefined when no call site binds its target.
  */
-export function callTargets(template: Template, registry: Registry): Map<string, string[]> {
-  const targets = new Map<string, string[]>();
-  const visitCall = (node: CallNode, target: Rule | undefined): void => {
-    const names = target === undefined ? undefined : targetNames(target, template, registry);
-    if (names !== undefined) targets.set(node.fn.signature, [...new Set([...(targets.get(node.fn.signature) ?? []), ...names])]);
-    node.fn.params.forEach((param, i) => visitArg(node.args[i] as Rule, param));
+export type CallSite = { readonly call: number; readonly nested: boolean; readonly fn: AbiFunction; readonly names: readonly string[] | undefined };
+
+/** Every function the template calls, each top-level call first and then the calls nested in its arguments. */
+export function callSites(template: Template, registry: Registry): CallSite[] {
+  const sites: CallSite[] = [];
+  const visitCall = (call: number, node: CallNode, target: Rule | undefined, nested: boolean): void => {
+    sites.push({ call, nested, fn: node.fn, names: target === undefined ? undefined : targetNames(target, template, registry) });
+    node.fn.params.forEach((param, i) => visitArg(call, node.args[i] as Rule, param));
   };
-  const visitArg = (rule: Rule, param: AbiParam | undefined): void => {
-    if (rule.kind === 'call') visitCall(rule.call, undefined);
+  const visitArg = (call: number, rule: Rule, param: AbiParam | undefined): void => {
+    if (rule.kind === 'call') visitCall(call, rule.call, undefined, true);
     if (rule.kind === 'items') {
       const item = param?.type.kind === 'array' || param?.type.kind === 'fixed-array' ? { name: undefined, type: param.type.item } : undefined;
-      rule.items.forEach((r) => visitArg(r, item));
+      rule.items.forEach((r) => visitArg(call, r, item));
     }
     if (rule.kind === 'fields') {
       const components = param?.type.kind === 'tuple' ? param.type.components : [];
       const addresses = components.flatMap((c, i) => (c.type.kind === 'address' ? [rule.fields[i] as Rule] : []));
       const target = addresses.length === 1 ? addresses[0] : undefined;
-      rule.fields.forEach((r, i) => (r.kind === 'call' ? visitCall(r.call, target) : visitArg(r, components[i])));
+      rule.fields.forEach((r, i) => (r.kind === 'call' ? visitCall(call, r.call, target, true) : visitArg(call, r, components[i])));
     }
   };
-  for (const call of template.calls) if (call.data !== 'empty') visitCall(call.data, call.to);
+  template.calls.forEach((call, i) => {
+    if (call.data !== 'empty') visitCall(i, call.data, call.to, false);
+  });
+  return sites;
+}
+
+/**
+ * For each function, by signature, the registry names the template calls it on: a call's `to`, or for a call nested in
+ * a tuple, such as a Bundler3 bundle item, the tuple's one address field. Absent when no call site binds its target.
+ */
+export function callTargets(template: Template, registry: Registry): Map<string, string[]> {
+  const targets = new Map<string, string[]>();
+  for (const { fn, names } of callSites(template, registry)) {
+    if (names !== undefined) targets.set(fn.signature, [...new Set([...(targets.get(fn.signature) ?? []), ...names])]);
+  }
   return targets;
 }
 

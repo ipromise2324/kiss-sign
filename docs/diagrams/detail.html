@@ -108,10 +108,10 @@
       <h3><i>5</i>Gather evidence</h3>
       <ul>
         <li><code>instance-evidence</code>: factory admits the vault; monthly assets; holder count and top 10 share</li>
-        <li><code>past-txs</code>: finds past transactions and counts, per field, who held the rule; the AI reads the counts</li>
+        <li><code>past-txs</code>: finds past transactions and counts, per field, who held the rule; records each one's call trace (who calls whom) to test the AI's flow lines; the AI reads the counts</li>
         <li><code>erc7730</code>: descriptors from a pinned archive, ERC-8176 attestations, no descriptor text</li>
       </ul>
-      <div class="chips"><span class="chip">Alchemy Transfers</span><span class="chip">Multicall3</span><span class="chip">Etherscan</span><span class="chip">ERC-7730 registry</span><span class="chip">EAS</span></div></div>
+      <div class="chips"><span class="chip">Alchemy Transfers</span><span class="chip">Multicall3</span><span class="chip">Etherscan</span><span class="chip">drpc trace</span><span class="chip">ERC-7730 registry</span><span class="chip">EAS</span></div></div>
     <div class="arrow">→</div>
     <div class="box ai"><div class="head"><span>AI agent</span><span>steps 6, 7</span></div>
       <h3><i>6</i>Open a pull request</h3>
@@ -239,7 +239,7 @@
 </section>
 
 <div class="trust">
-  <div><b>Two providers</b>Every chain read goes to Alchemy and drpc. If they disagree, the verdict is <code>UNVERIFIABLE</code>.</div>
+  <div><b>Two providers</b>Every chain read goes to Alchemy and drpc. If they disagree, the verdict is <code>UNVERIFIABLE</code>. Only a past transaction's call trace, read in research, comes from drpc alone.</div>
   <div><b>Pinned downloads</b>solc, the Public Suffix List and the ERC-7730 archive load on first use, refused unless the sha256 is pinned. Signing reads none.</div>
   <div><b>Doubt fails closed</b>An AI fooled during signing can at worst cause <code>MISMATCH</code> or <code>UNVERIFIABLE</code>, while the program is your <code>main</code>. A program rewritten on your computer is the basic tier's limit.</div>
 </div>

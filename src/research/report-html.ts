@@ -125,7 +125,9 @@ function diagram(sequence: Sequence, r: R): Html {
   // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
   const tagWidth = (tag: string) => Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(tag)));
   const captionWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => tagWidth(r.w.tag[arrow.text.tag]) + 8 + caption(arrow.text.ai, 0, 0).width;
-  const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + captionWidth(arrow) + 8 : 0)));
+  const seenText = (seen: NonNullable<Extract<Arrow, { kind: 'inside' }>['seen']>) => (seen.confirmed ? r.w.seenLabel(seen.seen, seen.of) : r.w.seenCount(seen.seen, seen.of));
+  const seenWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => (arrow.seen === undefined ? 0 : textWidth(seenText(arrow.seen)) * 0.9);
+  const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + Math.max(captionWidth(arrow), seenWidth(arrow)) + 8 : 0)));
   const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X, Math.ceil(widest));
   const rows: Html[] = [];
   let y = NODE_TOP + NODE_HEIGHT + 32;
@@ -140,16 +142,29 @@ function diagram(sequence: Sequence, r: R): Html {
     <text class="no" x="${x(0) + 12}" y="${y}">${arrow.n}</text><text class="fn" x="${x(0) + 30}" y="${y}">${arrow.fn}</text>
     <line class="call" x1="${x(0)}" y1="${y + 14}" x2="${x(arrow.to) - 3}" y2="${y + 14}" marker-end="url(#m-call)"/>`);
       y += 52;
+    } else if (arrow.kind === 'nested') {
+      const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
+      rows.push(h`
+    <text class="fn" x="${Math.min(from, to) + 12}" y="${y}">${arrow.fn}</text>
+    <line class="nested" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>`);
+      y += 36;
     } else if (arrow.kind === 'inside') {
       const tag = r.w.tag[arrow.text.tag];
       const tagged = tagWidth(tag);
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
       const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - captionWidth(arrow)));
       const cap = caption(arrow.text.ai, left + tagged + 8, y);
+      const seen = arrow.seen === undefined ? undefined : seenText(arrow.seen);
+      const source = arrow.seen?.confirmed === true ? arrow.text.sources[0] : undefined;
       rows.push(h`
     <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${tagged}" height="20" rx="6"/><text class="tagt" x="${left + tagged / 2}" y="${y}" text-anchor="middle">${tag}</text>${cap.boxes}${cap.text}</g>
-    <line class="inner" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>`);
-      y += 36;
+    <line class="${arrow.seen?.confirmed === true ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>${
+      seen === undefined
+        ? ''
+        : h`
+    <text class="seenl" x="${left}" y="${y + 30}">${source === undefined ? seen : h`<a href="${source}">${seen}</a>`}</text>`
+    }`);
+      y += seen === undefined ? 36 : 56;
     } else {
       rows.push(h`
     <text class="capg" x="${x(0) + 14}" y="${y}">${arrow.text}</text>
@@ -220,7 +235,8 @@ function flowBody(flow: Flow, r: R): Html {
   const lead = [flow.decoded ? around(r.w.decodedLead, 'cast decode-calldata') : undefined, flow.example === undefined ? undefined : text(flow.example)].filter((part) => part !== undefined);
   return h`
   <p class="lead">${r.w.flowLead}</p>
-  ${diagram(flow.diagram, r)}${
+  ${diagram(flow.diagram, r)}${flow.diagram.traced ? h`
+  <p class="lead">${r.w.traceNote}</p>` : ''}${
     flow.key.length === 0
       ? ''
       : h`
