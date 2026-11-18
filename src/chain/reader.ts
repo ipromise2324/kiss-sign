@@ -47,6 +47,8 @@ export type ReaderOptions = {
   readonly retryPausesMs?: readonly number[];
   /** Pauses after a rate-limited answer, long enough for a public endpoint's window to pass. */
   readonly rateLimitPausesMs?: readonly number[];
+  /** Requests each provider may have open at once; a rate-limited answer halves it, each answer raises it slowly back. */
+  readonly openRequests?: { readonly start: number; readonly max: number };
   /** Told of each provider that gave no answer after every retry, so a recording can refuse to keep the read. */
   readonly note?: NoteUnread;
 };
@@ -103,6 +105,44 @@ function attemptOf(text: string, method: Method): Attempt {
   return { kind: 'result', value: result };
 }
 
+type Gate = { enter(): Promise<number>; leave(round: number, cause: FailureCause | undefined): void };
+
+/**
+ * Additive increase, multiplicative decrease: a provider that limits its rate is asked fewer things at once.
+ * Only a refusal of a request sent after the last cut cuts again, so one burst of refusals halves the limit once.
+ */
+function gate(start: number, max: number): Gate {
+  let limit = start;
+  let open = 0;
+  let round = 0;
+  const waiting: (() => void)[] = [];
+  const admit = () => {
+    while (open < Math.floor(limit) && waiting.length > 0) {
+      open++;
+      waiting.shift()!();
+    }
+  };
+  return {
+    enter: async () => {
+      if (open < Math.floor(limit)) open++;
+      else await new Promise<void>((resolve) => waiting.push(resolve));
+      return round;
+    },
+    leave: (entered, cause) => {
+      open--;
+      if (cause === 'rate-limited') {
+        if (entered === round) {
+          limit = Math.max(1, limit / 2);
+          round++;
+        }
+      } else if (cause === undefined) {
+        limit = Math.min(max, limit + 1 / limit);
+      }
+      admit();
+    },
+  };
+}
+
 function withTimeout<T>(ms: number, run: (signal: AbortSignal) => Promise<T>): Promise<T> {
   const controller = new AbortController();
   let timer: NodeJS.Timeout | undefined;
@@ -135,9 +175,11 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
   if (endpoints[0].company === endpoints[1].company) throw new Error('the two providers must be run by different companies');
   const timeoutMs = options.timeoutMs ?? 20_000;
   const pauses = options.retryPausesMs ?? [250, 750];
-  const rateLimitPauses = options.rateLimitPausesMs ?? [1000, 2000, 4000, 8000, 16000];
+  const rateLimitPauses = options.rateLimitPausesMs ?? [1000, 2000, 4000, 8000, 16000, 32000, 60000];
+  const { start, max } = options.openRequests ?? { start: 8, max: 32 };
+  const gates = new Map(endpoints.map((endpoint) => [endpoint.url, gate(start, max)]));
 
-  async function attempt(endpoint: Endpoint, method: Method, params: readonly unknown[]): Promise<Attempt> {
+  async function send(endpoint: Endpoint, method: Method, params: readonly unknown[]): Promise<Attempt> {
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: method.name, params });
     try {
       const answer = await withTimeout(timeoutMs, (signal) => transport(endpoint.url, body, signal));
@@ -145,6 +187,19 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
       return attemptOf(answer.text, method);
     } catch (error) {
       return { kind: 'failed', cause: error instanceof Timeout ? 'timeout' : 'unreachable' };
+    }
+  }
+
+  async function attempt(endpoint: Endpoint, method: Method, params: readonly unknown[]): Promise<Attempt> {
+    const providerGate = gates.get(endpoint.url)!;
+    const round = await providerGate.enter();
+    let cause: FailureCause | undefined = 'no-answer';
+    try {
+      const result = await send(endpoint, method, params);
+      cause = result.kind === 'failed' ? result.cause : undefined;
+      return result;
+    } finally {
+      providerGate.leave(round, cause);
     }
   }
 
