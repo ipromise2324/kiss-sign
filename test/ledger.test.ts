@@ -287,7 +287,7 @@ const named = (places: readonly Place[]): string[] => places.map((place) => plac
 
 const ledgerOf = (change: Partial<Setup>): Ledger => {
   const inputs = inputsOf(change);
-  return judge(inputs, inputs.fixtures ?? []);
+  return judge(inputs, inputs.fixtures);
 };
 
 const resultOf = (ledger: Ledger, id: string) => ledger.results.find((r) => r.id === id) ?? assert.fail(`no result ${id}: ${ledger.results.map((r) => r.id).join(', ')}`);

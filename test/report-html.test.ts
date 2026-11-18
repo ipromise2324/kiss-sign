@@ -12,7 +12,7 @@ import type { Language } from '../src/language.ts';
 import { OLD_HTML_FILE, generatedHtml, generatedHtmlFile, generatedHtmlPath, htmlDifference, htmlDifferences, renderPage, writeHtmlPages } from '../src/research/report-html.ts';
 import { buildPage } from '../src/research/report-page.ts';
 import { loadReport, readDocs, replayInputs, reportDir, templateTargets } from '../src/research/report.ts';
-import type { JudgedInputs, ReportInputs, ReportTitle } from '../src/research/report.ts';
+import type { ReportInputs, ReportTitle } from '../src/research/report.ts';
 import { firstRecordedTx, judgeFixtures } from '../src/template/perturb.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { NOT_YET_REBUILT, reportedVaults } from '../src/template/vault-reports.ts';
@@ -90,7 +90,7 @@ test('the list of templates not yet rebuilt only shrinks: each one predates the 
 test('a template without notes.json gets no HTML report', async () => {
   const { subject } = loadReport(ROOT, registry, { template: 'eth/transfer' });
   const withoutNotes = mkdtempSync(join(tmpdir(), 'kiss-sign-no-notes-'));
-  assert.equal(await generatedHtml(withoutNotes, { subject, registry, fixtures: [] } as unknown as JudgedInputs, { command: '', sources: [] }), undefined);
+  assert.equal(await generatedHtml(withoutNotes, { subject, registry, fixtures: [] } as unknown as ReportInputs, { command: '', sources: [] }), undefined);
 });
 
 test('each committed HTML report is what the program writes from the recordings and notes.json, byte for byte, in each language', () => {
