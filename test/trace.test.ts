@@ -4,7 +4,7 @@ import type { Receipt } from '../src/chain/types.ts';
 import { selectorOf } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { flowResults, stateOf, strip } from '../src/research/ledger.ts';
-import { TraceError, compareFlow, parseRecordedTrace, tokenStepsDisagree, trimTrace } from '../src/research/trace.ts';
+import { TraceError, compareFlow, holdingTemplateCalls, parseRecordedTrace, tokenStepsDisagree, trimTrace } from '../src/research/trace.ts';
 import type { FlowLine, TraceCall, TracedTx } from '../src/research/trace.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
@@ -143,4 +143,18 @@ test('ETH sent inside a call is a money call, and a delegation is no step betwee
   assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', eth)]).uncovered, []);
   const deep = [...supply(), call(5, 'CALL', MORPHO, `0x${'77'.repeat(20)}` as Address, '0xabcdef01'), call(6, 'CALL', `0x${'77'.repeat(20)}` as Address, SAFE, undefined, undefined, '0x1' as Hex)];
   assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deep)]).uncovered, [{ call: 2, from: 'other', to: 'safe', kind: 'eth', transactions: 1, others: [`0x${'77'.repeat(20)}`] }]);
+});
+
+test('a trace nested deeper than the EVM allows is no trace, and a recording cannot hold one', () => {
+  let frame: Record<string, unknown> = { type: 'CALL', from: SAFE, to: USDC, input: '0x' };
+  for (let i = 0; i < 1100; i++) frame = { type: 'CALL', from: SAFE, to: USDC, input: '0x', calls: [frame] };
+  assert.throws(() => trimTrace(frame), (e: unknown) => e instanceof TraceError && /deeper than the 1024 nested calls/.test(e.message));
+  const deep = Array.from({ length: 1026 }, (_, depth) => call(depth, 'CALL', SAFE, USDC));
+  assert.throws(() => parseRecordedTrace({ hash: `0x${'ab'.repeat(32)}`, calls: deep }, 'traces[0]'), TraceError);
+});
+
+test("a traced transaction whose trace does not hold the template's calls in order is UNVERIFIABLE with why, not left out", () => {
+  const withoutSupply = supply().filter((c) => !(c.from === SAFE && c.to === BUNDLES));
+  assert.deepEqual(holdingTemplateCalls(template, registry, traced('0x01', withoutSupply)), { kind: 'unverifiable', hash: '0x01', why: "the trace does not hold the template's calls in order" });
+  assert.equal(holdingTemplateCalls(template, registry, traced('0x01', supply())).kind, 'traced');
 });

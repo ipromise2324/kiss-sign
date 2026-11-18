@@ -58,10 +58,14 @@ const quantity = (path: string, v: unknown): Hex => {
   return `0x${BigInt(v).toString(16)}` as Hex;
 };
 
+/** The EVM's call depth limit: no real trace nests deeper, so a deeper answer is no trace. */
+const MAX_DEPTH = 1024;
+
 /** The calls of one `callTracer` frame and every frame under it, depth first, cut down to a `TraceCall` each. */
 export function trimTrace(frame: unknown): TraceCall[] {
   const calls: TraceCall[] = [];
   const walk = (raw: unknown, depth: number, path: string): void => {
+    if (depth > MAX_DEPTH) throw new TraceError(`trace: deeper than the ${MAX_DEPTH} nested calls the EVM allows`);
     if (!isRecord(raw)) throw new TraceError(`${path}: not a call frame`);
     const type = CALL_TYPES.find((t) => t === raw.type);
     if (type === undefined) throw new TraceError(`${path}.type: not a call type`);
@@ -102,7 +106,7 @@ export function parseRecordedTrace(raw: unknown, path: string): RecordedTrace {
     const extra = Object.keys(call).find((key) => !['depth', 'type', 'from', 'to', 'selector', 'value', 'reverted', 'args'].includes(key));
     if (extra !== undefined) throw new TraceError(`${at}: ${extra} is not a field of a recorded call`);
     const type = CALL_TYPES.find((t) => t === call.type);
-    if (!Number.isSafeInteger(call.depth) || (call.depth as number) < 0 || type === undefined) throw new TraceError(`${at}: no depth or call type`);
+    if (!Number.isSafeInteger(call.depth) || (call.depth as number) < 0 || (call.depth as number) > MAX_DEPTH || type === undefined) throw new TraceError(`${at}: no depth or call type`);
     if (call.selector !== undefined && (typeof call.selector !== 'string' || !/^0x[0-9a-f]{8}$/.test(call.selector))) throw new TraceError(`${at}.selector: not a selector`);
     if (call.reverted !== undefined && call.reverted !== true) throw new TraceError(`${at}.reverted: not true`);
     if (call.args !== undefined && !Array.isArray(call.args)) throw new TraceError(`${at}.args: not a list`);
@@ -155,8 +159,8 @@ export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteU
     try {
       trace = { hash, calls: trimTrace((JSON.parse(answer.text) as { result: unknown }).result) };
     } catch (error) {
-      if (!(error instanceof TraceError)) throw error;
-      trace = { hash, unreadable: error.message };
+      if (!(error instanceof TraceError || error instanceof RangeError)) throw error;
+      trace = { hash, unreadable: error instanceof TraceError ? error.message : 'nested too deep to read' };
     }
     traces.set(hash, trace);
     return asAnswer(trace);
@@ -346,6 +350,10 @@ function templateCalls(template: Template, registry: Registry, tx: Extract<Trace
   }
   return found;
 }
+
+/** A traced transaction as it counts: UNVERIFIABLE, with why, when its trace does not hold the template's calls in order. */
+export const holdingTemplateCalls = (template: Template, registry: Registry, tx: TracedTx): TracedTx =>
+  tx.kind === 'traced' && templateCalls(template, registry, tx) === undefined ? { kind: 'unverifiable', hash: tx.hash, why: "the trace does not hold the template's calls in order" } : tx;
 
 /**
  * The AI's `flow` lines against the traced transactions: each line seen in N of M, and every money call (a token
