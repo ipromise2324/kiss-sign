@@ -16,7 +16,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { TEMPLATES_DIR, addressWord, isNamedToken, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
+import { TEMPLATES_DIR, addressWord, callSites, isNamedToken, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import { distributionOf, effectText } from './amounts.ts';
 import type { Difference } from './amounts.ts';
@@ -26,9 +26,9 @@ import { tipUrlOf } from './source-page.ts';
 import type { DeployerShare, SitePlace } from './listings.ts';
 import { weightOf } from './grades.ts';
 import type { Grade } from './grades.ts';
-import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
+import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, flowResults, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
-import { NOTES_FILE, argumentTree, notesLanguages, notesScope, parseNotes } from './notes.ts';
+import { NOTES_FILE, argumentTree, notesLanguages, notesScope, parseFlowLines, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { PERCENTILES, amountsOf, freeNumbers } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
@@ -41,6 +41,8 @@ import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
 import { signedEntryNames } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 import { WORDS } from './report-words.ts';
+import { compareFlow } from './trace.ts';
+import type { FlowComparison, TracedTx } from './trace.ts';
 import type { Words } from './report-words.ts';
 
 declare const anchorBrand: unique symbol;
@@ -136,9 +138,13 @@ export type AfterRow = { readonly label: Inline; readonly value: Inline; readonl
 export type Lifeline = { readonly name: string; readonly role: string };
 export type Arrow =
   | { readonly kind: 'call'; readonly n: number; readonly to: number; readonly fn: string }
-  | { readonly kind: 'inside'; readonly from: number; readonly to: number; readonly text: AiText }
+  /** A call the template binds inside a call, such as a Bundler3 bundle item. */
+  | { readonly kind: 'nested'; readonly from: number; readonly to: number; readonly fn: string }
+  /** An AI `flow` line; `seen` when the call traces saw it, with in how many of the transactions they tested. */
+  | { readonly kind: 'inside'; readonly from: number; readonly to: number; readonly text: AiText; readonly seen: { readonly seen: number; readonly of: number } | undefined }
   | { readonly kind: 'gets'; readonly from: number; readonly text: string };
-export type Sequence = { readonly lifelines: readonly Lifeline[]; readonly arrows: readonly Arrow[]; readonly narration: string };
+/** `traced` when a call trace saw a `flow` line, so the page says what a trace shows and what it does not. */
+export type Sequence = { readonly lifelines: readonly Lifeline[]; readonly arrows: readonly Arrow[]; readonly narration: string; readonly traced: boolean };
 
 export type Flow = {
   readonly diagram: Sequence;
@@ -440,6 +446,8 @@ type Context = {
   readonly facts: ProtocolFacts | undefined;
   readonly notes: Notes;
   readonly ledger: Ledger;
+  /** The `flow` lines and money calls against the past transactions' call traces. */
+  readonly comparison: FlowComparison;
   /** The example's card values, when there is an example. */
   readonly card: ReadonlyMap<string, ResolvedValue> | undefined;
   /** The example's decoded value at each field key; empty without an example or when it does not decode. */
@@ -839,16 +847,24 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
     const label = viewLabel(view, context);
     add(label, viewTargetNames(view.to, template, registry), kindOf(label));
   }
+  for (const site of nestedSites(context)) {
+    if (!names.some((of) => of.some((name) => site.names.includes(name)))) add(site.names.join(' | '), site.names, kindOf(site.names[0] as string));
+  }
   for (const name of context.notes.flow.flatMap((line) => [line.from, line.to])) {
     if (!names.some((of) => of.includes(name))) add(name, [name], kindOf(name));
   }
   return { lines, names, callTo };
 }
 
+/** Each call the template binds inside a call whose target it names. */
+const nestedSites = (context: Context) =>
+  callSites(context.template, context.registry).flatMap((site) => (site.nested && site.names !== undefined && site.names.length > 0 ? [{ ...site, names: site.names }] : []));
+
 function sequence(context: Context): Sequence {
-  const { template, notes, w } = context;
+  const { template, notes, w, comparison } = context;
   const { lines, names, callTo } = lifelines(context);
   const at = (name: string): number => names.findIndex((of) => of.includes(name));
+  const nested = nestedSites(context);
   const arrows: Arrow[] = [];
   const narration: string[] = [];
   template.calls.forEach((call, i) => {
@@ -858,7 +874,12 @@ function sequence(context: Context): Sequence {
     const fn = call.data !== 'empty' ? call.data.fn.name : sendsEth ? w.sendEth : w.noDataZero;
     arrows.push({ kind: 'call', n: i + 1, to, fn });
     narration.push(call.data !== 'empty' ? w.narrateCall(i + 1, target, fn) : w.narrateEmpty(i + 1, target, sendsEth));
-    for (const line of notes.flow.filter((f) => f.after === i + 1)) arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text) });
+    for (const site of nested.filter((s) => s.call === i)) arrows.push({ kind: 'nested', from: to, to: names.findIndex((of) => of.some((name) => site.names.includes(name))), fn: site.fn.name });
+    notes.flow.forEach((line, l) => {
+      if (line.after !== i + 1) return;
+      const tally = comparison.lines[l];
+      arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text, line.sources), seen: tally === undefined || tally.seen === 0 ? undefined : tally });
+    });
   });
   const last = callTo.at(-1) ?? 0;
   for (const effect of template.effects.gets) {
@@ -875,7 +896,7 @@ function sequence(context: Context): Sequence {
       narration.push(w.result(text));
     }
   }
-  return { lifelines: lines, arrows, narration: w.sentences(narration) };
+  return { lifelines: lines, arrows, narration: w.sentences(narration), traced: arrows.some((arrow) => arrow.kind === 'inside' && arrow.seen !== undefined) };
 }
 
 const zeroValue = (call: TemplateCall): boolean => call.value.kind === 'const' && call.value.value.kind === 'uint' && call.value.value.value === 0n;
@@ -1243,6 +1264,15 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
   if (result.about.kind === 'fixture') {
     const detail = result.finding.kind === 'judged-otherwise' ? ` ${result.finding.detail}` : '';
     return { title: w.fixtureTitle({ code: result.about.name }, words.title), why: [`${words.why}${detail}`] };
+  }
+  if (result.about.kind === 'flow') {
+    const counted = result.finding.kind === 'line-partly-seen' ? ` ${w.seenIn(result.finding.seen, result.finding.of)}` : result.finding.kind === 'line-not-seen' ? ` ${w.seenIn(0, result.finding.of)}` : '';
+    return { title: [w.flowLineTitle(result.about.line, words.title)], why: [`${words.why}${counted}`] };
+  }
+  if (result.about.kind === 'money') {
+    const { call, from, to, kind } = result.about.uncovered;
+    const counted = result.finding.kind === 'money-uncovered' ? ` ${w.inTransactions(result.finding.transactions)}` : '';
+    return { title: w.moneyTitle(call, from, to, { code: kind }, words.title), why: [`${words.why}${counted}`] };
   }
   const name = result.about.entry.name;
   const doc = /\/doc\.(0x[0-9a-f]{8})\.(\w+)$/.exec(result.id);
@@ -1891,6 +1921,7 @@ function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<stri
     abi: () => w.abiExplain(notCalled, unprovable),
     code: () => w.codeExplain(subjects === 1, reportOnly, today, routed),
     params: (_, c) => (!recorded ? unrecordedParams(template, w) : w.paramsExplain(c)),
+    trace: (p, c) => w.traceExplain(p, c),
   };
   const items = strip(ledger)
     .filter((s) => s.line === 'params' || ledger.results.some((r) => r.line === s.line))
@@ -1900,6 +1931,11 @@ function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<stri
   return [...items, { line: 'providers', name: w.strip.providers, state: 'ok', count: undefined, explain: w.providersExplain }];
 }
 
+/** Each transaction whose trace counts, once, though two recordings of the template may both hold it. */
+const tracedOnce = (traces: readonly TracedTx[]): Extract<TracedTx, { kind: 'traced' }>[] => [
+  ...new Map(traces.flatMap((t) => (t.kind === 'traced' ? [[t.hash, t] as const] : []))).values(),
+];
+
 /**
  * The signer's page in `language`, from the report's inputs and the raw notes.json. The ledger judges every result;
  * notes.json is parsed against the scope the template and the ledger derive, so it cannot name what the page does not
@@ -1908,7 +1944,15 @@ function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<stri
 export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
   const { subject, registry } = inputs;
   const { template } = subject;
-  const ledger = judge(inputs, inputs.fixtures);
+  const judged = judge(inputs, inputs.fixtures);
+  const flow = parseFlowLines(rawNotes, notesScope(inputs, judged, template, language));
+  const comparison = compareFlow(
+    template,
+    registry,
+    flow.map((line) => ({ after: line.after, from: line.from, to: line.to, selector: line.function?.selector as Hex | undefined })),
+    tracedOnce(inputs.pastTxs.flatMap(({ run }) => run.traces)),
+  );
+  const ledger: Ledger = { ...judged, results: [...judged.results, ...flowResults(comparison)] };
   const notes = parseNotes(rawNotes, notesScope(inputs, ledger, template, language));
   const { example } = inputs;
   const w = WORDS[language];
@@ -1921,6 +1965,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     facts: inputs.facts,
     notes,
     ledger,
+    comparison,
     card: example?.card.operations.find((op) => op.template === template.id)?.values,
     values: example === undefined ? new Map() : exampleValues(template, example.tx),
   };

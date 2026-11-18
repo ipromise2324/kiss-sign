@@ -122,6 +122,9 @@ svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
 svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
 svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
 svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .inner.seen{stroke:var(--fg2);stroke-dasharray:none}
+svg .nested{stroke:var(--fg2);stroke-width:1.2;fill:none}
+svg .seenl{fill:var(--fg3);font:12.5px var(--sans)} svg .seenl a{fill:var(--fg2);text-decoration:underline}
 svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}
@@ -294,7 +297,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="flow">
   <h2>流程 <span class="c">1 個呼叫</span></h2>
-  <p class="lead">實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。</p>
+  <p class="lead">實線是 Safe 發出的呼叫、模板綁定的內部呼叫，和程式在過去交易裡看到的流程線；虛線是還沒核對的 AI 研究；綠線是你得到的。</p>
   <div class="diagram">
   <svg viewBox="0 0 660 152" role="img" aria-labelledby="dt dd">
     <title id="dt">交易流程</title>

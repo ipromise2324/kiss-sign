@@ -158,7 +158,7 @@ None. There is no brand accent. Ink is the strongest non-state colour.
 - **Strong Hairline** (hairline-strong): section top rules, tag and code outlines, diagram lifelines and node strokes, link underlines at rest, text selection.
 - **Ink** (ink): primary text, values, addresses, solid call arrows.
 - **Ink 2** (ink-2): row labels, secondary prose, AI tag text.
-- **Ink 3** (ink-3): sources, counts beside titles, lead lines, captions, info icons at rest, the AI judgment icon, internal-call arrows, the 固定 chip.
+- **Ink 3** (ink-3): sources, counts beside titles, lead lines, captions, info icons at rest, the AI judgment icon, internal-call arrows not yet checked, the 固定 chip.
 
 ### State
 - **Pass Green** (state-ok): filled check icons, the "what the Safe receives" arrow and caption in the diagram, a positive change in after-transaction rows.
@@ -212,7 +212,7 @@ Flat. Depth exists in exactly two places: the diagram is recessed into Sunk Grap
 
 ## Shapes
 
-One radius, a gentle 6px, on everything that has a corner: tags, who-decides chips, inline code, tooltip, diagram frame and its nodes. Focus rings use 2px. Borders are 1px. The AI tag is the one dashed outline in the UI; dashes elsewhere mean "inside the contract" (diagram internal calls, lifelines) or "judgment" (the dashed-ring icon).
+One radius, a gentle 6px, on everything that has a corner: tags, who-decides chips, inline code, tooltip, diagram frame and its nodes. Focus rings use 2px. Borders are 1px. The AI tag is the one dashed outline in the UI; dashes elsewhere mean "inside the contract, not checked" (diagram internal calls no call trace saw, lifelines) or "judgment" (the dashed-ring icon). An internal call the template binds, or one a call trace saw, is a solid Ink 2 line; a seen one carries a 12.5px Ink 3 line under its caption saying it was confirmed two ways, linked to the AI's first source.
 
 ## Components
 

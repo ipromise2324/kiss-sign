@@ -1,12 +1,12 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { paramName } from '../decode/abi.ts';
+import { paramName, parseFunctionSignature } from '../decode/abi.ts';
 import type { AbiParam } from '../decode/abi.ts';
 import { LANGUAGES } from '../language.ts';
 import type { Language } from '../language.ts';
 import { parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
-import { TEMPLATES_DIR, callTargetEntries, effectTokenNames, refNames, viewTargetNames } from '../template/template.ts';
+import { TEMPLATES_DIR, callSites, callTargetEntries, effectTokenNames, refNames, viewTargetNames } from '../template/template.ts';
 import type { CallNode, Rule, Template } from '../template/template.ts';
 import { needsSigner } from './ledger.ts';
 import { factsScope } from './protocol-facts.ts';
@@ -128,6 +128,11 @@ export type NotesScope = {
   readonly calls: number;
   /** The registry names a call or an effects' view targets, the entries those depend on, and the tokens the effects move: a `flow` line's `from` and `to`. */
   readonly contracts: ReadonlySet<string>;
+  /**
+   * Each call nested in a template call, such as a Bundler3 bundle item: the call number, the names the top-level call's
+   * target and the nested call's target can be, and its selector. The template binds it, so no `flow` line may name it.
+   */
+  readonly nested: readonly { readonly after: number; readonly from: readonly string[]; readonly to: readonly string[] | undefined; readonly selector: string }[];
   /** The registry entries the report covers; `entries` may name any of them. */
   readonly entries: ReadonlySet<string>;
   /** The covered entries with `routes`, each of which `entries` must describe, with a role and its sources. */
@@ -197,6 +202,14 @@ export function fieldKeys(template: Template): string[] {
   return argumentTree(template).flatMap((call) => keys(call.args));
 }
 
+function nestedCalls(template: Template, registry: ReportInputs['registry']): NotesScope['nested'] {
+  const sites = callSites(template, registry);
+  return sites.flatMap((site) => {
+    const top = sites.find((s) => s.call === site.call && !s.nested);
+    return site.nested ? [{ after: site.call + 1, from: top?.names ?? [], to: site.names, selector: site.fn.selector }] : [];
+  });
+}
+
 export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Template, language: Language): NotesScope {
   const { registry } = inputs;
   const protocols: Map<string, number | 'unread'> =
@@ -212,6 +225,7 @@ export function notesScope(inputs: ReportInputs, ledger: Ledger, template: Templ
       ...[...template.effects.gives, ...template.effects.gets].flatMap((effect) => effectTokenNames(effect.token, template, registry)),
       ...template.effects.touches.map((touch) => touch.token),
     ]),
+    nested: nestedCalls(template, registry),
     entries: new Set(ledger.entries.map((entry) => entry.name)),
     routed: new Set(ledger.entries.filter((entry) => entry.routes !== undefined).map((entry) => entry.name)),
     protocols,
@@ -296,6 +310,19 @@ const url: P<HttpsUrl> = (path, raw) => parseHttpsUrl(raw) ?? refuse(path, 'not 
 const callNumber: P<number> = (path, raw, scope) =>
   typeof raw === 'number' && Number.isSafeInteger(raw) && raw >= 1 && raw <= scope.calls ? raw : refuse(path, `not one of the template's ${scope.calls} calls`);
 
+/** A function's canonical signature, such as `approve(address,uint256)`, with the selector it hashes to. */
+const signature: P<{ readonly signature: string; readonly selector: string }> = (path, raw, scope) => {
+  const written = str(400)(path, raw, scope);
+  let canonical: string | undefined;
+  let selector = '';
+  try {
+    ({ signature: canonical, selector } = parseFunctionSignature(written));
+  } catch {
+    canonical = undefined;
+  }
+  return canonical === written ? { signature: written, selector } : refuse(path, 'not a canonical function signature, such as `approve(address,uint256)`');
+};
+
 const contract: P<string> = (path, raw, scope) => {
   const name = str(80)(path, raw, scope);
   return scope.contracts.has(name) ? name : refuse(path, `${shown(name)} is not a contract the calls or the effects' views target, an entry one of those depends on, nor a token the effects move`);
@@ -357,11 +384,20 @@ const protocolNotes = (slug: string) =>
     return hacks === 'unread' || protocol.incidents.length === hacks ? undefined : `incidents lists ${protocol.incidents.length}; DefiLlama lists ${hacks} hacks`;
   });
 
+const FLOW = optList(
+  where(obj({ after: callNumber, from: contract, to: contract, function: opt(signature), text: text(100), sources: optList(url) }), (line, scope) =>
+    line.function !== undefined && scope.nested.some((n) => n.after === line.after && n.selector === line.function?.selector && n.from.includes(line.from) && (n.to === undefined || n.to.includes(line.to)))
+      ? 'names a call the template binds itself, which the diagram draws from the template'
+      : undefined,
+  ),
+  4,
+);
+
 const NOTES_FIELDS = obj({
   title: text(100),
   summary: text(2000),
   verdict: obj({ status: oneOf('safe', 'caution'), text: text(100) }),
-  flow: optList(obj({ after: callNumber, from: contract, to: contract, text: text(100) }), 4),
+  flow: FLOW,
   protocols: keyed((scope) => [...scope.protocols.keys()], 'a protocol the protocol facts cover', true, protocolNotes),
   judgments: optList(obj({ text: text(200), sources: optList(url), recommendation: text(200) }), 4),
   reviews: keyed((scope) => scope.reviews, 'a result the signer must look at', true, () =>
@@ -405,4 +441,11 @@ export function parseNotes(raw: unknown, scope: NotesScope): Notes {
   const held = notesLanguages(raw);
   if (!held.includes(scope.language)) refuse(`${NOTES_FILE}.title`, `holds no ${scope.language} text, so there is no ${scope.language} page to write`);
   return NOTES_SCHEMA(NOTES_FILE, raw, { ...scope, held });
+}
+
+/** The `flow` lines alone, parsed as `parseNotes` parses them, so the call traces can judge them before the reviews are read. */
+export function parseFlowLines(raw: unknown, scope: NotesScope): Notes['flow'] {
+  const held = notesLanguages(raw);
+  const flow = isRecord(raw) ? own(raw, 'flow') : undefined;
+  return flow === undefined ? FLOW.absent : FLOW.optional(`${NOTES_FILE}.flow`, flow, { ...scope, held });
 }

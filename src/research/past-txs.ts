@@ -11,6 +11,8 @@ import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
 import type { ReadMessage } from './messages.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, shapesOf, studyTx } from './study.ts';
 import type { OutsideKind, Sender, TxStudy } from './study.ts';
+import { checkTrace } from './trace.ts';
+import type { TraceSource, TracedTx } from './trace.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
 
@@ -47,6 +49,8 @@ export type PastTxsDeps = {
   readonly exclude: Address | undefined;
   /** The most transactions studied in a run, shared evenly between the windows; below one per window none is studied. */
   readonly maxTxs: number;
+  /** Each transaction's call trace; without it, nothing is traced. */
+  readonly traces?: TraceSource;
 };
 
 type Kept = Exclude<TxStudy, { kind: 'excluded' }>;
@@ -68,6 +72,8 @@ export type PastTxs = {
   /** The template's effects that state an amount, and for each fitting transaction stating one, how its balances differed. */
   readonly effects: readonly StatedEffect[];
   readonly measurements: ReadonlyMap<Hex, Measurement>;
+  /** Each transaction exactly the template that has a trace, checked against the transaction and its receipt. */
+  readonly traces: readonly TracedTx[];
 };
 
 const ZERO = `0x${'00'.repeat(20)}`;
@@ -150,9 +156,21 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const rulesOf = (fit: Fit) => (fit.sender.kind === 'safe' ? shapes.whole : (shapes.calls[fit.sender.call] as (typeof shapes.calls)[number])).loosened.rules;
   const measured = await inPool(fits, 4, (fit) => measure(deps.reader, { hash: fit.hash, sender: fit.sender, rules: rulesOf(fit), values: fit.values }, effects, deps.registry));
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
+  const traces = deps.traces === undefined ? [] : await traceExact(fits, deps.traces, deps.reader, deps.registry);
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
   const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
-  return { query, head, windows, perWindow, found, studies, shapes, excluded, effects, measurements };
+  return { query, head, windows, perWindow, found, studies, shapes, excluded, effects, measurements, traces };
+}
+
+/** Traces each transaction exactly the template, one at a time, and checks each trace that came back. */
+async function traceExact(fits: readonly Fit[], source: TraceSource, reader: Reader, registry: Registry): Promise<TracedTx[]> {
+  const tokens = new Set([...registry.entries.values()].filter((entry) => entry.kind === 'token' || entry.kind === 'vault').map((entry) => entry.address.toLowerCase() as Address));
+  const traced: TracedTx[] = [];
+  for (const fit of fits.filter((f) => f.outside.length === 0)) {
+    const calls = await source(fit.hash);
+    if (calls !== undefined) traced.push(await checkTrace(fit.hash, fit.sender, calls, reader, tokens));
+  }
+  return traced;
 }
 
 export const PERCENTILES = [50, 90, 99] as const;
@@ -402,6 +420,15 @@ function renderAmounts(lines: string[], run: PastTxs, registry: Registry): void 
   for (const [why, hashes] of unmeasured) lines.push(`  not measured, ${why}: ${hashes.length}, e.g. ${examples(hashes)}`);
 }
 
+function renderTraces(lines: string[], run: PastTxs): void {
+  if (run.traces.length === 0) return;
+  const traced = run.traces.filter((t) => t.kind === 'traced').length;
+  lines.push(`call traces, from drpc, of the transactions exactly the template: ${plural(run.traces.length, 'transaction')}, ${traced} checked against the receipt both providers agree on`);
+  const why = new Map<string, Hex[]>();
+  for (const t of run.traces) if (t.kind === 'unverifiable') why.set(t.why, [...(why.get(t.why) ?? []), t.hash]);
+  for (const [reason, hashes] of why) lines.push(`  UNVERIFIABLE, ${reason}: ${hashes.length}, e.g. ${examples(hashes)}`);
+}
+
 /** What a reader of the report sees. Never names the configured Safe, and names no other sender either. */
 export function renderPastTxs(run: PastTxs, registry: Registry): string {
   const { anchor, template, sampling } = run.query;
@@ -472,6 +499,7 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   }
 
   renderAmounts(lines, run, registry);
+  renderTraces(lines, run);
   lines.push('by proven Safes, the whole template in one transaction:');
   const otherOperation = misfits.filter((m) => isOtherOperation(m, template));
   if (otherOperation.length > 0) {
