@@ -191,7 +191,7 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 | Attack | Stopped by |
 |---|---|
 | One provider gives a false answer, or none | `verify` compares the two answers: they differ, `UNVERIFIABLE` |
-| Both give the same false answer, for example hiding that the vault's code was upgraded | Nothing in kiss-sign. The Safe web app's own simulation may show it, if the web app itself is not compromised |
+| Both give the same false answer, such as a simulation that hides your funds going elsewhere | Nothing in kiss-sign. The Safe web app's own simulation may show it, if the web app itself is not compromised |
 
 ## What kiss-sign checks
 
