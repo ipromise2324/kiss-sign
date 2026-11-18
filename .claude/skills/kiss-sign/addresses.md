@@ -20,7 +20,7 @@ Do this for every registry entry the report covers: the entries the template nam
 
 Never judge or drop a program `FINDING`, and never change the registry to hide one; the signer judges it.
 A `FINDING` stays in the report even when you confirmed the same address another way; your source and review sit beside it.
-The program checks on its own, through `pnpm check-sources`: the pages, the `apiSource` path and the `sdk` the entry records; CoinGecko's and Immunefi's listings of the address, whether or not the entry names a coin or a program; and, with both API keys, its creation.
+The program checks on its own, through `pnpm check-sources`: the pages, the `apiSource` path and the `sdk` the entry records; CoinGecko's listing of the address for each token and vault, and Immunefi's for every entry, whether or not the entry names a coin or a program; and, with both API keys, its creation.
 It checks a `factory` through `pnpm prove-instance` and the report.
 What you alone saw, such as the Etherscan creator or an API field `apiSource` does not name, is your observation and nothing more.
 
