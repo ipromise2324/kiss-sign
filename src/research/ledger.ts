@@ -468,7 +468,7 @@ function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
   );
 }
 
-function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean, inputs: ReportInputs): Finding {
+function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefined, unused: boolean, missing: readonly string[]): Finding {
   if (unused) return { kind: 'not-called' };
   if (entry.routes !== undefined) return { kind: 'routed-proxy' };
   if (proof === undefined) return { kind: 'no-abi-case' };
@@ -478,9 +478,18 @@ function abiFinding(entry: RegistryEntry, proof: AbiProof | AbiRefusal | undefin
   }
   const verdict = pinVerdict(entry, proof);
   if (verdict !== 'PASS') return verdict === 'FINDING' ? { kind: 'proof-not-pin' } : { kind: 'not-pinned' };
-  const signatures = missingFromAbi(inputs.subject, inputs.registry, entry, proof);
-  if (signatures.length > 0) return { kind: 'fn-not-in-abi', signatures };
+  if (missing.length > 0) return { kind: 'fn-not-in-abi', signatures: missing };
   return proof.metadataHashMasked ? { kind: 'metadata-differs' } : { kind: 'agrees' };
+}
+
+/** The entry's ABI result, and `<name>/abi.calls` when a proof that is not of the pin also lacks a function the template uses. */
+function abiResults(entry: RegistryEntry, unused: boolean, inputs: ReportInputs): Result[] {
+  const proof = inputs.abi.get(entry.address);
+  const missing = unused || entry.routes !== undefined || proof?.kind !== 'proven' ? [] : missingFromAbi(inputs.subject, inputs.registry, entry, proof);
+  const result = (key: string, finding: Finding): Result => ({ id: `${entry.name}/${key}`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding });
+  const finding = abiFinding(entry, proof, unused, missing);
+  const hidden = missing.length > 0 && finding.kind !== 'fn-not-in-abi';
+  return [result('abi', finding), ...(hidden ? [result('abi.calls', { kind: 'fn-not-in-abi', signatures: missing })] : [])];
 }
 
 const SPAN_FINDINGS: Readonly<Record<SpanCheck['kind'], Finding>> = {
@@ -620,7 +629,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
       ...factoryResults(entry, inputs),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
       ...marketResults(entry, inputs),
-      { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address), unused.has(entry.name), inputs) },
+      ...abiResults(entry, unused.has(entry.name), inputs),
       ...spanResults(entry, inputs.spans.get(entry.address)),
       ...todayResults(entry, inputs, today),
     ]), inputs),
