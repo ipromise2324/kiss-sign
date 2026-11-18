@@ -215,15 +215,6 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 
 On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
 
-### Your computer and GitHub account
-
-`verify` runs what your fork's `main` holds, on your computer, and refuses a clone that differs from it. Code that can rewrite that check too gets past it.
-
-| Attack | Stopped by |
-|---|---|
-| Malware on your computer changes kiss-sign and the Safe web app together | Only the second computer: `check.sh` decodes the transaction without kiss-sign, and you read its calls. On the basic tier, nothing |
-| Someone with your GitHub account changes your fork's `main` | A changed template needs your approval again: `MISMATCH`. A changed program is stopped only by the second computer, as above |
-
 ## What kiss-sign checks
 
 TODO
