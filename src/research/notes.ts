@@ -41,9 +41,12 @@ const KEYED = ['reviews', 'entries'];
 /**
  * The template's notes and a vault's, as one: each key once, except that `flow` and `judgments` join and `reviews` and `entries`
  * join by name. A vault's notes may hold only `VAULT_KEYS`, may review and describe only the entries in `owned`, the
- * vault, the entries its attributes name and those it depends on, and a key or name both define is refused. A template's `flow` line that
+ * vault, the entries its attributes name and those it depends on, and the call traces' results, and a key or name both define is refused. A template's `flow` line that
  * names an entry in `owned` is refused, since another vault's report could not name it.
  */
+/** The results the call traces give, which a vault's notes review, since each vault's report traces only its own recordings. */
+const TRACED = /^(flow|trace)\./;
+
 export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, owned: ReadonlySet<string>): unknown {
   const flow = isRecord(shared) ? own(shared, 'flow') : undefined;
   const named = Array.isArray(flow) ? flow.flatMap((line) => (isRecord(line) ? [own(line, 'from'), own(line, 'to')] : [])).find((name) => owned.has(name as string)) : undefined;
@@ -55,7 +58,7 @@ export function mergeNotes(shared: unknown, vault: unknown, vaultPath: string, o
     const value = own(vault, key);
     if (!VAULT_KEYS.includes(key)) refuse(vaultPath, `${shown(key)} belongs in the template's ${NOTES_FILE}, which every vault's report shares`);
     if (KEYED.includes(key) && isRecord(value)) {
-      const other = Object.keys(value).find((name) => !owned.has(key === 'reviews' ? name.split('/')[0]! : name));
+      const other = Object.keys(value).find((name) => !(key === 'reviews' && TRACED.test(name)) && !owned.has(key === 'reviews' ? name.split('/')[0]! : name));
       if (other !== undefined) refuse(`${vaultPath}.${key}`, `${shown(other)} is not the vault or an entry it names (${[...owned].join(', ')}); a shared contract belongs in the template's ${NOTES_FILE}`);
     }
     const before = own(shared, key);
