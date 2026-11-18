@@ -419,7 +419,7 @@ function docResults(doc: DocLink, inputs: ReportInputs): Result[] {
 }
 
 function marketResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
-  if (inputs.subject.kind !== 'template' || !hasMarket(inputs.subject.template)) return [];
+  if (!hasMarket(inputs.subject.template)) return [];
   return [...inputs.registry.markets.values()].flatMap((market) =>
     MARKET_ENTRY_PARTS.filter((part) => market[part].name === entry.name).map(
       (part): Result => ({ id: `${entry.name}/market.${market.name}.${part}`, line: 'sources', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: { kind: 'agrees' } }),
@@ -618,7 +618,7 @@ function fixtureFinding(judgement: FixtureJudgement): Finding {
  */
 export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[]): Ledger {
   const { subject } = inputs;
-  const docs = subject.kind === 'template' ? subject.docs : [];
+  const { docs } = subject;
   const checked = checkSources(entriesOf(subject, inputs.registry), inputs.listings, inputs.pages);
   const unused = abiUnused(subject, inputs.registry);
   const today = new Set(todayEntries(subject, inputs.registry).map((entry) => entry.name));

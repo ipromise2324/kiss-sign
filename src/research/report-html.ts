@@ -589,7 +589,6 @@ ${page.sections.map((s) => section(s, r).text).join('')}
  */
 export async function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): Promise<ReadonlyMap<Language, string> | undefined> {
   const { subject, registry } = inputs;
-  if (subject.kind !== 'template') return undefined;
   const raw = readNotes(repoRoot, subject.template.id, subject.vault);
   if (raw === undefined) return undefined;
   // The example must name the report's own vault.

@@ -38,7 +38,7 @@ import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
 import { readStoredEvidence } from './instance-evidence.ts';
 import type { StoredPoint } from './instance-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
-import { commandNames, signedEntryNames } from './report.ts';
+import { signedEntryNames } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
@@ -320,7 +320,7 @@ const withFileName = (url: HttpsUrl): string => {
 };
 
 function docLine(signature: string, context: Context): DocLine {
-  const docs = context.inputs.subject.kind === 'template' ? context.inputs.subject.docs : [];
+  const { docs } = context.inputs.subject;
   const doc = docs.find((d) => d.fn.signature === signature);
   if (doc === undefined) throw new Error(`docs.json names no page for ${signature}`);
   const { state, phrase } = docOf(context.ledger, doc);
@@ -1046,7 +1046,7 @@ function flowSection(context: Context): Section {
   const used = new Set([...rows([...safeTx, ...calls.flatMap((call) => call.args)]).flatMap((row) => row.chips.map((c) => c.who)), ...sent]);
   const { example } = context.inputs;
   const chosen = chosenWords(used, w);
-  const vault = context.inputs.subject.kind === 'template' ? context.inputs.subject.vault : undefined;
+  const { vault } = context.inputs.subject;
   let lead: Inline | undefined;
   if (chosen === '') lead = undefined;
   else if (example !== undefined && context.values.size > 0) {
@@ -1187,12 +1187,12 @@ function protocolSections(context: Context): Section[] {
 /** The card's vault in a per-vault report, from its stored `pnpm instance-evidence` output alone. */
 function vaultSection(context: Context): Section[] {
   const { subject } = context.inputs;
-  if (subject.kind !== 'template' || subject.vault === undefined) return [];
+  if (subject.vault === undefined) return [];
   const { w } = context;
   const vault = subject.vault;
   const text = context.inputs.vaults.get(vault.name);
   const section = (block: VaultBlock): Section[] => [{ anchor: anchor(`vault-${vault.name}`), label: w.vault, count: undefined, body: { kind: 'vault', vault: block } }];
-  const command = { code: commandNames(subject).evidence };
+  const command = { code: 'pnpm instance-evidence' };
   const lead: Inline = w.vaultLead(link(vault), command);
   if (text === undefined) return section({ lead: w.vaultNone(link(vault), command), rows: [], bars: [], most: undefined });
   const evidence = readStoredEvidence(text, vault, context.registry);
@@ -1246,7 +1246,7 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
   }
   const name = result.about.entry.name;
   const doc = /\/doc\.(0x[0-9a-f]{8})\.(\w+)$/.exec(result.id);
-  if (doc !== null && context.inputs.subject.kind === 'template') {
+  if (doc !== null) {
     const found = context.inputs.subject.docs.find((d) => d.fn.selector === doc[1]);
     const page = found?.standard === undefined ? w.docsPage : w.standardPage(found.standard.name);
     const why = found?.standard !== undefined && result.finding.kind === 'name-not-on-page' ? w.notInStandard(found.standard.name) : words.why;
@@ -1789,7 +1789,7 @@ function nextSection(context: Context): Section {
   const fields = [...template.card];
   const typed = (field: CardField): boolean => field.kind === 'amount' || field.kind === 'nonce' || field.kind === 'threshold' || field.kind === 'percent';
   const computed = (field: CardField): boolean => field.kind === 'amount' && field.computed !== undefined;
-  const vault = context.inputs.subject.kind === 'template' && context.inputs.subject.vault !== undefined;
+  const vault = context.inputs.subject.vault !== undefined;
   const trial = fields.some(([, f]) => f.kind === 'amount' && f.computed === undefined) ? w.trial(vault) : '';
   const prompts = [
     ...fields.filter(([, f]) => !typed(f)),
@@ -1907,7 +1907,6 @@ function stripItems(ledger: Ledger, template: Template, signed: ReadonlySet<stri
  */
 export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTitle, language: Language): Page {
   const { subject, registry } = inputs;
-  if (subject.kind !== 'template') throw new Error('an HTML report is written for a template only');
   const { template } = subject;
   const ledger = judge(inputs, inputs.fixtures);
   const notes = parseNotes(rawNotes, notesScope(inputs, ledger, template, language));
