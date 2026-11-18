@@ -43,6 +43,16 @@ jobs:
         env:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           FETCH_TOKEN: ${{ github.token }}
-      - run: node scripts/program-gate.ts pull/head
+      # Exit 3 means the pull request is the signer's to merge (a template, the registry or the gate), not that a check failed.
+      - run: |
+          set +e
+          node scripts/program-gate.ts pull/head
+          status=$?
+          if [ "$status" -eq 3 ]; then
+            echo "::notice title=The signer merges this pull request::It changes a template, the registry or the program gate, so the AI may not merge it. This job passes only so that red means a real failure."
+            echo "**The signer merges this pull request.** It changes a template, the registry or the program gate; the AI may not merge it." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          exit "$status"
         env:
           SOLC_TEST_CACHE: '1'
