@@ -247,7 +247,7 @@ test('a year whose every answer fits one page is searched whole in one request, 
   assert.deepEqual(year.sources.map(({ request }) => (request.source === 'etherscan' ? [request.query.fromBlock, request.query.toBlock] : [])), [['23810401', '26438400']]);
   const run = await recordedRun(year);
   const text = renderPastTxs(run, registry);
-  assert.match(text, /^whole year: blocks 23810401 to 26438400, every source's answer in one page, so the search covers the year with no gap; at most 12 studied, spread evenly by block\n {2}blocks 23810401 to 26438400: 16 found, 12 studied\nsources: /m);
+  assert.match(text, /^whole year: blocks 23810401 to 26438400, every source's answer in one page, so the search covers the year with no gap; at most 12 studied, taken evenly in block order\n {2}blocks 23810401 to 26438400: 16 found, 12 studied\nsources: /m);
   assert.doesNotMatch(text, /^windows:/m);
   const logs = (year.sources[0]?.answer as { result: { transactionHash: string; blockNumber: string }[] }).result;
   const firstBlock = new Map<string, number>();
@@ -278,6 +278,7 @@ test('an event searched over every contract is studied only where the sending Sa
   const fit = '0xbbacd35d8517f742df5e20dea15c4504782846b81d3ced4fdb36334dd088aeb4';
   const text = renderPastTxs(await recordedRun(anyContract), registry);
   assert.match(text, /^anchor: AddedOwner\(address\) logged by any contract, studied only where the sender logged it itself$/m);
+  assert.match(text, /^ {2}blocks 24244400 to 24244600: 4 found, 3 studied$/m);
   assert.match(text, /^not studied, the event logged only by another contract than the sender: 1, e\.g\. 0x2b854e652f87b788a5220cfac9ad5cdc7488e497c65b4a1c4b249df5fb8582e0$/m);
   assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 1 from 1 Safe$/m);
   assert.match(text, new RegExp(`^examples that fit: ${fit}$`, 'm'));
