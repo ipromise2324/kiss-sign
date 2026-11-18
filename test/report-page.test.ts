@@ -422,9 +422,15 @@ test('a mint of a token that is not a vault is a mint, not a deposit', () => {
 
 test('a contract a flow line names gets its own lifeline, so every inside arrow ends on one', () => {
   const { diagram } = body(depositPage, 'flow').flow;
-  assert.deepEqual(diagram.lifelines.map((l) => l.name), ['你的 Safe', 'usdc', 'bundler3', 'general-adapter-1']);
+  assert.deepEqual(diagram.lifelines.map((l) => l.name), ['你的 Safe', 'usdc', 'bundler3', 'general-adapter-1', 'hyperithm-usdc-apex-v2-9e2f']);
   const inside = diagram.arrows.flatMap((a) => (a.kind === 'inside' ? [[a.from, a.to]] : []));
   assert.deepEqual(inside, [[2, 3], [3, 1]]);
+});
+
+test('the green arrow for shares the Safe gets starts at the vault, on a lifeline of its own when no call targets it', () => {
+  const { diagram } = body(depositPage, 'flow').flow;
+  const gets = diagram.arrows.flatMap((a) => (a.kind === 'gets' ? [diagram.lifelines[a.from]?.name] : []));
+  assert.deepEqual(gets, ['hyperithm-usdc-apex-v2-9e2f']);
 });
 
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {

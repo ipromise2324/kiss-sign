@@ -827,7 +827,7 @@ function exampleValues(template: Template, tx: SafeTx): Map<string, AbiValue> {
   return values;
 }
 
-function lifelines(context: Context): { readonly lines: Lifeline[]; readonly names: (readonly string[])[]; readonly callTo: number[] } {
+function lifelines(context: Context): { readonly lines: Lifeline[]; readonly names: (readonly string[])[]; readonly callTo: number[]; readonly getsFrom: number[] } {
   const { template, registry, w } = context;
   const lines: Lifeline[] = [{ name: w.safe, role: w.role.sender }];
   const names: (readonly string[])[] = [['safe']];
@@ -856,7 +856,12 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
   for (const name of context.notes.flow.flatMap((line) => [line.from, line.to])) {
     if (!names.some((of) => of.includes(name))) add(name, [name], kindOf(name));
   }
-  return { lines, names, callTo };
+  const getsFrom = template.effects.gets.map(({ token }) => {
+    if (token === 'eth') return callTo.at(-1) ?? 0;
+    const target = targetOf(isNamedToken(token) ? { kind: 'contract', name: token.contract } : { kind: 'card', ref: token }, context);
+    return add(target.label, target.names, target.role);
+  });
+  return { lines, names, callTo, getsFrom };
 }
 
 /** Each call the template binds inside a call whose target it names. */
@@ -865,7 +870,7 @@ const nestedSites = (context: Context) =>
 
 function sequence(context: Context): Sequence {
   const { template, notes, w, comparison } = context;
-  const { lines, names, callTo } = lifelines(context);
+  const { lines, names, callTo, getsFrom } = lifelines(context);
   const at = (name: string): number => names.findIndex((of) => of.includes(name));
   const nested = nestedSites(context);
   const arrows: Arrow[] = [];
@@ -885,13 +890,12 @@ function sequence(context: Context): Sequence {
       arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text, line.sources), seen });
     });
   });
-  const last = callTo.at(-1) ?? 0;
-  for (const effect of template.effects.gets) {
+  template.effects.gets.forEach((effect, i) => {
     const token = tokenOf(effect.token, context);
     const text = effect.amount.kind === 'any' ? w.youMayGet(token?.name) : w.youGet(token?.name);
-    arrows.push({ kind: 'gets', from: last, text });
+    arrows.push({ kind: 'gets', from: getsFrom[i] as number, text });
     narration.push(w.result(text));
-  }
+  });
   for (const view of template.effects.views.filter((v) => v.args.some(readsSafe))) {
     for (const { value } of view.changes.filter((c) => c.change === 'increases')) {
       const label = viewLabel(view, context);

@@ -10,9 +10,9 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 
 | Result | Grade | Finding |
 | --- | --- | --- |
-| `morpho-oracle-cbbtc-usdc-86/address` | key | address confirmed in 1 place, [object Object]; it needs 2 |
-| `morpho-oracle-usp-usdc/address` | key | address confirmed in 1 place, [object Object]; it needs 2 |
-| `morpho-oracle-weeth-usdc-86/address` | key | address confirmed in 1 place, [object Object]; it needs 2 |
+| `morpho-oracle-cbbtc-usdc-86/address` | key | address confirmed in 1 place, `api` (morpho.org); it needs 2 |
+| `morpho-oracle-usp-usdc/address` | key | address confirmed in 1 place, `api` (morpho.org); it needs 2 |
+| `morpho-oracle-weeth-usdc-86/address` | key | address confirmed in 1 place, `api` (morpho.org); it needs 2 |
 | `usdc/abi` | reference | the source is not the deployed text |
 | `vault-v2-factory/source.deployer` | reference | who deployed it is not proven |
 | `cbbtc/source.deployer` | reference | who deployed it is not proven |
