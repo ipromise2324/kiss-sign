@@ -11,7 +11,7 @@ import type { Anchor, Ask, Hits, SourceName } from './sources.ts';
 import type { ReadMessage } from './messages.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, shapesOf, studyTx } from './study.ts';
 import type { OutsideKind, Sender, TxStudy } from './study.ts';
-import { checkTrace } from './trace.ts';
+import { checkTrace, holdingTemplateCalls } from './trace.ts';
 import type { TraceSource, TracedTx } from './trace.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
@@ -156,19 +156,23 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const rulesOf = (fit: Fit) => (fit.sender.kind === 'safe' ? shapes.whole : (shapes.calls[fit.sender.call] as (typeof shapes.calls)[number])).loosened.rules;
   const measured = await inPool(fits, 4, (fit) => measure(deps.reader, { hash: fit.hash, sender: fit.sender, rules: rulesOf(fit), values: fit.values }, effects, deps.registry));
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
-  const traces = deps.traces === undefined ? [] : await traceExact(fits, deps.traces, deps.reader, deps.registry);
+  const traces = deps.traces === undefined ? [] : await traceExact(query.template, fits, deps.traces, deps.reader, deps.registry);
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
   const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
   return { query, head, windows, perWindow, found, studies, shapes, excluded, effects, measurements, traces };
 }
 
-/** Traces each transaction exactly the template, one at a time, and checks each trace that came back. */
-async function traceExact(fits: readonly Fit[], source: TraceSource, reader: Reader, registry: Registry): Promise<TracedTx[]> {
+/**
+ * Traces each transaction exactly the template, one at a time, and checks each trace that came back: against the
+ * transaction and its receipt, and that it holds the template's calls in order.
+ */
+async function traceExact(template: Template, fits: readonly Fit[], source: TraceSource, reader: Reader, registry: Registry): Promise<TracedTx[]> {
   const tokens = new Set([...registry.entries.values()].filter((entry) => entry.kind === 'token' || entry.kind === 'vault').map((entry) => entry.address.toLowerCase() as Address));
   const traced: TracedTx[] = [];
   for (const fit of fits.filter((f) => f.outside.length === 0)) {
     const calls = await source(fit.hash);
-    if (calls !== undefined) traced.push(await checkTrace(fit.hash, fit.sender, calls, reader, tokens));
+    if (calls === undefined) continue;
+    traced.push(holdingTemplateCalls(template, registry, await checkTrace(fit.hash, fit.sender, calls, reader, tokens)));
   }
   return traced;
 }
