@@ -25,9 +25,8 @@ export const isProse = (raw: unknown): raw is Record<Language, unknown> =>
   typeof raw === 'object' && raw !== null && !Array.isArray(raw) && Object.keys(raw).length > 0 && Object.keys(raw).every((key) => isLanguage(key));
 
 /**
- * The language a command prints in: the one its last `--language` names, as parseArgs takes, else the `language` of the
- * config in `home`, else English, so a command run before any config exists prints English. It reads only that field,
- * so it runs before any package is loaded.
+ * The language of a refusal printed before any package is loaded: the one the last `--language` names, else the
+ * `language` field of the config in `home`, read alone, else English.
  */
 export function commandLanguage(argv: readonly string[], home: string): Language {
   const at = argv.findLastIndex((arg) => arg === '--language' || arg.startsWith('--language='));
