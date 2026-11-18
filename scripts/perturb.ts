@@ -16,9 +16,32 @@ import { simulateSafeTx } from '../src/simulate/simulate.ts';
 import { checkPerturbations, checkRecordedBlocks, executedOn, serviceExecution } from '../src/template/perturb.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/perturb.ts <safe-tx fixture name> --card '<card json>' [--template <template.json>] [--record <name>]`;
+const USAGE = `usage: pnpm perturb <safe-tx fixture name> --card '<card json>' [--template <template.json>]
+  [--record <name>]`;
+const HELP = `${USAGE}
+
+Runs the perturbation test on the executed Safe transaction in testdata/safe-tx/<name>.json. It
+changes each free field to other values of its type, one at a time, simulates every copy on the
+parent block through both providers, and prints each outcome: reverted, refused by the field or
+effects check, the same logs and Safe effects, or changed. It prints PASS, or FAIL naming each copy
+its field's claim forbids.
+
+Options:
+  --card '<card json>'         The card the transaction was made for; required.
+  --template <template.json>   Replace the card's template of that id, for a negative test; the
+                               recording carries it.
+  --record <name>              Write testdata/perturb/<name>.json, which pnpm test replays, after
+                               checking its blocks; nothing is written when a read got no answer.
+
+Writes: testdata/perturb/<name>.json with --record; otherwise nothing.
+Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Rules: docs/design/engine-and-chain.md, "Engine checks that every template gets" (the
+  perturbation test).`;
 const ROOT = join(import.meta.dirname, '..');
+
+exitOnHelp(HELP);
 
 const { values: flags, positionals } = parseArgs({
   allowPositionals: true,

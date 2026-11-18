@@ -4,6 +4,24 @@ import { packagePinsText, readPackagePin } from '../src/research/package-pin.ts'
 import { PACKAGE_PINS } from '../src/verify/package-pins.ts';
 import { lockedPackages } from '../src/verify/packages.ts';
 import type { LockedPackage } from '../src/verify/packages.ts';
+import { exitOnHelp } from '../src/script-help.ts';
+
+const USAGE = 'usage: node scripts/pin-packages.ts [<name>@<version>...]';
+const HELP = `${USAGE}
+
+Pins, in src/verify/package-pins.ts, the sha256 of every file of each package's npm tarball, keyed
+by the tarball's sha512. It downloads the tarball from registry.npmjs.org and requires that sha512
+to be the integrity pnpm-lock.yaml gives it, or npm's dist.integrity for a version the lockfile does
+not hold yet. With no names it pins every package the lockfile's dependencies reach. It prints
+pinned or unchanged per package, and REFUSED, exiting 1, for any other answer. Every bin/kiss-sign
+command checks the installed packages against these pins before it loads one. A dependency update
+pins the new version first, in a program pull request, then changes the lockfile.
+
+Writes: src/verify/package-pins.ts.
+Keys: none.
+Rules: docs/design/program-ownership.md, "The installed packages".`;
+
+exitOnHelp(HELP);
 
 const root = join(import.meta.dirname, '..');
 const locked = new Map<string, string>();
@@ -27,7 +45,7 @@ let refused = false;
 for (const key of wanted) {
   const at = key.lastIndexOf('@');
   if (at <= 0) {
-    console.error(`usage: node scripts/pin-packages.ts [<name>@<version>...], not ${key}`);
+    console.error(`${USAGE}, not ${key}`);
     process.exit(2);
   }
   const read = await readPackagePin(key.slice(0, at), key.slice(at + 1), locked.get(key), get);

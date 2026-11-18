@@ -9,16 +9,33 @@ import { kissSignHome } from '../src/keys.ts';
 import { REGISTRY_PATH, attributesText, registryFromTexts, unreachedSeeds } from '../src/registry.ts';
 import type { CodePin, CodePins, CodeSpan, ProxyDeclaration, Route } from '../src/registry.ts';
 import { checksumAddress, parseAddress } from '../src/safe/types.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/pin-code.ts [<registry name>...] [--history]
+const USAGE = 'usage: pnpm pin-code [<registry name>...] [--history]';
+const HELP = `${USAGE}
 
-Reads, through both providers at one agreed block, the code at each entry's address and, behind a proxy, the
-implementation and its code, and for an entry with "routes" each implementation its seeds reach, with its code and the
-selectors it serves, and writes their keccak256 into the entry's "code". It refuses an entry one of whose seeds
-routes nowhere. For an entry with no pin, a pin written before ranges, or a pin that changed, it then searches the
-blocks back to the deployment for each change of that code and writes each earlier pin with the block it starts at.
-With no names it pins every entry.
---history pins the local entries in $KISS_SIGN_HOME/history/registry.json instead of registry/contracts.json.`;
+Reads, through both providers at one agreed block, each entry's code and, behind a proxy, its
+implementation and that code, and for an entry with routes each implementation its seeds reach,
+with that code and the selectors it serves. It writes their keccak256 into the entry's code and
+prints each pin as new, unchanged, or CHANGED with the old pin. It refuses an entry one of whose
+seeds routes nowhere. For an entry with no pin, a pin with no from, or a changed pin, it then
+searches the blocks back to the deployment for each change of that code, writes the first block of
+today's code as from and each older pin with its from under earlier, prints each span, and prints
+FINDING for a recorded pin it did not find again. With no names it pins every entry. Any REFUSED
+entry makes it exit 1 after it writes the rest. verify requires every registry contract a
+transaction touches, and each entry it names in dependsOn, to run its current pin, and an executed
+transaction the pin whose span holds its block.
+
+Options:
+  --history   Pin the local entries of $KISS_SIGN_HOME/history/registry.json instead.
+
+Writes: registry/contracts.json, or $KISS_SIGN_HOME/history/registry.json with --history.
+Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2, Pin
+the code and Pin the routes); docs/design/engine-and-chain.md, "Engine checks that every template
+gets".`;
+
+exitOnHelp(HELP);
 
 const { values: flags, positionals: names } = parseArgs({ options: { history: { type: 'boolean', default: false } }, allowPositionals: true });
 const root = join(import.meta.dirname, '..');
