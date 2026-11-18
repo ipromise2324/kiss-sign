@@ -2,7 +2,8 @@ import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, utf8ToBytes } from '@noble/hashes/utils.js';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { KEYS, findKey } from '../src/keys.ts';
+import { loadStoredConfig } from '../src/config.ts';
+import { KEYS, findKey, kissSignHome } from '../src/keys.ts';
 import { checksumAddress, parseAddress, parseHex, parseOperation, parseUint256 } from '../src/safe/types.ts';
 import { exitOnHelp } from '../src/script-help.ts';
 
@@ -14,9 +15,9 @@ the tests read. It asks the Safe Transaction Service for the transaction of <saf
 safeTxHash, or for the executed one at that nonce, and requires exactly one. At the block it ran
 in, or at the latest block when it has not run, it reads the Safe's VERSION(), domainSeparator()
 and getTransactionHash(...) of the service's fields from Alchemy and drpc, which must agree. The
-fixture holds those answers and the service's record. It does not check that <safe> is not the
-configured Safe: record only other Safes' transactions. <name> is lowercase letters, digits and
-hyphens.
+fixture holds those answers and the service's record. It refuses <safe> when it is the Safe in
+$KISS_SIGN_HOME/config.json, before it reads anything, and writes nothing when the recording
+mentions that Safe. <name> is lowercase letters, digits and hyphens.
 
 Writes: testdata/safe-tx/<name>.json.
 Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
@@ -77,6 +78,8 @@ function decodeString(result: string): string {
 }
 
 const safe = parseAddress('safe', safeArg);
+const configured = loadStoredConfig(kissSignHome(process.env))?.safe;
+if (configured === safe) throw new Error('<safe> is the configured Safe; nothing written');
 const filter = /^0x[0-9a-fA-F]{64}$/.test(which) ? `safe_tx_hash=${which}` : `nonce=${parseUint256('nonce', which)}&executed=true`;
 const listing = (await (await fetch(`${SERVICE}/safes/${checksumAddress(safe)}/multisig-transactions/?${filter}`)).json()) as {
   count?: number;
@@ -120,6 +123,9 @@ const fixture = {
   service,
 };
 
+if (configured !== undefined && JSON.stringify(fixture).toLowerCase().includes(configured.slice(2))) {
+  throw new Error('the recording mentions the configured Safe; nothing written');
+}
 const out = join(import.meta.dirname, '..', 'testdata', 'safe-tx', `${name}.json`);
 mkdirSync(join(out, '..'), { recursive: true });
 writeFileSync(out, `${JSON.stringify(fixture, null, 2)}\n`);
