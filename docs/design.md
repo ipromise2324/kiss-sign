@@ -49,7 +49,7 @@ The design states each of these in full where it links.
 6. `verify` runs only the exact `main` of the signer's own fork, unless something on the work computer rewrites the clone and the self-check together, and a template counts only after its pull request is merged ([The program checks itself first](design/program-ownership.md#the-program-checks-itself-first)).
 7. The AI never merges a template, registry or program gate pull request, and never fills or seals a card; the skill, the program gate and the terminal prompts keep an honest AI from these, not one that means harm ([Who does what](#who-does-what), [Two tiers](#two-tiers)).
 8. A program pull request never changes a hand-written template or registry file, only re-renders an existing generated report, and one that changes the verdict core never changes the program gate ([Who owns the program](design/program-ownership.md#who-owns-the-program)).
-9. Except for the templates not yet rebuilt, a card naming an instance with no report for its template is refused ([No report, no signing](design/flow.md#first-time-an-operation-is-done-build-its-template), step 6).
+9. A card naming an instance with no report for its template is refused ([No report, no signing](design/flow.md#first-time-an-operation-is-done-build-its-template), step 6).
 10. The Safe's address and the API keys are never published ([The Safe's address is never published](design/engine-and-chain.md#the-safes-address-is-never-published)).
 
 ### The program offers checks, the AI picks them
