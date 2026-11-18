@@ -37,7 +37,7 @@ Each feature file starts with an H1 title and one paragraph describing the user-
 "$V/fixture-tx.mjs" morpho-vault-deposit-v2 "$KSV_DIR/tx.json"
 ```
 
-Another executed fixture works the same way when its template exists on `main` and, for a template reported per vault, its vault has a folder under `templates/<id>/vaults/`.
+Another executed fixture works the same way when its template exists on `main` and, for a template reported per vault, its vault has a folder under `templates/<id>/instances/` or `templates/<id>/vaults/`.
 
 ## Features
 

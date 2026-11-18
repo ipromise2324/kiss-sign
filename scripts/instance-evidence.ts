@@ -9,10 +9,10 @@ import { recordingTransport } from '../src/chain/recording.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { httpsTransport } from '../src/chain/rpc.ts';
 import { loadRegistry, sizeOf } from '../src/registry.ts';
-import { alchemyCall, trimVaultRecording, vaultEvidenceText } from '../src/research/vault-evidence.ts';
+import { alchemyCall, trimVaultRecording, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/vault-evidence.ts <registry name> [--record <name>]
+const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/instance-evidence.ts <registry name> [--record <name>]
 
 Reads the size the entry or its factory declares, such as a vault's totalAssets(), about every 30 days over the last
 12 months through Alchemy and drpc, and, when the size counts holders, its share holders at the latest block: every

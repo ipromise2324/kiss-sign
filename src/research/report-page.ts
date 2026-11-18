@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import { resolveRef } from '../card.ts';
 import type { ResolvedCard, ResolvedValue } from '../card.ts';
@@ -15,7 +16,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex, SafeTx } from '../safe/types.ts';
 import { decodeTemplateCall } from '../template/check.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import { addressWord, isNamedToken, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
+import { TEMPLATES_DIR, addressWord, isNamedToken, refNames, slippageBps, viewTargetNames, wordAddress } from '../template/template.ts';
 import type { CardField, CardRef, ConstValue, EffectToken, KeptApproval, FreeClaim, PackedPart, Rule, Template, TemplateCall, Tolerance, TokenRef, ViewEffect, ViewExpectation } from '../template/template.ts';
 import { distributionOf, effectText } from './amounts.ts';
 import type { Difference } from './amounts.ts';
@@ -27,15 +28,15 @@ import { weightOf } from './grades.ts';
 import type { Grade } from './grades.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
 import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
-import { NOTES_FILE, argumentTree, notesLanguages, notesPath, notesScope, parseNotes } from './notes.ts';
+import { NOTES_FILE, argumentTree, notesLanguages, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { PERCENTILES, amountsOf, freeNumbers } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { factsScope } from './protocol-facts.ts';
 import { functionNames, isOtherOperation, misfitText } from './study.ts';
 import type { CallName, MisfitReason, Sender, TxStudy } from './study.ts';
-import { readStoredEvidence } from './vault-evidence.ts';
-import type { StoredPoint } from './vault-evidence.ts';
+import { readStoredEvidence } from './instance-evidence.ts';
+import type { StoredPoint } from './instance-evidence.ts';
 import type { ProtocolFacts, ProtocolSheet } from './protocol-facts.ts';
 import { signedEntryNames } from './report.ts';
 import type { ReportInputs, ReportTitle } from './report.ts';
@@ -1183,7 +1184,7 @@ function protocolSections(context: Context): Section[] {
   });
 }
 
-/** The card's vault in a per-vault report, from its stored `pnpm vault-evidence` output alone. */
+/** The card's vault in a per-vault report, from its stored `pnpm instance-evidence` output alone. */
 function vaultSection(context: Context): Section[] {
   const { subject } = context.inputs;
   if (subject.kind !== 'template' || subject.vault === undefined) return [];
@@ -1924,7 +1925,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
     values: example === undefined ? new Map() : exampleValues(template, example.tx),
   };
   const sections = [flowSection(context), ...protocolSections(context), ...vaultSection(context), reviewSection(context), walletSection(context), ...addressSection(context), pastSection(context), nextSection(context)];
-  const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', notesPath(template.id), ...(subject.vault === undefined ? [] : [notesPath(template.id, subject.vault.name)])];
+  const sources = [...title.sources, 'testdata/perturb', 'testdata/safe-tx', join(TEMPLATES_DIR, template.id, NOTES_FILE), ...(subject.vault === undefined ? [] : [join(subject.dir, NOTES_FILE)])];
   return {
     language,
     id: subject.vault === undefined ? template.id : `${template.id} · ${subject.vault.name}`,
