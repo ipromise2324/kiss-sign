@@ -381,7 +381,7 @@ test('the vault its factory alone confirms is the one 待確認; every address r
   assert.deepEqual(
     vault.sources.map((s) => [s.label, s.state, s.phrase, s.site === undefined ? undefined : [s.site.state, s.site.slug, s.site.places[0]?.href]]),
     [
-      ['app.morpho.org/ethereum/vault', 'na', 'unread', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
+      ['app.morpho.org/ethereum/vault', 'na', 'url-holds-address', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
       ['CoinGecko', 'na', 'nothing-to-compare', undefined],
       ['工廠', 'ok', undefined, undefined],
       ['Immunefi 漏洞賞金範圍', 'na', 'not-listed', undefined],
