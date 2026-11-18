@@ -35,7 +35,7 @@ const mentions = (value: unknown, needles: readonly string[]): boolean => {
 };
 
 /**
- * Drops every search entry and chain read that mentions a forbidden address or transaction hash, then refuses a
+ * Drops every search entry, chain read and call trace that mentions a forbidden address or transaction hash, then refuses a
  * recording that still mentions one. The configured Safe and its transactions never reach a fixture.
  */
 export function scrubRecording(recording: PastTxsRecording, forbidden: readonly string[]): PastTxsRecording {
@@ -47,7 +47,8 @@ export function scrubRecording(recording: PastTxsRecording, forbidden: readonly 
     return { request, answer: { ...fields, ...('transfers' in fields ? { transfers: keep(fields.transfers) } : {}), ...('result' in fields ? { result: keep(fields.result) } : {}) } };
   });
   const messages = recording.messages === undefined ? {} : { messages: recording.messages.filter((m) => !mentions(m, needles)) };
-  const scrubbed = { ...recording, sources, ...messages, exchanges: recording.exchanges.filter((e) => !mentions(e, needles)) };
+  const traces = recording.traces === undefined ? {} : { traces: recording.traces.filter((t) => !mentions(t, needles)) };
+  const scrubbed = { ...recording, sources, ...messages, ...traces, exchanges: recording.exchanges.filter((e) => !mentions(e, needles)) };
   if (mentions(scrubbed, needles)) throw new Error('the recording still mentions the configured Safe or one of its transactions; nothing written');
   return scrubbed;
 }

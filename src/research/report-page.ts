@@ -140,10 +140,13 @@ export type Arrow =
   | { readonly kind: 'call'; readonly n: number; readonly to: number; readonly fn: string }
   /** A call the template binds inside a call, such as a Bundler3 bundle item. */
   | { readonly kind: 'nested'; readonly from: number; readonly to: number; readonly fn: string }
-  /** An AI `flow` line; `seen` when the call traces saw it, with in how many of the transactions they tested. */
-  | { readonly kind: 'inside'; readonly from: number; readonly to: number; readonly text: AiText; readonly seen: { readonly seen: number; readonly of: number } | undefined }
+  /**
+   * An AI `flow` line; `seen` when the call traces saw it, with in how many of the transactions they tested, and
+   * `confirmed` when they saw it in all of them and the AI names its sources.
+   */
+  | { readonly kind: 'inside'; readonly from: number; readonly to: number; readonly text: AiText; readonly seen: { readonly seen: number; readonly of: number; readonly confirmed: boolean } | undefined }
   | { readonly kind: 'gets'; readonly from: number; readonly text: string };
-/** `traced` when a call trace saw a `flow` line, so the page says what a trace shows and what it does not. */
+/** `traced` when a call trace confirmed a `flow` line, so the page says what a trace shows and what it does not. */
 export type Sequence = { readonly lifelines: readonly Lifeline[]; readonly arrows: readonly Arrow[]; readonly narration: string; readonly traced: boolean };
 
 export type Flow = {
@@ -878,7 +881,8 @@ function sequence(context: Context): Sequence {
     notes.flow.forEach((line, l) => {
       if (line.after !== i + 1) return;
       const tally = comparison.lines[l];
-      arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text, line.sources), seen: tally === undefined || tally.seen === 0 ? undefined : tally });
+      const seen = tally === undefined || tally.seen === 0 ? undefined : { ...tally, confirmed: tally.seen === tally.of && line.sources.length > 0 };
+      arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text, line.sources), seen });
     });
   });
   const last = callTo.at(-1) ?? 0;
@@ -896,7 +900,7 @@ function sequence(context: Context): Sequence {
       narration.push(w.result(text));
     }
   }
-  return { lifelines: lines, arrows, narration: w.sentences(narration), traced: arrows.some((arrow) => arrow.kind === 'inside' && arrow.seen !== undefined) };
+  return { lifelines: lines, arrows, narration: w.sentences(narration), traced: arrows.some((arrow) => arrow.kind === 'inside' && arrow.seen?.confirmed === true) };
 }
 
 const zeroValue = (call: TemplateCall): boolean => call.value.kind === 'const' && call.value.value.kind === 'uint' && call.value.value.value === 0n;
@@ -1270,9 +1274,10 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
     return { title: [w.flowLineTitle(result.about.line, words.title)], why: [`${words.why}${counted}`] };
   }
   if (result.about.kind === 'money') {
-    const { call, from, to, kind } = result.about.uncovered;
+    const { call, from, to, kind, others } = result.about.uncovered;
     const counted = result.finding.kind === 'money-uncovered' ? ` ${w.inTransactions(result.finding.transactions)}` : '';
-    return { title: w.moneyTitle(call, from, to, { code: kind }, words.title), why: [`${words.why}${counted}`] };
+    const outside = others.length === 0 ? '' : ` ${w.outsideRegistry(others.slice(0, 5).map(checksumAddress), others.length)}`;
+    return { title: w.moneyTitle(call, from, to, { code: kind }, words.title), why: [`${words.why}${counted}${outside}`] };
   }
   const name = result.about.entry.name;
   const doc = /\/doc\.(0x[0-9a-f]{8})\.(\w+)$/.exec(result.id);

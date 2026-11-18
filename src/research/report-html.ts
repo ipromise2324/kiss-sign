@@ -125,7 +125,8 @@ function diagram(sequence: Sequence, r: R): Html {
   // The tag's box fits its word: 12px text is narrower than textWidth's 14px estimate, which leaves the margin.
   const tagWidth = (tag: string) => Math.max(AI_TAG_WIDTH, Math.ceil(textWidth(tag)));
   const captionWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => tagWidth(r.w.tag[arrow.text.tag]) + 8 + caption(arrow.text.ai, 0, 0).width;
-  const seenWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => (arrow.seen === undefined ? 0 : textWidth(r.w.seenLabel(arrow.seen.seen, arrow.seen.of)) * 0.9);
+  const seenText = (seen: NonNullable<Extract<Arrow, { kind: 'inside' }>['seen']>) => (seen.confirmed ? r.w.seenLabel(seen.seen, seen.of) : r.w.seenCount(seen.seen, seen.of));
+  const seenWidth = (arrow: Extract<Arrow, { kind: 'inside' }>) => (arrow.seen === undefined ? 0 : textWidth(seenText(arrow.seen)) * 0.9);
   const widest = Math.max(0, ...sequence.arrows.map((arrow) => (arrow.kind === 'inside' ? x(0) + 12 + Math.max(captionWidth(arrow), seenWidth(arrow)) + 8 : 0)));
   const width = Math.max(660, x(sequence.lifelines.length - 1) + FIRST_X, Math.ceil(widest));
   const rows: Html[] = [];
@@ -153,11 +154,11 @@ function diagram(sequence: Sequence, r: R): Html {
       const [from, to] = [x(arrow.from), arrow.to === arrow.from ? x(arrow.from) + 60 : x(arrow.to)];
       const left = Math.max(x(0) + 12, Math.min(Math.min(from, to) + 12, width - 8 - captionWidth(arrow)));
       const cap = caption(arrow.text.ai, left + tagged + 8, y);
-      const seen = arrow.seen === undefined ? undefined : r.w.seenLabel(arrow.seen.seen, arrow.seen.of);
-      const source = arrow.text.sources[0];
+      const seen = arrow.seen === undefined ? undefined : seenText(arrow.seen);
+      const source = arrow.seen?.confirmed === true ? arrow.text.sources[0] : undefined;
       rows.push(h`
     <g data-ai><rect class="tagbox" x="${left}" y="${y - 14}" width="${tagged}" height="20" rx="6"/><text class="tagt" x="${left + tagged / 2}" y="${y}" text-anchor="middle">${tag}</text>${cap.boxes}${cap.text}</g>
-    <line class="${seen === undefined ? 'inner' : 'inner seen'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>${
+    <line class="${arrow.seen?.confirmed === true ? 'inner seen' : 'inner'}" x1="${from}" y1="${y + 10}" x2="${to + (to > from ? -3 : 3)}" y2="${y + 10}" marker-end="url(#m-inside)"/>${
       seen === undefined
         ? ''
         : h`

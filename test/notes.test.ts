@@ -345,6 +345,8 @@ test("a vault's notes review and describe only the vault and the entries its att
   refusedFor({ entries: { 'bundler3': { role: '共用' } } }, `${VAULT_PATH}.entries: "bundler3" ${shared}`);
   refusedFor({ reviews: { 'bundler3/abi': review } }, `${VAULT_PATH}.reviews: "bundler3/abi" ${shared}`);
   refusedFor({ reviews: { 'fixture.deposit': review } }, `${VAULT_PATH}.reviews: "fixture.deposit" ${shared}`);
+  const traced = mergeNotes(SHARED, { verdict: VALID.verdict, reviews: { 'flow.1': review, 'trace.2.bundler3.other.transfer': review } }, VAULT_PATH, owned) as { reviews: Record<string, unknown> };
+  assert.deepEqual(Object.keys(traced.reviews).slice(-2), ['flow.1', 'trace.2.bundler3.other.transfer'], "the call traces' results are the vault's own, since its report traces only its recordings");
 });
 
 test("a vault's notes may also describe the entries its attributes name, such as its asset, and no other", () => {

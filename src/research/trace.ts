@@ -6,7 +6,7 @@ import type { Transport } from '../chain/rpc.ts';
 import type { Receipt, Transaction } from '../chain/types.ts';
 import type { Registry } from '../registry.ts';
 import type { Address, Hex } from '../safe/types.ts';
-import { callSites } from '../template/template.ts';
+import { callSites, targetNames } from '../template/template.ts';
 import type { Template } from '../template/template.ts';
 import type { Sender } from './study.ts';
 
@@ -22,15 +22,16 @@ export type TraceCall = {
   readonly depth: number;
   readonly type: CallType;
   readonly from: Address;
-  readonly to: Address;
+  /** Absent only for a `CREATE` or `CREATE2` that failed, which created nothing. */
+  readonly to?: Address;
   readonly selector?: Hex;
   readonly value?: Hex;
   readonly reverted?: true;
   readonly args?: readonly Address[];
 };
 
-/** A transaction's trace as a `past-txs` recording keeps it. */
-export type RecordedTrace = { readonly hash: Hex; readonly calls: readonly TraceCall[] };
+/** A transaction's trace as a `past-txs` recording keeps it: its calls, or why drpc's answer could not be read as a trace. */
+export type RecordedTrace = { readonly hash: Hex; readonly calls: readonly TraceCall[] } | { readonly hash: Hex; readonly unreadable: string };
 
 export const TOKEN_CALLS = { '0xa9059cbb': 'transfer', '0x23b872dd': 'transferFrom', '0x095ea7b3': 'approve' } as const;
 export type TokenCall = (typeof TOKEN_CALLS)[keyof typeof TOKEN_CALLS];
@@ -72,11 +73,12 @@ export function trimTrace(frame: unknown): TraceCall[] {
       kind === undefined || words === undefined || words.length < ADDRESS_ARGS[kind] * 64
         ? undefined
         : Array.from({ length: ADDRESS_ARGS[kind] }, (_, i) => `0x${words.slice(i * 64 + 24, (i + 1) * 64)}` as Address);
+    const created = (type === 'CREATE' || type === 'CREATE2') && raw.error !== undefined && raw.to === undefined;
     calls.push({
       depth,
       type,
       from: address(`${path}.from`, raw.from),
-      to: address(`${path}.to`, raw.to),
+      ...(created ? {} : { to: address(`${path}.to`, raw.to) }),
       ...(selector === undefined ? {} : { selector }),
       ...(value === undefined || BigInt(value) === 0n ? {} : { value }),
       ...(raw.error === undefined ? {} : { reverted: true as const }),
@@ -92,7 +94,9 @@ export function trimTrace(frame: unknown): TraceCall[] {
 
 /** A recorded trace as the recording holds it, refused when any call is not one `trimTrace` writes. */
 export function parseRecordedTrace(raw: unknown, path: string): RecordedTrace {
-  if (!isRecord(raw) || typeof raw.hash !== 'string' || !/^0x[0-9a-f]{64}$/.test(raw.hash) || !Array.isArray(raw.calls)) throw new TraceError(`${path}: not a recorded trace`);
+  if (!isRecord(raw) || typeof raw.hash !== 'string' || !/^0x[0-9a-f]{64}$/.test(raw.hash)) throw new TraceError(`${path}: not a recorded trace`);
+  if (typeof raw.unreadable === 'string' && raw.calls === undefined && Object.keys(raw).length === 2) return { hash: raw.hash as Hex, unreadable: raw.unreadable };
+  if (!Array.isArray(raw.calls) || Object.keys(raw).length !== 2) throw new TraceError(`${path}: not a recorded trace`);
   const calls = raw.calls.map((call: unknown, i): TraceCall => {
     const at = `${path}.calls[${i}]`;
     if (!isRecord(call)) throw new TraceError(`${at}: not a call`);
@@ -103,13 +107,16 @@ export function parseRecordedTrace(raw: unknown, path: string): RecordedTrace {
     if (call.selector !== undefined && (typeof call.selector !== 'string' || !/^0x[0-9a-f]{8}$/.test(call.selector))) throw new TraceError(`${at}.selector: not a selector`);
     if (call.reverted !== undefined && call.reverted !== true) throw new TraceError(`${at}.reverted: not true`);
     if (call.args !== undefined && !Array.isArray(call.args)) throw new TraceError(`${at}.args: not a list`);
+    const value = call.value === undefined ? undefined : quantity(`${at}.value`, call.value);
+    if (value !== undefined && BigInt(value) === 0n) throw new TraceError(`${at}.value: zero, which a recording never writes`);
+    const created = (type === 'CREATE' || type === 'CREATE2') && call.reverted === true && call.to === undefined;
     return {
       depth: call.depth as number,
       type,
       from: address(`${at}.from`, call.from),
-      to: address(`${at}.to`, call.to),
+      ...(created ? {} : { to: address(`${at}.to`, call.to) }),
       ...(call.selector === undefined ? {} : { selector: call.selector as Hex }),
-      ...(call.value === undefined ? {} : { value: quantity(`${at}.value`, call.value) }),
+      ...(value === undefined ? {} : { value }),
       ...(call.reverted === undefined ? {} : { reverted: true as const }),
       ...(call.args === undefined ? {} : { args: (call.args as unknown[]).map((a, j) => address(`${at}.args[${j}]`, a)) }),
     };
@@ -119,28 +126,41 @@ export function parseRecordedTrace(raw: unknown, path: string): RecordedTrace {
   return { hash: raw.hash as Hex, calls };
 }
 
+/** A transaction's trace: its calls, or why the answer is no trace the program can read. */
+export type TraceAnswer = { readonly kind: 'calls'; readonly calls: readonly TraceCall[] } | { readonly kind: 'unreadable'; readonly why: string };
+
 /** Each transaction's trace by hash, or undefined for one not traced. */
-export type TraceSource = (hash: Hex) => Promise<readonly TraceCall[] | undefined>;
+export type TraceSource = (hash: Hex) => Promise<TraceAnswer | undefined>;
+
+const asAnswer = (trace: RecordedTrace): TraceAnswer => ('calls' in trace ? { kind: 'calls', calls: trace.calls } : { kind: 'unreadable', why: trace.unreadable });
 
 /**
  * Traces from drpc alone, one transaction at a time, retried after a pause; a trace with no answer after every retry is
  * noted, so `--record` writes nothing, and read as not traced. `recorded` gives every trace read, by hash.
  */
 export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteUnread): { readonly source: TraceSource; readonly recorded: () => RecordedTrace[] } {
-  const traces = new Map<Hex, readonly TraceCall[]>();
+  const traces = new Map<Hex, RecordedTrace>();
   let queue = Promise.resolve();
-  const read = async (hash: Hex): Promise<readonly TraceCall[] | undefined> => {
+  const read = async (hash: Hex): Promise<TraceAnswer | undefined> => {
+    const label = `${endpoint.provider} debug_traceTransaction ${hash}`;
     const body = JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'debug_traceTransaction', params: [hash, { tracer: 'callTracer' }] });
     let answer: HttpAnswer;
     try {
-      answer = await retried(`${endpoint.provider} debug_traceTransaction ${hash}`, () => transport(endpoint.url, body, AbortSignal.timeout(60_000)), (a) => transientStatus(a) ?? traceProblem(a.text), note);
-    } catch {
+      answer = await retried(label, () => transport(endpoint.url, body, AbortSignal.timeout(60_000)), (a) => transientStatus(a) ?? traceProblem(a.text), note);
+    } catch (error) {
+      note(`${label}: ${(error as Error).message}`);
       return undefined;
     }
     if (traceProblem(answer.text) !== undefined) return undefined;
-    const calls = trimTrace((JSON.parse(answer.text) as { result: unknown }).result);
-    traces.set(hash, calls);
-    return calls;
+    let trace: RecordedTrace;
+    try {
+      trace = { hash, calls: trimTrace((JSON.parse(answer.text) as { result: unknown }).result) };
+    } catch (error) {
+      if (!(error instanceof TraceError)) throw error;
+      trace = { hash, unreadable: error.message };
+    }
+    traces.set(hash, trace);
+    return asAnswer(trace);
   };
   const source: TraceSource = (hash) => {
     const next = queue.then(() => read(hash));
@@ -150,7 +170,7 @@ export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteU
     );
     return next;
   };
-  return { source, recorded: () => [...traces].map(([hash, calls]) => ({ hash, calls })) };
+  return { source, recorded: () => [...traces.values()] };
 }
 
 const traceProblem = (text: string): string | undefined => {
@@ -167,7 +187,7 @@ const traceProblem = (text: string): string | undefined => {
 export function replayTraces(recorded: readonly unknown[] | undefined): TraceSource {
   const traces = new Map((recorded ?? []).map((raw, i) => {
     const trace = parseRecordedTrace(raw, `traces[${i}]`);
-    return [trace.hash, trace.calls] as const;
+    return [trace.hash, asAnswer(trace)] as const;
   }));
   return async (hash) => traces.get(hash);
 }
@@ -201,6 +221,7 @@ const topicAddress = (topic: Hex | undefined): Address | undefined => (topic ===
 function callMovement(call: TraceCall): Movement | undefined {
   const kind = tokenCall(call.selector);
   if (kind === undefined || call.type !== 'CALL' || call.args === undefined) return undefined;
+  if (kind === undefined || call.to === undefined) return undefined;
   if (kind === 'transferFrom') return { event: 'Transfer', token: call.to, from: call.args[0] as Address, to: call.args[1] as Address };
   return { event: kind === 'transfer' ? 'Transfer' : 'Approval', token: call.to, from: call.from, to: call.args[0] as Address };
 }
@@ -242,7 +263,9 @@ export function tokenStepsDisagree(calls: readonly TraceCall[], receipt: Receipt
  * A transaction's trace checked against the transaction and the receipt both providers agree on: its top call must be
  * the transaction, and its token steps must match the receipt's logs both ways.
  */
-export async function checkTrace(hash: Hex, sender: Sender, calls: readonly TraceCall[], reader: Reader, registryTokens: ReadonlySet<Address>): Promise<TracedTx> {
+export async function checkTrace(hash: Hex, sender: Sender, answer: TraceAnswer, reader: Reader, registryTokens: ReadonlySet<Address>): Promise<TracedTx> {
+  if (answer.kind === 'unreadable') return { kind: 'unverifiable', hash, why: `drpc's answer is no trace the program reads: ${answer.why}` };
+  const { calls } = answer;
   const [tx, receipt] = await Promise.all([reader.getTransaction(hash), reader.getTransactionReceipt(hash)]);
   if (tx.kind !== 'agreed' || tx.value === null) return { kind: 'unverifiable', hash, why: 'the providers do not agree on the transaction' };
   if (receipt.kind !== 'agreed' || receipt.value === null) return { kind: 'unverifiable', hash, why: 'the providers do not agree on the receipt' };
@@ -258,8 +281,11 @@ export type FlowLine = { readonly after: number; readonly from: string; readonly
 
 export type MoneyKind = TokenCall | 'eth';
 
-/** A money call no line covers, grouped: under which call (from 1), between whom, of which kind, in how many transactions. */
-export type Uncovered = { readonly call: number; readonly from: string; readonly to: string; readonly kind: MoneyKind; readonly transactions: number };
+/**
+ * A money call no line covers, grouped: under which call (from 1), between whom, of which kind, in how many
+ * transactions, and every address outside the registry among its parties and token arguments, so a review names them.
+ */
+export type Uncovered = { readonly call: number; readonly from: string; readonly to: string; readonly kind: MoneyKind; readonly transactions: number; readonly others: readonly Address[] };
 
 /** Each line seen in `seen` of the `of` traced transactions that make its call, and the money calls no line covers. */
 export type FlowComparison = { readonly lines: readonly { readonly seen: number; readonly of: number }[]; readonly uncovered: readonly Uncovered[] };
@@ -285,19 +311,20 @@ function shape(calls: readonly TraceCall[]): { readonly end: readonly number[]; 
 
 /**
  * The template's calls found in a trace, by template call index: for an EOA, its transaction's own call; for a Safe,
- * in order, the calls the Safe makes with each call's selector, or no data for a call with none. Undefined when one
- * is missing.
+ * in order, the calls the Safe makes with each call's selector, or no data for a call with none, to a contract the
+ * call's target can be. Undefined when one is missing.
  */
-function templateCalls(template: Template, tx: Extract<TracedTx, { kind: 'traced' }>): Map<number, number> | undefined {
+function templateCalls(template: Template, registry: Registry, tx: Extract<TracedTx, { kind: 'traced' }>): Map<number, number> | undefined {
   if (tx.sender.kind === 'eoa') return new Map([[tx.sender.call, 0]]);
   const safe = tx.sender.address.toLowerCase();
   const found = new Map<number, number>();
   let at = 1;
   for (const [i, call] of template.calls.entries()) {
     const selector = call.data === 'empty' ? undefined : call.data.fn.selector.toLowerCase();
+    const targets = targetNames(call.to, template, registry)?.map((name) => registry.entries.get(name)?.address.toLowerCase());
     while (at < tx.calls.length) {
       const c = tx.calls[at] as TraceCall;
-      if (c.type === 'CALL' && c.from === safe && c.selector === selector) break;
+      if (c.type === 'CALL' && c.from === safe && c.selector === selector && (targets === undefined || targets.includes(c.to))) break;
       at++;
     }
     if (at >= tx.calls.length) return undefined;
@@ -317,7 +344,7 @@ export function compareFlow(template: Template, registry: Registry, lines: reado
   const seen = lines.map(() => ({ seen: 0, of: 0 }));
   const uncovered = new Map<string, Uncovered>();
   for (const tx of traced) {
-    const calls = templateCalls(template, tx);
+    const calls = templateCalls(template, registry, tx);
     if (calls === undefined) continue;
     const { end, parent } = shape(tx.calls);
     const sender = tx.sender.address.toLowerCase();
@@ -335,18 +362,20 @@ export function compareFlow(template: Template, registry: Registry, lines: reado
     });
     const label = (a: Address): string => (a === sender ? 'safe' : (registry.byAddress.get(a)?.name ?? 'other'));
     for (const [n, top] of calls) {
-      const bound = new Set([top, ...under(top).filter((j) => nested.some((site) => site.call === n && tx.calls[j]?.selector === site.fn.selector.toLowerCase() && (site.names === undefined || site.names.some((name) => addressOf(name) === tx.calls[j]?.to))))]);
+      const bound = new Set([top, ...under(top).filter((j) => nested.some((site) => site.call === n && tx.calls[j]?.selector === site.fn.selector.toLowerCase() && site.names?.some((name) => addressOf(name) === tx.calls[j]?.to) === true))]);
       const covers = (j: number | undefined): boolean => j !== undefined && (bound.has(j) || named.has(j));
       const counted = new Set<string>();
       for (const j of under(top)) {
         const call = tx.calls[j] as TraceCall;
-        const kind: MoneyKind | undefined = call.type !== 'CALL' ? undefined : (tokenCall(call.selector) ?? (call.value === undefined ? undefined : 'eth'));
-        if (kind === undefined || covers(j) || covers(parent[j])) continue;
+        const kind: MoneyKind | undefined = call.type !== 'CALL' || call.to === undefined ? undefined : (tokenCall(call.selector) ?? (call.value === undefined ? undefined : 'eth'));
+        if (kind === undefined || call.to === undefined || covers(j) || covers(parent[j])) continue;
         const group = { call: n + 1, from: label(call.from), to: label(call.to), kind };
         const id = `${group.call}.${group.from}.${group.to}.${group.kind}`;
-        if (counted.has(id)) continue;
+        const before = uncovered.get(id);
+        const outside = [call.from, call.to, ...(call.args ?? [])].filter((a) => label(a) === 'other');
+        const others = [...new Set([...(before?.others ?? []), ...outside])];
+        uncovered.set(id, { ...group, transactions: (before?.transactions ?? 0) + (counted.has(id) ? 0 : 1), others });
         counted.add(id);
-        uncovered.set(id, { ...group, transactions: (uncovered.get(id)?.transactions ?? 0) + 1 });
       }
     }
   }

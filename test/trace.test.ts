@@ -65,11 +65,15 @@ test('a callTracer answer is cut down to depth, type, from, to, selector, value,
     { depth: 1, type: 'STATICCALL', from: SAFE, to: USDC, reverted: true },
   ]);
   assert.throws(() => trimTrace({ ...answer, type: 'JUMP' }), TraceError);
+  const failedCreate = { type: 'CREATE2', from: SAFE, input: '0x00', error: 'execution reverted' };
+  assert.deepEqual(trimTrace({ ...answer, calls: [failedCreate] }).at(-1), { depth: 1, type: 'CREATE2', from: SAFE, reverted: true }, 'a failed create names no address');
 });
 
 test('a recorded trace is refused when its calls do not nest or hold a field the recording never writes', () => {
   const hash = `0x${'ab'.repeat(32)}`;
-  assert.equal(parseRecordedTrace({ hash, calls: supply() }, 'traces[0]').calls.length, 9);
+  assert.deepEqual(parseRecordedTrace({ hash, calls: supply() }, 'traces[0]'), { hash, calls: supply() });
+  assert.deepEqual(parseRecordedTrace({ hash, unreadable: 'trace.to: not an address' }, 'traces[0]'), { hash, unreadable: 'trace.to: not an address' });
+  assert.throws(() => parseRecordedTrace({ hash, calls: [{ ...call(0, 'CALL', SAFE, USDC), value: '0x0' }] }, 'traces[0]'), /zero, which a recording never writes/);
   assert.throws(() => parseRecordedTrace({ hash, calls: [call(1, 'CALL', SAFE, USDC)] }, 'traces[0]'), /not one call tree/);
   assert.throws(() => parseRecordedTrace({ hash, calls: [{ ...call(0, 'CALL', SAFE, USDC), input: '0x' }] }, 'traces[0]'), /input is not a field/);
 });
@@ -99,7 +103,7 @@ test('a flow line is confirmed in N of M traced transactions, and a money call n
   const elsewhere = supply().map((c) => (c.selector === SUPPLY ? { ...c, selector: '0x12345678' as Hex } : c));
   const partly = compareFlow(template, registry, [LINE], [traced('0x01', supply()), traced('0x02', elsewhere)]);
   assert.deepEqual(partly.lines, [{ seen: 1, of: 2 }]);
-  assert.deepEqual(partly.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 1 }], "Morpho's pull is explained only where the line was seen");
+  assert.deepEqual(partly.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 1, others: [] }], "Morpho's pull is explained only where the line was seen");
   assert.deepEqual(
     flowResults(partly).map((r) => [r.id, r.finding.kind]),
     [
@@ -109,7 +113,7 @@ test('a flow line is confirmed in N of M traced transactions, and a money call n
   );
 
   const noLine = compareFlow(template, registry, [], both);
-  assert.deepEqual(noLine.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 2 }]);
+  assert.deepEqual(noLine.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 2, others: [] }]);
 });
 
 test('a line seen nowhere is red, one seen in some and a money call no line covers amber, and each counts on the 呼叫追蹤 line', () => {
@@ -134,5 +138,5 @@ test('ETH sent inside a call is a money call, and a delegation is no step betwee
   const eth = [...supply(), call(5, 'DELEGATECALL', MORPHO, `0x${'77'.repeat(20)}` as Address, '0xabcdef01'), call(6, 'CALL', MORPHO, SAFE, undefined, undefined, '0x1' as Hex)];
   assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', eth)]).uncovered, []);
   const deep = [...supply(), call(5, 'CALL', MORPHO, `0x${'77'.repeat(20)}` as Address, '0xabcdef01'), call(6, 'CALL', `0x${'77'.repeat(20)}` as Address, SAFE, undefined, undefined, '0x1' as Hex)];
-  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deep)]).uncovered, [{ call: 2, from: 'other', to: 'safe', kind: 'eth', transactions: 1 }]);
+  assert.deepEqual(compareFlow(template, registry, [LINE], [traced('0x01', deep)]).uncovered, [{ call: 2, from: 'other', to: 'safe', kind: 'eth', transactions: 1, others: [`0x${'77'.repeat(20)}`] }]);
 });
