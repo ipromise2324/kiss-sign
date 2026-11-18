@@ -23,13 +23,39 @@ import { describeCallScan, scanCalls, simulateSafeTx } from '../src/simulate/sim
 import type { Observation } from '../src/simulate/simulate.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/simulate.ts (<safe-tx fixture name> | <safe> <nonce>) [--card '<card json>']
-  [--template <template.json>] [--registry <contracts.json>] [--book '<address book json>'] [--record <name>]
+const USAGE = `usage: pnpm simulate (<safe-tx fixture name> | <safe> <nonce>) [--card '<card json>']
+  [--template <template.json>] [--registry <contracts.json>] [--book '<address book json>']
+  [--record <name>]
 Without --card it prints what the transaction did and which calls move no asset, and judges nothing.
 --template replaces the card's template of that id, for a negative test.`;
+const HELP = `${USAGE}
+
+Simulates an executed Safe transaction through execTransaction on its parent block, at the
+execution block's time, and reads its receipt, both through both providers. It prints both
+effects on the Safe (ETH, tokens, allowances, Permit2 allowances, view readings, Safe settings),
+the simulated floor, and with --card the verdict of each. Then it runs each call as a Safe
+transaction of its own and marks the calls that move no asset of the Safe. The transaction comes
+from testdata/safe-tx/<name>.json, or, given <safe> <nonce>, from the Safe Transaction Service;
+that form runs locally only and records nothing.
+
+Options:
+  --card '<card json>'          Judge both effects against this card.
+  --template <template.json>    Replace the card's template of that id, for a negative test; needs
+                                --card, and the recording carries it.
+  --registry <contracts.json>   Read registry entries from this file, not registry/contracts.json.
+  --book '<address book json>'  Address-book entries the card names.
+  --record <name>               Write testdata/simulate/<name>.json; only with a fixture name, and
+                                nothing is written when a read got no answer.
+
+Writes: testdata/simulate/<name>.json with --record; otherwise nothing.
+Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Rules: docs/design/engine-and-chain.md, "Engine checks that every template gets".`;
 const SERVICE = 'https://api.safe.global/tx-service/eth/api/v2';
 const ROOT = join(import.meta.dirname, '..');
+
+exitOnHelp(HELP);
 
 const { values: flags, positionals } = parseArgs({
   allowPositionals: true,
