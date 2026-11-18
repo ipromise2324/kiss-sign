@@ -128,21 +128,15 @@ test('in English the verdict box and the page show each detail exactly as the ve
   assert.ok(pages[0]!.includes(`<div class="meta">${details[0]}</div>`));
 });
 
-test('verify finds the report of an instance under instances/ as under vaults/, and refuses one with a report in both', async () => {
-  const verifyWith = async (folders: readonly string[]) => {
-    const { base, repo, home } = setUp(undefined, false);
-    for (const folder of folders) write(join(repo, 'templates', template.id, folder, VAULT, 'report.generated.md'), '# report\n');
-    git(repo, 'add', '-A');
-    git(repo, 'commit', '--quiet', '-m', 'reports');
-    git(repo, 'push', '--quiet', join(base, 'origin.git'), 'main');
-    return run(['verify', '--card', fixture.inputs.card.hash, '--tx', write(join(base, 'tx.json'), JSON.stringify(service))], repo, home);
-  };
-  const moved = await verifyWith(['instances']);
-  assert.equal(moved.code, 0, moved.stderr);
-  assert.match(moved.stdout, /MATCH/);
-  const both = await verifyWith(['instances', 'vaults']);
-  assert.equal(both.code, 1);
-  assert.equal(both.stderr, `kiss-sign: card refused: ${VAULT} has a report for ${template.id} in both instances/ and vaults/; keep one. Nothing was verified.\n`);
+test('verify finds the report of an instance under instances/', async () => {
+  const { base, repo, home } = setUp(undefined, false);
+  write(join(repo, 'templates', template.id, 'instances', VAULT, 'report.generated.md'), '# report\n');
+  git(repo, 'add', '-A');
+  git(repo, 'commit', '--quiet', '-m', 'reports');
+  git(repo, 'push', '--quiet', join(base, 'origin.git'), 'main');
+  const result = await run(['verify', '--card', fixture.inputs.card.hash, '--tx', write(join(base, 'tx.json'), JSON.stringify(service))], repo, home);
+  assert.equal(result.code, 0, result.stderr);
+  assert.match(result.stdout, /MATCH/);
 });
 
 test('verify and replay never read GITHUB_TOKEN, from the environment or the key file', async () => {
