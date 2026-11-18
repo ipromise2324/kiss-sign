@@ -22,6 +22,21 @@ A template that was wrong when the signer approved it is not caught by any check
 | Program (the engine) | Fetches and hashes the Safe transaction, decodes it, runs the template's checks, simulates, compares effects with the card | Reads web pages, follows instructions found in data |
 | Independent check (hardened tier) | Fetches the transaction by nonce, computes its hashes, decodes each call, labels addresses from the signer's own list | Reads kiss-sign, its templates or its registry; compares the transaction with the card |
 
+### Who authorises what
+
+Each action that lets a change or a signing through has one owner.
+The last column is what must hold before the action, and who or what enforces it.
+
+| Action | Who | What must hold first |
+|---|---|---|
+| Merge a template or registry pull request | The signer | The signer reads the report and runs `pnpm report <protocol>/<operation> --compare --data origin/<branch>` from `main`. `pnpm check-push`, run by CI, refuses the branch if it also changes the verdict core. See [Who owns the program](design/program-ownership.md#who-owns-the-program). |
+| Merge a program pull request | The AI, with a merge commit | `pnpm program-gate`, run from main's code, prints `ELIGIBLE`, and a fresh AI reviewer, given the diff and not the author's conclusions, finds no security regression. See [The program gate](design/program-ownership.md#the-program-gate). |
+| Merge a program gate pull request | The signer | `pnpm program-gate` stops at `NOT ELIGIBLE` and names the gate files. `pnpm check-push` refuses the branch if it also changes the verdict core. |
+| Approve a template | The signer | `template approve` requires every `origin` URL to be the config's `repo`, fetches its `main`, prints the commit and the template's keccak256, and records that hash only after the signer's yes at a terminal. |
+| Add an address-book entry | The signer | `book add` asks for the signer's yes at a terminal. The address comes from a source outside the chat and is checked character by character. |
+| Fill and seal a card | The signer | `card new` refuses without a terminal. `card new` and `card seal` stop when the clone's templates or registry differ from GitHub's `main`. `card seal` stores the card only after the signer's yes. |
+| Sign | The signer, on the hardware wallet | `verify` prints `MATCH` for the sealed card, its self-check having passed on the signer's `main`. The signer compares every character of the domain hash and the message hash with `verify`'s page and, in the hardened tier, checks the independent computer's page row by row. |
+
 ### The program offers checks, the AI picks them
 
 The same split holds for a protocol no one has tested.
