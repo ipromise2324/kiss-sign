@@ -178,4 +178,4 @@ Nor does it catch Node itself; what changes the code Node runs without changing 
 This catches accidental edits and an AI that was tricked into changing a check or a template in the clone rather than through a pull request.
 It cannot catch anything that deliberately rewrites both a check and the self-check itself, such as an AI on the same computer, because the self-check is part of the same program.
 The hardened tier's independent check does not run kiss-sign, so such a change cannot alter what it decodes.
-See Known limits and Later security upgrades.
+See [Known limits](known-limits.md#known-limits) and [Later security upgrades](known-limits.md#later-security-upgrades).

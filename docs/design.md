@@ -59,7 +59,7 @@ The program offers a generic vocabulary a template declares as data: field rules
 Each is protocol-free and enforced exactly as declared.
 The AI's research picks which of them an operation needs and their parameters, such as which view to read and which slippage to apply, and gives each choice a cited reason, which the report prints and `pnpm past-txs` tests against real transactions.
 The AI never writes code that becomes a check.
-When the vocabulary cannot say what an operation needs, the program gains a new generic shape through a pull request with this document changed first; the template never uses a looser rule in its place.
+When the vocabulary cannot say what an operation needs, the program gains a new generic shape through a pull request with the design changed first; the template never uses a looser rule in its place.
 
 No template can loosen the floors, whatever it declares (see [Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)):
 
@@ -68,7 +68,7 @@ No template can loosen the floors, whatever it declares (see [Engine checks that
 - No change to the Safe's owners, threshold, modules, guard, fallback handler or implementation, except an owner or threshold change the card's `effects.safe` declares.
 - No allowance from the Safe ends higher than it started, except one `effects.approves` declares, and none is unlimited except a registry entry's standing allowance.
 - Every change to the Safe's balances is one the effects explain; no other token changes.
-  The only slack is a `tolerance` the template declares on an effect or a registry token, in the direction it names and by at most 10 base units each (see `effects`).
+  The only slack is a `tolerance` the template declares on an effect or a registry token, in the direction it names and by at most 10 base units each (see `effects` under [Template](design/data-shapes.md#template)).
 - The Safe's fee fields are zero, and every registry contract touched runs its pinned code.
 
 ### Two tiers
