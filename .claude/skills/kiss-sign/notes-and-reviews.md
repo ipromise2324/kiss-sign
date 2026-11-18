@@ -22,7 +22,11 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 - `title`, at most 100 characters, and `summary`.
 - `verdict`: `{ "status": "safe" | "caution", "text" }`, one line of at most 100: your research advice on the operation's risk, despite the key's name.
   It is not a transaction's verdict, which only `verify` gives, and it never moves a program result; the Advice (建議) line's icon is the program's worst result, not your status.
-- `flow`: at most four lines of what happens inside a call, each `{ "after": <call number>, "from": <registry name>, "to": <registry name>, "text" }`, between two contracts the calls or the effects' views target, the entries those name in `dependsOn`, or the tokens the effects move.
+- `flow`: at most four lines of what happens inside a call, each `{ "after": <call number>, "from": <registry name>, "to": <registry name>, "function": <canonical signature>, "text", "sources" }`, between two contracts the calls or the effects' views target, the entries those name in `dependsOn`, or the tokens the effects move.
+  `function` is the function `from` calls on `to`, canonical, such as `deposit(uint256,address)`; the program compares each line with the call traces `pnpm past-txs --record` keeps and draws it solid only when every traced transaction shows it.
+  Before you write a line, find that call in a past transaction's internal calls (Etherscan's trace of one transaction `pnpm past-txs` found) and in the contract's source; `sources` holds both, the source pinned to a commit and the transaction's Etherscan page.
+  Name no call the template binds itself, such as a Bundler3 bundle item: the diagram draws those from the template, and the program refuses the line.
+  Spend the four lines on the steps that move money inside the call, since every `transfer`, `transferFrom`, `approve` or ETH transfer no line or template call explains is a finding to review.
 - `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list.
 - `judgments`: at most four, each with a `recommendation`.
 - `reviews`: below.
@@ -56,6 +60,7 @@ Your own observations went into `entries` before the checks ([addresses.md](addr
 The result stays as it is, your review sits under it, and a `FINDING` stays visible even when you confirmed the source another way.
 
 - Key: `reviews["<registry name>/<check key>"]`, or `reviews["fixture.<name>"]`; a documentation page's key names its function by selector, such as `doc.0x095ea7b3.page`.
+- The call traces give `flow.<n>`, a line not seen in every traced transaction, and `trace.<call>.<from>.<to>.<kind>`, a money call no line covers; in a per-instance report they go in the instance's `notes.json`. Review an uncovered money call by naming each address outside the registry the page lists and what it is, from its source or Etherscan, or add the line that explains it.
 - Value: `{ "status": "confirmed" | "concern", "text", "recommendation" }`.
 - `text`, at most 300 characters, says only what you actually checked and what you saw, with full addresses, such as "Opened the page in a browser; the oracle address is 0x… (in full)." or "用瀏覽器打開頁面，oracle 地址就是 0x…（完整地址）。".
   If you could not check the thing the result names, say so and name the other evidence you have.

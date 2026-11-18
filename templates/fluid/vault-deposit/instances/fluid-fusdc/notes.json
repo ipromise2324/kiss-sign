@@ -4,19 +4,29 @@
       "after": 2,
       "from": "fluid-fusdc",
       "to": "fluid-liquidity",
+      "function": "operate(address,int256,int256,address,address,bytes)",
       "text": {
         "en": "The deposited USDC is held in Liquidity",
         "zh-TW": "存入的 USDC 放在 Liquidity"
-      }
+      },
+      "sources": [
+        "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/fToken/main.sol#L289",
+        "https://etherscan.io/tx/0xd24b81ce3d776642c935d61121b8baa831c5721d72b7bf74e47be2fa6f10c5f7"
+      ]
     },
     {
       "after": 2,
       "from": "fluid-fusdc",
       "to": "usdc",
+      "function": "transferFrom(address,address,uint256)",
       "text": {
         "en": "The fToken pulls USDC from the Safe with `transferFrom` through the Liquidity contract",
         "zh-TW": "fToken 經 Liquidity 合約用 `transferFrom` 從 Safe 拉走 USDC"
-      }
+      },
+      "sources": [
+        "https://github.com/Instadapp/fluid-contracts-public/blob/404d73f91e6806f881f8dabeb30494f93f9e99b7/contracts/protocols/lending/fToken/main.sol#L676",
+        "https://etherscan.io/tx/0xd24b81ce3d776642c935d61121b8baa831c5721d72b7bf74e47be2fa6f10c5f7"
+      ]
     }
   ],
   "verdict": {
