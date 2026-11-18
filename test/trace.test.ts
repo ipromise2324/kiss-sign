@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import type { Receipt } from '../src/chain/types.ts';
 import { selectorOf } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
-import { flowResults } from '../src/research/ledger.ts';
+import { flowResults, stateOf, strip } from '../src/research/ledger.ts';
 import { TraceError, compareFlow, parseRecordedTrace, tokenStepsDisagree, trimTrace } from '../src/research/trace.ts';
 import type { FlowLine, TraceCall, TracedTx } from '../src/research/trace.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
@@ -110,6 +110,16 @@ test('a flow line is confirmed in N of M traced transactions, and a money call n
 
   const noLine = compareFlow(template, registry, [], both);
   assert.deepEqual(noLine.uncovered, [{ call: 2, from: 'morpho-blue', to: 'usdc', kind: 'transferFrom', transactions: 2 }]);
+});
+
+test('a line seen nowhere is red, one seen in some and a money call no line covers amber, and each counts on the 呼叫追蹤 line', () => {
+  const nowhere = supply().map((c) => (c.selector === SUPPLY ? { ...c, selector: '0x12345678' as Hex } : c));
+  const results = flowResults(compareFlow(template, registry, [LINE], [traced('0x01', nowhere)]));
+  assert.deepEqual(results.map((r) => [r.id, r.finding.kind, stateOf(r)]), [
+    ['flow.1', 'line-not-seen', 'bad'],
+    ['trace.2.morpho-blue.usdc.transferFrom', 'money-uncovered', 'warn'],
+  ]);
+  assert.deepEqual(strip({ entries: [], results }).find((s) => s.line === 'trace'), { line: 'trace', state: 'bad', passed: 0, counted: 2 });
 });
 
 test('with no traced transaction no line is compared, and a line with no function is never compared', () => {
