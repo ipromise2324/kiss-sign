@@ -217,13 +217,12 @@ On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so y
 
 ### Contracts that change
 
-A contract you reviewed can be upgraded or reconfigured into one that harms you.
+A contract you reviewed can change into one that harms you.
 
 | Attack | Stopped by |
 |---|---|
-| It takes your funds in the transaction you sign | The simulation: your balances do not move as the card says, `MISMATCH` |
-| It acts normally now and harms you later, such as by blocking withdrawals | For a registry contract whose code changed since your review, the recorded code: `MISMATCH`. For a changed setting, or a contract behind it such as a market's oracle, nothing |
-| It changes after you run `verify` and before the transaction runs | Nothing |
+| A contract turns harmful before you sign | The simulation, if it takes your funds in this transaction: your balances do not move as the card says, `MISMATCH`. The recorded code, if a registry contract's code changed since your review: `MISMATCH`. A changed setting, or a contract behind it such as a market's oracle, is not checked |
+| The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 
 ## What kiss-sign checks
 
