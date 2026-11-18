@@ -22,6 +22,36 @@ A template that was wrong when the signer approved it is not caught by any check
 | Program (the engine) | Fetches and hashes the Safe transaction, decodes it, runs the template's checks, simulates, compares effects with the card | Reads web pages, follows instructions found in data |
 | Independent check (hardened tier) | Fetches the transaction by nonce, computes its hashes, decodes each call, labels addresses from the signer's own list | Reads kiss-sign, its templates or its registry; compares the transaction with the card |
 
+### Who authorises what
+
+Each action that lets a change or a signing through has one owner.
+The last column is what must hold before the action, and who or what enforces it.
+
+| Action | Who | What must hold first |
+|---|---|---|
+| Merge a template or registry pull request | The signer | The signer reads the report and runs `pnpm report <protocol>/<operation> --compare --data origin/<branch>` from `main`, with `--instance-of <instance>` for each per-instance report the branch changes. `pnpm check-push`, run by CI, refuses the branch if it also changes the verdict core. See [Who owns the program](design/program-ownership.md#who-owns-the-program). |
+| Merge a program pull request | The AI, with a merge commit | `pnpm program-gate`, run from main's code, prints `ELIGIBLE`, and a fresh AI reviewer, given the diff and not the author's conclusions, finds no security regression. See [The program gate](design/program-ownership.md#the-program-gate). |
+| Merge a program gate pull request | The signer | The signer reviews it as they do a template. `pnpm program-gate` stops at `NOT ELIGIBLE` and names the gate files. `pnpm check-push` refuses the branch if it also changes the verdict core. |
+| Approve a template | The signer | `template approve` requires every `origin` URL to be the config's `repo`, fetches its `main`, prints the commit and the template's keccak256, and records that hash only after the signer's yes at a terminal. |
+| Add an address-book entry | The signer | `book add` asks for the signer's yes at a terminal. The address comes from a source outside the chat and is checked character by character. |
+| Fill and seal a card | The signer | `card new` refuses without a terminal. `card new` and `card seal` stop when the clone's templates or registry differ from GitHub's `main`. `card seal` stores the card only after the signer's yes. |
+| Sign | The signer, on the hardware wallet | `verify` prints `MATCH` for the sealed card, its self-check having passed on the signer's `main`. The signer compares every character of the domain hash and the message hash with `verify`'s page and, in the hardened tier, checks the independent computer's page row by row. |
+
+### Security invariants
+
+The design states each of these in full where it links.
+
+1. The verdict is never the AI's judgment: the AI writes templates and the program runs them ([Who does what](#who-does-what)).
+2. `MATCH` needs every check to report its own pass or not to be needed for the card; any failed check gives `MISMATCH`, and otherwise any check that could not finish or did not run gives `UNVERIFIABLE` ([Every signing](design/flow.md#every-signing), step 12).
+3. No address on a card is typed by the AI: each is a registry name, an address-book name or the Safe ([Intent card](design/data-shapes.md#intent-card)).
+4. No template can loosen the floors ([Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)).
+5. Every registry contract the transaction or the card touches, and each entry these name in `dependsOn`, runs the code its registry pin names, and an executed transaction the pin whose span holds its block ([Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)).
+6. `verify` runs only the exact `main` of the signer's own fork, unless something on the work computer rewrites the clone and the self-check together, and a template counts only after its pull request is merged ([The program checks itself first](design/program-ownership.md#the-program-checks-itself-first)).
+7. The AI never merges a template, registry or program gate pull request, and never fills or seals a card; the skill, the program gate and the terminal prompts keep an honest AI from these, not one that means harm ([Who does what](#who-does-what), [Two tiers](#two-tiers)).
+8. A program pull request never changes a hand-written template or registry file, only re-renders an existing generated report, and one that changes the verdict core never changes the program gate ([Who owns the program](design/program-ownership.md#who-owns-the-program)).
+9. Except for the templates not yet rebuilt, a card naming an instance with no report for its template is refused ([No report, no signing](design/flow.md#first-time-an-operation-is-done-build-its-template), step 6).
+10. The Safe's address and the API keys are never published ([The Safe's address is never published](design/engine-and-chain.md#the-safes-address-is-never-published)).
+
 ### The program offers checks, the AI picks them
 
 The same split holds for a protocol no one has tested.
@@ -29,7 +59,7 @@ The program offers a generic vocabulary a template declares as data: field rules
 Each is protocol-free and enforced exactly as declared.
 The AI's research picks which of them an operation needs and their parameters, such as which view to read and which slippage to apply, and gives each choice a cited reason, which the report prints and `pnpm past-txs` tests against real transactions.
 The AI never writes code that becomes a check.
-When the vocabulary cannot say what an operation needs, the program gains a new generic shape through a pull request with this document changed first; the template never uses a looser rule in its place.
+When the vocabulary cannot say what an operation needs, the program gains a new generic shape through a pull request with the design changed first; the template never uses a looser rule in its place.
 
 No template can loosen the floors, whatever it declares (see [Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)):
 
@@ -38,7 +68,7 @@ No template can loosen the floors, whatever it declares (see [Engine checks that
 - No change to the Safe's owners, threshold, modules, guard, fallback handler or implementation, except an owner or threshold change the card's `effects.safe` declares.
 - No allowance from the Safe ends higher than it started, except one `effects.approves` declares, and none is unlimited except a registry entry's standing allowance.
 - Every change to the Safe's balances is one the effects explain; no other token changes.
-  The only slack is a `tolerance` the template declares on an effect or a registry token, in the direction it names and by at most 10 base units each (see `effects`).
+  The only slack is a `tolerance` the template declares on an effect or a registry token, in the direction it names and by at most 10 base units each (see `effects` under [Template](design/data-shapes.md#template)).
 - The Safe's fee fields are zero, and every registry contract touched runs its pinned code.
 
 ### Two tiers

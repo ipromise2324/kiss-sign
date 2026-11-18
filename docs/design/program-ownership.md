@@ -69,7 +69,7 @@ A pull request that changes a template and, beside it, one comparison in the ver
   Research code, docs and `test/` may change beside a template, since none of them runs at signing.
   `testdata/` is free on both sides, except what a canary reads (below): its recordings feed only the tests and the reports, never `verify`, and a core change needs its own fixtures.
   The reports `pnpm report` renders from recordings, `report.generated.md`, `report.generated.<language>.html` and `registry/reports/<vault>.generated.md`, which no command writes any more, are not hand-written, and `pnpm test` fails when one differs from what its recordings give, so a core change that alters a rendering may write the existing ones again.
-  Adding or deleting one counts as data: a vault's `report.generated.md` is what lets `card seal` and `verify` accept that vault.
+  Adding or deleting one counts as data: an instance's `report.generated.md` is what lets `card seal` and `verify` accept that instance.
 - **Where it is enforced.**
   `pnpm check-push` refuses such a branch before it is pushed, CI refuses it on every pull request and every push to `main`, and `pnpm report --compare`, which the signer runs with main's code, refuses it again, so a pull request that also weakens the check does not pass its own.
   A pull request can still rewrite its own CI job; `--compare` from main is the check it cannot change, and since `scripts/report.ts` is guarded, no template pull request can weaken it for the next one.
@@ -178,4 +178,4 @@ Nor does it catch Node itself; what changes the code Node runs without changing 
 This catches accidental edits and an AI that was tricked into changing a check or a template in the clone rather than through a pull request.
 It cannot catch anything that deliberately rewrites both a check and the self-check itself, such as an AI on the same computer, because the self-check is part of the same program.
 The hardened tier's independent check does not run kiss-sign, so such a change cannot alter what it decodes.
-See Known limits and Later security upgrades.
+See [Known limits](known-limits.md#known-limits) and [Later security upgrades](known-limits.md#later-security-upgrades).
