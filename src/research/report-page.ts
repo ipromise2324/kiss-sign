@@ -26,7 +26,7 @@ import type { DeployerShare, SitePlace } from './listings.ts';
 import { weightOf } from './grades.ts';
 import type { Grade } from './grades.ts';
 import { MIN_CONFIRMATIONS, addressRows, confidence, confirmations, docOf, forSigner, judge, needsSigner, sourcesOf, stateOf, strip, worst } from './ledger.ts';
-import type { Confidence, FindingKind, Ledger, Phrase, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
+import type { Confidence, FindingKind, Ledger, Phrase, Place, ProgramSource, Result, ResultId, State, StripLine } from './ledger.ts';
 import { NOTES_FILE, argumentTree, notesLanguages, notesPath, notesScope, parseNotes } from './notes.ts';
 import type { ArgNode, Notes } from './notes.ts';
 import { PERCENTILES, amountsOf, freeNumbers } from './past-txs.ts';
@@ -367,9 +367,12 @@ function rowWord(entry: RegistryEntry, source: ProgramSource, shared: DeployerSh
 /** What a confirmation is called in the line that counts them: the `source` page is the official page, any other as `sourceWord` names it. */
 const confirmationWord = (entry: RegistryEntry, source: ProgramSource, w: Words, registry: Registry): string => (source === 'page' ? w.officialPage : sourceWord(entry, source, w, registry));
 
-const confirmedWords = (entry: RegistryEntry, by: readonly ProgramSource[], w: Words, registry: Registry): string =>
+const confirmedWords = (entry: RegistryEntry, by: readonly Place[], w: Words, registry: Registry): string =>
   w.confirmed(
-    by.map((source) => confirmationWord(entry, source, w, registry)),
+    by.map(({ owner, sources }) => {
+      const words = sources.map((source) => confirmationWord(entry, source, w, registry));
+      return words.length === 1 ? (words[0] as string) : `${words.join(' + ')} (${owner})`;
+    }),
     by.length >= MIN_CONFIRMATIONS,
   );
 

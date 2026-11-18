@@ -9,7 +9,7 @@ import { loadRegistry } from '../src/registry.ts';
 import type { HttpsUrl, InstanceView, Registry, RegistryEntry } from '../src/registry.ts';
 import type { ApiAnswer } from '../src/research/api-source.ts';
 import { STATE_OF, addressRows, confidence, confirmations, forSigner, judge, sourcesOf, stateOf, strip } from '../src/research/ledger.ts';
-import type { FindingKind, Ledger, State } from '../src/research/ledger.ts';
+import type { FindingKind, Ledger, Place, State } from '../src/research/ledger.ts';
 import type { CoinGeckoCoin, DefiLlamaProtocol, SiteOwner } from '../src/research/listings.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
 import type { Creation, Creations } from '../src/research/deployer.ts';
@@ -282,6 +282,9 @@ function inputsOf(change: Partial<Setup>): ReportInputs {
   return inputs;
 }
 
+/** Each place as its sources joined by `+`. */
+const named = (places: readonly Place[]): string[] => places.map((place) => place.sources.join('+'));
+
 const ledgerOf = (change: Partial<Setup>): Ledger => {
   const inputs = inputsOf(change);
   return judge(inputs, inputs.fixtures ?? []);
@@ -430,27 +433,27 @@ test('two entries that share a deployer and are confirmed nowhere else never con
   assert.equal(resultOf(ledger, 'vault/address').finding.kind, 'few-confirmations');
   assert.equal(resultOf(ledger, 'sibling/address').finding.kind, 'few-confirmations');
   const confirmed = ledgerOf({ ...sharing(true), coins: [] });
-  assert.deepEqual(confirmations(confirmed, ENTRY), ['page', 'deployer']);
+  assert.deepEqual(named(confirmations(confirmed, ENTRY)), ['page', 'deployer']);
   assert.deepEqual(resultOf(confirmed, 'vault/source.deployer').shared, { deployer: DEPLOYER, siblings: ['sibling'] });
 });
 
 test('an SDK whose publisher nothing ties to the protocol confirms nothing, though its file shows the address', () => {
   const ledger = ledgerOf({ ...packageRead({ provenance: { kind: 'none' } }), coins: [] });
   assert.equal(resultOf(ledger, 'vault/source.sdk').finding.kind, 'agrees');
-  assert.deepEqual(confirmations(ledger, { ...ENTRY, sdk: SDK }), ['page']);
+  assert.deepEqual(named(confirmations(ledger, { ...ENTRY, sdk: SDK })), ['page']);
   assert.equal(resultOf(ledger, 'vault/address').finding.kind, 'few-confirmations');
-  assert.deepEqual(confirmations(ledgerOf({ ...packageRead(), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
+  assert.deepEqual(named(confirmations(ledgerOf({ ...packageRead(), coins: [] }), { ...ENTRY, sdk: SDK })), ['page', 'sdk']);
 });
 
 test('a bounty program is tied through a website its scope lists, and never through a shared host such as linktr.ee', () => {
-  assert.deepEqual(confirmations(ledgerOf({ sites: program([ADDRESS], undefined, null, ['https://app.example.org/']), coins: [] }), ENTRY), ['page', 'bounty']);
+  assert.deepEqual(named(confirmations(ledgerOf({ sites: program([ADDRESS], undefined, null, ['https://app.example.org/']), coins: [] }), ENTRY)), ['page', 'bounty']);
   const shared = ledgerOf({
     protocol: { ...BASE.protocol!, url: new URL('https://linktr.ee/proto'), github: [] },
     sites: program([ADDRESS], undefined, 'https://linktr.ee/other', ['https://github.com/other']),
     coins: [],
   });
   assert.equal(resultOf(shared, 'vault/source.bounty').finding.kind, 'not-listed');
-  assert.ok(!confirmations(shared, ENTRY).includes('bounty'), 'a program on the same shared host confirms nothing');
+  assert.ok(!named(confirmations(shared, ENTRY)).includes('bounty'), 'a program on the same shared host confirms nothing');
 });
 
 test('every finding kind has a row', () => {
@@ -475,10 +478,10 @@ test('the address needs two confirmations: a page by its label, the API, CoinGec
   const by = (change: Partial<Setup>) => {
     const ledger = ledgerOf(change);
     const entry = change.entry ?? ENTRY;
-    return [confirmations(ledger, entry), resultOf(ledger, `${entry.name}/address`).finding.kind];
+    return [named(confirmations(ledger, entry)), resultOf(ledger, `${entry.name}/address`).finding.kind];
   };
   assert.deepEqual(by({}), [['page', 'coingecko'], 'agrees']);
-  assert.deepEqual(by({ entry: { ...ENTRY, moreSources: [MORE], apiSource: API } }), [['page', 'more.1', 'api', 'coingecko'], 'agrees']);
+  assert.deepEqual(by({ entry: { ...ENTRY, moreSources: [MORE], apiSource: API } }), [['page+api', 'more.1', 'coingecko'], 'agrees']);
   assert.deepEqual(by({ entry: { ...ENTRY, moreSources: [MORE] }, commit: { kind: 'off-default', branch: 'main', status: 'diverged' }, coins: [] }), [['page'], 'few-confirmations']);
   const echoing = { ...VAULT, source: `${SOURCE}/${ADDRESS}` as HttpsUrl };
   assert.deepEqual(by({ entry: echoing, vaults: new Map([['vault', ADMITTED]]), factory: TRUE_FACTORY, coins: [] }), [['factory'], 'few-confirmations']);
@@ -486,24 +489,55 @@ test('the address needs two confirmations: a page by its label, the API, CoinGec
   assert.deepEqual(by({ protocol: { ...BASE.protocol!, url: undefined }, coins: [] }), [['page'], 'few-confirmations']);
 });
 
+test('a page and the API on one registrable domain are one place, and CoinGecko listing the coin a second', () => {
+  const entry = { ...ENTRY, apiSource: API };
+  const alone = ledgerOf({ entry, coins: [] });
+  assert.deepEqual(named(confirmations(alone, entry)), ['page+api'], 'docs.example.org and api.example.org');
+  assert.deepEqual(resultOf(alone, 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'example.org', sources: ['page', 'api'] }] });
+  const listed = ledgerOf({ entry });
+  assert.deepEqual(named(confirmations(listed, entry)), ['page+api', 'coingecko']);
+  assert.equal(resultOf(listed, 'vault/address').finding.kind, 'agrees');
+});
+
+test('pages of one GitHub organization are one place, and it stays apart from a domain GitHub verified it controls', () => {
+  const second = { url: `https://github.com/example/repo/blob/${'a'.repeat(40)}/other.md` as HttpsUrl, label: 'Vault' };
+  const entry = { ...ENTRY, source: GITHUB, moreSources: [second] };
+  const ledger = ledgerOf({ entry, coins: [] });
+  assert.deepEqual(resultOf(ledger, 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'github.com/example', sources: ['page', 'more.1'] }] });
+  const verified = { ...NO_SITE_LISTINGS, orgs: new Map([['example', { kind: 'domains', domains: ['example.org'] } as const]]) };
+  const both = { ...ENTRY, moreSources: [MORE] };
+  const apart = ledgerOf({ entry: both, coins: [], sites: verified });
+  assert.deepEqual(named(confirmations(apart, both)), ['page', 'more.1'], 'docs.example.org and github.com/example');
+  assert.equal(resultOf(apart, 'vault/address').finding.kind, 'agrees');
+});
+
+test("an SDK is the same place as the GitHub organization npm's provenance names as its publisher", () => {
+  const entry = { ...ENTRY, moreSources: [MORE], sdk: SDK };
+  const ledger = ledgerOf({ ...packageRead(), entry, coins: [] });
+  assert.deepEqual(named(confirmations(ledger, entry)), ['page', 'more.1+sdk']);
+  assert.deepEqual(resultOf(ledger, 'vault/address').finding.kind, 'agrees');
+  const page = { ...ENTRY, source: GITHUB, sdk: SDK };
+  assert.deepEqual(resultOf(ledgerOf({ ...packageRead(), entry: page, coins: [] }), 'vault/address').finding, { kind: 'few-confirmations', by: [{ owner: 'github.com/example', sources: ['page', 'sdk'] }] });
+});
+
 test('the newest version of a pinned page or SDK never counts as a place, and never keeps the pinned one from counting', () => {
   const github = { ...ENTRY, source: GITHUB };
   const differing = ledgerOf({ entry: github, tip: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }] } });
-  assert.deepEqual(confirmations(differing, github), ['page', 'coingecko']);
+  assert.deepEqual(named(confirmations(differing, github)), ['page', 'coingecko']);
   assert.deepEqual(forSigner(differing).map((r) => r.id), ['vault/source.tip']);
   const newest = sourcesOf(differing, github).find((line) => line.source === 'page')?.newest;
   assert.deepEqual([newest?.state, newest?.phrase, newest?.others], ['bad', 'other-address', [OTHER]], 'the row names the other address');
-  assert.deepEqual(confirmations(ledgerOf({ entry: github, tip: { kind: 'failed', why: 'HTTP 404' } }), github), ['page', 'coingecko']);
-  assert.deepEqual(confirmations(ledgerOf({ ...latestRead(ADDRESS), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
-  assert.deepEqual(confirmations(ledgerOf({ ...latestRead(OTHER), coins: [] }), { ...ENTRY, sdk: SDK }), ['page', 'sdk']);
-  assert.deepEqual(confirmations(ledgerOf({ sites: program([ADDRESS], undefined, 'https://other.org'), coins: [] }), ENTRY), ['page'], 'a program not tied to the protocol confirms nothing');
-  assert.deepEqual(confirmations(ledgerOf({ sites: program([ADDRESS]), coins: [] }), ENTRY), ['page', 'bounty']);
+  assert.deepEqual(named(confirmations(ledgerOf({ entry: github, tip: { kind: 'failed', why: 'HTTP 404' } }), github)), ['page', 'coingecko']);
+  assert.deepEqual(named(confirmations(ledgerOf({ ...latestRead(ADDRESS), coins: [] }), { ...ENTRY, sdk: SDK })), ['page', 'sdk']);
+  assert.deepEqual(named(confirmations(ledgerOf({ ...latestRead(OTHER), coins: [] }), { ...ENTRY, sdk: SDK })), ['page', 'sdk']);
+  assert.deepEqual(named(confirmations(ledgerOf({ sites: program([ADDRESS], undefined, 'https://other.org'), coins: [] }), ENTRY)), ['page'], 'a program not tied to the protocol confirms nothing');
+  assert.deepEqual(named(confirmations(ledgerOf({ sites: program([ADDRESS]), coins: [] }), ENTRY)), ['page', 'bounty']);
 });
 
 test("an adapter's factory, the vault naming it and the adapter's own answer are one place, counted only when every answer passes", () => {
   const by = (change: Partial<Setup>) => {
     const ledger = ledgerOf({ coins: [], ...change });
-    return [confirmations(ledger, ADAPTER), resultOf(ledger, 'vault/address').finding.kind];
+    return [named(confirmations(ledger, ADAPTER)), resultOf(ledger, 'vault/address').finding.kind];
   };
   const second = { ...ADAPTED, name: 'second' };
   assert.deepEqual(by(adapterAsked('yes')), [['page', 'factory'], 'agrees']);
@@ -530,7 +564,7 @@ test('an empty address source is grey; the address result alone puts the entry i
     ],
   );
   const alone = ledgerOf({ page: { kind: 'served', blocks: [{ text: 'Vault' }] } });
-  assert.deepEqual(forSigner(alone).map((r) => [r.id, r.finding]), [['vault/address', { kind: 'few-confirmations', by: ['coingecko'] }]]);
+  assert.deepEqual(forSigner(alone).map((r) => [r.id, r.finding]), [['vault/address', { kind: 'few-confirmations', by: [{ owner: 'coingecko.com', sources: ['coingecko'] }] }]]);
 });
 
 test('a site DefiLlama lists nothing for is vouched by CoinGecko or by another official page, never by a documentation page or the API site', () => {
@@ -561,7 +595,7 @@ test('a coin CoinGecko lists at an address the entry names no coin for stays for
     ['vault/address', 'few-confirmations'],
     ['vault/source.coingecko', 'unexplained-coin'],
   ]);
-  assert.deepEqual(confirmations(ledger, entry), ['page']);
+  assert.deepEqual(named(confirmations(ledger, entry)), ['page']);
 });
 
 test('a second page is its own row, each page with its own site under it, and no site is a source of its own', () => {
@@ -623,10 +657,11 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
   const { inputs } = await replayInputs(ROOT, registry, target, compilers, suffixes);
   const template = inputs.subject.kind === 'template' ? inputs.subject.template : assert.fail('a template report');
   const ledger = judge(inputs, await judgeFixtures(ROOT, template, registry));
+  const apiAlone = { kind: 'few-confirmations', by: [{ owner: 'morpho.org', sources: ['api'] }] };
   assert.deepEqual(forSigner(ledger).map((r) => [r.id, r.finding]), [
-    ['morpho-oracle-cbbtc-usdc-86/address', { kind: 'few-confirmations', by: ['api'] }],
-    ['morpho-oracle-usp-usdc/address', { kind: 'few-confirmations', by: ['api'] }],
-    ['morpho-oracle-weeth-usdc-86/address', { kind: 'few-confirmations', by: ['api'] }],
+    ['morpho-oracle-cbbtc-usdc-86/address', apiAlone],
+    ['morpho-oracle-usp-usdc/address', apiAlone],
+    ['morpho-oracle-weeth-usdc-86/address', apiAlone],
   ]);
   assert.equal(stateOf(resultOf(ledger, 'morpho-oracle-cbbtc-usdc-86/source.page')), 'na');
   assert.equal(stateOf(resultOf(ledger, 'morpho-oracle-cbbtc-usdc-86/source.api')), 'ok');

@@ -59,13 +59,14 @@ Each entry's `moreSources`: more official pages that list its address, each chec
 | --- | --- | --- | --- | --- | --- |
 | `safe-1.3.0` | <https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py> | PASS | PASS | PASS | PASS |
 | `safe-1.4.1` | <https://github.com/safe-global/safe-cli/blob/a7044bb5be4f8ee16e8d57d69bc5777aace01f0d/src/safe_cli/safe_addresses.py> | PASS | PASS | PASS | PASS |
+| `safe-1.4.1` | <https://docs.safe.global/advanced/erc-4337/guides/permissionless-detailed> | PASS | n/a | n/a | PASS |
 
 More places that may name the address: the scope of every Immunefi program tied to the entry's protocol, which the program finds, and of the one the entry names; its pinned SDK package (the address next to its label in the file, and the GitHub organization npm's provenance names for the tarball), and which addresses npm's latest version binds to the same label; and who sent the transaction that created it, with the other entries of its protocol here the same sender created. A shared deployer counts only through an entry confirmed in two other places; a program not tied to the protocol and the SDK's latest version never count.
 
 | Entry | Bounty scope | SDK file | SDK publisher | SDK latest | Deployer |
 | --- | --- | --- | --- | --- | --- |
 | `safe-1.3.0` | NOT LISTED | n/a | n/a | n/a | PASS `0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26`, also `safe-1.4.1` |
-| `safe-1.4.1` | NOT LISTED | n/a | n/a | n/a | PASS `0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26`, also `safe-1.3.0` |
+| `safe-1.4.1` | NOT LISTED | n/a | n/a | n/a | n/a: no confirmed entry shares `0xD7Df5bf3B8d2bd159664dF54A30101d7FAF6cA26` |
 
 2 entries; each finding is graded and listed under Findings at the top.
 
