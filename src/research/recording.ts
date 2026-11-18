@@ -97,7 +97,7 @@ const HASH = /0x[0-9a-f]{64}/g;
 export function scrubRecording(recording: PastTxsRecording, safes: readonly string[], run: Pick<PastTxs, 'found' | 'excluded' | 'search'>): PastTxsRecording {
   if (run.excluded.size > 0) {
     throw new Error(
-      `the search found ${run.excluded.size} transaction(s) the configured Safe sent or is named in, or that could not be checked, and a recording would point at them; nothing written. Search other blocks with --from-block and --to-block`,
+      `the search found ${run.excluded.size} transaction(s) the configured Safe sent or is named in, or that could not be checked, and a recording would point at them; nothing written. Do not narrow the blocks or --max-txs to avoid them, since the blocks chosen would point at them too; tell the signer`,
     );
   }
   const scrubbed = { ...recording, exchanges: recording.exchanges.map(trimBlockAnswers) };

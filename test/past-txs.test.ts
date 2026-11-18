@@ -366,7 +366,7 @@ async function searchAgain(exclude: Address | undefined, extra: readonly { hash:
 
 const FAKE_SAFE = `0x${'5a'.repeat(20)}` as Address;
 
-test('a recording names no transaction it did not sample, only counts them, so an unsampled one the configured Safe sent is not identified, and it replays the same', async () => {
+test('a recording names no transaction it did not sample, only counts them, so an unsampled one, never read, is not identified, and it replays the same', async () => {
   const { anyContract, live, unsampled, record, replay } = await searchAgain(FAKE_SAFE);
   assert.deepEqual(live.search.sampled.map((s) => s.hash), (anyContract.search as SearchText).sampled.map((s) => s.hash));
   assert.deepEqual(live.search.unsampled, [{ sources: ['etherscan'], count: 4 }]);

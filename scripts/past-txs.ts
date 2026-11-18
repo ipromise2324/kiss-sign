@@ -59,7 +59,8 @@ For each free number the template leaves, and each withinSeconds time it bounds,
 spread of values, less the block's time for a time.
 Senders are counted by type: a proven Safe (Safe proxy code and an official singleton), a
 contract that is not a proven Safe, and an EOA making one of the template's calls directly.
-The Safe in $KISS_SIGN_HOME/config.json is left out of every count, example and recording.`;
+The Safe in $KISS_SIGN_HOME/config.json is left out of every count and example, and a search that
+found one of its transactions is not recorded.`;
 const HELP = `${USAGE}
 Per field it prints how many transactions and senders held the template's rule, and the misfits
 grouped by reason. For each fitting transaction it runs the transaction alone on its parent block
@@ -81,8 +82,10 @@ Options:
                                  windows, at least 1 with --from-block and --to-block.
   --from-block, --to-block <n>   Search one block range in place of the windows.
   --same-windows-as <recording>  Search the windows of testdata/research/<recording>.json again.
-  --record <name>                Write testdata/research/<name>.json, with the hashes of the studied
-                                 transactions only; nothing is written when a read got no answer.
+  --record <name>                Write testdata/research/<name>.json, with the hashes of the sampled
+                                 transactions only; nothing is written when a read got no answer,
+                                 or when the search found a transaction the configured Safe sent or
+                                 is named in.
 
 Writes: testdata/research/<name>.json with --record; otherwise nothing.
 Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
