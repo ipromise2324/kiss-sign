@@ -472,8 +472,11 @@ test('a bounty program is tied through a website its scope lists, and never thro
   assert.ok(!named(confirmations(shared, ENTRY)).includes('bounty'), 'a program on the same shared host confirms nothing');
 });
 
-test('every finding kind has a row', () => {
-  assert.deepEqual(new Set(ROWS.map((row) => row.kind)), new Set(Object.keys(STATE_OF)));
+/** The kinds only the call traces give, which test/trace.test.ts covers. */
+const TRACE_KINDS: readonly string[] = ['line-not-seen', 'line-partly-seen', 'money-uncovered'];
+
+test('every finding kind but the call traces\' has a row', () => {
+  assert.deepEqual(new Set(ROWS.map((row) => row.kind)), new Set(Object.keys(STATE_OF).filter((kind) => !TRACE_KINDS.includes(kind))));
 });
 
 test('only an entry no ABI proof compares with the chain has a result for its code at the latest block', () => {
@@ -655,6 +658,7 @@ test('the strip counts addresses and recorded transactions, each by the worst of
     { line: 'abi', state: 'warn', passed: 0, counted: 1 },
     { line: 'code', state: 'ok', passed: 1, counted: 1 },
     { line: 'params', state: 'ok', passed: 1, counted: 1 },
+    { line: 'trace', state: 'na', passed: 0, counted: 0 },
   ]);
 });
 
@@ -688,6 +692,7 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
     ['abi', 'ok', '4/4'],
     ['code', 'ok', '10/10'],
     ['params', 'ok', '1/1'],
+    ['trace', 'na', '0/0'],
   ]);
   assert.deepEqual(['usdc/abi', 'morpho-blue/abi'].map((id) => [resultOf(ledger, id).finding.kind, stateOf(resultOf(ledger, id))]), [
     ['metadata-differs', 'na'],
