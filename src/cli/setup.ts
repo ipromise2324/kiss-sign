@@ -10,7 +10,7 @@ import { KEYS, createKeyFile, keyFilePath, kissSignHome } from '../keys.ts';
 import { ATTRIBUTES_PATH, MARKETS_PATH, REGISTRY_DIR, REGISTRY_PATH, isEntryName, loadRegistry, registryFromTexts } from '../registry.ts';
 import { checksumAddress, parseAddress } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../template/template.ts';
-import { reportedVaultsIn, unreportedVault } from '../template/vault-reports.ts';
+import { reportedInstancesIn, unreportedInstance } from '../template/vault-reports.ts';
 import { commitSubject, dataDiffersFromOriginMain, fetchOriginMain, fileAt, optionalFileAt, originRepo } from '../verify/self-check.ts';
 import { keccakText } from '../verify/verify.ts';
 import { cardSummary } from './card-view.ts';
@@ -164,7 +164,7 @@ export async function seal(card: Card, io: Io, w: Labels, confirm: Terminal['con
     io.stderr(`kiss-sign: ${refusalText(resolution, L)}\n`);
     return FAILED;
   }
-  const unreported = unreportedVault(resolution.card, templates, registry, (id) => reportedVaultsIn(io.repoRoot, id));
+  const unreported = unreportedInstance(resolution.card, templates, registry, (id) => reportedInstancesIn(io.repoRoot, id));
   if (unreported !== undefined) {
     io.stderr(`kiss-sign: ${L.refused(unreported)}\n`);
     return FAILED;

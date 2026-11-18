@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { test } from 'node:test';
 import { recordingText } from '../src/chain/bytecode.ts';
 import type { VerdictFile } from '../src/verify/verify.ts';
-import { ROOT, chain, fixture, git, receiverChanged, run, service, setUp, template, verifyTx, write } from './canaries/verify-harness.ts';
+import { ROOT, VAULT, chain, fixture, git, receiverChanged, run, service, setUp, template, verifyTx, write } from './canaries/verify-harness.ts';
 
 const rowValue = (page: string, id: string): string | undefined => new RegExp(`<span class="id">${id.replace(/\./g, '\\.')}</span><span class="k">[^<]*</span><span class="v">([^<]*)</span>`).exec(page)?.[1];
 
@@ -126,6 +126,23 @@ test('in English the verdict box and the page show each detail exactly as the ve
   assert.match(details[0]!, /^multiSend\[1\]\.multicall\.bundle\[1\]\.data\.erc4626Deposit receiver: expected 0x[0-9a-f]{40}, got 0x1{40}$/);
   assert.ok(stdout.replaceAll(/\n│ {9,}/g, ' ').includes(`│ fields  ${details[0]}\n`));
   assert.ok(pages[0]!.includes(`<div class="meta">${details[0]}</div>`));
+});
+
+test('verify finds the report of an instance under instances/ as under vaults/, and refuses one with a report in both', async () => {
+  const verifyWith = async (folders: readonly string[]) => {
+    const { base, repo, home } = setUp(undefined, false);
+    for (const folder of folders) write(join(repo, 'templates', template.id, folder, VAULT, 'report.generated.md'), '# report\n');
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '--quiet', '-m', 'reports');
+    git(repo, 'push', '--quiet', join(base, 'origin.git'), 'main');
+    return run(['verify', '--card', fixture.inputs.card.hash, '--tx', write(join(base, 'tx.json'), JSON.stringify(service))], repo, home);
+  };
+  const moved = await verifyWith(['instances']);
+  assert.equal(moved.code, 0, moved.stderr);
+  assert.match(moved.stdout, /MATCH/);
+  const both = await verifyWith(['instances', 'vaults']);
+  assert.equal(both.code, 1);
+  assert.equal(both.stderr, `kiss-sign: card refused: ${VAULT} has a report for ${template.id} in both instances/ and vaults/; keep one. Nothing was verified.\n`);
 });
 
 test('verify and replay never read GITHUB_TOKEN, from the environment or the key file', async () => {
