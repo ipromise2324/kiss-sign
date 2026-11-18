@@ -1,4 +1,4 @@
-import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs';
+import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { LANGUAGES, LANGUAGE_NAMES } from '../language.ts';
 import type { Prose } from '../language.ts';
 import { join } from 'node:path';
@@ -22,7 +22,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import type { MemberSource } from '../template/eip712.ts';
-import { GENERATED_FILE, INSTANCE_FOLDERS, inBothFolders, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
+import { GENERATED_FILE, inBothFolders, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
@@ -119,12 +119,21 @@ export const VAULT_REPORTS_DIR = join('registry', 'reports');
 export const REPORT_RECORDINGS_DIR = join('testdata', 'report');
 const RESEARCH_DIR = join('testdata', 'research');
 
-/** The folder an instance's report files sit in: `vaults/<instance>` while its committed files are there, else `instances/<instance>`. */
+/** The folder an instance's report files sit in: `vaults/<instance>` while its committed report is there, else `instances/<instance>`. */
 export function instanceReportDir(repoRoot: string, template: string, instance: string): string {
-  const held = INSTANCE_FOLDERS.map((folder) => join(TEMPLATES_DIR, template, folder, instance)).filter((dir) => existsSync(join(repoRoot, dir)));
-  if (held.length > 1) throw new ReportError(inBothFolders(template, instance));
-  return held[0] ?? join(TEMPLATES_DIR, template, INSTANCE_FOLDERS[0], instance);
+  const folders = reportedInstancesIn(repoRoot, template).get(instance) ?? [];
+  if (folders.length > 1) throw new ReportError(inBothFolders(template, instance));
+  return join(TEMPLATES_DIR, template, folders[0] ?? 'instances', instance);
 }
+
+/**
+ * The command names a report prints: a report in `instances/` prints today's; every other keeps the names it was rendered
+ * with, so the committed reports stay byte for byte until they are rendered again when they move to `instances/`.
+ */
+export const commandNames = (subject: Subject): { readonly instanceFlag: string; readonly evidence: string } =>
+  subject.kind === 'template' && subject.dir.split('/').includes('instances')
+    ? { instanceFlag: '--instance-of', evidence: 'pnpm instance-evidence' }
+    : { instanceFlag: '--vault-of', evidence: 'pnpm vault-evidence' };
 
 /** The folder a template report's files sit in: the template's, or for a per-instance report its instance's under it. */
 export const reportDir = (repoRoot: string, target: TemplateTarget): string =>
@@ -1133,7 +1142,7 @@ function fenced(text: string): string[] {
 
 /** The `pnpm report` arguments that name a subject's report. */
 export const reportArgs = (subject: Subject): string =>
-  subject.kind === 'vault' ? `--vault ${subject.vault.name}` : `${subject.template.id}${subject.vault === undefined ? '' : ` --vault-of ${subject.vault.name}`}`;
+  subject.kind === 'vault' ? `--vault ${subject.vault.name}` : `${subject.template.id}${subject.vault === undefined ? '' : ` ${commandNames(subject).instanceFlag} ${subject.vault.name}`}`;
 
 export const compareCommand = (subject: Subject): string => `pnpm report ${reportArgs(subject)} --compare`;
 
@@ -1393,7 +1402,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
   const out: string[] = [
     `# Generated evidence: ${name}`,
     '',
-    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code('pnpm vault-evidence')} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Etherscan gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
+    `Written by ${code(title.command)} from ${title.sources.map(code).join(', ')}. The listings and pages were read on ${inputs.fetched}. ${code('pnpm test')} computes it again from these files and fails on any difference: every section is recomputed from the recorded answers except the vault evidence, which is stored as ${code(commandNames(subject).evidence)} printed it. The recordings were made on the AI's computer; ${code(compareCommand(subject))} reads the listings, pages, ABI proofs, code spans, ERC-7730 attestations and DefiLlama's protocol entries and hacks live, reads each vault again at the blocks its evidence names and each protocol fact and token's decimals at the block it was read at, fetches each recorded past transaction again by hash, and prints each fact that differs. It does not search for past transactions again, so it cannot show that a search found every one. Text from outside the program appears only as identifiers: a contract name Etherscan gives, printed only when it is a Solidity identifier, and the file paths, field paths and format names ${code('pnpm erc7730')} prints. The URLs come from the registry and ${code(DOCS_FILE)}, in RFC 3986 characters only. Text the AI wrote appears only where a row says it was written by the AI in the template. Do not edit this file.`,
     '',
   ];
   const ledger = judge(inputs, inputs.fixtures);
@@ -1406,7 +1415,7 @@ export function renderReport(inputs: ReportInputs, title: ReportTitle): string {
 
   const vaults = evidenceEntries(subject);
   if (vaults.length > 0) {
-    out.push('## Vaults', '', `For each vault, the stored output of ${code('pnpm vault-evidence')}, not recomputed by ${code('pnpm test')}; ${code('pnpm report --compare')} reads it again at the blocks it names.`, '');
+    out.push('## Vaults', '', `For each vault, the stored output of ${code(commandNames(subject).evidence)}, not recomputed by ${code('pnpm test')}; ${code('pnpm report --compare')} reads it again at the blocks it names.`, '');
     for (const vault of vaults) {
       const text = inputs.vaults.get(vault.name) ?? 'not read';
       if (!VAULT_TEXT.test(text)) throw new ReportError(`the stored vault evidence of ${vault.name} holds a character ${code('pnpm instance-evidence')} never prints`);

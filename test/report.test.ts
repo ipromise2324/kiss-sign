@@ -140,18 +140,18 @@ test('a per-vault report joins its vault\'s docs.json with the template\'s, and 
   assert.deepEqual(subject.kind === 'template' ? subject.docs.map((d) => `${d.fn.signature} ${d.contract.name}`) : [], ['approve(address,uint256) usdt', 'deposit(uint256,address) fluid-fusdt']);
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-docs-'));
   const folder = join(root, TEMPLATES_DIR, 'fluid/vault-deposit');
-  mkdirSync(join(folder, 'vaults', 'fluid-fusdt'), { recursive: true });
+  mkdirSync(join(folder, 'instances', 'fluid-fusdt'), { recursive: true });
   const page = { contract: 'fluid-fusdt', url: 'https://docs.fluid.io/' };
   const approve = { contract: 'usdt', url: 'https://etherscan.io/' };
   writeFileSync(join(folder, 'docs.json'), JSON.stringify({ 'deposit(uint256,address)': page }));
-  writeFileSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'approve(address,uint256)': approve }));
+  writeFileSync(join(folder, 'instances', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'approve(address,uint256)': approve }));
   assert.deepEqual(readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), { 'deposit(uint256,address)': page, 'approve(address,uint256)': approve });
   assert.deepEqual(readDocs(root, 'fluid/vault-deposit', 'fluid-fusdc'), { 'deposit(uint256,address)': page });
-  writeFileSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'deposit(uint256,address)': page }));
-  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /vaults\/fluid-fusdt\/docs\.json: "deposit\(uint256,address\)" is in the template's docs\.json too/);
-  rmSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'));
-  symlinkSync(join(folder, 'docs.json'), join(folder, 'vaults', 'fluid-fusdt', 'docs.json'));
-  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /vaults\/fluid-fusdt\/docs\.json: not a regular file/);
+  writeFileSync(join(folder, 'instances', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'deposit(uint256,address)': page }));
+  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /instances\/fluid-fusdt\/docs\.json: "deposit\(uint256,address\)" is in the template's docs\.json too/);
+  rmSync(join(folder, 'instances', 'fluid-fusdt', 'docs.json'));
+  symlinkSync(join(folder, 'docs.json'), join(folder, 'instances', 'fluid-fusdt', 'docs.json'));
+  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /instances\/fluid-fusdt\/docs\.json: not a regular file/);
 });
 
 test('morpho/vault-deposit: the ERC-7730 section is computed again from the recorded descriptors and attestation reads', async () => {
@@ -741,6 +741,11 @@ test('--instance-of writes a new instance\'s report to instances/, and its notes
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+  const moved = { ...(scoped.subject as Extract<Subject, { kind: 'template' }>), dir: join(TEMPLATES_DIR, ID, 'instances', TARGET.instance) };
+  const text = quick(recording.pages, new Map(), moved, new Map([[TARGET.instance, recording.vaults[TARGET.instance]!]]));
+  assert.match(text, /`pnpm report morpho\/vault-deposit --instance-of steakhouse-prime-usdc-v2-0f51 --compare` reads/);
+  assert.match(text, /stored as `pnpm instance-evidence` printed it/);
+  assert.match(text, /the stored output of `pnpm instance-evidence`/);
 });
 
 test('an instance whose committed files are in vaults/ is read and written there, and one in both folders is refused', () => {
@@ -748,10 +753,14 @@ test('an instance whose committed files are in vaults/ is read and written there
   try {
     const target = { template: 'fluid/vault-deposit', instance: 'fluid-fusdt' };
     const earlier = join(TEMPLATES_DIR, 'fluid/vault-deposit', 'vaults', 'fluid-fusdt');
+    const later = join(TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt');
     mkdirSync(join(root, earlier), { recursive: true });
+    mkdirSync(join(root, later), { recursive: true });
+    assert.equal(generatedPath(root, target), join(later, GENERATED_FILE), 'a folder with no report yet is not where the report sits');
+    writeFileSync(join(root, earlier, GENERATED_FILE), '# report\n');
     assert.equal(generatedPath(root, target), join(earlier, GENERATED_FILE));
     assert.equal(notesPath(root, target.template, target.instance), join(earlier, 'notes.json'));
-    mkdirSync(join(root, TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt'), { recursive: true });
+    writeFileSync(join(root, later, GENERATED_FILE), '# report\n');
     assert.throws(() => reportDir(root, target), (e: unknown) => e instanceof ReportError && e.message === 'fluid-fusdt has a report for fluid/vault-deposit in both instances/ and vaults/; keep one');
   } finally {
     rmSync(root, { recursive: true, force: true });

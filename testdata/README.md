@@ -404,7 +404,7 @@ done
 
 ## Vault evidence
 
-`vault-evidence/<name>.json` is written by `pnpm vault-evidence <vault> --record <name>`: the vault's registry name and every request with each provider's answer, as in `simulate/`. Block answers are cut to `number`, `hash`, `timestamp`, `gasLimit` and `mixHash`, and each Alchemy Transfers API page to its distinct recipients. The command refuses to write a recording that names the configured Safe, so a vault the Safe ever held cannot be recorded.
+`vault-evidence/<name>.json` is written by `pnpm instance-evidence <vault> --record <name>`: the vault's registry name and every request with each provider's answer, as in `simulate/`. Block answers are cut to `number`, `hash`, `timestamp`, `gasLimit` and `mixHash`, and each Alchemy Transfers API page to its distinct recipients. The command refuses to write a recording that names the configured Safe, so a vault the Safe ever held cannot be recorded.
 
 | File | Vault | Block | What it shows |
 | --- | --- | --- | --- |

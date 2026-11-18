@@ -68,7 +68,7 @@ A pull request that changes a template and, beside it, one comparison in the ver
 - **What stays free.**
   Research code, docs and `test/` may change beside a template, since none of them runs at signing.
   `testdata/` is free on both sides, except what a canary reads (below): its recordings feed only the tests and the reports, never `verify`, and a core change needs its own fixtures.
-  The reports `pnpm report` renders from recordings, `report.generated.md`, `report.generated.<language>.html` and `registry/reports/<vault>.generated.md`, are not hand-written, and `pnpm test` fails when one differs from what its recordings give, so a core change that alters a rendering may write the existing ones again.
+  The reports `pnpm report` renders from recordings, `report.generated.md`, `report.generated.<language>.html` and `registry/reports/<vault>.generated.md`, which no command writes any more, are not hand-written, and `pnpm test` fails when one differs from what its recordings give, so a core change that alters a rendering may write the existing ones again.
   Adding or deleting one counts as data: a vault's `report.generated.md` is what lets `card seal` and `verify` accept that vault.
 - **Where it is enforced.**
   `pnpm check-push` refuses such a branch before it is pushed, CI refuses it on every pull request and every push to `main`, and `pnpm report --compare`, which the signer runs with main's code, refuses it again, so a pull request that also weakens the check does not pass its own.
