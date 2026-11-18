@@ -4,7 +4,7 @@ Part of [the kiss-sign design](../design.md).
 
 - A past transaction's call trace comes from drpc alone, since Alchemy's free plan does not serve one.
   Its token transfers and approvals are checked against the receipt both providers agree on, but a call that moves no token, and ETH sent inside a call, which logs nothing, rest on drpc's answer.
-  The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry needs no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, so only `--compare`, which traces each transaction again, catches such an edit.
+  The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry, a registry token's mint or burn, from or to the zero address, and an `Approval` of a token outside the registry need no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, so only `--compare`, which traces each transaction again, catches such an edit.
   A trace only confirms a `flow` line in the report or asks the AI for a review; it never changes a verdict.
   A trace also shows one path: a contract may branch on state, so a line seen in every past transaction may not hold for the transaction to sign, and the effects check at signing is what protects the signer.
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used.

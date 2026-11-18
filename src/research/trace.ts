@@ -106,7 +106,8 @@ export function parseRecordedTrace(raw: unknown, path: string): RecordedTrace {
     const extra = Object.keys(call).find((key) => !['depth', 'type', 'from', 'to', 'selector', 'value', 'reverted', 'args'].includes(key));
     if (extra !== undefined) throw new TraceError(`${at}: ${extra} is not a field of a recorded call`);
     const type = CALL_TYPES.find((t) => t === call.type);
-    if (!Number.isSafeInteger(call.depth) || (call.depth as number) < 0 || (call.depth as number) > MAX_DEPTH || type === undefined) throw new TraceError(`${at}: no depth or call type`);
+    if ((call.depth as number) > MAX_DEPTH) throw new TraceError(`${at}.depth: deeper than the ${MAX_DEPTH} nested calls the EVM allows`);
+    if (!Number.isSafeInteger(call.depth) || (call.depth as number) < 0 || type === undefined) throw new TraceError(`${at}: no depth or call type`);
     if (call.selector !== undefined && (typeof call.selector !== 'string' || !/^0x[0-9a-f]{8}$/.test(call.selector))) throw new TraceError(`${at}.selector: not a selector`);
     if (call.reverted !== undefined && call.reverted !== true) throw new TraceError(`${at}.reverted: not true`);
     if (call.args !== undefined && !Array.isArray(call.args)) throw new TraceError(`${at}.args: not a list`);
@@ -159,8 +160,8 @@ export function drpcTraces(endpoint: Endpoint, transport: Transport, note: NoteU
     try {
       trace = { hash, calls: trimTrace((JSON.parse(answer.text) as { result: unknown }).result) };
     } catch (error) {
-      if (!(error instanceof TraceError || error instanceof RangeError)) throw error;
-      trace = { hash, unreadable: error instanceof TraceError ? error.message : 'nested too deep to read' };
+      if (!(error instanceof TraceError)) throw error;
+      trace = { hash, unreadable: error.message };
     }
     traces.set(hash, trace);
     return asAnswer(trace);
