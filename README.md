@@ -211,7 +211,9 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 | Attack | Stopped by |
 |---|---|
 | The AI gives wrong information, such as a template that allows too much | `verify` refuses a delegatecall, an unlimited approval, a Safe setting change and an unexplained balance change whatever the template says; the rest shows in the report you review |
-| The AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry. On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments. Each of these can still be got around |
+| The AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
+
+On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
 
 ## What kiss-sign checks
 
