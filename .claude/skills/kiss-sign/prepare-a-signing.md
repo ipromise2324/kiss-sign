@@ -9,8 +9,11 @@ The signer runs every command from the clone as `pnpm kiss-sign <command>`, afte
 
 1. Once per merged template, and again whenever it changes: `pnpm kiss-sign template approve <protocol>/<operation>`.
 2. `pnpm kiss-sign card new <protocol>/<operation>`.
-   It stops first when the clone is behind GitHub's `main`, lists each contract, market or recipient with its full address to pick by number, asks each amount in whole tokens (commas between thousands allowed), reads the token's decimals on chain itself, and seals the card after they confirm.
+   It first fetches GitHub's `main` and stops, telling the signer to `git pull`, when the clone's `templates/` or `registry/` differ from it.
+   It lists each contract, market or recipient with its full address; the signer picks by number, or by the exact name, full address or market id as listed.
+   It asks each amount in whole tokens (commas between thousands allowed), reading a registry token's decimals on chain itself; ETH is 18 with no read, and a token outside the registry is asked in base units.
    It does not ask a computed field, such as a vault deposit's `min-shares`: it reads the declared view, applies the template's slippage, and prints the value with its slippage and source for the signer to check.
+   It ends with the card for the signer to seal; sealing stores its hash before the signer sees the Safe transaction.
 3. After the transaction is proposed in the Safe web app: `pnpm kiss-sign verify --card <card hash> --safe-tx-hash <safeTxHash>`.
 
 The Next steps (下一步) section at the bottom of the signer's HTML report lists every step and prompt.

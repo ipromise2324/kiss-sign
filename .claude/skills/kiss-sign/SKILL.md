@@ -64,9 +64,11 @@ Look in `templates/` for the operation, such as `templates/erc20/transfer/`, `te
 
 - No template for the operation: [Build a template](#build-a-template).
 - The template exists and is reported per instance, and the signer names an instance with no report for it: [Add an instance's report](#add-an-instances-report).
-  A template is reported per instance when its card has an instance field ([One report, one operation](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template), step 6); today every such instance is a vault, such as each vault `morpho/vault-deposit` or `fluid/vault-deposit` can deposit into.
+  A template is reported per instance when it declares `instanceField`, or, without one, when its card has a contract field of registry kind `vault`; a card value of that kind needs a report through whatever field names it, and a card with two fields of that kind is refused.
+  The rules and the templates not yet rebuilt, listed in `src/template/vault-reports.ts`, are in step 6 of [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template), the bold items One report, one operation and No report, no signing.
   `card new` lists only instances with a report, and `card seal` and `verify` refuse any other.
-  The exceptions, such as the templates not yet rebuilt listed in `src/template/vault-reports.ts`, are under No report, no signing in the same step.
+- The template exists and is not reported per instance, but a contract the signer names is not in `registry/contracts.json`: [Add a registry entry](#add-a-registry-entry).
+- A recipient that is not a contract goes in the signer's address book, never the registry: [Prepare a signing](#prepare-a-signing).
 - The template exists, every contract the signer names is in `registry/contracts.json`, and each instance has its report: [Prepare a signing](#prepare-a-signing).
 - The operation needs a capability the program lacks: research it anyway, then change the program as [Program changes](build-template.md#program-changes) says, merged as [Merge a program change](merge-a-program-change.md) says, before the template's pull request.
 
@@ -87,8 +89,7 @@ One report covers one concrete operation: for a template reported per instance, 
 8. **Write the notes and reviews.** Write `notes.json` and a review of every result the signer must look at, then `pnpm report ... --render` ([notes-and-reviews.md](notes-and-reviews.md)).
 9. **Add the tests.** Record two or more transactions of other Safes, require `MATCH`, and catch every bound field ([how](build-template.md#add-the-tests)).
 10. **Check and open the pull request.** `pnpm test`, `pnpm typecheck` and `pnpm check-push origin/main..HEAD` must pass ([how](build-template.md#open-the-pull-request)).
-11. **Tell the signer.** Say what the card will ask, what will be checked and the findings, give the link, and give the next steps ([how](build-template.md#tell-the-signer)).
-    The next steps always include, before merging: in a clone on `main`, `git pull`, `git fetch origin <branch>`, then `pnpm report <protocol>/<operation> --compare --data origin/<branch>` (with `--instance-of <instance>` for each per-instance report the branch adds or changes), and merge only when it prints no difference.
+11. **Tell the signer.** Say what the card will ask, what will be checked and the findings, give the link, and give the next steps, the `--compare` run before merging among them ([how](build-template.md#tell-the-signer)).
 
 ## Add an instance's report
 
@@ -97,25 +98,26 @@ The earlier instance's report already holds the shared part.
 
 1. Re-check the shared part live: `pnpm report <protocol>/<operation> --instance-of <an instance that has a report> --compare`.
    The route, the template's contracts, the tokens and the factory must print no difference; a difference stops the work and goes to the signer.
-2. Research the new instance's address, and its asset or any other entry it names that no report names yet, as [addresses.md](addresses.md) says.
-   Name its factory in its `factory` attribute, confirm with `pnpm prove-instance <instance>` that the factory made it, then run `pnpm instance-evidence <instance>`.
-3. Run `pnpm past-txs <protocol>/<operation>` anchored on the instance, such as `--token <vault> --anchor mint`, with no block range and `--record <name>`, and note the counts by sender type.
+2. Research the new instance's address, and every entry it names that no report names yet, such as its asset, as [addresses.md](addresses.md) says.
+   Prove its factory when its kind has one, and read its evidence ([An instance a template is reported per](addresses.md#contracts-that-need-more)).
+3. Run `pnpm past-txs <protocol>/<operation>` anchored on the instance with the transfer or event the operation itself makes, such as `--token <vault> --anchor mint` for a vault deposit ([Study past transactions](build-template.md#study-past-transactions)), with no block range and `--record <name>`, and note the counts by sender type.
 4. Run `pnpm report <protocol>/<operation> --instance-of <instance> --record`.
 5. Write the instance's own `notes.json`, and its `docs.json` when a function's page names the instance or its asset ([An instance's notes](notes-and-reviews.md#an-instances-notes)), then run `pnpm report <protocol>/<operation> --instance-of <instance> --render`.
    Change no template text and no other instance's notes; the template's hash does not change, so the signer approves nothing again.
-6. Open a pull request with the registry change, the instance's folder, its recordings and the past-transactions recording, as [Open the pull request](build-template.md#open-the-pull-request) says.
-   Tell the signer to run `pnpm report <protocol>/<operation> --instance-of <instance> --compare --data origin/<branch>` from `main` before merging.
+6. Open a pull request with the registry change, the instance's folder, its recordings and the past-transactions recording ([Open the pull request](build-template.md#open-the-pull-request)), and tell the signer ([Tell the signer](build-template.md#tell-the-signer)).
+
+## Add a registry entry
+
+A template not reported per instance covers every registry entry a card field can name, so a new entry changes its report.
+
+1. Research the entry, and each entry it names as an attribute, as [addresses.md](addresses.md) says.
+2. Run `pnpm report <protocol>/<operation> --record`, write a review for each new result under To review, and run `--render` ([notes-and-reviews.md](notes-and-reviews.md)).
+3. Check and open the pull request, and tell the signer, as steps 10 and 11 of [Build a template](#build-a-template) say.
 
 ## Merge a program change
 
 A program pull request changes no file under `templates/` or `registry/` and no file of the program gate.
-You merge it yourself, only after every step of [merge-a-program-change.md](merge-a-program-change.md), in order:
-
-1. Push the branch and open the pull request to the signer's fork.
-2. `pnpm program-gate origin/<branch>`, in a clone at exactly `origin/main`, prints `ELIGIBLE` (exit 0).
-3. The pull request's `program-gate` CI job passes and its log ends with the same `ELIGIBLE` line.
-4. A fresh reviewer, given the diff, `docs/design.md` and `docs/design/`, and the gate output, answers `NO SECURITY REGRESSION`.
-5. Merge exactly the judged commit with a merge commit.
+Merge it yourself only after every step of [merge-a-program-change.md](merge-a-program-change.md), in order.
 
 ## Prepare a signing
 
