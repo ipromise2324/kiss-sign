@@ -107,7 +107,7 @@ export type Header = {
 
 export type StripItem = { readonly line: StripLine | 'providers'; readonly name: string; readonly state: State; readonly count: string | undefined; readonly explain: string };
 
-export type Who = 'you-type' | 'you-pick' | 'fixed' | 'free' | 'bounded';
+export type Who = 'you-type' | 'you-pick' | 'computed' | 'fixed' | 'free' | 'bounded';
 export type KeyItem = { readonly who: Who; readonly label: string; readonly means: string };
 export type Chip = { readonly who: Who; readonly label: string };
 
@@ -517,11 +517,17 @@ function targetOf(rule: Rule, context: Context): { readonly label: string; reado
   return name === undefined ? { label: refWord(context.template, rule.ref, w), names, role: w.role.picked } : { label: name, names, role: role(name, w.role.picked) };
 }
 
+const isComputed = (template: Template, name: string): boolean => {
+  const field = template.card.get(name);
+  return field?.kind === 'amount' && field.computed !== undefined;
+};
+
 function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly field: string | undefined } | undefined {
   switch (rule.kind) {
     case 'card': {
-      const kind = template.card.get(rule.ref.field)?.kind;
-      return { who: kind === 'amount' || kind === 'nonce' || kind === 'threshold' || kind === 'percent' ? 'you-type' : 'you-pick', field: rule.ref.field };
+      const field = template.card.get(rule.ref.field);
+      if (isComputed(template, rule.ref.field)) return { who: 'computed', field: rule.ref.field };
+      return { who: field?.kind === 'amount' || field?.kind === 'nonce' || field?.kind === 'threshold' || field?.kind === 'percent' ? 'you-type' : 'you-pick', field: rule.ref.field };
     }
     case 'owner-before':
       return { who: 'fixed', field: undefined };
@@ -537,11 +543,14 @@ function whoOf(rule: Rule, template: Template): { readonly who: Who; readonly fi
       return { who: 'bounded', field: undefined };
     case 'equals':
       return whoOf(rule.rule, template);
-    case 'share-price':
+    case 'share-price': {
+      const computed = [rule.shares, rule.assets].find((q) => q.kind === 'card' && isComputed(template, q.field));
+      if (computed?.kind === 'card') return { who: 'computed', field: computed.field };
       return { who: 'you-type', field: rule.assets.kind === 'card' ? rule.assets.field : undefined };
+    }
     case 'at-least':
     case 'at-most':
-      return { who: 'you-type', field: rule.field };
+      return { who: isComputed(template, rule.field) ? 'computed' : 'you-type', field: rule.field };
     case 'call':
     case 'items':
     case 'fields':
@@ -1057,6 +1066,7 @@ function keyItems(used: ReadonlySet<Who>, template: Template, w: Words): KeyItem
   return [
     ...(used.has('you-type') ? [{ who: 'you-type' as const, label: w.who['you-type'], means: w.whoMeans['you-type'] }] : []),
     ...(used.has('you-pick') ? [{ who: 'you-pick' as const, label: w.who['you-pick'], means: w.whoMeans['you-pick'] }] : []),
+    ...(used.has('computed') ? [{ who: 'computed' as const, label: w.who.computed, means: w.whoMeans.computed }] : []),
     ...(used.has('fixed') ? [{ who: 'fixed' as const, label: w.who.fixed, means: w.whoMeans.fixed }] : []),
     ...(used.has('free') ? [...freeRules(template).claims].map((claim) => ({ who: 'free' as const, label: w.appFills, means: w.freeKey[claim] })) : []),
     ...(used.has('free') && freeRules(template).member ? [{ who: 'free' as const, label: w.appFills, means: w.whoMeans.member }] : []),
@@ -1101,7 +1111,7 @@ function flowSection(context: Context): Section {
 
 /** Who gives the values, in words, such as `you type, you pick and the app fills`. */
 const chosenWords = (used: ReadonlySet<Who>, w: Words): string =>
-  w.and((['you-type', 'you-pick', 'free'] as const).filter((who) => used.has(who) || (who === 'free' && used.has('bounded'))).map((who) => w.chosen[who]));
+  w.and((['you-type', 'you-pick', 'computed', 'free'] as const).filter((who) => used.has(who) || (who === 'free' && used.has('bounded'))).map((who) => w.chosen[who]));
 
 type ProtocolNote = NonNullable<ReturnType<Notes['protocols']['get']>>;
 
