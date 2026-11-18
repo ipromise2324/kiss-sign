@@ -46,12 +46,13 @@ export type SitePlace = { readonly kind: 'defillama' | 'coingecko' | 'immunefi' 
 /**
  * Why a check did not agree: `differs` for a real disagreement (another domain, GitHub org or coin, or an API answer
  * that is not the entry's address), `unexplained` for anything else the program cannot excuse, such as a slug DefiLlama
- * does not list or an address away from its label, `unlisted` when the listing holds nothing to compare with,
+ * does not list or an address away from its label, `other-address` when a pinned page or SDK file binds the label
+ * only to other addresses, `unlisted` when the listing holds nothing to compare with,
  * `not-served` when the page as served does not show the address, `not-fetched` when the page's or API's server
  * answered with something other than the page or JSON, such as a 404 or a redirect, `unattested` when npm holds no
  * provenance for an SDK's version.
  */
-export type FindingCause = 'differs' | 'unexplained' | 'unlisted' | 'not-served' | 'not-fetched' | 'unattested';
+export type FindingCause = 'differs' | 'other-address' | 'unexplained' | 'unlisted' | 'not-served' | 'not-fetched' | 'unattested';
 /**
  * `api` is the address the entry's `apiSource` answers; `api-site` its URL's site against the DefiLlama protocol, as
  * `defillama` compares the source's. `tip` and `sdk-latest` are the addresses the newest version of a pinned GitHub page
@@ -78,7 +79,7 @@ export type Line = (
   readonly shared?: DeployerShare;
   /** The Immunefi program a bounty line names. */
   readonly program?: string;
-  /** The addresses a newest version binds the label to instead of the entry's. */
+  /** The addresses a pinned page, SDK file or newest version binds the label to instead of the entry's. */
   readonly others?: readonly Address[];
 };
 /** `sites` holds the site of each page that lists the address, the `source` first. */
@@ -317,7 +318,10 @@ function pageLine(source: Omit<SourcePage, 'label'> & { readonly label: string |
   return labelLine('page', pages.get(url) ?? { kind: 'failed', why: `${url} was not fetched` }, url, source, address);
 }
 
-/** Where the address stands on `page` against the label: next to it, apart, or not there; `url` names where the page came from. */
+/**
+ * Where the address stands on `page` against the label: next to it, the label next to other addresses only, apart, or
+ * not there; `url` names where the page came from.
+ */
 function labelLine(check: 'page' | 'sdk', page: Page, url: string, source: { readonly label: string | undefined; readonly heading?: string }, address: Address): Line {
   const finding = (text: string, cause: FindingCause = 'unexplained'): Line => ({ kind: 'finding', check, text, cause });
   if (page.kind === 'unread') return { kind: 'unverifiable', check, text: page.why };
@@ -326,6 +330,11 @@ function labelLine(check: 'page' | 'sdk', page: Page, url: string, source: { rea
   const label = `"${source.label}"`;
   const under = source.heading === undefined ? '' : ` under a heading naming "${source.heading}"`;
   const match = findOnPage(page.blocks, address, source.label, source.heading);
+  const bound = match.kind === 'next-to' ? [] : labelBindings(page.blocks, source.label, source.heading);
+  if (bound.length > 0) {
+    const text = `the ${check === 'page' ? 'page' : 'file'} binds ${label}${under} to ${bound.map(checksumAddress).join(', ')}, not the entry's address ${checksumAddress(address)}`;
+    return { kind: 'finding', check, text, cause: 'other-address', others: bound };
+  }
   switch (match.kind) {
     case 'absent':
       return finding(`the address is not found on the page as served (${url}); a page that shows it only by running JavaScript is not read`, 'not-served');
@@ -661,19 +670,21 @@ export function pageReadsOf(entry: RegistryEntry): [string, PageRead][] {
 
 /**
  * Keeps only the blocks the checks read: for each of `reads`, the first block, with the one before it, that gives the
- * same answer as the whole page; for each of `words`, the first block it matches. It returns the page whole unless
- * every read gives the same answer on what it keeps.
+ * same answer as the whole page, and every block where its label binds an address; for each of `words`, the first
+ * block it matches. It returns the page whole unless every read gives the same answer on what it keeps.
  */
 export function trimPage(page: Page, reads: readonly PageRead[], words: readonly RegExp[] = []): Page {
   if (page.kind !== 'served') return page;
   const { blocks } = page;
-  const answer = (on: readonly PageBlock[], read: PageRead) => JSON.stringify(findOnPage(on, read.address, read.label, read.heading));
+  const found = (on: readonly PageBlock[], read: PageRead) => JSON.stringify(findOnPage(on, read.address, read.label, read.heading));
+  const answer = (on: readonly PageBlock[], read: PageRead) => JSON.stringify([found(on, read), labelBindings(on, read.label, read.heading)]);
   const kept = new Set<number>();
   for (const read of reads) {
-    const whole = answer(blocks, read);
-    const at = blocks.findIndex((block, i) => block.text.toLowerCase().includes(read.address.slice(2)) && answer(blocks.slice(Math.max(0, i - 1), i + 1), read) === whole);
+    const whole = found(blocks, read);
+    const at = blocks.findIndex((block, i) => block.text.toLowerCase().includes(read.address.slice(2)) && found(blocks.slice(Math.max(0, i - 1), i + 1), read) === whole);
     if (at > 0) kept.add(at - 1);
     if (at >= 0) kept.add(at);
+    for (const i of bindingBlocks(blocks, read)) kept.add(i);
   }
   for (const word of words) {
     const at = blocks.findIndex((block) => word.test(block.text));
@@ -694,17 +705,14 @@ export function trimBindings(page: Page, reads: readonly BindingRead[]): Page {
   if (page.kind !== 'served') return page;
   const { blocks } = page;
   const answer = (on: readonly PageBlock[], read: BindingRead) => JSON.stringify(labelBindings(on, read.label, read.heading));
-  const kept = new Set<number>();
-  for (const read of reads) {
-    blocks.forEach((_, i) => {
-      if (labelBindings(blocks.slice(Math.max(0, i - 1), i + 1), read.label, read.heading).length === 0) return;
-      kept.add(i);
-      if (i > 0) kept.add(i - 1);
-    });
-  }
+  const kept = new Set(reads.flatMap((read) => bindingBlocks(blocks, read)));
   const trimmed: Page = { kind: 'served', blocks: blocks.filter((_, i) => kept.has(i)) };
   return reads.every((read) => answer(trimmed.blocks, read) === answer(blocks, read)) ? trimmed : page;
 }
+
+/** Each block where `read`'s label binds an address, with the block before it. */
+const bindingBlocks = (blocks: readonly PageBlock[], read: BindingRead): number[] =>
+  blocks.flatMap((_, i) => (labelBindings(blocks.slice(Math.max(0, i - 1), i + 1), read.label, read.heading).length === 0 ? [] : i > 0 ? [i - 1, i] : [i]));
 
 /** What the newest-version checks of `entries` read on the tip page fetched from `url`. */
 const tipReadsOn = (entries: readonly RegistryEntry[], commits: SourcePages['commits'], url: string): BindingRead[] =>

@@ -200,7 +200,14 @@ export type SiteResult = RowResult & { readonly slug: string | undefined; readon
 /** What the newest version of a pinned page or SDK binds to the same label; `where` is its branch or npm version. */
 export type NewestResult = RowResult & { readonly where: string; readonly others: readonly string[] };
 /** A program source: whether it showed the address, for a page or the API its site, and for a pinned page or SDK its newest version. */
-export type SourceLine = RowResult & { readonly label: string; readonly href: HttpsUrl | undefined; readonly site: SiteResult | undefined; readonly newest: NewestResult | undefined };
+export type SourceLine = RowResult & {
+  readonly label: string;
+  readonly href: HttpsUrl | undefined;
+  /** The addresses the source binds the label to instead of the entry's. */
+  readonly others: readonly string[];
+  readonly site: SiteResult | undefined;
+  readonly newest: NewestResult | undefined;
+};
 /** A function's documentation page from docs.json, linked, with the worst of its results; a standard's page carries its caveat. */
 export type DocLine = RowResult & { readonly label: string; readonly href: HttpsUrl; readonly note: string | undefined };
 export type AiSourceResult = 'pass' | 'attention' | 'fail';
@@ -1248,7 +1255,14 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
   }
   const span = /\/code\.(\d+)$/.exec(result.id);
   const where = span !== null ? w.span(span[1] as string) : result.id.endsWith('/code.today') ? w.latestBlock : '';
-  const refused = result.finding.kind === 'refused' ? w.refusedWhy(result.finding.why) : result.finding.kind === 'fn-not-in-abi' ? ` ${result.finding.signatures.join(', ')}` : '';
+  const refused =
+    result.finding.kind === 'refused'
+      ? w.refusedWhy(result.finding.why)
+      : result.finding.kind === 'fn-not-in-abi'
+        ? ` ${result.finding.signatures.join(', ')}`
+        : result.finding.kind === 'label-differs'
+          ? ` ${(result.others ?? []).map(checksumAddress).join(', ')}`
+          : '';
   const source = result.source === undefined ? undefined : sourceWord(result.about.entry, result.source.of, w, context.registry);
   return { title: [w.resultTitle(name, source, words.title, where)], why: [`${words.why}${refused}`] };
 }
@@ -1422,6 +1436,7 @@ function addressSection(context: Context): Section[] {
         href: line.link,
         state: line.state,
         phrase: line.phrase,
+        others: line.others.map(checksumAddress),
         site: line.site === undefined ? undefined : { state: line.site.state, phrase: line.site.phrase, slug: entry.defillama, places: placeLinks(entry, line.site.places, w) },
         newest:
           line.newest === undefined

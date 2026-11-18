@@ -134,6 +134,15 @@ test('a recorded page keeps only the blocks its checks read, however often it na
   assert.deepEqual(findOnPage(trimmed.kind === 'served' ? trimmed.blocks : [], address, read.label, read.heading), findOnPage(page.blocks, address, read.label, read.heading));
 });
 
+test('a recorded page keeps every block where the label binds another address, so the recording names the same other address', async () => {
+  const entries = entriesOf({ r: { address: ADDR, kind: 'router', defillama: 'morpho-blue', source: DOCS, sourceLabel: 'Bundler3' } });
+  const filler = Array.from({ length: 20 }, (_, i) => `<p>Section ${i}</p>`).join('');
+  const pages = await gatherSourcePages(entries.flatMap(pageUrlsOf), getFrom({ [DOCS]: html(`<p>Router ${ADDR}</p>${filler}<p>Bundler3 ${OTHER}</p>`) }));
+  const recorded = sourcePagesOf(JSON.parse(JSON.stringify(trimForRecording(entries, listings, pages, new Date('2026-11-18')))));
+  assert.match(report(entries, listings, recorded), boundTo('Bundler3'));
+  assert.equal(report(entries, listings, recorded), report(entries, listings, pages));
+});
+
 test('the registry refuses a defillama or coingecko value that is not a slug, and a coingecko id on a contract that is no ERC-20', () => {
   assert.throws(
     () => entriesOf({ usdc: { address: FAKE, kind: 'token', source: 'https://example.org/u', defillama: 'Circle USDC' } }),
@@ -187,30 +196,32 @@ test('the registry: every labelled source page has its address next to its label
   assert.match(text, /hyperithm-usdc-apex-v2-9e2f .*\n(?: {2}.*\n)*? {2}url {8}FINDING the source URL holds the address/);
 });
 
-test('an address in the label\'s own table row agrees; in another row, too far away, or past another address it is a finding', async () => {
+const apartFrom = (label: string) => new RegExp(`page {7}FINDING the address is on the page, but not within 100 characters of "${label}"`);
+/** The finding for a label the page binds to OTHER only, which names OTHER in full. */
+const boundTo = (label: string, under = '') => new RegExp(`page {7}FINDING the page binds "${label}"${under} to ${OTHER}, not the entry's address ${ADDR}`);
+
+test('an address in the label\'s own table row agrees; too far away it is a finding, and a label next to another address is that finding', async () => {
   assert.match(await onDocs(`<table><tr><td>Bundler3</td><td><a href="x">${ADDR}</a></td></tr></table>`), /page {7}agrees {2}the page has the address 1 characters after "Bundler3"/);
   const apart = /page {7}FINDING the address is on the page, but not within 100 characters of "Bundler3" in one block with no other address between/;
-  assert.match(await onDocs(`<table><tr><td>Bundler3</td><td>${OTHER}</td></tr><tr><td>Adapter</td><td>${ADDR}</td></tr></table>`), apart);
   assert.match(await onDocs(`<p>Bundler3 ${'word '.repeat(30)}${ADDR}</p>`), apart);
-  assert.match(await onDocs(`<p>Bundler3 ${OTHER} ${ADDR}</p>`), apart);
   assert.match(await onDocs(`<p>Bundler3s ${ADDR}</p>`), apart);
+  assert.match(await onDocs(`<table><tr><td>Bundler3</td><td>${OTHER}</td></tr><tr><td>Adapter</td><td>${ADDR}</td></tr></table>`), boundTo('Bundler3'));
+  assert.match(await onDocs(`<p>Bundler3 ${OTHER} ${ADDR}</p>`), boundTo('Bundler3'));
 });
-
-const apartFrom = (label: string) => new RegExp(`page {7}FINDING the address is on the page, but not within 100 characters of "${label}"`);
 
 test('a label standing alone in the paragraph just before the address agrees; one inside other text or beside an address does not', async () => {
   assert.match(await onDocs(`<p>Bundler3:</p><p><a>${ADDR}</a></p>`), /page {7}agrees {2}the page has the address 2 characters after "Bundler3"/);
   assert.match(await onDocs(`<p>See the Bundler3 guide</p><p>${ADDR}</p>`), apartFrom('Bundler3'));
-  assert.match(await onDocs(`<p>${OTHER} is not Bundler3</p><p>${ADDR}</p>`), apartFrom('Bundler3'));
+  assert.match(await onDocs(`<p>${OTHER} is not Bundler3</p><p>${ADDR}</p>`), boundTo('Bundler3'));
 });
 
 test('in a list of names and addresses, each address binds to its own name, whichever side the names stand on', async () => {
   const nameFirst = `<p>Bundler3: ${ADDR} GeneralAdapter1: ${OTHER}</p>`;
   assert.match(await onDocs(nameFirst), /page {7}agrees {2}the page has the address 2 characters after "Bundler3"/);
-  assert.match(await onDocs(nameFirst, { sourceLabel: 'GeneralAdapter1' }), apartFrom('GeneralAdapter1'));
+  assert.match(await onDocs(nameFirst, { sourceLabel: 'GeneralAdapter1' }), boundTo('GeneralAdapter1'));
   const nameAfter = `<p>${OTHER} (Bundler3), ${ADDR} (GeneralAdapter1)</p>`;
   assert.match(await onDocs(nameAfter, { sourceLabel: 'GeneralAdapter1' }), /page {7}agrees {2}the page has the address 2 characters before "GeneralAdapter1"/);
-  assert.match(await onDocs(nameAfter), apartFrom('Bundler3'));
+  assert.match(await onDocs(nameAfter), boundTo('Bundler3'));
   assert.match(await onDocs(`<p>${ADDR} is Bundler3</p>`), /page {7}agrees {2}the page has the address 4 characters before "Bundler3"/);
 });
 
@@ -221,7 +232,7 @@ const onJson = (value: unknown, sourceLabel: string) =>
 test('in JSON, a name binds to an address only within its own object', async () => {
   const list = [{ address: OTHER, name: 'Bundler3' }, { address: ADDR, name: 'GeneralAdapter1' }];
   assert.match(await onJson(list, 'GeneralAdapter1'), /page {7}agrees {2}the page has the address 6 characters before "GeneralAdapter1"/);
-  assert.match(await onJson(list, 'Bundler3'), apartFrom('Bundler3'));
+  assert.match(await onJson(list, 'Bundler3'), boundTo('Bundler3'));
   assert.match(await onJson([{ name: 'Bundler3' }, { address: ADDR }], 'Bundler3'), apartFrom('Bundler3'));
 });
 
@@ -238,7 +249,7 @@ test('a markdown deployments file binds each address to the row label under its 
   ].join('\n');
   const at = (sourceHeading: string) => pageReport({ source: md, sourceLabel: 'mainnet', sourceHeading }, { [md]: { status: 200, text, headers: { 'content-type': 'text/plain' } } });
   assert.match(await at('fToken_fUSDC'), /page {7}agrees {2}the page has the address 3 characters after "mainnet" under a heading naming "fToken_fUSDC"/);
-  assert.match(await at('fToken_fUSDT'), apartFrom('mainnet'));
+  assert.match(await at('fToken_fUSDT'), boundTo('mainnet', ' under a heading naming "fToken_fUSDT"'));
 });
 
 test('an address only a script, an attribute, or a comment holds is not on the page as served', async () => {
@@ -292,7 +303,8 @@ test('an address in a broken letter case is a finding; lowercase and checksummed
 test('a sourceHeading must be the nearest heading above the address', async () => {
   const body = `<h3>TokenMessenger</h3><table><tr><td>Ethereum</td><td>${ADDR}</td></tr></table><h3>MessageTransmitter</h3><table><tr><td>Ethereum</td><td>${OTHER}</td></tr></table>`;
   assert.match(await onDocs(body, { sourceLabel: 'Ethereum', sourceHeading: 'TokenMessenger' }), /agrees {2}the page has the address 1 characters after "Ethereum" under a heading naming "TokenMessenger"/);
-  assert.match(await onDocs(body, { sourceLabel: 'Ethereum', sourceHeading: 'MessageTransmitter' }), /FINDING the address is on the page, but not within 100 characters of "Ethereum" under a heading naming "MessageTransmitter"/);
+  assert.match(await onDocs(body, { sourceLabel: 'Ethereum', sourceHeading: 'MessageTransmitter' }), boundTo('Ethereum', ' under a heading naming "MessageTransmitter"'));
+  assert.match(await onDocs(body, { sourceLabel: 'Ethereum', sourceHeading: 'Bridge' }), /FINDING the address is on the page, but not within 100 characters of "Ethereum" under a heading naming "Bridge"/);
 });
 
 test('an entry with no sourceLabel and a redirecting page are findings', async () => {
@@ -543,7 +555,7 @@ test('each of moreSources is read and checked as the source is: its label, its s
   );
   assert.match(text, /\n {2}source 1 {3}https:\/\/docs\.morpho\.org\/sdk\n {2}source 2 {3}https:\/\/github\.com\/safe-global/);
   assert.match(text, /\n {2}defillama 1 agrees {2}source 1 domain morpho\.org is listed by DefiLlama morpho-blue/);
-  assert.match(text, /\n {2}page 1 {5}FINDING the address is not found on the page as served/);
+  assert.match(text, new RegExp(`\\n {2}page 1 {5}FINDING the page binds "bundler3" to ${OTHER}, not the entry's address ${ADDR}`));
   assert.match(text, /\n {2}defillama 2 FINDING source 2 GitHub org safe-global is not one the protocol's places list: morpho-org \(DefiLlama morpho-blue/);
   assert.match(text, /\n {2}github 2 {3}FINDING commit ca9cb0d2d5f5 of safe-global\/safe-deployments is not on the default branch main/);
   assert.match(text, /\n {2}page 2 {5}agrees {2}the page has the address 9 characters after "canonical"/);
