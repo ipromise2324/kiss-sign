@@ -101,7 +101,7 @@
       <ul>
         <li>Each address has code; a proxy's implementation; the factory that created it</li>
         <li><code>pin-code</code>: code hash and implementation, with the first block each code ran</li>
-        <li><code>prove-abi</code>: Etherscan source compiled with a pinned solc equals the bytecode</li>
+        <li><code>prove-abi</code>: Etherscan source compiled with a pinned solc equals the bytecode, but for the positions it masks</li>
       </ul>
       <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Etherscan</span><span class="chip">pinned solc</span></div></div>
     <div class="arrow">→</div>
@@ -109,7 +109,7 @@
       <h3><i>5</i>Gather evidence</h3>
       <ul>
         <li><code>instance-evidence</code>: factory admits the vault; monthly assets; holder count and top 10 share</li>
-        <li><code>past-txs</code>: finds past transactions and counts, per field, who held the rule, evidence of normal use, not of safety; records each one's call trace (who calls whom) to test the AI's flow lines</li>
+        <li><code>past-txs</code>: finds past transactions and counts, per field, who held the rule, evidence of normal use, not of safety; traces each one that is exactly the template (who calls whom) to test the AI's flow lines; <code>--record</code> keeps the traces</li>
         <li><code>erc7730</code>: descriptors from a pinned archive, ERC-8176 attestations, no descriptor text</li>
       </ul>
       <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Alchemy Transfers</span><span class="chip">Multicall3</span><span class="chip">Etherscan</span><span class="chip">drpc trace</span><span class="chip">ERC-7730 registry</span><span class="chip">EAS</span></div></div>
@@ -139,7 +139,7 @@
       <h3><i>8</i>Review and merge</h3>
       <ul>
         <li>Read the report and the template's rules</li>
-        <li>From main: <code>pnpm report … --compare --data origin/&lt;branch&gt;</code> reads everything again live, needs the HTML byte for byte, prints <code>PROGRAM CHANGE</code> and <code>AI TEXT</code></li>
+        <li>From main: <code>pnpm report … --compare --data origin/&lt;branch&gt;</code> reads the facts again live (the search and signed-message answers stay recorded), needs the HTML byte for byte, prints <code>PROGRAM CHANGE</code> and <code>AI TEXT</code></li>
         <li>Approve and merge; branch protection on <code>main</code> is recommended, not required</li>
       </ul>
       <div class="chips"><span class="chip">GitHub</span></div></div>
@@ -176,7 +176,7 @@
       <ul>
         <li><code>card new</code>: pick vaults, markets and recipients by number, each with its full address</li>
         <li>Amounts in whole tokens; the program reads <code>decimals()</code> through both providers</li>
-        <li>First use of a template or vault: a small amount</li>
+        <li>First use of a template or vault: start with a small amount, as the report advises; nothing enforces it</li>
       </ul>
       <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span></div></div>
 
@@ -186,7 +186,7 @@
     <div class="arrow">→</div>
     <div class="box signer"><div class="head"><span>Signer</span><span>step 11</span></div>
       <h3><i>13</i>Propose on Safe</h3>
-      <p>kiss-sign reads the transaction back, or you paste it, and recomputes every hash itself.</p>
+      <p>kiss-sign reads the transaction back, or from a JSON file you save (<code>--tx</code>), and recomputes every hash itself.</p>
       <div class="chips"><span class="chip">Safe Transaction Service</span></div></div>
     <div class="arrow">→</div>
     <div class="box program"><div class="head"><span>Program · verify</span><span>self-check</span></div>
@@ -202,7 +202,7 @@
       <ul>
         <li>The template's hash is the one you approved</li>
         <li>Decode, re-encode byte for byte</li>
-        <li>Floors: no <code>delegatecall</code> except to MultiSend; no unlimited approval except a registry standing allowance; no Safe setting change except a declared owner or threshold change; zero fee fields</li>
+        <li>Floors: no <code>delegatecall</code> except to the official MultiSend; no unlimited approval except a registry standing allowance; no Safe setting change except a declared owner or threshold change; zero fee fields</li>
         <li>Every field against the template and the card</li>
         <li>Each vault's <code>asset()</code> is its registry token</li>
         <li>Every registry contract runs its pinned code</li>
@@ -213,7 +213,7 @@
     <div class="box program"><div class="head"><span>Program · verify</span><span>step 12</span></div>
       <h3><i>16</i>Simulate</h3>
       <ul>
-        <li>Through the Safe's <code>execTransaction</code> with <code>eth_simulateV1</code></li>
+        <li>Through the Safe's <code>execTransaction</code> with <code>eth_simulateV1</code>; an executed transaction's effects come from its receipt</li>
         <li>Balance and allowance changes must be what the effects explain</li>
         <li>Views read before and after, through a <code>STATICCALL</code></li>
         <li>Calls that move no asset of the Safe are listed, as information, not a check</li>
@@ -239,7 +239,7 @@
       <div class="chips"><span class="chip">Hardware wallet</span></div></div>
     <div class="arrow"></div>
     <div class="store local"><h3>Local only, never pushed: <code>$KISS_SIGN_HOME</code></h3>
-      <ul><li>Config: the Safe, the repository to trust, providers</li><li>API keys in <code>.env</code></li><li>Address book</li><li>Sealed cards and verdict files</li><li>Approved template hashes</li></ul></div>
+      <ul><li>Config: the Safe, the repository to trust, the language</li><li>API keys in <code>.env</code></li><li>Address book</li><li>Sealed cards and verdict files</li><li>Approved template hashes</li></ul></div>
   </div>
 </section>
 
