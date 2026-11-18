@@ -895,7 +895,7 @@ function sequence(context: Context): Sequence {
     notes.flow.forEach((line, l) => {
       if (line.after !== i + 1) return;
       const tally = comparison.lines[l];
-      const seen = tally === undefined || tally.seen === 0 ? undefined : { ...tally, confirmed: tally.seen === tally.of && line.sources.length > 0 };
+      const seen = tally === undefined || tally.seen === 0 ? undefined : { ...tally, confirmed: tally.seen === tally.of };
       arrows.push({ kind: 'inside', from: at(line.from), to: at(line.to), text: research(line.text, line.sources), seen });
     });
   });
@@ -1968,7 +1968,7 @@ export function buildPage(inputs: HtmlInputs, rawNotes: unknown, title: ReportTi
   const comparison = compareFlow(
     template,
     registry,
-    flow.map((line) => ({ after: line.after, from: line.from, to: line.to, selector: line.function?.selector as Hex | undefined })),
+    flow.map((line) => ({ after: line.after, from: line.from, to: line.to, selector: line.function.selector as Hex })),
     tracedOnce(inputs.pastTxs.flatMap(({ run }) => run.traces)),
   );
   const ledger: Ledger = { ...judged, results: [...judged.results, ...flowResults(comparison)] };

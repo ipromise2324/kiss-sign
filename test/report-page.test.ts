@@ -65,7 +65,7 @@ function notesFor(of: HtmlInputs): Record<string, unknown> {
     title: both('title'),
     summary: both('summary'),
     verdict: { status: 'caution', text: both('verdict') },
-    flow: [{ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text: both('supply') }],
+    flow: [{ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', function: 'supply((address,address,address,address,uint256),uint256,uint256,address,bytes)', text: both('supply'), sources: ['https://example.org/Morpho.sol'] }],
     protocols: Object.fromEntries([...scope.protocols].map(([slug]) => [slug, { intro: both(`intro ${slug}`), audits: { text: both('audits') }, incidents: [] }])),
     judgments: [{ text: both('judgment'), recommendation: both('small first') }],
     reviews: Object.fromEntries(scope.reviews.map((id) => [id, { status: 'concern', text: both(`review ${id}`), recommendation: both('look') }])),
@@ -227,7 +227,7 @@ test('交易後 says which way a token the Safe gives or gets more than nothing 
   const gives = effects.gives.map((e) => ({ ...e, amount: { kind: 'positive' as const } }));
   const gets = effects.gives.map((e) => ({ ...e, to: undefined, amount: { kind: 'positive' as const } }));
   const template = { ...subject.template, effects: { ...effects, gives, gets } };
-  const page = buildPage({ ...depositInputs, subject: { ...subject, template } }, depositNotes, depositTitle, 'zh-TW');
+  const page = buildPage({ ...depositInputs, subject: { ...subject, template } }, { ...(depositNotes as object), flow: [] }, depositTitle, 'zh-TW');
   const values = body(page, 'flow').flow.after.map((row) => plain(row.value));
   assert.ok(values.includes('給出多於 0') && values.includes('收到多於 0'), values.join(' / '));
 });
@@ -424,7 +424,7 @@ test('a contract a flow line names gets its own lifeline, so every inside arrow 
   const { diagram } = body(depositPage, 'flow').flow;
   assert.deepEqual(diagram.lifelines.map((l) => l.name), ['你的 Safe', 'usdc', 'bundler3', 'general-adapter-1', 'hyperithm-usdc-apex-v2-9e2f']);
   const inside = diagram.arrows.flatMap((a) => (a.kind === 'inside' ? [[a.from, a.to]] : []));
-  assert.deepEqual(inside, [[2, 3], [3, 1]]);
+  assert.deepEqual(inside, [[3, 1], [3, 4]]);
 });
 
 test('the green arrow for shares the Safe gets starts at the vault, on a lifeline of its own when no call targets it', () => {

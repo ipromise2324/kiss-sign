@@ -19,6 +19,8 @@ const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
 const template = loadTemplate(ROOT, 'morpho/market-supply', registry);
 
+const SUPPLY = 'supply((address,address,address,address,uint256),uint256,uint256,address,bytes)';
+
 const SCOPE: NotesScope = {
   calls: 2,
   contracts: new Set(['usdc', 'blue-bundles-v1', 'morpho-blue']),
@@ -39,7 +41,7 @@ const VALID = {
   title: t('供應 USDC 到 Morpho 市場'),
   summary: t('摘要'),
   verdict: { status: 'caution', text: t('要小心') },
-  flow: [{ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text: t('Bundler 呼叫 supply') }],
+  flow: [{ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', function: SUPPLY, text: t('Bundler 呼叫 supply'), sources: ['https://example.org/Bundler.sol'] }],
   protocols: { 'morpho-blue': { intro: t('借貸協議'), audits: NOTE, incidents: [NOTE] } },
   judgments: [{ text: t('判斷'), recommendation: t('建議') }],
   reviews: { 'morpho-oracle/source.page': { status: 'concern', text: t('頁面要跑 JavaScript'), recommendation: t('在瀏覽器打開') } },
@@ -186,8 +188,10 @@ test('a flow line naming a contract no call or view targets is refused', () => {
 });
 
 test("a flow line's function must be a canonical signature, and a line may not name a call the template binds itself", () => {
-  const supply = 'supply((address,address,address,address,uint256),uint256,uint256,address,bytes)';
-  assert.equal(parseNotes(edited(['flow', 0, 'function'], supply), SCOPE).flow[0]?.function?.signature, supply);
+  const supply = SUPPLY;
+  assert.equal(parseNotes(VALID, SCOPE).flow[0]?.function.signature, supply);
+  refused(edited(['flow', 0, 'function'], undefined), 'notes.json.flow[0]: function is missing');
+  refused(edited(['flow', 0, 'sources'], []), 'notes.json.flow[0].sources: names no source: the contract source read and a past transaction checked');
   refused(edited(['flow', 0, 'function'], 'supply(address spender)'), 'notes.json.flow[0].function: not a canonical function signature, such as `approve(address,uint256)`');
   const bound = { ...SCOPE, nested: [{ after: 2, from: ['blue-bundles-v1'], to: ['morpho-blue'], selector: selectorOf(supply) }] };
   assert.throws(
@@ -368,7 +372,7 @@ test('the judgments of both notes count toward the limit of four', () => {
 });
 
 test("a vault's flow lines join the template's after them, and both count toward the limit of four", () => {
-  const line = (text: string) => ({ after: 2, from: 'blue-bundles-v1', to: 'morpho-blue', text: t(text) });
+  const line = (text: string) => ({ ...VALID.flow[0], text: t(text) });
   const merged = mergeNotes({ ...SHARED, flow: [line('共用')] }, { verdict: VALID.verdict, flow: [line('這個金庫')] }, VAULT_PATH, OWNED);
   assert.deepEqual(parseNotes(merged, SCOPE).flow.map((f) => f.text), ['共用', '這個金庫']);
   const tooMany = mergeNotes({ ...SHARED, flow: [line('a'), line('b'), line('c')] }, { verdict: VALID.verdict, flow: [line('d'), line('e')] }, VAULT_PATH, OWNED);
@@ -376,7 +380,7 @@ test("a vault's flow lines join the template's after them, and both count toward
 });
 
 test("a template's flow line that names the vault or its asset is refused, since another vault's report could not name it", () => {
-  const shared = { ...SHARED, flow: [{ after: 2, from: 'blue-bundles-v1', to: 'usdc', text: t('拉走資產') }] };
+  const shared = { ...SHARED, flow: [{ ...VALID.flow[0], to: 'usdc', text: t('拉走資產') }] };
   assert.throws(() => mergeNotes(shared, undefined, VAULT_PATH, OWNED), (e: unknown) => e instanceof NotesError && e.message === `notes.json.flow: "usdc" differs per vault; its flow line belongs in ${VAULT_PATH}`);
 });
 
