@@ -12,7 +12,7 @@ import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { judgeEffects } from '../src/simulate/effects.ts';
 import type { Observed } from '../src/simulate/effects.ts';
 import { checkTemplateFields, inspectTemplateFields } from '../src/template/check.ts';
-import type { FieldCheck, Messages } from '../src/template/check.ts';
+import type { FieldChain, FieldCheck, Messages } from '../src/template/check.ts';
 import { domainSeparator, parseMessage, typedDataDigest } from '../src/template/eip712.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
@@ -30,10 +30,10 @@ type Order = Record<string, unknown> & { uid: string; sellToken: string; buyToke
 type Case = { readonly name: string; readonly template: string; readonly bound: number };
 
 const CASES: readonly Case[] = [
-  { name: 'cow-swap-approve-usdt', template: 'cow/swap-approve', bound: 19 },
-  { name: 'cow-swap-approve-cbbtc', template: 'cow/swap-approve', bound: 19 },
-  { name: 'cow-swap-usdt', template: 'cow/swap', bound: 15 },
-  { name: 'cow-swap-usdc', template: 'cow/swap', bound: 15 },
+  { name: 'cow-swap-approve-usdt', template: 'cow/swap-approve', bound: 20 },
+  { name: 'cow-swap-approve-cbbtc', template: 'cow/swap-approve', bound: 20 },
+  { name: 'cow-swap-usdt', template: 'cow/swap', bound: 16 },
+  { name: 'cow-swap-usdc', template: 'cow/swap', bound: 16 },
 ];
 
 function safeTx(name: string): SafeTx {
@@ -56,7 +56,13 @@ function resolved(tx: SafeTx, card: Card): ResolvedCard {
   return (result as Extract<typeof result, { kind: 'resolved' }>).card;
 }
 
-const check = (tx: SafeTx, card: Card, messages: Messages): FieldCheck => checkTemplateFields(tx, resolved(tx, card), templates, registry, messages);
+/** The block the fixture's transaction ran in, with its time, which an order's `validTo` is bounded from. */
+function ranIn(name: string): FieldChain {
+  const { service } = JSON.parse(load('safe-tx', name));
+  return { blockTime: { kind: 'read', number: BigInt(service.blockNumber), time: BigInt(Date.parse(service.executionDate) / 1000) } };
+}
+
+const check = (c: Case, tx: SafeTx, card: Card, messages: Messages): FieldCheck => checkTemplateFields(tx, resolved(tx, card), templates, registry, messages, ranIn(c.name));
 
 const message = (id: string): SignedMessage => {
   const call = templates.get(id)!.calls.at(-1)!;
@@ -91,8 +97,8 @@ for (const c of CASES) {
     const o = order(c.name);
     const card = impliedCard(c, o);
     const messages = [load('messages', c.name)];
-    assert.deepEqual(check(tx, card, messages), { kind: 'match' });
-    assert.deepEqual(checkMutations(tx, resolved(tx, card), templates, registry, messages), { kind: 'pass', bound: c.bound, free: 2 });
+    assert.deepEqual(check(c, tx, card, messages), { kind: 'match' });
+    assert.deepEqual(checkMutations(tx, resolved(tx, card), templates, registry, messages, ranIn(c.name)), { kind: 'pass', bound: c.bound, free: 1 });
   });
 
   test(`${c.name}: with no order given the field check is UNVERIFIABLE and names the URL to read it from`, () => {
@@ -109,7 +115,7 @@ test('an order body that does not hash to the digest counts for nothing: a chang
   const tx = safeTx(c.name);
   const o = order(c.name);
   const forged = JSON.stringify({ ...o, buyAmount: `${BigInt(o.buyAmount) * 2n}` });
-  const result = check(tx, impliedCard(c, o), [forged]);
+  const result = check(c, tx, impliedCard(c, o), [forged]);
   assert.equal(result.kind, 'unverifiable');
   assert.match((result as Extract<FieldCheck, { kind: 'unverifiable' }>).reasons[0]!, /no Order read from https:\/\/api\.cow\.fi\/mainnet\/api\/v1\/orders\/0x[0-9a-f]{112} hashes to 0x[0-9a-f]{64}/);
 });
@@ -123,7 +129,7 @@ test('an order that pays another receiver is MISMATCH at the order member, thoug
   const c = CASES[0]!;
   const o = order(c.name);
   const changed = withOrder(safeTx(c.name), o, { receiver: '0x000000000000000000000000000000000000dead' }, c.template);
-  assert.deepEqual(findings(check(changed.tx, impliedCard(c, o), [changed.text])), [
+  assert.deepEqual(findings(check(c, changed.tx, impliedCard(c, o), [changed.text])), [
     `multiSend[1].setPreSignature orderUid.digest.receiver: expected ${safeTx(c.name).safe}, got 0x000000000000000000000000000000000000dead`,
   ]);
 });
@@ -132,9 +138,27 @@ test('an order buying less than the card minimum is MISMATCH; buying more matche
   const c = CASES[2]!;
   const o = order(c.name);
   const less = withOrder(safeTx(c.name), o, { buyAmount: `${BigInt(o.buyAmount) - 1n}` }, c.template);
-  assert.deepEqual(findings(check(less.tx, impliedCard(c, o), [less.text])), [`call.setPreSignature orderUid.digest.buyAmount: expected at least ${o.buyAmount}, got ${BigInt(o.buyAmount) - 1n}`]);
+  assert.deepEqual(findings(check(c, less.tx, impliedCard(c, o), [less.text])), [`call.setPreSignature orderUid.digest.buyAmount: expected at least ${o.buyAmount}, got ${BigInt(o.buyAmount) - 1n}`]);
   const more = withOrder(safeTx(c.name), o, { buyAmount: `${BigInt(o.buyAmount) + 1n}` }, c.template);
-  assert.deepEqual(check(more.tx, impliedCard(c, o), [more.text]), { kind: 'match' });
+  assert.deepEqual(check(c, more.tx, impliedCard(c, o), [more.text]), { kind: 'match' });
+});
+
+test('an order expiring more than 7 days after the block it is judged on is MISMATCH; 7 days to the second matches', () => {
+  const c = CASES[2]!;
+  const o = order(c.name);
+  const { number, time } = ranIn(c.name).blockTime as Extract<FieldChain['blockTime'], { kind: 'read' }>;
+  const expiring = (validTo: bigint) => {
+    const changed = withOrder(safeTx(c.name), o, { validTo: Number(validTo) }, c.template);
+    const data = changed.tx.data.slice(2);
+    const at = data.indexOf(o.uid.slice(106, 114), data.indexOf(o.uid.slice(66, 106)));
+    return { tx: { ...changed.tx, data: `0x${data.slice(0, at)}${validTo.toString(16).padStart(8, '0')}${data.slice(at + 8)}` as Hex }, text: changed.text };
+  };
+  const week = expiring(time + 604_800n);
+  assert.deepEqual(check(c, week.tx, impliedCard(c, o), [week.text]), { kind: 'match' });
+  const later = expiring(time + 604_801n);
+  assert.deepEqual(findings(check(c, later.tx, impliedCard(c, o), [later.text])), [
+    `call.setPreSignature orderUid.digest.validTo: expected at most ${time + 604_800n}: 604800 seconds after the time of block ${number}, ${time}, got ${time + 604_801n}`,
+  ]);
 });
 
 test('a buy order, a partly fillable order and an order with a fee are each MISMATCH at that member', () => {
@@ -147,7 +171,7 @@ test('a buy order, a partly fillable order and an order with a fee are each MISM
     [{ sellTokenBalance: 'external' }, 'sellTokenBalance: expected "erc20", got "external"'],
   ] as const) {
     const changed = withOrder(safeTx(c.name), o, change, c.template);
-    assert.deepEqual(findings(check(changed.tx, impliedCard(c, o), [changed.text])), [`call.setPreSignature orderUid.digest.${expected}`]);
+    assert.deepEqual(findings(check(c, changed.tx, impliedCard(c, o), [changed.text])), [`call.setPreSignature orderUid.digest.${expected}`]);
   }
 });
 
@@ -156,7 +180,7 @@ test("a uid whose owner part is another address is MISMATCH at the owner, even w
   const tx = safeTx(c.name);
   const o = order(c.name);
   const other = `0x${tx.data.slice(2).replace(tx.safe.slice(2), '000000000000000000000000000000000000dead')}` as Hex;
-  assert.deepEqual(findings(check({ ...tx, data: other }, impliedCard(c, o), [load('messages', c.name)])), [
+  assert.deepEqual(findings(check(c, { ...tx, data: other }, impliedCard(c, o), [load('messages', c.name)])), [
     `call.setPreSignature orderUid.owner: expected ${tx.safe}, got 0x000000000000000000000000000000000000dead`,
   ]);
 });
@@ -167,7 +191,7 @@ test('an approval of more than the card sell amount is MISMATCH at the approve v
   const o = order(c.name);
   const amount = BigInt(o.sellAmount).toString(16).padStart(64, '0');
   const data = tx.data.replace(amount, (BigInt(o.sellAmount) + 1n).toString(16).padStart(64, '0')) as Hex;
-  assert.deepEqual(findings(check({ ...tx, data }, impliedCard(c, o), [load('messages', c.name)])), [
+  assert.deepEqual(findings(check(c, { ...tx, data }, impliedCard(c, o), [load('messages', c.name)])), [
     `multiSend[0].approve value: expected ${o.sellAmount}, got ${BigInt(o.sellAmount) + 1n}`,
   ]);
 });
@@ -230,7 +254,7 @@ test('a uid of another length than its packed parts is MISMATCH at the uid', () 
   const at = data.indexOf(o.uid.slice(2));
   const length = (data.length - at) / 2;
   const shorter = `0x${data.slice(0, at - 64)}${(56 - 1).toString(16).padStart(64, '0')}${data.slice(at, at + 110)}${'00'.repeat(length - 55)}` as Hex;
-  assert.deepEqual(findings(check({ ...tx, data: shorter }, impliedCard(c, o), [load('messages', c.name)])), [
+  assert.deepEqual(findings(check(c, { ...tx, data: shorter }, impliedCard(c, o), [load('messages', c.name)])), [
     'call.setPreSignature orderUid: expected 56 bytes: digest bytes32, owner address, validTo uint32, got 55 bytes',
   ]);
 });
