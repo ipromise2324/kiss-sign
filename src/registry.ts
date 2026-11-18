@@ -69,7 +69,7 @@ export type RegistryEntry = {
   readonly attributes: { readonly [attribute: string]: string };
   /** A factory's: the views that admit each entry whose `factory` attribute names it, all of which must pass. */
   readonly instanceCheck?: InstanceCheck;
-  /** What `pnpm vault-evidence` reads of the entry, or of each instance of a factory that has none of its own. */
+  /** What `pnpm instance-evidence` reads of the entry, or of each instance of a factory that has none of its own. */
   readonly size?: SizeView;
   /** The DefiLlama protocol slug this contract belongs to, such as `morpho-blue`; `pnpm check-sources` compares its listing with `source`. */
   readonly defillama?: string;
@@ -135,7 +135,7 @@ export type InstanceView = {
 export type InstanceCheck = readonly [InstanceView, ...InstanceView[]];
 
 /**
- * What `pnpm vault-evidence` reads of an instance: `fn`, a number it answers each month; `unit`, a view it answers with
+ * What `pnpm instance-evidence` reads of an instance: `fn`, a number it answers each month; `unit`, a view it answers with
  * the token that number counts, which must be the entry `attribute` names; `holders`, whether its own ERC-20 shares'
  * holders are counted.
  */
