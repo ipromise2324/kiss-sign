@@ -65,7 +65,7 @@ Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); temp
 
 ## Study past transactions
 
-Run `pnpm past-txs <protocol>/<operation>` with an anchor and no block range; `pnpm past-txs --help` lists the anchors.
+Run `pnpm past-txs <protocol>/<operation>` with no block range, anchored on the transfer or event the operation itself makes, such as a vault's shares minted for a deposit or the token's transfer for a transfer; `pnpm past-txs --help` lists the anchors.
 The program picks its own windows across the last year; never pass `--from-block` or `--to-block`, which replace them with one range of your choosing.
 
 1. For each field, note how many transactions and senders held the template's rule, for Safes and for EOAs separately.
@@ -118,7 +118,7 @@ Keep the final message short and plain.
 2. Then the template, what the card will ask, what will be checked, the findings, and the pull request link.
 3. Then the next steps:
    - Read the report in their language (`report.generated.en.html` or `report.generated.zh-TW.html`, or the one that exists).
-   - Before merging, the `--compare` run of [step 11](SKILL.md#build-a-template), from a clone on `main`.
+   - Before merging, in a clone on `main`: `git pull`, `git fetch origin <branch>`, then `pnpm report <protocol>/<operation> --compare --data origin/<branch>`, once per report the branch adds or changes, with `--instance-of <instance>` for a per-instance report.
      It runs main's code on the branch's templates, registry and recordings, reads every fact live again, and prints each that differs from the committed report; it does not search for past transactions again, so it cannot show the search found every one.
      It refuses a branch that changes the verdict core beside a template, the registry or a gate file, and prints `PROGRAM CHANGE` for each program file the branch changes, `gate` among them for a file only the signer merges.
    - Merge only when it prints no difference and they are satisfied.

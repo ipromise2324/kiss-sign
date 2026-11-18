@@ -1,7 +1,7 @@
 # Notes and reviews
 
 How to do step 8 of [Build a template](SKILL.md#build-a-template) and step 5 of [Add an instance's report](SKILL.md#add-an-instances-report): write `notes.json`, the AI's text beside the program's results.
-The exact shape and every limit are in [Written by the AI, as data](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template) (step 6); `--render` refuses any other key or length.
+The exact shape and every limit are in step 6 of [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template), the bold item Written by the AI, as data; `--render` refuses any other key or length.
 
 ## Write and render
 
@@ -19,8 +19,8 @@ The exact shape and every limit are in [Written by the AI, as data](../../../doc
 ## The keys
 
 - `title`, at most 100 characters, and `summary`.
-- `verdict`: `{ "status": "safe" | "caution", "text" }`, one line of at most 100.
-  It weighs the operation's risks from your research and never moves a program result; the Advice (建議) line's icon is the program's worst result, not your status.
+- `verdict`: `{ "status": "safe" | "caution", "text" }`, one line of at most 100: your research advice on the operation's risk, despite the key's name.
+  It is not a transaction's verdict, which only `verify` gives, and it never moves a program result; the Advice (建議) line's icon is the program's worst result, not your status.
 - `flow`: at most four lines of what happens inside a call, each `{ "after": <call number>, "from": <registry name>, "to": <registry name>, "text" }`, between two contracts the calls or the effects' views target, the entries those name in `dependsOn`, or the tokens the effects move.
 - `protocols`, by DefiLlama slug, one for every protocol the generated report's protocol facts cover: `intro`, one line; `audits`, a note citing the audit reports; `incidents`, one note per DefiLlama hack in date order, its cause with the post-mortem as a source, exactly as many as the facts list.
 - `judgments`: at most four, each with a `recommendation`.
@@ -37,7 +37,7 @@ Write no claim the program already checks: the page prints the facts, values and
 - **Addresses.** Where you found each address, the protocol API's query and answer when there is one, and the Etherscan verified contract name and creator, as `entries.<name>.sources` or in a review ([addresses.md](addresses.md)).
 - **Fields.** What each argument does, from the contract's source and documentation, and for a free field what values past transactions held, such as "`receiver` equalled the sender in all 42".
   The rules themselves are in the generated report.
-- **Instances.** Your judgment of each instance's evidence: whether the assets grew suddenly or were held long, and any young, sudden or concentrated instance, as a judgment.
+- **Instances.** Your judgment of each instance's evidence, read as the size it declares: whether it grew suddenly or was held long, and any young, sudden or concentrated instance, as a judgment.
 - **Past transactions.** The page prints the sender counts by type, both sources and their agreement, and every misfit group with examples; do not repeat them.
   Say what the misfits teach in `pastTxsConclusion`, and write a judgment only when they leave the signer something to decide that `verify` does not, never for a shape `verify` already refuses.
 - **ERC-7730.** Where the generated report's ERC-7730 fields differ from yours: a parameter it gives no field, a field it hides, or a format that does not fit your meaning, such as `addressName` on an amount.
@@ -49,15 +49,17 @@ Write no claim the program already checks: the page prints the facts, values and
 
 ## Reviews
 
-The page lists every program result for the signer under To review (待確認), and `--render` refuses notes that leave one without a review or review any other result.
-You check each one yourself first; the program's result stays as it is, and your review sits under it.
+The HTML page lists every red or amber program result under To review (待確認); the generated Markdown keeps every result with its raw output.
+`--render` refuses notes that leave one of those without a review or review any other result.
+Your own observations are already in `entries` ([addresses.md](addresses.md)); write each review against the program's result as it printed it.
+The result stays as it is, your review sits under it, and a `FINDING` stays visible even when you confirmed the source another way.
 
 - Key: `reviews["<registry name>/<check key>"]`, or `reviews["fixture.<name>"]`; a documentation page's key names its function by selector, such as `doc.0x095ea7b3.page`.
 - Value: `{ "status": "confirmed" | "concern", "text", "recommendation" }`.
 - `text`, at most 300 characters, says only what you actually checked and what you saw, with full addresses, such as "Opened the page in a browser; the oracle address is 0x… (in full)." or "用瀏覽器打開頁面，oracle 地址就是 0x…（完整地址）。".
   If you could not check the thing the result names, say so and name the other evidence you have.
 - `confirmed` means you checked the exact thing the result names, such as the address on that very page, and it agrees; evidence about anything else, however strong, is `concern`.
-- `recommendation` is one short line, such as "Acceptable." or "可以接受。".
+- `recommendation` is one short line on what the signer should look at, such as "Open the page and compare the address yourself." or "自己打開頁面比對地址。"; never a word that reads as approving the transaction.
 - An address confirmed in fewer than two places, or a site no listing ties to the protocol, has its own steps in [addresses.md](addresses.md#when-the-program-confirms-fewer-than-two-places).
 
 ## An instance's notes
