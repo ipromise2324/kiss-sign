@@ -30,6 +30,7 @@ import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from './past-txs.ts';
 import { factsScope, parseFactsRecording, protocolFacts, replaySources } from './protocol-facts.ts';
 import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts';
 import type { PastTxs, Sampling } from './past-txs.ts';
+import { parseSearch } from './recording.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { replayMessages } from './messages.ts';
 import { replayTraces } from './trace.ts';
@@ -631,7 +632,7 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
       exclude: undefined,
       maxTxs: query.maxTxs,
       traces,
-      excludedByRecording: new Set(recording.excluded ?? []),
+      ...(recording.search === undefined ? {} : { recorded: parseSearch(recording.search) }),
     },
   );
   return { file, query, text: renderPastTxs(run, registry), run };
