@@ -31,5 +31,5 @@ test('the verdict core is every repository file Node loads to run bin/kiss-sign,
 test('the verdict core holds the checks and the self-check, and no report or research tool', () => {
   const core = coreOnDisk(ROOT);
   for (const path of ['bin/kiss-sign', 'src/verify/verdict.ts', 'src/verify/self-check.ts', 'src/template/check.ts', 'src/floor/floor.ts', 'src/safe/hash.ts', 'package.json']) assert.ok(core.includes(path), path);
-  for (const path of ['src/research/report.ts', 'src/research/past-txs.ts', 'src/research/vault-evidence.ts', 'scripts/report.ts']) assert.ok(!core.includes(path), path);
+  for (const path of ['src/research/report.ts', 'src/research/past-txs.ts', 'src/research/instance-evidence.ts', 'scripts/report.ts']) assert.ok(!core.includes(path), path);
 });

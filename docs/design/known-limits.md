@@ -41,7 +41,7 @@ Part of [the kiss-sign design](../design.md).
 - The GitHub API allows 60 requests an hour without a token, and 5,000 with `GITHUB_TOKEN`; each pinned repository and commit costs two.
   Past that, every GitHub line is `UNVERIFIABLE` until the hour passes.
 - No free API lists a token's holders: Etherscan's `tokenholderlist`, `tokenholdercount` and `topholders` are API Pro endpoints, and Alchemy has no holder list for ERC-20 tokens.
-  `pnpm vault-evidence` takes its candidates from the Alchemy Transfers API alone; the sum against `totalSupply()` catches a missing holder but not a source that invents none.
+  `pnpm instance-evidence` takes its candidates from the Alchemy Transfers API alone; the sum against `totalSupply()` catches a missing holder but not a source that invents none.
   It counts addresses, not owners, so one owner's many wallets count as many, and a vault with more than 300,000 share transfers gets no holder count.
   `totalAssets()` is sampled once a month, so a deposit and withdrawal between two samples does not show.
   Linking holder wallets, such as by a common gas funder, is not built.
