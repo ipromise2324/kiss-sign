@@ -577,9 +577,9 @@ const names = (value: unknown, address: Address): boolean =>
   JSON.stringify(value, (_, v: unknown) => (typeof v === 'bigint' ? v.toString(16) : v)).toLowerCase().includes(address.slice(2).toLowerCase());
 
 /**
- * Whether the configured Safe sent the transaction or is named in it, in its input or in a log of its receipt: a recording
- * keeps no hash of such a transaction, so it is left out of the study too, and so is one whose transaction or receipt
- * the providers do not agree on, since nothing then shows it does not name the Safe.
+ * Whether the configured Safe sent the transaction or is named in it, in its input or in a log of its receipt, or its
+ * receipt is not one both providers give, so nothing shows it does not: such a transaction is left out of the study, and
+ * `--record` writes nothing for a search that found one.
  */
 async function touches(reader: Reader, tx: Transaction, safe: Address): Promise<boolean> {
   if (tx.to === safe || tx.from === safe || names(tx.input, safe)) return true;

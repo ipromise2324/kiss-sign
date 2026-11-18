@@ -89,24 +89,25 @@ export function parseSearch(text: SearchText): RecordedSearch {
 const HASH = /0x[0-9a-f]{64}/g;
 
 /**
- * Keeps of the chain reads, messages and call traces only what the replay reads: each block cut to its header, and none
- * of the reads that decided a transaction was the configured Safe's. Then refuses a recording that still names the
- * Safe, or holds the hash of any transaction the search found and the run did not study, so nothing that identifies the
- * Safe reaches a fixture, whatever channel it would take.
+ * Keeps of the chain reads each block cut to its header, and refuses a recording of a search that found a transaction
+ * the configured Safe sent or is named in, or one the run could not check: the search can be run again by anyone, so the
+ * gap such a transaction leaves in the counts or the sample would point at it. It also refuses a recording that still
+ * names the Safe, or holds the hash of a transaction the search found and the run did not sample.
  */
 export function scrubRecording(recording: PastTxsRecording, safes: readonly string[], run: Pick<PastTxs, 'found' | 'excluded' | 'search'>): PastTxsRecording {
-  const excluded = new Set([...run.excluded].map((h) => h.toLowerCase()));
-  const namesExcluded = (value: unknown) => (JSON.stringify(value).toLowerCase().match(HASH) ?? []).some((h) => excluded.has(h));
-  const messages = recording.messages === undefined ? {} : { messages: recording.messages.filter((m) => !namesExcluded(m)) };
-  const traces = recording.traces === undefined ? {} : { traces: recording.traces.filter((t) => !namesExcluded(t)) };
-  const scrubbed = { ...recording, ...messages, ...traces, exchanges: recording.exchanges.map(trimBlockAnswers).filter((e) => !namesExcluded(e)) };
-  const studied = new Set(run.search.sampled.map((s) => s.hash.toLowerCase()));
-  const withheld = new Set([...excluded, ...[...run.found.keys()].map((h) => h.toLowerCase()).filter((h) => !studied.has(h))]);
+  if (run.excluded.size > 0) {
+    throw new Error(
+      `the search found ${run.excluded.size} transaction(s) the configured Safe sent or is named in, or that could not be checked, and a recording would point at them; nothing written. Search other blocks with --from-block and --to-block`,
+    );
+  }
+  const scrubbed = { ...recording, exchanges: recording.exchanges.map(trimBlockAnswers) };
+  const sampled = new Set(run.search.sampled.map((s) => s.hash.toLowerCase()));
+  const unsampled = new Set([...run.found.keys()].map((h) => h.toLowerCase()).filter((h) => !sampled.has(h)));
   const text = JSON.stringify(scrubbed).toLowerCase();
   const safe = safes.map((f) => f.toLowerCase().replace(/^0x/, '')).find((needle) => text.includes(needle));
-  const hash = (text.match(HASH) ?? []).find((h) => withheld.has(h));
+  const hash = (text.match(HASH) ?? []).find((h) => unsampled.has(h));
   if (safe !== undefined || hash !== undefined) {
-    throw new Error(`the recording still names ${safe !== undefined ? 'the configured Safe' : 'a transaction the run did not study'}; nothing written`);
+    throw new Error(`the recording still names ${safe !== undefined ? 'the configured Safe' : 'a transaction the run did not sample'}; nothing written`);
   }
   return scrubbed;
 }
