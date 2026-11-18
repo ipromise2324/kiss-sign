@@ -40,7 +40,7 @@ import { gradedFindings, weightOf } from './grades.ts';
 import { MIN_CONFIRMATIONS, judge } from './ledger.ts';
 import { judgeFixtures } from '../template/perturb.ts';
 import type { FixtureJudgement } from '../template/perturb.ts';
-import type { FindingKind, Ledger, Result } from './ledger.ts';
+import type { FindingKind, Ledger, Place, Result } from './ledger.ts';
 import { githubRef, isGitHubPage, pageUrlOf } from './source-page.ts';
 import type { SourcePages } from './source-page.ts';
 import { chainAt, formatReports, studyEntries } from './erc7730.ts';
@@ -671,13 +671,16 @@ const MARKDOWN_TITLES: Readonly<Partial<Record<FindingKind, string>>> = {
   'url-holds-address': "the page's URL holds the address, so it only echoes it",
 };
 
+/** A place by the sources it joins, with its owner when that is not the one source's own name. */
+const placeName = ({ owner, sources }: Place): string => `${sources.map(code).join(' + ')}${sources.length === 1 && sources[0] === owner ? '' : ` (${owner})`}`;
+
 /** Every finding, key first, each with its result id: the index of what the tables below mark. */
 function findingsSection(ledger: Ledger): string[] {
   const findings = gradedFindings(ledger);
   const count = (grade: 'key' | 'reference') => findings.filter((r) => weightOf(r) === grade).length;
   const title = (r: Result) =>
     r.finding.kind === 'few-confirmations'
-      ? `address confirmed in ${r.finding.by.length} ${r.finding.by.length === 1 ? 'place' : 'places'}${r.finding.by.length === 0 ? '' : `, ${r.finding.by.join(', ')}`}; it needs ${MIN_CONFIRMATIONS}`
+      ? `address confirmed in ${r.finding.by.length} ${r.finding.by.length === 1 ? 'place' : 'places'}${r.finding.by.length === 0 ? '' : `, ${r.finding.by.map(placeName).join(', ')}`}; it needs ${MIN_CONFIRMATIONS}`
       : MARKDOWN_TITLES[r.finding.kind] ?? (WORDS.en.finding as Readonly<Partial<Record<FindingKind, { readonly title: string }>>>)[r.finding.kind]?.title ?? r.finding.kind;
   return [
     '## Findings',

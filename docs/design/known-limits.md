@@ -4,6 +4,7 @@ Part of [the kiss-sign design](../design.md).
 
 - A past transaction's call trace comes from drpc alone, since Alchemy's free plan does not serve one.
   Its token transfers and approvals are checked against the receipt both providers agree on, but a call that moves no token, and ETH sent inside a call, which logs nothing, rest on drpc's answer.
+  The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry, a registry token's mint or burn, from or to the zero address, and an `Approval` of a token outside the registry need no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, so only `--compare`, which traces each transaction again, catches such an edit.
   A trace only confirms a `flow` line in the report or asks the AI for a review; it never changes a verdict.
   A trace also shows one path: a contract may branch on state, so a line seen in every past transaction may not hold for the transaction to sign, and the effects check at signing is what protects the signer.
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used.
@@ -206,7 +207,7 @@ Part of [the kiss-sign design](../design.md).
 - An approval `effects.approves` leaves open can be spent by any order the spender's protocol accepts from the Safe, not only the order of this transaction: for CoW, any of the Safe's orders still valid, such as an earlier pre-signed one or a conditional order the Safe's fallback handler signs.
   The approval is the card's sell amount, so no order can take more than that.
 - A CoW order is pre-signed for as long as its `validTo` allows and its approval stays open until the order fills.
-  The template leaves `validTo` free; the card has no expiry.
+  Both CoW templates bind `validTo` to at most 604800 seconds (seven days) after the time of the block the transaction is judged on (`withinSeconds`), so a signed order can stay open for up to a week; the card has no expiry of its own.
   The order fills at most once, at no less than the card's minimum, and the Safe can cancel it.
 - Safe 1.1.1 has no `getStorageAt`, so a simulation cannot read its settings, and a pending transaction of a 1.1.1 Safe is at best `UNVERIFIABLE`.
 
