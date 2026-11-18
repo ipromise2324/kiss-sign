@@ -32,6 +32,7 @@ import {
   readInstances,
   readToday,
   renderReport,
+  reportFixtures,
   reportRecordingPath,
   summarizePastTxs,
   vaultsAt,
@@ -70,6 +71,7 @@ function quick(
   commits: ReportRecording['commits'] = recording.commits,
   today: ReportInputs['today'] = undefined,
   instances: ReportInputs['instances'] = undefined,
+  fixtures: ReportInputs['fixtures'] = [],
 ): string {
   const inputs: ReportInputs = {
     subject,
@@ -85,6 +87,7 @@ function quick(
     instances,
     erc7730: { text: 'not read', reports: [] },
     facts: undefined,
+    fixtures,
   };
   return renderReport(inputs, { command: 'test', sources: [] });
 }
@@ -321,6 +324,7 @@ test('the report opens with every finding, key before reference, and a deployer 
       instances: undefined,
       erc7730: { text: 'not read', reports: [] },
       facts: undefined,
+      fixtures: [],
     },
     { command: 'test', sources: [] },
   );
@@ -438,6 +442,17 @@ test('every template folder holds report.generated.md, or design.md lists it amo
   assert.deepEqual(notGeneratedProblems(added, [...folders, 'aave/supply'], (id) => id !== 'aave/supply' && hasReport(id)), [
     'design.md lists aave/supply as not generated yet, but only templates older than the generated report may be listed',
   ]);
+});
+
+test('a test transaction the template no longer matches is a key row of the Findings', async () => {
+  const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'template.json'), 'utf8'));
+  raw.calls[0].args.value = { const: '1' };
+  const subject = { ...scoped.subject, template: parseTemplate(raw, registry) } as Subject;
+  const fixtures = await reportFixtures(ROOT, subject, registry);
+  const text = quick(recording.pages, new Map(), subject, new Map(), [], new Map(), scoped.registry, recording.commits, undefined, undefined, fixtures);
+  const rows = text.split('\n').filter((line) => line.startsWith('| `fixture.'));
+  assert.ok(fixtures.length > 0, 'the template has recorded test transactions');
+  assert.deepEqual(rows, fixtures.map((f) => `| \`fixture.${f.name}\` | key | the test transaction is judged differently now |`));
 });
 
 test('--compare prints a verdict that changed, and ignores the date and the block an ABI proof was read at', () => {

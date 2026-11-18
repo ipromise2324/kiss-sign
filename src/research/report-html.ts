@@ -11,7 +11,7 @@ import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
 import { reportDir } from './report.ts';
-import type { JudgedInputs, ReportTitle } from './report.ts';
+import type { ReportInputs, ReportTitle } from './report.ts';
 
 /** Each language's HTML report beside report.generated.md; the name says the language, so no file changes language under an old name. */
 export const generatedHtmlFile = (language: Language): string => `report.generated.${language}.html`;
@@ -587,7 +587,7 @@ ${page.sections.map((s) => section(s, r).text).join('')}
  * The template's HTML report in every language from the recordings and `notes.json`, or undefined when it has none. It
  * takes the template's first recorded test transaction as the example. Throws NotesError for notes the program refuses.
  */
-export async function generatedHtml(repoRoot: string, inputs: JudgedInputs, title: ReportTitle): Promise<ReadonlyMap<Language, string> | undefined> {
+export async function generatedHtml(repoRoot: string, inputs: ReportInputs, title: ReportTitle): Promise<ReadonlyMap<Language, string> | undefined> {
   const { subject, registry } = inputs;
   if (subject.kind !== 'template') return undefined;
   const raw = readNotes(repoRoot, subject.template.id, subject.vault);

@@ -76,6 +76,10 @@
     }
   ],
   "reviews": {},
+  "pastTxsConclusion": {
+    "en": "Of the 62 batches whose approval differs from the sell amount, 55 approved an unlimited amount and 7 about 1% to 1.7% more. A batch built that way does not fit this template, so the approval must be for exactly the amount to sell.",
+    "zh-TW": "授權數量和賣出數量不同的 62 筆批次裡，55 筆授權無上限，7 筆多約 1% 到 1.7%。這樣組成的批次不符合這個模板，授權必須剛好是要賣的數量。"
+  },
   "entries": {
     "usdc": {
       "role": {
@@ -212,8 +216,8 @@
       "zh-TW": "最少要買到的數量（限價）。結算合約保證成交不少於這個數。"
     },
     "2.setPreSignature.orderUid.digest.validTo": {
-      "en": "When the order expires (Unix seconds). The CoW Swap app sets it 30 minutes after the quote (DEFAULT_DEADLINE_FROM_NOW). The template allows at most 7 days (604,800 seconds) after the time of the block the transaction is judged on; a later expiry is MISMATCH. Within that, a later expiry only keeps the order open longer: it still fills at most once, at no less than the card's minimum, to the Safe, and the Safe can cancel it with invalidateOrder. Why 7 days: pnpm past-txs (testdata/research/cow-swap-presign.json) measured the expiry less its block's time on 136 orders Safes pre-signed: median 1,720 seconds (about 29 minutes), 99th percentile 10,478 (about 3 hours), largest 604,767 (just under 7 days); the 7 orders from EOAs reached at most 86,363 (one day). Every observed order fits. An order left open for months, which a free expiry allowed, stays fillable long after the signer stops watching. That recording studied cow/swap, the pre-signature alone; this batch pre-signs the same order after the approval.",
-      "zh-TW": "訂單到期時間（Unix 秒）。CoW Swap app 設為報價後 30 分鐘（DEFAULT_DEADLINE_FROM_NOW）。模板只允許判定交易所用區塊的時間之後最多 7 天（604,800 秒）；更晚就是 MISMATCH。在這之內，較晚的到期時間只會讓訂單開著更久：它仍然最多成交一次，數量不少於卡片上的最低值，而且付給 Safe；Safe 可以用 invalidateOrder 取消它。為什麼是 7 天：pnpm past-txs（testdata/research/cow-swap-presign.json）量了 136 筆 Safe 預簽的訂單，到期時間減去所在區塊時間：中位數 1,720 秒（約 29 分鐘），第 99 百分位 10,478 秒（約 3 小時），最大 604,767 秒（差一點 7 天）；7 筆 EOA 的訂單最多 86,363 秒（一天）。觀察到的訂單全部符合。到期時間不限制時，訂單可以開好幾個月，簽名者早已不再注意，它仍能成交。那份紀錄研究的是 cow/swap，只有預簽；這個批次在授權之後預簽同一種訂單。"
+      "en": "When the order expires (Unix seconds). The CoW Swap app sets it 30 minutes after the quote (DEFAULT_DEADLINE_FROM_NOW). The template allows at most 7 days (604,800 seconds) after the time of the block the transaction is judged on; a later expiry is MISMATCH. Within that, a later expiry only keeps the order open longer: it still fills at most once, at no less than the card's minimum, to the Safe, and the Safe can cancel it with invalidateOrder. What past orders held: pnpm past-txs (testdata/research/cow-swap-approve-presign.json) measured the expiry less its block's time on the 19 batches from 19 Safes that approved and pre-signed in one transaction: median 1,632 seconds (about 27 minutes), largest 5,353 (about 1.5 hours); the 6 orders EOAs pre-signed alone reached at most 1,772. Why 7 days and not less: the larger cow/swap recording (testdata/research/cow-swap-presign.json) saw a Safe pre-sign an order expiring 604,767 seconds after its block, just under 7 days. An order left open for months, which a free expiry allowed, stays fillable long after the signer stops watching.",
+      "zh-TW": "訂單到期時間（Unix 秒）。CoW Swap app 設為報價後 30 分鐘（DEFAULT_DEADLINE_FROM_NOW）。模板只允許判定交易所用區塊的時間之後最多 7 天（604,800 秒）；更晚就是 MISMATCH。在這之內，較晚的到期時間只會讓訂單開著更久：它仍然最多成交一次，數量不少於卡片上的最低值，而且付給 Safe；Safe 可以用 invalidateOrder 取消它。過去的訂單：pnpm past-txs（testdata/research/cow-swap-approve-presign.json）量了 19 個 Safe 在同一筆交易裡先授權再預簽的 19 筆批次，到期時間減去所在區塊時間：中位數 1,632 秒（約 27 分鐘），最大 5,353 秒（約 1.5 小時）；6 筆 EOA 單獨預簽的訂單最多 1,772 秒。為什麼是 7 天而不更短：較大的 cow/swap 紀錄（testdata/research/cow-swap-presign.json）看到一個 Safe 預簽的訂單在區塊後 604,767 秒到期，差一點 7 天。到期時間不限制時，訂單可以開好幾個月，簽名者早已不再注意，它仍能成交。"
     },
     "2.setPreSignature.orderUid.digest.appData": {
       "en": "The hash of the JSON the app attaches to the order (app name, slippage, fees, hooks). The settlement contract does not read it.",
