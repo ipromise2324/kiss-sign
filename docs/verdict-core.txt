@@ -66,6 +66,8 @@ src/verify/code.ts
 src/verify/detail-text.ts
 src/verify/expected.ts
 src/verify/messages.ts
+src/verify/package-pins.ts
+src/verify/packages.ts
 src/verify/page.ts
 src/verify/self-check.ts
 src/verify/verdict.ts
