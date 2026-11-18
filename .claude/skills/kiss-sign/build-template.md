@@ -1,7 +1,7 @@
 # Build a template: how
 
 How to do each step of [Build a template](SKILL.md#build-a-template) except step 2 ([addresses.md](addresses.md)) and step 8 ([notes-and-reviews.md](notes-and-reviews.md)).
-The design of each step is in [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template).
+The design of each step is in [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template), whose steps are numbered differently; find them by name.
 
 ## Decide from evidence
 
@@ -59,6 +59,7 @@ Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); temp
   When you change a template that holds both languages, keep both and write the change in each.
 - **A signed order read by its digest.** Fetch one real order from the `lookup` API first and see where its members sit.
   When the API does not serve the message as one top-level object with each member under its own name, declare `answer` ([Signed messages](../../../docs/design/data-shapes.md#signed-messages)): the `path` to the object that holds it, and per member a `path` or `"encoding": "hex"` only where the API differs.
+  A wrong `answer` cannot pass a forged order, but it makes every order `UNVERIFIABLE`.
 - **When the vocabulary falls short**, such as an amount that rounds by a few wei, a recipient packed inside a `bytes32`, a read a computed field cannot make, or a proxy `prove-abi` does not know: stop and propose a generic program change ([Program changes](#program-changes)).
   Never reach for `free`, `positive` or another looser rule to make the transaction pass.
 
@@ -72,7 +73,7 @@ The program picks its own windows across the last year; never pass `--from-block
    A misfit shows a shape the template does not accept, such as an extra call or a longer trailer.
    Change the template only when the misfit is normal use, and say why in the report.
 3. Read `amounts against balances`: for each effect of an exact card amount, how far each sender's and receiver's balance ended from the amount the transaction states.
-   An effect with no `tolerance` allows 0, so any other difference prints as `FINDING`.
+   An effect with no `tolerance` allows 0, so a sender's other difference in a registry token prints as `FINDING`.
 4. Declare a `tolerance` on an effect only from that distribution: `less` and `more` the largest difference observed in each direction, never more than 10, and the distribution cited in `why`, such as "in 28 stETH transfers studied, the sender's balance ended 1 wei higher than stated in 21 and exact in 7".
    Never declare one where every difference is 0.
    Share-based or rebasing tokens, fee-on-transfer tokens and vault share conversions are only hints of where to look; the distribution decides.
@@ -119,5 +120,5 @@ Keep the final message short and plain.
    - Read the report in their language (`report.generated.en.html` or `report.generated.zh-TW.html`, or the one that exists).
    - Before merging, the `--compare` run of [step 11](SKILL.md#build-a-template), from a clone on `main`.
      It runs main's code on the branch's templates, registry and recordings, reads every fact live again, and prints each that differs from the committed report; it does not search for past transactions again, so it cannot show the search found every one.
-     It refuses a branch that changes the verdict core beside a template or the registry, and prints `PROGRAM CHANGE` for each program file the branch changes, `gate` among them for a file only the signer merges.
+     It refuses a branch that changes the verdict core beside a template, the registry or a gate file, and prints `PROGRAM CHANGE` for each program file the branch changes, `gate` among them for a file only the signer merges.
    - Merge only when it prints no difference and they are satisfied.
