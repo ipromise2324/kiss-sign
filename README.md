@@ -93,7 +93,7 @@ In Claude Code, from the clone, say it in one sentence: "deposit 1,000,611.44860
 
 The report shows what the transaction will do and where every fact came from. Text the AI wrote is marked `AI`; everything else the program read or checked.
 
-**The call flow.** Which contract the Safe calls, in which order, and what comes back.
+**The call flow.** Which contract the Safe calls, in which order, and what comes back. The Safe's own calls are the template's, which the program checks. The calls inside them are the AI's, from reading the source, and the program checks each against the call traces of other senders' past transactions: a line seen in every one is drawn solid, confirmed two ways.
 
 ![The call flow in the report: the Safe approves USDC to general-adapter-1, then calls bundler3.multicall, which pulls the USDC and deposits it, and the vault shares come back to the Safe](docs/readme/report-flow.png)
 
@@ -101,15 +101,15 @@ The report shows what the transaction will do and where every fact came from. Te
 
 ![The fields of usdc.approve in the report: spender is fixed to general-adapter-1 with its full address, and value is the amount you fill in](docs/readme/report-fields.png)
 
-**Every address.** Each place it was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report, where CoW's settlement contract is confirmed in five places.
+**Every address.** Each place it was found, whether that site belongs to the protocol, and whether the newest version still lists it. This crop is from the CoW swap report. CoW's settlement contract is found in four sources, but places count by who owns them: two GitHub pages and the SDK all belong to CoW's GitHub organization, so with Immunefi it is confirmed in two places.
 
-![An address the report confirmed in five places: two pages on CoW's GitHub, whose organization Immunefi ties to the protocol, each still listing it at the newest version; Immunefi's bug bounty scope; CoW's SDK on npm; and the deployer, which also deployed another confirmed CoW contract](docs/readme/report-address.png)
+![An address the report confirmed in two places: two pages on CoW's GitHub and CoW's SDK on npm, which count as one place, CoW's GitHub organization, each still listing it at the newest version; and Immunefi's bug bounty scope. The deployer shares no other confirmed contract, so it counts for nothing](docs/readme/report-address.png)
 
 Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under To review, with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
 
 ![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page could not be read, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
 
-The report was made on the AI's computer. Before you merge, read its facts again with your own `main`'s code; any fact that differs is printed:
+The report was made on the AI's computer. Before you merge, read its facts again with your own `main`'s code; any fact that differs is printed. It fetches and traces again the past transactions the report recorded, rather than searching anew. Run it once more with `--instance-of` for each per-instance report the branch changes:
 
 ```sh
 git fetch origin <branch>
@@ -169,7 +169,7 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 
 ### The Safe web app or Transaction Service
 
-`verify` never uses what the web app shows. It checks the transaction in the Transaction Service, and comparing the hashes on your wallet checks that you sign that one.
+`verify` checks the transaction you give it, from the Transaction Service by its safeTxHash or from a file, against your card, and comparing the hashes on your wallet checks that you sign that one.
 
 | Attack | Stopped by |
 |---|---|
@@ -203,7 +203,7 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 
 | Attack | Stopped by |
 |---|---|
-| The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall, an unlimited approval, a Safe setting change and an unexplained balance change whatever the template says; the rest shows in the report you review |
+| The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall other than to the official MultiSend, an unlimited approval other than a standing one the registry declares, such as to Permit2, a Safe setting change other than an owner or threshold change the card declares, and an unexplained balance change, whatever the template says; the rest shows in the report you review |
 | A steered AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
 
 On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
@@ -214,9 +214,9 @@ You choose the protocol; kiss-sign checks its state, its app's transactions and 
 
 | Attack | Stopped by |
 |---|---|
-| The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, read through both providers, for you to judge before you merge |
-| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | Other senders' CoW orders expired within 1.5 hours, so the template allows 7 days at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
-| A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings, and contracts behind it such as a market's oracle, are not checked |
+| The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, found through Alchemy and their balances read through both providers, for you to judge before you merge |
+| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | Most CoW orders other senders sent expired within half an hour and the longest within 7 days, so the template allows 7 days at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
+| A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings an admin can change, such as a vault's curator, fees or caps, and contracts that are not registry entries, such as the markets and oracles behind a vault, are not checked |
 | The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 
 ### You
