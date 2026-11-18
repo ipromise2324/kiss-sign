@@ -258,7 +258,7 @@ test('a status, verdict or AI source result outside its words is refused', () =>
   refused(edited(['entries', 'usdc', 'sources', 0, 'result'], 'ok'), 'notes.json.entries.usdc.sources[0].result: not one of pass, attention, fail');
 });
 
-const VAULT_PATH = 'templates/morpho/vault-deposit/vaults/v/notes.json';
+const VAULT_PATH = 'templates/morpho/vault-deposit/instances/v/notes.json';
 /** What these vault notes may name, as if each entry they review or describe were the vault or its factory. */
 const OWNED = new Set(['usdc', 'cbbtc', 'morpho-oracle']);
 const SHARED = Object.fromEntries(Object.entries(VALID).filter(([key]) => key !== 'verdict'));
@@ -368,11 +368,11 @@ test("a template's flow line that names the vault or its asset is refused, since
 test("--compare names a vault's notes.json too", () => {
   assert.deepEqual(
     notesChanges([
-      'templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json',
-      'templates/morpho/vault-deposit/vaults/x/report.generated.html',
+      'templates/morpho/vault-deposit/instances/steakhouse-prime-usdc-v2-0f51/notes.json',
+      'templates/morpho/vault-deposit/instances/x/report.generated.html',
       'templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json',
     ]),
-    ['templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json', 'templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json'],
+    ['templates/morpho/vault-deposit/instances/steakhouse-prime-usdc-v2-0f51/notes.json', 'templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json'],
   );
 });
 
