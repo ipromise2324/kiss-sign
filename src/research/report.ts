@@ -22,7 +22,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, WAD, callTargetEntries, callTargets, cardRefs, computedOutput, effectTokenNames, inScope, isNamedToken, loadTemplate, namedEffectTokens, refNames, ruleLeaves, scopeEntries, slippageBps, viewTargetNames } from '../template/template.ts';
 import type { MemberSource } from '../template/eip712.ts';
-import { GENERATED_FILE, inBothFolders, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
+import { GENERATED_FILE, INSTANCE_FOLDER, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
 import type { CallNode, CardRef, Computed, ComputedRead, Effect, EffectToken, Quantity, Rule, Template, Tolerance, TokenRef, ViewEffect } from '../template/template.ts';
 import type { Line, Listings, ListingsRecording, SiteOwner } from './listings.ts';
 import { checkSources, githubLine, listingsFor, recordedListingReads, sourcePagesOf, sourceSiteLine, trimForRecording, trimSourcePage } from './listings.ts';
@@ -115,16 +115,12 @@ export { GENERATED_FILE };
 export const REPORT_RECORDINGS_DIR = join('testdata', 'report');
 const RESEARCH_DIR = join('testdata', 'research');
 
-/** The folder an instance's report files sit in: `vaults/<instance>` while its committed report is there, else `instances/<instance>`. */
-export function instanceReportDir(repoRoot: string, template: string, instance: string): string {
-  const folders = reportedInstancesIn(repoRoot, template).get(instance) ?? [];
-  if (folders.length > 1) throw new ReportError(inBothFolders(template, instance));
-  return join(TEMPLATES_DIR, template, folders[0] ?? 'instances', instance);
-}
+/** The folder an instance's report files sit in. */
+export const instanceReportDir = (template: string, instance: string): string => join(TEMPLATES_DIR, template, INSTANCE_FOLDER, instance);
 
 /** The folder a template report's files sit in: the template's, or for a per-instance report its instance's under it. */
 export const reportDir = (repoRoot: string, target: TemplateTarget): string =>
-  target.instance === undefined ? join(TEMPLATES_DIR, target.template) : instanceReportDir(repoRoot, target.template, target.instance);
+  target.instance === undefined ? join(TEMPLATES_DIR, target.template) : instanceReportDir(target.template, target.instance);
 
 export const generatedPath = (repoRoot: string, target: TemplateTarget): string => join(reportDir(repoRoot, target), GENERATED_FILE);
 
@@ -294,7 +290,7 @@ export function loadReport(repoRoot: string, registry: Registry, target: Templat
 
 /** The `docs.json` files a report reads: the template's, and its instance's when that instance's report has one, as a file of its own. */
 export function docsPaths(repoRoot: string, template: string, instance?: string): string[] {
-  const own = instance === undefined ? undefined : join(instanceReportDir(repoRoot, template, instance), DOCS_FILE);
+  const own = instance === undefined ? undefined : join(instanceReportDir(template, instance), DOCS_FILE);
   const found = own === undefined ? undefined : lstatSync(join(repoRoot, own), { throwIfNoEntry: false });
   if (found === undefined) return [join(TEMPLATES_DIR, template, DOCS_FILE)];
   if (!found.isFile()) throw new ReportError(`${own}: not a regular file`);

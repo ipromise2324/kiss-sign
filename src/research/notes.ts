@@ -22,10 +22,10 @@ export class NotesError extends Error {
 
 /** The template's notes, or with `instance` the notes of that instance's report of it. */
 export const notesPath = (repoRoot: string, template: string, instance?: string): string =>
-  join(instance === undefined ? join(TEMPLATES_DIR, template) : instanceReportDir(repoRoot, template, instance), NOTES_FILE);
+  join(instance === undefined ? join(TEMPLATES_DIR, template) : instanceReportDir(template, instance), NOTES_FILE);
 
-/** The changed files that hold text the AI wrote for a template's HTML report, a vault's included, which no program checks. */
-export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/((instances|vaults)\/[^/]+\/)?notes\.json$/.test(file));
+/** The changed files that hold text the AI wrote for a template's HTML report, an instance's included, which no program checks. */
+export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/(instances\/[^/]+\/)?notes\.json$/.test(file));
 
 const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
 
