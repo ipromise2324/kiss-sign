@@ -10,6 +10,7 @@ import type { Verdict } from '../verify/verdict.ts';
 const EN = {
   language: 'en' as Language,
   usage: 'Usage:',
+  packagesDiffer: 'the installed packages are not the ones pnpm-lock.yaml names, so nothing was run; remove node_modules, run pnpm install --frozen-lockfile, then run this again.',
   confirmAtTerminal: (command: string) => `${command} asks you to confirm at a terminal, so run it in your own terminal with nothing piped into it.`,
   card: {
     operation: (id: string, index: number, count: number) => (count === 1 ? `Card for ${id}` : `Operation ${index} of ${count}: ${id}`),
@@ -197,6 +198,7 @@ export type Labels = typeof EN;
 const ZH: Labels = {
   language: 'zh-TW',
   usage: '用法：',
+  packagesDiffer: '安裝的套件和 pnpm-lock.yaml 寫的不一樣，所以什麼都沒有執行；刪掉 node_modules，執行 pnpm install --frozen-lockfile，再跑一次。',
   confirmAtTerminal: (command: string) => `${command} 要你在終端機上確認，所以請在你自己的終端機執行，不要用管線把輸入接給它。`,
   card: {
     operation: (id, index, count) => (count === 1 ? `${id} 的卡片` : `第 ${index} 個操作（共 ${count} 個）：${id}`),
