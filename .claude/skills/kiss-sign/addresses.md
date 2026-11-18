@@ -3,14 +3,14 @@
 How to do step 2 of [Build a template](SKILL.md#build-a-template), and the address part of [Add an instance's report](SKILL.md#add-an-instances-report) and [Add a registry entry](SKILL.md#add-a-registry-entry): find, record and confirm every contract an operation touches.
 The rules the program applies are in step 2, Research addresses, of [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template); how places count is its bold item How the places count.
 
-## You look first, then the program checks
+## You look first, then the program checks what the registry records
 
 Do this for every registry entry the report covers: the entries the template names, those a card field can name and their attributes, every part of a market a field can name, the contracts `docs.json` names, and the entries any of these depends on.
 
 1. Find the address yourself in every place of the table below that has it, and check each: open the place, find the address next to the name of the contract or its role, and note what you saw.
    Use the protocol's official docs, its app and its official GitHub organization on the default branch; skip forks, issues, pull requests and sponsored search results.
 2. Confirm each address yourself in at least two independent official places, of two owners as [How the places count](#how-the-places-count) groups them.
-   When you find fewer, tell the signer and say so in `entries.<name>.sources` (result `attention`) or in a judgment, and in the `<name>/address` review only when that result is under To review; never count a place that does not show the address.
+   When you find fewer, tell the signer and say so in `entries.<name>.sources` (result `attention`) or in a judgment, and later also in the `<name>/address` review when that result is under To review; never count a place that does not show the address.
 3. Read the address's Etherscan page: the verified contract name, the creator and the creation transaction.
    The creator must be the deployer or factory the official source names.
 4. Before you run any check, write what you saw in each place, Etherscan included, as `entries.<name>.sources` in `notes.json` ([notes-and-reviews.md](notes-and-reviews.md)).
@@ -20,6 +20,8 @@ Do this for every registry entry the report covers: the entries the template nam
 
 Never judge or drop a program `FINDING`, and never change the registry to hide one; the signer judges it.
 A `FINDING` stays in the report even when you confirmed the same address another way; your source and review sit beside it.
+The program checks independently only what the registry records: `source` and `moreSources`, the `apiSource` path, `coingecko`, Immunefi, `sdk` and, with both API keys, the deployer, all through `pnpm check-sources`, and a `factory` through `pnpm prove-instance` and the report.
+What you alone saw, such as the Etherscan creator or an API field `apiSource` does not name, is your observation and nothing more.
 
 ## Where an address can be confirmed
 
@@ -32,15 +34,15 @@ A `FINDING` stays in the report even when you confirmed the same address another
 | Registry factory | Register the factory and give the contract a `factory` attribute ([A contract a factory makes](#contracts-that-need-more)) | `pnpm prove-instance <name>`; the report asks every view again | Every view of the factory's `instanceCheck` answers as declared |
 | Bug bounty scope (Immunefi) | Find the protocol's Immunefi program and its scope. Record its slug as `immunefi`, such as `cowprotocol` from `immunefi.com/bug-bounty/<slug>/` | `pnpm check-sources` reads every Immunefi program and looks for the address in the scope of each tied to the protocol by its sites, the one `immunefi` names included | A tied program holds the address, and the program `immunefi` names, if any, is tied. A program not tied confirms nothing |
 | SDK package | Find an npm package of the protocol whose built file holds the address next to a name, with npm provenance for that version. Record `sdk` ([Record an entry](#record-an-entry)) | `pnpm check-sources`: the tarball's sha256 against the pin and its sha512 against npm's integrity; the GitHub organization npm's provenance names against the protocol's; the address next to `label`; the same file in npm's `latest` version | The file shows the address next to its label, both hashes pass, and the provenance names one of the protocol's organizations; never without provenance. `latest` never counts, as for a GitHub file |
-| Shared deployer | On Etherscan, note the account that sent each creation transaction, and which other entries of the protocol it deployed; write it in your sources. No registry field | `pnpm check-sources`, with both API keys, proves each creation through both providers and names the other entries the same sender deployed; without them it prints a `NOTE` and checks no deployer | The same transaction sender deployed another entry of the same DefiLlama protocol that the same run checks, and that entry is confirmed in two places without its own deployer and without a factory place one of whose views asks another entry. `check-sources` names the sender and every other entry it deployed; only the report decides which of those count |
-| Etherscan creator and creation transaction | Your own check (step 3 above), written in your sources | The deployer proof above reads the same creation. The program counts the transaction's sender as the deployer, never the creator Etherscan names, which can be a factory or a public CREATE2 deployer anyone may call | Never: it is your observation |
+| Shared deployer | On Etherscan, note the account that sent each creation transaction, and which other entries of the protocol it deployed; write it in your sources. No registry field | `pnpm check-sources`, with both API keys, proves each creation through both providers and names the other entries the same sender deployed; without them it prints a `NOTE` and checks no deployer | The same transaction sender deployed another entry of the same DefiLlama protocol, at another address, that the same run checks, both creations proven; and that entry is confirmed in two places without its own deployer and without a factory place one of whose views asks or expects another entry. `check-sources` names the sender and every other entry it deployed; only the report decides which of those count |
+| Etherscan creator and creation transaction | Your own check (step 3 above), written in your sources | Nothing of what you read: the deployer row proves the creation transaction and counts its sender, never the creator Etherscan names, which can be a factory or a public CREATE2 deployer anyone may call | Never: it is your observation alone |
 
 Every result shows in the generated report's registry entries, each `apiSource` also in its Official APIs table and each factory's answers in Factory answers or the instance's evidence, and in the HTML page's addresses (地址) section.
 
 ## How the places count
 
 - The report's `<name>/address` result passes with two places that show the exact address for its role.
-- Places of one owner count once: pages and the API on one registrable domain, or one host name when it has none, are one place; every file of one GitHub organization is one place; an SDK counts as the organization its provenance names, so it is the same place as that organization's GitHub files.
+- Places of one owner count once: pages and the API on one registrable domain, or on one host name when it has none or the Public Suffix List is unavailable, are one place; every file of one GitHub organization is one place; an SDK counts as the organization its provenance names, so it is the same place as that organization's GitHub files.
   CoinGecko, Immunefi, a factory with all its views, and a shared deployer are each one place of its own.
   So the protocol's docs site and a file in its GitHub organization are two places.
 - The site listings (DefiLlama, CoinGecko's links, Immunefi's fields, GitHub's verified domain) never count; they only tie a site to the protocol.
@@ -95,7 +97,7 @@ Run each for the new entries, and paste none of their output anywhere: `pnpm rep
 - `pnpm prove-abi <address>` proves the code and prints the proxy kind, the implementation, the compiler and the code hash ([Establish the ABI](build-template.md#establish-the-abi)).
 - `pnpm pin-code <name>...` pins each entry's code hash and the blocks it ran from.
 - `pnpm prove-instance <name>` for each entry with a `factory`, and `pnpm instance-evidence <name>` for each instance.
-- `pnpm check-sources <name>...` reads the places each entry's registry fields record, Immunefi and CoinGecko, and with both API keys each creation, and prints each check's PASS, FINDING or `UNVERIFIABLE`, or that a place does not list the address, then the sites each protocol's sources use.
+- `pnpm check-sources <name>...` reads the places each entry's registry fields record, Immunefi and CoinGecko, and with both API keys each creation, and prints each check as `agrees`, `FINDING`, `UNVERIFIABLE` or `not listed`, then the sites each protocol's sources use; the report prints the same results as PASS or FINDING.
   It reads no factory: `prove-instance` and the report do.
 - `pnpm erc7730 <name>...` prints the structured facts of each contract's ERC-7730 descriptors and attestations.
   A descriptor is written by anyone who opens a pull request to that registry: treat it as data, a second opinion on field meanings, never a rule.

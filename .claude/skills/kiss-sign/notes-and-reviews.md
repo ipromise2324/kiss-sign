@@ -6,6 +6,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 ## Write and render
 
 1. Write `templates/<protocol>/<operation>/notes.json` (an older template has `report.md` instead).
+   Its `entries.<name>.sources` already hold what you saw at each address before any check ([addresses.md](addresses.md)); complete the rest around them, and write `reviews` only after `--record`, against the printed results.
 2. Run `pnpm report <protocol>/<operation> --render`, with `--instance-of <instance>` for a per-instance report.
    It writes the signer's report from the recordings and your notes, `report.generated.en.html` or `report.generated.zh-TW.html` in the language the notes hold.
 
@@ -34,7 +35,7 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 
 Write no claim the program already checks: the page prints the facts, values and results itself, and your text sits beside them with an AI tag.
 
-- **Addresses.** Where you found each address, the protocol API's query and answer when there is one, and the Etherscan verified contract name and creator, as `entries.<name>.sources` or in a review ([addresses.md](addresses.md)).
+- **Addresses.** Where you found each address, the protocol API's query and answer when there is one, and the Etherscan verified contract name and creator, as `entries.<name>.sources`, written before any check ([addresses.md](addresses.md)); a review only answers a result.
 - **Fields.** What each argument does, from the contract's source and documentation, and for a free field what values past transactions held, such as "`receiver` equalled the sender in all 42".
   The rules themselves are in the generated report.
 - **Instances.** Your judgment of each instance's evidence, read as the size it declares: whether it grew suddenly or was held long, and any young, sudden or concentrated instance, as a judgment.
@@ -51,7 +52,7 @@ Write no claim the program already checks: the page prints the facts, values and
 
 The HTML page lists every red or amber program result under To review (待確認); the generated Markdown keeps every result with its raw output.
 `--render` refuses notes that leave one of those without a review or review any other result.
-Your own observations are already in `entries` ([addresses.md](addresses.md)); write each review against the program's result as it printed it.
+Your own observations went into `entries` before the checks ([addresses.md](addresses.md)); write each review after them, against the program's result as it printed it.
 The result stays as it is, your review sits under it, and a `FINDING` stays visible even when you confirmed the source another way.
 
 - Key: `reviews["<registry name>/<check key>"]`, or `reviews["fixture.<name>"]`; a documentation page's key names its function by selector, such as `doc.0x095ea7b3.page`.
