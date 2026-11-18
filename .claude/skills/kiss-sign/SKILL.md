@@ -67,7 +67,8 @@ Look in `templates/` for the operation, such as `templates/erc20/transfer/`, `te
   A template is reported per instance when it declares `instanceField`, or, without one, when its card has a contract field of registry kind `vault`; a card value of that kind needs a report through whatever field names it, and a card with two fields of that kind is refused.
   The rules and the templates not yet rebuilt, listed in `src/template/vault-reports.ts`, are in step 6 of [First time an operation is done](../../../docs/design/flow.md#first-time-an-operation-is-done-build-its-template), the bold items One report, one operation and No report, no signing.
   `card new` lists only instances with a report, and `card seal` and `verify` refuse any other.
-- The template exists and is not reported per instance, but a contract the signer names is not in `registry/contracts.json`: [Add a registry entry](#add-a-registry-entry).
+- The template exists and is not reported per instance, but a contract the signer names, other than a vault, is not in `registry/contracts.json`: [Add a registry entry](#add-a-registry-entry).
+  Such a template can never name a vault.
 - A recipient that is not a contract goes in the signer's address book, never the registry: [Prepare a signing](#prepare-a-signing).
 - The template exists, every contract the signer names is in `registry/contracts.json`, and each instance has its report: [Prepare a signing](#prepare-a-signing).
 - The operation needs a capability the program lacks: research it anyway, then change the program as [Program changes](build-template.md#program-changes) says, merged as [Merge a program change](merge-a-program-change.md) says, before the template's pull request.
