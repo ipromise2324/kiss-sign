@@ -12,6 +12,7 @@ import type { ReadMessage } from './messages.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, shapesOf, studyTx } from './study.ts';
 import type { OutsideKind, Sender, TxStudy } from './study.ts';
 import { checkTrace, holdingTemplateCalls } from './trace.ts';
+import { isWithheld } from './recording.ts';
 import type { TraceSource, TracedTx } from './trace.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
@@ -52,6 +53,8 @@ export type PastTxsDeps = {
   readonly maxTxs: number;
   /** Each transaction's call trace; without it, nothing is traced. */
   readonly traces?: TraceSource;
+  /** A recording's withheld hashes of transactions left out because they touch the configured Safe; none is read. */
+  readonly excludedByRecording?: ReadonlySet<Hex>;
 };
 
 type Kept = Exclude<TxStudy, { kind: 'excluded' }>;
@@ -183,7 +186,10 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const shapes = shapesOf(query.template);
   const token = query.anchor.token?.toLowerCase() as Address | undefined;
   const context = { shapes, registry: deps.registry, readMessage: deps.readMessage, exclude: deps.exclude, anchor: { kind: query.anchor.kind, ...(token === undefined ? {} : { token }) } };
-  const all = await inPool(searched.flatMap((w) => w.sample), 4, (hash) => studyTx(deps.reader, hash, context).then((study) => ({ hash, study })));
+  const all = await inPool(searched.flatMap((w) => w.sample), 4, async (hash) => ({
+    hash,
+    study: deps.excludedByRecording?.has(hash) === true ? ({ kind: 'excluded' } as const) : await studyTx(deps.reader, hash, context),
+  }));
   const studies: Kept[] = [];
   const otherEmitter: Hex[] = [];
   for (const { hash, study } of all) {
@@ -505,7 +511,9 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
     lines.push(`sources: alchemy found ${bySource('alchemy')}, etherscan found ${bySource('etherscan')}; both ${both}, only alchemy ${only('alchemy').length}, only etherscan ${only('etherscan').length}`);
     for (const source of SOURCES) {
       const hashes = only(source);
-      if (hashes.length > 0) lines.push(`  only ${source}: ${hashes.join(', ')}`);
+      const recorded = hashes.filter((hash) => !isWithheld(hash));
+      const withheld = hashes.length - recorded.length;
+      if (hashes.length > 0) lines.push(`  only ${source}: ${[...recorded, ...(withheld === 0 ? [] : [`${withheld} not studied, so not recorded`])].join(', ')}`);
     }
   } else lines.push(`sources: etherscan found ${bySource('etherscan')}; alchemy does not search an event (its eth_getLogs reads at most 10 blocks at a time on the free plan)`);
   if (run.otherEmitter.length > 0) lines.push(`not studied, the event logged only by another contract than the sender: ${run.otherEmitter.length}, e.g. ${examples(run.otherEmitter)}`);

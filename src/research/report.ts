@@ -623,7 +623,16 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
       },
       sampling: pastTxsSampling(query),
     },
-    { ask: replayAsk(recording.sources), reader, registry, readMessage: replayMessages(recording.messages ?? []), exclude: undefined, maxTxs: query.maxTxs, traces },
+    {
+      ask: replayAsk(recording.sources),
+      reader,
+      registry,
+      readMessage: replayMessages(recording.messages ?? []),
+      exclude: undefined,
+      maxTxs: query.maxTxs,
+      traces,
+      excludedByRecording: new Set(recording.excluded ?? []),
+    },
   );
   return { file, query, text: renderPastTxs(run, registry), run };
 }

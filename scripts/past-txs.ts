@@ -81,8 +81,8 @@ Options:
                                  windows, at least 1 with --from-block and --to-block.
   --from-block, --to-block <n>   Search one block range in place of the windows.
   --same-windows-as <recording>  Search the windows of testdata/research/<recording>.json again.
-  --record <name>                Write testdata/research/<name>.json; nothing is written when a
-                                 read got no answer.
+  --record <name>                Write testdata/research/<name>.json, with the hashes of the studied
+                                 transactions only; nothing is written when a read got no answer.
 
 Writes: testdata/research/<name>.json with --record; otherwise nothing.
 Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
@@ -225,7 +225,8 @@ if (flags.record !== undefined) {
       exchanges: chain.exchanges().filter((e) => providers.every((p) => p in e.answers)),
       traces: traces.recorded(),
     },
-    [...(exclude === undefined ? [] : [exclude]), ...run.excluded],
+    exclude === undefined ? [] : [exclude],
+    run,
   );
   const out = join(ROOT, 'testdata', 'research', `${flags.record}.json`);
   mkdirSync(join(out, '..'), { recursive: true });
