@@ -23,7 +23,7 @@
     "pin-code": "node scripts/pin-code.ts",
     "pin-solc": "node scripts/pin-solc.ts",
     "check-sources": "node scripts/check-sources.ts",
-    "vault-evidence": "node scripts/vault-evidence.ts",
+    "instance-evidence": "node scripts/instance-evidence.ts",
     "erc7730": "node scripts/erc7730.ts",
     "record-abi-case": "node scripts/record-abi-case.ts",
     "record-safe-proxy": "node scripts/record-safe-proxy.ts",

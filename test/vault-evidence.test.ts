@@ -12,7 +12,7 @@ import type { BlockRef, CallResult } from '../src/chain/types.ts';
 import { loadRegistry, parseRegistry, sizeOf } from '../src/registry.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Hex } from '../src/safe/types.ts';
-import { alchemyCall, factoryAnswer, formatVaultEvidence, gatherVaultEvidence, readStoredEvidence, vaultEvidenceText } from '../src/research/vault-evidence.ts';
+import { alchemyCall, factoryAnswer, formatVaultEvidence, gatherVaultEvidence, readStoredEvidence, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');

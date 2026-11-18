@@ -30,13 +30,13 @@ const MARKET: ReturnType<typeof templateTargets>[number] = { template: 'morpho/m
 const withNotes = new Map([
   ...templateTargets(ROOT, registry)
     .filter((t) => has(t.template, NOTES_FILE))
-    .map((target) => [reportDir(target), { target, root: ROOT, registry }] as const),
-  [reportDir(MARKET), { target: MARKET, root: FIXTURES, registry: loadRegistry(FIXTURES) }] as const,
+    .map((target) => [reportDir(ROOT, target), { target, root: ROOT, registry }] as const),
+  [reportDir(FIXTURES, MARKET), { target: MARKET, root: FIXTURES, registry: loadRegistry(FIXTURES) }] as const,
 ]);
 const reportOf = (path: string) => withNotes.get(path) ?? assert.fail(path);
 const notesOf = (path: string): unknown => {
   const { target, root, registry } = reportOf(path);
-  return readNotes(root, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
+  return readNotes(root, target.template, target.instance === undefined ? undefined : registry.entries.get(target.instance));
 };
 
 /** Each report's page in each language, by its folder. */
@@ -50,16 +50,16 @@ before(async () => {
     const { inputs, title } = await replayInputs(root, registry, target, compilers, loadPublicSuffixList());
     const html = (await generatedHtml(root, inputs, title)) ?? assert.fail(`${dir}: notes but no HTML`);
     pages.set(dir, { inputs, title, html });
-    for (const [language, page] of html) replayed.set(generatedHtmlPath(target, language), { dir, language, html: page });
+    for (const [language, page] of html) replayed.set(generatedHtmlPath(root, target, language), { dir, language, html: page });
   }
 });
 
 test('a report commits a page in exactly the languages its notes hold, none without notes.json, no old one-language page, and none has report.md', () => {
   for (const target of templateTargets(ROOT, registry)) {
-    const raw = readNotes(ROOT, target.template, target.cardVault === undefined ? undefined : registry.entries.get(target.cardVault));
+    const raw = readNotes(ROOT, target.template, target.instance === undefined ? undefined : registry.entries.get(target.instance));
     const held = raw === undefined ? [] : notesLanguages(raw);
     for (const language of LANGUAGES) {
-      const path = generatedHtmlPath(target, language);
+      const path = generatedHtmlPath(ROOT, target, language);
       assert.equal(existsSync(join(ROOT, path)), held.includes(language), `${path}: committed in a language the notes do not hold, or missing in one they hold`);
     }
   }
@@ -70,11 +70,11 @@ test('a report commits a page in exactly the languages its notes hold, none with
 });
 
 test('a template reported per vault keeps no report of its own, and each vault report has its notes.json', () => {
-  const perVault = templates.filter((id) => templateTargets(ROOT, registry).some((t) => t.template === id && t.cardVault !== undefined));
+  const perVault = templates.filter((id) => templateTargets(ROOT, registry).some((t) => t.template === id && t.instance !== undefined));
   assert.ok(perVault.includes('morpho/vault-deposit'));
   for (const id of perVault) {
     for (const file of [...LANGUAGES.map(generatedHtmlFile), 'report.generated.md']) assert.ok(!has(id, file), `${id} is reported per vault but has ${file}`);
-    for (const target of templateTargets(ROOT, registry).filter((t) => t.template === id)) assert.ok(existsSync(join(ROOT, notesPath(id, target.cardVault))), `${target.cardVault} has no ${NOTES_FILE}`);
+    for (const target of templateTargets(ROOT, registry).filter((t) => t.template === id)) assert.ok(existsSync(join(ROOT, notesPath(ROOT, id, target.instance))), `${target.instance} has no ${NOTES_FILE}`);
   }
 });
 
@@ -163,7 +163,7 @@ test('every link is a URL the registry, docs.json, notes.json or a computed card
     const notes = notesOf(dir);
     const { target, root, registry } = reportOf(dir);
     const folder = join(root, TEMPLATES_DIR, target.template);
-    const docs = readDocs(root, target.template, target.cardVault) as Record<string, { url: string }>;
+    const docs = readDocs(root, target.template, target.instance) as Record<string, { url: string }>;
     const card = (JSON.parse(readFileSync(join(folder, 'template.json'), 'utf8')) as { card: Record<string, { computed?: { default: { source: string } } }> }).card;
     const allowed = new Set<string>([
       'https://defillama.com/hacks',
@@ -347,7 +347,7 @@ test('下一步 ends every signer report, each command alone in its own block wi
 });
 
 test('下一步 of a per-vault report names the vault in full, says to pick it by name, and shows the computed field it will not ask', () => {
-  const [id, { html }] = [...replayed].find(([, page]) => page.language === 'zh-TW' && withNotes.get(page.dir)?.target.cardVault === 'hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the Hyperithm report');
+  const [id, { html }] = [...replayed].find(([, page]) => page.language === 'zh-TW' && withNotes.get(page.dir)?.target.instance === 'hyperithm-usdc-apex-v2-9e2f') ?? assert.fail('the Hyperithm report');
   const section = unescape(nextSteps(html).replace(/<[^>]+>/g, ''));
   assert.ok(section.includes('選 hyperithm-usdc-apex-v2-9e2f，地址是 0x093272C07700d3cA5301C3Bf9B3A392624179E2F'), id);
   assert.ok(section.includes('照名字選'), id);

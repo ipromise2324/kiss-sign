@@ -50,14 +50,14 @@ import {
   vaultsAt,
   evidenceEntries,
 } from '../src/research/report.ts';
-import type { Target } from '../src/research/report.ts';
+import type { TemplateTarget } from '../src/research/report.ts';
 import { NOTES_FILE, notesChanges, NotesError } from '../src/research/notes.ts';
 import { branchSplit, mixedRefusal } from '../src/verdict-core.ts';
 import type { Language } from '../src/language.ts';
-import { generatedHtml, generatedHtmlPath, htmlDifferences, writeHtmlPages } from '../src/research/report-html.ts';
+import { generatedHtml, generatedHtmlFile, htmlDifferences, writeHtmlPages } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
-import { alchemyCall, vaultEvidenceText } from '../src/research/vault-evidence.ts';
+import { alchemyCall, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
@@ -66,28 +66,29 @@ const colors = paint(colorWanted(process.stdout.isTTY, process.env));
 /** A line of `--compare`, its FINDING, DIFFERS and NOTE words coloured at a terminal. */
 const say = (line: string): void => console.log(markWords(line, colors));
 
-const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) [--record | --compare [--data <git ref>]]
-       node scripts/report.ts (<protocol>/<operation> [--vault-of <vault>] | --vault <registry vault name>) (--offline | --render)
+const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/report.ts <protocol>/<operation> [--instance-of <instance>] [--record | --compare [--data <git ref>]]
+       node scripts/report.ts <protocol>/<operation> [--instance-of <instance>] (--offline | --render)
 
 Prints the generated report of a template, read live: each field's rule from template.json, each function's page from
 docs.json checked against DefiLlama and the page itself, pnpm check-sources and pnpm prove-abi for every registry entry
-the operation can touch (pnpm prove-abi but for one whose ABI it does not use, such as a market's oracle, or one with routes, whose code it reads at the latest block instead), each span of its code pin checked on the chain, pnpm vault-evidence for every vault its card
+the operation can touch (pnpm prove-abi but for one whose ABI it does not use, such as a market's oracle, or one with routes, whose code it reads at the latest block instead), each span of its code pin checked on the chain, pnpm instance-evidence for every vault its card
 can name, the protocol facts (DefiLlama's TVL, listing date and hacks for each protocol a call goes to, each facts view
 for every value its card field can name, and each token's decimals()), the past-txs recordings of the template studied
 again with each recorded transaction fetched again by hash through both providers, and pnpm erc7730 for every such
-entry. --vault prints the same for one vault, for a pull request that adds it.
+entry.
 
-A template whose card names a vault is reported per vault: --vault-of names the vault, and the report reads the
-registry as if that vault were the only one the card can name. Its files sit in templates/<protocol>/<operation>/vaults/<vault>/
-and its recording in testdata/report/<protocol>-<operation>/<vault>.json.
+A template whose card names a vault is reported per instance: --instance-of names the vault, and the report reads the
+registry as if that vault were the only one the card can name. Its files sit in templates/<protocol>/<operation>/instances/<instance>/,
+or in vaults/<instance>/ beside it while that instance's committed files are there, and its recording in
+testdata/report/<protocol>-<operation>/<instance>.json.
 
 A read with no answer (no connection, a timeout, a server error or a rate limit) is asked again after each pause; one
 still without an answer prints as UNVERIFIABLE, never as FINDING, and --record then writes nothing.
 
 --record also writes the live answers to testdata/report/, records an ABI case for each entry testdata/abi/ lacks, and
-writes the committed report from those recordings alone: templates/<protocol>/<operation>/report.generated.md, or
-registry/reports/<vault>.generated.md, and for a template with notes.json, the signer's report beside it in each
-language the notes hold: report.generated.en.html in English, report.generated.zh-TW.html in Traditional Chinese.
+writes the committed report from those recordings alone: report.generated.md in the report's folder, and for a
+template with notes.json, the signer's report beside it in each language the notes hold: report.generated.en.html in
+English, report.generated.zh-TW.html in Traditional Chinese.
 --offline prints the Markdown text from the recordings, reading nothing live; --render writes every report file from
 them. Both remove a page in a language the notes no longer hold, and a report.generated.html the program wrote before
 it wrote one file per language.
@@ -106,6 +107,7 @@ runs the code checked out here. Run --compare from main with --data, so the pull
 
 const { values: flags, positionals } = parseArgs({
   options: {
+    'instance-of': { type: 'string' },
     vault: { type: 'string' },
     'vault-of': { type: 'string' },
     record: { type: 'boolean' },
@@ -117,17 +119,21 @@ const { values: flags, positionals } = parseArgs({
   allowPositionals: true,
 });
 const [id] = positionals;
+const removed = (['vault', 'vault-of'] as const).find((flag) => flags[flag] !== undefined);
+if (removed !== undefined) {
+  console.error(`REFUSED  --${removed} was removed; name an instance's report with <protocol>/<operation> --instance-of <instance>`);
+  process.exit(2);
+}
 if (
-  (id === undefined) === (flags.vault === undefined) ||
+  id === undefined ||
   positionals.length > 1 ||
   [flags.record, flags.offline, flags.render, flags.compare].filter(Boolean).length > 1 ||
-  (flags.data !== undefined && !flags.compare) ||
-  (flags['vault-of'] !== undefined && id === undefined)
+  (flags.data !== undefined && !flags.compare)
 ) {
   console.error(USAGE);
   process.exit(2);
 }
-const target: Target = id === undefined ? { vault: flags.vault! } : flags['vault-of'] === undefined ? { template: id } : { template: id, cardVault: flags['vault-of'] };
+const target: TemplateTarget = { template: id, instance: flags['instance-of'] };
 
 const codeRoot = join(import.meta.dirname, '..');
 const git = (...args: string[]): Buffer => execFileSync('git', args, { cwd: codeRoot, maxBuffer: 1 << 30, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -164,6 +170,8 @@ try {
   process.exit(2);
 }
 const { subject, registry } = loaded;
+const mdFile = generatedPath(root, target);
+const dir = reportDir(root, target);
 if (!(await ensureVendored(['solc', 'psl']))) process.exit(1);
 const suffixes = loadPublicSuffixList();
 const compilers = cachedCompilers();
@@ -176,16 +184,11 @@ if (flags.offline) {
 /** Writes the committed reports from the repository and the recordings alone. */
 async function writeGenerated(): Promise<void> {
   const { inputs, title } = await replayInputs(root, fullRegistry, target, compilers, suffixes);
-  const mdPath = join(root, generatedPath(target));
-  mkdirSync(dirname(mdPath), { recursive: true });
-  writeFileSync(mdPath, renderReport(inputs, title));
-  const written = [generatedPath(target)];
-  const html = await generatedHtml(root, inputs, title);
-  if ('template' in target) {
-    const pages = html ?? new Map<Language, string>();
-    for (const file of writeHtmlPages(join(root, reportDir(target)), pages)) console.error(`removed ${file}, a page in no language ${NOTES_FILE} holds`);
-    written.push(...[...pages.keys()].map((language) => generatedHtmlPath(target, language)));
-  }
+  mkdirSync(join(root, dir), { recursive: true });
+  writeFileSync(join(root, mdFile), renderReport(inputs, title));
+  const pages = (await generatedHtml(root, inputs, title)) ?? new Map<Language, string>();
+  for (const file of writeHtmlPages(join(root, dir), pages)) console.error(`removed ${file}, a page in no language ${NOTES_FILE} holds`);
+  const written = [mdFile, ...[...pages.keys()].map((language) => join(dir, generatedHtmlFile(language)))];
   console.error(`wrote ${written.join(' and ')}`);
 }
 
@@ -194,9 +197,9 @@ if (flags.render) {
   process.exit(0);
 }
 
-const committedPath = join(root, generatedPath(target));
+const committedPath = join(root, mdFile);
 if (flags.compare && !existsSync(committedPath)) {
-  console.error(`${generatedPath(target)} does not exist; there is nothing to compare with`);
+  console.error(`${mdFile} does not exist; there is nothing to compare with`);
   process.exit(2);
 }
 const entries = entriesOf(subject, registry);
@@ -274,7 +277,6 @@ const text = renderReport(live, { command, sources: ['live reads at the time it 
 
 /** Each committed HTML report against what the code checked out here writes from the recordings and notes.json. */
 async function compareHtml(): Promise<boolean> {
-  if (!('template' in target)) return true;
   let written: ReadonlyMap<Language, string> | undefined;
   let refused: string | undefined;
   try {
@@ -284,7 +286,6 @@ async function compareHtml(): Promise<boolean> {
     if (!(e instanceof NotesError)) throw e;
     refused = `the program refuses notes.json: ${e.message}`;
   }
-  const dir = reportDir(target);
   if (refused !== undefined) {
     say(`DIFFERS  ${dir}: ${refused}`);
     return false;
@@ -303,8 +304,8 @@ if (flags.compare) {
   for (const line of differences) say(`DIFFERS  ${line}`);
   say(
     differences.length === 0
-      ? `${generatedPath(target)}: every fact read live equals the committed report (not compared: the date the listings were read, DefiLlama's TVL and the block each ABI proof was read at; past transactions were not searched again)`
-      : `${generatedPath(target)}: ${differences.length} fact(s) differ from what was read live`,
+      ? `${mdFile}: every fact read live equals the committed report (not compared: the date the listings were read, DefiLlama's TVL and the block each ABI proof was read at; past transactions were not searched again)`
+      : `${mdFile}: ${differences.length} fact(s) differ from what was read live`,
   );
   const htmlSame = await compareHtml();
   process.exit(differences.length === 0 && htmlSame ? 0 : 1);
