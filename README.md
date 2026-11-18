@@ -63,7 +63,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault. One address crop is from another vault's report, as marked.
 
-**Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts. You merge each template and registry pull request into it, and merging is your confirmation; program changes your AI merges itself, behind a gate (see [A compromised AI](#a-compromised-ai)).
+**Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts. You merge each template and registry pull request into it, and merging is your confirmation; program changes your AI merges itself, behind a gate (see [Your AI](#your-ai)).
 
 ```sh
 git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
@@ -185,44 +185,37 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 | One provider gives a false answer, or none | `verify` compares the two answers: they differ, `UNVERIFIABLE` |
 | Both give the same false answer, such as a simulation that hides your funds going elsewhere | The attacker needs both companies at once, and a bad transaction must still reach your Safe. The Safe web app's own simulation, run by Tenderly rather than these two providers, may still show your funds going elsewhere, if the web app itself is not compromised |
 
-### Fake sites and listings
+### Fake sources
 
-Your AI finds each contract's address on the web, so a fake page can mislead it. The report checks both the site and the address, and you review it before you merge.
+Your AI finds each contract's address on the web, and a program fetches each contract's source code from Etherscan, so a fake page or fake source can mislead them. The report checks the site, the address and the source, and you review it before you merge.
 
 | Attack | Stopped by |
 |---|---|
 | The AI uses a fake site | A program, not the AI, compares the site with those the protocol's listings name, on DefiLlama, CoinGecko, its bug bounty and GitHub: not among them, flagged for you. To pass, the fake site must be listed there too |
 | The AI uses a wrong address | The address must be found in two places, such as the protocol's site, CoinGecko, the factory, the bug bounty or the SDK: fewer, flagged for you. To pass, the wrong address must be planted in two of them |
+| Etherscan serves source code that is not the contract's, so a harmful call reads as a harmless one | A program compiles it with a pinned compiler and compares it with the code on chain: different, refused |
 
-On the hardened tier, `check.sh` also marks every address not in your own list as unknown.
+On the hardened tier, `check.sh` also marks every address not in your own list as unknown, and takes its ABIs from Sourcify, not Etherscan.
 
-### Mistakes in the AI's research
+### Your AI
 
-Even with the right addresses, your AI can misread a contract or how the operation is used, or miss that a protocol is unsafe right now. A program checks its research against the chain, and you review the report before you merge.
-
-| Attack | Stopped by |
-|---|---|
-| The AI uses a wrong ABI, so a harmful call reads as a harmless one | A program compiles the contract's verified source with a pinned compiler and compares it with the code on chain: different, flagged for you |
-| The AI allows a value no real user sends, such as a CoW order that stays valid for a year | A program reads other senders' past transactions of the operation. Their CoW orders expired within 1.5 hours, so the template allows at most 7 days, and a later expiry is `MISMATCH`. Pre-signed transactions that stayed valid long after the signers stopped watching, through Solana's durable nonces, are what the Drift exploit of April 2026 relied on |
-| The AI picks a protocol or contract that is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and an instance's size over 12 months and its holders, read through both providers |
-| The AI writes a template that allows too much | `verify` refuses a delegatecall, an unlimited approval, a Safe setting change and an unexplained balance change whatever the template says; the rest shows in the report you review |
-
-### A compromised AI
-
-Models are trained to resist prompt injection, but a page your AI reads can still steer it. A steered AI can change the very checks above, so kiss-sign relies on what it cannot reach.
+Models are trained to resist prompt injection, but a page your AI reads can still steer it, and it can simply be wrong. kiss-sign assumes both can happen.
 
 | Attack | Stopped by |
 |---|---|
-| The AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
+| The AI gets something wrong, such as a template that allows too much | `verify` refuses a delegatecall, an unlimited approval, a Safe setting change and an unexplained balance change whatever the template says; the rest shows in the report you review |
+| A steered AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
 
 On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
 
-### Contracts that change
+### The protocol you use
 
-A contract you reviewed can change into one that harms you.
+You choose the protocol; kiss-sign checks its state, its app's transactions and its code.
 
 | Attack | Stopped by |
 |---|---|
+| The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, read through both providers, for you to judge before you merge |
+| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | The template bounds it from other senders' past transactions, whose CoW orders expired within 1.5 hours: at most 7 days, so later is `MISMATCH`. Pre-signed transactions that stayed valid long after the signers stopped watching, through Solana's durable nonces, are what the Drift exploit of April 2026 relied on |
 | A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings, and contracts behind it such as a market's oracle, are not checked |
 | The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 
