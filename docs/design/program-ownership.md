@@ -3,8 +3,9 @@ Part of [the kiss-sign design](../design.md).
 ## Who owns the program
 
 Each signer owns their own kiss-sign: they fork the repository and clone their fork, and their fork's `main` is what `verify` trusts.
-There is no maintainer.
-No one upstream reviews or merges a change, and the signer is not expected to read the program's code; the upstream repository is only a source of updates the signer may pull.
+The upstream repository has a maintainer, who welcomes issues, security problems included, and pull requests.
+An upstream merge reaches a signer only when the signer pulls it into their own fork; `verify` trusts only that fork's `main`, never upstream.
+The signer is not expected to read the program's code.
 Three kinds of pull request reach `main`, and different hands merge them:
 
 - **Templates and the registry,** the hand-written files under `templates/` and `registry/`: the signer reads the report, runs `--compare` from main, and merges.
