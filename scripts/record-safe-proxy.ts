@@ -9,8 +9,25 @@ import { kissSignHome } from '../src/keys.ts';
 import { safeProxyCreated } from '../src/safe/deployments.ts';
 import { parseHex } from '../src/safe/types.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = 'usage: ALCHEMY_API_KEY=... node scripts/record-safe-proxy.ts <name> <transaction hash>';
+const USAGE = 'usage: pnpm record-safe-proxy <name> <transaction hash>';
+const HELP = `${USAGE}
+
+Records, into testdata/safe-proxy/<name>.json, the transaction in which an official Safe proxy
+factory created a Safe, with its receipt and the new Safe's code at that block, as both providers
+answered them. The tests use it to show that the code each official factory deploys is a Safe
+proxy the program knows, of that version. It refuses a
+transaction whose logs hold no ProxyCreation from an official factory, and writes nothing when the
+recording mentions the Safe in $KISS_SIGN_HOME/config.json. <name> is lowercase letters, digits
+and hyphens.
+
+Writes: testdata/safe-proxy/<name>.json.
+Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 4,
+  Who sent it, by type).`;
+
+exitOnHelp(HELP);
 
 const [name, hashArg] = process.argv.slice(2);
 if (name === undefined || hashArg === undefined || !/^[a-z0-9-]+$/.test(name)) throw new Error(USAGE);
