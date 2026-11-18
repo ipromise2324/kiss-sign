@@ -161,9 +161,9 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 
 The templates in [`templates/`](templates/) are examples an AI wrote; read each one's report before you approve it. To sign something new, tell your AI, as in step 1. It opens a pull request with a template and its report, and you review and merge it.
 
-A template is data: it picks from checks the program already has and gives a reason for each. It cannot loosen the [checks every transaction gets](docs/design.md#engine-checks-that-every-template-gets).
+A template is data: it picks from checks the program already has and gives a reason for each. It cannot loosen the [checks every transaction gets](docs/design/engine-and-chain.md#engine-checks-that-every-template-gets).
 
-When no check fits, the AI first adds one to the program in a pull request of its own. It merges that one itself, once the program's tests pass and a second AI finds no security problem; you do not read program code. A change to those tests comes to you, like a template. What this leaves open is in [Who owns the program](docs/design.md#who-owns-the-program).
+When no check fits, the AI first adds one to the program in a pull request of its own. It merges that one itself, once the program's tests pass and a second AI finds no security problem; you do not read program code. A change to those tests comes to you, like a template. What this leaves open is in [Who owns the program](docs/design/program-ownership.md#who-owns-the-program).
 
 The report in a pull request was made on the AI's computer, so you cannot tell from it alone that its facts are true. Before you merge, read them again live with your own `main`'s code, which the pull request cannot change; any fact that differs from the report is printed (this needs the Alchemy and Etherscan keys):
 
