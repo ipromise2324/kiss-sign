@@ -34,7 +34,7 @@ Published files would otherwise tie the Safe, its balances, and its history to w
 - Templates refer to "the Safe", never to an address.
 - Test transactions come from other senders.
   The signer's own Safe is excluded when searching for past transactions.
-  `record-safe-tx` refuses the configured Safe before it reads anything, and `record-safe-tx`, `record-safe-proxy`, `past-txs --record`, `instance-evidence --record` and `report --record` write nothing when the recording would mention it.
+  `record-safe-tx` refuses the configured Safe before it reads anything; `record-safe-tx`, `record-safe-proxy`, `instance-evidence --record` and `report --record` write nothing when the recording would mention it, and `past-txs --record` drops every entry that mentions the Safe or one of its transactions and refuses a recording that still does.
 - Reports count senders but list no Safe of the signer's.
 - Before every push, a check greps the outgoing commits for the configured Safe address and for API keys, and must find nothing.
 
