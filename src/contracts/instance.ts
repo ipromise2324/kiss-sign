@@ -152,7 +152,7 @@ const resolveExpected = (view: InstanceView, instance: RegistryEntry, namer: Reg
   return 'entry' in expected ? expected.entry : undefined;
 };
 
-/** The view's verdict on one answer: the messages for a factory asked about its instance are the ones `pnpm vault-evidence` has always stored. */
+/** The view's verdict on one answer: the messages for a factory asked about its instance are the ones `pnpm instance-evidence` has always stored. */
 function judged(
   view: InstanceView,
   data: string | undefined,
