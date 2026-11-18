@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -46,16 +46,36 @@ for (const words of SIGNING) {
   });
 }
 
-test('kiss-sign verify -h prints the same help as --help, after an option value too', () => {
-  const help = runHelp(join(ROOT, 'bin', 'kiss-sign'), ['verify', '--help']).stdout;
-  assert.equal(runHelp(join(ROOT, 'bin', 'kiss-sign'), ['verify', '-h']).stdout, help);
-  assert.equal(runHelp(join(ROOT, 'bin', 'kiss-sign'), ['verify', '--card', '0x00', '--help']).stdout, help);
+test('kiss-sign verify -h prints the same help as --help', () => {
+  assert.equal(runHelp(join(ROOT, 'bin', 'kiss-sign'), ['verify', '-h']).stdout, runHelp(join(ROOT, 'bin', 'kiss-sign'), ['verify', '--help']).stdout);
 });
 
-test('kiss-sign --language zh-TW --help prints every command, in English', () => {
-  const run = runHelp(join(ROOT, 'bin', 'kiss-sign'), ['--language', 'zh-TW', '--help']);
+test('kiss-sign replay given a file named -h after -- reads no help and does not exit 0', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'kiss-sign-replay-'));
+  try {
+    writeFileSync(join(dir, '-h'), '{}');
+    const run = spawnSync(process.execPath, [join(ROOT, 'bin', 'kiss-sign'), 'replay', '--', '-h'], {
+      cwd: dir,
+      env: { PATH: process.env.PATH, HOME: dir, KISS_SIGN_HOME: join(dir, 'home') },
+      encoding: 'utf8',
+    });
+    assert.doesNotMatch(run.stdout, /usage: pnpm kiss-sign replay/);
+    assert.notEqual(run.status, 0);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('kiss-sign verify --card <hash> --help is not a request for help', () => {
+  const run = runHelp(join(ROOT, 'bin', 'kiss-sign'), ['verify', '--card', '0x00', '--help']);
+  assert.doesNotMatch(run.stdout, /^usage: pnpm kiss-sign verify/);
+  assert.notEqual(run.status, 0);
+});
+
+test('pnpm history fetch -h prints the history help', () => {
+  const run = runHelp(join(ROOT, 'scripts', 'history.ts'), ['fetch', '-h']);
   assert.equal(run.status, 0);
-  assert.equal(run.stdout, runHelp(join(ROOT, 'bin', 'kiss-sign'), ['--help']).stdout);
+  assert.match(run.stdout, /^usage: pnpm history /);
 });
 
 test('kiss-sign card --help prints the help of both card commands', () => {

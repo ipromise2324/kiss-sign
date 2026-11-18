@@ -38,10 +38,11 @@ Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env, for a nonce
   needs none. It never reads GITHUB_TOKEN.
 Rules: docs/design/known-limits.md, "Known limits".`;
 
-exitOnHelp(HELP);
+const args = process.argv.slice(2);
+exitOnHelp(HELP, args[0] === 'fetch' ? args.slice(1) : args);
 
 try {
-  process.exitCode = await history(process.argv.slice(2), nodeIo());
+  process.exitCode = await history(args, nodeIo());
 } catch (error) {
   if (!(error instanceof Error) || (error.name === 'Error' && !(error instanceof UsageError))) throw error;
   process.stderr.write(`history: ${error.message}\n`);

@@ -279,15 +279,23 @@ ${Object.values(COMMANDS)
   .map(({ usage }) => `  ${usage}\n`)
   .join('')}`;
 
-/** The help `--help` asks for: the commands its words name, such as both `card` commands for `card --help`, else every command. */
-function helpFor(words: readonly string[]): string {
-  const named = Object.entries(COMMANDS).filter(([name]) => name === words.slice(0, 2).join(' ') || name === words[0] || name.split(' ')[0] === words.join(' '));
-  return named.length === 0 ? TOP_HELP : named.map(([, { usage, help }]) => `usage: pnpm kiss-sign ${usage}\n\n${help}`).join('\n');
+/**
+ * The help a command line asks for: `--help` or `-h` as the command, or right after the words of one command or of a group such
+ * as `card`, never later, where it could be a value such as a file named `-h`.
+ */
+function helpAsked(argv: readonly string[]): string | undefined {
+  const at = argv.findIndex(isHelpFlag);
+  if (at === -1) return undefined;
+  const words = argv.slice(0, at).join(' ');
+  if (words === '') return TOP_HELP;
+  const named = Object.entries(COMMANDS).filter(([name]) => name === words || name.split(' ')[0] === words);
+  return named.length === 0 ? undefined : named.map(([, { usage, help }]) => `usage: pnpm kiss-sign ${usage}\n\n${help}`).join('\n');
 }
 
 export async function main(argv: readonly string[], io: Io): Promise<number> {
-  if (argv.some(isHelpFlag)) {
-    io.stdout(helpFor(argv.filter((arg) => !isHelpFlag(arg))));
+  const help = helpAsked(argv);
+  if (help !== undefined) {
+    io.stdout(help);
     return OK;
   }
   const name = [argv.slice(0, 2).join(' '), argv[0] ?? ''].find((words) => Object.hasOwn(COMMANDS, words));
