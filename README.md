@@ -165,6 +165,8 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 
 ## Threat model
 
+`verify` is the check you run on your own computer before you sign ([step 4](#4-verify-on-your-computer-and-check-on-a-second-one)): it compares the transaction with your card, using the template you reviewed and checks that every template gets.
+
 ### The Safe web app or Transaction Service
 
 `verify` never uses what the web app shows. It checks the transaction in the Transaction Service, and comparing the hashes on your wallet checks that you sign that one.
