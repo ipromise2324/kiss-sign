@@ -12,12 +12,31 @@ import type { ChainAccess, Erc7730Recording } from '../src/research/erc7730.ts';
 import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = `usage: [ALCHEMY_API_KEY=...] node scripts/erc7730.ts <registry name>... [--record <name>]
+const USAGE = 'usage: pnpm erc7730 <registry name>... [--record <name>]';
+const HELP = `${USAGE}
 
-Finds each registry contract's ERC-7730 calldata descriptors in the pinned registry archive (downloaded on first use), and
-prints only structured facts: file path, hashes, scope, selectors, field paths and format names, and each ERC-8176
-attestation checked against both providers. With no key, attestations print as UNVERIFIABLE.`;
+Finds each entry's ERC-7730 calldata descriptors in the pinned archive of the ERC-7730 registry, by
+exact address or by the entry's registry factory (printed loudly). It prints only structured facts:
+path, file sha256, ERC-8176 descriptorHash, includes, per function the selector and each field's
+path, format and visibility, and each ERC-8176 attestation as VALID, REVOKED, EXPIRED, INVALID or
+UNVERIFIABLE, with its signer recovered and its revocation read through both providers. It never
+prints descriptor text. Without ALCHEMY_API_KEY the attestations print as UNVERIFIABLE. It
+downloads a missing or changed archive first, as pnpm fetch-erc7730 does.
+
+Options:
+  --record <name>   Write testdata/erc7730/<name>.json; refused when a chain read got no answer.
+                    <name> takes lowercase letters, digits and -.
+
+Writes: testdata/erc7730/<name>.json with --record, otherwise nothing.
+Keys: ALCHEMY_API_KEY, optional, from the environment or $KISS_SIGN_HOME/.env. GITHUB_TOKEN,
+optional, sent only to api.github.com when the archive is fetched; it raises GitHub's limit from 60
+to 5,000 requests an hour and changes no answer.
+Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2,
+ERC-7730); docs/design/engine-and-chain.md, "Research services".`;
+
+exitOnHelp(HELP);
 
 const { values: flags, positionals: names } = parseArgs({ options: { record: { type: 'string' } }, allowPositionals: true });
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');

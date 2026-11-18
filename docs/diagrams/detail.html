@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Source of docs/architecture-detail.png. Every element is backed by a sentence in docs/design.md; "step N" is the step of "The flow" there. Re-render with docs/diagrams/render.sh. -->
+<!-- Source of docs/architecture-detail.png. Every element is backed by a sentence in the design, docs/design.md and docs/design/; "step N" is the step of "The flow" in docs/design/flow.md. Re-render with docs/diagrams/render.sh. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -107,7 +107,7 @@
     <div class="box program"><div class="head"><span>Program</span><span>steps 2, 4</span></div>
       <h3><i>5</i>Gather evidence</h3>
       <ul>
-        <li><code>vault-evidence</code>: factory admits the vault; monthly assets; holder count and top 10 share</li>
+        <li><code>instance-evidence</code>: factory admits the vault; monthly assets; holder count and top 10 share</li>
         <li><code>past-txs</code>: finds past transactions and counts, per field, who held the rule; the AI reads the counts</li>
         <li><code>erc7730</code>: descriptors from a pinned archive, ERC-8176 attestations, no descriptor text</li>
       </ul>

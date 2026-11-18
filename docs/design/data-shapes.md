@@ -32,9 +32,9 @@ It is data, not code.
     The signer never types it, as the Safe web app never asks for it;
   - equals a constant.
     A constant address is only the zero address, a constant string outside a signed message is a tag of at most 32 printable ASCII characters, such as Vault V2's `this/marketParams`, too short to spell an address in hex, and constant `bytes` hold at most 19 bytes, such as a router's command list `0x0a10`, so no address-typed value or call is written into a template without a registry name.
-    The lint goes by declared type: a free or constant `uint160`, `uint256` or `bytes32` that a contract reads as an address is not caught by type, and is left to review and the perturbation test, except a `bytes32` named as a recipient (below);
+    The lint goes by declared type: a free or constant `uint160`, `uint256` or `bytes32` that a contract reads as an address is not caught by type, and is left to review and the perturbation test (see [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)), except a `bytes32` named as a recipient (below);
   - equals the number the transaction holds at an earlier template path (`equals`), as a migration's share transfer must equal its approval;
-  - a share price bound, at least as strict as the price a card amount per a card amount or an earlier field gives, scaled by a power of ten the template declares (`maxSharePrice`, `minSharePrice`; see Intent card);
+  - a share price bound, at least as strict as the price a card amount per a card amount or an earlier field gives, scaled by a power of ten the template declares (`maxSharePrice`, `minSharePrice`; see [Intent card](#intent-card));
   - at least a card amount (`atLeast`), on a number, such as the fewest tokens a swap or an order may buy;
   - at most a card amount (`atMost`), on a number, such as the most tokens an exact-output swap may spend (`amountInMaximum`);
   - a time at most a number of seconds after the time of the block the transaction is judged on (`{"withinSeconds": <seconds>}`), on a `uintN` or `intN` that counts seconds since 1970 as a block's timestamp does, such as a CoW order's `validTo` or a swap's deadline.
@@ -42,7 +42,7 @@ It is data, not code.
     A later value is `MISMATCH`, naming the field, its value, the block and its time, and the seconds; a block time the providers do not agree on is `UNVERIFIABLE`.
     The seconds are a whole number from 1 to 31,536,000 (365 days); a bound beyond a year bounds next to nothing.
     An earlier value, an order already expired, is left alone: it can only fail.
-    It is a bound the program checks, like `atMost`, not a claim it takes on trust, so it carries no reason; the evidence for the number is the spread `pnpm past-txs` prints for it (see Free numbers under Study past transactions), and the AI cites it in the field's note.
+    It is a bound the program checks, like `atMost`, not a claim it takes on trust, so it carries no reason; the evidence for the number is the spread `pnpm past-txs` prints for it (see Free numbers under Study past transactions, step 4 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)), and the AI cites it in the field's note.
     It exists because a pre-signed order or approval that stays valid far longer than normal use needs keeps a door open after the signer stops watching, as in the Drift exploit of April 2026; a CoW order's `validTo` left free lets an order that expires in a year match.
     The mutation check sets it to one second past the bound.
     The perturbation test (`pnpm perturb`, replayed by `pnpm test` and the report) changes only free fields, so it never changes this one; it counts the bound, as the mutation check of a recorded test transaction does, from the time of the block the transaction ran in, read through both providers, so a recorded transaction later than its bound is not perturbed, since its fields give `MISMATCH`;
@@ -67,7 +67,7 @@ It is data, not code.
     The guard goes by the name the template's own signature gives, so it catches the common spellings, not a recipient a protocol names otherwise, a parameter the signature leaves unnamed, or a `bytes32[]` of recipients; those are left to review.
   - A number, a bool, fixed-size bytes or an array of numbers may be free with a reason: `{"free": "<why>"}`, such as the per-hop price floors (`minHopPriceX36`) a Uniswap swap may carry, which can only make it revert.
   - A free number that is a time, in seconds since 1970 as a block's timestamp counts, such as an order's expiry, may say so: `{"free": {"time": "<why>"}}`; `withinSeconds` (above) bounds such a time instead of freeing it.
-    It is free exactly as a number with a reason is, at signing and in the perturbation test; only `pnpm past-txs` reads the declaration, to measure the value against the time of the block that set it (see Free numbers under Study past transactions).
+    It is free exactly as a number with a reason is, at signing and in the perturbation test; only `pnpm past-txs` reads the declaration, to measure the value against the time of the block that set it (see Free numbers under Study past transactions, step 4 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)).
   - A number that picks one of a protocol's pools for the same tokens, such as a Uniswap pool's fee and tick spacing, may be free with a `route` claim: `{"free": {"route": "<why>"}}`.
     A changed value may send the swap through another pool, which changes the logs; the perturbation test then requires only that every copy reverts, is refused, or still passes the effects check, so the template's effects must bound every token the Safe gets with a card amount or `atLeast`, and template load refuses a `positive` or `any` one beside a route.
   - `bytes`, a string or an array of those leaves may be free only with a claim the template's tests check: `{"free": {"proof": "<why>"}}` when the contract reverts unless it verifies the value against what it already holds, such as a Merkle proof against a root or a CCTP message against Circle's attesters, or `{"free": {"unread": "<why>"}}` when the contract never reads it, such as the permit data of a VaultBundles deposit whose permit kind is bound to none.
@@ -97,7 +97,7 @@ It is data, not code.
 
   An effect of an exact card amount of a token, not of `eth`, may carry a `tolerance`, `{ "less": <n>, "more": <n>, "why": <why> }` with at least one of `less` and `more`: the Safe's balance of the token may end up to `less` base units lower, or up to `more` higher, than the card amount explains, and only in a direction the template names.
   The default is exact: an effect with no tolerance allows no difference.
-  It is for the rounding a protocol documents, and the template's past transactions are its evidence: `pnpm past-txs` measures how far each sender's balance ended from the stated amount (see Study past transactions), and the AI declares the largest difference it observed, never more than 10, citing that distribution in `why`. stETH holds balances as shares and converts with integer division, so a stETH transfer or mint can arrive 1 or 2 wei short ([Lido docs, 1-2 wei corner case](https://docs.lido.fi/guides/lido-tokens-integration-guide/#1-2-wei-corner-case)), and an Aave aToken mints a scaled balance rounded to the nearest unit, so a supply can land 1 wei either side of its amount.
+  It is for the rounding a protocol documents, and the template's past transactions are its evidence: `pnpm past-txs` measures how far each sender's balance ended from the stated amount (see Study past transactions, step 4 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)), and the AI declares the largest difference it observed, never more than 10, citing that distribution in `why`. stETH holds balances as shares and converts with integer division, so a stETH transfer or mint can arrive 1 or 2 wei short ([Lido docs, 1-2 wei corner case](https://docs.lido.fi/guides/lido-tokens-integration-guide/#1-2-wei-corner-case)), and an Aave aToken mints a scaled balance rounded to the nearest unit, so a supply can land 1 wei either side of its amount.
   Each of `less` and `more` is a whole number from 1 to 10, and template load refuses more.
   The cap is absolute, not a share of the amount: rounding loses a unit or two per conversion whatever the amount, while a share of the amount would grow with it and could hide a real loss on a large transaction.
   Ten units cover several conversions in one operation and are 0.00001 of a token of 6 decimals, such as USDC, and 10^-17 of a token of 18.
@@ -122,7 +122,7 @@ It is data, not code.
   `keccak` binds a view argument only.
   A return value the view does not name is not judged, and only a number can be named.
 - `effects.safe`.
-  Optional: the change an operation makes to the Safe's own owners and threshold, which the floor otherwise forbids (see the floor rules).
+  Optional: the change an operation makes to the Safe's own owners and threshold, which the floor otherwise forbids (see the floor rules under [Engine checks that every template gets](engine-and-chain.md#engine-checks-that-every-template-gets)).
   `owners` names the card owner the Safe `add`s, the one it `remove`s, or both, for a replacement: `{ "add": "card.owner" }`, `{ "remove": "card.owner" }`, `{ "remove": "card.old-owner", "add": "card.new-owner" }`.
   `threshold` names a card threshold the Safe's threshold must end at, `"card.threshold"`.
   The program reads the Safe's settings just before and just after the transaction, as the floor already does, and requires the owners afterwards to be exactly those before, less the removed owner, who must have been one, plus the added owner, who must not have been; the threshold to be the card's, or unchanged when `threshold` is absent; and the singleton, modules, guard, module guard and fallback handler unchanged.
@@ -221,7 +221,7 @@ Each view is one party vouching for the instance, written as:
 
 - `ask`: the contract asked, `"factory"` (the default), `"instance"`, `{"attribute": <name>}` for the entry an attribute of the instance names, or `{"namedBy": <name>}` for each registry entry whose attribute of that name names the instance, each asked on its own.
 - `function`: the view's signature.
-- `args`: one per parameter, in order: a party, as above, which binds an `address` parameter to its address, or a constant of the parameter's type: `{"uint": "500"}` or `{"int": "-1"}`, a decimal integer in the type's range; `{"address": "0x…"}`; `{"bytes32": "0x…"}`; or `{"string": "fToken"}`, 1 to 32 letters, digits, `_`, `.` and `-`, so the stored `pnpm vault-evidence` line that quotes it holds nothing a report's text block or table reads as markup.
+- `args`: one per parameter, in order: a party, as above, which binds an `address` parameter to its address, or a constant of the parameter's type: `{"uint": "500"}` or `{"int": "-1"}`, a decimal integer in the type's range; `{"address": "0x…"}`; `{"bytes32": "0x…"}`; or `{"string": "fToken"}`, 1 to 32 letters, digits, `_`, `.` and `-`, so the stored `pnpm instance-evidence` line that quotes it holds nothing a report's text block or table reads as markup.
 - `answers`: `true`, or a party whose address the answer must be.
   An object's default is `"instance"`.
 - `word`: optional, the zero-based 32-byte word of the answer that is compared, for a view that answers a static struct; without it the answer must be one word.
@@ -238,7 +238,7 @@ A `true` view passes only on the word 1; the word 0, or another address than the
 The asked call is written with the instance as `address`, every other party by its registry name and each constant as written, such as `isMetaMorpho(address)`, `computeToken(usdc,"fToken")` or `getPool(usdc,weth,500)`.
 `pnpm prove-instance` prints every view's answer.
 
-A factory, or an entry for itself, may also declare `size`, what `pnpm vault-evidence` reads of each instance: `{"function": "totalAssets()", "unit": {"function": "asset()", "attribute": "asset"}, "holders": true}`.
+A factory, or an entry for itself, may also declare `size`, what `pnpm instance-evidence` reads of each instance: `{"function": "totalAssets()", "unit": {"function": "asset()", "attribute": "asset"}, "holders": true}`.
 `function` is a view with no parameters the instance answers with one number.
 `unit`, optional, is a view with no parameters the instance answers with the token the number counts, which must be the entry its `attribute` names; its `decimals()` scale the number.
 `holders` says the instance is an ERC-20 share token whose holders are counted.
@@ -277,7 +277,7 @@ A market is a name from the markets table too.
 A template's contract field may name its protocol, `{"kind": "contract", "registryKind": "vault", "defillama": "fluid"}`, so that it accepts only registry entries of that kind that belong to that protocol: a Fluid deposit cannot be handed a Morpho vault, and its report lists only Fluid's.
 An entry with a `factory` attribute belongs to its factory's protocol, the factory entry's `defillama`, never its own: its own slug names the site that lists it, such as a curator's (`steakhouse-financial`), since `pnpm check-sources` compares its source page with that slug's website, while the factory, through its `instanceCheck` (`pnpm prove-instance`), shows on chain whose vault it is.
 The factory's `instanceCheck` and the shapes it takes are under [Registry attributes and instance checks](#registry-attributes-and-instance-checks).
-The HTML report shows an instance's admission, as `pnpm vault-evidence` stored it, as its result `<instance>/factory.admitted`, which passes only when the stored lines name the instance's own registry factory with every view answering as declared; `verify` does not ask the factory.
+The HTML report shows an instance's admission, as `pnpm instance-evidence` stored it, as its result `<instance>/factory.admitted`, which passes only when the stored lines name the instance's own registry factory with every view answering as declared; `verify` does not ask the factory.
 For an entry that names a `factory` and is not an instance whose evidence the report holds, such as a Vault V2's market adapter, `pnpm report` asks every view of that factory's `instanceCheck` through both providers at its latest block, as `pnpm prove-instance` does, and shows the first view's answer as `<entry>/factory.admitted` and each other view's as `<entry>/factory.<function>`, or `<entry>/factory.<function>.<entry asked>` for a view asked or answered once per entry naming it (`namedBy`), which is not read when no registry entry names it.
 Together these results are the entry's one `factory` place, which counts only when every one of them passes.
 An entry with no `factory` belongs to the protocol its own `defillama` names.
@@ -287,7 +287,7 @@ Template load refuses a slug no registry entry of that kind belongs to, by the s
 A contract field may also name a part of the markets table, `{"kind": "contract", "registryKind": "token", "marketPart": "collateralToken"}`, so that it accepts only registry entries of its kind that are that part of some market in `registry/markets.json`: a Vault V2 collateral's cap names a token a registered market takes as collateral, never a token such as MORPHO that no market of the table lends against.
 Template load refuses a part that is not a contract part of a market (`lending`, `loanToken`, `collateralToken`, `oracle`, `irm`), a part whose entries are of another kind than `registryKind`, and a scope no registry entry fills.
 `card new` lists only those entries, `pnpm report` states the rule and lists only those, and `card seal` and `verify` refuse a card naming any other (`morpho is not the collateralToken of any market in registry/markets.json`).
-A vault field of a template reported per vault narrows further, to the vaults with a report for that template (see [Report](flow.md#first-time-an-operation-is-done-build-its-template), step 6): `card new` lists only those, and `card seal` and `verify` refuse any other.
+An instance field of a template reported per instance narrows further, to the instances with a report for that template (see [Report](flow.md#first-time-an-operation-is-done-build-its-template), step 6): `card new` lists only those, and `card seal` and `verify` refuse any other.
 
 Card values per operation, covering the operations in the Safe's history:
 

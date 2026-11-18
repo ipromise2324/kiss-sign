@@ -19,9 +19,11 @@ import { parseAddress } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
 import { unreadRefusal } from '../src/chain/https.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/past-txs.ts <protocol>/<operation>
-  --token <registry name | address> --anchor mint|burn|any [--from <registry name | address>] [--to <registry name | address>]
+const USAGE = `usage: pnpm past-txs <protocol>/<operation>
+  --token <registry name | address> --anchor mint|burn|any [--from <registry name | address>]
+  [--to <registry name | address>]
   --token <registry name | address> --anchor event --event '<event signature>'
   [--max-txs <n>] [--record <name>]
   [--from-block <n> --to-block <n> | --same-windows-as <recording>]
@@ -30,23 +32,54 @@ Finds executed transactions of one operation through an anchor: an ERC-20 Transf
   deposit into a vault:   --token <vault> --anchor mint   (shares minted to the depositor)
   withdraw from a vault:  --token <vault> --anchor burn   (shares burned from the owner)
   transfer a token:       --token <token> --anchor any    (any transfer of the token)
-  claim a reward:         --token <token> --anchor any --from <distributor>   (the distributor paying it out)
-  supply to a market:     --token <loan token> --anchor any --to <lending>    (the loan token moving into Morpho Blue)
-  move no token:          --token <contract> --anchor event --event 'PreSignature(address,bytes,bool)'   (the contract logging the event)
-It searches 12 windows of up to 7200 blocks spread over the last year, placed by the head block, and studies at most
---max-txs (at least 12) transactions shared evenly between them. A window with more transfers than one page of a
-source is halved until they fit, and the report names the blocks left out. --same-windows-as places the windows by the head
-block testdata/research/<recording>.json keeps instead of today's, so a run again searches the same windows.
---from-block and --to-block replace the windows with one range.
-Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer; each transaction says
-which found it. Only Etherscan searches an event: Alchemy's eth_getLogs reads at most 10 blocks at a time on the free plan.
-A signed message the template names by its digest, such as a CoW order, is read from the template's lookup.
-For each free number the template leaves, it prints the spread of values, less the block's time for a declared time.
-Senders are counted by type: a proven Safe (Safe proxy code and an official singleton), a contract that is not a proven
-Safe, and an EOA making one of the template's calls directly.
+  claim a reward:         --token <token> --anchor any --from <distributor>
+                          (the distributor paying it out)
+  supply to a market:     --token <loan token> --anchor any --to <lending>
+                          (the loan token moving into Morpho Blue)
+  move no token:          --token <contract> --anchor event
+                          --event 'PreSignature(address,bytes,bool)'
+                          (the contract logging the event)
+It searches 12 windows of up to 7200 blocks spread over the last year, placed by the head block,
+and studies at most --max-txs (at least 12) transactions shared evenly between them. A window with
+more transfers than one page of a source is halved until they fit, and the report names the
+blocks left out. --same-windows-as places the windows by the head block
+testdata/research/<recording>.json keeps instead of today's, so a run again searches the same
+windows. --from-block and --to-block replace the windows with one range.
+Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer;
+each transaction says which found it. Only Etherscan searches an event: Alchemy's eth_getLogs
+reads at most 10 blocks at a time on the free plan.
+A signed message the template names by its digest, such as a CoW order, is read from the
+template's lookup.
+For each free number the template leaves, it prints the spread of values, less the block's time
+for a declared time.
+Senders are counted by type: a proven Safe (Safe proxy code and an official singleton), a
+contract that is not a proven Safe, and an EOA making one of the template's calls directly.
 The Safe in $KISS_SIGN_HOME/config.json is left out of every count, example and recording.`;
+const HELP = `${USAGE}
+Per field it prints how many transactions and senders held the template's rule, and the misfits
+grouped by reason. For each fitting transaction it runs the transaction alone on its parent block
+and compares each stated amount with the balances, printing FINDING for a sender's difference
+beyond the effect's tolerance in a registry token, or a tolerance no difference supports.
+
+Options:
+  --token <name | address>       The anchor token, or the contract that logs --event.
+  --anchor mint|burn|any|event   Which Transfer marks a transaction, or the event.
+  --from, --to <name | address>  With --anchor any: only transfers out of, or into, the address.
+  --event '<signature>'          With --anchor event: the event signature.
+  --max-txs <n>                  Transactions to study, 240 unless given, at least 12.
+  --from-block, --to-block <n>   Search one block range in place of the windows.
+  --same-windows-as <recording>  Search the windows of testdata/research/<recording>.json again.
+  --record <name>                Write testdata/research/<name>.json; nothing is written when a
+                                 read got no answer.
+
+Writes: testdata/research/<name>.json with --record; otherwise nothing.
+Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 4,
+  Study past transactions).`;
 
 const ROOT = join(import.meta.dirname, '..');
+
+exitOnHelp(HELP);
 
 const { values: flags, positionals } = parseArgs({
   allowPositionals: true,

@@ -2,7 +2,7 @@ import { keccak_256 } from '@noble/hashes/sha3.js';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
@@ -18,8 +18,7 @@ import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { EtherscanAnswer } from '../src/contracts/etherscan.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { GENERATED_SUFFIX, VAULT_REPORTS_DIR, generatedPath, replayReport, templateTargets } from '../src/research/report.ts';
-import type { Target } from '../src/research/report.ts';
+import { GENERATED_SUFFIX, generatedPath, replayReport, templateTargets } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
@@ -239,25 +238,20 @@ const CASES = [
 /** Etherscan's source for these compiles to the code on chain except the metadata hash. */
 const PARTIAL = ['cctp-message-transmitter', 'usdc', 'usdt'];
 
-const generated = templateTargets(ROOT, registry).filter((target) => existsSync(join(ROOT, generatedPath(target))));
+const generated = templateTargets(ROOT, registry).filter((target) => existsSync(join(ROOT, generatedPath(ROOT, target))));
 
-const vaultReports = existsSync(join(ROOT, VAULT_REPORTS_DIR)) ? readdirSync(join(ROOT, VAULT_REPORTS_DIR)).filter((f) => f.endsWith(GENERATED_SUFFIX)) : [];
-const vaultsReported = vaultReports.map((file) => file.slice(0, -GENERATED_SUFFIX.length));
-const reportTargets: Target[] = [...generated, ...vaultsReported.map((vault) => ({ vault }))];
-
-const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases(ROOT, registry, reportTargets)]);
+const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases(ROOT, registry, generated)]);
 
 test('every committed generated report has its own test below', () => {
   assert.ok(generated.some((target) => target.template === 'morpho/vault-deposit'), `morpho/vault-deposit has a generated report`);
-  assert.ok(vaultsReported.length > 0, `${VAULT_REPORTS_DIR} holds a vault report`);
-  const checked = [...generated.map(generatedPath), ...vaultReports.map((file) => join(VAULT_REPORTS_DIR, file))].sort();
+  const checked = generated.map((target) => generatedPath(ROOT, target)).sort();
   const committed = execFileSync('git', ['ls-files', `*${GENERATED_SUFFIX}`], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter((line) => line !== '').sort();
   assert.deepEqual(checked, committed, 'each committed *.generated.md needs a test, and each generated report must be committed: git add a report you just wrote');
 });
 
 for (const target of generated) {
-  const path = generatedPath(target);
-  const args = target.cardVault === undefined ? target.template : `${target.template} --vault-of ${target.cardVault}`;
+  const path = generatedPath(ROOT, target);
+  const args = target.instance === undefined ? target.template : `${target.template} --instance-of ${target.instance}`;
   test(`${path} is what the program writes from the repository and its recordings`, { timeout: 600_000 }, async () => {
     assert.ok(!('unavailable' in suffixes), `the source checks need the pinned Public Suffix List: ${'unavailable' in suffixes ? suffixes.unavailable : ''}`);
     const committed = readFileSync(join(ROOT, path), 'utf8');
@@ -266,18 +260,6 @@ for (const target of generated) {
     assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${args} lacks a read the proof now makes; delete it and run \`pnpm report ${args} --record\``);
     const missing = text.split('\n').find((line) => line.includes('FINDING: not in the ABI'));
     assert.equal(missing, undefined, `${args} calls or reads a function its contract's proven ABI does not hold`);
-  });
-}
-
-for (const vault of vaultsReported) {
-  test(`${VAULT_REPORTS_DIR}/${vault}${GENERATED_SUFFIX} is what pnpm report --vault writes from its recordings`, { timeout: 600_000 }, async () => {
-    const committed = readFileSync(join(ROOT, VAULT_REPORTS_DIR, `${vault}${GENERATED_SUFFIX}`), 'utf8');
-    const text = await replayReport(ROOT, registry, { vault }, compilers, suffixes);
-    assert.ok(text === committed, `${VAULT_REPORTS_DIR}/${vault}${GENERATED_SUFFIX} differs from \`pnpm report --vault ${vault} --offline\`; run \`pnpm report --vault ${vault} --record\``);
-    assert.ok(!text.includes('## Card'), 'a vault report has no template sections');
-    const entry = registry.entries.get(vault)!;
-    for (const name of [vault, ...Object.values(entry.attributes)]) assert.match(text, new RegExp(`^\\| \`${name.replace(/\./g, '\\.')}\` \\| \`0x[0-9a-fA-F]{40}\` \\|`, 'm'));
-    assert.match(text, /stored output of `pnpm vault-evidence`/);
   });
 }
 

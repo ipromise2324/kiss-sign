@@ -10,12 +10,33 @@ import { httpsTransport } from '../src/chain/rpc.ts';
 import { admitted, proveInstance } from '../src/contracts/instance.ts';
 import { ATTRIBUTES_PATH, MARKETS_PATH, REGISTRY_PATH, attributesText, marketsText, registryFromTexts } from '../src/registry.ts';
 import { checksumAddress } from '../src/safe/types.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = `usage: ALCHEMY_API_KEY=... node scripts/prove-instance.ts <registry name> [--registry <dir>] [--record <name>]
+const USAGE = 'usage: pnpm prove-instance <registry name> [--registry <dir>] [--record <name>]';
+const HELP = `${USAGE}
 
-Asks every view of the factory's instanceCheck about the entry, through both providers at the latest block, and prints
-each answer. --registry adds the entries and attributes of <dir>/contracts.json and <dir>/attributes.json, such as a
-test fixture's, to the repository's; a name in both is refused. --record writes testdata/instance/<name>.json.`;
+Asks every view of the instanceCheck of the factory the entry's factory attribute names whether it
+vouches for the entry, through both providers at the latest block. A view such as
+isMetaMorpho(address) must answer true. One with bound arguments, such as
+computeToken(address,string) with the entry's asset and "fToken", or getPool(address,address,uint24)
+with its token0, token1 and 500, must answer the entry's own address. A view asked of each entry
+naming the entry (namedBy), such as a Vault V2's isAdapter(address), or of the entry itself, such
+as an adapter's parentVault(), must answer as declared. It prints what it asked of whom and the
+answer both providers gave. It prints REFUSED and exits 1 for an entry with no factory to ask and
+for any view that does not answer as declared.
+
+Options:
+  --registry <dir>  Add the entries, markets and attributes of <dir>/contracts.json,
+                    <dir>/markets.json and <dir>/attributes.json, such as a test fixture's, to the
+                    repository's; a name the repository's file already holds is refused.
+  --record <name>   Write testdata/instance/<name>.json once every view passed; refused when a read
+                    got no answer. <name> takes lowercase letters, digits and -.
+
+Writes: testdata/instance/<name>.json with --record, otherwise nothing.
+Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Rules: docs/design/data-shapes.md, "Registry attributes and instance checks".`;
+
+exitOnHelp(HELP);
 
 const { values: flags, positionals } = parseArgs({ options: { registry: { type: 'string' }, record: { type: 'string' } }, allowPositionals: true });
 const [name] = positionals;

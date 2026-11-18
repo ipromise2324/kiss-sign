@@ -12,8 +12,26 @@ import { loadRegistry } from '../src/registry.ts';
 import { parseAddress, parseUint256 } from '../src/safe/types.ts';
 import { ensureVendored } from '../src/vendor.ts';
 import { readRecording, recordingText } from '../src/chain/bytecode.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 
-const USAGE = 'usage: ALCHEMY_API_KEY=... ETHERSCAN_API_KEY=... node scripts/record-abi-case.ts <name> <address> [block]';
+const USAGE = 'usage: pnpm record-abi-case <name> <address> [<block>]';
+const HELP = `${USAGE}
+
+Records an ABI-proof fixture for the contract at <address> into testdata/abi/<name>.json, which
+the tests replay offline. It reads the latest block, or <block>, through both providers and proves
+the ABI as prove-abi does: Etherscan's verified source, compiled with a pinned solc, must give the
+code on chain. Behind a proxy it follows the registry entry's implementationRead for the address
+or, when the registry has none, the one testdata/abi/<name>.json was recorded with for the same
+address. It writes the fixture whether the proof passes or is refused, and prints which. It writes
+nothing when a read got no answer. <name> is lowercase letters, digits and hyphens.
+
+Writes: testdata/abi/<name>.json; vendor/solc/ when a pinned compiler is missing or differs from
+its pin.
+Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
+Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 3,
+  Establish the ABI).`;
+
+exitOnHelp(HELP);
 
 const [name, addressArg, blockArg] = process.argv.slice(2);
 if (name === undefined || addressArg === undefined || !/^[a-z0-9-]+$/.test(name)) throw new Error(USAGE);

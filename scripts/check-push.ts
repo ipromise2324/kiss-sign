@@ -2,7 +2,35 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { exitOnHelp } from '../src/script-help.ts';
 import { branchSplit, mixedRefusal } from '../src/verdict-core.ts';
+
+const HELP = `usage: pnpm check-push <base>..<head>
+       .githooks/pre-push (git runs it before every push; pnpm install turns it on)
+
+Refuses a push whose commits name the configured Safe or an API key, or whose branch mixes files
+that must not share a pull request. It searches each commit's message and patch, ignoring letter
+case, for the Safe of $KISS_SIGN_HOME/config.json, each value of $KISS_SIGN_HOME/.env and each line
+of $KISS_SIGN_HOME/push-deny, and always for those in ~/.kiss-sign too.
+Given a range, such as origin/main..HEAD, it searches the commits of the range and judges the branch
+from where it left the range's base (git diff <base>...<head>). It takes only a range; a run by hand
+or in CI names one.
+With no argument, as the hook, it reads git's pushed refs on stdin, searches every pushed commit no
+remote holds, and judges each pushed ref against origin/main.
+It refuses a branch that changes the verdict core, or the guards counted with it, together with a
+file under templates/ or registry/ other than an existing generated report rendered again, or the
+verdict core together with a program gate file, naming both sets of files, and a branch git cannot
+compare with its base.
+It prints "check-push: ok" with the count of patterns, or "check-push: refused" with each finding,
+on stderr, and exits 0, 1 when refused, or 2 for an argument that is not a range.
+CI runs it on every pull request and every push to main.
+
+Writes: nothing.
+Keys: none (it reads the key values only to search for them).
+Rules: docs/design/program-ownership.md, "The verdict core" and "The program gate";
+docs/design/engine-and-chain.md, "The Safe's address is never published".`;
+
+exitOnHelp(HELP);
 
 type Needle = { label: string; text: string };
 
