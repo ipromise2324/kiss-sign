@@ -434,7 +434,7 @@ function notGeneratedProblems(design: string, folders: readonly string[], hasRep
 }
 
 test('every template folder holds report.generated.md, or design.md lists it among the templates that predate the report', () => {
-  const design = readFileSync(join(ROOT, 'docs', 'design.md'), 'utf8');
+  const design = readFileSync(join(ROOT, 'docs', 'design', 'flow.md'), 'utf8');
   const folders = readdirSync(join(ROOT, TEMPLATES_DIR)).flatMap((protocol) => readdirSync(join(ROOT, TEMPLATES_DIR, protocol)).map((operation) => `${protocol}/${operation}`));
   const hasReport = (id: string) => existsSync(join(ROOT, TEMPLATES_DIR, id, GENERATED_FILE)) || reportedInstancesIn(ROOT, id).size > 0;
   assert.deepEqual(notGeneratedProblems(design, folders, hasReport), []);
