@@ -385,7 +385,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="vault-fluid-fusdc">
   <h2>金庫</h2>
-  <p class="lead"><a href="#a-fluid-fusdc">fluid-fusdc</a>：程式記錄的 <code>pnpm vault-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
+  <p class="lead"><a href="#a-fluid-fusdc">fluid-fusdc</a>：程式記錄的 <code>pnpm instance-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
   <dl class="props">
     <div><dt>工廠</dt><dd>fluid-lending-factory 回答 <code>computeToken(usdc,&#34;fToken&#34;)</code> = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</dd><dd class="src">區塊 26436951</dd></div>
     <div><dt>現在的 totalAssets</dt><dd><span class="num">141,979,963.17 usdc</span></dd><dd class="src">2026-11-17，區塊 26436951</dd></div>
@@ -565,7 +565,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report fluid/vault-deposit --vault-of fluid-fusdc --record</code> 從 <code>templates/fluid/vault-deposit/template.json</code>、<code>templates/fluid/vault-deposit/docs.json</code>、<code>templates/fluid/vault-deposit/vaults/fluid-fusdc/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/fluid-vault-deposit/fluid-fusdc.json</code>、<code>testdata/abi</code>、<code>testdata/research/fluid-vault-deposit-fusdc.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/fluid/vault-deposit/notes.json</code>、<code>templates/fluid/vault-deposit/vaults/fluid-fusdc/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report fluid/vault-deposit --instance-of fluid-fusdc --record</code> 從 <code>templates/fluid/vault-deposit/template.json</code>、<code>templates/fluid/vault-deposit/docs.json</code>、<code>templates/fluid/vault-deposit/instances/fluid-fusdc/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/fluid-vault-deposit/fluid-fusdc.json</code>、<code>testdata/abi</code>、<code>testdata/research/fluid-vault-deposit-fusdc.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/fluid/vault-deposit/notes.json</code>、<code>templates/fluid/vault-deposit/instances/fluid-fusdc/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>
