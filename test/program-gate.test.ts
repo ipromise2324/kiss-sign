@@ -73,16 +73,16 @@ test('a core change a canary catches is NOT ELIGIBLE, naming the canary', () => 
   assert.match(result.stdout, /\nNOT ELIGIBLE {2}the AI may not merge weak:\n {2}canary test\/canaries\/x\.canary\.ts failed\n$/);
 });
 
-test('a branch that changes the gate or a template is NOT ELIGIBLE before any of its code runs', () => {
+test('a branch that changes the gate or a template is NOT ELIGIBLE, exit 3 for the signer to merge, before any of its code runs', () => {
   const repo = gateRepo();
   branch(repo, 'gate', { 'testdata/x.json': '2\n', 'test/canaries/x.canary.ts': "import { test } from 'node:test';\n\ntest('x', () => {});\n" });
   branch(repo, 'template', { 'templates/x/op/template.json': '{"a":1}\n' });
   const gated = gate(repo, 'gate');
-  assert.equal(gated.status, 1);
+  assert.equal(gated.status, 3);
   assert.match(gated.stdout, /\nNOT ELIGIBLE {2}the AI may not merge gate:\n {2}it changes the program gate \(docs\/canaries\.txt and the code that enforces it\), which only the signer merges: test\/canaries\/x\.canary\.ts, testdata\/x\.json\n$/);
   assert.doesNotMatch(gated.stdout, /typecheck|canary test/);
   const template = gate(repo, 'template');
-  assert.equal(template.status, 1);
+  assert.equal(template.status, 3);
   assert.match(template.stdout, /\n {2}it changes templates\/ or registry\/, which only the signer merges: templates\/x\/op\/template\.json\n$/);
 });
 
