@@ -186,12 +186,12 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 
 ### The RPC providers
 
-`verify` reads the chain and simulates through Alchemy and drpc, two companies, and uses an answer only when both give it.
+`verify` reads the chain and simulates through two providers run by different companies, Alchemy and drpc, and uses an answer only when both give it.
 
 | Attack | Stopped by |
 |---|---|
-| One provider lies or fails | `verify`: `UNVERIFIABLE` |
-| Both lie the same way, for example hiding an upgrade of the vault's code | Nothing |
+| One provider gives a false answer, or none | `verify` compares the two answers: they differ, `UNVERIFIABLE` |
+| Both give the same false answer, for example hiding that the vault's code was upgraded | Nothing in kiss-sign. The Safe web app's own simulation may show it, if the web app itself is not compromised |
 
 ## What kiss-sign checks
 
