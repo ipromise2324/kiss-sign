@@ -4,7 +4,7 @@ Part of [the kiss-sign design](../design.md).
 
 - A past transaction's call trace comes from drpc alone, since Alchemy's free plan does not serve one.
   Its token transfers and approvals are checked against the receipt both providers agree on, but a call that moves no token, and ETH sent inside a call, which logs nothing, rest on drpc's answer.
-  The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry, a registry token's mint or burn, from or to the zero address, and an `Approval` of a token outside the registry need no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, so only `--compare`, which traces each transaction again, catches such an edit.
+  The receipt check counts movements, not where they sit: a `Transfer` of a token outside the registry, a registry token's mint or burn, from or to the zero address, and an `Approval` of a token outside the registry need no matching call, and a registry token's call that a hand-edited trace moves under another call, one already covered, still matches its log, so only `--compare`, which traces again each transaction whose trace the recording holds, catches such an edit.
   A trace only confirms a `flow` line in the report or asks the AI for a review; it never changes a verdict.
   A trace also shows one path: a contract may branch on state, so a line seen in every past transaction may not hold for the transaction to sign, and the effects check at signing is what protects the signer.
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used.
@@ -60,7 +60,7 @@ Part of [the kiss-sign design](../design.md).
 - Program pull requests are merged by the AI, not read by a person.
   The program gate proves only what its canaries test: a change that weakens a check no canary covers, with the other tests that would catch it edited in the same branch or dropped in a way the title scan does not see, is merged when the AI reviewer misses it (see [Who owns the program](program-ownership.md#who-owns-the-program)).
   The gate is not a lock either: the AI holds merge rights, so an AI that skips `pnpm program-gate`, or merges a template pull request itself, is stopped only by its skill.
-  Branch protection could require the `program-gate` job, at the cost of the signer overriding it for every template pull request, which fails it by design.
+  Branch protection could require the `program-gate` job, at the cost of the signer overriding it for every pull request that changes only `templates/`, `registry/` or `testdata/`, which starts no such job, so the required check would wait on it forever.
 - The self-check runs inside the program it checks.
   Anything with shell access to the work computer, such as an AI, that deliberately rewrites both the program and its self-check passes it.
   The basic tier does not stop this; in the hardened tier the independent check still decodes what the hash commits to.

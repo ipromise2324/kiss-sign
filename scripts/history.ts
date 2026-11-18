@@ -14,8 +14,9 @@ card in history/cards/<nonce>.json and each template it names approved at its or
 the run. It prints one row per nonce with its verdict and, for each that is not MATCH, its reason:
 refused-by-design, no-card-yet, no-template with the template ids a card names that origin/main
 does not hold, or the verdict's causes; then a summary. It writes its text in the config's
-language. Chain answers are cached per nonce in history/cache/, so a rerun is offline, except for
-a nonce one of whose reads got no answer, which is not cached.
+language. Chain answers are cached per nonce in history/cache/, so a rerun reads the chain only for a
+nonce one of whose reads got no answer, which is not cached; it still fetches origin/main, and
+uses the local origin/main when GitHub cannot be reached.
 
 Optional files in $KISS_SIGN_HOME/history/:
   cards/<nonce>.json    { "operations": [...], "origin": "history", "marks": [{ "at":
