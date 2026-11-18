@@ -200,7 +200,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
   const traces = deps.traces === undefined ? [] : await traceExact(query.template, fits, deps.traces, deps.reader, deps.registry);
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
-  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample) }));
+  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample.filter((hash) => !otherEmitter.includes(hash))) }));
   return { query, head, year, windows, perWindow, found, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
 }
 
@@ -487,7 +487,7 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
   else lines.push(`anchor: Transfer of ${of} ${{ mint: 'minted (from the zero address)', burn: 'burned (to the zero address)', any: moved }[anchor.kind]}`);
   const { year } = run;
   if (year?.covered === true) {
-    lines.push(`whole year: blocks ${year.range.fromBlock} to ${year.range.toBlock}, every source's answer in one page, so the search covers the year with no gap; at most ${run.perWindow} studied, spread evenly by block`);
+    lines.push(`whole year: blocks ${year.range.fromBlock} to ${year.range.toBlock}, every source's answer in one page, so the search covers the year with no gap; at most ${run.perWindow} studied, taken evenly in block order`);
   } else if (sampling.kind === 'spread') {
     if (year !== undefined) lines.push(`whole year: blocks ${year.range.fromBlock} to ${year.range.toBlock} hold more than one page of a source, so the windows are searched`);
     lines.push(`windows: ${sampling.count} of up to ${sampling.blocks} blocks, one every ${YEAR / BigInt(sampling.count)} blocks over the last year; at most ${run.perWindow} studied per window`);

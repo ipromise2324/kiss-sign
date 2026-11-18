@@ -221,7 +221,7 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
 4. **Study past transactions.**
    The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape.
    The program (`pnpm past-txs`) finds them through Alchemy's Transfers API and Etherscan, decodes each with the template, and counts, per field, the transactions and senders that held its rule; the AI reads the counts and every misfit.
-   `--record` keeps of each search answer only what the search reads: of each list of transfers each one's transaction hash, `from` and `to` (and an Etherscan log's topics), of an answer over one page only that it is over, and any other answer whole.
+   `--record` keeps of each search answer only what the search reads: of each list of transfers each one's transaction hash, block, `from` and `to` (and an Etherscan log's topics, and with no `--token` the contract that logged it), of an answer over one page only that it is over, and any other answer whole.
    These teach the AI.
    They prove nothing about safety.
    - **Anchor:** an ERC-20 `Transfer` of one token marks each transaction: a mint for a vault deposit, a burn for a withdrawal, or any transfer.
@@ -229,13 +229,13 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
      The two can be given together.
      An operation that moves no token, such as a CoW order a Safe signs on chain with `setPreSignature`, is found by another event instead: `--anchor event --event '<event signature>'` keeps each transaction in which the contract `--token` names logged that event, such as `PreSignature(address,bytes,bool)` of CoW's settlement.
      Only Etherscan searches an event: Alchemy's Transfers API lists only transfers, and its `eth_getLogs` reads at most 10 blocks at a time on the free plan, so the report says that Alchemy did not search and marks no transaction as found by one source only.
-     An event each Safe logs about itself, such as `AddedOwner(address)` or `ChangedThreshold(uint256)`, has no one contract to name, so `--token` is left out: Etherscan searches every contract's logs of the event by its topic alone, and `--record` keeps the contract that logged each.
+     An event each Safe logs about itself, such as `AddedOwner(address)` or `ChangedThreshold(uint256)`, has no one contract to name, so `--token` is left out: Etherscan searches every contract's logs of the event by its topic alone, and the search keeps the contract that logged each.
      Such a transaction is studied only when the Safe that sent it logged the event itself; one whose sender did not, such as a contract logging the same event, is counted on its own line and studied no further.
    - **Where it looks:** unless the AI gives a block range, the program first asks each source for the anchor over the whole last year, one request each: the 2,628,000 blocks that end where the newest window below ends.
-     When every source's answer fits in one page, it studies those transactions, at most the number `--max-txs` gives, spread evenly by block over all of them, and the report says the search covered the year with no gap; an operation done a few dozen times a year, such as a vault curator's cap, is found whole this way.
+     When every source's answer fits in one page, it studies those transactions, at most the number `--max-txs` gives, taken at even steps through all of them in block order, and the report says the search covered the year with no gap; an operation done a few dozen times a year, such as a vault curator's cap, is found whole this way.
      Otherwise the report says the year held more than one page, and the program searches the windows: 12 windows of up to 7,200 blocks (about a day), one every 219,000 blocks (a month) back from the head block.
      The newest window ends on a multiple of 7,200 blocks, so a rerun picks the same windows, and the same year, until the head passes the next multiple.
-     `--record` keeps in its query that it asked the whole year first; a recording made before it did searched the windows alone, and replays so.
+     `--record` keeps in its query that it asked the whole year first; a recording made before it did searched the windows alone, and replays so, and `--same-windows-as` such a recording searches its windows alone too.
      `--record` keeps in its query the head block the windows were spread from, and `--same-windows-as <recording>` spreads them from the head that `testdata/research/<recording>.json` keeps instead of today's, so a run again, such as one to read again a transaction the first run could not, searches exactly the same windows.
      No one types a head block: it is read from the chain or taken from a recording that read it, and a block range given with it is refused.
      A recording made before the head was kept still replays, with its head from the recorded head read, and `--same-windows-as` takes its head from that read too; a recording of a block range, which has neither, is refused.

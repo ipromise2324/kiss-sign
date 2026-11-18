@@ -43,7 +43,7 @@ Finds executed transactions of one operation through an anchor: an ERC-20 Transf
   change a Safe itself:   --anchor event --event 'AddedOwner(address)'
                           (any contract logging it; studied only where the sending Safe did)
 It first asks each source for the whole last year, placed by the head block; when every answer
-fits in one page it studies at most --max-txs of those transactions, spread evenly by block.
+fits in one page it studies at most --max-txs of those transactions, taken evenly in block order.
 Otherwise it searches 12 windows of up to 7200 blocks spread over the year, and studies at most
 --max-txs (at least 12) transactions shared evenly between them. A window with more transfers
 than one page of a source is halved until they fit, and the report names the blocks left out.
@@ -139,13 +139,13 @@ try {
   process.exit(64);
 }
 if (flags.record !== undefined && !/^[a-z0-9-]+$/.test(flags.record)) throw new Error('--record takes a name of lowercase letters, digits and -');
-const head = flags['same-windows-as'] === undefined ? undefined : await recordedHead(flags['same-windows-as']);
+const sameAs = flags['same-windows-as'] === undefined ? undefined : await recordedSearch(flags['same-windows-as']);
 
 /**
- * The head block a `--record` run kept, or for a recording made before it kept one, its recorded head read, so a run
- * again searches its windows; no one types a head block.
+ * The head block a `--record` run kept, or for a recording made before it kept one, its recorded head read, and whether
+ * it asked the whole year first, so a run again searches its blocks; no one types a head block.
  */
-async function recordedHead(name: string): Promise<bigint> {
+async function recordedSearch(name: string): Promise<{ head: bigint; wholeYear: boolean }> {
   const path = join(ROOT, 'testdata', 'research', `${name}.json`);
   if (!/^[a-z0-9-]+$/.test(name) || !existsSync(path)) {
     console.error(`--same-windows-as ${name}: no recording testdata/research/${name}.json`);
@@ -153,14 +153,15 @@ async function recordedHead(name: string): Promise<bigint> {
   }
   const recording = readRecording(path) as PastTxsRecording;
   const kept = recording.query.head;
-  if (kept !== undefined && /^[0-9]+$/.test(kept)) return BigInt(kept);
+  const wholeYear = recording.query.wholeYear === true;
+  if (kept !== undefined && /^[0-9]+$/.test(kept)) return { head: BigInt(kept), wholeYear };
   const read = recording.query.fromBlock === undefined ? await replayReader(recording.exchanges).blockNumber() : undefined;
   if (read?.kind !== 'agreed') {
     const why = recording.query.fromBlock === undefined ? 'keeps no head block and no head read' : 'searched one block range and keeps no head block';
     console.error(`--same-windows-as ${name}: the recording ${why}, so it has no windows to search again`);
     process.exit(64);
   }
-  return read.value;
+  return { head: read.value, wholeYear: false };
 }
 
 const registry = loadRegistry(ROOT);
@@ -182,7 +183,7 @@ const traces = drpcTraces(endpoints[1], httpsTransport(), note);
 const query = {
   template,
   anchor: { ...(token === undefined ? {} : { token }), kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }), ...(event === undefined ? {} : { event }) },
-  sampling: range !== undefined ? ({ kind: 'range', range } as const) : head === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, head },
+  sampling: range !== undefined ? ({ kind: 'range', range } as const) : sameAs === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, ...sameAs },
 };
 const run = await pastTxs(query, {
   ask: sources.ask,
