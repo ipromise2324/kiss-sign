@@ -11,9 +11,8 @@ export const NOT_YET_REBUILT: ReadonlySet<string> = new Set([]);
 /** Whether a template's reports gate the instances its card names: every template but those not yet rebuilt. */
 export const gatesInstances = (template: Template): boolean => !NOT_YET_REBUILT.has(template.id);
 
-/** The folders under a template that hold its per-instance reports: `instances/`, and `vaults/`, their earlier name. */
-export const INSTANCE_FOLDERS = ['instances', 'vaults'] as const;
-export type InstanceFolder = (typeof INSTANCE_FOLDERS)[number];
+/** The folder under a template that holds its per-instance reports. */
+export const INSTANCE_FOLDER = 'instances';
 export const GENERATED_FILE = 'report.generated.md';
 
 /**
@@ -37,43 +36,28 @@ export function reportUnit(template: Template): ReportUnit {
   return fields.length === 1 ? { kind: 'instance', field: fields[0] as string, of } : { kind: 'several-instances' };
 }
 
-/** The folder `pnpm report` writes an instance's report to, until reports move to `instances/`. */
-export const vaultReportDir = (template: string, instance: string): string => join(TEMPLATES_DIR, template, 'vaults', instance);
+/** The instances with a report for the template. */
+export type ReportedInstances = ReadonlySet<string>;
 
-/** Each instance with a report for the template, and the folders that hold one. */
-export type ReportedInstances = ReadonlyMap<string, readonly InstanceFolder[]>;
-
-/** The reported instances, from the repository's file paths (`templates/<id>/<folder>/<instance>/report.generated.md`). */
+/** The reported instances, from the repository's file paths (`templates/<id>/instances/<instance>/report.generated.md`). */
 export function reportedInstances(template: string, paths: readonly string[]): ReportedInstances {
-  const reported = new Map<string, InstanceFolder[]>();
-  for (const folder of INSTANCE_FOLDERS) {
-    const prefix = `${TEMPLATES_DIR}/${template}/${folder}/`;
-    for (const path of paths) {
-      if (!path.startsWith(prefix) || !path.endsWith(`/${GENERATED_FILE}`) || path.split('/').length !== prefix.split('/').length + 1) continue;
-      const name = path.slice(prefix.length, -GENERATED_FILE.length - 1);
-      reported.set(name, [...(reported.get(name) ?? []), folder]);
-    }
-  }
-  return reported;
+  const prefix = `${TEMPLATES_DIR}/${template}/${INSTANCE_FOLDER}/`;
+  const depth = prefix.split('/').length + 1;
+  return new Set(paths.filter((path) => path.startsWith(prefix) && path.endsWith(`/${GENERATED_FILE}`) && path.split('/').length === depth).map((path) => path.slice(prefix.length, -GENERATED_FILE.length - 1)));
 }
 
 /** The same, read from a checkout's working tree. A symlinked folder is skipped, as git lists no files under it. */
 export function reportedInstancesIn(repoRoot: string, template: string): ReportedInstances {
-  const paths = INSTANCE_FOLDERS.flatMap((folder) => {
-    const dir = join(repoRoot, TEMPLATES_DIR, template, folder);
-    if (!existsSync(dir) || !lstatSync(dir).isDirectory()) return [];
-    return readdirSync(dir, { withFileTypes: true })
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => `${TEMPLATES_DIR}/${template}/${folder}/${entry.name}/${GENERATED_FILE}`)
-      .filter((path) => existsSync(join(repoRoot, path)));
-  });
+  const dir = join(repoRoot, TEMPLATES_DIR, template, INSTANCE_FOLDER);
+  if (!existsSync(dir) || !lstatSync(dir).isDirectory()) return new Set();
+  const paths = readdirSync(dir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => `${TEMPLATES_DIR}/${template}/${INSTANCE_FOLDER}/${entry.name}/${GENERATED_FILE}`)
+    .filter((path) => existsSync(join(repoRoot, path)));
   return reportedInstances(template, paths);
 }
 
 export const severalInstances = (template: string): string => `${template} names more than one instance of its report's kind, and no report covers such an operation yet`;
-
-export const inBothFolders = (template: string, instance: string): string =>
-  `${instance} has a report for ${template} in both ${INSTANCE_FOLDERS.map((folder) => `${folder}/`).join(' and ')}; keep one`;
 
 /** Whether a name a card field may take is a registry entry of the template's instance kind, which a gated template may name only with a report for it. */
 export const isInstanceOf = (template: Template, name: string, registry: Registry): boolean => registry.entries.get(name)?.kind === instanceKind(template);
@@ -85,7 +69,7 @@ function instanceNamed(template: Template, value: ResolvedValue, registry: Regis
 
 /**
  * Why a card may not be signed: a template its reports gate naming, through any field, an instance with no report for that
- * template, or with one in each folder. Undefined when none.
+ * template. Undefined when none.
  */
 export function unreportedInstance(
   card: ResolvedCard,
@@ -100,9 +84,7 @@ export function unreportedInstance(
     for (const value of op.values.values()) {
       const instance = instanceNamed(template, value, registry);
       if (instance === undefined) continue;
-      const folders = reported(template.id).get(instance);
-      if (folders === undefined) return `${instance} has no report for ${template.id}; build one first`;
-      if (folders.length > 1) return inBothFolders(template.id, instance);
+      if (!reported(template.id).has(instance)) return `${instance} has no report for ${template.id}; build one first`;
     }
   }
   return undefined;

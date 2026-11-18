@@ -817,6 +817,24 @@ test('card new lists and card seal accepts an instance whose report is under ins
   assert.equal(sealed.code, 0, sealed.stderr);
 });
 
+test('a report under vaults/, the folder per-instance reports left, is not found: card new does not list the instance and card seal refuses it', async () => {
+  const repoRoot = anyTokenClone();
+  reportVault(repoRoot, 'test/any-token', 'steakhouse-prime-usdc-v2-0f51');
+  mkdirSync(join(repoRoot, 'templates', 'test', 'any-token', 'vaults', 'smokehouse-usdc-v1-f5bc'), { recursive: true });
+  writeFileSync(join(repoRoot, 'templates', 'test', 'any-token', 'vaults', 'smokehouse-usdc-v1-f5bc', 'report.generated.md'), '# report\n');
+  const home = freshHome();
+  configure(home);
+  const made = await run(['card', 'new', 'test/any-token'], home, ['smokehouse-usdc-v1-f5bc'], { ...decimalsChain({}), repoRoot });
+  const listed = [...made.stdout.matchAll(/^ *\d+\.\s+([a-z0-9.-]+)\s/gm)].map((m) => m[1]);
+  assert.ok(listed.includes('steakhouse-prime-usdc-v2-0f51') && !listed.includes('smokehouse-usdc-v1-f5bc'), listed.join());
+  const card = join(home, 'card.json');
+  writeFileSync(card, JSON.stringify({ operations: [{ template: 'test/any-token', values: { token: 'smokehouse-usdc-v1-f5bc', amount: '5', recipient: 'safe' } }] }));
+  const refused = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(refused.code, 1);
+  assert.equal(refused.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
+  assert.deepEqual(refused.asked, []);
+});
+
 test('card new does not offer a vault with no report for the template through an address field', async () => {
   const repoRoot = anyTokenClone();
   reportVault(repoRoot, 'test/any-token', 'steakhouse-prime-usdc-v2-0f51');
