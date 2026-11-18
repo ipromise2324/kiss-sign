@@ -592,7 +592,7 @@ export function pastTxsSampling(query: PastTxsRecording['query']): Sampling {
  * Runs the study again on a recording, with the template as it is now. With `live`, the search answers and head block
  * still come from the recording, but each found transaction, its receipt and its sender's code are read again through
  * `live`, so a transaction the chain does not hold as recorded changes the summary. With `liveTraces`, a recorded trace
- * counts only when the transaction is traced again with the same calls.
+ * counts only when the transaction is traced again with the same calls, and is UNVERIFIABLE, with why, otherwise.
  */
 export async function summarizePastTxs(repoRoot: string, registry: Registry, file: string, recording: PastTxsRecording, live?: Reader, liveTraces?: TraceSource): Promise<PastTxsSummary> {
   const { query } = recording;
@@ -604,7 +604,8 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
           const kept = await recordedTraces(hash);
           if (kept === undefined) return undefined;
           const now = await liveTraces(hash);
-          return JSON.stringify(now) === JSON.stringify(kept) ? kept : undefined;
+          if (JSON.stringify(now) === JSON.stringify(kept)) return kept;
+          return { kind: 'unreadable', why: now === undefined ? 'drpc gives no trace now' : 'drpc now traces it otherwise than the recording' };
         };
   const recorded = replayReader(recording.exchanges);
   const reader: Reader = live === undefined ? recorded : { ...live, blockNumber: () => recorded.blockNumber() };

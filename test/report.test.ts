@@ -623,6 +623,21 @@ test('--compare fetches each recorded past transaction again by hash, so one the
   assert.ok(differences.some((d) => d.startsWith(`\`${file}\``)), differences.join('\n'));
 });
 
+test('--compare traces each recorded transaction again, and a trace drpc now gives otherwise is UNVERIFIABLE with why', async () => {
+  const { subject } = scoped;
+  const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock !== undefined)!;
+  const plain = await summarizePastTxs(ROOT, registry, file, past);
+  const exact = plain.run.studies.find((s) => s.kind === 'fit' && s.outside.length === 0) ?? assert.fail('a transaction exactly the template');
+  const traced = { ...past, traces: [{ hash: exact.hash, unreadable: 'recorded' }] };
+  const recorded = await summarizePastTxs(ROOT, registry, file, traced);
+  assert.match(recorded.text, /call traces, from drpc, of the transactions exactly the template: 1 transaction, 0 checked/);
+  const same = await summarizePastTxs(ROOT, registry, file, traced, replayReader(past.exchanges), async () => ({ kind: 'unreadable', why: 'recorded' }));
+  assert.equal(same.text, recorded.text);
+  const otherwise = await summarizePastTxs(ROOT, registry, file, traced, replayReader(past.exchanges), async () => ({ kind: 'unreadable', why: 'traced otherwise' }));
+  assert.notEqual(otherwise.text, recorded.text);
+  assert.match(otherwise.text, /UNVERIFIABLE, drpc's answer is no trace the program reads: drpc now traces it otherwise than the recording: 1/);
+});
+
 test('a recording that keeps its head block is studied again from it, and the command the report prints searches its windows again with --same-windows-as', async () => {
   const { subject } = scoped;
   const { file, recording: past } = pastTxsRecordings(ROOT, subject).find((r) => r.recording.query.fromBlock === undefined)!;
