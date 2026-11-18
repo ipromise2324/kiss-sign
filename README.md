@@ -181,9 +181,8 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 
 | Attack | Stopped by |
 |---|---|
-| The web app proposes a change to the Safe instead of your transfer, as at Bybit | `verify` checks it against your card: `MISMATCH` |
-| The Transaction Service returns the transaction you meant in place of the one proposed | `verify` computes the hash from the fields: it is not the safeTxHash you gave, refused |
-| The web app proposes the transaction you meant, then has your wallet sign another | You compare the hashes on your wallet with `verify`'s page: they differ |
+| The Transaction Service gives `verify` the attacker's transaction, as at Bybit | `verify` checks it against your card: `MISMATCH` |
+| The Transaction Service gives `verify` the transaction you meant, but your wallet is asked to sign another | You compare the hashes on your wallet with `verify`'s page: they differ |
 
 ### The RPC providers
 
