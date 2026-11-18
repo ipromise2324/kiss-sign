@@ -465,7 +465,7 @@ const cow: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', '
 async function cowRun(options: { time?: boolean; withinSeconds?: number; messages?: PastTxsRecording['messages']; reader?: Reader } = {}) {
   const raw = JSON.parse(readFileSync(join(ROOT, 'templates', 'cow', 'swap', 'template.json'), 'utf8'));
   const fields = raw.calls[0].args.orderUid.packed[0].rule.eip712.fields;
-  if (options.time === true) fields.validTo = { free: { time: fields.validTo.free } };
+  if (options.time === true) fields.validTo = { free: { time: { en: 'When the order expires.', 'zh-TW': '訂單到期的時間。' } } };
   if (options.withinSeconds !== undefined) fields.validTo = { withinSeconds: options.withinSeconds };
   const { query } = cow;
   return pastTxs(

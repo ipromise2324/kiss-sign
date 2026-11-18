@@ -169,3 +169,31 @@ test('the same key on an HTTP error body never reaches the reason', async () => 
   assert.ok(!JSON.stringify(read).includes(KEY));
   assert.match(unverifiable(read), /alchemy failed \(refused\)/);
 });
+
+/** drpc refuses any request that arrives while `capacity` others are still open, as a public endpoint does. */
+function busyAbove(capacity: number): Transport {
+  let open = 0;
+  const answering = transport(node(100), node(100));
+  return async (url, body, signal) => {
+    if (url === ALCHEMY_URL) return answering(url, body, signal);
+    if (open >= capacity) return { status: 429, text: 'Too Many Requests' };
+    open++;
+    await new Promise((resolve) => setTimeout(resolve, 2));
+    open--;
+    return answering(url, body, signal);
+  };
+}
+
+test('a burst of reads to a provider that refuses more than a few at once all get an answer, since a refusal halves how many are sent at once', async () => {
+  const unread: string[] = [];
+  const reader = createReader(ENDPOINTS, busyAbove(3), { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [5, 5, 5], note: (r) => unread.push(r) });
+  const reads = await Promise.all(Array.from({ length: 200 }, () => reader.getCode(ADDRESS, AT)));
+  assert.deepEqual(unread, []);
+  assert.ok(reads.every((read) => read.kind === 'agreed'));
+});
+
+test('a provider that never answers frees its place at each timeout, so reads queued behind it still finish', async () => {
+  const reader = createReader(ENDPOINTS, transport(node(100), () => 'hang'), { timeoutMs: 20, retryPausesMs: [], openRequests: { start: 1, max: 1 } });
+  const reads = await Promise.all(Array.from({ length: 5 }, () => reader.getCode(ADDRESS, AT)));
+  assert.deepEqual(reads.map(unverifiable), Array(5).fill('eth_getCode: drpc failed (timeout)'));
+});

@@ -86,10 +86,16 @@ export type Finding =
   | { readonly kind: 'refused'; readonly why: string }
   /** The address is confirmed in fewer than two places; `by` names those that did. */
   | { readonly kind: 'few-confirmations'; readonly by: readonly Place[] }
-  /** A bounty program's scope, or an SDK file next to its label, does not hold the address: no confirmation. */
+  /** A bounty program's scope, or an SDK file, does not hold the address: no confirmation. */
   | { readonly kind: 'not-listed' }
+  /** The entry names an Immunefi program, but the protocol's sites are not known, so nothing ties the program to it. */
+  | { readonly kind: 'bounty-not-tied' }
+  /** The entry names an Immunefi program that Immunefi does not list. */
+  | { readonly kind: 'no-such-program' }
   /** The newest version of a pinned GitHub page or SDK binds the same label only to other addresses. */
   | { readonly kind: 'newer-differs' }
+  /** A pinned source page or SDK file binds the entry's label only to other addresses. */
+  | { readonly kind: 'label-differs' }
   /** The SDK tarball's hash is not the pinned one, or not the one npm gives. */
   | { readonly kind: 'package-differs' }
   /** npm holds no provenance for the SDK version, so nothing ties its publisher to the protocol. */
@@ -153,7 +159,10 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'judged-otherwise': 'bad',
   'few-confirmations': 'warn',
   'not-listed': 'na',
+  'bounty-not-tied': 'na',
+  'no-such-program': 'na',
   'newer-differs': 'bad',
+  'label-differs': 'bad',
   'package-differs': 'bad',
   'no-provenance': 'na',
   'creation-unproven': 'na',
@@ -198,7 +207,10 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'judged-otherwise': undefined,
   'few-confirmations': undefined,
   'not-listed': 'not-listed',
+  'bounty-not-tied': 'nothing-to-compare',
+  'no-such-program': 'unread',
   'newer-differs': 'other-address',
+  'label-differs': 'other-address',
   'package-differs': 'other-file',
   'no-provenance': 'no-provenance',
   'creation-unproven': 'creation-unproven',
@@ -244,7 +256,7 @@ export type Result = {
   readonly places?: readonly SitePlace[];
   /** For the deployer, who it is and which other entries share it. */
   readonly shared?: DeployerShare;
-  /** For a newest version, the addresses it binds the label to instead of the entry's. */
+  /** For a pinned page, SDK file or newest version, the addresses it binds the label to instead of the entry's. */
   readonly others?: readonly Address[];
 };
 
@@ -319,6 +331,7 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
   if (line.kind === 'unverifiable') return ['page', 'tip', 'api', 'bounty', 'sdk', 'sdk-latest', 'deployer'].includes(line.check) ? { kind: 'source-no-answer' } : { kind: 'no-answer' };
   switch (line.check) {
     case 'page':
+      if (line.cause === 'other-address') return { kind: 'label-differs' };
       if (line.cause === 'not-served' || line.cause === 'not-fetched') return { kind: 'page-unread', why: line.cause };
       return { kind: 'page-unread', why: line.more === undefined && entry.sourceLabel === undefined ? 'no-label' : 'not-by-label' };
     case 'url':
@@ -330,9 +343,12 @@ function lineFinding(entry: RegistryEntry, line: Line): Finding {
     case 'coingecko':
       return line.cause === 'differs' ? { kind: 'other-coin' } : line.cause === 'unexplained' ? { kind: 'unexplained-coin' } : { kind: 'no-coin' };
     case 'bounty':
-      return line.cause === 'differs' ? { kind: 'site-differs' } : { kind: 'not-listed' };
+      return line.cause === 'differs' ? { kind: 'site-differs' } : line.cause === 'not-fetched' ? { kind: 'no-such-program' } : { kind: 'bounty-not-tied' };
     case 'sdk':
-      return line.cause === 'differs' ? { kind: 'package-differs' } : line.cause === 'not-fetched' ? { kind: 'page-unread', why: 'not-fetched' } : { kind: 'not-listed' };
+      if (line.cause === 'differs') return { kind: 'package-differs' };
+      if (line.cause === 'other-address') return { kind: 'label-differs' };
+      if (line.cause === 'not-fetched') return { kind: 'page-unread', why: 'not-fetched' };
+      return line.cause === 'not-served' ? { kind: 'not-listed' } : { kind: 'page-unread', why: 'not-by-label' };
     case 'deployer':
       return line.cause === 'unlisted' ? { kind: 'deployer-alone' } : { kind: 'creation-unproven' };
     case 'tip':
@@ -677,8 +693,12 @@ export type Judged = {
   readonly places: readonly SitePlace[];
 };
 
-/** A program source: whether it showed the entry's address, and for a page or the API, whether its site is the protocol's. */
+/**
+ * A program source: whether it showed the entry's address, with the addresses it binds the label to instead, and for a
+ * page or the API, whether its site is the protocol's.
+ */
 export type SourceLine = Judged & {
+  readonly others: readonly Address[];
   readonly source: ProgramSource;
   readonly site: Judged | undefined;
   readonly newest: (Judged & { readonly others: readonly Address[] }) | undefined;
@@ -701,6 +721,7 @@ export function sourcesOf(ledger: Ledger, entry: RegistryEntry): SourceLine[] {
     if (of('address').length === 0) throw new Error(`${entry.name}: source ${source} has a site result but none for its address`);
     return {
       ...judged(of('address')),
+      others: of('address').flatMap((r) => r.others ?? []),
       source,
       site: site.length === 0 ? undefined : judged(site),
       newest: newest.length === 0 ? undefined : { ...judged(newest), others: newest.flatMap((r) => r.others ?? []) },

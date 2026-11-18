@@ -16,7 +16,8 @@ import type { Creation, Creations } from '../src/research/deployer.ts';
 import type { PackageRead, PackageReads } from '../src/research/npm-package.ts';
 import { NO_SITE_LISTINGS, parseImmunefiPrograms } from '../src/research/site-listings.ts';
 import type { SiteListings } from '../src/research/site-listings.ts';
-import { replayInputs } from '../src/research/report.ts';
+import { renderReport, replayInputs } from '../src/research/report.ts';
+import { gradedFindings, weightOf } from '../src/research/grades.ts';
 import type { ReportInputs, SpanCheck, TodayCheck } from '../src/research/report.ts';
 import { pageUrlOf } from '../src/research/source-page.ts';
 import { STANDARDS } from '../src/research/standards.ts';
@@ -234,7 +235,7 @@ const failedRuns = (...outcomes: Run['outcome'][]): PerturbationReport => {
  * A one-entry report: the entry, documented by one page for `approve`, as the template's only contract. With
  * `reachedThrough`, a report of that vault alone, which reaches the entry only through its `dependsOn`.
  */
-function ledgerOf(change: Partial<Setup>): Ledger {
+function inputsOf(change: Partial<Setup>): ReportInputs {
   const s = { ...BASE, ...change };
   const all = [s.entry, ...(s.reachedThrough === undefined ? [] : [s.reachedThrough]), ...(s.factory === undefined ? [] : [s.factory]), ...(s.sibling === undefined ? [] : [SIBLING]), ...s.others];
   const siblingConfirmed = s.sibling?.confirmed === true;
@@ -272,12 +273,22 @@ function ledgerOf(change: Partial<Setup>): Ledger {
     today: s.today === undefined ? undefined : { block: { number: 200n, hash: PIN }, checks: new Map([[ADDRESS, s.today]]) },
     vaults: s.vaults,
     instances: s.instances === undefined ? undefined : { block: { number: 200n, hash: PIN }, answers: new Map([[s.entry.name, s.instances]]) },
+    fixtures: s.fixtures,
+    fetched: '2026-01-01',
+    pastTxs: [],
+    erc7730: { text: 'not read', reports: [] },
+    facts: undefined,
   } as unknown as ReportInputs;
-  return judge(inputs, s.fixtures);
+  return inputs;
 }
 
 /** Each place as its sources joined by `+`. */
 const named = (places: readonly Place[]): string[] => places.map((place) => place.sources.join('+'));
+
+const ledgerOf = (change: Partial<Setup>): Ledger => {
+  const inputs = inputsOf(change);
+  return judge(inputs, inputs.fixtures ?? []);
+};
 
 const resultOf = (ledger: Ledger, id: string) => ledger.results.find((r) => r.id === id) ?? assert.fail(`no result ${id}: ${ledger.results.map((r) => r.id).join(', ')}`);
 
@@ -338,6 +349,10 @@ const ROWS: readonly Row[] = [
   { what: 'a recorded transaction judged as before', change: { fixtures: [judged(MUTATIONS_PASS, PERTURB_PASS)] }, id: 'fixture.safe-tx-1', kind: 'agrees', state: 'ok' },
   { what: 'a source page with no answer', change: { page: { kind: 'unread', why: 'timeout' } }, id: 'vault/source.page', kind: 'source-no-answer', state: 'na' },
   { what: 'a page served without the address', change: { page: { kind: 'served', blocks: [{ text: 'Vault' }] } }, id: 'vault/source.page', kind: 'page-unread', state: 'na' },
+  { what: 'a page with the address away from its label, the label next to no address', change: { page: { kind: 'served', blocks: [{ text: 'Vault overview' }, { text: ADDRESS }] } }, id: 'vault/source.page', kind: 'page-unread', state: 'na' },
+  { what: 'a page with the address, its label next to another address', change: { page: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }, { text: `Router ${ADDRESS}` }] } }, id: 'vault/source.page', kind: 'label-differs', state: 'bad' },
+  { what: 'a page without the address, its label next to another address', change: { page: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }] } }, id: 'vault/source.page', kind: 'label-differs', state: 'bad' },
+  { what: 'a second page whose label binds another address', change: { entry: { ...ENTRY, moreSources: [MORE] }, more: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }] } }, id: 'vault/source.more.1.page', kind: 'label-differs', state: 'bad' },
   { what: 'a page that answered a 404', change: { page: { kind: 'failed', why: 'HTTP 404' } }, id: 'vault/source.page', kind: 'page-unread', state: 'na' },
   { what: 'an entry with no label', change: { entry: without('sourceLabel') }, id: 'vault/source.page', kind: 'page-unread', state: 'na' },
   { what: 'a source URL holding the address', change: { entry: { ...ENTRY, source: `${SOURCE}/${ADDRESS}` as HttpsUrl } }, id: 'vault/source.url', kind: 'url-holds-address', state: 'na' },
@@ -378,10 +393,13 @@ const ROWS: readonly Row[] = [
   { what: 'a bounty program with the address in scope', change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS]) }, id: 'vault/source.bounty', kind: 'agrees', state: 'ok' },
   { what: 'a bounty program without the address in scope', change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([OTHER]) }, id: 'vault/source.bounty', kind: 'not-listed', state: 'na' },
   { what: "a bounty program that lists none of the protocol's sites", change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS], 'https://github.com/other', 'https://other.org') }, id: 'vault/source.bounty', kind: 'site-differs', state: 'bad' },
-  { what: 'a bounty program Immunefi does not list', change: { entry: { ...ENTRY, immunefi: 'proto' } }, id: 'vault/source.bounty', kind: 'not-listed', state: 'na' },
+  { what: 'a bounty program Immunefi does not list', change: { entry: { ...ENTRY, immunefi: 'proto' } }, id: 'vault/source.bounty', kind: 'no-such-program', state: 'na' },
+  { what: "a bounty program named for a protocol whose sites are not known", change: { entry: { ...ENTRY, immunefi: 'proto' }, protocol: undefined, sites: program([ADDRESS]) }, id: 'vault/source.bounty', kind: 'bounty-not-tied', state: 'na' },
   { what: 'an SDK file with the address next to its label', change: packageRead(), id: 'vault/source.sdk', kind: 'agrees', state: 'ok' },
   { what: "an SDK built from the protocol's GitHub org", change: packageRead(), id: 'vault/source.sdk.site', kind: 'agrees', state: 'ok' },
-  { what: 'an SDK file without the address by its label', change: packageRead({ file: { kind: 'served', blocks: [{ text: `OTHER = "${ADDRESS}"` }] } }), id: 'vault/source.sdk', kind: 'not-listed', state: 'na' },
+  { what: 'an SDK file with the address, but not by its label', change: packageRead({ file: { kind: 'served', blocks: [{ text: `OTHER = "${ADDRESS}"` }] } }), id: 'vault/source.sdk', kind: 'page-unread', state: 'na' },
+  { what: 'an SDK file without the address, its label next to no address', change: packageRead({ file: { kind: 'served', blocks: [{ text: `OTHER = "${OTHER}"` }] } }), id: 'vault/source.sdk', kind: 'not-listed', state: 'na' },
+  { what: 'an SDK file whose label binds only another address', change: packageRead({ file: { kind: 'served', blocks: [{ text: `VAULT = "${OTHER}"` }, { text: `OTHER = "${ADDRESS}"` }] } }), id: 'vault/source.sdk', kind: 'label-differs', state: 'bad' },
   { what: 'an SDK tarball that is not the pinned one', change: packageRead({ sha256: `0x${'22'.repeat(32)}` as Hex }), id: 'vault/source.sdk', kind: 'package-differs', state: 'bad' },
   { what: 'an SDK version npm holds no provenance for', change: packageRead({ provenance: { kind: 'none' } }), id: 'vault/source.sdk.site', kind: 'no-provenance', state: 'na' },
   { what: 'an SDK built from another GitHub org', change: packageRead({ provenance: { ...BUILT, repository: 'https://github.com/someone/sdk' } }), id: 'vault/source.sdk.site', kind: 'site-differs', state: 'bad' },
@@ -677,4 +695,57 @@ test('morpho/market-supply from its recordings: the three oracles confirmed in o
       ['blue-bundles-v1', 'high'],
     ],
   );
+});
+
+/** The generated report's Markdown for a one-entry report, from the same inputs as `ledgerOf`. */
+const markdownOf = (change: Partial<Setup>): string => renderReport(inputsOf({ abi: undefined, ...change }), { command: 'test', sources: [] });
+/** The `## Findings` index of a report: each row's result id with its grade and what it found. */
+const findingsOf = (markdown: string): string[] =>
+  [...markdown.slice(markdown.indexOf('## Findings'), markdown.indexOf('\n## ', markdown.indexOf('## Findings') + 1)).matchAll(/^\| `([^`]+)` \| (key|reference) \| (.+) \|$/gm)].map((m) => `${m[1]} ${m[2]}: ${m[3]}`);
+const placesRow = (markdown: string): string => /^\| `vault` \|[^\n]*$/m.exec(markdown.slice(markdown.indexOf('| Entry | Bounty scope |')))?.[0] ?? assert.fail('no row for the bounty and SDK places');
+
+test('a bounty or SDK place that was never compared, or holds the address apart from its label, prints FINDING graded reference; only one without the address prints NOT LISTED', () => {
+  const unnamed = markdownOf({ entry: { ...ENTRY, immunefi: 'proto' } });
+  assert.match(placesRow(unnamed), /^\| `vault` \| FINDING \|/);
+  assert.ok(findingsOf(unnamed).includes('vault/source.bounty reference: Immunefi lists no program of the name the entry gives'));
+  const untied = markdownOf({ entry: { ...ENTRY, immunefi: 'proto' }, protocol: undefined, sites: program([ADDRESS]) });
+  assert.match(placesRow(untied), /^\| `vault` \| FINDING \|/);
+  assert.ok(findingsOf(untied).includes("vault/source.bounty reference: the protocol's sites are not known, so nothing ties the Immunefi program the entry names to it"));
+  const apart = markdownOf(packageRead({ file: { kind: 'served', blocks: [{ text: `OTHER = "${ADDRESS}"` }] } }));
+  assert.match(placesRow(apart), /^\| `vault` \| [^|]+ \| FINDING \|/);
+  assert.ok(findingsOf(apart).includes('vault/source.sdk reference: the address was not read on the page'));
+
+  const outOfScope = markdownOf({ entry: { ...ENTRY, immunefi: 'proto' }, sites: program([OTHER]) });
+  assert.match(placesRow(outOfScope), /^\| `vault` \| NOT LISTED \|/);
+  assert.ok(!findingsOf(outOfScope).some((row) => row.startsWith('vault/source.bounty ')), 'a scope without the address is no finding');
+  const absent = markdownOf(packageRead({ file: { kind: 'served', blocks: [{ text: `OTHER = "${OTHER}"` }] } }));
+  assert.match(placesRow(absent), /^\| `vault` \| [^|]+ \| NOT LISTED \|/);
+  assert.ok(!findingsOf(absent).some((row) => row.startsWith('vault/source.sdk ')), 'a file without the address is no finding');
+});
+
+test('a page or SDK file whose label binds only another address is a key finding for the signer that names that address in full; one away from a bare label stays reference', () => {
+  const page = ledgerOf({ page: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }, { text: `Router ${ADDRESS}` }] } });
+  assert.ok(forSigner(page).some((r) => r.id === 'vault/source.page'), 'it goes to 待確認');
+  assert.deepEqual(gradedFindings(page).filter((r) => r.id === 'vault/source.page').map(weightOf), ['key']);
+  const line = sourcesOf(page, ENTRY).find((l) => l.source === 'page');
+  assert.deepEqual([line?.state, line?.phrase, line?.others], ['bad', 'other-address', [OTHER]], 'the row names the other address');
+  const markdown = markdownOf({ page: { kind: 'served', blocks: [{ text: `Vault ${OTHER}` }, { text: `Router ${ADDRESS}` }] } });
+  assert.ok(findingsOf(markdown).includes('vault/source.page key: the label lists another address'));
+  assert.ok(markdown.includes(`FINDING: lists \`${checksumAddress(OTHER)}\` under the label`), 'the page cell names the other address checksummed');
+  const sdk = markdownOf(packageRead({ file: { kind: 'served', blocks: [{ text: `VAULT = "${OTHER}"` }] } }));
+  assert.match(placesRow(sdk), new RegExp(`^\\| \`vault\` \\| [^|]+ \\| FINDING: lists \`${checksumAddress(OTHER)}\` under the label \\|`));
+  assert.ok(findingsOf(sdk).includes('vault/source.sdk key: the label lists another address'));
+
+  const apart = ledgerOf({ page: { kind: 'served', blocks: [{ text: 'Vault overview' }, { text: ADDRESS }] } });
+  assert.ok(!forSigner(apart).some((r) => r.id === 'vault/source.page'), 'an address away from a bare label stays outside 待確認');
+  assert.deepEqual(gradedFindings(apart).filter((r) => r.id === 'vault/source.page').map(weightOf), ['reference']);
+});
+
+test("the Markdown findings index holds each recorded test transaction the HTML page judges, as the page's ledger does", () => {
+  const fixtures = [judged({ kind: 'weak-template', uncaught: [{}] }, PERTURB_PASS)];
+  const inputs = inputsOf({ abi: undefined, fixtures });
+  const rows = findingsOf(markdownOf({ fixtures }));
+  assert.ok(rows.some((row) => row.startsWith('fixture.safe-tx-1 key: ')), rows.join('\n'));
+  const graded = gradedFindings(judge(inputs, fixtures)).map((r) => r.id);
+  assert.deepEqual(rows.map((row) => row.slice(0, row.indexOf(' '))), graded);
 });

@@ -319,6 +319,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who you">你選</span>每次簽名選</span>
     <span><span class="who">固定</span>改了就 MISMATCH</span>
     <span><span class="who app">app 填，不限</span>訂單裡的值，由雜湊鎖住</span>
+    <span><span class="who app">app 填，有上限</span>超過上限就 MISMATCH</span>
   </div>
   <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。</p>
   
@@ -338,7 +339,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="cb">
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">gpv2-settlement.</span>setPreSignature</span><span class="sel">0xec6cb13f</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">文件：</span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol">github.com/cowprotocol/contracts</a><span class="res"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg></span></div></div>
     <div class="arg" data-field="2.setPreSignature.orderUid">
-      <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken、buyToken 你選</span><span class="who">receiver、feeAmount、kind、partiallyFillable、sellTokenBalance、buyTokenBalance、owner 固定</span><span class="who you">sellAmount、buyAmount 你填</span><span class="who app">validTo、appData 不限</span></div>
+      <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken、buyToken 你選</span><span class="who">receiver、feeAmount、kind、partiallyFillable、sellTokenBalance、buyTokenBalance、owner 固定</span><span class="who you">sellAmount、buyAmount 你填</span><span class="who app">validTo 有上限</span><span class="who app">appData 不限</span></div>
       <div class="val"><div class="is">56 bytes，3 段接在一起</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單 uid，56 bytes：訂單雜湊、擁有者、到期時間接在一起。合約只把它記成「已預簽」，不檢查內容。</span></span></div></div>
       <div class="parts">
@@ -355,8 +356,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>要賣的數量，賣單整筆賣出。</span></span></div></div></div>
         <div class="part"><div class="pn">buyAmount</div><div><div class="is">至少你填的金額（min-buy） <span class="f3">比這個少就 MISMATCH</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>最少要買到的數量（限價）。結算合約保證成交不少於這個數。</span></span></div></div></div>
-        <div class="part"><div class="pn">validTo</div><div><div class="is">每筆不同 <span class="f3">訂單裡的值，由雜湊鎖住；模板不限，也不換值測試</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單到期時間（Unix 秒）。CoW app 設為報價後 30 分鐘。</span></span></div></div></div>
+        <div class="part"><div class="pn">validTo</div><div><div class="is">最多比區塊時間晚 604800 秒（約 7 天） <span class="f3">區塊時間：還沒執行的交易用 verify 讀到的最新區塊，已執行的用它所在的區塊；更晚就 MISMATCH</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>訂單到期時間（Unix 秒）。CoW Swap app 設為報價後 30 分鐘（DEFAULT_DEADLINE_FROM_NOW）。模板只允許判定交易所用區塊的時間之後最多 7 天（604,800 秒）；更晚就是 MISMATCH。在這之內，較晚的到期時間只會讓訂單開著更久：它仍然最多成交一次，數量不少於卡片上的最低值，而且付給 Safe；Safe 可以用 invalidateOrder 取消它。為什麼是 7 天：pnpm past-txs（testdata/research/cow-swap-presign.json）量了 136 筆 Safe 預簽的訂單，到期時間減去所在區塊時間：中位數 1,720 秒（約 29 分鐘），第 99 百分位 10,478 秒（約 3 小時），最大 604,767 秒（差一點 7 天）；7 筆 EOA 的訂單最多 86,363 秒（一天）。觀察到的訂單全部符合。到期時間不限制時，訂單可以開好幾個月，簽名者早已不再注意，它仍能成交。那份紀錄研究的是 cow/swap，只有預簽；這個批次在授權之後預簽同一種訂單。</span></span></div></div></div>
         <div class="part"><div class="pn">appData</div><div><div class="is">每筆不同 <span class="f3">訂單裡的值，由雜湊鎖住；模板不限，也不換值測試</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>app 附在訂單上的 JSON 的雜湊（app 名稱、滑價、手續費、hooks）。結算合約不讀它。</span></span></div></div></div>
         <div class="part"><div class="pn">feeAmount</div><div><div class="raw">0</div><div class="is">固定為 0</div>
@@ -420,7 +421,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>這兩項 app 會自己填，模板不限制：到期時間（app 設 30 分鐘）和 appData（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。</span><span class="byai">AI 研究</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>這兩項 app 會自己填。到期時間模板限制在區塊時間後 7 天內（app 設 30 分鐘）；appData 模板不限制（可能含 0.1% 的合作方手續費）。成交仍不會少於你填的最少數量，也只給 Safe。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受。訂單過期前不想要了，用 Safe 撤回。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
   </div>
