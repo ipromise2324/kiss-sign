@@ -29,9 +29,9 @@ The last column is what must hold before the action, and who or what enforces it
 
 | Action | Who | What must hold first |
 |---|---|---|
-| Merge a template or registry pull request | The signer | The signer reads the report and runs `pnpm report <protocol>/<operation> --compare --data origin/<branch>` from `main`. `pnpm check-push`, run by CI, refuses the branch if it also changes the verdict core. See [Who owns the program](design/program-ownership.md#who-owns-the-program). |
+| Merge a template or registry pull request | The signer | The signer reads the report and runs `pnpm report <protocol>/<operation> --compare --data origin/<branch>` from `main`, with `--instance-of <instance>` for each per-instance report the branch changes. `pnpm check-push`, run by CI, refuses the branch if it also changes the verdict core. See [Who owns the program](design/program-ownership.md#who-owns-the-program). |
 | Merge a program pull request | The AI, with a merge commit | `pnpm program-gate`, run from main's code, prints `ELIGIBLE`, and a fresh AI reviewer, given the diff and not the author's conclusions, finds no security regression. See [The program gate](design/program-ownership.md#the-program-gate). |
-| Merge a program gate pull request | The signer | `pnpm program-gate` stops at `NOT ELIGIBLE` and names the gate files. `pnpm check-push` refuses the branch if it also changes the verdict core. |
+| Merge a program gate pull request | The signer | The signer reviews it as they do a template. `pnpm program-gate` stops at `NOT ELIGIBLE` and names the gate files. `pnpm check-push` refuses the branch if it also changes the verdict core. |
 | Approve a template | The signer | `template approve` requires every `origin` URL to be the config's `repo`, fetches its `main`, prints the commit and the template's keccak256, and records that hash only after the signer's yes at a terminal. |
 | Add an address-book entry | The signer | `book add` asks for the signer's yes at a terminal. The address comes from a source outside the chat and is checked character by character. |
 | Fill and seal a card | The signer | `card new` refuses without a terminal. `card new` and `card seal` stop when the clone's templates or registry differ from GitHub's `main`. `card seal` stores the card only after the signer's yes. |
@@ -42,12 +42,12 @@ The last column is what must hold before the action, and who or what enforces it
 The design states each of these in full where it links.
 
 1. The verdict is never the AI's judgment: the AI writes templates and the program runs them ([Who does what](#who-does-what)).
-2. `MATCH` needs every check to report its own pass or not to be needed for the card; a failed check gives `MISMATCH`, and an unfinished one `UNVERIFIABLE` ([Every signing](design/flow.md#every-signing), step 12).
+2. `MATCH` needs every check to report its own pass or not to be needed for the card; any failed check gives `MISMATCH`, and otherwise any check that could not finish or did not run gives `UNVERIFIABLE` ([Every signing](design/flow.md#every-signing), step 12).
 3. No address on a card is typed by the AI: each is a registry name, an address-book name or the Safe ([Intent card](design/data-shapes.md#intent-card)).
 4. No template can loosen the floors ([Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)).
-5. Every registry contract a transaction touches runs the code its registry pin names ([Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)).
-6. `verify` runs only the exact `main` of the signer's own fork, and a template counts only after its pull request is merged ([The program checks itself first](design/program-ownership.md#the-program-checks-itself-first)).
-7. The AI never merges a template, registry or program gate pull request, and never fills or seals a card ([Who does what](#who-does-what)).
+5. Every registry contract the transaction or the card touches, and each entry these name in `dependsOn`, runs the code its registry pin names, and an executed transaction the pin whose span holds its block ([Engine checks that every template gets](design/engine-and-chain.md#engine-checks-that-every-template-gets)).
+6. `verify` runs only the exact `main` of the signer's own fork, unless something on the work computer rewrites the clone and the self-check together, and a template counts only after its pull request is merged ([The program checks itself first](design/program-ownership.md#the-program-checks-itself-first)).
+7. The AI never merges a template, registry or program gate pull request, and never fills or seals a card; the skill, the program gate and the terminal prompts keep an honest AI from these, not one that means harm ([Who does what](#who-does-what), [Two tiers](#two-tiers)).
 8. A program pull request never changes a template or the registry, and one that changes the verdict core never changes the program gate ([Who owns the program](design/program-ownership.md#who-owns-the-program)).
 9. Except for the templates not yet rebuilt, a card naming an instance with no report for its template is refused ([No report, no signing](design/flow.md#first-time-an-operation-is-done-build-its-template), step 6).
 10. The Safe's address and the API keys are never published ([The Safe's address is never published](design/engine-and-chain.md#the-safes-address-is-never-published)).
