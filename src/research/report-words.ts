@@ -422,7 +422,7 @@ const ZH = {
     misfits === 0 ? ' 筆。' : ' 筆，列在其他做法。',
   ],
   succeeded: (one: boolean, searched: readonly string[]): string =>
-    `${one ? '它成功執行：它是' : '這些交易全部成功執行：它們是'}從 ${searched.join('、')}的鏈上紀錄找到的，失敗的交易不會留下紀錄。`,
+    `${one ? '它成功執行：它是' : '這些交易全部成功執行：它們是'}從 ${searched.join('、')}的事件紀錄（log）找到的，失敗的交易不會留下這種紀錄。`,
   latestExact: (n: number): string => `一模一樣的最近 ${n} 筆：`,
   latestShape: (n: number): string => `形狀一樣的最近 ${n} 筆：`,
   end: '。',
@@ -1022,7 +1022,7 @@ const EN: Words = {
     misfits === 0 ? ' have another shape.' : ` ${plural(misfits, 'has', 'have')} another shape, listed under Other ways.`,
   ],
   succeeded: (one, searched) =>
-    ` ${one ? 'It succeeded: it was' : 'All of them succeeded: they were'} found through the on-chain records of ${searched.join(', ')}, and a failed transaction leaves no such record.`,
+    ` ${one ? 'It succeeded: it was' : 'All of them succeeded: they were'} found through the event logs of ${searched.join(', ')}, and a failed transaction leaves no such log.`,
   latestExact: (n) => ` The latest ${n} exact ${plural(n, 'match', 'matches')}: `,
   latestShape: (n) => ` The latest ${n} with the same shape: `,
   end: '.',
