@@ -199,7 +199,7 @@ Your AI finds each contract's address on the web, so a fake page can mislead it.
 
 | Attack | Stopped by |
 |---|---|
-| A fake site gives the AI a look-alike address | The report checks the site against the protocol's website on DefiLlama: it differs, flagged for you |
+| A fake site gives the AI a look-alike address | The report looks for the address on the protocol's own site, the one DefiLlama lists, next to the contract's name: it is not there, flagged for you |
 | A listing such as DefiLlama names the fake site as the protocol's | The report wants the address in a second place, such as CoinGecko, the factory, the bug bounty or the SDK: missing, flagged for you |
 
 On the hardened tier, `check.sh` also marks every address not in your own list as unknown.
