@@ -523,6 +523,12 @@ test('a page and the API on one registrable domain are one place, and CoinGecko 
   assert.equal(resultOf(listed, 'vault/address').finding.kind, 'agrees');
 });
 
+test('a source page whose URL holds the address says so, not that it could not be read', () => {
+  const echoing = { ...VAULT, source: `${SOURCE}/${ADDRESS}` as HttpsUrl };
+  const line = sourcesOf(ledgerOf({ entry: echoing, vaults: new Map([['vault', ADMITTED]]), factory: TRUE_FACTORY }), echoing).find((l) => l.source === 'page');
+  assert.deepEqual([line?.state, line?.phrase], ['na', 'url-holds-address']);
+});
+
 test('the Markdown findings name each place that confirmed an address too few times, by its sources and owner', () => {
   assert.ok(findingsOf(markdownOf({ entry: { ...ENTRY, apiSource: API }, coins: [] })).includes('vault/address key: address confirmed in 1 place, `page` + `api` (example.org); it needs 2'));
   const echoing = { ...VAULT, source: `${SOURCE}/${ADDRESS}` as HttpsUrl };
