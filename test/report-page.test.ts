@@ -381,7 +381,7 @@ test('the vault its factory alone confirms is the one 待確認; every address r
   assert.deepEqual(
     vault.sources.map((s) => [s.label, s.state, s.phrase, s.site === undefined ? undefined : [s.site.state, s.site.slug, s.site.places[0]?.href]]),
     [
-      ['app.morpho.org/ethereum/vault', 'na', 'unread', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
+      ['app.morpho.org/ethereum/vault', 'na', 'url-holds-address', ['ok', 'morpho-blue', 'https://defillama.com/protocol/morpho-blue']],
       ['CoinGecko', 'na', 'nothing-to-compare', undefined],
       ['工廠', 'ok', undefined, undefined],
       ['Immunefi 漏洞賞金範圍', 'na', 'not-listed', undefined],
@@ -425,6 +425,19 @@ test('a contract a flow line names gets its own lifeline, so every inside arrow 
   assert.deepEqual(diagram.lifelines.map((l) => l.name), ['你的 Safe', 'usdc', 'bundler3', 'general-adapter-1', 'hyperithm-usdc-apex-v2-9e2f']);
   const inside = diagram.arrows.flatMap((a) => (a.kind === 'inside' ? [[a.from, a.to]] : []));
   assert.deepEqual(inside, [[3, 1], [3, 4]]);
+});
+
+test('the green arrow for shares the Safe gets starts at the vault, on a lifeline of its own when no call targets it', () => {
+  const { diagram } = body(depositPage, 'flow').flow;
+  const gets = diagram.arrows.flatMap((a) => (a.kind === 'gets' ? [diagram.lifelines[a.from]?.name] : []));
+  assert.deepEqual(gets, ['hyperithm-usdc-apex-v2-9e2f']);
+});
+
+test('a share price bounded by the computed fewest shares is labelled computed, by that field, not typed', () => {
+  const nested = (row: ArgRow): ArgRow[] => [row, ...row.parts.flatMap((part) => part.rows).flatMap(nested)];
+  const price = args(depositPage).flatMap(nested).find((row) => row.name === 'maxSharePriceE27') ?? assert.fail('no maxSharePriceE27 row');
+  assert.deepEqual(price.chips, [{ who: 'computed', label: '程式算：最少收到的數量' }]);
+  assert.ok(body(depositPage, 'flow').flow.key.some((k) => k.label === '程式算'), 'the key names the computed label');
 });
 
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {

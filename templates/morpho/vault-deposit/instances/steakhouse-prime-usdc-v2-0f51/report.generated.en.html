@@ -326,7 +326,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <g data-ai><rect class="tagbox" x="148.19999999999993" y="288" width="84" height="20" rx="6"/><text class="tagt" x="190.19999999999993" y="302" text-anchor="middle">AI research</text><rect class="codebox" x="592.8000000000001" y="288" width="62.6" height="19" rx="6"/><text class="cap" y="302"><tspan x="240.19999999999993">Deposits the pulled USDC into this vault with </tspan><tspan class="capc" x="596.8000000000001">deposit</tspan><tspan x="658.4000000000001">, which mints the shares to the Safe</tspan></text></g>
     <line class="inner" x1="660" y1="312" x2="847" y2="312" marker-end="url(#m-inside)"/>
     <text class="capg" x="104" y="338">you get steakhouse-prime-usdc-v2-0f51</text>
-    <line class="gain" x1="470" y1="348" x2="93" y2="348" marker-end="url(#m-gets)"/>
+    <line class="gain" x1="850" y1="348" x2="93" y2="348" marker-end="url(#m-gets)"/>
   </svg>
   </div>
   <div class="scrollhint">Scroll the diagram sideways</div>
@@ -334,6 +334,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span class="k0">Who decides</span>
     <span><span class="who you">you type</span>typed at each signing</span>
     <span><span class="who you">you pick</span>picked at each signing</span>
+    <span><span class="who">computed</span>read from the chain by card new at each signing; you check it</span>
     <span><span class="who">fixed</span>any change is a MISMATCH</span>
   </div>
   <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below. No perturbation test is recorded to serve as an example for steakhouse-prime-usdc-v2-0f51, so values decided at each signing show only their rule.</p>
@@ -392,7 +393,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>Which vault to deposit into. This is the vault you pick on the card.</span></span></div></div></div>
         <div class="part"><div class="pn">assets<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="is">the amount you type</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount of tokens deposited into the vault, equal to the deposit amount.</span></span></div></div></div>
-        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who you">you type: amount</span></div></div><div><div class="is">price ceiling <span class="f3">computed from the amount you type; the transaction&#39;s must be as strict or stricter</span></div>
+        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who">computed: minimum to receive</span></div></div><div><div class="is">price ceiling <span class="f3">computed from the card&#39;s amount and shares; the transaction&#39;s must be as strict or stricter</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The highest price per share (assets ÷ shares, times 1e27). If the actual price is higher, the whole transaction fails. The program requires it to be no higher than &#34;amount ÷ minimum shares&#34;, so by the share count the vault itself reports, you get at least the minimum shares.</span></span></div></div></div>
         <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">fixed</span></div></div><div><div class="is">your Safe</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The address that receives the shares, fixed to the Safe.</span></span></div></div></div>

@@ -57,7 +57,8 @@ export type Phrase =
   | 'other-file'
   | 'no-provenance'
   | 'creation-unproven'
-  | 'deployer-alone';
+  | 'deployer-alone'
+  | 'url-holds-address';
 
 /** Why a result has its state. The kind alone fixes the state (`STATE_OF`), so evidence missing can never read as red. */
 export type Finding =
@@ -228,7 +229,7 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'source-no-answer': 'unread',
   'no-answer': 'unread',
   'page-unread': 'unread',
-  'url-holds-address': 'unread',
+  'url-holds-address': 'url-holds-address',
   'site-not-compared': 'nothing-to-compare',
   'no-coin': 'nothing-to-compare',
   'unexplained-coin': 'nothing-to-compare',

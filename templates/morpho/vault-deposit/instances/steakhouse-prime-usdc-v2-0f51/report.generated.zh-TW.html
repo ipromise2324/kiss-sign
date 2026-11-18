@@ -326,7 +326,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <g data-ai><rect class="tagbox" x="434.5999999999999" y="288" width="56" height="20" rx="6"/><text class="tagt" x="462.5999999999999" y="302" text-anchor="middle">AI 研究</text><rect class="codebox" x="523.1999999999999" y="288" width="62.6" height="19" rx="6"/><text class="cap" y="302"><tspan x="498.5999999999999">用 </tspan><tspan class="capc" x="527.1999999999999">deposit</tspan><tspan x="588.8"> 把拉來的 USDC 存進這個金庫，金庫把份額鑄給 Safe</tspan></text></g>
     <line class="inner" x1="660" y1="312" x2="847" y2="312" marker-end="url(#m-inside)"/>
     <text class="capg" x="104" y="338">你得到 steakhouse-prime-usdc-v2-0f51</text>
-    <line class="gain" x1="470" y1="348" x2="93" y2="348" marker-end="url(#m-gets)"/>
+    <line class="gain" x1="850" y1="348" x2="93" y2="348" marker-end="url(#m-gets)"/>
   </svg>
   </div>
   <div class="scrollhint">圖可以左右滑動</div>
@@ -334,6 +334,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span class="k0">誰決定</span>
     <span><span class="who you">你填</span>每次簽名填</span>
     <span><span class="who you">你選</span>每次簽名選</span>
+    <span><span class="who">程式算</span>card new 每次簽名讀鏈算出，你核對</span>
     <span><span class="who">固定</span>改了就 MISMATCH</span>
   </div>
   <p class="lead keylead">每個單一值參數的第一行是 <code>cast decode-calldata</code> 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。steakhouse-prime-usdc-v2-0f51 沒有換值測試的記錄可以當例子，每次簽名才決定的值只寫規則。</p>
@@ -392,7 +393,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進哪一個 vault。這就是你在卡片上選的 vault。</span></span></div></div></div>
         <div class="part"><div class="pn">assets<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">你填的金額</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>存進 vault 的代幣數量，等於存款金額。</span></span></div></div></div>
-        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who you">你填：金額</span></div></div><div><div class="is">價格上限 <span class="f3">依你填的數量算出，交易裡的要一樣嚴或更嚴</span></div>
+        <div class="part"><div class="pn">maxSharePriceE27<div class="pchips"><span class="who">程式算：最少收到的數量</span></div></div><div><div class="is">價格上限 <span class="f3">依卡片的金額和股份數算出，交易裡的要一樣嚴或更嚴</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>每股最高價格（資產 ÷ 股份，乘以 1e27）。實際價格高於它，整筆失敗。程式要求它不高於「金額 ÷ 最少股份」，依 vault 自己回報的股份數，你至少拿到最少股份。</span></span></div></div></div>
         <div class="part"><div class="pn">receiver<div class="pchips"><span class="who">固定</span></div></div><div><div class="is">你的 Safe</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>收股份的地址，固定是 Safe。</span></span></div></div></div>
