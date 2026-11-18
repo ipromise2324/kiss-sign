@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 /** The languages a signer can read the HTML report and the verify page in. English is the default. */
 export const LANGUAGES = ['en', 'zh-TW'] as const;
 export type Language = (typeof LANGUAGES)[number];
@@ -20,3 +23,20 @@ export const say = (prose: Prose, language: Language): string => prose[language]
 /** Whether `raw` is prose keyed by language: an object whose keys are languages alone, at least one. */
 export const isProse = (raw: unknown): raw is Record<Language, unknown> =>
   typeof raw === 'object' && raw !== null && !Array.isArray(raw) && Object.keys(raw).length > 0 && Object.keys(raw).every((key) => isLanguage(key));
+
+/**
+ * The language of a refusal printed before any package is loaded: the one the last `--language` names, else the
+ * `language` field of the config in `home`, read alone, else English.
+ */
+export function commandLanguage(argv: readonly string[], home: string): Language {
+  const at = argv.findLastIndex((arg) => arg === '--language' || arg.startsWith('--language='));
+  const arg = argv[at];
+  const flag = arg === '--language' ? argv[at + 1] : arg?.slice('--language='.length);
+  if (isLanguage(flag)) return flag;
+  try {
+    const stored = (JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')) as { language?: unknown } | null)?.language;
+    return isLanguage(stored) ? stored : DEFAULT_LANGUAGE;
+  } catch {
+    return DEFAULT_LANGUAGE;
+  }
+}
