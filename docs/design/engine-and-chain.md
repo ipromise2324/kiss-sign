@@ -7,12 +7,12 @@ The evidence behind each template goes with it.
 
 | Published in the repository | Kept local, in `$KISS_SIGN_HOME` |
 |---|---|
-| Templates: what each operation checks | Config: the Safe address, the repository to trust, providers, API keys |
+| Templates: what each operation checks | Config: the Safe address, the repository to trust, the language; API keys in `.env` |
 | Reports: where every address and rule came from | Address book |
 | Test transactions | Intent cards and verdict files |
 | Contract registry and markets table | Approved template hashes |
 
-- Each operation has a folder, for example `templates/morpho/vault-deposit/`, holding `template.json`, `notes.json` and the HTML report in each language its notes hold (once rebuilt in the current report format), and, except for the templates listed under [Report not generated yet](flow.md#the-flow), `docs.json` and `report.generated.md`; a template reported per instance keeps its reports in `instances/<instance>/`, each with that instance's `notes.json` and, when a function's page names the instance or its asset, its `docs.json`, while the template's `docs.json` holds the rest, `{}` when no page is shared.
+- Each operation has a folder, for example `templates/morpho/vault-deposit/`, holding `template.json`, `notes.json` and `docs.json`, and, for a template reported once, `report.generated.md` and the HTML report in each language its notes hold; a template reported per instance keeps its reports in `instances/<instance>/`, each with that instance's `notes.json` and, when a function's page names the instance or its asset, its `docs.json`, while the template's `docs.json` holds the rest, `{}` when no page is shared.
   Its tests are in `test/` and `testdata/`.
 - This repository ships twenty-two templates: `eth/transfer`, `erc20/transfer`, `morpho/vault-deposit`, `fluid/vault-deposit`, `cow/swap` (a CoW order pre-signed alone, its sell token already approved), `cow/swap-approve` (the same with its approval, through MultiSend), `uniswap/swap` (one Uniswap swap, its Permit2 allowances already open), `uniswap/swap-permit` (the same swap with a `PERMIT2_PERMIT` command first, a Permit2 allowance to the router the Safe's owners signed as a Safe message), `uniswap/approve-permit2` `uniswap/allow-router` (the two allowances a first swap needs, each on its own or before `uniswap/swap` in one MultiSend) and the Vault V2 admin templates `morpho/vault-v2-cap-submit`, `morpho/vault-v2-cap-accept`, `morpho/vault-v2-cap-decrease`, `morpho/vault-v2-revoke`, `morpho/vault-v2-reallocate`, `morpho/vault-v2-adapter-cap-submit`, `morpho/vault-v2-adapter-cap-accept` and `morpho/vault-v2-collateral-cap-submit`, and the Safe settings templates `safe/add-owner`, `safe/remove-owner`, `safe/swap-owner` and `safe/change-threshold`.
   Other operations of the table in [Intent card](data-shapes.md#intent-card) whose checks no shipped template reaches, such as a Merkle claim's proof field, a market field or a withdrawal of all, keep a `template.json` under `test/fixtures/templates/`, with the registry entries and markets only they name under `test/fixtures/registry/`, or, for entries only one test file names, under a folder of their own that the file adds, such as `test/fixtures/vault-v2/registry/` for the Vault V2 vault whose curator's transactions only test the templates.
@@ -22,7 +22,7 @@ The evidence behind each template goes with it.
   CI (`.github/workflows/test.yml`, GitHub Actions) runs `pnpm typecheck` and the whole offline test suite on every pull request and every push to `main` (a branch runs once, through its pull request), with every action pinned by commit, after fetching the pinned solc builds and Public Suffix List and checking each file's sha256.
   It holds no secrets: the tests replay recorded chain answers, including recorded simulations, so live simulation and every live read run locally.
   To keep a run short, CI caches the solc outputs the tests compile, each keyed by the sha256 of the pinned compiler build and of the exact standard-JSON input, and the tests take only an exact match; every ABI proof still compares the cached bytecode with the code on chain on every run, while the ABI in a cached output is trusted as CI's own earlier output.
-  Only the test helper reads this cache: `pnpm prove-abi`, `pnpm report`, `pnpm record-abi-case` and `verify` always compile.
+  Only the test helper reads this cache: `pnpm prove-abi`, `pnpm report`, `pnpm record-abi-case` always compile, and `verify` compiles nothing.
 - Git stores and records; it is not trusted.
   At signing, the program checks that the template's hash equals the hash recorded when the signer merged it.
   A template from someone else's repository is only a starting point: its report still has to be reviewed.
@@ -52,7 +52,7 @@ These are protocol-free and change rarely.
     Without a declared trailer, any extra byte is `MISMATCH`.
 - Floor rules:
   - no unlimited approval, except to a registry contract whose entry declares a standing allowance of that route (see [Standing allowances](data-shapes.md#standing-allowances)): an ERC-20 approval to Permit2, or a Permit2 allowance to Uniswap's Universal Router;
-  - no `delegatecall` except to the official MultiSend, and the rules apply again to every call inside it, at every level;
+  - no `delegatecall` except to the official MultiSend, and the rules apply again to every call inside it; a call inside it must be a plain call, so a nested `delegatecall`, to a MultiSend or anything else, is refused and no deeper level is unwrapped;
   - no owner, module, guard, threshold, fallback handler or implementation change, except an owner or threshold change exactly as the card's one `effects.safe` says.
     A call from the Safe to itself with data is refused unless its function is `addOwnerWithThreshold(address,uint256)`, `removeOwner(address,address,uint256)`, `swapOwner(address,address,address)` or `changeThreshold(uint256)`, so `enableModule`, `setGuard`, `setFallbackHandler`, `setup` and every other call to itself never pass, whatever a template says; those four pass only for a card one of whose operations declares an owner or threshold change, and still change nothing unless a template binds the call.
     The settings are read before and after the transaction in the simulated block.
@@ -62,10 +62,10 @@ These are protocol-free and change rarely.
     Otherwise a correctly hashed transaction can pay a refund to someone else.
 - The mutation check: change each bound field and confirm the template gives `MISMATCH`.
   A share price bound changes to its loosest value, since a stricter one still matches, an `atLeast` bound changes to 0, and an `atMost` bound to the largest value of its type, a transaction's own `value` included.
-  A `withinSeconds` time changes to one second past its bound, from the block time the field check used; a type too small to hold that value cannot be changed, and the template is weak there.
+  A `withinSeconds` time changes to one second past its bound, from the block time the field check used; when that block time was not read, or the value does not fit the field's type, the field changes to one more instead, which a bound usually still allows, so the mutation check reports the template weak there.
   A member of a signed message changes in the message, with its digest written again into the transaction.
   Empty constant `bytes`, such as a Uniswap pool's `hookData`, have no byte to change in place and are not changed; any other value is longer, which the field check compares byte for byte.
-- The perturbation test, at template build time (`pnpm perturb`, replayed by `pnpm test`): every free field of a recorded test transaction is changed to other values of its type, one at a time (a number to one more, one less and zero; a bool flipped; bytes, a fixed-size word or an array item with its first or last byte flipped), and each copy is simulated through `execTransaction` on both providers.
+- The perturbation test, at template build time (`pnpm perturb`, replayed by `pnpm test`): every free field of a recorded test transaction is changed to other values of its type, one at a time (a number to one more, one less and zero; a bool flipped; a fixed-size word with its first byte flipped, and zeroed when it is not zero; `bytes` or a `string` with its first and its last byte flipped; an array with the first byte of its first and of its last word flipped), and each copy is simulated through `execTransaction` on both providers.
   A copy must revert, be refused by the field or effects check, or emit the same logs (the Safe's `ExecutionSuccess`, which names the transaction's hash, aside) with the same balance and allowance changes and the same readings of the views the template reads.
   A field claimed as `proof` must make every copy revert or be refused; a field claimed `unread` must change nothing; a field claimed `route` may also change the logs and the Safe's token amounts, as long as the copy still passes the effects check and leaves the same allowances, ending balances and view readings.
   A copy may also change an allowance the card's template keeps open at any amount (`effects.approves` with `unlimited`), and the log that sets it, such as the expiration of the Universal Router's Permit2 allowance, since the template already allows any value of it.
@@ -123,8 +123,11 @@ These are protocol-free and change rarely.
 
 Every on-chain read uses two providers from different companies.
 Both must agree, or the result is `UNVERIFIABLE`.
-This covers state reads, code, simulation, receipts, and the search for past transactions.
-The one exception is a past transaction's call trace during research, which only drpc serves free: its token transfers and approvals are checked against the receipt both providers agree on, and it never reaches a verdict.
+This covers state reads, code, simulation and receipts.
+Some research reads have one source, and none of them reaches a verdict:
+- a past transaction's call trace, which only drpc serves free: it counts only when its top call is the transaction both providers give, with the same sender, target, selector and value, and its token transfers and approvals are checked against the receipt both providers agree on, a reverted call left out and a `transferFrom` or `permit` accepted for an `Approval` log;
+- the search for past transactions, which takes every transaction either source finds and marks one found by one source only `only <source>`, and an event anchor, which only Etherscan searches;
+- an instance's holder candidates, which only the Alchemy Transfers API lists, while each candidate's balance and the total supply are read through both providers.
 
 | Role | Providers |
 |---|---|
@@ -133,13 +136,13 @@ The one exception is a past transaction's call trace during research, which only
 | Contract code, proxy implementation, and factory instance, during research | Alchemy and drpc |
 | Simulation, latest and past blocks | Alchemy and drpc, `eth_simulateV1` |
 | A signed message a template reads by its digest, during `verify` | The template's `lookup`, such as CoW's order API; one source is enough, since the program hashes the answer and requires the digest the transaction holds |
-| Finding past transactions | Alchemy Transfers API and a second source (Etherscan with a free key) |
-| A past transaction's call trace, during research | drpc alone (`debug_traceTransaction` with `callTracer`), its token calls checked against the receipt Alchemy and drpc agree on |
+| Finding past transactions | Alchemy Transfers API and a second source (Etherscan with a free key), each transaction marked with the sources that found it; Etherscan alone for an event |
+| A past transaction's call trace, during research | drpc alone (`debug_traceTransaction` with `callTracer`), its top call checked against the transaction and its token calls against the receipt Alchemy and drpc agree on |
 
 When the system resolver fails, kiss-sign resolves provider hosts over DNS over HTTPS.
 TLS certificate checks stay on, so a wrong address can only fail the connection.
 
-Keys enter through `kiss-sign key add <provider>` in a hidden prompt, or the signer fills in the `$KISS_SIGN_HOME/.env` that `kiss-sign init` creates, with an empty line per key and mode 0600; never through the chat.
+Keys enter through `kiss-sign key add alchemy|etherscan|github` in a hidden prompt, or the signer fills in the `$KISS_SIGN_HOME/.env` that `kiss-sign init` creates, with an empty line per key and mode 0600; never through the chat.
 `init` never overwrites an existing `.env`.
 
 `GITHUB_TOKEN` is optional and for building templates only.

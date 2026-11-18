@@ -67,7 +67,7 @@ A pull request that changes a template and, beside it, one comparison in the ver
   A branch that git cannot compare with `origin/main`, such as one pushed when the clone has no `origin/main`, is refused, since the check cannot tell what it changes.
   A program change goes first, in its own pull request, merged behind the [program gate](#the-program-gate); the template that needs it follows in another.
 - **What stays free.**
-  Research code, docs and `test/` may change beside a template, since none of them runs at signing.
+  Research code, docs and `test/` may change beside a template, since none of them runs at signing; the research files the signing commands import, which `docs/verdict-core.txt` lists, such as `src/research/report-words.ts`, `src/research/source-page.ts`, `src/research/api-source.ts` and `src/research/github-token.ts`, are core and may not.
   `testdata/` is free on both sides, except what a canary reads (below): its recordings feed only the tests and the reports, never `verify`, and a core change needs its own fixtures.
   The reports `pnpm report` renders from recordings, `report.generated.md` and `report.generated.<language>.html`, are not hand-written, and `pnpm test` fails when one differs from what its recordings give, so a core change that alters a rendering may write the existing ones again.
   Adding or deleting one counts as data: an instance's `report.generated.md` is what lets `card seal` and `verify` accept that instance.
@@ -89,7 +89,7 @@ The gate is that set of tests and the code that runs them, kept apart from the v
 - **The gate.**
   Every canary and every file under `test/canaries/`; every file a canary imports that the verdict core does not hold, walked as the core is, such as `src/attacks/attacks.ts` and `test/repo-with-test-fixtures.ts`; every path the list says a canary reads; `docs/canaries.txt`; and the code that enforces the rules: the guards the core rule names, `src/canaries.ts`, `src/canary-reads.ts`, `scripts/program-gate.ts`, `test/canaries.test.ts`, the kiss-sign skill, which tells the AI what it may merge, and `package.json`, `pnpm-lock.yaml` and `pnpm-workspace.yaml`, since a new dependency or a changed script is code no canary reads.
 - **The rule.**
-  A branch that changes a verdict core file may not change a gate file.
+  A branch that changes a verdict core file that is not itself a gate file, as the guards the core rule names are, may not change a gate file.
   Like the core rule, it is counted from where the branch left `origin/main`, the gate is read at both ends, and `pnpm check-push`, CI and `pnpm report --compare` refuse the branch, naming both sets of files.
   A branch that changes a gate file is a gate change: the signer reviews and merges it, never the AI, and a verdict core change that needs it follows in another pull request.
   `--compare` prints such files under `PROGRAM CHANGE  gate:`.
@@ -98,7 +98,7 @@ The gate is that set of tests and the code that runs them, kept apart from the v
   It runs in a clone whose checkout is exactly `origin/main`, every tracked file hashed from disk, so the gate that judges the branch is main's and not the branch's own, and refuses to run anywhere else.
   It resolves the branch to one commit, judges only that commit and names it, and the AI merges only that commit (`gh pr merge --match-head-commit`).
   The branch must hold `origin/main`, merged in, so the canaries and tests it carries are main's latest and not those of where it left.
-  It prints the verdict core files and the other program files the branch changes, then, without running any of the branch's code, stops at `NOT ELIGIBLE` when the branch changes a hand-written file under `templates/` or `registry/`, a gate file, or cannot be compared, and when the branch drops a test `origin/main` runs.
+  It prints the verdict core files and the other program files the branch changes, then, without running any of the branch's code, stops at `NOT ELIGIBLE` when the branch changes a hand-written file under `templates/` or `registry/`, adds or deletes a generated report there, changes a gate file, or cannot be compared, and when the branch drops a test `origin/main` runs.
   For that it reads every `*.test.ts` file under `test/` at both commits from git as text, skipping comments, strings and regular expressions, and takes each call of `test`, `it`, `describe` or `suite` whose title is a string or template literal.
   A call does not run when it is `.skip` or `.todo`, names `skip` or `todo` as an option key (`{ skip: true }`), calls `t.skip()` or `t.todo()` in its own body, or sits inside a call that does not run.
   Each title main runs in a file must run in the same file on the branch as often, so a test deleted, renamed, moved to another file, commented out or skipped is named with its file.
@@ -107,8 +107,9 @@ The gate is that set of tests and the code that runs them, kept apart from the v
   Otherwise it checks the branch out into a temporary worktree beside main's `node_modules` and `vendor/`, which the unchanged package files make the branch's own, fetches any pinned solc or Public Suffix List the branch needs, and runs the typecheck, each canary of main's list with main's runner and read hook, and every other test.
   It prints each canary with what it guards and its counts, then checks that the run left every tracked file of main's checkout and of the worktree as committed.
   It prints `ELIGIBLE` and exits 0 only when all of this passes; anything else is `NOT ELIGIBLE` with each reason, exit 3 when the reason is only that the branch changes a template, the registry or the gate, or drops a test while leaving the core alone, the signer's to merge, and exit 1 otherwise.
-  CI runs the same command as the `program-gate` job on `pull_request_target`, which runs main's workflow file and main's code against the pull request's head, with no secret and read-only access, so the branch can change neither.
-  The job fails on exit 1 and passes on exit 3 with the notice "The signer merges this pull request", so a red job means a check failed, not that the pull request is the signer's; the AI reads the `ELIGIBLE` line, never the job's color alone.
+  CI runs the same command as the `program-gate` job on `pull_request_target`, which runs main's workflow file and main's code against the pull request's head, with no secret and a read-only token, which fetches the pull request's head, so the branch can change neither.
+  The job fails on exit 1 and passes on exit 3 with the notice "The signer merges this pull request", whose words are the same for every exit 3 reason, a dropped test included, while the command's output names the reason; so a red job means a check failed, not that the pull request is the signer's, and the AI reads the `ELIGIBLE` line, never the job's color alone.
+  A pull request that changes only `templates/`, `registry/` and `testdata/` starts no job at all (`paths-ignore`), so it has no `ELIGIBLE` line and the AI does not merge it.
 - **Paths.**
   The diff is read with git's paths unquoted, so a name with a non-ASCII character is classified like any other, and every rule compares paths without letter case, since the signer's macOS clone writes `.Githooks/x` into `.githooks/`.
   `tsconfig.json` and `.npmrc` are gate files too, since they decide what the typecheck and an install accept.
@@ -129,7 +130,7 @@ kiss-sign runs from one clone of the signer's own fork.
 `kiss-sign verify` starts with a self-check before anything else:
 
 1. Every URL of `origin` must be the repository the signer's config names (their own fork): `repo` in `$KISS_SIGN_HOME/config.json`, such as `github.com/<owner>/kiss-sign`, in its https or ssh form.
-   `init` records it from the clone's `origin`, read the same way, and refuses an origin that is not one GitHub https or ssh URL; a config without `repo` stops every signing command until `init` runs again.
+   `init` records it from the clone's `origin`, read the same way, and refuses an origin with a URL that is not a GitHub https or ssh URL, or whose URLs name more than one repository; a config without `repo` stops every signing command until `init` runs again.
    The URL is read with the same git config the fetch uses, after any `url.<base>.insteadOf` rewrite.
    An origin elsewhere is not fetched.
 2. Fetch `main` from `origin` into `origin/main`, ignoring any configured fetch refspec, which could map another branch there.
@@ -137,6 +138,7 @@ kiss-sign runs from one clone of the signer's own fork.
    Git does not check this when it reads an object, so a rewritten object file would otherwise change a template or the registry read from it.
 4. The local checkout must be exactly `origin/main`: `HEAD` at that commit, every file of the commit on disk with the same bytes and mode, hashed from disk rather than asked of `git status`, and no other file that the commit's root `.gitignore` does not ignore.
    The index, `.git/info/exclude`, `core.excludesFile`, attributes, filters, stat settings and an untracked `.gitignore` take no part in this step.
+   The clone's git directory must be its own `.git`, as in a plain `git clone` and not a linked worktree, and it may hold no git replace ref (see [Known limits](known-limits.md#known-limits)).
 5. If anything differs, stop and name the files.
    Nothing is verified.
 
