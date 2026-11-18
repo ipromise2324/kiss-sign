@@ -90,6 +90,10 @@ test("a trace's token steps must match the receipt's logs both ways", () => {
   assert.match(tokenStepsDisagree(supply(), receipt(supplyLogs.slice(0, 3)), tokens) ?? '', /the trace holds a transfer of .* the receipt does not log/);
   assert.match(tokenStepsDisagree(supply(false), receipt(supplyLogs), tokens) ?? '', /the receipt logs a transfer of .* with no call in the trace/);
   assert.equal(tokenStepsDisagree(supply(), receipt([...supplyLogs, log(USDC, TRANSFER, `0x${'00'.repeat(20)}` as Address, SAFE)]), tokens), undefined, 'a mint has no call');
+  assert.match(tokenStepsDisagree(supply(), receipt([...supplyLogs, log(USDC, APPROVAL, SAFE, MORPHO)]), tokens) ?? '', /the receipt logs an approval of .* with no approve, transferFrom or permit in the trace/);
+  assert.equal(tokenStepsDisagree(supply(), receipt([...supplyLogs, log(USDC, APPROVAL, SAFE, BUNDLES)]), tokens), undefined, 'a token may log an Approval when transferFrom spends the allowance');
+  const permitted = [...supply(), call(4, 'CALL', BUNDLES, USDC, '0xd505accf', [SAFE, MORPHO])];
+  assert.equal(tokenStepsDisagree(permitted, receipt([...supplyLogs, log(USDC, APPROVAL, SAFE, MORPHO)]), tokens), undefined, 'a permit sets the allowance it logs');
 });
 
 test('a flow line is confirmed in N of M traced transactions, and a money call no line covers is a finding', () => {
