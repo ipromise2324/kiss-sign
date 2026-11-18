@@ -78,7 +78,12 @@ The program picks its own windows across the last year; never pass `--from-block
    Never declare one where every difference is 0.
    Share-based or rebasing tokens, fee-on-transfer tokens and vault share conversions are only hints of where to look; the distribution decides.
    A difference beyond 10, or one that grows with the amount, such as a fee, is not rounding: stop and tell the signer.
-5. Record the runs the report studies with `--record <name>` before you generate the report.
+5. Read the spread `pnpm past-txs` prints for every number the template leaves free, a value the signer does not choose, such as an order's `validTo` less the block's time, a deadline or a fee.
+   Ask what the largest normal value is, and what a far larger one would let happen after the signer stops watching, such as an order or approval still valid in a year.
+   For a time, declare it `{"free": {"time": "<why>"}}` first, so the spread counts from the block's time, then bound it with `withinSeconds` ([Template](../../../docs/design/data-shapes.md#template)) at or above the largest value real Safes used, and cite the spread in the field's note in `notes.json`, such as "136 Safe orders: median 1,720 s, 99th percentile 10,478 s, largest 604,767 s; bound 7 days".
+   For another number, when the spread shows a bound is needed and no rule in the vocabulary can hold it, stop and propose a generic program change.
+   When no bound is needed, say why in that note.
+6. Record the runs the report studies with `--record <name>` before you generate the report.
 
 ## Check the protocol's health
 
