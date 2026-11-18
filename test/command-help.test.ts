@@ -78,6 +78,13 @@ test('pnpm history fetch -h prints the history help', () => {
   assert.match(run.stdout, /^usage: pnpm history /);
 });
 
+test('pnpm fetch-solc --help, which names a kind first, prints the fetch help', () => {
+  const run = runHelp(join(ROOT, 'scripts', 'fetch-vendored.ts'), ['solc', '--help']);
+  assert.equal(run.status, 0, run.stderr);
+  assert.match(run.stdout, /^usage: /);
+  assert.equal(run.homeTouched, false);
+});
+
 test('kiss-sign card --help prints the help of both card commands', () => {
   const { stdout } = runHelp(join(ROOT, 'bin', 'kiss-sign'), ['card', '--help']);
   assert.match(stdout, /^usage: pnpm kiss-sign card new /m);
