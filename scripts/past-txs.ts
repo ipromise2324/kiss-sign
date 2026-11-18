@@ -14,6 +14,7 @@ import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
 import { liveMessages, recordingMessages } from '../src/research/messages.ts';
 import { httpsMessage } from '../src/verify/messages.ts';
 import { scrubRecording } from '../src/research/recording.ts';
+import { drpcTraces } from '../src/research/trace.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
 import { loadTemplate } from '../src/template/template.ts';
@@ -60,6 +61,10 @@ Per field it prints how many transactions and senders held the template's rule, 
 grouped by reason. For each fitting transaction it runs the transaction alone on its parent block
 and compares each stated amount with the balances, printing FINDING for a sender's difference
 beyond the effect's tolerance in a registry token, or a tolerance no difference supports.
+For each transaction exactly the template it reads the call trace from drpc alone
+(debug_traceTransaction with callTracer, one at a time), and checks the trace's token transfers and
+approvals against the receipt both providers agree on; --record keeps each trace cut down to each
+call's depth, type, from, to, selector, value and a token call's address arguments.
 
 Options:
   --token <name | address>       The anchor token, or the contract that logs --event.
@@ -75,7 +80,7 @@ Options:
 Writes: testdata/research/<name>.json with --record; otherwise nothing.
 Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 4,
-  Study past transactions).`;
+  Study past transactions, Call traces).`;
 
 const ROOT = join(import.meta.dirname, '..');
 
@@ -168,6 +173,7 @@ const note = (read: string) => void unread.push(read);
 const sources = recordingAsk(liveAsk(process.env, note));
 const messages = recordingMessages(liveMessages(httpsMessage, note));
 const reader = createReader(endpoints, chain.transport, { note });
+const traces = drpcTraces(endpoints[1], httpsTransport(), note);
 const query = {
   template,
   anchor: { token, kind, ...(from === undefined ? {} : { from }), ...(to === undefined ? {} : { to }), ...(event === undefined ? {} : { event }) },
@@ -180,6 +186,7 @@ const run = await pastTxs(query, {
   readMessage: messages.read,
   exclude,
   maxTxs,
+  traces: traces.source,
 });
 process.stdout.write(renderPastTxs(run, registry));
 
@@ -207,11 +214,12 @@ if (flags.record !== undefined) {
       messages: messages.exchanges(),
       providers,
       exchanges: chain.exchanges().filter((e) => providers.every((p) => p in e.answers)),
+      traces: traces.recorded(),
     },
     [...(exclude === undefined ? [] : [exclude]), ...run.excluded],
   );
   const out = join(ROOT, 'testdata', 'research', `${flags.record}.json`);
   mkdirSync(join(out, '..'), { recursive: true });
   writeFileSync(out, recordingText(fixture, 1));
-  console.log(`wrote ${out}: ${fixture.sources.length} source answers, ${fixture.exchanges.length} chain requests`);
+  console.log(`wrote ${out}: ${fixture.sources.length} source answers, ${fixture.exchanges.length} chain requests, ${fixture.traces?.length ?? 0} call traces`);
 }

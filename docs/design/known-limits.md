@@ -2,6 +2,10 @@ Part of [the kiss-sign design](../design.md).
 
 ## Known limits
 
+- A past transaction's call trace comes from drpc alone, since Alchemy's free plan does not serve one.
+  Its token transfers and approvals are checked against the receipt both providers agree on, but a call that moves no token, and ETH sent inside a call, which logs nothing, rest on drpc's answer.
+  A trace only confirms a `flow` line in the report or asks the AI for a review; it never changes a verdict.
+  A trace also shows one path: a contract may branch on state, so a line seen in every past transaction may not hold for the transaction to sign, and the effects check at signing is what protects the signer.
 - Etherscan name tags (labels such as "Morpho: Bundler3") are not used.
   Etherscan offers no free API for them.
   The verified contract name and the creator, read from the contract's Etherscan page, are used instead.

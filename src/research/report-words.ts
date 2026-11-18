@@ -34,7 +34,7 @@ const ZH = {
   sentenceGap: '',
 
   tag: { research: 'AI 研究', ai: 'AI', safe: 'AI 研究：可以用', caution: 'AI 研究：要小心' } satisfies Record<AiTag, string>,
-  strip: { sources: '地址來源', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', providers: '雙節點比對' } satisfies Record<StripLine | 'providers', string>,
+  strip: { sources: '地址來源', abi: '原始碼驗證', code: '合約沒被換掉', params: '參數保護', trace: '呼叫追蹤', providers: '雙節點比對' } satisfies Record<StripLine | 'providers', string>,
   kind: {
     token: '代幣',
     vault: '金庫',
@@ -120,6 +120,9 @@ const ZH = {
       why: '重新編譯後，除了 metadata hash 以外每個 byte 都跟鏈上一樣，所以函式選擇器和參數型別有證明；但 metadata hash 不同，表示 Etherscan 上的原始碼文字（註解、檔名或參數名稱）跟部署時的不一樣，參數名稱沒有證明。',
     },
     'judged-otherwise': { title: '測試交易現在的判定不同', why: '用現在的模板重跑記錄的測試交易，結果跟記錄時不一樣。' },
+    'line-not-seen': { title: '過去交易裡看不到這條流程線', why: '在呼叫追蹤裡，這條線所在的呼叫底下，沒有一筆過去交易有這個呼叫。' },
+    'line-partly-seen': { title: '只有部分過去交易有這條流程線', why: '在呼叫追蹤裡，只有部分過去交易有這個呼叫；合約可能依當時狀態走不同的路。' },
+    'money-uncovered': { title: '有動到錢的內部呼叫沒有說明', why: '呼叫追蹤裡有一筆代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。' },
     'no-answer': { title: '讀取沒有回應', why: '程式重試後仍讀不到答案，記為 UNVERIFIABLE。' },
     'site-not-compared': { title: '沒辦法比對來源網站', why: 'DefiLlama 找不到這個協議，或網域無法判斷。' },
     'no-second-source': {
@@ -143,6 +146,11 @@ const ZH = {
   } satisfies { readonly [K in FindingKind]?: { readonly title: string; readonly why: string } },
   needsReview: '要你看',
   fixtureTitle: (name: Span, title: string): Span[] => ['測試交易 ', name, `：${title}`],
+  flowLineTitle: (n: number, title: string): string => `流程線 ${n}：${title}`,
+  moneyTitle: (call: number, from: string, to: string, kind: Span, title: string): Span[] => [`呼叫 ${call} 底下 ${from} → ${to} 的 `, kind, `：${title}`],
+  seenIn: (seen: number, of: number): string => `在 ${of} 筆裡看到 ${seen} 筆。`,
+  inTransactions: (n: number): string => `共 ${n} 筆過去交易。`,
+  outsideRegistry: (shown: readonly string[], all: number): string => `不在登記表裡的地址${all > shown.length ? `（共 ${all} 個，列出 ${shown.length} 個）` : ''}：${shown.join('、')}。`,
   docTitle: (entry: string, page: string, fn: Span, title: string): Span[] => [`${entry}：${page} `, fn, `，${title}`],
   notInStandard: (standard: string): string => `標準頁上沒有這個函式在 ${standard} 裡的宣告。`,
   span: (n: string): string => `（第 ${n} 段）`,
@@ -495,6 +503,8 @@ const ZH = {
   paramsExplain: (counted: number): string => `程式把 ${counted} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`,
   noTests: '沒有測試',
   providersExplain: '所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。',
+  traceExplain: (passed: number, counted: number): string =>
+    `程式在過去交易的呼叫追蹤裡找 AI 寫的每條流程線，也確認每筆動到錢的內部呼叫都有模板或流程線說明；${counted} 項裡 ${passed} 項通過。追蹤只來自 drpc，其中代幣的轉帳和授權都跟兩家節點都同意的收據核對過。`,
   footer: (command: Span, sources: readonly Span[], fetched: string, test: Span, notes: string): Span[] => [
     '由 ',
     command,
@@ -534,7 +544,10 @@ const ZH = {
   docs: '文件：',
   /** Text around a code span the renderer puts between the two. */
   decodedLead: ['每個單一值參數的第一行是 ', ' 會印出的值；陣列、tuple 和巢狀呼叫的第一行是摘要，內容列在下面。'] as readonly [string, string],
-  flowLead: '實線是 Safe 發出的呼叫，虛線是合約內部做的事，綠線是你得到的。',
+  flowLead: '實線是 Safe 發出的呼叫、模板綁定的內部呼叫，和程式在過去交易裡看到的流程線；虛線是還沒核對的 AI 研究；綠線是你得到的。',
+  seenLabel: (seen: number, of: number): string => `兩邊都確認：程式在 ${of} 筆過去交易的呼叫追蹤裡看到 ${seen} 筆；AI 讀過合約原始碼`,
+  seenCount: (seen: number, of: number): string => `程式在 ${of} 筆過去交易的呼叫追蹤裡只看到 ${seen} 筆，或 AI 沒附來源，所以還不算確認`,
+  traceNote: '呼叫追蹤只顯示過去交易走過的路；合約可能依當時狀態走別條路，簽名時保護你的是效果檢查。',
   whoDecides: '誰決定',
   safeTx: 'Safe 交易',
   afterTx: '交易後',
@@ -596,7 +609,7 @@ const EN: Words = {
   sentenceGap: ' ',
 
   tag: { research: 'AI research', ai: 'AI', safe: 'AI research: OK to use', caution: 'AI research: be careful' },
-  strip: { sources: 'Address sources', abi: 'Source verified', code: 'Code unchanged', params: 'Parameter checks', providers: 'Two providers' },
+  strip: { sources: 'Address sources', abi: 'Source verified', code: 'Code unchanged', params: 'Parameter checks', trace: 'Call traces', providers: 'Two providers' },
   kind: {
     token: 'token',
     vault: 'vault',
@@ -690,6 +703,9 @@ const EN: Words = {
       why: "Compiled again, every byte equals the code on chain except the metadata hash, so the function selectors and parameter types are proven. The metadata hash differs, so the source text on Etherscan (comments, file names or parameter names) is not the deployed text, and the parameter names are not proven.",
     },
     'judged-otherwise': { title: 'the test transaction is judged differently now', why: 'Running the recorded test transaction again with the current template gives another result than when it was recorded.' },
+    'line-not-seen': { title: 'no past transaction shows this flow line', why: 'In the call traces, no past transaction makes this call under the call the line follows.' },
+    'line-partly-seen': { title: 'only some past transactions show this flow line', why: 'In the call traces, only some past transactions make this call; a contract may take another path on other state.' },
+    'money-uncovered': { title: 'a call inside moves money and nothing explains it', why: 'A call trace holds a token transfer, approval or ETH transfer that no call the template binds and no flow line explains.' },
     'no-answer': { title: 'a read got no answer', why: 'The program got no answer even after retrying; it counts as UNVERIFIABLE.' },
     'site-not-compared': { title: 'the source site cannot be compared', why: 'DefiLlama does not know this protocol, or the domain cannot be determined.' },
     'no-second-source': {
@@ -731,6 +747,11 @@ const EN: Words = {
   },
   needsReview: 'needs your review',
   fixtureTitle: (name, title) => ['Test transaction ', name, `: ${title}`],
+  flowLineTitle: (n, title) => `Flow line ${n}: ${title}`,
+  moneyTitle: (call, from, to, kind, title) => [`Under call ${call}, ${from} → ${to} `, kind, `: ${title}`],
+  seenIn: (seen, of) => `Seen in ${seen} of ${of}.`,
+  inTransactions: (n) => `In ${n} past ${plural(n, 'transaction', 'transactions')}.`,
+  outsideRegistry: (shown, all) => `Addresses outside the registry${all > shown.length ? ` (${shown.length} of ${all})` : ''}: ${shown.join(', ')}.`,
   docTitle: (entry, page, fn, title) => [`${entry}: ${page} `, fn, `, ${title}`],
   notInStandard: (standard) => `The standard's page does not hold this function's declaration in ${standard}.`,
   span: (n) => ` (span ${n})`,
@@ -1091,6 +1112,8 @@ const EN: Words = {
     `The program changed every bound argument of ${counted} test ${plural(counted, 'transaction', 'transactions')} one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.`,
   noTests: 'no tests',
   providersExplain: 'Every chain read asks two providers; when they disagree, there is no result.',
+  traceExplain: (passed, counted) =>
+    `The program looks for each of the AI's flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; ${passed} of ${counted} passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.`,
   footer: (command, sources, fetched, test, notes) => [
     'Written by ',
     command,
@@ -1129,7 +1152,10 @@ const EN: Words = {
   scrollHint: 'Scroll the diagram sideways',
   docs: 'Docs: ',
   decodedLead: ["Each single-value argument's first line is what ", ' prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below.'],
-  flowLead: "Solid lines are the Safe's calls, dashed lines what a contract does inside, green lines what you get.",
+  flowLead: "Solid lines are the Safe's calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.",
+  seenLabel: (seen, of) => `Confirmed two ways: the program saw it in the call traces of ${seen} of ${of} past transactions; the AI read the contract's source`,
+  seenCount: (seen, of) => `The program saw it in the call traces of ${seen} of ${of} past transactions, or the AI gave no source, so it is not confirmed`,
+  traceNote: 'A call trace shows only the path past transactions took; a contract may take another path on other state, and what protects you at signing is the effects check.',
   whoDecides: 'Who decides',
   safeTx: 'Safe transaction',
   afterTx: 'After the transaction',

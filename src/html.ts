@@ -158,6 +158,9 @@ svg .nodet{fill:var(--fg);font:590 14px var(--sans)}
 svg .nodes{fill:var(--fg3);font:12.5px var(--sans)}
 svg .call{stroke:var(--fg);stroke-width:1.4;fill:none}
 svg .inner{stroke:var(--fg3);stroke-width:1.2;stroke-dasharray:4 4;fill:none}
+svg .inner.seen{stroke:var(--fg2);stroke-dasharray:none}
+svg .nested{stroke:var(--fg2);stroke-width:1.2;fill:none}
+svg .seenl{fill:var(--fg3);font:12.5px var(--sans)} svg .seenl a{fill:var(--fg2);text-decoration:underline}
 svg .gain{stroke:var(--ok);stroke-width:1.4;fill:none}
 svg .ah{fill:var(--fg)} svg .ahi{fill:var(--fg3)} svg .ahg{fill:var(--ok)}
 svg .fn{fill:var(--fg);font:400 14px var(--mono)}

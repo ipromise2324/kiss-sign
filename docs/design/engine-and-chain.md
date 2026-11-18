@@ -124,6 +124,7 @@ These are protocol-free and change rarely.
 Every on-chain read uses two providers from different companies.
 Both must agree, or the result is `UNVERIFIABLE`.
 This covers state reads, code, simulation, receipts, and the search for past transactions.
+The one exception is a past transaction's call trace during research, which only drpc serves free: its token transfers and approvals are checked against the receipt both providers agree on, and it never reaches a verdict.
 
 | Role | Providers |
 |---|---|
@@ -133,6 +134,7 @@ This covers state reads, code, simulation, receipts, and the search for past tra
 | Simulation, latest and past blocks | Alchemy and drpc, `eth_simulateV1` |
 | A signed message a template reads by its digest, during `verify` | The template's `lookup`, such as CoW's order API; one source is enough, since the program hashes the answer and requires the digest the transaction holds |
 | Finding past transactions | Alchemy Transfers API and a second source (Etherscan with a free key) |
+| A past transaction's call trace, during research | drpc alone (`debug_traceTransaction` with `callTracer`), its token calls checked against the receipt Alchemy and drpc agree on |
 
 When the system resolver fails, kiss-sign resolves provider hosts over DNS over HTTPS.
 TLS certificate checks stay on, so a wrong address can only fail the connection.
@@ -177,4 +179,5 @@ None of them is read at signing.
 | EAS contract on mainnet, through Alchemy and drpc | Each attestation's signer, by the `ecrecover` precompile, and whether the signer revoked it (step 2) | Program, `pnpm erc7730` |
 | Etherscan API (`getsourcecode`) and a pinned `solc` | The verified source compiles to the code on chain, and its ABI holds every function the template uses (step 3) | Program, `pnpm prove-abi` |
 | Alchemy Transfers API and Etherscan API | Past transactions of the operation (step 4) | Program, `pnpm past-txs`; the AI reads the counts |
+| drpc `debug_traceTransaction`, and receipts through Alchemy and drpc | The calls inside each past transaction exactly the template, against the AI's `flow` lines (steps 4 and 6) | Program, `pnpm past-txs` and `pnpm report`; the AI reviews each finding |
 | DefiLlama hacks list and post-mortems | Past hacks and incidents (step 5) | AI |
