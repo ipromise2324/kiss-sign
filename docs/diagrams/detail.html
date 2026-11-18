@@ -213,7 +213,7 @@
     <div class="box program"><div class="head"><span>Program · verify</span><span>step 12</span></div>
       <h3><i>16</i>Simulate</h3>
       <ul>
-        <li>Through the Safe's <code>execTransaction</code> with <code>eth_simulateV1</code>; an executed transaction is judged by its receipt, and simulated alone on its parent block only for views or a Safe setting change</li>
+        <li>Through the Safe's <code>execTransaction</code> with <code>eth_simulateV1</code>; an executed transaction's effects come from its receipt</li>
         <li>Balance and allowance changes must be what the effects explain</li>
         <li>Views read before and after, through a <code>STATICCALL</code></li>
         <li>Calls that move no asset of the Safe are listed, as information, not a check</li>

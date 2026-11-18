@@ -22,7 +22,7 @@ The evidence behind each template goes with it.
   CI (`.github/workflows/test.yml`, GitHub Actions) runs `pnpm typecheck` and the whole offline test suite on every pull request and every push to `main` (a branch runs once, through its pull request), with every action pinned by commit, after fetching the pinned solc builds and Public Suffix List and checking each file's sha256.
   It holds no secrets: the tests replay recorded chain answers, including recorded simulations, so live simulation and every live read run locally.
   To keep a run short, CI caches the solc outputs the tests compile, each keyed by the sha256 of the pinned compiler build and of the exact standard-JSON input, and the tests take only an exact match; every ABI proof still compares the cached bytecode with the code on chain on every run, while the ABI in a cached output is trusted as CI's own earlier output.
-  Only the test helper reads this cache: `pnpm prove-abi`, `pnpm report`, `pnpm record-abi-case` always compile, and `verify` compiles nothing.
+  Only the test helper reads this cache: `pnpm prove-abi`, `pnpm report` and `pnpm record-abi-case` always compile, and `verify` compiles nothing.
 - Git stores and records; it is not trusted.
   At signing, the program checks that the template's hash equals the hash recorded when the signer merged it.
   A template from someone else's repository is only a starting point: its report still has to be reviewed.
@@ -62,7 +62,7 @@ These are protocol-free and change rarely.
     Otherwise a correctly hashed transaction can pay a refund to someone else.
 - The mutation check: change each bound field and confirm the template gives `MISMATCH`.
   A share price bound changes to its loosest value, since a stricter one still matches, an `atLeast` bound changes to 0, and an `atMost` bound to the largest value of its type, a transaction's own `value` included.
-  A `withinSeconds` time changes to one second past its bound, from the block time the field check used; when that block time was not read, or the value does not fit the field's type, the field changes to one more instead, which a bound usually still allows, so the mutation check reports the template weak there.
+  A `withinSeconds` time changes to one second past its bound, from the block time the field check used; when that block time was not read, or the value does not fit the field's type, the field changes by one instead, which a bound usually still allows, so the mutation check reports the template weak there.
   A member of a signed message changes in the message, with its digest written again into the transaction.
   Empty constant `bytes`, such as a Uniswap pool's `hookData`, have no byte to change in place and are not changed; any other value is longer, which the field check compares byte for byte.
 - The perturbation test, at template build time (`pnpm perturb`, replayed by `pnpm test`): every free field of a recorded test transaction is changed to other values of its type, one at a time (a number to one more, one less and zero; a bool flipped; a fixed-size word with its first byte flipped, and zeroed when it is not zero; `bytes` or a `string` with its first and its last byte flipped; an array with the first byte of its first and of its last word flipped), and each copy is simulated through `execTransaction` on both providers.
