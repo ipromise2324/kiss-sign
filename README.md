@@ -63,7 +63,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault. One address crop is from another vault's report, as marked.
 
-**Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts. You merge each template and registry pull request into it, and merging is your confirmation; program changes your AI merges itself, behind a gate (see [Your AI](#your-ai)).
+**Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts. You merge each template and registry pull request into it, and merging is your confirmation; program changes your AI merges itself, behind a gate (see [A compromised AI](#a-compromised-ai)).
 
 ```sh
 git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
@@ -196,13 +196,23 @@ Your AI finds each contract's address on the web, so a fake page can mislead it.
 
 On the hardened tier, `check.sh` also marks every address not in your own list as unknown.
 
-### Your AI
+### Mistakes in the AI's research
 
-Models are trained to resist prompt injection, but a page your AI reads can still steer it, and it can simply be wrong. kiss-sign assumes this can happen and makes it hard to turn into a loss.
+Even with the right addresses, your AI can misread a contract or how the operation is used, or miss that a protocol is unsafe right now. A program checks its research against the chain, and you review the report before you merge.
 
 | Attack | Stopped by |
 |---|---|
-| The AI gives wrong information, such as a template that allows too much | `verify` refuses a delegatecall, an unlimited approval, a Safe setting change and an unexplained balance change whatever the template says; the rest shows in the report you review |
+| The AI uses a wrong ABI, so a harmful call reads as a harmless one | A program compiles the contract's verified source with a pinned compiler and compares it with the code on chain: different, flagged for you |
+| The AI allows a value no real user sends, such as a CoW order that stays valid for a year | A program reads other senders' past transactions of the operation. Their CoW orders expired within 1.5 hours, so the template allows at most 7 days, and a later expiry is `MISMATCH`. Pre-signed transactions that stayed valid long after the signers stopped watching, through Solana's durable nonces, are what the Drift exploit of April 2026 relied on |
+| The AI picks a protocol or contract that is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and an instance's size over 12 months and its holders, read through both providers |
+| The AI writes a template that allows too much | `verify` refuses a delegatecall, an unlimited approval, a Safe setting change and an unexplained balance change whatever the template says; the rest shows in the report you review |
+
+### A compromised AI
+
+Models are trained to resist prompt injection, but a page your AI reads can still steer it. A steered AI can change the very checks above, so kiss-sign relies on what it cannot reach.
+
+| Attack | Stopped by |
+|---|---|
 | The AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
 
 On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
