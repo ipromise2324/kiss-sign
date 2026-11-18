@@ -293,7 +293,7 @@ function admission(lines: readonly string[], vault: RegistryEntry, registry: Reg
 }
 
 /**
- * What stored `pnpm vault-evidence` output says the vault's registry factory answered, from its first line: `admitted`
+ * What stored `pnpm instance-evidence` output says the vault's registry factory answered, from its first line: `admitted`
  * when it admitted the vault, `not-created` when it answered false or another address, `other-answer` when it answered
  * neither. Anything else, such as a read with no answer, an answer from another factory, or no output, is unread.
  */
@@ -311,7 +311,7 @@ export function factoryAnswer(text: string | undefined, vault: RegistryEntry, re
 }
 
 /**
- * What `pnpm vault-evidence` prints: a vault that names a factory is read only after that factory answers that it
+ * What `pnpm instance-evidence` prints: a vault that names a factory is read only after that factory answers that it
  * created the vault, since the numbers come from the vault's own code. Everything is read as of one block, `at`.
  * `read` is false when nothing was read.
  */
@@ -348,7 +348,7 @@ export type StoredPoint = {
   readonly assets: { readonly kind: 'amount'; readonly amount: bigint } | { readonly kind: 'unread' } | { readonly kind: 'no-code' } | { readonly kind: 'reverted' };
 };
 
-/** Stored `pnpm vault-evidence` output read back into its facts; a fact its text does not hold is undefined. */
+/** Stored `pnpm instance-evidence` output read back into its facts; a fact its text does not hold is undefined. */
 export type StoredEvidence = {
   /** Each view's answer in order, `answer` being `true` or the expected checksum address. */
   readonly admitted: { readonly factory: string; readonly answers: readonly { readonly asker: string; readonly check: string; readonly answer: string }[]; readonly block: bigint } | undefined;

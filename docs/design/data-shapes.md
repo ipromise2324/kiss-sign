@@ -221,7 +221,7 @@ Each view is one party vouching for the instance, written as:
 
 - `ask`: the contract asked, `"factory"` (the default), `"instance"`, `{"attribute": <name>}` for the entry an attribute of the instance names, or `{"namedBy": <name>}` for each registry entry whose attribute of that name names the instance, each asked on its own.
 - `function`: the view's signature.
-- `args`: one per parameter, in order: a party, as above, which binds an `address` parameter to its address, or a constant of the parameter's type: `{"uint": "500"}` or `{"int": "-1"}`, a decimal integer in the type's range; `{"address": "0x…"}`; `{"bytes32": "0x…"}`; or `{"string": "fToken"}`, 1 to 32 letters, digits, `_`, `.` and `-`, so the stored `pnpm vault-evidence` line that quotes it holds nothing a report's text block or table reads as markup.
+- `args`: one per parameter, in order: a party, as above, which binds an `address` parameter to its address, or a constant of the parameter's type: `{"uint": "500"}` or `{"int": "-1"}`, a decimal integer in the type's range; `{"address": "0x…"}`; `{"bytes32": "0x…"}`; or `{"string": "fToken"}`, 1 to 32 letters, digits, `_`, `.` and `-`, so the stored `pnpm instance-evidence` line that quotes it holds nothing a report's text block or table reads as markup.
 - `answers`: `true`, or a party whose address the answer must be.
   An object's default is `"instance"`.
 - `word`: optional, the zero-based 32-byte word of the answer that is compared, for a view that answers a static struct; without it the answer must be one word.
@@ -238,7 +238,7 @@ A `true` view passes only on the word 1; the word 0, or another address than the
 The asked call is written with the instance as `address`, every other party by its registry name and each constant as written, such as `isMetaMorpho(address)`, `computeToken(usdc,"fToken")` or `getPool(usdc,weth,500)`.
 `pnpm prove-instance` prints every view's answer.
 
-A factory, or an entry for itself, may also declare `size`, what `pnpm vault-evidence` reads of each instance: `{"function": "totalAssets()", "unit": {"function": "asset()", "attribute": "asset"}, "holders": true}`.
+A factory, or an entry for itself, may also declare `size`, what `pnpm instance-evidence` reads of each instance: `{"function": "totalAssets()", "unit": {"function": "asset()", "attribute": "asset"}, "holders": true}`.
 `function` is a view with no parameters the instance answers with one number.
 `unit`, optional, is a view with no parameters the instance answers with the token the number counts, which must be the entry its `attribute` names; its `decimals()` scale the number.
 `holders` says the instance is an ERC-20 share token whose holders are counted.
@@ -277,7 +277,7 @@ A market is a name from the markets table too.
 A template's contract field may name its protocol, `{"kind": "contract", "registryKind": "vault", "defillama": "fluid"}`, so that it accepts only registry entries of that kind that belong to that protocol: a Fluid deposit cannot be handed a Morpho vault, and its report lists only Fluid's.
 An entry with a `factory` attribute belongs to its factory's protocol, the factory entry's `defillama`, never its own: its own slug names the site that lists it, such as a curator's (`steakhouse-financial`), since `pnpm check-sources` compares its source page with that slug's website, while the factory, through its `instanceCheck` (`pnpm prove-instance`), shows on chain whose vault it is.
 The factory's `instanceCheck` and the shapes it takes are under [Registry attributes and instance checks](#registry-attributes-and-instance-checks).
-The HTML report shows an instance's admission, as `pnpm vault-evidence` stored it, as its result `<instance>/factory.admitted`, which passes only when the stored lines name the instance's own registry factory with every view answering as declared; `verify` does not ask the factory.
+The HTML report shows an instance's admission, as `pnpm instance-evidence` stored it, as its result `<instance>/factory.admitted`, which passes only when the stored lines name the instance's own registry factory with every view answering as declared; `verify` does not ask the factory.
 For an entry that names a `factory` and is not an instance whose evidence the report holds, such as a Vault V2's market adapter, `pnpm report` asks every view of that factory's `instanceCheck` through both providers at its latest block, as `pnpm prove-instance` does, and shows the first view's answer as `<entry>/factory.admitted` and each other view's as `<entry>/factory.<function>`, or `<entry>/factory.<function>.<entry asked>` for a view asked or answered once per entry naming it (`namedBy`), which is not read when no registry entry names it.
 Together these results are the entry's one `factory` place, which counts only when every one of them passes.
 An entry with no `factory` belongs to the protocol its own `defillama` names.

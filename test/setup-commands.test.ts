@@ -678,7 +678,7 @@ function withdrawClone(): string {
   return publish(dir);
 }
 
-/** A report for `vault` under the template, as `pnpm report --vault-of` writes it; the gate reads only that the file is there. */
+/** A report for `vault` under the template, as `pnpm report --instance-of` writes it; the gate reads only that the file is there. */
 function reportVault(repoRoot: string, template: string, vault: string, folder = 'vaults'): void {
   mkdirSync(join(repoRoot, 'templates', template, folder, vault), { recursive: true });
   writeFileSync(join(repoRoot, 'templates', template, folder, vault, 'report.generated.md'), '# report\n');

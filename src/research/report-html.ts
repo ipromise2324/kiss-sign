@@ -11,11 +11,11 @@ import { CSS, Html, SYMBOLS, escape, h, icon } from '../html.ts';
 import { WORDS } from './report-words.ts';
 import type { Words } from './report-words.ts';
 import { reportDir } from './report.ts';
-import type { ReportInputs, ReportTitle } from './report.ts';
+import type { ReportInputs, ReportTitle, TemplateTarget } from './report.ts';
 
 /** Each language's HTML report beside report.generated.md; the name says the language, so no file changes language under an old name. */
 export const generatedHtmlFile = (language: Language): string => `report.generated.${language}.html`;
-export const generatedHtmlPath = (target: { readonly template: string; readonly cardVault?: string }, language: Language): string => join(reportDir(target), generatedHtmlFile(language));
+export const generatedHtmlPath = (repoRoot: string, target: TemplateTarget, language: Language): string => join(reportDir(repoRoot, target), generatedHtmlFile(language));
 /** The one-language report the program wrote before it wrote one per language; none may remain. */
 export const OLD_HTML_FILE = 'report.generated.html';
 

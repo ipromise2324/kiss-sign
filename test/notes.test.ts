@@ -284,8 +284,8 @@ test("a vault's report is in the languages both notes hold: a zh-TW-only vault u
   mkdirSync(join(root, vaultReportDir('fluid/vault-deposit', 'fluid-fusdt')), { recursive: true });
   const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
   const write = (shared: unknown, vault: unknown) => {
-    writeFileSync(join(root, notesPath('fluid/vault-deposit')), JSON.stringify(shared));
-    writeFileSync(join(root, notesPath('fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify(vault));
+    writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit')), JSON.stringify(shared));
+    writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify(vault));
   };
   const verdict = (text: Record<string, string>) => ({ verdict: { status: 'caution', text } });
   const sharedZh = Object.fromEntries(Object.entries(only('zh-TW')).filter(([key]) => key !== 'verdict'));
@@ -307,7 +307,7 @@ test("a vault's report is in the languages both notes hold: a zh-TW-only vault u
     () => readNotes(root, 'fluid/vault-deposit', fusdt),
     (e: unknown) =>
       e instanceof NotesError &&
-      e.message === `${notesPath('fluid/vault-deposit', 'fluid-fusdt')}: holds zh-TW and ${notesPath('fluid/vault-deposit')} holds en; a vault's report is written in a language both hold`,
+      e.message === `${notesPath(root, 'fluid/vault-deposit', 'fluid-fusdt')}: holds zh-TW and ${notesPath(root, 'fluid/vault-deposit')} holds en; a vault's report is written in a language both hold`,
   );
   write(SHARED, { ...verdict({ 'zh-TW': '要小心' }), pastTxsConclusion: t('結論') });
   assert.throws(() => readNotes(root, 'fluid/vault-deposit', fusdt), /holds texts in zh-TW, in en and zh-TW; every text in one file holds the same languages/);
@@ -338,8 +338,8 @@ test("a vault's notes review and describe only the vault and the entries its att
 test("a vault's notes may also describe the entries its attributes name, such as its asset, and no other", () => {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
   mkdirSync(join(root, vaultReportDir('fluid/vault-deposit', 'fluid-fusdt')), { recursive: true });
-  writeFileSync(join(root, notesPath('fluid/vault-deposit')), JSON.stringify(SHARED));
-  const write = (entries: unknown) => writeFileSync(join(root, notesPath('fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify({ entries }));
+  writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit')), JSON.stringify(SHARED));
+  const write = (entries: unknown) => writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify({ entries }));
   const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
   write({ 'fluid-fusdt': { role: '金庫' }, usdt: { role: '存進去的代幣' } });
   assert.deepEqual(Object.keys((readNotes(root, 'fluid/vault-deposit', fusdt) as { entries: Record<string, unknown> }).entries).slice(-2), ['fluid-fusdt', 'usdt']);

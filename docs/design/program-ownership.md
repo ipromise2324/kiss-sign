@@ -50,7 +50,7 @@ The pre-push check stays too; it keeps the Safe's address and the API keys out o
 ### The verdict core
 
 Only a small part of the program decides a verdict: the Safe transaction's hash, decoding and encoding again, the floors, the simulation on both providers, the effects, the field checks, the self-check, the verdict and its replay.
-The research tools, such as `pnpm report`, `check-sources`, `past-txs`, `erc7730` and `vault-evidence`, write what the signer reads but never run at signing.
+The research tools, such as `pnpm report`, `check-sources`, `past-txs`, `erc7730` and `instance-evidence`, write what the signer reads but never run at signing.
 A pull request that changes a template and, beside it, one comparison in the verdict code would change what `verify` checks for every signing while the signer reads the template's report; so the two never share a pull request.
 
 - **The core is derived, not chosen.**
