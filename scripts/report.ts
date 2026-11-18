@@ -109,8 +109,7 @@ Writes: with --record, testdata/report/<protocol>-<operation>.json (or <protocol
 <instance>.json), testdata/abi/<entry>.json, and in the report's folder report.generated.md and,
 for a template with notes.json, report.generated.en.html and report.generated.zh-TW.html in each
 language the notes hold; --render writes the same report files; otherwise nothing. The folder is
-templates/<protocol>/<operation>/, or instances/<instance>/ (vaults/<instance>/ while that
-instance's files are there) under it.
+templates/<protocol>/<operation>/, or instances/<instance>/ under it.
 Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY for a live read (not --offline or --render), from the
 environment or $KISS_SIGN_HOME/.env. GITHUB_TOKEN is optional: sent only to api.github.com, it
 raises GitHub's limit from 60 to 5,000 requests an hour and changes no answer.
