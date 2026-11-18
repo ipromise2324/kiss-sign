@@ -55,8 +55,8 @@ each transaction says which found it. Only Etherscan searches an event: Alchemy'
 reads at most 10 blocks at a time on the free plan.
 A signed message the template names by its digest, such as a CoW order, is read from the
 template's lookup.
-For each free number the template leaves, it prints the spread of values, less the block's time
-for a declared time.
+For each free number the template leaves, and each withinSeconds time it bounds, it prints the
+spread of values, less the block's time for a time.
 Senders are counted by type: a proven Safe (Safe proxy code and an official singleton), a
 contract that is not a proven Safe, and an EOA making one of the template's calls directly.
 The Safe in $KISS_SIGN_HOME/config.json is left out of every count, example and recording.`;
@@ -68,7 +68,8 @@ beyond the effect's tolerance in a registry token, or a tolerance no difference 
 For each transaction exactly the template it reads the call trace from drpc alone
 (debug_traceTransaction with callTracer, one at a time), and checks the trace's token transfers and
 approvals against the receipt both providers agree on; --record keeps each trace cut down to each
-call's depth, type, from, to, selector, value and a token call's address arguments.
+call's depth, type, from, to, selector, value, whether it reverted, and the address arguments of a
+transfer, transferFrom, approve or permit.
 
 Options:
   --token <name | address>       The anchor token, or the contract that logs --event; left out for
@@ -76,7 +77,8 @@ Options:
   --anchor mint|burn|any|event   Which Transfer marks a transaction, or the event.
   --from, --to <name | address>  With --anchor any: only transfers out of, or into, the address.
   --event '<signature>'          With --anchor event: the event signature.
-  --max-txs <n>                  Transactions to study, 240 unless given, at least 12.
+  --max-txs <n>                  Transactions to study, 240 unless given, at least 12 across the
+                                 windows, at least 1 with --from-block and --to-block.
   --from-block, --to-block <n>   Search one block range in place of the windows.
   --same-windows-as <recording>  Search the windows of testdata/research/<recording>.json again.
   --record <name>                Write testdata/research/<name>.json; nothing is written when a

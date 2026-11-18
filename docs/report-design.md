@@ -72,16 +72,11 @@ spacing:
   rail: "184px"
   rail-gap: "56px"
 components:
-  tag-program:
-    textColor: "{colors.ink-3}"
-    typography: "{typography.label}"
-    rounded: "{rounded.r}"
-    padding: "0 5px"
   tag-ai:
     textColor: "{colors.ink-2}"
     typography: "{typography.label}"
     rounded: "{rounded.r}"
-    padding: "0 5px"
+    padding: "0 6px"
   property-row:
     textColor: "{colors.ink}"
     typography: "{typography.body-row}"
@@ -91,17 +86,18 @@ components:
     padding: "16px 0"
   who-chip:
     textColor: "{colors.ink-3}"
-    typography: "{typography.caption}"
+    fontSize: "13px"
+    lineHeight: "22px"
     rounded: "{rounded.r}"
     padding: "0 8px"
   review-row:
     textColor: "{colors.ink}"
-    padding: "12px 8px 12px 0"
+    padding: "16px 8px 16px 0"
   review-row-hover:
     backgroundColor: "{colors.hover}"
   address-row:
     textColor: "{colors.ink}"
-    padding: "12px 8px 12px 0"
+    padding: "16px 8px 16px 0"
   address:
     textColor: "{colors.ink}"
     typography: "{typography.mono}"
@@ -131,9 +127,9 @@ The report is a security tool's ledger at Linear's level of restraint: one left-
 
 Everything is expressible as one inline stylesheet plus a block of inline SVG `<symbol>`s: no JavaScript, no external font, image or stylesheet, system fonts only, dark only. Interaction is limited to what HTML and CSS give for free: a hover/focus tooltip, `<details>` folds, link underlines.
 
-Two voices share the page and never blur: what the program read and checked (plain text, solid tags), and what the AI researched (marked by a dashed outline). The program's facts always come first.
+Two voices share the page and never blur: what the program read and checked (plain text, untagged), and what the AI researched (marked by a dashed outline). The program's facts always come first.
 
-The page is written in each language its `notes.json` holds, English, Traditional Chinese or both, the same layout in each; every word below is given in Traditional Chinese, and the English page uses the same word in English (你填 is "you type", 待確認 is "To review"). A page whose notes hold its language alone says so in one Ink 3 14px line under the summary (這份報告只有繁體中文版。, "This report exists only in English.").
+The page is written in each language its `notes.json` holds, English, Traditional Chinese or both, the same layout in each (a per-instance report in each language both the template's and the instance's notes hold); every word below is given in Traditional Chinese, and the English page uses the same word in English (你填 is "you type", 待確認 is "To review"). A page whose notes hold its language alone says so in one Ink 3 14px line under the summary (這份報告只有繁體中文版。, "This report exists only in English.").
 
 **Key Characteristics:**
 - Near-black ground, three ink greys, three state colours, no brand accent.
@@ -162,7 +158,7 @@ None. There is no brand accent. Ink is the strongest non-state colour.
 
 ### State
 - **Pass Green** (state-ok): filled check icons, the "what the Safe receives" arrow and caption in the diagram, a positive change in after-transaction rows.
-- **Attention Amber** (state-warn): ring-with-! icons, and the 不限 chip of an argument the program leaves unbound but tested.
+- **Attention Amber** (state-warn): ring-with-! icons, the 不限 chip of an argument the program leaves unbound but tested, and the 有上限 chip of an argument the template bounds by time.
 - **Fail Red** (state-bad): filled cross icons.
 
 ### Named Rules
@@ -184,7 +180,7 @@ None. There is no brand accent. Ink is the strongest non-state colour.
 - **Body** (400, 16px, 1.65): the summary under the title (17px, Ink 2, capped at 60ch) and running text.
 - **Body Row** (400, 15px): property, review and address row content, and an argument's plain-words line.
 - **Caption** (400, 14px): sources, leads, rules, tooltips, the contents rail, an argument's AI line; footnote prose capped at 70ch.
-- **Label** (400, 12–13px, 20–22px line): program / AI tags and who-decides chips.
+- **Label** (400, 12–13px, 20–22px line): the AI tag (12px, 20px line) and who-decides chips (13px, 22px line).
 - **Mono** (400, 14px, 0.01em): addresses and code; a tuple part's value and a market id drop to 13–14px. Amounts use tabular figures instead of mono.
 
 ### Named Rules
@@ -196,9 +192,9 @@ None. There is no brand accent. Ink is the strongest non-state colour.
 
 A two-column page, max 1180px, with 20px side padding (respecting safe-area insets), 32px top and 120px bottom: a 184px sticky contents rail, a 56px gap, and one reading column of at most 880px. At 1040px and below the rail hides and the contents fold under the verdict. Sections stack with a 72px gap; each opens with a Strong Hairline top rule and 28px of padding, an 8px gap under the title, and a 14px Ink 3 lead with 20px under it when present. Sub-blocks inside a section start 36px down.
 
-Property rows are a three-column grid: label (min 140px, 24%), value (fluid), source (auto, right-aligned). Argument rows are a two-column grid: name and who-decides chip (200px), value (fluid); at 720px and below the chip sits beside the name above the value. At 600px and below the label moves to its own line above value and source. The check strip wraps inline with 8px / 24px gaps and becomes a single column at 600px. The two wallet screens sit side by side with a 32px gutter and stack at 680px. The diagram keeps a 660px minimum width and scrolls horizontally inside its frame, with a "scroll" hint shown at 700px and below.
+Property rows are a three-column grid: label (min 140px, 24%), value (fluid), source (auto, right-aligned). Argument rows are a two-column grid: name and who-decides chip (200px), value (fluid); at 720px and below the chip sits beside the name above the value. At 600px and below the label moves to its own line above value and source. The check strip wraps inline with 10px / 28px gaps and becomes a single column at 600px. The wallet section is one property table, one row per call, which follows the property rows' 600px rule. The diagram keeps a 660px minimum width and scrolls horizontally inside its frame, with a "scroll" hint shown at 700px and below.
 
-Order inside the page follows the signer: title, check strip and verdict; flow and its parameters; protocol; items to review; wallet display; addresses; past transactions; signing steps.
+Order inside the page follows the signer: title, check strip and verdict; flow and its parameters; protocol; in a per-instance report, the instance (實例); items to review; wallet display; addresses; past transactions; signing steps.
 
 ## Elevation & Depth
 
@@ -222,6 +218,7 @@ One radius, a gentle 6px, on everything that has a corner: tags, who-decides chi
 - **Attention:** 1.5px ring in Attention Amber with a "!" stroke and dot.
 - **Fail:** filled disc in Fail Red with a ground-coloured cross.
 - **AI judgment:** dashed 1.5px ring with a centre dot, in Ink 3 (no hue: a judgment is not a result).
+- **Not compared:** 1.5px ring in Ink 3 with a dash, for a result that is grey: nothing to compare, or not compared.
 - **Info:** thin 1.3px ring with an "i", Ink 3, the tooltip trigger.
 - **Chevron:** 1.5px stroke, Ink 3, rotates 90deg over 150ms when its fold opens.
 Every state icon carries `role="img"` and an `aria-label` in the page's language; info and chevron are `aria-hidden`.
@@ -251,13 +248,13 @@ A heading row over a Strong Hairline: the call number in mono Ink 3, the functio
 Left: the parameter name in 14px mono Ink, and under it its who-decides chip (or two, for an argument whose parts differ, such as `kind 固定` and `data 不限`). Right, top to bottom: the value as `cast decode-calldata` prints it, in mono Ink; a 15px Ink line saying in words what it is (a registry name, 你填的金額, 不抽成, 無（零地址）), with an Ink 3 qualifier after it; and the AI line, a dashed `AI` tag followed by 14px Ink 2 text on what the argument does. A tuple shows its summary (such as the market's name and its id) in place of a value, and its parts nest under it: indented 16px behind a 1px Strong Hairline rule, each part a 132px mono Ink 2 name beside its value, plain-words line and AI line. The parts carry no chip of their own; the tuple's chip covers them.
 
 ### Who-Decides Chip
-A 13px label in a 1px 6px-radius outline. The words, from the template's rule for the argument, include: 你填 (a card amount; Ink text, Ink 2 outline, 590), 你選 (a card choice such as a market or vault; same style), 程式算 (a value a computed card field bounds, which `card new` reads; same style as 固定), 固定 (a value the template fixes; Ink 3 on Strong Hairline), and app 填，不限 (an argument left free and tested by perturbation; Attention Amber text and outline). A chip may name the card field after a colon, by its word (你填：金額, 你選：市場).
+A 13px label in a 1px 6px-radius outline. The words, from the template's rule for the argument, include: 你填 (a card amount; Ink text, Ink 2 outline, 590), 你選 (a card choice such as a market or vault; same style), 程式算 (a value a computed card field bounds, which `card new` reads; same style as 固定), 固定 (a value the template fixes; Ink 3 on Strong Hairline), app 填，不限 (an argument left free and tested by perturbation; Attention Amber text and outline), and app 填，有上限 (a `withinSeconds` argument the app fills and the template bounds; the same amber style). A chip may name the card field after a colon, by its word (你填：金額, 你選：市場).
 
-### Program / AI Tags
-12px label in a 1px 6px-radius outline. Program: solid Strong Hairline outline, Ink 3 text. AI: dashed Ink 3 outline, Ink 2 text, reading "AI 研究" plus the AI's own conclusion when given.
+### AI Tag
+12px label in a 1px dashed Ink 3 6px-radius outline, Ink 2 text, reading "AI 研究", "AI" on an argument's AI line, or "AI 研究：可以用" / "AI 研究：要小心" on the verdict line. The program's results carry no tag.
 
 ### Sequence Diagram
-Inline SVG in a Sunk Graphite frame with a Hairline border. Participants are 44px-tall 6px-radius nodes (Row Hover fill, Strong Hairline stroke) with a 590 14px name and a 12.5px Ink 3 role, each dropping a dotted lifeline (2 4). Arrows: solid 1.4px Ink with a filled head for a call the Safe sends, numbered in mono Ink 3 with the function name in 14px mono; dashed 1.2px Ink 3 (4 4) for what a contract does internally, captioned in 14px Ink 2, where a function or argument name the AI wrote between backticks sits in 13px mono Ink on its own 6px-radius Row Hover box, like inline code in prose with a Strong Hairline stroke, each part placed at its own x so the caption ends inside the frame; one solid 1.4px Pass Green arrow back to the Safe with a 590 green caption for what the Safe receives. The SVG carries a `<title>` and a `<desc>` that narrates the calls in words.
+Inline SVG in a Sunk Graphite frame with a Hairline border. Participants are 44px-tall 6px-radius nodes (Row Hover fill, Strong Hairline stroke) with a 590 14px name and a 12.5px Ink 3 role, each dropping a dotted lifeline (2 4). Arrows: solid 1.4px Ink with a filled head for a call the Safe sends, numbered in mono Ink 3 with the function name in 14px mono; dashed 1.2px Ink 3 (4 4) for what a contract does internally that no call trace confirmed, solid Ink 2 for an internal call the template binds or a call trace saw (see Shapes), captioned in 14px Ink 2, where a function or argument name the AI wrote between backticks sits in 13px mono Ink on its own 6px-radius Row Hover box, like inline code in prose with a Strong Hairline stroke, each part placed at its own x so the caption ends inside the frame; one solid 1.4px Pass Green arrow back to the Safe with a 590 green caption for what the Safe receives. The SVG carries a `<title>` and a `<desc>` that narrates the calls in words.
 
 ### Bar Chart
 Inline SVG in the Sequence Diagram's frame, 660 wide at least and scrolling inside the frame on a narrow screen. One bar per reading, oldest first, on a Strong Hairline baseline: Strong Hairline fill, the latest in Ink 2; a reading with no amount is a dashed Ink 3 stub. Month labels and the year at the first bar and each January sit under it in 12px Ink 3, and the largest reading in 12px Ink 3 at the top left. Colour marks no state here. Each bar carries a `<title>` with its date and amount, the SVG a `<title>` and a `<desc>`, and the readings follow as rows in a fold.
@@ -266,10 +263,10 @@ Inline SVG in the Sequence Diagram's frame, 660 wide at least and scrolling insi
 A `<nav>` in the left column, sticky 32px from the top: a 13px 590 Ink 3 "目錄", then an ordered list behind a 1px Hairline left rule, one 14px Ink 2 link per section, each 6px tall padding and 14px from the rule. A count sits right-aligned in Ink 3 (such as 2 個呼叫 or 6), and 待確認 shows its state icon with its count. Hover lightens the link to Ink and draws its piece of the rule in Ink 2. At 1040px and below the rail hides, and the same list folds under the verdict as a `<details>` named 目錄, laid out as a grid of 150px columns. Sections carry `scroll-margin-top` so a jump lands below the top edge.
 
 ### Folds
-`<details>` with a hidden marker, a chevron and Ink 2 15px summary text that lightens to Ink on hover. Used only for things that passed or ran automatically, and for the numbers a chart already draws.
+`<details>` with a hidden marker, a chevron and Ink 2 15px summary text that lightens to Ink on hover. Used only for things that passed or ran automatically, for the numbers a chart already draws, and for 過去交易's 其他做法, the past transactions of other shapes, which are context, not results.
 
 ### Signing Steps
-An ordered list of hairline rows with a mono Ink 3 counter ("1."), inline code for commands and expected output, and a two-column hash grid (Ink 3 name, Ink 2 value).
+An ordered list of hairline rows with a mono Ink 3 counter ("1."), each command in a copyable block of its own under the step's sentence, and a two-column hash grid (Ink 3 name, Ink 2 value).
 
 ## Do's and Don'ts
 
@@ -278,7 +275,7 @@ An ordered list of hairline rows with a mono Ink 3 counter ("1."), inline code f
 - **Do** let icon shape carry state (filled check, ring with !, filled cross, dashed ring) and keep colour to state alone.
 - **Do** separate content with 1px hairline rows; use Strong Hairline only for section tops and outlines.
 - **Do** print every address and hash whole, in 14px mono, breakable anywhere.
-- **Do** say who decides each argument in the signer's words: 你填, 你選, 程式算, 固定, app 填，不限.
+- **Do** say who decides each argument in the signer's words: 你填, 你選, 程式算, 固定, app 填，不限, app 填，有上限.
 - **Do** keep check explanations behind an info tooltip and keep section titles to one or two words.
 - **Do** list exceptions open and fold passes.
 - **Do** keep the whole system to one inline stylesheet and inline SVG symbols.
