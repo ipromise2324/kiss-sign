@@ -11,8 +11,7 @@ import type { NotesScope } from '../src/research/notes.ts';
 import type { ProtocolFacts } from '../src/research/protocol-facts.ts';
 import { entriesOf, loadReport } from '../src/research/report.ts';
 import type { ReportInputs } from '../src/research/report.ts';
-import { loadTemplate } from '../src/template/template.ts';
-import { vaultReportDir } from '../src/template/vault-reports.ts';
+import { TEMPLATES_DIR, loadTemplate } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -281,7 +280,7 @@ test("a vault's notes join the template's: its verdict, judgments after the shar
 
 test("a vault's report is in the languages both notes hold: a zh-TW-only vault under a bilingual template gets a zh-TW page alone", () => {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
-  mkdirSync(join(root, vaultReportDir('fluid/vault-deposit', 'fluid-fusdt')), { recursive: true });
+  mkdirSync(join(root, TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt'), { recursive: true });
   const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
   const write = (shared: unknown, vault: unknown) => {
     writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit')), JSON.stringify(shared));
@@ -337,7 +336,7 @@ test("a vault's notes review and describe only the vault and the entries its att
 
 test("a vault's notes may also describe the entries its attributes name, such as its asset, and no other", () => {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-notes-'));
-  mkdirSync(join(root, vaultReportDir('fluid/vault-deposit', 'fluid-fusdt')), { recursive: true });
+  mkdirSync(join(root, TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt'), { recursive: true });
   writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit')), JSON.stringify(SHARED));
   const write = (entries: unknown) => writeFileSync(join(root, notesPath(root, 'fluid/vault-deposit', 'fluid-fusdt')), JSON.stringify({ entries }));
   const fusdt = registry.entries.get('fluid-fusdt') ?? assert.fail('fluid-fusdt');
@@ -367,9 +366,14 @@ test("a template's flow line that names the vault or its asset is refused, since
 });
 
 test("--compare names a vault's notes.json too", () => {
-  assert.deepEqual(notesChanges(['templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json', 'templates/morpho/vault-deposit/vaults/x/report.generated.html']), [
-    'templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json',
-  ]);
+  assert.deepEqual(
+    notesChanges([
+      'templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json',
+      'templates/morpho/vault-deposit/vaults/x/report.generated.html',
+      'templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json',
+    ]),
+    ['templates/morpho/vault-deposit/vaults/steakhouse-prime-usdc-v2-0f51/notes.json', 'templates/morpho/vault-deposit/instances/hyperithm-usdc-apex-v2-9e2f/notes.json'],
+  );
 });
 
 test('field keys walk every argument, tuple part, array item and nested call of the template', () => {

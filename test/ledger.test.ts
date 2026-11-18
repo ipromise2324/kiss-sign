@@ -246,7 +246,7 @@ function inputsOf(change: Partial<Setup>): ReportInputs {
       s.reachedThrough !== undefined
         ? { kind: 'vault', vault: s.reachedThrough }
         : s.documented
-          ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, publisher: s.docPublisher ?? s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }] }
+          ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, publisher: s.docPublisher ?? s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }], dir: 'templates/test/op' }
           : { kind: 'vault', vault: s.entry },
     registry,
     listings: {
