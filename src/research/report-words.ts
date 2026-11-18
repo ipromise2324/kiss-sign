@@ -101,7 +101,7 @@ const ZH = {
   confirmed: (places: readonly string[], enough: boolean): string => (places.length === 0 ? '沒有任何地方確認' : `${enough ? '在' : '只在'} ${places.length} 個地方確認：${places.join('、')}`),
   addressConfirmed: (name: string, confirmed: string): string => `${name}：地址${confirmed}`,
   fewConfirmationsWhy: (min: number): string =>
-    `至少要 ${min} 個地方列出同一個地址：官方頁、官方 GitHub 檔案（算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。`,
+    `至少要 ${min} 個地方列出同一個地址：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。`,
 
   finding: {
     'site-differs': { title: '網站跟 DefiLlama 列的不同', why: '這個頁面的網域或 GitHub 組織，不是 DefiLlama 列給這個協議的。' },
@@ -481,7 +481,7 @@ const ZH = {
   allBound: (member: boolean): string =>
     `${member ? '交易裡不限的值只在簽的訂單裡，由雜湊鎖住，不換值測試。' : ''}模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。`,
   sourcesOk: (counted: number, min: number): string =>
-    `${counted === 1 ? '這個地址' : `${counted} 個地址都`}至少在 ${min} 個地方確認：官方頁、官方 GitHub 檔案（算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。`,
+    `${counted === 1 ? '這個地址' : `${counted} 個地址都`}至少在 ${min} 個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。`,
   sourcesSome: (failed: number, passed: number, min: number): string =>
     `${failed} 個地址有結果要你看，見「待確認」。${passed === 0 ? '' : passed === 1 ? `另外那個地址至少在 ${min} 個地方確認。` : `其餘 ${passed} 個都至少在 ${min} 個地方確認。`}`,
   abiExplain: (notCalled: readonly string[], unprovable: readonly string[]): string =>
@@ -579,7 +579,7 @@ const ZH = {
   compareHashesWhat: 'domain hash 和 message hash，都是 0x 開頭 64 個字元',
   automatic: '程式每次簽名自動做的事',
   addressRule:
-    '每個地址至少要在兩個地方確認：官方頁、官方 GitHub 檔案（算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。',
+    '每個地址至少要在兩個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。',
   addressRuleLabel: '信心等級說明',
   descriptors: 'ERC-7730 描述檔',
   addressCount: (n: string): string => `${n} 個`,
@@ -662,7 +662,7 @@ const EN: Words = {
     places.length === 0 ? 'Confirmed nowhere' : `Confirmed in ${enough ? '' : 'only '}${places.length} ${plural(places.length, 'place', 'places')}: ${places.join(', ')}`,
   addressConfirmed: (name, confirmed) => `${name}: address ${confirmed.charAt(0).toLowerCase()}${confirmed.slice(1)}`,
   fewConfirmationsWhy: (min) =>
-    `At least ${min} places must list the same address: the official page, the official GitHub file (which counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.`,
+    `At least ${min} places must list the same address: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package, or the same deployer as another confirmed contract. A page whose URL holds the address does not count: it would only echo the URL.`,
 
   finding: {
     'site-differs': { title: 'site differs from the one DefiLlama lists', why: "This page's domain or GitHub organization is not one DefiLlama lists for this protocol." },
@@ -1072,7 +1072,7 @@ const EN: Words = {
   allBound: (member) =>
     `${member ? 'The only values that may be anything are in the signed order, locked by its hash, and they are not perturbed. ' : ''}The template has no argument that takes any value: each is bound to the card or to a fixed value, so nothing needs a perturbation test and none is recorded. At each signing, verify changes every bound argument one by one and checks that each becomes a MISMATCH.`,
   sourcesOk: (counted, min) =>
-    `${counted === 1 ? 'This address is' : `All ${counted} addresses are`} confirmed in at least ${min} places: the official page, the official GitHub file (which counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.`,
+    `${counted === 1 ? 'This address is' : `All ${counted} addresses are`} confirmed in at least ${min} places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.`,
   sourcesSome: (failed, passed, min) =>
     `${failed} ${plural(failed, 'address has', 'addresses have')} results for you to review; see "To review".${
       passed === 0 ? '' : passed === 1 ? ` The other address is confirmed in at least ${min} places.` : ` The other ${passed} are all confirmed in at least ${min} places.`
@@ -1174,7 +1174,7 @@ const EN: Words = {
   compareHashesWhat: 'the domain hash and the message hash, each 0x followed by 64 characters',
   automatic: 'What the program does at each signing',
   addressRule:
-    "Each address must be confirmed in at least two places: the official page, the official GitHub file (which counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked \"–\" had nothing to compare: it does not count as a confirmation, but it is not a problem; a \"site\" line under a source marked \"–\" does not change whether that source counts. What the AI also checked does not change the confidence.",
+    "Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked \"–\" had nothing to compare: it does not count as a confirmation, but it is not a problem; a \"site\" line under a source marked \"–\" does not change whether that source counts. What the AI also checked does not change the confidence.",
   addressRuleLabel: 'About confidence',
   descriptors: 'ERC-7730 descriptors',
   addressCount: (n) => n,
