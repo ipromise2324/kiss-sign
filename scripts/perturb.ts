@@ -13,7 +13,7 @@ import { parseServiceTx } from '../src/safe/parse.ts';
 import type { Hex } from '../src/safe/types.ts';
 import { endsNeeded, expectedChanges, viewCalls } from '../src/simulate/effects.ts';
 import { simulateSafeTx } from '../src/simulate/simulate.ts';
-import { checkPerturbations, executedOn } from '../src/template/perturb.ts';
+import { checkPerturbations, checkRecordedBlocks, executedOn, serviceExecution } from '../src/template/perturb.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import { recordingText } from '../src/chain/bytecode.ts';
 
@@ -89,6 +89,7 @@ if (flags.record !== undefined) {
     parent: { number: parent.number.toString(), hash: parent.hash },
     exchanges: recorder.exchanges().filter((e) => reader.providers.every((p) => p in e.answers || p in (e.errors ?? {}))),
   };
+  checkRecordedBlocks(out, recording, serviceExecution(fixture.service));
   mkdirSync(join(out, '..'), { recursive: true });
   writeFileSync(out, recordingText(recording, 2));
   console.log(`wrote ${out}: ${recording.exchanges.length} requests`);

@@ -74,6 +74,7 @@ function section(facts: ProtocolFacts | undefined): string {
       instances: undefined,
       erc7730: { text: 'not read', reports: [] },
       facts,
+      fixtures: [],
     },
     { command: 'test', sources: [] },
   );

@@ -39,6 +39,125 @@ function changedOnDisk(dir: string, rev: string): string[] {
   return [...tree.filter(({ path }) => !existsSync(join(dir, path))).map(({ path }) => path), ...present.filter(({ blob }, i) => hashes[i] !== blob).map(({ path }) => path)].sort();
 }
 
+/** One call of `test`, `it`, `describe` or `suite` whose title is a literal, and whether it is skipped. */
+type TestCall = { readonly title: string; readonly skipped: boolean };
+type Token = { readonly kind: 'name' | 'string' | 'punct'; readonly text: string };
+
+const REGEX_AFTER = new Set(['return', 'typeof', 'case', 'do', 'else', 'in', 'of', 'new', 'delete', 'void', 'throw', 'instanceof', 'yield', 'await']);
+
+/** The tokens of a TypeScript source that matter for finding test calls, with comments dropped and each string, template and regular expression one token. */
+function tokens(source: string): Token[] {
+  const out: Token[] = [];
+  let i = 0;
+  const quoted = (quote: string) => {
+    const start = i++;
+    while (i < source.length && source[i] !== quote && source[i] !== '\n') i += source[i] === '\\' ? 2 : 1;
+    i++;
+    return source.slice(start, i);
+  };
+  const template = () => {
+    const start = i++;
+    while (i < source.length && source[i] !== '`') {
+      if (source[i] === '\\') i += 2;
+      else if (source.startsWith('${', i)) {
+        i += 2;
+        const before = out.length;
+        for (let depth = 0; i < source.length && !(depth === 0 && source[i] === '}'); ) {
+          const count = out.length;
+          step();
+          const text = out.length > count ? out.at(-1)!.text : '';
+          depth += text === '{' ? 1 : text === '}' ? -1 : 0;
+        }
+        out.splice(before);
+        i++;
+      } else i++;
+    }
+    i++;
+    return source.slice(start, i);
+  };
+  const regex = () => {
+    let inClass = false;
+    for (i++; i < source.length && (inClass || source[i] !== '/') && source[i] !== '\n'; i++) {
+      if (source[i] === '\\') i++;
+      else if (source[i] === '[') inClass = true;
+      else if (source[i] === ']') inClass = false;
+    }
+    for (i++; /[a-z]/.test(source[i] ?? ''); ) i++;
+  };
+  function step(): void {
+    const c = source[i]!;
+    const last = out.at(-1);
+    if (/\s/.test(c)) i++;
+    else if (source.startsWith('//', i)) i = source.includes('\n', i) ? source.indexOf('\n', i) : source.length;
+    else if (source.startsWith('/*', i)) i = source.includes('*/', i + 2) ? source.indexOf('*/', i + 2) + 2 : source.length;
+    else if (c === "'" || c === '"') out.push({ kind: 'string', text: quoted(c) });
+    else if (c === '`') out.push({ kind: 'string', text: template() });
+    else if (c === '/' && (last === undefined || (last.kind === 'punct' && !')]}'.includes(last.text)) || (last.kind === 'name' && REGEX_AFTER.has(last.text)))) regex();
+    else if (/[\w$]/.test(c)) {
+      const start = i;
+      while (/[\w$]/.test(source[i] ?? '')) i++;
+      out.push({ kind: 'name', text: source.slice(start, i) });
+    } else if (c === '!' && /[\w$)\]]/.test(source[i - 1] ?? '')) out.push({ kind: 'name', text: source[i++]! });
+    else out.push({ kind: 'punct', text: source[i++]! });
+  }
+  while (i < source.length) step();
+  return out;
+}
+
+const TEST_NAMES = ['test', 'it', 'describe', 'suite'];
+const SKIPS = ['skip', 'todo'];
+
+/**
+ * Every test call in a source, read as text: nothing of the branch runs. A call is skipped when it is `.skip` or `.todo`, names `skip`
+ * or `todo` as an option key, calls `t.skip()` or `t.todo()` in its own body, or sits inside a skipped call.
+ */
+function testCalls(source: string): TestCall[] {
+  const all = tokens(source);
+  const calls = all.flatMap((token, at) => {
+    if (token.kind !== 'name' || !TEST_NAMES.includes(token.text) || all[at - 1]?.text === '.') return [];
+    const member = all[at + 1]?.text === '.' && all[at + 2]?.kind === 'name' ? all[at + 2]!.text : undefined;
+    const open = member === undefined ? at + 1 : at + 3;
+    const title = all[open + 1];
+    if (all[open]?.text !== '(' || title?.kind !== 'string') return [];
+    let end = open;
+    let own = SKIPS.includes(member ?? '');
+    for (let parens = 0, braces = 0; end < all.length; end++) {
+      const { kind, text } = all[end]!;
+      parens += text === '(' ? 1 : text === ')' ? -1 : 0;
+      braces += text === '{' ? 1 : text === '}' ? -1 : 0;
+      if (parens === 0) break;
+      const before = all[end - 1]?.text;
+      const owner = all[end - 2];
+      const option = (before === '{' || before === ',') && [':', ',', '}'].includes(all[end + 1]?.text ?? '');
+      const selfCall = before === '.' && all[end + 1]?.text === '(' && owner?.kind === 'name' && !TEST_NAMES.includes(owner.text);
+      if (kind === 'name' && SKIPS.includes(text) && parens === 1 && braces <= 1 && (option || selfCall)) own = true;
+    }
+    const literal = title.text.slice(1, -1);
+    return [{ title: title.text[0] === '`' ? literal : literal.replace(/\\(['"])/g, '$1'), own, start: at, end }];
+  });
+  return calls.map(({ title, own, start, end }) => ({ title, skipped: own || calls.some((outer) => outer.own && outer.start < start && end <= outer.end) }));
+}
+
+/** The test files under test/ at a commit, each with its test calls, read from git's objects. */
+function testsAt(rev: string): Map<string, TestCall[]> {
+  const files = git(root, 'ls-tree', '-r', '-z', '--name-only', rev, '--', 'test/').split('\0').filter((path) => path.endsWith('.test.ts'));
+  return new Map(files.map((path) => [path, testCalls(git(root, 'show', `${rev}:${path}`))]));
+}
+
+/** Each test origin/main runs that the branch no longer runs in the same file as often, as `file: removed|skipped: title`. */
+function droppedTests(base: string, branch: string): string[] {
+  const after = testsAt(branch);
+  return [...testsAt(base)].flatMap(([path, calls]) => {
+    const later = after.get(path) ?? [];
+    const running = (list: readonly TestCall[], title: string) => list.filter((call) => call.title === title && !call.skipped).length;
+    return [...new Set(calls.map(({ title }) => title))].flatMap((title) => {
+      const missing = running(calls, title) - running(later, title);
+      const how = later.some((call) => call.title === title && call.skipped) ? 'skipped' : 'removed';
+      return Array.from({ length: Math.max(0, missing) }, () => `${path}: ${how}: ${title}`);
+    });
+  });
+}
+
 const head = git(root, 'rev-parse', 'HEAD').trim();
 const main = (() => {
   try {
@@ -75,11 +194,16 @@ for (const line of listed(verdict)) say(line);
 say(split.other.length === 0 ? 'other program files changed: none' : `other program files changed (${split.other.length}):`);
 for (const line of listed(split.other)) say(line);
 
+const dropped = droppedTests(main, sha);
+const refused = verdict.length > 0 && dropped.length > 0;
 const refusals = [
   ...(split.data.length > 0 ? [`it changes templates/ or registry/, which only the signer merges: ${split.data.join(', ')}`] : []),
   ...(split.gate.length > 0 ? [`it changes the program gate (${CANARY_LIST} and the code that enforces it), which only the signer merges: ${split.gate.join(', ')}`] : []),
+  ...(refused ? ['it changes the verdict core and drops tests origin/main runs; rename, move or remove a test in a pull request that leaves the core alone, which the signer merges:'] : []),
+  ...(dropped.length > 0 && !refused ? ['it drops tests origin/main runs, which only the signer merges:'] : []),
+  ...listed(dropped),
 ];
-if (refusals.length > 0) notEligible(refusals, 3);
+if (refusals.length > 0) notEligible(refusals, refused ? 1 : 3);
 
 const canaries = parseCanaryList(readFileSync(join(root, CANARY_LIST), 'utf8'));
 const work = mkdtempSync(join(tmpdir(), 'kiss-sign-program-gate-'));
