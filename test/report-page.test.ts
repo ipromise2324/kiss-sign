@@ -433,6 +433,13 @@ test('the green arrow for shares the Safe gets starts at the vault, on a lifelin
   assert.deepEqual(gets, ['hyperithm-usdc-apex-v2-9e2f']);
 });
 
+test('a share price bounded by the computed fewest shares is labelled computed, by that field, not typed', () => {
+  const nested = (row: ArgRow): ArgRow[] => [row, ...row.parts.flatMap((part) => part.rows).flatMap(nested)];
+  const price = args(depositPage).flatMap(nested).find((row) => row.name === 'maxSharePriceE27') ?? assert.fail('no maxSharePriceE27 row');
+  assert.deepEqual(price.chips, [{ who: 'computed', label: '程式算：最少收到的數量' }]);
+  assert.ok(body(depositPage, 'flow').flow.key.some((k) => k.label === '程式算'), 'the key names the computed label');
+});
+
 test('the protocol block holds the recorded facts and the market reading with its ratio', () => {
   const { block } = body(pageOf(inputs), 'protocol');
   const row = (label: string) => block.rows.find((r) => r.label === label) ?? assert.fail(`no ${label} row`);
