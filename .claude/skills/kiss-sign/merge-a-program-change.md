@@ -3,7 +3,7 @@
 How to do [Merge a program change](SKILL.md#merge-a-program-change): the only pull requests you merge yourself.
 The rules are in [The program gate](../../../docs/design/program-ownership.md#the-program-gate).
 
-A program pull request changes no file under `templates/` or `registry/` and no file of the program gate.
+A program pull request changes no hand-written file under `templates/` or `registry/` and no file of the program gate; it may render an existing generated report again, but never add or delete one.
 The signer does not read its code, so merge only after all of these, in order:
 
 1. Push the branch and open the pull request to the signer's fork.
@@ -14,7 +14,7 @@ The signer does not read its code, so merge only after all of these, in order:
    `NOT ELIGIBLE` names why.
    Exit 3 means the branch changes a template, the registry or a gate file, or drops a test with no verdict core change.
    When it also changes the verdict core, split it: the core change in a pull request of its own, the rest handed to the signer; otherwise hand that pull request to the signer.
-   Exit 1 means a check failed, the clone is not exactly `origin/main`, or the branch does not hold it or cannot be compared: fix it.
+   Exit 1 means a check failed, the clone is not exactly `origin/main`, the branch does not hold it or cannot be compared, or it changes the verdict core and drops a test, which you split into two pull requests: fix it.
    Exit 2 means a wrong argument.
 3. Require the pull request's `program-gate` CI job to pass and its log to end with an `ELIGIBLE` line that names the same commit sha.
    The two lines differ in the branch name (CI judges `pull/head`), so compare the sha, never the whole line.

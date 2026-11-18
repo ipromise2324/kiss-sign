@@ -14,7 +14,8 @@ origin/main, such as pnpm program-gate origin/my-branch; it refuses to run anywh
 the one commit the branch names, which must hold origin/main, and prints the verdict core files and
 the other program files the branch changes.
 Without running the branch's code it stops at NOT ELIGIBLE, naming each file or test, when the
-branch changes a hand-written file under templates/ or registry/ or a gate file, or drops a test
+branch changes a hand-written file under templates/ or registry/, adds or deletes a generated report
+there, changes a gate file, or drops a test
 origin/main runs (a literal test, it, describe or suite title deleted, renamed, moved to another
 file, commented out, or skipped). Otherwise it checks the branch out into a temporary worktree and
 runs the typecheck, each canary of main's docs/canaries.txt with what it guards and its counts, and
