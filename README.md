@@ -174,7 +174,7 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 | Attack | Stopped by |
 |---|---|
 | The Transaction Service gives `verify` the attacker's transaction, as at Bybit | `verify` checks it against your card: `MISMATCH` |
-| The Transaction Service gives `verify` the transaction you meant, but your wallet is asked to sign another | You compare the hashes on your wallet with `verify`'s page: they differ |
+| The Transaction Service gives `verify` the transaction you meant, but your wallet is asked to sign another | You compare the hashes on your wallet with `verify`'s page: they differ. The attacker also needs the web app, which decides what your wallet is asked to sign |
 
 ### The RPC providers
 
@@ -183,7 +183,7 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 | Attack | Stopped by |
 |---|---|
 | One provider gives a false answer, or none | `verify` compares the two answers: they differ, `UNVERIFIABLE` |
-| Both give the same false answer, such as a simulation that hides your funds going elsewhere | The Safe web app's own simulation, run by Tenderly rather than these two providers, may still show your funds going elsewhere, if the web app itself is not compromised |
+| Both give the same false answer, such as a simulation that hides your funds going elsewhere | The attacker needs both companies at once, and a bad transaction must still reach your Safe. The Safe web app's own simulation, run by Tenderly rather than these two providers, may still show your funds going elsewhere, if the web app itself is not compromised |
 
 ### Fake sites and listings
 
@@ -191,8 +191,8 @@ Your AI finds each contract's address on the web, so a fake page can mislead it.
 
 | Attack | Stopped by |
 |---|---|
-| The AI uses a fake site | A program, not the AI, compares the site with those the protocol's listings name, on DefiLlama, CoinGecko, its bug bounty and GitHub: not among them, flagged for you |
-| The AI uses a wrong address | The address must be found in two places, such as the protocol's site, CoinGecko, the factory, the bug bounty or the SDK: fewer, flagged for you |
+| The AI uses a fake site | A program, not the AI, compares the site with those the protocol's listings name, on DefiLlama, CoinGecko, its bug bounty and GitHub: not among them, flagged for you. To pass, the fake site must be listed there too |
+| The AI uses a wrong address | The address must be found in two places, such as the protocol's site, CoinGecko, the factory, the bug bounty or the SDK: fewer, flagged for you. To pass, the wrong address must be planted in two of them |
 
 On the hardened tier, `check.sh` also marks every address not in your own list as unknown.
 
