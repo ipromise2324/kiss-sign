@@ -30,7 +30,7 @@ Rules: docs/design/flow.md, "First time an operation is done: build its template
 Establish the ABI, for solc; step 2, ERC-7730); docs/design/engine-and-chain.md, "Research
 services".`;
 
-exitOnHelp(HELP);
+exitOnHelp(HELP, process.argv.slice(2).filter((arg) => !isVendoredKind(arg)));
 
 const { values, positionals } = parseArgs({ options: { missing: { type: 'boolean' } }, allowPositionals: true });
 const kinds = positionals.filter(isVendoredKind);
