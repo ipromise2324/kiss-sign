@@ -510,7 +510,18 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>過去交易</h2><p class="lead">這個操作沒有研究過去交易。</p>
+  <h2>過去交易</h2>
+  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">0</span> 筆。</p>
+  <p class="intro"><span class="aiw" data-ai><span>取樣窗口沒找到生效的上限提高。AI 另查 Etherscan，這個 vault 這一年有 6 筆，一天長的窗口抓不到這麼少的交易。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 kpk-usdc-prime-v2-9ee6 的IncreaseAbsoluteCap，找到 0 筆，研究 0 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-vault-v2-adapter-cap-accept-kpk-usdc-prime-v2-9ee6.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">0</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
+  </div>
+  </details>
 </section>
 
 <section id="next">
@@ -552,7 +563,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report morpho/vault-v2-adapter-cap-accept --instance-of kpk-usdc-prime-v2-9ee6 --record</code> 從 <code>templates/morpho/vault-v2-adapter-cap-accept/template.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/docs.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-vault-v2-adapter-cap-accept/kpk-usdc-prime-v2-9ee6.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/notes.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report morpho/vault-v2-adapter-cap-accept --instance-of kpk-usdc-prime-v2-9ee6 --record</code> 從 <code>templates/morpho/vault-v2-adapter-cap-accept/template.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/docs.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/morpho-vault-v2-adapter-cap-accept/kpk-usdc-prime-v2-9ee6.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-vault-v2-adapter-cap-accept-kpk-usdc-prime-v2-9ee6.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/notes.json</code>、<code>templates/morpho/vault-v2-adapter-cap-accept/instances/kpk-usdc-prime-v2-9ee6/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>

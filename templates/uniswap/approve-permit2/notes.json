@@ -14,6 +14,10 @@
       "zh-TW": "無上限授權給 Permit2 會留著；只有 Safe 另外在 Permit2 授權過的合約能用。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "The anchor is every USDC approval, so most misfits approve other spenders. A few EOAs gave Permit2 an exact amount or 0. The one Safe misfit approved general-adapter-1 for a Morpho deposit.",
+    "zh-TW": "錨點是所有 USDC 授權，所以不合的多是授權給別的 spender；少數 EOA 給 Permit2 的是固定數量或 0。唯一不合的 Safe 是授權 general-adapter-1 做 Morpho 存款。"
+  },
   "flow": [],
   "protocols": {},
   "judgments": [

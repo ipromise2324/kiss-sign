@@ -6,6 +6,10 @@
       "zh-TW": "可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "The windows found no accepted cap increase. AI's own Etherscan query found 6 such transactions by this vault in the year, too few for one-day windows to catch.",
+    "zh-TW": "取樣窗口沒找到生效的上限提高。AI 另查 Etherscan，這個 vault 這一年有 6 筆，一天長的窗口抓不到這麼少的交易。"
+  },
   "judgments": [
     {
       "text": {

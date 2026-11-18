@@ -6,6 +6,10 @@
       "zh-TW": "可以用。CoinGecko 和工廠都確認這個 vault；待確認是只有 Morpho API 列出的 oracle，AI 在鏈上查過。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "The windows found no submission by this vault. AI's own Etherscan query found 16 submission transactions in the year, too few for one-day windows to catch.",
+    "zh-TW": "取樣窗口沒找到這個 vault 的提交。AI 另查 Etherscan，這一年有 16 筆提交交易，一天長的窗口抓不到這麼少的交易。"
+  },
   "judgments": [
     {
       "text": {

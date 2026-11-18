@@ -14,6 +14,10 @@
       "zh-TW": "兌換本身有綁住；但 Permit2 授權是事先另外簽的訊息，kiss-sign 不檢查那一步。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "EOA swaps that do not fit took routes the app picks: a v3 or v2 pool, a split route, or an extra `SWEEP` or `UNWRAP_WETH` step. The sample holds no Safe doing this swap.",
+    "zh-TW": "不合的 EOA 兌換走的是 app 選的其他路線：v3 或 v2 池子、拆成多段，或多一步 `SWEEP`、`UNWRAP_WETH`。取樣裡沒有 Safe 做這種兌換。"
+  },
   "flow": [],
   "protocols": {
     "uniswap-v4": {
@@ -76,7 +80,30 @@
       }
     }
   ],
-  "reviews": {},
+  "reviews": {
+    "trace.1.permit2.usdt.transferFrom": {
+      "status": "confirmed",
+      "text": {
+        "en": "AI read the trace of 0xf89f9bed4553e10953b49e02b1924707f30a73859822c75a40651015716dd500: the router calls Permit2 `transferFrom` for the `SETTLE` step (Permit2Payments.permit2TransferFrom in the router's verified source), and Permit2 moves USDT from the sender to the v4 PoolManager 0x000000000004444c5dC75cB358380D2e3dE08A90, the sold amount.",
+        "zh-TW": "AI 讀了 0xf89f9bed4553e10953b49e02b1924707f30a73859822c75a40651015716dd500 的追蹤：router 為 `SETTLE` 呼叫 Permit2 的 `transferFrom`（router 驗證原始碼的 Permit2Payments.permit2TransferFrom），Permit2 把賣出的 USDT 從發送者轉到 v4 PoolManager 0x000000000004444c5dC75cB358380D2e3dE08A90。"
+      },
+      "recommendation": {
+        "en": "Nothing to do: this is the sold token paid to the pool; the effects check at signing bounds what the Safe gives.",
+        "zh-TW": "不用處理：這是賣出的代幣付給池子；簽署時的效果檢查會限制 Safe 付出多少。"
+      }
+    },
+    "trace.1.other.usdc.transfer": {
+      "status": "confirmed",
+      "text": {
+        "en": "AI read the same trace: the v4 PoolManager 0x000000000004444c5dC75cB358380D2e3dE08A90, outside the registry, calls USDC `transfer` to the sender for the `TAKE` step after the router calls its `take`. This is the bought token paid out.",
+        "zh-TW": "AI 讀了同一筆追蹤：不在登記表裡的 v4 PoolManager 0x000000000004444c5dC75cB358380D2e3dE08A90，在 router 呼叫它的 `take` 後，為 `TAKE` 步驟對發送者呼叫 USDC `transfer`，這是買到的代幣。"
+      },
+      "recommendation": {
+        "en": "Nothing to do: the effects check at signing requires the Safe to receive at least the card's minimum.",
+        "zh-TW": "不用處理：簽署時的效果檢查要求 Safe 至少收到卡片上的最低數量。"
+      }
+    }
+  },
   "entries": {
     "usdc": {
       "role": {

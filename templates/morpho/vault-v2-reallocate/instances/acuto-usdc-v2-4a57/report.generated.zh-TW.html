@@ -695,7 +695,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>過去交易</h2><p class="lead">這個操作沒有研究過去交易。</p>
+  <h2>過去交易</h2>
+  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">0</span> 筆；形狀一樣、但用的是 registry 外的市場的有 <span class="num">1</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀不同的有 <span class="num">1</span> 筆，列在其他做法。它成功執行：它是從 acuto-usdc-v2-4a57 Deallocate時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。形狀一樣的最近 1 筆：<a href="https://etherscan.io/tx/0x0b23e1c0afbe544a6e0ac398c2512e968918db939a1447b0abe193def18d22dc">0x0b23e1c0…</a>。</p>
+  <p class="intro"><span class="aiw" data-ai><span>Deallocate 事件多半來自提領，不是 curator。不合的 Safe 是把資金從市場移進 MorphoVaultV1Adapter 0x85f2582533B5583Cf2A0017A91589473C48aB958，不帶市場資料。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 acuto-usdc-v2-4a57 的Deallocate，找到 27 筆，研究 27 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/morpho-vault-v2-reallocate-acuto-usdc-v2-4a57.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">27</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">2</span> 筆用了這個操作的呼叫（2 個 Safe），<span class="num">0</span> 筆跟模板一模一樣，<span class="num">1</span> 筆形狀一樣、但用的是 registry 外的市場。</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div>形狀一樣，但 <code>marketParams</code> 用的是 registry 外的市場<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x0b23e1c0afbe544a6e0ac398c2512e968918db939a1447b0abe193def18d22dc">0x0b23e1c0…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.multicall.data[1].allocate.data.encoding</code> 的值跟模板不同：模板要 <span class="addr">market((address,address,address,address,uint256))</span>，交易是 <span class="addr">the heads run past the end</span><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x32af2b4ada61fe36b5021453176c01f9d9ac42463afd204b5b355158b64e5ee3">0x32af2b4a…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 25 筆是別的操作，不列入：<code>acuto-usdc-v2-4a57.redeem</code> 15 筆、<code>acuto-usdc-v2-4a57.withdraw</code> 8 筆、<code>0x76501733b2274674cB4e601fCA420230085572fa.0x0e19dc3a</code> 2 筆。</span></div>
+  </details>
 </section>
 
 <section id="next">
@@ -734,7 +750,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report morpho/vault-v2-reallocate --instance-of acuto-usdc-v2-4a57 --record</code> 從 <code>templates/morpho/vault-v2-reallocate/template.json</code>、<code>templates/morpho/vault-v2-reallocate/docs.json</code>、<code>templates/morpho/vault-v2-reallocate/instances/acuto-usdc-v2-4a57/docs.json</code>、<code>registry/contracts.json</code>、<code>registry/markets.json</code>、<code>testdata/report/morpho-vault-v2-reallocate/acuto-usdc-v2-4a57.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-reallocate/notes.json</code>、<code>templates/morpho/vault-v2-reallocate/instances/acuto-usdc-v2-4a57/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report morpho/vault-v2-reallocate --instance-of acuto-usdc-v2-4a57 --record</code> 從 <code>templates/morpho/vault-v2-reallocate/template.json</code>、<code>templates/morpho/vault-v2-reallocate/docs.json</code>、<code>templates/morpho/vault-v2-reallocate/instances/acuto-usdc-v2-4a57/docs.json</code>、<code>registry/contracts.json</code>、<code>registry/markets.json</code>、<code>testdata/report/morpho-vault-v2-reallocate/acuto-usdc-v2-4a57.json</code>、<code>testdata/abi</code>、<code>testdata/research/morpho-vault-v2-reallocate-acuto-usdc-v2-4a57.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/morpho/vault-v2-reallocate/notes.json</code>、<code>templates/morpho/vault-v2-reallocate/instances/acuto-usdc-v2-4a57/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>

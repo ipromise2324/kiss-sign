@@ -268,7 +268,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -286,12 +286,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">At each signing, the program checks that every contract the card uses still runs the code it was researched with. An upgrade or a replacement is stopped.</span></span></li>
     <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Parameter checks <span class="n num">1 / 1</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">The program changed every bound argument of 1 test transaction one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.</span></span></li>
+    <li data-state="warn" data-line="trace"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>Call traces <span class="n num">0 / 2</span>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">The program looks for each of the AI&#39;s flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; 0 of 2 passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Two providers
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">Every chain read asks two providers; when they disagree, there is no result.</span></span></li>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Every chain read asks two providers; when they disagree, there is no result.</span></span></li>
   </ul>
-  <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>The template binds the swap itself. But the Permit2 allowance is a message signed separately beforehand, and kiss-sign does not check that step.</span><span class="byai">AI research: be careful</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">Advice</span><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg><span class="aiw" data-ai><span>The template binds the swap itself. But the Permit2 allowance is a message signed separately beforehand, and kiss-sign does not check that step.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#flow">Flow <span class="cnt">1 call</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">To review <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">7</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
 
@@ -459,9 +461,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>To review <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></span></h2>
+  <h2>To review <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>key 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">The AI checked each item first and gives its advice.</p>
   <div class="rows">
+    <div class="row" data-state="warn" data-grade="key" data-result="trace.1.permit2.usdt.transferFrom">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t"><span class="lbl">key</span> Under call 1, permit2 → usdt <code>transferFrom</code>: a call inside moves money and nothing explains it</div>
+        <div class="meta">A call trace holds a token transfer, approval or ETH transfer that no call the template binds and no flow line explains. In 1 past transaction. Addresses outside the registry: 0x000000000004444c5dc75cB358380D2e3dE08A90.</div>
+        <div class="rec"><span class="lbl">AI confirmed</span><span class="aiw" data-ai><span>AI read the trace of 0xf89f9bed4553e10953b49e02b1924707f30a73859822c75a40651015716dd500: the router calls Permit2 <code>transferFrom</code> for the <code>SETTLE</code> step (Permit2Payments.permit2TransferFrom in the router&#39;s verified source), and Permit2 moves USDT from the sender to the v4 PoolManager 0x000000000004444c5dC75cB358380D2e3dE08A90, the sold amount.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Nothing to do: this is the sold token paid to the pool; the effects check at signing bounds what the Safe gives.</span><span class="byai">AI research</span></span></div></div>
+    </div>
+    <div class="row" data-state="warn" data-grade="key" data-result="trace.1.other.usdc.transfer">
+      <svg class="i warn" role="img" aria-label="attention"><use href="#warn"/></svg>
+      <div><div class="t"><span class="lbl">key</span> Under call 1, other → usdc <code>transfer</code>: a call inside moves money and nothing explains it</div>
+        <div class="meta">A call trace holds a token transfer, approval or ETH transfer that no call the template binds and no flow line explains. In 1 past transaction. Addresses outside the registry: 0x000000000004444c5dc75cB358380D2e3dE08A90.</div>
+        <div class="rec"><span class="lbl">AI confirmed</span><span class="aiw" data-ai><span>AI read the same trace: the v4 PoolManager 0x000000000004444c5dC75cB358380D2e3dE08A90, outside the registry, calls USDC <code>transfer</code> to the sender for the <code>TAKE</code> step after the router calls its <code>take</code>. This is the bought token paid out.</span><span class="byai">AI research</span></span></div>
+        <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Nothing to do: the effects check at signing requires the Safe to receive at least the card&#39;s minimum.</span><span class="byai">AI research</span></span></div></div>
+    </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>The Permit2 allowance this transaction uses is a Safe message (EIP-1271) that the Safe&#39;s signers signed beforehand, and kiss-sign does not check that step. The template binds the allowance&#39;s contents in the transaction, so a wrongly signed one makes the transaction fail. But an allowance you were tricked into signing for someone else can be used without this transaction.</span><span class="byai">AI research</span></span></div>
@@ -494,7 +510,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>Addresses <span class="c">7</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h2>Addresses <span class="c">7</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t7"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t7" role="tooltip">Each address must be confirmed in at least two places: the official page (a github.com file counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
   <div class="rows">
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>7 more addresses have no result for you to review</summary>
@@ -557,7 +573,55 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>Past transactions</h2><p class="lead">No past transactions were studied for this operation.</p>
+  <h2>Past transactions</h2>
+  <p class="lead">In past records, <span class="num">1</span> transaction matches the template exactly: Safe <span class="num">0</span>, EOA <span class="num">1</span> (1 address, each sending one call of the template); <span class="num">0</span> have the same shape but with an address outside the registry; <span class="num">10</span> have another shape, listed under Other ways. It succeeded: it was found through the Transfer records of permit2 Permit, and a failed transaction leaves no such record. The latest 1 exact match: <a href="https://etherscan.io/tx/0xf89f9bed4553e10953b49e02b1924707f30a73859822c75a40651015716dd500">0xf89f9bed…</a>.</p>
+  <p class="intro"><span class="aiw" data-ai><span>EOA swaps that do not fit took routes the app picks: a v3 or v2 pool, a split route, or an extra <code>SWEEP</code> or <code>UNWRAP_WETH</code> step. The sample holds no Safe doing this swap.</span><span class="byai">AI research</span></span></p>
+  <p class="lead">The values the fitting transactions set in each number the template leaves free: the smallest, the 50th, 90th and 99th percentile, and the largest. For a field the template declares a time, each is the value less the time of the block the transaction ran in, in seconds. This is evidence, not a rule.</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.expiration</code></span><span>EOA: value set</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">1794914659</span>, p50 <span class="num">1794914659</span>, p90 <span class="num">1794914659</span>, p99 <span class="num">1794914659</span>, max <span class="num">1794914659</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.nonce</code></span><span>EOA: value set</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">0</span>, p50 <span class="num">0</span>, p90 <span class="num">0</span>, p99 <span class="num">0</span>, max <span class="num">0</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.sigDeadline</code></span><span>EOA: value set</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">1792324459</span>, p50 <span class="num">1792324459</span>, p90 <span class="num">1792324459</span>, p99 <span class="num">1792324459</span>, max <span class="num">1792324459</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].fee</code></span><span>EOA: value set</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">7</span>, p50 <span class="num">7</span>, p90 <span class="num">7</span>, p99 <span class="num">7</span>, max <span class="num">7</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].tickSpacing</code></span><span>EOA: value set</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">1</span>, p50 <span class="num">1</span>, p90 <span class="num">1</span>, p99 <span class="num">1</span>, max <span class="num">1</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.deadline</code></span><span>EOA: value set</span></div>
+    <div class="pg"><span class="pc num">1</span><div><div class="pex">min <span class="num">1792324461</span>, p50 <span class="num">1792324461</span>, p90 <span class="num">1792324461</span>, p99 <span class="num">1792324461</span>, max <span class="num">1792324461</span></div></div></div>
+  </div>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Other ways</summary>
+  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>Search of permit2 Permit: 7579 found, 240 studied</h3>
+  <p class="lead">Recorded in <code>testdata/research/uniswap-swap-permit-permit2.json</code>. Only Etherscan searches an event, and found <span class="num">7579</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> transactions used this operation&#39;s calls (0 Safes); <span class="num">0</span> match the template exactly.</span></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA calls execute directly</span><span><span class="num">11</span> transactions used this operation&#39;s calls (11 addresses); <span class="num">1</span> matches the template exactly.</span></div>
+    <div class="pg"><span class="pc num">6</span><div><div><code>inputs</code> has 3 items; the template has 2<span class="f3">, from 6 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x78f681a9511eb8a31fe7b4088c8152afa8b0939b56e1b2d353f7a247947ed162">0x78f681a9…</a>, <a href="https://etherscan.io/tx/0x51df625c33a06ac9c8e6094b95f7cde1ec58ce63eb4562bf51d233f6db4ba246">0x51df625c…</a>, <a href="https://etherscan.io/tx/0x9fd19aede59aec7fc00f310a8af1d5a3d8617df057ed039e22fc8237f75f2be6">0x9fd19aed…</a></div></div></div>
+    <div class="pg"><span class="pc num">2</span><div><div><code>inputs</code> has 4 items; the template has 2<span class="f3">, from 2 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x226ef5769d3858b7dddd6f82e2f537425db1ada89d4983f2f90ea48ad7c137f2">0x226ef576…</a>, <a href="https://etherscan.io/tx/0x35d2fb742339a6d0aa3f5e46ba071eda1958d3aef2ebed3fe3c0b127224d0899">0x35d2fb74…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>call.execute.inputs[1].V4_SWAP.params[0].encoding</code> differs from the template: the template wants <span class="addr">canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))</span>, the transaction has <span class="addr">differs at byte 1040</span><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x7e56968679d27bf07e6aa8d0e4512ff6a84a464ddecd13d929e0ed713abeb3dd">0x7e569686…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>inputs</code> has 5 items; the template has 2<span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x96905ecdf0e63efcdc8635795c7496bb4fc8ee972c9a2908f2995610fd6087bb">0x96905ecd…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>229 more are other operations, not counted: <code>0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af.execute</code> 129, <code>0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA.execute</code> 35, <code>bundler3.0x374f435d</code> 16, <code>permit2.0x2b67b570</code> 13, and others.</span></div>
+  </details>
 </section>
 
 <section id="next">
@@ -595,7 +659,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">Written by <code>pnpm report uniswap/swap-permit --record</code> from <code>templates/uniswap/swap-permit/template.json</code>, <code>templates/uniswap/swap-permit/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/uniswap-swap-permit.json</code>, <code>testdata/abi</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/uniswap/swap-permit/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<footer class="foot">Written by <code>pnpm report uniswap/swap-permit --record</code> from <code>templates/uniswap/swap-permit/template.json</code>, <code>templates/uniswap/swap-permit/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/uniswap-swap-permit.json</code>, <code>testdata/abi</code>, <code>testdata/research/uniswap-swap-permit-permit2.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/uniswap/swap-permit/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>
 </div>

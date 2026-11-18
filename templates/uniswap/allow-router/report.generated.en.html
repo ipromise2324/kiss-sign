@@ -455,7 +455,32 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>Past transactions</h2><p class="lead">No past transactions were studied for this operation.</p>
+  <h2>Past transactions</h2>
+  <p class="lead">In past records, <span class="num">0</span> transactions match the template exactly; <span class="num">0</span> have the same shape but with an address outside the registry; <span class="num">33</span> have another shape, listed under Other ways.</p>
+  <p class="intro"><span class="aiw" data-ai><span>No Safe called Permit2 approve in the sample. EOAs that did mostly approved an older Universal Router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, or set amount 0 to revoke.</span><span class="byai">AI research</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Other ways</summary>
+  <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>
+  <h3>Search of permit2 Approval: 8144 found, 240 studied</h3>
+  <p class="lead">Recorded in <code>testdata/research/uniswap-allow-router-permit2.json</code>. Only Etherscan searches an event, and found <span class="num">8144</span>; Alchemy&#39;s eth_getLogs reads at most 10 blocks at a time on the free plan.</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> transactions used this operation&#39;s calls (0 Safes); <span class="num">0</span> match the template exactly.</span></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA calls approve directly</span><span><span class="num">33</span> transactions used this operation&#39;s calls (30 addresses); <span class="num">0</span> match the template exactly.</span></div>
+    <div class="pg"><span class="pc num">24</span><div><div><code>spender</code> is <span class="addr">0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af</span>, not the template&#39;s universal-router-2.1.2<span class="f3">, from 21 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x62fe857f5ecf02120c55cc6f9da420c9cba44db4df8310028dc215a51710b43c">0x62fe857f…</a>, <a href="https://etherscan.io/tx/0x6f3f986ca290d6ee2525118fe524185d1dfe81006c53408ae15315855a82ed11">0x6f3f986c…</a>, <a href="https://etherscan.io/tx/0x336a56ff4c1feb876792d4238701c2cadf9bd57010186dd3f918485b8245afa8">0x336a56ff…</a></div></div></div>
+    <div class="pg"><span class="pc num">6</span><div><div><code>call.approve.amount</code> differs from the template: the template wants <span class="addr">1461501637330902918203684832716283019655932542975</span>, the transaction has <span class="addr">0</span><span class="f3">, from 6 addresses</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xafc0e639780ac77428a0d62c4ad83cefff902a5425b8466eb8cc77ea8a442b37">0xafc0e639…</a>, <a href="https://etherscan.io/tx/0x251003d6d2856dc15ddfa44d0556808685dc1ed88075451ea106ffe43eb301ed">0x251003d6…</a>, <a href="https://etherscan.io/tx/0x931425af8fc3d9dafd8c02396895cc74ce2857d10a7618037c99be69699bbc2f">0x931425af…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>call.approve.amount</code> differs from the template: the template wants <span class="addr">1461501637330902918203684832716283019655932542975</span>, the transaction has <span class="addr">142468643035</span><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x2180ae5f8f1f75e353bc5e8a660c28a626597d43014d46b0fc4db5ce204caabd">0x2180ae5f…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>call.approve.amount</code> differs from the template: the template wants <span class="addr">1461501637330902918203684832716283019655932542975</span>, the transaction has <span class="addr">1217429637980827183012</span><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0xe0f202c15cf49471b86f91d5f7a079da063f23c7234e4c1d0ff2c1944fc420d3">0xe0f202c1…</a></div></div></div>
+    <div class="pg"><span class="pc num">1</span><div><div><code>call.approve.amount</code> differs from the template: the template wants <span class="addr">1461501637330902918203684832716283019655932542975</span>, the transaction has <span class="addr">100000000000000000</span><span class="f3">, from 1 address</span></div>
+      <div class="pex">Examples: <a href="https://etherscan.io/tx/0x27c441f4795b35b8b68f2b7e7c30024c70ea0d8a1e8926d79e101effae1febc1">0x27c441f4…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>207 more are other operations, not counted: <code>0x881D40237659C251811CEC9c364ef91dC08D300C.0x5f575529</code> 56, <code>0x084C0EC7f5C0585195c1c713ED9f06272F48cB45.0x02c52a55</code> 8, <code>0xd226997439ecfBEfF8E110C8C78c8a7Eefd19f89.0x99999999</code> 6, <code>gpv2-settlement.0x13d79a0b</code> 4, and others.</span></div>
+  </details>
 </section>
 
 <section id="next">
@@ -487,7 +512,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">Written by <code>pnpm report uniswap/allow-router --record</code> from <code>templates/uniswap/allow-router/template.json</code>, <code>templates/uniswap/allow-router/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/uniswap-allow-router.json</code>, <code>testdata/abi</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/uniswap/allow-router/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
+<footer class="foot">Written by <code>pnpm report uniswap/allow-router --record</code> from <code>templates/uniswap/allow-router/template.json</code>, <code>templates/uniswap/allow-router/docs.json</code>, <code>registry/contracts.json</code>, <code>testdata/report/uniswap-allow-router.json</code>, <code>testdata/abi</code>, <code>testdata/research/uniswap-allow-router-permit2.json</code>, <code>testdata/perturb</code>, <code>testdata/safe-tx</code>, <code>templates/uniswap/allow-router/notes.json</code>; the data was read on 2026-11-17. Do not edit it by hand; <code>pnpm test</code> computes it again and compares. notes.json is written by the AI; no program checks the text tagged AI.</footer>
 
 </div>
 </div>

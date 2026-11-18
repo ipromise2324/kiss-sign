@@ -6,6 +6,10 @@
       "zh-TW": "可以用，但這是沒上架的小 vault，持有人集中；地址只有工廠確認，見待確認。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "The windows found no accepted cap increase. AI's own Etherscan query found 9 such transactions by this vault in the year, too few for one-day windows to catch.",
+    "zh-TW": "取樣窗口沒找到生效的上限提高。AI 另查 Etherscan，這個 vault 這一年有 9 筆，一天長的窗口抓不到這麼少的交易。"
+  },
   "judgments": [
     {
       "text": {

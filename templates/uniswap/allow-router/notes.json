@@ -14,6 +14,10 @@
       "zh-TW": "授權只給 router；router 只從呼叫它的 Safe 拉代幣，留著也只有 Safe 能用。"
     }
   },
+  "pastTxsConclusion": {
+    "en": "No Safe called Permit2 approve in the sample. EOAs that did mostly approved an older Universal Router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, or set amount 0 to revoke.",
+    "zh-TW": "取樣裡沒有 Safe 呼叫 Permit2 的 approve。有呼叫的 EOA 多半是授權舊版 Universal Router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af，或把數量設 0 來撤銷。"
+  },
   "flow": [],
   "protocols": {
     "uniswap-v4": {

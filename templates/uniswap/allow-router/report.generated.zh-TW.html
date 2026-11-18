@@ -455,7 +455,32 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>過去交易</h2><p class="lead">這個操作沒有研究過去交易。</p>
+  <h2>過去交易</h2>
+  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">33</span> 筆，列在其他做法。</p>
+  <p class="intro"><span class="aiw" data-ai><span>取樣裡沒有 Safe 呼叫 Permit2 的 approve。有呼叫的 EOA 多半是授權舊版 Universal Router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af，或把數量設 0 來撤銷。</span><span class="byai">AI 研究</span></span></p>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 permit2 的Approval，找到 8144 筆，研究 240 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/uniswap-allow-router-permit2.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">8144</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 approve</span><span><span class="num">33</span> 筆用了這個操作的呼叫（30 個地址），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
+    <div class="pg"><span class="pc num">24 筆</span><div><div><code>spender</code> 是 <span class="addr">0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af</span>，不是模板的 universal-router-2.1.2<span class="f3">，來自 21 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x62fe857f5ecf02120c55cc6f9da420c9cba44db4df8310028dc215a51710b43c">0x62fe857f…</a>、<a href="https://etherscan.io/tx/0x6f3f986ca290d6ee2525118fe524185d1dfe81006c53408ae15315855a82ed11">0x6f3f986c…</a>、<a href="https://etherscan.io/tx/0x336a56ff4c1feb876792d4238701c2cadf9bd57010186dd3f918485b8245afa8">0x336a56ff…</a></div></div></div>
+    <div class="pg"><span class="pc num">6 筆</span><div><div><code>call.approve.amount</code> 的值跟模板不同：模板要 <span class="addr">1461501637330902918203684832716283019655932542975</span>，交易是 <span class="addr">0</span><span class="f3">，來自 6 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xafc0e639780ac77428a0d62c4ad83cefff902a5425b8466eb8cc77ea8a442b37">0xafc0e639…</a>、<a href="https://etherscan.io/tx/0x251003d6d2856dc15ddfa44d0556808685dc1ed88075451ea106ffe43eb301ed">0x251003d6…</a>、<a href="https://etherscan.io/tx/0x931425af8fc3d9dafd8c02396895cc74ce2857d10a7618037c99be69699bbc2f">0x931425af…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.approve.amount</code> 的值跟模板不同：模板要 <span class="addr">1461501637330902918203684832716283019655932542975</span>，交易是 <span class="addr">142468643035</span><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x2180ae5f8f1f75e353bc5e8a660c28a626597d43014d46b0fc4db5ce204caabd">0x2180ae5f…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.approve.amount</code> 的值跟模板不同：模板要 <span class="addr">1461501637330902918203684832716283019655932542975</span>，交易是 <span class="addr">1217429637980827183012</span><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0xe0f202c15cf49471b86f91d5f7a079da063f23c7234e4c1d0ff2c1944fc420d3">0xe0f202c1…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.approve.amount</code> 的值跟模板不同：模板要 <span class="addr">1461501637330902918203684832716283019655932542975</span>，交易是 <span class="addr">100000000000000000</span><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x27c441f4795b35b8b68f2b7e7c30024c70ea0d8a1e8926d79e101effae1febc1">0x27c441f4…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 207 筆是別的操作，不列入：<code>0x881D40237659C251811CEC9c364ef91dC08D300C.0x5f575529</code> 56 筆、<code>0x084C0EC7f5C0585195c1c713ED9f06272F48cB45.0x02c52a55</code> 8 筆、<code>0xd226997439ecfBEfF8E110C8C78c8a7Eefd19f89.0x99999999</code> 6 筆、<code>gpv2-settlement.0x13d79a0b</code> 4 筆，還有別的。</span></div>
+  </details>
 </section>
 
 <section id="next">
@@ -487,7 +512,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report uniswap/allow-router --record</code> 從 <code>templates/uniswap/allow-router/template.json</code>、<code>templates/uniswap/allow-router/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/uniswap-allow-router.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/uniswap/allow-router/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report uniswap/allow-router --record</code> 從 <code>templates/uniswap/allow-router/template.json</code>、<code>templates/uniswap/allow-router/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/uniswap-allow-router.json</code>、<code>testdata/abi</code>、<code>testdata/research/uniswap-allow-router-permit2.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/uniswap/allow-router/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>

@@ -268,7 +268,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -286,12 +286,14 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t3"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t3" role="tooltip">每次簽名都確認卡片用到的每個合約還是研究時那份程式碼。被升級或換掉就擋下。</span></span></li>
     <li data-state="ok" data-line="params"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>參數保護 <span class="n num">1 / 1</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">程式把 1 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。</span></span></li>
+    <li data-state="warn" data-line="trace"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>呼叫追蹤 <span class="n num">0 / 2</span>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">程式在過去交易的呼叫追蹤裡找 AI 寫的每條流程線，也確認每筆動到錢的內部呼叫都有模板或流程線說明；2 項裡 0 項通過。追蹤只來自 drpc，其中代幣的轉帳和授權都跟兩家節點都同意的收據核對過。</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
   </ul>
-  <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>兌換本身有綁住；但 Permit2 授權是事先另外簽的訊息，kiss-sign 不檢查那一步。</span><span class="byai">AI 研究：要小心</span></span></div>
+  <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>兌換本身有綁住；但 Permit2 授權是事先另外簽的訊息，kiss-sign 不檢查那一步。</span><span class="byai">AI 研究：要小心</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">待確認 <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-uniswap-v4">uniswap-v4</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">7</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -459,9 +461,23 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="review">
-  <h2>待確認 <span class="c"> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
+  <h2>待確認 <span class="c"> <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 2</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></span></h2>
   <p class="lead">每一項 AI 都先查過，附上建議。</p>
   <div class="rows">
+    <div class="row" data-state="warn" data-grade="key" data-result="trace.1.permit2.usdt.transferFrom">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t"><span class="lbl">重要</span> 呼叫 1 底下 permit2 → usdt 的 <code>transferFrom</code>：有動到錢的內部呼叫沒有說明</div>
+        <div class="meta">呼叫追蹤裡有一筆代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。 共 1 筆過去交易。 不在登記表裡的地址：0x000000000004444c5dc75cB358380D2e3dE08A90。</div>
+        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>AI 讀了 0xf89f9bed4553e10953b49e02b1924707f30a73859822c75a40651015716dd500 的追蹤：router 為 <code>SETTLE</code> 呼叫 Permit2 的 <code>transferFrom</code>（router 驗證原始碼的 Permit2Payments.permit2TransferFrom），Permit2 把賣出的 USDT 從發送者轉到 v4 PoolManager 0x000000000004444c5dC75cB358380D2e3dE08A90。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>不用處理：這是賣出的代幣付給池子；簽署時的效果檢查會限制 Safe 付出多少。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
+    <div class="row" data-state="warn" data-grade="key" data-result="trace.1.other.usdc.transfer">
+      <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
+      <div><div class="t"><span class="lbl">重要</span> 呼叫 1 底下 other → usdc 的 <code>transfer</code>：有動到錢的內部呼叫沒有說明</div>
+        <div class="meta">呼叫追蹤裡有一筆代幣轉帳、授權或 ETH 轉帳，模板綁定的呼叫和流程線都沒有說明它。 共 1 筆過去交易。 不在登記表裡的地址：0x000000000004444c5dc75cB358380D2e3dE08A90。</div>
+        <div class="rec"><span class="lbl">AI 已確認</span><span class="aiw" data-ai><span>AI 讀了同一筆追蹤：不在登記表裡的 v4 PoolManager 0x000000000004444c5dC75cB358380D2e3dE08A90，在 router 呼叫它的 <code>take</code> 後，為 <code>TAKE</code> 步驟對發送者呼叫 USDC <code>transfer</code>，這是買到的代幣。</span><span class="byai">AI 研究</span></span></div>
+        <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>不用處理：簽署時的效果檢查要求 Safe 至少收到卡片上的最低數量。</span><span class="byai">AI 研究</span></span></div></div>
+    </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>
       <div><div class="t"><span class="aiw" data-ai><span>這筆交易用的 Permit2 授權是 Safe 簽署人事先簽的 Safe 訊息（EIP-1271），kiss-sign 不檢查那一步。交易裡的授權內容模板有綁住，簽錯會讓交易失敗；但被騙簽給別人的授權，不需要這筆交易就能被用掉。</span><span class="byai">AI 研究</span></span></div>
@@ -494,7 +510,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>地址 <span class="c">7 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
+  <h2>地址 <span class="c">7 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t7"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t7" role="tooltip">每個地址至少要在兩個地方確認：官方頁（GitHub 上的檔案算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
   <div class="rows">
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>另外 7 個地址都沒有要你看的結果</summary>
@@ -557,7 +573,55 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="past">
-  <h2>過去交易</h2><p class="lead">這個操作沒有研究過去交易。</p>
+  <h2>過去交易</h2>
+  <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">1</span> 筆：Safe <span class="num">0</span> 筆、EOA <span class="num">1</span> 筆（1 個地址，各自送模板的一個呼叫）；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">10</span> 筆，列在其他做法。它成功執行：它是從 permit2 Permit時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。一模一樣的最近 1 筆：<a href="https://etherscan.io/tx/0xf89f9bed4553e10953b49e02b1924707f30a73859822c75a40651015716dd500">0xf89f9bed…</a>。</p>
+  <p class="intro"><span class="aiw" data-ai><span>不合的 EOA 兌換走的是 app 選的其他路線：v3 或 v2 池子、拆成多段，或多一步 <code>SWEEP</code>、<code>UNWRAP_WETH</code>。取樣裡沒有 Safe 做這種兌換。</span><span class="byai">AI 研究</span></span></p>
+  <p class="lead">模板留給 app 自由填的數字，在符合模板形狀的交易裡填了哪些值：最小、第 50、90、99 百分位和最大。模板宣告為時間的欄位，算的是它減掉交易所在區塊時間的秒數。這是證據，不是規則。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.expiration</code></span><span>EOA: 填的值</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pex">min <span class="num">1794914659</span>、p50 <span class="num">1794914659</span>、p90 <span class="num">1794914659</span>、p99 <span class="num">1794914659</span>、max <span class="num">1794914659</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.nonce</code></span><span>EOA: 填的值</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pex">min <span class="num">0</span>、p50 <span class="num">0</span>、p90 <span class="num">0</span>、p99 <span class="num">0</span>、max <span class="num">0</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.sigDeadline</code></span><span>EOA: 填的值</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pex">min <span class="num">1792324459</span>、p50 <span class="num">1792324459</span>、p90 <span class="num">1792324459</span>、p99 <span class="num">1792324459</span>、max <span class="num">1792324459</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].fee</code></span><span>EOA: 填的值</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pex">min <span class="num">7</span>、p50 <span class="num">7</span>、p90 <span class="num">7</span>、p99 <span class="num">7</span>、max <span class="num">7</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.inputs[1].V4_SWAP.params[0].SWAP_EXACT_IN.params.path[0].tickSpacing</code></span><span>EOA: 填的值</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pex">min <span class="num">1</span>、p50 <span class="num">1</span>、p90 <span class="num">1</span>、p99 <span class="num">1</span>、max <span class="num">1</span></div></div></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt"><code>call.execute.deadline</code></span><span>EOA: 填的值</span></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div class="pex">min <span class="num">1792324461</span>、p50 <span class="num">1792324461</span>、p90 <span class="num">1792324461</span>、p99 <span class="num">1792324461</span>、max <span class="num">1792324461</span></div></div></div>
+  </div>
+  <details class="fold">
+  <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
+  <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>
+  <h3>搜尋 permit2 的Permit，找到 7579 筆，研究 240 筆</h3>
+  <p class="lead">記錄在 <code>testdata/research/uniswap-swap-permit-permit2.json</code>。只有 Etherscan 搜尋事件，找到 <span class="num">7579</span> 筆；Alchemy 免費方案的 eth_getLogs 一次只讀 10 個區塊。</p>
+  <div class="pblock">
+    <div class="ph"><span class="pt">Safe</span><span><span class="num">0</span> 筆用了這個操作的呼叫（0 個 Safe），<span class="num">0</span> 筆跟模板一模一樣。</span></div>
+  </div>
+  <div class="pblock">
+    <div class="ph"><span class="pt">EOA 直接呼叫 execute</span><span><span class="num">11</span> 筆用了這個操作的呼叫（11 個地址），<span class="num">1</span> 筆跟模板一模一樣。</span></div>
+    <div class="pg"><span class="pc num">6 筆</span><div><div><code>inputs</code> 有 3 項，模板是 2 項<span class="f3">，來自 6 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x78f681a9511eb8a31fe7b4088c8152afa8b0939b56e1b2d353f7a247947ed162">0x78f681a9…</a>、<a href="https://etherscan.io/tx/0x51df625c33a06ac9c8e6094b95f7cde1ec58ce63eb4562bf51d233f6db4ba246">0x51df625c…</a>、<a href="https://etherscan.io/tx/0x9fd19aede59aec7fc00f310a8af1d5a3d8617df057ed039e22fc8237f75f2be6">0x9fd19aed…</a></div></div></div>
+    <div class="pg"><span class="pc num">2 筆</span><div><div><code>inputs</code> 有 4 項，模板是 2 項<span class="f3">，來自 2 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x226ef5769d3858b7dddd6f82e2f537425db1ada89d4983f2f90ea48ad7c137f2">0x226ef576…</a>、<a href="https://etherscan.io/tx/0x35d2fb742339a6d0aa3f5e46ba071eda1958d3aef2ebed3fe3c0b127224d0899">0x35d2fb74…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>call.execute.inputs[1].V4_SWAP.params[0].encoding</code> 的值跟模板不同：模板要 <span class="addr">canonical SWAP_EXACT_IN((address,(address,uint24,int24,address,bytes)[],uint256[],uint128,uint128))</span>，交易是 <span class="addr">differs at byte 1040</span><span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x7e56968679d27bf07e6aa8d0e4512ff6a84a464ddecd13d929e0ed713abeb3dd">0x7e569686…</a></div></div></div>
+    <div class="pg"><span class="pc num">1 筆</span><div><div><code>inputs</code> 有 5 項，模板是 2 項<span class="f3">，來自 1 個地址</span></div>
+      <div class="pex">例：<a href="https://etherscan.io/tx/0x96905ecdf0e63efcdc8635795c7496bb4fc8ee972c9a2908f2995610fd6087bb">0x96905ecd…</a></div></div></div>
+  </div>
+  <div class="warnline"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span>另外 229 筆是別的操作，不列入：<code>0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af.execute</code> 129 筆、<code>0x4C82D1fBFe28C977cBB58D8C7FF8FCF9F70a2cCA.execute</code> 35 筆、<code>bundler3.0x374f435d</code> 16 筆、<code>permit2.0x2b67b570</code> 13 筆，還有別的。</span></div>
+  </details>
 </section>
 
 <section id="next">
@@ -595,7 +659,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </div>
 </section>
 
-<footer class="foot">由 <code>pnpm report uniswap/swap-permit --record</code> 從 <code>templates/uniswap/swap-permit/template.json</code>、<code>templates/uniswap/swap-permit/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/uniswap-swap-permit.json</code>、<code>testdata/abi</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/uniswap/swap-permit/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
+<footer class="foot">由 <code>pnpm report uniswap/swap-permit --record</code> 從 <code>templates/uniswap/swap-permit/template.json</code>、<code>templates/uniswap/swap-permit/docs.json</code>、<code>registry/contracts.json</code>、<code>testdata/report/uniswap-swap-permit.json</code>、<code>testdata/abi</code>、<code>testdata/research/uniswap-swap-permit-permit2.json</code>、<code>testdata/perturb</code>、<code>testdata/safe-tx</code>、<code>templates/uniswap/swap-permit/notes.json</code> 寫出，資料在 2026-11-17 讀取。不要手改；<code>pnpm test</code> 會重算並比對。notes.json 是 AI 寫的，標 AI 的文字沒有程式檢查。</footer>
 
 </div>
 </div>
