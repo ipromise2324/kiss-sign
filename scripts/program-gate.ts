@@ -17,10 +17,11 @@ const git = (cwd: string, ...args: string[]): string => execFileSync('git', args
 const say = (line: string) => console.log(line);
 const listed = (paths: readonly string[]) => paths.map((path) => `  ${path}`);
 
-function notEligible(reasons: readonly string[]): never {
+/** Exit 3 when the branch is the signer's to merge, so CI can show it apart from a branch that failed; 1 for any other refusal. */
+function notEligible(reasons: readonly string[], status: 1 | 3 = 1): never {
   say(`NOT ELIGIBLE  the AI may not merge ${ref}:`);
   for (const reason of reasons) say(`  ${reason}`);
-  process.exit(1);
+  process.exit(status);
 }
 
 /** Every tracked file of `rev` whose bytes on disk under `dir` differ from the commit, hashed from disk without git's stat cache or filters. */
@@ -78,7 +79,7 @@ const refusals = [
   ...(split.data.length > 0 ? [`it changes templates/ or registry/, which only the signer merges: ${split.data.join(', ')}`] : []),
   ...(split.gate.length > 0 ? [`it changes the program gate (${CANARY_LIST} and the code that enforces it), which only the signer merges: ${split.gate.join(', ')}`] : []),
 ];
-if (refusals.length > 0) notEligible(refusals);
+if (refusals.length > 0) notEligible(refusals, 3);
 
 const canaries = parseCanaryList(readFileSync(join(root, CANARY_LIST), 'utf8'));
 const work = mkdtempSync(join(tmpdir(), 'kiss-sign-program-gate-'));
