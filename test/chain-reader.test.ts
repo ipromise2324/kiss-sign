@@ -191,3 +191,9 @@ test('a burst of reads to a provider that refuses more than a few at once all ge
   assert.deepEqual(unread, []);
   assert.ok(reads.every((read) => read.kind === 'agreed'));
 });
+
+test('a provider that never answers frees its place at each timeout, so reads queued behind it still finish', async () => {
+  const reader = createReader(ENDPOINTS, transport(node(100), () => 'hang'), { timeoutMs: 20, retryPausesMs: [], openRequests: { start: 1, max: 1 } });
+  const reads = await Promise.all(Array.from({ length: 5 }, () => reader.getCode(ADDRESS, AT)));
+  assert.deepEqual(reads.map(unverifiable), Array(5).fill('eth_getCode: drpc failed (timeout)'));
+});
