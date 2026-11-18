@@ -8,11 +8,11 @@ The exact shape and every limit are in step 6 of [First time an operation is don
 1. Write `templates/<protocol>/<operation>/notes.json` (an older template has `report.md` instead).
    Its `entries.<name>.sources` already hold what you saw at each address before any check ([addresses.md](addresses.md)); complete the rest around them, and write `reviews` only after `--record`, against the printed results.
 2. Run `pnpm report <protocol>/<operation> --render`, with `--instance-of <instance>` for a per-instance report.
-   It writes the signer's report from the recordings and your notes, `report.generated.en.html` or `report.generated.zh-TW.html` in the language the notes hold.
+   It writes the signer's report from the recordings and your notes, `report.generated.en.html`, `report.generated.zh-TW.html` or both, one for each language the notes hold.
 
 ## Language and length
 
-- Write every text only in the signer's `language` from the config, as `{ "zh-TW": "..." }` or `{ "en": "..." }`, in plain Traditional Chinese or plain English; `--render` refuses a file whose texts hold different languages.
+- Write every text in the signer's `language` from the config, `{ "zh-TW": "..." }` or `{ "en": "..." }`, or in both, `{ "en": "...", "zh-TW": "..." }`, in plain Traditional Chinese or plain English; every text of one file holds the same languages, and `--render` refuses a file whose texts differ.
 - Each limit counts Traditional Chinese characters; English may use three times as many.
 - Sources, statuses, names and URLs are written once.
 - Write a function or argument name between backticks, such as "Calls `erc20TransferFrom`, then `erc4626Deposit`" or "依序呼叫 `erc20TransferFrom` 和 `erc4626Deposit`"; only one identifier, with or without `()`, may stand between two backticks.
@@ -70,7 +70,7 @@ A per-instance report reads two files.
 - The template's `notes.json` holds what every instance's report shares: `title`, `summary`, `protocols`, `fields`, the `flow` lines that name no instance or asset, and the shared contracts' `entries`, `judgments` and `reviews`, among them every entry each instance with a report depends on or names as the same attribute, such as Fluid's Liquidity and LendingFactory, written once.
 - The instance's own `notes.json`, in `templates/<protocol>/<operation>/instances/<instance>/` (or `vaults/<instance>/` while its committed files are there; never make a second folder for one instance), holds only `verdict`, `flow`, `judgments`, `reviews`, `entries` and `pastTxsConclusion` about that instance, the entries only it names as attributes or depends on included, such as its asset.
   A `flow` line that names the instance or its asset goes here, since another instance's report cannot name it.
-- Its `docs.json` sits beside it when a function's page names the instance or its asset.
+- Its `docs.json` sits beside it, written before `--record`, when a function's page is specific to this report, such as one that names the instance, its asset or another contract only this report covers.
 - The program refuses a `reviews` key or `entries` name for any other contract, or for a test transaction, and a key or name both files define; the `flow` lines and the judgments of both each count toward four.
 - Write the instance's notes in the signer's language even when the template's hold both, and leave every existing text as it is; the report is written in the languages both files hold, and `--render` refuses an instance's notes that share no language with the template's.
 - Never write about another instance in an instance's notes.
