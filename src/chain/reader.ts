@@ -193,9 +193,14 @@ export function createReader(endpoints: readonly [Endpoint, Endpoint], transport
   async function attempt(endpoint: Endpoint, method: Method, params: readonly unknown[]): Promise<Attempt> {
     const providerGate = gates.get(endpoint.url)!;
     const round = await providerGate.enter();
-    const result = await send(endpoint, method, params);
-    providerGate.leave(round, result.kind === 'failed' ? result.cause : undefined);
-    return result;
+    let cause: FailureCause | undefined = 'no-answer';
+    try {
+      const result = await send(endpoint, method, params);
+      cause = result.kind === 'failed' ? result.cause : undefined;
+      return result;
+    } finally {
+      providerGate.leave(round, cause);
+    }
   }
 
   /** Only a missing answer is asked again. An answer is final, so a retry never swaps one answer for another. */
