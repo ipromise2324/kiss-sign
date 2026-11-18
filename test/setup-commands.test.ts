@@ -770,12 +770,12 @@ test('card seal does not count a report reached through a symlinked folder, whic
   configure(home);
   const card = join(home, 'card.json');
   writeFileSync(card, JSON.stringify({ operations: [{ template: 'test/any-token', values: { token: 'smokehouse-usdc-v1-f5bc', amount: '5', recipient: 'safe' } }] }));
-  const vaultLink = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
-  assert.equal(vaultLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
+  const instanceLink = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot });
+  assert.equal(instanceLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
   const linked = anyTokenClone();
   symlinkSync(join(elsewhere, 'templates', 'test', 'any-token', 'instances'), join(linked, 'templates', 'test', 'any-token', 'instances'));
-  const vaultsLink = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot: linked });
-  assert.equal(vaultsLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
+  const folderLink = await run(['card', 'seal', card], home, ['y'], { ...noChain, repoRoot: linked });
+  assert.equal(folderLink.stderr, 'kiss-sign: card refused: smokehouse-usdc-v1-f5bc has no report for test/any-token; build one first\n');
 });
 
 /** A clone whose `test/any-token` template takes its token through an address field, which may name any registry entry. */
