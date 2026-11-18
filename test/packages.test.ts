@@ -83,6 +83,14 @@ test('a node_modules folder under src, which Node would search before the root o
   assert.ok(result.stderr.endsWith('\n  a node_modules folder below the root: src/safe/node_modules\n'), result.stderr);
 });
 
+test('a node_modules folder under src in another letter case is refused too', () => {
+  const { root, home, noble } = copyOfProgram();
+  cpSync(noble, join(root, 'src', 'NODE_MODULES', '@noble', 'hashes'), { recursive: true });
+  const result = run(root, home);
+  assert.equal(result.status, 1);
+  assert.ok(result.stderr.endsWith('\n  a node_modules folder below the root: src/NODE_MODULES\n'), result.stderr);
+});
+
 test('a symlink inside a package is named, and a list in the lockfile is read', () => {
   const { root, noble } = copyOfProgram();
   symlinkSync(join(noble, 'sha3.js'), join(noble, 'link.js'));

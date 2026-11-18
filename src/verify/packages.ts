@@ -125,13 +125,14 @@ function differences(dir: string, pin: PackagePin): string[] {
 }
 
 /**
- * Each `node_modules` folder in the folders that hold the program's code, `bin/` and `src/`. Node looks for a package
- * there before the root `node_modules`, from the folder of the file that imports it.
+ * Each `node_modules` folder in the folders that hold the program's code, `bin/` and `src/`, in any letter case, since a
+ * case-insensitive file system such as macOS's default opens `NODE_MODULES` for it. Node looks for a package there before
+ * the root `node_modules`, from the folder of the file that imports it.
  */
 function nestedModuleFolders(root: string): string[] {
   return ['bin', 'src'].flatMap((top) =>
     readdirSync(join(root, top), { recursive: true, withFileTypes: true })
-      .filter((entry) => entry.name === 'node_modules')
+      .filter((entry) => entry.name.toLowerCase() === 'node_modules')
       .map((entry) => `a node_modules folder below the root: ${relative(root, join(entry.parentPath, entry.name)).split(sep).join('/')}`),
   );
 }
