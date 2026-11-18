@@ -287,7 +287,7 @@ const named = (places: readonly Place[]): string[] => places.map((place) => plac
 
 const ledgerOf = (change: Partial<Setup>): Ledger => {
   const inputs = inputsOf(change);
-  return judge(inputs, inputs.fixtures ?? []);
+  return judge(inputs, inputs.fixtures);
 };
 
 const resultOf = (ledger: Ledger, id: string) => ledger.results.find((r) => r.id === id) ?? assert.fail(`no result ${id}: ${ledger.results.map((r) => r.id).join(', ')}`);
@@ -427,6 +427,22 @@ for (const row of ROWS) {
     assert.equal(stateOf(result), row.state);
   });
 }
+
+test('a proof of code other than the pin still says which functions the template uses are missing from its ABI', () => {
+  const other = { ...withAbi(['transfer(address to,uint256 value)']), codeHash: `0x${'22'.repeat(32)}` as Hex };
+  const unpinned = withAbi(['transfer(address to,uint256 value)']);
+  for (const [change, first] of [
+    [{ read: APPROVE, abi: other }, 'proof-not-pin'],
+    [{ read: APPROVE, abi: unpinned, entry: without('code') }, 'not-pinned'],
+  ] as const) {
+    const abi = ledgerOf(change).results.filter((r) => r.line === 'abi');
+    assert.deepEqual(abi.map((r) => [r.id, r.finding.kind, stateOf(r)]), [
+      ['vault/abi', first, first === 'proof-not-pin' ? 'bad' : 'warn'],
+      ['vault/abi.calls', 'fn-not-in-abi', 'bad'],
+    ]);
+  }
+  assert.deepEqual(ledgerOf({ read: APPROVE, abi: proven(`0x${'22'.repeat(32)}` as Hex) }).results.filter((r) => r.line === 'abi').map((r) => r.id), ['vault/abi']);
+});
 
 test('two entries that share a deployer and are confirmed nowhere else never confirm each other through it', () => {
   const ledger = ledgerOf({ ...sharing(false), coins: [] });

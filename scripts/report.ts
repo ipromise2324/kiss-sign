@@ -41,6 +41,7 @@ import {
   readToday,
   renderReport,
   replayInputs,
+  reportFixtures,
   replayReport,
   reportDir,
   reportRecordingPath,
@@ -266,7 +267,8 @@ const facts = scope === undefined ? undefined : await protocolFacts(scope, regis
 
 const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
 const fetched = new Date();
-const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, today, instances, erc7730, facts };
+const fixtures = await reportFixtures(root, subject, fullRegistry);
+const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, today, instances, erc7730, facts, fixtures };
 const command = `pnpm report ${reportArgs(subject)}`;
 const text = renderReport(live, { command, sources: ['live reads at the time it ran', ...pastTxs.map((p) => p.file)] });
 
