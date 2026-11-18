@@ -7,7 +7,7 @@ The flow is in [Every signing](../../../docs/design/flow.md#every-signing).
 
 The signer runs every command from the clone as `pnpm kiss-sign <command>`, after `git pull`:
 
-1. Once per merged template: `pnpm kiss-sign template approve <protocol>/<operation>`.
+1. Once per merged template, and again whenever it changes: `pnpm kiss-sign template approve <protocol>/<operation>`.
 2. `pnpm kiss-sign card new <protocol>/<operation>`.
    It stops first when the clone is behind GitHub's `main`, lists each contract, market or recipient with its full address to pick by number, asks each amount in whole tokens (commas between thousands allowed), reads the token's decimals on chain itself, and seals the card after they confirm.
    It does not ask a computed field, such as a vault deposit's `min-shares`: it reads the declared view, applies the template's slippage, and prints the value with its slippage and source for the signer to check.
@@ -17,7 +17,7 @@ The Next steps (下一步) section at the bottom of the signer's HTML report lis
 
 ## A recipient not in the address book
 
-Tell the signer to add it in their own terminal with `pnpm kiss-sign book add <name> <address>`, taking the address from a source outside this chat.
+Tell the signer to add it in their own terminal with `pnpm kiss-sign book add <name> <address>`, taking the address from a source outside this chat and checking it character by character.
 
 ## The hardened tier
 
