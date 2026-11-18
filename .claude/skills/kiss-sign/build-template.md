@@ -28,7 +28,7 @@ When the program lacks a capability the operation needs, such as a borrow whose 
   Merge it as [merge-a-program-change.md](merge-a-program-change.md) says before the template's pull request, which follows on a branch from the new `main`.
   `pnpm check-push`, CI and `--compare` refuse a branch that mixes them ([The verdict core](../../../docs/design/program-ownership.md#the-verdict-core)).
 - Run `pnpm verdict-core` after the change, since `pnpm test` fails when that list is out of date.
-- A change only to research code, such as a report section under `src/research/`, may share the template's pull request, unless `docs/verdict-core.txt` lists the file, as it does `src/research/report-words.ts`, every word of the report, and `source-page.ts`, `api-source.ts` and `github-token.ts`.
+- A change only to research code, such as a report section under `src/research/`, may share the template's pull request, unless `docs/verdict-core.txt` lists the file, as it does `src/research/report-words.ts`, which holds every word of the report, and `source-page.ts`, `api-source.ts` and `github-token.ts`.
   `scripts/report.ts`, which holds `--compare`, guards that rule and is a gate file, so a change to it goes in a pull request of its own, which the signer merges.
 - Write the code the way the signer's own setup asks, such as their instructions or the development workflow they use; this skill prescribes none.
   Tell the signer you will follow their workflow, not which tool you run.
@@ -100,8 +100,9 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
    - A URL holds only RFC 3986 characters other than `[` and `]`; prefer the protocol's docs, and pin a GitHub page to a commit.
    - For a function a token standard defines, called on a registry token or vault, such as ERC-20's `approve`, `transfer` or `transferFrom`, write `{ "contract": "<registry name>", "standard": "erc-20" }` when the issuer publishes no page on its own site that names the function as code; the standards are `erc-20` (a token or a vault), `erc-4626` (a vault) and `weth9` (WETH alone).
 2. Run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for the instance the signer named when the template is reported per instance.
-   It reads everything live but the past transactions, which it studies again from the `pnpm past-txs` recordings, records the answers in `testdata/report/` and any missing ABI case in `testdata/abi/`, and writes `report.generated.md`.
-   It then writes the HTML report from `notes.json`, which refuses, naming what is missing, until the notes review every result the signer must look at; at this step that refusal is expected, after the recordings and `report.generated.md` are written: write the reviews ([notes-and-reviews.md](notes-and-reviews.md)) and run `--render`.
+   It reads everything live, the past transactions studied again from the `pnpm past-txs` recordings, whose search, signed-message answers and traces it reuses, and records the answers in `testdata/report/` and any missing ABI case in `testdata/abi/`, and writes `report.generated.md`.
+   Last it writes the HTML report from `notes.json`; that step refuses, naming the problem, until the notes review exactly the results the signer must look at.
+   At this step the refusal is expected and comes after the recordings and `report.generated.md` are written: write the reviews ([notes-and-reviews.md](notes-and-reviews.md)) and run `--render`.
    Never edit the generated file; `pnpm test` fails if it differs from what the recordings give.
 
 ## Add the tests

@@ -119,8 +119,9 @@ Writes: with --record, testdata/report/<protocol>-<operation>.json (or <protocol
 <instance>.json), testdata/abi/<entry>.json, and in the report's folder report.generated.md and,
 for a template with notes.json, report.generated.en.html and report.generated.zh-TW.html in each
 language the notes hold; --render writes report.generated.md and the HTML pages; otherwise nothing.
-The folder is templates/<protocol>/<operation>/, or instances/<instance>/ under it. Every mode first
-downloads into vendor/ any pinned solc or Public Suffix List that is missing.
+The folder is templates/<protocol>/<operation>/, or instances/<instance>/ under it. Every mode
+downloads into vendor/ any pinned solc or Public Suffix List that is missing, and a live read the
+ERC-7730 archive, before it reads a fact.
 Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY for a live read (not --offline or --render), from the
 environment or $KISS_SIGN_HOME/.env. GITHUB_TOKEN is optional: sent only to api.github.com, it
 raises GitHub's limit from 60 to 5,000 requests an hour and changes no answer.

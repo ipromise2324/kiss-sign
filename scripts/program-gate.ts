@@ -15,11 +15,11 @@ the one commit the branch names, which must hold origin/main, and prints the ver
 the other program files the branch changes.
 Without running the branch's code it stops at NOT ELIGIBLE, naming each file or test, when the
 branch changes a hand-written file under templates/ or registry/, adds or deletes a generated report
-there, changes a gate file, or drops a test
-origin/main runs (a literal test, it, describe or suite title deleted, renamed, moved to another
-file, commented out, or skipped). Otherwise it checks the branch out into a temporary worktree and
-runs the typecheck, each canary of main's docs/canaries.txt with what it guards and its counts, and
-every other test, then requires every tracked file to be as committed.
+there, changes a gate file, or drops a test origin/main runs (a literal test, it, describe or suite
+title deleted, renamed, moved to another file, commented out, or skipped). Otherwise it checks the
+branch out into a temporary worktree and runs the typecheck, each canary of main's docs/canaries.txt
+with what it guards and its counts, and every other test, then requires every tracked file to be as
+committed.
 It prints ELIGIBLE, with the merge command for exactly that commit, and exits 0 only when all pass.
 NOT ELIGIBLE exits 3 when the only reason is a template, registry or gate file, or a dropped test
 with no verdict core change, the signer's to merge, and 1 otherwise. A wrong argument exits 2.
