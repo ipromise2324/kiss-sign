@@ -76,10 +76,7 @@
                       "atLeast": "card.min-buy"
                     },
                     "validTo": {
-                      "free": {
-                        "en": "When the order expires. The CoW Swap app sets it 30 minutes after the quote (DEFAULT_DEADLINE_FROM_NOW); a later expiry only keeps the order open longer, and it still fills at most once, at no less than the card's minimum, to the Safe. The Safe can cancel it with invalidateOrder.",
-                        "zh-TW": "訂單到期的時間。CoW Swap app 把它設在報價後 30 分鐘（DEFAULT_DEADLINE_FROM_NOW）；較晚的到期時間只會讓訂單開著更久，它仍然最多成交一次，數量不少於卡片上的最低值，而且付給 Safe。Safe 可以用 invalidateOrder 取消它。"
-                      }
+                      "withinSeconds": 604800
                     },
                     "appData": {
                       "free": {
