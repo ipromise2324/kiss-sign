@@ -747,13 +747,15 @@ test('--instance-of writes a new instance\'s report to instances/, and its notes
   assert.match(text, /the stored output of `pnpm instance-evidence`/);
 });
 
-test('an instance whose committed report is in instances/ is read and written there', () => {
+test('an instance whose committed report is in instances/ is found there, with its notes beside it', () => {
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-instances-'));
   try {
     const target = { template: 'fluid/vault-deposit', instance: 'fluid-fusdt' };
     const folder = join(TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt');
     mkdirSync(join(root, folder), { recursive: true });
+    assert.deepEqual([...reportedInstancesIn(root, target.template).keys()], [], 'a folder with no report holds no report');
     writeFileSync(join(root, folder, GENERATED_FILE), '# report\n');
+    assert.deepEqual([...reportedInstancesIn(root, target.template).keys()], [target.instance]);
     assert.equal(reportDir(root, target), folder);
     assert.equal(generatedPath(root, target), join(folder, GENERATED_FILE));
     assert.equal(notesPath(root, target.template, target.instance), join(folder, 'notes.json'));
