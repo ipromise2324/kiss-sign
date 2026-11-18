@@ -7,12 +7,13 @@ import { after, test } from 'node:test';
 import { unreadRefusal } from '../src/chain/https.ts';
 import { createReader } from '../src/chain/reader.ts';
 import type { Reader } from '../src/chain/reader.ts';
-import { REPLAY_ENDPOINTS, replayReader, replayTransport } from '../src/chain/recording.ts';
+import { REPLAY_ENDPOINTS, recordingTransport, replayReader, replayTransport } from '../src/chain/recording.ts';
 import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
-import { isWithheld, scrubRecording } from '../src/research/recording.ts';
+import { parseSearch, scrubRecording, searchText } from '../src/research/recording.ts';
+import type { SearchText } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
 import { pastTxsRecordings, pastTxsSampling } from '../src/research/report.ts';
 import type { Subject } from '../src/research/report.ts';
@@ -22,6 +23,7 @@ import type { Anchor, AnchorKind, Ask, SourceExchange, SourceRequest } from '../
 import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
+import type { TxStudy } from '../src/research/study.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
@@ -229,7 +231,7 @@ test('a whole year holding more than one page of a source falls back to the wind
   assert.equal(text.replace(/^whole year: .*\n/m, ''), await report({ recorded: windowed }));
 });
 
-const recordedRun = (recorded: PastTxsRecording, sources: readonly SourceExchange[] = recorded.sources) => {
+const recordedRun = (recorded: PastTxsRecording) => {
   const { query } = recorded;
   return pastTxs(
     {
@@ -237,23 +239,36 @@ const recordedRun = (recorded: PastTxsRecording, sources: readonly SourceExchang
       anchor: { ...(query.token === undefined ? {} : { token: query.token as Address }), kind: 'event', event: anchorEvent(query.event as string) },
       sampling: pastTxsSampling(query),
     },
-    { ask: replayAsk(sources), reader: replayReader(recorded.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs },
+    { ask: replayAsk([]), reader: replayReader(recorded.exchanges), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: query.maxTxs, recorded: parseSearch(recorded.search as SearchText) },
   );
 };
 
-test('a year whose every answer fits one page is searched whole in one request, and sampled evenly by block', async () => {
+test('a year whose every answer fits one page is searched whole in one request, and its recording replays the year with the studied transactions alone', async () => {
   const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
   assert.equal(year.query.wholeYear, true);
-  assert.deepEqual(year.sources.map(({ request }) => (request.source === 'etherscan' ? [request.query.fromBlock, request.query.toBlock] : [])), [['23810401', '26438400']]);
-  const run = await recordedRun(year);
-  const text = renderPastTxs(run, registry);
-  assert.match(text, /^whole year: blocks 23810401 to 26438400, every source's answer in one page, so the search covers the year with no gap; at most 12 studied, taken evenly in block order\n {2}blocks 23810401 to 26438400: 16 found, 12 studied\nsources: /m);
+  assert.deepEqual(year.sources, []);
+  const text = renderPastTxs(await recordedRun(year), registry);
+  assert.match(text, /^whole year: blocks 23810401 to 26438400, every source's answer in one page, so the search covers the year with no gap; at most 12 studied, taken evenly in block order\n {2}blocks 23810401 to 26438400: 16 found, 12 studied\nsources: etherscan found 16; /m);
   assert.doesNotMatch(text, /^windows:/m);
-  const logs = (year.sources[0]?.answer as { result: { transactionHash: string; blockNumber: string }[] }).result;
-  const firstBlock = new Map<string, number>();
-  for (const log of logs) if (!firstBlock.has(log.transactionHash)) firstBlock.set(log.transactionHash, Number(log.blockNumber));
-  const byBlock = [...firstBlock.keys()].sort((a, b) => (firstBlock.get(a) as number) - (firstBlock.get(b) as number));
-  assert.deepEqual(new Set(run.studies.map((s) => s.hash)), new Set(Array.from({ length: 12 }, (_, i) => byBlock[Math.floor((i * 16) / 12)])));
+  assert.match(text, /^senders, of 12 transactions studied:$/m);
+});
+
+test('the whole year is asked in one request and sampled at even steps in block order, whatever order the source lists it in', async () => {
+  const hash = (n: number) => `0x${n.toString(16).padStart(64, '0')}`;
+  const blocks = Array.from({ length: 16 }, (_, i) => (i * 7) % 16);
+  const asked: SourceRequest[] = [];
+  const ask: Ask = async (request) => {
+    asked.push(request);
+    return { status: '1', message: 'OK', result: blocks.map((b) => ({ transactionHash: hash(b + 1), blockNumber: `0x${(1000 + b).toString(16)}`, topics: [] })) };
+  };
+  const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
+  const run = await pastTxs(
+    { template: loadTemplate(ROOT, year.query.template, registry), anchor: { token: year.query.token as Address, kind: 'event', event: anchorEvent(year.query.event as string) }, sampling: { ...DEFAULT_SPREAD, head: 26444119n } },
+    { ask, reader: replayReader([]), registry, readMessage: replayMessages([]), exclude: undefined, maxTxs: 12 },
+  );
+  assert.deepEqual(asked.map((r) => (r.source === 'etherscan' ? [r.query.fromBlock, r.query.toBlock] : [])), [['23810401', '26438400']]);
+  assert.deepEqual(run.search.sampled.map((s) => s.hash), Array.from({ length: 12 }, (_, i) => hash(Math.floor((i * 16) / 12) + 1)));
+  assert.deepEqual(run.search.unsampled, [{ sources: ['etherscan'], count: 4 }]);
 });
 
 test('the report takes a recording that asked the whole year first, or searched an event with no token, and refuses a transfer anchor with no token', () => {
@@ -282,11 +297,9 @@ test('an event searched over every contract is studied only where the sending Sa
   assert.match(text, /^not studied, the event logged only by another contract than the sender: 1, e\.g\. 0x2b854e652f87b788a5220cfac9ad5cdc7488e497c65b4a1c4b249df5fb8582e0$/m);
   assert.match(text, /^fit the template's shape: 1 transaction from 1 Safe; misfits: 1 from 1 Safe$/m);
   assert.match(text, new RegExp(`^examples that fit: ${fit}$`, 'm'));
-  const otherLogger = anyContract.sources.map(({ request, answer }) => {
-    const { result } = answer as { result: { transactionHash: string; address: string }[] };
-    return { request, answer: { ...(answer as object), result: result.map((log) => (log.transactionHash === fit ? { ...log, address: `0x${'5a'.repeat(20)}` } : log)) } };
-  });
-  const moved = renderPastTxs(await recordedRun(anyContract, otherLogger), registry);
+  const search = anyContract.search as SearchText;
+  const otherLogger = { ...anyContract, search: { ...search, sampled: search.sampled.map((s) => (s.hash === fit ? { ...s, emitters: [`0x${'5a'.repeat(20)}`] } : s)) } };
+  const moved = renderPastTxs(await recordedRun(otherLogger), registry);
   assert.match(moved, new RegExp(`^not studied, the event logged only by another contract than the sender: 2, e\\.g\\. .*${fit}`, 'm'));
   assert.match(moved, /^fit the template's shape: 0 transactions from 0 Safes; misfits: 1 from 1 Safe$/m);
 });
@@ -294,7 +307,6 @@ test('an event searched over every contract is studied only where the sending Sa
 test('the configured Safe is left out of every count and example, and never printed', async () => {
   const safe = safeOf(FIT);
   const text = await report({ exclude: safe });
-  assert.match(text, /^sources: alchemy found 62, etherscan found 62; both 62, /m);
   assert.match(text, /^ {2}proven Safe: 0, from 0 Safes$/m);
   assert.doesNotMatch(text, new RegExp(`${safe.slice(2)}|${FIT}|${MISFIT}`, 'i'));
 });
@@ -323,54 +335,87 @@ test('a transaction a provider would not serve is unreadable for that reason, ap
   assert.match(text, new RegExp(`^ {2}1 unreadable, eth_getTransactionByHash: alchemy and drpc disagree: ${MISFIT}$`, 'm'));
 });
 
-test('a recording keeps the hash of no transaction it did not study, and none the configured Safe sent or is named in, and replays the same', async () => {
-  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
-  const { query } = windowed;
-  const study = (ask: Ask, exclude: Address | undefined, excludedByRecording?: ReadonlySet<Hex>) =>
-    pastTxs(
-      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
-      { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude, maxTxs: query.maxTxs, ...(excludedByRecording === undefined ? {} : { excludedByRecording }) },
-    );
-  const plain = await study(replayAsk(windowed.sources), undefined);
-  const studied = new Set(plain.studies.map((s) => s.hash));
-  const transfers = windowed.sources.flatMap(({ answer }) => ((answer as { transfers?: { hash: string; to: string }[] }).transfers ?? []));
-  const unsampled = transfers.find((t) => !studied.has(t.hash as Hex) && transfers.filter((u) => u.to === t.to).every((u) => !studied.has(u.hash as Hex))) as { hash: string; to: string };
-  const safe = unsampled.to.toLowerCase() as Address;
+const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+/** A reader over `exchanges` that keeps each read it made, as `--record` does. */
+function readsKept(exchanges: PastTxsRecording['exchanges']) {
+  const read = recordingTransport(replayTransport(exchanges, REPLAY_ENDPOINTS), REPLAY_ENDPOINTS);
+  return { reader: createReader(REPLAY_ENDPOINTS, read.transport, { retryPausesMs: [] }), exchanges: () => read.exchanges().filter((e) => REPLAY_ENDPOINTS.every((p) => p.provider in e.answers)) };
+}
+let windowedReads = readsKept(windowed.exchanges);
+const windowedRun = (sources: readonly SourceExchange[], exclude: Address | undefined, recorded?: PastTxsRecording) => {
+  windowedReads = readsKept(windowed.exchanges);
+  return pastTxs(
+    { template: loadTemplate(ROOT, windowed.query.template, registry), anchor: { token: windowed.query.token as Address, kind: windowed.query.anchor as AnchorKind }, sampling: pastTxsSampling(windowed.query) },
+    {
+      ask: replayAsk(sources),
+      reader: recorded === undefined ? windowedReads.reader : replayReader(recorded.exchanges),
+      registry,
+      readMessage: replayMessages([]),
+      exclude,
+      maxTxs: windowed.query.maxTxs,
+      ...(recorded === undefined ? {} : { recorded: parseSearch(recorded.search as SearchText) }),
+    },
+  );
+};
+const record = (run: Awaited<ReturnType<typeof pastTxs>>, safe: Address, from: PastTxsRecording = windowed, exchanges = windowedReads.exchanges()) =>
+  scrubRecording({ ...from, sources: [], search: searchText(run.search), exchanges }, [safe], run);
+const recordedHashes = (written: PastTxsRecording) => new Set(JSON.stringify(written).toLowerCase().match(/0x[0-9a-f]{64}/g));
 
-  const recorder = recordingAsk(replayAsk(windowed.sources));
-  const live = await study(recorder.ask, safe);
-  const written = scrubRecording({ ...windowed, sources: recorder.exchanges() }, [safe], live);
-  const text = JSON.stringify(written).toLowerCase();
-  assert.doesNotMatch(text, new RegExp(safe.slice(2)));
-  assert.ok(!text.includes(unsampled.hash.toLowerCase()), 'the unsampled transaction the configured Safe is named in is not recorded');
-  const kept = new Set([...live.studies.map((s) => s.hash), ...live.otherEmitter]);
-  const hashes = written.sources.flatMap(({ answer }) => [...((answer as { transfers?: { hash: Hex }[] }).transfers ?? []).map((t) => t.hash), ...((answer as { result?: { transactionHash?: Hex }[] }).result ?? []).flatMap((l) => (l.transactionHash === undefined ? [] : [l.transactionHash]))]);
-  assert.ok(hashes.length > kept.size);
-  for (const hash of hashes) assert.ok(kept.has(hash) || isWithheld(hash), `${hash} was not studied but is recorded`);
-  const replayed = await study(replayAsk(written.sources), undefined, new Set(written.excluded ?? []));
-  assert.equal(renderPastTxs(replayed, registry), renderPastTxs(live, registry));
-  assert.throws(() => scrubRecording({ ...written, query: { ...written.query, token: safe } }, [safe], live), /still mentions the configured Safe/);
-});
-
-test('a sampled transaction the configured Safe sent, whose search entry names no address, is left out, and its withheld hash replays as left out without a chain read', async () => {
-  const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
-  const senders = year.exchanges.filter((e) => e.method === 'eth_getTransactionByHash').map((e) => (e.answers.alchemy as { to: string }).to.toLowerCase());
-  const safe = senders.find((to, i) => senders.indexOf(to) !== i) as Address;
-  const { query } = year;
-  const run = (ask: Ask, exclude: Address | undefined, excludedByRecording: ReadonlySet<Hex>, exchanges = year.exchanges) =>
+test('a recording keeps the hash of no transaction it did not sample, so an unsampled one the configured Safe sent or is named in is not in it, and it replays the same', async () => {
+  const anyContract: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'any-contract.json'));
+  const { query } = anyContract;
+  const safe = `0x${'5a'.repeat(20)}` as Address;
+  const sampled = (anyContract.search as SearchText).sampled;
+  const unsampled = (n: number) => `0x${'c0'.repeat(31)}${n.toString(16).padStart(2, '0')}`;
+  const event = anchorEvent(query.event as string);
+  const log = (hash: string, emitter: string) => ({ transactionHash: hash, address: emitter, topics: [event.topic], blockNumber: '0x1' });
+  const logs = [
+    log(unsampled(9), safe),
+    ...sampled.flatMap((s, i) => [log(s.hash, s.emitters[0] as string), log(unsampled(i), `0x${'77'.repeat(20)}`)]),
+  ];
+  const ask: Ask = async () => ({ status: '1', message: 'OK', result: logs });
+  const reads = readsKept(anyContract.exchanges);
+  const run = (reader: Reader, exclude: Address | undefined, recorded?: PastTxsRecording) =>
     pastTxs(
-      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: pastTxsSampling(query) },
-      { ask, reader: replayReader(exchanges), registry, readMessage: replayMessages([]), exclude, maxTxs: query.maxTxs, excludedByRecording },
+      { template: loadTemplate(ROOT, query.template, registry), anchor: { kind: 'event', event }, sampling: pastTxsSampling(query) },
+      { ask, reader, registry, readMessage: replayMessages([]), exclude, maxTxs: 4, ...(recorded === undefined ? {} : { recorded: parseSearch(recorded.search as SearchText) }) },
     );
-  const live = await run(replayAsk(year.sources), safe, new Set());
-  const written = scrubRecording(year, [safe], live);
-  assert.ok((written.excluded ?? []).length > 0 && (written.excluded ?? []).every(isWithheld));
+  const live = await run(reads.reader, safe);
+  assert.deepEqual(live.search.sampled.map((s) => s.hash), sampled.map((s) => s.hash));
+  assert.deepEqual(live.search.unsampled, [{ sources: ['etherscan'], count: 4 }]);
+  const written = record(live, safe, anyContract, reads.exchanges());
   const text = JSON.stringify(written).toLowerCase();
   assert.ok(!text.includes(safe.slice(2)));
-  const unstudied = [...live.excluded, ...[...live.found.keys()].filter((h) => !live.studies.some((s) => s.hash === h))].filter((h) => !isWithheld(h));
-  assert.ok(unstudied.length > 0);
-  for (const hash of unstudied) assert.ok(!text.includes(hash.toLowerCase()), `${hash} is recorded`);
-  assert.equal(renderPastTxs(await run(replayAsk(written.sources), undefined, new Set(written.excluded), written.exchanges), registry), renderPastTxs(live, registry));
+  for (let n = 0; n <= 9; n++) assert.ok(!text.includes(unsampled(n)), `unsampled ${n} is recorded`);
+  assert.equal(renderPastTxs(await run(replayReader(written.exchanges), undefined, written), registry), renderPastTxs(live, registry));
+});
+
+test('a sampled transaction the configured Safe sent is left out of the study and the recording, which replays the same', async () => {
+  const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
+  const reads = readsKept(year.exchanges);
+  const senders = year.exchanges.filter((e) => e.method === 'eth_getTransactionByHash').map((e) => (e.answers.alchemy as { to: string }).to.toLowerCase());
+  const safe = senders.find((to, i) => senders.indexOf(to) !== i) as Address;
+  const run = (reader: Reader, exclude: Address | undefined, recorded: PastTxsRecording) =>
+    pastTxs(
+      { template: loadTemplate(ROOT, year.query.template, registry), anchor: { token: year.query.token as Address, kind: 'event', event: anchorEvent(year.query.event as string) }, sampling: pastTxsSampling(year.query) },
+      { ask: replayAsk([]), reader, registry, readMessage: replayMessages([]), exclude, maxTxs: year.query.maxTxs, recorded: parseSearch(recorded.search as SearchText) },
+    );
+  const live = await run(reads.reader, safe, year);
+  assert.ok(live.excluded.size > 0);
+  const written = record(live, safe, year, reads.exchanges());
+  assert.ok(!JSON.stringify(written).toLowerCase().includes(safe.slice(2)));
+  const kept = recordedHashes(written);
+  for (const hash of live.excluded) assert.ok(!kept.has(hash), hash);
+  assert.equal(renderPastTxs(await run(replayReader(written.exchanges), undefined, written), registry), renderPastTxs(live, registry));
+});
+
+test('a recording that would still name the configured Safe, or a transaction it did not sample, is refused', async () => {
+  const safe = safeOf(FIT);
+  const live = await windowedRun(windowed.sources, safe);
+  assert.throws(() => scrubRecording({ ...windowed, sources: [], search: searchText(live.search), query: { ...windowed.query, token: safe } }, [safe], live), /still names the configured Safe/);
+  const unsampled = [...live.found.keys()].find((h) => !live.search.sampled.some((s) => s.hash === h)) as Hex;
+  const leaked = { ...windowed, sources: [], search: searchText(live.search), messages: [{ url: 'https://example.org', answer: unsampled }] as unknown as PastTxsRecording['messages'] };
+  assert.throws(() => scrubRecording(leaked as PastTxsRecording, [safe], live), /still names a transaction the run did not study/);
 });
 
 test('a template whose trailer allowance is shorter than real use lists those transactions as misfits, with the reason', async () => {

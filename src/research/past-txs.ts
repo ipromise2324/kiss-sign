@@ -12,7 +12,6 @@ import type { ReadMessage } from './messages.ts';
 import { brokenRule, constText, functionNames, isOtherOperation, isTime, misfitText, shapesOf, studyTx } from './study.ts';
 import type { OutsideKind, Sender, TxStudy } from './study.ts';
 import { checkTrace, holdingTemplateCalls } from './trace.ts';
-import { isWithheld } from './recording.ts';
 import type { TraceSource, TracedTx } from './trace.ts';
 
 export type BlockRange = { readonly fromBlock: bigint; readonly toBlock: bigint };
@@ -53,8 +52,8 @@ export type PastTxsDeps = {
   readonly maxTxs: number;
   /** Each transaction's call trace; without it, nothing is traced. */
   readonly traces?: TraceSource;
-  /** A recording's withheld hashes of transactions left out because they touch the configured Safe; none is read. */
-  readonly excludedByRecording?: ReadonlySet<Hex>;
+  /** A recording's search, replayed in place of asking the sources. */
+  readonly recorded?: RecordedSearch;
 };
 
 type Kept = Exclude<TxStudy, { kind: 'excluded' }>;
@@ -80,6 +79,8 @@ export type PastTxs = {
   readonly excluded: ReadonlySet<Hex>;
   /** With an event any contract may log, transactions whose sender did not log it itself, left out of `studies`. */
   readonly otherEmitter: readonly Hex[];
+  /** What `--record` keeps of the search. */
+  readonly search: RecordedSearch;
   /** The template's effects that state an amount, and for each fitting transaction stating one, how its balances differed. */
   readonly effects: readonly StatedEffect[];
   readonly measurements: ReadonlyMap<Hex, Measurement>;
@@ -151,7 +152,22 @@ async function searchWindow(anchor: PastTxsQuery['anchor'], range: BlockRange, s
 const spacedSample = <T>(items: readonly T[], cap: number): T[] =>
   items.length <= cap ? [...items] : Array.from({ length: cap }, (_, i) => items[Math.floor((i * items.length) / cap)] as T);
 
-export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<PastTxs> {
+/**
+ * What a search found, in the form `--record` keeps: each sampled transaction by hash with the sources that found it and
+ * the contracts that logged it, in the order it was studied, and every other one only as a count per set of sources.
+ * The configured Safe's transactions are in neither.
+ */
+export type RecordedSearch = {
+  readonly year: YearSearch | undefined;
+  readonly perWindow: number;
+  readonly windows: readonly WindowRun[];
+  readonly sampled: readonly { readonly hash: Hex; readonly sources: readonly SourceName[]; readonly emitters: readonly Address[] }[];
+  readonly unsampled: readonly { readonly sources: readonly SourceName[]; readonly count: number }[];
+};
+
+type Searched = { asked: BlockRange; range: BlockRange; found: Hex[]; sample: Hex[] };
+
+async function searchLive(query: PastTxsQuery, deps: PastTxsDeps) {
   const { sampling } = query;
   let ranges: BlockRange[];
   let head: bigint | undefined;
@@ -173,7 +189,7 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const found = new Map<Hex, SourceName[]>();
   const excluded = new Set<Hex>();
   const emitters = new Map<Hex, Set<Address>>();
-  const searched: { asked: BlockRange; range: BlockRange; found: Hex[]; sample: Hex[] }[] = [];
+  const searched: Searched[] = [];
   for (const asked of ranges) {
     const { range, hits } = yearHits === undefined ? await searchWindow(query.anchor, asked, sampling.kind, deps.ask) : { range: asked, hits: yearHits };
     const window = hashesBySource(hits, deps.exclude);
@@ -183,13 +199,33 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
     const hashes = yearHits === undefined ? [...window.found.keys()] : byBlock([...window.found.keys()], hits);
     searched.push({ asked, range, found: hashes, sample: spacedSample(hashes, perWindow) });
   }
+  return { head, year, perWindow, found, excluded, emitters, searched };
+}
+
+const WITHHELD = `0x${'ee'.repeat(28)}`;
+const isWithheld = (hash: Hex): boolean => hash.startsWith(WITHHELD);
+
+/** A recorded search as the run it replays: each transaction not sampled under a hash of its own that no real one holds. */
+function searchRecorded(recorded: RecordedSearch) {
+  const found = new Map<Hex, SourceName[]>(recorded.sampled.map((s) => [s.hash, [...s.sources]]));
+  let n = 0;
+  for (const { sources, count } of recorded.unsampled) for (let i = 0; i < count; i++) found.set(`${WITHHELD}${(n++).toString(16).padStart(8, '0')}` as Hex, [...sources]);
+  const emitters = new Map(recorded.sampled.map((s) => [s.hash, new Set(s.emitters)]));
+  return { found, emitters, sample: recorded.sampled.map((s) => s.hash) };
+}
+
+export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<PastTxs> {
+  const live = deps.recorded === undefined ? await searchLive(query, deps) : undefined;
+  const replayed = deps.recorded === undefined ? undefined : searchRecorded(deps.recorded);
+  const head = live?.head ?? (query.sampling.kind === 'spread' && deps.recorded !== undefined ? query.sampling.head : undefined);
+  const found = live?.found ?? (replayed as NonNullable<typeof replayed>).found;
+  const emitters = live?.emitters ?? (replayed as NonNullable<typeof replayed>).emitters;
+  const excluded = live?.excluded ?? new Set<Hex>();
+  const sample = live?.searched.flatMap((w) => w.sample) ?? (replayed as NonNullable<typeof replayed>).sample;
   const shapes = shapesOf(query.template);
   const token = query.anchor.token?.toLowerCase() as Address | undefined;
   const context = { shapes, registry: deps.registry, readMessage: deps.readMessage, exclude: deps.exclude, anchor: { kind: query.anchor.kind, ...(token === undefined ? {} : { token }) } };
-  const all = await inPool(searched.flatMap((w) => w.sample), 4, async (hash) => ({
-    hash,
-    study: deps.excludedByRecording?.has(hash) === true ? ({ kind: 'excluded' } as const) : await studyTx(deps.reader, hash, context),
-  }));
+  const all = await inPool(sample, 4, (hash) => studyTx(deps.reader, hash, context).then((study) => ({ hash, study })));
   const studies: Kept[] = [];
   const otherEmitter: Hex[] = [];
   for (const { hash, study } of all) {
@@ -206,8 +242,22 @@ export async function pastTxs(query: PastTxsQuery, deps: PastTxsDeps): Promise<P
   const measurements = new Map(fits.flatMap((fit, i) => (measured[i] === undefined ? [] : [[fit.hash, measured[i]] as const])));
   const traces = deps.traces === undefined ? [] : await traceExact(query.template, fits, deps.traces, deps.reader, deps.registry);
   const kept = (hashes: readonly Hex[]) => hashes.filter((hash) => !excluded.has(hash)).length;
-  const windows = searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample.filter((hash) => !otherEmitter.includes(hash))) }));
-  return { query, head, year, windows, perWindow, found, studies, shapes, excluded, otherEmitter, effects, measurements, traces };
+  const windows =
+    live?.searched.map(({ asked, range, found, sample }) => ({ asked, range, found: kept(found), studied: kept(sample.filter((hash) => !otherEmitter.includes(hash))) })) ??
+    (deps.recorded as RecordedSearch).windows;
+  const perWindow = live?.perWindow ?? (deps.recorded as RecordedSearch).perWindow;
+  const year = live === undefined ? (deps.recorded as RecordedSearch).year : live.year;
+  const sampled = sample.filter((hash) => !excluded.has(hash));
+  const unsampled = new Map<string, number>();
+  for (const [hash, sources] of found) if (!sampled.includes(hash)) unsampled.set(sources.join(','), (unsampled.get(sources.join(',')) ?? 0) + 1);
+  const search: RecordedSearch = {
+    year,
+    perWindow,
+    windows,
+    sampled: sampled.map((hash) => ({ hash, sources: found.get(hash) ?? [], emitters: [...(emitters.get(hash) ?? [])] })),
+    unsampled: [...unsampled].map(([sources, count]) => ({ sources: sources.split(',') as SourceName[], count })),
+  };
+  return { query, head, year, windows, perWindow, found, studies, shapes, excluded, otherEmitter, effects, measurements, traces, search };
 }
 
 /**
@@ -513,7 +563,7 @@ export function renderPastTxs(run: PastTxs, registry: Registry): string {
       const hashes = only(source);
       const recorded = hashes.filter((hash) => !isWithheld(hash));
       const withheld = hashes.length - recorded.length;
-      if (hashes.length > 0) lines.push(`  only ${source}: ${[...recorded, ...(withheld === 0 ? [] : [`${withheld} not studied, so not recorded`])].join(', ')}`);
+      if (hashes.length > 0) lines.push(`  only ${source}: ${[...recorded, ...(withheld === 0 ? [] : [`${withheld} not sampled, so not recorded`])].join(', ')}`);
     }
   } else lines.push(`sources: etherscan found ${bySource('etherscan')}; alchemy does not search an event (its eth_getLogs reads at most 10 blocks at a time on the free plan)`);
   if (run.otherEmitter.length > 0) lines.push(`not studied, the event logged only by another contract than the sender: ${run.otherEmitter.length}, e.g. ${examples(run.otherEmitter)}`);

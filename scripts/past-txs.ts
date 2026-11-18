@@ -9,11 +9,11 @@ import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
-import { ANCHOR_KINDS, anchorEvent, liveAsk, recordingAsk } from '../src/research/sources.ts';
+import { ANCHOR_KINDS, anchorEvent, liveAsk } from '../src/research/sources.ts';
 import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
 import { liveMessages, recordingMessages } from '../src/research/messages.ts';
 import { httpsMessage } from '../src/verify/messages.ts';
-import { scrubRecording } from '../src/research/recording.ts';
+import { scrubRecording, searchText } from '../src/research/recording.ts';
 import { drpcTraces } from '../src/research/trace.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
@@ -178,7 +178,7 @@ const endpoints = mainnetEndpoints(process.env);
 const chain = recordingTransport(httpsTransport(), endpoints);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
-const sources = recordingAsk(liveAsk(process.env, note));
+const ask = liveAsk(process.env, note);
 const messages = recordingMessages(liveMessages(httpsMessage, note));
 const reader = createReader(endpoints, chain.transport, { note });
 const traces = drpcTraces(endpoints[1], httpsTransport(), note);
@@ -188,7 +188,7 @@ const query = {
   sampling: range !== undefined ? ({ kind: 'range', range } as const) : sameAs === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, ...sameAs },
 };
 const run = await pastTxs(query, {
-  ask: sources.ask,
+  ask,
   reader,
   registry,
   readMessage: messages.read,
@@ -219,7 +219,8 @@ if (flags.record !== undefined) {
         ...(run.year === undefined ? {} : { wholeYear: true as const }),
         maxTxs,
       },
-      sources: sources.exchanges(),
+      sources: [],
+      search: searchText(run.search),
       messages: messages.exchanges(),
       providers,
       exchanges: chain.exchanges().filter((e) => providers.every((p) => p in e.answers)),
@@ -231,5 +232,5 @@ if (flags.record !== undefined) {
   const out = join(ROOT, 'testdata', 'research', `${flags.record}.json`);
   mkdirSync(join(out, '..'), { recursive: true });
   writeFileSync(out, recordingText(fixture, 1));
-  console.log(`wrote ${out}: ${fixture.sources.length} source answers, ${fixture.exchanges.length} chain requests, ${fixture.traces?.length ?? 0} call traces`);
+  console.log(`wrote ${out}: ${run.search.sampled.length} sampled transactions, ${fixture.exchanges.length} chain requests, ${fixture.traces?.length ?? 0} call traces`);
 }
