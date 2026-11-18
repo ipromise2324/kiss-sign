@@ -4,10 +4,29 @@
       "after": 2,
       "from": "general-adapter-1",
       "to": "usdc",
+      "function": "transferFrom(address,address,uint256)",
       "text": {
         "en": "Pulls the amount you type of the asset token from the Safe with `transferFrom`",
         "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額的資產代幣"
-      }
+      },
+      "sources": [
+        "https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L381",
+        "https://etherscan.io/tx/0x7667a60ff42625518a709b06a447e9dac326f87e6731d065463c244585066521"
+      ]
+    },
+    {
+      "after": 2,
+      "from": "general-adapter-1",
+      "to": "hyperithm-usdc-apex-v2-9e2f",
+      "function": "deposit(uint256,address)",
+      "text": {
+        "en": "Deposits the pulled USDC into this vault with `deposit`, which mints the shares to the Safe",
+        "zh-TW": "用 `deposit` 把拉來的 USDC 存進這個金庫，金庫把份額鑄給 Safe"
+      },
+      "sources": [
+        "https://github.com/morpho-org/bundler3/blob/b4014349e3527f44ceaab697b26e29f2b11457f3/src/adapters/GeneralAdapter1.sol#L89",
+        "https://etherscan.io/tx/0x7667a60ff42625518a709b06a447e9dac326f87e6731d065463c244585066521"
+      ]
     }
   ],
   "verdict": {

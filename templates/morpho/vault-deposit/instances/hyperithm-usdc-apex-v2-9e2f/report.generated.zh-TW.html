@@ -299,7 +299,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>流程 <span class="c">2 個呼叫</span></h2>
   <p class="lead">實線是 Safe 發出的呼叫、模板綁定的內部呼叫，和程式在過去交易裡看到的流程線；虛線是還沒核對的 AI 研究；綠線是你得到的。</p>
   <div class="diagram">
-  <svg viewBox="0 0 750 372" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 940 372" role="img" aria-labelledby="dt dd">
     <title id="dt">交易流程</title>
     <desc id="dd">呼叫 1：Safe 呼叫 usdc 的 approve。呼叫 2：Safe 呼叫 bundler3 的 multicall。結果：你得到 hyperithm-usdc-apex-v2-9e2f。</desc>
     <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
@@ -311,6 +311,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">bundler3</text><text class="nodes" x="470" y="50" text-anchor="middle">路由合約</text>
     <line class="life" x1="660" y1="58" x2="660" y2="364"/>
     <rect class="node" x="574.5" y="14" width="171" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">general-adapter-1</text><text class="nodes" x="660" y="50" text-anchor="middle">轉接合約</text>
+    <line class="life" x1="850" y1="58" x2="850" y2="364"/>
+    <rect class="node" x="763" y="14" width="174" height="44" rx="6"/><text class="nodet" x="850" y="34" text-anchor="middle">hyperithm-usdc-apex-v2-9e2f</text><text class="nodes" x="850" y="50" text-anchor="middle">金庫</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">multicall</text>
@@ -319,10 +321,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="nested" x1="470" y1="204" x2="657" y2="204" marker-end="url(#m-inside)"/>
     <text class="fn" x="482" y="230">erc4626Deposit</text>
     <line class="nested" x1="470" y1="240" x2="657" y2="240" marker-end="url(#m-inside)"/>
-    <g data-ai><rect class="tagbox" x="315.40000000000003" y="252" width="56" height="20" rx="6"/><text class="tagt" x="343.40000000000003" y="266" text-anchor="middle">AI 研究</text><rect class="codebox" x="446.00000000000006" y="252" width="140.6" height="19" rx="6"/><rect class="codebox" x="621.8000000000001" y="252" width="117.2" height="19" rx="6"/><text class="cap" y="266"><tspan x="379.40000000000003">依序呼叫 </tspan><tspan class="capc" x="450.00000000000006">erc20TransferFrom</tspan><tspan x="589.6"> 和 </tspan><tspan class="capc" x="625.8000000000001">erc4626Deposit</tspan><tspan x="742.0000000000001"></tspan></text></g>
-    <line class="inner" x1="470" y1="276" x2="657" y2="276" marker-end="url(#m-inside)"/>
-    <g data-ai><rect class="tagbox" x="292" y="288" width="56" height="20" rx="6"/><text class="tagt" x="320" y="302" text-anchor="middle">AI 研究</text><rect class="codebox" x="380.6" y="288" width="101.6" height="19" rx="6"/><text class="cap" y="302"><tspan x="356">用 </tspan><tspan class="capc" x="384.6">transferFrom</tspan><tspan x="485.20000000000005"> 從 Safe 拉走你填的金額的資產代幣</tspan></text></g>
-    <line class="inner" x1="660" y1="312" x2="283" y2="312" marker-end="url(#m-inside)"/>
+    <g data-ai><rect class="tagbox" x="292" y="252" width="56" height="20" rx="6"/><text class="tagt" x="320" y="266" text-anchor="middle">AI 研究</text><rect class="codebox" x="380.6" y="252" width="101.6" height="19" rx="6"/><text class="cap" y="266"><tspan x="356">用 </tspan><tspan class="capc" x="384.6">transferFrom</tspan><tspan x="485.20000000000005"> 從 Safe 拉走你填的金額的資產代幣</tspan></text></g>
+    <line class="inner" x1="660" y1="276" x2="283" y2="276" marker-end="url(#m-inside)"/>
+    <g data-ai><rect class="tagbox" x="434.5999999999999" y="288" width="56" height="20" rx="6"/><text class="tagt" x="462.5999999999999" y="302" text-anchor="middle">AI 研究</text><rect class="codebox" x="523.1999999999999" y="288" width="62.6" height="19" rx="6"/><text class="cap" y="302"><tspan x="498.5999999999999">用 </tspan><tspan class="capc" x="527.1999999999999">deposit</tspan><tspan x="588.8"> 把拉來的 USDC 存進這個金庫，金庫把份額鑄給 Safe</tspan></text></g>
+    <line class="inner" x1="660" y1="312" x2="847" y2="312" marker-end="url(#m-inside)"/>
     <text class="capg" x="104" y="338">你得到 hyperithm-usdc-apex-v2-9e2f</text>
     <line class="gain" x1="470" y1="348" x2="93" y2="348" marker-end="url(#m-gets)"/>
   </svg>

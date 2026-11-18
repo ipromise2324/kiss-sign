@@ -388,8 +388,8 @@ const protocolNotes = (slug: string) =>
   });
 
 const FLOW = optList(
-  where(obj({ after: callNumber, from: contract, to: contract, function: opt(signature), text: text(100), sources: optList(url) }), (line, scope) =>
-    line.function !== undefined && scope.nested.some((n) => n.after === line.after && n.selector === line.function?.selector && n.from.includes(line.from) && (n.to === undefined || n.to.includes(line.to)))
+  where(obj({ after: callNumber, from: contract, to: contract, function: signature, text: text(100), sources: where(list(url), (sources) => (sources.length === 0 ? 'names no source: the contract source read and a past transaction checked' : undefined)) }), (line, scope) =>
+    scope.nested.some((n) => n.after === line.after && n.selector === line.function.selector && n.from.includes(line.from) && (n.to === undefined || n.to.includes(line.to)))
       ? 'names a call the template binds itself, which the diagram draws from the template'
       : undefined,
   ),

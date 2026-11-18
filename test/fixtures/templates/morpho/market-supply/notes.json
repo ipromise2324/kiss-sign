@@ -19,19 +19,29 @@
       "after": 2,
       "from": "blue-bundles-v1",
       "to": "usdc",
+      "function": "transferFrom(address,address,uint256)",
       "text": {
         "en": "Pulls the amount you type from the Safe with `transferFrom`",
         "zh-TW": "用 `transferFrom` 從 Safe 拉走你填的金額"
-      }
+      },
+      "sources": [
+        "https://github.com/morpho-org/morpho-blue/blob/main/src/Morpho.sol",
+        "https://etherscan.io/tx/0x4d8feed089c00f2714ba3b9642292dd0f1bd87b5944882ef5f78c3ce28fa59bb"
+      ]
     },
     {
       "after": 2,
       "from": "blue-bundles-v1",
       "to": "morpho-blue",
+      "function": "supply((address,address,address,address,uint256),uint256,uint256,address,bytes)",
       "text": {
         "en": "`supply` into the market, with `onBehalf` the Safe",
         "zh-TW": "`supply` 進 market，`onBehalf` 是 Safe"
-      }
+      },
+      "sources": [
+        "https://github.com/morpho-org/morpho-blue/blob/main/src/Morpho.sol",
+        "https://etherscan.io/tx/0x4d8feed089c00f2714ba3b9642292dd0f1bd87b5944882ef5f78c3ce28fa59bb"
+      ]
     }
   ],
   "protocols": {

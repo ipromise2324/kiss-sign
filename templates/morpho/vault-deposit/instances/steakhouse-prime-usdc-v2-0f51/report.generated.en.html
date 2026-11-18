@@ -299,7 +299,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <h2>Flow <span class="c">2 calls</span></h2>
   <p class="lead">Solid lines are the Safe&#39;s calls, the calls the template binds inside them, and flow lines the program saw in past transactions; dashed lines are AI research not checked; green lines are what you get.</p>
   <div class="diagram">
-  <svg viewBox="0 0 797 372" role="img" aria-labelledby="dt dd">
+  <svg viewBox="0 0 940 372" role="img" aria-labelledby="dt dd">
     <title id="dt">Transaction flow</title>
     <desc id="dd">Call 1: the Safe calls approve on usdc. Call 2: the Safe calls multicall on bundler3. Result: you get steakhouse-prime-usdc-v2-0f51.</desc>
     <defs><marker id="m-call" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ah" d="M0 0L10 5L0 10z"/></marker><marker id="m-inside" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahi" d="M0 0L10 5L0 10z"/></marker><marker id="m-gets" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path class="ahg" d="M0 0L10 5L0 10z"/></marker></defs>
@@ -311,6 +311,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <rect class="node" x="404" y="14" width="132" height="44" rx="6"/><text class="nodet" x="470" y="34" text-anchor="middle">bundler3</text><text class="nodes" x="470" y="50" text-anchor="middle">router</text>
     <line class="life" x1="660" y1="58" x2="660" y2="364"/>
     <rect class="node" x="574.5" y="14" width="171" height="44" rx="6"/><text class="nodet" x="660" y="34" text-anchor="middle">general-adapter-1</text><text class="nodes" x="660" y="50" text-anchor="middle">adapter</text>
+    <line class="life" x1="850" y1="58" x2="850" y2="364"/>
+    <rect class="node" x="763" y="14" width="174" height="44" rx="6"/><text class="nodet" x="850" y="34" text-anchor="middle">steakhouse-prime-usdc-v2-0f51</text><text class="nodes" x="850" y="50" text-anchor="middle">vault</text>
     <text class="no" x="102" y="90">1</text><text class="fn" x="120" y="90">approve</text>
     <line class="call" x1="90" y1="104" x2="277" y2="104" marker-end="url(#m-call)"/>
     <text class="no" x="102" y="142">2</text><text class="fn" x="120" y="142">multicall</text>
@@ -319,10 +321,10 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <line class="nested" x1="470" y1="204" x2="657" y2="204" marker-end="url(#m-inside)"/>
     <text class="fn" x="482" y="230">erc4626Deposit</text>
     <line class="nested" x1="470" y1="240" x2="657" y2="240" marker-end="url(#m-inside)"/>
-    <g data-ai><rect class="tagbox" x="275.20000000000005" y="252" width="84" height="20" rx="6"/><text class="tagt" x="317.20000000000005" y="266" text-anchor="middle">AI research</text><rect class="codebox" x="415.80000000000007" y="252" width="140.6" height="19" rx="6"/><rect class="codebox" x="600.4000000000001" y="252" width="117.2" height="19" rx="6"/><text class="cap" y="266"><tspan x="367.20000000000005">Calls </tspan><tspan class="capc" x="419.80000000000007">erc20TransferFrom</tspan><tspan x="559.4000000000001"> and </tspan><tspan class="capc" x="604.4000000000001">erc4626Deposit</tspan><tspan x="720.6000000000001"> in order</tspan></text></g>
-    <line class="inner" x1="470" y1="276" x2="657" y2="276" marker-end="url(#m-inside)"/>
-    <g data-ai><rect class="tagbox" x="102.99999999999943" y="288" width="84" height="20" rx="6"/><text class="tagt" x="144.99999999999943" y="302" text-anchor="middle">AI research</text><rect class="codebox" x="684.4" y="288" width="101.6" height="19" rx="6"/><text class="cap" y="302"><tspan x="194.99999999999943">Pulls the amount you type of the asset token from the Safe with </tspan><tspan class="capc" x="688.4">transferFrom</tspan><tspan x="789"></tspan></text></g>
-    <line class="inner" x1="660" y1="312" x2="283" y2="312" marker-end="url(#m-inside)"/>
+    <g data-ai><rect class="tagbox" x="245.99999999999943" y="252" width="84" height="20" rx="6"/><text class="tagt" x="287.99999999999943" y="266" text-anchor="middle">AI research</text><rect class="codebox" x="827.4" y="252" width="101.6" height="19" rx="6"/><text class="cap" y="266"><tspan x="337.99999999999943">Pulls the amount you type of the asset token from the Safe with </tspan><tspan class="capc" x="831.4">transferFrom</tspan><tspan x="932"></tspan></text></g>
+    <line class="inner" x1="660" y1="276" x2="283" y2="276" marker-end="url(#m-inside)"/>
+    <g data-ai><rect class="tagbox" x="148.19999999999993" y="288" width="84" height="20" rx="6"/><text class="tagt" x="190.19999999999993" y="302" text-anchor="middle">AI research</text><rect class="codebox" x="592.8000000000001" y="288" width="62.6" height="19" rx="6"/><text class="cap" y="302"><tspan x="240.19999999999993">Deposits the pulled USDC into this vault with </tspan><tspan class="capc" x="596.8000000000001">deposit</tspan><tspan x="658.4000000000001">, which mints the shares to the Safe</tspan></text></g>
+    <line class="inner" x1="660" y1="312" x2="847" y2="312" marker-end="url(#m-inside)"/>
     <text class="capg" x="104" y="338">you get steakhouse-prime-usdc-v2-0f51</text>
     <line class="gain" x1="470" y1="348" x2="93" y2="348" marker-end="url(#m-gets)"/>
   </svg>
