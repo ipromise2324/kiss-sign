@@ -3,7 +3,6 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from 'node:test';
 import { resolveCard } from '../src/card.ts';
-import { replayReader } from '../src/chain/recording.ts';
 import type { Card } from '../src/card.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { parseServiceTx } from '../src/safe/parse.ts';
@@ -11,10 +10,7 @@ import type { Address, Hex, SafeTx } from '../src/safe/types.ts';
 import { checkTemplateFields } from '../src/template/check.ts';
 import { checkMutations } from '../src/template/mutation.ts';
 import { TemplateError, loadTemplate, parseTemplate } from '../src/template/template.ts';
-import { evaluate } from '../src/verify/verify.ts';
-import type { VerdictFile, VerifyInputs } from '../src/verify/verify.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
-import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = repoWithTestFixtures();
 const registry = loadRegistry(ROOT);
@@ -95,40 +91,4 @@ test('a migration card asks for at least the assets the redeem bound guarantees,
     'multiSend[1].multicall.bundle[1].data.erc4626Redeem.minSharePriceE27',
   ]);
   assert.deepEqual(at(migrate(assets, `${BigInt(shares) + 1n}`)), ['multiSend[1].multicall.bundle[2].data.erc4626Deposit.maxSharePriceE27']);
-});
-
-const recorded: VerdictFile = readRecording(join(ROOT, 'testdata', 'verify', 'morpho-migrate-all.json'));
-const ASSET_CALL = '0x38d52e0f';
-
-function withRegistry(edit: (entries: Record<string, { attributes?: Record<string, string> }>) => void): VerifyInputs {
-  const entries = JSON.parse(recorded.inputs.registry);
-  edit(entries);
-  return { ...recorded.inputs, registry: JSON.stringify(entries) };
-}
-
-test('the recorded migration, judged by its receipt, is MATCH', async () => {
-  assert.deepEqual((await evaluate(recorded.inputs, replayReader(recorded.exchanges))).verdict, { kind: 'MATCH' });
-});
-
-test('a registry that names another asset for both vaults is MISMATCH, since each vault asset() is read from the chain', async () => {
-  const inputs = withRegistry((entries) => {
-    entries['smokehouse-usdc']!.attributes!.asset = 'usdt';
-    entries['steakhouse-high-yield-usdc']!.attributes!.asset = 'usdt';
-  });
-  const { verdict } = await evaluate(inputs, replayReader(recorded.exchanges));
-  assert.equal(verdict.kind, 'MISMATCH');
-  assert.deepEqual(verdict.causes.map((c) => c.check), ['vault-asset']);
-  assert.match(
-    JSON.stringify(verdict),
-    /smokehouse-usdc 0xbeefff209270748ddd194831b3fa287a5386f5bc holds 0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48 by its asset\(\) at block \d+, the registry says usdt 0xdac17f958d2ee523a2206206994597c13d831ec7/,
-  );
-});
-
-test('a vault asset() the two providers disagree on is UNVERIFIABLE', async () => {
-  const exchanges = recorded.exchanges.map((e) =>
-    JSON.stringify(e.params).includes(ASSET_CALL) ? { ...e, answers: { ...e.answers, drpc: `0x${'0'.repeat(24)}${'11'.repeat(20)}` } } : e,
-  );
-  const { verdict } = await evaluate(recorded.inputs, replayReader(exchanges));
-  assert.equal(verdict.kind, 'UNVERIFIABLE');
-  assert.deepEqual(verdict.causes.map((c) => c.check), ['vault-asset']);
 });

@@ -58,7 +58,13 @@ export function setUp(approved: string | null = template.approved, reported = tr
 }
 
 /** Runs the CLI with every provider answer served from the recorded deposit, never from the network. */
-export async function run(argv: string[], repo: string, home: string, watch = (env: Record<string, string>): Record<string, string> => env) {
+export async function run(
+  argv: string[],
+  repo: string,
+  home: string,
+  watch = (env: Record<string, string>): Record<string, string> => env,
+  fetchJson = async (_url: string): Promise<unknown> => assert.fail('these tests give the transaction as a file'),
+) {
   let stdout = '';
   let stderr = '';
   const env = { ...ENV, KISS_SIGN_HOME: home };
@@ -71,7 +77,7 @@ export async function run(argv: string[], repo: string, home: string, watch = (e
     ask: undefined,
     repoRoot: repo,
     transport: replayTransport(fixture.exchanges, mainnetEndpoints(env)),
-    fetchJson: async () => assert.fail('these tests give the transaction as a file'),
+    fetchJson,
     readMessage: async () => ({ why: 'this test reads no signed message' }),
   });
   return { code, stdout, stderr };
