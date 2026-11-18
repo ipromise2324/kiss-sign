@@ -4,11 +4,10 @@ import { AddressBookError } from '../address-book.ts';
 import { CardError } from '../card.ts';
 import { MissingKeyError } from '../chain/providers.ts';
 import { httpsTransport } from '../chain/rpc.ts';
-import { ConfigError, loadStoredConfig } from '../config.ts';
+import { ConfigError } from '../config.ts';
 import { KEYS, KeyError, findKey, keyFilePath, keySpec, kissSignHome, removeKey, saveKey } from '../keys.ts';
 import type { KeySpec } from '../keys.ts';
-import { DEFAULT_LANGUAGE, isLanguage } from '../language.ts';
-import type { Language } from '../language.ts';
+import { commandLanguage } from '../language.ts';
 import { RegistryError } from '../registry.ts';
 import { SafeTxParseError } from '../safe/types.ts';
 import { TemplateError } from '../template/template.ts';
@@ -96,29 +95,13 @@ const usageText = (w: Labels): string => `${w.usage}\n${Object.values(COMMANDS)
   .map(({ usage }) => `  pnpm kiss-sign ${usage}\n`)
   .join('')}`;
 
-/**
- * The language a command prints in: the one its last `--language` names, as parseArgs takes, else the config's, else English, so a command run
- * before any config exists, or whose config cannot be read, prints English.
- */
-function languageOf(argv: readonly string[], io: Io): Language {
-  const at = argv.findLastIndex((arg) => arg === '--language' || arg.startsWith('--language='));
-  const arg = argv[at];
-  const flag = arg === '--language' ? argv[at + 1] : arg?.slice('--language='.length);
-  if (isLanguage(flag)) return flag;
-  try {
-    return loadStoredConfig(kissSignHome(io.env))?.language ?? DEFAULT_LANGUAGE;
-  } catch {
-    return DEFAULT_LANGUAGE;
-  }
-}
-
 /** Errors whose message is written for the signer. */
 const FAILURES = [KeyError, CardError, ConfigError, VerifyError, AddressBookError, SafeTxParseError, TemplateError, RegistryError, MissingKeyError];
 
 export async function main(argv: readonly string[], io: Io): Promise<number> {
   const name = [argv.slice(0, 2).join(' '), argv[0] ?? ''].find((words) => Object.hasOwn(COMMANDS, words));
   const command = name === undefined ? undefined : COMMANDS[name];
-  const w = LABELS[languageOf(argv, io)];
+  const w = LABELS[commandLanguage(argv, kissSignHome(io.env))];
   if (name === undefined || command === undefined) {
     io.stderr(usageText(w));
     return USAGE;

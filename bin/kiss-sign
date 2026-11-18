@@ -1,4 +1,17 @@
 #!/usr/bin/env node
-import { main, nodeIo } from '../src/cli/main.ts';
+import { join } from 'node:path';
+import { LABELS } from '../src/cli/labels.ts';
+import { kissSignHome } from '../src/keys.ts';
+import { commandLanguage } from '../src/language.ts';
+import { packageProblems } from '../src/verify/packages.ts';
 
-process.exitCode = await main(process.argv.slice(2), nodeIo());
+const argv = process.argv.slice(2);
+// A package's code runs as it loads, so the packages are checked before main.ts, which imports them, loads.
+const problems = packageProblems(join(import.meta.dirname, '..'));
+if (problems.length > 0) {
+  process.stderr.write(`kiss-sign: ${LABELS[commandLanguage(argv, kissSignHome(process.env))].packagesDiffer}\n${problems.map((problem) => `  ${problem}\n`).join('')}`);
+  process.exitCode = 1;
+} else {
+  const { main, nodeIo } = await import('../src/cli/main.ts');
+  process.exitCode = await main(argv, nodeIo());
+}
