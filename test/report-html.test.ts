@@ -393,3 +393,9 @@ test('a vault whose report is in one language only still has a report, so card n
   for (const language of LANGUAGES)
     assert.deepEqual([...reportedInstances('morpho/vault-deposit', [`${dir}/v/notes.json`, `${dir}/v/report.generated.md`, `${dir}/v/${generatedHtmlFile(language)}`]).keys()], ['v']);
 });
+
+test('the report list verify reads at the trusted commit holds no report under vaults/, only under instances/', () => {
+  const at = (folder: string) => [...reportedInstances('morpho/vault-deposit', [`templates/morpho/vault-deposit/${folder}/v/report.generated.md`]).keys()];
+  assert.deepEqual(at('vaults'), []);
+  assert.deepEqual(at('instances'), ['v']);
+});

@@ -21,7 +21,7 @@ import { checksumAddress } from '../safe/types.ts';
 import type { Address, Hex } from '../safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, scopeEntries, slippageBps, WAD } from '../template/template.ts';
 import type { CardField, CardRef, Computed, ComputedRead, Rule, Template, TokenRef } from '../template/template.ts';
-import { gatesInstances, inBothFolders, isInstanceOf, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
+import { gatesInstances, isInstanceOf, reportUnit, reportedInstancesIn, severalInstances } from '../template/vault-reports.ts';
 import type { ReportedInstances } from '../template/vault-reports.ts';
 import { marketHead, marketTable } from './card-view.ts';
 import { paint, rows, section, table, text } from './format.ts';
@@ -376,9 +376,7 @@ async function fill(template: Template, shared: Omit<Context, 'template'>): Prom
     const listed = optionsFor(field, ctx.sources);
     const gated = gatesInstances(template) && field.kind !== 'market';
     const instances = gated ? listed.filter((choice) => isInstanceOf(template, choice.name, ctx.sources.registry)) : [];
-    const reported = instances.length === 0 ? new Map() : ctx.reported(template.id);
-    const twice = instances.find((choice) => (reported.get(choice.name)?.length ?? 0) > 1);
-    if (twice !== undefined) throw new CardError(inBothFolders(template.id, twice.name));
+    const reported = instances.length === 0 ? new Set<string>() : ctx.reported(template.id);
     const choices = listed.filter((choice) => !instances.includes(choice) || reported.has(choice.name));
     if (unit.kind === 'instance' && unit.field === name && choices.length === 0) throw new CardError(L.noReportedInstance(name, unit.of, template.id));
     if (choices.length === 0) {
