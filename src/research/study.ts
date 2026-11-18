@@ -573,12 +573,26 @@ async function studyDirectCall(reader: Reader, tx: Transaction & { readonly to: 
   return studies.find((study) => study.kind === 'fit' && study.outside.length === 0) ?? studies.find((study) => study.kind === 'fit') ?? (studies[0] as TxStudy);
 }
 
+const names = (value: unknown, address: Address): boolean =>
+  JSON.stringify(value, (_, v: unknown) => (typeof v === 'bigint' ? v.toString(16) : v)).toLowerCase().includes(address.slice(2).toLowerCase());
+
+/**
+ * Whether the configured Safe sent the transaction or is named in it, in its input or in a log of its receipt: a recording
+ * keeps no hash of such a transaction, so it is left out of the study too. A receipt the providers do not agree on names
+ * nothing here; the recording still refuses to write any read that names the Safe.
+ */
+async function touches(reader: Reader, tx: Transaction, safe: Address): Promise<boolean> {
+  if (tx.to === safe || tx.from === safe || names(tx.input, safe)) return true;
+  const receipt = await reader.getTransactionReceipt(tx.hash);
+  return receipt.kind === 'agreed' && receipt.value !== null && names(receipt.value.logs, safe);
+}
+
 export async function studyTx(reader: Reader, hash: Hex, context: StudyContext): Promise<TxStudy> {
   const read = await reader.getTransaction(hash);
   if (read.kind === 'unverifiable') return { kind: 'unreadable', hash, reason: read.reason };
   const tx = read.value;
   if (tx === null) return { kind: 'unreadable', hash, reason: 'neither provider knows the transaction' };
-  if (context.exclude !== undefined && (tx.to === context.exclude || tx.from === context.exclude)) return { kind: 'excluded' };
+  if (context.exclude !== undefined && (await touches(reader, tx, context.exclude))) return { kind: 'excluded' };
   const { to, blockNumber } = tx;
   if (to === null) return { kind: 'not-studied', hash, why: 'calls no function the template calls', to: undefined, selector: 'contract creation' };
   if (blockNumber === null) return { kind: 'unreadable', hash, reason: 'the transaction is pending' };

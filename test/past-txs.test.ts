@@ -12,14 +12,14 @@ import type { Transport } from '../src/chain/rpc.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Registry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs, spreadOf } from '../src/research/past-txs.ts';
-import { scrubRecording } from '../src/research/recording.ts';
+import { isWithheld, scrubRecording } from '../src/research/recording.ts';
 import { replayMessages } from '../src/research/messages.ts';
 import { pastTxsRecordings, pastTxsSampling } from '../src/research/report.ts';
 import type { Subject } from '../src/research/report.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { anchorEvent, recordingAsk, replayAsk, searchBoth } from '../src/research/sources.ts';
 import type { Anchor, AnchorKind, Ask, SourceExchange, SourceRequest } from '../src/research/sources.ts';
-import type { Address } from '../src/safe/types.ts';
+import type { Address, Hex } from '../src/safe/types.ts';
 import { loadTemplate, parseTemplate } from '../src/template/template.ts';
 import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
@@ -323,11 +323,52 @@ test('a transaction a provider would not serve is unreadable for that reason, ap
   assert.match(text, new RegExp(`^ {2}1 unreadable, eth_getTransactionByHash: alchemy and drpc disagree: ${MISFIT}$`, 'm'));
 });
 
-test('a recording that would name the configured Safe loses those entries, or is refused', () => {
-  const safe = safeOf(FIT);
-  const scrubbed = JSON.stringify(scrubRecording(recording, [safe]));
-  assert.doesNotMatch(scrubbed, new RegExp(safe.slice(2), 'i'));
-  assert.throws(() => scrubRecording({ ...recording, query: { ...recording.query, token: safe } }, [safe]), /still mentions the configured Safe/);
+test('a recording keeps the hash of no transaction it did not study, and none the configured Safe sent or is named in, and replays the same', async () => {
+  const windowed: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'research', 'morpho-vault-deposit-windows.json'));
+  const { query } = windowed;
+  const study = (ask: Ask, exclude: Address | undefined, excludedByRecording?: ReadonlySet<Hex>) =>
+    pastTxs(
+      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: query.anchor as AnchorKind }, sampling: pastTxsSampling(query) },
+      { ask, reader: replayReader(windowed.exchanges), registry, readMessage: replayMessages([]), exclude, maxTxs: query.maxTxs, ...(excludedByRecording === undefined ? {} : { excludedByRecording }) },
+    );
+  const plain = await study(replayAsk(windowed.sources), undefined);
+  const studied = new Set(plain.studies.map((s) => s.hash));
+  const transfers = windowed.sources.flatMap(({ answer }) => ((answer as { transfers?: { hash: string; to: string }[] }).transfers ?? []));
+  const unsampled = transfers.find((t) => !studied.has(t.hash as Hex) && transfers.filter((u) => u.to === t.to).every((u) => !studied.has(u.hash as Hex))) as { hash: string; to: string };
+  const safe = unsampled.to.toLowerCase() as Address;
+
+  const recorder = recordingAsk(replayAsk(windowed.sources));
+  const live = await study(recorder.ask, safe);
+  const written = scrubRecording({ ...windowed, sources: recorder.exchanges() }, [safe], live);
+  const text = JSON.stringify(written).toLowerCase();
+  assert.doesNotMatch(text, new RegExp(safe.slice(2)));
+  assert.ok(!text.includes(unsampled.hash.toLowerCase()), 'the unsampled transaction the configured Safe is named in is not recorded');
+  const kept = new Set([...live.studies.map((s) => s.hash), ...live.otherEmitter]);
+  const hashes = written.sources.flatMap(({ answer }) => [...((answer as { transfers?: { hash: Hex }[] }).transfers ?? []).map((t) => t.hash), ...((answer as { result?: { transactionHash?: Hex }[] }).result ?? []).flatMap((l) => (l.transactionHash === undefined ? [] : [l.transactionHash]))]);
+  assert.ok(hashes.length > kept.size);
+  for (const hash of hashes) assert.ok(kept.has(hash) || isWithheld(hash), `${hash} was not studied but is recorded`);
+  const replayed = await study(replayAsk(written.sources), undefined, new Set(written.excluded ?? []));
+  assert.equal(renderPastTxs(replayed, registry), renderPastTxs(live, registry));
+  assert.throws(() => scrubRecording({ ...written, query: { ...written.query, token: safe } }, [safe], live), /still mentions the configured Safe/);
+});
+
+test('a sampled transaction the configured Safe sent, whose search entry names no address, is left out, and its withheld hash replays as left out without a chain read', async () => {
+  const year: PastTxsRecording = readRecording(join(ROOT, 'testdata', 'past-txs', 'whole-year.json'));
+  const senders = year.exchanges.filter((e) => e.method === 'eth_getTransactionByHash').map((e) => (e.answers.alchemy as { to: string }).to.toLowerCase());
+  const safe = senders.find((to, i) => senders.indexOf(to) !== i) as Address;
+  const { query } = year;
+  const run = (ask: Ask, exclude: Address | undefined, excludedByRecording: ReadonlySet<Hex>, exchanges = year.exchanges) =>
+    pastTxs(
+      { template: loadTemplate(ROOT, query.template, registry), anchor: { token: query.token as Address, kind: 'event', event: anchorEvent(query.event as string) }, sampling: pastTxsSampling(query) },
+      { ask, reader: replayReader(exchanges), registry, readMessage: replayMessages([]), exclude, maxTxs: query.maxTxs, excludedByRecording },
+    );
+  const live = await run(replayAsk(year.sources), safe, new Set());
+  const written = scrubRecording(year, [safe], live);
+  assert.ok((written.excluded ?? []).length > 0 && (written.excluded ?? []).every(isWithheld));
+  const text = JSON.stringify(written).toLowerCase();
+  assert.ok(!text.includes(safe.slice(2)));
+  for (const hash of [...live.excluded, ...[...live.found.keys()].filter((h) => !live.studies.some((s) => s.hash === h))]) assert.ok(!text.includes(hash.toLowerCase()), `${hash} is recorded`);
+  assert.equal(renderPastTxs(await run(replayAsk(written.sources), undefined, new Set(written.excluded), written.exchanges), registry), renderPastTxs(live, registry));
 });
 
 test('a template whose trailer allowance is shorter than real use lists those transactions as misfits, with the reason', async () => {

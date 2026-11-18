@@ -222,6 +222,8 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
    The AI looks at real transactions of the same operation to learn each field's role and the operation's normal shape.
    The program (`pnpm past-txs`) finds them through Alchemy's Transfers API and Etherscan, decodes each with the template, and counts, per field, the transactions and senders that held its rule; the AI reads the counts and every misfit.
    `--record` keeps of each search answer only what the search reads: of each list of transfers each one's transaction hash, block, `from` and `to` (and an Etherscan log's topics, and with no `--token` the contract that logged it), of an answer over one page only that it is over, and any other answer whole.
+   It keeps a real transaction hash only for a transaction the run studied: every other one it found keeps its place under a withheld hash, a number no real hash holds, so a replay finds the same counts and samples the same transactions.
+   The configured Safe never reaches a recording, not by its address and not by the hash of a transaction that touches it: a transaction it sent, or whose input or receipt logs name it, is left out of the study, its sampled hash is withheld and listed as left out, so a replay leaves it out without reading it, and every entry of a transaction whose search entry names the Safe is dropped, as the search dropped it before sampling; a recording that would still mention the Safe is refused.
    These teach the AI.
    They prove nothing about safety.
    - **Anchor:** an ERC-20 `Transfer` of one token marks each transaction: a mint for a vault deposit, a burn for a withdrawal, or any transfer.
