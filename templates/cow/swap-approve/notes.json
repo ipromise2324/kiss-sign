@@ -77,8 +77,8 @@
   ],
   "reviews": {},
   "pastTxsConclusion": {
-    "en": "62 batches from 58 Safes approved more than the order sells, against 19 that approved exactly the sell amount: 55 approved an unlimited amount and 7 about 1% to 1.7% more. verify refuses both. Approve exactly the amount to sell.",
-    "zh-TW": "有 58 個 Safe 的 62 筆批次授權得比訂單要賣的多，剛好授權賣出數量的只有 19 筆：55 筆授權無上限，7 筆多約 1% 到 1.7%。verify 兩種都拒絕。請只授權剛好要賣的數量。"
+    "en": "Of the 62 batches whose approval differs from the sell amount, 55 approved an unlimited amount and 7 about 1% to 1.7% more. A batch built that way does not fit this template, so the approval must be for exactly the amount to sell.",
+    "zh-TW": "授權數量和賣出數量不同的 62 筆批次裡，55 筆授權無上限，7 筆多約 1% 到 1.7%。這樣組成的批次不符合這個模板，授權必須剛好是要賣的數量。"
   },
   "entries": {
     "usdc": {
