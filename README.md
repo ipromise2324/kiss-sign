@@ -185,6 +185,15 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 | The service returns altered fields | `verify` computes the hash itself and refuses |
 | The web app proposes the right transaction, then has your wallet sign another | You: compare every character of the hashes |
 
+### The RPC providers
+
+`verify` reads the chain and simulates through Alchemy and drpc, two companies, and uses an answer only when both give it.
+
+| Attack | Stopped by |
+|---|---|
+| One provider lies or fails | `verify`: `UNVERIFIABLE` |
+| Both lie the same way, for example hiding an upgrade of the vault's code | Nothing |
+
 ## What kiss-sign checks
 
 TODO
