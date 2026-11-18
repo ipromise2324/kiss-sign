@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="目錄">
   <h2>目錄</h2>
-  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+  <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">實例</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
 </nav>
 
 <div class="main">
@@ -288,7 +288,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="warn"><span class="lbl">建議</span><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg><span class="aiw" data-ai><span>可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。</span><span class="byai">AI 研究：可以用</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
-    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">金庫</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
+    <ol><li><a href="#flow">流程 <span class="cnt">1 個呼叫</span></a></li><li><a href="#protocol-morpho-blue">morpho-blue</a></li><li><a href="#vault-kpk-usdc-prime-v2-9ee6">實例</a></li><li><a href="#review">待確認 <span class="cnt" data-state="warn"><svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>重要 3</span> <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI 判斷"><use href="#ask"/></svg>4</span></a></li><li><a href="#wallet">錢包顯示</a></li><li><a href="#addresses">地址 <span class="cnt">13</span></a></li><li><a href="#past">過去交易</a></li><li><a href="#next">下一步</a></li></ol>
   </details>
 </header>
 
@@ -484,7 +484,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="vault-kpk-usdc-prime-v2-9ee6">
-  <h2>金庫</h2>
+  <h2>實例</h2>
   <p class="lead"><a href="#a-kpk-usdc-prime-v2-9ee6">kpk-usdc-prime-v2-9ee6</a>：程式記錄的 <code>pnpm instance-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
   <dl class="props">
     <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26434567</dd></div>
@@ -543,21 +543,21 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-cbbtc-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t"><span class="lbl">重要</span> morpho-oracle-cbbtc-usdc-86：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、官方 GitHub 檔案（算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-cbbtc-usdc-86">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x64d65c9a2d91c36d56fbc42d69e979335320169b3df63bf92789e2c8883fcc64），回答的 oracle 就是 0xA6D6950c9F177F1De7f7757FB33539e3Ec60182a；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-usp-usdc/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t"><span class="lbl">重要</span> morpho-oracle-usp-usdc：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、官方 GitHub 檔案（算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-usp-usdc">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>：usdc-usp-915 和 usdc-usp-86 兩個市場回答的 oracle 都是 0x5096642B7c7CD82198932f3FADd873EC2fcDeb6d；市場 id 是五個參數的 hash，換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這兩個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
     <div class="row" data-state="warn" data-grade="key" data-result="morpho-oracle-weeth-usdc-86/address">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
       <div><div class="t"><span class="lbl">重要</span> morpho-oracle-weeth-usdc-86：地址只在 1 個地方確認：協議 API</div>
-        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、協議 API、CoinGecko、登記工廠（轉接合約還要用它的金庫確認）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
+        <div class="meta">至少要 2 個地方列出同一個地址：官方頁、官方 GitHub 檔案（算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件，或跟另一個已確認合約同一個部署者。網址本身含有地址的頁面不算，它只會照網址印出來。<a href="#a-morpho-oracle-weeth-usdc-86">看來源</a></div>
         <div class="rec"><span class="lbl">AI 有疑慮</span><span class="aiw" data-ai><span>AI 沒有能跑 JavaScript 的瀏覽器，沒打開 Morpho app 的市場頁。AI 在鏈上讀 Morpho Blue 的 <code>idToMarketParams</code>（市場 id 0x85252bb8485c99bba46fe149c7dd2aad83672640f53c630890673cf1848ba16e），回答的 oracle 就是 0xa3A7A3ceFee206f9d7Fe00eC3C83324ED4228411；換掉 oracle 就是另一個市場。</span><span class="byai">AI 研究</span></span></div>
         <div class="rec"><span class="lbl">建議</span><span class="aiw" data-ai><span>可以接受；想再確認就在 Morpho app 打開這個市場頁比對 oracle 地址。</span><span class="byai">AI 研究</span></span></div></div>
     </div>
@@ -593,7 +593,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>地址 <span class="c">13 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、協議 API、CoinGecko，或登記工廠（轉接合約還要用它的金庫確認）列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
+  <h2>地址 <span class="c">13 個</span><span class="tip" tabindex="0" aria-label="信心等級說明" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">每個地址至少要在兩個地方確認：官方頁、官方 GitHub 檔案（算它的 GitHub 組織，跟文件網站是不同的地方）、協議 API、CoinGecko、登記工廠（連同它的檢查問到的其他合約）、Immunefi 漏洞賞金範圍、釘選的 SDK 套件或共用的部署者列出同一個地址。高信心：沒有要你看的結果，確認的地方有官方頁，code pin 也在鏈上確認過。中信心：沒有要你看的結果，但確認的地方沒有官方頁，或少了 code pin 的確認。低信心：有結果要你看。標「–」的是那個來源沒資料，只是不算確認，不是問題；來源下面的「網站」行標「–」，不影響那個來源算不算確認。AI 補查不改變信心等級。</span></span></h2>
   <div class="rows">
     <div class="ad" id="a-morpho-oracle-cbbtc-usdc-86" data-state="warn">
       <svg class="i warn" role="img" aria-label="注意"><use href="#warn"/></svg>
@@ -720,7 +720,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">它在問 [y/N] 之前顯示的卡片列出百分比和 base units（100% 是 10^18），核對數字是你要的。</p></div></li>
     <li><div>它印出整張卡片，每個名字都附完整地址，最後問 <code>Is this what you mean to do? [y/N]</code> 。全部是你要的才打 <code>y</code> 。
       <p class="then">它印出 <code>Sealed card 0x…</code> ，這是卡片的 hash，下一步要用。</p></div></li>
-    <li><div>在 Safe web app 提出交易（第一次用這個模板或這個金庫，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+    <li><div>在 Safe web app 提出交易（第一次用這個模板或這個合約，先用小額），複製它的 safeTxHash，然後跑<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
       <p class="then"><code>MATCH</code>：它印出 safeTxHash 和一個網頁的路徑，網頁上有 domain hash、message hash 和比對清單，往下走。</p>
       <p class="then"><code>MISMATCH</code> 或 <code>UNVERIFIABLE</code>：不要簽。看它列出的檢查，再看本報告「<a href="#review">待確認</a>」裡 AI 的判斷，可能說明原因。</p></div></li>
     <li><div>加強等級：在獨立電腦上跑<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>

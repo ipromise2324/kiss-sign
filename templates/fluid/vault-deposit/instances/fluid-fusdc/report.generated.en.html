@@ -265,7 +265,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <nav class="rail" aria-label="Contents">
   <h2>Contents</h2>
-  <ol><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+  <ol><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Instance</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
 </nav>
 
 <div class="main">
@@ -276,7 +276,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <p class="sub"><span class="aiw" data-ai><span>The Safe first gives the fToken you pick an allowance of exactly the amount you type, then calls <code>deposit</code> on the same fToken. Through Fluid&#39;s Liquidity contract, the fToken pulls these tokens from the Safe and mints fToken shares to the Safe. When depositing, the Fluid app asks only for the amount and sets no minimum shares, so the card asks only for the vault and the amount.</span><span class="byai">AI research</span></span></p>
   <ul class="checks">
     <li data-state="ok" data-line="sources"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Address sources <span class="n num">4 / 4</span>
-      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 4 addresses are confirmed in at least 2 places: the official page, the protocol API, CoinGecko, the registered factory (for an adapter, with the vault that uses it), the bug bounty scope, the SDK package or a shared deployer lists the same address.</span></span></li>
+      <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t1"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t1" role="tooltip">All 4 addresses are confirmed in at least 2 places: the official page, the official GitHub file (which counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address.</span></span></li>
     <li data-state="ok" data-line="abi"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Source verified <span class="n num">2 / 2</span>
       <span class="tip" tabindex="0" aria-label="Explanation" aria-describedby="t2"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t2" role="tooltip">The source verified on Etherscan, compiled again with a pinned compiler, gives exactly the code on chain, so the function definitions used to decode the transaction belong to these contracts. fluid-liquidity: no call goes to it directly and no function definition of it decodes anything, so it has no proof and is not counted; the code it runs is compared under &#34;Code unchanged&#34;.</span></span></li>
     <li data-state="ok" data-line="code"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>Code unchanged <span class="n num">4 / 4</span>
@@ -288,7 +288,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">Advice</span><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg><span class="aiw" data-ai><span>Usable. The tokens are actually held in Fluid&#39;s Liquidity contract, and at every signing the program checks that its code is unchanged. Send a small amount the first time.</span><span class="byai">AI research: be careful</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Contents</summary>
-    <ol><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Vault</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
+    <ol><li><a href="#flow">Flow <span class="cnt">2 calls</span></a></li><li><a href="#protocol-fluid-lending">fluid-lending</a></li><li><a href="#vault-fluid-fusdc">Instance</a></li><li><a href="#review">To review <span class="cnt" data-state="ask"><svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>3</span></a></li><li><a href="#wallet">Wallet display</a></li><li><a href="#addresses">Addresses <span class="cnt">4</span></a></li><li><a href="#past">Past transactions</a></li><li><a href="#next">Next steps</a></li></ol>
   </details>
 </header>
 
@@ -384,7 +384,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="vault-fluid-fusdc">
-  <h2>Vault</h2>
+  <h2>Instance</h2>
   <p class="lead"><a href="#a-fluid-fusdc">fluid-fusdc</a>: the recorded output of <code>pnpm instance-evidence</code>. Every number was asked of two providers. No conversion to US dollars here.</p>
   <dl class="props">
     <div><dt>Factory</dt><dd>fluid-lending-factory answers <code>computeToken(usdc,&#34;fToken&#34;)</code> = 0x9Fb7b4477576Fe5B32be4C1843aFB1e55F251B33</dd><dd class="src">block 26436951</dd></div>
@@ -464,7 +464,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 </section>
 
 <section id="addresses">
-  <h2>Addresses <span class="c">4</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page, the protocol API, CoinGecko, or the registered factory (for an adapter, with the vault that uses it) lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
+  <h2>Addresses <span class="c">4</span><span class="tip" tabindex="0" aria-label="About confidence" aria-describedby="t6"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t6" role="tooltip">Each address must be confirmed in at least two places: the official page, the official GitHub file (which counts as its GitHub organization, a place apart from the docs site), the protocol API, CoinGecko, the registered factory (with each other contract its check asks), the Immunefi bug bounty scope, the pinned SDK package or a shared deployer lists the same address. High confidence: no result for you to review, an official page among the confirmations, and the code pin confirmed on chain. Medium confidence: no result for you to review, but no official page among the confirmations, or no code pin confirmation. Low confidence: a result for you to review. A source marked &#34;–&#34; had nothing to compare: it does not count as a confirmation, but it is not a problem; a &#34;site&#34; line under a source marked &#34;–&#34; does not change whether that source counts. What the AI also checked does not change the confidence.</span></span></h2>
   <div class="rows">
     <details class="fold">
       <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg>4 more addresses have no result for you to review</summary>
@@ -545,7 +545,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
       <p class="then">The card it shows before asking [y/N] gives it both in whole tokens and in base units; check that the number is what you want.</p></div></li>
     <li><div>It prints the whole card, each name with its full address, and asks <code>Is this what you mean to do? [y/N]</code>. Type <code>y</code> only if all of it is what you want.
       <p class="then">It prints <code>Sealed card 0x…</code>, the card&#39;s hash, which the next step uses.</p></div></li>
-    <li><div>Propose the transaction in the Safe web app (the first time you use this template or this vault, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
+    <li><div>Propose the transaction in the Safe web app (the first time you use this template or this contract, start with a small amount), copy its safeTxHash, then run<pre class="cmd"><code>bin/kiss-sign verify --card &#60;card hash&#62; --safe-tx-hash &#60;safeTxHash&#62;</code></pre>
       <p class="then"><code>MATCH</code>: it prints the safeTxHash and the path of a page with the domain hash, the message hash and the checklist. Go on.</p>
       <p class="then"><code>MISMATCH</code> or <code>UNVERIFIABLE</code>: do not sign. Read the checks it lists, then the AI judgment under &#34;<a href="#review">To review</a>&#34; in this report, which may explain why.</p></div></li>
     <li><div>Hardened tier: on an independent computer, run<pre class="cmd"><code>./check.sh &#60;nonce&#62;</code></pre>
