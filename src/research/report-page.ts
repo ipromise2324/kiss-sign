@@ -859,8 +859,7 @@ function lifelines(context: Context): { readonly lines: Lifeline[]; readonly nam
   const getsFrom = template.effects.gets.map(({ token }) => {
     if (token === 'eth') return callTo.at(-1) ?? 0;
     const target = targetOf(isNamedToken(token) ? { kind: 'contract', name: token.contract } : { kind: 'card', ref: token }, context);
-    const same = names.findIndex((of) => of.length === target.names.length && of.every((name) => target.names.includes(name)));
-    return same !== -1 && target.names.length > 0 ? same : add(target.label, target.names, target.role);
+    return add(target.label, target.names, target.role);
   });
   return { lines, names, callTo, getsFrom };
 }
