@@ -35,7 +35,7 @@ The AI that writes templates reads the web, and no one yet knows how to stop suc
 A program change is merged on the gate and an AI reviewer, not on a person.
 The gate proves only what the canaries test.
 A change that weakens a check no canary covers passes it.
-For example, a branch that changes one comparison in `src/verify/assets.ts`, `if (actual !== asset.address)` to `if (actual !== actual)`, so a vault whose `asset()` is not the registry's token is never reported, and deletes the one test in `test/morpho-migrate.test.ts` that would catch it, printed `ELIGIBLE` on 2026-11-17, with the 12 canaries main listed that day and its other 1,186 tests passing.
+For example, a branch that changes one comparison in `src/verify/assets.ts`, `if (actual !== asset.address)` to `if (actual !== actual)`, so a vault whose `asset()` is not the registry's token is never reported, and deletes the one test in `test/morpho-migrate.test.ts` that would catch it, printed `ELIGIBLE` on 2026-11-17, with the 12 canaries main then listed and the branch's other 1,186 tests passing.
 The gate now refuses it twice: that test has since moved into a canary, and no branch the AI merges may drop a test main runs, so the gate names the deleted test (see [The program gate](#the-program-gate)).
 A check no canary covers is still open in the ways the next sentence names.
 It compares test titles, not what a test asserts, so the same branch that keeps the test and changes its expected answer, or empties it, still prints `ELIGIBLE`, as does one that hides the test from the title scan, such as by skipping it through a variable.
