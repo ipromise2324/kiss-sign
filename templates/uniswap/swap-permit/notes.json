@@ -15,8 +15,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "EOA swaps that do not fit took routes the app picks: a v3 or v2 pool, a split route, or an extra `SWEEP` or `UNWRAP_WETH` step. The sample holds no Safe doing this swap.",
-    "zh-TW": "不合的 EOA 兌換走的是 app 選的其他路線：v3 或 v2 池子、拆成多段，或多一步 `SWEEP`、`UNWRAP_WETH`。取樣裡沒有 Safe 做這種兌換。"
+    "en": "Misfit swaps add a v3 or v2 pool, a split route, or an extra SWEEP or UNWRAP_WETH step; each gives MISMATCH. Most found swaps went to an older router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af.",
+    "zh-TW": "不合的兌換多了 v3 或 v2 池子、拆成多段，或多一步 SWEEP、UNWRAP_WETH，都會是 MISMATCH。找到的兌換多半送到舊版 router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af。"
   },
   "flow": [],
   "protocols": {

@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Most Deallocate logs are withdrawals, not curators. The Safe misfit moved assets from a market into a MorphoVaultV1Adapter, 0x85f2582533B5583Cf2A0017A91589473C48aB958, with no market data.",
-    "zh-TW": "Deallocate 事件多半來自提領，不是 curator。不合的 Safe 是把資金從市場移進 MorphoVaultV1Adapter 0x85f2582533B5583Cf2A0017A91589473C48aB958，不帶市場資料。"
+    "en": "Most transactions found are withdrawals, not allocators. The Safe misfit moved assets from a market into a MorphoVaultV1Adapter, 0x85f2582533B5583Cf2A0017A91589473C48aB958, with no market data.",
+    "zh-TW": "找到的交易多半是提領，不是 allocator。不合的 Safe 是把資金從市場移進 MorphoVaultV1Adapter 0x85f2582533B5583Cf2A0017A91589473C48aB958，不帶市場資料。"
   },
   "judgments": [
     {

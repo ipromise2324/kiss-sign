@@ -700,7 +700,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">0</span> 筆；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">0</span> 筆。</p>
-  <p class="intro"><span class="aiw" data-ai><span>取樣窗口沒找到生效的上限提高。AI 另查 Etherscan，這個 vault 這一年有 9 筆，一天長的窗口抓不到這麼少的交易。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>取樣窗口沒找到這個 vault 執行的上限提高：一年只取 12 個一天的窗口（約 3%），這麼稀少的交易很難碰上；沒找到不代表沒發生。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>

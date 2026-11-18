@@ -697,7 +697,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">0</span> 筆；形狀一樣、但用的是 registry 外的市場的有 <span class="num">1</span> 筆：Safe <span class="num">1</span> 筆（1 個 Safe）、EOA <span class="num">0</span> 筆；形狀不同的有 <span class="num">1</span> 筆，列在其他做法。它成功執行：它是從 acuto-usdc-v2-4a57 Deallocate時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。形狀一樣的最近 1 筆：<a href="https://etherscan.io/tx/0x0b23e1c0afbe544a6e0ac398c2512e968918db939a1447b0abe193def18d22dc">0x0b23e1c0…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>Deallocate 事件多半來自提領，不是 curator。不合的 Safe 是把資金從市場移進 MorphoVaultV1Adapter 0x85f2582533B5583Cf2A0017A91589473C48aB958，不帶市場資料。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>找到的交易多半是提領，不是 allocator。不合的 Safe 是把資金從市場移進 MorphoVaultV1Adapter 0x85f2582533B5583Cf2A0017A91589473C48aB958，不帶市場資料。</span><span class="byai">AI 研究</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>其他做法</summary>
   <p class="lead">只算用了這個操作的呼叫的交易。跟模板一模一樣，指交易的呼叫和參數位置跟模板相同，從交易本身看得出來的參數規定（例如該填送出者的地方、固定值）都成立，模板綁定 registry 合約的地方也是模板允許的合約。形狀一樣、但用的是 registry 外的市場、代幣、金庫或地址，指呼叫、參數位置和這些參數規定都一樣，但有地址或市場不在 registry 裡；種類照記錄看得出的寫，看不出就只說地址。其他的依原因分組，各附最多 3 筆例子。</p>

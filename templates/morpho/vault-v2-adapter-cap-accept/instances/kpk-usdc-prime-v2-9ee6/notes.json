@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "The windows found no accepted cap increase. AI's own Etherscan query found 6 such transactions by this vault in the year, too few for one-day windows to catch.",
-    "zh-TW": "取樣窗口沒找到生效的上限提高。AI 另查 Etherscan，這個 vault 這一年有 6 筆，一天長的窗口抓不到這麼少的交易。"
+    "en": "The windows found no cap increase executed on this vault: so rare an event is seldom caught by 12 one-day windows (about 3% of the year); none found does not mean none happened.",
+    "zh-TW": "取樣窗口沒找到這個 vault 執行的上限提高：一年只取 12 個一天的窗口（約 3%），這麼稀少的交易很難碰上；沒找到不代表沒發生。"
   },
   "judgments": [
     {

@@ -457,7 +457,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>Past transactions</h2>
   <p class="lead">In past records, <span class="num">0</span> transactions match the template exactly; <span class="num">0</span> have the same shape but with an address outside the registry; <span class="num">33</span> have another shape, listed under Other ways.</p>
-  <p class="intro"><span class="aiw" data-ai><span>No Safe called Permit2 approve in the sample. EOAs that did mostly approved an older Universal Router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, or set amount 0 to revoke.</span><span class="byai">AI research</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>Permit2 approvals found mostly name an older Universal Router, 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af, or set amount 0 to revoke; either gives MISMATCH with this template.</span><span class="byai">AI research</span></span></p>
   <details class="fold">
   <summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>Other ways</summary>
   <p class="lead">Only transactions that used this operation&#39;s calls count. An exact match has the template&#39;s calls and argument positions, meets every rule the transaction itself can show (such as where the sender goes, or a fixed value), and uses a contract the template allows wherever the template binds a registry contract. Same shape but a market, token, vault or address outside the registry means the calls, argument positions and those rules are the same, but an address or market is not in the registry; the kind is named when the record shows it, otherwise only address. The rest are grouped by reason, each with up to 3 examples.</p>

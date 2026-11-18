@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "The windows held only this one submission, so there is no other shape to learn from. AI's own Etherscan query found 25 submission transactions by this vault in the year.",
-    "zh-TW": "取樣窗口只有這一筆提交，沒有別的形狀可學。AI 另查 Etherscan，這個 vault 這一年有 25 筆提交交易。"
+    "en": "No submission of another shape was found, so the windows teach nothing beyond this shape; curator submissions on one vault are rare.",
+    "zh-TW": "沒找到其他形狀的提交，所以窗口除了這個形狀學不到別的；單一 vault 的 curator 提交很少。"
   },
   "judgments": [
     {

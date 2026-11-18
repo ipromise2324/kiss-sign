@@ -7,8 +7,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "The windows held one submission, an adapter cap (the adapter-cap-submit shape), not a market cap. AI's own Etherscan query found 25 submission transactions in the year; the windows miss most.",
-    "zh-TW": "取樣窗口只找到一筆提交，是 adapter 上限（adapter-cap-submit 的形狀），不是市場上限。AI 另查 Etherscan，這一年有 25 筆提交交易，窗口抓不到大多數。"
+    "en": "The one submission the windows held set an adapter's caps, not a market's, so a market cap submission was not seen; such a transaction gives MISMATCH with this template.",
+    "zh-TW": "取樣窗口裡唯一的提交設的是轉接合約的上限，不是市場的，所以沒看到市場上限的提交；這種交易用這個模板會是 MISMATCH。"
   },
   "judgments": [
     {

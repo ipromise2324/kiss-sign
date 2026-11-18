@@ -575,7 +575,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 <section id="past">
   <h2>過去交易</h2>
   <p class="lead">過去的記錄裡，跟模板一模一樣的有 <span class="num">1</span> 筆：Safe <span class="num">0</span> 筆、EOA <span class="num">1</span> 筆（1 個地址，各自送模板的一個呼叫）；形狀一樣、但有地址不在 registry 裡的有 <span class="num">0</span> 筆；形狀不同的有 <span class="num">10</span> 筆，列在其他做法。它成功執行：它是從 permit2 Permit時的 Transfer 紀錄找到的，失敗的交易不會留下紀錄。一模一樣的最近 1 筆：<a href="https://etherscan.io/tx/0xf89f9bed4553e10953b49e02b1924707f30a73859822c75a40651015716dd500">0xf89f9bed…</a>。</p>
-  <p class="intro"><span class="aiw" data-ai><span>不合的 EOA 兌換走的是 app 選的其他路線：v3 或 v2 池子、拆成多段，或多一步 <code>SWEEP</code>、<code>UNWRAP_WETH</code>。取樣裡沒有 Safe 做這種兌換。</span><span class="byai">AI 研究</span></span></p>
+  <p class="intro"><span class="aiw" data-ai><span>不合的兌換多了 v3 或 v2 池子、拆成多段，或多一步 SWEEP、UNWRAP_WETH，都會是 MISMATCH。找到的兌換多半送到舊版 router 0x66a9893cC07D91D95644AEDD05D03f95e1dBA8Af。</span><span class="byai">AI 研究</span></span></p>
   <p class="lead">模板留給 app 自由填的數字，在符合模板形狀的交易裡填了哪些值：最小、第 50、90、99 百分位和最大。模板宣告為時間的欄位，算的是它減掉交易所在區塊時間的秒數。這是證據，不是規則。</p>
   <div class="pblock">
     <div class="ph"><span class="pt"><code>call.execute.inputs[0].PERMIT2_PERMIT.permitSingle.details.expiration</code></span><span>EOA: 填的值</span></div>
