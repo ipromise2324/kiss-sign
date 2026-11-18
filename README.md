@@ -215,6 +215,16 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 
 On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
 
+### Contracts that change
+
+The report reviews each contract's code once, and the registry records it. A contract can change after that.
+
+| Attack | Stopped by |
+|---|---|
+| A registry contract is upgraded after your review | `verify` compares its code with the recorded code, through both providers: `MISMATCH` |
+| An admin changes a setting, such as a vault's curator or fees, or a contract behind it changes, such as a market's oracle | Nothing: only the code of registry contracts is recorded |
+| A contract is upgraded after you run `verify` and before the transaction runs | Nothing |
+
 ## What kiss-sign checks
 
 TODO
