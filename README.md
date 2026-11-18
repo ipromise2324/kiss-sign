@@ -193,6 +193,17 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 | One provider gives a false answer, or none | `verify` compares the two answers: they differ, `UNVERIFIABLE` |
 | Both give the same false answer, such as a simulation that hides your funds going elsewhere | Nothing in kiss-sign. The Safe web app's own simulation may show it, if the web app itself is not compromised |
 
+### Fake sites and listings
+
+Your AI finds each contract's address on the web, so a fake page can mislead it. The report checks where each address came from, and you review it before you merge.
+
+| Attack | Stopped by |
+|---|---|
+| A fake site gives the AI a look-alike address | The report checks the site against the protocol's website on DefiLlama: it differs, flagged for you |
+| A listing such as DefiLlama names the fake site as the protocol's | The report wants the address in a second place, such as CoinGecko, the factory, the bug bounty or the SDK: missing, flagged for you |
+
+On the hardened tier, `check.sh` also marks every address not in your own list as unknown.
+
 ## What kiss-sign checks
 
 TODO
