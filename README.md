@@ -30,7 +30,6 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
   - [5. Sign](#5-sign)
   - [Add your own operation](#add-your-own-operation)
 - [Threat model](#threat-model)
-- [What kiss-sign checks](#what-kiss-sign-checks)
 - [Scope](#scope)
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
@@ -227,10 +226,6 @@ A contract you reviewed can change into one that harms you.
 ### You
 
 kiss-sign checks a transaction against the card you sealed and the reports you merged, so it cannot catch your own mistake in them. A card with the wrong vault or an extra zero in the amount gets `MATCH`. Nothing catches a signature you give without comparing the hashes on your wallet, or a flagged address you merge without reading the report.
-
-## What kiss-sign checks
-
-TODO
 
 ## Scope
 
