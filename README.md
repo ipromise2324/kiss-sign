@@ -28,7 +28,6 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
   - [3. Fill a card](#3-fill-a-card)
   - [4. Verify on your computer, and check on a second one](#4-verify-on-your-computer-and-check-on-a-second-one)
   - [5. Sign](#5-sign)
-  - [Add your own operation](#add-your-own-operation)
 - [Threat model](#threat-model)
 - [Scope](#scope)
 - [Contributing](#contributing)
@@ -64,7 +63,7 @@ Signing tools today show you a transaction and ask whether it looks right. Your 
 
 The pictures below come from one real run: another Safe's deposit of 1,000,611.448606 USDC into a Morpho vault, the Hyperithm USDC Apex vault. One address crop is from another vault's report, as marked.
 
-**Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts. You merge each template and registry pull request into it, and merging is your confirmation; program changes your AI merges itself, behind a gate (see [Add your own operation](#add-your-own-operation)).
+**Set up once.** Fork this repository and clone your fork. Your fork's `main` is the program `verify` trusts. You merge each template and registry pull request into it, and merging is your confirmation; program changes your AI merges itself, behind a gate (see [Your AI](#your-ai)).
 
 ```sh
 git clone https://github.com/<you>/kiss-sign.git && cd kiss-sign
@@ -109,6 +108,13 @@ The report shows what the transaction will do and where every fact came from. Te
 Weak evidence is shown, not hidden. The Hyperithm vault was confirmed only by its factory, so the report flags it and lists it under To review (待確認 in the Traditional Chinese report), with the AI's suggestion: open the vault from the Morpho app's list, compare the address, and send a small amount first.
 
 ![An address confirmed in only one place, the factory, flagged with low confidence: the Morpho app page could not be read, CoinGecko had nothing to compare, Immunefi's scope does not list it, and no deployer was proven](docs/readme/report-address-flagged.png)
+
+The report was made on the AI's computer. Before you merge, read its facts again with your own `main`'s code; any fact that differs is printed:
+
+```sh
+git fetch origin <branch>
+pnpm report <protocol>/<operation> [--instance-of <vault>] --compare --data origin/<branch>
+```
 
 This review happens once per operation, and once per vault. Merging is your confirmation. Then approve the template on your own computer, which records its hash so `verify` refuses any other version:
 
@@ -156,22 +162,6 @@ Then every call, row by row, down to the calls inside a batch: both sides split 
 ### 5. Sign
 
 Compare the hashes on `verify`'s page with your hardware wallet's screen, character by character: the domain hash and message hash, or the safeTxHash if that is what your wallet shows. Then sign. The first time you use a template or a vault, send a small amount first.
-
-### Add your own operation
-
-The templates in [`templates/`](templates/) are examples an AI wrote; read each one's report before you approve it. To sign something new, tell your AI, as in step 1. It opens a pull request with a template and its report, and you review and merge it.
-
-A template is data: it picks from checks the program already has and gives a reason for each. It cannot loosen the [checks every transaction gets](docs/design/engine-and-chain.md#engine-checks-that-every-template-gets).
-
-When no check fits, the AI first adds one to the program in a pull request of its own. It merges that one itself, once the program's tests pass and a second AI finds no security problem; you do not read program code. A change to those tests comes to you, like a template. What this leaves open is in [Who owns the program](docs/design/program-ownership.md#who-owns-the-program).
-
-The report in a pull request was made on the AI's computer, so you cannot tell from it alone that its facts are true. Before you merge, read them again live with your own `main`'s code, which the pull request cannot change; any fact that differs from the report is printed (this needs the Alchemy and Etherscan keys):
-
-```sh
-git pull
-git fetch origin <branch>
-pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/<branch>
-```
 
 ## Threat model
 
