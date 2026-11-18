@@ -13,6 +13,7 @@ import { findOnPage, gatherSourcePages, retryingGet } from '../src/research/sour
 import type { HttpGet, Page, SourcePages } from '../src/research/source-page.ts';
 import type { Address } from '../src/safe/types.ts';
 import { trimReportRecording } from '../src/research/report.ts';
+import type { Template } from '../src/template/template.ts';
 import { repoWithTestFixtures } from './repo-with-test-fixtures.ts';
 
 const ROOT = repoWithTestFixtures();
@@ -342,7 +343,7 @@ async function tipReport(tip: Served): Promise<string> {
   const pages = await gatherSourcePages(entries.flatMap(pageUrlsOf), get);
   const recorded = sourcePagesOf(JSON.parse(JSON.stringify(trimForRecording(entries, listings, pages, new Date('2026-11-17')))));
   assert.equal(report(entries, listings, recorded), report(entries, listings, pages), 'the recording, read back, gives the same lines');
-  const forReport = trimReportRecording({ kind: 'vault', vault: entries[0]! }, entries, listings, pages, new Date('2026-11-17'), new Map(), {} as never, [], undefined, undefined);
+  const forReport = trimReportRecording({ kind: 'template', template: {} as Template, docs: [], vault: undefined, dir: '' }, entries, listings, pages, new Date('2026-11-17'), new Map(), {} as never, [], undefined, undefined);
   assert.equal(report(entries, listings, sourcePagesOf(JSON.parse(JSON.stringify(forReport)))), report(entries, listings, pages), "the report's recording, read back, gives the same lines");
   return report(entries, listings, pages);
 }

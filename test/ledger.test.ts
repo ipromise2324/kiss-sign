@@ -96,7 +96,6 @@ type Setup = {
   readonly abi: AbiProof | AbiRefusal | undefined;
   readonly spans: readonly SpanCheck[] | undefined;
   readonly today: TodayCheck | undefined;
-  readonly documented: boolean;
   readonly approveStandard: Standard | undefined;
   readonly docPublisher: SiteOwner | undefined;
   readonly fixtures: readonly FixtureJudgement[];
@@ -129,7 +128,6 @@ const BASE: Setup = {
   abi: { kind: 'proven', proxy: { kind: 'none' }, codeHash: PIN, abi: APPROVE_ABI } as unknown as AbiProof,
   spans: [{ kind: 'pass', text: '' }],
   today: undefined,
-  documented: true,
   approveStandard: undefined,
   docPublisher: undefined,
   fixtures: [],
@@ -188,6 +186,8 @@ const sharing = (confirmed: boolean): Partial<Setup> => ({
 
 const DEPENDENT: RegistryEntry = { ...ENTRY, name: 'dependent', address: OTHER, kind: 'vault', dependsOn: ['vault'] };
 const ADAPTED: RegistryEntry = { ...ENTRY, name: 'adapted', address: OTHER, kind: 'vault', attributes: { adapter: 'vault' } };
+/** A contract a vault depends on that is no token, so the vault's report decodes nothing with its ABI. */
+const LENDING: RegistryEntry = { ...ENTRY, kind: 'lending' };
 const ROUTED: RegistryEntry = {
   ...ENTRY,
   routes: { implementationOf: parseFunctionSignature('getSigsImplementation(bytes4)'), selectorsOf: parseFunctionSignature('getImplementationSigs(address)'), seeds: ['0x00000001' as Hex] },
@@ -233,21 +233,21 @@ const failedRuns = (...outcomes: Run['outcome'][]): PerturbationReport => {
 
 /**
  * A one-entry report: the entry, documented by one page for `approve`, as the template's only contract. With
- * `reachedThrough`, a report of that vault alone, which reaches the entry only through its `dependsOn`.
+ * `reachedThrough`, the report of that instance, the one vault its card accepts, which reaches the entry only through
+ * the instance.
  */
 function inputsOf(change: Partial<Setup>): ReportInputs {
   const s = { ...BASE, ...change };
   const all = [s.entry, ...(s.reachedThrough === undefined ? [] : [s.reachedThrough]), ...(s.factory === undefined ? [] : [s.factory]), ...(s.sibling === undefined ? [] : [SIBLING]), ...s.others];
   const siblingConfirmed = s.sibling?.confirmed === true;
   const registry: Registry = { attributes: new Map([['asset', 'token'], ['factory', 'factory'], ['adapter', 'adapter']]), entries: new Map(all.map((e) => [e.name, e])), byAddress: new Map(all.map((e) => [e.address, e])), markets: new Map() };
-  const template = { id: 'test/op', card: new Map(), nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [], safe: undefined, approves: [], touches: [] }, facts: s.read === undefined ? [] : [{ to: s.entry.name, fn: s.read, args: [], returns: [] } as never], instanceField: undefined } as Template;
+  const card = new Map(s.reachedThrough === undefined ? [] : [['vault', { kind: 'contract', scope: { registryKind: 'vault', protocol: undefined, marketPart: undefined } }]]);
+  const template = { id: 'test/op', card, nonce: undefined, same: [], calls: [], effects: { gives: [], gets: [], views: [], safe: undefined, approves: [], touches: [] }, facts: s.read === undefined ? [] : [{ to: s.entry.name, fn: s.read, args: [], returns: [] } as never], instanceField: undefined } as Template;
   const inputs = {
     subject:
       s.reachedThrough !== undefined
-        ? { kind: 'vault', vault: s.reachedThrough }
-        : s.documented
-          ? { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, publisher: s.docPublisher ?? s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }], dir: 'templates/test/op' }
-          : { kind: 'vault', vault: s.entry },
+        ? { kind: 'template', template, docs: [], vault: s.reachedThrough, dir: 'templates/test/op/instances/dependent' }
+        : { kind: 'template', template, docs: [{ fn: APPROVE, contract: s.entry, publisher: s.docPublisher ?? s.entry, url: s.approveStandard?.page ?? DOC, standard: s.approveStandard }], dir: 'templates/test/op' },
     registry,
     listings: {
       protocols: new Map(s.protocol === undefined ? [] : [['proto', [s.protocol]]]),
@@ -382,12 +382,12 @@ const ROWS: readonly Row[] = [
   { what: 'a coin at the address the entry names no id for', change: { entry: without('coingecko') }, id: 'vault/source.coingecko', kind: 'unexplained-coin', state: 'warn' },
   { what: 'a compiler not pinned', change: { abi: refused({ why: 'compiler-not-pinned', version: '0.8.99' }) }, id: 'vault/abi', kind: 'compiler-not-pinned', state: 'warn' },
   { what: 'a pin recorded before spans', change: { spans: [{ kind: 'not-read', text: '' }] }, id: 'vault/code.1', kind: 'pinned-before-spans', state: 'warn' },
-  { what: 'an entry reached only through dependsOn, with no ABI case', change: { reachedThrough: DEPENDENT, abi: undefined }, id: 'vault/abi', kind: 'not-called', state: 'na' },
-  { what: 'an entry reached only through dependsOn that runs its pin at the latest block', change: { reachedThrough: DEPENDENT, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
-  { what: 'an entry reached only through dependsOn that runs other code at the latest block', change: { reachedThrough: DEPENDENT, ...today('finding') }, id: 'vault/code.today', kind: 'pin-not-run', state: 'bad' },
-  { what: "an entry reached only through dependsOn whose code at the latest block got no answer", change: { reachedThrough: DEPENDENT, ...today('unverifiable') }, id: 'vault/code.today', kind: 'no-answer', state: 'warn' },
-  { what: 'an entry reached only through dependsOn with no read at the latest block', change: { reachedThrough: DEPENDENT }, id: 'vault/code.today', kind: 'no-chain-result', state: 'warn' },
-  { what: "a vault's adapter, whose address only goes into an argument, with its proof refused", change: { reachedThrough: ADAPTED, abi: refused({ why: 'not-on-etherscan' }) }, id: 'vault/abi', kind: 'not-called', state: 'na' },
+  { what: 'an entry reached only through dependsOn, with no ABI case', change: { reachedThrough: DEPENDENT, entry: LENDING, abi: undefined }, id: 'vault/abi', kind: 'not-called', state: 'na' },
+  { what: 'an entry reached only through dependsOn that runs its pin at the latest block', change: { reachedThrough: DEPENDENT, entry: LENDING, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
+  { what: 'an entry reached only through dependsOn that runs other code at the latest block', change: { reachedThrough: DEPENDENT, entry: LENDING, ...today('finding') }, id: 'vault/code.today', kind: 'pin-not-run', state: 'bad' },
+  { what: "an entry reached only through dependsOn whose code at the latest block got no answer", change: { reachedThrough: DEPENDENT, entry: LENDING, ...today('unverifiable') }, id: 'vault/code.today', kind: 'no-answer', state: 'warn' },
+  { what: 'an entry reached only through dependsOn with no read at the latest block', change: { reachedThrough: DEPENDENT, entry: LENDING }, id: 'vault/code.today', kind: 'no-chain-result', state: 'warn' },
+  { what: "a vault's adapter, whose address only goes into an argument, with its proof refused", change: { reachedThrough: ADAPTED, entry: { ...ENTRY, kind: 'adapter' }, abi: refused({ why: 'not-on-etherscan' }) }, id: 'vault/abi', kind: 'not-called', state: 'na' },
   { what: 'a selector-routed proxy a call targets', change: { entry: ROUTED }, id: 'vault/abi', kind: 'routed-proxy', state: 'na' },
   { what: 'a selector-routed proxy that runs its pin and routes at the latest block', change: { entry: ROUTED, ...today('pass') }, id: 'vault/code.today', kind: 'agrees', state: 'ok' },
   { what: 'a bounty program with the address in scope', change: { entry: { ...ENTRY, immunefi: 'proto' }, sites: program([ADDRESS]) }, id: 'vault/source.bounty', kind: 'agrees', state: 'ok' },
@@ -478,7 +478,7 @@ test('every finding kind has a row', () => {
 
 test('only an entry no ABI proof compares with the chain has a result for its code at the latest block', () => {
   assert.ok(!ledgerOf(today('pass')).results.some((r) => r.id.endsWith('/code.today')));
-  assert.ok(!ledgerOf({ reachedThrough: DEPENDENT, entry: without('code'), ...today('pass') }).results.some((r) => r.id.endsWith('/code.today')), 'an entry with no pin has only its not-pinned result');
+  assert.ok(!ledgerOf({ reachedThrough: DEPENDENT, entry: without('code', LENDING), ...today('pass') }).results.some((r) => r.id.endsWith('/code.today')), 'an entry with no pin has only its not-pinned result');
 });
 
 test('only an entry that names a factory has a factory result', () => {

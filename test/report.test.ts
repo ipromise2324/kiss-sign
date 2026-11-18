@@ -411,13 +411,13 @@ test('text the AI wrote in the template prints escaped and labelled as written b
   assert.ok(!quick().includes("the template's reason"), 'every template reason is labelled as written by the AI');
 });
 
-test('stored vault evidence holding a backtick or a character pnpm vault-evidence never prints is refused, and its section says it is stored', () => {
+test('stored vault evidence holding a backtick or a character pnpm instance-evidence never prints is refused, and its section says it is stored', () => {
   const vault = 'steakhouse-prime-usdc-v2-0f51';
   const stored = recording.vaults[vault]!;
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n\`\`\`\n# Approved by the auditors`]])), ReportError);
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n<img src=x>`]])), ReportError);
   const text = quick(recording.pages, new Map(), undefined, new Map([[vault, stored]]));
-  assert.match(text, /stored output of `pnpm vault-evidence`, not recomputed by `pnpm test`; `pnpm report --compare` reads it again at the blocks it names/);
+  assert.match(text, /stored output of `pnpm instance-evidence`, not recomputed by `pnpm test`; `pnpm report --compare` reads it again at the blocks it names/);
   assert.ok(!/`pnpm test` writes it again/.test(text), 'the header does not claim pnpm test recomputes every section');
 });
 
@@ -555,7 +555,7 @@ test("each declaration the program holds names the function's canonical signatur
 
 test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH itself, each checked against its own page and org', () => {
   const fluid = loadTemplate(ROOT, 'fluid/vault-deposit', registry);
-  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', 'vaults', 'fluid-fusdt', 'docs.json'), 'utf8')) as Record<string, unknown>;
+  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt', 'docs.json'), 'utf8')) as Record<string, unknown>;
   const named = (standard: string, contract = 'fluid-fusdt') => parseDocs({ ...valid, 'deposit(uint256,address)': { contract, standard } }, fluid, registry);
   const docs = named('erc-4626');
   const deposit = docs.find((d) => d.fn.signature === 'deposit(uint256,address)')!;
@@ -583,7 +583,7 @@ test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH 
 });
 
 const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
-const vaultRecording: { exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'vault-evidence', `${VAULT}.json`));
+const vaultRecording: { exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'instance-evidence', `${VAULT}.json`));
 
 test('--compare reads each vault again at the blocks its evidence names, so a changed month, holder count or top-10 share differs', async () => {
   const transport = replayTransport(vaultRecording.exchanges, REPLAY_ENDPOINTS);
@@ -593,7 +593,7 @@ test('--compare reads each vault again at the blocks its evidence names, so a ch
     const evidence = await gatherVaultEvidence(reader, alchemy, vault, sizeOf(vault, registry)!, at);
     return 'kind' in evidence ? `UNVERIFIABLE ${evidence.reason}` : formatVaultEvidence(evidence, registry);
   };
-  const { subject } = loadReport(ROOT, registry, { vault: VAULT });
+  const { subject } = loadReport(ROOT, registry, { template: ID, instance: VAULT });
   const vault = registry.entries.get(VAULT)!;
   const honest = quick(recording.pages, new Map(), subject, new Map([[VAULT, await read(vault, 26385872n)]]), [], new Map(), registry);
   const compare = async (committed: string) => compareReports(committed, quick(recording.pages, new Map(), subject, await vaultsAt(committed, [vault], read), [], new Map(), registry));
@@ -741,8 +741,7 @@ test('--instance-of writes a new instance\'s report to instances/, and its notes
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
-  const moved = { ...(scoped.subject as Extract<Subject, { kind: 'template' }>), dir: join(TEMPLATES_DIR, ID, 'instances', TARGET.instance) };
-  const text = quick(recording.pages, new Map(), moved, new Map([[TARGET.instance, recording.vaults[TARGET.instance]!]]));
+  const text = quick(recording.pages, new Map(), scoped.subject, new Map([[TARGET.instance, recording.vaults[TARGET.instance]!]]));
   assert.match(text, /`pnpm report morpho\/vault-deposit --instance-of steakhouse-prime-usdc-v2-0f51 --compare` reads/);
   assert.match(text, /stored as `pnpm instance-evidence` printed it/);
   assert.match(text, /the stored output of `pnpm instance-evidence`/);
@@ -765,8 +764,8 @@ test('an instance whose committed files are in vaults/ is read and written there
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
-  assert.equal(generatedPath(ROOT, TARGET), join(TEMPLATES_DIR, ID, 'vaults', TARGET.instance, GENERATED_FILE));
-  assert.equal(scoped.subject.kind === 'template' && scoped.subject.dir, join(TEMPLATES_DIR, ID, 'vaults', TARGET.instance));
+  assert.equal(generatedPath(ROOT, TARGET), join(TEMPLATES_DIR, ID, 'instances', TARGET.instance, GENERATED_FILE));
+  assert.equal(scoped.subject.dir, join(TEMPLATES_DIR, ID, 'instances', TARGET.instance));
 });
 
 test('pnpm report refuses --vault-of and --vault, naming --instance-of', () => {
@@ -796,7 +795,7 @@ test("a per-vault report shows that vault alone: no other vault, no asset or fac
   assert.deepEqual(entriesOf(scoped.subject, scoped.registry).map((e) => e.name), ['usdc', 'bundler3', 'steakhouse-prime-usdc-v2-0f51', 'vault-v2-factory', 'general-adapter-1']);
   const anchored = pastTxsRecordings(ROOT, scoped.subject).map((r) => r.file);
   assert.deepEqual(anchored, ['testdata/research/morpho-vault-deposit-windows.json', 'testdata/research/morpho-vault-deposit.json']);
-  assert.match(text, /^Written by `pnpm report morpho\/vault-deposit --vault-of steakhouse-prime-usdc-v2-0f51 --record` /m);
+  assert.match(text, /^Written by `pnpm report morpho\/vault-deposit --instance-of steakhouse-prime-usdc-v2-0f51 --record` /m);
 });
 
 test("a signed message's answer is shown on its digest's row: where the message sits, and each member read elsewhere or in hex", () => {

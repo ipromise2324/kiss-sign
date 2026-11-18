@@ -18,8 +18,7 @@ import { SOLC_PINS } from '../src/contracts/solc-pins.ts';
 import type { EtherscanAnswer } from '../src/contracts/etherscan.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { loadPublicSuffixList } from '../src/research/public-suffix.ts';
-import { GENERATED_SUFFIX, VAULT_REPORTS_DIR, generatedPath, replayReport, templateTargets } from '../src/research/report.ts';
-import type { Target } from '../src/research/report.ts';
+import { GENERATED_SUFFIX, generatedPath, replayReport, templateTargets } from '../src/research/report.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR } from '../src/template/template.ts';
 import { reportCases, warmCompilers } from './solc-pool.ts';
@@ -241,16 +240,11 @@ const PARTIAL = ['cctp-message-transmitter', 'usdc', 'usdt'];
 
 const generated = templateTargets(ROOT, registry).filter((target) => existsSync(join(ROOT, generatedPath(ROOT, target))));
 
-const vaultReports = existsSync(join(ROOT, VAULT_REPORTS_DIR)) ? readdirSync(join(ROOT, VAULT_REPORTS_DIR)).filter((f) => f.endsWith(GENERATED_SUFFIX)) : [];
-const vaultsReported = vaultReports.map((file) => file.slice(0, -GENERATED_SUFFIX.length));
-const reportTargets: Target[] = [...generated, ...vaultsReported.map((vault) => ({ vault }))];
-
-const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases(ROOT, registry, reportTargets)]);
+const compilers = await warmCompilers([...CASES.map((expected) => load(expected.name)), ...reportCases(ROOT, registry, generated)]);
 
 test('every committed generated report has its own test below', () => {
   assert.ok(generated.some((target) => target.template === 'morpho/vault-deposit'), `morpho/vault-deposit has a generated report`);
-  assert.ok(vaultsReported.length > 0, `${VAULT_REPORTS_DIR} holds a vault report`);
-  const checked = [...generated.map((target) => generatedPath(ROOT, target)), ...vaultReports.map((file) => join(VAULT_REPORTS_DIR, file))].sort();
+  const checked = generated.map((target) => generatedPath(ROOT, target)).sort();
   const committed = execFileSync('git', ['ls-files', `*${GENERATED_SUFFIX}`], { cwd: ROOT, encoding: 'utf8' }).split('\n').filter((line) => line !== '').sort();
   assert.deepEqual(checked, committed, 'each committed *.generated.md needs a test, and each generated report must be committed: git add a report you just wrote');
 });
@@ -266,26 +260,6 @@ for (const target of generated) {
     assert.ok(!text.includes('REFUSED: `unverifiable`'), `an ABI case of ${args} lacks a read the proof now makes; delete it and run \`pnpm report ${args} --record\``);
     const missing = text.split('\n').find((line) => line.includes('FINDING: not in the ABI'));
     assert.equal(missing, undefined, `${args} calls or reads a function its contract's proven ABI does not hold`);
-  });
-}
-
-test('a report whose instance has committed files in vaults/ is read from there and renders to it byte for byte', { timeout: 600_000 }, async () => {
-  const earlier = generated.filter((target) => target.instance !== undefined && existsSync(join(ROOT, 'templates', target.template, 'vaults', target.instance)));
-  assert.ok(earlier.length > 0, 'an instance report still sits in vaults/');
-  for (const target of earlier) assert.equal(generatedPath(ROOT, target), join('templates', target.template, 'vaults', target.instance!, 'report.generated.md'));
-  const [first] = earlier;
-  assert.equal(await replayReport(ROOT, registry, first!, compilers, suffixes), readFileSync(join(ROOT, generatedPath(ROOT, first!)), 'utf8'));
-});
-
-for (const vault of vaultsReported) {
-  test(`${VAULT_REPORTS_DIR}/${vault}${GENERATED_SUFFIX} is what pnpm report --vault writes from its recordings`, { timeout: 600_000 }, async () => {
-    const committed = readFileSync(join(ROOT, VAULT_REPORTS_DIR, `${vault}${GENERATED_SUFFIX}`), 'utf8');
-    const text = await replayReport(ROOT, registry, { vault }, compilers, suffixes);
-    assert.ok(text === committed, `${VAULT_REPORTS_DIR}/${vault}${GENERATED_SUFFIX} differs from what the program writes from its recordings; never edit it by hand`);
-    assert.ok(!text.includes('## Card'), 'a vault report has no template sections');
-    const entry = registry.entries.get(vault)!;
-    for (const name of [vault, ...Object.values(entry.attributes)]) assert.match(text, new RegExp(`^\\| \`${name.replace(/\./g, '\\.')}\` \\| \`0x[0-9a-fA-F]{40}\` \\|`, 'm'));
-    assert.match(text, /stored output of `pnpm vault-evidence`/);
   });
 }
 

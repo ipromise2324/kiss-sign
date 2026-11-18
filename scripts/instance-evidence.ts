@@ -27,11 +27,11 @@ holder count and the top 10 holders' share, no address and no verdict. An entry 
 its own or its factory's, is refused.
 
 Options:
-  --record <name>   Write testdata/vault-evidence/<name>.json; refused, writing nothing, when a
+  --record <name>   Write testdata/instance-evidence/<name>.json; refused, writing nothing, when a
                     read got no answer or the recording names the configured Safe. <name> takes
                     lowercase letters, digits and -.
 
-Writes: testdata/vault-evidence/<name>.json with --record, otherwise nothing.
+Writes: testdata/instance-evidence/<name>.json with --record, otherwise nothing.
 Keys: ALCHEMY_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
 Rules: docs/design/flow.md, "First time an operation is done: build its template" (step 2, Vault
 history); docs/design/data-shapes.md, "Registry attributes and instance checks".`;
@@ -70,7 +70,7 @@ if (flags.record !== undefined) {
     console.error('the configured Safe holds or once held these shares, so the recording would name it; nothing written');
     process.exit(1);
   }
-  const dir = join(root, 'testdata', 'vault-evidence');
+  const dir = join(root, 'testdata', 'instance-evidence');
   mkdirSync(dir, { recursive: true });
   const path = join(dir, `${flags.record}.json`);
   writeFileSync(path, recordingText(fixture, 2));
