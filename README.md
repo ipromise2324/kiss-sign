@@ -177,12 +177,12 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 
 ### The Safe web app or Transaction Service
 
-`verify` checks the transaction in the Transaction Service; comparing the hashes on your wallet checks that you sign that one.
+`verify` checks the transaction in the Transaction Service; comparing the hashes on your wallet checks that you sign that one. In each attack below the web app shows exactly what you meant, so you cannot see it there.
 
 | Attack | Stopped by |
 |---|---|
-| The web app shows the transfer you meant but proposes a change to the Safe, as at Bybit | `verify` checks it against your card: `MISMATCH` |
-| The Transaction Service returns fields that do not give the safeTxHash you asked for | `verify` computes the hash from the fields: refused, no verdict |
+| The web app proposes a change to the Safe instead of your transfer, as at Bybit | `verify` checks it against your card: `MISMATCH` |
+| The Transaction Service returns the transaction you meant in place of the one proposed | `verify` computes the hash from the fields: it is not the safeTxHash you gave, refused |
 | The web app proposes the transaction you meant, then has your wallet sign another | You compare the hashes on your wallet with `verify`'s page: they differ |
 
 ### The RPC providers
