@@ -177,7 +177,7 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 
 ### The Safe web app or Transaction Service
 
-`verify` checks the transaction in the Transaction Service; comparing the hashes on your wallet checks that you sign that one. In each attack below the web app shows exactly what you meant, so you cannot see it there.
+`verify` never uses what the web app shows. It checks the transaction in the Transaction Service, and comparing the hashes on your wallet checks that you sign that one.
 
 | Attack | Stopped by |
 |---|---|
