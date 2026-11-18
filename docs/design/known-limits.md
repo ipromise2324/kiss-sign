@@ -207,7 +207,7 @@ Part of [the kiss-sign design](../design.md).
 - An approval `effects.approves` leaves open can be spent by any order the spender's protocol accepts from the Safe, not only the order of this transaction: for CoW, any of the Safe's orders still valid, such as an earlier pre-signed one or a conditional order the Safe's fallback handler signs.
   The approval is the card's sell amount, so no order can take more than that.
 - A CoW order is pre-signed for as long as its `validTo` allows and its approval stays open until the order fills.
-  The template leaves `validTo` free; the card has no expiry.
+  Both CoW templates bind `validTo` to at most 604800 seconds (seven days) after the time of the block the transaction is judged on (`withinSeconds`), so a signed order can stay open for up to a week; the card has no expiry of its own.
   The order fills at most once, at no less than the card's minimum, and the Safe can cancel it.
 - Safe 1.1.1 has no `getStorageAt`, so a simulation cannot read its settings, and a pending transaction of a 1.1.1 Safe is at best `UNVERIFIABLE`.
 
