@@ -14,12 +14,13 @@ import { githubOrg } from './site-listings.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './instance-evidence.ts';
 import type { Address } from '../safe/types.ts';
+import type { FlowComparison, Uncovered } from './trace.ts';
 
 /** ok passed; warn evidence missing (amber); bad a real disagreement (red); na nothing to compare (grey). */
 export type State = 'ok' | 'warn' | 'bad' | 'na';
 
 /** The check strip's lines that hold results, in strip order. 雙節點比對 is a rule of the program with no results. */
-export const STRIP_LINES = ['sources', 'abi', 'code', 'params'] as const;
+export const STRIP_LINES = ['sources', 'abi', 'code', 'params', 'trace'] as const;
 export type StripLine = (typeof STRIP_LINES)[number];
 
 /**
@@ -139,7 +140,13 @@ export type Finding =
   | { readonly kind: 'no-abi-case' }
   | { readonly kind: 'not-called' }
   /** A selector-routed proxy: its calls run in the implementations its routes reach, so no proof of one contract covers it. */
-  | { readonly kind: 'routed-proxy' };
+  | { readonly kind: 'routed-proxy' }
+  /** A `flow` line the call traces saw in none of the past transactions that make its call. */
+  | { readonly kind: 'line-not-seen'; readonly of: number }
+  /** A `flow` line the call traces saw in some of the past transactions that make its call, not all. */
+  | { readonly kind: 'line-partly-seen'; readonly seen: number; readonly of: number }
+  /** A call in the traces that moves money, which no call the template binds and no seen `flow` line covers. */
+  | { readonly kind: 'money-uncovered'; readonly transactions: number };
 export type FindingKind = Finding['kind'];
 
 export const STATE_OF: { readonly [K in FindingKind]: State } = {
@@ -188,6 +195,9 @@ export const STATE_OF: { readonly [K in FindingKind]: State } = {
   'no-abi-case': 'warn',
   'not-called': 'na',
   'routed-proxy': 'na',
+  'line-not-seen': 'bad',
+  'line-partly-seen': 'warn',
+  'money-uncovered': 'warn',
 };
 
 const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
@@ -236,15 +246,26 @@ const PHRASE_OF: { readonly [K in FindingKind]: Phrase | undefined } = {
   'no-abi-case': undefined,
   'not-called': undefined,
   'routed-proxy': undefined,
+  'line-not-seen': undefined,
+  'line-partly-seen': undefined,
+  'money-uncovered': undefined,
 };
 
-/** `<registry name>/<check key>`, such as `cbbtc/source.coingecko` or `morpho-blue/doc.0x095ea7b3.page`, or `fixture.<safe-tx fixture>`. */
+/**
+ * `<registry name>/<check key>`, such as `cbbtc/source.coingecko` or `morpho-blue/doc.0x095ea7b3.page`,
+ * `fixture.<safe-tx fixture>`, `flow.<line>`, or `trace.<call>.<from>.<to>.<kind>`.
+ */
 export type ResultId = string;
 
 export type Result = {
   readonly id: ResultId;
   readonly line: StripLine;
-  readonly about: { readonly kind: 'entry'; readonly entry: RegistryEntry } | { readonly kind: 'fixture'; readonly name: string };
+  readonly about:
+    | { readonly kind: 'entry'; readonly entry: RegistryEntry }
+    | { readonly kind: 'fixture'; readonly name: string }
+    /** A `flow` line, by its place in the merged list from 1. */
+    | { readonly kind: 'flow'; readonly line: number }
+    | { readonly kind: 'money'; readonly uncovered: Uncovered };
   /** Where the address row shows it; undefined for the address, documentation, market, ABI, code and fixture results. */
   readonly source: RowPart | undefined;
   /** For a result with a source, the owner of that source: sources with one owner are one place. */
@@ -642,6 +663,21 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
   return { entries: checked.map(({ entry }) => entry), results: [...results, ...judged] };
 }
 
+/**
+ * The `flow` lines and money calls against the call traces: one result per line that the traces tested, and one per
+ * money call no line covers. None when no transaction was tested, so every line stays the AI's.
+ */
+export function flowResults(comparison: FlowComparison): Result[] {
+  const result = (id: string, about: Result['about'], finding: Finding): Result => ({ id, line: 'trace', about, source: undefined, link: undefined, finding });
+  const lines = comparison.lines.flatMap(({ seen, of }, i): Result[] => {
+    if (of === 0) return [];
+    const finding: Finding = seen === of ? { kind: 'agrees' } : seen === 0 ? { kind: 'line-not-seen', of } : { kind: 'line-partly-seen', seen, of };
+    return [result(`flow.${i + 1}`, { kind: 'flow', line: i + 1 }, finding)];
+  });
+  const money = comparison.uncovered.map((u) => result(`trace.${u.call}.${u.from}.${u.to}.${u.kind}`, { kind: 'money', uncovered: u }, { kind: 'money-uncovered', transactions: u.transactions }));
+  return [...lines, ...money];
+}
+
 const RANK: Readonly<Record<State, number>> = { na: 0, ok: 1, warn: 2, bad: 3 };
 
 /** The worst state among results; `na` when there are none. */
@@ -650,7 +686,7 @@ export const worst = (results: readonly Result[]): State => results.reduce<State
 /** 待確認: the results for the signer, red first, then amber, each in ledger order. */
 export const forSigner = (ledger: Ledger): Result[] => [...ledger.results.filter((r) => stateOf(r) === 'bad'), ...ledger.results.filter((r) => stateOf(r) === 'warn')];
 
-const subjectOf = (result: Result): string => (result.about.kind === 'entry' ? result.about.entry.name : `fixture.${result.about.name}`);
+const subjectOf = (result: Result): string => (result.about.kind === 'entry' ? result.about.entry.name : result.id);
 
 export type StripItem = { readonly line: StripLine; readonly state: State; readonly passed: number; readonly counted: number };
 

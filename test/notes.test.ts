@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { selectorOf } from '../src/decode/abi.ts';
 import { loadRegistry } from '../src/registry.ts';
 import type { Ledger, Result } from '../src/research/ledger.ts';
 import { NotesError, fieldKeys, mergeNotes, notesChanges, notesLanguages, notesPath, notesScope, parseNotes, readNotes } from '../src/research/notes.ts';
@@ -21,6 +22,7 @@ const template = loadTemplate(ROOT, 'morpho/market-supply', registry);
 const SCOPE: NotesScope = {
   calls: 2,
   contracts: new Set(['usdc', 'blue-bundles-v1', 'morpho-blue']),
+  nested: [],
   entries: new Set(['usdc', 'morpho-blue', 'cbbtc']),
   routed: new Set(),
   protocols: new Map([['morpho-blue', 1]]),
@@ -181,6 +183,17 @@ test('a flow line after a call the template does not make is refused', () => {
 
 test('a flow line naming a contract no call or view targets is refused', () => {
   refused(edited(['flow', 0, 'to'], 'cbbtc'), 'notes.json.flow[0].to: "cbbtc" is not a contract the calls or the effects\' views target, an entry one of those depends on, nor a token the effects move');
+});
+
+test("a flow line's function must be a canonical signature, and a line may not name a call the template binds itself", () => {
+  const supply = 'supply((address,address,address,address,uint256),uint256,uint256,address,bytes)';
+  assert.equal(parseNotes(edited(['flow', 0, 'function'], supply), SCOPE).flow[0]?.function?.signature, supply);
+  refused(edited(['flow', 0, 'function'], 'supply(address spender)'), 'notes.json.flow[0].function: not a canonical function signature, such as `approve(address,uint256)`');
+  const bound = { ...SCOPE, nested: [{ after: 2, from: ['blue-bundles-v1'], to: ['morpho-blue'], selector: selectorOf(supply) }] };
+  assert.throws(
+    () => parseNotes(edited(['flow', 0, 'function'], supply), bound),
+    (e: unknown) => e instanceof NotesError && e.message === 'notes.json.flow[0]: names a call the template binds itself, which the diagram draws from the template',
+  );
 });
 
 test('more than four flow lines or judgments are refused', () => {

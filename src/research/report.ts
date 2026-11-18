@@ -32,6 +32,8 @@ import type { FactReading, FactsScope, ProtocolFacts } from './protocol-facts.ts
 import type { PastTxs, Sampling } from './past-txs.ts';
 import type { PastTxsRecording } from './recording.ts';
 import { replayMessages } from './messages.ts';
+import { replayTraces } from './trace.ts';
+import type { TraceSource } from './trace.ts';
 import { pathText } from './api-source.ts';
 import { provenanceRepositories } from './npm-package.ts';
 import { gradedFindings, weightOf } from './grades.ts';
@@ -589,10 +591,21 @@ export function pastTxsSampling(query: PastTxsRecording['query']): Sampling {
 /**
  * Runs the study again on a recording, with the template as it is now. With `live`, the search answers and head block
  * still come from the recording, but each found transaction, its receipt and its sender's code are read again through
- * `live`, so a transaction the chain does not hold as recorded changes the summary.
+ * `live`, so a transaction the chain does not hold as recorded changes the summary. With `liveTraces`, a recorded trace
+ * counts only when the transaction is traced again with the same calls.
  */
-export async function summarizePastTxs(repoRoot: string, registry: Registry, file: string, recording: PastTxsRecording, live?: Reader): Promise<PastTxsSummary> {
+export async function summarizePastTxs(repoRoot: string, registry: Registry, file: string, recording: PastTxsRecording, live?: Reader, liveTraces?: TraceSource): Promise<PastTxsSummary> {
   const { query } = recording;
+  const recordedTraces = replayTraces(recording.traces);
+  const traces: TraceSource =
+    liveTraces === undefined
+      ? recordedTraces
+      : async (hash) => {
+          const kept = await recordedTraces(hash);
+          if (kept === undefined) return undefined;
+          const now = await liveTraces(hash);
+          return JSON.stringify(now) === JSON.stringify(kept) ? kept : undefined;
+        };
   const recorded = replayReader(recording.exchanges);
   const reader: Reader = live === undefined ? recorded : { ...live, blockNumber: () => recorded.blockNumber() };
   const run = await pastTxs(
@@ -607,7 +620,7 @@ export async function summarizePastTxs(repoRoot: string, registry: Registry, fil
       },
       sampling: pastTxsSampling(query),
     },
-    { ask: replayAsk(recording.sources), reader, registry, readMessage: replayMessages(recording.messages ?? []), exclude: undefined, maxTxs: query.maxTxs },
+    { ask: replayAsk(recording.sources), reader, registry, readMessage: replayMessages(recording.messages ?? []), exclude: undefined, maxTxs: query.maxTxs, traces },
   );
   return { file, query, text: renderPastTxs(run, registry), run };
 }

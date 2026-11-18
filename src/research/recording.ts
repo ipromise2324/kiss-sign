@@ -2,6 +2,7 @@ import type { Exchange } from '../chain/recording.ts';
 import type { ProviderName } from '../chain/providers.ts';
 import type { MessageExchange } from './messages.ts';
 import type { SourceExchange } from './sources.ts';
+import type { RecordedTrace } from './trace.ts';
 
 /** One `past-txs --record` run: its query, every search answer, and every chain read with each provider's answer. */
 export type PastTxsRecording = {
@@ -24,6 +25,8 @@ export type PastTxsRecording = {
   readonly messages?: readonly MessageExchange[];
   readonly providers: readonly ProviderName[];
   readonly exchanges: readonly Exchange[];
+  /** Each traced transaction's calls from drpc, cut down; absent in a recording from before traces. */
+  readonly traces?: readonly RecordedTrace[];
 };
 
 const mentions = (value: unknown, needles: readonly string[]): boolean => {
