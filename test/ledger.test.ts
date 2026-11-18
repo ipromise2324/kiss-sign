@@ -523,6 +523,12 @@ test('a page and the API on one registrable domain are one place, and CoinGecko 
   assert.equal(resultOf(listed, 'vault/address').finding.kind, 'agrees');
 });
 
+test('the Markdown findings name each place that confirmed an address too few times, by its sources and owner', () => {
+  assert.ok(findingsOf(markdownOf({ entry: { ...ENTRY, apiSource: API }, coins: [] })).includes('vault/address key: address confirmed in 1 place, `page` + `api` (example.org); it needs 2'));
+  const echoing = { ...VAULT, source: `${SOURCE}/${ADDRESS}` as HttpsUrl };
+  assert.ok(findingsOf(markdownOf({ entry: echoing, vaults: new Map([['vault', ADMITTED]]), factory: TRUE_FACTORY, coins: [] })).includes('vault/address key: address confirmed in 1 place, `factory`; it needs 2'));
+});
+
 test('pages of one GitHub organization are one place, and it stays apart from a domain GitHub verified it controls', () => {
   const second = { url: `https://github.com/example/repo/blob/${'a'.repeat(40)}/other.md` as HttpsUrl, label: 'Vault' };
   const entry = { ...ENTRY, source: GITHUB, moreSources: [second] };
