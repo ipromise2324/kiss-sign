@@ -215,7 +215,7 @@ You choose the protocol; kiss-sign checks its state, its app's transactions and 
 | Attack | Stopped by |
 |---|---|
 | The protocol or vault you pick is unsafe right now, such as one just hacked, or a vault made yesterday with no holders | The report shows the protocol's TVL and hacks from DefiLlama, and the vault's size over 12 months and its holders, read through both providers, for you to judge before you merge |
-| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | The template bounds it from other senders' past transactions, whose CoW orders expired within 1.5 hours: at most 7 days, so later is `MISMATCH`. Pre-signed transactions that stayed valid long after the signers stopped watching, through Solana's durable nonces, are what the Drift exploit of April 2026 relied on |
+| The protocol's app is compromised and sets a field you do not fill to a value no real user sends, such as a CoW order valid for a year | Other senders' CoW orders expired within 1.5 hours, so the template allows 7 days at most: later is `MISMATCH`. Drift was exploited in April 2026 through pre-signed transactions that durable nonces kept valid |
 | A contract is upgraded or reconfigured to act maliciously | The simulation: a balance or allowance change the card does not explain, `MISMATCH`. The recorded code: a registry contract whose code changed since your review, `MISMATCH`. Settings, and contracts behind it such as a market's oracle, are not checked |
 | The protocol is hacked while your funds are in it | Nothing: kiss-sign checks only the transactions you sign |
 
