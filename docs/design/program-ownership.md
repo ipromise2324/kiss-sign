@@ -3,8 +3,9 @@ Part of [the kiss-sign design](../design.md).
 ## Who owns the program
 
 Each signer owns their own kiss-sign: they fork the repository and clone their fork, and their fork's `main` is what `verify` trusts.
-There is no maintainer.
-No one upstream reviews or merges a change, and the signer is not expected to read the program's code; the upstream repository is only a source of updates the signer may pull.
+The upstream repository has a maintainer, who welcomes issues, security problems included, and pull requests.
+An upstream merge reaches a signer only when the signer pulls it into their own fork; `verify` trusts only that fork's `main`, never upstream.
+The signer is not expected to read the program's code.
 Three kinds of pull request reach `main`, and different hands merge them:
 
 - **Templates and the registry,** the hand-written files under `templates/` and `registry/`: the signer reads the report, runs `--compare` from main, and merges.
@@ -50,7 +51,7 @@ The pre-push check stays too; it keeps the Safe's address and the API keys out o
 ### The verdict core
 
 Only a small part of the program decides a verdict: the Safe transaction's hash, decoding and encoding again, the floors, the simulation on both providers, the effects, the field checks, the self-check, the verdict and its replay.
-The research tools, such as `pnpm report`, `check-sources`, `past-txs`, `erc7730` and `vault-evidence`, write what the signer reads but never run at signing.
+The research tools, such as `pnpm report`, `check-sources`, `past-txs`, `erc7730` and `instance-evidence`, write what the signer reads but never run at signing.
 A pull request that changes a template and, beside it, one comparison in the verdict code would change what `verify` checks for every signing while the signer reads the template's report; so the two never share a pull request.
 
 - **The core is derived, not chosen.**
@@ -68,8 +69,8 @@ A pull request that changes a template and, beside it, one comparison in the ver
 - **What stays free.**
   Research code, docs and `test/` may change beside a template, since none of them runs at signing.
   `testdata/` is free on both sides, except what a canary reads (below): its recordings feed only the tests and the reports, never `verify`, and a core change needs its own fixtures.
-  The reports `pnpm report` renders from recordings, `report.generated.md`, `report.generated.<language>.html` and `registry/reports/<vault>.generated.md`, are not hand-written, and `pnpm test` fails when one differs from what its recordings give, so a core change that alters a rendering may write the existing ones again.
-  Adding or deleting one counts as data: a vault's `report.generated.md` is what lets `card seal` and `verify` accept that vault.
+  The reports `pnpm report` renders from recordings, `report.generated.md` and `report.generated.<language>.html`, are not hand-written, and `pnpm test` fails when one differs from what its recordings give, so a core change that alters a rendering may write the existing ones again.
+  Adding or deleting one counts as data: an instance's `report.generated.md` is what lets `card seal` and `verify` accept that instance.
 - **Where it is enforced.**
   `pnpm check-push` refuses such a branch before it is pushed, CI refuses it on every pull request and every push to `main`, and `pnpm report --compare`, which the signer runs with main's code, refuses it again, so a pull request that also weakens the check does not pass its own.
   A pull request can still rewrite its own CI job; `--compare` from main is the check it cannot change, and since `scripts/report.ts` is guarded, no template pull request can weaken it for the next one.
@@ -178,4 +179,4 @@ Nor does it catch Node itself; what changes the code Node runs without changing 
 This catches accidental edits and an AI that was tricked into changing a check or a template in the clone rather than through a pull request.
 It cannot catch anything that deliberately rewrites both a check and the self-check itself, such as an AI on the same computer, because the self-check is part of the same program.
 The hardened tier's independent check does not run kiss-sign, so such a change cannot alter what it decodes.
-See Known limits and Later security upgrades.
+See [Known limits](known-limits.md#known-limits) and [Later security upgrades](known-limits.md#later-security-upgrades).

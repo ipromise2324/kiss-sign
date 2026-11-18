@@ -12,7 +12,7 @@ import { packageKey } from './npm-package.ts';
 import { registrableDomain } from './public-suffix.ts';
 import { githubOrg } from './site-listings.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
-import { factoryAnswer } from './vault-evidence.ts';
+import { factoryAnswer } from './instance-evidence.ts';
 import type { Address } from '../safe/types.ts';
 
 /** ok passed; warn evidence missing (amber); bad a real disagreement (red); na nothing to compare (grey). */
@@ -124,7 +124,7 @@ export type Finding =
   | { readonly kind: 'page-not-fetched' }
   | { readonly kind: 'name-not-on-page' }
   | { readonly kind: 'no-chain-result' }
-  /** No stored `pnpm vault-evidence` output or report recording holds the factory's answer, or the registry gives nothing to ask. */
+  /** No stored `pnpm instance-evidence` output or report recording holds the factory's answer, or the registry gives nothing to ask. */
   | { readonly kind: 'factory-unread' }
   /** No report recording holds such a view's answer, or the registry gives it nothing to ask, such as no entry naming the instance. */
   | { readonly kind: 'check-unread' }
@@ -419,7 +419,7 @@ function docResults(doc: DocLink, inputs: ReportInputs): Result[] {
 }
 
 function marketResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
-  if (inputs.subject.kind !== 'template' || !hasMarket(inputs.subject.template)) return [];
+  if (!hasMarket(inputs.subject.template)) return [];
   return [...inputs.registry.markets.values()].flatMap((market) =>
     MARKET_ENTRY_PARTS.filter((part) => market[part].name === entry.name).map(
       (part): Result => ({ id: `${entry.name}/market.${market.name}.${part}`, line: 'sources', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: { kind: 'agrees' } }),
@@ -453,7 +453,7 @@ const viewKey = (answer: Pick<ViewAnswer, 'index' | 'view' | 'namer'>): string =
   answer.index === 0 && answer.namer === undefined ? 'factory.admitted' : `factory.${answer.index}.${answer.view.fn.name}${answer.namer === undefined ? '' : `.${answer.namer.name}`}`;
 
 /**
- * The `factory` place: an instance's factory answers, stored by `pnpm vault-evidence`; another entry's, read by the
+ * The `factory` place: an instance's factory answers, stored by `pnpm instance-evidence`; another entry's, read by the
  * report, one result per view of the factory's `instanceCheck`, all of which must pass.
  */
 function factoryResults(entry: RegistryEntry, inputs: ReportInputs): Result[] {
@@ -618,7 +618,7 @@ function fixtureFinding(judgement: FixtureJudgement): Finding {
  */
 export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[]): Ledger {
   const { subject } = inputs;
-  const docs = subject.kind === 'template' ? subject.docs : [];
+  const { docs } = subject;
   const checked = checkSources(entriesOf(subject, inputs.registry), inputs.listings, inputs.pages);
   const unused = abiUnused(subject, inputs.registry);
   const today = new Set(todayEntries(subject, inputs.registry).map((entry) => entry.name));

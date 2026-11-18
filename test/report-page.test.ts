@@ -35,7 +35,7 @@ const target = { template: 'morpho/market-supply' };
 let inputs: HtmlInputs;
 let title: ReportTitle;
 let template: Template;
-const deposit = { template: 'morpho/vault-deposit', cardVault: 'hyperithm-usdc-apex-v2-9e2f' };
+const deposit = { template: 'morpho/vault-deposit', instance: 'hyperithm-usdc-apex-v2-9e2f' };
 let depositPage: Page;
 let depositInputs: HtmlInputs;
 let depositNotes: unknown;
@@ -46,7 +46,7 @@ before(async () => {
   const depositReplayed = await replayInputs(ROOT, registry, deposit, compilers, loadPublicSuffixList());
   const depositTemplate = depositReplayed.inputs.subject.kind === 'template' ? depositReplayed.inputs.subject.template : assert.fail('a template report');
   depositInputs = { ...depositReplayed.inputs, fixtures: await judgeFixtures(ROOT, depositTemplate, registry), example: firstRecordedTx(ROOT, depositTemplate, depositReplayed.inputs.registry) };
-  depositNotes = readNotes(ROOT, deposit.template, registry.entries.get(deposit.cardVault));
+  depositNotes = readNotes(ROOT, deposit.template, registry.entries.get(deposit.instance));
   depositTitle = depositReplayed.title;
   depositPage = buildPage(depositInputs, depositNotes, depositTitle, 'zh-TW');
   const replayed = await replayInputs(ROOT, registry, target, compilers, loadPublicSuffixList());
@@ -239,7 +239,7 @@ test('交易後 and the Markdown report show an atMost, a tolerance and a touche
   const tolerance = { less: 2n, more: 0n, why };
   const gives = [...effects.gives.map((e) => ({ ...e, amount: { kind: 'at-most' as const, field: 'amount' } })), ...effects.gives.map((e) => ({ ...e, token: 'eth' as const, tolerance: { less: 0n, more: 1n, why } }))];
   const gets = effects.gives.map((e) => ({ ...e, to: undefined, tolerance }));
-  const touches = [{ token: deposit.cardVault, tolerance: { less: 0n, more: 1n, why } }];
+  const touches = [{ token: deposit.instance, tolerance: { less: 0n, more: 1n, why } }];
   const template = { ...subject.template, effects: { ...effects, gives, gets, touches } };
   const inputs = { ...depositInputs, subject: { ...subject, template } };
   const page = buildPage(inputs, depositNotes, depositTitle, 'zh-TW');
@@ -247,11 +247,11 @@ test('交易後 and the Markdown report show an atMost, a tolerance and a touche
   const notes = after.map((row) => plain(row.note));
   assert.ok(notes.some((n) => n.startsWith('給出的不能多於你填的')), notes.join(' / '));
   assert.ok(notes.some((n) => n.endsWith('因為捨入，Safe 最後的餘額可以低最多 2 個最小單位')), notes.join(' / '));
-  assert.ok(after.some((row) => plain(row.label) === `Safe 的 ${deposit.cardVault}` && plain(row.value) === '只能因捨入變動' && row.ai?.ai === why['zh-TW']), JSON.stringify(after.map((r) => r.label)));
+  assert.ok(after.some((row) => plain(row.label) === `Safe 的 ${deposit.instance}` && plain(row.value) === '只能因捨入變動' && row.ai?.ai === why['zh-TW']), JSON.stringify(after.map((r) => r.label)));
   const markdown = renderReport(inputs, depositTitle);
   assert.ok(markdown.includes("; the Safe's balance may end up to 2 base units lower than that, for rounding; written by the AI in the template: stETH rounds shares down; in Traditional Chinese: stETH 換算份額時無條件捨去 |"), markdown);
   assert.ok(markdown.includes("| the Safe gives | ETH | the card's `amount`; the Safe's balance may end up to 1 base unit higher than that, for rounding;"), markdown.split('## Effects')[1]?.slice(0, 900));
-  assert.ok(markdown.includes(`| the Safe keeps | \`${deposit.cardVault}\``) && markdown.includes("| unchanged; the Safe's balance may end up to 1 base unit higher than that, for rounding; written by the AI"));
+  assert.ok(markdown.includes(`| the Safe keeps | \`${deposit.instance}\``) && markdown.includes("| unchanged; the Safe's balance may end up to 1 base unit higher than that, for rounding; written by the AI"));
   assert.ok(markdown.includes("at most the card's `amount`, and none gained"));
 });
 
@@ -392,11 +392,11 @@ test('the vault its factory alone confirms is the one 待確認; every address r
 });
 
 test("a Vault V2's market adapter is confirmed by the protocol API and, as one place, by its factory, the vault that names it and its own answer", { timeout: 600_000 }, async () => {
-  const revoke = { template: 'morpho/vault-v2-revoke', cardVault: 'acuto-usdc-v2-4a57' };
+  const revoke = { template: 'morpho/vault-v2-revoke', instance: 'acuto-usdc-v2-4a57' };
   const replayed = await replayInputs(ROOT, registry, revoke, await warmCompilers(reportCases(ROOT, registry, [revoke])), loadPublicSuffixList());
   const revokeTemplate = replayed.inputs.subject.kind === 'template' ? replayed.inputs.subject.template : assert.fail('a template report');
   const of = { ...replayed.inputs, fixtures: await judgeFixtures(ROOT, revokeTemplate, registry), example: firstRecordedTx(ROOT, revokeTemplate, replayed.inputs.registry) };
-  const page = buildPage(of, readNotes(ROOT, revoke.template, registry.entries.get(revoke.cardVault)), replayed.title, 'zh-TW');
+  const page = buildPage(of, readNotes(ROOT, revoke.template, registry.entries.get(revoke.instance)), replayed.title, 'zh-TW');
   assert.ok(!body(page, 'review').rows.some((r) => r.id.startsWith('acuto-usdc-v2-4a57-market-adapter/')), 'the adapter is not for the signer');
   const { open, folded } = body(page, 'addresses');
   const adapter = [...open, ...folded].find((r) => r.name === 'acuto-usdc-v2-4a57-market-adapter') ?? assert.fail('the adapter row');

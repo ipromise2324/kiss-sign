@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -24,7 +25,9 @@ import {
   signedEntryNames,
   erc7730Text,
   generatedPath,
+  docsPaths,
   loadReport,
+  reportDir,
   parseDocs,
   readDocs,
   pastTxsRecordings,
@@ -41,7 +44,8 @@ import type { ReportInputs, ReportRecording, Subject } from '../src/research/rep
 import type { Page } from '../src/research/source-page.ts';
 import { parseFunctionSignature } from '../src/decode/abi.ts';
 import { STANDARDS } from '../src/research/standards.ts';
-import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/vault-evidence.ts';
+import { notesPath } from '../src/research/notes.ts';
+import { alchemyCall, formatVaultEvidence, gatherVaultEvidence } from '../src/research/instance-evidence.ts';
 import type { AbiProof } from '../src/contracts/prove.ts';
 import type { Address, Hex } from '../src/safe/types.ts';
 import { TEMPLATES_DIR, loadTemplate, parseTemplate } from '../src/template/template.ts';
@@ -55,7 +59,7 @@ const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
 const suffixes = loadPublicSuffixList();
 const ID = 'morpho/vault-deposit';
-const TARGET = { template: ID, cardVault: 'steakhouse-prime-usdc-v2-0f51' };
+const TARGET = { template: ID, instance: 'steakhouse-prime-usdc-v2-0f51' };
 const scoped = loadReport(ROOT, registry, TARGET);
 const recording = readRecording(join(ROOT, reportRecordingPath(TARGET))) as ReportRecording;
 
@@ -123,7 +127,7 @@ test('the report says what a computed field reads: the registry contract it call
 test('a contract field that names its protocol puts only that protocol\'s entries in the report', () => {
   const raw = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid', 'vault-deposit', 'template.json'), 'utf8'));
   const template = parseTemplate({ ...raw, card: { ...raw.card, vault: { kind: 'contract', registryKind: 'vault', defillama: 'fluid-lending' } } }, registry);
-  const subject: Subject = { kind: 'template', template, docs: [], vault: undefined };
+  const subject: Subject = { kind: 'template', template, docs: [], vault: undefined, dir: join(TEMPLATES_DIR, template.id) };
   const vaults = entriesOf(subject, registry).filter((entry) => entry.kind === 'vault').map((entry) => entry.name);
   assert.deepEqual(vaults, ['fluid-fusdc', 'fluid-fusdt']);
   const text = quick(recording.pages, new Map(), subject, undefined, undefined, undefined, registry);
@@ -132,22 +136,22 @@ test('a contract field that names its protocol puts only that protocol\'s entrie
 });
 
 test('a per-vault report joins its vault\'s docs.json with the template\'s, and refuses a function both name', () => {
-  const { subject } = loadReport(ROOT, registry, { template: 'fluid/vault-deposit', cardVault: 'fluid-fusdt' });
+  const { subject } = loadReport(ROOT, registry, { template: 'fluid/vault-deposit', instance: 'fluid-fusdt' });
   assert.deepEqual(subject.kind === 'template' ? subject.docs.map((d) => `${d.fn.signature} ${d.contract.name}`) : [], ['approve(address,uint256) usdt', 'deposit(uint256,address) fluid-fusdt']);
   const root = mkdtempSync(join(tmpdir(), 'kiss-sign-docs-'));
   const folder = join(root, TEMPLATES_DIR, 'fluid/vault-deposit');
-  mkdirSync(join(folder, 'vaults', 'fluid-fusdt'), { recursive: true });
+  mkdirSync(join(folder, 'instances', 'fluid-fusdt'), { recursive: true });
   const page = { contract: 'fluid-fusdt', url: 'https://docs.fluid.io/' };
   const approve = { contract: 'usdt', url: 'https://etherscan.io/' };
   writeFileSync(join(folder, 'docs.json'), JSON.stringify({ 'deposit(uint256,address)': page }));
-  writeFileSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'approve(address,uint256)': approve }));
+  writeFileSync(join(folder, 'instances', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'approve(address,uint256)': approve }));
   assert.deepEqual(readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), { 'deposit(uint256,address)': page, 'approve(address,uint256)': approve });
   assert.deepEqual(readDocs(root, 'fluid/vault-deposit', 'fluid-fusdc'), { 'deposit(uint256,address)': page });
-  writeFileSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'deposit(uint256,address)': page }));
-  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /vaults\/fluid-fusdt\/docs\.json: "deposit\(uint256,address\)" is in the template's docs\.json too/);
-  rmSync(join(folder, 'vaults', 'fluid-fusdt', 'docs.json'));
-  symlinkSync(join(folder, 'docs.json'), join(folder, 'vaults', 'fluid-fusdt', 'docs.json'));
-  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /vaults\/fluid-fusdt\/docs\.json: not a regular file/);
+  writeFileSync(join(folder, 'instances', 'fluid-fusdt', 'docs.json'), JSON.stringify({ 'deposit(uint256,address)': page }));
+  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /instances\/fluid-fusdt\/docs\.json: "deposit\(uint256,address\)" is in the template's docs\.json too/);
+  rmSync(join(folder, 'instances', 'fluid-fusdt', 'docs.json'));
+  symlinkSync(join(folder, 'docs.json'), join(folder, 'instances', 'fluid-fusdt', 'docs.json'));
+  assert.throws(() => readDocs(root, 'fluid/vault-deposit', 'fluid-fusdt'), /instances\/fluid-fusdt\/docs\.json: not a regular file/);
 });
 
 test('morpho/vault-deposit: the ERC-7730 section is computed again from the recorded descriptors and attestation reads', async () => {
@@ -160,7 +164,7 @@ test('morpho/vault-deposit: the ERC-7730 section is computed again from the reco
     text,
     /steakhouse-prime-usdc-v2-0f51 0xbeef088055857739C12CD3765F20b7679Def0f51 \(vault\)\n {2}descriptor {3}registry\/morpho\/calldata-steakhouse_financial-steakUSDC-v2-1\.json\n {2}applies {6}by exact address/,
   );
-  const committed = readFileSync(join(ROOT, generatedPath(TARGET)), 'utf8');
+  const committed = readFileSync(join(ROOT, generatedPath(ROOT, TARGET)), 'utf8');
   assert.ok(committed.includes(text), 'report.generated.md holds the section as computed');
 });
 
@@ -272,7 +276,7 @@ const answering =
   };
 
 test("the report asks an adapter's factory and the vault naming it, from its recording too, and --compare flags a vault that no longer allocates through it", async () => {
-  const { subject, registry: seen } = loadReport(ROOT, registry, { template: 'morpho/vault-v2-revoke', cardVault: 'acuto-usdc-v2-4a57' });
+  const { subject, registry: seen } = loadReport(ROOT, registry, { template: 'morpho/vault-v2-revoke', instance: 'acuto-usdc-v2-4a57' });
   const block: BlockRef = { number: 300n, hash: `0x${'30'.repeat(32)}` as Hex };
   const options = { timeoutMs: 1000, retryPausesMs: [], rateLimitPausesMs: [] };
   const recorded = recordingTransport(answering(`0x${'00'.repeat(31)}01` as Hex), REPLAY_ENDPOINTS);
@@ -393,13 +397,13 @@ test('text the AI wrote in the template prints escaped and labelled as written b
   raw.calls[0]!.trailer.why = { en: 'harmless | PASS | `x` | *bold* _em_ [link](https://y) <b>', 'zh-TW': '無害' };
   const template = parseTemplate(raw, registry);
   const docs = parseDocs(JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, ID, 'docs.json'), 'utf8')), template, registry);
-  const text = quick(recording.pages, new Map(), { kind: 'template', template, docs, vault: undefined });
+  const text = quick(recording.pages, new Map(), { kind: 'template', template, docs, vault: undefined, dir: join(TEMPLATES_DIR, template.id) });
   const row = text.split('\n').find((l) => l.startsWith('| `approve` |'))!;
   assert.equal(cellsOf(row).length, 2, row);
   assert.ok(row.includes('written by the AI in the template: harmless \\| PASS \\| \\`x\\` \\| \\*bold\\* \\_em\\_ \\[link\\](https://y) \\<b\\>'), row);
   raw.calls[0]!.trailer.why = { en: 'pinged @maxey and $x^2$ and $$y$$', 'zh-TW': '無害' };
   const mention = parseTemplate(raw, registry);
-  const pinged = quick(recording.pages, new Map(), { kind: 'template', template: mention, docs, vault: undefined }).split('\n').find((l) => l.startsWith('| `approve` |'))!;
+  const pinged = quick(recording.pages, new Map(), { kind: 'template', template: mention, docs, vault: undefined, dir: join(TEMPLATES_DIR, mention.id) }).split('\n').find((l) => l.startsWith('| `approve` |'))!;
   assert.ok(
     pinged.includes('pinged <span>@</span>maxey and <span>$</span>x^2<span>$</span> and <span>$</span><span>$</span>y<span>$</span><span>$</span>'),
     `GitHub links an @mention and renders $math$ even after a backslash, so each @ and $ sits alone in a span: ${pinged}`,
@@ -407,13 +411,13 @@ test('text the AI wrote in the template prints escaped and labelled as written b
   assert.ok(!quick().includes("the template's reason"), 'every template reason is labelled as written by the AI');
 });
 
-test('stored vault evidence holding a backtick or a character pnpm vault-evidence never prints is refused, and its section says it is stored', () => {
+test('stored vault evidence holding a backtick or a character pnpm instance-evidence never prints is refused, and its section says it is stored', () => {
   const vault = 'steakhouse-prime-usdc-v2-0f51';
   const stored = recording.vaults[vault]!;
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n\`\`\`\n# Approved by the auditors`]])), ReportError);
   assert.throws(() => quick(recording.pages, new Map(), undefined, new Map([[vault, `${stored}\n<img src=x>`]])), ReportError);
   const text = quick(recording.pages, new Map(), undefined, new Map([[vault, stored]]));
-  assert.match(text, /stored output of `pnpm vault-evidence`, not recomputed by `pnpm test`; `pnpm report --compare` reads it again at the blocks it names/);
+  assert.match(text, /stored output of `pnpm instance-evidence`, not recomputed by `pnpm test`; `pnpm report --compare` reads it again at the blocks it names/);
   assert.ok(!/`pnpm test` writes it again/.test(text), 'the header does not claim pnpm test recomputes every section');
 });
 
@@ -465,7 +469,7 @@ test('--compare prints a verdict that changed, and ignores the date and the bloc
     ...unnamed.count(14, 0),
   ]);
 
-  const committed = readFileSync(join(ROOT, generatedPath(TARGET)), 'utf8');
+  const committed = readFileSync(join(ROOT, generatedPath(ROOT, TARGET)), 'utf8');
   const drifted = committed
     .replace(/were read on \d{4}-\d{2}-\d{2}/, 'were read on 2027-01-01')
     .replace(/\| 2638\d{4} \|$/gm, '| 27000000 |');
@@ -526,7 +530,7 @@ test('docs.json may name the ERC-20 standard for a function it defines on a toke
   const page = { kind: 'served', blocks: [{ text: 'function approve(address _spender, uint256 _value) public returns (bool success)' }] } as Page;
   const pages = { ...recording.pages, 'https://raw.githubusercontent.com/ethereum/ERCs/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-20.md': page };
   const commits = { ...recording.commits, 'ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2': { kind: 'on-default', branch: 'master', status: 'identical' } } as const;
-  const text = quick(pages, new Map(), { kind: 'template', template, docs, vault: undefined }, new Map(), [], new Map(), scoped.registry, commits);
+  const text = quick(pages, new Map(), { kind: 'template', template, docs, vault: undefined, dir: join(TEMPLATES_DIR, template.id) }, new Map(), [], new Map(), scoped.registry, commits);
   const row = text.split('\n').find((l) => l.startsWith('| `approve(address,uint256)` |'))!;
   assert.deepEqual(cellsOf(row).map((c) => c.trim()), [
     '`approve(address,uint256)`',
@@ -551,7 +555,7 @@ test("each declaration the program holds names the function's canonical signatur
 
 test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH itself, each checked against its own page and org', () => {
   const fluid = loadTemplate(ROOT, 'fluid/vault-deposit', registry);
-  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', 'vaults', 'fluid-fusdt', 'docs.json'), 'utf8')) as Record<string, unknown>;
+  const valid = JSON.parse(readFileSync(join(ROOT, TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt', 'docs.json'), 'utf8')) as Record<string, unknown>;
   const named = (standard: string, contract = 'fluid-fusdt') => parseDocs({ ...valid, 'deposit(uint256,address)': { contract, standard } }, fluid, registry);
   const docs = named('erc-4626');
   const deposit = docs.find((d) => d.fn.signature === 'deposit(uint256,address)')!;
@@ -563,7 +567,7 @@ test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH 
   const raw = 'https://raw.githubusercontent.com/ethereum/ERCs/ae65e89408f387ffb47d220879925c4ab384dfc2/ERCS/erc-4626.md';
   const commits = { ...recording.commits, 'ethereum/ercs@ae65e89408f387ffb47d220879925c4ab384dfc2': { kind: 'on-default', branch: 'master', status: 'identical' } } as const;
   const onPage = (blocks: Extract<Page, { kind: 'served' }>['blocks']) => {
-    const text = quick({ ...recording.pages, [raw]: { kind: 'served', blocks } as Page }, new Map(), { kind: 'template', template: fluid, docs, vault: undefined }, new Map(), [], new Map(), registry, commits);
+    const text = quick({ ...recording.pages, [raw]: { kind: 'served', blocks } as Page }, new Map(), { kind: 'template', template: fluid, docs, vault: undefined, dir: join(TEMPLATES_DIR, fluid.id) }, new Map(), [], new Map(), registry, commits);
     return cellsOf(text.split('\n').find((l) => l.startsWith('| `deposit(uint256,address)` |'))!).map((c) => c.trim());
   };
   assert.deepEqual(onPage([{ text: '#### deposit' }, { text: '- name: deposit', heading: 'deposit' }]), [
@@ -579,7 +583,7 @@ test('docs.json may name ERC-4626 for a vault function, and WETH9 only for WETH 
 });
 
 const VAULT = 'steakhouse-high-yield-usdc-v2-a757';
-const vaultRecording: { exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'vault-evidence', `${VAULT}.json`));
+const vaultRecording: { exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'instance-evidence', `${VAULT}.json`));
 
 test('--compare reads each vault again at the blocks its evidence names, so a changed month, holder count or top-10 share differs', async () => {
   const transport = replayTransport(vaultRecording.exchanges, REPLAY_ENDPOINTS);
@@ -589,7 +593,7 @@ test('--compare reads each vault again at the blocks its evidence names, so a ch
     const evidence = await gatherVaultEvidence(reader, alchemy, vault, sizeOf(vault, registry)!, at);
     return 'kind' in evidence ? `UNVERIFIABLE ${evidence.reason}` : formatVaultEvidence(evidence, registry);
   };
-  const { subject } = loadReport(ROOT, registry, { vault: VAULT });
+  const { subject } = loadReport(ROOT, registry, { template: ID, instance: VAULT });
   const vault = registry.entries.get(VAULT)!;
   const honest = quick(recording.pages, new Map(), subject, new Map([[VAULT, await read(vault, 26385872n)]]), [], new Map(), registry);
   const compare = async (committed: string) => compareReports(committed, quick(recording.pages, new Map(), subject, await vaultsAt(committed, [vault], read), [], new Map(), registry));
@@ -692,7 +696,7 @@ test('a market field lists every market with its id, lltv and parts, binds each 
     },
     reg,
   );
-  const subject: Subject = { kind: 'template', template, docs: [], vault: undefined };
+  const subject: Subject = { kind: 'template', template, docs: [], vault: undefined, dir: join(TEMPLATES_DIR, template.id) };
   const text = quick(recording.pages, new Map(), subject, new Map(), [], new Map(), reg);
   const full = (name: keyof typeof added) => `\`${name}\` \`${added[name].address}\``;
   const usdc = '`usdc` `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48`';
@@ -718,9 +722,56 @@ test('a market field lists every market with its id, lltv and parts, binds each 
 test('a template whose card names a vault is reported per vault: without the vault, with another template, or with a vault the field refuses, it is refused', () => {
   const refused = (target: Parameters<typeof loadReport>[2], message: string) => assert.throws(() => loadReport(ROOT, registry, target), (e: unknown) => e instanceof ReportError && e.message === message);
   refused({ template: ID }, 'morpho/vault-deposit is reported per vault; name the vault (reports exist for hyperithm-usdc-apex-v2-9e2f, steakhouse-prime-usdc-v2-0f51)');
-  refused({ template: 'eth/transfer', cardVault: 'steakhouse-prime-usdc-v2-0f51' }, 'eth/transfer has one report, not one per vault; leave out the vault');
-  refused({ template: ID, cardVault: 'fluid-fusdc' }, "fluid-fusdc is not a vault the card's vault of morpho/vault-deposit accepts");
-  refused({ template: ID, cardVault: 'bundler3' }, "bundler3 is not a vault the card's vault of morpho/vault-deposit accepts");
+  refused({ template: 'eth/transfer', instance: 'steakhouse-prime-usdc-v2-0f51' }, 'eth/transfer has one report, not one per vault; leave out the vault');
+  refused({ template: ID, instance: 'fluid-fusdc' }, "fluid-fusdc is not a vault the card's vault of morpho/vault-deposit accepts");
+  refused({ template: ID, instance: 'bundler3' }, "bundler3 is not a vault the card's vault of morpho/vault-deposit accepts");
+});
+
+test('--instance-of writes a new instance\'s report to instances/, and its notes and docs are read from there', () => {
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-instances-'));
+  try {
+    const target = { template: 'fluid/vault-deposit', instance: 'fluid-fusdt' };
+    const folder = join(TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt');
+    assert.equal(reportDir(root, target), folder);
+    assert.equal(generatedPath(root, target), join(folder, GENERATED_FILE));
+    assert.equal(notesPath(root, target.template, target.instance), join(folder, 'notes.json'));
+    mkdirSync(join(root, folder), { recursive: true });
+    writeFileSync(join(root, folder, 'docs.json'), '{}');
+    assert.deepEqual(docsPaths(root, target.template, target.instance), [join(TEMPLATES_DIR, 'fluid/vault-deposit', 'docs.json'), join(folder, 'docs.json')]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+  const text = quick(recording.pages, new Map(), scoped.subject, new Map([[TARGET.instance, recording.vaults[TARGET.instance]!]]));
+  assert.match(text, /`pnpm report morpho\/vault-deposit --instance-of steakhouse-prime-usdc-v2-0f51 --compare` reads/);
+  assert.match(text, /stored as `pnpm instance-evidence` printed it/);
+  assert.match(text, /the stored output of `pnpm instance-evidence`/);
+});
+
+test('an instance whose committed report is in instances/ is found there, with its notes beside it', () => {
+  const root = mkdtempSync(join(tmpdir(), 'kiss-sign-instances-'));
+  try {
+    const target = { template: 'fluid/vault-deposit', instance: 'fluid-fusdt' };
+    const folder = join(TEMPLATES_DIR, 'fluid/vault-deposit', 'instances', 'fluid-fusdt');
+    mkdirSync(join(root, folder), { recursive: true });
+    assert.deepEqual([...reportedInstancesIn(root, target.template).keys()], [], 'a folder with no report holds no report');
+    writeFileSync(join(root, folder, GENERATED_FILE), '# report\n');
+    assert.deepEqual([...reportedInstancesIn(root, target.template).keys()], [target.instance]);
+    assert.equal(reportDir(root, target), folder);
+    assert.equal(generatedPath(root, target), join(folder, GENERATED_FILE));
+    assert.equal(notesPath(root, target.template, target.instance), join(folder, 'notes.json'));
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+  assert.equal(generatedPath(ROOT, TARGET), join(TEMPLATES_DIR, ID, 'instances', TARGET.instance, GENERATED_FILE));
+  assert.equal(scoped.subject.dir, join(TEMPLATES_DIR, ID, 'instances', TARGET.instance));
+});
+
+test('pnpm report refuses --vault-of and --vault, naming --instance-of', () => {
+  for (const [flag, value] of [['--vault-of', TARGET.instance], ['--vault', 'steakhouse-high-yield-usdc-v2-a757']] as const) {
+    const run = spawnSync(process.execPath, [join(ROOT, 'scripts', 'report.ts'), ...(flag === '--vault' ? [] : [ID]), flag, value, '--offline'], { encoding: 'utf8' });
+    assert.equal(run.status, 2, run.stderr);
+    assert.equal(run.stderr.trim(), `REFUSED  ${flag} was removed; name an instance's report with <protocol>/<operation> --instance-of <instance>`);
+  }
 });
 
 test('a per-vault report refuses a registry whose kept entry depends on another vault the field accepts', () => {
@@ -733,8 +784,8 @@ test('a per-vault report refuses a registry whose kept entry depends on another 
 });
 
 test("a per-vault report shows that vault alone: no other vault, no asset or factory only another vault names, and only past searches anchored on its token", () => {
-  const others = [...registry.entries.values()].filter((e) => e.kind === 'vault' && e.name !== TARGET.cardVault && e.defillama !== 'fluid-lending');
-  const text = readFileSync(join(ROOT, generatedPath(TARGET)), 'utf8');
+  const others = [...registry.entries.values()].filter((e) => e.kind === 'vault' && e.name !== TARGET.instance && e.defillama !== 'fluid-lending');
+  const text = readFileSync(join(ROOT, generatedPath(ROOT, TARGET)), 'utf8');
   for (const entry of [...others, registry.entries.get('usdt')!, registry.entries.get('metamorpho-factory-v1-0')!]) {
     assert.ok(!text.includes(`\`${entry.name}\``) && !text.toLowerCase().includes(entry.address), `${entry.name} appears in the report`);
   }
@@ -742,7 +793,7 @@ test("a per-vault report shows that vault alone: no other vault, no asset or fac
   assert.deepEqual(entriesOf(scoped.subject, scoped.registry).map((e) => e.name), ['usdc', 'bundler3', 'steakhouse-prime-usdc-v2-0f51', 'vault-v2-factory', 'general-adapter-1']);
   const anchored = pastTxsRecordings(ROOT, scoped.subject).map((r) => r.file);
   assert.deepEqual(anchored, ['testdata/research/morpho-vault-deposit-windows.json', 'testdata/research/morpho-vault-deposit.json']);
-  assert.match(text, /^Written by `pnpm report morpho\/vault-deposit --vault-of steakhouse-prime-usdc-v2-0f51 --record` /m);
+  assert.match(text, /^Written by `pnpm report morpho\/vault-deposit --instance-of steakhouse-prime-usdc-v2-0f51 --record` /m);
 });
 
 test("a signed message's answer is shown on its digest's row: where the message sits, and each member read elsewhere or in hex", () => {

@@ -71,7 +71,7 @@ The tests require the hashes kiss-sign computes to equal `chain.domainSeparator`
 
 The claim fixtures were found with `pnpm past-txs` on transfers of the reward token out of its distributor (`--from`), the CCTP one on USDC mints. Each Safe's nonce is its `nonce()` at the block before. No Safe in the searched blocks received a CCTP message in a transaction of its own, so `cctp-receive-then-call` serves the CCTP tests twice: whole, and with its first call taken out as a direct call.
 
-The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see the reports in `templates/morpho/vault-deposit/vaults/`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service. The Fluid fixtures come from two Safes that `pnpm past-txs fluid/vault-deposit` and `fluid/vault-withdraw` found, and from those Safes' histories in the Safe Transaction Service; the Fluid app is the origin of each. One Safe was upgraded from 1.3.0 to 1.4.1 between its nonces 124 and 152.
+The four `morpho-deposit-*` fixtures were found with `pnpm past-txs morpho/vault-deposit` on vault share mints (see the reports in `templates/morpho/vault-deposit/instances/`); each Safe's nonce is its `nonce()` at the block before. The first Morpho deposit was found by listing token transfers into GeneralAdapter1 with Etherscan's `tokentx`, keeping senders whose `VERSION()` reads like a Safe, and looking each transaction up in the Safe Transaction Service by `transaction_hash`. The transfers and cancellations were found in the full executed histories of the Safes of the other fixtures, listed from the Safe Transaction Service. The Fluid fixtures come from two Safes that `pnpm past-txs fluid/vault-deposit` and `fluid/vault-withdraw` found, and from those Safes' histories in the Safe Transaction Service; the Fluid app is the origin of each. One Safe was upgraded from 1.3.0 to 1.4.1 between its nonces 124 and 152.
 
 ### Recording again
 
@@ -402,9 +402,9 @@ done
 | --- | --- | --- |
 | `registry.json` | 2026-11-10 | Every entry of `registry/contracts.json` at the time |
 
-## Vault evidence
+## Instance evidence
 
-`vault-evidence/<name>.json` is written by `pnpm vault-evidence <vault> --record <name>`: the vault's registry name and every request with each provider's answer, as in `simulate/`. Block answers are cut to `number`, `hash`, `timestamp`, `gasLimit` and `mixHash`, and each Alchemy Transfers API page to its distinct recipients. The command refuses to write a recording that names the configured Safe, so a vault the Safe ever held cannot be recorded.
+`instance-evidence/<name>.json` is written by `pnpm instance-evidence <vault> --record <name>`: the vault's registry name and every request with each provider's answer, as in `simulate/`. Block answers are cut to `number`, `hash`, `timestamp`, `gasLimit` and `mixHash`, and each Alchemy Transfers API page to its distinct recipients. The command refuses to write a recording that names the configured Safe, so a vault the Safe ever held cannot be recorded.
 
 | File | Vault | Block | What it shows |
 | --- | --- | --- | --- |

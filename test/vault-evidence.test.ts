@@ -12,12 +12,12 @@ import type { BlockRef, CallResult } from '../src/chain/types.ts';
 import { loadRegistry, parseRegistry, sizeOf } from '../src/registry.ts';
 import { checksumAddress } from '../src/safe/types.ts';
 import type { Hex } from '../src/safe/types.ts';
-import { alchemyCall, factoryAnswer, formatVaultEvidence, gatherVaultEvidence, readStoredEvidence, vaultEvidenceText } from '../src/research/vault-evidence.ts';
+import { alchemyCall, factoryAnswer, formatVaultEvidence, gatherVaultEvidence, readStoredEvidence, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import { readRecording } from '../src/chain/bytecode.ts';
 
 const ROOT = join(import.meta.dirname, '..');
 const registry = loadRegistry(ROOT);
-const recorded: { vault: string; exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'vault-evidence', 'steakhouse-high-yield-usdc-v2-a757.json'));
+const recorded: { vault: string; exchanges: Exchange[] } = readRecording(join(ROOT, 'testdata', 'instance-evidence', 'steakhouse-high-yield-usdc-v2-a757.json'));
 const TOTAL_ASSETS = '0x01e1d114';
 const TOTAL_SUPPLY = '0x18160ddd';
 

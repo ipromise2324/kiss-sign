@@ -41,7 +41,7 @@ Part of [the kiss-sign design](../design.md).
 - The GitHub API allows 60 requests an hour without a token, and 5,000 with `GITHUB_TOKEN`; each pinned repository and commit costs two.
   Past that, every GitHub line is `UNVERIFIABLE` until the hour passes.
 - No free API lists a token's holders: Etherscan's `tokenholderlist`, `tokenholdercount` and `topholders` are API Pro endpoints, and Alchemy has no holder list for ERC-20 tokens.
-  `pnpm vault-evidence` takes its candidates from the Alchemy Transfers API alone; the sum against `totalSupply()` catches a missing holder but not a source that invents none.
+  `pnpm instance-evidence` takes its candidates from the Alchemy Transfers API alone; the sum against `totalSupply()` catches a missing holder but not a source that invents none.
   It counts addresses, not owners, so one owner's many wallets count as many, and a vault with more than 300,000 share transfers gets no holder count.
   `totalAssets()` is sampled once a month, so a deposit and withdrawal between two samples does not show.
   Linking holder wallets, such as by a common gas funder, is not built.
@@ -138,7 +138,7 @@ Part of [the kiss-sign design](../design.md).
   It shows what a recorded verdict was based on; it is not permission to sign.
 - When the code on chain ends in a metadata trailer without a source hash, as solc writes with `bytecodeHash: "none"`, matching bytecode proves the ABI's selectors and types but not its parameter names, since no byte on chain depends on them.
 - When the source Etherscan holds compiles to the code on chain except the metadata hash (IPFS, or Swarm `bzzr0` for solc before 0.5.9), which hashes the source text, file names and comments included, the proof masks that hash, so it proves the ABI's selectors and types but not its parameter names.
-  The generated report prints this as a FINDING, graded reference (see Finding grades).
+  The generated report prints this as a FINDING, graded reference (see Finding grades under Report, step 6 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)).
   The signer's HTML page keeps it out of 待確認, since every other byte is proven and nothing the signer could check would change it: USDT, USDC, Morpho Blue and Circle's CCTP MessageTransmitter all differ there.
   A source verified on Etherscan as one flattened file usually differs there, since its file name and layout are not the deployed ones.
 - The simulation reads at most 50 modules.
@@ -171,7 +171,7 @@ Part of [the kiss-sign design](../design.md).
   Routes make this likelier than code, since an admin can add an implementation and remove it again.
   Only a transaction executed in that gap is affected: `verify` reads the code at its block, finds B where the pin names A, and gives `MISMATCH`, the safe direction; a transaction to sign needs today's pin.
 - A proxy is recognized only by EIP-1167, the Safe proxy, the EIP-1967 implementation and beacon slots, and the ZeppelinOS slot, or, for an entry that declares `routes`, by the routes its pin holds, or, for one that declares `implementationRead`, by its views and the probe.
-  Code that delegates anywhere else is refused only when the walk of a call that matches no function reaches that delegation (see Establish the ABI).
+  Code that delegates anywhere else is refused only when the walk of a call that matches no function reaches that delegation (see Establish the ABI, step 3 of [the flow](flow.md#first-time-an-operation-is-done-build-its-template)).
   The walk follows one such selector, so a fallback that delegates only for some selectors it compares, such as only for `transfer`, or that copies a slot's value through branches on it, passes, and so does a named function of the proven ABI whose own body delegates, as each function of a Compound-style delegator does: a call to it runs code that is neither proven nor pinned.
   A beacon proxy's code is not walked.
   A fallback that forwards a call with CALL to an address from storage, as Synthetix's `ProxyERC20` does, is not a delegation and is not refused, though the ABI proven is still only the forwarder's.

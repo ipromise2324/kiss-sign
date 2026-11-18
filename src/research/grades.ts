@@ -10,7 +10,7 @@ export type Grade = 'key' | 'reference';
 /** A result's weight: passed, a finding of a grade, or neutral, a place with nothing to compare that is no finding. */
 export type Weight = 'pass' | Grade | 'neutral';
 
-/** The one table of weights; docs/design.md (Finding grades) gives the reason for each. Unsure is key. */
+/** The one table of weights; docs/design/flow.md (Finding grades) gives the reason for each. Unsure is key. */
 export const WEIGHT_OF: { readonly [K in FindingKind]: Weight } = {
   agrees: 'pass',
   'site-differs': 'key',

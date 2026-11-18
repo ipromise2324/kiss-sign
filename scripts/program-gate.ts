@@ -3,9 +3,34 @@ import { cpSync, existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, sym
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runCanary, runProcess } from '../src/canaries.ts';
+import { exitOnHelp } from '../src/script-help.ts';
 import { CANARY_LIST, branchSplit, parseCanaryList } from '../src/verdict-core.ts';
 
 const USAGE = 'usage: pnpm program-gate <branch>, run in a clone at origin/main, such as pnpm program-gate origin/my-branch';
+const HELP = `usage: pnpm program-gate <branch>
+
+Says whether the AI may merge a program pull request. Run it in a clone whose checkout is exactly
+origin/main, such as pnpm program-gate origin/my-branch; it refuses to run anywhere else. It judges
+the one commit the branch names, which must hold origin/main, and prints the verdict core files and
+the other program files the branch changes.
+Without running the branch's code it stops at NOT ELIGIBLE, naming each file or test, when the
+branch changes a hand-written file under templates/ or registry/ or a gate file, or drops a test
+origin/main runs (a literal test, it, describe or suite title deleted, renamed, moved to another
+file, commented out, or skipped). Otherwise it checks the branch out into a temporary worktree and
+runs the typecheck, each canary of main's docs/canaries.txt with what it guards and its counts, and
+every other test, then requires every tracked file to be as committed.
+It prints ELIGIBLE, with the merge command for exactly that commit, and exits 0 only when all pass.
+NOT ELIGIBLE exits 3 when the only reason is a template, registry or gate file, or a dropped test
+with no verdict core change, the signer's to merge, and 1 otherwise. A wrong argument exits 2.
+CI runs it as the program-gate job on pull_request_target, from main's workflow and code; the job
+passes on exit 3 with the notice "The signer merges this pull request", so red means a check failed.
+
+Writes: no tracked file; a temporary worktree it removes, and into vendor/ any pinned solc or Public
+Suffix List the tests need.
+Keys: none.
+Rules: docs/design/program-ownership.md, "The program gate" and "The verdict core".`;
+
+exitOnHelp(HELP);
 const ref = process.argv[2];
 if (ref === undefined || process.argv.length > 3 || ref.startsWith('-')) {
   console.error(USAGE);

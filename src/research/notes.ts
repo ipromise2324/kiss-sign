@@ -7,11 +7,11 @@ import type { Language } from '../language.ts';
 import { parseHttpsUrl } from '../registry.ts';
 import type { HttpsUrl, RegistryEntry } from '../registry.ts';
 import { TEMPLATES_DIR, callTargetEntries, effectTokenNames, refNames, viewTargetNames } from '../template/template.ts';
-import { vaultReportDir } from '../template/vault-reports.ts';
 import type { CallNode, Rule, Template } from '../template/template.ts';
 import { needsSigner } from './ledger.ts';
 import { factsScope } from './protocol-facts.ts';
 import type { Ledger, ResultId } from './ledger.ts';
+import { instanceReportDir } from './report.ts';
 import type { ReportInputs } from './report.ts';
 
 export const NOTES_FILE = 'notes.json';
@@ -20,11 +20,12 @@ export class NotesError extends Error {
   override name = 'NotesError';
 }
 
-/** The template's notes, or with `vault` the notes of that vault's report of it. */
-export const notesPath = (template: string, vault?: string): string => join(vault === undefined ? join(TEMPLATES_DIR, template) : vaultReportDir(template, vault), NOTES_FILE);
+/** The template's notes, or with `instance` the notes of that instance's report of it. */
+export const notesPath = (repoRoot: string, template: string, instance?: string): string =>
+  join(instance === undefined ? join(TEMPLATES_DIR, template) : instanceReportDir(repoRoot, template, instance), NOTES_FILE);
 
 /** The changed files that hold text the AI wrote for a template's HTML report, a vault's included, which no program checks. */
-export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/(vaults\/[^/]+\/)?notes\.json$/.test(file));
+export const notesChanges = (changed: readonly string[]): string[] => changed.filter((file) => /^templates\/[^/]+\/[^/]+\/((instances|vaults)\/[^/]+\/)?notes\.json$/.test(file));
 
 const readJson = (path: string): unknown => (existsSync(path) ? (JSON.parse(readFileSync(path, 'utf8')) as unknown) : undefined);
 
@@ -113,10 +114,10 @@ export function joinLanguages(shared: unknown, vault: unknown, sharedPath: strin
  * languages both hold; undefined without the template's.
  */
 export function readNotes(repoRoot: string, template: string, vault?: RegistryEntry): unknown {
-  const sharedPath = notesPath(template);
+  const sharedPath = notesPath(repoRoot, template);
   const shared = readJson(join(repoRoot, sharedPath));
   if (vault === undefined) return shared;
-  const path = notesPath(template, vault.name);
+  const path = notesPath(repoRoot, template, vault.name);
   const [ours, theirs] = joinLanguages(shared, readJson(join(repoRoot, path)), sharedPath, path);
   return mergeNotes(ours, theirs, path, new Set([vault.name, ...Object.values(vault.attributes), ...(vault.dependsOn ?? [])]));
 }
