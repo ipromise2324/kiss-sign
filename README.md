@@ -183,7 +183,7 @@ Compare the hashes on `verify`'s page with your hardware wallet's screen, charac
 | Attack | Stopped by |
 |---|---|
 | One provider gives a false answer, or none | `verify` compares the two answers: they differ, `UNVERIFIABLE` |
-| Both give the same false answer, such as a simulation that hides your funds going elsewhere | The Safe web app's own simulation may show it, if the web app itself is not compromised |
+| Both give the same false answer, such as a simulation that hides your funds going elsewhere | The Safe web app's own simulation, run by Tenderly rather than these two providers, may still show your funds going elsewhere, if the web app itself is not compromised |
 
 ### Fake sites and listings
 
@@ -203,7 +203,7 @@ Models are trained to resist prompt injection, but a page your AI reads can stil
 | Attack | Stopped by |
 |---|---|
 | The AI gives wrong information, such as a template that allows too much | `verify` refuses a delegatecall, an unlimited approval, a Safe setting change and an unexplained balance change whatever the template says; the rest shows in the report you review |
-| The AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
+| The AI changes the report, `verify`'s code or its verdict | A bad transaction must still reach your Safe, through a compromised web app or protocol app; otherwise the attack fails. `--compare` reads the report's facts again with your `main`'s code, and a program change never shares a pull request with a template or the registry |
 
 On the hardened tier, `check.sh` decodes the transaction without kiss-sign, so you see the real functions and arguments.
 
