@@ -77,18 +77,6 @@ test('the service data null is hashed as empty bytes', () => {
   assert.equal(tx.data, '0x');
 });
 
-test('a service object with an altered safeTxHash is refused', () => {
-  const altered = { ...morpho.service, safeTxHash: `0x${'ab'.repeat(32)}` };
-  assert.throws(() => parseServiceTx(altered, context), { name: 'SafeTxParseError', field: 'safeTxHash' });
-});
-
-test('a service object with one changed data byte and the original safeTxHash is refused', () => {
-  const data = morpho.service.data as string;
-  const last = data.slice(-2) === '00' ? '01' : '00';
-  const altered = { ...morpho.service, data: `${data.slice(0, -2)}${last}` };
-  assert.throws(() => parseServiceTx(altered, context), { name: 'SafeTxParseError', field: 'safeTxHash' });
-});
-
 test('an unsupported Safe version is refused', () => {
   assert.throws(() => parseServiceTx(morpho.service, { chainId: 1n, version: '1.2.0' }), {
     field: 'version',

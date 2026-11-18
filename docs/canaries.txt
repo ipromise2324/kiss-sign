@@ -31,6 +31,15 @@ reads testdata/safe-tx/eth-transfer-null-data.json
 reads testdata/safe-tx/morpho-vault-deposit.json
 reads testdata/simulate/morpho-vault-deposit.json
 
+canary test/canaries/assets.canary.ts
+guards What the Safe holds is judged whether or not an effect names it: a token found only by a Transfer log naming the Safe, in the receipt or in the simulation, and ETH, changed when the card explains no change, are MISMATCH; a vault whose asset() is not the token the registry names is MISMATCH, and one the providers disagree on UNVERIFIABLE.
+reads testdata/safe-tx/eth-transfer-null-data.json
+reads testdata/safe-tx/morpho-vault-deposit.json
+reads testdata/simulate/eth-transfer-null-data.json
+reads testdata/simulate/morpho-vault-deposit.json
+reads testdata/verify/morpho-migrate-all.json
+reads testdata/verify/morpho-vault-deposit.json
+
 canary test/canaries/allowance.canary.ts
 guards No allowance from the Safe ends higher than it started unless the card declares it: an approval raised and not spent in the same transaction is MISMATCH, a Permit2 allowance may fall or be voided but not rise or last longer, and a Permit2 approval of 2^160-1 is refused by the static floor, the simulated floor and the effects.
 reads testdata/safe-tx/permit2-unlimited-approval.json
@@ -68,6 +77,16 @@ guards How checks become a verdict: a failed check is MISMATCH and an unfinished
 
 canary test/canaries/verify.canary.ts
 guards verify and replay as the signer runs them: a changed receiver is MISMATCH with no hashes shown; a template that differs from its approved hash is MISMATCH and one never approved UNVERIFIABLE; a card with a 0 floor or a vault with no report is refused before any verdict; replay reproduces a recorded MATCH and MISMATCH offline, and refuses an edited card or a verdict it does not reproduce.
+reads testdata/safe-tx/morpho-vault-deposit.json
+reads testdata/verify/morpho-vault-deposit.json
+
+canary test/canaries/service-hash.canary.ts
+guards A Transaction Service record whose fields do not hash to its safeTxHash, by a changed data byte, nonce or hash, is refused, and verify given one as --tx writes no verdict.
+reads testdata/safe-tx/morpho-vault-deposit.json
+reads testdata/verify/morpho-vault-deposit.json
+
+canary test/canaries/safe-tx-hash.canary.ts
+guards verify --safe-tx-hash gives a verdict only for the transaction that hashes to the safeTxHash asked: a service answer holding another transaction, under its own safeTxHash or under the one asked, is refused before any verdict.
 reads testdata/safe-tx/morpho-vault-deposit.json
 reads testdata/verify/morpho-vault-deposit.json
 
