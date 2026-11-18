@@ -57,6 +57,7 @@ import type { Language } from '../src/language.ts';
 import { generatedHtml, generatedHtmlFile, htmlDifferences, writeHtmlPages } from '../src/research/report-html.ts';
 import { gatherSourcePages, httpsGet, retryingGet } from '../src/research/source-page.ts';
 import { readGithubToken } from '../src/research/github-token.ts';
+import { drpcTraces } from '../src/research/trace.ts';
 import { alchemyCall, vaultEvidenceText } from '../src/research/instance-evidence.ts';
 import type { Address } from '../src/safe/types.ts';
 import { ensureVendored, nodeVendorIoWith } from '../src/vendor.ts';
@@ -76,7 +77,8 @@ Prints the generated report of a template, read live: the card's choices and eac
 the effects, each function's official page, pnpm check-sources and the code pin's spans for every
 registry entry the operation can touch, pnpm prove-abi for each whose ABI it uses (the code it runs
 at the latest block for the others), pnpm instance-evidence for the instance, the protocol facts,
-the past-txs recordings of the template studied again, and pnpm erc7730 for every such entry.
+the past-txs recordings of the template studied again, each recorded call trace traced again
+through drpc and counted only when its calls are the same, and pnpm erc7730 for every such entry.
 A template whose card has an instance field, a vault today, is reported per instance: --instance-of
 names it, and the report reads the registry as if it were the only one the card can name. Without
 --instance-of such a template is refused, naming the instances that have a report.
@@ -281,7 +283,8 @@ const factsBlock = committedFacts === undefined ? latest.value : { number: BigIn
 const scope = subject.kind === 'template' ? factsScope(subject.template, registry, entries) : undefined;
 const facts = scope === undefined ? undefined : await protocolFacts(scope, registry, { defillama: listing, reader: createReader(endpoints, factsChain.transport, { note }), block: factsBlock });
 
-const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader)));
+const traces = drpcTraces(endpoints[1], httpsTransport(), note).source;
+const pastTxs = await Promise.all(pastTxsRecordings(root, subject).map(({ file, recording }) => summarizePastTxs(root, registry, file, recording, reader, traces)));
 const fetched = new Date();
 const fixtures = await reportFixtures(root, subject, fullRegistry);
 const live = { subject, registry, listings, pages, fetched: fetched.toISOString().slice(0, 10), abi, vaults, pastTxs, spans, today, instances, erc7730, facts, fixtures };
