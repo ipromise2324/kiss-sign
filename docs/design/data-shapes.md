@@ -287,7 +287,7 @@ Template load refuses a slug no registry entry of that kind belongs to, by the s
 A contract field may also name a part of the markets table, `{"kind": "contract", "registryKind": "token", "marketPart": "collateralToken"}`, so that it accepts only registry entries of its kind that are that part of some market in `registry/markets.json`: a Vault V2 collateral's cap names a token a registered market takes as collateral, never a token such as MORPHO that no market of the table lends against.
 Template load refuses a part that is not a contract part of a market (`lending`, `loanToken`, `collateralToken`, `oracle`, `irm`), a part whose entries are of another kind than `registryKind`, and a scope no registry entry fills.
 `card new` lists only those entries, `pnpm report` states the rule and lists only those, and `card seal` and `verify` refuse a card naming any other (`morpho is not the collateralToken of any market in registry/markets.json`).
-A vault field of a template reported per vault narrows further, to the vaults with a report for that template (see [Report](flow.md#first-time-an-operation-is-done-build-its-template), step 6): `card new` lists only those, and `card seal` and `verify` refuse any other.
+An instance field of a template reported per instance narrows further, to the instances with a report for that template (see [Report](flow.md#first-time-an-operation-is-done-build-its-template), step 6): `card new` lists only those, and `card seal` and `verify` refuse any other.
 
 Card values per operation, covering the operations in the Safe's history:
 
