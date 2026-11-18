@@ -61,7 +61,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 | `setPreSignature.orderUid.digest.receiver` | the Safe |
 | `setPreSignature.orderUid.digest.sellAmount` | the card's `sell-amount` |
 | `setPreSignature.orderUid.digest.buyAmount` | at least the card's `min-buy` |
-| `setPreSignature.orderUid.digest.validTo` | free; written by the AI in the template: When the order expires. The CoW Swap app sets it 30 minutes after the quote (DEFAULT\_DEADLINE\_FROM\_NOW); a later expiry only keeps the order open longer, and it still fills at most once, at no less than the card's minimum, to the Safe. The Safe can cancel it with invalidateOrder.; in Traditional Chinese: 訂單到期的時間。CoW Swap app 把它設在報價後 30 分鐘（DEFAULT\_DEADLINE\_FROM\_NOW）；較晚的到期時間只會讓訂單開著更久，它仍然最多成交一次，數量不少於卡片上的最低值，而且付給 Safe。Safe 可以用 invalidateOrder 取消它。 |
+| `setPreSignature.orderUid.digest.validTo` | a time at most 604800 seconds after the time of the block the transaction is judged on: the latest block for a pending transaction, the block it ran in for an executed one; a later time is a MISMATCH |
 | `setPreSignature.orderUid.digest.appData` | free; written by the AI in the template: The hash of the app's JSON note on the order (app code, slippage, an optional partner fee or hooks). The settlement contract never reads it and enforces the signed tokens, amounts and receiver whatever it says; a partner fee comes out of the price above the card's minimum, and a hook runs from CoW's trampoline contract, not as the Safe.; in Traditional Chinese: app 附在訂單上的 JSON 備註的 hash（app 代碼、滑價、可選的合作方手續費或 hooks）。結算合約從不讀它，不管它寫什麼，都照簽好的代幣、數量和收款人執行；合作方手續費從高於卡片最低值的價格中扣，hook 由 CoW 的 trampoline 合約執行，不是以 Safe 的身分執行。 |
 | `setPreSignature.orderUid.digest.feeAmount` | constant `0` |
 | `setPreSignature.orderUid.digest.kind` | constant `"sell"` |
@@ -69,7 +69,7 @@ Key: it bears on whether an address or its code is the protocol's real one and d
 | `setPreSignature.orderUid.digest.sellTokenBalance` | constant `"erc20"` |
 | `setPreSignature.orderUid.digest.buyTokenBalance` | constant `"erc20"` |
 | `setPreSignature.orderUid.owner` | the Safe |
-| `setPreSignature.orderUid.validTo` | the same number as `calls[0].args.orderUid.packed.digest.eip712.fields.validTo`, which is free; written by the AI in the template: When the order expires. The CoW Swap app sets it 30 minutes after the quote (DEFAULT\_DEADLINE\_FROM\_NOW); a later expiry only keeps the order open longer, and it still fills at most once, at no less than the card's minimum, to the Safe. The Safe can cancel it with invalidateOrder.; in Traditional Chinese: 訂單到期的時間。CoW Swap app 把它設在報價後 30 分鐘（DEFAULT\_DEADLINE\_FROM\_NOW）；較晚的到期時間只會讓訂單開著更久，它仍然最多成交一次，數量不少於卡片上的最低值，而且付給 Safe。Safe 可以用 invalidateOrder 取消它。 |
+| `setPreSignature.orderUid.validTo` | the same number as `calls[0].args.orderUid.packed.digest.eip712.fields.validTo`, which is a time at most 604800 seconds after the time of the block the transaction is judged on: the latest block for a pending transaction, the block it ran in for an executed one; a later time is a MISMATCH |
 | `setPreSignature.signed` | constant `true` |
 
 ## Effects
@@ -235,8 +235,8 @@ fields, over the 136 fitting transactions:
     same as the other leaves bound to card sell-amount in 136 of 136; values: 118 distinct values
   call.setPreSignature.orderUid.digest.buyAmount  [at least card min-buy]
     values: 136 distinct values
-  call.setPreSignature.orderUid.digest.validTo  [free]
-    values: 136 transactions, min 1765790272, p50 1776366116, p90 1792159265, p99 1794853179, max 1794869274
+  call.setPreSignature.orderUid.digest.validTo  [at most 604800 seconds after its block's time]
+    values: less the block's time, in seconds: 136 transactions, min -125, p50 1720, p90 1777, p99 10478, max 604767
   call.setPreSignature.orderUid.digest.appData  [free]
     values: 123 distinct values
   call.setPreSignature.orderUid.digest.feeAmount  [const 0]
@@ -377,8 +377,8 @@ fields, over the 7 fitting transactions:
     same as the other leaves bound to card sell-amount in 7 of 7; values: 7 distinct values
   call.setPreSignature.orderUid.digest.buyAmount  [at least card min-buy]
     values: 7 distinct values
-  call.setPreSignature.orderUid.digest.validTo  [free]
-    values: 7 transactions, min 1771064723, p50 1792197316, p90 1794800615, p99 1794800615, max 1794800615
+  call.setPreSignature.orderUid.digest.validTo  [at most 604800 seconds after its block's time]
+    values: less the block's time, in seconds: 7 transactions, min 569, p50 1706, p90 86363, p99 86363, max 86363
   call.setPreSignature.orderUid.digest.appData  [free]
     values: 4 distinct values
   call.setPreSignature.orderUid.digest.feeAmount  [const 0]

@@ -5,8 +5,8 @@ import { parseCard, resolveCard } from '../card.ts';
 import type { Card, ResolvedCard } from '../card.ts';
 import { replayReader } from '../chain/recording.ts';
 import type { Exchange } from '../chain/recording.ts';
-import type { Read } from '../chain/reader.ts';
-import type { EventLog } from '../chain/types.ts';
+import type { Read, Reader } from '../chain/reader.ts';
+import type { BlockHeader, EventLog } from '../chain/types.ts';
 import { uintWord } from '../decode/codec.ts';
 import type { Registry } from '../registry.ts';
 import { parseServiceTx } from '../safe/parse.ts';
@@ -20,7 +20,7 @@ import type { Observation } from '../simulate/simulate.ts';
 import { checkTemplateFields, inspectTemplateFields } from './check.ts';
 import { checkMutations } from './mutation.ts';
 import type { MutationResult } from './mutation.ts';
-import type { Leaf } from './check.ts';
+import type { FieldChain, Leaf } from './check.ts';
 import { loadTemplate, parseTemplate } from './template.ts';
 import type { FreeClaim, Template } from './template.ts';
 import { readRecording } from '../chain/bytecode.ts';
@@ -147,8 +147,9 @@ export async function checkPerturbations(
   templates: ReadonlyMap<string, Template>,
   registry: Registry,
   simulate: (tx: SafeTx) => Promise<Observation>,
+  chain: FieldChain = {},
 ): Promise<PerturbationReport> {
-  const { check, leaves } = inspectTemplateFields(tx, card, templates, registry);
+  const { check, leaves } = inspectTemplateFields(tx, card, templates, registry, [], chain);
   if (check.kind !== 'match') return { kind: 'not-run', cause: 'fields', reason: `the transaction's fields give ${check.kind}` };
   const base = await simulate(tx);
   if (base.kind === 'unverifiable') return { kind: 'not-run', cause: 'unverifiable', reason: base.reasons.join('; ') };
@@ -166,7 +167,7 @@ export async function checkPerturbations(
       const run = (outcome: Run['outcome'], detail = ''): void => {
         runs.push({ leaf, value: change.value, outcome, detail });
       };
-      const fields = checkTemplateFields(copy, card, templates, registry);
+      const fields = checkTemplateFields(copy, card, templates, registry, [], chain);
       if (fields.kind !== 'match') {
         run('refused', `fields: ${fields.kind}`);
         continue;
@@ -209,14 +210,27 @@ function recordedTx(repoRoot: string, recording: PerturbRecording): SafeTx {
   return parseServiceTx(fixture.service, { chainId: 1n, version: fixture.chain.version });
 }
 
-async function replay(name: string, recording: PerturbRecording, tx: SafeTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Promise<PerturbationReport> {
+/** The field checks' chain for a transaction judged on the block it ran in: that block's time, as `verify` counts it. */
+export const executedOn = (executed: BlockHeader): FieldChain => ({ blockTime: { kind: 'read', number: executed.number, time: executed.time } });
+
+type Replayed = { readonly reader: Reader; readonly parent: BlockHeader; readonly executed: BlockHeader };
+
+async function replayed(name: string, recording: PerturbRecording): Promise<Replayed> {
   const reader = replayReader(recording.exchanges);
   const header = async (at: PerturbRecording['parent']) => agreed(await reader.header({ number: BigInt(at.number), hash: at.hash }), `${PERTURB_DIR}/${name}.json block ${at.number}`);
-  const [parent, executed] = [await header(recording.parent), await header(recording.executed)];
+  return { reader, parent: await header(recording.parent), executed: await header(recording.executed) };
+}
+
+function replay({ reader, parent, executed }: Replayed, tx: SafeTx, card: ResolvedCard, templates: ReadonlyMap<string, Template>, registry: Registry): Promise<PerturbationReport> {
   const expectations = expectedChanges(card, templates, registry);
   const watch = expectations.kind === 'expected' ? [...expectations.changes.keys()].filter((asset): asset is Address => asset !== 'eth') : [];
-  return checkPerturbations(tx, card, templates, registry, (copy) =>
-    simulateSafeTx(reader, { tx: copy, parent, time: executed.time, watch, ends: endsNeeded(expectations), views: viewCalls(card, templates, registry) }),
+  return checkPerturbations(
+    tx,
+    card,
+    templates,
+    registry,
+    (copy) => simulateSafeTx(reader, { tx: copy, parent, time: executed.time, watch, ends: endsNeeded(expectations), views: viewCalls(card, templates, registry) }),
+    executedOn(executed),
   );
 }
 
@@ -235,7 +249,7 @@ export async function replayPerturbRecording(repoRoot: string, name: string, reg
   }
   const resolution = resolveCard(card, { templates, registry, addressBook: new Map(), safe: tx.safe });
   if (resolution.kind === 'refused') throw new Error(`${PERTURB_DIR}/${name}.json: card refused: ${resolution.reason} at ${resolution.at}: ${resolution.detail}`);
-  return replay(name, recording, tx, resolution.card, templates, registry);
+  return replay(await replayed(name, recording), tx, resolution.card, templates, registry);
 }
 
 /** A recorded transaction of one template, judged again offline with the template as it is now. */
@@ -273,8 +287,9 @@ export async function judgeFixtures(repoRoot: string, template: Template, regist
       judged.push({ name: recording.safeTx, outcome: { kind: 'card-refused', why: `${resolution.reason} at ${resolution.at}: ${resolution.detail}` } });
       continue;
     }
-    const mutations = checkMutations(tx, resolution.card, templates, registry);
-    const perturbation = await replay(name, recording, tx, resolution.card, templates, registry);
+    const at = await replayed(name, recording);
+    const mutations = checkMutations(tx, resolution.card, templates, registry, [], executedOn(at.executed));
+    const perturbation = await replay(at, tx, resolution.card, templates, registry);
     judged.push({ name: recording.safeTx, outcome: { kind: 'judged', mutations, perturbation } });
   }
   return judged;

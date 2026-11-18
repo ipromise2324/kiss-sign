@@ -319,6 +319,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <span><span class="who you">you pick</span>picked at each signing</span>
     <span><span class="who">fixed</span>any change is a MISMATCH</span>
     <span><span class="who app">app fills, any value</span>a value in the order, locked by its hash</span>
+    <span><span class="who app">app fills, up to a limit</span>past the limit is a MISMATCH</span>
   </div>
   <p class="lead keylead">Each single-value argument&#39;s first line is what <code>cast decode-calldata</code> prints; for an array, a tuple or a nested call the first line is a summary, and its contents follow below. No perturbation test is recorded to serve as an example, so values decided at each signing show only their rule.</p>
   
@@ -338,7 +339,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
   <div class="cb">
     <div class="callh"><span class="no">2</span><span class="fnn"><span class="ct">gpv2-settlement.</span>setPreSignature</span><span class="sel">0xec6cb13f</span></div><div class="cdoc"><div class="doc" data-state="ok"><span class="f3">Docs: </span><a href="https://github.com/cowprotocol/contracts/blob/ea0c36591b6da73b9ba4e2e2107897080c7f9b68/src/contracts/mixins/GPv2Signing.sol">github.com/cowprotocol/contracts</a><span class="res"><svg class="i ok" role="img" aria-label="pass"><use href="#ok"/></svg></span></div></div>
     <div class="arg" data-field="2.setPreSignature.orderUid">
-      <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken, buyToken you pick</span><span class="who">receiver, feeAmount, kind, partiallyFillable, sellTokenBalance, buyTokenBalance, owner fixed</span><span class="who you">sellAmount, buyAmount you type</span><span class="who app">validTo, appData any</span></div>
+      <div class="nm"><span class="pn">orderUid</span><span class="who you">sellToken, buyToken you pick</span><span class="who">receiver, feeAmount, kind, partiallyFillable, sellTokenBalance, buyTokenBalance, owner fixed</span><span class="who you">sellAmount, buyAmount you type</span><span class="who app">validTo bounded</span><span class="who app">appData any</span></div>
       <div class="val"><div class="is">56 bytes, 3 parts joined</div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The order uid, 56 bytes: the order hash, the owner and the expiry joined together. The contract only records it as &#34;pre-signed&#34; and does not check its contents.</span></span></div></div>
       <div class="parts">
@@ -355,8 +356,8 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The amount to sell. A sell order sells all of it.</span></span></div></div></div>
         <div class="part"><div class="pn">buyAmount</div><div><div class="is">at least the amount (min-buy) you type <span class="f3">less than this is a MISMATCH</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The minimum amount to buy (the limit price). The settlement contract ensures the fill is no less than this.</span></span></div></div></div>
-        <div class="part"><div class="pn">validTo</div><div><div class="is">differs each time <span class="f3">a value in the order, locked by its hash; the template allows any value and no perturbation test tries another</span></div>
-        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When the order expires (Unix seconds). The CoW app sets it 30 minutes after the quote.</span></span></div></div></div>
+        <div class="part"><div class="pn">validTo</div><div><div class="is">at most 604800 s (about 7 d) after the block&#39;s time <span class="f3">the block&#39;s time: for a transaction not yet executed, the latest block verify reads; for an executed one, the block it ran in; later is a MISMATCH</span></div>
+        <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>When the order expires (Unix seconds). The CoW Swap app sets it 30 minutes after the quote (DEFAULT_DEADLINE_FROM_NOW). The template allows at most 7 days (604,800 seconds) after the time of the block the transaction is judged on; a later expiry is MISMATCH. Within that, a later expiry only keeps the order open longer: it still fills at most once, at no less than the card&#39;s minimum, to the Safe, and the Safe can cancel it with invalidateOrder. Why 7 days: pnpm past-txs (testdata/research/cow-swap-presign.json) measured the expiry less its block&#39;s time on 136 orders Safes pre-signed: median 1,720 seconds (about 29 minutes), 99th percentile 10,478 (about 3 hours), largest 604,767 (just under 7 days); the 7 orders from EOAs reached at most 86,363 (one day). Every observed order fits. An order left open for months, which a free expiry allowed, stays fillable long after the signer stops watching. That recording studied cow/swap, the pre-signature alone; this batch pre-signs the same order after the approval.</span></span></div></div></div>
         <div class="part"><div class="pn">appData</div><div><div class="is">differs each time <span class="f3">a value in the order, locked by its hash; the template allows any value and no perturbation test tries another</span></div>
         <div class="ai"><span class="aiw" data-ai><span class="byai">AI</span><span>The hash of the JSON the app attaches to the order (app name, slippage, fees, hooks). The settlement contract does not read it.</span></span></div></div></div>
         <div class="part"><div class="pn">feeAmount</div><div><div class="raw">0</div><div class="is">fixed to 0</div>
@@ -420,7 +421,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     </div>
     <div class="row">
       <svg class="i mute" role="img" aria-label="AI judgment"><use href="#ask"/></svg>
-      <div><div class="t"><span class="aiw" data-ai><span>The app fills these two items, and the template does not limit them: the expiry (the app sets 30 minutes) and appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.</span><span class="byai">AI research</span></span></div>
+      <div><div class="t"><span class="aiw" data-ai><span>The app fills these two items. The template limits the expiry to at most 7 days after the block (the app sets 30 minutes) and does not limit appData (may include a 0.1% partner fee). The fill still gives no less than the minimum you type, and only to the Safe.</span><span class="byai">AI research</span></span></div>
         <div class="rec"><span class="lbl">Advice</span><span class="aiw" data-ai><span>Acceptable. If you no longer want the order before it expires, cancel it from the Safe.</span><span class="byai">AI research</span></span></div></div>
     </div>
   </div>
