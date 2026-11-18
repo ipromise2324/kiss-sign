@@ -26,13 +26,13 @@ const gitEnv = (config: ConfigScope, extra: NodeJS.ProcessEnv = {}): NodeJS.Proc
   ...extra,
 });
 
-function gitRun(root: string, config: ConfigScope, args: readonly string[], options: { input?: string; env?: NodeJS.ProcessEnv } = {}): Buffer {
+function gitRun(root: string, config: ConfigScope, args: readonly string[], options: { input?: string; env?: NodeJS.ProcessEnv; maxBuffer?: number } = {}): Buffer {
   return execFileSync('git', ['-c', 'core.hooksPath=/dev/null', '-c', 'core.fsmonitor=false', `--work-tree=${root}`, ...args], {
     cwd: root,
     env: gitEnv(config, options.env),
     input: options.input,
     stdio: ['pipe', 'pipe', 'pipe'],
-    maxBuffer: 1 << 28,
+    maxBuffer: options.maxBuffer ?? 1 << 28,
   });
 }
 
@@ -140,11 +140,35 @@ function treeEntries(root: string, commit: string, paths: readonly string[] = []
 
 const objectId = (type: string, content: Buffer): string => createHash('sha1').update(`${type} ${content.length}\0`).update(content).digest('hex');
 
+/** The most object bytes one `git cat-file --batch` run returns; a repository's objects together outgrow any one buffer. */
+const BATCH_BYTES = 1 << 26;
+
 /** The objects of `commit` (itself, its trees and blobs) whose content does not hash to their id; git does not check on read. */
 function corruptObjects(root: string, commit: string): string[] {
   const tree = git(root, 'rev-parse', `${commit}^{tree}`).trim();
   const ids = [...new Set([commit, tree, ...treeEntries(root, commit).filter((entry) => entry.type !== 'commit').map((entry) => entry.id)])];
-  const out = gitRun(root, 'clone-only', ['cat-file', '--batch'], { input: `${ids.join('\n')}\n` });
+  const sizes = gitRun(root, 'clone-only', ['cat-file', '--batch-check=%(objectsize)'], { input: `${ids.join('\n')}\n` }).toString('utf8').split('\n');
+  const corrupt: string[] = [];
+  const batches: { ids: string[]; bytes: number }[] = [];
+  ids.forEach((id, i) => {
+    const size = Number(sizes[i]);
+    if (!/^\d+$/.test(sizes[i] ?? '')) {
+      corrupt.push(id);
+      return;
+    }
+    const last = batches.at(-1);
+    if (last !== undefined && last.bytes + size <= BATCH_BYTES) {
+      last.ids.push(id);
+      last.bytes += size;
+    } else batches.push({ ids: [id], bytes: size });
+  });
+  for (const batch of batches) corrupt.push(...corruptIn(root, batch.ids, batch.bytes));
+  return ids.filter((id) => corrupt.includes(id));
+}
+
+/** The objects of one batch whose content does not hash to their id, read with one `git cat-file --batch`. */
+function corruptIn(root: string, ids: readonly string[], bytes: number): string[] {
+  const out = gitRun(root, 'clone-only', ['cat-file', '--batch'], { input: `${ids.join('\n')}\n`, maxBuffer: bytes + ids.length * 128 + 1024 });
   const corrupt: string[] = [];
   let at = 0;
   for (const id of ids) {
