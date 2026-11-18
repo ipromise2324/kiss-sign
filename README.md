@@ -195,12 +195,12 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 
 ### Fake sites and listings
 
-Your AI finds each contract's address on the web, so a fake page can mislead it. The report checks where each address came from, and you review it before you merge.
+Your AI finds each contract's address on the web, so a fake page can mislead it. The report checks both the site and the address, and you review it before you merge.
 
 | Attack | Stopped by |
 |---|---|
-| A fake site gives the AI a look-alike address | The report looks for the address on the protocol's own site, the one DefiLlama lists, next to the contract's name: it is not there, flagged for you |
-| A listing such as DefiLlama names the fake site as the protocol's | The report wants the address in a second place, such as CoinGecko, the factory, the bug bounty or the SDK: missing, flagged for you |
+| The AI uses a fake site | The program compares the site with those the protocol's listings name, on DefiLlama, CoinGecko, its bug bounty and GitHub: not among them, flagged for you. A listing can be wrong too, so the site alone never confirms an address |
+| The AI uses a look-alike address | The address must be found in two places, such as the protocol's site, CoinGecko, the factory, the bug bounty or the SDK: fewer, flagged for you |
 
 On the hardened tier, `check.sh` also marks every address not in your own list as unknown.
 
