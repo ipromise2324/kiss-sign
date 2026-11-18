@@ -175,18 +175,15 @@ pnpm report <protocol>/<operation> [--vault-of <vault>] --compare --data origin/
 
 ## Threat model
 
-Each part below says what an attacker controls, what stops it, and what is left to you.
+### The Safe web app or Transaction Service
 
-### The Safe web app or the Safe Transaction Service
+`verify` checks the transaction in the Transaction Service; comparing the hashes on your wallet checks that you sign that one.
 
-The Transaction Service only stores what the web app sends it, and the web app also decides what your hardware wallet signs. The two can differ. So two things must hold: the transaction in the service is the one you meant, and the transaction you sign is that one. `verify` checks the first; comparing the hashes checks the second.
-
-| The attacker | What stops it |
+| Attack | Stopped by |
 |---|---|
-| Controls the web app, which shows a normal transfer but proposes a change to the Safe, as at Bybit | `verify` fetches the proposed transaction and checks it against your card: `MISMATCH`. |
-| Controls the Transaction Service, which returns fields that do not hash to the safeTxHash you asked for | `verify` computes the hash from the fields itself and refuses. |
-| Controls the web app, which proposes the transaction you meant, then asks your wallet to sign another and sends that signature to the attacker | Only you: the hashes on your wallet differ from those on `verify`'s page. Compare every character; an attacker who varies the transaction can match the first and last few. |
-| Hides the transaction | Nothing, and nothing is lost: there is nothing to sign. |
+| The web app proposes another transaction, as at Bybit | `verify`: `MISMATCH` |
+| The service returns altered fields | `verify` computes the hash itself and refuses |
+| The web app proposes the right transaction, then has your wallet sign another | You: compare every character of the hashes |
 
 ## What kiss-sign checks
 
