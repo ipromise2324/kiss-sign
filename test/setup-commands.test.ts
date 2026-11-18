@@ -713,7 +713,7 @@ test('card new takes a Vault V2 cap as max or in whole tokens and a relative cap
   assert.match(refused.stderr, /relative-cap: "100\.5" is more than 100 percent/);
 });
 
-test('card new refuses a template reported per vault when no vault the card can name has a report', async () => {
+test('card new refuses a template reported per vault when no vault has a report', async () => {
   const repoRoot = mkdtempSync(join(tmpdir(), 'kiss-sign-repo-'));
   cpSync(join(ROOT, 'registry'), join(repoRoot, 'registry'), { recursive: true });
   cpSync(join(ROOT, 'templates', 'morpho', 'vault-deposit', 'template.json'), join(repoRoot, 'templates', 'morpho', 'vault-deposit', 'template.json'));
