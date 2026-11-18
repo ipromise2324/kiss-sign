@@ -364,7 +364,7 @@ Each picture is drawn from an HTML source in `docs/diagrams/`, and `sh docs/diag
      A line seen in none of its transactions is red, and the rest amber.
      With no trace that counts, as for a template no recording has traced yet, no line is compared and none gives a result: every line stays the AI's.
      None of this runs at signing: `verify`, `card new`, `card seal` and `replay` read no trace.
-     `--compare` traces each recorded transaction again through drpc and requires the same calls, and checks them against the receipt read again through both providers.
+     `--compare` traces each recorded transaction again through drpc and requires the same calls, a trace drpc now gives otherwise, or not at all, being UNVERIFIABLE with why, and checks them against the receipt read again through both providers; `--record` and the other modes read the recorded trace alone.
    - **Live check:** the recordings are made on the AI's computer, so the program can show only that it computed the report from them, not that they are true.
      Before merging, the signer runs `--compare` with main's code on the pull request's files, so a pull request that also weakens `--compare` cannot pass its own check: in a clone on `main`, `git pull` and `git fetch origin <branch>`, then `pnpm report <protocol>/<operation> --compare --data origin/<branch>`, with `--instance-of <instance>` for each per-instance report the branch changes.
      `--data` unpacks `templates/`, `registry/` and `testdata/` from that ref into a temporary directory and runs the code checked out.
