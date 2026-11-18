@@ -8,6 +8,9 @@ import { checkSources, githubLine } from './listings.ts';
 import type { DeployerShare, Line, SitePlace } from './listings.ts';
 import { abiUnused, docSiteLine, entriesOf, evidenceEntries, functionOnPage, hasMarket, missingFromAbi, pinVerdict, todayEntries } from './report.ts';
 import type { DocLink, ReportInputs, SpanCheck, TodayCheck } from './report.ts';
+import { packageKey } from './npm-package.ts';
+import { registrableDomain } from './public-suffix.ts';
+import { githubOrg } from './site-listings.ts';
 import { isGitHubPage, pageUrlOf } from './source-page.ts';
 import { factoryAnswer } from './vault-evidence.ts';
 import type { Address } from '../safe/types.ts';
@@ -31,6 +34,9 @@ export type ProgramSource = 'page' | `more.${number}` | 'api' | 'coingecko' | 'f
  * same label. A site confirms no address: DefiLlama lists none. The newest version is the same place, so it never counts.
  */
 export type RowPart = { readonly of: ProgramSource; readonly part: 'address' | 'site' | 'newest' };
+
+/** One place that confirmed an address: its sources, which one owner controls as far as the program can tell, named by `owner`. */
+export type Place = { readonly owner: string; readonly sources: readonly ProgramSource[] };
 
 const sourceRank = (source: ProgramSource): number => {
   const more = /^more\.(\d+)$/.exec(source);
@@ -79,7 +85,7 @@ export type Finding =
   | { readonly kind: 'check-other-answer' }
   | { readonly kind: 'refused'; readonly why: string }
   /** The address is confirmed in fewer than two places; `by` names those that did. */
-  | { readonly kind: 'few-confirmations'; readonly by: readonly ProgramSource[] }
+  | { readonly kind: 'few-confirmations'; readonly by: readonly Place[] }
   /** A bounty program's scope, or an SDK file, does not hold the address: no confirmation. */
   | { readonly kind: 'not-listed' }
   /** The entry names an Immunefi program, but the protocol's sites are not known, so nothing ties the program to it. */
@@ -241,6 +247,8 @@ export type Result = {
   readonly about: { readonly kind: 'entry'; readonly entry: RegistryEntry } | { readonly kind: 'fixture'; readonly name: string };
   /** Where the address row shows it; undefined for the address, documentation, market, ABI, code and fixture results. */
   readonly source: RowPart | undefined;
+  /** For a result with a source, the owner of that source: sources with one owner are one place. */
+  readonly owner?: string;
   /** What it links: the entry's page, its API, its CoinGecko coin, or for a site its DefiLlama protocol. */
   readonly link: HttpsUrl | undefined;
   readonly finding: Finding;
@@ -524,22 +532,59 @@ function deployerCounts(result: Result, confirmedElsewhere: ReadonlySet<string>)
   return { ...result, shared: { ...result.shared, siblings }, ...(siblings.length === 0 ? { finding: { kind: 'deployer-alone' } } : {}) };
 }
 
+type Service = 'coingecko' | 'bounty' | 'factory' | 'deployer';
+const SERVICE_OWNERS: Readonly<Record<Service, string>> = { coingecko: 'coingecko.com', bounty: 'immunefi.com', factory: 'factory', deployer: 'deployer' };
+
 /**
- * The sources whose every result passed, each one place that showed the entry's address for its role; a site shows
- * none. An SDK counts only with its publisher too, since anyone can publish a package that names an address. The
- * newest version of a page or SDK is the same place, so it neither counts nor keeps one from counting.
+ * Who controls a source: a URL's registrable domain, or its host when it has none; a GitHub page's organization, apart
+ * from any domain, since GitHub is not the protocol's web host; an SDK's the organization npm's provenance names, whose
+ * CI publishes it. Any other source is a service or the chain, an owner of its own.
  */
-function confirmingSources(results: readonly Result[]): ProgramSource[] {
+function ownerOf(entry: RegistryEntry, source: ProgramSource, inputs: ReportInputs): string {
+  const { suffixes } = inputs.listings;
+  const ofUrl = (url: string): string => {
+    const parsed = new URL(url);
+    const org = githubOrg(parsed);
+    if (org !== undefined) return `github.com/${org}`;
+    return ('unavailable' in suffixes ? undefined : registrableDomain(parsed.hostname, suffixes)) ?? parsed.hostname.toLowerCase();
+  };
+  if (source in SERVICE_OWNERS) return SERVICE_OWNERS[source as Service];
+  if (source === 'sdk') {
+    const read = entry.sdk === undefined ? undefined : inputs.pages.packages?.get(packageKey(entry.sdk));
+    return read?.kind === 'read' && read.provenance.kind === 'built' ? ofUrl(read.provenance.repository) : `npmjs.com/package/${entry.sdk?.package ?? ''}`;
+  }
+  const url = source === 'page' ? entry.source : source === 'api' ? entry.apiSource?.url : entry.moreSources?.[Number(source.slice(5)) - 1]?.url;
+  return url === undefined ? source : ofUrl(url);
+}
+
+/** Gives each result with a source the owner of that source. */
+function withOwners(entry: RegistryEntry, results: readonly Result[], inputs: ReportInputs): Result[] {
+  return results.map((r) => (r.source === undefined ? r : { ...r, owner: ownerOf(entry, r.source.of, inputs) }));
+}
+
+/**
+ * The places that showed the entry's address for its role, each the sources of one owner whose every result passed;
+ * a site shows none. An SDK counts only with its publisher too, since anyone can publish a package that names an
+ * address. The newest version of a page or SDK is the same source, so it neither counts nor keeps one from counting.
+ */
+function confirmingPlaces(results: readonly Result[]): Place[] {
   const showing = results.filter((r) => r.source?.part === 'address' || (r.source?.of === 'sdk' && r.source.part === 'site'));
-  const sources = [...new Set(showing.map((r) => (r.source as RowPart).of))];
-  return sources.filter((source) => showing.every((r) => r.source?.of !== source || STATE_OF[r.finding.kind] === 'ok')).sort((a, b) => sourceRank(a) - sourceRank(b));
+  const sources = [...new Set(showing.map((r) => (r.source as RowPart).of))]
+    .filter((source) => showing.every((r) => r.source?.of !== source || STATE_OF[r.finding.kind] === 'ok'))
+    .sort((a, b) => sourceRank(a) - sourceRank(b));
+  const places = new Map<string, ProgramSource[]>();
+  for (const source of sources) {
+    const owner = showing.find((r) => r.source?.of === source)?.owner ?? source;
+    places.set(owner, [...(places.get(owner) ?? []), source]);
+  }
+  return [...places].map(([owner, of]) => ({ owner, sources: of }));
 }
 
 export const MIN_CONFIRMATIONS = 2;
 
 /** The entry's `<name>/address` result, first among its results: it passes when enough sources confirmed the address. */
 function withAddressResult(entry: RegistryEntry, results: readonly Result[]): Result[] {
-  const by = confirmingSources(results);
+  const by = confirmingPlaces(results);
   const finding: Finding = by.length >= MIN_CONFIRMATIONS ? { kind: 'agrees' } : { kind: 'few-confirmations', by };
   return [{ id: `${entry.name}/address`, line: 'sources', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding }, ...results];
 }
@@ -570,7 +615,7 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
   const today = new Set(todayEntries(subject, inputs.registry).map((entry) => entry.name));
   const byEntry = checked.map(({ entry, lines }) => ({
     entry,
-    results: unvouchedUnlistedHasNoSecondSource(entry, [
+    results: withOwners(entry, unvouchedUnlistedHasNoSecondSource(entry, [
       ...sourceResults(entry, lines),
       ...factoryResults(entry, inputs),
       ...docs.filter((doc) => doc.contract.name === entry.name).flatMap((doc) => docResults(doc, inputs)),
@@ -578,9 +623,9 @@ export function judge(inputs: ReportInputs, fixtures: readonly FixtureJudgement[
       { id: `${entry.name}/abi`, line: 'abi', about: { kind: 'entry', entry }, source: undefined, link: undefined, finding: abiFinding(entry, inputs.abi.get(entry.address), unused.has(entry.name), inputs) },
       ...spanResults(entry, inputs.spans.get(entry.address)),
       ...todayResults(entry, inputs, today),
-    ]),
+    ]), inputs),
   }));
-  const confirmedElsewhere = new Set(byEntry.filter(({ entry, results }) => confirmingSources(results.filter((r) => r.source?.of !== 'deployer' && !(r.source?.of === 'factory' && restsOnOthers(inputs.registry.entries.get(entry.attributes.factory ?? ''))))).length >= MIN_CONFIRMATIONS).map(({ entry }) => entry.name));
+  const confirmedElsewhere = new Set(byEntry.filter(({ entry, results }) => confirmingPlaces(results.filter((r) => r.source?.of !== 'deployer' && !(r.source?.of === 'factory' && restsOnOthers(inputs.registry.entries.get(entry.attributes.factory ?? ''))))).length >= MIN_CONFIRMATIONS).map(({ entry }) => entry.name));
   const results = byEntry.flatMap(({ entry, results: own }) => withAddressResult(entry, own.map((r) => deployerCounts(r, confirmedElsewhere))));
   const judged = fixtures.map(
     (fixture): Result => ({ id: `fixture.${fixture.name}`, line: 'params', about: { kind: 'fixture', name: fixture.name }, source: undefined, link: undefined, finding: fixtureFinding(fixture) }),
@@ -626,7 +671,7 @@ export function addressRows(ledger: Ledger): { readonly open: readonly RegistryE
 export type Confidence = 'high' | 'medium' | 'low';
 
 /** The places that confirmed the entry's address, in row order. */
-export const confirmations = (ledger: Ledger, entry: RegistryEntry): ProgramSource[] => confirmingSources(resultsOf(ledger, entry));
+export const confirmations = (ledger: Ledger, entry: RegistryEntry): Place[] => confirmingPlaces(resultsOf(ledger, entry));
 
 /**
  * From the entry's results alone: low when any is for the signer; high when none is, an official page is among the
@@ -635,7 +680,7 @@ export const confirmations = (ledger: Ledger, entry: RegistryEntry): ProgramSour
 export function confidence(ledger: Ledger, entry: RegistryEntry): Confidence {
   const results = resultsOf(ledger, entry);
   if (results.some(needsSigner)) return 'low';
-  const page = confirmations(ledger, entry).some((source) => source === 'page' || source.startsWith('more.'));
+  const page = confirmations(ledger, entry).some((place) => place.sources.some((source) => source === 'page' || source.startsWith('more.')));
   const pinned = results.some((r) => stateOf(r) === 'ok' && /^code\.\d+$/.test(r.id.slice(entry.name.length + 1)));
   return page && pinned ? 'high' : 'medium';
 }
