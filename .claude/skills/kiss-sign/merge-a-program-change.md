@@ -12,8 +12,8 @@ The signer does not read its code, so merge only after all of these, in order:
    The branch must hold the current `origin/main`; merge it in first, never rebase.
    Require exit 0 and a last line that starts with `ELIGIBLE`; note the commit sha it names, the commit it judged.
    `NOT ELIGIBLE` names why.
-   Exit 3 means the branch changes a template, the registry or a gate file, or drops a test, and leaves the verdict core alone: hand that pull request to the signer.
-   Exit 1 means a check failed, the clone is not exactly `origin/main`, the branch does not hold it or cannot be compared, or it changes the verdict core beside a template, the registry, a gate file or a dropped test. Fix it; split a mixed branch into the core change in a pull request of its own and the rest, handed to the signer.
+   Exit 3 means the branch changes a template, the registry or a gate file, or drops a test, and changes no verdict core file that is not a gate file, nor a guard beside a template or the registry: hand that pull request to the signer.
+   Exit 1 means a check failed, the clone is not exactly `origin/main`, the branch does not hold it or cannot be compared, or it changes the verdict core, the guards the core rule names included, beside a template or the registry, or a core file that is not a gate file beside a gate file or a dropped test. Fix it; split a mixed branch into the core change in a pull request of its own and the rest, handed to the signer.
    Exit 2 means a wrong argument.
 3. Require the pull request's `program-gate` CI job to pass and its log to end with an `ELIGIBLE` line that names the same commit sha.
    The two lines differ in the branch name (CI judges `pull/head`), so compare the sha, never the whole line.
