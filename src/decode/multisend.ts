@@ -39,7 +39,9 @@ export type Unwrapped =
   | { readonly kind: 'direct'; readonly calls: readonly [InnerCall] }
   | { readonly kind: 'multisend'; readonly deployment: MultiSendDeployment; readonly outer: DecodedCall; readonly calls: readonly InnerCall[] }
   /** A delegatecall to anything but an official MultiSend. It is not unwrapped; the floor rules refuse it. */
-  | { readonly kind: 'foreign-delegatecall'; readonly to: Address };
+  | { readonly kind: 'foreign-delegatecall'; readonly to: Address }
+  /** A MultiSend call whose `to` is zero, at byte `at`. MultiSend 1.5.0 sends it to the Safe itself, so the floor rules refuse it in every version. */
+  | { readonly kind: 'zero-to'; readonly at: number };
 
 const HEADER = 1 + 20 + 32 + 32;
 const ZERO_ADDRESS = `0x${'0'.repeat(40)}` as Address;
@@ -92,8 +94,7 @@ export function unwrapSafeTx(tx: Pick<SafeTx, 'to' | 'value' | 'data' | 'operati
   if (transactions?.kind !== 'bytes') throw new Error('multiSend(bytes) decoded without its bytes');
   const calls = decodeMultiSendTransactions({ root: data.root, start: transactions.span[0], end: transactions.span[1] });
   if ('kind' in calls) return calls;
-  // MultiSend 1.5.0 sends a call whose `to` is zero to the Safe itself, which every check here reads as the zero address.
-  const zeroTo = deployment.version === '1.5.0' ? calls.find((call) => call.to === ZERO_ADDRESS) : undefined;
-  if (zeroTo !== undefined) return { kind: 'malformed', at: zeroTo.span[0] + 1, problem: 'a MultiSend 1.5.0 call to the zero address, which it sends to the Safe itself' };
+  const zeroTo = calls.find((call) => call.to === ZERO_ADDRESS);
+  if (zeroTo !== undefined) return { kind: 'zero-to', at: zeroTo.span[0] + 1 };
   return { kind: 'multisend', deployment, outer, calls };
 }
