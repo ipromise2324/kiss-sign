@@ -81,7 +81,8 @@ the past-txs recordings of the template studied again (with --compare, each reco
 traced again through drpc and UNVERIFIABLE when its calls differ), and pnpm erc7730 for every
 such entry.
 A template whose card has an instance field, a vault today, is reported per instance: --instance-of
-names it, and the report reads the registry as if it were the only one the card can name. Without
+names it, and the report reads the registry as if it were the only one the card can name and
+studies only the past-txs recordings whose --token is that instance. Without
 --instance-of such a template is refused, naming the instances that have a report.
 A read with no answer is asked again after each pause; one still without an answer prints as
 UNVERIFIABLE, never as FINDING, and --record then writes nothing.

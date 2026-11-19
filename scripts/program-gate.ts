@@ -23,8 +23,9 @@ committed.
 It prints ELIGIBLE, with the merge command for exactly that commit, and exits 0 only when all pass.
 NOT ELIGIBLE exits 3 when the only reason is a template, registry or gate file, or a dropped test,
 and the branch leaves the verdict core alone, the signer's to merge, and 1 otherwise: a branch that
-changes the core beside any of these is refused as pnpm check-push refuses it, and is no one's to
-merge until it is split. A wrong argument exits 2.
+changes the core, its guards included, beside a template or the registry, or a core file that is
+not a gate file beside a gate file or a dropped test, is refused as pnpm check-push refuses it, and
+is no one's to merge until it is split. A wrong argument exits 2.
 CI runs it as the program-gate job on pull_request_target, from main's workflow and code; the job
 passes on exit 3 with the notice "The signer merges this pull request", so red means a check failed.
 
