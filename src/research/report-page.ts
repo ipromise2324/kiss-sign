@@ -1284,7 +1284,7 @@ function reviewTitle(result: Result, context: Context): { readonly title: Inline
     return { title: w.fixtureTitle({ code: result.about.name }, words.title), why: [`${words.why}${detail}`] };
   }
   if (result.about.kind === 'flow') {
-    const counted = result.finding.kind === 'line-partly-seen' ? ` ${w.seenIn(result.finding.seen, result.finding.of)}` : result.finding.kind === 'line-not-seen' ? ` ${w.seenIn(0, result.finding.of)}` : '';
+    const counted = result.finding.kind === 'line-not-every' ? ` ${w.seenIn(result.finding.seen, result.finding.of)}` : '';
     return { title: [w.flowLineTitle(result.about.line, words.title)], why: [`${words.why}${counted}`] };
   }
   if (result.about.kind === 'money') {
