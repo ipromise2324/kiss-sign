@@ -375,7 +375,7 @@ test("a transaction the configured Safe sent, found without its address in the s
   assert.equal(renderPastTxs(await run(undefined, written), registry), renderPastTxs(live, registry));
 });
 
-test("a recording that still holds the configured Safe's address is refused", () => {
+test('a recording that would name the configured Safe loses those entries, or is refused', () => {
   const safe = `0x${'5a'.repeat(20)}`;
   const none = { found: new Set<never>(), sampled: new Set<never>() };
   assert.throws(() => scrubRecording({ ...recording, query: { ...recording.query, token: safe } }, [safe], none), /still holds the configured Safe's address; nothing written/);
