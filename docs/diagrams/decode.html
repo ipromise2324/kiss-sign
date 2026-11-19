@@ -20,54 +20,27 @@ pre { color: #c9d1d9; font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, Consolas,
 <div class="wrap">
 <div class="win"><div class="bar"><i></i><i></i><i></i><span>1. Compute the hashes with safe-tx-hashes</span></div><pre>$ ./safe_hashes.sh --network ethereum --address 0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B --nonce 20
 …
-&gt; Transaction Data:
-Multisig address: 0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B
 To: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
-Value: 0
+…
 Data: 0x8d80ff0a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000…00000000
 Operation: Delegatecall (trusted delegatecall)
 …
-Nonce: 20
-Encoded message: 0xbb8310d486368db6bd6f849402fdd73ad53d316b5a4b2644ad6efe0f941286d80000000000000000000000009641d764fc13c8b624c0…00000014
 Method: multiSend
-Parameters: [
-  {
-    &quot;name&quot;: &quot;transactions&quot;,
-    &quot;type&quot;: &quot;bytes&quot;,
-    &quot;value&quot;: &quot;0x00a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48000000000000000000000000000000000000000000000000000000000000000000…25afea44&quot;,
+…
     &quot;valueDecoded&quot;: [
-      {
-        &quot;operation&quot;: 0,
+…
         &quot;to&quot;: &quot;0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&quot;,
-        &quot;value&quot;: &quot;0&quot;,
-        &quot;data&quot;: &quot;0x095ea7b30000000000000000000000004a6c312ec70e8747a587ee860a0353cd42be0ae0000000000000000000000000000000000000…25afea44&quot;,
-        &quot;dataDecoded&quot;: {
+…
           &quot;method&quot;: &quot;approve&quot;,
-          &quot;parameters&quot;: [
-            {
-              &quot;name&quot;: &quot;spender&quot;,
-              &quot;type&quot;: &quot;address&quot;,
+…
               &quot;value&quot;: &quot;0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0&quot;
-            },
-            {
-              &quot;name&quot;: &quot;value&quot;,
-              &quot;type&quot;: &quot;uint256&quot;,
+…
               &quot;value&quot;: &quot;10001000000&quot;
-            }
-          ]
-        }
-      },
-      {
-        &quot;operation&quot;: 0,
+…
         &quot;to&quot;: &quot;0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245&quot;,
-        &quot;value&quot;: &quot;0&quot;,
-        &quot;data&quot;: &quot;0x374f435d0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000…25afea44&quot;,
+…
         &quot;dataDecoded&quot;: null
-      }
-    ]
-  }
-]
-
+…
 &gt; Hashes:
 Domain hash: 0x435F508C2DAADCD9E47D062385F88785E87FD428FE66214DD1CE06026AAF130E
 Message hash: 0xF7F0CC7F831B82E63988FEBF02F0F6C6F30F3F7E1C7C99D92E238364128F7C13
