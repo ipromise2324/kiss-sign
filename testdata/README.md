@@ -151,6 +151,8 @@ Code that can DELEGATECALL and has neither EIP-1967 slot set also has its Zeppel
 | `usdc.json` | USDC `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | ZeppelinOS | `FiatTokenV2_2` at `0x43506849D7C04F9138D1A2050bbF3A0c054402dd`, solc 0.6.12. Its metadata hash differs and is masked, like `cctp-message-transmitter.json`'s |
 | `cbbtc.json` | cbBTC `0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf` | ZeppelinOS | `FiatTokenV2_1` at `0x7458bfDC30034EB860B265E6068121D18Fa5Aa72`, solc 0.6.12 |
 | `safe-proxy-1-3-0.json` | the Safe of `safe-tx/eth-transfer-null-data.json`, `0x9467dcFD4519287e3878C018c02f5670465a9003` | Safe proxy (1.3.0 factory) | `GnosisSafeL2` at `0x3E5c63644E683549055b9Be8653de26E0B4CD36E`, solc 0.7.6 |
+| `multisend-1-5-0.json` | Safe MultiSend 1.5.0 `0x218543288004CD07832472D464648173c77D7eB7` | none | `MultiSend`, solc 0.7.6, 1 immutable span masked |
+| `multisend-call-only-1-5-0.json` | Safe MultiSendCallOnly 1.5.0 `0xA83c336B20401Af773B6219BA5027174338D1836` | none | `MultiSendCallOnly`, solc 0.7.6 |
 
 ### Recording again
 
@@ -173,6 +175,8 @@ pnpm record-abi-case merkl-distributor 0x3Ef3D8bA38EBe18DB133cEc108f4D14CE00Dd9A
 pnpm record-abi-case cctp-message-transmitter 0x0a992d191DEeC32aFe36203Ad87D7d289a738F81
 pnpm record-abi-case usdc 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
 pnpm record-abi-case cbbtc 0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf
+pnpm record-abi-case multisend-1-5-0 0x218543288004CD07832472D464648173c77D7eB7
+pnpm record-abi-case multisend-call-only-1-5-0 0xA83c336B20401Af773B6219BA5027174338D1836
 ```
 
 An optional third argument records at that block instead of the latest.

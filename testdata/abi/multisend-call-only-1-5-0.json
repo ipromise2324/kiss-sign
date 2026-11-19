@@ -1,0 +1,70 @@
+{
+  "address": "0xa83c336b20401af773b6219ba5027174338d1836",
+  "block": {
+    "number": "26447856",
+    "hash": "0x5fb5b05a211c4014e20adc32e591bfcafbe2ed6fb6300bbde24e00bbe7db5829"
+  },
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "reads": [
+    {
+      "method": "getCode",
+      "args": [
+        "0xa83c336b20401af773b6219ba5027174338d1836"
+      ],
+      "value": {
+        "keccak256": "0xcdbdcec38d2f1c7d961b0029ff8416b7e86e9974d6f0e9c9580c7d17fcfb6663"
+      }
+    },
+    {
+      "method": "getStorageAt",
+      "args": [
+        "0xa83c336b20401af773b6219ba5027174338d1836",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
+      ],
+      "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "method": "getStorageAt",
+      "args": [
+        "0xa83c336b20401af773b6219ba5027174338d1836",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50"
+      ],
+      "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "etherscan": {
+    "0xa83c336b20401af773b6219ba5027174338d1836": {
+      "status": 200,
+      "body": {
+        "status": "1",
+        "message": "OK",
+        "result": [
+          {
+            "SourceCode": "{{\r\n  \"language\": \"Solidity\",\r\n  \"settings\": {\r\n    \"evmVersion\": \"istanbul\",\r\n    \"libraries\": {},\r\n    \"metadata\": {\r\n      \"bytecodeHash\": \"ipfs\",\r\n      \"useLiteralContent\": true\r\n    },\r\n    \"optimizer\": {\r\n      \"enabled\": false,\r\n      \"runs\": 200\r\n    },\r\n    \"remappings\": [],\r\n    \"outputSelection\": {\r\n      \"*\": {\r\n        \"*\": [\r\n          \"evm.bytecode\",\r\n          \"evm.deployedBytecode\",\r\n          \"devdoc\",\r\n          \"userdoc\",\r\n          \"metadata\",\r\n          \"abi\"\r\n        ]\r\n      }\r\n    }\r\n  },\r\n  \"sources\": {\r\n    \"contracts/libraries/MultiSendCallOnly.sol\": {\r\n      \"content\": \"// SPDX-License-Identifier: LGPL-3.0-only\\npragma solidity >=0.7.0 <0.9.0;\\n\\n/**\\n * @title Multi Send Call Only - Allows to batch multiple transactions into one, but only calls\\n * @notice The guard logic is not required here as this contract doesn't support nested delegate calls\\n * @author Stefan George - @Georgi87\\n * @author Richard Meissner - @rmeissner\\n */\\ncontract MultiSendCallOnly {\\n    /**\\n     * @dev Sends multiple transactions and reverts all if one fails.\\n     * @param transactions Encoded transactions. Each transaction is encoded as a packed bytes of\\n     *                     operation has to be uint8(0) in this version (=> 1 byte),\\n     *                     to as a address (=> 20 bytes),\\n     *                     value as a uint256 (=> 32 bytes),\\n     *                     data length as a uint256 (=> 32 bytes),\\n     *                     data as bytes.\\n     *                     see abi.encodePacked for more information on packed encoding\\n     * @notice The code is for the most part the same as the normal MultiSend (to keep compatibility),\\n     *         but reverts if a transaction tries to use a delegatecall.\\n     * @notice This method is payable as delegatecalls keep the msg.value from the previous call\\n     *         If the calling method (e.g. execTransaction) received ETH this would revert otherwise\\n     */\\n    function multiSend(bytes memory transactions) public payable {\\n        /* solhint-disable no-inline-assembly */\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            let length := mload(transactions)\\n            let i := 0x20\\n            for {\\n                // Pre block is not used in \\\"while mode\\\"\\n            } lt(i, length) {\\n                // Post block is not used in \\\"while mode\\\"\\n            } {\\n                // First byte of the data is the operation.\\n                // We shift by 248 bits (256 - 8 [operation byte]) right, since mload will always load 32 bytes (a word).\\n                // This will also zero out unused data.\\n                let operation := shr(0xf8, mload(add(transactions, i)))\\n                // We offset the load address by 1 byte (operation byte)\\n                // We shift it right by 96 bits (256 - 160 [20 address bytes]) to right-align the data and zero out unused data.\\n                let to := shr(0x60, mload(add(transactions, add(i, 0x01))))\\n                // Defaults `to` to `address(this)` if `address(0)` is provided.\\n                to := or(to, mul(iszero(to), address()))\\n                // We offset the load address by 21 byte (operation byte + 20 address bytes)\\n                let value := mload(add(transactions, add(i, 0x15)))\\n                // We offset the load address by 53 byte (operation byte + 20 address bytes + 32 value bytes)\\n                let dataLength := mload(add(transactions, add(i, 0x35)))\\n                // We offset the load address by 85 byte (operation byte + 20 address bytes + 32 value bytes + 32 data length bytes)\\n                let data := add(transactions, add(i, 0x55))\\n                let success := 0\\n                switch operation\\n                case 0 {\\n                    success := call(gas(), to, value, data, dataLength, 0, 0)\\n                }\\n                // This version does not allow delegatecalls\\n                case 1 {\\n                    revert(0, 0)\\n                }\\n                if iszero(success) {\\n                    let ptr := mload(0x40)\\n                    returndatacopy(ptr, 0, returndatasize())\\n                    revert(ptr, returndatasize())\\n                }\\n                // Next entry starts at 85 byte + data length\\n                i := add(i, add(0x55, dataLength))\\n            }\\n        }\\n        /* solhint-enable no-inline-assembly */\\n    }\\n}\\n\"\r\n    }\r\n  }\r\n}}",
+            "ABI": "[{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transactions\",\"type\":\"bytes\"}],\"name\":\"multiSend\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+            "ContractName": "MultiSendCallOnly",
+            "CompilerVersion": "v0.7.6+commit.7338295f",
+            "CompilerType": "solc-j",
+            "OptimizationUsed": "0",
+            "Runs": "200",
+            "ConstructorArguments": "",
+            "EVMVersion": "istanbul",
+            "Library": "",
+            "ContractFileName": "contracts/libraries/MultiSendCallOnly.sol",
+            "LicenseType": "GNU LGPLv3",
+            "Proxy": "0",
+            "Implementation": "",
+            "SwarmSource": "",
+            "SimilarMatch": ""
+          }
+        ]
+      }
+    }
+  },
+  "bytecode": {
+    "0xcdbdcec38d2f1c7d961b0029ff8416b7e86e9974d6f0e9c9580c7d17fcfb6663": "0x60806040526004361061001e5760003560e01c80638d80ff0a14610023575b600080fd5b6100dc6004803603602081101561003957600080fd5b810190808035906020019064010000000081111561005657600080fd5b82018360208201111561006857600080fd5b8035906020019184600183028401116401000000008311171561008a57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192905050506100de565b005b805160205b8181101561016a578083015160f81c6001820184015160601c3081150281179050601583018501516035840186015160558501870160008560008114610130576001811461014057610145565b6000808585888a5af19150610145565b600080fd5b5080610157576040513d6000823e3d81fd5b82605501870196505050505050506100e3565b50505056fea26469706673582212201ad552da02f0e66afd7f2ad29a305f1d4c737610d3b9e7ce8c994444949e57d664736f6c63430007060033"
+  }
+}
