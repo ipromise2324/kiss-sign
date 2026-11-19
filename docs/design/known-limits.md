@@ -157,7 +157,7 @@ Part of [the kiss-sign design](../design.md).
   Settings an admin can change, such as a vault's curator, fees or caps, are not pinned either.
 - Only registry entries are code-checked.
   A market on the card names Morpho Blue, its tokens, its oracle and its interest rate model as registry entries, so each of them is pinned.
-  A contract the transaction reaches without being one is not: the Morpho Blue markets, oracles and interest rate models behind a vault, the adapters of a Morpho Vault V2, and the Safe's own singleton, fallback handler and guard.
+  A contract the transaction reaches without being one is not: the Morpho Blue markets, oracles and interest rate models behind a vault, the adapters of a Morpho Vault V2 that no card reference names, and the Safe's own singleton, fallback handler and guard.
   For the Safe's settings the floor rules check only that the transaction does not change them.
   A contract reached only from inside a registry contract, such as Fluid's Liquidity layer behind each fToken, is checked when that entry names it in `dependsOn`.
 - A proxy that routes each selector to its own implementation has no view that lists its implementations, so its pin covers the implementations its seeds reach and the selectors those list.

@@ -11,7 +11,7 @@ The signer clones `kiss-sign-check`, sets the Safe's address and `LANGUAGE`, the
 No AI writes the list.
 
 **Each signing.**
-After the transaction is proposed and `verify` prints `MATCH`, the signer types on the independent computer the command `verify` prints, on its page and in the terminal: `./check.sh <nonce>`, followed by `--hints '<hints>'` when a template the card uses reads `bytes` that no ABI describes ([Hints](#hints)).
+After the transaction is proposed and `verify` prints `MATCH`, the signer types on the independent computer the command `verify` prints, on its page and in the terminal: `./check.sh <nonce>`, followed by `--hints '<hints>'` when a template the card uses reads `bytes` that no ABI describes as `encoded` parameters or `packed` parts ([Hints](#hints)).
 Only the nonce and those hints cross between the two computers; the Safe's address was set once.
 The script:
 
