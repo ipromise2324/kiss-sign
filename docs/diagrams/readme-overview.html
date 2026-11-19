@@ -55,10 +55,10 @@
   .part { padding: 9px 10px 11px; font-size: 16px; line-height: 1.3; display: grid; gap: 3px; }
   .part .who { font-size: 16px; margin-bottom: 0; }
   .part .logos { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
-  .then { display: flex; align-items: center; gap: 60px; margin: 64px 0 0 0; padding-left: 360px; }
+  .then { display: flex; align-items: center; gap: 60px; margin: 64px 0 0 0; padding-left: 320px; }
   .note { color: var(--muted); font-size: 15px; }
 
-  .report { width: 470px; }
+  .report { width: 560px; }
   .report ul { list-style: none; display: grid; grid-template-columns: 1fr; gap: 5px; font-size: 18px; }
   .report li::before { content: "✓ "; color: var(--prog); }
   .report li.ai::before { content: "✎ "; color: var(--ai); }
@@ -117,17 +117,17 @@
   <h2>The first time: a template <b>once per operation</b></h2>
   <div class="chain" id="chain">
     <div class="steps">
-      <div class="step" id="s1"><div class="t"><span class="n">1</span>Find each address</div><div class="sk part ai"><div class="who">your AI</div><div>searches widely, official places first</div><div class="logos"><span class="lg"><img class="mono-logo" src="logos/docs.svg" alt="">official site</span><span class="lg"><img class="mono-logo" src="logos/api.svg" alt="">API</span></div></div><div class="sk part prog"><div class="who">kiss-sign</div><div>checks each page and its site, and needs two places</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">Immunefi</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub</span></div></div></div>
+      <div class="step" id="s1"><div class="t"><span class="n">1</span>Find each address</div><div class="sk part ai"><div class="who">your AI</div><div>searches widely, official places first</div><div class="logos"><span class="lg"><img class="mono-logo" src="logos/docs.svg" alt="">official site</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub</span><span class="lg"><img class="mono-logo" src="logos/api.svg" alt="">API</span></div></div><div class="sk part prog"><div class="who">kiss-sign</div><div>checks each page and its site, and needs two places</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/coingecko.png" alt="">CoinGecko</span><span class="lg"><img class="mono-logo" src="logos/bounty.svg" alt="">Immunefi</span><span class="lg"><img class="mono-logo" src="logos/github.svg" alt="">GitHub</span></div></div></div>
       <div class="step" id="s2"><div class="t"><span class="n">2</span>Prove each ABI</div><div class="sk part prog"><div class="who">kiss-sign</div><div>compiles the source and compares it with the chain</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img class="mono-logo" src="logos/solidity.svg" alt="">solc</span></div></div></div>
       <div class="step" id="s3"><div class="t"><span class="n">3</span>Write the template</div><div class="sk part ai"><div class="who">your AI</div><div>and its call flow, from the proven ABI and the protocol's docs</div></div></div>
       <div class="step" id="s4"><div class="t"><span class="n">4</span>See how others did it</div><div class="sk part prog"><div class="who">kiss-sign</div><div>finds a year of past transactions, counts each field, traces the calls</div><div class="logos"><span class="lg"><img src="logos/etherscan.svg" alt="">Etherscan</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div><div class="sk part ai"><div class="who">your AI</div><div>reads the misfits and sets the bounds</div></div></div>
-      <div class="step" id="s5"><div class="t"><span class="n">5</span>Check the protocol now</div><div class="sk part prog"><div class="who">kiss-sign</div><div>TVL, hacks, vault size, holders</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span></div></div><div class="sk part ai"><div class="who">your AI</div><div>judges incidents and audits</div></div></div>
+      <div class="step" id="s5"><div class="t"><span class="n">5</span>Check the protocol now</div><div class="sk part prog"><div class="who">kiss-sign</div><div>TVL, hacks, vault size, holders</div><div class="logos"><span class="lg"><img src="logos/defillama.jpg" alt="">DefiLlama</span><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div><div class="sk part ai"><div class="who">your AI</div><div>judges incidents and audits</div></div></div>
       <div class="step" id="s6"><div class="t"><span class="n">6</span>Pin the code</div><div class="sk part prog"><div class="who">kiss-sign</div><div>so an upgrade after your review is caught</div><div class="logos"><span class="lg"><img src="logos/alchemy.png" alt="">Alchemy</span><span class="lg"><img src="logos/drpc.png" alt="">drpc</span></div></div></div>
     </div>
   </div>
   <div class="then">
     <div class="sk prog report" id="report">
-      <div class="who">kiss-sign writes a report in a pull request</div>
+      <div class="who">kiss-sign writes the report your AI puts in a pull request</div>
       <ul><li>the call flow, checked against the traces</li><li>each field: fixed, yours, or bounded</li><li>where each address came from</li><li class="ai">your AI's notes, marked as its own</li><li class="q">what still needs your eye</li></ul>
     </div>
     <div class="sk you merge" id="merge">
