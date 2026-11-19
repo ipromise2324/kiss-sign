@@ -291,7 +291,7 @@ const ZH = {
 
   vault: '實例',
   point: { unread: '讀不到', 'no-code': '還沒有程式碼', reverted: 'totalAssets() revert' },
-  vaultLead: (vault: Span, command: Span): Span[] => [vault, '：程式記錄的 ', command, ' 輸出，每個數字都同時問兩家節點。這裡不換算成美元。'],
+  vaultLead: (vault: Span, command: Span): Span[] => [vault, '：程式記錄的 ', command, ' 輸出，每個數字都同時問兩家節點，只有曾經收過份額的地址名單只來自 Alchemy。這裡不換算成美元。'],
   vaultNone: (vault: Span, command: Span): Span[] => [vault, '：沒有 ', command, ' 的記錄。'],
   dateUnknown: '日期不明',
   factory: '工廠',
@@ -504,7 +504,8 @@ const ZH = {
     }${routed.length === 0 ? '' : `${routed.join('、')} 依函式選擇器把呼叫分給各自的實作：seeds 接到的每個實作和它的函式清單也一樣確認，沒有 seed 接到的實作不檢查。`}`,
   paramsExplain: (counted: number): string => `程式把 ${counted} 筆測試交易的每個綁定參數逐一改掉，都要變成 MISMATCH；不限的參數換成別的值，結果要跟原本一樣。`,
   noTests: '沒有測試',
-  providersExplain: '所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。',
+  providersExplain:
+    '鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。',
   traceExplain: (passed: number, counted: number): string =>
     `程式在過去交易的呼叫追蹤裡找 AI 寫的每條流程線，也確認每筆動到錢的內部呼叫都有模板或流程線說明；${counted} 項裡 ${passed} 項通過。追蹤只來自 drpc，其中代幣的轉帳和授權都跟兩家節點都同意的收據核對過。`,
   footer: (command: Span, sources: readonly Span[], fetched: string, test: Span, notes: string): Span[] => [
@@ -893,7 +894,7 @@ const EN: Words = {
 
   vault: 'Instance',
   point: { unread: 'could not be read', 'no-code': 'no code yet', reverted: 'totalAssets() reverted' },
-  vaultLead: (vault, command) => [vault, ': the recorded output of ', command, '. Every number was asked of two providers. No conversion to US dollars here.'],
+  vaultLead: (vault, command) => [vault, ': the recorded output of ', command, '. Every number was asked of two providers; only the list of addresses that ever received shares comes from Alchemy alone. No conversion to US dollars here.'],
   vaultNone: (vault, command) => [vault, ': no recording of ', command, '.'],
   dateUnknown: 'date unknown',
   factory: 'Factory',
@@ -1116,7 +1117,8 @@ const EN: Words = {
   paramsExplain: (counted) =>
     `The program changed every bound argument of ${counted} test ${plural(counted, 'transaction', 'transactions')} one by one, and each must become a MISMATCH; an argument that takes any value must give the same result with another value.`,
   noTests: 'no tests',
-  providersExplain: 'Every chain read asks two providers; when they disagree, there is no result.',
+  providersExplain:
+    "Every chain read asks two providers; when they disagree, there is no result. Three research reads have one source, and none of them reaches a verdict: past transactions' call traces (drpc), the search for past transactions (Alchemy or Etherscan finds them), and the addresses that ever received a vault's shares (Alchemy; each one's balance is still read through both).",
   traceExplain: (passed, counted) =>
     `The program looks for each of the AI's flow lines in the call traces of past transactions, and checks that the template or a flow line explains every call inside that moves money; ${passed} of ${counted} passed. The traces come from drpc alone; their token transfers and approvals are checked against the receipt both providers agree on.`,
   footer: (command, sources, fetched, test, notes) => [

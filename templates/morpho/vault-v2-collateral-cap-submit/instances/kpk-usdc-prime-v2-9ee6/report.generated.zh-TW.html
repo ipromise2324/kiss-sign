@@ -287,7 +287,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
     <li data-state="na" data-line="params"><svg class="i mute" role="img" aria-label="沒資料可比"><use href="#na"/></svg>參數保護 <span class="n num">沒有測試</span>
       <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t4"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t4" role="tooltip">模板沒有不限的參數：每個參數都綁定卡片或固定值，沒有參數要換值測試，所以沒有換值測試的記錄。每次簽名，verify 都把每個綁定的參數逐一改掉，確認都變成 MISMATCH。</span></span></li>
     <li data-state="ok" data-line="providers"><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg>雙節點比對
-      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">所有鏈上資料都同時問兩家節點，答案不一樣就不給結果。</span></span></li>
+      <span class="tip" tabindex="0" aria-label="說明" aria-describedby="t5"><svg class="i" aria-hidden="true"><use href="#info"/></svg><span class="bub" id="t5" role="tooltip">鏈上資料都同時問兩家節點，答案不一樣就不給結果。研究時有三種資料只有一個來源，都不會影響判定：過去交易的呼叫追蹤（drpc）、搜尋過去交易（Alchemy 或 Etherscan 找到的都算），和金庫曾經收過份額的地址名單（Alchemy，每個地址的餘額仍問兩家）。</span></span></li>
   </ul>
   <div class="verdict" data-state="ok"><span class="lbl">建議</span><svg class="i ok" role="img" aria-label="通過"><use href="#ok"/></svg><span class="aiw" data-ai><span>可以用。KPK 文件、CoinGecko 和工廠都確認這個 vault。</span><span class="byai">AI 研究：可以用</span></span></div>
   <details class="tocfold"><summary><svg class="i chev" aria-hidden="true"><use href="#chev"/></svg>目錄</summary>
@@ -388,7 +388,7 @@ ol.steps>li::before{content:counter(s) ".";font-family:var(--mono);color:var(--f
 
 <section id="vault-kpk-usdc-prime-v2-9ee6">
   <h2>實例</h2>
-  <p class="lead"><a href="#a-kpk-usdc-prime-v2-9ee6">kpk-usdc-prime-v2-9ee6</a>：程式記錄的 <code>pnpm instance-evidence</code> 輸出，每個數字都同時問兩家節點。這裡不換算成美元。</p>
+  <p class="lead"><a href="#a-kpk-usdc-prime-v2-9ee6">kpk-usdc-prime-v2-9ee6</a>：程式記錄的 <code>pnpm instance-evidence</code> 輸出，每個數字都同時問兩家節點，只有曾經收過份額的地址名單只來自 Alchemy。這裡不換算成美元。</p>
   <dl class="props">
     <div><dt>工廠</dt><dd>vault-v2-factory 回答 <code>isVaultV2(address)</code> = true</dd><dd class="src">區塊 26434652</dd></div>
     <div><dt>現在的 totalAssets</dt><dd><span class="num">30,773,998.04 usdc</span></dd><dd class="src">2026-11-17，區塊 26434652</dd></div>
