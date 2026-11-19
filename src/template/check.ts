@@ -508,6 +508,9 @@ export function inspectTemplateFields(
     case 'foreign-delegatecall':
       findings.push({ callPath: 'safeTx', arg: 'to', bytes: undefined, expected: 'an official MultiSend for a delegatecall', actual: unwrapped.to });
       return done({ kind: 'mismatch', findings });
+    case 'zero-to':
+      findings.push({ callPath: 'safeTx', arg: 'data', bytes: [unwrapped.at, unwrapped.at + 20], expected: 'no MultiSend call with to = 0, which MultiSend 1.5.0 sends to the Safe itself', actual: 'a call with to = 0' });
+      return done({ kind: 'mismatch', findings });
     case 'malformed':
     case 'non-canonical':
     case 'wrong-selector':

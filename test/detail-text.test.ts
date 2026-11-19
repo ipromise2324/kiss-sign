@@ -30,6 +30,8 @@ const CASES: readonly (readonly [string, string])[] = [
   ['a change to multiSend[0].approve spender gave match, not a mismatch', '把 multiSend[0].approve spender 改成別的值，欄位檢查仍然相符，而不是不符'],
   ['safeTx data: expected canonical multiSend(bytes), got malformed', 'safeTx data：應為 multiSend(bytes) 的標準編碼，實際 格式錯誤'],
   ['delegatecall at safeTx: the MultiSend data does not decode (malformed at byte 5)', 'delegatecall 在 safeTx：MultiSend 的資料無法解碼（第 5 位元組格式錯誤）'],
+  ['delegatecall at safeTx: a MultiSend call with to = 0 at byte 101 is refused (MultiSend 1.5.0 sends it to the Safe itself)', 'delegatecall 在 safeTx：第 101 位元組有 to = 0 的 MultiSend 呼叫，不接受（MultiSend 1.5.0 會把它送給 Safe 自己）'],
+  ['safeTx data: expected no MultiSend call with to = 0, which MultiSend 1.5.0 sends to the Safe itself, got a call with to = 0', 'safeTx data：應為 沒有 to = 0 的 MultiSend 呼叫（MultiSend 1.5.0 會把它送給 Safe 自己），實際 to = 0 的呼叫'],
 ];
 
 test('a detail of a known shape reads in Traditional Chinese, its paths, values, addresses and names unchanged', () => {
