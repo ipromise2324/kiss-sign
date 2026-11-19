@@ -83,17 +83,20 @@ You need:
 - Free [Alchemy](https://dashboard.alchemy.com/) and [Etherscan](https://etherscan.io/myapikey) keys. A GitHub token is optional: a fine-grained, read-only one for public repositories raises GitHub's hourly limit when you build or review templates.
 - A hardware wallet that shows a Safe transaction's domain hash and message hash, or its safeTxHash.
 
-**Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`). Change it later with `pnpm kiss-sign init --language zh-TW`. It sets which HTML report your AI gives you, the terminal text, `verify`'s page and `pnpm history`; addresses, hashes and verdict words stay the same, and so do verdicts. Set `LANGUAGE` in `check.sh`'s `config` to the same language, or the comparison rows differ.
+**Language.** English (`en`, the default) or Traditional Chinese (`zh-TW`). Change it later with `pnpm kiss-sign init --language zh-TW`. It sets which HTML report your AI gives you, the terminal text, `verify`'s page and `pnpm history`; addresses, hashes and verdict words stay the same, and so do verdicts. Give `./check.sh init` on the second computer the same language, or the comparison rows differ.
 
 ### A second, clean computer: kiss-sign-check
 
 Set this up too: a second computer that runs no AI and no kiss-sign, so malware or an AI on your computer cannot also change what you compare. kiss-sign works without it, but then nothing outside your computer would catch a computer or an AI that was tampered with.
 
-On it, install Foundry for `cast` and `jq` 1.7 or later, then:
+On it:
 
 ```sh
+curl -L https://foundry.paradigm.xyz | bash   # installs foundryup; open a new terminal after it
+foundryup                                     # installs Foundry, for cast
+brew install jq                               # or your package manager's jq, 1.7 or later
 git clone https://github.com/ipromise2324/kiss-sign-check.git && cd kiss-sign-check
-cp config.example config  # set SAFE, SAFE_VERSION and LANGUAGE, the same language you gave init
+./check.sh init --safe 0x… --safe-version 1.4.1 --language en   # the same language you gave kiss-sign
 ```
 
 The [kiss-sign-check README](https://github.com/ipromise2324/kiss-sign-check#set-up) has every step.

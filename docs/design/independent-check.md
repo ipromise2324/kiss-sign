@@ -7,7 +7,7 @@ It runs Foundry's `cast`, `curl`, `jq`, and one short script, `check.sh`, from a
 The script is kept apart from kiss-sign so that a change to kiss-sign, by a bug, an AI or a merged pull request, cannot change it.
 
 **Set up once.**
-The signer clones `kiss-sign-check`, sets the Safe's address and `LANGUAGE`, the language kiss-sign's `init` recorded (`en` unless the signer chose `zh-TW`).
+The signer clones `kiss-sign-check` and runs `./check.sh init` with the Safe's address, its version and `LANGUAGE`, the language kiss-sign's `init` recorded (`en` unless the signer chose `zh-TW`).
 No AI sets it up.
 
 **Each signing.**
