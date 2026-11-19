@@ -28,7 +28,8 @@ When the program lacks a capability the operation needs, such as a borrow whose 
   Merge it as [merge-a-program-change.md](merge-a-program-change.md) says before the template's pull request, which follows on a branch from the new `main`.
   `pnpm check-push`, CI and `--compare` refuse a branch that mixes them ([The verdict core](../../../docs/design/program-ownership.md#the-verdict-core)).
 - Run `pnpm verdict-core` after the change, since `pnpm test` fails when that list is out of date.
-- A change only to research code, such as a report section under `src/research/`, may share the template's pull request; `scripts/report.ts`, which holds `--compare`, counts as core.
+- A change only to research code, such as a report section under `src/research/`, may share the template's pull request, unless `docs/verdict-core.txt` lists the file, as it does `src/research/report-words.ts`, which holds every word of the report, and `source-page.ts`, `api-source.ts` and `github-token.ts`.
+  `scripts/report.ts`, which holds `--compare`, guards that rule and is a gate file, so a change to it goes in a pull request of its own, which the signer merges.
 - Write the code the way the signer's own setup asks, such as their instructions or the development workflow they use; this skill prescribes none.
   Tell the signer you will follow their workflow, not which tool you run.
 
@@ -52,7 +53,7 @@ Start from the existing template nearest in shape, after checking it is still in
 Then follow [Data shapes](../../../docs/design/data-shapes.md#data-shapes); template load refuses anything else.
 
 - Bind every argument, and every address to the Safe, a card value or a registry contract.
-- Use `free` only with a reason, on a number, bool, fixed-size bytes or an array of numbers; free `bytes` or another array only with a `proof` or `unread` claim; a number that picks one of the protocol's pools, such as a Uniswap pool's fee, only with a `route` claim, when the effects bound every token the Safe gets.
+- Use `free` only with a reason, on a number, bool, fixed-size bytes or an array of numbers; free `bytes`, a `string` or another array only with a `proof` or `unread` claim; a number that picks one of the protocol's pools, such as a Uniswap pool's fee, only with a `route` claim, when the effects bound every token the Safe gets.
 - Bind bytes a router takes as a command's input, ABI-encoded with no selector, with `encoded`.
 - Put an allowance the operation leaves open in `effects.approves`; `unlimited` only to a registry contract that declares a `standingAllowance` of that route, with the reason from its code ([Standing allowances](../../../docs/design/data-shapes.md#standing-allowances)).
 - Write every reason the signer reads (each `free` reason or its `proof`, `unread` or `route`, each trailer's, `max`'s and `margin`'s `why`, a `merge` and a fact's `reason`) only in the signer's `language` from the config, as `{ "zh-TW": "..." }` or `{ "en": "..." }`, the same language for every reason of the template.
@@ -78,12 +79,13 @@ The program picks its own windows across the last year; never pass `--from-block
    Never declare one where every difference is 0.
    Share-based or rebasing tokens, fee-on-transfer tokens and vault share conversions are only hints of where to look; the distribution decides.
    A difference beyond 10, or one that grows with the amount, such as a fee, is not rounding: stop and tell the signer.
-5. Read the spread `pnpm past-txs` prints for every number the template leaves free, a value the signer does not choose, such as an order's `validTo` less the block's time, a deadline or a fee.
+5. Read the spread `pnpm past-txs` prints for every `uint` or `int` the template leaves free or bounds with `withinSeconds`, over the transactions that fit, a value the signer does not choose, such as an order's `validTo` less the block's time, a deadline or a fee.
    Ask what the largest normal value is, and what a far larger one would let happen after the signer stops watching, such as an order or approval still valid in a year.
-   For a time, declare it `{"free": {"time": "<why>"}}` first, so the spread counts from the block's time, then bound it with `withinSeconds` ([Template](../../../docs/design/data-shapes.md#template)) at or above the largest value real Safes used, and cite the spread in the field's note in `notes.json`, such as "136 Safe orders: median 1,720 s, 99th percentile 10,478 s, largest 604,767 s; bound 7 days".
+   For a time, declare it `{"free": {"time": "<why>"}}` first, so the spread counts from the block's time, then replace that with `{"withinSeconds": <seconds>}` ([Template](../../../docs/design/data-shapes.md#template)), a whole number from 1 to 31,536,000, at or above the largest value real Safes used (when that is above a year, stop and tell the signer), and cite the spread in the field's note in `notes.json`, such as "136 Safe orders: median 1,720 s, 99th percentile 10,478 s, largest 604,767 s; bound 7 days".
    For another number, when the spread shows a bound is needed and no rule in the vocabulary can hold it, stop and propose a generic program change.
    When no bound is needed, say why in that note.
 6. Record the runs the report studies with `--record <name>` before you generate the report.
+   The recording also keeps the call trace of each transaction exactly the template, which the report compares with your `flow` lines ([Notes and reviews](notes-and-reviews.md)).
 
 ## Check the protocol's health
 
@@ -96,9 +98,11 @@ Cite a URL for every claim; it goes into `protocols` in `notes.json`.
    - For a function called on the Safe itself, such as `addOwnerWithThreshold`, `contract` is the registry Safe singleton (`safe-1.4.1`) and the URL Safe's own reference page on docs.safe.global.
    - When the template binds the call's target, `contract` is that target or one of the entries a card field can name.
    - A URL holds only RFC 3986 characters other than `[` and `]`; prefer the protocol's docs, and pin a GitHub page to a commit.
-   - For a function a token standard defines, called on a registry token or vault, such as ERC-20's `approve`, `transfer` or `transferFrom`, write `{ "contract": "<registry name>", "standard": "erc-20" }` when the issuer publishes no page on its own site that names the function as code.
+   - For a function a token standard defines, called on a registry token or vault, such as ERC-20's `approve`, `transfer` or `transferFrom`, write `{ "contract": "<registry name>", "standard": "erc-20" }` when the issuer publishes no page on its own site that names the function as code; the standards are `erc-20` (a token or a vault), `erc-4626` (a vault) and `weth9` (WETH alone).
 2. Run `pnpm report <protocol>/<operation> --record`, with `--instance-of <instance>` for the instance the signer named when the template is reported per instance.
-   It reads everything live, records the answers in `testdata/report/` and any missing ABI case in `testdata/abi/`, and writes `report.generated.md`.
+   It reads everything live, the past transactions studied again from the `pnpm past-txs` recordings, whose search, signed-message answers and traces it reuses, and records the answers in `testdata/report/` and any missing ABI case in `testdata/abi/`, and writes `report.generated.md`.
+   Last it writes the HTML report from `notes.json`; that step refuses, naming the problem, until the notes review exactly the results the signer must look at.
+   At this step the refusal is expected and comes after the recordings and `report.generated.md` are written: write the reviews ([notes-and-reviews.md](notes-and-reviews.md)) and run `--render`.
    Never edit the generated file; `pnpm test` fails if it differs from what the recordings give.
 
 ## Add the tests
@@ -124,6 +128,7 @@ Keep the final message short and plain.
 3. Then the next steps:
    - Read the report in their language (`report.generated.en.html` or `report.generated.zh-TW.html`, or the one that exists).
    - Before merging, in a clone on `main`: `git pull`, `git fetch origin <branch>`, then `pnpm report <protocol>/<operation> --compare --data origin/<branch>`, once per report the branch adds or changes, with `--instance-of <instance>` for a per-instance report.
-     It runs main's code on the branch's templates, registry and recordings, reads every fact live again, and prints each that differs from the committed report; it does not search for past transactions again, so it cannot show the search found every one.
-     It refuses a branch that changes the verdict core beside a template, the registry or a gate file, and prints `PROGRAM CHANGE` for each program file the branch changes, `gate` among them for a file only the signer merges.
-   - Merge only when it prints no difference and they are satisfied.
+     It runs main's code on the branch's templates, registry and recordings, reads the facts live again, and prints each that differs from the committed report; it does not search for past transactions again, so it cannot show the search found every one, and it takes each signed message's answer from the recording.
+     It also requires each HTML report to equal, byte for byte, what main's code writes from the recordings and notes.
+     It refuses a branch that changes the verdict core beside a template, the registry or a gate file, and prints `PROGRAM CHANGE` for each program file the branch changes, `gate` among them for a file only the signer merges, and `AI TEXT` for each `notes.json` the branch changes, text no program checks for truth: read those files.
+   - Merge only when it exits 0, printing no difference, and they are satisfied.
