@@ -1,0 +1,78 @@
+{
+  "address": "0x218543288004cd07832472d464648173c77d7eb7",
+  "block": {
+    "number": "26447856",
+    "hash": "0x5fb5b05a211c4014e20adc32e591bfcafbe2ed6fb6300bbde24e00bbe7db5829"
+  },
+  "providers": [
+    "alchemy",
+    "drpc"
+  ],
+  "reads": [
+    {
+      "method": "getCode",
+      "args": [
+        "0x218543288004cd07832472d464648173c77d7eb7"
+      ],
+      "value": {
+        "keccak256": "0xca1147a12963172a93910c5cb2bfa5ad0e941c7f03fc7eb017dd06a8ea4e5604"
+      }
+    },
+    {
+      "method": "getStorageAt",
+      "args": [
+        "0x218543288004cd07832472d464648173c77d7eb7",
+        "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc"
+      ],
+      "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "method": "getStorageAt",
+      "args": [
+        "0x218543288004cd07832472d464648173c77d7eb7",
+        "0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50"
+      ],
+      "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    {
+      "method": "getStorageAt",
+      "args": [
+        "0x218543288004cd07832472d464648173c77d7eb7",
+        "0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3"
+      ],
+      "value": "0x0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "etherscan": {
+    "0x218543288004cd07832472d464648173c77d7eb7": {
+      "status": 200,
+      "body": {
+        "status": "1",
+        "message": "OK",
+        "result": [
+          {
+            "SourceCode": "{{\r\n  \"language\": \"Solidity\",\r\n  \"settings\": {\r\n    \"evmVersion\": \"istanbul\",\r\n    \"libraries\": {},\r\n    \"metadata\": {\r\n      \"bytecodeHash\": \"ipfs\",\r\n      \"useLiteralContent\": true\r\n    },\r\n    \"optimizer\": {\r\n      \"enabled\": false,\r\n      \"runs\": 200\r\n    },\r\n    \"remappings\": [],\r\n    \"outputSelection\": {\r\n      \"*\": {\r\n        \"*\": [\r\n          \"evm.bytecode\",\r\n          \"evm.deployedBytecode\",\r\n          \"devdoc\",\r\n          \"userdoc\",\r\n          \"metadata\",\r\n          \"abi\"\r\n        ]\r\n      }\r\n    }\r\n  },\r\n  \"sources\": {\r\n    \"contracts/libraries/MultiSend.sol\": {\r\n      \"content\": \"// SPDX-License-Identifier: LGPL-3.0-only\\npragma solidity >=0.7.0 <0.9.0;\\n\\n/**\\n * @title Multi Send - Allows to batch multiple transactions into one.\\n * @author Nick Dodson - <nick.dodson@consensys.net>\\n * @author Gonçalo Sá - <goncalo.sa@consensys.net>\\n * @author Stefan George - @Georgi87\\n * @author Richard Meissner - @rmeissner\\n */\\ncontract MultiSend {\\n    address private immutable MULTISEND_SINGLETON;\\n\\n    constructor() {\\n        MULTISEND_SINGLETON = address(this);\\n    }\\n\\n    /**\\n     * @dev Sends multiple transactions and reverts all if one fails.\\n     * @param transactions Encoded transactions. Each transaction is encoded as a packed bytes of\\n     *                     operation as a uint8 with 0 for a call or 1 for a delegatecall (=> 1 byte),\\n     *                     to as a address (=> 20 bytes),\\n     *                     value as a uint256 (=> 32 bytes),\\n     *                     data length as a uint256 (=> 32 bytes),\\n     *                     data as bytes.\\n     *                     see abi.encodePacked for more information on packed encoding\\n     * @notice This method is payable as delegatecalls keep the msg.value from the previous call\\n     *         If the calling method (e.g. execTransaction) received ETH this would revert otherwise\\n     */\\n    function multiSend(bytes memory transactions) public payable {\\n        require(address(this) != MULTISEND_SINGLETON, \\\"MultiSend should only be called via delegatecall\\\");\\n        /* solhint-disable no-inline-assembly */\\n        /// @solidity memory-safe-assembly\\n        assembly {\\n            let length := mload(transactions)\\n            let i := 0x20\\n            for {\\n                // Pre block is not used in \\\"while mode\\\"\\n            } lt(i, length) {\\n                // Post block is not used in \\\"while mode\\\"\\n            } {\\n                // First byte of the data is the operation.\\n                // We shift by 248 bits (256 - 8 [operation byte]) right, since mload will always load 32 bytes (a word).\\n                // This will also zero out unused data.\\n                let operation := shr(0xf8, mload(add(transactions, i)))\\n                // We offset the load address by 1 byte (operation byte)\\n                // We shift it right by 96 bits (256 - 160 [20 address bytes]) to right-align the data and zero out unused data.\\n                let to := shr(0x60, mload(add(transactions, add(i, 0x01))))\\n                // Defaults `to` to `address(this)` if `address(0)` is provided.\\n                to := or(to, mul(iszero(to), address()))\\n                // We offset the load address by 21 byte (operation byte + 20 address bytes)\\n                let value := mload(add(transactions, add(i, 0x15)))\\n                // We offset the load address by 53 byte (operation byte + 20 address bytes + 32 value bytes)\\n                let dataLength := mload(add(transactions, add(i, 0x35)))\\n                // We offset the load address by 85 byte (operation byte + 20 address bytes + 32 value bytes + 32 data length bytes)\\n                let data := add(transactions, add(i, 0x55))\\n                let success := 0\\n                switch operation\\n                case 0 {\\n                    success := call(gas(), to, value, data, dataLength, 0, 0)\\n                }\\n                case 1 {\\n                    success := delegatecall(gas(), to, data, dataLength, 0, 0)\\n                }\\n                if iszero(success) {\\n                    let ptr := mload(0x40)\\n                    returndatacopy(ptr, 0, returndatasize())\\n                    revert(ptr, returndatasize())\\n                }\\n                // Next entry starts at 85 byte + data length\\n                i := add(i, add(0x55, dataLength))\\n            }\\n        }\\n        /* solhint-enable no-inline-assembly */\\n    }\\n}\\n\"\r\n    }\r\n  }\r\n}}",
+            "ABI": "[{\"inputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"transactions\",\"type\":\"bytes\"}],\"name\":\"multiSend\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+            "ContractName": "MultiSend",
+            "CompilerVersion": "v0.7.6+commit.7338295f",
+            "CompilerType": "solc-j",
+            "OptimizationUsed": "0",
+            "Runs": "200",
+            "ConstructorArguments": "",
+            "EVMVersion": "istanbul",
+            "Library": "",
+            "ContractFileName": "contracts/libraries/MultiSend.sol",
+            "LicenseType": "GNU LGPLv3",
+            "Proxy": "0",
+            "Implementation": "",
+            "SwarmSource": "",
+            "SimilarMatch": ""
+          }
+        ]
+      }
+    }
+  },
+  "bytecode": {
+    "0xca1147a12963172a93910c5cb2bfa5ad0e941c7f03fc7eb017dd06a8ea4e5604": "0x60806040526004361061001e5760003560e01c80638d80ff0a14610023575b600080fd5b6100dc6004803603602081101561003957600080fd5b810190808035906020019064010000000081111561005657600080fd5b82018360208201111561006857600080fd5b8035906020019184600183028401116401000000008311171561008a57600080fd5b91908080601f016020809104026020016040519081016040528093929190818152602001838380828437600081840152601f19601f8201169050808301925050505050505091929192905050506100de565b005b7f000000000000000000000000218543288004cd07832472d464648173c77d7eb773ffffffffffffffffffffffffffffffffffffffff163073ffffffffffffffffffffffffffffffffffffffff161415610183576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252603081526020018061021b6030913960400191505060405180910390fd5b805160205b81811015610215578083015160f81c6001820184015160601c30811502811790506015830185015160358401860151605585018701600085600081146101d557600181146101e5576101f0565b6000808585888a5af191506101f0565b6000808585895af491505b5080610202576040513d6000823e3d81fd5b8260550187019650505050505050610188565b50505056fe4d756c746953656e642073686f756c64206f6e6c792062652063616c6c6564207669612064656c656761746563616c6ca2646970667358221220010cee0b8561c589589ae6e225d288cd7acdd4d61470e8c27e55cff6917b242d64736f6c63430007060033"
+  }
+}
