@@ -89,7 +89,7 @@ One report covers one concrete operation: for a template reported per instance, 
 6. **Check the protocol's health.** Hacks, audits, upgrades, admin changes, paused contracts, each with a URL ([how](build-template.md#check-the-protocols-health)).
 7. **Generate the report.** Write `docs.json`, then `pnpm report ... --record` ([how](build-template.md#generate-the-report)).
 8. **Write the notes and reviews.** Complete `notes.json` around your step 2 observations, write a review of every result the signer must look at against the result as printed, then `pnpm report ... --render` ([notes-and-reviews.md](notes-and-reviews.md)).
-9. **Add the tests.** Record two or more transactions of other Safes, require `MATCH`, catch every bound field, and run `--render` again, since the report judges the perturbation recordings ([how](build-template.md#add-the-tests)).
+9. **Add the tests.** Record two or more transactions of other Safes, require `MATCH`, catch every bound field, and run `--render` again for every report of the template, since each judges the perturbation recordings ([how](build-template.md#add-the-tests)).
 10. **Check and open the pull request.** `pnpm test`, `pnpm typecheck` and `pnpm check-push origin/main..HEAD` must pass ([how](build-template.md#open-the-pull-request)).
 11. **Tell the signer.** Say what the card will ask, what will be checked and the findings, give the link, and give the next steps, the `--compare` run before merging among them ([how](build-template.md#tell-the-signer)).
 
