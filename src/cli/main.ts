@@ -94,8 +94,9 @@ that opens the file (open -e on macOS, \${EDITOR:-nano} elsewhere).
 Options:
   --safe <address>       the Safe; may be left out on a home already set up, to change only the
                          language
-  --language en|zh-TW    the language of the HTML report, verify's page and the signing
-                         commands' terminal text; en unless given, and a config with none reads en
+  --language en|zh-TW    the language you read: the AI writes its report notes in it, and verify's
+                         page and the signing commands' terminal text use it; en unless given, and
+                         a config with none reads en
 
 Writes: $KISS_SIGN_HOME/config.json, and $KISS_SIGN_HOME/.env when there is none.
 Keys: none.
@@ -167,6 +168,8 @@ stops before asking anything, telling you to run git pull, when any file under t
 registry/ differs from origin/main.
 Each address is picked by number, exact name, full address or market id from the lists it
 prints: registry entries of the right kind, address-book entries or the Safe, or the markets.
+Where the template is reported per instance, the list holds only the instances with a report for
+it, and it stops when there is none.
 Amounts are typed in whole tokens, such as 5, 1.25 or 1,000,611.448606, or max where the field
 declares one; a token outside the registry is typed in base units. A percent, such as 100 or 35.5, is at most 100 with at most 16 decimals. Decimals
 are read through both providers at one block they agree on. A computed field is read, not asked.
@@ -183,7 +186,8 @@ card"; docs/design/program-ownership.md, "The program checks itself first".
 
 const CARD_SEAL_HELP = `Seals a card written as a file. It runs the same check against GitHub's main as card new, resolves
 every name, and refuses 0 in a computed amount field or in one a share price bound or atLeast
-compares with, and an instance, named in any field, with no report for its template (an entry of
+compares with, an entry that lacks an attribute the template reads, such as a vault with no
+adapter, and an instance, named in any field, with no report for its template (an entry of
 the kind the template is reported per, a vault unless its instanceField names another kind),
 reading the report folders from the clone. It prints the card in
 one box with full addresses and each amount in base units, since it reads no decimals. After
@@ -197,8 +201,9 @@ Rules: docs/design/flow.md, "Every signing" (step 10); docs/design/data-shapes.m
 const VERIFY_HELP = `Checks a Safe transaction against a sealed card and prints one verdict: MATCH with the
 safeTxHash, or MISMATCH or UNVERIFIABLE with the checks that caused it.
 It first runs the self-check: every origin URL must be the config's repo, and the checkout must
-be exactly its main. It refuses, writing no verdict, a card holding 0 where card seal refuses it
-or naming an instance with no report for its template at that commit. It reads each signed message
+be exactly its main. It refuses, writing no verdict, a card holding 0 where card seal refuses it,
+naming an entry that lacks an attribute the template reads, or naming an instance with no report
+for its template at that commit. It reads each signed message
 the transaction holds only by its digest, such as a CoW order, from the template's lookup, then
 runs every check. An executed transaction is judged by its receipt, and also simulated alone on
 its parent block when the card reads views or changes a Safe setting; any other is simulated on
@@ -233,7 +238,7 @@ Rules: docs/design/data-shapes.md, "Verdict file".
 `;
 
 const COMMANDS: Readonly<Record<string, Command>> = {
-  init: { usage: 'init --safe <address> [--language en|zh-TW]', help: INIT_HELP, run: init },
+  init: { usage: 'init [--safe <address>] [--language en|zh-TW]', help: INIT_HELP, run: init },
   'book add': { usage: 'book add <name> <address>', help: BOOK_ADD_HELP, run: bookAdd },
   'book list': { usage: 'book list', help: BOOK_LIST_HELP, run: bookList },
   'card new': { usage: 'card new <protocol>/<operation>...', help: CARD_NEW_HELP, run: cardNew },
