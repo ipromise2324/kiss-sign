@@ -15,8 +15,8 @@
     }
   },
   "pastTxsConclusion": {
-    "en": "Misfits batch the threshold with owner changes, some with enableModule calls, which kiss-sign refuses. 9 removed one owner through MultiSend 1.5.0, 0x218543288004CD07832472D464648173c77D7eB7, which kiss-sign does not yet accept as an official MultiSend.",
-    "zh-TW": "不合的是把門檻和 owner 變更一起送，有的還加 enableModule，kiss-sign 不接受。有 9 筆是透過 MultiSend 1.5.0（0x218543288004CD07832472D464648173c77D7eB7）移除一個 owner，kiss-sign 還不把它當作官方的 MultiSend。"
+    "en": "Every misfit batches the threshold with owner changes, some with enableModule calls, which kiss-sign refuses.",
+    "zh-TW": "不合的都是把門檻和 owner 變更一起送，有的還加 enableModule，kiss-sign 不接受。"
   },
   "flow": [],
   "protocols": {},
