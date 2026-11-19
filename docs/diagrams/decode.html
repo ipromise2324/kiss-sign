@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Decoding by hand</title>
+<!-- Source of docs/readme/decode.png: sh docs/diagrams/crop.sh docs/diagrams/decode.html .wrap 0 docs/readme/decode.png 1200
+     Both runs are real, on another Safe's Morpho deposit (nonce 20); lines left out are marked with a dim "…". -->
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d1117; }
+.wrap { width: 1140px; display: grid; gap: 22px; }
+.step { color: #e6edf3; font: 600 17px/1.4 -apple-system, Helvetica, Arial, sans-serif; display: flex; gap: 10px; align-items: baseline; }
+.step b { color: #0d1117; background: #e3b341; border-radius: 50%; width: 24px; height: 24px; display: inline-grid; place-items: center; font-size: 14px; flex: none; }
+.step span { color: #9198a1; font-weight: 400; }
+.win { border: 1px solid #30363d; border-radius: 10px; overflow: hidden; background: #0b0e13; margin-top: -10px; }
+.bar { height: 34px; background: #161b22; border-bottom: 1px solid #30363d; display: flex; align-items: center; gap: 8px; padding: 0 14px; }
+.bar i { width: 12px; height: 12px; border-radius: 50%; background: #30363d; display: block; }
+.bar span { margin-left: 10px; color: #9198a1; font: 13px -apple-system, Helvetica, Arial, sans-serif; }
+pre { color: #c9d1d9; font: 13.5px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace; padding: 14px 18px; white-space: pre-wrap; word-break: break-all; }
+.p { color: #6ea8ff; }
+.dim { color: #6e7681; }
+.ok { color: #4ac286; }
+.bad { color: #ff7b72; font-weight: 700; }
+.say { color: #e3b341; font-family: -apple-system, Helvetica, Arial, sans-serif; font-size: 14.5px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="step"><b>1</b>Compute the hashes with safe-tx-hashes <span>(its real output, shortened)</span></div>
+<div class="win"><div class="bar"><i></i><i></i><i></i><span>safe-tx-hashes</span></div><pre><span class="p">$</span> ./safe_hashes.sh --network ethereum --address 0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B --nonce 20
+To: 0x9641d764fc13c8B624c04430C7356C1C7C8102e2
+Data: 0x8d80ff0a0000000000000000000000000000000000000000000000000000000000000020<span class="dim">… 1,156 bytes in all</span>
+Operation: Delegatecall (trusted delegatecall)
+Method: multiSend
+    "valueDecoded": [
+      {
+        "to": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "method": "approve",
+              "name": "spender",  "value": "0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0"
+              "name": "value",    "value": "10001000000"
+<span class="say">→ call 1 is decoded, but by Safe's API: the script says it does not check this part</span>
+      },
+      {
+        "to": "0x6566194141eefa99Af43Bb5Aa71460Ca2Dc90245",
+        "data": "0x374f435d0000000000000000000000000000000000000000000000000000000000000020<span class="dim">…</span>",
+        <span class="bad">"dataDecoded": null</span>
+<span class="say">→ call 2, the one that moves your USDC into the vault, is not decoded at all</span>
+<span class="dim">…</span>
+Domain hash: <span class="ok">0x435F508C2DAADCD9E47D062385F88785E87FD428FE66214DD1CE06026AAF130E</span>
+Message hash: <span class="ok">0xF7F0CC7F831B82E63988FEBF02F0F6C6F30F3F7E1C7C99D92E238364128F7C13</span>
+<span class="say">→ these are what your hardware wallet should show</span>
+
+IMPORTANT: The decoded "Method" and "Parameters" are provided by the Safe transaction service API and are not verified by this script. <span class="bad">Always independently decode the transaction "Data" yourself before you sign!</span></pre></div>
+
+<div class="step"><b>2</b>Decode the data yourself with cast <span>(a real run on the same Data)</span></div>
+<div class="win"><div class="bar"><i></i><i></i><i></i><span>cast</span></div><pre><span class="p">$</span> PACKED=$(cast decode-calldata "multiSend(bytes)" $DATA)
+<span class="p">$</span> CALL1=0x${PACKED:172:152}; CALL2=0x${PACKED:494:1624}
+<span class="say">→ MultiSend packs its calls into one blob; you count the byte offsets of each call by hand</span>
+<span class="p">$</span> cast decode-calldata "approve(address,uint256)" $CALL1
+0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
+10001000000 [1e10]
+<span class="say">→ lets 0x4A6c…0aE0 spend 10,001 USDC (USDC has 6 decimals)</span>
+<span class="p">$</span> BUNDLE=$(cast decode-calldata --json "multicall((address,bytes,uint256,bool,bytes32)[])" $CALL2)
+<span class="say">→ call 2 is Bundler3's multicall, which holds two more calls</span>
+<span class="p">$</span> cast decode-calldata "erc20TransferFrom(address,address,uint256)" $(jq -r '.data[0][0][1]' &lt;&lt;&lt; $BUNDLE)
+0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+0x4A6c312ec70E8747a587EE860a0353cd42Be0aE0
+10001000000 [1e10]
+<span class="say">→ pulls 10,001 USDC from the Safe to 0x4A6c…0aE0</span>
+<span class="p">$</span> cast decode-calldata "erc4626Deposit(address,uint256,uint256,address)" $(jq -r '.data[0][1][1]' &lt;&lt;&lt; $BUNDLE)
+0x777791C4d6DC2CE140D00D2828a7C93503c67777
+10001000000 [1e10]
+1054633213541066 [1.054e15]
+0x4F6981AD898c3296C0FFC5afd44Af4281f7ebF9B
+<span class="say">→ deposits 10,001 USDC into vault 0x7777…7777, at a share price of at most 1.054e15 (scaled by 1e27), with the shares going to the Safe</span></pre></div>
+</div>
+</body>
+</html>
