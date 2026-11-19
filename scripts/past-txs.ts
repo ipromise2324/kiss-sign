@@ -29,7 +29,8 @@ const USAGE = `usage: pnpm past-txs <protocol>/<operation>
   [--max-txs <n>] [--record <name>]
   [--from-block <n> --to-block <n> | --same-windows-as <recording>]
 
-Finds executed transactions of one operation through an anchor: an ERC-20 Transfer of --token.
+Finds executed transactions of one operation through an anchor: an ERC-20 Transfer of --token, or
+an event (--anchor event), as one of the two forms above.
   deposit into a vault:   --token <vault> --anchor mint   (shares minted to the depositor)
   withdraw from a vault:  --token <vault> --anchor burn   (shares burned from the owner)
   transfer a token:       --token <token> --anchor any    (any transfer of the token)
@@ -48,8 +49,8 @@ Otherwise it searches 12 windows of up to 7200 blocks spread over the year, and 
 --max-txs (at least 12) transactions shared evenly between them. A window with more transfers
 than one page of a source is halved until they fit, and the report names the blocks left out.
 --same-windows-as places the year and the windows by the head block
-testdata/research/<recording>.json keeps instead of today's, so a run again searches the same
-blocks. --from-block and --to-block replace the year and the windows with one range.
+testdata/research/<recording>.json keeps instead of today's, and asks the whole year first only
+when that recording did, so a run again searches the same blocks. --from-block and --to-block replace the year and the windows with one range.
 Both Alchemy (alchemy_getAssetTransfers) and Etherscan (logs) search each window for a Transfer;
 each transaction says which found it. Only Etherscan searches an event: Alchemy's eth_getLogs
 reads at most 10 blocks at a time on the free plan.

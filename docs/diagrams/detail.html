@@ -158,7 +158,7 @@
         <li>Protocol health: hacks, audits, upgrades, admin changes, each with its source</li>
         <li><code>template.json</code>: a rule for every argument, the effects, any views, computed fields with their slippage, each choice with a reason</li>
         <li><code>docs.json</code>: one official page per function</li>
-        <li><code>notes.json</code>: title, verdict, each contract's role, each argument's meaning, up to 4 flow lines (from, to, function, sources), a review of every result the signer must look at</li>
+        <li><code>notes.json</code>: title, verdict, each contract's role, each argument's meaning, up to 4 flow lines (after which call, from, to, function, text, sources), a review of every result the signer must look at</li>
         <li>Test transactions, from other Safes</li>
       </ul>
       <div class="why"><b>Why data, not code:</b> the AI picks from the program's vocabulary; it never writes code that becomes a check.</div></div>
@@ -168,8 +168,8 @@
       <ul>
         <li><code>perturb</code>: changes each free field of each test transaction and simulates every copy; each must revert, be refused, or change nothing</li>
         <li><code>report --record</code> keeps only the live answers the checks read, or writes nothing if a read got none</li>
-        <li>Writes <code>report.generated.md</code>, and the HTML report in each language <code>notes.json</code> holds, from the recordings and the notes; compares each flow line with the traces</li>
-        <li>Refuses notes with a result left unreviewed, an unknown name, or a flow line outside the template</li>
+        <li>Writes <code>report.generated.md</code>, and the HTML report in each language <code>notes.json</code> holds (for an instance, both files), from the recordings and the notes; compares each flow line with the traces</li>
+        <li>Refuses notes with a result left unreviewed, a review of a result that needs none, an unknown name, or a flow line outside the template</li>
         <li><code>pnpm test</code> computes every report again from the recordings, offline</li>
       </ul>
       <div class="why"><b>Why record:</b> CI has no keys, so it replays the answers. A recording shows what the report was computed from, not that it is true; box 10 checks that.</div></div>
@@ -180,7 +180,7 @@
         <li>The template, its test transactions and <code>perturb</code> recordings</li>
         <li>Registry entries and markets, with their code pins</li>
         <li><code>docs.json</code>, <code>notes.json</code>, the report and its recordings</li>
-        <li>One report per operation, or per operation and vault when the card picks a vault (<code>instances/&lt;vault&gt;/</code>); no report, no signing</li>
+        <li>One report per operation, or per operation and instance when the card picks one, a vault today (<code>instances/&lt;instance&gt;/</code>); no report, no signing</li>
         <li>A program change it needs goes first, in a pull request of its own</li>
         <li>Never merges a template, registry or program gate pull request</li>
       </ul></div>
@@ -189,7 +189,7 @@
       <h3><i>10</i>Review and merge</h3>
       <ul>
         <li>Read the report (below) and the template's rules</li>
-        <li>From <code>main</code>: <code>pnpm report … --compare --data origin/&lt;branch&gt;</code>, with <code>--instance-of &lt;vault&gt;</code> per instance report</li>
+        <li>From <code>main</code>: <code>pnpm report … --compare --data origin/&lt;branch&gt;</code>, with <code>--instance-of &lt;instance&gt;</code> per instance report</li>
         <li>It reads the facts again live, past transactions and their traces included (the search and signed messages stay recorded), and needs the HTML byte for byte</li>
         <li>It refuses a branch that also changes the verdict core, and prints <code>PROGRAM CHANGE</code> and <code>AI TEXT</code></li>
         <li>Merging is your approval; branch protection on <code>main</code> is recommended</li>
@@ -217,7 +217,7 @@
     <tr><th>Part</th><th>What it shows</th><th>Where it comes from</th></tr>
     <tr><td>Header</td><td>Title, summary, and a one-line verdict marked as advice</td><td><span class="tag ai">AI notes</span></td></tr>
     <tr><td>Check strip</td><td>Address sources · Source verified · Code unchanged · Parameter checks · Call traces · Two providers, each with its count</td><td><span class="tag program">check-sources</span><span class="tag program">prove-abi</span><span class="tag program">pin-code</span><span class="tag program">mutation, perturb</span><span class="tag program">traces</span></td></tr>
-    <tr><td>Flow (流程)</td><td>Solid numbered arrows: the template's calls. One lifeline per contract a call or view targets. Up to 4 AI flow lines: solid and “confirmed” when the traces saw it in every transaction, dashed otherwise. Green arrows back to the Safe: what the effects say it gets. Per argument: who decides it (you type, you pick, the program computes, fixed, the app fills) and an example value.</td><td><span class="tag program">template</span><span class="tag program">traces</span><span class="tag program">perturb recording</span><span class="tag ai">AI flow lines, field meanings</span></td></tr>
+    <tr><td>Flow (流程)</td><td>Solid numbered arrows: the template's calls. One lifeline per contract a call or view targets. Up to 4 AI flow lines: solid and “confirmed” when the traces saw it in every traced transaction that makes its call; dashed otherwise, and a result to review when the traces missed it. Green arrows back to the Safe: what the effects say it gets. Per argument: who decides it (you type, you pick, the program computes, fixed, the app fills) and an example value.</td><td><span class="tag program">template</span><span class="tag program">traces</span><span class="tag program">perturb recording</span><span class="tag ai">AI flow lines, field meanings</span></td></tr>
     <tr><td>Protocol</td><td>TVL, listing date, whether the contract is a proxy, hacks with date and amount; what the protocol is, audits, each hack's cause</td><td><span class="tag program">DefiLlama</span><span class="tag program">code pin</span><span class="tag ai">AI intro, audits, causes</span></td></tr>
     <tr><td>Instance (實例)</td><td>The factory's answer, monthly <code>totalAssets()</code> as a bar chart, holder count, the top 10's share</td><td><span class="tag program">instance-evidence</span></td></tr>
     <tr><td>To review (待確認)</td><td>Every result you must look at, important (重要) before reference (參考), red before amber, each with the AI's review under it; then the AI's judgments</td><td><span class="tag program">results</span><span class="tag ai">AI reviews, judgments</span></td></tr>
@@ -256,7 +256,7 @@
       <h3><i>13</i>Fill the card</h3>
       <ul>
         <li><code>card new</code> stops first unless <code>templates/</code> and <code>registry/</code> equal GitHub's main</li>
-        <li>Pick vaults, markets and recipients by number, each with its full address; only vaults with a report are listed</li>
+        <li>Pick vaults, markets and recipients by number, each with its full address; only instances, vaults today, with a report are listed</li>
         <li>Amounts in whole tokens; <code>decimals()</code> read through both providers</li>
         <li>A computed field, such as the fewest shares, is read on chain with the template's slippage, not typed</li>
         <li>First use of a template or vault: a small amount first, as the report advises; nothing enforces it</li>
@@ -280,7 +280,7 @@
         <li>Every <code>origin</code> URL is your fork; fetch its main</li>
         <li>Every object hashes to its name</li>
         <li>The clone is exactly that commit, or nothing is verified</li>
-        <li>Refuses a card naming a vault with no report, or an entry without an attribute the template reads</li>
+        <li>Then, before any chain read: refuses a card naming an instance with no report, or an entry without an attribute the template reads</li>
       </ul>
       <div class="why"><b>Why:</b> the checks that run are the ones on your <code>main</code>.</div></div>
 
@@ -288,10 +288,10 @@
       <h3><i>17</i>Check the transaction</h3>
       <ol>
         <li>The template's hash is the one you approved</li>
-        <li>Floors: no <code>delegatecall</code> but to the official MultiSend; no unlimited approval but a registry standing allowance; no Safe setting change but a declared owner or threshold change; zero fee fields</li>
+        <li>Floors: no <code>delegatecall</code> but to the official MultiSend; no unlimited approval but a registry standing allowance; no Safe setting change but a declared owner or threshold change; no MultiSend item sent to address zero; zero fee fields</li>
         <li>Fields: decode, re-encode byte for byte, every field against the template and the card; a signed message fetched by its digest must hash to it</li>
         <li>Each vault's <code>asset()</code> is its registry token</li>
-        <li>Code: every registry contract the transaction or card names, inside packed calls and signed messages too, runs its pinned code</li>
+        <li>Code: every registry contract the transaction or card names, or a card reference's attribute names, inside packed calls and signed messages too, with each message's <code>verifyingContract</code>, runs its pinned code</li>
         <li>Mutations: each bound field changed must give <code>MISMATCH</code>, or the verdict is <code>UNVERIFIABLE</code></li>
       </ol>
       <div class="chips"><span class="chip">Alchemy</span><span class="chip">drpc</span><span class="chip">Order API, e.g. CoW</span></div>

@@ -6,7 +6,7 @@ Building a template or adding a vault follows the kiss-sign skill (`.claude/skil
 
 ## Commands
 
-Every command below but `pnpm test` and `pnpm typecheck` prints its usage, flags, keys and the design section that holds its full rules with `--help`, before it reads a key, a config or the network: `pnpm kiss-sign <command> --help`, `pnpm <script> --help`, `node scripts/pin-packages.ts --help`. Read it before you run a command.
+Every command below but `pnpm install`, `pnpm test` and `pnpm typecheck` prints its usage, flags, keys and the design section that holds its full rules with `--help`, before it reads a key, a config or the network: `pnpm kiss-sign <command> --help`, `pnpm <script> --help`, `node scripts/pin-packages.ts --help`. Read it before you run a command.
 
 - `pnpm install` also sets `core.hooksPath` to `.githooks`, which turns on the pre-push check.
 - Keys enter only through the command's environment or `$KISS_SIGN_HOME/.env`: `ALCHEMY_API_KEY`, `ETHERSCAN_API_KEY`, and `GITHUB_TOKEN`, which is optional and goes only to `api.github.com`, where it raises the rate limit and changes no answer.
@@ -45,7 +45,7 @@ Every command below but `pnpm test` and `pnpm typecheck` prints its usage, flags
 - `pnpm kiss-sign card seal <card.json>`: stores a card after the signer confirms it and prints its hash.
 - `pnpm kiss-sign verify --card <hash> (--tx <file> | --safe-tx-hash <hash>)`: checks a transaction against a card and prints the verdict.
 - `pnpm kiss-sign replay <verdict file>`: recomputes a verdict offline and says whether it equals the recorded one.
-- `pnpm history fetch`, `pnpm history`: download the configured Safe's transactions and run each through `verify`'s checks.
+- `pnpm history fetch`, `pnpm history`: download the configured Safe's transactions and run each executed one through `verify`'s checks.
 
 ### Checks
 
