@@ -577,19 +577,18 @@ const names = (value: unknown, address: Address): boolean =>
   JSON.stringify(value, (_, v: unknown) => (typeof v === 'bigint' ? v.toString(16) : v)).toLowerCase().includes(address.slice(2).toLowerCase());
 
 /**
- * Whether the configured Safe sent the transaction or is named in it, in its input or in a log of its receipt, or its
- * receipt is not one both providers give, so nothing shows it does not: such a transaction is left out of the study, and
- * `--record` writes nothing for a search that found one.
+ * Whether the configured Safe sent the transaction or is named in its input or in a log of the receipt both providers
+ * give: its reads would hold the Safe's address, which a recording drops, so it is left out of the study.
  */
 async function touches(reader: Reader, tx: Transaction, safe: Address): Promise<boolean> {
   if (tx.to === safe || tx.from === safe || names(tx.input, safe)) return true;
   const receipt = await reader.getTransactionReceipt(tx.hash);
-  return receipt.kind === 'unverifiable' || receipt.value === null || names(receipt.value.logs, safe);
+  return receipt.kind === 'agreed' && receipt.value !== null && names(receipt.value.logs, safe);
 }
 
 export async function studyTx(reader: Reader, hash: Hex, context: StudyContext): Promise<TxStudy> {
   const read = await reader.getTransaction(hash);
-  if (read.kind === 'unverifiable') return context.exclude === undefined ? { kind: 'unreadable', hash, reason: read.reason } : { kind: 'excluded' };
+  if (read.kind === 'unverifiable') return { kind: 'unreadable', hash, reason: read.reason };
   const tx = read.value;
   if (tx === null) return { kind: 'unreadable', hash, reason: 'neither provider knows the transaction' };
   if (context.exclude !== undefined && (await touches(reader, tx, context.exclude))) return { kind: 'excluded' };

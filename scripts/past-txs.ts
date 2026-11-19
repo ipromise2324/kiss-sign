@@ -9,11 +9,11 @@ import { loadStoredConfig } from '../src/config.ts';
 import { kissSignHome } from '../src/keys.ts';
 import { loadRegistry } from '../src/registry.ts';
 import { DEFAULT_SPREAD, pastTxs, renderPastTxs } from '../src/research/past-txs.ts';
-import { ANCHOR_KINDS, anchorEvent, liveAsk } from '../src/research/sources.ts';
+import { ANCHOR_KINDS, anchorEvent, liveAsk, recordingAsk } from '../src/research/sources.ts';
 import type { AnchorEvent, AnchorKind } from '../src/research/sources.ts';
 import { liveMessages, recordingMessages } from '../src/research/messages.ts';
 import { httpsMessage } from '../src/verify/messages.ts';
-import { scrubRecording, searchText } from '../src/research/recording.ts';
+import { scrubRecording } from '../src/research/recording.ts';
 import { drpcTraces } from '../src/research/trace.ts';
 import type { PastTxsRecording } from '../src/research/recording.ts';
 import { parseAddress } from '../src/safe/types.ts';
@@ -59,8 +59,8 @@ For each free number the template leaves, and each withinSeconds time it bounds,
 spread of values, less the block's time for a time.
 Senders are counted by type: a proven Safe (Safe proxy code and an official singleton), a
 contract that is not a proven Safe, and an EOA making one of the template's calls directly.
-The Safe in $KISS_SIGN_HOME/config.json is left out of every count and example, and a search that
-found one of its transactions is not recorded.`;
+The Safe in $KISS_SIGN_HOME/config.json is left out of every count and example, and its address out
+of every recording; a recording keeps its transactions' place and hash.`;
 const HELP = `${USAGE}
 Per field it prints how many transactions and senders held the template's rule, and the misfits
 grouped by reason. For each fitting transaction it runs the transaction alone on its parent block
@@ -82,10 +82,8 @@ Options:
                                  windows, at least 1 with --from-block and --to-block.
   --from-block, --to-block <n>   Search one block range in place of the windows.
   --same-windows-as <recording>  Search the windows of testdata/research/<recording>.json again.
-  --record <name>                Write testdata/research/<name>.json, with the hashes of the sampled
-                                 transactions only; nothing is written when a read got no answer,
-                                 or when the search found a transaction the configured Safe sent or
-                                 is named in.
+  --record <name>                Write testdata/research/<name>.json; nothing is written when a
+                                 read got no answer.
 
 Writes: testdata/research/<name>.json with --record; otherwise nothing.
 Keys: ALCHEMY_API_KEY and ETHERSCAN_API_KEY, from the environment or $KISS_SIGN_HOME/.env.
@@ -181,7 +179,7 @@ const endpoints = mainnetEndpoints(process.env);
 const chain = recordingTransport(httpsTransport(), endpoints);
 const unread: string[] = [];
 const note = (read: string) => void unread.push(read);
-const ask = liveAsk(process.env, note);
+const sources = recordingAsk(liveAsk(process.env, note));
 const messages = recordingMessages(liveMessages(httpsMessage, note));
 const reader = createReader(endpoints, chain.transport, { note });
 const traces = drpcTraces(endpoints[1], httpsTransport(), note);
@@ -191,7 +189,7 @@ const query = {
   sampling: range !== undefined ? ({ kind: 'range', range } as const) : sameAs === undefined ? DEFAULT_SPREAD : { ...DEFAULT_SPREAD, ...sameAs },
 };
 const run = await pastTxs(query, {
-  ask,
+  ask: sources.ask,
   reader,
   registry,
   readMessage: messages.read,
@@ -222,18 +220,17 @@ if (flags.record !== undefined) {
         ...(run.year === undefined ? {} : { wholeYear: true as const }),
         maxTxs,
       },
-      sources: [],
-      search: searchText(run.search),
+      sources: sources.exchanges(),
       messages: messages.exchanges(),
       providers,
       exchanges: chain.exchanges().filter((e) => providers.every((p) => p in e.answers)),
       traces: traces.recorded(),
     },
     exclude === undefined ? [] : [exclude],
-    run,
+    run.excluded,
   );
   const out = join(ROOT, 'testdata', 'research', `${flags.record}.json`);
   mkdirSync(join(out, '..'), { recursive: true });
   writeFileSync(out, recordingText(fixture, 1));
-  console.log(`wrote ${out}: ${run.search.sampled.length} sampled transactions, ${fixture.exchanges.length} chain requests, ${fixture.traces?.length ?? 0} call traces`);
+  console.log(`wrote ${out}: ${fixture.sources.length} source answers, ${fixture.exchanges.length} chain requests, ${fixture.traces?.length ?? 0} call traces`);
 }
