@@ -66,9 +66,12 @@ Part of [the kiss-sign design](../design.md).
   The basic tier does not stop this; in the hardened tier the independent check still decodes what the hash commits to.
 - In the basic tier an AI on the work computer can read `$KISS_SIGN_HOME/.env`, and research scripts read the keys there on its behalf.
   The rule that the AI never asks for or prints a key is its behaviour, not a lock.
-- The hardware wallet shows only the two hashes, not the decoded transaction.
-  ERC-7730 clear signing does not yet cover Safe MultiSend batches.
-  In the hardened tier the independent check decodes it on a second computer.
+- The report's 錢包顯示 says what a Ledger that supports ERC-7730 can show, not what the signer's wallet shows.
+  A Ledger with a current Ethereum app resolves the Safe proxy to its singleton through Ledger's own signed server answer, not the chain, then decodes the `SafeTx` and, from app 1.19, the call inside it.
+  Not verified: whether Safe{Wallet}'s Ledger connection uses that path (Ledger's context module) or an older one that shows only hashes or raw fields, and whether Ledger's live metadata service serves the Safe descriptors of the pinned commit.
+  Trezor, Keystone and GridPlus do not document ERC-7730 proxy matching for a Safe, so the report claims nothing for them.
+  No descriptor decodes a Safe MultiSend batch, and the `SafeTx` descriptor hides the nonce and `safeTxGas`.
+  The hashes cover all of it, and a Ledger shows them beside a decoded `SafeTx` only with its "Transaction hash" setting on; in the hardened tier the independent check decodes the transaction on a second computer.
 - A template is only as good as its review.
   The mutation check and the simulation are the backstops.
 - The v1 templates were written and merged by the AI without human review.
@@ -227,7 +230,7 @@ Listed so the path is clear.
   Removes rate and range limits and adds an independent source.
 - **Clear signing on the wallet (ERC-7730).**
   Export templates as display descriptors so the device shows the decoded call.
-  Wait until wallets decode Safe MultiSend batches; until then, hash comparison stays.
+  Wait until wallets decode Safe MultiSend batches and the descriptors stop hiding the nonce; until then, hash comparison stays.
 
 ## Out of scope
 
