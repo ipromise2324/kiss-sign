@@ -8,7 +8,7 @@ import { MARKET_ENTRY_PARTS, isMarketEntryPart } from './registry.ts';
 import type { Market, Registry, RegistryEntry } from './registry.ts';
 import { checksumAddress } from './safe/types.ts';
 import type { Address, Hex } from './safe/types.ts';
-import { WAD, contractRefusal, floorFields } from './template/template.ts';
+import { WAD, cardRefs, contractRefusal, floorFields } from './template/template.ts';
 import type { CardField, CardRef, Template } from './template/template.ts';
 
 /** What the signer confirms at each signing: which templates, and each one's values. Addresses appear only as names. */
@@ -42,6 +42,7 @@ export type CardRefusal =
   | 'not-a-percent'
   | 'not-a-threshold'
   | 'zero-floor'
+  | 'missing-attribute'
   | 'not-the-same'
   | 'two-settings-changes';
 
@@ -188,6 +189,10 @@ export function resolveCard(card: Card, context: CardContext): Resolution {
     }
     const zero = [...values].find(([name, value]) => value.kind === 'amount' && isZeroFloor(template, name, value.value))?.[0];
     if (zero !== undefined) return refuse('zero-floor', zero, `${zero} is 0; a computed amount, or one a share price bound or atLeast compares with, must be at least 1, since 0 there bounds nothing or nothing can meet it`);
+    for (const { field, attribute } of cardRefs(template)) {
+      const target = attribute === undefined ? undefined : resolveRef({ field, attribute }, values, context.registry);
+      if (target !== undefined && 'problem' in target) return refuse('missing-attribute', field, `${target.problem}, which ${template.id} reads as ${field}.${attribute}`);
+    }
     const named = template.same.map((ref) => {
       const target = resolveRef(ref, values, context.registry);
       const label = ref.attribute === undefined ? ref.field : `${ref.field}.${ref.attribute}`;
