@@ -7,8 +7,8 @@ It runs Foundry's `cast`, `curl`, `jq`, and one short script, `check.sh`, from a
 The script is kept apart from kiss-sign so that a change to kiss-sign, by a bug, an AI or a merged pull request, cannot change it.
 
 **Set up once.**
-The signer clones `kiss-sign-check`, sets the Safe's address and `LANGUAGE`, the language kiss-sign's `init` recorded (`en` unless the signer chose `zh-TW`), and writes `known-addresses.txt` by hand: each address the signer uses with a name, taken from sources the signer trusts.
-No AI writes the list.
+The signer clones `kiss-sign-check`, sets the Safe's address and `LANGUAGE`, the language kiss-sign's `init` recorded (`en` unless the signer chose `zh-TW`).
+No AI sets it up.
 
 **Each signing.**
 After the transaction is proposed and `verify` prints `MATCH`, the signer types on the independent computer the command `verify` prints, on its page and in the terminal: `./check.sh <nonce>`, followed by `--hints '<hints>'` when a template the card uses reads `bytes` that no ABI describes as `encoded` parameters or `packed` parts ([Hints](#hints)).
@@ -20,8 +20,7 @@ The script:
 3. splits a MultiSend into its calls, and decodes again the calls nested in a Bundler3 `multicall`, in `multicall(bytes[])`, `submit(bytes)` and `revoke(bytes)`, and in Morpho's callback bundle, each with the ABI Sourcify gives for the contract it goes to;
 4. checks each function name against the 4-byte selector of the call's data with `cast sig`;
 5. decodes each call with `cast decode-calldata`;
-6. labels every address with its name from `known-addresses.txt`;
-7. shows the parts of each `bytes` value a hint reads, with a warning (see [Hints](#hints)).
+6. shows the parts of each `bytes` value a hint reads, with a warning (see [Hints](#hints)).
 
 The signer then compares the hashes with the hardware wallet's screen, and the 比對清單 on `check.sh`'s page with the one on `verify`'s page after `MATCH`, row by row, and the decoded calls with what they meant to do.
 Several proposals can share one nonce, such as a transaction and its cancellation; the safeTxHash that matches the hardware wallet settles which one is signed.
@@ -39,11 +38,10 @@ Each warning about a `bytes` argument or part it cannot read, or reads only thro
 | MultiSend split into its calls | A call hidden in a batch that the card does not name |
 | Each function name against its selector with `cast sig` | A call decoded under the wrong function |
 | Each call decoded with `cast decode-calldata` | Arguments that differ from the card |
-| Each address labelled from `known-addresses.txt` | An address the signer's own list does not name, or names as something else |
 
 | Guaranteed | Not guaranteed |
 |---|---|
-| kiss-sign cannot make the signer sign something other than what the independent computer decodes. | That an address is the protocol's real contract. That stays on kiss-sign's checks, the report, and the signer's own address list. |
+| kiss-sign cannot make the signer sign something other than what the independent computer decodes. | That an address is the protocol's real contract. That stays on kiss-sign's checks and the report; `check.sh` names only the official MultiSends, the Safe and the zero address. |
 | The hash math and which transaction is signed are checked without kiss-sign. | That the transaction does what the signer meant. Only kiss-sign compares the transaction with the card and simulates it. |
 | | That every call is readable. A call nested inside another call's bytes is decoded only where step 3 names it, and only when Sourcify's ABI for its contract has its selector; any other is shown raw, loudly. |
 | | That a hint reads `bytes` as the contract reads them. A hint only lets the independent computer show what it reads; it changes no row, and the bytes it reads keep a warning (see [Hints](#hints)). |
@@ -82,7 +80,7 @@ The hints come from the work computer, the one the hardened tier does not trust,
   Any bytes whose length is a multiple of 32 also fit as that many `uint256`, a reading that would show a hidden call or address as numbers.
   So a value a hint reads keeps a warning in place of the one that says it cannot be decoded: its parts are shown as the hint reads them, checked to encode back, not checked to be what the contract reads.
   A hint can add lines to the full decode; it never changes a row, and it never leaves the bytes it reads without a warning.
-  The parts' addresses are named from `known-addresses.txt` or warned about as anywhere else, and a `bytes` part no hint reads warns as before.
+  A `bytes` part no hint reads warns as before.
 - An entry whose path names no `bytes` this transaction holds, or names bytes `check.sh` decodes as calls, is not used, and is a warning.
 
 So a wrong or hostile hint shows the bytes raw with a warning, or a reading of them under a warning; the rows, the hashes and every other warning stay what `check.sh` finds on its own.
@@ -102,7 +100,7 @@ ID is fixed text in every language.
 KEY, each group's TITLE, the VALUE of an empty `-data` and the words of a folded VALUE are fixed text in the page's language, from the table below, which both programs carry word for word: kiss-sign's `language` from `init`, `check.sh`'s `LANGUAGE` in its `config`, `en` by default in both.
 Two pages in different languages write these rows differently, so a signer whose two computers are set to different languages sees rows that differ and stops; each page names its language in one line above the block.
 VALUE is the value to compare.
-NAME is each program's own name for it, on kiss-sign's page in the signer's language: kiss-sign's registry or address book, `check.sh`'s `known-addresses.txt`, or kiss-sign's note on a number the card bounds: its whole-token amount (`= 244.093807 usdc`), its percent (`= 5%`), or, for a share price bound, which bound it is.
+NAME is each program's own name for it, on kiss-sign's page in the signer's language: kiss-sign's registry or address book, `check.sh`'s names for the official MultiSends, the Safe and the zero address, or kiss-sign's note on a number the card bounds: its whole-token amount (`= 244.093807 usdc`), its percent (`= 5%`), or, for a share price bound, which bound it is.
 It differs between the two by design, so the signer compares addresses, not names.
 On kiss-sign's `-extra` row, NAME also states the template's rule as a program fact, such as `模板允許這個呼叫最多 12 bytes，這裡 8 bytes，在範圍內`, and the template's `trailer.why`, tagged AI as the signer's report tags AI text; VALUE stays the hex `check.sh` writes.
 
