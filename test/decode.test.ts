@@ -132,6 +132,17 @@ test('a MultiSend entry whose operation is neither call nor delegatecall is malf
   assert.deepEqual(unwrapSafeTx(withData(bytes)), { kind: 'malformed', at: approve!.span[0], problem: 'a MultiSend operation that is neither 0 nor 1' });
 });
 
+test('a MultiSend call with a zero `to` is refused in every version, since MultiSend 1.5.0 sends it to the Safe itself', () => {
+  const [approve] = unwrapped(unwrapSafeTx(deposit));
+  const bytes = depositBytes();
+  bytes.fill(0, approve!.span[0] + 1, approve!.span[0] + 21);
+  const zeroTo = withData(bytes);
+  const refused = { kind: 'zero-to', at: approve!.span[0] + 1 };
+  assert.deepEqual(unwrapSafeTx(zeroTo), refused);
+  assert.deepEqual(unwrapSafeTx({ ...zeroTo, to: '0xa83c336b20401af773b6219ba5027174338d1836' as Address }), refused);
+  assert.equal(unwrapped(unwrapSafeTx({ ...deposit, to: '0xa83c336b20401af773b6219ba5027174338d1836' as Address })).length, 2);
+});
+
 test('only an official MultiSend is unwrapped; a direct call is one call', () => {
   const foreign = '0x1111111111111111111111111111111111111111' as Address;
   assert.deepEqual(unwrapSafeTx({ ...deposit, to: foreign }), { kind: 'foreign-delegatecall', to: foreign });
