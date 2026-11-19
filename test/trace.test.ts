@@ -111,7 +111,7 @@ test('a flow line is confirmed in N of M traced transactions, and a money call n
   assert.deepEqual(
     flowResults(partly).map((r) => [r.id, r.finding.kind]),
     [
-      ['flow.1', 'line-partly-seen'],
+      ['flow.1', 'line-not-every'],
       ['trace.2.morpho-blue.usdc.transferFrom', 'money-uncovered'],
     ],
   );
@@ -124,9 +124,16 @@ test('a line seen nowhere is red, one seen in some and a money call no line cove
   const nowhere = supply().map((c) => (c.selector === SUPPLY ? { ...c, selector: '0x12345678' as Hex } : c));
   const results = flowResults(compareFlow(template, registry, [LINE], [traced('0x01', nowhere)]));
   assert.deepEqual(results.map((r) => [r.id, r.finding.kind, stateOf(r)]), [
-    ['flow.1', 'line-not-seen', 'bad'],
+    ['flow.1', 'line-not-every', 'bad'],
     ['trace.2.morpho-blue.usdc.transferFrom', 'money-uncovered', 'warn'],
   ]);
+  assert.deepEqual(strip({ entries: [], results }).find((s) => s.line === 'trace'), { line: 'trace', state: 'bad', passed: 0, counted: 2 });
+});
+
+test('a line seen in only some traced transactions is red like one seen in none, since a flow line must hold on every one', () => {
+  const elsewhere = supply().map((c) => (c.selector === SUPPLY ? { ...c, selector: '0x12345678' as Hex } : c));
+  const results = flowResults(compareFlow(template, registry, [LINE], [traced('0x01', supply()), traced('0x02', elsewhere)]));
+  assert.deepEqual(results.map((r) => [r.id, r.finding, stateOf(r)])[0], ['flow.1', { kind: 'line-not-every', seen: 1, of: 2 }, 'bad']);
   assert.deepEqual(strip({ entries: [], results }).find((s) => s.line === 'trace'), { line: 'trace', state: 'bad', passed: 0, counted: 2 });
 });
 
