@@ -183,6 +183,12 @@ function viewOf(tx: SafeTx): View {
       return { tx, calls: unwrapped.calls, unwrapError: undefined };
     case 'foreign-delegatecall':
       return { tx, calls: [], unwrapError: { callPath: 'safeTx', detail: `a delegatecall to ${unwrapped.to}, which is not an official MultiSend`, bytes: undefined } };
+    case 'zero-to':
+      return {
+        tx,
+        calls: [],
+        unwrapError: { callPath: 'safeTx', detail: `a MultiSend call with to = 0 at byte ${unwrapped.at} is refused (MultiSend 1.5.0 sends it to the Safe itself)`, bytes: [unwrapped.at, unwrapped.at + 20] },
+      };
     default:
       return {
         tx,
